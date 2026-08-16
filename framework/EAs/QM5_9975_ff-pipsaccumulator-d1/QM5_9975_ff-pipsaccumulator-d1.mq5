@@ -308,11 +308,12 @@ void Strategy_ManageOpenPosition()
    if(g_cached_trail_sl > 0.0)
      {
       const double curr_sl  = PositionGetDouble(POSITION_SL);
+      const double normalized_trail_sl = QM_TM_NormalizePrice(_Symbol, g_cached_trail_sl);
       const bool   improves = (curr_sl <= 0.0) ||
-                              (is_buy ? (g_cached_trail_sl > curr_sl + point * 0.5)
-                                      : (g_cached_trail_sl < curr_sl - point * 0.5));
+                              (is_buy ? (normalized_trail_sl > curr_sl + point * 0.5)
+                                      : (normalized_trail_sl < curr_sl - point * 0.5));
       if(improves)
-         QM_TM_MoveSL(ticket, g_cached_trail_sl, "trail_d1_low_high");
+         QM_TM_MoveSL(ticket, normalized_trail_sl, "trail_d1_low_high");
      }
   }
 

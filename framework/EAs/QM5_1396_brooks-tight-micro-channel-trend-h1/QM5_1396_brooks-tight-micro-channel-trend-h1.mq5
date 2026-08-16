@@ -435,7 +435,7 @@ void Strategy_ManageOpenPosition()
       const double market = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double l1 = iLow(_Symbol, strategy_tf, 1); // perf-allowed: bar-by-bar trail reference
       const double new_sl = l1 - strategy_trail_atr_buffer * atr;
-      if(new_sl > cur_sl && new_sl < market)
+      if(QM_TM_NormalizePrice(_Symbol, new_sl) > cur_sl && new_sl < market)
          QM_TM_MoveSL(g_active_ticket, QM_TM_NormalizePrice(_Symbol, new_sl), "brooks_tight_mc_trail");
      }
    else
@@ -443,7 +443,7 @@ void Strategy_ManageOpenPosition()
       const double market = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double h1 = iHigh(_Symbol, strategy_tf, 1); // perf-allowed: bar-by-bar trail reference
       const double new_sl = h1 + strategy_trail_atr_buffer * atr;
-      if((cur_sl <= 0.0 || new_sl < cur_sl) && new_sl > market)
+      if((cur_sl <= 0.0 || QM_TM_NormalizePrice(_Symbol, new_sl) < cur_sl) && new_sl > market)
          QM_TM_MoveSL(g_active_ticket, QM_TM_NormalizePrice(_Symbol, new_sl), "brooks_tight_mc_trail");
      }
   }

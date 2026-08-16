@@ -479,7 +479,7 @@ void Strategy_ManageOpenPosition()
          continue; // not yet +1R
 
       // Already at/through break-even?
-      const bool already_be = is_buy ? (sl_px >= open_px) : (sl_px <= open_px && sl_px > 0.0);
+      const bool already_be = is_buy ? (sl_px >= QM_TM_NormalizePrice(_Symbol, open_px)) : (sl_px <= QM_TM_NormalizePrice(_Symbol, open_px) && sl_px > 0.0);
       if(already_be)
          continue;
 

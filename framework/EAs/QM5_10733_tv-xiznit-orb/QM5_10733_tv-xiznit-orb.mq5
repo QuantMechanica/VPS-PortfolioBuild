@@ -406,7 +406,7 @@ void Strategy_ManageOpenPosition()
       if(favorable < initial_risk)
          continue;
 
-      const bool improves = is_buy ? (current_sl < open_price) : (current_sl > open_price);
+      const bool improves = is_buy ? (current_sl < QM_StopRulesNormalizePrice(_Symbol, open_price)) : (current_sl > QM_StopRulesNormalizePrice(_Symbol, open_price));
       if(improves)
          QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, open_price), "xiznit_orb_move_to_breakeven_1r");
      }

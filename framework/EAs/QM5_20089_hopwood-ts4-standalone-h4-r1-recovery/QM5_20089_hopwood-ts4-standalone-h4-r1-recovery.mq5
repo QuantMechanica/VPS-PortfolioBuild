@@ -203,7 +203,7 @@ void Strategy_ManageOpenPosition()
       // 3. PSAR Trail (only after T1 BE has been established)
       if(already_moved_be)
       {
-         const double sar = QM_SAR(_Symbol, PERIOD_H4, strategy_psar_step, strategy_psar_max, 1);
+         const double sar = QM_TM_NormalizePrice(_Symbol, QM_SAR(_Symbol, PERIOD_H4, strategy_psar_step, strategy_psar_max, 1));
          if(is_buy)
          {
             if(sar > current_sl)

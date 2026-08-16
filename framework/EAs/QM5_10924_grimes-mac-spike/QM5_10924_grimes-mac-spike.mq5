@@ -393,6 +393,7 @@ void Strategy_ManageOpenPosition()
    datetime open_time;
    if(!Strategy_SelectPosition(ptype, open_price, sl, ticket, open_time))
       return;
+   open_price = QM_TM_NormalizePrice(_Symbol, open_price);
 
    if(open_price <= 0.0 || sl <= 0.0 || strategy_be_trigger_rr <= 0.0)
       return;

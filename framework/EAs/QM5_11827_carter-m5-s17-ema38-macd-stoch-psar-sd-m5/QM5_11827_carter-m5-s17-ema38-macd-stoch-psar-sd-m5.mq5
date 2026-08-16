@@ -212,7 +212,7 @@ void Strategy_ManageOpenPosition()
    const int magic = QM_FrameworkMagic();
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double psar = QM_SAR(_Symbol, PERIOD_M5, strategy_psar_step, strategy_psar_maximum, 1);
+   const double psar = QM_TM_NormalizePrice(_Symbol, QM_SAR(_Symbol, PERIOD_M5, strategy_psar_step, strategy_psar_maximum, 1));
    if(magic <= 0 || psar <= 0.0)
       return;
 

@@ -285,7 +285,7 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const double buffer = (double)strategy_breakeven_buffer_points * point;
-      const double target_sl = is_buy ? (open_price + buffer) : (open_price - buffer);
+      const double target_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (open_price + buffer) : (open_price - buffer));
       const bool improves = is_buy ? (target_sl > current_sl + point * 0.5)
                                    : (target_sl < current_sl - point * 0.5);
       if(!improves)

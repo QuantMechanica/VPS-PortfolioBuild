@@ -158,7 +158,7 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const double entry_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double entry_price = QM_TM_NormalizePrice(_Symbol, PositionGetDouble(POSITION_PRICE_OPEN));
       const double sl_price    = PositionGetDouble(POSITION_SL);
       if(entry_price <= 0.0 || sl_price <= 0.0 || sl_price >= entry_price)
          continue; // need a below-entry stop to define R for a long

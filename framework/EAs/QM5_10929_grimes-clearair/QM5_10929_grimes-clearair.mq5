@@ -344,7 +344,7 @@ void Strategy_ManageOpenPosition()
       const double base = LowestRecentLow(strategy_trail_bars);
       if(base <= 0.0)
          return;
-      const double new_sl = base - strategy_trail_atr_mult * atr_h1;
+      const double new_sl = QM_TM_NormalizePrice(_Symbol, base - strategy_trail_atr_mult * atr_h1);
       const double cur_sl = PositionGetDouble(POSITION_SL);
       if(cur_sl <= 0.0 || new_sl > cur_sl + point * 0.5)
          QM_TM_MoveSL(ticket, new_sl, "clear_air_h1_trail_long");
@@ -354,7 +354,7 @@ void Strategy_ManageOpenPosition()
    const double base = HighestRecentHigh(strategy_trail_bars);
    if(base <= 0.0)
       return;
-   const double new_sl = base + strategy_trail_atr_mult * atr_h1;
+   const double new_sl = QM_TM_NormalizePrice(_Symbol, base + strategy_trail_atr_mult * atr_h1);
    const double cur_sl = PositionGetDouble(POSITION_SL);
    if(cur_sl <= 0.0 || new_sl < cur_sl - point * 0.5)
       QM_TM_MoveSL(ticket, new_sl, "clear_air_h1_trail_short");

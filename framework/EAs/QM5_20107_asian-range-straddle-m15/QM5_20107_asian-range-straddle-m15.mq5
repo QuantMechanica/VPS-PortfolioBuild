@@ -837,12 +837,11 @@ void Strategy_ManageOpenPosition()
          (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double current_sl =
          PositionGetDouble(POSITION_SL);
-      const double candidate =
-         Strategy016_AlignPrice(
+      const double candidate =QM_TM_NormalizePrice(_Symbol, Strategy016_AlignPrice(
             (position_type == POSITION_TYPE_BUY)
             ? closed_bar.low
             : closed_bar.high,
-            (position_type == POSITION_TYPE_BUY) ? -1 : 1);
+            (position_type == POSITION_TYPE_BUY) ? -1 : 1));
       if(candidate <= 0.0)
          continue;
       if(position_type == POSITION_TYPE_BUY &&

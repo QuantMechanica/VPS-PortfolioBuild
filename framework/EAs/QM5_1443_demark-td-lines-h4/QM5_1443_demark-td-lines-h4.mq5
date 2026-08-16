@@ -375,7 +375,7 @@ void Strategy_ManageOpenPosition()
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double pos_sl = PositionGetDouble(POSITION_SL);
-   const bool moved_to_be = (point > 0.0 && MathAbs(pos_sl - open_price) <= point);
+   const bool moved_to_be = (point > 0.0 && MathAbs(pos_sl - NormalizePrice(open_price)) <= point);
    if(!moved_to_be && ((is_buy && current >= tp1) || (!is_buy && current <= tp1)))
      {
       const double partial_lots = volume * MathMax(0.0, MathMin(1.0, strategy_partial_pct));

@@ -1037,9 +1037,8 @@ void Strategy086_ManagePosition(
                                  forming_time);
       return;
      }
-   const double candidate =
-      Strategy086_AlignPrice(ma_1,
-                             buy_side ? -1 : 1);
+   const double candidate =QM_TM_NormalizePrice(_Symbol, Strategy086_AlignPrice(ma_1,
+                             buy_side ? -1 : 1));
    const bool tightens =
       (candidate > 0.0) &&
       (buy_side

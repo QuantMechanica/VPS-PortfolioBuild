@@ -262,7 +262,7 @@ void Strategy_ManageOpenPosition()
          // Both of the last two bars must have CLOSED below SMA5.
          if(!(close1 < sma1 && close2 < sma2))
             continue;
-         const double new_sl = MathMin(close1, close2);
+         const double new_sl = QM_TM_NormalizePrice(_Symbol, MathMin(close1, close2));
          if(new_sl > cur_sl && new_sl < bid)
             QM_TM_MoveSL(ticket, new_sl, "money_line_trail_long");
         }
@@ -276,7 +276,7 @@ void Strategy_ManageOpenPosition()
          // Both of the last two bars must have CLOSED above SMA5.
          if(!(close1 > sma1 && close2 > sma2))
             continue;
-         const double new_sl = MathMax(close1, close2);
+         const double new_sl = QM_TM_NormalizePrice(_Symbol, MathMax(close1, close2));
          if(new_sl < cur_sl && new_sl > ask)
             QM_TM_MoveSL(ticket, new_sl, "money_line_trail_short");
         }

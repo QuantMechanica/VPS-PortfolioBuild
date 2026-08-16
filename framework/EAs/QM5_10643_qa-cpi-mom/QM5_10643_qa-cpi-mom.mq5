@@ -241,8 +241,8 @@ void Strategy_ManageOpenPosition()
       if(spread_buffer <= 0.0 || spread_buffer == DBL_MAX)
          continue;
 
-      const double be_sl = is_buy ? (open_price + spread_buffer)
-                                  : (open_price - spread_buffer);
+      const double be_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (open_price + spread_buffer)
+                                  : (open_price - spread_buffer));
       const bool improves = is_buy ? (be_sl > current_sl + point * 0.5)
                                    : (be_sl < current_sl - point * 0.5);
       if(improves)

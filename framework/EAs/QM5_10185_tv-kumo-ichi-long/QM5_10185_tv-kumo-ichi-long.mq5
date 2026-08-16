@@ -306,7 +306,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   const double target_sl = Strategy_TrailingStop();
+   const double target_sl = QM_TM_NormalizePrice(_Symbol, Strategy_TrailingStop());
    if(target_sl <= 0.0)
       return;
 

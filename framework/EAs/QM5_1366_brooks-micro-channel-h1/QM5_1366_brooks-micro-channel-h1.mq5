@@ -477,13 +477,13 @@ void Strategy_ManageOpenPosition()
      {
       const double new_sl = LowestLow(1, strategy_trail_extreme_bars);
       // Only ratchet up, and never above market.
-      if(new_sl > cur_sl && new_sl < market)
+      if(QM_TM_NormalizePrice(_Symbol, new_sl) > cur_sl && new_sl < market)
          QM_TM_MoveSL(g_active_ticket, QM_TM_NormalizePrice(_Symbol, new_sl), "brooks_mc_trail");
      }
    else
      {
       const double new_sl = HighestHigh(1, strategy_trail_extreme_bars);
-      if((cur_sl <= 0.0 || new_sl < cur_sl) && new_sl > market)
+      if((cur_sl <= 0.0 || QM_TM_NormalizePrice(_Symbol, new_sl) < cur_sl) && new_sl > market)
          QM_TM_MoveSL(g_active_ticket, QM_TM_NormalizePrice(_Symbol, new_sl), "brooks_mc_trail");
      }
   }

@@ -360,7 +360,7 @@ void Strategy_ManageOpenPosition()
       if(favorable < initial_r * strategy_be_trigger_rr)
          continue;
 
-      const double be_sl = open_price;
+      const double be_sl = QM_TM_NormalizePrice(_Symbol, open_price);
       const bool improves = is_buy ? (be_sl > current_sl + point * 0.5)
                                    : (be_sl < current_sl - point * 0.5);
       if(improves)

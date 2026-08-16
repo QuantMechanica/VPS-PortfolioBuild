@@ -333,7 +333,7 @@ void Strategy_ManageOpenPosition()
          const double target_be = open_price + strategy_be_atr_mult * g_atr_at_entry;
          if(close1 >= target_be)
          {
-            const double new_sl = open_price + spread + 2.0 * SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+            const double new_sl = QM_TM_NormalizePrice(_Symbol, open_price + spread + 2.0 * SymbolInfoDouble(_Symbol, SYMBOL_POINT));
             if(current_sl < new_sl - 1e-5)
             {
                QM_TM_MoveSL(ticket, new_sl, "BREAKEVEN");
@@ -345,7 +345,7 @@ void Strategy_ManageOpenPosition()
          const double target_be = open_price - strategy_be_atr_mult * g_atr_at_entry;
          if(close1 <= target_be)
          {
-            const double new_sl = open_price - spread - 2.0 * SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+            const double new_sl = QM_TM_NormalizePrice(_Symbol, open_price - spread - 2.0 * SymbolInfoDouble(_Symbol, SYMBOL_POINT));
             if(current_sl > new_sl + 1e-5 || current_sl == 0.0)
             {
                QM_TM_MoveSL(ticket, new_sl, "BREAKEVEN");

@@ -814,8 +814,8 @@ void Strategy_ManageOpenPosition()
       if(g_partial_ticket != ticket)
         {
          g_partial_ticket = ticket;
-         g_partial_done = is_buy ? (current_sl >= open_price - point * 0.5)
-                                 : (current_sl <= open_price + point * 0.5);
+         g_partial_done = is_buy ? (current_sl >= QM_StopRulesNormalizePrice(_Symbol, open_price) - point * 0.5)
+                                 : (current_sl <= QM_StopRulesNormalizePrice(_Symbol, open_price) + point * 0.5);
         }
       if(g_partial_done)
          continue;

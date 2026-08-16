@@ -274,6 +274,7 @@ void Strategy_ManageOpenPosition()
    datetime open_time;
    if(!Strategy_SelectOurPosition(ticket, ptype, open_price, open_time))
       return;
+   open_price = QM_TM_NormalizePrice(_Symbol, open_price);
 
    const bool is_buy = (ptype == POSITION_TYPE_BUY);
    const double market = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)

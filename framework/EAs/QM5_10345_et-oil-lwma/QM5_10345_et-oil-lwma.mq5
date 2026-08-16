@@ -341,7 +341,7 @@ void Strategy_ManageOpenPosition()
       const double moved = is_buy ? (market - open_price) : (open_price - market);
       if(initial_risk > 0.0 && moved >= initial_risk)
         {
-         const double be_sl = open_price;
+         const double be_sl = QM_TM_NormalizePrice(_Symbol, open_price);
          const bool improves_to_be = is_buy ? (current_sl < be_sl - point * 0.5)
                                             : (current_sl > be_sl + point * 0.5);
          if(improves_to_be)
@@ -353,8 +353,8 @@ void Strategy_ManageOpenPosition()
       if(!at_or_beyond_be)
          continue;
 
-      const double trail_sl = is_buy ? (market - atr * strategy_trail_atr_mult)
-                                     : (market + atr * strategy_trail_atr_mult);
+      const double trail_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (market - atr * strategy_trail_atr_mult)
+                                     : (market + atr * strategy_trail_atr_mult));
       const bool improves_trail = is_buy ? (trail_sl > current_sl + point * 0.5)
                                          : (trail_sl < current_sl - point * 0.5);
       if(improves_trail)

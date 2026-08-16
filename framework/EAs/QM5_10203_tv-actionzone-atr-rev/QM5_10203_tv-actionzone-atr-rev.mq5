@@ -243,7 +243,7 @@ void Strategy_ManageOpenPosition()
       return;
 
    const QM_OrderType side = (type == POSITION_TYPE_BUY) ? QM_BUY : QM_SELL;
-   const double candidate = Strategy_StopForSide(side);
+   const double candidate = QM_TM_NormalizePrice(_Symbol, Strategy_StopForSide(side));
    const double current_sl = PositionGetDouble(POSITION_SL);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(candidate <= 0.0 || point <= 0.0)

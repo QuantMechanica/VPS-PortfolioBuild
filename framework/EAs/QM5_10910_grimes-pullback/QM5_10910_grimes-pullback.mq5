@@ -363,8 +363,8 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const bool needs_be = (current_sl <= 0.0) ||
-                            (is_buy ? (current_sl < open_price - point * 0.5)
-                                    : (current_sl > open_price + point * 0.5));
+                            (is_buy ? (current_sl < NormalizeStrategyPrice(open_price) - point * 0.5)
+                                    : (current_sl > NormalizeStrategyPrice(open_price) + point * 0.5));
       if(needs_be)
          QM_TM_MoveSL(ticket, NormalizeStrategyPrice(open_price), "grimes_1r_breakeven");
 

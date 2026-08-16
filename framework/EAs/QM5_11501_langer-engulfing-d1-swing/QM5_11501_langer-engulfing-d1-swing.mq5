@@ -194,10 +194,10 @@ void Strategy_ManageOpenPosition()
          if(last_closed[0].time > open_time)
            {
             if(position_type == POSITION_TYPE_BUY && last_closed[0].close > open_price &&
-               (current_sl <= 0.0 || current_sl < open_price))
+               (current_sl <= 0.0 || current_sl < QM_TM_NormalizePrice(_Symbol, open_price)))
                QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, open_price), "langer_be_after_profitable_d1_close");
             else if(position_type == POSITION_TYPE_SELL && last_closed[0].close < open_price &&
-                    (current_sl <= 0.0 || current_sl > open_price))
+                    (current_sl <= 0.0 || current_sl > QM_TM_NormalizePrice(_Symbol, open_price)))
                QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, open_price), "langer_be_after_profitable_d1_close");
            }
         }
@@ -216,7 +216,7 @@ void Strategy_ManageOpenPosition()
          for(int j = 0; j < strategy_trail_bars; ++j)
             trail = MathMin(trail, trail_bars[j].low);
          const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(trail > 0.0 && trail < DBL_MAX && (current_sl <= 0.0 || trail > current_sl) &&
+         if(trail > 0.0 && trail < DBL_MAX && (current_sl <= 0.0 || QM_TM_NormalizePrice(_Symbol, trail) > current_sl) &&
             (bid <= 0.0 || trail < bid))
             QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, trail), "langer_trail_d1_lows");
         }
@@ -226,7 +226,7 @@ void Strategy_ManageOpenPosition()
          for(int j = 0; j < strategy_trail_bars; ++j)
             trail = MathMax(trail, trail_bars[j].high);
          const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(trail > 0.0 && (current_sl <= 0.0 || trail < current_sl) &&
+         if(trail > 0.0 && (current_sl <= 0.0 || QM_TM_NormalizePrice(_Symbol, trail) < current_sl) &&
             (ask <= 0.0 || trail > ask))
             QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, trail), "langer_trail_d1_highs");
         }

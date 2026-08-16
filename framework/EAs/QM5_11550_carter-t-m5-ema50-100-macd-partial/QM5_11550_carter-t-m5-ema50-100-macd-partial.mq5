@@ -177,9 +177,9 @@ void Strategy_ManageOpenPosition()
       if(open_price <= 0.0 || current_sl <= 0.0 || volume <= 0.0)
          continue;
 
-      if(is_buy && current_sl >= open_price - point * 0.5)
+      if(is_buy && current_sl >= QM_StopRulesNormalizePrice(_Symbol, open_price) - point * 0.5)
          continue;
-      if(!is_buy && current_sl <= open_price + point * 0.5)
+      if(!is_buy && current_sl <= QM_StopRulesNormalizePrice(_Symbol, open_price) + point * 0.5)
          continue;
 
       const double one_r = MathAbs(open_price - current_sl);

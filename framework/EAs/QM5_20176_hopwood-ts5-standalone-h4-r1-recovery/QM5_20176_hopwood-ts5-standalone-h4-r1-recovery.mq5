@@ -327,7 +327,7 @@ void Strategy_ManageOpenPosition()
 
    const double bid   = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask   = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double sar_1 = QM_SAR(_Symbol, PERIOD_CURRENT, psar_step, psar_max, 1);
+   const double sar_1 = QM_TM_NormalizePrice(_Symbol, QM_SAR(_Symbol, PERIOD_CURRENT, psar_step, psar_max, 1));
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {

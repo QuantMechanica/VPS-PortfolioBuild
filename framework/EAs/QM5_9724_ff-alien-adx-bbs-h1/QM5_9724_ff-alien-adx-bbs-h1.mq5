@@ -286,7 +286,7 @@ void Strategy_ManageOpenPosition()
      {
       const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
       if(point <= 0.0) return;
-      const double new_sl = (g_pos_dir > 0) ? (entry_px + point) : (entry_px - point);
+      const double new_sl = QM_TM_NormalizePrice(_Symbol, (g_pos_dir > 0) ? (entry_px + point) : (entry_px - point));
       const bool improves = (g_pos_dir > 0) ? (new_sl > current_sl) : (new_sl < current_sl);
       if(improves && QM_TM_MoveSL(ticket, new_sl, "BE_1R")) g_pos_be_done = true;
      }

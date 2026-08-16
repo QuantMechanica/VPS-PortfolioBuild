@@ -393,7 +393,7 @@ void Strategy_ManageOpenPosition()
       else if(pos_magic == magic2)
       {
          magic2_ticket = ticket;
-         magic2_open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+         magic2_open_price = QM_TM_NormalizePrice(_Symbol, PositionGetDouble(POSITION_PRICE_OPEN));
          magic2_sl = PositionGetDouble(POSITION_SL);
       }
    }

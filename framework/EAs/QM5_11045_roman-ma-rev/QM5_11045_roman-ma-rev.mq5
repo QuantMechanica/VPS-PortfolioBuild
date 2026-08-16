@@ -280,7 +280,8 @@ void Strategy_ManageOpenPosition()
       return;
 
    const bool is_buy = (position_type == POSITION_TYPE_BUY);
-   if((is_buy && sl >= open_price) || (!is_buy && sl <= open_price))
+   const double break_even_sl = QM_TM_NormalizePrice(_Symbol, open_price);
+   if((is_buy && sl >= break_even_sl) || (!is_buy && sl <= break_even_sl))
       return;
 
    const double risk_distance = MathAbs(open_price - sl);
@@ -290,9 +291,9 @@ void Strategy_ManageOpenPosition()
       return;
 
    const double favorable_distance = is_buy ? (market_price - open_price)
-                                            : (open_price - market_price);
+                                             : (open_price - market_price);
    if(favorable_distance >= risk_distance * strategy_break_even_r)
-      QM_TM_MoveSL(ticket, open_price, "roman_ma_rev_break_even");
+      QM_TM_MoveSL(ticket, break_even_sl, "roman_ma_rev_break_even");
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,

@@ -481,12 +481,11 @@ void Strategy_ManageOpenPosition()
            strategy_trail_pips * pip))
          continue;
 
-      const double candidate =
-         Strategy067_AlignPrice(
+      const double candidate =QM_TM_NormalizePrice(_Symbol, Strategy067_AlignPrice(
             is_long
             ? market - strategy_trail_pips * pip
             : market + strategy_trail_pips * pip,
-            is_long ? -1 : 1);
+            is_long ? -1 : 1));
       if(candidate <= 0.0)
          continue;
 

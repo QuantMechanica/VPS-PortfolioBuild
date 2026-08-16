@@ -321,7 +321,7 @@ void Strategy_ManageOpenPosition()
       return;
 
    const double lock   = BeLockFrac * g_be_risk;
-   const double new_sl = is_buy ? (g_be_entry + lock) : (g_be_entry - lock);
+   const double new_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (g_be_entry + lock) : (g_be_entry - lock));
    const double point  = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const bool   improves = is_buy ? (new_sl > sl + point * 0.5)
                                   : (sl <= 0.0 || new_sl < sl - point * 0.5);

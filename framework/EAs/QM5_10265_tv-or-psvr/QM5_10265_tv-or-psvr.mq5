@@ -365,8 +365,8 @@ void Strategy_ManageOpenPosition()
 
       const bool is_buy = (ptype == POSITION_TYPE_BUY);
       const bool already_be = (current_sl > 0.0) &&
-                              (is_buy ? (current_sl >= open_price - point * 0.5)
-                                      : (current_sl <= open_price + point * 0.5));
+                              (is_buy ? (current_sl >= NormalizePrice(open_price) - point * 0.5)
+                                      : (current_sl <= NormalizePrice(open_price) + point * 0.5));
       if(already_be)
          continue;
 

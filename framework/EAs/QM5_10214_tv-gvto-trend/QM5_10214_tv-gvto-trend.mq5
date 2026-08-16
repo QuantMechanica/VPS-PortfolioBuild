@@ -285,6 +285,7 @@ void Strategy_ManageOpenPosition()
    int    dir_2   = 0;
    if(!ComputeSuperTrend(warmup, st_line, dir_1, dir_2) || st_line <= 0.0)
       return;
+   st_line = QM_TM_NormalizePrice(_Symbol, st_line);
 
    const double bid   = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask   = SymbolInfoDouble(_Symbol, SYMBOL_ASK);

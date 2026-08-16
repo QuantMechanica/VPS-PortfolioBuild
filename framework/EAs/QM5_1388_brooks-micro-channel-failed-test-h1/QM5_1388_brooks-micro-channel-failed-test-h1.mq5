@@ -590,8 +590,8 @@ void Strategy_ManageOpenPosition()
      {
       const double new_sl = is_buy ? (open_price + strategy_lock_atr * g_atr_at_entry)
                                    : (open_price - strategy_lock_atr * g_atr_at_entry);
-      bool ratchet = is_buy ? ((cur_sl <= 0.0 || new_sl > cur_sl) && new_sl < market)
-                            : ((cur_sl <= 0.0 || new_sl < cur_sl) && new_sl > market);
+      bool ratchet = is_buy ? ((cur_sl <= 0.0 || QM_TM_NormalizePrice(_Symbol, new_sl) > cur_sl) && QM_TM_NormalizePrice(_Symbol, new_sl) < market)
+                            : ((cur_sl <= 0.0 || QM_TM_NormalizePrice(_Symbol, new_sl) < cur_sl) && new_sl > market);
       if(ratchet)
         {
          QM_TM_MoveSL(g_active_ticket, QM_TM_NormalizePrice(_Symbol, new_sl), "brooks_ft_lock_half");
@@ -606,8 +606,8 @@ void Strategy_ManageOpenPosition()
      {
       const double new_sl = is_buy ? (open_price - strategy_be_buffer_atr * g_atr_at_entry)
                                    : (open_price + strategy_be_buffer_atr * g_atr_at_entry);
-      bool ratchet = is_buy ? ((cur_sl <= 0.0 || new_sl > cur_sl) && new_sl < market)
-                            : ((cur_sl <= 0.0 || new_sl < cur_sl) && new_sl > market);
+      bool ratchet = is_buy ? ((cur_sl <= 0.0 || QM_TM_NormalizePrice(_Symbol, new_sl) > cur_sl) && QM_TM_NormalizePrice(_Symbol, new_sl) < market)
+                            : ((cur_sl <= 0.0 || QM_TM_NormalizePrice(_Symbol, new_sl) < cur_sl) && new_sl > market);
       if(ratchet)
         {
          QM_TM_MoveSL(g_active_ticket, QM_TM_NormalizePrice(_Symbol, new_sl), "brooks_ft_break_even");

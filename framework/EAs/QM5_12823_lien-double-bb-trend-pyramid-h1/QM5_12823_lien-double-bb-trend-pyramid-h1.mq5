@@ -470,7 +470,7 @@ bool QM12823_LockExistingLegsBreakEven()
       if(current_sl >= entry)
          continue;
 
-      const double target = QM12823_ClampLongStopBelowBid(entry);
+      const double target = QM_TM_NormalizePrice(_Symbol, QM12823_ClampLongStopBelowBid(entry));
       if(target <= 0.0)
          return false;
       if(target < entry)
@@ -564,7 +564,7 @@ bool QM12823_TrailAggregateStop(const bool force_run = false)
    if(method_stop > target)
       target = method_stop;
 
-   target = QM12823_ClampLongStopBelowBid(target);
+   target = QM_TM_NormalizePrice(_Symbol, QM12823_ClampLongStopBelowBid(target));
    if(target <= 0.0)
       return false;
 

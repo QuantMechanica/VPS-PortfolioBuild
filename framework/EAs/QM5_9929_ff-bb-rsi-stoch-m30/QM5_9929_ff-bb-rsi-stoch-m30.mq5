@@ -371,7 +371,7 @@ void Strategy_ManageOpenPosition()
       return;
 
    const bool sl_at_or_better_than_entry = (sl > 0.0) &&
-      (is_buy ? (sl >= open_price - point * 0.5) : (sl <= open_price + point * 0.5));
+      (is_buy ? (sl >= Strategy_NormalizePrice(open_price) - point * 0.5) : (sl <= Strategy_NormalizePrice(open_price) + point * 0.5));
    if(sl_at_or_better_than_entry)
       return;
 

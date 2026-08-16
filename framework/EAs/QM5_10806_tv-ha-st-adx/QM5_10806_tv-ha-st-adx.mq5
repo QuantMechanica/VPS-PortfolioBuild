@@ -360,7 +360,7 @@ void Strategy_ManageOpenPosition()
 
       QM_TM_TrailATR(ticket, MathMax(1, strategy_stop_atr_period), strategy_stop_atr_mult);
 
-      const double target_sl = QM5_SelectSwingProtectiveStop(side, market);
+      const double target_sl = QM_TM_NormalizePrice(_Symbol, QM5_SelectSwingProtectiveStop(side, market));
       if(target_sl <= 0.0)
          continue;
 

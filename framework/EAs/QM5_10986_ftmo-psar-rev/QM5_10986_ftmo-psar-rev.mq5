@@ -264,7 +264,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
-   const double sar_now = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
+   const double sar_now = QM_TM_NormalizePrice(_Symbol, QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1));
    if(sar_now <= 0.0)
       return;
    if(strategy_tp_rr <= 0.0)

@@ -360,8 +360,8 @@ void Strategy_ManageOpenPosition()
       if(favorable_distance < risk_distance)
          continue;
 
-      const bool improves = is_buy ? (current_sl < open_price - point * 0.5)
-                                   : (current_sl > open_price + point * 0.5);
+      const bool improves = is_buy ? (current_sl < QM_StopRulesNormalizePrice(_Symbol, open_price) - point * 0.5)
+                                   : (current_sl > QM_StopRulesNormalizePrice(_Symbol, open_price) + point * 0.5);
       if(improves)
          QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, open_price), "ASQ_MOVE_TO_BE_1R");
      }

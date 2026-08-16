@@ -265,7 +265,7 @@ void Strategy_ManageOpenPosition()
 
       const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const bool is_buy = (position_type == POSITION_TYPE_BUY);
-      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double open_price = QM_TM_NormalizePrice(_Symbol, PositionGetDouble(POSITION_PRICE_OPEN));
       const double current_sl = PositionGetDouble(POSITION_SL);
       const double volume = PositionGetDouble(POSITION_VOLUME);
       const double market = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)

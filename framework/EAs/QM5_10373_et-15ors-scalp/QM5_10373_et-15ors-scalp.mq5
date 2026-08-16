@@ -245,8 +245,8 @@ void Strategy_ManageOpenPosition()
       if(risk_dist <= 0.0 || moved < risk_dist * strategy_be_trigger_r)
          continue;
 
-      const double be_sl = is_buy ? (open_price + tick * strategy_be_buffer_ticks)
-                                  : (open_price - tick * strategy_be_buffer_ticks);
+      const double be_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (open_price + tick * strategy_be_buffer_ticks)
+                                  : (open_price - tick * strategy_be_buffer_ticks));
       const bool improves = is_buy ? (be_sl > current_sl + tick * 0.5)
                                    : (be_sl < current_sl - tick * 0.5);
       if(improves)

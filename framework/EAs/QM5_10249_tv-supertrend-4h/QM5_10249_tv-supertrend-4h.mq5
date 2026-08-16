@@ -308,8 +308,8 @@ void Strategy_ManageOpenPosition()
    const bool is_buy = (ptype == POSITION_TYPE_BUY);
    g_had_position = true;
    g_last_position_dir = is_buy ? 1 : -1;
-   g_last_position_be_protected = is_buy ? (sl >= open_price - point * 2.0)
-                                         : (sl <= open_price + point * 2.0);
+   g_last_position_be_protected = is_buy ? (sl >= NormalizeStrategyPrice(open_price) - point * 2.0)
+                                         : (sl <= NormalizeStrategyPrice(open_price) + point * 2.0);
 
    if(g_last_position_be_protected)
       return;

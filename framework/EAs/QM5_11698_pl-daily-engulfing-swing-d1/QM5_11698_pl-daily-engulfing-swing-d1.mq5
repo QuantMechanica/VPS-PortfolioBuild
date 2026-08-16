@@ -314,13 +314,13 @@ void Strategy_ManageOpenPosition()
          const double close1 = iClose(_Symbol, PERIOD_D1, 1);
          if(pos_type == POSITION_TYPE_BUY && close1 > entry_px)
            {
-            if(cur_sl < entry_px)
+            if(cur_sl < QM_TM_NormalizePrice(_Symbol, entry_px))
                QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, entry_px), "break_even");
             g_be_done = true;
            }
          else if(pos_type == POSITION_TYPE_SELL && close1 < entry_px)
            {
-            if(cur_sl <= 0.0 || cur_sl > entry_px)
+            if(cur_sl <= 0.0 || cur_sl > QM_TM_NormalizePrice(_Symbol, entry_px))
                QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, entry_px), "break_even");
             g_be_done = true;
            }

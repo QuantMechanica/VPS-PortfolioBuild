@@ -469,13 +469,14 @@ void Strategy_ManageOpenPosition()
    if(moved_r < strategy_trail_trigger_r)
       return;
 
-   const bool valid = g_active_is_long ? (g_cached_trail_stop < bid)
-                                       : (g_cached_trail_stop > ask);
+   const double normalized_trail_stop = QM_TM_NormalizePrice(_Symbol, g_cached_trail_stop);
+   const bool valid = g_active_is_long ? (normalized_trail_stop < bid)
+                                       : (normalized_trail_stop > ask);
    const bool improves = (sl <= 0.0) ||
-                         (g_active_is_long ? (g_cached_trail_stop > sl + point * 0.5)
-                                           : (g_cached_trail_stop < sl - point * 0.5));
+                         (g_active_is_long ? (normalized_trail_stop > sl + point * 0.5)
+                                           : (normalized_trail_stop < sl - point * 0.5));
    if(valid && improves)
-      QM_TM_MoveSL(ticket, g_cached_trail_stop, "grimes_trendday_prior3_trail");
+      QM_TM_MoveSL(ticket, normalized_trail_stop, "grimes_trendday_prior3_trail");
   }
 
 // Trade Close. Card exit: close at session close or when a closed M15 bar

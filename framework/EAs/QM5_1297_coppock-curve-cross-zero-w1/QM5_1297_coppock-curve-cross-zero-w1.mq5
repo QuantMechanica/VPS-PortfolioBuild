@@ -316,7 +316,7 @@ void Strategy_ManageOpenPosition()
             continue;
          if(bid - entry >= trigger_dist)
            {
-            const double new_sl = entry + buffer_dist;
+            const double new_sl = QM_TM_NormalizePrice(_Symbol, entry + buffer_dist);
             if(cur_sl <= 0.0 || new_sl > cur_sl)
                QM_TM_MoveSL(ticket, new_sl, "coppock_breakeven_trail");
            }
@@ -328,7 +328,7 @@ void Strategy_ManageOpenPosition()
             continue;
          if(entry - ask >= trigger_dist)
            {
-            const double new_sl = entry - buffer_dist;
+            const double new_sl = QM_TM_NormalizePrice(_Symbol, entry - buffer_dist);
             if(cur_sl <= 0.0 || new_sl < cur_sl)
                QM_TM_MoveSL(ticket, new_sl, "coppock_breakeven_trail");
            }

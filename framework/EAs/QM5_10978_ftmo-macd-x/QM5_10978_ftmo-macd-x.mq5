@@ -296,6 +296,7 @@ void Strategy_ManageOpenPosition()
    double tp;
    if(!Strategy_SelectOurPosition(ticket, ptype, open_price, open_time, sl, tp))
       return;
+   open_price = QM_TM_NormalizePrice(_Symbol, open_price);
 
    if(open_price <= 0.0 || tp <= 0.0 || strategy_take_profit_r <= 0.0)
       return;

@@ -309,12 +309,13 @@ void Strategy_ManageOpenPosition()
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double current_sl = PositionGetDouble(POSITION_SL);
-      if(ptype == POSITION_TYPE_BUY && g_strategy_cache.slow_line < bid &&
-         (current_sl <= 0.0 || g_strategy_cache.slow_line > current_sl + point))
-         QM_TM_MoveSL(ticket, g_strategy_cache.slow_line, "slow_supertrend_trail_long");
-      if(ptype == POSITION_TYPE_SELL && g_strategy_cache.slow_line > ask &&
-         (current_sl <= 0.0 || g_strategy_cache.slow_line < current_sl - point))
-         QM_TM_MoveSL(ticket, g_strategy_cache.slow_line, "slow_supertrend_trail_short");
+      const double normalized_slow_line = QM_TM_NormalizePrice(_Symbol, g_strategy_cache.slow_line);
+      if(ptype == POSITION_TYPE_BUY && normalized_slow_line < bid &&
+         (current_sl <= 0.0 || normalized_slow_line > current_sl + point))
+         QM_TM_MoveSL(ticket, normalized_slow_line, "slow_supertrend_trail_long");
+      if(ptype == POSITION_TYPE_SELL && normalized_slow_line > ask &&
+         (current_sl <= 0.0 || normalized_slow_line < current_sl - point))
+         QM_TM_MoveSL(ticket, normalized_slow_line, "slow_supertrend_trail_short");
      }
   }
 

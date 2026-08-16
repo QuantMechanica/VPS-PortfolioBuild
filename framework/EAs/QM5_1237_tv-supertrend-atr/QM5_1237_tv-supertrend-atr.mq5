@@ -298,6 +298,7 @@ void Strategy_ManageOpenPosition()
    int dir = 0;
    if(!ReadSuperTrend(1, st_line, dir))
       return;
+   st_line = QM_TM_NormalizePrice(_Symbol, st_line);
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double current_sl = PositionGetDouble(POSITION_SL);

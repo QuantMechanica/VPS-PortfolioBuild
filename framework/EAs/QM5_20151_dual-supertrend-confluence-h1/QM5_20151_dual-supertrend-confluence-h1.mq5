@@ -785,9 +785,8 @@ void Strategy_ManageOpenPosition()
       buy_side
       ? g_str141_fast_line[newest]
       : g_str141_slow_line[newest];
-   const double candidate =
-      Strategy141_AlignPrice(raw_candidate,
-                             buy_side ? -1 : 1);
+   const double candidate =QM_TM_NormalizePrice(_Symbol, Strategy141_AlignPrice(raw_candidate,
+                             buy_side ? -1 : 1));
    const double tick = Strategy141_TradeTick();
    const bool tightens =
       (candidate > 0.0 && tick > 0.0 &&

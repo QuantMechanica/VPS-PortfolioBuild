@@ -403,8 +403,8 @@ void Strategy_ManageOpenPosition()
       const bool valid_side = is_buy ? (g_st_bull && g_st_line < market)
                                      : (!g_st_bull && g_st_line > market);
       const bool improves = (current_sl <= 0.0) ||
-                            (is_buy ? (g_st_line > current_sl + point * 0.5)
-                                    : (g_st_line < current_sl - point * 0.5));
+                            (is_buy ? (QM_StopRulesNormalizePrice(_Symbol, g_st_line) > current_sl + point * 0.5)
+                                    : (QM_StopRulesNormalizePrice(_Symbol, g_st_line) < current_sl - point * 0.5));
       if(valid_side && improves)
          QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, g_st_line), "supertrend_trail");
      }

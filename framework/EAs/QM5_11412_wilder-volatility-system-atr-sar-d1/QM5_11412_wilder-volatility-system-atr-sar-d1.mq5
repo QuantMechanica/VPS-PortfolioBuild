@@ -261,7 +261,8 @@ void CloseAllForMagic(const int magic)
 // dir: +1 long / -1 short. Called once per closed bar from Strategy_EntrySignal.
 void TrailStopToSAR(const int magic, const int dir, const double sar)
   {
-   if(sar <= 0.0)
+   const double normalized_sar = QM_TM_NormalizePrice(_Symbol, sar);
+   if(normalized_sar <= 0.0)
       return;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -276,13 +277,13 @@ void TrailStopToSAR(const int magic, const int dir, const double sar)
 
       if(dir > 0)
         {
-         if(sar < open_p && (cur_sl <= 0.0 || sar > cur_sl))
-            QM_TM_MoveSL(ticket, sar, "wilder_sar_trail");
+         if(normalized_sar < open_p && (cur_sl <= 0.0 || normalized_sar > cur_sl))
+            QM_TM_MoveSL(ticket, normalized_sar, "wilder_sar_trail");
         }
       else
         {
-         if(sar > open_p && (cur_sl <= 0.0 || sar < cur_sl))
-            QM_TM_MoveSL(ticket, sar, "wilder_sar_trail");
+         if(normalized_sar > open_p && (cur_sl <= 0.0 || normalized_sar < cur_sl))
+            QM_TM_MoveSL(ticket, normalized_sar, "wilder_sar_trail");
         }
      }
   }

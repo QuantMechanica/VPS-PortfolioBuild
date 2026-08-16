@@ -318,7 +318,7 @@ void Strategy_ManageOpenPosition()
          // Only trail once price has run +N*ATR in favour.
          if(bid - open_price < trigger_dist)
             continue;
-         const double new_sl = ema - trail_buf;
+         const double new_sl = QM_TM_NormalizePrice(_Symbol, ema - trail_buf);
          // Never loosen the stop; only ratchet it up.
          if(new_sl > cur_sl && new_sl < bid)
             QM_TM_MoveSL(ticket, new_sl, "carter_h1_trail_to_ema18");
@@ -330,7 +330,7 @@ void Strategy_ManageOpenPosition()
             continue;
          if(open_price - ask < trigger_dist)
             continue;
-         const double new_sl = ema + trail_buf;
+         const double new_sl = QM_TM_NormalizePrice(_Symbol, ema + trail_buf);
          // Never loosen the stop; only ratchet it down (cur_sl may be 0 = unset).
          if((cur_sl <= 0.0 || new_sl < cur_sl) && new_sl > ask)
             QM_TM_MoveSL(ticket, new_sl, "carter_h1_trail_to_ema18");

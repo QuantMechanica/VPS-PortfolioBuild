@@ -266,7 +266,7 @@ void Strategy_ManageOpenPosition()
       const double entry = PositionGetDouble(POSITION_PRICE_OPEN);
       const double cur_sl = PositionGetDouble(POSITION_SL);
 
-      const double new_sl = OopsDayExtremeStop(ptype, entry);
+      const double new_sl = QM_TM_NormalizePrice(_Symbol, OopsDayExtremeStop(ptype, entry));
       if(new_sl <= 0.0)
          continue;
 

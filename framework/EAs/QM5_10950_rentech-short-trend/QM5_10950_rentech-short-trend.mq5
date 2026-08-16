@@ -221,7 +221,7 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double open_price = QM_TM_NormalizePrice(_Symbol, PositionGetDouble(POSITION_PRICE_OPEN));
       const double current_sl = PositionGetDouble(POSITION_SL);
       if(open_price <= 0.0 || current_sl <= 0.0)
          continue;

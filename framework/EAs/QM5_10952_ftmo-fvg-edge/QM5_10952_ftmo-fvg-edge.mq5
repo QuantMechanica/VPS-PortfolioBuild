@@ -334,7 +334,7 @@ void Strategy_ManageOpenPosition()
       if(market <= 0.0 || initial_r <= 0.0 || favorable < initial_r * strategy_tp1_rr)
          continue;
 
-      const double be_sl = open_price;
+      const double be_sl = QM_TM_NormalizePrice(_Symbol, open_price);
       const bool be_improves = is_buy ? (be_sl > current_sl + point * 0.5) : (be_sl < current_sl - point * 0.5);
       double active_sl = current_sl;
       if(be_improves)

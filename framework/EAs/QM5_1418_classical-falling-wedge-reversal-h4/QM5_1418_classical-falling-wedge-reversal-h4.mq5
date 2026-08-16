@@ -445,7 +445,7 @@ void Strategy_ManageOpenPosition()
       have_position = true;
       g_position_tracking_active = true;
 
-      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double open_price = QM_TM_NormalizePrice(_Symbol, PositionGetDouble(POSITION_PRICE_OPEN));
       const double tp_price = PositionGetDouble(POSITION_TP);
       const double current_sl = PositionGetDouble(POSITION_SL);
       const double volume = PositionGetDouble(POSITION_VOLUME);

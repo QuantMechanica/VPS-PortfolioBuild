@@ -242,13 +242,13 @@ void Strategy_ManageOpenPosition()
         {
          const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
          // +1R reached and SL still below entry -> lift to break-even.
-         if(bid - open_px >= risk && cur_sl < open_px)
+         if(bid - open_px >= risk && cur_sl < QM_TM_NormalizePrice(_Symbol, open_px))
             QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, open_px), "breakeven_1R");
         }
       else if(pos_type == POSITION_TYPE_SELL)
         {
          const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(open_px - ask >= risk && cur_sl > open_px)
+         if(open_px - ask >= risk && cur_sl > QM_TM_NormalizePrice(_Symbol, open_px))
             QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, open_px), "breakeven_1R");
         }
      }

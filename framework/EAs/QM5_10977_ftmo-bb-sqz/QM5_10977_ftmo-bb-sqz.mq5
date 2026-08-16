@@ -279,9 +279,9 @@ void Strategy_ManageOpenPosition()
       return;
 
    const bool is_buy = (position_type == POSITION_TYPE_BUY);
-   if(is_buy && stop_loss >= open_price - point * 0.5)
+   if(is_buy && stop_loss >= QM_StopRulesNormalizePrice(_Symbol, open_price) - point * 0.5)
       return;
-   if(!is_buy && stop_loss <= open_price + point * 0.5)
+   if(!is_buy && stop_loss <= QM_StopRulesNormalizePrice(_Symbol, open_price) + point * 0.5)
       return;
 
    const double risk = MathAbs(open_price - stop_loss);

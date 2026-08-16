@@ -297,7 +297,7 @@ void Strategy_ManageOpenPosition()
      {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(bid >= open_price + trigger_distance &&
-         (current_sl <= 0.0 || current_sl < open_price - point * 0.5))
+         (current_sl <= 0.0 || current_sl < NormalizedPrice(open_price) - point * 0.5))
          QM_TM_MoveSL(ticket, NormalizedPrice(open_price), "IB_TP1_BE");
       return;
      }
@@ -306,7 +306,7 @@ void Strategy_ManageOpenPosition()
      {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(ask <= open_price - trigger_distance &&
-         (current_sl <= 0.0 || current_sl > open_price + point * 0.5))
+         (current_sl <= 0.0 || current_sl > NormalizedPrice(open_price) + point * 0.5))
          QM_TM_MoveSL(ticket, NormalizedPrice(open_price), "IB_TP1_BE");
      }
   }

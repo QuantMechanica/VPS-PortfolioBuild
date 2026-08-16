@@ -255,12 +255,13 @@ void Strategy_ManageOpenPosition()
 
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double current_sl = PositionGetDouble(POSITION_SL);
-      if(bid <= 0.0 || g_st_line >= bid)
+      const double normalized_st_line = QM_TM_NormalizePrice(_Symbol, g_st_line);
+      if(bid <= 0.0 || normalized_st_line >= bid)
          continue;
 
-      const bool improves = (current_sl <= 0.0) || (g_st_line > current_sl + point * 0.5);
+      const bool improves = (current_sl <= 0.0) || (normalized_st_line > current_sl + point * 0.5);
       if(improves)
-         QM_TM_MoveSL(ticket, g_st_line, "supertrend_support_trail");
+         QM_TM_MoveSL(ticket, normalized_st_line, "supertrend_support_trail");
      }
   }
 

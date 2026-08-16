@@ -145,7 +145,7 @@ void Strategy_ManageOpenPosition()
    if(close1 <= 0.0)
       return;
 
-   const double candidate_sl = close1 - strategy_atr_mult * atr_value;
+   const double candidate_sl = QM_TM_NormalizePrice(_Symbol, close1 - strategy_atr_mult * atr_value);
    if(candidate_sl <= 0.0)
       return;
 

@@ -291,7 +291,7 @@ void Strategy_ManageOpenPosition()
          if(risk <= 0.0)
             continue;
          const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(bid >= entry + strategy_be_trigger_rr * risk && sl < entry)
+         if(bid >= entry + strategy_be_trigger_rr * risk && sl < QM_StopRulesNormalizePrice(_Symbol, entry))
             QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, entry), "break_even");
         }
       else if(ptype == POSITION_TYPE_SELL)
@@ -300,7 +300,7 @@ void Strategy_ManageOpenPosition()
          if(risk <= 0.0)
             continue;
          const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(ask <= entry - strategy_be_trigger_rr * risk && sl > entry)
+         if(ask <= entry - strategy_be_trigger_rr * risk && sl > QM_StopRulesNormalizePrice(_Symbol, entry))
             QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, entry), "break_even");
         }
      }

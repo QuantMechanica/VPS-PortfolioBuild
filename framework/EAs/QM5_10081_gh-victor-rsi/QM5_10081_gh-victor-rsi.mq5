@@ -231,7 +231,7 @@ void Strategy_ManageOpenPosition()
          const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
          if(bid <= 0.0)
             continue;
-         const double target = bid * (1.0 - trail_percent / 100.0);
+         const double target = QM_TM_NormalizePrice(_Symbol, bid * (1.0 - trail_percent / 100.0));
          // Trail up only: tighten SL when the new level is above the current one.
          if(target > cur_sl)
             QM_TM_MoveSL(ticket, target, "QM5_10081_TRAIL_LONG");
@@ -241,7 +241,7 @@ void Strategy_ManageOpenPosition()
          const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
          if(ask <= 0.0)
             continue;
-         const double target = ask * (1.0 + trail_percent / 100.0);
+         const double target = QM_TM_NormalizePrice(_Symbol, ask * (1.0 + trail_percent / 100.0));
          // Trail down only: tighten SL when the new level is below the current one.
          if(cur_sl <= 0.0 || target < cur_sl)
             QM_TM_MoveSL(ticket, target, "QM5_10081_TRAIL_SHORT");

@@ -304,7 +304,7 @@ void Strategy_ManageOpenPosition()
          const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
          if(bid <= 0.0 || bid - open_price < trigger_dist)
             continue;
-         if(current_sl <= 0.0 || current_sl < open_price)
+         if(current_sl <= 0.0 || current_sl < QM_StopRulesNormalizePrice(_Symbol, open_price))
             QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, open_price), "kangaroo_tail_atr_break_even");
         }
       else if(pos_type == POSITION_TYPE_SELL)
@@ -312,7 +312,7 @@ void Strategy_ManageOpenPosition()
          const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
          if(ask <= 0.0 || open_price - ask < trigger_dist)
             continue;
-         if(current_sl <= 0.0 || current_sl > open_price)
+         if(current_sl <= 0.0 || current_sl > QM_StopRulesNormalizePrice(_Symbol, open_price))
             QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, open_price), "kangaroo_tail_atr_break_even");
         }
      }

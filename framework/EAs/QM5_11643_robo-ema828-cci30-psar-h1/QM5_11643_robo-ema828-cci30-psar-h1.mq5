@@ -179,7 +179,7 @@ void Strategy_ManageOpenPosition()
    if(QM_TM_OpenPositionCount(magic) <= 0)
       return;
 
-   const double sar = QM_SAR(_Symbol, _Period, strategy_psar_step, strategy_psar_max, 1);
+   const double sar = QM_TM_NormalizePrice(_Symbol, QM_SAR(_Symbol, _Period, strategy_psar_step, strategy_psar_max, 1));
    if(sar <= 0.0)
       return;
 

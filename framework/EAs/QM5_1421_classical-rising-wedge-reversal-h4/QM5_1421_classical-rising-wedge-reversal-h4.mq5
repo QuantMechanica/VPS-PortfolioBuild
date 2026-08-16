@@ -423,7 +423,7 @@ void Strategy_ManageOpenPosition()
       if(open_price <= 0.0 || current_tp <= 0.0 || current_tp >= open_price || ask <= 0.0)
          continue;
 
-      if(current_sl <= 0.0 || current_sl <= open_price + point * 0.5)
+      if(current_sl <= 0.0 || current_sl <= QM_TM_NormalizePrice(_Symbol, open_price) + point * 0.5)
          continue;
 
       const double partial_trigger = open_price - (open_price - current_tp) * strategy_partial_progress;

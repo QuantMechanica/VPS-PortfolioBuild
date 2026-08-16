@@ -399,8 +399,8 @@ void Strategy_ManageOpenPosition()
       if(trail_distance <= 0.0)
          continue;
 
-      const double new_sl = is_buy ? (market_price - trail_distance)
-                                   : (market_price + trail_distance);
+      const double new_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (market_price - trail_distance)
+                                   : (market_price + trail_distance));
       const double current_sl = PositionGetDouble(POSITION_SL);
       const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
       if(point <= 0.0)

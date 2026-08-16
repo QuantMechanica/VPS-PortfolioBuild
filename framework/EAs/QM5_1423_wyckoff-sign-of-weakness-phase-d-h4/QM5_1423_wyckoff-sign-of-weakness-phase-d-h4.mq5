@@ -761,7 +761,7 @@ void Strategy_ManageOpenPosition()
       if(open_price <= 0.0 || tp_price <= 0.0 || current_ask <= 0.0 || volume <= 0.0)
          continue;
 
-      if(current_sl > 0.0 && current_sl <= open_price)
+      if(current_sl > 0.0 && current_sl <= QM_StopRulesNormalizePrice(_Symbol, open_price))
         {
          MarkPartialDone(ticket);
          continue;
@@ -776,7 +776,7 @@ void Strategy_ManageOpenPosition()
       if(QM_TM_PartialClose(ticket, volume * 0.5, QM_EXIT_PARTIAL))
         {
          MarkPartialDone(ticket);
-         if(current_sl <= 0.0 || current_sl > open_price)
+         if(current_sl <= 0.0 || current_sl > QM_StopRulesNormalizePrice(_Symbol, open_price))
             QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, open_price), "wyckoff_sow_partial_be");
         }
      }

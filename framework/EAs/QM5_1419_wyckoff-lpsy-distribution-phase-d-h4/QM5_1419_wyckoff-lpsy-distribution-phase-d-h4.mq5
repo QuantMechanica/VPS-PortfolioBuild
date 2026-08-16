@@ -714,7 +714,7 @@ void Strategy_ManageOpenPosition()
         {
          MarkPartialDone(ticket);
          const double current_sl = PositionGetDouble(POSITION_SL);
-         if(current_sl <= 0.0 || current_sl > open_price)
+         if(current_sl <= 0.0 || current_sl > QM_StopRulesNormalizePrice(_Symbol, open_price))
             QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, open_price), "wyckoff_lpsy_partial_be");
         }
      }

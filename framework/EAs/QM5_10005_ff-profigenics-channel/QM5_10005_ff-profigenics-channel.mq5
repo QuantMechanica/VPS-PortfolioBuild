@@ -198,8 +198,8 @@ void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
    const ENUM_TIMEFRAMES ltf = (ENUM_TIMEFRAMES)_Period;
-   const double channel_high = QM_SMA(_Symbol, ltf, strategy_channel_period, 1, PRICE_HIGH);
-   const double channel_low  = QM_SMA(_Symbol, ltf, strategy_channel_period, 1, PRICE_LOW);
+   const double channel_high = QM_TM_NormalizePrice(_Symbol, QM_SMA(_Symbol, ltf, strategy_channel_period, 1, PRICE_HIGH));
+   const double channel_low  = QM_TM_NormalizePrice(_Symbol, QM_SMA(_Symbol, ltf, strategy_channel_period, 1, PRICE_LOW));
    const double close_last   = iClose(_Symbol, ltf, 1);
    if(channel_high <= 0.0 || channel_low <= 0.0 || close_last <= 0.0)
       return;

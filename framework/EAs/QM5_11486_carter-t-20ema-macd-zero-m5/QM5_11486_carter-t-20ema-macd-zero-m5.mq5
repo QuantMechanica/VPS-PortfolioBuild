@@ -236,7 +236,7 @@ void Strategy_ManageOpenPosition()
 
       if(g_partial_done_ticket != ticket)
         {
-         const bool already_at_be = is_buy ? (sl_price >= open_price) : (sl_price <= open_price && sl_price > 0.0);
+         const bool already_at_be = is_buy ? (sl_price >= QM_TM_NormalizePrice(_Symbol, open_price)) : (sl_price <= QM_TM_NormalizePrice(_Symbol, open_price) && sl_price > 0.0);
          if(already_at_be)
             g_partial_done_ticket = ticket;
         }

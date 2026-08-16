@@ -462,7 +462,7 @@ void Strategy_ManageOpenPosition()
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return;
-   const double ema = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_period, 1);
+   const double ema = QM_TM_NormalizePrice(_Symbol, QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_period, 1));
    if(ema <= 0.0)
       return;
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);

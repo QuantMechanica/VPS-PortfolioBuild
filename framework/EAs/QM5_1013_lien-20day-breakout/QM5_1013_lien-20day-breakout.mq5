@@ -521,7 +521,7 @@ void Strategy_ManageOpenPosition()
          continue;
         }
 
-      const double candidate = StructuralTrailCandidate(pos_type);
+      const double candidate = QM_TM_NormalizePrice(_Symbol, StructuralTrailCandidate(pos_type));
       const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
       if(candidate <= 0.0 || point <= 0.0)
          continue;

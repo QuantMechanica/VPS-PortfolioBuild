@@ -1118,8 +1118,7 @@ void Strategy132_ManagePosition(const datetime forming_time)
    if(pip <= 0.0 || tick <= 0.0 || market <= 0.0)
       return;
 
-   const double desired_initial_sl =
-      Strategy132_AlignPrice(
+   const double desired_initial_sl =QM_TM_NormalizePrice(_Symbol, Strategy132_AlignPrice(
          buy_side
          ? open_price -
            (strategy_sl_pips * pip +
@@ -1127,7 +1126,7 @@ void Strategy132_ManagePosition(const datetime forming_time)
          : open_price +
            (strategy_sl_pips * pip +
             g_str132_captured_spread),
-         buy_side ? -1 : 1);
+         buy_side ? -1 : 1));
    const bool initial_sl_tightens =
       buy_side
       ? desired_initial_sl >
@@ -1215,14 +1214,13 @@ void Strategy132_ManagePosition(const datetime forming_time)
    if(!g_str132_partial_done || g_str132_be_done)
       return;
 
-   const double desired_be =
-      Strategy132_AlignPrice(
+   const double desired_be =QM_TM_NormalizePrice(_Symbol, Strategy132_AlignPrice(
          buy_side
          ? open_price +
            strategy_be_plus_pips * pip
          : open_price -
            strategy_be_plus_pips * pip,
-         buy_side ? -1 : 1);
+         buy_side ? -1 : 1));
    const bool tightens =
       buy_side
       ? desired_be > current_sl + tick * 0.5

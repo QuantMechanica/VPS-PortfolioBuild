@@ -188,7 +188,7 @@ void Strategy_ManageOpenPosition()
       if(bid <= 0.0)
          continue;
 
-      if((bid - open_price) >= strategy_breakeven_trigger_r * initial_r && sl_price < open_price)
+      if((bid - open_price) >= strategy_breakeven_trigger_r * initial_r && sl_price < QM_TM_NormalizePrice(_Symbol, open_price))
          QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, open_price), "cs_stoch_mfi_breakeven");
      }
   }

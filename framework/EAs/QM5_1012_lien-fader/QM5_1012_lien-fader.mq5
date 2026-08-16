@@ -374,6 +374,7 @@ void Strategy_ManageOpenPosition()
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
+      const double normalized_open_price = QM_TM_NormalizePrice(_Symbol, open_price);
       const double volume = PositionGetDouble(POSITION_VOLUME);
       const bool is_buy = (pos_type == POSITION_TYPE_BUY);
       const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
@@ -383,18 +384,18 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const double moved = is_buy ? (market_price - open_price) : (open_price - market_price);
-      if(!BreakevenOrBetter(pos_type, open_price, current_sl) && moved >= risk_dist)
+      if(!BreakevenOrBetter(pos_type, normalized_open_price, current_sl) && moved >= risk_dist)
         {
          const double half = volume * 0.5;
          if(half > 0.0)
             QM_TM_PartialClose(ticket, half, QM_EXIT_STRATEGY);
-         QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, open_price), "lien_fader_tp1_breakeven");
+         QM_TM_MoveSL(ticket, normalized_open_price, "lien_fader_tp1_breakeven");
          continue;
         }
 
-      if(BreakevenOrBetter(pos_type, open_price, current_sl))
+      if(BreakevenOrBetter(pos_type, normalized_open_price, current_sl))
         {
-         const double candidate = TrailStopCandidate(pos_type, market_price);
+         const double candidate = QM_TM_NormalizePrice(_Symbol, TrailStopCandidate(pos_type, market_price));
          const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
          if(candidate <= 0.0 || point <= 0.0)
             continue;

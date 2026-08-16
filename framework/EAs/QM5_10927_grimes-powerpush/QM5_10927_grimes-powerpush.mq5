@@ -511,8 +511,8 @@ void Strategy_ManageOpenPosition()
    if(point <= 0.0)
       return;
 
-   const bool improves = is_long ? (sl < open_price - point * 0.5)
-                                 : (sl > open_price + point * 0.5);
+   const bool improves = is_long ? (sl < StrategyNormalizePrice(open_price) - point * 0.5)
+                                 : (sl > StrategyNormalizePrice(open_price) + point * 0.5);
    if(improves)
       QM_TM_MoveSL(ticket, StrategyNormalizePrice(open_price), "grimes_powerpush_be_1r");
   }

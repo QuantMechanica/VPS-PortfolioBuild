@@ -556,12 +556,11 @@ void Strategy_ManageOpenPosition()
       : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    if(market <= 0.0)
       return;
-   const double candidate =
-      Strategy085_AlignPrice(
+   const double candidate =QM_TM_NormalizePrice(_Symbol, Strategy085_AlignPrice(
          buy_side
          ? market - initial_r
          : market + initial_r,
-         buy_side ? -1 : 1);
+         buy_side ? -1 : 1));
    const bool tightens =
       (candidate > 0.0) &&
       (buy_side

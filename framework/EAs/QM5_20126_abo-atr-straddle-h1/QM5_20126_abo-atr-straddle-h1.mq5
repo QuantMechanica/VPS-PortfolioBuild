@@ -842,12 +842,11 @@ void Strategy_ManageOpenPosition()
          : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(market <= 0.0)
          continue;
-      const double candidate =
-         Strategy072_AlignPrice(
+      const double candidate =QM_TM_NormalizePrice(_Symbol, Strategy072_AlignPrice(
             position_type == POSITION_TYPE_BUY
             ? market - strategy_ts_mult * atr
             : market + strategy_ts_mult * atr,
-            position_type == POSITION_TYPE_BUY ? -1 : 1);
+            position_type == POSITION_TYPE_BUY ? -1 : 1));
       if(candidate <= 0.0)
          continue;
 

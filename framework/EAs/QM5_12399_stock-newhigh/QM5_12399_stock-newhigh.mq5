@@ -219,7 +219,7 @@ void Strategy_AdvanceClosedBarTrail()
    if(!Strategy_SelectOurLongPosition(ticket, current_sl))
       return;
 
-   const double target_sl = Strategy_ClosedBarAtrStop();
+   const double target_sl = QM_TM_NormalizePrice(_Symbol, Strategy_ClosedBarAtrStop());
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(target_sl <= 0.0 || point <= 0.0 || bid <= 0.0)

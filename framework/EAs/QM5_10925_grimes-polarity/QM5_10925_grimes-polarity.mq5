@@ -416,7 +416,7 @@ void Strategy_ManageOpenPosition()
    if(g_polarity_initial_risk <= 0.0 || !PositionSelectByTicket(ticket))
       return;
 
-   const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+   const double open_price = QM_TM_NormalizePrice(_Symbol, PositionGetDouble(POSITION_PRICE_OPEN));
    const double current_sl = PositionGetDouble(POSITION_SL);
    const bool is_long = (ptype == POSITION_TYPE_BUY);
    const double market_price = is_long ? SymbolInfoDouble(_Symbol, SYMBOL_BID)

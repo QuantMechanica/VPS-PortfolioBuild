@@ -635,8 +635,8 @@ void Strategy_ManageOpenPosition()
    if(profit_distance < initial_risk)
       return;
 
-   const bool stop_at_breakeven = is_buy ? (current_sl >= open_price - point * 0.5)
-                                         : (current_sl <= open_price + point * 0.5);
+   const bool stop_at_breakeven = is_buy ? (current_sl >= QM_TM_NormalizePrice(_Symbol, open_price) - point * 0.5)
+                                         : (current_sl <= QM_TM_NormalizePrice(_Symbol, open_price) + point * 0.5);
    if(!stop_at_breakeven)
      {
       const double close_fraction = MathMax(0.0, MathMin(1.0, strategy_partial_close_fraction));

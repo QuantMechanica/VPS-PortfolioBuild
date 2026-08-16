@@ -531,7 +531,7 @@ void Strategy_ManageOpenPosition()
          return;
      }
 
-   const double trail_sl = is_long ? g_cached_long_trail_sl : g_cached_short_trail_sl;
+   const double trail_sl = QM_TM_NormalizePrice(_Symbol, is_long ? g_cached_long_trail_sl : g_cached_short_trail_sl);
    if(trail_sl <= 0.0)
       return;
 

@@ -326,7 +326,7 @@ void Strategy_ManageOpenPosition()
       return;
 
    const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-   const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+   const double open_price = QM_TM_NormalizePrice(_Symbol, PositionGetDouble(POSITION_PRICE_OPEN));
    const double current_sl = PositionGetDouble(POSITION_SL);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -348,7 +348,7 @@ void Strategy_ManageOpenPosition()
 
       if(open_profit > g_initial_risk)
         {
-         const double trail = bid - strategy_trail_atr_mult * atr;
+         const double trail = QM_TM_NormalizePrice(_Symbol, bid - strategy_trail_atr_mult * atr);
          if(trail > 0.0 && (current_sl <= 0.0 || trail > current_sl))
             QM_TM_MoveSL(ticket, trail, "QM5_12801_ATR_TRAIL_LONG");
         }
@@ -368,7 +368,7 @@ void Strategy_ManageOpenPosition()
 
       if(open_profit > g_initial_risk)
         {
-         const double trail = ask + strategy_trail_atr_mult * atr;
+         const double trail = QM_TM_NormalizePrice(_Symbol, ask + strategy_trail_atr_mult * atr);
          if(trail > 0.0 && (current_sl <= 0.0 || trail < current_sl))
             QM_TM_MoveSL(ticket, trail, "QM5_12801_ATR_TRAIL_SHORT");
         }

@@ -347,13 +347,13 @@ void Strategy_ManageOpenPosition()
 
          if(ptype == POSITION_TYPE_BUY)
            {
-            const double vwap_sl = g_session_vwap - atr_half;
+            const double vwap_sl = QM_TM_NormalizePrice(_Symbol, g_session_vwap - atr_half);
             if(cur_sl <= 0.0 || vwap_sl > cur_sl)
                QM_TM_MoveSL(ticket, vwap_sl, "VWAP_trail_L");
            }
          else if(ptype == POSITION_TYPE_SELL)
            {
-            const double vwap_sl = g_session_vwap + atr_half;
+            const double vwap_sl = QM_TM_NormalizePrice(_Symbol, g_session_vwap + atr_half);
             if(cur_sl <= 0.0 || vwap_sl < cur_sl)
                QM_TM_MoveSL(ticket, vwap_sl, "VWAP_trail_S");
            }

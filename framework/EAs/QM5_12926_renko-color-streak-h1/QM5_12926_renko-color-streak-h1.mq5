@@ -245,7 +245,7 @@ void Strategy_ManageOpenPosition()
    if(trail_dist <= 0.0)
       return;
 
-   const double target_sl = is_buy ? (g_pos_extreme - trail_dist) : (g_pos_extreme + trail_dist);
+   const double target_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (g_pos_extreme - trail_dist) : (g_pos_extreme + trail_dist));
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const bool improves = (current_sl <= 0.0) ||
                          (is_buy ? (target_sl > current_sl + point * 0.5)

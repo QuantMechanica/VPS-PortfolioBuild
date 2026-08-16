@@ -315,7 +315,7 @@ void Strategy_ManageOpenPosition()
          if(bid <= 0.0)
             continue;
          const double progress_r = (bid - open_price) / risk;
-         if(progress_r >= strategy_trail_trigger_rr && fast_now > cur_sl && fast_now < bid)
+         if(progress_r >= strategy_trail_trigger_rr && QM_TM_NormalizePrice(_Symbol, fast_now) > cur_sl && fast_now < bid)
             QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, fast_now), "trail_sma50");
         }
       else if(pos_type == POSITION_TYPE_SELL)
@@ -324,7 +324,7 @@ void Strategy_ManageOpenPosition()
          if(ask <= 0.0)
             continue;
          const double progress_r = (open_price - ask) / risk;
-         if(progress_r >= strategy_trail_trigger_rr && fast_now < cur_sl && fast_now > ask)
+         if(progress_r >= strategy_trail_trigger_rr && QM_TM_NormalizePrice(_Symbol, fast_now) < cur_sl && fast_now > ask)
             QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, fast_now), "trail_sma50");
         }
      }

@@ -277,7 +277,7 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const double trail_distance = market * strategy_trailing_stop_pct / 100.0;
-      const double target_sl = QM_StopRulesStopFromDistance(_Symbol, is_buy ? QM_BUY : QM_SELL, market, trail_distance);
+      const double target_sl = QM_TM_NormalizePrice(_Symbol, QM_StopRulesStopFromDistance(_Symbol, is_buy ? QM_BUY : QM_SELL, market, trail_distance));
       if(target_sl <= 0.0)
          continue;
       if(current_sl <= 0.0 ||

@@ -369,14 +369,15 @@ void Strategy_ManageOpenPosition()
       const double current_sl = PositionGetDouble(POSITION_SL);
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double normalized_psar = QM_TM_NormalizePrice(_Symbol, g_psar);
 
-      if(position_type == POSITION_TYPE_BUY && g_psar_trend > 0 && g_psar < bid &&
-         (current_sl <= 0.0 || g_psar > current_sl))
-         QM_TM_MoveSL(ticket, g_psar, "psar_trailing_stop");
+      if(position_type == POSITION_TYPE_BUY && g_psar_trend > 0 && normalized_psar < bid &&
+         (current_sl <= 0.0 || normalized_psar > current_sl))
+         QM_TM_MoveSL(ticket, normalized_psar, "psar_trailing_stop");
 
-      if(position_type == POSITION_TYPE_SELL && g_psar_trend < 0 && g_psar > ask &&
-         (current_sl <= 0.0 || g_psar < current_sl))
-         QM_TM_MoveSL(ticket, g_psar, "psar_trailing_stop");
+      if(position_type == POSITION_TYPE_SELL && g_psar_trend < 0 && normalized_psar > ask &&
+         (current_sl <= 0.0 || normalized_psar < current_sl))
+         QM_TM_MoveSL(ticket, normalized_psar, "psar_trailing_stop");
      }
   }
 

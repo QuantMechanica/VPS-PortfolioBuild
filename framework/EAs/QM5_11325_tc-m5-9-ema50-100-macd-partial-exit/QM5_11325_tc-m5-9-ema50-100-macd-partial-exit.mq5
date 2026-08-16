@@ -202,7 +202,7 @@ void Strategy_ManageOpenPosition()
 
       ticket = pos_ticket;
       position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      open_price = QM_TM_NormalizePrice(_Symbol, PositionGetDouble(POSITION_PRICE_OPEN));
       sl = PositionGetDouble(POSITION_SL);
       volume = PositionGetDouble(POSITION_VOLUME);
       found = true;

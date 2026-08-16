@@ -305,12 +305,13 @@ void Strategy_ManageOpenPosition()
       if(moved < threshold)
          continue;
 
+      const double normalized_st_line = QM_TM_NormalizePrice(_Symbol, g_st_line);
       const bool improves = (current_sl <= 0.0) ||
-                            (is_buy ? (g_st_line > current_sl + point * 0.5)
-                                    : (g_st_line < current_sl - point * 0.5));
-      const bool valid_side = is_buy ? (g_st_line < market) : (g_st_line > market);
+                            (is_buy ? (normalized_st_line > current_sl + point * 0.5)
+                                    : (normalized_st_line < current_sl - point * 0.5));
+      const bool valid_side = is_buy ? (normalized_st_line < market) : (normalized_st_line > market);
       if(improves && valid_side)
-         QM_TM_MoveSL(ticket, g_st_line, "supertrend_trail_after_favorable_move");
+         QM_TM_MoveSL(ticket, normalized_st_line, "supertrend_trail_after_favorable_move");
      }
   }
 

@@ -371,13 +371,13 @@ void Strategy_ManageOpenPosition()
 
       if(position_type == POSITION_TYPE_BUY && g_tlb_dir > 0)
         {
-         const double target = g_tlb_last_level - g_atr_h4 * strategy_trail_atr_mult;
+         const double target = QM_TM_NormalizePrice(_Symbol, g_tlb_last_level - g_atr_h4 * strategy_trail_atr_mult);
          if(target > 0.0 && (current_sl <= 0.0 || target > current_sl + point * 0.5))
             QM_TM_MoveSL(ticket, target, "QM5_1579_TLB_TRAIL_LONG");
         }
       else if(position_type == POSITION_TYPE_SELL && g_tlb_dir < 0)
         {
-         const double target = g_tlb_last_level + g_atr_h4 * strategy_trail_atr_mult;
+         const double target = QM_TM_NormalizePrice(_Symbol, g_tlb_last_level + g_atr_h4 * strategy_trail_atr_mult);
          if(target > 0.0 && (current_sl <= 0.0 || target < current_sl - point * 0.5))
             QM_TM_MoveSL(ticket, target, "QM5_1579_TLB_TRAIL_SHORT");
         }

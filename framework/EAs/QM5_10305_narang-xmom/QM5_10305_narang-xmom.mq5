@@ -421,10 +421,10 @@ void Strategy_ManageOpenPosition()
 
    const QM_OrderType side = is_buy ? QM_BUY : QM_SELL;
    const double trail_distance = g_cached_d1_atr * strategy_trail_atr_mult;
-   const double target_sl = QM_StopRulesStopFromDistance(_Symbol,
+   const double target_sl = QM_TM_NormalizePrice(_Symbol, QM_StopRulesStopFromDistance(_Symbol,
                                                          side,
                                                          market,
-                                                         trail_distance);
+                                                         trail_distance));
    if(target_sl <= 0.0)
       return;
 

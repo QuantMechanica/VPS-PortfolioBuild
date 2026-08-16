@@ -428,6 +428,7 @@ void Strategy_ManageOpenPosition()
       ResetActiveState();
       return;
      }
+   open_price = QM_TM_NormalizePrice(_Symbol, open_price);
 
    const int direction = (position_type == POSITION_TYPE_BUY) ? 1 : -1;
    if(ticket != g_active_ticket)

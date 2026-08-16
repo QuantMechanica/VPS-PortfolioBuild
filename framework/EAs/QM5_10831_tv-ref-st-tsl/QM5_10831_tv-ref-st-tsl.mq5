@@ -300,7 +300,7 @@ void Strategy_ManageOpenPosition()
 
       if(trail_active && strategy_breakeven_atr_mult > 0.0)
         {
-         const double be_sl = open_price;
+         const double be_sl = QM_TM_NormalizePrice(_Symbol, open_price);
          const bool be_improves = (current_sl <= 0.0) ||
                                   (is_buy ? (be_sl > current_sl + point * 0.5)
                                           : (be_sl < current_sl - point * 0.5));
@@ -314,7 +314,7 @@ void Strategy_ManageOpenPosition()
          const double close_ref = (g_strategy_close > 0.0) ? g_strategy_close : market;
          const double atr_stop = is_buy ? (close_ref - strategy_atr_trail_mult * atr)
                                         : (close_ref + strategy_atr_trail_mult * atr);
-         target_sl = is_buy ? MathMax(target_sl, atr_stop) : MathMin(target_sl, atr_stop);
+         target_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? MathMax(target_sl, atr_stop) : MathMin(target_sl, atr_stop));
         }
 
       if(target_sl <= 0.0)

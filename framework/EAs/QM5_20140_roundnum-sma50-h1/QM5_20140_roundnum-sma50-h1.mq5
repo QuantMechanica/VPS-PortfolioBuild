@@ -717,12 +717,11 @@ void Strategy087_ManageBreakEven(
       return;
    const bool buy_side =
       (position_type == POSITION_TYPE_BUY);
-   const double target =
-      Strategy087_AlignPrice(
+   const double target =QM_TM_NormalizePrice(_Symbol, Strategy087_AlignPrice(
          buy_side
          ? open_price + strategy_be_plus_pips * pip
          : open_price - strategy_be_plus_pips * pip,
-         buy_side ? 1 : -1);
+         buy_side ? 1 : -1));
    const bool already_done =
       (target > 0.0) &&
       (buy_side

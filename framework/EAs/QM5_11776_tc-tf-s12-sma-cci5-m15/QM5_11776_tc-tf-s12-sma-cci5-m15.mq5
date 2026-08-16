@@ -201,7 +201,7 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const long position_type = PositionGetInteger(POSITION_TYPE);
-      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double open_price = QM_TM_NormalizePrice(_Symbol, PositionGetDouble(POSITION_PRICE_OPEN));
       const double current_sl = PositionGetDouble(POSITION_SL);
       const double volume = PositionGetDouble(POSITION_VOLUME);
       if(open_price <= 0.0 || volume <= 0.0)

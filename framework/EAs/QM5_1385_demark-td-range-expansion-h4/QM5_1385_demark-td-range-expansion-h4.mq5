@@ -311,6 +311,7 @@ void Strategy_ManageOpenPosition()
    datetime open_time;
    if(!GetOurPosition(ticket, position_type, open_price, open_time))
       return;
+   open_price = QM_TM_NormalizePrice(_Symbol, open_price);
 
    int expansion_shift = 0;
    if(!GetExpansionBarForPosition(open_time, expansion_shift))
@@ -342,8 +343,8 @@ void Strategy_ManageOpenPosition()
 
    const double prior_low = iLow(_Symbol, PERIOD_H4, 1);
    const double prior_high = iHigh(_Symbol, PERIOD_H4, 1);
-   const double trail_sl = is_buy ? (prior_low - strategy_trail_atr_buffer * atr)
-                                  : (prior_high + strategy_trail_atr_buffer * atr);
+   const double trail_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (prior_low - strategy_trail_atr_buffer * atr)
+                                  : (prior_high + strategy_trail_atr_buffer * atr));
    if(trail_sl <= 0.0)
       return;
 

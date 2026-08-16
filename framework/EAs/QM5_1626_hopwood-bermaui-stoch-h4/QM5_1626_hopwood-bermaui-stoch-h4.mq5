@@ -381,9 +381,9 @@ void Strategy_ManageOpenPosition()
    // 1. Move stop to breakeven-plus-spread once profit reaches +be*ATR.
    if(profit >= strategy_be_atr_mult * atr)
      {
-      const double new_sl = (ptype == POSITION_TYPE_BUY)
+      const double new_sl = QM_TM_NormalizePrice(_Symbol, (ptype == POSITION_TYPE_BUY)
                             ? (open_price + spread + 2.0 * point)
-                            : (open_price - spread - 2.0 * point);
+                            : (open_price - spread - 2.0 * point));
       const bool improves = (cur_sl <= 0.0) ||
                             (ptype == POSITION_TYPE_BUY ? (new_sl > cur_sl + 0.5 * point)
                                                         : (new_sl < cur_sl - 0.5 * point));

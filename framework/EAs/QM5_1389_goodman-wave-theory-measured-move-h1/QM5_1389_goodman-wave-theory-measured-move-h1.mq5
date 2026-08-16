@@ -462,12 +462,12 @@ void Strategy_ManageOpenPosition()
          const double cur_sl = PositionGetDouble(POSITION_SL);
          if(is_long)
          {
-            if(prev_low > cur_sl && prev_low < px)
+            if(QM_TM_NormalizePrice(_Symbol, prev_low) > cur_sl && prev_low < px)
                QM_TM_MoveSL(t, QM_TM_NormalizePrice(_Symbol, prev_low), "MM_TRAIL");
          }
          else
          {
-            if((cur_sl == 0.0 || prev_high < cur_sl) && prev_high > px)
+            if((cur_sl == 0.0 || QM_TM_NormalizePrice(_Symbol, prev_high) < cur_sl) && prev_high > px)
                QM_TM_MoveSL(t, QM_TM_NormalizePrice(_Symbol, prev_high), "MM_TRAIL");
          }
       }

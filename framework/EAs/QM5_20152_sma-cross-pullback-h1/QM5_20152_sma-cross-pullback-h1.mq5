@@ -901,9 +901,8 @@ void Strategy_ManageOpenPosition()
 
    if(!g_str143_be_latched || g_str143_be_done)
       return;
-   const double be =
-      Strategy143_AlignPrice(open_price,
-                             buy_side ? -1 : 1);
+   const double be =QM_TM_NormalizePrice(_Symbol, Strategy143_AlignPrice(open_price,
+                             buy_side ? -1 : 1));
    const bool already_done =
       (buy_side
        ? current_sl >= be - tick * 0.5

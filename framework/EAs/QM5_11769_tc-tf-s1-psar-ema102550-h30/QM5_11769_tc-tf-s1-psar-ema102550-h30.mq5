@@ -262,7 +262,7 @@ void Strategy_ManageOpenPosition()
       const bool   is_long  = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
       const double cur_sl   = PositionGetDouble(POSITION_SL);
       const double open_px  = PositionGetDouble(POSITION_PRICE_OPEN);
-      const double new_sl   = SarStopPrice(is_long ? QM_BUY : QM_SELL, open_px, sar1);
+      const double new_sl   = QM_TM_NormalizePrice(_Symbol, SarStopPrice(is_long ? QM_BUY : QM_SELL, open_px, sar1));
       if(new_sl <= 0.0)
          continue;
 

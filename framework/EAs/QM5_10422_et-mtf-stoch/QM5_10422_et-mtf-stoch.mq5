@@ -196,7 +196,7 @@ void Strategy_ManageOpenPosition()
       return;
 
    const bool is_buy = (position_type == POSITION_TYPE_BUY);
-   if((is_buy && sl_price >= open_price) || (!is_buy && sl_price <= open_price))
+   if((is_buy && sl_price >= QM_StopRulesNormalizePrice(_Symbol, open_price)) || (!is_buy && sl_price <= QM_StopRulesNormalizePrice(_Symbol, open_price)))
       return;
 
    const double one_r = MathAbs(open_price - sl_price);

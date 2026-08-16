@@ -275,7 +275,7 @@ void Strategy_ManageOpenPosition()
       if(initial_risk <= 0.0 || moved < initial_risk * strategy_breakeven_trigger_r)
          continue;
 
-      const double target_sl = is_buy ? (open_price + point) : (open_price - point);
+      const double target_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (open_price + point) : (open_price - point));
       const bool improves = is_buy ? (target_sl > sl + point * 0.5)
                                    : (target_sl < sl - point * 0.5);
       if(improves)
