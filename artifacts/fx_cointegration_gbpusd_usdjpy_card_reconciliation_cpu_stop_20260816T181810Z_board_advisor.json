@@ -1,0 +1,111 @@
+{
+  "schema_version": "qm.fx-cointegration-card-reconciliation-cpu-stop/v1",
+  "captured_at_utc": "2026-08-16T18:18:10.7032206Z",
+  "captured_at_local": "2026-08-16T20:18:10.7032206+02:00",
+  "branch": "agents/board-advisor",
+  "sampled_head": "b1a49dbc4657ac6b32a376e047f0cebec9a03abd",
+  "outcome": "EXISTING_FOREX_CARD_RECONCILED_TO_Q02_PASS_HARD_CPU_CEILING_STOP_BEFORE_Q04_ENQUEUE",
+  "mission_reconciliation": {
+    "frozen_pair_count": 66,
+    "mechanized_pair_count": 66,
+    "unbuilt_pair_count": 0,
+    "duplicate_card_or_ea_created": false,
+    "anchor_state": {
+      "QM5_12532_AUDNZD_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_PASS",
+        "Q05_FAIL"
+      ],
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_FAIL"
+      ]
+    },
+    "selected_fallback": {
+      "scan_rank": 58,
+      "ea_id": "QM5_1257",
+      "pair_slot": 8,
+      "pair": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+      "source": "Lemishko, Landi, and Caicedo-Llano (2024), SSRN 4771108",
+      "structural_only": true,
+      "ml_used": false
+    }
+  },
+  "q02_result": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "phase": "Q02",
+    "status": "done",
+    "verdict": "PASS",
+    "updated_at_utc": "2026-08-16T17:14:14+00:00",
+    "evidence_path": "D:/QM/reports/work_items/d4cd660c-c81a-41d3-8a4c-ad21d3319816/QM5_1257/20260816_165134/summary.json",
+    "evidence_sha256": "caeaee89354ae7d68a1700eed1eca07ab25e2cae1af77df07f446712993e079f",
+    "total_trades": 290,
+    "profit_factor": 0.65,
+    "net_profit": -7003.44,
+    "drawdown": 7920.49,
+    "drawdown_percent": 7.90,
+    "oninit_failure_detected": false,
+    "source_ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+    "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4"
+  },
+  "card_reconciliation": {
+    "path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/docs/strategy_card.md",
+    "pipeline_phase_before": "Q02_PENDING",
+    "pipeline_phase_after": "Q02_PASS",
+    "terminal_result_recorded": true,
+    "adverse_economics_recorded": true
+  },
+  "canonical_queue": {
+    "work_item_count": 29,
+    "q04_row_present": false,
+    "q04_enqueue_created": false,
+    "exact_next_command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_1257 --phase Q04 --from-work-item-id d4cd660c-c81a-41d3-8a4c-ad21d3319816"
+  },
+  "resources": {
+    "factory_scan_at_utc": "2026-08-16T18:17:37+00:00",
+    "running_factory_terminals": [
+      "T2",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "running_factory_terminal_count": 7,
+    "cpu_sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      98.68,
+      92.56,
+      99.95,
+      98.84,
+      100.0
+    ],
+    "cpu_average_percent": 98.01,
+    "cpu_max_percent": 100.0,
+    "cpu_hard_trip_percent": 97.0,
+    "cpu_hard_trip": true
+  },
+  "mutations": {
+    "card_pipeline_metadata": true,
+    "repository_evidence_files": true,
+    "ea_or_ex5": false,
+    "setfile_or_basket_manifest": false,
+    "registry_or_magic": false,
+    "runtime_queue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_or_factory_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_terminal": false,
+    "auto_trading": false
+  }
+}

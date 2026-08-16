@@ -16,8 +16,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02_PENDING
-last_updated: 2026-08-12
+pipeline_phase: Q02_PASS
+last_updated: 2026-08-16
 g0_approval_reasoning: "SSRN Lemishko-Landi-Caicedo 2024 (abstract 4771108) R1-R4 PASS: named authors+SSRN URL, Engle-Granger coint + frozen monthly OLS hedge ratio (no online adaptation), 7-pair major FX DWX universe, no ML"
 ---
 
@@ -100,13 +100,19 @@ empirical pipeline question.
 - Q02: 2026-08-12, task `39ee6910-5d04-4087-83b0-65a6fd6b22f9`
   created exactly one pending logical-basket work item,
   `d4cd660c-c81a-41d3-8a4c-ad21d3319816`; no dispatch was run.
+- Q02: 2026-08-16, PASS on that exact logical-basket work item after 290
+  Model-4 trades over 2018-07-02 through 2022-12-31. The run had no ONINIT
+  failure and retained stable EX5 and fixed-risk setfile bindings. Q04 enqueue
+  was deferred because the explicit backtest CPU ceiling was binding.
 
 ## Verwandte Strategien
 - [[strategies/QM5_1129_gatev-distance-pairs]] - distance-based pairs; this card uses cointegration and Forex pairs.
 - [[strategies/QM5_1227_neely-fx-channel]] - FX technical trend-following, not pair mean reversion.
 
 ## Lessons Learned (waehrend Pipeline-Lauf)
-- TBD
+- Q02 established executable basket cadence, not economic merit. The bound
+  run was adverse (PF 0.65, net profit -7,003.44, drawdown 7,920.49 / 7.90%),
+  so no rescue tuning, refit, filter, or profitability claim is authorized.
 
 ---
 
