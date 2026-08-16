@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20071
+; ea_slug:      channel-cci-bollinger-mr-r1-recovery
+; ea_version:   v5.0
+; set_version:  s20260816-001
+; symbol:       AUDUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-16
+;==========================================================
+qm_ea_id=20071
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_20071_channel-cci-bollinger-mr-r1-recovery.md
+strategy_bb_period=20
+strategy_bb_deviation=2.0
+strategy_cci_period=20
+strategy_atr_period=14
+strategy_atr_mult=1.5
+strategy_atr_filter_period=20
+strategy_bandwidth_mult=0.5
+strategy_max_holding_bars=24
+strategy_max_spread_points=25
