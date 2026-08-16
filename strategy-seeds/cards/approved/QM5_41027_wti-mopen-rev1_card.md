@@ -62,8 +62,8 @@ r1_track_record: PASS_WITH_COMPOSITE_AND_WORKING_PAPER_RISK
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: PENDING
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a fixed-clock WTI month-opening reversal outside the certified XAU/SP500/NDX/XNG book. Verify exact first/second session identity, completed first-session endpoints, contrarian direction, restart-safe monthly attempt state, and next-D1 exit; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -329,13 +329,14 @@ and full pipeline requalification.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial WTI first-session/second-session reversal extraction | G0 | APPROVED |
+| v1-build | 2026-08-16 | deterministic V5 implementation and strict validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_wti_month_opening_reversal_g0.md` |
-| Q01 Build Validation | - | PENDING | - |
+| Q01 Build Validation | 2026-08-16 | PASS | strict compile and targeted build check `framework/build/compile/20260816_171720/QM5_41027_wti-mopen-rev1.compile.log`, `D:/QM/reports/framework/21/build_check_20260816_171720.json`; static P1 `D:/QM/reports/pipeline/QM5_41027/P1/P1_QM5_41027_result.json`; eight deterministic reference tests PASS |
 | Q02 Baseline Screening | - | NOT ENQUEUED | - |
 
 ## Safety Boundary
