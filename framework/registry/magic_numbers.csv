@@ -16122,3 +16122,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 31003,london-open-currency-strength-dispersion,2,AUDUSD.DWX,310030002,2026-08-16T20:45:59Z,Codex,active
 41031,xauxag-goldlead,0,XAUUSD.DWX,410310000,2026-08-16T21:14:33Z,Codex,active
 41031,xauxag-goldlead,1,XAGUSD.DWX,410310001,2026-08-16T21:14:33Z,Codex,active
+41032,wti-flow-div,0,XTIUSD.DWX,410320000,2026-08-16T21:56:02Z,Codex,active
