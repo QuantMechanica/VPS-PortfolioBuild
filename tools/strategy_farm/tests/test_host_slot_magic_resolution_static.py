@@ -108,4 +108,3 @@ def test_qm5_10571_is_wired_by_shared_helper_not_v3_contract() -> None:
     assert "QM_FrameworkInitV3" not in QM5_10571
     assert "req.symbol_slot = Strategy_SymbolSlot();" in SHARED_REBUILD
     assert "return qm_magic_slot_offset;" in SHARED_REBUILD
-

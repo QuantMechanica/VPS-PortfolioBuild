@@ -154,4 +154,3 @@ def test_baseline_comparison_is_exact_pair_set(tmp_path: Path) -> None:
         {"ea": "QM5_9999", "slot": 1, "symbol": "XAUUSD.DWX"}
     ]
     assert comparison["added_pairs"] == []
-
