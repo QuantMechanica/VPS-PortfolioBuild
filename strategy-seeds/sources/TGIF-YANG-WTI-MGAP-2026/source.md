@@ -10,7 +10,7 @@ last_updated: 2026-08-16
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-16"
 approved_at: 2026-08-16
 source_approval: decisions/2026-08-16_wti_month_boundary_gap_fade_source_approval.md
-approval_commit: PENDING
+approval_commit: 50d77b36a
 strategy_ids:
   - TGIF-YANG-WTI-MGAP-2026_S01
 parent_sources:
