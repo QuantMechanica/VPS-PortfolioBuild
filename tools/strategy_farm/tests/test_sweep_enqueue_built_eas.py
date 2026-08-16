@@ -99,6 +99,7 @@ def test_never_tested_sweep_enqueues_one_logical_basket_item(
     assert payload["basket_manifest"] == str(manifest_path.resolve())
     assert payload["tester_currency"] == "USD"
     assert payload["priority_track"] is True
+    assert payload["timeout_min"] == farmctl.BASKET_Q02_ACTIVE_TIMEOUT_MIN
 
     report = json.loads(
         (report_root / "state" / "claude_sweep_enqueue_2026-06-10.json")
@@ -352,6 +353,7 @@ def test_part2_requeues_terminal_failed_logical_basket_with_auditable_source(
     assert payload["host_symbol"] == "XAUUSD.DWX"
     assert payload["portfolio_scope"] == "basket"
     assert payload["priority_track"] is True
+    assert payload["timeout_min"] == farmctl.BASKET_Q02_ACTIVE_TIMEOUT_MIN
     assert payload["requeue_source"] == {
         "work_item_id": source_id,
         "status": "failed",

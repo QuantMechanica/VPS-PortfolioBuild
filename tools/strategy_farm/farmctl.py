@@ -117,6 +117,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 CANONICAL_REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
 FRAMEWORK_EAS_DIR = CANONICAL_REPO_ROOT / "framework" / "EAs"
 REQUEUE_EXCLUDED_EAS_FILE = DEFAULT_ROOT / "state" / "requeue_excluded_eas.txt"
+MULTISYMBOL_EAS_FILE = DEFAULT_ROOT / "state" / "multisymbol_eas.txt"
 P5_CALIBRATION_JSON = REPO_ROOT / "framework" / "calibrations" / "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json"
 MT5_ROOT = Path(os.environ.get("QM_MT5_ROOT", r"D:\QM\mt5"))
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
@@ -7844,6 +7845,59 @@ def _payload_is_basket(payload: dict[str, Any]) -> bool:
         return int(payload.get("basket_symbol_count") or 0) > 1
     except (TypeError, ValueError):
         return False
+
+
+def _q02_work_item_is_multisymbol(
+    ea_id: str,
+    symbol: str,
+    payload: dict[str, Any],
+) -> bool:
+    """Classify Q02 basket work before it reaches the worker/reaper."""
+    if _payload_is_basket(payload):
+        return True
+    if symbol and not str(symbol).strip().upper().endswith(".DWX"):
+        return True
+
+    dependency_manifest = _load_multisymbol_dependency_manifest(str(ea_id))
+    dependency_symbols = (dependency_manifest or {}).get("basket_symbols") or []
+    if (
+        dependency_manifest
+        and str(symbol).casefold()
+        in {str(item).casefold() for item in dependency_symbols}
+    ):
+        return True
+
+    try:
+        registry_ids = {
+            line.split("#", 1)[0].strip().split()[0]
+            for line in MULTISYMBOL_EAS_FILE.read_text(encoding="utf-8").splitlines()
+            if line.split("#", 1)[0].strip()
+        }
+    except (OSError, IndexError):
+        registry_ids = set()
+    return _normalise_ea_label(ea_id) in registry_ids
+
+
+def _apply_q02_multisymbol_timeout_min(
+    payload: dict[str, Any],
+    *,
+    phase: str,
+    ea_id: str,
+    symbol: str,
+) -> None:
+    """Persist the 450-minute Q02 outer budget on every multisymbol row."""
+    if phase_qid(phase) != "Q02":
+        return
+    if not _q02_work_item_is_multisymbol(ea_id, symbol, payload):
+        return
+    try:
+        existing_timeout_min = int(payload.get("timeout_min") or 0)
+    except (TypeError, ValueError):
+        existing_timeout_min = 0
+    payload["timeout_min"] = max(
+        existing_timeout_min,
+        BASKET_Q02_ACTIVE_TIMEOUT_MIN,
+    )
 
 
 def _q_phase_full_history_from(payload: dict[str, Any], phase: str) -> str | None:
@@ -16836,6 +16890,12 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
                 payload["history_adjustment_message"] = message
         if _priority_track:
             payload["priority_track"] = True
+        _apply_q02_multisymbol_timeout_min(
+            payload,
+            phase=phase,
+            ea_id=str(ea_id),
+            symbol=str(sym),
+        )
         wid = str(uuid.uuid4())
         conn.execute(
             """
@@ -17746,6 +17806,12 @@ def enqueue_fresh_q02_seed(
                 },
                 "setfile_reconciliation": reconciliation,
             })
+        _apply_q02_multisymbol_timeout_min(
+            payload,
+            phase=phase,
+            ea_id=str(ea_id),
+            symbol=str(source["symbol"]),
+        )
         wid = str(uuid.uuid4())
         conn.execute(
             """
@@ -18146,6 +18212,12 @@ def _enqueue_q02_append_only_exact_row_rerun(
             else:
                 repaired_payload["rerun_source_repaired_after_draft_defect"] = True
             payload.update(repaired_payload)
+        _apply_q02_multisymbol_timeout_min(
+            payload,
+            phase=phase,
+            ea_id=str(ea_id),
+            symbol=str(target["symbol"]),
+        )
         wid = str(uuid.uuid4())
         conn.execute(
             """
@@ -21070,6 +21142,12 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
             payload.update(payload_extra)
             if priority_track:
                 payload["priority_track"] = True
+            _apply_q02_multisymbol_timeout_min(
+                payload,
+                phase="Q02",
+                ea_id=str(ea_id),
+                symbol=str(symbol),
+            )
             conn.execute(
                 "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
                 "status, attempt_count, payload_json, created_at, updated_at) "

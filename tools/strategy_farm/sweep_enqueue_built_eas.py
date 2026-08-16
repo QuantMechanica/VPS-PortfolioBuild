@@ -248,6 +248,12 @@ def insert_wi(
     ):
         report.setdefault("non_dwx_refused", []).append({"ea_id": ea_id, "symbol": symbol})
         return None
+    farmctl._apply_q02_multisymbol_timeout_min(
+        payload,
+        phase=phase,
+        ea_id=str(ea_id),
+        symbol=str(symbol),
+    )
     work_item_id = str(uuid.uuid4())
     if APPLY:
         cur.execute(

@@ -376,6 +376,7 @@ def test_repaired_infra_q02_binds_new_multisymbol_dependency_manifest(
     assert successor_payload["basket_symbols"] == ["EURUSD.DWX", "GBPUSD.DWX"]
     assert successor_payload["host_symbol"] == "EURUSD.DWX"
     assert successor_payload["host_timeframe"] == "H1"
+    assert successor_payload["timeout_min"] == farmctl.BASKET_Q02_ACTIVE_TIMEOUT_MIN
 
 
 def test_exact_infra_q02_ignores_noninfra_result_for_different_setfile(

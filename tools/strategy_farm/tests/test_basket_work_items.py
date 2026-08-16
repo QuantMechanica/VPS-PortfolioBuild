@@ -123,6 +123,36 @@ class BasketWorkItemsTests(unittest.TestCase):
             expected,
         )
 
+    def test_q02_multisymbol_timeout_is_persisted_and_never_lowered(self) -> None:
+        logical_payload: dict[str, object] = {}
+        farmctl._apply_q02_multisymbol_timeout_min(
+            logical_payload,
+            phase="Q02",
+            ea_id="QM5_999901",
+            symbol="QM5_999901_LOGICAL_BASKET_D1",
+        )
+        self.assertEqual(
+            logical_payload["timeout_min"],
+            farmctl.BASKET_Q02_ACTIVE_TIMEOUT_MIN,
+        )
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            registry = Path(tmp) / "multisymbol_eas.txt"
+            registry.write_text("QM5_999902\n", encoding="utf-8")
+            old_registry = farmctl.MULTISYMBOL_EAS_FILE
+            try:
+                farmctl.MULTISYMBOL_EAS_FILE = registry
+                registry_payload = {"timeout_min": 600}
+                farmctl._apply_q02_multisymbol_timeout_min(
+                    registry_payload,
+                    phase="Q02",
+                    ea_id="QM5_999902",
+                    symbol="EURUSD.DWX",
+                )
+            finally:
+                farmctl.MULTISYMBOL_EAS_FILE = old_registry
+        self.assertEqual(registry_payload["timeout_min"], 600)
+
     def test_q08_timeout_scales_with_child_workload(self) -> None:
         h1 = farmctl._q08_active_timeout_min({"host_timeframe": "H1"})
         m5 = farmctl._q08_active_timeout_min({"host_timeframe": "M5"})
@@ -286,6 +316,10 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(created["payload"]["host_symbol"], "EURUSD.DWX")
             self.assertEqual(created["payload"]["host_timeframe"], "D1")
             self.assertEqual(created["payload"]["portfolio_scope"], "basket")
+            self.assertEqual(
+                created["payload"]["timeout_min"],
+                farmctl.BASKET_Q02_ACTIVE_TIMEOUT_MIN,
+            )
 
     def test_record_build_auto_q02_enqueues_logical_basket_setfile(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
