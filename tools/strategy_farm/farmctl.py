@@ -18062,6 +18062,37 @@ def _repaired_infra_source_binding(
     return False, mapped
 
 
+def _stale_invalid_source_binding(
+    target: sqlite3.Row,
+    payload: dict[str, Any],
+    current_bindings: dict[str, Any],
+) -> tuple[bool, dict[str, Any]]:
+    """Authenticate an INVALID Q02 row for a different current binary.
+
+    INVALID is an evidence disposition, not an infrastructure retry class.  It
+    may therefore seed a successor only when the historical execution binding
+    is complete, the execution identity is unchanged, and the operator-bound
+    current EX5 is different.  This lets a corrected binary requalify without
+    weakening the ordinary same-binary/economic-verdict guards.
+    """
+    ok, detail = _stale_pass_source_binding(target, payload, current_bindings)
+    if ok:
+        return True, detail
+    reason_map = {
+        "stale_pass_source_binding_missing_or_invalid": (
+            "stale_invalid_source_binding_missing_or_invalid"
+        ),
+        "q02_pass_source_not_stale": "q02_invalid_source_not_stale",
+        "stale_pass_source_identity_mismatch": (
+            "stale_invalid_source_identity_mismatch"
+        ),
+    }
+    mapped = dict(detail)
+    source_reason = str(detail.get("reason"))
+    mapped["reason"] = reason_map.get(source_reason, source_reason)
+    return False, mapped
+
+
 def enqueue_fresh_q02_seed(
     root: Path,
     ea_id: str,
@@ -18556,7 +18587,12 @@ def _enqueue_q02_append_only_exact_row_rerun(
             and target["ea_id"] == ea_id
             and target["phase"] == phase
             and target["status"] in {"done", "failed"}
-            and target["verdict"] in {"DRAFT_DEFECT", "INFRA_FAIL", "PASS"}
+            and target["verdict"] in {
+                "DRAFT_DEFECT",
+                "INFRA_FAIL",
+                "INVALID",
+                "PASS",
+            }
             and not target["claimed_by"]
         )
         if not target_matches:
@@ -18604,6 +18640,13 @@ def _enqueue_q02_append_only_exact_row_rerun(
             # immutable execution evidence is the work-item runner log recorded
             # by the reaper.  Authenticate and hash-bind that exact payload path
             # just like the legacy purpose-specific transient evidence above.
+            evidence_path_raw = str(source_payload.get("log_path") or "").strip()
+            evidence_binding = "payload.log_path"
+        if not evidence_path_raw and target["verdict"] == "INVALID":
+            # INVALID rows can be produced specifically because no aggregate
+            # was publishable.  The terminal worker log is then the exact
+            # execution evidence; hash-bind it before allowing a new-binary
+            # successor, just as ACTIVE_TIMEOUT rows bind their runner log.
             evidence_path_raw = str(source_payload.get("log_path") or "").strip()
             evidence_binding = "payload.log_path"
         if not evidence_path_raw and target["verdict"] == "INFRA_FAIL":
@@ -18662,15 +18705,21 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 **risk_detail,
             }
         stale_pass = str(target["verdict"]) == "PASS"
+        stale_invalid = str(target["verdict"]) == "INVALID"
         repaired_infra = False
         repaired_draft_defect = False
         source_transition_detail: dict[str, Any] = {}
-        if stale_pass:
+        if stale_pass or stale_invalid:
             bindings_ok, bindings = _expected_current_execution_bindings(
                 target, expected_current_ex5_sha256
             )
             if bindings_ok:
-                bindings_ok, source_transition_detail = _stale_pass_source_binding(
+                binding_check = (
+                    _stale_pass_source_binding
+                    if stale_pass
+                    else _stale_invalid_source_binding
+                )
+                bindings_ok, source_transition_detail = binding_check(
                     target, source_payload, bindings
                 )
         else:
@@ -18711,7 +18760,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "source_work_item_id": source_id,
                 **failure_detail,
             }
-        if stale_pass:
+        if stale_pass or stale_invalid:
             current_terminal = conn.execute(
                 """
                 SELECT id,status,verdict FROM work_items
@@ -18878,6 +18927,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "rerun_source_verdict": target["verdict"],
             **evidence_metadata,
             "stale_pass_rerun": stale_pass,
+            "stale_invalid_rerun": stale_invalid,
             "repaired_infra_rerun": repaired_infra,
             "repaired_draft_defect_rerun": repaired_draft_defect,
             "risk_fixed": risk_detail["risk_fixed"],
@@ -18888,7 +18938,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "expected_symbol": bindings["expected_symbol"],
         })
         _stamp_custom_history_archive_admission(payload, archive_admission)
-        if stale_pass:
+        if stale_pass or stale_invalid:
             payload.update({
                 "expected_current_ex5_sha256": source_transition_detail[
                     "current_ex5_sha256"
@@ -18898,6 +18948,8 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 ],
                 "rerun_source_current_ex5_mismatch_verified": True,
             })
+            if stale_invalid:
+                payload["rerun_source_invalid_disposition_requalified"] = True
         elif repaired_infra or repaired_draft_defect:
             repaired_payload = {
                 "expected_current_ex5_sha256": source_transition_detail[

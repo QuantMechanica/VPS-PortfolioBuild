@@ -327,6 +327,124 @@ def test_repaired_draft_defect_q02_binds_current_artifacts_append_only(
     assert new_payload["risk_percent"] == 0.0
 
 
+def test_stale_invalid_q02_binds_runner_log_and_current_artifacts_append_only(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    payload = _payload(art, stale=True)
+    runner_log = _insert_work_item(
+        art,
+        item_id="q02-invalid-old-binary",
+        phase="Q02",
+        status="failed",
+        verdict="INVALID",
+        payload=payload,
+    )
+    payload["log_path"] = str(runner_log)
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.execute(
+            "UPDATE work_items SET evidence_path=NULL,payload_json=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), "q02-invalid-old-binary"),
+        )
+        conn.commit()
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        root,
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-invalid-old-binary",
+        append_only_rerun_of="q02-invalid-old-binary",
+        rerun_reason="corrected binary must requalify an invalid run",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    assert _work_item_count(art) == 2
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        historical = conn.execute(
+            "SELECT status,verdict,evidence_path FROM work_items WHERE id=?",
+            ("q02-invalid-old-binary",),
+        ).fetchone()
+        successor_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert historical == ("failed", "INVALID", None)
+    assert successor_payload["stale_pass_rerun"] is False
+    assert successor_payload["stale_invalid_rerun"] is True
+    assert successor_payload["rerun_source_invalid_disposition_requalified"] is True
+    assert successor_payload["rerun_source_current_ex5_mismatch_verified"] is True
+    assert successor_payload["rerun_source_expected_ex5_sha256"] == "2" * 64
+    assert successor_payload["expected_current_ex5_sha256"] == art["current_ex5"]
+    assert successor_payload["expected_ex5_sha256"] == art["current_ex5"]
+    assert successor_payload["rerun_source_evidence_binding"] == "payload.log_path"
+    assert successor_payload["rerun_source_evidence_sha256"] == (
+        farmctl._sha256_file(runner_log)
+    )
+    assert successor_payload["risk_fixed"] == 1000.0
+    assert successor_payload["risk_percent"] == 0.0
+
+
+def test_invalid_q02_refuses_same_binary_rerun(tmp_path: Path, monkeypatch) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-invalid-current-binary",
+        phase="Q02",
+        status="failed",
+        verdict="INVALID",
+        payload=_payload(art, stale=False),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-invalid-current-binary",
+        append_only_rerun_of="q02-invalid-current-binary",
+        rerun_reason="same binary must remain terminal",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "q02_invalid_source_not_stale"
+    assert _work_item_count(art) == 1
+
+
+def test_q02_append_only_still_refuses_other_economic_verdicts(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-zero-trades",
+        phase="Q02",
+        status="done",
+        verdict="ZERO_TRADES",
+        payload=_payload(art, stale=True),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-zero-trades",
+        append_only_rerun_of="q02-zero-trades",
+        rerun_reason="must not bypass economic disposition",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == (
+        "q02_rerun_target_mismatch_or_not_terminal_supported_verdict"
+    )
+    assert _work_item_count(art) == 1
+
+
 def test_repaired_infra_q02_binds_new_multisymbol_dependency_manifest(
     tmp_path: Path, monkeypatch
 ) -> None:
