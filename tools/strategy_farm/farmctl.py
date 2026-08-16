@@ -14342,9 +14342,28 @@ def _plan_artifact_auto_commit(
     """Pure classification shared by the pump and Factory_ON preflight."""
     commit_set: set[str] = set()
     skipped_active: list[str] = []
+    skipped_source_dirty: list[str] = []
     rejected_dirty: list[str] = []
     dirty_paths: list[str] = []
     try:
+        # 2026-08-17: never publish an .ex5 whose own .mq5 is still dirty.
+        # The active-build skip above only sees EAs with a live build_ea task log;
+        # an ops lane editing EA sources is invisible to it. On 2026-08-16 that let
+        # the pump commit QM5_20176's freshly compiled binary while the source edit
+        # stayed in the working tree, so HEAD recorded an .ex5 that its own recorded
+        # .mq5 cannot produce (same for QM5_11897). The pipeline was never at risk --
+        # the work-item evidence binding compares repo files at dispatch and refuses
+        # -- but the committed record stopped being reproducible, which is exactly
+        # what the evidence trail exists to guarantee. The source is in this same
+        # porcelain listing, so this costs no I/O.
+        source_dirty_eas: set[str] = set()
+        for line in entries:
+            probe = _artifact_path_from_porcelain_line(line)
+            if probe.endswith(".mq5"):
+                m = re.match(r"framework/EAs/(QM5_\d+_[^/]+)/", probe)
+                if m:
+                    source_dirty_eas.add(m.group(1))
+
         for line in entries:
             path = _artifact_path_from_porcelain_line(line)
             dirty_paths.append(path)
@@ -14355,6 +14374,11 @@ def _plan_artifact_auto_commit(
             if ea_match and ea_match.group(1) in active_eas:
                 skipped_active.append(path)
                 continue
+            if path.endswith(".ex5"):
+                dir_match = re.match(r"framework/EAs/(QM5_\d+_[^/]+)/", path)
+                if dir_match and dir_match.group(1) in source_dirty_eas:
+                    skipped_source_dirty.append(path)
+                    continue
             commit_set.add(path)
     except (TypeError, ValueError) as exc:
         return {
@@ -14368,6 +14392,7 @@ def _plan_artifact_auto_commit(
             "candidate_count": 0,
             "commit_paths": [],
             "skipped_active_paths": [],
+            "skipped_source_dirty_paths": [],
             "rejected_dirty_paths": [],
         }
 
@@ -14382,6 +14407,7 @@ def _plan_artifact_auto_commit(
         "candidate_count": len(commit_paths),
         "commit_paths": commit_paths,
         "skipped_active_paths": sorted(set(skipped_active)),
+        "skipped_source_dirty_paths": sorted(set(skipped_source_dirty)),
         "rejected_dirty_paths": sorted(set(rejected_dirty)),
     }
 
