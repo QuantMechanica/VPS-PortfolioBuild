@@ -3,7 +3,7 @@
   "window_hours": 72,
   "tolerance_pct": 5.0,
   "policy": "priority list for targeted rework waves; gates are NOT overridden (OWNER DL territory)",
-  "count": 6,
+  "count": 8,
   "entries": [
     {
       "kind": "walkforward_folds",
@@ -37,6 +37,19 @@
       "reason": "pf_below_floor:pf=1.000:floor=1.0"
     },
     {
+      "kind": "pf_below_floor",
+      "value": 0.99,
+      "floor": 1.0,
+      "gap_pct": 1.0,
+      "work_item": "d0049c13-0245-4851-b036-ca1d266ea026",
+      "ea": "QM5_10714",
+      "symbol": "XAUUSD.DWX",
+      "phase": "Q06",
+      "verdict": "FAIL",
+      "at": "2026-08-16T11:09:20",
+      "reason": "pf_below_floor:pf=0.990:floor=1.0"
+    },
+    {
       "kind": "walkforward_folds",
       "value": 0.988,
       "floor": 1.0,
@@ -53,6 +66,24 @@
       "verdict": "FAIL",
       "at": "2026-08-16T05:59:15",
       "reason": "F1:pf_net=1.051;F2:pf_net=0.988;F3:pf_net=1.107"
+    },
+    {
+      "kind": "walkforward_folds",
+      "value": 0.98,
+      "floor": 1.0,
+      "gap_pct": 2.0,
+      "folds": [
+        1.05,
+        0.98,
+        1.05
+      ],
+      "work_item": "fb7864f2-a993-467f-9114-cc44485ee2db",
+      "ea": "QM5_10242",
+      "symbol": "XAUUSD.DWX",
+      "phase": "Q04",
+      "verdict": "FAIL",
+      "at": "2026-08-16T09:58:49",
+      "reason": "F1:pf_net=1.050;F2:pf_net=0.980;F3:pf_net=1.050"
     },
     {
       "kind": "walkforward_folds",
