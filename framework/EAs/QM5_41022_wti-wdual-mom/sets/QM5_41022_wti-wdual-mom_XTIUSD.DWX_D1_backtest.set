@@ -1,0 +1,39 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41022
+; ea_slug:      wti-wdual-mom
+; ea_version:   v5.0
+; set_version:  s20260816-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   a5aae4e670860a78cfc86b083e9daf6934fe8b2076741897777f150343bc9cdf
+; author:       Development
+; date:         2026-08-16
+;==========================================================
+qm_ea_id=41022
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Native completed-price signal; both news axes are intentionally OFF.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+; Framework Friday close is the ordinary weekly lifecycle exit.
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-wdual-mom_card.md
+strategy_entry_grace_minutes=180
+strategy_atr_period=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=7
+strategy_max_spread_points=1500

@@ -153,3 +153,4 @@ portfolio admission, portfolio-gate mutation, deploy or T_Live manifest,
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial bounded split-week extraction | G0 | APPROVED |
+| v1-build | 2026-08-16 | deterministic V5 implementation and strict validation | Q01 | PASS |
