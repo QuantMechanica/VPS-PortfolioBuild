@@ -58,7 +58,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-q01_status: PENDING
+q01_status: PASS
 q02_status: PENDING
 review_focus: "Falsify an exact-clock WTI week-opening return-sign continuation sleeve outside the certified XAU/SP500/NDX/XNG book. Verify weekday continuity, completed endpoints, no late restart entry, and Friday flattening; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -137,7 +137,12 @@ authorized baseline. Anything not stated here is out of scope.
 ## 4. Entry Rules
 
 - Evaluate the entry path only on a new `XTIUSD.DWX` D1 bar.
-- Require the current bar's broker weekday to be Wednesday.
+- Require the current broker clock, not the raw D1 label, to be Wednesday.
+- Support native same-day D1 labels and the factory energy convention that
+  labels a session with the preceding calendar date. When the current label
+  is 24-48 hours behind the broker clock, normalize it and all three completed
+  labels by the same +1 calendar day before weekday/date checks. Apply no
+  other offset, holiday shift, or bar substitution.
 - Read exactly the three immediately preceding completed D1 bars and require
   them, newest first, to be Tuesday, Monday, and prior Friday.
 - Require their broker dates to be exactly one, two, and five calendar days
@@ -148,9 +153,10 @@ authorized baseline. Anything not stated here is out of scope.
 - If no durable current-Wednesday attempt exists, persist the key before
   history validation, return calculation, news, spread, quote, ATR, sizing,
   or order gates. Never retry the Wednesday.
-- Compute elapsed time from the current Wednesday D1 bar timestamp. If it is
-  negative or greater than 180 minutes, consume the attempt flat and never
-  backfill the week after a late restart.
+- Compute elapsed time since the executable session open as broker time minus
+  the raw D1 label modulo one day. If it is negative or greater than 180
+  minutes, consume the attempt flat and never backfill the week after a late
+  restart. Derive the attempt key from the unshifted broker-clock Wednesday.
 - Require positive, finite Tuesday and prior-Friday completed closes.
 - Compute `opening_return = log(TuesdayClose / PriorFridayClose)`. Monday close
   is a continuity observation only; the current Wednesday price is excluded.
@@ -280,6 +286,9 @@ with the certified book.
 - A bounded three-bar `CopyRates` read is allowed only behind that new-bar
   gate for the bespoke weekday sequence. Do not hand-roll a per-EA bar-change
   tracker.
+- Normalize a known prior-date energy D1 label only by applying the same +1
+  calendar day to the current and three completed labels. Broker time remains
+  authoritative for the Wednesday decision and persistent attempt date.
 - Persist the consumed `yyyymmdd` state with a terminal global variable and
   corroborate it with owned deal history.
 - Create exactly one D1 `backtest` setfile. Do not create demo, shadow, live,
@@ -291,13 +300,14 @@ with the certified book.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial fixed week-opening momentum extraction | G0 | APPROVED |
+| v2 | 2026-08-16 | V5 build, energy-label fixtures, and strict validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_wti_week_opening_momentum_g0.md` |
-| Q01 Build Validation | pending | PENDING | branch-only build not yet validated |
+| Q01 Build Validation | 2026-08-16 | PASS; compiler and build check 0 errors, 0 warnings; reference tests 8/8 PASS | `D:\QM\reports\framework\21\build_check_20260816_022133.json` |
 | Q02 Baseline Screening | pending | PENDING | not yet enqueued |
 
 ## Safety Boundary

@@ -46,12 +46,18 @@ the QM portfolio.
 - exact carrier `XTIUSD.DWX`, D1, magic slot 0;
 - exact broker-week sequence of prior Friday, Monday, Tuesday, and current
   Wednesday D1 bars, with no holiday shift or substitution;
+- broker time defines the Wednesday decision and attempt date; native same-day
+  D1 labels are used directly, while a factory energy label 24-48 hours behind
+  broker time normalizes the current and all three completed labels by one
+  uniform +1 calendar day before sequence checks;
 - formation return `log(TuesdayClose / PriorFridayClose)` from completed,
   positive, finite closes only;
 - Wednesday BUY after a positive formation return and SELL after a negative
   formation return, with exact zero consumed flat;
-- first-observed-tick deadline of 180 minutes after the Wednesday bar
-  timestamp, so a later restart consumes the week without a backfilled entry;
+- first-observed-tick deadline of 180 minutes after executable session open,
+  computed from the raw D1 label modulo one day so both governed label
+  conventions behave identically; a later restart consumes the week without a
+  backfilled entry;
 - one persistent exact-Wednesday attempt recorded before every fallible gate;
 - one `RISK_FIXED=1000` budget, `RISK_PERCENT=0`, frozen
   `3.5 * ATR(20,D1)` hard stop, 1,500-point spread ceiling, and no target;
@@ -120,9 +126,10 @@ first-order risks. No parameter rescue or correlation waiver is authorized.
 
 - no_trade: exact host/D1/ID/slot, locked inputs, risk mode, news OFF, Friday
   close ON, and identity guards.
-- trade_entry: exact Friday-Monday-Tuesday-Wednesday sequence, persistent
-  attempt, completed return sign, entry grace, spread/quote/ATR validation,
-  and one directed order.
+- trade_entry: broker-clock Wednesday, uniform known energy-label
+  normalization, exact Friday-Monday-Tuesday sequence, persistent attempt,
+  completed return sign, entry grace, spread/quote/ATR validation, and one
+  directed order.
 - trade_management: malformed, stale weekday, and six-day repair before
   entry-only gates.
 - trade_close: framework Friday close, V5 close path, hard stop, and kill
@@ -142,9 +149,11 @@ is binding, the item may be enqueued but no tester may be controlled.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial fixed week-opening extraction | G0 | APPROVED |
+| v2 | 2026-08-16 | V5 build, energy-label fixtures, and strict validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED; R1-R4 reviewed | source packet, source-approval decision, G0 decision, and Strategy Card |
+| Q01 Build Validation | 2026-08-16 | PASS; 0 errors, 0 warnings | `D:\QM\reports\framework\21\build_check_20260816_022133.json`; reference tests 8/8 PASS |
