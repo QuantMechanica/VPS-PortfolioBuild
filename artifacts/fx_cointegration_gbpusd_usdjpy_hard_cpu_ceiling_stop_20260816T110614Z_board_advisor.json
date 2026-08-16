@@ -1,0 +1,165 @@
+{
+  "schema_version": "qm.fx-cointegration-hard-cpu-ceiling-stop/v1",
+  "captured_at_utc": "2026-08-16T11:06:14.0400938Z",
+  "captured_at_local": "2026-08-16T13:06:14.0400938+02:00",
+  "branch": "agents/board-advisor",
+  "sampled_head": "3fde00db410ac8236e52ef75e816846eb670d1e6",
+  "outcome": "HARD_CPU_CEILING_TARGET_PENDING_ONCE_NO_MUTATION",
+  "selection": {
+    "frozen_pair_count": 66,
+    "fully_mechanized": true,
+    "anchors_beyond_q02": {
+      "QM5_12532_AUDNZD_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_PASS",
+        "Q05_FAIL"
+      ],
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_FAIL"
+      ]
+    },
+    "fallback": "existing_rank_58_qm5_1257_gbpusd_usdjpy"
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "parent_task_id": "39ee6910-5d04-4087-83b0-65a6fd6b22f9",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "updated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+    "exact_identity_row_count": 1,
+    "exact_open_row_count": 1,
+    "active_hold_count": 0,
+    "priority_track": true,
+    "enqueue_action": "SKIPPED_DUPLICATE_ROW_ALREADY_PENDING",
+    "dispatch_action": "SKIPPED_HARD_CPU_AND_SERIALIZED_MULTISYMBOL_CEILINGS",
+    "basket_contract": {
+      "host_symbol": "GBPUSD.DWX",
+      "host_timeframe": "H1",
+      "basket_symbols": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1,
+      "structural_only": true,
+      "ml_or_banned_indicator": false
+    },
+    "bindings": {
+      "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+      "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+      "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+      "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+      "payload_matches_repository": true
+    },
+    "repair_lineage": {
+      "entry_repair_commit": "751cb391d8f388f5b61641ba3299011cdf9a09ed",
+      "exit_repair_commit": "f9ef37c1c26686758567b493b0411c65079286d8",
+      "set_metadata_restore_commit": "82a1bf44319a26fee1dbe5eb8463c7986f0304e6",
+      "prior_zero_trade_summary": "D:/QM/reports/work_items/d4cd660c-c81a-41d3-8a4c-ad21d3319816/QM5_1257/20260815_082908/summary.json",
+      "prior_zero_trade_summary_sha256": "76fcd6351b98f8cc16250a5fd7e3bc2fb47e6b868cd9ce4619102c5f64bc1526"
+    }
+  },
+  "fleet": {
+    "active_work_item_count": 7,
+    "active_multisymbol_count": 1,
+    "basket_lane_available": false,
+    "active_multisymbol_work_item": {
+      "id": "92235bb9-1fc0-4aeb-90c3-f8771ca9e2bd",
+      "ea_id": "QM5_20233",
+      "symbol": "QM5_20233_XAU_XAG_SKEW_RANK_D1",
+      "phase": "Q02",
+      "claimed_by": "T8",
+      "basket_symbols": [
+        "XAUUSD.DWX",
+        "XAGUSD.DWX"
+      ],
+      "runner_pid": 17136,
+      "terminal_pid": 1628,
+      "tester_pid": 2724,
+      "runner_executable": "C:/Program Files/PowerShell/7/pwsh.exe",
+      "terminal_executable": "D:/QM/mt5/T8/terminal64.exe",
+      "tester_executable": "D:/QM/mt5/T8/metatester64.exe",
+      "tester_config": "D:/QM/reports/work_items/92235bb9-1fc0-4aeb-90c3-f8771ca9e2bd/QM5_20233/20260816_043334/raw/run_01/tester.ini",
+      "started_at_utc": "2026-08-16T04:32:09+00:00",
+      "timeout_seconds": 25200,
+      "process_chain_live": true
+    },
+    "active_terminal_claims": [
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "t_live_excluded": true
+  },
+  "resources": {
+    "cpu_sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      93.36,
+      97.47,
+      94.76,
+      98.65,
+      100.0
+    ],
+    "cpu_average_percent": 96.85,
+    "cpu_max_percent": 100.0,
+    "cpu_hard_trip_percent": 97.0,
+    "cpu_hard_trip": true,
+    "free_physical_memory_kib": 27700908,
+    "total_visible_memory_kib": 66185976,
+    "d_volume_free_bytes": 163300052992,
+    "binding_ceiling": [
+      "cpu_hard_trip",
+      "farm_wide_single_multisymbol_serialization_lane"
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_evidence": "artifacts/fx_cointegration_gbpusd_usdjpy_serialized_lane_stop_20260816T094931Z_board_advisor.json",
+    "prior_sampled_at_utc": "2026-08-16T09:49:31.0299426Z",
+    "prior_active_work_item_count": 4,
+    "current_active_work_item_count": 7,
+    "prior_cpu_average_percent": 72.17,
+    "current_cpu_average_percent": 96.85,
+    "prior_cpu_max_percent": 74.59,
+    "current_cpu_max_percent": 100.0,
+    "prior_cpu_hard_trip": false,
+    "current_cpu_hard_trip": true,
+    "same_live_basket_owner_revalidated": true,
+    "description": "The fleet changed from a serialized-lane-only stop to a hard CPU trip while three additional work items became active. The target remains hash-clean, priority-tracked, unheld, and pending exactly once; starting or duplicating it would violate both active ceilings."
+  },
+  "zero_trades_recovery": {
+    "ea": "QM5_1257 GBPUSD/USDJPY",
+    "bound_run": "D:/QM/reports/work_items/d4cd660c-c81a-41d3-8a4c-ad21d3319816/QM5_1257/20260815_082908",
+    "root_cause": "entry and exit implementation defects already repaired in-lineage",
+    "repair": "compiled and queue bindings refreshed before this pass",
+    "compile": "PASS_0_ERRORS_0_WARNINGS_PRIOR_BOUND_EVIDENCE",
+    "entry_events": null,
+    "trades": null,
+    "remaining_gap": "governed Q02 rerun after both resource ceilings clear"
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_control": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "auto_trading": false,
+    "repository_evidence_files": true
+  }
+}
