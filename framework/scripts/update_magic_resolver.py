@@ -254,6 +254,23 @@ bool QM_MagicRegistered(const int ea_id, const int symbol_slot)
    return false;
   }}
 
+// R-069/18954866: the registry symbol bound to (ea_id, symbol_slot). "" if the
+// pair is not registered. Callers use this to fail closed when the caller's
+// actual _Symbol disagrees with what the slot is registered for, instead of
+// silently trading under a foreign symbol's magic (host-slot conflation).
+string QM_MagicRegisteredSymbol(const int ea_id, const int symbol_slot)
+  {{
+   for(int i = 0; i < QM_MAGIC_REGISTRY_ROWS; ++i)
+     {{
+      if(QM_MAGIC_REG_EA_ID[i] == ea_id && QM_MAGIC_REG_SLOT[i] == symbol_slot)
+        {{
+         return QM_MAGIC_REG_SYMBOL[i];
+        }}
+     }}
+
+   return "";
+  }}
+
 string QM_MagicRegistryHash()
   {{
    return QM_MAGIC_REGISTRY_SHA256;
@@ -307,7 +324,7 @@ bool QM_MagicCollisionWithForeignOpenPositions(const int magic, const string exp
 
 int QM_MagicChecked(const int ea_id, const int symbol_slot, const string expected_symbol = "")
   {{
-   // Log-bomb guard: dedupe the per-tick "not registered" warning (see QM_Magic).
+   // Log-bomb guard: dedupe the per-tick "not registered"/"resolution failed" warnings (see QM_Magic).
    static int chk_warn_ea   = -2147483647;
    static int chk_warn_slot = -2147483647;
    const int magic = QM_Magic(ea_id, symbol_slot);
@@ -324,6 +341,25 @@ int QM_MagicChecked(const int ea_id, const int symbol_slot, const string expecte
          chk_warn_ea = ea_id; chk_warn_slot = symbol_slot;
         }}
       return -1;
+     }}
+
+   // R-069/18954866 host-slot magic conflation fix: the registry maps
+   // (ea_id, symbol_slot) to a specific symbol. If the caller's actual symbol
+   // disagrees, this slot belongs to a DIFFERENT symbol's assignment and must
+   // fail closed rather than silently hand back that foreign symbol's magic.
+   if(expected_symbol != "")
+     {{
+      const string registered_symbol = QM_MagicRegisteredSymbol(ea_id, symbol_slot);
+      if(registered_symbol != "" && registered_symbol != expected_symbol)
+        {{
+         if(ea_id != chk_warn_ea || symbol_slot != chk_warn_slot)
+           {{
+            PrintFormat("%s: ea_id=%d slot=%d registered_symbol=%s expected_symbol=%s magic=%d",
+                        EA_MAGIC_RESOLUTION_FAILED, ea_id, symbol_slot, registered_symbol, expected_symbol, magic);
+            chk_warn_ea = ea_id; chk_warn_slot = symbol_slot;
+           }}
+         return -1;
+        }}
      }}
 
    if(QM_MagicCollisionWithForeignOpenPositions(magic, expected_symbol))
