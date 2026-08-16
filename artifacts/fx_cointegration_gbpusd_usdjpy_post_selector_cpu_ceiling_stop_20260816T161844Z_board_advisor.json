@@ -1,0 +1,170 @@
+{
+  "schema_version": "qm.fx-cointegration-cpu-ceiling-stop/v1",
+  "captured_at_utc": "2026-08-16T16:18:44.785Z",
+  "captured_at_local": "2026-08-16T18:18:44.791+02:00",
+  "branch": "agents/board-advisor",
+  "sampled_head": "72bf9ff9b34322887c0366173c8b0f2cd5d3d191",
+  "outcome": "HARD_CPU_CEILING_STOP_POST_SELECTOR_REPAIR_Q02_LEFT_PENDING",
+  "mission_reconciliation": {
+    "frozen_pair_count": 66,
+    "mechanized_pair_count": 66,
+    "unbuilt_pair_count": 0,
+    "duplicate_card_or_ea_created": false,
+    "anchor_state": {
+      "QM5_12532_AUDNZD_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_PASS",
+        "Q05_FAIL"
+      ],
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_FAIL"
+      ]
+    },
+    "selected_fallback": {
+      "scan_rank": 58,
+      "ea_id": "QM5_1257",
+      "pair_slot": 8,
+      "pair": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+      "selection_reason": "All frozen scan relationships are covered; this repaired existing relationship remains the sole exact pending Q02 identity from the governed fallback."
+    }
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "created_at_utc": "2026-08-11T23:53:50+00:00",
+    "updated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+    "exact_identity_row_count": 1,
+    "exact_open_row_count": 1,
+    "priority_track": true,
+    "priority_reason": "board_advisor_fx_fallback_full_66_pair_frontier_covered",
+    "portfolio_scope": "basket",
+    "avoid_terminals": [
+      "T4",
+      "T8"
+    ],
+    "canonical_selector_rank": 3,
+    "canonical_eligible_pending_count": 975,
+    "canonical_basket_q02_rank": 0,
+    "enqueue_action": "SKIPPED_EXACT_ROW_ALREADY_PENDING",
+    "requeue_action": "SKIPPED_NO_DUPLICATE_OR_APPEND_ONLY_RETRY",
+    "priority_mutation": "SKIPPED_ALREADY_PRIORITY_TRACKED"
+  },
+  "approved_contract": {
+    "card_path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/docs/strategy_card.md",
+    "card_sha256": "aa0313ea4218ed418432adcdf3a34b49cd3c4f46e725fefd31ec5b2266b2f9ae",
+    "g0_status": "APPROVED",
+    "r1_r4": "PASS",
+    "source": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "structural_only": true,
+    "low_frequency": true,
+    "ml_or_banned_indicator": false
+  },
+  "basket_contract": {
+    "manifest_path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+    "manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+    "host_symbol": "GBPUSD.DWX",
+    "host_timeframe": "H1",
+    "basket_symbols": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+    "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+    "setfile_path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "fleet_snapshot": {
+    "database_active_work_item_count": 9,
+    "database_active_multisymbol_count": 0,
+    "running_factory_terminals_at_process_scan": [
+      "T1",
+      "T3",
+      "T4",
+      "T5",
+      "T7",
+      "T9",
+      "T10"
+    ],
+    "orphaned_factory_terminal_count": 0,
+    "t_live_and_ftmo_processes_excluded": true
+  },
+  "resources": {
+    "sampled_at_local": [
+      "2026-08-16T18:17:18.718+02:00",
+      "2026-08-16T18:17:26.743+02:00"
+    ],
+    "cpu_sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      99.56,
+      98.78
+    ],
+    "cpu_average_percent": 99.67,
+    "cpu_max_percent": 100.0,
+    "cpu_hard_trip_percent": 97.0,
+    "cpu_hard_trip": true,
+    "free_physical_memory_kib": 49799032,
+    "memory_gate_trip": false,
+    "resource_gate_currently_clear": false,
+    "binding_stop_reason": "The explicit 97% backtest CPU ceiling is exceeded while the paced farm already owns nine active work items."
+  },
+  "non_duplicate_delta": {
+    "prior_evidence": "artifacts/fx_cointegration_gbpusd_usdjpy_hard_cpu_ceiling_stop_20260816T141932Z_board_advisor.json",
+    "selector_repair_commit": "7ed9ef10ebde63094b01a13d4b16d3eba0c142e4",
+    "prior_canonical_selector_rank": 28,
+    "current_canonical_selector_rank": 3,
+    "prior_active_work_item_count": 7,
+    "current_active_work_item_count": 9,
+    "prior_cpu_average_percent": 98.11,
+    "current_cpu_average_percent": 99.67,
+    "description": "The compact-JSON basket selector repair now classifies the exact row as basket Q02 and moved it from rank 28 to rank 3 without queue mutation; concurrent farm load rose and the hard CPU ceiling remains binding."
+  },
+  "actions_skipped_due_to_cpu_ceiling": [
+    "manual tester launch",
+    "targeted work-item execution",
+    "normal dispatch tick",
+    "enqueue",
+    "requeue",
+    "priority or timestamp mutation",
+    "terminal reservation or control",
+    "Factory OFF/ON mutation"
+  ],
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "priority_or_timestamp": false,
+    "external_queue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_or_factory_control": false,
+    "repository_evidence_files": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_terminal": false,
+    "auto_trading": false
+  }
+}
