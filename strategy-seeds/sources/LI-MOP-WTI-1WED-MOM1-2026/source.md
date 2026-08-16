@@ -137,3 +137,4 @@ resource ceiling binds at enqueue time, stop without tester control.
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial bounded composite source packet | G0 | APPROVED_SOURCE |
 | v1-build | 2026-08-16 | deterministic V5 implementation and strict validation | Q01 | PASS |
+| v1-q02-hold | 2026-08-16 | paced handoff stopped before queue commands at binding 7/7 tester CPU ceiling | Q02 | NOT_ENQUEUED |

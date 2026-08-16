@@ -64,7 +64,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_STARTED
+q02_status: NOT_ENQUEUED
 review_focus: "Falsify a direct-WTI calendar/trend sleeve outside the certified XAU/SP500/NDX/XNG book. Verify normalized first-Wednesday identity, exact completed-month endpoints, no late/repeated entry, return-sign direction, and next-D1 exit; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -305,6 +305,7 @@ and full pipeline requalification.
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial first-Wednesday/prior-month WTI extraction | G0 | APPROVED |
 | v1-build | 2026-08-16 | deterministic V5 implementation and strict validation | Q01 | PASS |
+| v1-q02-hold | 2026-08-16 | path-anchored capacity gate found 7/7 T1-T10 tester terminals before any queue command | Q02 | NOT_ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -312,7 +313,7 @@ and full pipeline requalification.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_wti_first_wednesday_month_momentum_g0.md` |
 | Q01 Build Validation | 2026-08-16 | PASS | `D:/QM/reports/framework/21/build_check_20260816_135723.json` |
-| Q02 Baseline Screening | pending | NOT STARTED | enqueue only after strict Q01 PASS |
+| Q02 Baseline Screening | 2026-08-16 | NOT_ENQUEUED; stopped at binding 7/7 tester CPU ceiling | `docs/ops/evidence/2026-08-16_qm5_41024_wti_1wed_mom1_q01_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 
