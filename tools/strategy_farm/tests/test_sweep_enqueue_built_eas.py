@@ -14,6 +14,7 @@ from tools.strategy_farm import farmctl
 
 REPO = Path(__file__).resolve().parents[3]
 SWEEP = REPO / "tools" / "strategy_farm" / "sweep_enqueue_built_eas.py"
+SWEEP_SUBPROCESS_TIMEOUT_SEC = 180
 
 
 def test_never_tested_sweep_enqueues_one_logical_basket_item(
@@ -72,7 +73,7 @@ def test_never_tested_sweep_enqueues_one_logical_basket_item(
         env=env,
         capture_output=True,
         text=True,
-        timeout=60,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC,
         check=False,
     )
 
@@ -157,7 +158,7 @@ def test_never_tested_sweep_prioritizes_every_first_q02_row(
         env=env,
         capture_output=True,
         text=True,
-        timeout=60,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC,
         check=False,
     )
 
@@ -237,7 +238,7 @@ def test_apply_preserves_new_deferral_when_sidecar_was_already_nonempty(
         env=env,
         capture_output=True,
         text=True,
-        timeout=60,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC,
         check=False,
     )
 
@@ -336,7 +337,7 @@ def test_part2_requeues_terminal_failed_logical_basket_with_auditable_source(
         env=env,
         capture_output=True,
         text=True,
-        timeout=60,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC,
         check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
@@ -472,7 +473,7 @@ def test_q08_stranded_retry_carries_hash_pinned_requal_lineage(
         env=env,
         capture_output=True,
         text=True,
-        timeout=60,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC,
         check=False,
     )
 

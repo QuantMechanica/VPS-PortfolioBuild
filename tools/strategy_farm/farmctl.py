@@ -379,6 +379,18 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "Q09": 120,    # news-mode sweep (1 or 7 modes)
     "Q10": 60,     # full-history canonical confirmation
 }
+# Q04 launches one run_smoke child per fold.  The runner's historical flat
+# 1800-second child cap was independent of the worker/reaper budget, so a Q02
+# runtime that legitimately exceeded 30 minutes could pass and then be killed
+# in every Q04 fold.  Budget the child from the measured Q02 run and the same
+# payload timeout contract used by Q02.  The seven-hour per-fold cap matches
+# the bounded smoke layer; the phase budget covers all currently available
+# folds plus publish/headroom work.
+Q04_FOLD_TIMEOUT_MIN_SEC = 1800
+Q04_FOLD_TIMEOUT_MAX_SEC = 25200
+Q04_Q02_RUNTIME_HEADROOM_MULTIPLIER = 1.5
+Q04_PHASE_HEADROOM_SEC = 900
+Q04_PHASE_TIMEOUT_MAX_MIN = 24 * 60
 ACTIVE_PROGRESS_STALL_MIN = 20
 ACTIVE_OUTER_HEADROOM_MIN = 10
 _MT5_PROGRESS_RE = re.compile(
@@ -6404,6 +6416,186 @@ def _phase_runner_timeout_sec_from_payload(payload: dict[str, Any]) -> int | Non
     return max(60, min(timeout_sec, PHASE_RUNNER_TIMEOUT_MAX_SEC))
 
 
+def _q04_fold_count_from_payload(payload: dict[str, Any]) -> int:
+    try:
+        latest_year = int(
+            payload.get("q04_latest_full_year")
+            or payload.get("latest_full_year")
+            or Q04_DEFAULT_LATEST_FULL_YEAR
+        )
+    except (TypeError, ValueError):
+        latest_year = Q04_DEFAULT_LATEST_FULL_YEAR
+    return max(
+        1,
+        min(
+            Q04_DEFAULT_LATEST_FULL_YEAR - Q04_FIRST_OOS_YEAR + 1,
+            latest_year - Q04_FIRST_OOS_YEAR + 1,
+        ),
+    )
+
+
+def _q04_fold_timeout_seconds(payload: dict[str, Any]) -> int:
+    """Return the bound per-fold Q04 child budget.
+
+    New rows carry an explicit derived value.  The fallback keeps legacy rows
+    safe by using their payload timeout and/or recorded Q02 runtime, while
+    retaining the historical 1800-second floor.
+    """
+    try:
+        explicit = int(payload.get("q04_fold_timeout_sec") or 0)
+    except (TypeError, ValueError):
+        explicit = 0
+    if explicit > 0:
+        return max(
+            Q04_FOLD_TIMEOUT_MIN_SEC,
+            min(Q04_FOLD_TIMEOUT_MAX_SEC, explicit),
+        )
+
+    timeout_floor = _payload_timeout_floor_seconds(payload)
+    try:
+        q02_runtime_sec = float(payload.get("q02_full_runtime_sec") or 0.0)
+    except (TypeError, ValueError):
+        q02_runtime_sec = 0.0
+    runtime_floor = (
+        int(q02_runtime_sec * Q04_Q02_RUNTIME_HEADROOM_MULTIPLIER + 0.999999)
+        if q02_runtime_sec > 0
+        else 0
+    )
+    return max(
+        Q04_FOLD_TIMEOUT_MIN_SEC,
+        min(Q04_FOLD_TIMEOUT_MAX_SEC, max(timeout_floor, runtime_floor)),
+    )
+
+
+def _observed_work_item_runtime_seconds(
+    work_item: sqlite3.Row | dict[str, Any],
+) -> int | None:
+    try:
+        payload = json.loads(_work_item_value(work_item, "payload_json", "{}") or "{}")
+    except (TypeError, json.JSONDecodeError):
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+    started_raw = payload.get("started_at_iso") or payload.get("claimed_at_iso")
+    completed_raw = _work_item_value(work_item, "updated_at")
+    started = _parse_utc_datetime(str(started_raw)) if started_raw else None
+    completed = _parse_utc_datetime(str(completed_raw)) if completed_raw else None
+    if started is None or completed is None or completed <= started:
+        return None
+    runtime_sec = int((completed - started).total_seconds() + 0.999999)
+    # Reject stale/corrupt lifecycle timestamps rather than manufacturing a
+    # multi-day timeout from them.  Seven days is far above any governed Q02.
+    if runtime_sec <= 0 or runtime_sec > 7 * 24 * 60 * 60:
+        return None
+    return runtime_sec
+
+
+def _q02_source_work_item_for_q04(
+    conn: sqlite3.Connection,
+    parent_work_item: sqlite3.Row | dict[str, Any],
+) -> sqlite3.Row | dict[str, Any] | None:
+    phase = str(_work_item_value(parent_work_item, "phase", "") or "").upper()
+    if phase == "Q02":
+        return parent_work_item
+
+    try:
+        parent_payload = json.loads(
+            _work_item_value(parent_work_item, "payload_json", "{}") or "{}"
+        )
+    except (TypeError, json.JSONDecodeError):
+        parent_payload = {}
+    if not isinstance(parent_payload, dict):
+        parent_payload = {}
+    source_ids = []
+    for key in (
+        "promoted_from_p2_work_item",
+        "promoted_from_work_item",
+        "q02_source_work_item_id",
+    ):
+        value = str(parent_payload.get(key) or "").strip()
+        if value and value not in source_ids:
+            source_ids.append(value)
+    for source_id in source_ids:
+        row = conn.execute(
+            "SELECT * FROM work_items WHERE id=? AND phase='Q02' "
+            "AND status='done' AND verdict='PASS'",
+            (source_id,),
+        ).fetchone()
+        if row is not None:
+            return row
+
+    ea_id = str(_work_item_value(parent_work_item, "ea_id", "") or "")
+    symbol = str(_work_item_value(parent_work_item, "symbol", "") or "")
+    setfile = str(_work_item_value(parent_work_item, "setfile_path", "") or "")
+    if not ea_id or not symbol or not setfile:
+        return None
+    return conn.execute(
+        "SELECT * FROM work_items WHERE ea_id=? AND symbol=? AND setfile_path=? "
+        "AND phase='Q02' AND status='done' AND verdict='PASS' "
+        "ORDER BY updated_at DESC LIMIT 1",
+        (ea_id, symbol, setfile),
+    ).fetchone()
+
+
+def _apply_q04_timeout_budget(
+    conn: sqlite3.Connection,
+    parent_work_item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+) -> None:
+    """Bind the Q04 child and outer budgets to predecessor workload evidence."""
+    source = _q02_source_work_item_for_q04(conn, parent_work_item)
+    source_timeout_min = 0
+    source_runtime_sec = None
+    source_id = None
+    if source is not None:
+        source_id = str(_work_item_value(source, "id", "") or "") or None
+        source_runtime_sec = _observed_work_item_runtime_seconds(source)
+        try:
+            source_payload = json.loads(
+                _work_item_value(source, "payload_json", "{}") or "{}"
+            )
+        except (TypeError, json.JSONDecodeError):
+            source_payload = {}
+        if isinstance(source_payload, dict):
+            try:
+                source_timeout_min = int(source_payload.get("timeout_min") or 0)
+            except (TypeError, ValueError):
+                source_timeout_min = 0
+
+    try:
+        existing_timeout_min = int(payload.get("timeout_min") or 0)
+    except (TypeError, ValueError):
+        existing_timeout_min = 0
+    timeout_input_min = max(existing_timeout_min, source_timeout_min)
+    timeout_input = dict(payload)
+    if timeout_input_min > 0:
+        timeout_input["timeout_min"] = timeout_input_min
+    if source_runtime_sec is not None:
+        timeout_input["q02_full_runtime_sec"] = source_runtime_sec
+    fold_timeout_sec = _q04_fold_timeout_seconds(timeout_input)
+    fold_count = _q04_fold_count_from_payload(payload)
+    derived_outer_min = (
+        fold_timeout_sec * fold_count + Q04_PHASE_HEADROOM_SEC + 59
+    ) // 60
+    outer_timeout_min = max(
+        PHASE_ACTIVE_TIMEOUT_MIN["Q04"],
+        existing_timeout_min,
+        min(Q04_PHASE_TIMEOUT_MAX_MIN, derived_outer_min),
+    )
+
+    payload.update({
+        "q04_fold_timeout_sec": fold_timeout_sec,
+        "q04_fold_count_budgeted": fold_count,
+        "q04_phase_headroom_sec": Q04_PHASE_HEADROOM_SEC,
+        "q04_timeout_basis": "q02_runtime_and_payload_timeout",
+        "timeout_min": outer_timeout_min,
+    })
+    if source_id:
+        payload["q02_source_work_item_id"] = source_id
+    if source_runtime_sec is not None:
+        payload["q02_full_runtime_sec"] = source_runtime_sec
+
+
 def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
                                     report_root: Path,
                                     terminal: str | None = None,
@@ -6587,6 +6779,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--terminal", terminal or "T1",
             "--scratch-root", str(report_root),
             "--evidence-key", str(item_row["id"]),
+            "--timeout-sec", str(_q04_fold_timeout_seconds(payload)),
         ])
         latest_full_year = payload.get("q04_latest_full_year", payload.get("latest_full_year"))
         if latest_full_year is not None:
@@ -15923,6 +16116,8 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                 )
                 if next_phase in {"Q04", "Q05"}:
                     _apply_q04_latest_full_year_from_history(wi, payload)
+                if next_phase == "Q04":
+                    _apply_q04_timeout_budget(conn, wi, payload)
                 if next_phase in {"Q05", "Q06", "Q08"}:
                     _apply_phase_timeout_min(payload, next_phase)
                 if next_phase in {"Q05", "Q06", "Q07", "Q10"}:
@@ -16032,6 +16227,7 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                 },
             )
             _apply_q04_latest_full_year_from_history(wi, payload)
+            _apply_q04_timeout_budget(conn, wi, payload)
             conn.execute(
                 """
                 INSERT INTO work_items
@@ -19424,6 +19620,7 @@ def enqueue_cascade_backtest_for_ea(
             if phase == "Q04":
                 payload["q04_default_probe"] = True
                 _apply_q04_latest_full_year_from_history(prev, payload)
+                _apply_q04_timeout_budget(conn, prev, payload)
             elif phase == "Q05":
                 _apply_q04_latest_full_year_from_history(prev, payload)
             if phase in {"Q05", "Q06", "Q08"}:

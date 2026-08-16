@@ -153,6 +153,15 @@ class BasketWorkItemsTests(unittest.TestCase):
                 farmctl.MULTISYMBOL_EAS_FILE = old_registry
         self.assertEqual(registry_payload["timeout_min"], 600)
 
+        non_q02_payload: dict[str, object] = {}
+        farmctl._apply_q02_multisymbol_timeout_min(
+            non_q02_payload,
+            phase="Q04",
+            ea_id="QM5_999901",
+            symbol="QM5_999901_LOGICAL_BASKET_D1",
+        )
+        self.assertNotIn("timeout_min", non_q02_payload)
+
     def test_q08_timeout_scales_with_child_workload(self) -> None:
         h1 = farmctl._q08_active_timeout_min({"host_timeframe": "H1"})
         m5 = farmctl._q08_active_timeout_min({"host_timeframe": "M5"})
