@@ -100,9 +100,54 @@ is the right instrument here precisely because it is uniform: the failure classe
 looks for are the ones that have actually cost this factory time, and each has a named
 incident behind it.
 
+## Correction: 12 of those approvals were wrong, and why
+
+After closing the `build_ea` queue I looked at the rest of the review backlog and found
+**27 `review_ea` tasks also sitting in REVIEW** — code reviews already performed, never
+read. Cross-referencing them against my own closures
+(`artifacts/review_conflicts_20260816.json`) produced **12 direct contradictions**: EAs I
+had just approved, which an existing review had already failed.
+
+| EA | Existing review verdict |
+|---|---|
+| QM5_9354 | FAIL: canonical build_check 31 failures; pre-open state mutation |
+| QM5_2245 | FAIL: raw `OrderSend`; canonical build_check 6 failures |
+| QM5_20179 | FAIL: fresh strict build contradicts artifact; invalid-stop cases |
+| QM5_20070 | FAIL: canonical RETIRE; stale framework wiring; session filter suppresses exits |
+| QM5_20071 | FAIL: canonical RETIRE; stale framework wiring; spread filter suppresses exits |
+| QM5_1627 | FAIL: news/MAE/order/perf/restart defects, missing EA row, SPEC, build result |
+| QM5_1628 | NEEDS_FIX: missing `ea_id_registry` row, missing SPEC.md, missing setfiles |
+| QM5_11301 | FAIL: SPEC gate and build-result smoke schema |
+| QM5_11302 | FAIL: SPEC gate and build-result smoke schema |
+| QM5_11689 | FAIL: raw series calls, non-canonical `GER40.DWX` registration |
+| QM5_11898 | FAIL: 96-bar timeout implemented as wall-clock seconds |
+| QM5_12352 | FAIL: 0-trade smoke, blocked build result, card/registry symbol mismatch |
+
+All twelve approvals were withdrawn to `BLOCKED`, each verdict naming the review task that
+overrides it. Net result of the round: **40 approved, 20 blocked, 39 recycled.**
+
+The battery is not wrong — every one of these twelve genuinely passes the seven checks it
+performs. It is *incomplete*, and it was applied as though it were sufficient. The defects
+it missed are the ones that need a reader: an EA calling `OrderSend` raw instead of through
+the framework, a 96-bar timeout implemented in wall-clock seconds, a filter that suppresses
+exits as well as entries, a card/registry symbol mismatch. No fixed grep finds those.
+
+**Rule adopted: a `build_ea` task may not be closed without first resolving any `review_ea`
+task for the same `ea_id`.** The two queues describe the same artifact from different
+depths, and closing the shallow one first silently overrides the deep one.
+
 ## Operational lesson
 
 A blocking verdict must record the **condition**, not just the conclusion, so the next
 actor can re-test it instead of inheriting it. `PRECHECK_DEFERRED: … dirty canonical
 registry transaction` should carry the dirty paths and the check that would clear it.
 Ten EAs waited twelve hours on a `git status` that had already gone clean.
+
+And the mirror of that lesson, from my own error above: a queue is not a work unit. I
+treated `build_ea` as the backlog because it was the one OWNER named, and the 27 reviews
+that contradicted it were one query away the whole time.
+
+## Final state
+
+The review queue is empty — 150 tasks at the start of the round, 0 now, every closure read
+back from the database rather than inferred from an exit code.

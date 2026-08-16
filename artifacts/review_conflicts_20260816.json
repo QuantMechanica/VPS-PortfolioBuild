@@ -1,0 +1,86 @@
+[
+  {
+    "ea_id": "11301",
+    "ea": "QM5_11301_tc-m5-macd1-stoch-ema5-open-close",
+    "build_task": "90e1e59d-24cf-4c64-9564-9c78fa247021",
+    "review_task": "efe9876c-ca5d-4405-ae94-65d804e3c715",
+    "review_verdict": "FAIL: SPEC gate and build-result smoke schema"
+  },
+  {
+    "ea_id": "11302",
+    "ea": "QM5_11302_tc-m5-bb-stoch-extreme-reversal",
+    "build_task": "5dc30880-b500-4eda-9cca-783b9c000fc6",
+    "review_task": "dfc248dc-ce63-4b55-bbfb-1ff701db0d91",
+    "review_verdict": "FAIL: SPEC gate and build-result smoke schema"
+  },
+  {
+    "ea_id": "11689",
+    "ea": "QM5_11689_strat-bb-mr",
+    "build_task": "bf461f09-93ea-4eaa-9419-86d3f058b22d",
+    "review_task": "b36ca851-5323-405b-9a22-f9c5a7c596ae",
+    "review_verdict": "FAIL: raw series calls and noncanonical GER40.DWX registration"
+  },
+  {
+    "ea_id": "11898",
+    "ea": "QM5_11898_trix-signal-line-cross-h1",
+    "build_task": "ccde1b2a-b70f-466a-bdf6-e626b2af48b4",
+    "review_task": "7ac78733-f755-445e-a36c-1e21f7d6b600",
+    "review_verdict": "FAIL: 96-bar timeout implemented as wall-clock seconds and canonical build_result missing; Gemini build remains REVIEW."
+  },
+  {
+    "ea_id": "12352",
+    "ea": "QM5_12352_orev-bb-rsi",
+    "build_task": "5146007d-b1b8-4acf-b239-1ed29e56d16f",
+    "review_task": "23a6f9a0-0044-428d-af46-4774e028f60d",
+    "review_verdict": "FAIL: 0-trade smoke and blocked build result; card/registry symbol mismatch; Gemini build remains REVIEW."
+  },
+  {
+    "ea_id": "1627",
+    "ea": "QM5_1627_hopwood-bermaui-cci-h4",
+    "build_task": "932cb7ee-a445-41c4-9fbf-a9650d0155be",
+    "review_task": "6ec40513-d44b-4b71-babc-91c725bce7fb",
+    "review_verdict": "FAIL: news/MAE/order/perf/restart defects plus missing EA row, SPEC, build result, and smoke; Gemini build remains REVIEW"
+  },
+  {
+    "ea_id": "1628",
+    "ea": "QM5_1628_carney-5-0-pattern-h4",
+    "build_task": "c1c715e2-d00f-4bfe-b82b-ff12ddc65b3e",
+    "review_task": "3c46e814-d8b2-429c-9a15-d7660a3376d1",
+    "review_verdict": "NEEDS_FIX (5 findings: missing ea_id_registry row, missing SPEC.md, missing setfiles -- systemic gap shared with sibling QM5_1627/1630 this batch; structural SL anchored to D-pivot instead of card-specified C-pivot, producing a materially tighter stop than approved design; card's independent +1.5xATR breakeven trigger missing from implementation). Left in REVIEW per mandatory-Codex-pass hard rule; not self-approved."
+  },
+  {
+    "ea_id": "20070",
+    "ea": "QM5_20070_antor-mtf-macd-scalper-r1-recovery",
+    "build_task": "9c696bd1-2c57-4965-8b83-a6cdd78eebce",
+    "review_task": "fe1f8186-798a-41f7-8909-ecdaa522581a",
+    "review_verdict": "FAIL: canonical RETIRE; stale framework wiring; session filter suppresses exits"
+  },
+  {
+    "ea_id": "20071",
+    "ea": "QM5_20071_channel-cci-bollinger-mr-r1-recovery",
+    "build_task": "351636a9-f05e-4f81-9976-67f77fc34993",
+    "review_task": "47666b69-24c3-48f1-a660-e74c7396c467",
+    "review_verdict": "FAIL: canonical RETIRE; stale framework wiring; spread filter suppresses exits"
+  },
+  {
+    "ea_id": "20179",
+    "ea": "QM5_20179_pesavento-abcd-pattern-h4-r1-recovery",
+    "build_task": "ac185816-7e73-441f-9435-05187192c272",
+    "review_task": "9df810a8-9783-4f10-9378-83989f69ac36",
+    "review_verdict": "FAIL: fresh strict build contradicts artifact; invalid-stop cases; incomplete/out-of-charter card"
+  },
+  {
+    "ea_id": "2245",
+    "ea": "QM5_2245_pring-three-trends-mtf-h4",
+    "build_task": "db396423-a845-48d4-b75e-c6f858ad953c",
+    "review_task": "703ad829-d436-4815-ae26-da1bde4f04de",
+    "review_verdict": "FAIL: raw OrderSend; canonical build_check 6 failures"
+  },
+  {
+    "ea_id": "9354",
+    "ea": "QM5_9354_demark-td-dwave-wave4-h4",
+    "build_task": "78fa29a2-a41f-4eaf-bc55-b892025fadb1",
+    "review_task": "982fe1f3-c9e2-430b-a080-093f59a5b012",
+    "review_verdict": "FAIL: canonical build_check 31 failures; pre-open state mutation"
+  }
+]
