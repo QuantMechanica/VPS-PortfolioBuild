@@ -71,8 +71,8 @@ r1_track_record: PASS_WITH_COMPOSITE_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_DISCLOSED_BASIS_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: NOT_RUN
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify an exact-calendar XAU/XAG weekly relative-flow-disagreement package designed to suppress common precious-metal direction: verify every completed close/open endpoint, cross-metal subtraction, strict opposition, session-following sides, basket atomicity, and Friday flattening. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -341,13 +341,14 @@ realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial XAU/XAG relative-flow divergence extraction | G0 | APPROVED |
+| v1-build | 2026-08-16 | deterministic XAU/XAG logical-basket implementation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_xauxag_relative_flow_divergence_g0.md` |
-| Q01 Build Validation | - | NOT_RUN | - |
+| Q01 Build Validation | 2026-08-16 | PASS | `D:/QM/reports/framework/21/build_check_20260816_200126.json` |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | - |
 
 ## Safety Boundary
