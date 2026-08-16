@@ -66,7 +66,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-q01_status: PENDING
+q01_status: PASS
 q02_status: PENDING
 review_focus: "Falsify a jointly risked Wednesday crude-versus-natural-gas differential outside the certified index/metal/XNG book; adverse modern XNG evidence and Q09 correlation are binding downstream tests."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -207,11 +207,12 @@ synchronized and the previous completed host bar must be Tuesday.
 | `strategy_entry_grace_minutes` | 5 | 5 | first-tick tolerance |
 | `strategy_atr_period_d1` | 20 | 20 | completed D1 stop estimate |
 | `strategy_atr_sl_mult` | 3.5 | 3.5 | frozen per-leg stop distance |
-| `strategy_close_hour_broker` | 21 | 21 | Wednesday package close |
+| `strategy_exit_hour_broker` | 21 | 21 | Wednesday package close |
 | `strategy_max_hold_days` | 3 | 3 | stale repair limit |
-| `strategy_xti_max_spread_points` | 2500 | 2500 | host spread cap |
-| `strategy_xng_max_spread_points` | 2500 | 2500 | foreign spread cap |
-| `strategy_notional_tolerance_pct` | 10.0 | 10.0 | rounded 1:1 tolerance |
+| `strategy_xti_max_spread_pts` | 2500 | 2500 | host spread cap |
+| `strategy_xng_max_spread_pts` | 2500 | 2500 | foreign spread cap |
+| `strategy_notional_ratio` | 1.0 | 1.0 | absolute USD notional target |
+| `strategy_max_notional_error_pct` | 10.0 | 10.0 | rounded 1:1 tolerance |
 
 No sweep is authorized. Changing the weekday, direction, component set,
 hold, sizing, or risk rule requires a new approved card.
