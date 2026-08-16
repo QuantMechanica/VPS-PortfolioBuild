@@ -62,9 +62,9 @@ r1_track_record: PASS_WITH_HORIZON_AND_ACCESS_RISK
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_STARTED
+q02_status: ENQUEUED
 review_focus: "Falsify an exact-calendar WTI split-week continuation sleeve outside the certified XAU/SP500/NDX/XNG book. Verify the six-bar weekday sequence, disjoint opening/closing endpoints, strict agreement, no late or repeated Monday entry, and Friday flattening; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -334,6 +334,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial split-week dual-segment WTI extraction | G0 | APPROVED |
 | v1-build | 2026-08-16 | deterministic V5 implementation and strict validation | Q01 | PASS |
+| v1-queue | 2026-08-16 | one target-only fixed-risk baseline queued through the paced factory | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -341,7 +342,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_wti_week_dual_momentum_g0.md` |
 | Q01 Build Validation | 2026-08-16 | PASS | `D:/QM/reports/framework/21/build_check_20260816_103954.json` |
-| Q02 Baseline Screening | pending | NOT STARTED | enqueue only after strict Q01 PASS |
+| Q02 Baseline Screening | 2026-08-16 | ENQUEUED | `docs/ops/evidence/2026-08-16_qm5_41022_wti_wdual_mom_build_q02_enqueue.md` |
 
 ## Safety Boundary
 

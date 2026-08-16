@@ -91,3 +91,4 @@ admission, portfolio-gate changes, and correlation waivers are outside scope.
 |---|---|---|---|
 | v1 | 2026-08-16 | approved build scaffold | G0 approved |
 | v1-build | 2026-08-16 | deterministic implementation | magic/resolver verified; strict compile and build check PASS |
+| v1-queue | 2026-08-16 | target-only fixed-risk baseline queue handoff | Q02 ENQUEUED; work item `ebfa5729-6f34-4366-835d-511f7a1a4c44` |
