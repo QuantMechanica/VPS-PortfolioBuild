@@ -1,0 +1,351 @@
+{
+  "calendar_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\calendar\\QM5_1537_monthly_sleeves_v1.csv",
+  "calendar_sha256": "401E0D91E2428DAB4ABFF17C1DF651F1C7BC716B7160B71A06D1A3ECA9B5288B",
+  "coverage": {
+    "from_month": 201710,
+    "to_month": 202612
+  },
+  "generated_at_utc": "2026-08-16T09:41:50.962757+00:00",
+  "generator": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\tools\\build_monthly_sleeve_calendar.py",
+  "history_root": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history",
+  "input_bundle_sha256": "B177F13D49B91B2235D9B2C1013AE46F9F2BD9798D2CBA00922AACD760E41862",
+  "inputs": [
+    {
+      "bars": 2124,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\XAUUSD.DWX\\cache\\Daily.hc",
+      "sha256": "36C06238CF0D901A49E487A6FCA6F0270E1F5886C061C103B2EE04BF94DA8957",
+      "slot": 0,
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "bars": 1868,
+      "first_epoch": 1506902400,
+      "last_epoch": 1735603200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\XAGUSD.DWX\\cache\\Daily.hc",
+      "sha256": "83635CB754FB350A6A338F50080CADDFFF42D99E80671E322CD0BC240E475CAF",
+      "slot": 1,
+      "symbol": "XAGUSD.DWX"
+    },
+    {
+      "bars": 2204,
+      "first_epoch": 1506902400,
+      "last_epoch": 1776988800,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\XNGUSD.DWX\\cache\\Daily.hc",
+      "sha256": "805B5090E2544D6EAE051E10B311DA13F6BA4C68DB917258C359C676F7CD6297",
+      "slot": 2,
+      "symbol": "XNGUSD.DWX"
+    },
+    {
+      "bars": 2126,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\XTIUSD.DWX\\cache\\Daily.hc",
+      "sha256": "B4A54B8A46A58491D8DB40D363FE73081CB61EBFE9D5FA7E2EEE09DDA8C28CB6",
+      "slot": 3,
+      "symbol": "XTIUSD.DWX"
+    },
+    {
+      "bars": 1755,
+      "first_epoch": 1530489600,
+      "last_epoch": 1776988800,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\NDX.DWX\\cache\\Daily.hc",
+      "sha256": "F5E86717B4F2275E3EA13F75B0F741E3DD5B806689252E7484E60E3BD47C7A9E",
+      "slot": 4,
+      "symbol": "NDX.DWX"
+    },
+    {
+      "bars": 2013,
+      "first_epoch": 1530489600,
+      "last_epoch": 1776988800,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\WS30.DWX\\cache\\Daily.hc",
+      "sha256": "EA5583A87A18CD05100ECF5B83BD262C476240E6DC76D5AB4877736B54DC7FD5",
+      "slot": 5,
+      "symbol": "WS30.DWX"
+    },
+    {
+      "bars": 1981,
+      "first_epoch": 1530489600,
+      "last_epoch": 1776988800,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\GDAXI.DWX\\cache\\Daily.hc",
+      "sha256": "CF7C38E544C4571711C4C561F3C594E221C567482BD1CD7D3A1CBA6574EF60FA",
+      "slot": 6,
+      "symbol": "GDAXI.DWX"
+    },
+    {
+      "bars": 1894,
+      "first_epoch": 1530489600,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\UK100.DWX\\cache\\Daily.hc",
+      "sha256": "A2DA599FDBB54A4DF3206A6947F5797C90CEC543961E963B4025D29133A005DF",
+      "slot": 7,
+      "symbol": "UK100.DWX"
+    },
+    {
+      "bars": 2014,
+      "first_epoch": 1530489600,
+      "last_epoch": 1776988800,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\SP500.DWX\\cache\\Daily.hc",
+      "sha256": "149F36D23BB70757FC71ED5ADB9B26917B9BD2C98050A45F4F6A47A9C002A064",
+      "slot": 8,
+      "symbol": "SP500.DWX"
+    },
+    {
+      "bars": 2124,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\AUDCAD.DWX\\cache\\Daily.hc",
+      "sha256": "0AC50DB53A64371F90013273F2C41F4CCA6F50D107C98D262D63F3A2E58C713A",
+      "slot": 9,
+      "symbol": "AUDCAD.DWX"
+    },
+    {
+      "bars": 2210,
+      "first_epoch": 1506902400,
+      "last_epoch": 1776988800,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\AUDCHF.DWX\\cache\\Daily.hc",
+      "sha256": "1E36F7C55FAA9A1A41EE4DDFAD6E5CAD11079C606C62D6BBAFCF306E02C3E1DB",
+      "slot": 10,
+      "symbol": "AUDCHF.DWX"
+    },
+    {
+      "bars": 2125,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\AUDJPY.DWX\\cache\\Daily.hc",
+      "sha256": "7AC42437E7EA087CF2CE43695928A4CC4651DC50C8A6B7EECD43360C64DF4064",
+      "slot": 11,
+      "symbol": "AUDJPY.DWX"
+    },
+    {
+      "bars": 2127,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\AUDNZD.DWX\\cache\\Daily.hc",
+      "sha256": "DABE67E296FCF837753FE8CDDD897BFA383B54B52FA2CDA5405F98E2D15B2031",
+      "slot": 12,
+      "symbol": "AUDNZD.DWX"
+    },
+    {
+      "bars": 1883,
+      "first_epoch": 1506902400,
+      "last_epoch": 1735603200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\AUDUSD.DWX\\cache\\Daily.hc",
+      "sha256": "BFB2291430FA41EAC526DBBA36AB5A2440C839ED7217EE6693B0560B94CF9782",
+      "slot": 13,
+      "symbol": "AUDUSD.DWX"
+    },
+    {
+      "bars": 1886,
+      "first_epoch": 1506902400,
+      "last_epoch": 1735603200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\CADCHF.DWX\\cache\\Daily.hc",
+      "sha256": "94003DE6788C057714F1097324ABD0B72F316AA4A566714B6F31332198BEBF70",
+      "slot": 14,
+      "symbol": "CADCHF.DWX"
+    },
+    {
+      "bars": 2127,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\CADJPY.DWX\\cache\\Daily.hc",
+      "sha256": "83DF424418DD96CC851BBEFAEB800071F1B6D07446768C121A31403CEA84A553",
+      "slot": 15,
+      "symbol": "CADJPY.DWX"
+    },
+    {
+      "bars": 2124,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\CHFJPY.DWX\\cache\\Daily.hc",
+      "sha256": "D1BB3064C002A8982C37B3553BB17940188943DAC5A05859AC59406FC3B87C47",
+      "slot": 16,
+      "symbol": "CHFJPY.DWX"
+    },
+    {
+      "bars": 2123,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\EURAUD.DWX\\cache\\Daily.hc",
+      "sha256": "D3C14B3C28D1DDFB8E6106C9A2BA666592AD8F9115806D80E02C469E7632D2AD",
+      "slot": 17,
+      "symbol": "EURAUD.DWX"
+    },
+    {
+      "bars": 2122,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\EURCAD.DWX\\cache\\Daily.hc",
+      "sha256": "480DE2BB99CA1635ABF78A7D192F51744F80226BCE9866BFD0188C53AA478D4B",
+      "slot": 18,
+      "symbol": "EURCAD.DWX"
+    },
+    {
+      "bars": 2122,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\EURCHF.DWX\\cache\\Daily.hc",
+      "sha256": "320C021B1FCF1A99CDB457F89258F42538EFECD9C0CAE6A1E1DD3F0FF757ADE0",
+      "slot": 19,
+      "symbol": "EURCHF.DWX"
+    },
+    {
+      "bars": 1882,
+      "first_epoch": 1506902400,
+      "last_epoch": 1735603200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\EURGBP.DWX\\cache\\Daily.hc",
+      "sha256": "AD9E9771CC19329B015589A70EB9A9CBC746074569C99383EE48A159D6617491",
+      "slot": 20,
+      "symbol": "EURGBP.DWX"
+    },
+    {
+      "bars": 2203,
+      "first_epoch": 1506902400,
+      "last_epoch": 1776988800,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\EURJPY.DWX\\cache\\Daily.hc",
+      "sha256": "B7D91EB46F36313BD4ECA1C1DF847E6057524134AB86838BC6BD2D2602096D7F",
+      "slot": 21,
+      "symbol": "EURJPY.DWX"
+    },
+    {
+      "bars": 2124,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\EURNZD.DWX\\cache\\Daily.hc",
+      "sha256": "636A726925C0A5B0466B33C8FA359066A07F89CDAD5616F255B641B876F28F76",
+      "slot": 22,
+      "symbol": "EURNZD.DWX"
+    },
+    {
+      "bars": 2191,
+      "first_epoch": 1506902400,
+      "last_epoch": 1775433600,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\EURUSD.DWX\\cache\\Daily.hc",
+      "sha256": "BBC173ADB1C3C447E841F85B8FCAED4EF6ABE7C34EA78AFD18F7CD92A4B81EA2",
+      "slot": 23,
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "bars": 2122,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\GBPAUD.DWX\\cache\\Daily.hc",
+      "sha256": "703E603D4DBC456EFBBC86DC25B9062BA552EE914A26DC6CB7DE955082CBE107",
+      "slot": 24,
+      "symbol": "GBPAUD.DWX"
+    },
+    {
+      "bars": 2204,
+      "first_epoch": 1506902400,
+      "last_epoch": 1776988800,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\GBPCAD.DWX\\cache\\Daily.hc",
+      "sha256": "A0EE1F709CB42B9B54A89DF430114EE56F05322ABE94EB604648EED349D9CDB0",
+      "slot": 25,
+      "symbol": "GBPCAD.DWX"
+    },
+    {
+      "bars": 2125,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\GBPCHF.DWX\\cache\\Daily.hc",
+      "sha256": "CED78ECAE0BB817CF930583FC3AD2A2995C6C4C06A35A9E3FC4C4DBD2440C0EE",
+      "slot": 26,
+      "symbol": "GBPCHF.DWX"
+    },
+    {
+      "bars": 2122,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\GBPJPY.DWX\\cache\\Daily.hc",
+      "sha256": "A2EE167536BBE5F1747FC70653B6349CDB3F8B644ADFA974F6801EF6E2EB914D",
+      "slot": 27,
+      "symbol": "GBPJPY.DWX"
+    },
+    {
+      "bars": 2204,
+      "first_epoch": 1506902400,
+      "last_epoch": 1776988800,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\GBPNZD.DWX\\cache\\Daily.hc",
+      "sha256": "32CBB4F057A67C0AD551F17E868F90DF037A039250AD46416E5F0F969EE753D8",
+      "slot": 28,
+      "symbol": "GBPNZD.DWX"
+    },
+    {
+      "bars": 2207,
+      "first_epoch": 1506902400,
+      "last_epoch": 1776988800,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\GBPUSD.DWX\\cache\\Daily.hc",
+      "sha256": "EDD9ADE4E9CB1E1CB93DB15ED8FE21B44EFE51727FC98713E4421FD6532172CC",
+      "slot": 29,
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "bars": 1886,
+      "first_epoch": 1506902400,
+      "last_epoch": 1735603200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\NZDCAD.DWX\\cache\\Daily.hc",
+      "sha256": "EDCC135382B103D53E33C5EA4BB7A5027EBFE438B7082F29CB6632C720817773",
+      "slot": 30,
+      "symbol": "NZDCAD.DWX"
+    },
+    {
+      "bars": 1886,
+      "first_epoch": 1506902400,
+      "last_epoch": 1735603200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\NZDCHF.DWX\\cache\\Daily.hc",
+      "sha256": "4D9562DB87F470A7E182A499F203B67961DBFB45C13F991EF5544E539D4B82D0",
+      "slot": 31,
+      "symbol": "NZDCHF.DWX"
+    },
+    {
+      "bars": 2128,
+      "first_epoch": 1506902400,
+      "last_epoch": 1767139200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\NZDJPY.DWX\\cache\\Daily.hc",
+      "sha256": "422F3B2E4249A4A5D4360BB1A46F19BD2FAD328A4383D582202033DF8F39BCDB",
+      "slot": 32,
+      "symbol": "NZDJPY.DWX"
+    },
+    {
+      "bars": 1883,
+      "first_epoch": 1506902400,
+      "last_epoch": 1735603200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\NZDUSD.DWX\\cache\\Daily.hc",
+      "sha256": "5B39247CE0DCF1ACF997B474C9A600AF4BD1C6BD4F7A22CFC6857E860D1561CD",
+      "slot": 33,
+      "symbol": "NZDUSD.DWX"
+    },
+    {
+      "bars": 1880,
+      "first_epoch": 1506902400,
+      "last_epoch": 1735603200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\USDCAD.DWX\\cache\\Daily.hc",
+      "sha256": "962A0492347D12C9C776863B67C6F7867A73E7638CC34B3171C8F22B7541C790",
+      "slot": 34,
+      "symbol": "USDCAD.DWX"
+    },
+    {
+      "bars": 1883,
+      "first_epoch": 1506902400,
+      "last_epoch": 1735603200,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\USDCHF.DWX\\cache\\Daily.hc",
+      "sha256": "F007233E9C0172714D1DCC33276CAB1C508ABF538F38F7CC5FF811CDFD4A4B25",
+      "slot": 35,
+      "symbol": "USDCHF.DWX"
+    },
+    {
+      "bars": 2204,
+      "first_epoch": 1506902400,
+      "last_epoch": 1776988800,
+      "path": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history\\USDJPY.DWX\\cache\\Daily.hc",
+      "sha256": "F3CF3B7DBD70A944B35A660572458D1A9ED4DF80472063DE07E0E90CEDAEBD8F",
+      "slot": 36,
+      "symbol": "USDJPY.DWX"
+    }
+  ],
+  "ranking_contract_payload": "schema=qm1537.monthly_sleeve.v1|min_daily_bars=270|vol_lookback_days=252|annualization_days=252|top_n=3|tie_break=basket_slot_ascending|evaluation=first_host_d1_bar_of_calendar_month|universe=XAUUSD.DWX,XAGUSD.DWX,XNGUSD.DWX,XTIUSD.DWX,NDX.DWX,WS30.DWX,GDAXI.DWX,UK100.DWX,SP500.DWX,AUDCAD.DWX,AUDCHF.DWX,AUDJPY.DWX,AUDNZD.DWX,AUDUSD.DWX,CADCHF.DWX,CADJPY.DWX,CHFJPY.DWX,EURAUD.DWX,EURCAD.DWX,EURCHF.DWX,EURGBP.DWX,EURJPY.DWX,EURNZD.DWX,EURUSD.DWX,GBPAUD.DWX,GBPCAD.DWX,GBPCHF.DWX,GBPJPY.DWX,GBPNZD.DWX,GBPUSD.DWX,NZDCAD.DWX,NZDCHF.DWX,NZDJPY.DWX,NZDUSD.DWX,USDCAD.DWX,USDCHF.DWX,USDJPY.DWX",
+  "ranking_contract_sha256": "314634871498688C3784984B8EA3DF35716996ACBEDC63623396FBC31D188007",
+  "row_count": 3546,
+  "schema_version": "qm1537.monthly_sleeve.v1"
+}

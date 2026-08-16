@@ -43,15 +43,21 @@ input group "Strategy"
 input int    strategy_sma_period          = 10;
 input int    strategy_min_daily_bars      = 270;
 input int    strategy_vol_lookback_days   = 252;
+input int    strategy_vol_annualization_days = 252;
 input int    strategy_top_symbols         = 3;
 input int    strategy_atr_period          = 14;
 input double strategy_atr_sl_mult         = 2.5;
 input bool   strategy_enable_short        = false;
 input int    strategy_max_spread_points   = 0;
+input string strategy_sleeve_calendar_schema = "qm1537.monthly_sleeve.v1";
+input string strategy_sleeve_calendar_file = "QM5_1537_monthly_sleeves_v1.csv";
+input string strategy_sleeve_calendar_sha256 = "401E0D91E2428DAB4ABFF17C1DF651F1C7BC716B7160B71A06D1A3ECA9B5288B";
+input string strategy_sleeve_contract_sha256 = "314634871498688C3784984B8EA3DF35716996ACBEDC63623396FBC31D188007";
+input string strategy_sleeve_input_bundle_sha256 = "B177F13D49B91B2235D9B2C1013AE46F9F2BD9798D2CBA00922AACD760E41862";
 
 // Registry slot order. Every entry is present in dwx_symbol_matrix.csv and in
-// magic_numbers.csv for QM5_1537. Each per-symbol EA instance computes the same
-// monthly basket ranking and acts only on its own chart symbol.
+// magic_numbers.csv for QM5_1537. The exact order is bound into the monthly
+// calendar contract; each EA instance reads only its host-symbol calendar row.
 string g_strategy_basket[37] =
   {
    "XAUUSD.DWX", "XAGUSD.DWX", "XNGUSD.DWX", "XTIUSD.DWX",
@@ -64,6 +70,8 @@ string g_strategy_basket[37] =
    "USDCAD.DWX", "USDCHF.DWX", "USDJPY.DWX"
   };
 
+#include "QM5_1537_MonthlySleeveCalendar.mqh"
+
 bool   g_sleeve_initialized       = false;
 bool   g_sleeve_active            = false;
 double g_host_realized_vol_pct    = 0.0;
@@ -75,6 +83,17 @@ bool   g_crossed_above_sma        = false;
 bool   g_crossed_below_sma        = false;
 double g_cached_atr_d1            = 0.0;
 
+int g_rejection_month_key         = 0;
+int g_reject_calendar_missing     = 0;
+int g_reject_sleeve_inactive      = 0;
+int g_reject_daily_data           = 0;
+int g_reject_position_open        = 0;
+int g_reject_spread               = 0;
+int g_reject_no_cross             = 0;
+int g_reject_market_data          = 0;
+int g_reject_invalid_stop         = 0;
+int g_signal_fire_count           = 0;
+
 #define QM1537_DIR_FLAT   0
 #define QM1537_DIR_LONG   1
 #define QM1537_DIR_SHORT -1
@@ -85,6 +104,8 @@ bool Strategy_ParametersValid()
       return false;
    if(strategy_vol_lookback_days < 2)
       return false;
+   if(strategy_vol_annualization_days < 2)
+      return false;
    if(strategy_min_daily_bars < strategy_vol_lookback_days + 1)
       return false;
    if(strategy_top_symbols < 1)
@@ -94,6 +115,40 @@ bool Strategy_ParametersValid()
    if(strategy_max_spread_points < 0)
       return false;
    return true;
+  }
+
+void Strategy_ResetRejectionCounters(const int month_key)
+  {
+   g_rejection_month_key = month_key;
+   g_reject_calendar_missing = 0;
+   g_reject_sleeve_inactive = 0;
+   g_reject_daily_data = 0;
+   g_reject_position_open = 0;
+   g_reject_spread = 0;
+   g_reject_no_cross = 0;
+   g_reject_market_data = 0;
+   g_reject_invalid_stop = 0;
+   g_signal_fire_count = 0;
+  }
+
+void Strategy_LogRejectionSummary()
+  {
+   if(g_rejection_month_key <= 0)
+      return;
+   QM_LogEvent(QM_INFO,
+               "SLEEVE_REJECTION_SUMMARY",
+               StringFormat(
+                  "{\"month\":%d,\"calendar_missing\":%d,\"sleeve_inactive\":%d,\"daily_data\":%d,\"position_open\":%d,\"spread\":%d,\"no_cross\":%d,\"market_data\":%d,\"invalid_stop\":%d,\"signal_fire\":%d}",
+                  g_rejection_month_key,
+                  g_reject_calendar_missing,
+                  g_reject_sleeve_inactive,
+                  g_reject_daily_data,
+                  g_reject_position_open,
+                  g_reject_spread,
+                  g_reject_no_cross,
+                  g_reject_market_data,
+                  g_reject_invalid_stop,
+                  g_signal_fire_count));
   }
 
 bool Strategy_HostRegistrationMatches()
@@ -145,138 +200,47 @@ bool Strategy_SpreadAllowsEntry()
    return ((ask - bid) <= cap);
   }
 
-// Bespoke cross-sectional statistic from the approved card. This is evaluated
-// only from the monthly calendar edge in Strategy_ManageOpenPosition.
-bool Strategy_RealizedVolatility(const string sym, double &out_vol_pct)
-  {
-   out_vol_pct = 0.0;
-   if(!QM_SymbolAssertOrLog(sym))
-      return false;
-
-   int need = strategy_min_daily_bars;
-   const int return_closes = strategy_vol_lookback_days + 1;
-   if(need < return_closes)
-      need = return_closes;
-
-   double closes[];
-   ArraySetAsSeries(closes, true);
-   const int copied = CopyClose(sym, PERIOD_D1, 1, need, closes); // perf-allowed: monthly 252-return cross-sectional realized-volatility ranking
-   if(copied != need)
-      return false;
-
-   double sum = 0.0;
-   double sum_sq = 0.0;
-   const int n = strategy_vol_lookback_days;
-   for(int i = 0; i < n; ++i)
-     {
-      if(closes[i] <= 0.0 || closes[i + 1] <= 0.0)
-         return false;
-      const double daily_return = MathLog(closes[i] / closes[i + 1]);
-      sum += daily_return;
-      sum_sq += daily_return * daily_return;
-     }
-
-   const double mean = sum / (double)n;
-   double variance = (sum_sq - (double)n * mean * mean) / (double)(n - 1);
-   if(variance < 0.0)
-      variance = 0.0;
-   out_vol_pct = MathSqrt(variance) * MathSqrt(252.0) * 100.0;
-   return true;
-  }
-
-bool Strategy_ComputeMonthlySelection(bool &out_selected,
-                                      double &out_host_vol_pct,
-                                      int &out_host_rank,
-                                      int &out_valid_count)
-  {
-   out_selected = false;
-   out_host_vol_pct = 0.0;
-   out_host_rank = -1;
-   out_valid_count = 0;
-
-   const int n = ArraySize(g_strategy_basket);
-   double vol[];
-   bool valid[];
-   ArrayResize(vol, n);
-   ArrayResize(valid, n);
-
-   int host_index = -1;
-   for(int i = 0; i < n; ++i)
-     {
-      double value = 0.0;
-      valid[i] = Strategy_RealizedVolatility(g_strategy_basket[i], value);
-      vol[i] = value;
-      if(valid[i])
-         out_valid_count++;
-      if(g_strategy_basket[i] == _Symbol)
-         host_index = i;
-     }
-
-   if(host_index < 0 || out_valid_count <= 0)
-      return false;
-   if(!valid[host_index])
-      return true;
-
-   int ranked[];
-   ArrayResize(ranked, out_valid_count);
-   int k = 0;
-   for(int i = 0; i < n; ++i)
-     {
-      if(!valid[i])
-         continue;
-      ranked[k] = i;
-      k++;
-     }
-
-   // Stable descending insertion sort; basket/slot order resolves exact ties.
-   for(int i = 1; i < out_valid_count; ++i)
-     {
-      const int key_index = ranked[i];
-      const double key_vol = vol[key_index];
-      int j = i - 1;
-      while(j >= 0 && vol[ranked[j]] < key_vol)
-        {
-         ranked[j + 1] = ranked[j];
-         j--;
-        }
-      ranked[j + 1] = key_index;
-     }
-
-   for(int i = 0; i < out_valid_count; ++i)
-     {
-      if(ranked[i] == host_index)
-        {
-         out_host_rank = i;
-         break;
-        }
-     }
-   out_host_vol_pct = vol[host_index];
-
-   int selected_count = strategy_top_symbols;
-   if(selected_count > out_valid_count)
-      selected_count = out_valid_count;
-   out_selected = (out_host_rank >= 0 && out_host_rank < selected_count);
-   return true;
-  }
-
 void Strategy_AdvanceMonthlyState()
   {
    if(!QM_IsNewCalendarPeriod(PERIOD_MN1))
       return;
 
+   Strategy_LogRejectionSummary();
+   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1);
+   Strategy_ResetRejectionCounters(month_key);
    bool selected = false;
    double host_vol_pct = 0.0;
    int host_rank = -1;
    int valid_count = 0;
-   const bool ready = Strategy_ComputeMonthlySelection(selected,
-                                                        host_vol_pct,
-                                                        host_rank,
-                                                        valid_count);
+   long asof_epoch = 0;
+   const bool ready = Strategy_ReadMonthlySleeve(month_key,
+                                                  selected,
+                                                  host_vol_pct,
+                                                  host_rank,
+                                                  valid_count,
+                                                  asof_epoch);
    g_sleeve_initialized = ready;
    g_sleeve_active = (ready && selected);
    g_host_realized_vol_pct = host_vol_pct;
    g_host_vol_rank = host_rank;
    g_valid_vol_symbols = valid_count;
+   if(!ready)
+      g_reject_calendar_missing++;
+   const string missing_reason = ready ? "" :
+      Strategy_SleeveCalendarMissingReason(month_key);
+   QM_LogEvent(ready ? QM_INFO : QM_ERROR,
+               "MONTHLY_SLEEVE_STATE",
+               StringFormat(
+                  "{\"month\":%d,\"host\":\"%s\",\"host_rank\":%d,\"valid_count\":%d,\"selected\":%s,\"host_vol_pct\":%.12f,\"asof_epoch\":%I64d,\"ready\":%s,\"reject_reason\":\"%s\"}",
+                  month_key,
+                  _Symbol,
+                  host_rank,
+                  valid_count,
+                  selected ? "true" : "false",
+                  host_vol_pct,
+                  asof_epoch,
+                  ready ? "true" : "false",
+                  missing_reason));
   }
 
 void Strategy_AdvanceDailyState()
@@ -316,12 +280,8 @@ bool Strategy_NoTradeFilter()
    if(!Strategy_ParametersValid() || !Strategy_HostRegistrationMatches())
       return true;
 
-   // News is handled by the central two-axis entry gate below management.
-   // A wide spread blocks new exposure only; open-position management and
-   // signal exits remain active.
-   if(Strategy_CurrentPositionDirection() == QM1537_DIR_FLAT &&
-      !Strategy_SpreadAllowsEntry())
-      return true;
+   // News and spread are entry-only gates below management. Keeping them out
+   // of this hook guarantees monthly/daily state and exits still advance.
    return false;
   }
 
@@ -336,12 +296,31 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!g_sleeve_initialized || !g_sleeve_active || !g_daily_signal_ready)
+   if(!g_sleeve_initialized)
+     {
+      g_reject_calendar_missing++;
       return false;
+     }
+   if(!g_sleeve_active)
+     {
+      g_reject_sleeve_inactive++;
+      return false;
+     }
+   if(!g_daily_signal_ready)
+     {
+      g_reject_daily_data++;
+      return false;
+     }
    if(Strategy_CurrentPositionDirection() != QM1537_DIR_FLAT)
+     {
+      g_reject_position_open++;
       return false;
+     }
    if(!Strategy_SpreadAllowsEntry())
+     {
+      g_reject_spread++;
       return false;
+     }
 
    int entry_direction = QM1537_DIR_FLAT;
    if(g_crossed_above_sma)
@@ -349,13 +328,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    else if(strategy_enable_short && g_crossed_below_sma)
       entry_direction = QM1537_DIR_SHORT;
    if(entry_direction == QM1537_DIR_FLAT)
+     {
+      g_reject_no_cross++;
       return false;
+     }
 
    const bool go_long = (entry_direction == QM1537_DIR_LONG);
    const double entry = go_long ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
                                 : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry <= 0.0 || g_cached_atr_d1 <= 0.0)
+     {
+      g_reject_market_data++;
       return false;
+     }
 
    req.type = go_long ? QM_BUY : QM_SELL;
    req.sl = QM_StopATRFromValue(_Symbol,
@@ -366,11 +351,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = go_long ? "AA_VOL_SMA10_CROSS_ABOVE"
                         : "AA_VOL_SMA10_CROSS_BELOW_SHORT";
    if(req.sl <= 0.0)
+     {
+      g_reject_invalid_stop++;
       return false;
+     }
    if(go_long && req.sl >= entry)
+     {
+      g_reject_invalid_stop++;
       return false;
+     }
    if(!go_long && req.sl <= entry)
+     {
+      g_reject_invalid_stop++;
       return false;
+     }
+   g_signal_fire_count++;
    return true;
   }
 
@@ -427,13 +422,23 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_SymbolGuardInit(g_strategy_basket);
-   int warmup_bars = strategy_min_daily_bars;
-   if(warmup_bars < strategy_vol_lookback_days + 1)
-      warmup_bars = strategy_vol_lookback_days + 1;
-   if(warmup_bars < 300)
-      warmup_bars = 300;
-   QM_BasketWarmupHistory(g_strategy_basket, PERIOD_D1, warmup_bars + 2);
+   if(!Strategy_ParametersValid() || !Strategy_HostRegistrationMatches())
+     {
+      QM_LogEvent(QM_ERROR,
+                  "SLEEVE_CALENDAR_INIT_FAILED",
+                  "{\"reason\":\"invalid_parameters_or_host_registration\"}");
+      QM_FrameworkShutdown();
+      return INIT_FAILED;
+     }
+   if(!Strategy_LoadBoundMonthlySleeveCalendar())
+     {
+      QM_LogEvent(QM_ERROR,
+                  "SLEEVE_CALENDAR_INIT_FAILED",
+                  StringFormat("{\"reason\":\"%s\"}",
+                               Strategy_SleeveCalendarLastError()));
+      QM_FrameworkShutdown();
+      return INIT_FAILED;
+     }
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
@@ -441,6 +446,7 @@ int OnInit()
 
 void OnDeinit(const int reason)
   {
+   Strategy_LogRejectionSummary();
    QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
    QM_FrameworkShutdown();
   }

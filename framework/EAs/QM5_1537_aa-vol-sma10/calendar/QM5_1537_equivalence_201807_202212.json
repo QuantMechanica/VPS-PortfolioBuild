@@ -1,0 +1,23 @@
+{
+  "algorithm": {
+    "annualization_days": 252,
+    "asof": "first host D1 bar in month; candidate closes strictly before asof",
+    "log_returns": 252,
+    "minimum_daily_bars": 270,
+    "sample_variance_denominator": 251,
+    "tie_break": "basket_slot_ascending",
+    "top_n": 3
+  },
+  "calendar": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\calendar\\QM5_1537_monthly_sleeves_v1.csv",
+  "calendar_sha256": "401E0D91E2428DAB4ABFF17C1DF651F1C7BC716B7160B71A06D1A3ECA9B5288B",
+  "failure_count": 0,
+  "failures": [],
+  "from_month": 201807,
+  "history_root": "D:\\QM\\mt5\\T_Export\\Bases\\Custom\\history",
+  "host_months_compared": 1986,
+  "legacy_source": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\QM5_1537_aa-vol-sma10.mq5",
+  "legacy_source_sha256": "97E76AA58FA00F61360A9F6F251E36D6338474F3DE333351C7A7C3997526A073",
+  "status": "PASS",
+  "to_month": 202212,
+  "verified_at_utc": "2026-08-16T09:41:58.300735+00:00"
+}

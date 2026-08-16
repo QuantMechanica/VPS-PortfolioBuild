@@ -4,13 +4,13 @@
 **Slug:** `aa-vol-sma10`
 **Source:** `ede348b4-0fa7-5be1-baa8-09e9089b67b7` (see `strategy-seeds/sources/ede348b4-0fa7-5be1-baa8-09e9089b67b7/`)
 **Author of this spec:** Claude
-**Last revised:** 2026-08-13
+**Last revised:** 2026-08-16
 
 ---
 
 ## 1. Strategy Logic
 
-Once per calendar month, every EA instance calculates the annualized standard deviation of 252 closed D1 log returns for all 37 portable DWX symbols and ranks them from highest to lowest volatility. The three highest-volatility symbols form the active sleeve, provided each has at least 270 closed D1 bars. An active symbol enters long at the next D1 open after its close crosses above SMA(10), and it exits at the next D1 open after a cross below or when the next monthly rank removes it from the sleeve. Every entry has an initial 2.5 × ATR(14, D1) stop; the source-faithful default has no short position, trailing stop, break-even move, partial close, or pyramiding.
+Once per calendar month, the bounded calendar generator calculates the annualized standard deviation of 252 closed D1 log returns for all 37 portable DWX symbols and ranks them from highest to lowest volatility. The three highest-volatility symbols form the active sleeve, provided each has at least 270 closed D1 bars. Each EA instance loads only its host-symbol row from the SHA-bound calendar; it does not request foreign-symbol history at runtime. An active symbol enters long at the next D1 open after its close crosses above SMA(10), and it exits at the next D1 open after a cross below or when the next monthly rank removes it from the sleeve. Every entry has an initial 2.5 × ATR(14, D1) stop; the source-faithful default has no short position, trailing stop, break-even move, partial close, or pyramiding.
 
 ---
 
@@ -21,11 +21,17 @@ Once per calendar month, every EA instance calculates the annualized standard de
 | `strategy_sma_period` | 10 | 5–50 | D1 simple moving-average period for the close-cross trigger. |
 | `strategy_min_daily_bars` | 270 | 270–600 | Minimum closed D1 history required before a symbol is eligible. |
 | `strategy_vol_lookback_days` | 252 | 60–504 | Number of closed daily log returns used for realized-volatility ranking. |
+| `strategy_vol_annualization_days` | 252 | fixed | Annualization factor bound into the ranking contract. |
 | `strategy_top_symbols` | 3 | 1–10 | Number of highest-volatility eligible symbols admitted each month. |
 | `strategy_atr_period` | 14 | 5–30 | Closed-D1 ATR period used for the initial stop. |
 | `strategy_atr_sl_mult` | 2.5 | 0.5–5.0 | Initial stop distance in ATR multiples. |
 | `strategy_enable_short` | false | false / true | Enables the optional short-on-cross-below test variant; false preserves long/cash. |
 | `strategy_max_spread_points` | 0 | 0–500 | Optional per-symbol spread cap; 0 disables it and zero modeled DWX spread remains tradeable. |
+| `strategy_sleeve_calendar_schema` | `qm1537.monthly_sleeve.v1` | fixed | Calendar schema bound at initialization. |
+| `strategy_sleeve_calendar_file` | `QM5_1537_monthly_sleeves_v1.csv` | fixed | Verified `FILE_COMMON` calendar basename. |
+| `strategy_sleeve_calendar_sha256` | `401E0D…5288B` | fixed | Exact calendar-file identity; mismatch fails initialization. |
+| `strategy_sleeve_contract_sha256` | `314634…8007` | fixed | Binds lookback, minimum bars, annualization, top-N, basket order, tie-break, and evaluation rule. |
+| `strategy_sleeve_input_bundle_sha256` | `B177F1…1862` | fixed | Binds the 37 source D1 history caches used to generate the calendar. |
 
 > Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
 
@@ -113,6 +119,10 @@ This card was mechanised from:
 **Pointer:** Wesley Gray, PhD, “Technical Analysis may actually work!”, 2010-05-19, https://alphaarchitect.com/technical-analysis-may-actually-work/
 **R1–R4 verdict (Q00):** R1 lineage recorded and R2–R4 PASS per `artifacts/cards_approved/QM5_1537_aa-vol-sma10.md`.
 
+### Bounded monthly-sleeve data contract
+
+`tools/build_monthly_sleeve_calendar.py` derives one row per host symbol and host-month from the 37 portable D1 caches. It preserves the original sample standard deviation (251 denominator), `sqrt(252)` annualization, minimum 270 bars, top-three selection, ascending basket-slot tie-break, and first-host-D1-bar monthly evaluation. `tools/verify_monthly_sleeve_equivalence.py` independently compares the generated calendar with the pre-rework in-EA algorithm. Runtime initialization fails closed if the schema, live ranking parameters, basket order, calendar hash, ranking-contract hash, or input-bundle hash differs from the bound values.
+
 ---
 
 ## 7. Risk Model
@@ -132,3 +142,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-13 | Initial build from card | fa1fd187-eccb-4e11-bd71-a16531a61530 |
+| v2 | 2026-08-16 | Bound monthly sleeve calendar | Eliminates runtime foreign-history fan-out while preserving the exact ranking contract. |
