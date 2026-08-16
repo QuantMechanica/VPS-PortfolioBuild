@@ -2,6 +2,7 @@
 
 - **Task ID**: `c162c123-6264-4028-9f19-84cbd81cff48`
 - **Agent**: Gemini (`agents/board-advisor`)
+- **Repair Commit**: `c99b67c8b954e23f70da5d78d45a4483a8710d18`
 - **Review Cycle**: Recycle 1 (reworked following Codex review `7ef88ada-0b69-41a8-985e-36857b21aa68` / `docs/ops/evidence/2026-08-17_codex_review_gemini_8_ea_battery.md`)
 - **Timestamp**: 2026-08-16T23:26:00Z
 - **Verdict**: `REVIEW` (Ready for Codex review)
