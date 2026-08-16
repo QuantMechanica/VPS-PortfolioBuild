@@ -62,8 +62,8 @@ r1_track_record: PASS_WITH_COMPOSITE_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: PENDING
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify an exact-calendar WTI weekly price-flow agreement sleeve outside the certified XAU/SP500/NDX/XNG book. Verify all ten completed close/open endpoints, strict component-sign agreement, no late/repeated Monday entry, and Friday flattening; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -279,9 +279,9 @@ component resize, or lifecycle rescue is authorized by this card.
 |---|---|---|
 | exact symbol/period, attempt, history, component sums, agreement, spread, ATR, sizing | Trade Entry | `Strategy_EntrySignal` plus deterministic helpers |
 | malformed and stale ownership repair | Trade Management | `Strategy_ManageOpenPosition` |
-| Friday/stale/time lifecycle | Trade Close | `Strategy_ExitSignal` and framework Friday close |
+| Friday lifecycle | Trade Close | `Strategy_ExitSignal` returns false; framework Friday close owns the ordinary exit |
 | kill switch, session ownership, risk mode | Framework No-Trade | standard framework orchestration |
-| news OFF | News hooks | `Strategy_NewsFilterHook` returns true; both modes OFF |
+| news OFF | News hooks | `Strategy_NewsFilterHook` returns false; both modes OFF |
 
 ## Kill Criteria
 
@@ -327,13 +327,14 @@ establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial WTI weekly flow-agreement extraction | G0 | APPROVED |
+| v1-build | 2026-08-16 | deterministic V5 implementation and strict validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_wti_weekly_flow_agreement_g0.md` |
-| Q01 Build Validation | - | PENDING | - |
+| Q01 Build Validation | 2026-08-16 | PASS | `D:/QM/reports/framework/21/build_check_20260816_191153.json` |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | - |
 
 ## Safety Boundary
