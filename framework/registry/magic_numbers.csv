@@ -16103,3 +16103,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11518,carter-t-ema5-100-mtf-m15-h1,0,EURUSD.DWX,115180000,2026-08-16,Codex,active
 11518,carter-t-ema5-100-mtf-m15-h1,1,GBPUSD.DWX,115180001,2026-08-16,Codex,active
 41024,wti-1wed-mom1,0,XTIUSD.DWX,410240000,2026-08-16T13:56:17Z,Codex,active
+41025,wti-dom-mom1,0,XTIUSD.DWX,410250000,2026-08-16T14:59:02Z,Codex,active
