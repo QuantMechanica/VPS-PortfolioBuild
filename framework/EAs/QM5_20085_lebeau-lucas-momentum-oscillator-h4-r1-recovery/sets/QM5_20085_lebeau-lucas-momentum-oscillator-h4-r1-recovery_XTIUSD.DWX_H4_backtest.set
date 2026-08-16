@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20085
+; ea_slug:      lebeau-lucas-momentum-oscillator-h4-r1-recovery
+; ea_version:   v5.0
+; set_version:  s20260811-001
+; symbol:       XTIUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   8
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   859b37df11f2474f438a6597b31624d6360ea35fac6c2800931352a7ace87951
+; author:       Development
+; date:         2026-08-11
+;==========================================================
+qm_ea_id=20085
+qm_magic_slot_offset=8
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_20085_lebeau-lucas-momentum-oscillator-h4-r1-recovery.md
+roc_period=12
+llmo_smooth=8
+ema_trend_period=21
+d1_regime_ema_period=50
+atr_period=20
+sl_atr_mult=2.5
+trail_atr_mult=2.0
+trail_activate_atr_mult=1.5
+time_stop_bars=20
+spread_atr_mult_cap=0.35
