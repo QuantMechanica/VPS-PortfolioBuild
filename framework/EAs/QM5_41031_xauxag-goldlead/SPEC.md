@@ -128,3 +128,4 @@ in the sole backtest setfile. This build does not authorize AutoTrading,
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-16 | Initial governed build from approved card | Q01 PASS |
+| v1-q02 | 2026-08-16 | Paced target-only handoff | one logical Q02 row enqueued |
