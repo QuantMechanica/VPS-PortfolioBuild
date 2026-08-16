@@ -10,7 +10,7 @@ Scope: router task `89a4cb33-fdba-47a2-b564-6edd659e4649`
 
 ## Verdict
 
-REVIEW. The allocation blocker is cleared for all 19 held EAs. Ninety-one active, card-ordered magic rows were allocated and the resolver was regenerated atomically. Nine recoverable Claude implementation directories were independently reviewed, repaired where needed, packaged, and compiled serially with 0 errors and 0 warnings. The other ten canonical sources are still no-trade skeletons; their existing deterministic build tasks are being returned to BACKLOG for genuine approved-card implementation.
+REVIEW. The allocation blocker is cleared for all 19 held EAs. Ninety-one active, card-ordered magic rows were allocated and the resolver was regenerated atomically. Nine recoverable Claude implementation directories were independently reviewed, repaired where needed, packaged, and compiled serially with 0 errors and 0 warnings. The other ten canonical sources are still no-trade skeletons. Their existing tasks remain in REVIEW because the cycle contract explicitly excludes REVIEW tasks from Codex handling.
 
 This is build evidence only. No pipeline phase, backtest, live deployment, terminal launch, T_Live change, or AutoTrading change was performed, and no pipeline verdict is asserted.
 
@@ -87,7 +87,7 @@ Serial strict compile evidence:
 
 ## Ten PRECHECK re-drives
 
-Magic precheck is cleared, but each canonical MQ5 remains a no-trade skeleton and has no recoverable implementation commit. The existing build task—not untracked replacement work—is the correct deterministic unit to re-drive:
+Magic precheck is cleared, but each canonical MQ5 remains a no-trade skeleton and has no recoverable implementation commit. The existing build task—not untracked replacement work—is the correct deterministic unit for a later authorized re-drive:
 
 | EA | Existing task |
 |---|---|
@@ -102,4 +102,4 @@ Magic precheck is cleared, but each canonical MQ5 remains a no-trade skeleton an
 | QM5_11517 | `df68e99a-096b-4875-b408-d64cf204f2b0` |
 | QM5_11518 | `d0f1e256-7e79-48ed-ac9b-ecdde5128a35` |
 
-Router confirmation: all 10/10 listed tasks were updated from REVIEW to BACKLOG with this artifact path and a `MAGIC_PRECHECK_CLEARED` verdict. A post-update router read returned `COUNT=10 BACKLOG=10`.
+Router ownership confirmation: a brief attempted BACKLOG transition was identified as conflicting with the cycle's higher-priority “ignore REVIEW” rule and corrected within the same cycle. A pre-change SQLite backup supplied the exact prior fields. All 10/10 tasks were restored to `REVIEW`, artifact `C:\QM\repo\docs\ops\evidence\fa922736_stalled_build_recovery_2026-08-16.md`, and verdict `PRECHECK_DEFERRED: governed magic allocation overlaps unrelated dirty canonical registry transaction`. No implementation or source mutation was made for these ten EAs.
