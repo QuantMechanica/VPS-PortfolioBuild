@@ -1,0 +1,239 @@
+{
+  "schema_version": "qm.fx-cointegration-cpu-ceiling-stop/v1",
+  "captured_at_utc": "2026-08-16T14:19:32.733Z",
+  "captured_at_local": "2026-08-16T16:19:32.738+02:00",
+  "branch": "agents/board-advisor",
+  "sampled_head": "1ff84cc2d4d14ff85f7cf215b36c8a16c20824d2",
+  "outcome": "HARD_CPU_CEILING_STOP_EXISTING_FOREX_Q02_LEFT_PENDING",
+  "mission_reconciliation": {
+    "frozen_pair_count": 66,
+    "mechanized_pair_count": 66,
+    "unbuilt_pair_count": 0,
+    "duplicate_card_or_ea_created": false,
+    "anchor_state": {
+      "QM5_12532_AUDNZD_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_PASS",
+        "Q05_FAIL"
+      ],
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_FAIL"
+      ]
+    },
+    "selected_fallback": {
+      "scan_rank": 58,
+      "ea_id": "QM5_1257",
+      "pair_slot": 8,
+      "pair": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+      "selection_reason": "The checked-in sign-aware reconciliation covers all 66 frozen scan relationships; this existing repaired relationship remains the sole exact pending Q02 identity selected by the prior handoff."
+    }
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "parent_task_id": "39ee6910-5d04-4087-83b0-65a6fd6b22f9",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "created_at_utc": "2026-08-11T23:53:50+00:00",
+    "updated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+    "exact_identity_row_count": 1,
+    "exact_open_row_count": 1,
+    "active_hold_count": 0,
+    "active_quarantine_count": 0,
+    "priority_track": true,
+    "avoid_terminals": [
+      "T4",
+      "T8"
+    ],
+    "canonical_selector_rank": 28,
+    "canonical_eligible_pending_count": 974,
+    "enqueue_action": "SKIPPED_EXACT_ROW_ALREADY_PENDING",
+    "requeue_action": "SKIPPED_NO_DUPLICATE_OR_APPEND_ONLY_RETRY",
+    "priority_mutation": "SKIPPED_ALREADY_PRIORITY_TRACKED"
+  },
+  "approved_contract": {
+    "card_path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/docs/strategy_card.md",
+    "card_sha256": "aa0313ea4218ed418432adcdf3a34b49cd3c4f46e725fefd31ec5b2266b2f9ae",
+    "g0_status": "APPROVED",
+    "r1_r4": "PASS",
+    "source": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "structural_only": true,
+    "low_frequency": true,
+    "ml_or_banned_indicator": false
+  },
+  "basket_contract": {
+    "manifest_path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+    "manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+    "host_symbol": "GBPUSD.DWX",
+    "host_timeframe": "H1",
+    "basket_symbols": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+    "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+    "setfile_path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "queue_payload_matches_repository": true
+  },
+  "zero_trades_recovery": {
+    "prior_bound_run": "D:/QM/reports/work_items/d4cd660c-c81a-41d3-8a4c-ad21d3319816/QM5_1257/20260815_082908",
+    "prior_summary_sha256": "76fcd6351b98f8cc16250a5fd7e3bc2fb47e6b868cd9ce4619102c5f64bc1526",
+    "prior_result": "FAIL_MIN_TRADES_NOT_MET",
+    "prior_trade_count": 0,
+    "harness_layer": "PASS",
+    "setup_layer": "PASS",
+    "first_failed_layer": "entry_implementation",
+    "entry_repair_commit": "751cb391d8f388f5b61641ba3299011cdf9a09ed",
+    "exit_repair_commit": "f9ef37c1c26686758567b493b0411c65079286d8",
+    "set_metadata_restore_commit": "82a1bf44319a26fee1dbe5eb8463c7986f0304e6",
+    "economics_changed": false,
+    "thresholds_changed": false,
+    "remaining_gap": "One worker-owned rerun of the same bound Q02 case."
+  },
+  "fleet_snapshot": {
+    "database_sampled_during_utc_window": [
+      "2026-08-16T14:18:08Z",
+      "2026-08-16T14:19:32Z"
+    ],
+    "factory_off": false,
+    "worker_count": 10,
+    "active_work_item_count": 7,
+    "active_multisymbol_count": 0,
+    "active_items": [
+      {
+        "id": "e1aa5c61-6ddd-46ef-a404-bc8f609bb1e5",
+        "ea_id": "QM5_20085",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q02",
+        "claimed_by": "T5"
+      },
+      {
+        "id": "da89eae6-ff01-45bf-a60a-5455db5b8e6c",
+        "ea_id": "QM5_20178",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q02",
+        "claimed_by": "T4"
+      },
+      {
+        "id": "7771ffb7-55d9-4c13-b525-0edb299096c8",
+        "ea_id": "QM5_20176",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q02",
+        "claimed_by": "T8"
+      },
+      {
+        "id": "e18020d1-c229-4d71-a354-3e7b8e38ef41",
+        "ea_id": "QM5_20085",
+        "symbol": "NDX.DWX",
+        "phase": "Q02",
+        "claimed_by": "T7"
+      },
+      {
+        "id": "55837f3f-fa1a-4760-8ff2-24e3f9043fd0",
+        "ea_id": "QM5_20178",
+        "symbol": "NDX.DWX",
+        "phase": "Q02",
+        "claimed_by": "T2"
+      },
+      {
+        "id": "ae9d863a-b2bd-43c1-84cf-ffc45eceaea4",
+        "ea_id": "QM5_20176",
+        "symbol": "NDX.DWX",
+        "phase": "Q02",
+        "claimed_by": "T3"
+      },
+      {
+        "id": "8fd3ed21-e81e-42c4-b555-bbf3d7d878c2",
+        "ea_id": "QM5_20076",
+        "symbol": "EURUSD.DWX",
+        "phase": "Q02",
+        "claimed_by": "T1"
+      }
+    ],
+    "custom_history_containment_enabled": false,
+    "orphaned_factory_terminals_at_process_scan": 0,
+    "t_live_and_ftmo_processes_excluded": true
+  },
+  "resources": {
+    "sampled_at_local": [
+      "2026-08-16T16:18:20+02:00",
+      "2026-08-16T16:18:28+02:00"
+    ],
+    "cpu_sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      100.0,
+      99.95,
+      99.77,
+      93.0,
+      97.82
+    ],
+    "cpu_average_percent": 98.11,
+    "cpu_max_percent": 100.0,
+    "cpu_hard_trip_percent": 97.0,
+    "cpu_resume_percent": 90.0,
+    "cpu_hard_trip": true,
+    "last_sample_available_physical_mib": 51707,
+    "last_sample_committed_bytes": 53037285376,
+    "last_sample_commit_limit_bytes": 131657756672,
+    "memory_gate_trip": false,
+    "resource_gate_currently_clear": false,
+    "binding_stop_reason": "The OWNER-defined CPU admission ceiling is exceeded while seven Q02 testers are already active."
+  },
+  "non_duplicate_delta": {
+    "prior_evidence": "artifacts/fx_cointegration_gbpusd_usdjpy_governed_queue_handoff_20260816T122623Z_board_advisor.json",
+    "prior_cpu_average_percent": 65.87,
+    "current_cpu_average_percent": 98.11,
+    "prior_cpu_hard_trip": false,
+    "current_cpu_hard_trip": true,
+    "prior_active_work_item_count": 3,
+    "current_active_work_item_count": 7,
+    "prior_canonical_selector_rank": 40,
+    "current_canonical_selector_rank": 28,
+    "description": "The queue advanced the exact FX row from rank 40 to 28 without duplicate mutation, but factory occupancy rose from three to seven and CPU crossed the explicit hard ceiling."
+  },
+  "actions_skipped_due_to_cpu_ceiling": [
+    "manual tester launch",
+    "targeted work-item execution",
+    "normal dispatch tick",
+    "enqueue",
+    "requeue",
+    "priority or timestamp mutation",
+    "terminal reservation or control",
+    "Factory OFF/ON mutation"
+  ],
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "priority_or_timestamp": false,
+    "external_queue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_or_factory_control": false,
+    "repository_evidence_files": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_terminal": false,
+    "auto_trading": false
+  }
+}
