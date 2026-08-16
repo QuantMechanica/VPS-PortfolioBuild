@@ -1795,6 +1795,17 @@ def main(argv: list[str] | None = None) -> int:
     else:  # pragma: no cover
         raise AssertionError(args.command)
     print(json.dumps(result, indent=2, sort_keys=True))
+    # 2026-08-16: a REFUSED mutation used to exit 0. close_review_task and
+    # update_task report refusal in-band ({"closed": false, "reason": ...} /
+    # {"updated": false, "reason": "task_not_found"}), so a caller that checked
+    # only the exit code was told a state change had happened when it had not.
+    # This bit a bulk closure of 53 build_ea reviews (every one refused with
+    # artifact_missing, all reported as success) and a mistyped task id on the
+    # same day. Refusal is now an exit code, not just a field.
+    if isinstance(result, dict):
+        for key in ("closed", "updated", "enqueued"):
+            if key in result and result.get(key) is False:
+                return 1
     return 0
 
 

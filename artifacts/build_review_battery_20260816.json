@@ -1,0 +1,847 @@
+[
+  {
+    "ea": "QM5_10645_tv-sweep-react",
+    "ea_id": "10645",
+    "issues": [],
+    "task": "d19e84db-f6e4-45c3-b48a-cbb0d01128eb",
+    "verdict": "build PASS; compile 0 errors/0 warnings; build_check PASS; smoke deferred to Q02 pump"
+  },
+  {
+    "ea": "QM5_10282_jstm-bbw",
+    "ea_id": "10282",
+    "issues": [],
+    "task": "ca072f14-b71e-4164-b8b1-03e3aed032dc",
+    "verdict": "build PASS; compile 0 errors/0 warnings; build_check PASS; smoke deferred to Q02 pump"
+  },
+  {
+    "ea": "QM5_10648_tv-velox-mtf",
+    "ea_id": "10648",
+    "issues": [
+      "magic_slot_not_wired"
+    ],
+    "task": "5f1f643e-e343-41bd-a17c-6bc21ddeba47",
+    "verdict": "build_check PASS, compile PASS (0 err/0 warn), 4 setfiles generated, registries updated (ea_id+magic_numbers+resolver). Smoke ad-hoc dispatch hit the active Ramp-10 custom-history isolation gate (framework_error, universal across T1-T10 right now) -- farmctl normalized this to deferred_p2_smoke (sanctioned outcome) and auto-enqueued 3 Q02 work_items (NDX.DWX staged_deferred). Fixed a stale frontmatter/body R2 UNKNOWN->PASS drift in the approved card. farmctl task 353fc9da-84f6-4b03-9215-36a54cabc7bd."
+  },
+  {
+    "ea": "QM5_10649_tv-stoch-sltp",
+    "ea_id": "10649",
+    "issues": [
+      "magic_slot_not_wired"
+    ],
+    "task": "3371d2a0-7569-46f6-8f08-a9c951ee1d3d",
+    "verdict": "build_check PASS, compile PASS (0 err/0 warn), 4 setfiles generated, registries updated. Smoke ad-hoc dispatch hit the active Ramp-10 custom-history isolation gate (framework_error, universal across T1-T10 right now) -- farmctl normalized this to deferred_p2_smoke (sanctioned outcome) and auto-enqueued 3 Q02 work_items (GBPUSD.DWX staged_deferred). farmctl task acc0b130-65fc-419a-bf86-4e614d9846b8."
+  },
+  {
+    "ea": "QM5_10973_ftmo-adl-div",
+    "ea_id": "10973",
+    "issues": [
+      "magic_slot_not_wired"
+    ],
+    "task": "93481b8d-1a1d-4506-9064-12b0dc740c4e",
+    "verdict": "build_check PASS, compile PASS (0 err/0 warn), 4 setfiles generated, registries updated. Bespoke windowed-ADL + confirmed-fractal-pivot helpers written (no QM_* AD/multi-pivot helper exists), documented in SPEC.md. Smoke ad-hoc dispatch hit the active Ramp-10 custom-history isolation gate (framework_error, universal across T1-T10 right now) -- farmctl normalized this to deferred_p2_smoke (sanctioned outcome) and auto-enqueued 3 Q02 work_items (GBPUSD.DWX staged_deferred). Fixed a stale frontmatter/body R3 UNKNOWN->PASS drift in the approved card. farmctl task 4c2a1074-b596-437b-ab66-6ccca92f4867."
+  },
+  {
+    "ea": "QM5_11301_tc-m5-macd1-stoch-ema5-open-close",
+    "ea_id": "11301",
+    "issues": [],
+    "task": "90e1e59d-24cf-4c64-9564-9c78fa247021",
+    "verdict": "build PASS; compile 0 errors/0 warnings; build_check PASS; smoke deferred to Q02 pump"
+  },
+  {
+    "ea": "QM5_11302_tc-m5-bb-stoch-extreme-reversal",
+    "ea_id": "11302",
+    "issues": [],
+    "task": "5dc30880-b500-4eda-9cca-783b9c000fc6",
+    "verdict": "build PASS; compile 0 errors/0 warnings; build_check PASS; smoke deferred to Q02 pump"
+  },
+  {
+    "ea": "QM5_11375_kathy-lien-double-bb-1-2sigma-m15",
+    "ea_id": "11375",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "04dd4c02-2889-4a31-bf5c-630843571d34",
+    "verdict": "BLOCKED_PREFLIGHT: no magic rows for QM5_11375"
+  },
+  {
+    "ea": "QM5_11380_macd12-stoch8-extreme-m1m5",
+    "ea_id": "11380",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "79e5c330-2f98-4147-aabf-c1850e3d7f06",
+    "verdict": "BLOCKED_PREFLIGHT: no magic rows for QM5_11380"
+  },
+  {
+    "ea": "QM5_11376_4h-macd-5-13-ma5-cascade-h4",
+    "ea_id": "11376",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "e6622cd5-4136-46d8-a294-e89cef17e8cd",
+    "verdict": "BLOCKED_PREFLIGHT: no magic rows for QM5_11376"
+  },
+  {
+    "ea": "QM5_11325_tc-m5-9-ema50-100-macd-partial-exit",
+    "ea_id": "11325",
+    "issues": [],
+    "task": "1ace6ea0-966f-44a4-9a0c-8de35e61cf41",
+    "verdict": "Built from cards_approved card (Thomas Carter TC-M5 System #9, R2-R4 PASS). EMA(50/100) cascade breakout (10-pip) + MACD zero-cross-within-5-bar filter; SL = 5-bar structure extreme capped to ATR(14)x1.5; partial-close 50% at 2R + move remainder SL to breakeven (SL==open_price state idiom, no flag); remainder trail-exits on EMA50 break-back by 10 pips. Registered ea_id 11325 (ea_id_registry.csv) and magic slots 0-2 for EURUSD/GBPUSD/USDJPY.DWX (magic_numbers.csv) -- both were entirely missing for the 11xxx card batch, a systemic gap beyond this task's scope. compile_one.ps1 -Strict: PASS, 0 errors/0 warnings. 3 backtest set files generated (M5, RISK_FIXED=1000/RISK_PERCENT=0, qm_news_stale_max_hours default 336 unchanged). Committed 8e38822d9 on agents/claude-orchestration-2 (registry diff isolated via git plumbing from ~40 lines of unrelated pre-existing worktree drift in magic_numbers.csv/ea_id_registry.csv -- left untouched, not this task's scope). Not yet pipeline-tested; needs codex/claude review before APPROVED."
+  },
+  {
+    "ea": "QM5_11388_russ-horn-golden-smma55-wpr55-stoch555",
+    "ea_id": "11388",
+    "issues": [],
+    "task": "2d7b5fa7-e248-4cdc-ba2f-0148b7f7492c",
+    "verdict": "Built from cards_approved card (Russ Horn, The Golden Strategy, R1 PASS/R2 CONDITIONAL->deterministic via ATR SL substitution). SMMA(55) High/Low channel breakout + WPR(55) level cross (-25 long / -75 short) + Stoch(5,5,5) %K/%D confirm. SL=ATR(14)x1.0 capped 20 pips, TP=2R fixed (no partial/trail, matches P2 baseline card). Registered ea_id 11388 + magic slots 0-2 EURUSD/GBPUSD/USDJPY.DWX. Note: worktree is ~6464 commits behind main -- QM_Indicators.mqh on main already has a QM_WPR helper my checkout lacked; used the shared-terminal-synced version rather than adding a duplicate (removed my first draft local wrapper after a 'function already defined' compile error surfaced the version gap). compile_one.ps1 -Strict: PASS, 0 errors/0 warnings both before and after the fix. 3 backtest set files generated (M5, RISK_FIXED=1000/RISK_PERCENT=0). Committed 1d136b059 on agents/claude-orchestration-2. Flagging the worktree staleness for whoever next syncs this branch -- not fixed here, out of single-task scope. Not yet pipeline-tested; needs codex/claude review before APPROVED."
+  },
+  {
+    "ea": "QM5_11401_davey-low-volume-mean-reversion-d1",
+    "ea_id": "11401",
+    "issues": [],
+    "task": "b86dcf17-3bbd-431f-b177-0e77ce5af243",
+    "verdict": "Built from cards_approved card (Kevin Davey, My 5 Favorite Entries Entry #3, R1-R4 PASS). LONG/SHORT on low tick-volume (< 5-bar avg) at a 20-bar close extreme, with the card's own tolerance relaxation (2 points) since strict equality rarely fires. SL=ATR(14)x1.5 capped 80 pips, TP=ATR(14)x2.0, BE move at +1xATR (SL==open_price state idiom). Registered ea_id 11401 + magic slots 0-3 EURUSD/GBPUSD/AUDUSD/USDJPY.DWX. compile_one.ps1 -Strict: PASS 0/0. 4 backtest set files (D1). Committed 5fb110680 on agents/claude-orchestration-2. Not yet pipeline-tested; needs codex/claude review before APPROVED."
+  },
+  {
+    "ea": "QM5_11402_davey-dueling-momentum-d1",
+    "ea_id": "11402",
+    "issues": [],
+    "task": "2d603ebe-6fa0-4102-a2f5-652ff25ede8d",
+    "verdict": "Built from cards_approved card (Kevin Davey, My 5 Favorite Entries Entry #5, R1-R4 PASS). Counter-trend LONG/SHORT when 5-bar close momentum and 25-bar close momentum disagree (mutual-exclusivity guard included, per card's own note). SL=ATR(14)x1.5 capped 60 pips, TP=ATR(14)x1.5, BE move at +1xATR (SL==open_price state idiom, shared with QM5_11401/QM5_11325). Registered ea_id 11402 + magic slots 0-3 EURUSD/GBPUSD/AUDUSD/USDJPY.DWX. compile_one.ps1 -Strict: PASS 0/0. 4 backtest set files (D1). Committed 5fb110680 on agents/claude-orchestration-2. Not yet pipeline-tested; needs codex/claude review before APPROVED."
+  },
+  {
+    "ea": "QM5_11434_carter-t-sma32hl-psar-sma200-h1",
+    "ea_id": "11434",
+    "issues": [],
+    "task": "bbefa05b-b224-4ebd-adbe-ef48cb8bd2ed",
+    "verdict": "build PASS; compile 0/0; build_check PASS 0 failures/0 warnings; committed 5b5c78689. Card-faithful 4-way confluence (SMA32 H/L channel, close/open bias, SMA100/200, PSAR), tightest-of-3 SL capped 80 pips, ATR TP, opposite-signal exit+reverse via shared helper. 5 backtest set files (H1)."
+  },
+  {
+    "ea": "QM5_11435_carter-t-adx35-priorday-range-h1",
+    "ea_id": "11435",
+    "issues": [],
+    "task": "9c093a25-779f-48f7-8426-baf85d5309c0",
+    "verdict": "build PASS; compile 0/0; build_check PASS 0 failures/0 warnings; committed 5b5c78689. Card-faithful ADX<35-gated OCO BUYSTOP/SELLSTOP bracket at prior-day H/L+/-15 pips, fixed 60/30 TP/SL (40pip cap), OCO cancel-other-on-fill + 18:00 broker EOD cancel. 5 backtest set files (H1)."
+  },
+  {
+    "ea": "QM5_11455_davey-donchian-close-breakout",
+    "ea_id": "11455",
+    "issues": [],
+    "task": "22d3a361-f77f-483b-9837-875fef523a26",
+    "verdict": "Built QM5_11455 (Davey Donchian close breakout D1) from approved card: magic registry+resolver updated, mq5 hooks implemented (close-vs-close Donchian entry w/ ATR SL(capped 120p)/TP, opposite-signal reversal exit), SPEC.md PASS, compile COMPILED 0 err/0 warn, guardrails PASS, 5 backtest setfiles (EUR/GBP/JPY/AUD/CAD USD). Live run_smoke REFUSED by active custom-history containment/soak isolation (T5, worker-bound archive privatization required) -> smoke_result=deferred_p2_smoke (farmctl-sanctioned non-failure path); Q02 verification will run via pump once record-build/APPROVED."
+  },
+  {
+    "ea": "QM5_11457_goodwin-6day-extreme-3day-stop-entry-d1",
+    "ea_id": "11457",
+    "issues": [],
+    "task": "3d6528b3-867e-49d7-b359-3ea00ab4137d",
+    "verdict": "Built QM5_11457 (Goodwin 6-day extreme -> 3-day stop entry D1, exploratory FX port of an S&P system) from approved card: magic registry+resolver updated, mq5 hooks implemented (BUYSTOP/SELLSTOP at 3-bar close extreme on 6-bar close extreme trigger, daily cancel+replace, ATR SL(capped 100p)/TP, 5-bar time-exit), SPEC.md PASS, compile COMPILED 0 err/0 warn, guardrails PASS, 5 backtest setfiles (EUR/GBP/JPY/AUD/CAD USD). Live run_smoke REFUSED by active custom-history containment/soak isolation (T5, worker-bound archive privatization required) -> smoke_result=deferred_p2_smoke (farmctl-sanctioned non-failure path); Q02 verification will run via pump once record-build/APPROVED. Card flags FX edge as unverified (source is S&P futures only)."
+  },
+  {
+    "ea": "QM5_11461_goodwin-j-outside-bar-daily-reversion-d1",
+    "ea_id": "11461",
+    "issues": [],
+    "task": "d683a46f-5e83-48fc-bccd-9106e8f3f489",
+    "verdict": "Built QM5_11461 (Goodwin-J outside-bar daily reversion D1) from approved card: magic registry+resolver updated, mq5 hooks implemented (outside-bar exhaustion fade, no-Friday-setup filter, market entry, fixed 200p SL, P2 1-bar time exit per card simplification), SPEC.md PASS, compile COMPILED 0 err/0 warn, guardrails PASS, 5 backtest setfiles (EUR/GBP/JPY/AUD/CAD USD). Live run_smoke REFUSED by active custom-history containment/soak isolation (T5, worker-bound archive privatization required) -> smoke_result=deferred_p2_smoke (farmctl-sanctioned non-failure path); Q02 verification will run via pump once record-build/APPROVED."
+  },
+  {
+    "ea": "QM5_11532_carter-t-h1-ema5-15-60-pullback",
+    "ea_id": "11532",
+    "issues": [
+      "no_backtest_setfile"
+    ],
+    "task": "be80243b-1365-4e65-b5b5-68bdbc3b805a",
+    "verdict": "COMPILED"
+  },
+  {
+    "ea": "QM5_11531_carter-t-h1-ema6-23-stoch-macd",
+    "ea_id": "11531",
+    "issues": [
+      "no_backtest_setfile"
+    ],
+    "task": "80333de1-acfc-472d-9291-dc0a78fe4a25",
+    "verdict": "COMPILED"
+  },
+  {
+    "ea": "QM5_11897_vegas-wave-ema144-169-fractal-h1-alt",
+    "ea_id": "11897",
+    "issues": [
+      "unwired:strategy_timeframe,strategy_fractal_lookback_bars,strategy_fractal_filter_pips,strategy_time_filter_majors_start_gmt"
+    ],
+    "task": "9cc2e6ea-bd05-4a95-9ea6-3e26a724769a",
+    "verdict": "COMPILED"
+  },
+  {
+    "ea": "QM5_11689_strat-bb-mr",
+    "ea_id": "11689",
+    "issues": [],
+    "task": "bf461f09-93ea-4eaa-9419-86d3f058b22d",
+    "verdict": "COMPILED"
+  },
+  {
+    "ea": "QM5_12355_orev-powertrend",
+    "ea_id": "12355",
+    "issues": [],
+    "task": "756354c8-615c-4560-b6d9-c45b5b037b97",
+    "verdict": "build_check PASS, compile PASS 0 err/0 warn, 5 symbols registered (SP500/NDX/WS30/EURUSD/XAUUSD.DWX per card sec.3 primary basket, narrower than frontmatter's 7), SPEC.md valid, setfiles generated. smoke_result=deferred_p2_smoke (same sanctioned ramp-10 isolation soak refusal). ATR stop mult (4.0x, undocumented in card) and symbol-basket choice flagged in open_questions for reviewer."
+  },
+  {
+    "ea": "QM5_12354_orev-turtle40",
+    "ea_id": "12354",
+    "issues": [],
+    "task": "5424e1a4-a11d-4422-a180-ef3c5e76f098",
+    "verdict": "Resumed a stalled prior wake. build_check PASS, compile PASS 0 err/0 warn (367804 byte ex5, confirmed stable). Fixed two real defects from the stalled attempt: wrong symbol basket (rewrote to card sec.3 primary 5: SP500/NDX/WS30/EURUSD/XAUUSD.DWX) and raw iHigh/iClose/Bars calls (converted to corset-clean QM_SMA period-1 readers). smoke_result=deferred_p2_smoke (sanctioned soak refusal). Note: resolve_logger_sample.py hung 12+min during this build, killed and build_check fell back to embedded sample -- flagging as an infra issue for later builds."
+  },
+  {
+    "ea": "QM5_12435_ea31337-cci",
+    "ea_id": "12435",
+    "issues": [],
+    "task": "c2941420-efec-4ddb-84af-5a9cb7d0102c",
+    "verdict": "Built QM5_12435 (EA31337 CCI extreme reversal) from approved card, capacity-spilled from codex: CCI(20) typical price, long when CCI<-90 and rising 2-bar, short mirrors above +90 falling. Fixed 80-pip SL/TP, 30-bar time exit, opposite-signal exit. Self-allocated magic rows (EURUSD/GBPUSD/USDJPY/XAUUSD.DWX slots 0-3, 124350000-3) per SOP 2 (codex_build_ea.md), no collision. compile COMPILED 0 err/0 warn, build_check PASS 0/0, guardrails PASS, SPEC.md validate PASS, 8 setfiles (H1+M15 x4 symbols) RISK_FIXED=1000/RISK_PERCENT=0. Committed 13e894278 on agents/board-advisor."
+  },
+  {
+    "ea": "QM5_12436_ea31337-wpr",
+    "ea_id": "12436",
+    "issues": [],
+    "task": "56edb077-8f14-49ac-882a-e39fa6ebc96a",
+    "verdict": "Built QM5_12436 (EA31337 Williams %R reentry) from approved card, capacity-spilled from codex: long when WPR(18) recovers above -(50+level) after a genuine 4-bar oversold excursion below that line, rising, risen >=level/10 pct over 3 bars; short mirrors from overbought excursion. Fixed 80-pip SL/TP, 30-bar time exit, opposite-signal exit. Self-allocated magic rows (EURUSD/GBPUSD/USDJPY/XAUUSD.DWX slots 0-3, 124360000-3) per SOP 2, no collision. compile COMPILED 0 err/0 warn, build_check PASS 0/0, guardrails PASS, SPEC.md validate PASS, 8 setfiles (H1+M15 x4 symbols) RISK_FIXED=1000/RISK_PERCENT=0. Committed d10b706ad on agents/board-advisor."
+  },
+  {
+    "ea": "QM5_12430_ea31337-stoch",
+    "ea_id": "12430",
+    "issues": [],
+    "task": "48b905a0-6146-481b-bc3c-fd4282f2a9d1",
+    "verdict": "Resumed correct prior-wake implementation; verified entry logic against card. build_check PASS, compile PASS 0 err/0 warn, 4 symbols registered, H1+M15 setfiles generated. Fixed a real defect: wall-clock 30-bar time exit replaced with QM_TM_HeldPeriodsForMagic (weekend-accurate bar counting). smoke_result=deferred_p2_smoke (sanctioned soak refusal). Open items for reviewer: H1-vs-M15 period choice (card unpinned), forced SMA stochastic smoothing (corset helper limitation vs card's EMA), fixed 80/80-pip SL/TP mapping."
+  },
+  {
+    "ea": "QM5_12352_orev-bb-rsi",
+    "ea_id": "12352",
+    "issues": [],
+    "task": "5146007d-b1b8-4acf-b239-1ed29e56d16f",
+    "verdict": "PASS"
+  },
+  {
+    "ea": "QM5_11898_trix-signal-line-cross-h1",
+    "ea_id": "11898",
+    "issues": [],
+    "task": "ccde1b2a-b70f-466a-bdf6-e626b2af48b4",
+    "verdict": "PASS"
+  },
+  {
+    "ea": "QM5_13208_mulham-4h-sweep-fvg",
+    "ea_id": "13208",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "57c680ca-a82c-4e84-950a-71ac938b4bb6",
+    "verdict": "BLOCKED_PRE_FLIGHT: checkout EA/magic registry contract absent; canonical magic rows absent; no build attempted."
+  },
+  {
+    "ea": "QM5_1321_ha-smoothed-mtf-confluence-h1",
+    "ea_id": "1321",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "230cacde-3610-417a-898a-39de1926bfe4",
+    "verdict": "BLOCKED_PRE_FLIGHT: incomplete card schema and no EA/magic registry rows; no build attempted."
+  },
+  {
+    "ea": "QM5_1323_tom-fps-donchian-h4",
+    "ea_id": "1323",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "32e32389-8319-488b-b7b2-29407a7325a5",
+    "verdict": "BLOCKED_PRE_FLIGHT: incomplete card, no EA/magic rows, and slug already registered to 1326; no build attempted."
+  },
+  {
+    "ea": "QM5_13211_mulham-tgif-weekly-fade",
+    "ea_id": "13211",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "4f53ec6b-9e40-4266-9a59-dbd707316c2e",
+    "verdict": "BLOCKED_PRE_FLIGHT: checkout EA/magic registry contract absent; canonical magic rows absent; no build attempted."
+  },
+  {
+    "ea": "QM5_1338_nnfx-baseline-2confirm-h4",
+    "ea_id": "1338",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "886ebc65-07f3-4bee-9d95-c8abc29cc4a9",
+    "verdict": "BLOCKED_PRE_FLIGHT: incomplete card schema and no EA/magic registry rows, including continuation slots; no build attempted."
+  },
+  {
+    "ea": "QM5_1286_camarilla-monthly-pivots-position",
+    "ea_id": "1286",
+    "issues": [],
+    "task": "7c9876b2-de27-43bf-8553-8b5543f5c589",
+    "verdict": "Built QM5_1286 camarilla-monthly-pivots-position from approved card, capacity-spilled from codex (codex auth degraded). Resumed a stalled prior wake (mq5/SPEC.md/magic rows already written; ex5/setfiles/commit missing). Monthly Camarilla dual-mode position EA: range_ratio=month_range/(ATR(20,D1)*20) selects Mode A fade (S3/R3->P target) below 0.80 or Mode B break (S4/R4, Chandelier ATR*3.0 trail) at/above; D1-native monthly OHLC aggregation via QM_CalendarPeriodKey(MN1) since .DWX yields no MN1 bars; hard 3-month time-stop. Fixed build_check FAIL: perf-allowed markers were on the line above the raw iHigh/iLow/iClose calls instead of the same line -- moved inline. compile COMPILED 0 err/0 warn, build_check PASS 0/0, guardrails PASS, SPEC.md validate PASS, 9 setfiles (D1 x 9 symbols) RISK_FIXED=1000/RISK_PERCENT=0. Magic rows (9 slots, 12860000-8) + resolver already committed in a prior commit; this commit adds ex5/SPEC.md/setfiles. Committed 68cddcf7b on agents/board-advisor."
+  },
+  {
+    "ea": "QM5_1287_mtf-macd-histogram-divergence",
+    "ea_id": "1287",
+    "issues": [],
+    "task": "0705feeb-6fe5-40ab-8e5a-7f4266633b9e",
+    "verdict": "Built QM5_1287 mtf-macd-histogram-divergence from approved card, capacity-spilled from codex (codex auth degraded). Resumed a stalled prior wake (mq5 + magic rows already written; SPEC.md/ex5/setfiles/commit missing). H4-anchor/H1-trigger MACD histogram divergence fade: 3-bar fractal swing detector on H4 latches bearish (SH[1].price>SH[2].price, SH[1].hist<SH[2].hist, SH[1].hist>0) or bullish (mirror) regular divergence; H1 MACD zero-cross confirms in latch direction; H4 EMA(50) slope reject (|slope|>2*ATR(14,H4)) blocks fading a strong continuation; latch expires 24 H1 bars. Exit: primary H1 opposite zero-cross, secondary hard TP 2*ATR(14,H4), tertiary 48-H1-bar time-stop. SL at triggering swing extremum +/-0.3*ATR buffer, floored 0.5*ATR. compile COMPILED 0 err/0 warn, build_check PASS 0/0 (perf-allowed markers already correctly inline), guardrails PASS, SPEC.md written + validate PASS, 8 setfiles (H1 x 8 symbols) RISK_FIXED=1000/RISK_PERCENT=0. Magic rows (8 slots, 12870000-7) + resolver already committed in a prior commit; this commit adds ex5/SPEC.md/setfiles. Committed dcef7d6e0 on agents/board-advisor."
+  },
+  {
+    "ea": "QM5_1354_woodie-cci-dual-h1",
+    "ea_id": "1354",
+    "issues": [],
+    "task": "eeb21d12-1358-4cf1-9e41-a5a1d21e6106",
+    "verdict": "PASS: Compiled and build check PASS."
+  },
+  {
+    "ea": "QM5_1355_williams-vix-fix-fx-h4",
+    "ea_id": "1355",
+    "issues": [
+      "unwired:strategy_wvf_lookback,strategy_wvf_ma_period,strategy_wvf_range_pct,strategy_atr_period"
+    ],
+    "task": "85abc20a-1798-4c0c-b705-f67bbab19cc8",
+    "verdict": "PASS: Compiled and build check PASS."
+  },
+  {
+    "ea": "QM5_1312_ha-sma-smoothed-flip-h1",
+    "ea_id": "1312",
+    "issues": [],
+    "task": "525ec19f-b7ac-413d-90ee-478435ca107c",
+    "verdict": "Built QM5_1312 ha-sma-smoothed-flip-h1 from approved card, capacity-spilled from codex (codex auth degraded). Was still the inert auto-scaffold skeleton (description=Unknown Strategy, TODO hooks) -- full implementation written from scratch, mirroring the bounded-recursion smoothed-HA pattern from the compiled sibling QM5_1313 (same source cluster) but adapted to this card's exact spec: SMA(6) pre-smooth (not EMA) -> HA recurrence -> SMA(2) post-smooth; BUY requires color[0]=bull AND color[1]=bear AND color[2]=bear (2-bar streak, prevents flicker) AND no-wick confirmation (HAO''-HALow<=0.35*range) AND close>EMA(200,H1); SELL mirrors. Exit: color flip against position OR genuine EMA(200) cross-against (true cross detection, not a level state) OR framework Friday close. SL=min/max(HALow/HAHigh over last 2 bars) -/+ 0.5*ATR(14,H1); TP=2.0*ATR. Session 06:00-21:00 broker, spread guard vs trailing 20-bar median (rolling ring buffer, sampled once per closed bar). Fixed 2 build_check findings: MQL5 ArraySort doesn't take MQL4-style WHOLE_ARRAY/MODE_ASCEND params (removed); Bars() call needed inline perf-allowed; also removed a spurious ask<=bid comparison the DWX-advisory pattern-matcher flagged as fail-closed (spread is already computed and gated separately, so the extra check was redundant, not a real fail-closed bug, but removed for clarity). compile COMPILED 0 err/0 warn, build_check PASS 0/0, guardrails PASS, SPEC.md written + validate PASS, 4 setfiles (H1 x 4 symbols) RISK_FIXED=1000/RISK_PERCENT=0. Magic rows (4 slots, 13120000-3) + resolver already committed in a prior commit; this commit adds mq5/ex5/SPEC.md/setfiles. Committed 842e8fedd on agents/board-advisor. Reviewer note: no-wick shadow formula and median-spread guard are my literal reading of the card's prose (no reference implementation existed for this exact card, unlike 1286/1287) -- worth a second look."
+  },
+  {
+    "ea": "QM5_1627_hopwood-bermaui-cci-h4",
+    "ea_id": "1627",
+    "issues": [],
+    "task": "932cb7ee-a445-41c4-9fbf-a9650d0155be",
+    "verdict": "PASS: Compiled and build check PASS."
+  },
+  {
+    "ea": "QM5_1528_hopwood-pause-ea-h4",
+    "ea_id": "1528",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "33a13dd3-49f4-474d-a85b-c013a0b72c5e",
+    "verdict": "PREBUILD_BLOCK: missing EA and magic registry rows; no build attempted"
+  },
+  {
+    "ea": "QM5_1541_connors-pullback-channel-exit-h4",
+    "ea_id": "1541",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "41e19827-7abe-4297-8ba5-db83aeccb3c5",
+    "verdict": "PREBUILD_BLOCK: missing EA and magic registry rows; no build attempted"
+  },
+  {
+    "ea": "QM5_1566_connors-streak-reversal-h4",
+    "ea_id": "1566",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "3497999a-779c-4450-984f-f655503c814f",
+    "verdict": "PREBUILD_BLOCK: missing EA and magic registry rows; no build attempted"
+  },
+  {
+    "ea": "QM5_1545_bressert-composite-index-h4",
+    "ea_id": "1545",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "9624a863-1b3c-4e4a-81b9-697701c1328e",
+    "verdict": "PREBUILD_BLOCK: missing EA and magic registry rows; no build attempted"
+  },
+  {
+    "ea": "QM5_1564_hopwood-bermaui-rsi-mtf-h4",
+    "ea_id": "1564",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "49e87f75-7bf9-4d6a-a107-62ef0426804b",
+    "verdict": "PREBUILD_BLOCK: missing EA and magic registry rows; duplicate approved slug"
+  },
+  {
+    "ea": "QM5_1670_hopwood-bermaui-macd-h4",
+    "ea_id": "1670",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "f3093ecd-e820-4224-9c22-e248300d50e8",
+    "verdict": "BLOCKED_PREBUILD: active EA row but 0/6 magic rows; registry allocation required"
+  },
+  {
+    "ea": "QM5_1750_hopwood-bermaui-adx-h4",
+    "ea_id": "1750",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "fa98372d-3350-4ddd-b904-2a00a72bbd05",
+    "verdict": "BLOCKED_PREBUILD: EA row missing and 0/6 magic rows; governed allocation required"
+  },
+  {
+    "ea": "QM5_1753_bressert-timecycle-mtf-h4",
+    "ea_id": "1753",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "31609b87-fa05-441e-b957-09058a694b1c",
+    "verdict": "BLOCKED_PREBUILD: EA row missing and 0/6 magic rows; governed allocation required"
+  },
+  {
+    "ea": "QM5_20065_pricebob-refbar-breakout-eurusd",
+    "ea_id": "20065",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "7e8c9eaa-1af5-40ca-9f49-4c785b5ae07d",
+    "verdict": "BLOCKED_PREBUILD: active EA row but 0/1 magic rows; registry allocation required"
+  },
+  {
+    "ea": "QM5_1626_hopwood-bermaui-stoch-h4",
+    "ea_id": "1626",
+    "issues": [],
+    "task": "4ee453be-7325-4586-9924-883cc64c8ce5",
+    "verdict": "CORRECTED: redone against canonical C:/QM/repo per build_ea SOP (T1-T10 backtest workers only read C:/QM/repo/framework/EAs/..., a worktree copy is unreachable by the pipeline -- general Worktree Discipline does not apply to build_ea). Registries self-allocated (magic 16260000-3 for EURUSD/GBPUSD/NDX/XAUUSD.DWX, resolver regen 0 dropped), build_check PASS, compile PASS (.ex5 382KB), validate_spec_doc PASS, validate_build_guardrails PASS, 4 backtest setfiles RISK_FIXED=1000/RISK_PERCENT=0. Smoke blocked by active RAMP-10-SOAK Custom-history isolation (infra refusal, not a strategy defect) -- will get its real Q02 backtest via the normal factory queue. Commits 155d8fe76/7b4373240/f8ae0ad66 on agents/board-advisor. NOTE: prior verdict on this task (claude-orchestration-2) pointed at C:/QM/worktrees/claude-orchestration-2/... commit aac51b3a8 branch agents/claude-orchestration-2 -- a well-formed but INERT duplicate (pipeline cannot see worktree-only artifacts). Do not merge that branch's QM5_1626 commit; canonical is authoritative."
+  },
+  {
+    "ea": "QM5_20073_pip-hunter-heiken-ashi-r1-recovery",
+    "ea_id": "20073",
+    "issues": [],
+    "task": "2be6f998-6677-45bc-a9d3-34a65cf809d3",
+    "verdict": "Built QM5_20073 pip-hunter-heiken-ashi-r1-recovery (HA color-streak + EMA200 bias + RSI50-cross entry, HA-flip/RSI-recross exit, ATRx2.0 SL, RR2.0 TP) against canonical C:/QM/repo. Registry: ea_id row pre-existing, self-allocated 6 magic rows (200730000-5, EURUSD/GBPUSD/USDJPY/AUDUSD/EURJPY/XAUUSD.DWX), resolver regen 0 dropped. validate_spec_doc PASS, build_check PASS, compile PASS (.ex5 372KB), 6 backtest setfiles RISK_FIXED=1000/RISK_PERCENT=0 verified. Smoke blocked by active RAMP-10-SOAK Custom-history isolation (infra, not a strategy defect) -- will get its real Q02 backtest via the normal factory queue. Commits 9342c12c8/02fd5a923 on agents/board-advisor."
+  },
+  {
+    "ea": "QM5_20087_carney-three-drives-h4-r1-recovery",
+    "ea_id": "20087",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "18ba3691-6172-48a8-9c4f-6664034658a1",
+    "verdict": "RETIRE: source note records zero drafted candidates; magic numbers not registered"
+  },
+  {
+    "ea": "QM5_20088_carney-crab-pattern-h4-r1-recovery",
+    "ea_id": "20088",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "46f70fb4-77d1-401f-85ed-c31a6f281bc7",
+    "verdict": "RETIRE: source note records zero drafted candidates; magic numbers not registered"
+  },
+  {
+    "ea": "QM5_20077_atr-channel-trail-breakout-h1",
+    "ea_id": "20077",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "6c35c3ec-b576-4919-a321-796b7c813350",
+    "verdict": "BLOCKED_PREBUILD: active EA row; 0/5 magic rows; governed allocation required"
+  },
+  {
+    "ea": "QM5_20078_volume-profile-poc-retest-intraday",
+    "ea_id": "20078",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "751d8eb5-d9de-4cfe-85c6-27468c409078",
+    "verdict": "BLOCKED_PREBUILD: active EA row; 0/7 magic rows; governed allocation required"
+  },
+  {
+    "ea": "QM5_20079_pip-boxer-bounded-grid-h1",
+    "ea_id": "20079",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "a6092797-1416-4719-8c13-cc60829247bb",
+    "verdict": "BLOCKED_PREBUILD: 0/5 magic rows; grid prohibited by active Edge Lab charter"
+  },
+  {
+    "ea": "QM5_20080_goodman-wave-theory-intersection-h1",
+    "ea_id": "20080",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "89195162-745e-4f46-aa8c-12924b6981a3",
+    "verdict": "BLOCKED_PREBUILD: active EA row; 0/8 magic rows; governed allocation required"
+  },
+  {
+    "ea": "QM5_20081_renko-triple-block-flip-h1",
+    "ea_id": "20081",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "fdf510ce-db61-46f3-a1da-dad1559c0a73",
+    "verdict": "BLOCKED_PREBUILD: active EA row; 0/7 magic rows; governed allocation required"
+  },
+  {
+    "ea": "QM5_20175_alpha-inst-magnet-r1-recovery",
+    "ea_id": "20175",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile",
+      "no_magic_row"
+    ],
+    "task": "2d61b824-c3c2-4d46-a087-f89ab39ce6f7",
+    "verdict": "BLOCKED_PRE_FLIGHT: magic rows absent; card incomplete and outside active Edge Lab DD/news contract"
+  },
+  {
+    "ea": "QM5_20089_hopwood-ts4-standalone-h4-r1-recovery",
+    "ea_id": "20089",
+    "issues": [
+      "no_backtest_setfile"
+    ],
+    "task": "d00ea063-eb22-41c0-85f3-f793f11a3978",
+    "verdict": "compiled successfully, trend consensus entries, dynamic trailing ATR stop loss, time-stop, range gate and spread filters implemented."
+  },
+  {
+    "ea": "QM5_20090_pricebob-ttr-brooks-stoporder-breakout-audusd",
+    "ea_id": "20090",
+    "issues": [
+      "no_backtest_setfile"
+    ],
+    "task": "a7ce1651-e695-4528-9d52-e989defed3ee",
+    "verdict": "compiled successfully, tight trading range (TTR) box breakout, bracketed stop orders, OCO cancellation, measured move take-profit, opposite edge stop loss, and session flattening implemented."
+  },
+  {
+    "ea": "QM5_2076_chaikin-oscillator-h4",
+    "ea_id": "2076",
+    "issues": [
+      "unwired:strategy_stddev_period,strategy_volume_mean_bars"
+    ],
+    "task": "1e9d9d3e-2060-408a-8cc3-9025a49d021b",
+    "verdict": "build PASS; compile 0 errors/0 warnings; build_check PASS; smoke deferred to Q02 pump"
+  },
+  {
+    "ea": "QM5_20179_pesavento-abcd-pattern-h4-r1-recovery",
+    "ea_id": "20179",
+    "issues": [],
+    "task": "ac185816-7e73-441f-9435-05187192c272",
+    "verdict": "build PASS; compile 0 errors/0 warnings; build_check PASS; smoke deferred to Q02 pump"
+  },
+  {
+    "ea": "QM5_9641_bandy-cci-extreme-fade-mr-index",
+    "ea_id": "9641",
+    "issues": [],
+    "task": "fead18b1-3859-48aa-a192-0eb7c1a79530",
+    "verdict": "build_check PASS; compile PASS (0 err/0 warn, ex5 371388B); smoke=deferred_p2_smoke (run_smoke deployed canonical board-advisor .ex5 not worktree binary -> ONINIT_FAILED, not this build); registered SP500/NDX/WS30 (magic 96410000-02); commit 9fa85d4cd"
+  },
+  {
+    "ea": "QM5_9644_bandy-tps-bounded-mr-index",
+    "ea_id": "9644",
+    "issues": [],
+    "task": "d9102952-d408-4b39-a53a-f395807f9840",
+    "verdict": "build_check PASS; compile PASS (0 err/0 warn, worktree .ex5); smoke deferred_p2_smoke (deploy resolved FOREIGN canonical board-advisor .ex5 -> INVALID_REPORT, not my binary; one-pass, no retry); 3 symbols registered SP500/NDX/WS30 magics 96440000-96440002; units_held state machine via GlobalVariables + single shared aggregate ATR virtual+broker stop, 1/3-per-unit explicit risk; commit 53bba06ce; DUPLICATE-BUILD watch: board-advisor holds parallel 9644"
+  },
+  {
+    "ea": "QM5_9501_pring-kst-w1",
+    "ea_id": "9501",
+    "issues": [],
+    "task": "037da632-6b8f-435f-b142-3829e442a2a9",
+    "verdict": "CORRECTED post-submit: original build used defective native PERIOD_W1 (DWX symbols yield 0 bars on W1 in tester per QM_Indicators.mqh doc, would zero-trade at Q02) -- replaced with D1-native x5-rescale (adopted+verified from concurrent board-advisor fix, commit 669e9e981), 13 D1 setfiles regenerated, build_check+compile PASS clean (commit b0be16c70). Reviewer: treat as functionally == board-advisor's QM5_9501, only needs registry dedup at merge."
+  },
+  {
+    "ea": "QM5_9354_demark-td-dwave-wave4-h4",
+    "ea_id": "9354",
+    "issues": [],
+    "task": "78fa29a2-a41f-4eaf-bc55-b892025fadb1",
+    "verdict": "build PASS; compile 0 errors/0 warnings; build_check PASS; smoke deferred to Q02 pump"
+  },
+  {
+    "ea": "QM5_2245_pring-three-trends-mtf-h4",
+    "ea_id": "2245",
+    "issues": [],
+    "task": "db396423-a845-48d4-b75e-c6f858ad953c",
+    "verdict": "build PASS; compile 0 errors/0 warnings; build_check PASS; smoke deferred to Q02 pump"
+  },
+  {
+    "ea": "QM5_11362_robo-one-two-bb-reversal",
+    "ea_id": "11362",
+    "issues": [],
+    "task": "a5d43bb7-8921-451d-9f42-8814162ae04d",
+    "verdict": "CODEX_REVIEW_BUILD_READY: 6 governed M15 sets; strict compile PASS 0/0; remains REVIEW"
+  },
+  {
+    "ea": "QM5_11363_robo-vol-channel-breakout",
+    "ea_id": "11363",
+    "issues": [],
+    "task": "71709418-e0ba-4ee0-9532-77ebfa8ce167",
+    "verdict": "CODEX_REVIEW_BUILD_READY: 3 governed M15 sets; strict compile PASS 0/0; remains REVIEW"
+  },
+  {
+    "ea": "QM5_1630_demark-td-sequential-combo-overlay-h4",
+    "ea_id": "1630",
+    "issues": [
+      "unwired:strategy_cooldown_bars"
+    ],
+    "task": "1af5d4c8-737b-4e19-84e4-2e34174cd5d5",
+    "verdict": "CODEX_REVIEW_RECYCLE: strict compile PASS but req.symbol_slot unwired and strategy_cooldown_bars declaration-only"
+  },
+  {
+    "ea": "QM5_1628_carney-5-0-pattern-h4",
+    "ea_id": "1628",
+    "issues": [],
+    "task": "c1c715e2-d00f-4bfe-b82b-ff12ddc65b3e",
+    "verdict": "CODEX_REVIEW_BUILD_READY: 4 governed H4 sets; strict compile PASS 0/0; remains REVIEW"
+  },
+  {
+    "ea": "QM5_20070_antor-mtf-macd-scalper-r1-recovery",
+    "ea_id": "20070",
+    "issues": [],
+    "task": "9c696bd1-2c57-4965-8b83-a6cdd78eebce",
+    "verdict": "CODEX_REVIEW_BUILD_READY: 3 governed M5 sets; strict compile PASS 0/0; remains REVIEW"
+  },
+  {
+    "ea": "QM5_20071_channel-cci-bollinger-mr-r1-recovery",
+    "ea_id": "20071",
+    "issues": [],
+    "task": "351636a9-f05e-4f81-9976-67f77fc34993",
+    "verdict": "CODEX_REVIEW_BUILD_READY: 4 governed H1 sets; strict compile PASS 0/0; remains REVIEW"
+  },
+  {
+    "ea": "QM5_20076_trendline-diagonal-break-retest",
+    "ea_id": "20076",
+    "issues": [],
+    "task": "425526f4-c462-463b-9d30-be802d177643",
+    "verdict": "REBUILD_PRECHECK_BLOCK_MAGIC_ROWS: approved card; active EA row; zero governed magic rows; no canonical EX5"
+  },
+  {
+    "ea": "QM5_20074_trendline-horizontal-sr-retest",
+    "ea_id": "20074",
+    "issues": [],
+    "task": "5fdad0a7-0719-4846-ba82-c13302374f37",
+    "verdict": "REBUILD_PRECHECK_BLOCK_MAGIC_ROWS: approved card; active EA row; zero governed magic rows; no canonical EX5"
+  },
+  {
+    "ea": "QM5_20075_camarilla-inner-pivot-fade",
+    "ea_id": "20075",
+    "issues": [],
+    "task": "81793202-f0ec-45d3-9e99-96c1a619a626",
+    "verdict": "REBUILD_PRECHECK_BLOCK_MAGIC_ROWS: approved card; active EA row; zero governed magic rows; no canonical EX5"
+  },
+  {
+    "ea": "QM5_20082_connors-rsi2-pullback-h4",
+    "ea_id": "20082",
+    "issues": [],
+    "task": "81681d73-c2b2-493c-add7-979dc133966c",
+    "verdict": "REBUILD_PRECHECK_BLOCK_MAGIC_ROWS: approved card; active EA row; zero governed magic rows; no canonical EX5"
+  },
+  {
+    "ea": "QM5_20085_lebeau-lucas-momentum-oscillator-h4-r1-recovery",
+    "ea_id": "20085",
+    "issues": [],
+    "task": "cae7c583-a48e-4975-93d0-5f8bdd59c76f",
+    "verdict": "REBUILD_PRECHECK_BLOCK_MAGIC_ROWS: approved card; active EA row; zero governed magic rows; no canonical EX5"
+  },
+  {
+    "ea": "QM5_20086_connors-multi-day-high-low-h4-r1-recovery",
+    "ea_id": "20086",
+    "issues": [],
+    "task": "8d747492-1653-4990-9003-f08b82597382",
+    "verdict": "REBUILD_PRECHECK_BLOCK_MAGIC_ROWS: approved card; active EA row; zero governed magic rows; no canonical EX5"
+  },
+  {
+    "ea": "QM5_11291_tc20-ema18-28-wma5-12-rsi21-h1",
+    "ea_id": "11291",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile"
+    ],
+    "task": "aa43aa9c-27b9-4ee3-b71c-58c1a4abd0f5",
+    "verdict": "PRECHECK_DEFERRED: governed magic allocation overlaps unrelated dirty canonical registry transaction"
+  },
+  {
+    "ea": "QM5_11292_trix14-signal-cross",
+    "ea_id": "11292",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile"
+    ],
+    "task": "56e67144-da6b-48b8-89ae-ba7048da97a9",
+    "verdict": "PRECHECK_DEFERRED: governed magic allocation overlaps unrelated dirty canonical registry transaction"
+  },
+  {
+    "ea": "QM5_11294_cs-ichi-cloud",
+    "ea_id": "11294",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile"
+    ],
+    "task": "a53520bc-d92a-4aa2-b6fb-3e24d974cba8",
+    "verdict": "PRECHECK_DEFERRED: governed magic allocation overlaps unrelated dirty canonical registry transaction"
+  },
+  {
+    "ea": "QM5_20176_hopwood-ts5-standalone-h4-r1-recovery",
+    "ea_id": "20176",
+    "issues": [],
+    "task": "48507dd0-ae58-41f1-9ad5-98616a41dbad",
+    "verdict": "REBUILD_PRECHECK_BLOCK_MAGIC_ROWS: approved card; active EA row; zero governed magic rows; no canonical EX5"
+  },
+  {
+    "ea": "QM5_20177_carney-ab-cd-pattern-h4-r1-recovery",
+    "ea_id": "20177",
+    "issues": [],
+    "task": "128ef0f9-80fe-4fe2-a1da-962a9dcec2c5",
+    "verdict": "REBUILD_PRECHECK_BLOCK_MAGIC_ROWS: approved card; active EA row; zero governed magic rows; no canonical EX5"
+  },
+  {
+    "ea": "QM5_20178_hopwood-bermaui-macd-h4-r1-recovery",
+    "ea_id": "20178",
+    "issues": [],
+    "task": "4fd0c86e-654d-47d5-a8ad-053d76ea3568",
+    "verdict": "REBUILD_PRECHECK_BLOCK_MAGIC_ROWS: approved card; active EA row; zero governed magic rows; no canonical EX5"
+  },
+  {
+    "ea": "QM5_11299_lwma144-smma5-fractal-m5-scalp",
+    "ea_id": "11299",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile"
+    ],
+    "task": "ea624d92-20db-425b-9deb-840b11c83d40",
+    "verdict": "PRECHECK_DEFERRED: governed magic allocation overlaps unrelated dirty canonical registry transaction"
+  },
+  {
+    "ea": "QM5_11300_macd-psar-atr-trender-h4",
+    "ea_id": "11300",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile"
+    ],
+    "task": "03dbc26e-174f-4879-bbbc-ac69b07ec692",
+    "verdict": "PRECHECK_DEFERRED: governed magic allocation overlaps unrelated dirty canonical registry transaction"
+  },
+  {
+    "ea": "QM5_11465_suhr-bank-trading-stop-run-fade-h1",
+    "ea_id": "11465",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile"
+    ],
+    "task": "6def383b-c119-4ec7-a54d-1d790eb362e3",
+    "verdict": "PRECHECK_DEFERRED: governed magic allocation overlaps unrelated dirty canonical registry transaction"
+  },
+  {
+    "ea": "QM5_11496_carter-t-ema100-psar-macd64128-m5",
+    "ea_id": "11496",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile"
+    ],
+    "task": "f1331db1-b26e-462f-9710-b9f47f677828",
+    "verdict": "PRECHECK_DEFERRED: governed magic allocation overlaps unrelated dirty canonical registry transaction"
+  },
+  {
+    "ea": "QM5_11516_carter-t-sma7-21-cci5-m15",
+    "ea_id": "11516",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile"
+    ],
+    "task": "53266c28-bd4a-4400-80da-dd621c2558ff",
+    "verdict": "PRECHECK_DEFERRED: governed magic allocation overlaps unrelated dirty canonical registry transaction"
+  },
+  {
+    "ea": "QM5_11517_carter-t-ema5-15-50-100-macd-h4",
+    "ea_id": "11517",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile"
+    ],
+    "task": "df68e99a-096b-4875-b408-d64cf204f2b0",
+    "verdict": "PRECHECK_DEFERRED: governed magic allocation overlaps unrelated dirty canonical registry transaction"
+  },
+  {
+    "ea": "QM5_11518_carter-t-ema5-100-mtf-m15-h1",
+    "ea_id": "11518",
+    "issues": [
+      "no_ex5",
+      "no_backtest_setfile"
+    ],
+    "task": "d0f1e256-7e79-48ed-ac9b-ecdde5128a35",
+    "verdict": "PRECHECK_DEFERRED: governed magic allocation overlaps unrelated dirty canonical registry transaction"
+  },
+  {
+    "ea": "QM5_11660_pp-wedge",
+    "ea_id": "11660",
+    "issues": [],
+    "task": "574b5036-996f-4b2a-bb1c-44ad9bf94518",
+    "verdict": "BUILD_PASS_COMMITTED_Q02_ENQUEUED commit=93c999d82 build=7960bf7e q02=54370a3d,aae1ae40,eefc00ee smoke=deferred_p2_smoke cpu_workers=4"
+  },
+  {
+    "ea": "QM5_12615_tsmom-12m-cross-asset-basket",
+    "ea_id": "12615",
+    "issues": [],
+    "task": "2616cb8c-ed4f-415c-92c9-05546275d0f5",
+    "verdict": "BUILD_PASS_COMMITTED_Q02_ENQUEUED commit=48f0d411d q02=ec1c5057 smoke=deferred_p2_smoke cpu=98.35%"
+  },
+  {
+    "ea": "QM5_13148_energy-rank-lmh",
+    "ea_id": "13148",
+    "issues": [],
+    "task": "97cf24af-ecc1-49a3-b911-e943880c90e3",
+    "verdict": "Q01 strict build and guardrails PASS; generation-2 build recorded; exactly one hash-bound full-window Q02 row is pending with no pipeline verdict; ready for independent review."
+  },
+  {
+    "ea": "QM5_13205_xau-xag-qc",
+    "ea_id": "13205",
+    "issues": [],
+    "task": "2604259a-7840-4bee-afad-40ead7cd366e",
+    "verdict": "Q01 strict build PASS; Q02 intentionally not enqueued because tester CPU ceiling averaged 100.0%."
+  },
+  {
+    "ea": "QM5_12599_wti-feb-prem",
+    "ea_id": "12599",
+    "issues": [],
+    "task": "a2460b52-0bfa-445d-bfcb-3fddad6a4519",
+    "verdict": "Q01_PASS_Q02_DEFERRED_CPU_CEILING"
+  }
+]
