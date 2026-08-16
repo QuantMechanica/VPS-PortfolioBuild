@@ -14,6 +14,7 @@
 ; author:       Development
 ; date:         2026-08-10
 ;==========================================================
+qm_ea_id=20075
 qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
