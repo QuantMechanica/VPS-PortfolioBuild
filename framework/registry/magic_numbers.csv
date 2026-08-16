@@ -16126,3 +16126,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 33004,kevin-davey-3bar-momentum-expansion,0,XTIUSD.DWX,330040000,2026-08-16T22:09:58Z,Codex,active
 33004,kevin-davey-3bar-momentum-expansion,1,XAUUSD.DWX,330040001,2026-08-16T22:09:58Z,Codex,active
 33004,kevin-davey-3bar-momentum-expansion,2,EURUSD.DWX,330040002,2026-08-16T22:09:58Z,Codex,active
+41033,wti-flow-dom,0,XTIUSD.DWX,410330000,2026-08-16T23:00:46Z,Codex,active
