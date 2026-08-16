@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10000
 ; ea_slug:      ff-tasayc-cci-breakout
@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   76622167e75f015f31abad3ed7416bc054cd19cc76194ae99e1d3cdb63b67afa
+; build_hash:   7c00d3f2e3f705b61cfbaf6675a1de742b6dc3bc53df3305f61d10ea6379698b
 ; author:       Development
 ; date:         2026-06-27
 ;==========================================================
