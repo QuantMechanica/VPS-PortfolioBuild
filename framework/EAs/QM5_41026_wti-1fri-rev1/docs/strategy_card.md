@@ -333,6 +333,7 @@ and full pipeline requalification.
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial first-Friday/prior-month WTI reversal extraction | G0 | APPROVED |
 | v1-build | 2026-08-16 | deterministic V5 implementation and strict validation | Q01 | PASS |
+| v1-q02-hold | 2026-08-16 | path-anchored capacity gate found 8 running T1-T10 tester terminals against the 7-terminal ceiling before any queue command | Q02 | NOT_ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -340,7 +341,7 @@ and full pipeline requalification.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_wti_first_friday_reversal_g0.md` |
 | Q01 Build Validation | 2026-08-16 | PASS | strict compile `framework/build/compile/20260816_161212/QM5_41026_wti-1fri-rev1.compile.log`; targeted build check `D:/QM/reports/framework/21/build_check_20260816_160937.json`; static P1 `D:/QM/reports/pipeline/QM5_41026/P1/P1_QM5_41026_result.json`; eight deterministic reference tests PASS |
-| Q02 Baseline Screening | - | NOT ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-16 | NOT_ENQUEUED; stopped above the 7-terminal tester CPU ceiling | `docs/ops/evidence/2026-08-16_qm5_41026_wti_1fri_rev1_q01_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 

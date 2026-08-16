@@ -108,3 +108,4 @@ changes, portfolio admission, and correlation waivers.
 |---|---|---|---|
 | v1 | 2026-08-16 | initial approved build scaffold | G0 approved |
 | v1-build | 2026-08-16 | deterministic implementation | magic/resolver verified; strict compile, targeted build check, static P1, and reference suite PASS |
+| v1-q02-hold | 2026-08-16 | paced Q02 handoff stopped at CPU ceiling | pre-command path-anchored sample found 8 running T1-T10 tester terminals against the 7-terminal ceiling; no queue row created |
