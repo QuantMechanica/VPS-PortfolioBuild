@@ -136,3 +136,4 @@ resource ceiling binds at enqueue time, stop without tester control.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial bounded composite source packet | G0 | APPROVED_SOURCE |
+| v1-build | 2026-08-16 | deterministic V5 implementation and strict validation | Q01 | PASS |
