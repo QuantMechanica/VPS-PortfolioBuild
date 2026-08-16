@@ -60,6 +60,33 @@ health gate's router-completion semantics (accept a running router instance
 or a task-START freshness for tasks whose legitimate runtime exceeds the
 trigger cadence; do not treat scheduler overlap-refusals as failures).
 
+## 4. Silent consequence of the wedge: the AI lanes stayed OFF (10:35)
+
+Terminating the wedged ON host restored backtest production but skipped
+Factory_ON's LAST step. `$QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS`
+(Codex/Gemini/Claude orchestration, CodexFleetPacer, AgyGovernor) are enabled
+only AFTER the post-start health gate passes, so all five stayed `Disabled`
+from the 04:39 OFF onward. Nothing surfaced it: work items kept flowing, the
+dashboards stayed green, and only a manual look at `agent_tasks` showed the
+truth — zero IN_PROGRESS since 04:30 and every new ops task parked in TODO.
+
+Chain: lanes disabled -> no `state/lane_<agent>_heartbeat.json` refresh ->
+`_lane_heartbeat_stale()` true for all three (threshold
+`LANE_HEARTBEAT_STALE_HOURS = 2`; observed 6-8h) -> `_eligible_agents()`
+returns [] -> the router reports `no_available_agent` on a green run. So even
+after the router freeze was fixed at 10:31, dispatch stayed dead for a second,
+independent reason.
+
+Recovery: the five tasks were re-enabled exactly as Factory_ON would have done
+(same canonical list, no other task touched, T_Live untouched). Verification
+is by lane heartbeat freshness followed by the first IN_PROGRESS task.
+
+**This raises the priority of the health-gate fix (task `8d6c7ef9`)**: a
+wedged ON is not merely slow, it silently leaves the agent fleet switched off
+while every visible signal says the factory is healthy. The repair must
+either complete the quiet-zone enablement on abort, or leave a loud, checkable
+marker that the lanes were never released.
+
 ## Net state at 07:15
 
 Full parallelism restoring under claim orchestration; resident fixes:
