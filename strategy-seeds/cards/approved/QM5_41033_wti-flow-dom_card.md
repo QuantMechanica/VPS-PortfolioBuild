@@ -413,13 +413,14 @@ establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial WTI opposed-flow dominance extraction | G0 | APPROVED |
+| v1-build | 2026-08-17 | deterministic V5 implementation and fixed-risk preset | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-17 | APPROVED | `decisions/2026-08-17_wti_weekly_flow_dominance_g0.md` |
-| Q01 Build Validation | TBD | NOT_BUILT | TBD |
+| Q01 Build Validation | 2026-08-17 | PASS | `framework/EAs/QM5_41033_wti-flow-dom/SPEC.md` |
 | Q02 Baseline Screening | TBD | NOT_ENQUEUED | TBD |
 
 ## Safety Boundary
