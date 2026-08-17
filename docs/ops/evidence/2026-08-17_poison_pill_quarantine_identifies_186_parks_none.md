@@ -104,9 +104,19 @@ a pending row gets claimed; that is refuted — both sample triples still hold p
 1. **Make the writer actually write**, or state why it must not. A safety mechanism that
    identifies 186 poison pills and parks none is worse than absent, because its presence
    implies the problem is handled.
-2. **`priority_track` must not survive on a poison-eligible triple.** A known-dead row sorting
-   ahead of healthy work is the one variant of this defect that costs real throughput, and it is
-   cheap to check: three rows today.
+2. **Do not strip the `priority_track` flag — fixing (1) already covers it.** My first
+   formulation said the flag "must not survive on a poison-eligible triple". That was wrong, and
+   the reason matters: `tools/strategy_farm/set_priority_track.py` describes itself as a
+   *"Dry-run-first exact-ID controller for OWNER priority-track backfills"*, and its only
+   reference to `poison_pill_quarantine` is line 312, where the table appears in a snapshot list
+   beside `work_items` and `work_item_holds` — **not** a filter. So those three flags were most
+   likely set by an OWNER-authorised backfill, and having an agent clear them would quietly undo
+   an OWNER decision.
+
+   It is also unnecessary. Ordering only decides *which claimable row goes first*; a quarantined
+   triple is **not claimable at all** (`farmctl.py:1171`). Once the writer works, a poison triple
+   cannot be served regardless of how it sorts. If ordering still turns out to matter after
+   quarantine functions, that is a finding to report — and the flag decision stays OWNER's.
 3. **`summary_missing_retries_exhausted` deserves its own disposition.** 183 triples share it —
    this is the documented Q02 graveyard above the hourly sweep's retry cap. Those rows will
    never be re-run by the sweep and never be judged; they are neither recoverable nor terminal.
