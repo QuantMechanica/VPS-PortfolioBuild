@@ -1,0 +1,204 @@
+{
+ "schema": "qm.p4-survivor-cohort-candidates/v1",
+ "purpose": "grounding data for P4 cohort expansion: every candidate needs one named lever, a falsifiable prose hypothesis, and the number that would refute it",
+ "cohort_frozen_pairs": 9,
+ "candidates": 25,
+ "available_levers": [
+  "EXIT_SURGERY",
+  "VOL_REGIME_FILTER",
+  "LOCKED_PORT",
+  "MTF_ENTRY"
+ ],
+ "entries": [
+  {
+   "ea_id": "QM5_13036",
+   "symbol": "GDAXI.DWX",
+   "dir": "QM5_13036_balke-go-long-regime",
+   "trades": 1352.0,
+   "pf": 1.04,
+   "sharpe": 0.1675
+  },
+  {
+   "ea_id": "QM5_12969",
+   "symbol": "USDJPY.DWX",
+   "dir": "QM5_12969_usdjpy-gotobi-nakane-fix",
+   "trades": 331.0,
+   "pf": 1.55,
+   "sharpe": 2.3111
+  },
+  {
+   "ea_id": "QM5_11165",
+   "symbol": "EURUSD.DWX",
+   "dir": "QM5_11165_weiss-rsi-ma",
+   "trades": 260.0,
+   "pf": 1.07,
+   "sharpe": 0.3793
+  },
+  {
+   "ea_id": "QM5_12778",
+   "symbol": "AUDUSD.DWX",
+   "dir": "QM5_12778_edgelab-audusd-eurjpy-cointegration",
+   "trades": 210.0
+  },
+  {
+   "ea_id": "QM5_10403",
+   "symbol": "XAUUSD.DWX",
+   "dir": "QM5_10403_et-turtle20x",
+   "trades": 209.0,
+   "pf": 1.31,
+   "sharpe": 1.5799
+  },
+  {
+   "ea_id": "QM5_13117",
+   "symbol": "EURGBP.DWX",
+   "dir": "QM5_13117_eurgbp-audjpy",
+   "trades": 208.0
+  },
+  {
+   "ea_id": "QM5_11165",
+   "symbol": "AUDCAD.DWX",
+   "dir": "QM5_11165_weiss-rsi-ma",
+   "trades": 207.0,
+   "pf": 1.14,
+   "sharpe": 0.6265
+  },
+  {
+   "ea_id": "QM5_11708",
+   "symbol": "EURUSD.DWX",
+   "dir": "QM5_11708_anon-market-squeeze-d1",
+   "trades": 178.0,
+   "pf": 1.3,
+   "sharpe": 1.5137
+  },
+  {
+   "ea_id": "QM5_10513",
+   "symbol": "XAUUSD.DWX",
+   "dir": "QM5_10513_mql5-ichimoku",
+   "trades": 104.0,
+   "pf": 1.17,
+   "sharpe": 1.0223
+  },
+  {
+   "ea_id": "QM5_10123",
+   "symbol": "XAUUSD.DWX",
+   "dir": "QM5_10123_don20-break",
+   "trades": 101.0,
+   "pf": 1.52,
+   "sharpe": 2.5445
+  },
+  {
+   "ea_id": "QM5_10939",
+   "symbol": "GBPUSD.DWX",
+   "dir": "QM5_10939_grimes-context-pb",
+   "trades": 92.0,
+   "pf": 1.65,
+   "sharpe": 3.274
+  },
+  {
+   "ea_id": "QM5_11421",
+   "symbol": "EURUSD.DWX",
+   "dir": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+   "trades": 92.0,
+   "pf": 1.17,
+   "sharpe": 1.0862
+  },
+  {
+   "ea_id": "QM5_11421",
+   "symbol": "AUDUSD.DWX",
+   "dir": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+   "trades": 90.0,
+   "pf": 1.2,
+   "sharpe": 1.1706
+  },
+  {
+   "ea_id": "QM5_11132",
+   "symbol": "SP500.DWX",
+   "dir": "QM5_11132_tm-cum-rsi2",
+   "trades": 73.0,
+   "pf": 1.49,
+   "sharpe": 2.5743
+  },
+  {
+   "ea_id": "QM5_12567",
+   "symbol": "XAUUSD.DWX",
+   "dir": "QM5_12567_cum-rsi2-commodity",
+   "trades": 73.0,
+   "pf": 1.72,
+   "sharpe": 3.4137
+  },
+  {
+   "ea_id": "QM5_1567",
+   "symbol": "EURUSD.DWX",
+   "dir": "QM5_1567_demark-td-reverse-sequential-h4",
+   "trades": 73.0,
+   "pf": 0.0,
+   "sharpe": 3.5348
+  },
+  {
+   "ea_id": "QM5_13013",
+   "symbol": "NDX.DWX",
+   "dir": "QM5_13013_grimes-trendday-v2",
+   "trades": 71.0,
+   "pf": 1.48,
+   "sharpe": 2.2893
+  },
+  {
+   "ea_id": "QM5_10142",
+   "symbol": "SP500.DWX",
+   "dir": "QM5_10142_rsi2-sma",
+   "trades": 67.0,
+   "pf": 1.53
+  },
+  {
+   "ea_id": "QM5_10938",
+   "symbol": "GDAXI.DWX",
+   "dir": "QM5_10938_grimes-accept-high",
+   "trades": 61.0,
+   "pf": 1.27,
+   "sharpe": 1.4883
+  },
+  {
+   "ea_id": "QM5_20048",
+   "symbol": "XTIUSD.DWX",
+   "dir": "QM5_20048_wti-preholiday",
+   "trades": 61.0,
+   "pf": 1.31,
+   "sharpe": 1.4858
+  },
+  {
+   "ea_id": "QM5_1328",
+   "symbol": "EURJPY.DWX",
+   "dir": "QM5_1328_brooks-3bar-reversal-h4",
+   "trades": 58.0,
+   "pf": 1.09
+  },
+  {
+   "ea_id": "QM5_13128",
+   "symbol": "NDX.DWX",
+   "dir": "QM5_13128_pre-fomc-drift-ndx",
+   "trades": 57.0,
+   "pf": 0.0
+  },
+  {
+   "ea_id": "QM5_1556",
+   "symbol": "XAUUSD.DWX",
+   "dir": "QM5_1556_aa-zak-mom12",
+   "trades": 53.0,
+   "pf": 1.93
+  },
+  {
+   "ea_id": "QM5_12989",
+   "symbol": "XAUUSD.DWX",
+   "dir": "QM5_12989_grimes-nested-pb-v2",
+   "trades": 51.0,
+   "pf": 1.72
+  },
+  {
+   "ea_id": "QM5_10919",
+   "symbol": "XTIUSD.DWX",
+   "dir": "QM5_10919_grimes-overshoot",
+   "trades": 30.0,
+   "pf": 4.84
+  }
+ ]
+}
