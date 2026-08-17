@@ -93,3 +93,4 @@ authorized.
 |---|---|---|---|
 | v1 | 2026-08-17 | approved build | source/G0/card and deterministic identities complete |
 | v1-build | 2026-08-17 | deterministic implementation | Q01 PASS: 19 reference cases, strict compile 0/0, build check 0/0, static P1 |
+| v1-q02 | 2026-08-17 | paced target-only handoff | one XTIUSD.DWX Q02 row enqueued |

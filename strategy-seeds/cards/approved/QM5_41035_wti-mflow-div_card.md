@@ -62,9 +62,9 @@ r1_track_record: PASS_WITH_COMPOSITE_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify a direct-WTI monthly public/session-flow divergence sleeve outside the certified XAU/SP500/NDX/XNG book. Verify every completed prior-month close/open endpoint, strict component opposition, session-following direction, reconciliation, no late/repeated new-month entry, and next-month renewal; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -385,13 +385,15 @@ new source packet, dedup review, strategy ID, card, and EA ID.
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial monthly flow-divergence extraction | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic EA, fixed-risk set, strict compile, focused build check, and static P1 | Q01 | PASS |
+| v1-q02 | 2026-08-17 | one paced WTI baseline row created | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 - G0: `APPROVED`.
 - Q01: `PASS` — deterministic implementation, 19-case reference suite,
   strict compile, focused build checks, and static P1 all passed.
-- Q02: `NOT_ENQUEUED` until Q01 PASS and capacity preflight.
+- Q02: `ENQUEUED` — pending work item
+  `6c8f3dd6-7d8c-4400-8c74-7f6cc754db29`.
 - Q03+: not authorized by this card/build task.
 
 ## Safety Boundary
