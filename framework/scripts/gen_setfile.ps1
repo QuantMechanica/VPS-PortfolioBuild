@@ -312,6 +312,46 @@ function Convert-EAInputValueForSetfile {
         return $candidate
     }
 
+    if ($inputType -eq 'double' -or $inputType -eq 'float') {
+        # MT5's .set parser does not understand exponent notation for floating
+        # inputs: it reads `1.0e-10` as `1.0e-1`, i.e. 0.1 — nine orders of
+        # magnitude wrong, silently.  An EA whose self-consistency guard checks
+        # such a value then rejects its own configuration in OnInit and the run
+        # dies before the first bar, which the factory records as BARS_ZERO and
+        # retries.  Proven 4/4 against passing siblings that write the identical
+        # value in decimal form.  Evidence:
+        # docs/ops/evidence/2026-08-17_setfile_exponent_notation_kills_runs_deterministically.md
+        $candidate = $Value.Trim()
+        if ($candidate -notmatch '[eE]') {
+            return $candidate
+        }
+        $parsed = 0.0
+        if (-not [double]::TryParse($candidate, [Globalization.NumberStyles]::Float,
+                [Globalization.CultureInfo]::InvariantCulture, [ref]$parsed)) {
+            throw "SETFILE_FLOAT_UNPARSEABLE: input=$Name value=$Value type=$inputType"
+        }
+        $expanded = $null
+        try {
+            $expanded = ([decimal]$parsed).ToString([Globalization.CultureInfo]::InvariantCulture)
+        }
+        catch {
+            throw ("SETFILE_FLOAT_NOT_REPRESENTABLE_IN_DECIMAL: input=$Name value=$Value " +
+                   "type=$inputType — magnitude is outside System.Decimal, so no plain-decimal " +
+                   "form exists and an exponent token would be silently truncated by MT5")
+        }
+        # Expansion must be exact.  [decimal] flushes magnitudes below ~1e-28 to
+        # zero, and writing 0 for a tolerance is a worse failure than writing an
+        # exponent — so verify the round trip and refuse rather than guess.
+        $back = 0.0
+        if (-not [double]::TryParse($expanded, [Globalization.NumberStyles]::Float,
+                [Globalization.CultureInfo]::InvariantCulture, [ref]$back) -or $back -ne $parsed) {
+            throw ("SETFILE_FLOAT_EXPANSION_LOSSY: input=$Name value=$Value type=$inputType " +
+                   "expanded=$expanded — decimal expansion did not round-trip, refusing to " +
+                   "write a value the EA would observe differently than declared")
+        }
+        return $expanded
+    }
+
     if ($inputType -ne 'ENUM_TIMEFRAMES') {
         return $Value
     }
