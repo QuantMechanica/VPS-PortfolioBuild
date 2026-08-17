@@ -65,7 +65,7 @@ invalid composition.
 - Q02 decides density and economics; Q09 alone may establish realized book
   correlation.
 
-## 6. Source And Non-Duplicate Boundary
+## 6. Source Citation
 
 Qin, Cai, Zhu, and Webb (2025), "Commodity Futures Characteristics and Asset
 Pricing Models," *Journal of Futures Markets* 45(3), 176-207, DOI
@@ -114,3 +114,4 @@ runtime data, banned indicator, or ML is authorized.
 | v1 | 2026-08-06 | initial approved XAU/XAG expected-shortfall carrier build |
 | v1.1 | 2026-08-06 | strict compile and full V5 build check PASS with zero warnings |
 | v1.2 | 2026-08-06 | Q02 enqueue withheld at the binding 8-of-7 factory-terminal CPU ceiling |
+| v1.3 | 2026-08-17 | source-preserving rebuild against the current registered-magic resolver after artifact-bound Q02 `EA_MAGIC_NOT_REGISTERED` failures |
