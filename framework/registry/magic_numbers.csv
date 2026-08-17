@@ -17410,4 +17410,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 35003,three-ducks-multi-timeframe-system,2,AUDUSD.DWX,350030002,2026-08-17T20:15:00Z,Gemini,active
 35003,three-ducks-multi-timeframe-system,3,USDJPY.DWX,350030003,2026-08-17T20:15:00Z,Gemini,active
 41051,wti-fri-weekfade,0,XTIUSD.DWX,410510000,2026-08-17T20:24:21Z,Codex,active
+35005,sma-crossover-pullback-system,0,EURUSD.DWX,350050000,2026-08-17T20:30:00Z,Gemini,active
+35005,sma-crossover-pullback-system,1,GBPUSD.DWX,350050001,2026-08-17T20:30:00Z,Gemini,active
+35005,sma-crossover-pullback-system,2,EURJPY.DWX,350050002,2026-08-17T20:30:00Z,Gemini,active
+35006,guppy-multiple-moving-average-breakout,0,GBPJPY.DWX,350060000,2026-08-17T20:30:00Z,Gemini,active
+35006,guppy-multiple-moving-average-breakout,1,EURUSD.DWX,350060001,2026-08-17T20:30:00Z,Gemini,active
+35008,short-term-bollinger-reversion-system,0,EURUSD.DWX,350080000,2026-08-17T20:45:00Z,Gemini,active
+35008,short-term-bollinger-reversion-system,1,USDCAD.DWX,350080001,2026-08-17T20:45:00Z,Gemini,active
+35008,short-term-bollinger-reversion-system,2,EURCHF.DWX,350080002,2026-08-17T20:45:00Z,Gemini,active
 
