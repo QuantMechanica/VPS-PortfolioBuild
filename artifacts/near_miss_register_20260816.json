@@ -171,7 +171,8 @@
    ],
    "depth_note": "deepest entry in the register by two phases; prior lineage Q04 PF 2.57 (folds 4.035/1.209/2.461), Q05 PF 1.35 dd 6.76, Q06 HARSH PF 1.35 dd 6.03, Q07 five seeds PF 1.31-1.41 variance 7.41 pct, 445 trades",
    "second_symbol_corroboration": "QM5_20086 NDX.DWX independently reached Q07 PASS at 2026-08-17T04:04:57 (Q02 PASS, Q04 PASS_SOFT, Q05 PASS, Q06 PASS, Q07 PASS). Two independent symbols to Q07 substantially weakens the single-symbol overfit reading that a lone deep survivor invites. NDX Q08 is the decisive run: if it returns FAIL_SOFT on the same three sub-gates (8.4 seasonal, 8.7 PBO, 8.10 regime_crisis), that is a consistent structural property across symbols and therefore a fixable rework target rather than noise.",
-   "at_updated": "2026-08-17T04:10:00"
+   "at_updated": "2026-08-17T04:10:00",
+   "status_correction": "NOT merely a rework candidate: Q08 FAIL_SOFT legitimately advances to Q09_PORTFOLIO by design (farmctl phase_prev_verdicts Q09_PORTFOLIO = {PASS, FAIL_SOFT}, DL-082 SS3c). The Q09_PORTFOLIO row was enqueued 2026-08-17T02:11 and is pending. QM5_20086 EURUSD is therefore a LIVE candidate at the first OWNER-adjacent gate, and the first in the factory history to reach it on a FAIL_SOFT - the five prior entrants (QM5_1537, 13054, 12708, 12849, 12855) all carried Q08 PASS. The three soft edges are what the portfolio gate now weighs against the rest of the book; an uncorrelated strategy with soft edges can still be a good addition, which is what that rule exists for."
   }
  ],
  "repeat_offenders": {}
