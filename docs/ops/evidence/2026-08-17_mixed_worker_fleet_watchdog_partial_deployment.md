@@ -69,3 +69,47 @@ between runs of the same EA must record which terminal served each one.
 A `summary_missing` / `UNCLASSIFIED` death at approximately 90 minutes on T2, T4, T5, T6,
 T7, T8 or T9 is the known watchdog defect and is not evidence about the EA. The same row
 on T1, T3 or T10 is a real test.
+
+## Staggered restart — executed 2026-08-17 08:40Z, OWNER-authorized
+
+Progress: **5 of 10 workers now carry the fix** (T1, T3, T8, T9, T10). T8 and T9 were
+restarted here; the other three had cycled on their own earlier.
+
+### Correction: the pump does NOT respawn a killed worker
+
+I expected the 5-minute pump to refill the slot, because `start_terminal_workers.py` is
+idempotent and the pump invokes it. It does not. T9 was stopped at ~08:36Z, a full pump
+tick passed at 08:38Z, and the fleet stayed at **9 workers**. Nothing brought it back.
+
+That matches the known dead `InteractiveToken` task class: `QM_StrategyFarm_WorkerDedupe`
+cannot run, `factory_watchdog.ps1` delegates all healing to it by design, and
+`interactive_worker_keeper.py` — the interim substitute — is not running. The factory has
+no automatic worker self-healing at present. On 2026-07-26 the same gap let the fleet
+bleed 9 → 7 → 6 and only manual spawner runs restored it.
+
+**The working procedure is therefore: stop the worker AND immediately run
+`python tools/strategy_farm/start_terminal_workers.py --dedupe` from the interactive
+session.** Do not stop a worker and wait. I made that mistake with T9 and the fleet ran a
+worker short for about four minutes.
+
+### Method that worked
+
+Per worker, in this order:
+
+1. Confirm the terminal holds **no active claim** in `work_items` — restarting a busy
+   worker aborts its backtest.
+2. Confirm the worker process has **zero child processes** — a running `terminal64`
+   under it means work is in flight regardless of what the database says.
+3. Resolve the PID by matching the full command line `--terminal <T>`, never by a broad
+   name filter. A loose filter killed my own shell earlier in this session.
+4. `Stop-Process -Force`, then run the spawner immediately.
+5. Verify: fleet back to 10, the terminal's process creation time is after the fix
+   commit, and it survives ~25 s (a worker spawned from session 0 dies 0xC0000142, so an
+   immediate death means the wrong session).
+
+### Remaining
+
+T2, T4, T5, T6, T7 are stale and all currently busy. They get the same treatment as they
+free up. **T4 must be left alone** while `QM5_41030` runs — a 450-minute basket that has
+been going since 00:02Z and is the one job on the fleet where a restart would discard
+hours of work.
