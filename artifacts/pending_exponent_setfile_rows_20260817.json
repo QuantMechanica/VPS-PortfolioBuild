@@ -1,0 +1,54 @@
+{
+ "schema": "qm.pending-exponent-setfile-rows/v1",
+ "why": "MT5 .set parsing does not handle exponent notation for double inputs; an EA guard on such a value rejects its own configuration in OnInit and the run dies deterministically, recorded as BARS_ZERO -> INFRA_FAIL",
+ "open_rows_scanned": 1002,
+ "distinct_setfiles": 981,
+ "affected_open_rows": 3,
+ "entries": [
+  {
+   "id": "bcf23174-a097-4d49-b929-5d2c0f63443b",
+   "ea_id": "QM5_41038",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q02",
+   "status": "active",
+   "already_held": false,
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_41038_xng-mflow-dom\\sets\\QM5_41038_xng-mflow-dom_XNGUSD.DWX_D1_backtest.set",
+   "offending_params": [
+    {
+     "name": "strategy_reconcile_tolerance",
+     "value": "1.0e-10"
+    }
+   ]
+  },
+  {
+   "id": "6fbebae3-83e9-4885-a609-5e04ad5e619f",
+   "ea_id": "QM5_41041",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "status": "active",
+   "already_held": false,
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_41041_wti-wed-flow-fade\\sets\\QM5_41041_wti-wed-flow-fade_XTIUSD.DWX_D1_backtest.set",
+   "offending_params": [
+    {
+     "name": "strategy_reconcile_tolerance",
+     "value": "1.0e-10"
+    }
+   ]
+  },
+  {
+   "id": "d062a748-ac59-4bcf-83cd-96b85b73e8d7",
+   "ea_id": "QM5_41033",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "status": "pending",
+   "already_held": false,
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_41033_wti-flow-dom\\sets\\QM5_41033_wti-flow-dom_XTIUSD.DWX_D1_backtest.set",
+   "offending_params": [
+    {
+     "name": "strategy_reconcile_tolerance",
+     "value": "1.0e-10"
+    }
+   ]
+  }
+ ]
+}
