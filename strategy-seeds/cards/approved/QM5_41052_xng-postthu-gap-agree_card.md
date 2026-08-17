@@ -68,8 +68,8 @@ r1_track_record: PASS_WITH_COMPOSITE_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_SESSION_LABEL_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: NOT_RUN
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a second XNG event-time sleeve outside the certified XAU/SP500/NDX/XNG book. Verify exact Tuesday-Wednesday-Thursday identity, completed Thursday event-session endpoints, frozen Friday open, strict cross-boundary agreement, durable Friday attempt, common-sign side, and broker-hour-21 flattening. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -373,8 +373,8 @@ realized correlation with the certified book.
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-17 | APPROVED | `decisions/2026-08-17_xng_post_thursday_gap_agreement_g0.md` |
-| Q01 Build Validation | — | NOT_RUN | pending implementation |
-| Q02 Baseline Screening | — | NOT_ENQUEUED | requires Q01 PASS and capacity checks |
+| Q01 Build Validation | 2026-08-17 | PASS | `framework/build/compile/20260817_213650/QM5_41052_xng-postthu-gap-agree.compile.log`; `D:/QM/reports/framework/21/build_check_20260817_213650.json`; `D:/QM/reports/pipeline/QM5_41052/P1/P1_QM5_41052_result.json` |
+| Q02 Baseline Screening | — | NOT_ENQUEUED | pending fresh tester and CPU capacity checks |
 
 ## Safety Boundary
 

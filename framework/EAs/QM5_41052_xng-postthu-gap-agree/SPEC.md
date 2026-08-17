@@ -1,6 +1,6 @@
 # QM5_41052 - XNG Post-Thursday Gap-Agreement Friday Continuation
 
-Status: `G0 APPROVED; MAGIC ALLOCATED; IMPLEMENTED; COMPILE PENDING`
+Status: `G0 APPROVED; MAGIC ALLOCATED; Q01 PASS; Q02 CAPACITY CHECK PENDING`
 
 ## Identity
 
@@ -54,7 +54,9 @@ exact Tuesday-through-Friday identity, frozen endpoints, all sign pairings,
 reconciliation, grace, intrabar non-leakage, Friday cutoff, later-D1 repair,
 and stable attempt identity.
 
-Strict MetaEditor compile, generated setfile build hash, V5 build check, static
-Q01 artifact validation, and Q02 handoff are still pending. No live artifact,
-tester dispatch, terminal control, portfolio mutation, or performance claim is
-authorized.
+Strict MetaEditor compile (0 errors, 0 warnings), generated setfile build hash,
+targeted V5 build check, static P1 artifact validation, card lint, all 15
+reference fixtures, and single-symbol scope validation pass. The compiled EX5
+is a Q01 artifact only; the capacity-gated Q02 handoff remains pending. No
+manual tester dispatch, terminal control, live artifact, portfolio mutation,
+or performance claim is authorized.
