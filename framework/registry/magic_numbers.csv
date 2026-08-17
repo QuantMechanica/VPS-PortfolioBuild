@@ -17397,3 +17397,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 34008,multicurrency-basket-dispersion-hedger,4,USDCAD.DWX,340080004,2026-08-17T19:50:00Z,Gemini,active
 34008,multicurrency-basket-dispersion-hedger,5,USDCHF.DWX,340080005,2026-08-17T19:50:00Z,Gemini,active
 34008,multicurrency-basket-dispersion-hedger,6,USDJPY.DWX,340080006,2026-08-17T19:50:00Z,Gemini,active
+35001,cowabunga-multi-timeframe-trend-system,0,GBPUSD.DWX,350010000,2026-08-17T20:00:00Z,Gemini,active
+35001,cowabunga-multi-timeframe-trend-system,1,EURUSD.DWX,350010001,2026-08-17T20:00:00Z,Gemini,active
+35002,hlhb-trend-catcher-system,0,EURUSD.DWX,350020000,2026-08-17T20:00:00Z,Gemini,active
+35002,hlhb-trend-catcher-system,1,GBPUSD.DWX,350020001,2026-08-17T20:00:00Z,Gemini,active
+35002,hlhb-trend-catcher-system,2,USDJPY.DWX,350020002,2026-08-17T20:00:00Z,Gemini,active
+
