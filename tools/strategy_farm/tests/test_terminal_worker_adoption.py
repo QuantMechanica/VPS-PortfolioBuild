@@ -218,6 +218,114 @@ class TerminalWorkerAdoptionTests(unittest.TestCase):
             self.assertEqual(stopped["pid"], 4321)
             self.assertIsNone(result["exit_code_seen"])
 
+    def test_adopted_monitor_deadline_never_below_inner_budget(self) -> None:
+        # docs/ops/evidence/q02_summary_missing_90min_outer_watchdog_mismatch_2026-08-16.md:
+        # the outer watchdog must bind to whatever inner budget this row was
+        # actually spawned with, never fall back to the bare CLI default.
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            item = self._insert_active_item(
+                root,
+                payload={
+                    "pid": 4321,
+                    "claimed_by_worker_pid": os.getpid(),
+                    "timeout_seconds": 7200,  # inner Q02-full budget, 120 minutes
+                    "report_root": str(root / "reports" / "wi-adopt"),
+                    "log_path": str(root / "logs" / "wi-adopt.log"),
+                },
+            )
+
+            captured: dict[str, object] = {}
+
+            def fake_monitor(_root, _item, _terminal, _spawn, _payload, timeout_seconds, *, adopted=False):
+                captured["timeout_seconds"] = timeout_seconds
+                captured["adopted"] = adopted
+                return {"action": "finished", "item_id": _item["id"]}
+
+            old_preflight = terminal_worker._work_item_preflight_failure
+            old_pid_tree_exists = farmctl._pid_tree_exists
+            old_monitor = terminal_worker._monitor_spawned_work_item
+            try:
+                terminal_worker._work_item_preflight_failure = lambda _row: None
+                farmctl._pid_tree_exists = lambda pid: int(pid) == 4321
+                terminal_worker._monitor_spawned_work_item = fake_monitor
+
+                # CLI --timeout-minutes default (90 min) is below the 120-minute
+                # inner budget this row was actually spawned with.
+                cli_default_seconds = 90 * 60
+                terminal_worker._run_claimed_item(root, item, "T1", cli_default_seconds)
+            finally:
+                terminal_worker._work_item_preflight_failure = old_preflight
+                farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker._monitor_spawned_work_item = old_monitor
+
+            self.assertTrue(captured["adopted"])
+            self.assertGreaterEqual(captured["timeout_seconds"], 7200)
+
+    def test_fresh_spawn_monitor_deadline_never_below_inner_budget(self) -> None:
+        # Same invariant as test_adopted_monitor_deadline_never_below_inner_budget,
+        # exercised on the first-attempt (non-adopted) spawn path — this is the
+        # branch the four confirmed UNCLASSIFIED/summary_missing rows actually hit.
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            item = self._insert_active_item(root, payload={})
+
+            captured: dict[str, object] = {}
+
+            def fake_monitor(_root, _item, _terminal, _spawn, _payload, timeout_seconds, *, adopted=False):
+                captured["timeout_seconds"] = timeout_seconds
+                captured["adopted"] = adopted
+                return {"action": "finished", "item_id": _item["id"]}
+
+            old_preflight = terminal_worker._work_item_preflight_failure
+            old_calendar = farmctl._news_calendar_preflight
+            old_staged = terminal_worker._prepare_staged_ex5
+            old_gate = terminal_worker._custom_history_gate
+            old_privatize = terminal_worker._privatize_custom_history_claim
+            old_launch_slot = terminal_worker._acquire_launch_slot
+            old_spawn_runner = farmctl._spawn_work_item_runner
+            old_monitor = terminal_worker._monitor_spawned_work_item
+            try:
+                terminal_worker._work_item_preflight_failure = lambda _row: None
+                farmctl._news_calendar_preflight = lambda **_kwargs: {"ok": True}
+                terminal_worker._prepare_staged_ex5 = lambda _row, _terminal: {
+                    "required_sha256": "a" * 64,
+                    "source_path": "dummy.ex5",
+                }
+                terminal_worker._custom_history_gate = lambda _root, _terminal: {"required": False}
+                terminal_worker._privatize_custom_history_claim = (
+                    lambda _root, _row, _terminal, _gate: {"required": False}
+                )
+                terminal_worker._acquire_launch_slot = lambda _terminal: None
+                farmctl._spawn_work_item_runner = lambda _root, _row, _terminal: {
+                    "spawned": True,
+                    "pid": 4321,
+                    "log_path": str(root / "logs" / "wi-fresh.log"),
+                    "report_root": str(root / "reports" / "wi-fresh"),
+                    "ea_dir_name": "ea",
+                    # farmctl._p2_full_timeout_seconds's Q02-full floor
+                    # (P2_FULL_TIMEOUT_MIN_SECONDS = 7200, 120 minutes).
+                    "timeout_seconds": 7200,
+                }
+                terminal_worker._monitor_spawned_work_item = fake_monitor
+
+                # CLI --timeout-minutes default (90 min) is below the 120-minute
+                # inner budget farmctl just computed for this dispatch.
+                cli_default_seconds = 90 * 60
+                terminal_worker._run_claimed_item(root, item, "T1", cli_default_seconds)
+            finally:
+                terminal_worker._work_item_preflight_failure = old_preflight
+                farmctl._news_calendar_preflight = old_calendar
+                terminal_worker._prepare_staged_ex5 = old_staged
+                terminal_worker._custom_history_gate = old_gate
+                terminal_worker._privatize_custom_history_claim = old_privatize
+                terminal_worker._acquire_launch_slot = old_launch_slot
+                farmctl._spawn_work_item_runner = old_spawn_runner
+                terminal_worker._monitor_spawned_work_item = old_monitor
+
+            self.assertFalse(captured["adopted"])
+            self.assertGreaterEqual(captured["timeout_seconds"], 7200)
+
 
 if __name__ == "__main__":
     unittest.main()

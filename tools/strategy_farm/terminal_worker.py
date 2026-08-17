@@ -3911,13 +3911,21 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             "log_path": existing_payload.get("log_path"),
             "report_root": existing_payload.get("report_root"),
         }
+        # The outer watchdog must never fire before the inner budget this row was
+        # actually spawned with — the CLI --timeout-minutes default is a floor,
+        # not the effective ceiling. See docs/ops/evidence/
+        # q02_summary_missing_90min_outer_watchdog_mismatch_2026-08-16.md.
+        try:
+            existing_inner_budget_seconds = int(existing_payload.get("timeout_seconds") or 0)
+        except (TypeError, ValueError):
+            existing_inner_budget_seconds = 0
         return _monitor_spawned_work_item(
             root,
             item,
             terminal,
             existing_spawn,
             existing_payload,
-            timeout_seconds,
+            max(timeout_seconds, existing_inner_budget_seconds),
             adopted=True,
         )
     # This early read avoids staging against a known-bad bundle and may reuse the
@@ -4165,7 +4173,13 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
 
     _with_sqlite_retry(_record_spawn)
 
-    return _monitor_spawned_work_item(root, item, terminal, spawn, payload, timeout_seconds)
+    # The outer watchdog must never fire before the inner budget just computed
+    # and handed to run_smoke.ps1 as -TimeoutSeconds — the CLI --timeout-minutes
+    # default is a floor, not the effective ceiling. See docs/ops/evidence/
+    # q02_summary_missing_90min_outer_watchdog_mismatch_2026-08-16.md.
+    return _monitor_spawned_work_item(
+        root, item, terminal, spawn, payload, max(timeout_seconds, spawn_timeout_seconds)
+    )
 
 
 def _disk_free_gb(root: Path) -> float:
