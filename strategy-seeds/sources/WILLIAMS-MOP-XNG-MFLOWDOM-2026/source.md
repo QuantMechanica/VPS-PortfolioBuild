@@ -10,7 +10,7 @@ last_updated: 2026-08-17
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-17"
 approved_at: 2026-08-17
 source_approval: decisions/2026-08-17_xng_monthly_opposed_flow_dominance_source_approval.md
-approval_commit: PENDING_BRANCH_COMMIT
+approval_commit: a57d5f9a6
 strategy_ids:
   - WILLIAMS-MOP-XNG-MFLOWDOM-2026_S01
 cards_extracted:
