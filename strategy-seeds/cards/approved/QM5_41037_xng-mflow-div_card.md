@@ -64,7 +64,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a second XNG sleeve whose monthly public/session-flow disagreement is structurally separate from the certified cumulative-RSI pullback. Verify every completed prior-month close/open endpoint, strict component opposition, session-following direction, reconciliation, no late/repeated new-month entry, and next-month renewal; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -386,13 +386,16 @@ new source packet, dedup review, strategy ID, card, and EA ID.
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial monthly flow-divergence extraction | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic EA, fixed-risk set, strict compile, focused build check, and static P1 | Q01 | PASS |
+| v1-capacity | 2026-08-17 | exact-path factory sample found 8 active terminals against the ceiling of 7; no queue apply or enqueue | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
 - G0: `APPROVED`.
 - Q01: `PASS` — deterministic implementation, 19-case reference suite,
   strict compile, focused build checks, and static P1 all passed.
-- Q02: `NOT_ENQUEUED` until Q01 PASS and capacity preflight.
+- Q02: `NOT_ENQUEUED_CPU_CEILING` — eight exact T1-T10 factory
+  terminals were active against the governed ceiling of seven; queue
+  readback remained empty and no apply/enqueue was permitted.
 - Q03+: not authorized by this card/build task.
 
 ## Safety Boundary

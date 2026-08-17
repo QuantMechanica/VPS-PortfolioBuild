@@ -178,3 +178,4 @@ economics.
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
 | v1-card | 2026-08-17 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic EA, fixed-risk set, strict compile, focused build check, and static P1 | Q01 | PASS |
+| v1-capacity | 2026-08-17 | exact-path factory sample found 8 active terminals against ceiling 7; queue apply was not invoked and readback stayed empty | Q02 | NOT_ENQUEUED_CPU_CEILING |
