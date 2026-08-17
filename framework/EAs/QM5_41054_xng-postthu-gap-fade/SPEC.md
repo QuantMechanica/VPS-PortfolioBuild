@@ -1,6 +1,6 @@
 # QM5_41054 - XNG Post-Thursday Counter-Gap Fade
 
-Status: `G0 APPROVED; EA ID AND MAGIC ALLOCATED; BUILD NOT STARTED`
+Status: `G0 APPROVED; IMPLEMENTED; Q01 PENDING; Q02 NOT QUEUED`
 
 ## Identity
 
@@ -20,8 +20,8 @@ Status: `G0 APPROVED; EA ID AND MAGIC ALLOCATED; BUILD NOT STARTED`
 - G0 decision:
   `decisions/2026-08-18_xng_post_thursday_countergap_fade_g0.md`
 - host: exact `XNGUSD.DWX`, D1
-- intended slot: `0`
-- intended magic: `410540000`
+- slot: `0`
+- registered magic: `410540000`
 
 ## Locked Candidate Boundary
 
@@ -57,9 +57,20 @@ multiday drift, and the incumbent cumulative-RSI commodity pullback
 
 ## Build State
 
-The directory identity existed before magic allocation because the governed
-resolver retains rows only for materialized EA directories. G0 now authorizes
-the exact approved card, but code, binary, preset, Q01, and Q02 status must not
-be inferred from this scaffold.
+The approved card, durable G0 decision, EA registry row, and active slot-0
+magic authorize this exact non-live implementation. The resolver contains
+`410540000`; no alternate carrier, signal endpoint, direction, or lifecycle is
+authorized.
+
+Artifacts:
+
+- `QM5_41054_xng-postthu-gap-fade.mq5`
+- `docs/strategy_card.md` (byte-identical governed card mirror)
+- `docs/test_post_thursday_countergap_fade_reference.py`
+- `sets/QM5_41054_xng-postthu-gap-fade_XNGUSD.DWX_D1_backtest.set`
+
+Strict compile, build checks, and static Q01 remain required before the
+target-only Q02 queue may be mutated.
+
 No live artifact, tester dispatch, terminal control, portfolio mutation, or
 performance claim is authorized.
