@@ -7,6 +7,7 @@ approval_basis: decisions/2026-08-14_qm5_21504_xng_flowrev_g0.md
 created: 2026-08-14
 cards_extracted:
   - QM5_21504_xng-flowrev
+  - QM5_21503_xti-weekly-tsmom-lowvol
 ---
 
 # Zhao-Ding-Yu-Kang bounded source packet
@@ -123,3 +124,20 @@ hold, or risk to rescue a failure.
 This source packet authorizes one branch-only, non-live build and one paced
 Q02 handoff. It authorizes no manual backtest, live/demo/shadow/stress setfile,
 portfolio admission, deploy manifest, `T_Live` action, or AutoTrading change.
+
+## 2026-08-17 WTI exact-week low-volatility extension
+
+The OWNER commodity/energy portfolio mission and the durable pre-extraction
+approval at
+`decisions/2026-08-17_wti_exact_week_lowvol_momentum_source_approval.md`
+authorize the previously reserved but unbuilt `QM5_21503` candidate as a
+second, independently falsifiable carrier from this source.
+
+Unlike `QM5_21504`, it reads no tick volume and never fades the prior return.
+It follows the sign of one exact completed WTI Monday-Friday return only when
+that week's five-return realized volatility ranks in the inclusive lower
+tercile of forty older, non-overlapping five-return blocks. The exact calendar,
+price-only proxy, rank estimator, WTI CFD mapping, fixed risk, stop, and weekly
+lifecycle are QM translations rather than source results. Its authorization is
+limited to one branch-only non-live build and one paced Q02 enqueue if capacity
+permits; every existing live and portfolio exclusion above remains binding.
