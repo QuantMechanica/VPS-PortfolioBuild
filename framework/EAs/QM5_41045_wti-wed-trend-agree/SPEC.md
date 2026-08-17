@@ -15,7 +15,7 @@
 - EA allocation commit: `4690bd83e`
 - G0 approval commit: `1e61e1ae7`
 - carrier: exact `XTIUSD.DWX`, D1, symbol slot 0
-- planned magic: `410450000`
+- allocated magic: `410450000`
 
 ## Locked Mechanic
 
@@ -50,10 +50,11 @@ feed, retry, scale-in, grid, martingale, pyramid, or second leg is authorized.
 
 ## Build State
 
-Directory identity established before magic allocation as required by the V5
-resolver ordering contract. Source, binary, setfile, card copy, reference
-fixtures, compile evidence, and Q01 evidence are intentionally absent until
-the deterministic magic row exists and the build preflight passes.
+Directory identity was established before magic allocation as required by the
+V5 resolver ordering contract. Slot 0 is allocated to exact `XTIUSD.DWX` as
+magic `410450000`. Source, binary, setfile, card copy, reference fixtures,
+compile evidence, and Q01 evidence remain absent until the post-allocation
+build preflight passes.
 
 ## Safety Boundary
 
