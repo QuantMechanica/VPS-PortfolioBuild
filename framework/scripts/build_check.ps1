@@ -13,7 +13,8 @@ param(
     [switch]$SkipForbiddenScan,
     [switch]$SkipInputGroupCheck,
     [switch]$SkipPerfStaticCheck,
-    [switch]$SkipMaeHookCheck
+    [switch]$SkipMaeHookCheck,
+    [switch]$NormalizeExponentFloats
 )
 
 Set-StrictMode -Version Latest
@@ -322,6 +323,11 @@ function Update-SetFileBuildHash {
         [string]$SetFilePath
     )
 
+    $originalBytes = [System.IO.File]::ReadAllBytes($SetFilePath)
+    $hasUtf8Bom = $originalBytes.Length -ge 3 -and
+        $originalBytes[0] -eq 0xEF -and
+        $originalBytes[1] -eq 0xBB -and
+        $originalBytes[2] -eq 0xBF
     $lines = Get-Content -LiteralPath $SetFilePath
     $hashLineIdx = -1
     for ($i = 0; $i -lt $lines.Count; $i++) {
@@ -342,7 +348,12 @@ function Update-SetFileBuildHash {
     ).Replace("-", "").ToLowerInvariant()
 
     $lines[$hashLineIdx] = "; build_hash:   $hash"
-    Set-Content -LiteralPath $SetFilePath -Value $lines -Encoding utf8
+    $rewritten = ($lines -join "`r`n") + "`r`n"
+    [System.IO.File]::WriteAllText(
+        $SetFilePath,
+        $rewritten,
+        [System.Text.UTF8Encoding]::new($hasUtf8Bom)
+    )
 }
 
 function Invoke-SetValidation {
@@ -1057,6 +1068,101 @@ function Write-GateEvidence {
     Write-Output "build_check.report=$reportPath"
 }
 
+function Invoke-ExponentFloatNormalization {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    if (-not $EALabel) {
+        Add-Failure 'BUILD_CHECK_EXPONENT_NORMALIZE_REQUIRES_EA_LABEL: refusing unscoped setfile mutation.'
+        return
+    }
+
+    $eaRoot = Join-Path $ResolvedRepoRoot "framework\EAs\$EALabel"
+    $mq5Files = @(Get-ChildItem -LiteralPath $eaRoot -File -Filter '*.mq5' -ErrorAction SilentlyContinue)
+    if ($mq5Files.Count -ne 1) {
+        Add-Failure "BUILD_CHECK_EXPONENT_NORMALIZE_SOURCE_COUNT: $EALabel expected exactly one mq5 source, found $($mq5Files.Count)."
+        return
+    }
+
+    # Reuse the generator's actual serializer rather than maintaining a second
+    # numeric implementation in build_check.  Extracting this one function does
+    # not execute gen_setfile.ps1's body, so existing setfile keys, seed/news/
+    # Friday controls, and build bindings cannot be dropped by regeneration.
+    $genPath = Join-Path $ResolvedRepoRoot 'framework\scripts\gen_setfile.ps1'
+    $genLines = [System.IO.File]::ReadAllLines($genPath)
+    $start = ($genLines | Select-String -Pattern '^function Convert-EAInputValueForSetfile\s*\{' |
+        Select-Object -First 1).LineNumber
+    if (-not $start) {
+        Add-Failure "BUILD_CHECK_EXPONENT_NORMALIZE_CONVERTER_MISSING: $genPath"
+        return
+    }
+    $depth = 0
+    $end = $null
+    for ($i = $start - 1; $i -lt $genLines.Count; $i++) {
+        $depth += ([regex]::Matches($genLines[$i], '\{')).Count
+        $depth -= ([regex]::Matches($genLines[$i], '\}')).Count
+        if ($depth -le 0 -and $i -gt ($start - 1)) { $end = $i; break }
+    }
+    if ($null -eq $end) {
+        Add-Failure "BUILD_CHECK_EXPONENT_NORMALIZE_CONVERTER_UNBOUNDED: $genPath"
+        return
+    }
+    Invoke-Expression (($genLines[($start - 1)..$end]) -join "`n")
+
+    $inputTypes = @{}
+    foreach ($line in [System.IO.File]::ReadAllLines($mq5Files[0].FullName)) {
+        if ($line -match '^\s*input\s+(?<type>[A-Za-z_][A-Za-z0-9_<>]*)\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=') {
+            $inputTypes[$matches['name']] = $matches['type']
+        }
+    }
+
+    $valuePattern = '^-?\d+(\.\d+)?[eE][+-]?\d+$'
+    $setFiles = @(Get-ChildItem -LiteralPath $eaRoot -Recurse -File -Filter '*.set' | Sort-Object FullName)
+    foreach ($setFile in $setFiles) {
+        $originalBytes = [System.IO.File]::ReadAllBytes($setFile.FullName)
+        $hasUtf8Bom = $originalBytes.Length -ge 3 -and
+            $originalBytes[0] -eq 0xEF -and
+            $originalBytes[1] -eq 0xBB -and
+            $originalBytes[2] -eq 0xBF
+        $content = [System.IO.File]::ReadAllText($setFile.FullName)
+        $state = @{ Changed = $false; Normalizations = New-Object System.Collections.Generic.List[string] }
+        $rewritten = [regex]::Replace(
+            $content,
+            '(?m)^(?<key>[A-Za-z_][A-Za-z0-9_]*)=(?<value>[^\r\n|]+)(?<suffix>\|\|[^\r\n]*)?(?=\r?$)',
+            {
+                param($match)
+                $key = $match.Groups['key'].Value
+                $value = $match.Groups['value'].Value.Trim()
+                if ($value -notmatch $valuePattern) { return $match.Value }
+                if (-not $inputTypes.ContainsKey($key)) {
+                    throw "SETFILE_FLOAT_INPUT_TYPE_MISSING: file=$($setFile.FullName) input=$key value=$value"
+                }
+                $serialized = Convert-EAInputValueForSetfile -Name $key -Value $value -InputTypes $inputTypes
+                if ($serialized -eq $value) {
+                    throw "SETFILE_FLOAT_EXPONENT_UNCHANGED: file=$($setFile.FullName) input=$key value=$value type=$($inputTypes[$key])"
+                }
+                $state.Changed = $true
+                $state.Normalizations.Add("${key}:$value->$serialized")
+                return "$key=$serialized$($match.Groups['suffix'].Value)"
+            }
+        )
+        if ($state.Changed) {
+            # Preserve the file's existing UTF-8 BOM policy.  The normalizer's
+            # only intentional content change is the matched exponent value.
+            [System.IO.File]::WriteAllText(
+                $setFile.FullName,
+                $rewritten,
+                [System.Text.UTF8Encoding]::new($hasUtf8Bom)
+            )
+            foreach ($normalization in $state.Normalizations) {
+                Write-Output "build_check.setfile_float_normalized=$($setFile.FullName):$normalization"
+            }
+        }
+    }
+}
+
 $resolvedRepoRoot = Resolve-RepoRoot
 if (-not $CompileScriptPath) {
     $CompileScriptPath = Join-Path $resolvedRepoRoot "framework\scripts\compile_one.ps1"
@@ -1070,6 +1176,14 @@ if (-not $SkipCompile.IsPresent) {
     }
 }
 
+if ($NormalizeExponentFloats.IsPresent) {
+    try {
+        Invoke-ExponentFloatNormalization -ResolvedRepoRoot $resolvedRepoRoot
+    }
+    catch {
+        Add-Failure "BUILD_CHECK_EXPONENT_NORMALIZE_FAILED: $($_.Exception.Message)"
+    }
+}
 if (-not $SkipCompile.IsPresent -and $resolvedCompileScriptPath) {
     Invoke-CompileGate -ResolvedRepoRoot $resolvedRepoRoot -ResolvedCompileScriptPath $resolvedCompileScriptPath
 }

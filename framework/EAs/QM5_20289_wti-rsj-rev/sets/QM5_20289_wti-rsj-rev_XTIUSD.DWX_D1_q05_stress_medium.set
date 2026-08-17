@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6c0ee82d0e7fad72d9b66a947e7c0d22fbf1430ffc9dcb2f97fc5c1a36cadf56
+; build_hash:   f9b6acc1532f4f5e76b76ab729541a1815d51bd28e772d9ddb00c8a6dedd8c27
 ; author:       Development
 ; date:         2026-08-12
 ;==========================================================
@@ -25,7 +25,7 @@ qm_stress_reject_probability=0.0000
 strategy_lookback_months=1
 strategy_min_return_observations=15
 strategy_max_return_observations=25
-strategy_rsj_tolerance=1.0e-12
+strategy_rsj_tolerance=0.000000000001
 strategy_history_bars_d1=80
 strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.5

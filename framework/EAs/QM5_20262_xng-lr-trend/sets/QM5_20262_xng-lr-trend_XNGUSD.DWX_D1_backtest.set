@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5f7b0136652f8cc6d7c6b5fc338f26fafbe2414e0a20f5f65eafa782613a9ca8
+; build_hash:   a9af8d8412163ff5bf05f76a2c0b40e2402a13638d2484c08c18e356de3c64fb
 ; author:       Development
 ; date:         2026-08-07
 ;==========================================================
@@ -23,7 +23,7 @@ PORTFOLIO_WEIGHT=1
 ; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xng-lr-trend_card.md
 strategy_regression_points=13
 strategy_min_r_squared=0.50
-strategy_slope_epsilon=1.0e-10
+strategy_slope_epsilon=0.0000000001
 strategy_history_bars_d1=800
 strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.5

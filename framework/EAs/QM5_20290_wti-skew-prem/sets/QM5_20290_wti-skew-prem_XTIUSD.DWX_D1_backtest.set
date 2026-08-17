@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f186bc6d715eb39e3e2cb6151a0a0d3aec4e0bea38abbb95d6ae4ccce3a9f7a9
+; build_hash:   3ec8d436e41e77e1b8674c6f8c491a37a083e584f7f09cd86985ff1b9153b8c3
 ; author:       Development
 ; date:         2026-08-12
 ;==========================================================
@@ -25,8 +25,8 @@ strategy_lookback_months=12
 strategy_history_bars_d1=500
 strategy_min_return_observations=180
 strategy_max_return_observations=280
-strategy_variance_floor=1.0e-12
-strategy_skew_tolerance=1.0e-12
+strategy_variance_floor=0.000000000001
+strategy_skew_tolerance=0.000000000001
 strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.5
 strategy_max_hold_days=40

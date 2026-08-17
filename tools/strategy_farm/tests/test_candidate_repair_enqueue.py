@@ -227,6 +227,97 @@ def test_stale_pass_q02_is_append_only_and_double_enqueue_safe(
     assert new_payload["risk_percent"] == 0.0
 
 
+def test_stale_setfile_pass_q02_is_append_only_with_same_ex5(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    payload = _payload(art, stale=False)
+    setfile = art["setfile"]
+    assert isinstance(setfile, Path)
+    setfile.write_text(
+        "RISK_FIXED=1000\nRISK_PERCENT=0\nstrategy_tolerance=0.000000000001\n",
+        encoding="utf-8",
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-stale-setfile",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=payload,
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-stale-setfile",
+        append_only_rerun_of="q02-stale-setfile",
+        rerun_reason="setfile serialization repair",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        new_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert new_payload["expected_ex5_sha256"] == art["current_ex5"]
+    assert new_payload["expected_setfile_sha256"] == farmctl._sha256_file(setfile)
+    assert new_payload["historical_work_item_preserved"] is True
+
+
+def test_stale_setfile_zero_trades_q02_is_requalifiable(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch, ea_id="QM5_9902")
+    payload = _payload(art, stale=False)
+    setfile = art["setfile"]
+    assert isinstance(setfile, Path)
+    setfile.write_text(
+        "RISK_FIXED=1000\nRISK_PERCENT=0\nstrategy_tolerance=0.000000000001\n",
+        encoding="utf-8",
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-zero-trades-stale-setfile",
+        phase="Q02",
+        status="done",
+        verdict="ZERO_TRADES",
+        payload=payload,
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-zero-trades-stale-setfile",
+        append_only_rerun_of="q02-zero-trades-stale-setfile",
+        rerun_reason="setfile serialization repair",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        new_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert new_payload["rerun_source_verdict"] == "ZERO_TRADES"
+    assert new_payload["changed_execution_bindings"] == [
+        "expected_setfile_sha256"
+    ]
+
+
 def test_repaired_infra_q02_binds_current_artifacts_append_only(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -415,7 +506,7 @@ def test_invalid_q02_refuses_same_binary_rerun(tmp_path: Path, monkeypatch) -> N
     assert _work_item_count(art) == 1
 
 
-def test_q02_append_only_still_refuses_other_economic_verdicts(
+def test_q02_append_only_still_refuses_current_economic_verdicts(
     tmp_path: Path, monkeypatch
 ) -> None:
     art = _artifacts(tmp_path, monkeypatch)
@@ -425,7 +516,7 @@ def test_q02_append_only_still_refuses_other_economic_verdicts(
         phase="Q02",
         status="done",
         verdict="ZERO_TRADES",
-        payload=_payload(art, stale=True),
+        payload=_payload(art, stale=False),
     )
 
     result = farmctl.enqueue_cascade_backtest_for_ea(
@@ -439,9 +530,7 @@ def test_q02_append_only_still_refuses_other_economic_verdicts(
     )
 
     assert not result["enqueued"]
-    assert result["reason"] == (
-        "q02_rerun_target_mismatch_or_not_terminal_supported_verdict"
-    )
+    assert result["reason"] == "q02_pass_source_not_stale"
     assert _work_item_count(art) == 1
 
 

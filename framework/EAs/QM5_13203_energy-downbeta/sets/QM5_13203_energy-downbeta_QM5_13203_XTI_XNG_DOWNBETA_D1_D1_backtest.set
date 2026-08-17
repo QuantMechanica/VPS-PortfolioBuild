@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    RISK_FIXED
 ; portfolio_weight: 1
-; build_hash:   d64705baf78b793ea7c91cedea69cfdaafc8e148a1a460a1cafa20fa515a98ec
+; build_hash:   680811aec42b4d31607b062ffdb53199a74f093ad2893e282d1dc22a665b20ae
 ; author:       Development
 ; date:         2026-07-12
 ;==========================================================
@@ -34,7 +34,7 @@ qm_stress_reject_probability=0.0
 ; strategy-specific locked baseline
 strategy_lookback_d1=252
 strategy_min_down_days=100
-strategy_beta_tie_epsilon=1e-8
+strategy_beta_tie_epsilon=0.00000001
 strategy_history_bars=420
 strategy_max_endpoint_gap_days=10
 strategy_atr_period_d1=20

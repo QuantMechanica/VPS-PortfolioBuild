@@ -18185,7 +18185,7 @@ def _stale_pass_source_binding(
     payload: dict[str, Any],
     current_bindings: dict[str, Any],
 ) -> tuple[bool, dict[str, Any]]:
-    """Prove that a terminal PASS belongs to an older binary identity."""
+    """Prove that a terminal PASS belongs to an older execution identity."""
     for key in (
         "expected_mq5_sha256",
         "expected_ex5_sha256",
@@ -18198,15 +18198,27 @@ def _stale_pass_source_binding(
                 "binding": key,
                 "value": value,
             }
-    source_ex5 = str(payload["expected_ex5_sha256"]).strip().lower()
-    current_ex5 = str(
-        current_bindings["artifact_sha256"]["expected_ex5_sha256"]
-    ).lower()
-    if source_ex5 == current_ex5:
+    source_artifacts = {
+        key: str(payload[key]).strip().lower()
+        for key in (
+            "expected_mq5_sha256",
+            "expected_ex5_sha256",
+            "expected_setfile_sha256",
+        )
+    }
+    current_artifacts = {
+        key: str(current_bindings["artifact_sha256"][key]).lower()
+        for key in source_artifacts
+    }
+    changed_bindings = [
+        key for key in source_artifacts
+        if source_artifacts[key] != current_artifacts[key]
+    ]
+    if not changed_bindings:
         return False, {
             "reason": "q02_pass_source_not_stale",
-            "source_ex5_sha256": source_ex5,
-            "current_ex5_sha256": current_ex5,
+            "source_artifact_sha256": source_artifacts,
+            "current_artifact_sha256": current_artifacts,
         }
     for key in ("expected_symbol", "expected_period", "expected_expert"):
         expected = str(current_bindings[key])
@@ -18218,8 +18230,12 @@ def _stale_pass_source_binding(
                 "actual": payload.get(key),
             }
     return True, {
-        "source_expected_ex5_sha256": source_ex5,
-        "current_ex5_sha256": current_ex5,
+        "source_artifact_sha256": source_artifacts,
+        "current_artifact_sha256": current_artifacts,
+        "changed_execution_bindings": changed_bindings,
+        # Retain the established scalar keys for downstream audit consumers.
+        "source_expected_ex5_sha256": source_artifacts["expected_ex5_sha256"],
+        "current_ex5_sha256": current_artifacts["expected_ex5_sha256"],
     }
 
 
@@ -18783,6 +18799,8 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "INFRA_FAIL",
                 "INVALID",
                 "PASS",
+                "FAIL",
+                "ZERO_TRADES",
             }
             and not target["claimed_by"]
         )
@@ -18896,18 +18914,19 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 **risk_detail,
             }
         stale_pass = str(target["verdict"]) == "PASS"
+        stale_economic = str(target["verdict"]) in {"PASS", "FAIL", "ZERO_TRADES"}
         stale_invalid = str(target["verdict"]) == "INVALID"
         repaired_infra = False
         repaired_draft_defect = False
         source_transition_detail: dict[str, Any] = {}
-        if stale_pass or stale_invalid:
+        if stale_economic or stale_invalid:
             bindings_ok, bindings = _expected_current_execution_bindings(
                 target, expected_current_ex5_sha256
             )
             if bindings_ok:
                 binding_check = (
                     _stale_pass_source_binding
-                    if stale_pass
+                    if stale_economic
                     else _stale_invalid_source_binding
                 )
                 bindings_ok, source_transition_detail = binding_check(
@@ -18951,7 +18970,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "source_work_item_id": source_id,
                 **failure_detail,
             }
-        if stale_pass or stale_invalid:
+        if stale_economic or stale_invalid:
             current_terminal = conn.execute(
                 """
                 SELECT id,status,verdict FROM work_items
@@ -18960,6 +18979,12 @@ def _enqueue_q02_append_only_exact_row_rerun(
                   AND lower(COALESCE(
                     json_extract(payload_json, '$.expected_ex5_sha256'), ''
                   ))=?
+                  AND lower(COALESCE(
+                    json_extract(payload_json, '$.expected_mq5_sha256'), ''
+                  ))=?
+                  AND lower(COALESCE(
+                    json_extract(payload_json, '$.expected_setfile_sha256'), ''
+                  ))=?
                 ORDER BY updated_at DESC LIMIT 1
                 """,
                 (
@@ -18967,6 +18992,8 @@ def _enqueue_q02_append_only_exact_row_rerun(
                     target["symbol"],
                     source_id,
                     bindings["artifact_sha256"]["expected_ex5_sha256"],
+                    bindings["artifact_sha256"]["expected_mq5_sha256"],
+                    bindings["artifact_sha256"]["expected_setfile_sha256"],
                 ),
             ).fetchone()
             if current_terminal:
@@ -19022,7 +19049,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "existing_work_item_id": open_row["id"],
                 "existing_status": open_row["status"],
             }
-        if not stale_pass:
+        if not stale_economic:
             noninfra_row = conn.execute(
                 """
                 SELECT id, status, verdict FROM work_items
@@ -19118,6 +19145,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "rerun_source_verdict": target["verdict"],
             **evidence_metadata,
             "stale_pass_rerun": stale_pass,
+            "stale_economic_rerun": stale_economic,
             "stale_invalid_rerun": stale_invalid,
             "repaired_infra_rerun": repaired_infra,
             "repaired_draft_defect_rerun": repaired_draft_defect,
@@ -19129,7 +19157,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "expected_symbol": bindings["expected_symbol"],
         })
         _stamp_custom_history_archive_admission(payload, archive_admission)
-        if stale_pass or stale_invalid:
+        if stale_economic or stale_invalid:
             payload.update({
                 "expected_current_ex5_sha256": source_transition_detail[
                     "current_ex5_sha256"
@@ -19137,8 +19165,16 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "rerun_source_expected_ex5_sha256": source_transition_detail[
                     "source_expected_ex5_sha256"
                 ],
-                "rerun_source_current_ex5_mismatch_verified": True,
+                "rerun_source_execution_identity_change_verified": True,
+                "rerun_source_current_ex5_mismatch_verified": (
+                    source_transition_detail["source_expected_ex5_sha256"]
+                    != source_transition_detail["current_ex5_sha256"]
+                ),
             })
+            if stale_economic:
+                payload["changed_execution_bindings"] = source_transition_detail[
+                    "changed_execution_bindings"
+                ]
             if stale_invalid:
                 payload["rerun_source_invalid_disposition_requalified"] = True
         elif repaired_infra or repaired_draft_defect:
