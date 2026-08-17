@@ -1,6 +1,6 @@
 # QM5_41054 - XNG Post-Thursday Counter-Gap Fade
 
-Status: `G0 APPROVED; IMPLEMENTED; Q01 PENDING; Q02 NOT QUEUED`
+Status: `G0 APPROVED; Q01 PASS; Q02 READY`
 
 ## Identity
 
@@ -69,8 +69,9 @@ Artifacts:
 - `docs/test_post_thursday_countergap_fade_reference.py`
 - `sets/QM5_41054_xng-postthu-gap-fade_XNGUSD.DWX_D1_backtest.set`
 
-Strict compile, build checks, and static Q01 remain required before the
-target-only Q02 queue may be mutated.
+Strict compile, targeted build checks, independent fixtures, static P1, card
+lint, and single-symbol scope all pass. A target-only Q02 enqueue remains
+subject to the governed tester/CPU ceiling.
 
 No live artifact, tester dispatch, terminal control, portfolio mutation, or
 performance claim is authorized.
