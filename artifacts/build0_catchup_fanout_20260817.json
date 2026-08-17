@@ -694,5 +694,79 @@
    "runs": 1,
    "re_derivations": 0
   }
- ]
+ ],
+ "recost_after_p2": {
+  "question": "folding never-passed-for-infra gates into the RUN set, and excluding negatively-answered gates as policy",
+  "run_from_fanout": 110,
+  "added_never_passed_infra_or_no_row": 6,
+  "run_total": 116,
+  "excluded_as_policy_gate_answered_negatively": 26,
+  "hours_at_10_7_per_h": 10.8,
+  "share_of_one_784_row_queue_pass_pct": 15,
+  "history": {
+   "first_list": {
+    "actions": 214,
+    "hours": 20.0,
+    "share_pct": 27
+   },
+   "after_fanout": {
+    "runs": 110,
+    "hours": 10.3
+   },
+   "after_p2_recost": {
+    "runs": 116,
+    "hours": 10.8,
+    "share_pct": 15
+   }
+  },
+  "added_by_pair": [
+   {
+    "ea_id": "QM5_1567",
+    "symbol": "EURUSD.DWX",
+    "in_pool": true,
+    "in_roster": true,
+    "phases": [
+     "Q07=INFRA_FAIL",
+     "Q08=INFRA_FAIL"
+    ]
+   },
+   {
+    "ea_id": "QM5_10403",
+    "symbol": "XAUUSD.DWX",
+    "in_pool": true,
+    "in_roster": true,
+    "phases": [
+     "Q08=INFRA_FAIL"
+    ]
+   },
+   {
+    "ea_id": "QM5_10440",
+    "symbol": "NDX.DWX",
+    "in_pool": false,
+    "in_roster": true,
+    "phases": [
+     "Q08=INFRA_FAIL"
+    ]
+   },
+   {
+    "ea_id": "QM5_11165",
+    "symbol": "EURUSD.DWX",
+    "in_pool": true,
+    "in_roster": true,
+    "phases": [
+     "Q05=INFRA_FAIL"
+    ]
+   },
+   {
+    "ea_id": "QM5_13013",
+    "symbol": "NDX.DWX",
+    "in_pool": true,
+    "in_roster": false,
+    "phases": [
+     "Q07=INFRA_FAIL"
+    ]
+   }
+  ],
+  "note": "stable: only +6 actions over the fan-out, because most never-passed phases were already captured as evidence-gone or missing-gate"
+ }
 }
