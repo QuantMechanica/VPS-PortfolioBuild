@@ -58,13 +58,18 @@ Completed the end-to-end build, canonical setfile authoring, compilation, build-
 | Artifact Path | SHA-256 Hash | Size | Status |
 |---|---|---:|---|
 | `framework/EAs/QM5_21514_qs-klinger-vol-osc-xag/QM5_21514_qs-klinger-vol-osc-xag.mq5` | `232e19fd5ff1b4e5c95ce142be8937a56ecd9134e93d59d9a44df6a2e3c9ab1a` | 21,148 B | Clean (0E/0W) |
-| `framework/EAs/QM5_21514_qs-klinger-vol-osc-xag/QM5_21514_qs-klinger-vol-osc-xag.ex5` | `76929098ce1fe1eae74b43c6a9f861da57efd41ab6ce575d1611cb865bef8892` | 379,850 B | Compiled 0/0 |
-| `framework/EAs/QM5_21514_qs-klinger-vol-osc-xag/sets/QM5_21514_qs-klinger-vol-osc-xag_XAGUSD.DWX_D1_backtest.set` | `0ced3190a5d37a7d3ea7caf6b7c031264b2e340c3fda87e7a40e5a98ba7167b3` | 1,109 B | Sealed |
-| `framework/EAs/QM5_21514_qs-klinger-vol-osc-xag/SPEC.md` | `9d7b9ffdfb78e3820a45eaef3c5c56784d13a69715a3a2e3ce97b2ee93c8d35d` | 3,778 B | Verified |
+| `framework/EAs/QM5_21514_qs-klinger-vol-osc-xag/QM5_21514_qs-klinger-vol-osc-xag.ex5` | `91db04d12b283bf5e19cb23af505c7499561ef16b291629dfce753121b92355f` | 380,618 B | Codex review rebuild 0/0 |
+| `framework/EAs/QM5_21514_qs-klinger-vol-osc-xag/sets/QM5_21514_qs-klinger-vol-osc-xag_XAGUSD.DWX_D1_backtest.set` | `476428110fb449fcec25c2f4cc5fade447a415c6748d8eb733e48ded79e2f46f` | 1,109 B | Codex resealed |
+| `framework/EAs/QM5_21514_qs-klinger-vol-osc-xag/SPEC.md` | `dee63b5218389d08a12e9527cf1f1600486023a7048efdebbdf2153a839ee1d9` | 3,778 B | Verified |
 
 - `validate_build_guardrails.py`: **PASS** (`max_news_stale_hours = 336`, `entry_grace_margin_minutes = 5.0`).
 - `build_check.ps1`: **PASS** (`failures = 0`, `warnings = 0`).
 - `compile_one`: **PASS** (`errors = 0`, `warnings = 0`).
+
+Codex review detected that the original evidence row carried an incorrect
+EX5 byte size and an incorrect SPEC hash. The table above is the authoritative
+reseal from the mandatory Codex rebuild and review; see
+`9960bd92_qm5_21514_codex_review_2026-08-17.md` for the review record.
 
 ---
 
