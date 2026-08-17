@@ -141,3 +141,9 @@ price-only proxy, rank estimator, WTI CFD mapping, fixed risk, stop, and weekly
 lifecycle are QM translations rather than source results. Its authorization is
 limited to one branch-only non-live build and one paced Q02 enqueue if capacity
 permits; every existing live and portfolio exclusion above remains binding.
+
+The extension reached Q01 PASS on 2026-08-17 with 13 passing independent
+mechanic fixtures, a strict MetaEditor compile with zero errors and warnings,
+a target build check with zero failures and warnings, a static P1 artifact
+PASS, and the sole fixed-risk backtest preset. Q02 remains pending the governed
+target-only capacity gate; no manual test or terminal control is authorized.
