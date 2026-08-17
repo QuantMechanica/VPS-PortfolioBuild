@@ -68,8 +68,8 @@ r1_track_record: PASS_WITH_COMPOSITE_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_SESSION_LABEL_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: NOT_STARTED
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: NOT_STARTED
 review_focus: "Falsify a standard-Wednesday WTI overnight-dominant continuation sleeve outside the certified XAU/SP500/NDX/XNG book. Verify exact Monday-Tuesday-Wednesday identity, completed Wednesday close/open endpoints, strict component opposition, strict overnight dominance, common-sign side, durable Thursday attempt, and next-D1 flattening. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -383,13 +383,14 @@ realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial standard-Wednesday WTI overnight-dominant flow-continuation card | G0 | APPROVED |
+| v1-build | 2026-08-17 | deterministic EA, fixed-risk preset, independent fixtures, and strict validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-17 | APPROVED | `decisions/2026-08-17_wti_wednesday_overnight_dominance_g0.md` |
-| Q01 Build Validation | TBD | PENDING | TBD |
+| Q01 Build Validation | 2026-08-17 | PASS | `framework/build/compile/20260817_175414/QM5_41049_wti-wed-overnight-dom.compile.log`; `D:/QM/reports/framework/21/build_check_20260817_175557.json`; `D:/QM/reports/pipeline/QM5_41049/P1/P1_QM5_41049_result.json` |
 | Q02 Baseline Screening | TBD | NOT_ENQUEUED | TBD |
 
 ## Safety Boundary

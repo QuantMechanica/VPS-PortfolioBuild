@@ -1,6 +1,6 @@
 # QM5_41049 — WTI Standard-Wednesday Overnight-Dominant Flow
 
-Status: `IMPLEMENTED; Q01 PENDING`
+Status: `G0 APPROVED; Q01 PASS; Q02 NOT ENQUEUED`
 
 ## Identity
 
@@ -51,5 +51,23 @@ boundary.
 
 The governed directory identity preceded the active
 `(41049, 0, XTIUSD.DWX)` magic row, and resolver regeneration retained it.
-The exact non-live EA, fixed-risk setfile, card copy, and independent fixtures
-are implemented. Strict compile and Q01 validation remain pending.
+The exact non-live EA and binary are present with one fixed-risk backtest
+preset, a byte-identical approved-card copy, and an independent 14-case
+reference suite.
+
+Q01 evidence:
+
+- independent reference suite: 14 tests PASS
+- strict compile PASS, zero errors and zero warnings:
+  `framework/build/compile/20260817_175414/QM5_41049_wti-wed-overnight-dom.compile.log`
+- targeted build check PASS, zero failures and zero warnings:
+  `D:/QM/reports/framework/21/build_check_20260817_175557.json`
+- static P1 artifact validation PASS:
+  `D:/QM/reports/pipeline/QM5_41049/P1/P1_QM5_41049_result.json`
+- factory symbol-scope validation: `SINGLE_SYMBOL_OK`, zero violations
+- MQ5 SHA-256:
+  `611BC4AEF7823DDFADDC897075A5BBC13566206B6D5D07AD2CDAF7938789BDBA`
+- EX5 SHA-256:
+  `8C68C2CB03F79071E2816C0CF32B5E4342DDE37C360BA4C1A41198781399B526`
+- setfile normalized-content build hash:
+  `533c40e211991aa23961e3927ce71f10824359ff8f7ecf3974c246659c3d45c9`
