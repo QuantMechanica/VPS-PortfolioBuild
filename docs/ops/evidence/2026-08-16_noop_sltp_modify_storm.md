@@ -170,3 +170,22 @@ run_smoke log names this failure. It was only visible by measuring the
 terminal's own journal. When a run dies with no summary and no signature, the
 next place to look is the size and composition of `Tester/logs/<date>.log` —
 2.3 GB of one repeated line is not a symptom the pipeline can see from inside.
+
+## Pre-registered reading of the QM5_20176 XAUUSD rerun (written 2026-08-17 01:10Z, before the result)
+
+The requeued XAUUSD Q02 row was claimed on T7 at 00:55Z with the fixed binary. Its
+outcome has two possible causes and they must not be confused after the fact, so the
+interpretation is fixed here in advance:
+
+- **Completes with a verdict** → the 6.2 M rejected modifies were the reason its earlier
+  attempts exceeded their budget. The no-op guard did its job.
+- **Dies at ~90 minutes with `summary_missing` / `UNCLASSIFIED`** → that is the outer
+  watchdog (task `738e9396`, fix committed as `e607a1bc3` but *not yet deployed* —
+  `terminal_worker.py` is resident in the worker from process start, so the running
+  worker still enforces the 90-minute CLI default). Such a result says **nothing** about
+  the modify fix and must not be read as one.
+
+The 90-minute mark for this run falls at approximately 02:25Z. The two changes are
+independent and only the second one is currently live in the workers, so a failure in
+that window is the expected behaviour of a known, already-fixed defect — not new
+evidence.
