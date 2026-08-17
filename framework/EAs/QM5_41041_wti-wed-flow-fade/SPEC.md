@@ -88,7 +88,7 @@ hold rather than a completed week and Monday-Friday lifecycle.
 - Magic slot 0: `XTIUSD.DWX / 410410000 / active`
 - Q01: PASS (14 fixtures; strict compile and targeted build check clean;
   static P1 artifact validation PASS)
-- Q02: not enqueued
+- Q02: ENQUEUED as one paced pending work item
 
 ## Revision History
 
@@ -96,6 +96,7 @@ hold rather than a completed week and Monday-Friday lifecycle.
 |---|---|---|---|
 | v1 | 2026-08-17 | approved build directory identity | source/G0/card and EA-ID registry complete |
 | v1-build | 2026-08-17 | deterministic implementation | strict compile, targeted build check, independent fixtures, and static P1 PASS |
+| v1-queue | 2026-08-17 | paced Q02 handoff | one pending priority-track work item; no terminal action |
 
 ## Q01 Evidence
 
@@ -110,3 +111,14 @@ hold rather than a completed week and Monday-Friday lifecycle.
   `D:/QM/reports/framework/21/build_check_20260817_085805.json`
 - P1 report:
   `D:/QM/reports/pipeline/QM5_41041/P1/P1_QM5_41041_result.json`
+
+## Q02 Enqueue
+
+- canonical work item: `ffc71d7e-7b55-46d6-8694-9286aa3276f6`
+- status at verification: `pending`, attempt count 0, priority track enabled
+- routed host: exact `XTIUSD.DWX`, D1
+- exact-path capacity sample: 4/7 governed factory roots active; `T_Live`
+  excluded and no terminal action taken
+- target-only post-apply dry run selected zero new rows; no duplicate exists
+- receipt:
+  `docs/ops/evidence/2026-08-17_qm5_41041_wti_wednesday_flow_fade_q01_q02_enqueue.md`

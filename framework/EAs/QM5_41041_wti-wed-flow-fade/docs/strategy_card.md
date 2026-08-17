@@ -70,7 +70,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify a standard-Wednesday WTI information-time reversal sleeve outside the certified XAU/SP500/NDX/XNG book. Verify exact Monday-Tuesday-Wednesday identity, completed Wednesday close/open endpoints, strict component opposition, strict session dominance, contrarian side, durable Thursday attempt, and next-D1 flattening. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -383,6 +383,7 @@ realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial standard-Wednesday WTI session-dominant flow-fade card | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic EA, fixed-risk preset, independent fixtures, and strict validation | Q01 | PASS |
+| v1-queue | 2026-08-17 | one paced target-only work item created | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -390,7 +391,7 @@ realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-17 | APPROVED | `decisions/2026-08-17_wti_wednesday_flow_fade_g0.md` |
 | Q01 Build Validation | 2026-08-17 | PASS | `framework/build/compile/20260817_085806/QM5_41041_wti-wed-flow-fade.compile.log`; `D:/QM/reports/framework/21/build_check_20260817_085805.json`; `D:/QM/reports/pipeline/QM5_41041/P1/P1_QM5_41041_result.json` |
-| Q02 Baseline Screening | TBD | NOT_ENQUEUED | TBD |
+| Q02 Baseline Screening | 2026-08-17 | ENQUEUED | `ffc71d7e-7b55-46d6-8694-9286aa3276f6`; `docs/ops/evidence/2026-08-17_qm5_41041_wti_wednesday_flow_fade_q01_q02_enqueue.md` |
 
 ## Safety Boundary
 
