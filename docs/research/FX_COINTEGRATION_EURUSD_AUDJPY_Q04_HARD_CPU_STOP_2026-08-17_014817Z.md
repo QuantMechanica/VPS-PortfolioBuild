@@ -281,3 +281,42 @@ queue row, requeue, priority mutation, dispatch tick, backtest, tester launch,
 terminal action, or portfolio/live-surface change followed. Fresh
 machine-readable evidence is
 `artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T081753Z_board_advisor.json`.
+
+## 11:17Z continuation audit
+
+A seventh continuation audit at repository head
+`1cbf3cbdb062852545c964268ee9e9b23175ab12` found another materially
+changed factory state and the same binding hard-CPU condition. Five two-second
+whole-machine samples were `100%`, `99.71%`, `98.21%`, `99.61%`, and
+`89.82%` (average `97.47%`, maximum `100%`). Both the average and maximum
+exceed the explicit `97%` ceiling.
+
+The canonical database reported seven claimed active work items: one at Q02,
+one at Q04, four at Q07, and one at Q08. Claims occupied `T2`, `T3`, `T5`,
+`T6`, `T7`, `T8`, and `T10`. This differs materially from the 08:18Z
+snapshot, which had eight active rows with seven at Q02 and one at Q07. A
+path-aware `farmctl.py mt5-slots` read matched those seven factory terminals;
+the separately visible `T_Live` and FTMO processes were excluded and neither
+was controlled.
+
+`QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1` still has exactly one open row:
+Q04 work item `113ae6d1-33c0-42bc-b9b0-bf3a48ef3445`, `pending`, unclaimed,
+at attempt zero. Its canonical Q02 predecessor remains `PASS`. The two
+preferred anchors remain terminal downstream of canonical Q02 PASS:
+`QM5_12532` at Q05 FAIL and `QM5_12533` at Q04 FAIL. Fresh hashes confirm the
+selected EA's MQ5/EX5 package, basket manifest, approved Card snapshot, and
+fixed-risk logical-basket setfile are unchanged; the setfile retains
+`RISK_FIXED=1000`, `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`.
+
+A bounded read-only SQLite `PRAGMA quick_check` did not complete under the
+loaded machine. The supported `farmctl` read and a separate read-only query of
+the selected and active rows both completed successfully, so no retry was made
+after the CPU ceiling fired.
+
+Because all 66 frozen-scan relationships are already mechanized, the anchors
+are not Q02-infrastructure blocked, the selected successor is already enqueued
+exactly once, and the CPU ceiling is binding, no duplicate Card, EA, queue row,
+requeue, priority mutation, dispatch tick, backtest, tester launch, terminal
+action, or portfolio/live-surface change followed. Fresh machine-readable
+evidence is
+`artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T111722Z_board_advisor.json`.

@@ -1,0 +1,155 @@
+{
+  "schema_version": "fx_cointegration_frontier_cpu_stop.v1",
+  "observed_at_utc": "2026-08-17T11:17:22Z",
+  "branch": "agents/board-advisor",
+  "repository_head": "1cbf3cbdb062852545c964268ee9e9b23175ab12",
+  "decision": "STOP_HARD_CPU_CEILING",
+  "frontier": {
+    "scan": "analyze_cross_asset_v3.py --include-negative-hedges",
+    "relationship_count": 66,
+    "reconciliation": "fully_mechanized",
+    "new_card_or_ea_created": false
+  },
+  "anchors": [
+    {
+      "ea_id": "QM5_12532",
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "terminal_path": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "open_rows": 0
+    },
+    {
+      "ea_id": "QM5_12533",
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "terminal_path": "Q02_PASS_Q04_FAIL",
+      "open_rows": 0
+    }
+  ],
+  "selected_existing_successor": {
+    "scan_rank": 21,
+    "ea_id": "QM5_20203",
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "source_contract": "OWNER-approved Tier-A Chan cointegration card",
+    "q02_work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+    "q02_status": "done",
+    "q02_verdict": "PASS",
+    "q04_work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+    "q04_status": "pending",
+    "q04_verdict": null,
+    "q04_attempt_count": 0,
+    "q04_claimed_by": null,
+    "open_row_count": 1,
+    "queue_mutation": "none_duplicate_guard"
+  },
+  "artifact_hashes": {
+    "mq5_sha256": "d75788d24eadcff9c699a2f8964ab2cfd5ad924296b34df0b1d4a0a6853365cb",
+    "ex5_sha256": "4d57f2bc03a14ce0be3f7f18245adfff280955287cda5af1119d502d33d96270",
+    "basket_manifest_sha256": "2f5823242ae1b2a0592d9239969e22f31ac90234d909b3eee5e1d9c635b519a9",
+    "backtest_setfile_sha256": "dcac19dcd0882c24ba0c772b36e47c816c582d3f612b35445ce909bfc8e846d8",
+    "approved_card_sha256": "f5f4b1d13ace14d69ca3249b77976503f025c229598f16693ace755ba8c0043d"
+  },
+  "database": {
+    "path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "operator_read": "farmctl_success",
+    "readonly_row_query": "success",
+    "quick_check": "not_completed_bounded_timeout",
+    "active_work_item_count": 7,
+    "active_phase_counts": {
+      "Q02": 1,
+      "Q04": 1,
+      "Q07": 4,
+      "Q08": 1
+    }
+  },
+  "cpu": {
+    "threshold_percent": 97.0,
+    "sample_interval_seconds": 2,
+    "samples_percent": [
+      100.0,
+      99.71,
+      98.21,
+      99.61,
+      89.82
+    ],
+    "average_percent": 97.47,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true
+  },
+  "factory": {
+    "active_work_items": [
+      {
+        "terminal": "T10",
+        "work_item_id": "28289976-f823-4bfc-84d5-47015d95e6f0",
+        "ea_id": "QM5_12354",
+        "phase": "Q08",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T2",
+        "work_item_id": "b37c01d6-3762-4f7d-9463-0272d444c007",
+        "ea_id": "QM5_1116",
+        "phase": "Q07",
+        "symbol": "EURJPY.DWX"
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "46374352-ee77-4c40-a032-e3cd6e59b00a",
+        "ea_id": "QM5_20233",
+        "phase": "Q02",
+        "symbol": "QM5_20233_XAU_XAG_SKEW_RANK_D1"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "215317c3-893d-4b13-a7a8-2d35b1eaf577",
+        "ea_id": "QM5_9642",
+        "phase": "Q04",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "e317cb4a-0486-4a4e-a47b-660162844345",
+        "ea_id": "QM5_1077",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "6e1598dd-9344-40f6-8ec4-50c508ec1557",
+        "ea_id": "QM5_12935",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "e5754875-6bbc-4458-8313-88b9a476f987",
+        "ea_id": "QM5_20085",
+        "phase": "Q07",
+        "symbol": "EURUSD.DWX"
+      }
+    ],
+    "path_anchored_factory_terminals": [
+      "T2",
+      "T3",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "process_scan_performed": true,
+    "t_live_excluded": true,
+    "t_live_controlled": false,
+    "process_control_performed": false
+  },
+  "mutations": {
+    "queue": false,
+    "backtest_or_dispatch": false,
+    "terminal": false,
+    "ea_or_registry": false,
+    "portfolio_gate": false,
+    "t_live_or_autotrading": false
+  }
+}
