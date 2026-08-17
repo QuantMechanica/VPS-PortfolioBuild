@@ -1,0 +1,150 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-17T17:20:14Z",
+  "generated_at_local": "2026-08-17T19:20:14+02:00",
+  "branch": "agents/board-advisor",
+  "base_commit": "998fe5887b0398029453b85f76c53481c95a0f02",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_state": {
+    "scan": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a80493291",
+    "new_card_or_ea_permitted": false,
+    "reason": "The committed sign-aware reconciliation covers every frozen-scan relationship; another identity would be duplicate work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "canonical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "canonical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "selection_reason": "No unbuilt frozen-scan relationship remains; rank 21 is the highest-ranked exact frontier sleeve still awaiting an economic verdict.",
+    "scan_rank": 21,
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "ea_id": "QM5_20203",
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "q02": {
+      "work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-08-05T14:53:04+00:00",
+      "updated_at": "2026-08-15T23:46:58+00:00",
+      "duplicate_enqueue_or_requeue_performed": false
+    }
+  },
+  "capacity_sample": {
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "cpu_percent": [
+      98.49,
+      94.93,
+      95.51,
+      90.97,
+      87.60
+    ],
+    "average_cpu_percent": 93.50,
+    "maximum_cpu_percent": 98.49,
+    "explicit_hard_ceiling_percent": 97.00,
+    "ceiling_binding": true,
+    "active_database_work_item_count": 7,
+    "active_database_claims": [
+      {
+        "terminal": "T1",
+        "work_item_id": "c66474ef-ade3-46c1-b65c-fc5163277ae5",
+        "ea_id": "QM5_1206",
+        "phase": "Q07",
+        "symbol": "SP500.DWX"
+      },
+      {
+        "terminal": "T2",
+        "work_item_id": "48c217fb-2dfc-4b42-90b1-52e287fc0ccc",
+        "ea_id": "QM5_12354",
+        "phase": "Q08",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "3669c7af-8c79-4520-bc6a-954dcbc8922a",
+        "ea_id": "QM5_10672",
+        "phase": "Q04",
+        "symbol": "SP500.DWX"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "751dcc43-42bb-45ac-b224-85fed6df6638",
+        "ea_id": "QM5_10439",
+        "phase": "Q04",
+        "symbol": "XAGUSD.DWX"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "1cf5109f-8c92-4e05-bb13-d0d61d804cfc",
+        "ea_id": "QM5_20178",
+        "phase": "Q02",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": "b797a5ba-8b14-4f97-97bf-50585c9ec5b6",
+        "ea_id": "QM5_1169",
+        "phase": "Q04",
+        "symbol": "XAGUSD.DWX"
+      },
+      {
+        "terminal": "T10",
+        "work_item_id": "f5d156b2-dc14-42e3-984a-6cdad792103e",
+        "ea_id": "QM5_11264",
+        "phase": "Q04",
+        "symbol": "XAUUSD.DWX"
+      }
+    ],
+    "path_bounded_terminal_processes": [
+      "T1",
+      "T2",
+      "T3",
+      "T9"
+    ],
+    "database_process_roster_difference_observed_only": true,
+    "terminal_reconciliation_or_control_performed": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The selected successor already exists exactly once and the explicit hard CPU ceiling is binding."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
