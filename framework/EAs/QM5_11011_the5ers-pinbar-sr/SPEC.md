@@ -4,7 +4,7 @@
 **Slug:** the5ers-pinbar-sr
 **Source:** 1d445184-7c47-57da-9856-a123682a932d (see `sources/the5ers-blog`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-08-17
 
 ---
 
@@ -102,3 +102,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | fb0901f0-072d-461d-a056-fa7b66fff818 |
+| v2 | 2026-08-17 | Recover stranded approved build and refresh V5 wiring | fb0901f0-072d-461d-a056-fa7b66fff818 generation 1 |

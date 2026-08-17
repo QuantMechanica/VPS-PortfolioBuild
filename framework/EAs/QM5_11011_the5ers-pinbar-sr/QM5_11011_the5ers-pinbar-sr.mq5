@@ -8,7 +8,7 @@
 // QuantMechanica V5 EA — QM5_11011 the5ers-pinbar-sr
 // -----------------------------------------------------------------------------
 // Source: The5ers blog "Follow The Money With The Forex Pin Bar Pattern"
-//   https://the5ers.com/forex-pin-bar/ (source_id 1d445184-7c47-57da-9856-a123682a932d).
+//   source_id 1d445184-7c47-57da-9856-a123682a932d; full citation is in SPEC.md.
 // Card: artifacts/cards_approved/QM5_11011_the5ers-pinbar-sr.md (g0_status APPROVED).
 //
 // Mechanics (closed-bar, H4). All geometry/level work runs ONCE per new closed
@@ -470,6 +470,11 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H4,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "V5_WEEKEND_RISK_POLICY"))
+      return INIT_FAILED;
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
@@ -482,18 +487,14 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: capture floating P&L before any early return.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -517,7 +518,17 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   // News blackouts suppress new entries only; risk management and exits above
+   // remain active throughout the blackout window.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar(_Symbol, PERIOD_H4))
       return;
 
    QM_EquityStreamOnNewBar();
@@ -526,6 +537,7 @@ void OnTick()
    AdvanceState_OnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
