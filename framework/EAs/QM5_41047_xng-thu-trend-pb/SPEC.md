@@ -1,6 +1,6 @@
 # QM5_41047 — XNG Thursday Counter-Move / Slow-Trend Re-entry
 
-Status: `G0 APPROVED; DIRECTORY IDENTITY ESTABLISHED; BUILD PENDING`
+Status: `G0 APPROVED; Q01 PASS; Q02 HANDOFF PENDING`
 
 ## Identity
 
@@ -41,9 +41,22 @@ normal one-D1 lifecycle spans the weekend.
   shadow, stress, optimization, AutoTrading, `T_Live`, deploy/T_Live manifest,
   portfolio-gate change, portfolio admission, or correlation waiver
 
-## Build Order
+## Build State
 
-This file established the exact EA directory before magic allocation, as
-required by the canonical resolver generator. The single active
-`(41047, 0, XNGUSD.DWX)` row is now registered. Development may proceed only
-after resolver regeneration keeps this row and reports zero dropped rows.
+The directory was established before magic allocation, then the canonical
+resolver kept 17,296 rows and dropped zero. The source and binary are present
+with one fixed-risk backtest preset, a synchronized approved-card copy, and an
+independent 15-case reference suite.
+
+Q01 evidence:
+
+- strict compile PASS, zero errors and zero warnings:
+  `framework/build/compile/20260817_150047/QM5_41047_xng-thu-trend-pb.compile.log`
+- targeted build check PASS, zero failures and zero warnings:
+  `D:/QM/reports/framework/21/build_check_20260817_150150.json`
+- static P1 artifact validation PASS:
+  `D:/QM/reports/pipeline/QM5_41047/P1/P1_QM5_41047_result.json`
+- factory symbol-scope validation: `SINGLE_SYMBOL_OK`, zero violations
+
+The only next mutation authorized by the card is one paced target-only Q02
+enqueue below the governed tester ceiling.
