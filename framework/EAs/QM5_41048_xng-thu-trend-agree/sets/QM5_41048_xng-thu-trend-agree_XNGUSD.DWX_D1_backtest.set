@@ -30,7 +30,7 @@ qm_news_mode_legacy=0
 qm_friday_close_enabled=false
 qm_friday_close_hour_broker=21
 qm_stress_reject_probability=0.0
-; append strategy-specific parameters from the approved card below this line
+; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41048_xng-thu-trend-agree_card.md
 strategy_entry_grace_minutes=180
 strategy_trend_lookback_d1=252

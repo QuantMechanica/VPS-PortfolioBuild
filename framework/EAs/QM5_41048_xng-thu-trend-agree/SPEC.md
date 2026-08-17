@@ -1,6 +1,6 @@
 # QM5_41048 — XNG Standard-Thursday Event / Slow-Trend Agreement
 
-Status: `G0 APPROVED; Q01 PASS; Q02 HANDOFF PENDING`
+Status: `G0 APPROVED; Q01 PASS; Q02 ENQUEUED`
 
 ## Identity
 
@@ -64,5 +64,16 @@ Q01 evidence:
 - setfile normalized-content build hash:
   `80974e1c67e39ad4fecf5698b9c8f14e38881bb551f47f080a04b792354c8b7a`
 
-The only next mutation authorized by the card is one paced target-only Q02
-enqueue below the governed tester and host-CPU ceilings.
+## Q02 Handoff
+
+The target-only dry run selected one fresh Q02 item and no recovery item. At
+the capacity gate, five exact-path research terminals were active against the
+seven-terminal ceiling; five host-CPU samples averaged `94.80%` and peaked at
+`96.93%`, below the `97%` hard stop. The paced launch limit was `1`.
+
+The apply created exactly one work item,
+`6d4dbb7f-736b-4255-965a-b12e7333f24e`, for exact `XNGUSD.DWX`, D1. It was
+initially `pending` with attempt count 0; the scheduled fleet later claimed it
+on T7 without operator terminal control. A post-apply target-only dry run
+selected zero additional rows. Full evidence is in
+`docs/ops/evidence/2026-08-17_qm5_41048_xng_thursday_trend_agreement_q01_q02_enqueue.md`.
