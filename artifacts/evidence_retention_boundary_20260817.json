@@ -1,0 +1,620 @@
+{
+ "schema": "qm.evidence-retention-boundary/v1",
+ "measured_at": "2026-08-17",
+ "question": "is the evidence boundary a fixed DATE (one-off) or a fixed AGE (running retention)?",
+ "method": "per-day present/missing counts for every done|failed row with a set evidence_path since 2026-05-01; a sharp step implies a date, a graded ramp implies an age",
+ "note": "MEASURED ONCE, a date-cliff and an age-cliff are indistinguishable. The discriminator is whether this boundary MOVES on re-measurement, which is why the cohort watcher exists.",
+ "boundary_day_today": "2026-07-07",
+ "boundary_age_days": 41,
+ "per_day": [
+  {
+   "day": "2026-05-23",
+   "rows": 186,
+   "present": 0,
+   "missing": 186,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-05-24",
+   "rows": 930,
+   "present": 0,
+   "missing": 930,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-05-25",
+   "rows": 467,
+   "present": 0,
+   "missing": 467,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-05-26",
+   "rows": 1728,
+   "present": 0,
+   "missing": 1728,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-05-27",
+   "rows": 1894,
+   "present": 0,
+   "missing": 1894,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-05-28",
+   "rows": 419,
+   "present": 0,
+   "missing": 419,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-05-29",
+   "rows": 664,
+   "present": 0,
+   "missing": 664,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-05-30",
+   "rows": 338,
+   "present": 0,
+   "missing": 338,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-05-31",
+   "rows": 772,
+   "present": 0,
+   "missing": 772,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-01",
+   "rows": 487,
+   "present": 0,
+   "missing": 487,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-02",
+   "rows": 179,
+   "present": 2,
+   "missing": 177,
+   "missing_pct": 98.9
+  },
+  {
+   "day": "2026-06-03",
+   "rows": 1666,
+   "present": 0,
+   "missing": 1666,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-04",
+   "rows": 1490,
+   "present": 0,
+   "missing": 1490,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-05",
+   "rows": 1004,
+   "present": 0,
+   "missing": 1004,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-06",
+   "rows": 524,
+   "present": 0,
+   "missing": 524,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-07",
+   "rows": 1321,
+   "present": 0,
+   "missing": 1321,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-08",
+   "rows": 1252,
+   "present": 0,
+   "missing": 1252,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-09",
+   "rows": 915,
+   "present": 0,
+   "missing": 915,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-10",
+   "rows": 1475,
+   "present": 0,
+   "missing": 1475,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-11",
+   "rows": 1545,
+   "present": 0,
+   "missing": 1545,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-12",
+   "rows": 1757,
+   "present": 0,
+   "missing": 1757,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-13",
+   "rows": 937,
+   "present": 0,
+   "missing": 937,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-14",
+   "rows": 792,
+   "present": 0,
+   "missing": 792,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-15",
+   "rows": 512,
+   "present": 0,
+   "missing": 512,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-16",
+   "rows": 851,
+   "present": 0,
+   "missing": 851,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-17",
+   "rows": 1289,
+   "present": 0,
+   "missing": 1289,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-18",
+   "rows": 3008,
+   "present": 0,
+   "missing": 3008,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-19",
+   "rows": 336,
+   "present": 0,
+   "missing": 336,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-20",
+   "rows": 1368,
+   "present": 0,
+   "missing": 1368,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-21",
+   "rows": 1929,
+   "present": 0,
+   "missing": 1929,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-22",
+   "rows": 1151,
+   "present": 0,
+   "missing": 1151,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-23",
+   "rows": 961,
+   "present": 0,
+   "missing": 961,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-24",
+   "rows": 198,
+   "present": 0,
+   "missing": 198,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-25",
+   "rows": 935,
+   "present": 0,
+   "missing": 935,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-26",
+   "rows": 845,
+   "present": 3,
+   "missing": 842,
+   "missing_pct": 99.6
+  },
+  {
+   "day": "2026-06-27",
+   "rows": 727,
+   "present": 0,
+   "missing": 727,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-28",
+   "rows": 1003,
+   "present": 0,
+   "missing": 1003,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-29",
+   "rows": 680,
+   "present": 0,
+   "missing": 680,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-06-30",
+   "rows": 845,
+   "present": 0,
+   "missing": 845,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-07-01",
+   "rows": 570,
+   "present": 0,
+   "missing": 570,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-07-02",
+   "rows": 272,
+   "present": 0,
+   "missing": 272,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-07-03",
+   "rows": 411,
+   "present": 0,
+   "missing": 411,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-07-04",
+   "rows": 463,
+   "present": 0,
+   "missing": 463,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-07-05",
+   "rows": 438,
+   "present": 0,
+   "missing": 438,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-07-06",
+   "rows": 357,
+   "present": 0,
+   "missing": 357,
+   "missing_pct": 100.0
+  },
+  {
+   "day": "2026-07-07",
+   "rows": 571,
+   "present": 363,
+   "missing": 208,
+   "missing_pct": 36.4
+  },
+  {
+   "day": "2026-07-08",
+   "rows": 645,
+   "present": 438,
+   "missing": 207,
+   "missing_pct": 32.1
+  },
+  {
+   "day": "2026-07-09",
+   "rows": 744,
+   "present": 672,
+   "missing": 72,
+   "missing_pct": 9.7
+  },
+  {
+   "day": "2026-07-10",
+   "rows": 831,
+   "present": 795,
+   "missing": 36,
+   "missing_pct": 4.3
+  },
+  {
+   "day": "2026-07-11",
+   "rows": 10,
+   "present": 10,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-07-12",
+   "rows": 1,
+   "present": 1,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-07-13",
+   "rows": 533,
+   "present": 300,
+   "missing": 233,
+   "missing_pct": 43.7
+  },
+  {
+   "day": "2026-07-14",
+   "rows": 667,
+   "present": 662,
+   "missing": 5,
+   "missing_pct": 0.7
+  },
+  {
+   "day": "2026-07-15",
+   "rows": 664,
+   "present": 664,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-07-16",
+   "rows": 861,
+   "present": 858,
+   "missing": 3,
+   "missing_pct": 0.3
+  },
+  {
+   "day": "2026-07-17",
+   "rows": 412,
+   "present": 410,
+   "missing": 2,
+   "missing_pct": 0.5
+  },
+  {
+   "day": "2026-07-18",
+   "rows": 348,
+   "present": 346,
+   "missing": 2,
+   "missing_pct": 0.6
+  },
+  {
+   "day": "2026-07-19",
+   "rows": 729,
+   "present": 726,
+   "missing": 3,
+   "missing_pct": 0.4
+  },
+  {
+   "day": "2026-07-20",
+   "rows": 771,
+   "present": 760,
+   "missing": 11,
+   "missing_pct": 1.4
+  },
+  {
+   "day": "2026-07-21",
+   "rows": 605,
+   "present": 592,
+   "missing": 13,
+   "missing_pct": 2.1
+  },
+  {
+   "day": "2026-07-22",
+   "rows": 807,
+   "present": 807,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-07-23",
+   "rows": 1058,
+   "present": 1058,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-07-24",
+   "rows": 738,
+   "present": 737,
+   "missing": 1,
+   "missing_pct": 0.1
+  },
+  {
+   "day": "2026-07-25",
+   "rows": 293,
+   "present": 293,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-07-26",
+   "rows": 615,
+   "present": 609,
+   "missing": 6,
+   "missing_pct": 1.0
+  },
+  {
+   "day": "2026-07-27",
+   "rows": 380,
+   "present": 380,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-07-28",
+   "rows": 692,
+   "present": 692,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-07-29",
+   "rows": 1074,
+   "present": 611,
+   "missing": 463,
+   "missing_pct": 43.1
+  },
+  {
+   "day": "2026-07-30",
+   "rows": 5,
+   "present": 5,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-07-31",
+   "rows": 371,
+   "present": 371,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-01",
+   "rows": 388,
+   "present": 388,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-02",
+   "rows": 267,
+   "present": 267,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-03",
+   "rows": 272,
+   "present": 272,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-04",
+   "rows": 174,
+   "present": 174,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-05",
+   "rows": 368,
+   "present": 368,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-06",
+   "rows": 332,
+   "present": 332,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-07",
+   "rows": 358,
+   "present": 358,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-08",
+   "rows": 325,
+   "present": 325,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-09",
+   "rows": 68,
+   "present": 68,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-10",
+   "rows": 250,
+   "present": 250,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-11",
+   "rows": 486,
+   "present": 486,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-12",
+   "rows": 220,
+   "present": 220,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-13",
+   "rows": 144,
+   "present": 144,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-14",
+   "rows": 53,
+   "present": 53,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-15",
+   "rows": 78,
+   "present": 78,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-16",
+   "rows": 293,
+   "present": 293,
+   "missing": 0,
+   "missing_pct": 0.0
+  },
+  {
+   "day": "2026-08-17",
+   "rows": 110,
+   "present": 110,
+   "missing": 0,
+   "missing_pct": 0.0
+  }
+ ]
+}

@@ -1,0 +1,141 @@
+{
+ "schema": "qm.evidence-recoverability/v1",
+ "measured_at": "2026-08-17",
+ "question": "is the missing evidence deleted, or relocated by the requeue-archive rename and merely unreferenced?",
+ "mechanism_candidate": "farmctl.py:20262 _archive_work_item_report_root_for_requeue renames <uuid> -> <uuid>.requeued_<stamp>",
+ "counts": {
+  "PRESENT": 17352,
+  "GENUINELY_ABSENT": 42693,
+  "ROOT_EXISTS_BUT_FILE_GONE": 452,
+  "RECOVERABLE_REQUEUE_ARCHIVE": 6
+ },
+ "by_month": {
+  "2026-08": {
+   "PRESENT": 4187
+  },
+  "2026-05": {
+   "GENUINELY_ABSENT": 7398
+  },
+  "2026-06": {
+   "GENUINELY_ABSENT": 31977,
+   "PRESENT": 5
+  },
+  "2026-07": {
+   "GENUINELY_ABSENT": 3318,
+   "PRESENT": 13160,
+   "ROOT_EXISTS_BUT_FILE_GONE": 452,
+   "RECOVERABLE_REQUEUE_ARCHIVE": 6
+  }
+ },
+ "index": {
+  "plain_roots": 18401,
+  "requeue_archived_ids": 488,
+  "purge_quarantine_ids": 5
+ },
+ "samples": {
+  "PRESENT": [
+   {
+    "id": "cba8df85-9a5a-57b7-a856-6b5ce49c1399",
+    "at": "2026-08-13T04:49:54",
+    "phase": "Q14",
+    "verdict": "OPT_ELIGIBLE",
+    "evidence_path": "D:\\QM\\reports\\opt_track\\OPT-13213-USDJPY-EXIT-SURGERY-1e2bb8e4c42f21f7\\opt_card.json",
+    "archive": null
+   },
+   {
+    "id": "ce7fa014-75c4-50ec-ad4c-a6fa02287eb6",
+    "at": "2026-08-13T04:49:54",
+    "phase": "Q14",
+    "verdict": "OPT_ELIGIBLE",
+    "evidence_path": "D:\\QM\\reports\\opt_track\\OPT-13213-USDJPY-VOL-REGIME-FILTER-bacbed95fb36992e\\opt_card.json",
+    "archive": null
+   },
+   {
+    "id": "4d7f3315-174f-5a70-b8f7-ab3e58e93e0a",
+    "at": "2026-08-13T04:49:54",
+    "phase": "Q14",
+    "verdict": "OPT_ELIGIBLE",
+    "evidence_path": "D:\\QM\\reports\\opt_track\\OPT-10706-GBPUSD-EXIT-SURGERY-1618b1899dbe4a0f\\opt_card.json",
+    "archive": null
+   }
+  ],
+  "GENUINELY_ABSENT": [
+   {
+    "id": "c98a7ee4-3700-49ec-b1de-f4bfafeab0ca",
+    "at": "2026-05-23T15:26:44",
+    "phase": "Q02",
+    "verdict": "FAIL",
+    "evidence_path": "D:\\QM\\reports\\work_items\\c98a7ee4-3700-49ec-b1de-f4bfafeab0ca\\QM5_1056\\20260523_152211\\summary.json",
+    "archive": null
+   },
+   {
+    "id": "f80113a6-a779-4386-90d2-822ee7776ee4",
+    "at": "2026-05-23T15:26:28",
+    "phase": "Q02",
+    "verdict": "FAIL",
+    "evidence_path": "D:\\QM\\reports\\work_items\\f80113a6-a779-4386-90d2-822ee7776ee4\\QM5_1056\\20260523_152211\\summary.json",
+    "archive": null
+   },
+   {
+    "id": "aa0a3011-1f3e-40a3-bd94-f72ae53463fa",
+    "at": "2026-05-23T15:26:48",
+    "phase": "Q02",
+    "verdict": "FAIL",
+    "evidence_path": "D:\\QM\\reports\\work_items\\aa0a3011-1f3e-40a3-bd94-f72ae53463fa\\QM5_1056\\20260523_152212\\summary.json",
+    "archive": null
+   }
+  ],
+  "ROOT_EXISTS_BUT_FILE_GONE": [
+   {
+    "id": "8924fea7-7b40-4d8f-b4a1-a7566a2c8e1f",
+    "at": "2026-07-29T12:18:03",
+    "phase": "Q02",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "D:\\QM\\strategy_farm\\logs\\work_item_8924fea7-7b40-4d8f-b4a1-a7566a2c8e1f.log",
+    "archive": null
+   },
+   {
+    "id": "199d8181-938d-4232-ba41-c81c95346a1f",
+    "at": "2026-07-29T12:18:03",
+    "phase": "Q02",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "D:\\QM\\strategy_farm\\logs\\work_item_199d8181-938d-4232-ba41-c81c95346a1f.log",
+    "archive": null
+   },
+   {
+    "id": "18372e4c-1193-4b87-915d-9804f5dff7aa",
+    "at": "2026-07-29T12:18:03",
+    "phase": "Q02",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "D:\\QM\\strategy_farm\\logs\\work_item_18372e4c-1193-4b87-915d-9804f5dff7aa.log",
+    "archive": null
+   }
+  ],
+  "RECOVERABLE_REQUEUE_ARCHIVE": [
+   {
+    "id": "59a62276-643f-4368-ae2c-d2db69abe6bd",
+    "at": "2026-07-18T03:08:42",
+    "phase": "Q08",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "D:\\QM\\reports\\work_items\\59a62276-643f-4368-ae2c-d2db69abe6bd\\QM5_10715\\Q08\\USDJPY_DWX\\aggregate.json",
+    "archive": "59a62276-643f-4368-ae2c-d2db69abe6bd.requeued_manual_20260718T0010Z"
+   },
+   {
+    "id": "4849e604-ea16-408a-86ad-e672086295b0",
+    "at": "2026-07-29T12:18:03",
+    "phase": "Q02",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "D:\\QM\\strategy_farm\\logs\\work_item_4849e604-ea16-408a-86ad-e672086295b0.log",
+    "archive": "4849e604-ea16-408a-86ad-e672086295b0.requeued_20260727T1835030000"
+   },
+   {
+    "id": "52050142-85ad-445d-bce5-5a0491110670",
+    "at": "2026-07-29T12:18:03",
+    "phase": "Q02",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "D:\\QM\\strategy_farm\\logs\\work_item_52050142-85ad-445d-bce5-5a0491110670.log",
+    "archive": "52050142-85ad-445d-bce5-5a0491110670.requeued_20260727T1835030000"
+   }
+  ]
+ }
+}

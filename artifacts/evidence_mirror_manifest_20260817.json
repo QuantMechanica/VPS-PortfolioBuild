@@ -1,0 +1,2377 @@
+{
+ "schema": "qm.evidence-mirror-manifest/v1",
+ "created_at_utc": "2026-08-17T13:05:40Z",
+ "dry_run": false,
+ "scope": "Q10 PASS survivors, Q09_PORTFOLIO verdicts, Q14 cohort rows",
+ "note": "evidence file plus sibling metadata only; raw *.log excluded as bulk and regenerable. SYSTEM cannot see G:, so this is a session tool by design.",
+ "destination": "G:\\My Drive\\QuantMechanica - Company Reference\\_evidence_mirror",
+ "counts": {
+  "rows": 174,
+  "files": 143,
+  "bytes": 3377259,
+  "already_absent_rows": 58,
+  "by_class": {
+   "q10_survivor": {
+    "MIRRORED": 40,
+    "ALREADY_ABSENT": 0
+   },
+   "portfolio_verdict": {
+    "MIRRORED": 65,
+    "ALREADY_ABSENT": 58
+   },
+   "q14_cohort": {
+    "MIRRORED": 11,
+    "ALREADY_ABSENT": 0
+   }
+  }
+ },
+ "entries": [
+  {
+   "class": "q10_survivor",
+   "work_item_id": "c042c58f-14f6-40a3-b661-585e1a55e4bf",
+   "ea_id": "QM5_10123",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-20T02:41:37+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\c042c58f-14f6-40a3-b661-585e1a55e4bf\\QM5_10123\\Q10\\XAUUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10123\\XAUUSD_DWX\\c042c58f",
+   "files_sha256": {
+    "aggregate.json": "0c7b7d9c7028f6ebbfbaa95c1c291b106dd45f747324ab785c3faa4968676a38"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "c3ea0dcb-96f9-4f3f-a79f-7dde50417f62",
+   "ea_id": "QM5_10128",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-20T14:12:15+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\c3ea0dcb-96f9-4f3f-a79f-7dde50417f62\\QM5_10128\\Q10\\XAUUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10128\\XAUUSD_DWX\\c3ea0dcb",
+   "files_sha256": {
+    "aggregate.json": "48209f9101bd1d3fb89fa98c77856bbfbd31b1a46c2eb87fef999a58135fa319"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "c78efefc-9dd7-42fe-b72b-659299e349e2",
+   "ea_id": "QM5_10142",
+   "symbol": "SP500.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-26T13:23:29+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\c78efefc-9dd7-42fe-b72b-659299e349e2\\QM5_10142\\Q10\\SP500_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10142\\SP500_DWX\\c78efefc",
+   "files_sha256": {
+    "aggregate.json": "4805d8799fa3b802e246f7a5cc4b7819f20be12a967f4d2c2a2ec3379595963c"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "8eafc3ce-58c9-4b25-9cd6-b935061c074c",
+   "ea_id": "QM5_10145",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-24T08:15:30+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\8eafc3ce-58c9-4b25-9cd6-b935061c074c\\QM5_10145\\Q10\\XAUUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10145\\XAUUSD_DWX\\8eafc3ce",
+   "files_sha256": {
+    "aggregate.json": "d15390393e3476366b22fab4e2c540f25ef8d6b9770a848a174efba4796c1844"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "a4c37b83-b40e-4ed9-abeb-d914fa6a60b4",
+   "ea_id": "QM5_10145",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-24T08:29:39+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\a4c37b83-b40e-4ed9-abeb-d914fa6a60b4\\QM5_10145\\Q10\\XAUUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10145\\XAUUSD_DWX\\a4c37b83",
+   "files_sha256": {
+    "aggregate.json": "03bfa6091722aea2ff111f8a81a25b3c5b94a16d24afe2abecf0db8ac77babd6"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "7c0b521a-83fb-43db-9286-2c6b9db63e9c",
+   "ea_id": "QM5_10145",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-24T08:41:37+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\7c0b521a-83fb-43db-9286-2c6b9db63e9c\\QM5_10145\\Q10\\XAUUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10145\\XAUUSD_DWX\\7c0b521a",
+   "files_sha256": {
+    "aggregate.json": "e6f93cbe6c6f6712f2d7058413473ec716b571ba33946c00539d1805e20454b4"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "2e13a544-899a-4bf2-9d23-eb2cfa196b69",
+   "ea_id": "QM5_10183",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-21T14:50:27+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\2e13a544-899a-4bf2-9d23-eb2cfa196b69\\QM5_10183\\Q10\\XAUUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10183\\XAUUSD_DWX\\2e13a544",
+   "files_sha256": {
+    "aggregate.json": "f373cdce44550e4d10fe705cdbc3d071914318d7d5abdae8831cd9f60d594e11"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "ad668c04-7720-445a-b5ea-80d6b6d1f2b7",
+   "ea_id": "QM5_10403",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_10403\\Q10\\XAUUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10403\\XAUUSD_DWX\\ad668c04",
+   "files_sha256": {
+    "aggregate.json": "9931af70230cbdc8ee93618c126b6f97842a5946ab97c707de3ac3d19191d6b0"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "297c0127-7a8e-4bcd-bbbb-c4a57e823477",
+   "ea_id": "QM5_10513",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_10513\\Q10\\XAUUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10513\\XAUUSD_DWX\\297c0127",
+   "files_sha256": {
+    "aggregate.json": "166704e04b11bb8023a7760a8e9d8d395281494c03c3654596d84fe8af798def"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "10c85a72-ebea-451a-9b38-82b3c4f6aee7",
+   "ea_id": "QM5_10692",
+   "symbol": "NDX.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-26T05:01:34+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\10c85a72-ebea-451a-9b38-82b3c4f6aee7\\QM5_10692\\Q10\\NDX_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10692\\NDX_DWX\\10c85a72",
+   "files_sha256": {
+    "aggregate.json": "297f93337c10089e87b1f55339f6f858d408b3c203a93f5bfbb317dfa62e32ba"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "f06b8243-d3ca-490a-8b47-7c598f4d6d58",
+   "ea_id": "QM5_10706",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_10706\\Q10\\GBPUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10706\\GBPUSD_DWX\\f06b8243",
+   "files_sha256": {
+    "aggregate.json": "020787223d9bd50cb64a976d192a62bcddbab5d762886f1e9c5d21953c1aa39c"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "2e54188a-2b36-439a-8ad6-f3d5b3e22f60",
+   "ea_id": "QM5_10911",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_10911\\Q10\\GDAXI_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10911\\GDAXI_DWX\\2e54188a",
+   "files_sha256": {
+    "aggregate.json": "c05c0e7a44fb9ee0b9425e8b1685ef9254460e51ec1c765556f07c16f94327f2"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "afff2cd2-85a9-4c9e-af10-8f73e4e1f7e0",
+   "ea_id": "QM5_10911",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T22:34:05+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\afff2cd2-85a9-4c9e-af10-8f73e4e1f7e0\\QM5_10911\\Q10\\GDAXI_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10911\\GDAXI_DWX\\afff2cd2",
+   "files_sha256": {
+    "aggregate.json": "0c2b2b2bd09feae8aab6ad695dd274048bdd4bcc13c147a0bd0ed07d2c6224c8"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "fcbb4c4f-6b8b-4330-8476-e0578a3300bd",
+   "ea_id": "QM5_10919",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_10919\\Q10\\XTIUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10919\\XTIUSD_DWX\\fcbb4c4f",
+   "files_sha256": {
+    "aggregate.json": "afb0e39d3c0210238c08763aaddf4b56acd3acab319852a82b019365aa3fb714"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "e4130503-2213-46b2-bbf8-47cdc5444836",
+   "ea_id": "QM5_10938",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-26T04:56:50+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\e4130503-2213-46b2-bbf8-47cdc5444836\\QM5_10938\\Q10\\GDAXI_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10938\\GDAXI_DWX\\e4130503",
+   "files_sha256": {
+    "aggregate.json": "8c48b5e742d546aa427824d2683897e6a92c6977edf0f321d34dac6c57645b57"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "ec920551-6e1b-4ae8-8b3b-963be5ea5561",
+   "ea_id": "QM5_10939",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_10939\\Q10\\GBPUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_10939\\GBPUSD_DWX\\ec920551",
+   "files_sha256": {
+    "aggregate.json": "4d2b0f2d78502b44891b3decd85e473ff0b8d1fbe9a75d8492ae13400f7c9a85"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "ee1c2cb0-7683-4c28-8897-dc662f045d51",
+   "ea_id": "QM5_11132",
+   "symbol": "SP500.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_11132\\Q10\\SP500_DWX",
+   "mirror_rel": "q10_survivor\\QM5_11132\\SP500_DWX\\ee1c2cb0",
+   "files_sha256": {
+    "aggregate.json": "97b9106c3705a0fe889d449e2a66f973785da13fc29268544cf91ea70863116e"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "678f28ba-6be0-4ba9-a775-feb00997f344",
+   "ea_id": "QM5_11165",
+   "symbol": "AUDCAD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_11165\\Q10\\AUDCAD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_11165\\AUDCAD_DWX\\678f28ba",
+   "files_sha256": {
+    "aggregate.json": "c1b7db3bdc4657b5a6f98fbd2f69741b8ae05968334a9658b426e5c42fae0297"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "69e5a3e7-f517-4338-81aa-b416104cd4d8",
+   "ea_id": "QM5_11165",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_11165\\Q10\\EURUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_11165\\EURUSD_DWX\\69e5a3e7",
+   "files_sha256": {
+    "aggregate.json": "3529bb5c091fd3e8859781d8b72f41e42ca72024a627fee19e5cd6d6add0a100"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "935ac243-041d-4039-b854-4f6c07a07153",
+   "ea_id": "QM5_11421",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q10\\AUDUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_11421\\AUDUSD_DWX\\935ac243",
+   "files_sha256": {
+    "aggregate.json": "3d40289e2b60b6ff62d32213a4a860204d7cd2d43ca9c9232448fb06833c8c46"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "d3bda02d-e28b-4658-b3b4-907872635086",
+   "ea_id": "QM5_11421",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q10\\EURUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_11421\\EURUSD_DWX\\d3bda02d",
+   "files_sha256": {
+    "aggregate.json": "cfb9be54252d8c643b2c3e0d42269847ba29a1dcc43693ec62ca14aa1c8b7a21"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "38eddd19-0d07-4686-b1e2-afc4124e9bc8",
+   "ea_id": "QM5_11421",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T21:30:39+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\38eddd19-0d07-4686-b1e2-afc4124e9bc8\\QM5_11421\\Q10\\EURUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_11421\\EURUSD_DWX\\38eddd19",
+   "files_sha256": {
+    "aggregate.json": "7bfc3c519c12ff695d00c92604360751e4a5d7a6650144d9983feea898824242"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "6f9400fa-9ca2-4835-9fcf-e1087289f9b1",
+   "ea_id": "QM5_11422",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T21:10:06+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\6f9400fa-9ca2-4835-9fcf-e1087289f9b1\\QM5_11422\\Q10\\USDCAD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_11422\\USDCAD_DWX\\6f9400fa",
+   "files_sha256": {
+    "aggregate.json": "bd8ba9a44a8ec1ca986bf2468937d309f158ac00b62b0982830b93b8c767886a"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "3508bc4a-c393-4d12-8dad-d77d4e0e4c4f",
+   "ea_id": "QM5_11708",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_11708\\Q10\\EURUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_11708\\EURUSD_DWX\\3508bc4a",
+   "files_sha256": {
+    "aggregate.json": "77134f20992d3626e691fa5c688105f45907c7c5882e8edd38505a2a6994f19a"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "f23b9851-8fdd-4363-b0d5-63f18ef09104",
+   "ea_id": "QM5_12567",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_12567\\Q10\\XAUUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_12567\\XAUUSD_DWX\\f23b9851",
+   "files_sha256": {
+    "aggregate.json": "ebdac744edb41b019eabadcd15ae25cc96c297e7bbc810d8e2a346a3e876b3a4"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "50f735c5-6054-45dc-9e56-3c696540a129",
+   "ea_id": "QM5_12567",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T23:54:00+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\50f735c5-6054-45dc-9e56-3c696540a129\\QM5_12567\\Q10\\XAUUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_12567\\XAUUSD_DWX\\50f735c5",
+   "files_sha256": {
+    "aggregate.json": "b76bb4c60530a25613b895ab6546b52a5ff1c93fb23b1a681c17ba2334391fac"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "4ad274ec-891a-4c16-9d61-d3809590de9a",
+   "ea_id": "QM5_12778",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_12778\\Q10\\AUDUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_12778\\AUDUSD_DWX\\4ad274ec",
+   "files_sha256": {
+    "aggregate.json": "868166636d312cd7481260cbad4d7c9e47ed695819b9cbf24803ed6250923ffe"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "1c4ceb5b-6c19-4309-89cf-5f2d12b9c555",
+   "ea_id": "QM5_12969",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_12969\\Q10\\USDJPY_DWX",
+   "mirror_rel": "q10_survivor\\QM5_12969\\USDJPY_DWX\\1c4ceb5b",
+   "files_sha256": {
+    "aggregate.json": "42efa1eb4925f568639ef6758abb8155b564770fdccca56c2a24da183a8b1373"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "b0ed83c7-ff92-49e9-aafd-647a37fda30e",
+   "ea_id": "QM5_12989",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_12989\\Q10\\XAUUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_12989\\XAUUSD_DWX\\b0ed83c7",
+   "files_sha256": {
+    "aggregate.json": "c1fd6ab88dbb1aeaba9e33b85f47bb0b5ee5cc6f43cfe2f3dc067e87e8089e7e"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "f8a81085-838d-40f4-82d2-ac91b7484351",
+   "ea_id": "QM5_13013",
+   "symbol": "NDX.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-20T05:57:26+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\f8a81085-838d-40f4-82d2-ac91b7484351\\QM5_13013\\Q10\\NDX_DWX",
+   "mirror_rel": "q10_survivor\\QM5_13013\\NDX_DWX\\f8a81085",
+   "files_sha256": {
+    "aggregate.json": "99cd2475d48b8fda8140c8c47db1683573616182d9635a3086a42d7591c9ebd5"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "788d2371-4a37-42c3-b9b1-18d9fb09bd3f",
+   "ea_id": "QM5_13036",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-26T19:56:11+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\788d2371-4a37-42c3-b9b1-18d9fb09bd3f\\QM5_13036\\Q10\\GDAXI_DWX",
+   "mirror_rel": "q10_survivor\\QM5_13036\\GDAXI_DWX\\788d2371",
+   "files_sha256": {
+    "aggregate.json": "2b214ed22f7ac7df5de41e08338e1f21074b9ed4c035908a8bfe0730826b155b"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "5945764e-21d5-4064-8f2e-f33f81e5f0f5",
+   "ea_id": "QM5_13117",
+   "symbol": "EURGBP.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_13117\\Q10\\EURGBP_DWX",
+   "mirror_rel": "q10_survivor\\QM5_13117\\EURGBP_DWX\\5945764e",
+   "files_sha256": {
+    "aggregate.json": "7c2895f2c3460aa05235c16a7f5ef0bf5daf2c293dfe5a87c85f22f0e69fae11"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "e211f1c2-dfd6-4c2c-bdc1-64de7d4a1dfa",
+   "ea_id": "QM5_13128",
+   "symbol": "NDX.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_13128\\Q10\\NDX_DWX",
+   "mirror_rel": "q10_survivor\\QM5_13128\\NDX_DWX\\e211f1c2",
+   "files_sha256": {
+    "aggregate.json": "1fbf7e6bd92175db918f1472cc75f53a2c19a6269cfe3ad6ec1a9a67b310eafe"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "54b9ad23-d10d-493b-80b2-90c77347cffa",
+   "ea_id": "QM5_13213",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_13213\\Q10\\USDJPY_DWX",
+   "mirror_rel": "q10_survivor\\QM5_13213\\USDJPY_DWX\\54b9ad23",
+   "files_sha256": {
+    "aggregate.json": "8e43424a14e17926a140dd2bc29d293c30526e7074cbc6ca019288fa084c5418"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "312d2888-9381-4866-9701-ad99ccb611c3",
+   "ea_id": "QM5_1328",
+   "symbol": "EURJPY.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-26T15:32:43+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\312d2888-9381-4866-9701-ad99ccb611c3\\QM5_1328\\Q10\\EURJPY_DWX",
+   "mirror_rel": "q10_survivor\\QM5_1328\\EURJPY_DWX\\312d2888",
+   "files_sha256": {
+    "aggregate.json": "67f3b769d5024392f2f5890994e4563ede92094ba2e16a8bb1a414f1cca15de4"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "ed116e37-e82b-42d7-b0b6-f2f9f234cc89",
+   "ea_id": "QM5_13301",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_13301\\Q10\\GDAXI_DWX",
+   "mirror_rel": "q10_survivor\\QM5_13301\\GDAXI_DWX\\ed116e37",
+   "files_sha256": {
+    "aggregate.json": "7f1cf05cbaff895d7cec0fe2c0097fc24e9f705d9a9c5343a30fa0ccb02d5e48"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "90c6f8d4-a5e4-4126-a099-ea83d990b624",
+   "ea_id": "QM5_13301",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-26T22:57:38+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\90c6f8d4-a5e4-4126-a099-ea83d990b624\\QM5_13301\\Q10\\GDAXI_DWX",
+   "mirror_rel": "q10_survivor\\QM5_13301\\GDAXI_DWX\\90c6f8d4",
+   "files_sha256": {
+    "aggregate.json": "b8281566c3e6387404172b5a126ef334c0288692820f3383fd7e1dd5605a9315"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "6cd290c6-25d5-4c3d-b66e-323aece723c3",
+   "ea_id": "QM5_1556",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_1556\\Q10\\XAUUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_1556\\XAUUSD_DWX\\6cd290c6",
+   "files_sha256": {
+    "aggregate.json": "3850ace1243a9aa5a97b3d8421b65060430e93c97e9fd23993591ab02e4d48f1"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "34ade445-3b26-4766-b2cb-d5774d819bed",
+   "ea_id": "QM5_1567",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-25T19:45:35+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_1567\\Q10\\EURUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_1567\\EURUSD_DWX\\34ade445",
+   "files_sha256": {
+    "aggregate.json": "3bf316e6d3fa110b396f6a7b84fa3835552b4d807ff2ef4eade1680f975ac53a"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q10_survivor",
+   "work_item_id": "25adbc0c-7b9e-4340-9f60-c288ba32b3d3",
+   "ea_id": "QM5_20048",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q10",
+   "verdict": "PASS",
+   "row_updated_at": "2026-07-22T19:26:53+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\25adbc0c-7b9e-4340-9f60-c288ba32b3d3\\QM5_20048\\Q10\\XTIUSD_DWX",
+   "mirror_rel": "q10_survivor\\QM5_20048\\XTIUSD_DWX\\25adbc0c",
+   "files_sha256": {
+    "aggregate.json": "b56a862838aa4b4bb47da650df611ebe9a77e2778af85825a5212c1273b3ce39"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "8051f5f0-b3e4-4566-a0eb-9771ac715aa3",
+   "ea_id": "QM5_10069",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "evidence_path": "D:\\QM\\reports\\work_items\\2fb7d0e7-3bff-4971-90e7-9a31c83febab\\QM5_10069\\Q08\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "9799d0aa-4a75-4925-b58c-fdaa62f823ca",
+   "ea_id": "QM5_10440",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-06-26T07:32:28+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_10440\\Q09_PORTFOLIO\\NDX_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10440\\NDX_DWX\\9799d0aa",
+   "files_sha256": {
+    "aggregate.json": "0c3d571d4c9b7408bf8974789e1823419e20ec26706f1bbd553607e3cdf2fbaf"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "dd06ad11-3e9e-4d2b-b850-308253539768",
+   "ea_id": "QM5_10513",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\dd06ad11-3e9e-4d2b-b850-308253539768\\QM5_10513\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "607f7b0c-ecd8-4f72-a3e7-ca84bbd0b0ca",
+   "ea_id": "QM5_10692",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-06-26T07:32:28+00:00",
+   "source_dir": "D:\\QM\\reports\\pipeline\\QM5_10692\\Q09_PORTFOLIO\\NDX_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10692\\NDX_DWX\\607f7b0c",
+   "files_sha256": {
+    "aggregate.json": "30be184241d96270a85bd72dc31787ffc3ba03e3a33754c7de9d1d7861944bac"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "e25da444-2e84-402c-9ff1-a4f7493731a6",
+   "ea_id": "QM5_10940",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\e25da444-2e84-402c-9ff1-a4f7493731a6\\QM5_10940\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "3171ac4d-fc0c-408b-b0bd-da33096d52ca",
+   "ea_id": "QM5_11124",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "evidence_path": "D:\\QM\\reports\\work_items\\3171ac4d-fc0c-408b-b0bd-da33096d52ca\\QM5_11124\\Q09_PORTFOLIO\\SP500_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "cfea221d-581c-4647-93eb-b58ff31bd663",
+   "ea_id": "QM5_11132",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\cfea221d-581c-4647-93eb-b58ff31bd663\\QM5_11132\\Q09_PORTFOLIO\\SP500_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "f35e559a-cead-4ee0-95db-d736b4a2c2aa",
+   "ea_id": "QM5_12567",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "evidence_path": "D:\\QM\\reports\\work_items\\f35e559a-cead-4ee0-95db-d736b4a2c2aa\\QM5_12567\\Q09_PORTFOLIO\\XNGUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "b258fc3b-e8c3-4988-be44-ba56d072befa",
+   "ea_id": "QM5_11132",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\b258fc3b-e8c3-4988-be44-ba56d072befa\\QM5_11132\\Q09_PORTFOLIO\\SP500_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "1ea996fd-ef55-48ce-93d8-2b0a13c4f19a",
+   "ea_id": "QM5_11132",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\1ea996fd-ef55-48ce-93d8-2b0a13c4f19a\\QM5_11132\\Q09_PORTFOLIO\\SP500_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "28e51179-8572-48ac-bb66-810e1c6ee4d0",
+   "ea_id": "QM5_10513",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "evidence_path": "D:\\QM\\reports\\work_items\\28e51179-8572-48ac-bb66-810e1c6ee4d0\\QM5_10513\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "e0e2d0ff-189a-471c-84f7-107286e03d44",
+   "ea_id": "QM5_10513",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "evidence_path": "D:\\QM\\reports\\work_items\\e0e2d0ff-189a-471c-84f7-107286e03d44\\QM5_10513\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "fb68328d-16bb-4412-8c4e-a7af5e75dec9",
+   "ea_id": "QM5_10513",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "evidence_path": "D:\\QM\\reports\\work_items\\fb68328d-16bb-4412-8c4e-a7af5e75dec9\\QM5_10513\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "84fce5fb-fae4-4909-8082-03d6f5353215",
+   "ea_id": "QM5_10513",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "evidence_path": "D:\\QM\\reports\\work_items\\84fce5fb-fae4-4909-8082-03d6f5353215\\QM5_10513\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "q09-rescue-12567-xng-619205deb800",
+   "ea_id": "QM5_12567",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-06-26T13:37:48+00:00",
+   "source_dir": "D:\\QM\\reports\\portfolio\\canonical_q09_12567_20260626\\QM5_12567\\Q09_PORTFOLIO\\XNGUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_12567\\XNGUSD_DWX\\q09-resc",
+   "files_sha256": {
+    "aggregate.json": "83959ebb2ed9434948f6a4f8d745fb17e4a4c1a9e54e1a0cb73a5734497675ff"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "705890f6-5ebd-4ea1-a603-8d83a9b538ae",
+   "ea_id": "QM5_10911",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "evidence_path": "D:\\QM\\reports\\work_items\\705890f6-5ebd-4ea1-a603-8d83a9b538ae\\QM5_10911\\Q09_PORTFOLIO\\GDAXI_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "6a606407-c3b6-43aa-ae01-9de959682f17",
+   "ea_id": "QM5_11421",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "evidence_path": "D:\\QM\\reports\\work_items\\6a606407-c3b6-43aa-ae01-9de959682f17\\QM5_11421\\Q09_PORTFOLIO\\AUDUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "40dd74d4-00d6-4363-bf47-ddcd5904f8e7",
+   "ea_id": "QM5_11421",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "evidence_path": "D:\\QM\\reports\\work_items\\40dd74d4-00d6-4363-bf47-ddcd5904f8e7\\QM5_11421\\Q09_PORTFOLIO\\EURUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "6fc8c5e4-4dc2-43cf-b08c-c685d00464b7",
+   "ea_id": "QM5_10938",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "evidence_path": "D:\\QM\\reports\\work_items\\6fc8c5e4-4dc2-43cf-b08c-c685d00464b7\\QM5_10938\\Q09_PORTFOLIO\\GDAXI_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "e521f24e-1aae-489c-8ecc-574516e8b5b6",
+   "ea_id": "QM5_10115",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\e521f24e-1aae-489c-8ecc-574516e8b5b6\\QM5_10115\\Q09_PORTFOLIO\\GDAXI_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "71a4e841-8729-4cd2-a6bf-ec08bcab44e0",
+   "ea_id": "QM5_11165",
+   "symbol": "AUDCAD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\71a4e841-8729-4cd2-a6bf-ec08bcab44e0\\QM5_11165\\Q09_PORTFOLIO\\AUDCAD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "df72b85a-c537-43a7-90fe-7b342ce03361",
+   "ea_id": "QM5_10715",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\df72b85a-c537-43a7-90fe-7b342ce03361\\QM5_10715\\Q09_PORTFOLIO\\USDJPY_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "dfeb6afb-61e6-4deb-9e61-d8873271eb70",
+   "ea_id": "QM5_10939",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\dfeb6afb-61e6-4deb-9e61-d8873271eb70\\QM5_10939\\Q09_PORTFOLIO\\GBPUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "926abb93-d699-4943-bef3-5623b20e1cad",
+   "ea_id": "QM5_10115",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\926abb93-d699-4943-bef3-5623b20e1cad\\QM5_10115\\Q09_PORTFOLIO\\GDAXI_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "58d8956f-b849-42aa-8734-407d8a48de65",
+   "ea_id": "QM5_10715",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\58d8956f-b849-42aa-8734-407d8a48de65\\QM5_10715\\Q09_PORTFOLIO\\USDJPY_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "2772acf1-8d73-4d44-a303-4651595ab3bb",
+   "ea_id": "QM5_11165",
+   "symbol": "AUDCAD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\2772acf1-8d73-4d44-a303-4651595ab3bb\\QM5_11165\\Q09_PORTFOLIO\\AUDCAD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "45519afb-0b4a-4ed8-a039-32c6436821ef",
+   "ea_id": "QM5_11165",
+   "symbol": "AUDCAD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\45519afb-0b4a-4ed8-a039-32c6436821ef\\QM5_11165\\Q09_PORTFOLIO\\AUDCAD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "3e2867e1-016f-497b-82f6-59785449079b",
+   "ea_id": "QM5_11421",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\3e2867e1-016f-497b-82f6-59785449079b\\QM5_11421\\Q09_PORTFOLIO\\EURUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "12272f1b-ead7-41c7-bc3d-0ab3f935da6a",
+   "ea_id": "QM5_11421",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\12272f1b-ead7-41c7-bc3d-0ab3f935da6a\\QM5_11421\\Q09_PORTFOLIO\\AUDUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "7a8c7433-07d2-451d-a96d-4570d7fc5c17",
+   "ea_id": "QM5_11165",
+   "symbol": "AUDCAD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\7a8c7433-07d2-451d-a96d-4570d7fc5c17\\QM5_11165\\Q09_PORTFOLIO\\AUDCAD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "6c25bcc5-2050-44a4-ab52-bbbb4bffb5d6",
+   "ea_id": "QM5_11421",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\6c25bcc5-2050-44a4-ab52-bbbb4bffb5d6\\QM5_11421\\Q09_PORTFOLIO\\EURUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "2e1111b9-0cb9-4fd2-8e89-3ac2960b58fd",
+   "ea_id": "QM5_11421",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\2e1111b9-0cb9-4fd2-8e89-3ac2960b58fd\\QM5_11421\\Q09_PORTFOLIO\\AUDUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "d0dae336-db27-4b85-b6ea-c91f6717b5ef",
+   "ea_id": "QM5_12567",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\d0dae336-db27-4b85-b6ea-c91f6717b5ef\\QM5_12567\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "ce492d3c-47d2-4949-9754-44c233f3b7db",
+   "ea_id": "QM5_11128",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\ce492d3c-47d2-4949-9754-44c233f3b7db\\QM5_11128\\Q09_PORTFOLIO\\NDX_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "2a53bf7b-7edf-4a6c-afcf-770062162510",
+   "ea_id": "QM5_10569",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\2a53bf7b-7edf-4a6c-afcf-770062162510\\QM5_10569\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "983500be-68bd-422a-b9e3-a7a9eab5f80b",
+   "ea_id": "QM5_10494",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\983500be-68bd-422a-b9e3-a7a9eab5f80b\\QM5_10494\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "0e1609dc-7307-49bd-b04a-1a8024c09810",
+   "ea_id": "QM5_12915",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\0e1609dc-7307-49bd-b04a-1a8024c09810\\QM5_12915\\Q09_PORTFOLIO\\SP500_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "df19e36e-20d5-4c40-8d2b-7de3e3909735",
+   "ea_id": "QM5_12958",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\df19e36e-20d5-4c40-8d2b-7de3e3909735\\QM5_12958\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "1eb09509-f7d9-4b2d-af0a-74c0b2bb2510",
+   "ea_id": "QM5_12990",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\1eb09509-f7d9-4b2d-af0a-74c0b2bb2510\\QM5_12990\\Q09_PORTFOLIO\\GBPUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "c59d8929-2b8a-41d3-be00-753ffb69e33c",
+   "ea_id": "QM5_10919",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\c59d8929-2b8a-41d3-be00-753ffb69e33c\\QM5_10919\\Q09_PORTFOLIO\\XTIUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "1c25f3dd-b6b3-42cb-9fac-276fb45b7d39",
+   "ea_id": "QM5_11128",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\1c25f3dd-b6b3-42cb-9fac-276fb45b7d39\\QM5_11128\\Q09_PORTFOLIO\\SP500_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "e5e3f200-c976-4e69-8e91-c78537d33a9a",
+   "ea_id": "QM5_12847",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\e5e3f200-c976-4e69-8e91-c78537d33a9a\\QM5_12847\\Q09_PORTFOLIO\\NDX_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "6e9bc500-5280-490f-9704-afd15259ce90",
+   "ea_id": "QM5_10476",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\6e9bc500-5280-490f-9704-afd15259ce90\\QM5_10476\\Q09_PORTFOLIO\\USDCAD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "dcecff4c-3032-4a59-a978-80aa9f20199a",
+   "ea_id": "QM5_10920",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\dcecff4c-3032-4a59-a978-80aa9f20199a\\QM5_10920\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "a896d9a6-a6aa-4c48-b03a-a23732129aee",
+   "ea_id": "QM5_10939",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\a896d9a6-a6aa-4c48-b03a-a23732129aee\\QM5_10939\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "aeb64c9f-ab47-4416-9d86-3b188cab2d03",
+   "ea_id": "QM5_12989",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\aeb64c9f-ab47-4416-9d86-3b188cab2d03\\QM5_12989\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "fd1dbec8-bbb5-4e0f-a99d-66c3c9fd8b87",
+   "ea_id": "QM5_10943",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\fd1dbec8-bbb5-4e0f-a99d-66c3c9fd8b87\\QM5_10943\\Q09_PORTFOLIO\\NDX_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "de194e05-ce08-4ded-9779-71111159d2c4",
+   "ea_id": "QM5_11132",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\de194e05-ce08-4ded-9779-71111159d2c4\\QM5_11132\\Q09_PORTFOLIO\\NDX_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "0b1fddba-6c4e-47ec-b9b3-6b54273e5832",
+   "ea_id": "QM5_12778",
+   "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\0b1fddba-6c4e-47ec-b9b3-6b54273e5832\\QM5_12778\\Q09_PORTFOLIO\\QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "bbe97a5b-eb6a-41e5-9d50-d58b681976a5",
+   "ea_id": "QM5_13013",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\bbe97a5b-eb6a-41e5-9d50-d58b681976a5\\QM5_13013\\Q09_PORTFOLIO\\NDX_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "22fca5c5-4480-4c49-95ef-0194086e5de3",
+   "ea_id": "QM5_10706",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\22fca5c5-4480-4c49-95ef-0194086e5de3\\QM5_10706\\Q09_PORTFOLIO\\GBPUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "239d4268-d5df-46cf-ab8f-a613669f5e9d",
+   "ea_id": "QM5_11125",
+   "symbol": "WS30.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "evidence_path": "D:\\QM\\reports\\work_items\\dd53c753-2753-4417-84fc-4012c5d04190\\QM5_11125\\Q08\\WS30_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "0c1ca4ce-bf1a-4955-857a-dfc9ac641489",
+   "ea_id": "QM5_11063",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\0c1ca4ce-bf1a-4955-857a-dfc9ac641489\\QM5_11063\\Q09_PORTFOLIO\\USDJPY_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "e241bacd-5681-4172-a785-a475fd25140b",
+   "ea_id": "QM5_1556",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\e241bacd-5681-4172-a785-a475fd25140b\\QM5_1556\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "862e20ca-4ba7-453f-af4e-5c787fe7f1c0",
+   "ea_id": "QM5_10916",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\862e20ca-4ba7-453f-af4e-5c787fe7f1c0\\QM5_10916\\Q09_PORTFOLIO\\SP500_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "1e34816e-260c-46f2-b5a7-73f98f12538c",
+   "ea_id": "QM5_12623",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\1e34816e-260c-46f2-b5a7-73f98f12538c\\QM5_12623\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "790edb77-fe2d-4ba8-8127-0c8e5cfb5d33",
+   "ea_id": "QM5_11708",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\790edb77-fe2d-4ba8-8127-0c8e5cfb5d33\\QM5_11708\\Q09_PORTFOLIO\\EURUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "1cba26f9-4f55-4afa-a7b0-1a6496ea991d",
+   "ea_id": "QM5_10847",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\1cba26f9-4f55-4afa-a7b0-1a6496ea991d\\QM5_10847\\Q09_PORTFOLIO\\GDAXI_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "f3f5163c-b81b-470d-98ee-5d1c7f6b0e9f",
+   "ea_id": "QM5_12864",
+   "symbol": "QM5_12864_XTI_XAG_RSPREAD_D1",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\f3f5163c-b81b-470d-98ee-5d1c7f6b0e9f\\QM5_12864\\Q09_PORTFOLIO\\QM5_12864_XTI_XAG_RSPREAD_D1\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "80bcdc1b-74ae-40f4-82be-b0b87771d4ea",
+   "ea_id": "QM5_11165",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\80bcdc1b-74ae-40f4-82be-b0b87771d4ea\\QM5_11165\\Q09_PORTFOLIO\\EURUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "e12845b9-04fe-4d97-af43-93d37268f2f4",
+   "ea_id": "QM5_10403",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "evidence_path": "D:\\QM\\reports\\work_items\\e12845b9-04fe-4d97-af43-93d37268f2f4\\QM5_10403\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "status": "ALREADY_ABSENT"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "de65a075-6bd9-49c9-a775-624a32fc4214",
+   "ea_id": "QM5_12969",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-07T16:12:03+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\de65a075-6bd9-49c9-a775-624a32fc4214\\QM5_12969\\Q09_PORTFOLIO\\USDJPY_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_12969\\USDJPY_DWX\\de65a075",
+   "files_sha256": {
+    "aggregate.json": "fc1b326b5d0c843f7e3de856953a0a410b81f1690046d2cadf3600bb69c14a5c"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "9aae113f-51e0-41b9-8ad3-c4cf8941d326",
+   "ea_id": "QM5_9929",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-08T00:20:36+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\9aae113f-51e0-41b9-8ad3-c4cf8941d326\\QM5_9929\\Q09_PORTFOLIO\\XAUUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_9929\\XAUUSD_DWX\\9aae113f",
+   "files_sha256": {
+    "aggregate.json": "d56bf62fecac9ac08b2163ed670b2976414c194a176e282a6ea06b61356d7e94"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "c4addea5-fb50-483a-aa7d-17d07db8e4fd",
+   "ea_id": "QM5_12831",
+   "symbol": "QM5_12831_XTI_AUDUSD_BRK_D1",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-08T10:35:02+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\c4addea5-fb50-483a-aa7d-17d07db8e4fd\\QM5_12831\\Q09_PORTFOLIO\\QM5_12831_XTI_AUDUSD_BRK_D1",
+   "mirror_rel": "portfolio_verdict\\QM5_12831\\QM5_12831_XTI_AUDUSD_BRK_D1\\c4addea5",
+   "files_sha256": {
+    "aggregate.json": "74bd0ab10d0ab4cd0e99557cc9ff6c57d0028023b9fbddda0d32d87f5166bf37"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "fd1442a2-fb17-4668-8097-08fc405e7006",
+   "ea_id": "QM5_12712",
+   "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-08T19:53:24+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\fd1442a2-fb17-4668-8097-08fc405e7006\\QM5_12712\\Q09_PORTFOLIO\\QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+   "mirror_rel": "portfolio_verdict\\QM5_12712\\QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1\\fd1442a2",
+   "files_sha256": {
+    "aggregate.json": "db8a85d0972cb29bc165efa1039b0397616cd4abb5fc7f1ee0162e0939b6ed6b"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "15f34153-91bd-426c-8453-d74216c31f03",
+   "ea_id": "QM5_13076",
+   "symbol": "QM5_13076_XTI_NZDCAD_RSPREAD_D1",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-09T07:38:07+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\15f34153-91bd-426c-8453-d74216c31f03\\QM5_13076\\Q09_PORTFOLIO\\QM5_13076_XTI_NZDCAD_RSPREAD_D1",
+   "mirror_rel": "portfolio_verdict\\QM5_13076\\QM5_13076_XTI_NZDCAD_RSPREAD_D1\\15f34153",
+   "files_sha256": {
+    "aggregate.json": "53e8eb84ce6ccc30d5e9feab1519c05986cc675d4543d0fc021a3da92c712742"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "526aff5a-c4ff-44ef-807f-b828c66b7054",
+   "ea_id": "QM5_10848",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-14T02:18:10+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\526aff5a-c4ff-44ef-807f-b828c66b7054\\QM5_10848\\Q09_PORTFOLIO\\XAUUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10848\\XAUUSD_DWX\\526aff5a",
+   "files_sha256": {
+    "aggregate.json": "1f7e167ee0c62c163cb24e1dec3d6d07a8fb6949ab8db0407e7c7d1b7d159dc8"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "73f99934-e028-4b3b-87c0-eb62796d0ff5",
+   "ea_id": "QM5_12475",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-10T15:14:00+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\73f99934-e028-4b3b-87c0-eb62796d0ff5\\QM5_12475\\Q09_PORTFOLIO\\NDX_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_12475\\NDX_DWX\\73f99934",
+   "files_sha256": {
+    "aggregate.json": "19920760af02d1970a10e0eaf9c9cde9d40d5d6f21d3608ad8a76699cc4f36bc"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "8413f8a2-5327-4fbb-9267-84b64353bb78",
+   "ea_id": "QM5_11476",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-13T06:49:59+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\8413f8a2-5327-4fbb-9267-84b64353bb78\\QM5_11476\\Q09_PORTFOLIO\\USDJPY_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_11476\\USDJPY_DWX\\8413f8a2",
+   "files_sha256": {
+    "aggregate.json": "4e4602c5b8f82367e9fcbbd3e69d3beb39401eed6f361cefc8f4ce0bb89ad0c5"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "1d32c07e-126f-4763-9a7f-de73c5328e36",
+   "ea_id": "QM5_13117",
+   "symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-13T20:58:45+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\1d32c07e-126f-4763-9a7f-de73c5328e36\\QM5_13117\\Q09_PORTFOLIO\\QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+   "mirror_rel": "portfolio_verdict\\QM5_13117\\QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1\\1d32c07e",
+   "files_sha256": {
+    "aggregate.json": "4ada86c06208e78624bd8bcc6e7c90c7abcedf9ddfe031f623de1e072acd942c"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "c028199b-4e70-4948-a9d9-0450492ec852",
+   "ea_id": "QM5_12474",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-14T01:38:34+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\c028199b-4e70-4948-a9d9-0450492ec852\\QM5_12474\\Q09_PORTFOLIO\\GBPUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_12474\\GBPUSD_DWX\\c028199b",
+   "files_sha256": {
+    "aggregate.json": "b175d9c4f2e904168da99f87948fb3c582c26e9c93dac6c7766f66d21688f8e6"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "abc5ddf1-739a-4883-8ba7-0fa17393f9ff",
+   "ea_id": "QM5_12823",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-14T08:05:59+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\abc5ddf1-739a-4883-8ba7-0fa17393f9ff\\QM5_12823\\Q09_PORTFOLIO\\USDJPY_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_12823\\USDJPY_DWX\\abc5ddf1",
+   "files_sha256": {
+    "aggregate.json": "71ee460886add0ed6f967e716bc018198da46355daedeb03bde7f23ec46e6c0b"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "bceab94f-1b3e-491b-ae5b-accc893efdb3",
+   "ea_id": "QM5_11129",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-14T13:06:58+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\bceab94f-1b3e-491b-ae5b-accc893efdb3\\QM5_11129\\Q09_PORTFOLIO\\SP500_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_11129\\SP500_DWX\\bceab94f",
+   "files_sha256": {
+    "aggregate.json": "ff8a8506408d768459a186b29f3baa68229001961c2ee477a006885700ac9530"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "ab770c0f-6d11-4afe-a522-52c57bd3ef6f",
+   "ea_id": "QM5_10114",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-15T02:59:11+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\ab770c0f-6d11-4afe-a522-52c57bd3ef6f\\QM5_10114\\Q09_PORTFOLIO\\SP500_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10114\\SP500_DWX\\ab770c0f",
+   "files_sha256": {
+    "aggregate.json": "1a154b13268be04d6e6f304f1a31baf9d071fa609f7eceb8256f7e2a852dcec4"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "acee11e2-7a30-417c-ba86-40b05b2076b5",
+   "ea_id": "QM5_1567",
+   "symbol": "XAGUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-15T03:09:21+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\acee11e2-7a30-417c-ba86-40b05b2076b5\\QM5_1567\\Q09_PORTFOLIO\\XAGUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_1567\\XAGUSD_DWX\\acee11e2",
+   "files_sha256": {
+    "aggregate.json": "b73ef9a06e68bbc521e1cdcac638b21d13034330f5e54e14d287e84fa302297b"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "2ab7626b-d45c-4784-bdcf-06e239e2d81e",
+   "ea_id": "QM5_10145",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-15T04:37:31+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\2ab7626b-d45c-4784-bdcf-06e239e2d81e\\QM5_10145\\Q09_PORTFOLIO\\SP500_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10145\\SP500_DWX\\2ab7626b",
+   "files_sha256": {
+    "aggregate.json": "d836ed15fd94275149a29e8fa5e79dea30da5d20b9d7704ab316bfa8af0844bd"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "7d0801d9-cab3-4fec-a188-271ac86e6c1b",
+   "ea_id": "QM5_10291",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-15T06:58:32+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\7d0801d9-cab3-4fec-a188-271ac86e6c1b\\QM5_10291\\Q09_PORTFOLIO\\SP500_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10291\\SP500_DWX\\7d0801d9",
+   "files_sha256": {
+    "aggregate.json": "6471a9db0ae1cd377371aca887ad7451310f08519ac0ec20877c4b49c34e86af"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "b723601f-8578-43da-858c-91b458437bab",
+   "ea_id": "QM5_11124",
+   "symbol": "WS30.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-15T11:05:38+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\b723601f-8578-43da-858c-91b458437bab\\QM5_11124\\Q09_PORTFOLIO\\WS30_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_11124\\WS30_DWX\\b723601f",
+   "files_sha256": {
+    "aggregate.json": "5ad28f1b20dd7c2d4d19aaf312f186a61a6984f1c8d4212d98eac20436d7e3bd"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "76089bbb-52bf-4aca-a0e4-7423fa79fb54",
+   "ea_id": "QM5_10127",
+   "symbol": "AUDCAD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-15T14:47:27+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\76089bbb-52bf-4aca-a0e4-7423fa79fb54\\QM5_10127\\Q09_PORTFOLIO\\AUDCAD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10127\\AUDCAD_DWX\\76089bbb",
+   "files_sha256": {
+    "aggregate.json": "a77cfb7b61e0b0cd524a3ee80e251b781f85379414cfd708b2dfae0191fb9efa"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "6fce5094-d6e5-4f17-b576-3c85b4b1dd85",
+   "ea_id": "QM5_10146",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-16T07:36:19+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\6fce5094-d6e5-4f17-b576-3c85b4b1dd85\\QM5_10146\\Q09_PORTFOLIO\\AUDUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10146\\AUDUSD_DWX\\6fce5094",
+   "files_sha256": {
+    "aggregate.json": "a1628c314ea8133b80c74720b40f44c4d45eb73cb7bc8fe04544508de6a91ed2"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "30129a8a-55bd-4b80-866d-0b677440368d",
+   "ea_id": "QM5_10145",
+   "symbol": "CHFJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-16T09:48:06+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\30129a8a-55bd-4b80-866d-0b677440368d\\QM5_10145\\Q09_PORTFOLIO\\CHFJPY_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10145\\CHFJPY_DWX\\30129a8a",
+   "files_sha256": {
+    "aggregate.json": "f5e75043481efa2bf12bbaac9907e26a8cb56d1def69b1159f44d80ddc6ff4a2"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "0c656cef-dd97-42ef-9f48-345dc76d4ef9",
+   "ea_id": "QM5_10553",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-16T14:55:21+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\0c656cef-dd97-42ef-9f48-345dc76d4ef9\\QM5_10553\\Q09_PORTFOLIO\\XAUUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10553\\XAUUSD_DWX\\0c656cef",
+   "files_sha256": {
+    "aggregate.json": "f3100f80f937ec0d7b89167da9c81e37a1fcfd32eed82c490a3298c6c73d6af6"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "db5027ee-9326-40bc-b87f-dcfdf346d3fa",
+   "ea_id": "QM5_13301",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-27T04:56:21+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\db5027ee-9326-40bc-b87f-dcfdf346d3fa\\QM5_13301\\Q09_PORTFOLIO\\GDAXI_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_13301\\GDAXI_DWX\\db5027ee",
+   "files_sha256": {
+    "aggregate.json": "e916b76eeb765914532fc972bbfa15e3a4e4ce759ee158144187f3f3f4a97d80"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "b7522bfc-4f6b-4447-9a15-5e0718afe8c8",
+   "ea_id": "QM5_13128",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "NEED_MORE_DATA",
+   "row_updated_at": "2026-07-18T12:11:21+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\6f4fff24-3a6d-40e3-aaca-773b5195f6d2\\QM5_13128\\Q08\\NDX_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_13128\\NDX_DWX\\b7522bfc",
+   "files_sha256": {
+    "8_10_regime_crisis.json": "14b8ed2da9b35a6ae53436afcce763ba30737e1daaa54ea48cecc21056ed10b5",
+    "8_11_mc_shuffle_dd.json": "9fe2350eb9c6a8aa70e4a0c0008a1bccc6809cdd9ad050c4bd414dec4d3662df",
+    "8_1_correlation.json": "51e7e8c787c2db8b29f48b38e2ccbb820d85353009822036ca715c4465eebfac",
+    "8_2_dsr_mc_fdr.json": "b844bb3b848e56d8157f7fe5c02fa4376d41bb5523bd983fa095a6d5868a3b3f",
+    "8_3_tail_dependence.json": "7dd31e425cda1141b09d57526185517ed2b3f56956b63e1dd7b4ac8612e6b183",
+    "8_4_seasonal.json": "26f937115a83aa0cb5eebaa6e7c902efc9d94e7db2b6bfa4947da7a2a8bc37eb",
+    "8_5_neighborhood.json": "eee6110e986dd648774c0f5c7fc077153abd4e5414dd0041fef16a7bf964a8fa",
+    "8_6_chopping_block.json": "26396e98fb8af8ed0fd638d817f1757d5c826e1e197c295913537595092c43ec",
+    "8_7_pbo.json": "8ef35e56028379b29ba8f048660757c04c5a197013248c7d8e28122e3e7c2063",
+    "8_8_edge_decay.json": "8311528eaa68f8e31aed95f664171e515c5f04891ef5888f204e91dc7eb29eb9",
+    "8_9_runs_test.json": "c16f6de17cbe86740d8fbc764d3cb6d88566fdc056825acf1a432b957b315650",
+    "aggregate.json": "17ab2512bde3d95c661e560d435c3e883a4fac607de383733e9285ee2ba396cb"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "632e5f2a-a909-433b-9a6b-43d415d05578",
+   "ea_id": "QM5_1551",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-19T07:52:30+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\632e5f2a-a909-433b-9a6b-43d415d05578\\QM5_1551\\Q09_PORTFOLIO\\USDJPY_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_1551\\USDJPY_DWX\\632e5f2a",
+   "files_sha256": {
+    "aggregate.json": "8887fbe13fc07e8aea36f0bc3017f5393eb0007cc63f83fd40cfe8b495c4a32c"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "89acf6eb-581b-411b-9aaf-2f19c12c68c5",
+   "ea_id": "QM5_1567",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-19T09:44:37+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\89acf6eb-581b-411b-9aaf-2f19c12c68c5\\QM5_1567\\Q09_PORTFOLIO\\EURUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_1567\\EURUSD_DWX\\89acf6eb",
+   "files_sha256": {
+    "aggregate.json": "e560460747af0b17db71d9f731b373a8cb8bbade3d3f6bbae26f9c48f87f3113"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "0703aa1e-113b-40a6-9462-6879845d4974",
+   "ea_id": "QM5_10123",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-19T11:04:09+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\0703aa1e-113b-40a6-9462-6879845d4974\\QM5_10123\\Q09_PORTFOLIO\\XAUUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10123\\XAUUSD_DWX\\0703aa1e",
+   "files_sha256": {
+    "aggregate.json": "56d4debc8bb33709ea7fc1933b4748667716c087ff16337f355eefb41078fa48"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "ae828ece-f1ab-4670-9f87-214b0400dc5a",
+   "ea_id": "QM5_10815",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-19T20:35:36+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\ae828ece-f1ab-4670-9f87-214b0400dc5a\\QM5_10815\\Q09_PORTFOLIO\\GDAXI_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10815\\GDAXI_DWX\\ae828ece",
+   "files_sha256": {
+    "aggregate.json": "2533bedb08bc71951df075bdb7c06143bb99d5955cb15c7e0db3cf1364d89c60"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "a7398b69-db24-4d47-99d7-ee7bf1584583",
+   "ea_id": "QM5_10815",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-20T00:27:31+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\a7398b69-db24-4d47-99d7-ee7bf1584583\\QM5_10815\\Q09_PORTFOLIO\\EURUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10815\\EURUSD_DWX\\a7398b69",
+   "files_sha256": {
+    "aggregate.json": "0f6cc2b8d4ccfeef345f1825505e7f7afdc049c623307b397e152d4d263f8c28"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "55af03d6-12d2-485e-a154-e890cb02790a",
+   "ea_id": "QM5_10700",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-20T02:42:50+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\55af03d6-12d2-485e-a154-e890cb02790a\\QM5_10700\\Q09_PORTFOLIO\\XAUUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10700\\XAUUSD_DWX\\55af03d6",
+   "files_sha256": {
+    "aggregate.json": "8d87c30f965bda9f789fb6278841480ddb62d225e23dc40225339fdb4dfb7fa2"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "563b7376-1ade-4dc2-a53d-9653efd972db",
+   "ea_id": "QM5_10128",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-20T14:12:32+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\563b7376-1ade-4dc2-a53d-9653efd972db\\QM5_10128\\Q09_PORTFOLIO\\XAUUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10128\\XAUUSD_DWX\\563b7376",
+   "files_sha256": {
+    "aggregate.json": "27d9270fa8222418eac17907289d10f74427dc41603da86c91830669fa6c7cae"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "60d2934f-5a4a-4470-891a-93dba726945d",
+   "ea_id": "QM5_10145",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-20T19:17:37+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\60d2934f-5a4a-4470-891a-93dba726945d\\QM5_10145\\Q09_PORTFOLIO\\XAUUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10145\\XAUUSD_DWX\\60d2934f",
+   "files_sha256": {
+    "aggregate.json": "14ddccad4d4a218a8f7b2c6b7bde8c9474fe9e40b8226ad7690bb8aee5473c4a"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "5ee86c68-900f-4e6c-b972-774e1c4fd186",
+   "ea_id": "QM5_9502",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-21T05:01:12+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\5ee86c68-900f-4e6c-b972-774e1c4fd186\\QM5_9502\\Q09_PORTFOLIO\\SP500_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_9502\\SP500_DWX\\5ee86c68",
+   "files_sha256": {
+    "aggregate.json": "4d638abf9c5b6b3d2a878dec46949bfb6b4d23e2163ccaa29c64abe72a27a5e4"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "96d02b8b-0b0f-43e2-98b4-cd0313ebc4eb",
+   "ea_id": "QM5_10183",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-21T14:50:32+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\96d02b8b-0b0f-43e2-98b4-cd0313ebc4eb\\QM5_10183\\Q09_PORTFOLIO\\XAUUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10183\\XAUUSD_DWX\\96d02b8b",
+   "files_sha256": {
+    "aggregate.json": "45ea1a078e7c7eecb9c2e1b51a20e14e9300be7fa9c398d81faba57beabaede9"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "e949dda2-babc-438c-9dac-33cc840f125d",
+   "ea_id": "QM5_9503",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-21T15:25:16+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\e949dda2-babc-438c-9dac-33cc840f125d\\QM5_9503\\Q09_PORTFOLIO\\USDJPY_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_9503\\USDJPY_DWX\\e949dda2",
+   "files_sha256": {
+    "aggregate.json": "b2346ab99d7286d7d270b1883b24048c6ccb659cdc9eb6d2dcc96e9add3f1237"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "cc714648-17b2-4064-b7d8-094e009c28b1",
+   "ea_id": "QM5_9403",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-21T23:06:23+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\cc714648-17b2-4064-b7d8-094e009c28b1\\QM5_9403\\Q09_PORTFOLIO\\GDAXI_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_9403\\GDAXI_DWX\\cc714648",
+   "files_sha256": {
+    "aggregate.json": "a15e97b3602a6ae7af029edd0fb2b6b98f0e41205f39e55b92df01eb18c21cb6"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "7d0e5d4d-9336-431d-a51e-314d11d674b0",
+   "ea_id": "QM5_13108",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-22T12:04:12+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\7d0e5d4d-9336-431d-a51e-314d11d674b0\\QM5_13108\\Q09_PORTFOLIO\\XTIUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_13108\\XTIUSD_DWX\\7d0e5d4d",
+   "files_sha256": {
+    "aggregate.json": "7e625d67f1031465e2f30e1dafd98450d7bbf84085e97fd88dab66b1851a7be3"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "69e619f5-30af-4f4e-aedd-9725a86aae10",
+   "ea_id": "QM5_20048",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-22T19:27:01+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\69e619f5-30af-4f4e-aedd-9725a86aae10\\QM5_20048\\Q09_PORTFOLIO\\XTIUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_20048\\XTIUSD_DWX\\69e619f5",
+   "files_sha256": {
+    "aggregate.json": "da2ca276c0ef86ca36419d6aa905547f0efd82faa0b21e87b72a980c91dcdf3b"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "925fd228-408b-4777-b3c7-296addf94f05",
+   "ea_id": "QM5_20047",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-23T04:34:40+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\925fd228-408b-4777-b3c7-296addf94f05\\QM5_20047\\Q09_PORTFOLIO\\XTIUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_20047\\XTIUSD_DWX\\925fd228",
+   "files_sha256": {
+    "aggregate.json": "f659e891a54d3cf605e73c01bc72937e246319971e8444ee36959e599e251a5a"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "f260dabb-deb6-4117-8174-5046678cfd3a",
+   "ea_id": "QM5_12966",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-26T12:42:35+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\f260dabb-deb6-4117-8174-5046678cfd3a\\QM5_12966\\Q09_PORTFOLIO\\GDAXI_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_12966\\GDAXI_DWX\\f260dabb",
+   "files_sha256": {
+    "aggregate.json": "af99dd0aefc3ec2c96770bd3870036e3c2533caa10efc3c5b128bff368e7ecf4"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "99ab79c9-1c13-40ff-8b71-0b72fd05db91",
+   "ea_id": "QM5_11422",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-24T15:10:40+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\99ab79c9-1c13-40ff-8b71-0b72fd05db91\\QM5_11422\\Q09_PORTFOLIO\\USDCAD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_11422\\USDCAD_DWX\\99ab79c9",
+   "files_sha256": {
+    "aggregate.json": "69b453bee1e730004fd1527f5b0feaee79f68c2ec416b35ac40dc859aa8e6c71"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "8b849344-89e4-42a4-b697-026e81ff6a65",
+   "ea_id": "QM5_11910",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-24T19:42:02+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\8b849344-89e4-42a4-b697-026e81ff6a65\\QM5_11910\\Q09_PORTFOLIO\\NZDUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_11910\\NZDUSD_DWX\\8b849344",
+   "files_sha256": {
+    "aggregate.json": "6adcffc93ed9dfb9c040ef0433eca8cb792231d9ab9845dcb4ddc7eb296d2ef4"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "d3c5183e-bc8c-4f16-9a61-f141e3550026",
+   "ea_id": "QM5_13213",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-25T22:00:50+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\d3c5183e-bc8c-4f16-9a61-f141e3550026\\QM5_13213\\Q09_PORTFOLIO\\USDJPY_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_13213\\USDJPY_DWX\\d3c5183e",
+   "files_sha256": {
+    "aggregate.json": "fc0eb81c65abec5bd7d2c2be2d7a32f946b0f40215f57b319898c547bd3e51fc"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "c60924a7-3fd4-49d9-a39a-7b9e67a9dd62",
+   "ea_id": "QM5_12710",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-25T23:32:37+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\c60924a7-3fd4-49d9-a39a-7b9e67a9dd62\\QM5_12710\\Q09_PORTFOLIO\\XTIUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_12710\\XTIUSD_DWX\\c60924a7",
+   "files_sha256": {
+    "aggregate.json": "d887b124e7e3bf35645429f04a3294b2d5bbf8f9d7e9c20efae59540cd6475bc"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "cb8e8ece-98ef-4a25-9eac-2f25656ab594",
+   "ea_id": "QM5_12580",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-07-26T01:52:29+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\cb8e8ece-98ef-4a25-9eac-2f25656ab594\\QM5_12580\\Q09_PORTFOLIO\\AUDUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_12580\\AUDUSD_DWX\\cb8e8ece",
+   "files_sha256": {
+    "aggregate.json": "12e948d6cb29cd841b8cb461e5576a98aaca3d2daae22ec2a2378a534798b206"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "20b44139-38be-404e-8e33-27e8816ea80f",
+   "ea_id": "QM5_10142",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-26T13:23:49+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\20b44139-38be-404e-8e33-27e8816ea80f\\QM5_10142\\Q09_PORTFOLIO\\SP500_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10142\\SP500_DWX\\20b44139",
+   "files_sha256": {
+    "aggregate.json": "6bf5eef0f092a3d3a3476ec68898376e0273ae08637bc960f79937b6f8f433d9"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "a614a764-8dbe-4957-ade6-8eedc1fe054a",
+   "ea_id": "QM5_1328",
+   "symbol": "EURJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-26T15:37:26+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\a614a764-8dbe-4957-ade6-8eedc1fe054a\\QM5_1328\\Q09_PORTFOLIO\\EURJPY_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_1328\\EURJPY_DWX\\a614a764",
+   "files_sha256": {
+    "aggregate.json": "0f8951925e51367fca2e9506dfebee3987d6a28fe161e048d53be0bb346ba19e"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "6655a7d3-ac3c-458e-b374-a06ef5e5d01f",
+   "ea_id": "QM5_13036",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-26T19:56:28+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\6655a7d3-ac3c-458e-b374-a06ef5e5d01f\\QM5_13036\\Q09_PORTFOLIO\\GDAXI_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_13036\\GDAXI_DWX\\6655a7d3",
+   "files_sha256": {
+    "aggregate.json": "815b92a98adb8839f0a415b637749ffe8031adea2a5f83360311a512188f8e2d"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "2f646bd1-4111-4080-98bc-cec1eb6b0d15",
+   "ea_id": "QM5_10094",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-26T19:57:13+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\2f646bd1-4111-4080-98bc-cec1eb6b0d15\\QM5_10094\\Q09_PORTFOLIO\\GDAXI_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_10094\\GDAXI_DWX\\2f646bd1",
+   "files_sha256": {
+    "aggregate.json": "440ec6267014cf8c361b9966ab53e54daa0e402bdb854f0aae6c186df4bbff24"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "560ef011-a73b-42df-86b8-41e797b4d714",
+   "ea_id": "QM5_13059",
+   "symbol": "QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-26T20:50:27+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\560ef011-a73b-42df-86b8-41e797b4d714\\QM5_13059\\Q09_PORTFOLIO\\QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+   "mirror_rel": "portfolio_verdict\\QM5_13059\\QM5_13059_XTI_AUDJPY_RSPREAD_D1\\560ef011",
+   "files_sha256": {
+    "aggregate.json": "f8b6ec718aedc459bcadcb98893f65c76c90416a0a86e5fd7a1737e7e32752d6"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "d1e757c9-fb7e-453b-875b-06a9872e7c9d",
+   "ea_id": "QM5_9936",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-27T06:27:30+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\d1e757c9-fb7e-453b-875b-06a9872e7c9d\\QM5_9936\\Q09_PORTFOLIO\\USDJPY_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_9936\\USDJPY_DWX\\d1e757c9",
+   "files_sha256": {
+    "aggregate.json": "823c99fde09a4501a5106ae3aee296ede8aca0380be9f87cf4eed0e861a5c6fb"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "e2423b5b-c95a-439f-9f5a-52e877036a29",
+   "ea_id": "QM5_20010",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-07-27T15:12:32+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\e2423b5b-c95a-439f-9f5a-52e877036a29\\QM5_20010\\Q09_PORTFOLIO\\XAUUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_20010\\XAUUSD_DWX\\e2423b5b",
+   "files_sha256": {
+    "aggregate.json": "eb85cd28b58b17029dd6903ad4c2cb8cf17e247fa9aa2be4cdd6aace647e9e7e"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "1b4367e9-25f3-411f-b98c-3256158edfd0",
+   "ea_id": "QM5_11288",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-08-06T09:10:37+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\1b4367e9-25f3-411f-b98c-3256158edfd0\\QM5_11288\\Q09_PORTFOLIO\\USDJPY_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_11288\\USDJPY_DWX\\1b4367e9",
+   "files_sha256": {
+    "aggregate.json": "ba677c48ae60fb44e227c3db6a30fb3aeecc85ba283be9702a28b02c7511590b"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "e9d052cf-656d-4632-b19f-e46e793702f5",
+   "ea_id": "QM5_11147",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-08-08T15:07:34+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\e9d052cf-656d-4632-b19f-e46e793702f5\\QM5_11147\\Q09_PORTFOLIO\\SP500_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_11147\\SP500_DWX\\e9d052cf",
+   "files_sha256": {
+    "aggregate.json": "855d948925446cde20715a16ad9e2f18d6ca3902405d5f8de2145e1ad800461c"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "b0aaa113-a0b3-4a5f-8d42-5530c8b8da2f",
+   "ea_id": "QM5_20266",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-08-08T20:32:43+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\b0aaa113-a0b3-4a5f-8d42-5530c8b8da2f\\QM5_20266\\Q09_PORTFOLIO\\XTIUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_20266\\XTIUSD_DWX\\b0aaa113",
+   "files_sha256": {
+    "aggregate.json": "1065a66a1d0888dcd8be816bb4f8490ea4623e00b88d9f28af3d564a5201327b"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "8b05b971-5108-4b7b-bec1-ae8d12972ac1",
+   "ea_id": "QM5_9641",
+   "symbol": "WS30.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-08-12T02:14:29+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\8b05b971-5108-4b7b-bec1-ae8d12972ac1\\QM5_9641\\Q09_PORTFOLIO\\WS30_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_9641\\WS30_DWX\\8b05b971",
+   "files_sha256": {
+    "aggregate.json": "3f25c61ab45c042d48c75d7bd9cf6b36b09a8e543607f6e06c2bb4c3246ab919"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "5f01f8e7-57a1-4618-94c4-211aef347a59",
+   "ea_id": "QM5_11660",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-08-12T10:16:35+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\5f01f8e7-57a1-4618-94c4-211aef347a59\\QM5_11660\\Q09_PORTFOLIO\\NDX_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_11660\\NDX_DWX\\5f01f8e7",
+   "files_sha256": {
+    "aggregate.json": "73869709c1f522f1aaf4a87474ddc34cc640b706ff1b62619171a4e5014b5e64"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "888e12f7-2534-4afd-864f-69971c2332db",
+   "ea_id": "QM5_12855",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-08-15T22:19:52+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\888e12f7-2534-4afd-864f-69971c2332db\\QM5_12855\\Q09_PORTFOLIO\\XTIUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_12855\\XTIUSD_DWX\\888e12f7",
+   "files_sha256": {
+    "aggregate.json": "4a5cbfa94003f275b9e4f00ab348bd4fdd9180e259e8176a51c32c8dc4fb52ce"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "fe46f524-c882-47e8-a5f2-36b84373ce99",
+   "ea_id": "QM5_12849",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-08-15T22:33:03+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\fe46f524-c882-47e8-a5f2-36b84373ce99\\QM5_12849\\Q09_PORTFOLIO\\XTIUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_12849\\XTIUSD_DWX\\fe46f524",
+   "files_sha256": {
+    "aggregate.json": "876406f8a22f53f49715a4c8188430bfb02f0fa28fa3a72def87c8326910a1c6"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "9347d44c-b107-4cd6-9c07-7094009bda25",
+   "ea_id": "QM5_12708",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-08-16T06:27:45+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\9347d44c-b107-4cd6-9c07-7094009bda25\\QM5_12708\\Q09_PORTFOLIO\\XAUUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_12708\\XAUUSD_DWX\\9347d44c",
+   "files_sha256": {
+    "aggregate.json": "047d248a7267a07c1775d931c9799a05a3308531f4cce60bc054457722aacbcf"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "b12d6ddc-3e29-4ee7-8ad8-398637f4af10",
+   "ea_id": "QM5_13054",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-08-16T08:17:15+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\b12d6ddc-3e29-4ee7-8ad8-398637f4af10\\QM5_13054\\Q09_PORTFOLIO\\XTIUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_13054\\XTIUSD_DWX\\b12d6ddc",
+   "files_sha256": {
+    "aggregate.json": "7cace80702f5db8d14092937edbe3413ac2cbe4019b8131f4e4c5b5165928ce8"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "14c1c6da-2c68-41c4-8162-736f1d6fddb6",
+   "ea_id": "QM5_1537",
+   "symbol": "XAGUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "FAIL_PORTFOLIO",
+   "row_updated_at": "2026-08-17T10:51:39+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\14c1c6da-2c68-41c4-8162-736f1d6fddb6\\QM5_1537\\Q09_PORTFOLIO\\XAGUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_1537\\XAGUSD_DWX\\14c1c6da",
+   "files_sha256": {
+    "aggregate.json": "e7ca87b5d9eebe7c40c45375c666a7622f1fe4bf11c924ec4802605d671c8602"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "portfolio_verdict",
+   "work_item_id": "f6325233-5956-4cf0-a05e-de0c55cfd2aa",
+   "ea_id": "QM5_20086",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q09_PORTFOLIO",
+   "verdict": "PASS_PORTFOLIO",
+   "row_updated_at": "2026-08-17T10:59:48+00:00",
+   "source_dir": "D:\\QM\\reports\\work_items\\f6325233-5956-4cf0-a05e-de0c55cfd2aa\\QM5_20086\\Q09_PORTFOLIO\\EURUSD_DWX",
+   "mirror_rel": "portfolio_verdict\\QM5_20086\\EURUSD_DWX\\f6325233",
+   "files_sha256": {
+    "aggregate.json": "d2a8d784a19c34746e3eb7da3600a30344c98740b370af261e3fd6888354e45e"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q14_cohort",
+   "work_item_id": "cba8df85-9a5a-57b7-a856-6b5ce49c1399",
+   "ea_id": "QM5_13213",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q14",
+   "verdict": "OPT_ELIGIBLE",
+   "row_updated_at": "2026-08-13T04:49:54.013874+00:00",
+   "source_dir": "D:\\QM\\reports\\opt_track\\OPT-13213-USDJPY-EXIT-SURGERY-1e2bb8e4c42f21f7",
+   "mirror_rel": "q14_cohort\\QM5_13213\\USDJPY_DWX\\cba8df85",
+   "files_sha256": {
+    "challenger_default_off_behavior.json": "5fa80d8bf1fc6ea158121e05f632dec9004eadfa9022c3e7d27ced028dcc19c2",
+    "default_off_equivalence.json": "8ba3318910fac8becfe6ffda7e9d063699e54af49c6aecaab95ce907837ec7da",
+    "dev_sweep.json": "937de029741a46a26ebdfd3bfc72cbef2a64e3f8a14d6496a65e079f4410139a",
+    "freeze_addendum.json": "cbe481f13c543b54a76db3c1ab6097e0fe0c44e6bb51c3e181b70373de41a405",
+    "opt_card.json": "dd4e498f633b0b4ca2aecebc1fce9668d33ffb7e61fef9762cefb720c83ef5b5",
+    "parent_default_off_behavior.json": "5fa80d8bf1fc6ea158121e05f632dec9004eadfa9022c3e7d27ced028dcc19c2",
+    "trial_ledger.json": "c1315e581878926004007c9e68d48df4e57f469cb1d52568a9d214a05e085959"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q14_cohort",
+   "work_item_id": "ce7fa014-75c4-50ec-ad4c-a6fa02287eb6",
+   "ea_id": "QM5_13213",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q14",
+   "verdict": "OPT_ELIGIBLE",
+   "row_updated_at": "2026-08-13T04:49:54.022897+00:00",
+   "source_dir": "D:\\QM\\reports\\opt_track\\OPT-13213-USDJPY-VOL-REGIME-FILTER-bacbed95fb36992e",
+   "mirror_rel": "q14_cohort\\QM5_13213\\USDJPY_DWX\\ce7fa014",
+   "files_sha256": {
+    "opt_card.json": "25c97a27e5e052fa98de1ca0ca52f0d0d02b1f6c299bd11ad7b95a6716b658f3",
+    "trial_ledger.json": "d1b9a4dad9ac9728a35d041afb028a24438c984c527424aa27fac3db5172a1d4"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q14_cohort",
+   "work_item_id": "4d7f3315-174f-5a70-b8f7-ab3e58e93e0a",
+   "ea_id": "QM5_10706",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q14",
+   "verdict": "OPT_ELIGIBLE",
+   "row_updated_at": "2026-08-13T04:49:54.030918+00:00",
+   "source_dir": "D:\\QM\\reports\\opt_track\\OPT-10706-GBPUSD-EXIT-SURGERY-1618b1899dbe4a0f",
+   "mirror_rel": "q14_cohort\\QM5_10706\\GBPUSD_DWX\\4d7f3315",
+   "files_sha256": {
+    "opt_card.json": "270834d26a36f8c9d4a521bbeab61c11615d6eef0e9d069c67bc03837968f0c1",
+    "trial_ledger.json": "a238b0107c39ed0895bbae2227985c09876799c34df9433ab2a5016adfbe3ec4"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q14_cohort",
+   "work_item_id": "483dd7f7-1b3e-5999-b51f-6592d5db07cd",
+   "ea_id": "QM5_10706",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q14",
+   "verdict": "OPT_ELIGIBLE",
+   "row_updated_at": "2026-08-13T04:49:54.039335+00:00",
+   "source_dir": "D:\\QM\\reports\\opt_track\\OPT-10706-GBPUSD-VOL-REGIME-FILTER-1ff3ceb4edf81600",
+   "mirror_rel": "q14_cohort\\QM5_10706\\GBPUSD_DWX\\483dd7f7",
+   "files_sha256": {
+    "opt_card.json": "cf82e74574731c40495202f69a1a20189797a784511eb6132f98ca327df725dd",
+    "trial_ledger.json": "2c066966055e54f3ef4a2a648ffe3e3057e8e8cdb6e1c8c0d5e70b4f09785e77"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q14_cohort",
+   "work_item_id": "b44e5440-2e98-550a-b404-094bb9138383",
+   "ea_id": "QM5_10692",
+   "symbol": "NDX.DWX",
+   "phase": "Q14",
+   "verdict": "OPT_ELIGIBLE",
+   "row_updated_at": "2026-08-13T04:49:54.047356+00:00",
+   "source_dir": "D:\\QM\\reports\\opt_track\\OPT-10692-NDX-EXIT-SURGERY-ec2fb5ef8650fbd1",
+   "mirror_rel": "q14_cohort\\QM5_10692\\NDX_DWX\\b44e5440",
+   "files_sha256": {
+    "opt_card.json": "04d39d19bbf7a99d309c948969397cf2b4ec28fa5e7656c9fa69dcd0fd53c816",
+    "trial_ledger.json": "4118af55b369481700c27350c89de49c200acaa19e1eb230e9cdbf76d142cd2f"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q14_cohort",
+   "work_item_id": "d4505d3b-d6a3-5b4a-94d7-66f8c8b60651",
+   "ea_id": "QM5_10692",
+   "symbol": "NDX.DWX",
+   "phase": "Q14",
+   "verdict": "OPT_ELIGIBLE",
+   "row_updated_at": "2026-08-13T04:49:54.054879+00:00",
+   "source_dir": "D:\\QM\\reports\\opt_track\\OPT-10692-NDX-VOL-REGIME-FILTER-afff15fae9579a57",
+   "mirror_rel": "q14_cohort\\QM5_10692\\NDX_DWX\\d4505d3b",
+   "files_sha256": {
+    "opt_card.json": "1b2bbd535fb3ce5b143a1d474edce145e0484aadb5ca9376780f53a9135d5adb",
+    "trial_ledger.json": "f5a9f29ae9adaaebc736217523b7a9957c03db79e27d13f7c72f32e511cbc3f5"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q14_cohort",
+   "work_item_id": "b2daa1b1-aee8-503b-b7d8-23492606df05",
+   "ea_id": "QM5_10911",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q14",
+   "verdict": "OPT_ELIGIBLE",
+   "row_updated_at": "2026-08-13T04:49:54.063901+00:00",
+   "source_dir": "D:\\QM\\reports\\opt_track\\OPT-10911-GDAXI-EXIT-SURGERY-be6ec0f6a1d391c4",
+   "mirror_rel": "q14_cohort\\QM5_10911\\GDAXI_DWX\\b2daa1b1",
+   "files_sha256": {
+    "opt_card.json": "f22ef28682cabb8c9e678c622fc8e05fe7ddf223c8a069498ec8d76149ccb67a",
+    "trial_ledger.json": "509198cf914cd32bce56c0880c3c4da1d36e17a26f575258874c456c55f0ea03"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q14_cohort",
+   "work_item_id": "99d58e96-b108-5098-8394-f2cc2080ad68",
+   "ea_id": "QM5_10911",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q14",
+   "verdict": "OPT_ELIGIBLE",
+   "row_updated_at": "2026-08-13T04:49:54.071922+00:00",
+   "source_dir": "D:\\QM\\reports\\opt_track\\OPT-10911-GDAXI-VOL-REGIME-FILTER-7b0dba1a18fbd595",
+   "mirror_rel": "q14_cohort\\QM5_10911\\GDAXI_DWX\\99d58e96",
+   "files_sha256": {
+    "opt_card.json": "03d194b03f1e2f16e7780244986c15cb5ad3c6d1a5ff8549cd14fbc66c02db0b",
+    "trial_ledger.json": "365f9659f37ad6abe46b050fe35e57ae357875b1ccfcb799dcd32a7da2f5bd62"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q14_cohort",
+   "work_item_id": "5c458390-6110-5222-9dc2-03fb734754bf",
+   "ea_id": "QM5_13301",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q14",
+   "verdict": "OPT_ELIGIBLE",
+   "row_updated_at": "2026-08-13T04:49:54.079943+00:00",
+   "source_dir": "D:\\QM\\reports\\opt_track\\OPT-13301-GDAXI-EXIT-SURGERY-ce8136c70e4855f2",
+   "mirror_rel": "q14_cohort\\QM5_13301\\GDAXI_DWX\\5c458390",
+   "files_sha256": {
+    "opt_card.json": "db59706eca17ff2a3187e859b07ffde559187ab9629c1b8679a490f30f4bfd5f",
+    "trial_ledger.json": "fe36bff6b77aae0737b5d2dc33773d33aec1f86aec55102e0bc78ca187b9b55d"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q14_cohort",
+   "work_item_id": "ac158b7a-d2b7-55d4-9504-78a2e9e8edb3",
+   "ea_id": "QM5_13301",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q14",
+   "verdict": "OPT_ELIGIBLE",
+   "row_updated_at": "2026-08-13T04:49:54.087964+00:00",
+   "source_dir": "D:\\QM\\reports\\opt_track\\OPT-13301-GDAXI-VOL-REGIME-FILTER-b8667f3c6891c031",
+   "mirror_rel": "q14_cohort\\QM5_13301\\GDAXI_DWX\\ac158b7a",
+   "files_sha256": {
+    "opt_card.json": "de84d7f0a0f58219a1da60d2b8d28cb6fb0b6ce3f0238d80556afe21a9aa7cc5",
+    "trial_ledger.json": "cfb6e565cea83856a77c3de0ef9ae55d764f178a443e419d7917b65bc5092e6f"
+   },
+   "status": "MIRRORED"
+  },
+  {
+   "class": "q14_cohort",
+   "work_item_id": "11992fe2-9e0d-5d06-ba05-b5adb0fd28eb",
+   "ea_id": "QM5_11422",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q14",
+   "verdict": "OPT_ELIGIBLE",
+   "row_updated_at": "2026-08-13T04:49:54.097990+00:00",
+   "source_dir": "D:\\QM\\reports\\opt_track\\OPT-11422-USDCAD-EXIT-SURGERY-3b28b4764ce69cc2",
+   "mirror_rel": "q14_cohort\\QM5_11422\\USDCAD_DWX\\11992fe2",
+   "files_sha256": {
+    "opt_card.json": "6bd5b91a9c71b91441e815c4de740484df3817f74ad7fff550c4163db8a9e361",
+    "trial_ledger.json": "e14b1045c298c4f6fcf31b6ba5aa90ae4e0112b2588caef42cad0be1b46b8535"
+   },
+   "status": "MIRRORED"
+  }
+ ]
+}

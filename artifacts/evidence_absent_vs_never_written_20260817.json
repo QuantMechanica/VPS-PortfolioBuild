@@ -1,0 +1,118 @@
+{
+ "schema": "qm.evidence-absent-vs-never-written/v1",
+ "question": "of the rows whose evidence_path does not resolve, how many carry a verdict that could only have been derived FROM that evidence?",
+ "method": "a PASS/FAIL-family verdict proves a summary existed at grading time; an INFRA_FAIL/INVALID row may never have produced one, so absence there is not proof of deletion",
+ "productive_verdicts": [
+  "FAIL",
+  "FAIL_HARD",
+  "FAIL_PORTFOLIO",
+  "FAIL_SOFT",
+  "PASS",
+  "PASS_LOWFREQ",
+  "PASS_PORTFOLIO",
+  "PASS_SOFT",
+  "RETIRED_LOW_FREQ",
+  "ZERO_TRADES"
+ ],
+ "absent_total": 43151,
+ "present_total": 17353,
+ "absent_productive": 35918,
+ "absent_non_productive": 7233,
+ "absent_verdict_mix": {
+  "FAIL": 15398,
+  "PASS": 20051,
+  "INFRA_FAIL": 6368,
+  "RETIRED_LOW_FREQ": 79,
+  "PASS_SOFT": 173,
+  "FAIL_HARD": 45,
+  "FAIL_SOFT": 110,
+  "NEED_MORE_DATA": 12,
+  "PASS_PORTFOLIO": 20,
+  "PASS_LOWFREQ": 16,
+  "FAIL_PORTFOLIO": 26,
+  "SUPERSEDED_BY_LOGICAL_BASKET": 9,
+  "INVALID": 660,
+  "OBSOLETE_NON_DWX_SYMBOL": 183,
+  "CANCELLED_DUPLICATE_REQUEUE": 1
+ },
+ "present_verdict_mix": {
+  "OPT_ELIGIBLE": 11,
+  "SUPERSEDED": 2,
+  "FAIL": 5976,
+  "INFRA_FAIL": 3826,
+  "ZERO_TRADES": 1162,
+  "PASS": 5703,
+  "PASS_LOWFREQ": 111,
+  "PASS_SOFT": 161,
+  "PASS_PORTFOLIO": 18,
+  "FAIL_DD_PORTFOLIO_REVIEW": 31,
+  "FAIL_SOFT": 71,
+  "RETIRED_LOW_FREQ": 2,
+  "FAIL_HARD": 93,
+  "DRAFT_DEFECT": 49,
+  "RETIRED_WITHOUT_BUILD": 1,
+  "FAIL_PORTFOLIO": 46,
+  "RETIRE": 30,
+  "NEED_MORE_DATA": 1,
+  "INVALID": 12,
+  "REVIEW_REQUIRED": 39,
+  "INVALID_EVIDENCE": 1,
+  "CONFIG_LOCKED": 1,
+  "CHALLENGER_SPAWNED": 1,
+  "INVALID_BUILD_STATIC_FIDELITY": 5
+ },
+ "absent_productive_by_month": {
+  "2026-05": 7331,
+  "2026-06": 25588,
+  "2026-07": 2999
+ },
+ "absent_non_productive_by_month": {
+  "2026-06": 6389,
+  "2026-05": 67,
+  "2026-07": 777
+ },
+ "samples_productive_absent": [
+  {
+   "id": "c98a7ee4-3700-49ec-b1de-f4bfafeab0ca",
+   "at": "2026-05-23T15:26:44",
+   "phase": "Q02",
+   "verdict": "FAIL",
+   "evidence_path": "D:\\QM\\reports\\work_items\\c98a7ee4-3700-49ec-b1de-f4bfafeab0ca\\QM5_1056\\20260523_152211\\summary.json"
+  },
+  {
+   "id": "f80113a6-a779-4386-90d2-822ee7776ee4",
+   "at": "2026-05-23T15:26:28",
+   "phase": "Q02",
+   "verdict": "FAIL",
+   "evidence_path": "D:\\QM\\reports\\work_items\\f80113a6-a779-4386-90d2-822ee7776ee4\\QM5_1056\\20260523_152211\\summary.json"
+  },
+  {
+   "id": "aa0a3011-1f3e-40a3-bd94-f72ae53463fa",
+   "at": "2026-05-23T15:26:48",
+   "phase": "Q02",
+   "verdict": "FAIL",
+   "evidence_path": "D:\\QM\\reports\\work_items\\aa0a3011-1f3e-40a3-bd94-f72ae53463fa\\QM5_1056\\20260523_152212\\summary.json"
+  },
+  {
+   "id": "e4f4825e-27c7-442f-893f-84576da197af",
+   "at": "2026-06-11T18:50:55",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "evidence_path": "D:\\QM\\reports\\work_items\\e4f4825e-27c7-442f-893f-84576da197af\\QM5_1056\\20260611_184220\\summary.json"
+  },
+  {
+   "id": "20823a47-8ae2-4e21-ac8f-32bb13b3af44",
+   "at": "2026-05-23T17:19:30",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "evidence_path": "D:\\QM\\reports\\work_items\\20823a47-8ae2-4e21-ac8f-32bb13b3af44\\QM5_1056\\20260523_152713\\summary.json"
+  },
+  {
+   "id": "cca3cb69-4866-48c0-9581-85bb8c388a4b",
+   "at": "2026-05-23T17:19:30",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "evidence_path": "D:\\QM\\reports\\work_items\\cca3cb69-4866-48c0-9581-85bb8c388a4b\\QM5_1056\\20260523_153000\\summary.json"
+  }
+ ]
+}
