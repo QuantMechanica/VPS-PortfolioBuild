@@ -102,5 +102,15 @@ portfolio-gate change, or live-manifest change is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-17 | approved build directory identity | source/G0/card and EA-ID registry complete |
-| v1-build | 2026-08-17 | deterministic implementation | Q01 PENDING |
+| v1-build | 2026-08-17 | deterministic implementation | strict compile, targeted build check, independent fixtures, and static P1 PASS |
 | v1-queue | 2026-08-17 | paced Q02 handoff | PENDING capacity check and enqueue |
+
+## Q01 Evidence
+
+- independent monthly mechanic reference suite: 21 tests PASS
+- strict compile: 0 errors, 0 warnings
+- targeted V5 build check: 0 failures, 0 warnings
+- basket manifest JSON and locked `RISK_FIXED` preset identity: PASS
+- static P1 artifact validation: PASS
+- build report: `D:/QM/reports/framework/21/build_check_20260817_070502.json`
+- P1 report: `D:/QM/reports/pipeline/QM5_41039/P1/P1_QM5_41039_result.json`
