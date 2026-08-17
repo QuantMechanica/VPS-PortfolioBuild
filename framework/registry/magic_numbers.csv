@@ -17421,4 +17421,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 35007,inside-bar-momentum-breakout-system,0,EURUSD.DWX,350070000,2026-08-17T20:45:00Z,Gemini,active
 35007,inside-bar-momentum-breakout-system,1,GBPUSD.DWX,350070001,2026-08-17T20:45:00Z,Gemini,active
 35007,inside-bar-momentum-breakout-system,2,USDJPY.DWX,350070002,2026-08-17T20:45:00Z,Gemini,active
+36001,nnfx-classic-mcginley-ssl-wae,0,EURUSD.DWX,360010000,2026-08-17T20:50:00Z,Gemini,active
+36001,nnfx-classic-mcginley-ssl-wae,1,GBPUSD.DWX,360010001,2026-08-17T20:50:00Z,Gemini,active
+36001,nnfx-classic-mcginley-ssl-wae,2,AUDUSD.DWX,360010002,2026-08-17T20:50:00Z,Gemini,active
+36001,nnfx-classic-mcginley-ssl-wae,3,USDJPY.DWX,360010003,2026-08-17T20:50:00Z,Gemini,active
+36001,nnfx-classic-mcginley-ssl-wae,4,USDCAD.DWX,360010004,2026-08-17T20:50:00Z,Gemini,active
 
