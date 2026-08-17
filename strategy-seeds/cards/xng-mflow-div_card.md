@@ -254,7 +254,7 @@ authorized.
 
 ### 6. Filters (No-Trade Module)
 
-- Exact host `XNGUSD.DWX`, D1, `qm_ea_id=41035`, and slot 0 only.
+- Exact host `XNGUSD.DWX`, D1, `qm_ea_id=41037`, and slot 0 only.
 - Exact locked risk, news, Friday-close, stress, and strategy inputs only.
 - Both news axes remain OFF; there is no event-feed dependency.
 - Fail closed on invalid label offset, date/month identity, history, OHLC,
