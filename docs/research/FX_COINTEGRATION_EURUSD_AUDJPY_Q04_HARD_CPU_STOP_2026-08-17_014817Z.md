@@ -354,3 +354,35 @@ queue row, requeue, priority mutation, dispatch tick, backtest, tester launch,
 terminal action, or portfolio/live-surface change followed. Fresh
 machine-readable evidence is
 `artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T123356Z_board_advisor.json`.
+
+## 13:16Z continuation audit
+
+A ninth continuation audit at repository head
+`b6a0165b17b5a97a1cff55ea523dff2aa04d9601` found another materially changed
+factory roster and the same binding hard-CPU condition. Five one-second
+whole-machine samples were `100%`, `100%`, `100%`, `100%`, and `99%`
+(average `99.8%`, maximum `100%`). Both the average and maximum exceed the
+explicit `97%` ceiling.
+
+The path-aware operator scan observed seven factory terminals on `T1`, `T3`,
+`T6`, `T7`, `T8`, `T9`, and `T10`. This differs from the 12:33Z process
+snapshot: the roster fell from eight terminals to seven, `T4` and `T5` left,
+and `T9` entered. The active process mix was two Q02, two Q04, two Q07, and
+one Q08 pipeline run. The separately visible `T_Live` and FTMO processes were
+excluded and neither was controlled.
+
+The supported operator query for
+`QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1` completed successfully. The exact
+logical basket still has one canonical Q02 PASS and exactly one open successor:
+Q04 work item `113ae6d1-33c0-42bc-b9b0-bf3a48ef3445`, `pending`, unclaimed,
+at attempt zero. Its approved Card, MQ5, EX5, basket manifest, and fixed-risk
+setfile remain unchanged; the setfile retains `RISK_FIXED=1000`,
+`RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`.
+
+Because the 66-relationship frontier is already fully mechanized, the anchors
+are downstream of Q02, the selected successor is already enqueued exactly
+once, and the CPU ceiling is binding, no duplicate Card, EA, queue row,
+requeue, priority mutation, dispatch tick, backtest, tester launch, terminal
+action, or portfolio/live-surface change followed. Fresh machine-readable
+evidence is
+`artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T131648Z_board_advisor.json`.
