@@ -102,7 +102,7 @@ portfolio-gate change, or live-manifest change is authorized.
 |---|---|---|---|
 | v1 | 2026-08-17 | approved build directory identity | source/G0/card and EA-ID registry complete |
 | v1-build | 2026-08-17 | deterministic implementation | strict compile, targeted build check, independent fixtures, and static P1 PASS |
-| v1-queue | 2026-08-17 | paced Q02 handoff | PENDING capacity check and enqueue |
+| v1-queue | 2026-08-17 | paced Q02 handoff | ENQUEUED; canonical work item `b126ae29-eb19-4c13-8cd3-33f7637eae25` pending |
 
 ## Q01 Evidence
 
@@ -114,3 +114,12 @@ portfolio-gate change, or live-manifest change is authorized.
 - compile log: `framework/build/compile/20260817_075647/QM5_41040_xauxag-wflow-fade.compile.log`
 - build report: `D:/QM/reports/framework/21/build_check_20260817_075738.json`
 - P1 report: `D:/QM/reports/pipeline/QM5_41040/P1/P1_QM5_41040_result.json`
+
+## Q02 Enqueue
+
+- one canonical logical-basket Q02 work item exists: `b126ae29-eb19-4c13-8cd3-33f7637eae25`
+- status at verification: `pending`, attempt count 0, priority track enabled
+- routed host: `XAUUSD.DWX`, D1; payload basket: `XAUUSD.DWX` plus `XAGUSD.DWX`
+- exact-path capacity sample: 6/7 governed factory roots active; no terminal action was taken
+- target-only dry run selected zero new rows because the existing work item already makes the EA non-fresh; no duplicate `--apply` was attempted
+- receipt: `docs/ops/evidence/2026-08-17_qm5_41040_xauxag_wflow_fade_q01_q02_enqueue.md`

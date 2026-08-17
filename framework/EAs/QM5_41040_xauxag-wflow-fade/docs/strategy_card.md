@@ -73,7 +73,7 @@ r3_data_available: PASS_WITH_DISCLOSED_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify an exact-calendar XAU/XAG weekly flow-conditioned relative-reversion package designed to suppress common precious-metal direction: verify every completed close/open endpoint, cross-metal subtraction, strict opposition, strict session dominance, completed-week fade sides, basket atomicity, and Friday flattening. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -419,6 +419,7 @@ realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial XAU/XAG weekly flow-conditioned relative-reversion card | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic synchronized logical-basket implementation and independent mechanic fixtures | Q01 | PASS |
+| v1-q02 | 2026-08-17 | canonical paced-sweeper logical-basket row verified pending without duplicate apply | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -426,7 +427,7 @@ realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-17 | APPROVED | `decisions/2026-08-17_xauxag_weekly_flow_conditioned_reversion_g0.md` |
 | Q01 Build Validation | 2026-08-17 | PASS | `D:/QM/reports/framework/21/build_check_20260817_075738.json`; `D:/QM/reports/pipeline/QM5_41040/P1/P1_QM5_41040_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | paced capacity gate required after Q01 PASS |
+| Q02 Baseline Screening | 2026-08-17 | ENQUEUED | `docs/ops/evidence/2026-08-17_qm5_41040_xauxag_wflow_fade_q01_q02_enqueue.md` |
 
 ## Safety Boundary
 
