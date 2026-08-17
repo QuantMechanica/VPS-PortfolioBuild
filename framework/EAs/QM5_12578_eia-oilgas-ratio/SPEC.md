@@ -79,3 +79,18 @@ the compiled artifact and setfile build hash, keeps the logical basket symbol
 `QM5_12578_XTI_XNG_RATIO_D1`, and runs the tester on the manifest host
 `XTIUSD.DWX` at D1. A new Q02 work item was enqueued after the rebuild so the
 farm does not keep treating the stale failed artifact as current state.
+
+## 9. Q02 Host-Binding Repair (2026-08-17)
+
+The July retry (`fc8e93ed-feca-46dd-b713-987fda41fe49`) remained pending
+because its payload used the synthetic logical basket name as `host_symbol`.
+MT5 must execute this basket from the manifest host `XTIUSD.DWX`; the logical
+name is reporting identity only. The retry is superseded by a fresh,
+hash-bound Q02 work item derived from the last terminal row with the correct
+host identity.
+
+The backtest setfile now declares the actual V5 inputs (`qm_ea_id`, RNG seed,
+the two news axes, Friday-close settings, and stress probability). The prior
+`qm_filter_news_*` entries were retired keys and did not bind any EA input.
+News remains enabled at the card default (`PRE30_POST30` + `DXZ`); this repair
+does not weaken the strategy filters or change entry/exit mechanics.
