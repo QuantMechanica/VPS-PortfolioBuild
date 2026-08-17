@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        40002
+; ea_slug:      quantpedia-fx-momentum-volatility-parity
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       USDCAD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e8459873c744fe03399c2e1336e6de2bd911deee20d68dbd92ad73492abe2ba8
+; author:       Codex
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=40002
+qm_magic_slot_offset=4
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_mode_legacy=0
+strategy_momentum_lookback_d1=63
+strategy_volatility_lookback_d1=21
+strategy_ema_period=50
+strategy_atr_period=14
+strategy_stop_atr_mult=2.0
+strategy_reward_risk=2.0
+strategy_spread_atr_mult=1.8
