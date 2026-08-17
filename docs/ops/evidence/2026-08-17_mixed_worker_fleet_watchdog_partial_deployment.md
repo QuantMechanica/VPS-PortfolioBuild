@@ -113,3 +113,39 @@ T2, T4, T5, T6, T7 are stale and all currently busy. They get the same treatment
 free up. **T4 must be left alone** while `QM5_41030` runs — a 450-minute basket that has
 been going since 00:02Z and is the one job on the fleet where a restart would discard
 hours of work.
+
+## Prospective confirmation — 2026-08-17 08:00Z, prediction held 4 of 4
+
+The pre-registered prediction was: a symbol that died as `INFRA_FAIL` on a stale worker
+will **pass** when re-run on a worker carrying `e607a1bc3`, with no change to the EA, the
+setfile or the window. `QM5_20178` was the natural experiment — it had been failing on
+four of five symbols all night.
+
+Terminal and duration read from each run's own evidence summary (`work_items.claimed_by`
+is cleared on completion, so it cannot serve as the record):
+
+| Symbol | pre-fix | post-fix | terminal | duration | attempts |
+|---|---|---|---|---|---|
+| NDX.DWX | INFRA_FAIL 08-16 21:13 | **PASS** 08-17 05:30 | T3 | 217.8 min | 1/3 |
+| WS30.DWX | INFRA_FAIL 08-16 23:40 | **PASS** 08-17 07:02 | T10 | 229.5 min | 1/3 |
+| GBPUSD.DWX | INFRA_FAIL 08-16 23:54 | **PASS** 08-17 07:02 | T1 | 234.6 min | 1/3 |
+| USDJPY.DWX | INFRA_FAIL 08-17 03:28 | **PASS** 08-17 07:13 | T3 | 213.9 min | 1/3 |
+| EURUSD.DWX | — | PASS 08-16 21:18 | T10 | 209.3 min | 1/3 |
+| XAUUSD.DWX | INFRA_FAIL ×3 | running on T9 | — | — | — |
+
+**Four symbols died before the fix and passed after it. None was re-authored between the
+two runs.** Every passing run landed on a terminal that carries the fix (T1, T3, T10).
+The prediction is confirmed.
+
+The mechanism is visible in the durations: **QM5_20178's Q02 full run costs 209–235
+minutes on every symbol** — a tight cluster across six independent symbols. No run of
+that length can survive a 90-minute outer deadline, which is why this EA and not others
+failed all night. It was never a strategy or symbol property.
+
+Note the asymmetry the deaths leave behind: none of the seven `INFRA_FAIL` rows has an
+evidence summary at all. A killed run writes nothing, so the only trace is the absence of
+a file — which is why the class read as `summary_missing` / `UNCLASSIFIED` rather than as
+a timeout.
+
+`XAUUSD.DWX` is the one symbol still unproven: it failed three times and is currently
+running on T9, a fixed worker. It is the last open item of this experiment.

@@ -1,0 +1,422 @@
+{
+ "schema": "qm.stalled-broad-q02-families/v1",
+ "source_register": "C:\\QM\\repo\\artifacts\\q02_breadth_extraction_register_20260817.json",
+ "criterion": ">=3 distinct Q02 PASS symbols and no accepted verdict past Q02",
+ "count": 39,
+ "entries": [
+  {
+   "ea_id": "QM5_11294",
+   "ea_id_status": "active",
+   "q02_pass_count": 5,
+   "phases_seen": {
+    "Q02": 5
+   },
+   "why_stalled": "KEINE downstream-Zeile -> Q04 nie enqueued"
+  },
+  {
+   "ea_id": "QM5_11661",
+   "ea_id_status": "active",
+   "q02_pass_count": 5,
+   "phases_seen": {
+    "Q02": 5
+   },
+   "why_stalled": "KEINE downstream-Zeile -> Q04 nie enqueued"
+  },
+  {
+   "ea_id": "QM5_10720",
+   "ea_id_status": "active",
+   "q02_pass_count": 9,
+   "phases_seen": {
+    "Q02": 9,
+    "Q03": 4,
+    "Q04": 5
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_11886",
+   "ea_id_status": "active",
+   "q02_pass_count": 5,
+   "phases_seen": {
+    "Q02": 29,
+    "Q03": 1,
+    "Q04": 5
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_10273",
+   "ea_id_status": "active",
+   "q02_pass_count": 4,
+   "phases_seen": {
+    "Q02": 48,
+    "Q03": 2,
+    "Q04": 4
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_10490",
+   "ea_id_status": "active",
+   "q02_pass_count": 4,
+   "phases_seen": {
+    "Q02": 48,
+    "Q03": 11,
+    "Q04": 4
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_10527",
+   "ea_id_status": "active",
+   "q02_pass_count": 4,
+   "phases_seen": {
+    "Q02": 48,
+    "Q03": 11,
+    "Q04": 5
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_10738",
+   "ea_id_status": "active",
+   "q02_pass_count": 4,
+   "phases_seen": {
+    "Q02": 7,
+    "Q03": 1,
+    "Q04": 4
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_9724",
+   "ea_id_status": "active",
+   "q02_pass_count": 4,
+   "phases_seen": {
+    "Q02": 24,
+    "Q03": 3,
+    "Q04": 4
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_9974",
+   "ea_id_status": "active",
+   "q02_pass_count": 4,
+   "phases_seen": {
+    "Q02": 11,
+    "Q03": 1,
+    "Q04": 4
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_10358",
+   "ea_id_status": "active",
+   "q02_pass_count": 4,
+   "phases_seen": {
+    "Q02": 5,
+    "Q03": 3,
+    "Q04": 3
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_10661",
+   "ea_id_status": "active",
+   "q02_pass_count": 4,
+   "phases_seen": {
+    "Q02": 31,
+    "Q03": 2,
+    "Q04": 4
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_10037",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 49,
+    "Q03": 2,
+    "Q04": 3
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_10363",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 18,
+    "Q03": 3,
+    "Q04": 3
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_11016",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 64,
+    "Q03": 1,
+    "Q04": 3
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_10413",
+   "ea_id_status": "active",
+   "q02_pass_count": 6,
+   "phases_seen": {
+    "Q02": 8,
+    "Q04": 4
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q04"
+  },
+  {
+   "ea_id": "QM5_11664",
+   "ea_id_status": "active",
+   "q02_pass_count": 5,
+   "phases_seen": {
+    "Q02": 6,
+    "Q04": 5
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q04"
+  },
+  {
+   "ea_id": "QM5_10380",
+   "ea_id_status": "active",
+   "q02_pass_count": 4,
+   "phases_seen": {
+    "Q02": 60,
+    "Q04": 4
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q04"
+  },
+  {
+   "ea_id": "QM5_10355",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 13,
+    "Q04": 3
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q04"
+  },
+  {
+   "ea_id": "QM5_1052",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 10,
+    "Q04": 3
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q04"
+  },
+  {
+   "ea_id": "QM5_10688",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 9,
+    "Q04": 3
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q04"
+  },
+  {
+   "ea_id": "QM5_11334",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 5,
+    "Q04": 3
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q04"
+  },
+  {
+   "ea_id": "QM5_11875",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 36,
+    "Q04": 3
+   },
+   "why_stalled": "downstream nur INFRA/INVALID: Q04"
+  },
+  {
+   "ea_id": "QM5_1371",
+   "ea_id_status": "active",
+   "q02_pass_count": 20,
+   "phases_seen": {
+    "Q02": 290,
+    "Q03": 3,
+    "Q04": 20
+   },
+   "why_stalled": "pending: Q02"
+  },
+  {
+   "ea_id": "QM5_1386",
+   "ea_id_status": "active",
+   "q02_pass_count": 10,
+   "phases_seen": {
+    "Q02": 99,
+    "Q03": 3,
+    "Q04": 10
+   },
+   "why_stalled": "pending: Q02"
+  },
+  {
+   "ea_id": "QM5_1800",
+   "ea_id_status": "active",
+   "q02_pass_count": 9,
+   "phases_seen": {
+    "Q02": 239,
+    "Q03": 1,
+    "Q04": 9
+   },
+   "why_stalled": "pending: Q02"
+  },
+  {
+   "ea_id": "QM5_1440",
+   "ea_id_status": "active",
+   "q02_pass_count": 4,
+   "phases_seen": {
+    "Q02": 99,
+    "Q03": 3,
+    "Q04": 4
+   },
+   "why_stalled": "pending: Q02"
+  },
+  {
+   "ea_id": "QM5_1642",
+   "ea_id_status": "active",
+   "q02_pass_count": 4,
+   "phases_seen": {
+    "Q02": 110,
+    "Q03": 39,
+    "Q04": 4
+   },
+   "why_stalled": "pending: Q02"
+  },
+  {
+   "ea_id": "QM5_10492",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 49,
+    "Q04": 3
+   },
+   "why_stalled": "pending: Q02"
+  },
+  {
+   "ea_id": "QM5_10983",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 27,
+    "Q03": 2,
+    "Q04": 3
+   },
+   "why_stalled": "pending: Q02"
+  },
+  {
+   "ea_id": "QM5_11056",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 35,
+    "Q04": 3
+   },
+   "why_stalled": "pending: Q02"
+  },
+  {
+   "ea_id": "QM5_12113",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 11,
+    "Q04": 3
+   },
+   "why_stalled": "pending: Q02"
+  },
+  {
+   "ea_id": "QM5_12707",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 5,
+    "Q03": 2,
+    "Q04": 3
+   },
+   "why_stalled": "pending: Q02"
+  },
+  {
+   "ea_id": "QM5_1518",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 77,
+    "Q03": 1,
+    "Q04": 3
+   },
+   "why_stalled": "pending: Q02"
+  },
+  {
+   "ea_id": "QM5_12382",
+   "ea_id_status": "active",
+   "q02_pass_count": 6,
+   "phases_seen": {
+    "Q02": 157,
+    "Q03": 5,
+    "Q04": 6
+   },
+   "why_stalled": "pending: Q02,Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_1443",
+   "ea_id_status": "active",
+   "q02_pass_count": 10,
+   "phases_seen": {
+    "Q02": 103,
+    "Q03": 2,
+    "Q04": 12
+   },
+   "why_stalled": "pending: Q02,Q04"
+  },
+  {
+   "ea_id": "QM5_10718",
+   "ea_id_status": "active",
+   "q02_pass_count": 4,
+   "phases_seen": {
+    "Q02": 340,
+    "Q03": 7,
+    "Q04": 4
+   },
+   "why_stalled": "pending: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_10232",
+   "ea_id_status": "active",
+   "q02_pass_count": 3,
+   "phases_seen": {
+    "Q02": 19,
+    "Q03": 1,
+    "Q04": 3
+   },
+   "why_stalled": "pending: Q03,Q04"
+  },
+  {
+   "ea_id": "QM5_2002",
+   "ea_id_status": "active",
+   "q02_pass_count": 6,
+   "phases_seen": {
+    "Q02": 230,
+    "Q03": 1,
+    "Q04": 6
+   },
+   "why_stalled": "pending: Q04"
+  }
+ ]
+}
