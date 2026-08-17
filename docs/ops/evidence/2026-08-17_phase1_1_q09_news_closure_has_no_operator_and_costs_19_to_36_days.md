@@ -100,6 +100,34 @@ choice. The options are:
 option, and it converts a manual ceremony into something whose cost can then be measured properly rather
 than estimated from n=1.
 
+## 1.2 — the pool split recomputed against both arms
+
+Same predicate reading, applied to the 34 Q10 PASS pairs. The expectation was pre-registered as
+"closer to one than sixteen":
+
+| | pairs |
+|---|---:|
+| **tenable under both arms of the current contract** | **1** — QM5_11422/USDCAD |
+| not tenable | **33** |
+| undecidable | **0** |
+
+Earlier figure, computed with the **portfolio arm alone**: 16 tenable / 12 not / 6 undecidable. The
+"undecidable" bucket disappears entirely, because the news arm is a binary fact — a `CONFIG_LOCKED` row
+exists for the pair or it does not.
+
+**And a subtlety that matters more than the count.** QM5_11422/USDCAD's own chronology:
+
+```
+Q09_PORTFOLIO  PASS_PORTFOLIO  2026-07-24
+Q10            PASS            2026-07-25
+Q09_NEWS       CONFIG_LOCKED   2026-08-08   <- fourteen days AFTER its Q10
+```
+
+So even the one tenable pair earned its Q10 before its news arm existed; the arm was closed
+retrospectively. Which means: **zero of the 34 Q10 PASS verdicts were produced under the contract now in
+force.** One of them is re-earnable today; none was originally compliant. That is a cleaner statement of
+the same fact and it removes any suggestion that the pool contains a compliant core to build on.
+
 ## Deliberately not done
 
 No `bind-q09-plan` run, no adjudication invoked, no hold released. Every one of those is a factory-time
