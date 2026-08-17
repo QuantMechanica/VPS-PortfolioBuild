@@ -1,0 +1,90 @@
+{
+  "schema_version": "qm.fx-existing-card-q04-cpu-stop/v1",
+  "captured_at_utc": "2026-08-17T18:26:04Z",
+  "branch": "agents/board-advisor",
+  "outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier": {
+    "frozen_relationship_count": 66,
+    "mechanized_relationship_count": 66,
+    "unbuilt_relationship_count": 0,
+    "new_card_or_ea_created": false,
+    "anchors": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    }
+  },
+  "selected_existing_fx_card": {
+    "ea_id": "QM5_12741",
+    "ea_dir": "QM5_12741_nnfx-fx-basket-pooled",
+    "logical_symbol": "QM5_12741_NNFX_FX_BASKET_D1",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "AUDUSD.DWX",
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDCHF.DWX"
+    ],
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "mq5_sha256": "72bea21c0237c38f79053148515e12d33c8b806483c16b30e23cc19cb5e8157f",
+    "ex5_sha256": "47c92e1a7f3ba5ef3578f11065368d581b1f7385768eb716371a95b5b57853be",
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260817_182239.json"
+    },
+    "work_item_chain": [
+      {
+        "id": "cab41d73-7573-4648-b58d-ce9fa6df26b3",
+        "phase": "Q02",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "id": "bf4f1a14-2d2f-4caf-9d94-8076560d8b8d",
+        "phase": "Q03",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "id": "fc9e29f1-9729-478f-96fb-dd7dcdb5978d",
+        "phase": "Q04",
+        "status": "done",
+        "verdict": "INFRA_FAIL",
+        "reason": "F3:invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,RUN_STATUS_INVALID"
+      }
+    ],
+    "open_target_rows_after_timed_command": 0,
+    "append_only_descendants_after_timed_command": 0
+  },
+  "farm_backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_12741_q04_append_retry_20260817T182450Z.sqlite",
+  "capacity_samples": [
+    {
+      "captured_at_utc": "2026-08-17T18:24:00Z",
+      "cpu_percent": [87.41, 86.08, 76.52, 81.94, 82.09],
+      "average_cpu_percent": 82.81,
+      "maximum_cpu_percent": 87.41,
+      "active_work_item_count": 6
+    },
+    {
+      "captured_at_utc": "2026-08-17T18:26:04Z",
+      "cpu_percent": [81.20, 84.05, 79.98, 97.46, 79.99],
+      "average_cpu_percent": 84.54,
+      "maximum_cpu_percent": 97.46,
+      "hard_ceiling_percent": 97.0,
+      "ceiling_binding": true,
+      "active_work_item_count": 6
+    }
+  ],
+  "actions": {
+    "queue_row_created": false,
+    "dispatch_tick": false,
+    "backtest_or_tester_launched": false,
+    "terminal_control": false,
+    "portfolio_gate_mutation": false,
+    "t_live_or_autotrading_mutation": false
+  }
+}
