@@ -477,6 +477,112 @@ def test_part2_refuses_terminal_disposition_and_historical_phase(
     assert report["part2_stranded"]["rate_limited"] is False
 
 
+def test_part2_requeues_q04_and_q07_but_preserves_infra_cap(
+    tmp_path: Path,
+) -> None:
+    farm_root = tmp_path / "farm"
+    repo_root = tmp_path / "repo"
+    report_root = tmp_path / "reports"
+    registry = repo_root / "framework" / "registry" / "ea_id_registry.csv"
+    registry.parent.mkdir(parents=True)
+    report_root.joinpath("state").mkdir(parents=True)
+
+    fixtures = {}
+    for ea_id, slug in (
+        ("QM5_9007", "q04-recovery"),
+        ("QM5_9008", "q07-recovery"),
+        ("QM5_9009", "q07-capped"),
+    ):
+        ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_{slug}"
+        sets_dir = ea_dir / "sets"
+        sets_dir.mkdir(parents=True)
+        setfile = sets_dir / f"{ea_dir.name}_EURUSD.DWX_D1_backtest.set"
+        setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+        fixtures[ea_id] = setfile.resolve()
+
+    with registry.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["ea_id", "slug", "status"])
+        writer.writeheader()
+        writer.writerow({"ea_id": "9007", "slug": "q04-recovery", "status": "active"})
+        writer.writerow({"ea_id": "9008", "slug": "q07-recovery", "status": "active"})
+        writer.writerow({"ea_id": "9009", "slug": "q07-capped", "status": "active"})
+
+    farmctl.init_db(farm_root)
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        rows = [
+            ("q04-infra", "Q04", "QM5_9007", "2026-08-01T00:00:00+00:00"),
+            ("q07-infra", "Q07", "QM5_9008", "2026-08-01T00:00:00+00:00"),
+        ]
+        rows.extend(
+            (
+                f"q07-capped-{attempt:02d}",
+                "Q07",
+                "QM5_9009",
+                f"2026-08-{attempt + 1:02d}T00:00:00+00:00",
+            )
+            for attempt in range(12)
+        )
+        for item_id, phase, ea_id, stamp in rows:
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                    attempt_count,payload_json,created_at,updated_at
+                ) VALUES(?, 'backtest', ?, ?, 'EURUSD.DWX', ?, 'done',
+                         'INFRA_FAIL', 0, '{}', ?, ?)
+                """,
+                (item_id, phase, ea_id, str(fixtures[ea_id]), stamp, stamp),
+            )
+        conn.commit()
+
+    env = os.environ.copy()
+    env.update({
+        "QM_STRATEGY_FARM_ROOT": str(farm_root),
+        "QM_CANONICAL_REPO_ROOT": str(repo_root),
+        "QM_REPORT_ROOT": str(report_root),
+    })
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SWEEP),
+            "--apply",
+            "--ea",
+            "QM5_9007,QM5_9008,QM5_9009",
+            "--max-part2-per-run",
+            "10",
+        ],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        pending = conn.execute(
+            "SELECT ea_id,phase FROM work_items WHERE status='pending' ORDER BY ea_id"
+        ).fetchall()
+    assert pending == [("QM5_9007", "Q04"), ("QM5_9008", "Q07")]
+
+    report = json.loads(
+        (report_root / "state" / "claude_sweep_enqueue_2026-06-10.json")
+        .read_text(encoding="utf-8")
+    )
+    assert {
+        (row["ea_id"], row["phase"])
+        for row in report["part2_stranded"]["enqueued"]
+    } == {("QM5_9007", "Q04"), ("QM5_9008", "Q07")}
+    assert any(
+        row.get("ea_id") == "QM5_9009"
+        and row.get("phase") == "Q07"
+        and row.get("reason") == "infra_retry_cap_reached"
+        and row.get("attempts") == 12
+        for row in report["part2_stranded"]["skipped"]
+    )
+
+
 def test_q08_stranded_retry_carries_hash_pinned_requal_lineage(
     tmp_path: Path,
 ) -> None:

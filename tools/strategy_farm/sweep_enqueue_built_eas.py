@@ -5,7 +5,7 @@
    OWNER gate-acceleration #2: diverse stage-1 wave (<=3 symbols across
    asset buckets), remainder deferred to the sidecar.
 2. Re-enqueue (ea, symbol, setfile) rows stranded on INFRA_FAIL at
-   Q02/Q03/Q08 with nothing pending/active, no terminal non-INFRA
+   Q02/Q03/Q04/Q07/Q08 with nothing pending/active, no terminal non-INFRA
    disposition, and no work for the same EA/symbol at a deeper phase.
 3. Promote deferred symbols (state/q02_deferred_symbols.json): an EA's
    deferred setfiles are enqueued as soon as ANY of its Q02 rows is a done
@@ -111,6 +111,10 @@ if "--max-infra-attempts" in sys.argv:
 MAX_PART2_PER_RUN = 250
 if "--max-part2-per-run" in sys.argv:
     MAX_PART2_PER_RUN = int(sys.argv[sys.argv.index("--max-part2-per-run") + 1])
+# Q04 and Q07 can be reclassified to INFRA_FAIL after their phase-specific
+# operators finish.  Keep those rows on the same bounded hourly recovery path
+# as Q02/Q03/Q08; Q05/Q06 remain with the separately governed deep-phase tool.
+STRANDED_INFRA_PHASES = ("Q02", "Q03", "Q04", "Q07", "Q08")
 TARGET_EAS = set()
 if "--ea" in sys.argv:
     for raw in sys.argv[sys.argv.index("--ea") + 1].split(","):
@@ -504,10 +508,10 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
             {"ea_id": ea_id, "symbol": symbol, "setfile": sf.name,
              "priority_track": priority_track})
 
-# ---------- Part 2: stranded INFRA_FAIL at Q02/Q03/Q08 ----------
+# ---------- Part 2: stranded INFRA_FAIL at Q02/Q03/Q04/Q07/Q08 ----------
 part2_count = 0
 report["part2_stranded"]["rate_limited"] = False
-for phase in ("Q02", "Q03", "Q08"):
+for phase in STRANDED_INFRA_PHASES:
     if part2_count >= MAX_PART2_PER_RUN:
         break
     params = [phase]
