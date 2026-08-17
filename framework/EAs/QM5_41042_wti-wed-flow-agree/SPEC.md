@@ -87,7 +87,7 @@ opposition plus session dominance and fades rather than follows the total.
 - Magic slot 0: `XTIUSD.DWX / 410420000 / active`
 - Q01: PASS (14 fixtures; strict compile and targeted build check clean;
   static P1 artifact validation PASS)
-- Q02: not enqueued
+- Q02: ENQUEUED as one repaired paced priority-track work item
 
 ## Revision History
 
@@ -96,6 +96,7 @@ opposition plus session dominance and fades rather than follows the total.
 | v1 | 2026-08-17 | approved build directory identity | source/G0/card and EA-ID registry complete |
 | v1-build | 2026-08-17 | deterministic implementation | strict compile, targeted build check, independent fixtures, and static P1 PASS |
 | v1-preflight | 2026-08-17 | Q02 deterministic-gate repair | tester-loading calls use `_Symbol`; tolerance set value uses decimal serialization |
+| v1-queue | 2026-08-17 | paced Q02 handoff | one priority-track retry; no terminal action |
 
 ## Q01 Evidence
 
@@ -113,3 +114,19 @@ opposition plus session dominance and fades rather than follows the total.
   `D:/QM/reports/framework/21/build_check_20260817_100356.json`
 - P1 report:
   `D:/QM/reports/pipeline/QM5_41042/P1/P1_QM5_41042_result.json`
+
+## Q02 Enqueue
+
+- canonical work item: `0af71887-c879-463e-9bad-4a6b5451a4ad`
+- status: created `pending`; later read-only verification found the scheduled
+  fleet had claimed it `active` on T4, attempt count 0, priority track enabled
+- bounded recovery parent: `b07a5699-7675-4aba-8ae7-96a70bc3555c`
+  (`INFRA_FAIL`, pre-tester `compile_gate:SYMBOL_SCOPE_LEAK`)
+- repaired preflight: factory scope validator `SINGLE_SYMBOL_OK`; setfile
+  tolerance serialized as `0.0000000001`
+- routed host: exact `XTIUSD.DWX`, D1
+- exact-path samples remained below the seven-root ceiling; `T_Live` was
+  excluded and no terminal action was taken
+- target-only post-apply dry run selected zero new rows; no duplicate exists
+- receipt:
+  `docs/ops/evidence/2026-08-17_qm5_41042_wti_wednesday_flow_agreement_q01_q02_enqueue.md`
