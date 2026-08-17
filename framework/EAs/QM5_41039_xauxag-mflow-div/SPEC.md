@@ -103,7 +103,7 @@ portfolio-gate change, or live-manifest change is authorized.
 |---|---|---|---|
 | v1 | 2026-08-17 | approved build directory identity | source/G0/card and EA-ID registry complete |
 | v1-build | 2026-08-17 | deterministic implementation | strict compile, targeted build check, independent fixtures, and static P1 PASS |
-| v1-queue | 2026-08-17 | paced Q02 handoff | PENDING capacity check and enqueue |
+| v1-queue | 2026-08-17 | paced Q02 handoff | NOT_ENQUEUED_CPU_CEILING; binding pre-apply sample reached 7/7 governed terminals |
 
 ## Q01 Evidence
 
@@ -114,3 +114,11 @@ portfolio-gate change, or live-manifest change is authorized.
 - static P1 artifact validation: PASS
 - build report: `D:/QM/reports/framework/21/build_check_20260817_070502.json`
 - P1 report: `D:/QM/reports/pipeline/QM5_41039/P1/P1_QM5_41039_result.json`
+
+## Q02 Capacity Stop
+
+- initial exact-path sample: 4/7 governed factory terminals active
+- target-only dry run: exactly one never-tested Q02 row selected; no recovery rows
+- binding pre-apply sample: 7/7 terminals active and 99% CPU
+- result: no `--apply`, queue insertion, dispatch, backtest, or terminal action
+- receipt: `docs/ops/evidence/2026-08-17_qm5_41039_xauxag_mflow_div_q01_cpu_ceiling_stop.md`

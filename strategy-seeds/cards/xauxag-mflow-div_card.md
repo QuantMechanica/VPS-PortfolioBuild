@@ -78,7 +78,7 @@ r3_data_available: PASS_WITH_DISCLOSED_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a synchronized XAU/XAG monthly relative-flow-divergence package outside the directional certified XAU/SP500/NDX/XNG book. Verify every completed close/open endpoint, cross-metal subtraction, strict opposition, session-relative sides, basket atomicity, and next-month flattening. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -442,6 +442,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial monthly XAU/XAG relative-flow-divergence card | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic synchronized logical-basket implementation and independent mechanic fixtures | Q01 | PASS |
+| v1-q02-hold | 2026-08-17 | target-only dry run selected one row, but the binding pre-apply sample reached the seven-terminal CPU ceiling | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -449,7 +450,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-17 | APPROVED | `decisions/2026-08-17_xauxag_monthly_relative_flow_divergence_g0.md` |
 | Q01 Build Validation | 2026-08-17 | PASS | `D:/QM/reports/framework/21/build_check_20260817_070502.json`; `D:/QM/reports/pipeline/QM5_41039/P1/P1_QM5_41039_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | paced capacity gate required after Q01 PASS |
+| Q02 Baseline Screening | 2026-08-17 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-17_qm5_41039_xauxag_mflow_div_q01_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 
