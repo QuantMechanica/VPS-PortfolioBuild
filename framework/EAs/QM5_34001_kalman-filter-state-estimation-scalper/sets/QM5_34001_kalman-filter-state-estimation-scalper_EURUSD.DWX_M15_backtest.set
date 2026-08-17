@@ -1,0 +1,12 @@
+qm_ea_id=34001
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_process_noise_q=0.0001
+strategy_measurement_noise_r=0.01
+strategy_z_threshold=2.00
+strategy_atr_period=14
+strategy_sl_atr_mult=1.5
+strategy_spread_atr_period=14
+strategy_spread_atr_mult=1.8
