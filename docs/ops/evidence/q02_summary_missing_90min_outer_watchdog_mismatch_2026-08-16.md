@@ -178,3 +178,38 @@ run_smoke.ps1, for every phase, without a second place to remember to configure 
   resolved - it is not fixed by the change proposed here.
 
 No factory OFF/ON, no T_Live, no claim-path code edited as part of this diagnosis.
+
+## Prospective confirmation (2026-08-17 02:25Z)
+
+The diagnosis was tested forward rather than only backward. On 2026-08-17 01:10Z —
+before the outcome — the reading of the QM5_20176 XAUUSD rerun `c7a4351f` was fixed in
+writing (`docs/ops/evidence/2026-08-16_noop_sltp_modify_storm.md`, commit `70b5c6683`):
+completion would credit the no-op SLTP fix, while a death near 90 minutes would be this
+watchdog and would say nothing about it.
+
+Measured:
+
+| | |
+|---|---|
+| claimed | `2026-08-17T00:53:54Z` |
+| process started | `2026-08-17T00:55:43Z` |
+| released back to `pending` | `2026-08-17T02:25:52Z` |
+| elapsed from process start | **90 min 09 s** |
+| `timeout_seconds` in payload | `7200` (120 min) |
+| `run_smoke_exit_code` | `None` |
+| `prior_failure` | `summary_missing` |
+
+A run with a 120-minute inner budget, killed at 90 minutes and 9 seconds, with no exit
+code — the predicted signature to the second, on a row chosen in advance. A diagnosis
+that predicts is worth more than one that explains, and this one now has both.
+
+Two consequences:
+
+1. **The no-op SLTP modify fix remains unverified.** Its discriminator could not run to
+   a verdict. Verification now depends on the QM5_10000 canary (`78979d0f`, pending) or
+   on any bound run that finishes, whichever comes first after the watchdog fix is live.
+2. **The waste is self-sustaining.** `c7a4351f` returned to `pending` with
+   `attempt_count=1` rather than terminating, so it will be re-claimed and killed again.
+   The five QM5_20178 Q02 runs in flight at the time of writing are in the same loop.
+   Only deploying `e607a1bc3` — which requires a Factory OFF/ON, because
+   `terminal_worker.py` is resident from worker start — breaks it.
