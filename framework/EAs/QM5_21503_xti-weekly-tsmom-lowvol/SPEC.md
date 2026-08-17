@@ -87,3 +87,4 @@ admission, portfolio-gate changes, and correlation waivers are outside scope.
 |---|---|---|---|
 | v1 | 2026-08-17 | approved build-directory identity | G0 approved |
 | v1-build | 2026-08-17 | deterministic implementation, 13 passing reference tests, fixed-risk setfile, strict compile and target build checks | Q01 PASS |
+| v1-capacity | 2026-08-17 | fresh capacity gate found eight governed testers and 100% CPU | Q02 not enqueued; hard-ceiling stop |

@@ -60,7 +60,7 @@ r3_data_available: PASS_FOR_DISCLOSED_PROXY
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: PENDING
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify an exact-calendar direct-WTI weekly continuation sleeve outside the certified XAU/SP500/NDX/XNG book. Verify the completed Monday-Friday endpoints, non-overlapping five-return RV blocks, inclusive lower-tercile rank, no late/repeated Monday entry, and Friday flattening; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -352,6 +352,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial exact-week low-volatility WTI card | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic EA, 13 passing mechanic fixtures, fixed-risk set, strict compile and build gates | Q01 | PASS |
+| v1-capacity | 2026-08-17 | fresh governed sample found eight active T1-T10 testers and 100% CPU; stopped before queue mutation | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -359,7 +360,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-17 | APPROVED | `decisions/2026-08-17_wti_exact_week_lowvol_momentum_g0.md` |
 | Q01 Build Validation | 2026-08-17 | PASS | 13/13 reference fixtures; strict compile 0 errors/0 warnings; target build check 0 failures/0 warnings; static P1 artifact validation PASS |
-| Q02 Baseline Screening | 2026-08-17 | PENDING | target-only capacity gate and enqueue required |
+| Q02 Baseline Screening | 2026-08-17 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-17_qm5_21503_xti_weekly_tsmom_lowvol_q01_cpu_ceiling_stop.md`; eight governed testers and 100% CPU; no queue mutation |
 
 ## Safety Boundary
 

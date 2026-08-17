@@ -145,5 +145,7 @@ permits; every existing live and portfolio exclusion above remains binding.
 The extension reached Q01 PASS on 2026-08-17 with 13 passing independent
 mechanic fixtures, a strict MetaEditor compile with zero errors and warnings,
 a target build check with zero failures and warnings, a static P1 artifact
-PASS, and the sole fixed-risk backtest preset. Q02 remains pending the governed
-target-only capacity gate; no manual test or terminal control is authorized.
+PASS, and the sole fixed-risk backtest preset. A fresh governed sample at
+2026-08-17T06:02:40Z then found eight active T1-T10 testers and 100% CPU. Q02
+was not enqueued under the hard-ceiling stop; no manual test, queue mutation,
+dispatch, or terminal control is authorized or occurred.
