@@ -86,7 +86,7 @@ cumulative-RSI pullback.
 - G0: `APPROVED`
 - EA ID registry: `41043 / xng-thu-flow-agree / active`
 - EA directory identity: established before magic allocation
-- Magic slot 0: pending governed allocation
+- Magic slot 0: `XNGUSD.DWX / 410430000 / active`
 - Q01: pending
 - Q02: not enqueued
 
