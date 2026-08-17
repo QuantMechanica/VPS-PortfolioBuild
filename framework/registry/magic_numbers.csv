@@ -16137,3 +16137,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 31007,forex-trend-hunter-triple-ema,1,GBPJPY.DWX,310070001,2026-08-16T23:12:59Z,Codex,active
 31007,forex-trend-hunter-triple-ema,2,XAUUSD.DWX,310070002,2026-08-16T23:12:59Z,Codex,active
 32001,nq-micro-momentum-apex-scalper,0,NDX.DWX,320010000,2026-08-16T23:12:59Z,Codex,active
+41034,wti-mflow-agree,0,XTIUSD.DWX,410340000,2026-08-17T00:12:48Z,Codex,active
