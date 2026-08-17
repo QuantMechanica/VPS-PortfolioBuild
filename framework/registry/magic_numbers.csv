@@ -17418,4 +17418,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 35008,short-term-bollinger-reversion-system,0,EURUSD.DWX,350080000,2026-08-17T20:45:00Z,Gemini,active
 35008,short-term-bollinger-reversion-system,1,USDCAD.DWX,350080001,2026-08-17T20:45:00Z,Gemini,active
 35008,short-term-bollinger-reversion-system,2,EURCHF.DWX,350080002,2026-08-17T20:45:00Z,Gemini,active
+35007,inside-bar-momentum-breakout-system,0,EURUSD.DWX,350070000,2026-08-17T20:45:00Z,Gemini,active
+35007,inside-bar-momentum-breakout-system,1,GBPUSD.DWX,350070001,2026-08-17T20:45:00Z,Gemini,active
+35007,inside-bar-momentum-breakout-system,2,USDJPY.DWX,350070002,2026-08-17T20:45:00Z,Gemini,active
 
