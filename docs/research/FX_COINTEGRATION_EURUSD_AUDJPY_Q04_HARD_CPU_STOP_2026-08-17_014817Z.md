@@ -60,6 +60,53 @@ factory-control action followed.
 Machine-readable evidence is
 `artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T014817Z_board_advisor.json`.
 
+## 03:01Z continuation audit
+
+A fresh read-only audit at repository head
+`233d0919b47dd2fc5e85a708dd3961adbd417304` found a materially changed
+factory roster but the same binding hard-CPU condition. Five whole-machine
+samples were `99.9%`, `99.9%`, `100%`, `100%`, and `100%` (average `99.96%`,
+maximum `100%`). Six path-anchored factory terminals were active:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| `T2` | `QM5_20085` | `Q06` | `EURUSD.DWX` |
+| `T4` | `QM5_41030` | `Q02` | `QM5_41030_XAU_XAG_FLOWDIV_D1` |
+| `T5` | `QM5_20178` | `Q02` | `USDJPY.DWX` |
+| `T6` | `QM5_20086` | `Q07` | `NDX.DWX` |
+| `T7` | `QM5_20085` | `Q06` | `XAUUSD.DWX` |
+| `T10` | `QM5_20178` | `Q02` | `GBPUSD.DWX` |
+
+The roster fell from eight active factory terminals to six and changed its
+work-item composition, so this is not a copy of the 01:48Z observation. CPU
+nevertheless remained above the explicit `97%` ceiling on every sample. The
+separately visible `T_Live` and FTMO processes were excluded from the factory
+roster and were neither inspected beyond process identity nor controlled.
+
+`PRAGMA quick_check` against the canonical farm database remained `ok`.
+`QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1` still has exactly one open row:
+Q04 work item `113ae6d1-33c0-42bc-b9b0-bf3a48ef3445`, `pending`, unclaimed,
+attempt zero. The exact logical Q02 predecessor remains canonical `PASS`.
+The anchor dispositions also remain Q02 `PASS` followed by downstream
+economic failure. A new Q02/Q04 row, timestamp change, priority mutation, or
+requeue would therefore be duplicate work.
+
+The selected package remains cryptographically unchanged:
+
+- EX5 SHA-256:
+  `4d57f2bc03a14ce0be3f7f18245adfff280955287cda5af1119d502d33d96270`
+- basket manifest SHA-256:
+  `2f5823242ae1b2a0592d9239969e22f31ac90234d909b3eee5e1d9c635b519a9`
+- fixed-risk setfile SHA-256:
+  `dcac19dcd0882c24ba0c772b36e47c816c582d3f612b35445ce909bfc8e846d8`
+- build-local approved Card SHA-256:
+  `f5f4b1d13ace14d69ca3249b77976503f025c229598f16693ace755ba8c0043d`
+
+Per the mission stop condition, no enqueue, dispatch tick, backtest, tester
+launch, terminal action, or queue/EA-package mutation followed. The fresh
+machine-readable evidence is
+`artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T030120Z_board_advisor.json`.
+
 ## Safety
 
 - No portfolio-admission, portfolio KPI, or Q08-contribution path changed.

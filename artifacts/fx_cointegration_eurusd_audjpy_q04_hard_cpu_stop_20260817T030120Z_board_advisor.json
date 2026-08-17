@@ -1,0 +1,137 @@
+{
+  "schema_version": "fx_cointegration_frontier_cpu_stop.v1",
+  "observed_at_utc": "2026-08-17T03:01:20+00:00",
+  "db_checked_at_utc": "2026-08-17T03:02:10.7535439Z",
+  "branch": "agents/board-advisor",
+  "repository_head": "233d0919b47dd2fc5e85a708dd3961adbd417304",
+  "decision": "STOP_HARD_CPU_CEILING",
+  "frontier": {
+    "scan": "analyze_cross_asset_v3.py --include-negative-hedges",
+    "relationship_count": 66,
+    "reconciliation": "fully_mechanized",
+    "new_card_or_ea_created": false
+  },
+  "anchors": [
+    {
+      "ea_id": "QM5_12532",
+      "symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "terminal_path": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "open_rows": 0
+    },
+    {
+      "ea_id": "QM5_12533",
+      "symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "terminal_path": "Q02_PASS_Q04_FAIL",
+      "open_rows": 0
+    }
+  ],
+  "selected_existing_successor": {
+    "scan_rank": 21,
+    "ea_id": "QM5_20203",
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "q02_work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+    "q02_status": "done",
+    "q02_verdict": "PASS",
+    "q04_work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+    "q04_status": "pending",
+    "q04_verdict": null,
+    "q04_attempt_count": 0,
+    "q04_claimed_by": null,
+    "open_row_count": 1,
+    "queue_mutation": "none_duplicate_guard"
+  },
+  "artifact_sha256": {
+    "ex5": "4d57f2bc03a14ce0be3f7f18245adfff280955287cda5af1119d502d33d96270",
+    "basket_manifest": "2f5823242ae1b2a0592d9239969e22f31ac90234d909b3eee5e1d9c635b519a9",
+    "risk_fixed_setfile": "dcac19dcd0882c24ba0c772b36e47c816c582d3f612b35445ce909bfc8e846d8",
+    "build_local_approved_card": "f5f4b1d13ace14d69ca3249b77976503f025c229598f16693ace755ba8c0043d"
+  },
+  "database": {
+    "path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "quick_check": "ok",
+    "access": "read_only"
+  },
+  "cpu": {
+    "threshold_percent": 97.0,
+    "samples_percent": [
+      99.9,
+      99.9,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 99.96,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true
+  },
+  "factory": {
+    "active_terminal_count": 6,
+    "active_terminals": [
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T10"
+    ],
+    "active_work_items": [
+      {
+        "terminal": "T2",
+        "work_item_id": "a4cb2e43-5d5d-4f79-96c0-f278886d0e56",
+        "ea_id": "QM5_20085",
+        "phase": "Q06",
+        "symbol": "EURUSD.DWX"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "d25b62c2-c22a-4f7a-8697-0ab2a733ceab",
+        "ea_id": "QM5_41030",
+        "phase": "Q02",
+        "symbol": "QM5_41030_XAU_XAG_FLOWDIV_D1"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "03d06ffa-74b2-4e4c-89e6-6985a6d107a6",
+        "ea_id": "QM5_20178",
+        "phase": "Q02",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "452d30f1-d128-448f-823b-bcf69ee970ac",
+        "ea_id": "QM5_20086",
+        "phase": "Q07",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "65b74c41-2494-41c8-a0a7-c697798184e4",
+        "ea_id": "QM5_20085",
+        "phase": "Q06",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T10",
+        "work_item_id": "16c2e667-e4f2-40bd-93a1-93d4d9e65c68",
+        "ea_id": "QM5_20178",
+        "phase": "Q02",
+        "symbol": "GBPUSD.DWX"
+      }
+    ],
+    "t_live_excluded": true,
+    "ftmo_excluded": true,
+    "process_control_performed": false
+  },
+  "mutations": {
+    "queue": false,
+    "backtest_or_dispatch": false,
+    "terminal": false,
+    "ea_or_registry": false,
+    "portfolio_gate": false,
+    "t_live_or_autotrading": false
+  }
+}
