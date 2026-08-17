@@ -17370,3 +17370,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 33006,andrea-unger-turtle-soup-false-breakout,0,SP500.DWX,330060000,2026-08-17T19:00:00Z,Gemini,active
 33006,andrea-unger-turtle-soup-false-breakout,1,XTIUSD.DWX,330060001,2026-08-17T19:00:00Z,Gemini,active
 33006,andrea-unger-turtle-soup-false-breakout,2,EURUSD.DWX,330060002,2026-08-17T19:00:00Z,Gemini,active
+41050,wti-postwed-gap-agree,0,XTIUSD.DWX,410500000,2026-08-17T19:08:41Z,Codex,active
+33008,thomas-stridsman-rvi-noise-buster,0,NDX.DWX,330080000,2026-08-17T19:00:00Z,Gemini,active
+33008,thomas-stridsman-rvi-noise-buster,1,SP500.DWX,330080001,2026-08-17T19:00:00Z,Gemini,active
