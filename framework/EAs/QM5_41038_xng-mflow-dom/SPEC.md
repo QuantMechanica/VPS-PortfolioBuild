@@ -92,4 +92,4 @@ authorized.
 |---|---|---|---|
 | v1 | 2026-08-17 | approved build | source/G0/card and deterministic identities complete |
 | v1-build | 2026-08-17 | deterministic implementation | Q01 PASS: 20 fixtures; strict compile/build checks clean |
-| v1-queue | 2026-08-17 | paced Q02 handoff | PENDING capacity check and enqueue |
+| v1-capacity | 2026-08-17 | paced Q02 preflight | 7 exact factory terminals active against ceiling 7; guard stopped before queue apply |

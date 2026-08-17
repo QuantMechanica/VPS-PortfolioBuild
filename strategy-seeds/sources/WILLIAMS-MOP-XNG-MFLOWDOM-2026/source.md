@@ -183,4 +183,4 @@ economics.
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
 | v1-card | 2026-08-17 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic EA, 20 passing mechanic fixtures, locked fixed-risk set, strict compile and build gate | Q01 | PASS |
-| v1-queue | 2026-08-17 | paced target-only enqueue subject to the tester ceiling | Q02 | PENDING |
+| v1-capacity | 2026-08-17 | exact-path pre-apply sample reached 7 active factory terminals against ceiling 7; guarded command stopped before queue apply and target readback stayed empty | Q02 | NOT_ENQUEUED_CPU_CEILING |
