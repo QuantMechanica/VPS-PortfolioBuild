@@ -1,0 +1,147 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-17T22:47:14Z",
+  "generated_at_local": "2026-08-18T00:47:14+02:00",
+  "branch": "agents/board-advisor",
+  "base_commit": "fa4a5a5851a666c889c3fc1e46709c6c1260583a",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_state": {
+    "scan": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a80493291",
+    "coverage_commit_is_ancestor_of_head": true,
+    "new_card_or_ea_permitted": false,
+    "reason": "The committed sign-aware reconciliation covers every frozen-scan relationship; another identity would be duplicate work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "canonical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "canonical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "selection_reason": "No unbuilt frozen-scan relationship remains; rank 21 is the highest-ranked exact frontier sleeve still awaiting an economic verdict.",
+    "scan_rank": 21,
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "ea_id": "QM5_20203",
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "q02": {
+      "work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 0,
+      "claimed_by": null,
+      "duplicate_enqueue_or_requeue_performed": false
+    },
+    "package_sha256": {
+      "ex5": "4d57f2bc03a14ce0be3f7f18245adfff280955287cda5af1119d502d33d96270",
+      "basket_manifest": "2f5823242ae1b2a0592d9239969e22f31ac90234d909b3eee5e1d9c635b519a9",
+      "backtest_setfile": "dcac19dcd0882c24ba0c772b36e47c816c582d3f612b35445ce909bfc8e846d8",
+      "approved_card_snapshot": "f5f4b1d13ace14d69ca3249b77976503f025c229598f16693ace755ba8c0043d"
+    }
+  },
+  "capacity_sample": {
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "cpu_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "operator_scan_at_utc": "2026-08-17T22:46:21+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T8"
+    ],
+    "active_q02_work_items": [
+      {
+        "terminal": "T2",
+        "work_item_id": "217f85ea-bf07-45a0-b33f-b873b6c8d0dc",
+        "ea_id": "QM5_35006",
+        "symbol": "GBPJPY.DWX"
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "2bdfffde-8730-4bd7-9d2d-90e51be5361e",
+        "ea_id": "QM5_35003",
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "6c66261d-185e-4816-ad04-87b8fc771b01",
+        "ea_id": "QM5_35001",
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "87c7a2cb-10e4-4ea8-bb5f-90e68605cd3f",
+        "ea_id": "QM5_35001",
+        "symbol": "EURUSD.DWX"
+      }
+    ],
+    "active_q08_pipeline_runs": [
+      {
+        "terminal": "T1",
+        "ea_id": "QM5_10145"
+      },
+      {
+        "terminal": "T4",
+        "ea_id": "QM5_10183"
+      },
+      {
+        "terminal": "T6",
+        "ea_id": "QM5_12354"
+      }
+    ],
+    "t_live_and_unrelated_ftmo_observed_only": true,
+    "terminal_reconciliation_or_control_performed": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The selected successor already exists exactly once and all five CPU samples exceeded the explicit hard ceiling."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
