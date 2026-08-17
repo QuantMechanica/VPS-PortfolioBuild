@@ -10,11 +10,11 @@ last_updated: 2026-08-17
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-17"
 approved_at: 2026-08-17
 source_approval: decisions/2026-08-17_xng_thursday_flow_fade_source_approval.md
-approval_commit: PENDING
+approval_commit: fcccf5407
 strategy_ids:
   - EIA-WILLIAMS-YANG-XNG-THUFLOWFADE-2026_S01
 cards_extracted:
-  - xng-thu-flow-fade
+  - strategy-seeds/cards/approved/QM5_41044_xng-thu-flow-fade_card.md
 parent_sources:
   - EIA-XNG-STORAGE-AFTERSHOCK-2026
   - SRC03
@@ -193,3 +193,4 @@ calendar proxy.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
+| v1-card | 2026-08-17 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
