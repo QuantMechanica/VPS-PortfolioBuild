@@ -1,0 +1,355 @@
+{
+ "schema": "qm.q10-pool-recompute/v1",
+ "question": "which Q10 PASS verdicts would be granted under the contract in force today, i.e. Q10 requires a PASS_PORTFOLIO dependency (b62cf0638, 2026-07-29)?",
+ "method": "arithmetic over stored verdicts only; no run was triggered and nothing was devalued",
+ "unit": "pairs (ea_id, symbol)",
+ "counts": {
+  "NOT_TENABLE": 12,
+  "TENABLE": 16,
+  "UNDECIDABLE": 6
+ },
+ "total": 34,
+ "q10_rows_with_zero_deps": 34,
+ "entries": [
+  {
+   "ea_id": "QM5_10123",
+   "symbol": "XAUUSD.DWX",
+   "q10_at": "2026-07-20",
+   "q10_deps": 0,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_at": "2026-07-19",
+   "class": "NOT_TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_10128",
+   "symbol": "XAUUSD.DWX",
+   "q10_at": "2026-07-20",
+   "q10_deps": 0,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_at": "2026-07-20",
+   "class": "NOT_TENABLE",
+   "in_q14_cohort": true
+  },
+  {
+   "ea_id": "QM5_10142",
+   "symbol": "SP500.DWX",
+   "q10_at": "2026-07-26",
+   "q10_deps": 0,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_at": "2026-07-26",
+   "class": "NOT_TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_10145",
+   "symbol": "XAUUSD.DWX",
+   "q10_at": "2026-07-24",
+   "q10_deps": 0,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_at": "2026-07-20",
+   "class": "NOT_TENABLE",
+   "in_q14_cohort": true
+  },
+  {
+   "ea_id": "QM5_10183",
+   "symbol": "XAUUSD.DWX",
+   "q10_at": "2026-07-21",
+   "q10_deps": 0,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_at": "2026-07-21",
+   "class": "NOT_TENABLE",
+   "in_q14_cohort": true
+  },
+  {
+   "ea_id": "QM5_12989",
+   "symbol": "XAUUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_at": "2026-07-03",
+   "class": "NOT_TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_13013",
+   "symbol": "NDX.DWX",
+   "q10_at": "2026-07-20",
+   "q10_deps": 0,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_at": "2026-07-05",
+   "class": "NOT_TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_13036",
+   "symbol": "GDAXI.DWX",
+   "q10_at": "2026-07-26",
+   "q10_deps": 0,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_at": "2026-07-26",
+   "class": "NOT_TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_13213",
+   "symbol": "USDJPY.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_at": "2026-07-25",
+   "class": "NOT_TENABLE",
+   "in_q14_cohort": true
+  },
+  {
+   "ea_id": "QM5_1328",
+   "symbol": "EURJPY.DWX",
+   "q10_at": "2026-07-26",
+   "q10_deps": 0,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_at": "2026-07-26",
+   "class": "NOT_TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_13301",
+   "symbol": "GDAXI.DWX",
+   "q10_at": "2026-07-26",
+   "q10_deps": 0,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_at": "2026-07-27",
+   "class": "NOT_TENABLE",
+   "in_q14_cohort": true
+  },
+  {
+   "ea_id": "QM5_20048",
+   "symbol": "XTIUSD.DWX",
+   "q10_at": "2026-07-22",
+   "q10_deps": 0,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_at": "2026-07-22",
+   "class": "NOT_TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_10403",
+   "symbol": "XAUUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-07-06",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_10692",
+   "symbol": "NDX.DWX",
+   "q10_at": "2026-07-26",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-06-26",
+   "class": "TENABLE",
+   "in_q14_cohort": true
+  },
+  {
+   "ea_id": "QM5_10706",
+   "symbol": "GBPUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-07-05",
+   "class": "TENABLE",
+   "in_q14_cohort": true
+  },
+  {
+   "ea_id": "QM5_10919",
+   "symbol": "XTIUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-07-03",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_10939",
+   "symbol": "GBPUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-06-27",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_11132",
+   "symbol": "SP500.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-06-26",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_11165",
+   "symbol": "AUDCAD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-06-27",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_11165",
+   "symbol": "EURUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-07-06",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_11421",
+   "symbol": "AUDUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-06-27",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_11421",
+   "symbol": "EURUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-06-27",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_11422",
+   "symbol": "USDCAD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-07-24",
+   "class": "TENABLE",
+   "in_q14_cohort": true
+  },
+  {
+   "ea_id": "QM5_11708",
+   "symbol": "EURUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-07-06",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_12567",
+   "symbol": "XAUUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-06-27",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_12969",
+   "symbol": "USDJPY.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-07-07",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_1556",
+   "symbol": "XAUUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-07-05",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_1567",
+   "symbol": "EURUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_at": "2026-07-19",
+   "class": "TENABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_10513",
+   "symbol": "XAUUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "NEED_MORE_DATA",
+   "portfolio_at": "2026-06-26",
+   "class": "UNDECIDABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_10911",
+   "symbol": "GDAXI.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "NEED_MORE_DATA",
+   "portfolio_at": "2026-06-26",
+   "class": "UNDECIDABLE",
+   "in_q14_cohort": true
+  },
+  {
+   "ea_id": "QM5_10938",
+   "symbol": "GDAXI.DWX",
+   "q10_at": "2026-07-26",
+   "q10_deps": 0,
+   "portfolio_verdict": "NEED_MORE_DATA",
+   "portfolio_at": "2026-06-26",
+   "class": "UNDECIDABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_12778",
+   "symbol": "AUDUSD.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": null,
+   "portfolio_at": null,
+   "class": "UNDECIDABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_13117",
+   "symbol": "EURGBP.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": null,
+   "portfolio_at": null,
+   "class": "UNDECIDABLE",
+   "in_q14_cohort": false
+  },
+  {
+   "ea_id": "QM5_13128",
+   "symbol": "NDX.DWX",
+   "q10_at": "2026-07-25",
+   "q10_deps": 0,
+   "portfolio_verdict": "NEED_MORE_DATA",
+   "portfolio_at": "2026-07-18",
+   "class": "UNDECIDABLE",
+   "in_q14_cohort": false
+  }
+ ]
+}
