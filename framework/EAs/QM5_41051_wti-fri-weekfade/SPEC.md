@@ -1,6 +1,6 @@
 # QM5_41051 - WTI Exact-Week Pullback / Friday Bounce
 
-Status: `G0 APPROVED; MAGIC ALLOCATED; BUILD PASS; Q01 PASS; Q02 NOT ENQUEUED`
+Status: `G0 APPROVED; MAGIC ALLOCATED; BUILD PASS; Q01 PASS; Q02 NOT ENQUEUED — CPU CEILING`
 
 ## Identity
 
@@ -53,9 +53,11 @@ zero errors and zero warnings; the targeted V5 build gate and P1 artifact
 validator both returned `PASS` on 2026-08-17. The setfile carries the generated
 source build hash.
 
-Q02 remains a separate paced queue operation and may be enqueued only after
-the governed tester-slot and CPU ceilings pass. Development must not change
-the calendar, endpoints, sign, direction, risk, or lifecycle.
+The target-only Q02 dry run selected exactly one new row, but the five-sample
+pre-apply host reading reached 100% and exceeded the 97% hard CPU ceiling.
+No queue row was created. A later paced operator may enqueue only after a fresh
+tester-slot and CPU check passes. Development must not change the calendar,
+endpoints, sign, direction, risk, or lifecycle.
 
 No live artifact, manual test, terminal control, portfolio mutation, or
 performance claim is authorized.

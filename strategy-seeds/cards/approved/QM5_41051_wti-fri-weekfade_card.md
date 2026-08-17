@@ -62,9 +62,9 @@ r1_track_record: PASS_WITH_COMPOSITE_AND_WORKING_PAPER_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_SESSION_LABEL_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify an exact within-week WTI pullback/Friday calendar sleeve outside the certified XAU/SP500/NDX/XNG book. Verify exact Monday-through-Friday identity, completed Monday-open and Thursday-close endpoints, negative-only long mapping, durable Friday attempt, and same-session flattening. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -307,14 +307,16 @@ realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial exact-week pullback / Friday bounce card | G0 | APPROVED |
+| v1-build | 2026-08-17 | deterministic EA, fixed-risk preset, independent fixtures, and strict validation | Q01 | PASS |
+| v1-q02-hold | 2026-08-17 | target-only dry run selected one row, but the pre-apply host sample exceeded the hard CPU ceiling | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-17 | APPROVED | `decisions/2026-08-17_wti_friday_week_pullback_g0.md` |
-| Q01 Build Validation | - | PENDING | branch-only build required |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | Q01 and capacity gate required |
+| Q01 Build Validation | 2026-08-17 | PASS | `framework/build/compile/20260817_203603/QM5_41051_wti-fri-weekfade.compile.log`; `D:/QM/reports/framework/21/build_check_20260817_203603.json`; `D:/QM/reports/pipeline/QM5_41051/P1/P1_QM5_41051_result.json` |
+| Q02 Baseline Screening | 2026-08-17 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-17_qm5_41051_wti_friday_week_pullback_q01_q02_capacity_stop.md` |
 
 ## Safety Boundary
 
