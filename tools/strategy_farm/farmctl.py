@@ -1076,7 +1076,10 @@ def pending_claim_order_sql() -> str:
           CASE
             WHEN json_valid(w.payload_json) = 1 THEN
               CASE
-                WHEN json_type(w.payload_json, '$.priority_track') = 'true' THEN 0
+                WHEN json_type(w.payload_json, '$.priority_track') = 'true'
+                 AND COALESCE(json_extract(
+                   w.payload_json, '$.poison_pill_priority_override'
+                 ), 0) <> 1 THEN 0
                 ELSE 1
               END
             ELSE 1 END AS _priority_track_rank,

@@ -320,6 +320,23 @@ def _fetch_row(conn: sqlite3.Connection, wid: str) -> sqlite3.Row | None:
     ).fetchone()
 
 
+def _poison_pill_quarantined(
+    conn: sqlite3.Connection, ea_id: str, symbol: str, phase: str,
+) -> bool:
+    """Return active quarantine state; old/test DBs without the table fail open."""
+    try:
+        row = conn.execute(
+            "SELECT 1 FROM poison_pill_quarantine "
+            "WHERE ea_id=? AND symbol=? AND phase=? AND active=1 LIMIT 1",
+            (ea_id, symbol, phase),
+        ).fetchone()
+    except sqlite3.OperationalError as exc:
+        if "no such table" in str(exc).lower():
+            return False
+        raise
+    return row is not None
+
+
 def _payload_reason(payload: dict[str, Any]) -> str | None:
     return payload.get("final_failure") or payload.get("verdict_reason")
 
@@ -613,7 +630,12 @@ def _plan(
         eligible: list[dict[str, Any]] = []
         for phase in effective_phases:
             is_q02 = phase == Q02_PHASE
-            groups = conn.execute(_STRANDED_SQL, (phase,)).fetchall()
+            groups = [
+                group for group in conn.execute(_STRANDED_SQL, (phase,)).fetchall()
+                if not _poison_pill_quarantined(
+                    conn, str(group["ea_id"]), str(group["symbol"]), str(group["phase"])
+                )
+            ]
             classified = [
                 _classify_group(cfg, conn, g, is_q02=is_q02, symbol_skip_fn=symbol_skip_fn)
                 for g in groups
@@ -1236,6 +1258,8 @@ def _revalidate(cfg: Config, conn: sqlite3.Connection, entry: dict[str, Any]) ->
     ).fetchone()
     if dn:
         return "sibling_done_non_infra"
+    if _poison_pill_quarantined(conn, ea_id, symbol, phase):
+        return "poison_pill_quarantined"
     if _later_phase_successor(conn, ea_id, symbol, phase) is not None:
         return "historical_phase_advanced"
     if farmctl._q02_symbol_skip_reason(symbol, allow_logical_basket=True):

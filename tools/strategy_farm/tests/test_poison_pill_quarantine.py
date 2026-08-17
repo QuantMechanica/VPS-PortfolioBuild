@@ -61,3 +61,41 @@ def test_release_needs_five_new_failures() -> None:
     assert ppq.refresh_pending(conn) == []
     add(conn, 10, "ONINIT_FAILED")
     assert len(ppq.refresh_pending(conn)) == 1
+
+
+def test_single_observation_expires_after_new_start() -> None:
+    conn = db()
+    for n in range(1, 6):
+        add(conn, n, "TIMEOUT;INCOMPLETE_RUNS")
+    marker = {"protected_at": "2026-07-26T01:00:00+00:00", "note": "new budget"}
+    conn.execute(
+        "UPDATE work_items SET payload_json=? WHERE id='5'",
+        (json.dumps({
+            ppq.SINGLE_OBSERVATION_KEY: marker,
+            "priority_track": True,
+            "verdict_reason": "TIMEOUT;INCOMPLETE_RUNS",
+        }),),
+    )
+    assert ppq.refresh_pending(conn) == []
+    conn.execute(
+        "UPDATE work_items SET payload_json=? WHERE id='5'",
+        (json.dumps({
+            ppq.SINGLE_OBSERVATION_KEY: marker,
+            "started_at_iso": "2026-07-26T01:00:01+00:00",
+            "priority_track": True,
+            "verdict_reason": "TIMEOUT;INCOMPLETE_RUNS",
+        }),),
+    )
+    assert len(ppq.refresh_pending(conn)) == 1
+
+
+def test_summary_missing_is_sealed_invalid_not_merit() -> None:
+    conn = db()
+    for n in range(1, 6):
+        add(conn, n, ppq.SUMMARY_MISSING_EXHAUSTED)
+    found = ppq.refresh_pending(conn)
+    assert found[0]["sealed_pending_rows"] == 1
+    row = conn.execute("SELECT status,verdict,payload_json FROM work_items WHERE id='5'").fetchone()
+    assert (row["status"], row["verdict"]) == ("failed", "INVALID")
+    payload = json.loads(row["payload_json"])
+    assert payload["poison_pill_disposition"]["verdict"] == "INVALID"

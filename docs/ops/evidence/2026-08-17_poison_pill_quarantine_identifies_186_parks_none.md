@@ -132,3 +132,55 @@ a pending row gets claimed; that is refuted — both sample triples still hold p
 - `D:\QM\reports\work_items\218be3c9-…\QM5_20235\20260814_163348\summary.json`
 - Related: `2026-08-17_basket_q02_timeout_clamp_infra_loss.md`,
   `2026-08-17_stranded_infra_recovery_wave1.md`
+
+## Implementation closeout (Codex, 2026-08-17 13:00 CEST)
+
+The writer now writes, and the live result establishes the original root cause directly:
+`refresh_pending` was only called by `farmctl.dispatch_work_items` after both
+`free_terminals` and `calendar_gate_open` were true. The resident terminal-worker claim path
+deliberately does not refresh the table. A manual invocation of the same writer, after the
+two protected timeout observations were marked, changed active quarantine rows from **0 to
+184** in 2.5 seconds. This rules out a persistence/commit defect; the production call-site
+guard was the reason the table remained empty.
+
+Before the live write, a point-in-time SQLite backup was made at
+`D:\QM\strategy_farm\state\backups\farm_state_before_poison_pill_writer_20260817T105932Z.sqlite`
+(SHA-256 `f05899061a28400daa3c6851dc0c89a8b7e6026f6f3a2353a6cdd5d3dca97314`). The apply receipt
+is `D:\QM\strategy_farm\artifacts\ops\poison_pill_apply_20260817.json`.
+
+### Direct before/after state
+
+| Measure | Before | After |
+|---|---:|---:|
+| active `poison_pill_quarantine` rows | 0 | **184** |
+| pending rows sealed by poison disposition | 0 | **183** |
+| protected timeout observations still pending | 2 | **2** |
+| protected timeout observations quarantined | 0 | **0** |
+| held QM5_20235 OnInit triple quarantined | 0 | **1** |
+
+The 183 `summary_missing_retries_exhausted` successors are now `status=failed,
+verdict=INVALID`. `INVALID` is the honest non-merit disposition: five or more identical
+no-summary infrastructure failures prove that the row cannot produce admissible evidence;
+they do **not** prove strategy merit `PASS` or `FAIL`. No requeue wave was created.
+
+The two old-budget timeout rows (`e2622f78`, `4db00c93`) retain
+`priority_track=true` and carry a one-observation marker plus
+`poison_pill_priority_override=true`. The canonical claim query reports effective
+`_priority_track_rank=1` for both (live positions 170 and 171), so they no longer jump ahead
+of healthy work. They remain unquarantined and pending for one run under the 14,400-second
+two-member basket floor. Protection expires automatically when a worker stamps a
+`started_at_iso` later than the marker time; if that observation returns to pending without
+a merit verdict, the next refresh quarantines it. The OWNER flag itself is not deleted.
+
+The held QM5_20235 row (`382fa0dc`) is actively quarantined and absent from the canonical
+claim selector, in addition to its existing explicit hold.
+
+Finally, `requeue_stranded_infra.py` now filters active poison triples during wave planning
+and repeats the check under the apply transaction. A recovery plan created before quarantine
+cannot reintroduce a known-dead triple at apply time.
+
+Focused verification:
+
+- `test_poison_pill_quarantine.py` + `test_ultracode_wsa_claim.py`: **35 passed**;
+- `test_requeue_stranded_infra.py`: **24 passed** after adding the quarantine-wave case;
+- `py_compile` and `git diff --check`: pass.

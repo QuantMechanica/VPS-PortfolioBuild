@@ -118,6 +118,29 @@ class SelectionTests(_Base):
         self.assertEqual(plan["canary"][0]["work_item_id"], "wi1")
         self.assertEqual(plan["canary"][0]["reason"], "stranded_infra_eligible")
 
+    def test_active_poison_quarantine_excludes_recovery_wave(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _d, sf = self._make_ea(root, 500, "slug")
+            db = self._db(root)
+            self._insert(db, id="wi1", phase="Q04", ea_id="QM5_500", symbol="EURUSD.DWX",
+                         setfile_path=str(sf), status="done", verdict="INFRA_FAIL")
+            conn = sqlite3.connect(db)
+            conn.execute(
+                "CREATE TABLE poison_pill_quarantine "
+                "(ea_id TEXT,symbol TEXT,phase TEXT,active INTEGER)"
+            )
+            conn.execute(
+                "INSERT INTO poison_pill_quarantine VALUES(?,?,?,1)",
+                ("QM5_500", "EURUSD.DWX", "Q04"),
+            )
+            conn.commit()
+            conn.close()
+            cfg = self._cfg(root, [(500, "active", "slug")])
+            plan = rsi._plan(cfg, phases=("Q04",), include_q02_exhausted=False, limit=50,
+                             symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO)
+        self.assertEqual(plan["eligible_total"], 0)
+
     def test_poison_attempt_count_refused(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
