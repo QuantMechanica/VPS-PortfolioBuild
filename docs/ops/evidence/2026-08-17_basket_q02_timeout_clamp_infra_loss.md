@@ -161,6 +161,33 @@ cost compounds downstream: at >7h for one Q02 run, its Q07 five-seed stage would
   watchdog, so a wrong value has fleet-wide reach; and an opt-in override that must be
   applied per row is what produced this backlog.
 
+## Consequence found downstream: a standing mission is misdiagnosing this as a CPU stop
+
+`docs/research/FX_COINTEGRATION_EURUSD_AUDJPY_Q04_HARD_CPU_STOP_2026-08-17_014817Z.md`
+records **six hourly continuation audits** between 01:48Z and 08:18Z, each concluding that
+work on `QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1` must stop because whole-machine CPU
+exceeds a 97% ceiling. Every audit is correct about the CPU number and wrong about what it
+means:
+
+- **The stop condition can never clear.** The factory runs eight to ten terminals and
+  *MT5 saturation is the primary throughput metric* (`CLAUDE.md`). ~100% CPU is the
+  designed healthy state, not an anomaly. A 97% whole-machine ceiling used as a stop
+  condition is therefore permanently binding during normal operation.
+- **There was nothing to do anyway.** The audits themselves establish that Q04 row
+  `113ae6d1` is already enqueued exactly once, pending, unclaimed, at attempt zero — so the
+  mission's own conclusion is that any action would be duplicate work. Six re-derivations
+  of "nothing to do" is a loop, not progress.
+- **The actual reason it has not run is this finding.** `113ae6d1` has been pending since
+  2026-08-05 — twelve days — because it is a **logical-basket row in the farm-wide
+  serialized basket lane**, and **23 of the 59 pending basket rows are older than it**.
+  Several of those are the repeat-timeout EAs above, each of which will occupy the
+  exclusive lane for 2–4h and then die. The queue ahead of it is largely doomed work.
+
+So the FX cointegration successor is not blocked by CPU and not blocked on merit — it is
+queued behind the timeout clamp. Fixing the clamp and adding the circuit breaker unblocks
+it as a side effect. Whoever schedules that hourly mission should replace the CPU stop
+condition; as written it will keep producing audits indefinitely without ever acting.
+
 ## Related
 
 - `docs/ops/evidence/2026-08-17_mixed_worker_fleet_watchdog_partial_deployment.md` — the
