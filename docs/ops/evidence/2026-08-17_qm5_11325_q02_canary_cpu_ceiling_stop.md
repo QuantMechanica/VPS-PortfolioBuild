@@ -89,6 +89,7 @@ EURUSD Q02 successor:
 python tools/strategy_farm/farmctl.py enqueue-backtest `
   --ea QM5_11325 `
   --phase Q02 `
+  --from-work-item-id 6b0dc37c-437f-4804-9f1a-6ef944160a14 `
   --append-only-rerun-of 6b0dc37c-437f-4804-9f1a-6ef944160a14 `
   --rerun-reason "repaired current-framework EX5 and news-off contract; one EURUSD Q02 canary after ONINIT INFRA_FAIL" `
   --expected-current-ex5-sha256 2bf875d2a303fe36dbae9c8a51d85c9ae44bdbe28c8099c25a4a2596b8d6c171
@@ -97,3 +98,42 @@ python tools/strategy_farm/farmctl.py enqueue-backtest `
 No work item was inserted, reopened, reset, claimed, or dispatched in this
 slot. No EA, setfile, registry, resolver, Strategy Card, terminal process,
 portfolio gate, deploy manifest, `T_Live` path, or AutoTrading state changed.
+
+## 10:21Z continuation — capacity cleared and canary enqueued
+
+A later bounded preflight found six active work items, below the configured
+seven-item backpressure limit. Five host CPU samples were `96.22%`, `84.22%`,
+`96.53%`, `77.21%`, and `95.51%` (average `89.94%`, maximum `96.53%`), below
+the `97%` hard ceiling. The frozen 66-pair cointegration frontier remained
+fully mechanized, while `QM5_12532` and `QM5_12533` remained downstream of
+Q02 with economic failures rather than `ONINIT` or `NO_HISTORY` blockers.
+The permitted existing-forex fallback therefore remained `QM5_11325` on
+`EURUSD.DWX`.
+
+Before the queue mutation, an online SQLite backup was created and verified:
+
+`D:\QM\strategy_farm\state\backups\farm_state_before_qm5_11325_q02_canary_20260817T102102Z.sqlite`
+
+The canonical append-only enqueue path then created exactly one current-binary
+Q02 successor:
+
+| Field | Value |
+|---|---|
+| Work item | `cc39009e-3d44-4f0a-a945-e96c59eafa22` |
+| Status at verification | `pending`, unclaimed, attempt zero |
+| Symbol / period | `EURUSD.DWX` / `M5` |
+| Preserved predecessor | `6b0dc37c-437f-4804-9f1a-6ef944160a14` (`INFRA_FAIL`) |
+| EX5 SHA-256 | `2bf875d2a303fe36dbae9c8a51d85c9ae44bdbe28c8099c25a4a2596b8d6c171` |
+| Setfile SHA-256 | `c90f9aa80ebe8710354eeaae5eb71ae0988c287f0e7a7f3516a647faee5e103c` |
+| Risk contract | `RISK_FIXED=1000`, `RISK_PERCENT=0` |
+| Source evidence SHA-256 | `948e0a9cc8ce1d545267fb452e5c90f65670ab0145b02e189608ed307fed92f0` |
+
+The authenticated payload records `repaired_infra_rerun=true`, verifies the
+old/current EX5 mismatch, admits the active EURUSD custom-history archive, and
+retains `priority_track=true`. A read-only postcondition query found exactly
+one pending/active row for this EA/symbol identity. The farm had reached seven
+active work items by then, so no dispatch tick, tester launch, terminal action,
+or additional enqueue followed. The paced workers own the pending canary.
+
+Machine-readable evidence:
+`artifacts/qm5_11325_fx_q02_canary_enqueue_20260817T102154Z_board_advisor.json`.

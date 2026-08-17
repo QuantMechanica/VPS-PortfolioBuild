@@ -1,0 +1,100 @@
+{
+  "artifact_type": "fx_q02_append_only_canary_enqueue",
+  "generated_at_utc": "2026-08-17T10:23:01Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "b428b5e9a",
+  "mission_outcome": "ENQUEUED_ONE_NON_DUPLICATE_EXISTING_FOREX_Q02_CANARY",
+  "frontier_decision": {
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationship_count": 66,
+    "unbuilt_relationship_count": 0,
+    "fallback_used": true,
+    "anchor_triage": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    },
+    "anchor_q02_oninit_or_no_history_blocker": false
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_11325",
+    "slug": "tc-m5-9-ema50-100-macd-partial-exit",
+    "symbol": "EURUSD.DWX",
+    "period": "M5",
+    "expected_trades_per_year_per_symbol": 36,
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11325_tc-m5-9-ema50-100-macd-partial-exit.md",
+    "g0_status": "APPROVED",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS",
+    "source_lineage": "Thomas Carter, 20 Forex Trading Strategies (5 Minute Time Frame), System #9"
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "a6ad9de616453c7fa414379b025d07d9eaabd085298f0687202418a1c4d2da2f",
+    "ex5_sha256": "2bf875d2a303fe36dbae9c8a51d85c9ae44bdbe28c8099c25a4a2596b8d6c171",
+    "setfile_sha256": "c90f9aa80ebe8710354eeaae5eb71ae0988c287f0e7a7f3516a647faee5e103c",
+    "approved_card_snapshot_sha256": "f7b3e6287e8dadd1e7ef8272456f69db63800b8a94409e9e588ee127122bedb1",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0,
+    "news_temporal": 0,
+    "news_compliance": 0,
+    "news_legacy": 0
+  },
+  "preserved_infra_source": {
+    "work_item_id": "6b0dc37c-437f-4804-9f1a-6ef944160a14",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "reason_classes": [
+      "ONINIT_FAILED",
+      "INCOMPLETE_RUNS"
+    ],
+    "evidence_path": "D:/QM/reports/work_items/6b0dc37c-437f-4804-9f1a-6ef944160a14/QM5_11325/20260811_151555/summary.json",
+    "evidence_sha256": "948e0a9cc8ce1d545267fb452e5c90f65670ab0145b02e189608ed307fed92f0",
+    "historical_row_mutated": false
+  },
+  "queue_action": {
+    "command": "farmctl enqueue-backtest --ea QM5_11325 --phase Q02 --from-work-item-id 6b0dc37c-437f-4804-9f1a-6ef944160a14 --append-only-rerun-of 6b0dc37c-437f-4804-9f1a-6ef944160a14 --expected-current-ex5-sha256 2bf875d2a303fe36dbae9c8a51d85c9ae44bdbe28c8099c25a4a2596b8d6c171",
+    "created_work_item_id": "cc39009e-3d44-4f0a-a945-e96c59eafa22",
+    "created_at_utc": "2026-08-17T10:21:54+00:00",
+    "status_at_verification": "pending",
+    "claimed_by_at_verification": null,
+    "attempt_count": 0,
+    "append_only_rerun": true,
+    "repaired_infra_rerun": true,
+    "current_binary_mismatch_verified": true,
+    "priority_track": true,
+    "open_exact_identity_count": 1,
+    "duplicate_enqueue_performed": false
+  },
+  "capacity": {
+    "active_work_items_before_enqueue": 6,
+    "active_backpressure_limit": 7,
+    "cpu_hard_ceiling_percent": 97.0,
+    "pre_enqueue_cpu_samples_percent": [
+      96.2168286679854,
+      84.2159215825944,
+      96.5296295200089,
+      77.2083231730996,
+      95.5117757949076
+    ],
+    "pre_enqueue_cpu_average_percent": 89.9364957473172,
+    "pre_enqueue_cpu_max_percent": 96.5296295200089,
+    "active_work_items_after_enqueue_verification": 7,
+    "dispatch_tick_performed": false,
+    "tester_or_backtest_launched_by_this_run": false,
+    "stop_reason_after_enqueue": "ACTIVE_WORK_ITEM_BACKPRESSURE_LIMIT_REACHED"
+  },
+  "database_backup": {
+    "path": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11325_q02_canary_20260817T102102Z.sqlite",
+    "method": "sqlite_online_backup",
+    "quick_check": "ok"
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false,
+    "deploy_manifest": false
+  }
+}
