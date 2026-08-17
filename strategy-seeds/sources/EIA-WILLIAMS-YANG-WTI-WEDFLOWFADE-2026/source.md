@@ -10,6 +10,7 @@ last_updated: 2026-08-17
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-17"
 approved_at: 2026-08-17
 source_approval: decisions/2026-08-17_wti_wednesday_flow_fade_source_approval.md
+approval_commit: 4d5611a10
 strategy_ids:
   - EIA-WILLIAMS-YANG-WTI-WEDFLOWFADE-2026_S01
 cards_extracted:
@@ -198,4 +199,3 @@ economically usable.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
-
