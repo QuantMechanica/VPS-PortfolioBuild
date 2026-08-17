@@ -50,10 +50,20 @@ feed, retry, scale-in, grid, martingale, pyramid, or second leg is authorized.
 
 ## Build State
 
-Directory identity established before magic allocation as required by the V5
-resolver ordering contract. Source, binary, setfile, card copy, reference
-fixtures, compile evidence, and Q01 evidence are intentionally absent until
-the deterministic magic row exists and the build preflight passes.
+Directory identity was established before magic allocation as required by the
+V5 resolver ordering contract. Slot 0 is allocated to exact `XTIUSD.DWX` as
+magic `410460000`. The deterministic source and binary are present together
+with one fixed-risk backtest preset, a synchronized approved-card copy, and an
+independent 14-case reference suite. Strict targeted compilation passed with
+zero errors and zero warnings, the targeted build check passed with zero
+failures and zero warnings, static P1 artifact validation passed, and factory
+symbol-scope validation returned `SINGLE_SYMBOL_OK`.
+
+Q01 evidence:
+
+- `framework/build/compile/20260817_140351/QM5_41046_wti-wed-trend-pb.compile.log`
+- `D:/QM/reports/framework/21/build_check_20260817_140351.json`
+- `D:/QM/reports/pipeline/QM5_41046/P1/P1_QM5_41046_result.json`
 
 ## Safety Boundary
 
