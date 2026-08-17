@@ -17373,3 +17373,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41050,wti-postwed-gap-agree,0,XTIUSD.DWX,410500000,2026-08-17T19:08:41Z,Codex,active
 33008,thomas-stridsman-rvi-noise-buster,0,NDX.DWX,330080000,2026-08-17T19:00:00Z,Gemini,active
 33008,thomas-stridsman-rvi-noise-buster,1,SP500.DWX,330080001,2026-08-17T19:00:00Z,Gemini,active
+34003,triple-timeframe-williams-r-champion,0,EURUSD.DWX,340030000,2026-08-17T19:15:00Z,Gemini,active
+34003,triple-timeframe-williams-r-champion,1,GBPUSD.DWX,340030001,2026-08-17T19:15:00Z,Gemini,active
+34003,triple-timeframe-williams-r-champion,2,USDCHF.DWX,340030002,2026-08-17T19:15:00Z,Gemini,active
+34001,kalman-filter-state-estimation-scalper,0,EURUSD.DWX,340010000,2026-08-17T19:15:00Z,Gemini,active
+34001,kalman-filter-state-estimation-scalper,1,GBPUSD.DWX,340010001,2026-08-17T19:15:00Z,Gemini,active
+34001,kalman-filter-state-estimation-scalper,2,USDJPY.DWX,340010002,2026-08-17T19:15:00Z,Gemini,active

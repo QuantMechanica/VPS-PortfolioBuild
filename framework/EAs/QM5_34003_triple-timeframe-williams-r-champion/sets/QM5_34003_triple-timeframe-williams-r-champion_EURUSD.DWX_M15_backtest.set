@@ -1,0 +1,16 @@
+qm_ea_id=34003
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_wpr_period=14
+strategy_h4_trend_long=-35.0
+strategy_h4_trend_short=-65.0
+strategy_h1_trend_mid=-50.0
+strategy_m15_pullback_long=-80.0
+strategy_m15_pullback_short=-20.0
+strategy_atr_period=14
+strategy_sl_atr_mult=1.5
+strategy_tp_rr_mult=2.5
+strategy_spread_atr_period=14
+strategy_spread_atr_mult=1.8
