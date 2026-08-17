@@ -10,10 +10,11 @@ last_updated: 2026-08-17
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-17"
 approved_at: 2026-08-17
 source_approval: decisions/2026-08-17_xauxag_monthly_relative_flow_divergence_source_approval.md
-approval_commit: PENDING_COMMIT
+approval_commit: cf8667151
 strategy_ids:
   - WILLIAMS-SCHWEIKERT-MOP-XAUXAG-MFLOWDIV-2026_S01
-cards_extracted: []
+cards_extracted:
+  - strategy-seeds/cards/approved/QM5_41039_xauxag-mflow-div_card.md
 parent_sources:
   - SRC03
   - SCHWEIKERT-XAUXAG-RATIO-2026
@@ -198,3 +199,4 @@ mode, or nonpositive governed economics.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
+| v1-card | 2026-08-17 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
