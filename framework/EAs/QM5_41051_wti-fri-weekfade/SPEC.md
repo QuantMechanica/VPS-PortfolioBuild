@@ -1,6 +1,6 @@
 # QM5_41051 - WTI Exact-Week Pullback / Friday Bounce
 
-Status: `G0 APPROVED; MAGIC ALLOCATED; BUILD PENDING`
+Status: `G0 APPROVED; MAGIC ALLOCATED; BUILD PASS; Q01 PASS; Q02 NOT ENQUEUED`
 
 ## Identity
 
@@ -15,9 +15,9 @@ Status: `G0 APPROVED; MAGIC ALLOCATED; BUILD PENDING`
 - host: exact `XTIUSD.DWX`, D1
 - slot: `0`
 - registered magic: `410510000`
-- planned card:
+- approved card:
   `strategy-seeds/cards/approved/QM5_41051_wti-fri-weekfade_card.md`
-- planned G0 decision:
+- G0 decision:
   `decisions/2026-08-17_wti_friday_week_pullback_g0.md`
 
 ## Locked Candidate Boundary
@@ -46,10 +46,16 @@ prior-month reversal (`QM5_41026`), and earlier/prior-week momentum families.
 
 ## Build State
 
-The approved card and G0 decision now authorize exactly one branch-only,
-non-live implementation, one `RISK_FIXED` D1 backtest preset, strict Q01, and
-one paced target-only Q02 enqueue below capacity ceilings. Development must not
-change the calendar, endpoints, sign, direction, risk, or lifecycle.
+The branch-only V5 implementation is complete with one compiled `.ex5`, an
+exact approved-card copy, 13 independent reference fixtures, and one
+`RISK_FIXED` D1 backtest preset. Strict MetaEditor compilation completed with
+zero errors and zero warnings; the targeted V5 build gate and P1 artifact
+validator both returned `PASS` on 2026-08-17. The setfile carries the generated
+source build hash.
+
+Q02 remains a separate paced queue operation and may be enqueued only after
+the governed tester-slot and CPU ceilings pass. Development must not change
+the calendar, endpoints, sign, direction, risk, or lifecycle.
 
 No live artifact, manual test, terminal control, portfolio mutation, or
 performance claim is authorized.
