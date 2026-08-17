@@ -10,11 +10,11 @@ last_updated: 2026-08-17
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-17"
 approved_at: 2026-08-17
 source_approval: decisions/2026-08-17_wti_monthly_opposed_flow_dominance_source_approval.md
-approval_commit: PENDING_BRANCH_COMMIT
+approval_commit: 81183098b
 strategy_ids:
   - WILLIAMS-MOP-WTI-MFLOWDOM-2026_S01
 cards_extracted:
-  - PENDING_DETERMINISTIC_ALLOCATION
+  - strategy-seeds/cards/approved/QM5_41036_wti-mflow-dom_card.md
 parent_sources:
   - SRC03
   - MOP-TSMOM-2012
@@ -180,6 +180,6 @@ economics.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
-| v1-card | - | locked card extraction and OWNER G0 authorization | G0 | PENDING |
+| v1-card | 2026-08-17 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
 | v1-build | - | deterministic EA and fixed-risk set | Q01 | PENDING |
 | v1-q02 | - | paced target-only WTI baseline row | Q02 | PENDING_CAPACITY |
