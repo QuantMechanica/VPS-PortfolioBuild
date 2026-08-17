@@ -7,10 +7,10 @@
   "QM5_21527"
  ],
  "counts": {
-  "compared": 3,
-  "identical": 3,
-  "differ": 0,
-  "verdict_changed": 0
+  "compared": 15,
+  "identical": 14,
+  "differ": 1,
+  "verdict_changed": 1
  },
  "entries": [
   {
@@ -68,9 +68,28 @@
   {
    "ea_id": "QM5_20262",
    "symbol": "XNGUSD.DWX",
-   "state": "METRICS_MISSING",
-   "old_present": true,
-   "new_present": false
+   "old": {
+    "work_item_id": "ab875180-bc18-48f8-85fe-c32081b2473f",
+    "at": "2026-08-07T09:55:14",
+    "verdict": "ZERO_TRADES",
+    "trades": 0,
+    "profit_factor": 0.0,
+    "drawdown_pct": 0.0,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "b65eb03a-208c-4a90-bd78-3d4a3cc55f4e",
+    "at": "2026-08-17T14:29:28",
+    "verdict": "FAIL",
+    "trades": 19,
+    "profit_factor": 1.16,
+    "drawdown_pct": 3.5,
+    "source": "summary_runs"
+   },
+   "verdict_changed": true,
+   "metrics_identical": false,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
   },
   {
    "ea_id": "QM5_20289",
@@ -101,79 +120,288 @@
   {
    "ea_id": "QM5_20290",
    "symbol": "XTIUSD.DWX",
-   "state": "METRICS_MISSING",
-   "old_present": true,
-   "new_present": false
+   "old": {
+    "work_item_id": "661b4c77-8fed-41ff-92e2-d4851ebcaad0",
+    "at": "2026-08-12T09:21:26",
+    "verdict": "PASS",
+    "trades": 51,
+    "profit_factor": 1.37,
+    "drawdown_pct": 5.12,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "b59227b5-d1fa-4f60-a794-743d51451be1",
+    "at": "2026-08-17T14:06:07",
+    "verdict": "PASS",
+    "trades": 51,
+    "profit_factor": 1.37,
+    "drawdown_pct": 5.12,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
   },
   {
    "ea_id": "QM5_20295",
    "symbol": "XTIUSD.DWX",
-   "state": "METRICS_MISSING",
-   "old_present": true,
-   "new_present": false
+   "old": {
+    "work_item_id": "0ed36c55-2a83-49ad-a5f0-71b25700ff18",
+    "at": "2026-08-13T02:58:23",
+    "verdict": "PASS",
+    "trades": 51,
+    "profit_factor": 1.14,
+    "drawdown_pct": 5.37,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "8f769b59-4463-4325-ae6e-5f7a6edb7163",
+    "at": "2026-08-17T14:29:18",
+    "verdict": "PASS",
+    "trades": 51,
+    "profit_factor": 1.14,
+    "drawdown_pct": 5.37,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
   },
   {
    "ea_id": "QM5_20296",
    "symbol": "XNGUSD.DWX",
-   "state": "METRICS_MISSING",
-   "old_present": true,
-   "new_present": false
+   "old": {
+    "work_item_id": "36cc9282-c16c-449f-b5a1-455809f8a9d4",
+    "at": "2026-08-13T02:55:20",
+    "verdict": "PASS",
+    "trades": 38,
+    "profit_factor": 0.89,
+    "drawdown_pct": 7.2,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "1ed45d08-e42c-4c33-a0cf-a16a5c3f2e81",
+    "at": "2026-08-17T14:15:34",
+    "verdict": "PASS",
+    "trades": 38,
+    "profit_factor": 0.89,
+    "drawdown_pct": 7.2,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
   },
   {
    "ea_id": "QM5_20297",
    "symbol": "XNGUSD.DWX",
-   "state": "METRICS_MISSING",
-   "old_present": true,
-   "new_present": false
+   "old": {
+    "work_item_id": "8a3e73ec-caca-4306-89fb-4941d953a05a",
+    "at": "2026-08-13T02:54:08",
+    "verdict": "PASS",
+    "trades": 38,
+    "profit_factor": 1.9,
+    "drawdown_pct": 5.85,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "a24c1399-0002-4824-b044-e0244893dde4",
+    "at": "2026-08-17T14:16:47",
+    "verdict": "PASS",
+    "trades": 38,
+    "profit_factor": 1.9,
+    "drawdown_pct": 5.85,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
   },
   {
    "ea_id": "QM5_20298",
    "symbol": "XTIUSD.DWX",
-   "state": "METRICS_MISSING",
-   "old_present": true,
-   "new_present": false
+   "old": {
+    "work_item_id": "16e088fa-2b19-49d8-b0c2-027e94ddfa50",
+    "at": "2026-08-13T03:03:36",
+    "verdict": "PASS",
+    "trades": 37,
+    "profit_factor": 0.77,
+    "drawdown_pct": 10.58,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "d2a2d3dc-3356-4a9c-b727-dcec2a391894",
+    "at": "2026-08-17T14:07:42",
+    "verdict": "PASS",
+    "trades": 37,
+    "profit_factor": 0.77,
+    "drawdown_pct": 10.58,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
   },
   {
    "ea_id": "QM5_20299",
    "symbol": "XNGUSD.DWX",
-   "state": "METRICS_MISSING",
-   "old_present": true,
-   "new_present": false
+   "old": {
+    "work_item_id": "19cae282-9ed8-4791-b439-868b1c51e867",
+    "at": "2026-08-13T04:36:10",
+    "verdict": "PASS",
+    "trades": 25,
+    "profit_factor": 1.47,
+    "drawdown_pct": 2.37,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "23931290-932c-4b94-beeb-16a4ecfb8458",
+    "at": "2026-08-17T14:05:20",
+    "verdict": "PASS",
+    "trades": 25,
+    "profit_factor": 1.47,
+    "drawdown_pct": 2.37,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
   },
   {
    "ea_id": "QM5_20300",
    "symbol": "XTIUSD.DWX",
-   "state": "METRICS_MISSING",
-   "old_present": true,
-   "new_present": false
+   "old": {
+    "work_item_id": "42f8f5dd-b01e-493f-ba28-c51e9ff2b9d8",
+    "at": "2026-08-13T05:55:48",
+    "verdict": "PASS",
+    "trades": 39,
+    "profit_factor": 1.19,
+    "drawdown_pct": 6.48,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "3ba83b8a-c0fb-4553-8984-b196e3540f9f",
+    "at": "2026-08-17T14:30:44",
+    "verdict": "PASS",
+    "trades": 39,
+    "profit_factor": 1.19,
+    "drawdown_pct": 6.48,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
   },
   {
    "ea_id": "QM5_20301",
    "symbol": "XTIUSD.DWX",
-   "state": "METRICS_MISSING",
-   "old_present": true,
-   "new_present": false
+   "old": {
+    "work_item_id": "391694f4-f6d3-400a-9f3b-9f8f5d700ae0",
+    "at": "2026-08-13T07:53:33",
+    "verdict": "PASS",
+    "trades": 39,
+    "profit_factor": 0.69,
+    "drawdown_pct": 11.14,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "60e065d8-acfb-4ce1-89a3-ec9b0caabe91",
+    "at": "2026-08-17T14:32:34",
+    "verdict": "PASS",
+    "trades": 39,
+    "profit_factor": 0.69,
+    "drawdown_pct": 11.14,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
   },
   {
    "ea_id": "QM5_20302",
    "symbol": "XTIUSD.DWX",
-   "state": "METRICS_MISSING",
-   "old_present": true,
-   "new_present": false
+   "old": {
+    "work_item_id": "9666a9ef-f51a-464f-a883-90a89945d45d",
+    "at": "2026-08-13T08:47:21",
+    "verdict": "PASS",
+    "trades": 39,
+    "profit_factor": 1.01,
+    "drawdown_pct": 6.39,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "7a2d303a-4028-4a26-9f04-ce680879379e",
+    "at": "2026-08-17T14:16:23",
+    "verdict": "PASS",
+    "trades": 39,
+    "profit_factor": 1.01,
+    "drawdown_pct": 6.39,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
   },
   {
    "ea_id": "QM5_21516",
    "symbol": "XTIUSD.DWX",
-   "state": "METRICS_MISSING",
-   "old_present": true,
-   "new_present": false
+   "old": {
+    "work_item_id": "35a76a18-9b2c-4ac3-9b96-c4096be2a460",
+    "at": "2026-08-15T08:37:03",
+    "verdict": "PASS",
+    "trades": 43,
+    "profit_factor": 1.08,
+    "drawdown_pct": 4.66,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "d8e8a579-0387-4fb2-ac86-887e16802a2b",
+    "at": "2026-08-17T14:18:32",
+    "verdict": "PASS",
+    "trades": 43,
+    "profit_factor": 1.08,
+    "drawdown_pct": 4.66,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
   },
   {
    "ea_id": "QM5_21527",
    "symbol": "XTIUSD.DWX",
-   "state": "METRICS_MISSING",
-   "old_present": true,
-   "new_present": false
+   "old": {
+    "work_item_id": "f2e7b05f-6194-4a21-a2cc-2f71a5d52e9a",
+    "at": "2026-08-15T21:38:13",
+    "verdict": "PASS",
+    "trades": 25,
+    "profit_factor": 1.04,
+    "drawdown_pct": 3.88,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "0f308401-bd4d-48d4-bdc3-e270f21c03f5",
+    "at": "2026-08-17T14:17:55",
+    "verdict": "PASS",
+    "trades": 25,
+    "profit_factor": 1.04,
+    "drawdown_pct": 3.88,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": true,
+   "state": "COMPARED"
   }
  ]
 }
