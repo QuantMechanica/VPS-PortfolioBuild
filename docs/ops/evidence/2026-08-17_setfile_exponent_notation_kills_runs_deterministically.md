@@ -92,6 +92,43 @@ another polluted census row. This directly caps the stranded-infra recovery prog
 **Wave 2 of the deep-phase recovery stays gated on this** (`cause before quantity`): an unknown
 share of the 1,562 "recoverable" pairs may be deterministic rejections rather than transients.
 
+## Blast radius, measured; and the class reproduces at build time
+
+Scan over **all 30,995 setfiles**: **28 affected across 25 EA directories**
+(`artifacts/exponent_notation_setfile_scan_20260817.json`). Every affected input is a
+numerical **tolerance, epsilon, floor or deadband** — 18 distinct names, led by
+`strategy_variance_floor`, `strategy_beta_tolerance`, `strategy_corr_tolerance` (4 each) and
+`strategy_reconcile_tolerance` (3). That is why the newest quantitative EA families are hit
+hardest, and it is **not confined to Q02**: `QM5_20289` and `QM5_21516` carry it in their
+`q05_stress_medium` and `q06_stress` setfiles too.
+
+Of the 981 distinct setfiles referenced by open work, **3** were affected — all in the
+QM5_410xx band, and all three were **new rows**: the requeue path had already re-fed the
+defect. `d062a748` (QM5_41033 Q02) is held under `SETFILE_EXPONENT_NOTATION_UNPARSEABLE` with
+claimability verified 0; the two sibling rows were already active and were left running rather
+than aborted.
+
+**The generator is still producing the defect.** `gen_setfile.ps1` has not been touched in 24
+hours. `QM5_41042` was built at 11:55 local — three minutes after the cause was named on the
+Codex task — and its generated setfile carried `strategy_reconcile_tolerance=1.0e-10` anyway.
+It was then hand-sealed by `4748590b4` at 12:04, a two-line change to one setfile. Correct as
+an immediate unblock, and the fifth per-EA patch of a generator defect. **So 25 is a floor, not
+a total** — the scan predates QM5_41042's existence.
+
+### The exact fix location
+
+`framework/scripts/gen_setfile.ps1`, `Convert-EAInputValueForSetfile` (~line 287). It
+special-cases `inputType` `string` and `ENUM_TIMEFRAMES`; for **everything else, including
+`double`**, it performs a bare `return $Value` and passes the upstream literal through
+unchanged. Nothing in the generator prevents exponent notation from reaching the file.
+
+One open thread worth naming rather than assuming: the passing siblings `QM5_41034` and
+`QM5_41037` were **born clean** — created in a single commit with `0.0000000001`, never patched
+— although their *source* default is also `1.0e-10`. So the emitted value does not come from
+the source literal alone, and some upstream supplier writes it differently. A generator guard
+is necessary regardless, but that upstream inconsistency is what makes the defect intermittent
+and therefore invisible to review.
+
 ## What must change
 
 1. **Fix the generator, not the files.** Setfile serialisation must never emit exponent
