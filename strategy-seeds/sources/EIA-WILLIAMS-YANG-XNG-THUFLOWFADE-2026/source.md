@@ -194,3 +194,4 @@ calendar proxy.
 |---|---|---|---|---|
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
 | v1-card | 2026-08-17 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
+| v1-build | 2026-08-17 | deterministic EA, fixed-risk set, and Q01 evidence | Q01 | PASS |
