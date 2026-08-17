@@ -69,7 +69,7 @@ r2_mechanical: PASS
 r3_data_available: PASS_WITH_SESSION_LABEL_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-q01_status: NOT_STARTED
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a direct-WTI event-time sleeve outside the certified XAU/SP500/NDX/XNG book. Verify exact Monday-Tuesday-Wednesday identity, completed Wednesday event-session endpoints, frozen Thursday open, strict opposition, event-session dominance, reconciliation, durable Thursday attempt, counter-gap-fade side, and next-D1 flattening. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -376,13 +376,14 @@ realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-18 | initial post-Wednesday counter-gap-fade card | G0 | APPROVED |
+| v1-build | 2026-08-18 | deterministic EA, fixed-risk preset, independent fixtures, and strict validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-18 | APPROVED | `decisions/2026-08-18_wti_post_wednesday_countergap_fade_g0.md` |
-| Q01 Build Validation | - | NOT_STARTED | - |
+| Q01 Build Validation | 2026-08-18 | PASS | `framework/build/compile/20260817_223209/QM5_41053_wti-postwed-gap-fade.compile.log`; `D:/QM/reports/framework/21/build_check_20260817_223209.json`; `D:/QM/reports/pipeline/QM5_41053/P1/P1_QM5_41053_result.json` |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | - |
 
 ## Safety Boundary
