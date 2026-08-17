@@ -10,11 +10,11 @@ last_updated: 2026-08-17
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-17"
 approved_at: 2026-08-17
 source_approval: decisions/2026-08-17_xng_monthly_flow_divergence_source_approval.md
-approval_commit: PENDING_BRANCH_COMMIT
+approval_commit: 29856a0d7
 strategy_ids:
   - WILLIAMS-MOP-XNG-MFLOWDIV-2026_S01
 cards_extracted:
-  - PENDING_DETERMINISTIC_ALLOCATION
+  - strategy-seeds/cards/approved/QM5_41037_xng-mflow-div_card.md
 parent_sources:
   - SRC03
   - MOP-TSMOM-2012
@@ -176,5 +176,4 @@ economics.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
-| v1-card | - | locked card extraction and OWNER G0 authorization | G0 | PENDING_ALLOCATION |
-
+| v1-card | 2026-08-17 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
