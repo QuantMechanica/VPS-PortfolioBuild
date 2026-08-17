@@ -61,6 +61,10 @@ datetime g_pair_entry_time = 0;
 int      g_signal_date_key = 0;
 int      g_last_attempt_date_key = 0;
 string   g_attempt_state_key = "";
+MqlRates g_flow_xau_bars[];
+MqlRates g_flow_xag_bars[];
+datetime g_flow_anchor_host_bar = 0;
+bool     g_flow_window_valid = false;
 
 int Strategy_DayKey(const datetime value)
   {
@@ -621,6 +625,54 @@ bool Strategy_NoTradeFilter()
    return (!Strategy_IsHostChart() || !Strategy_InputsValid());
   }
 
+bool Strategy_RefreshFlowWindow()
+  {
+   ArrayResize(g_flow_xau_bars, 6);
+   ArrayResize(g_flow_xag_bars, 6);
+   ArraySetAsSeries(g_flow_xau_bars, true);
+   ArraySetAsSeries(g_flow_xag_bars, true);
+   const int xau_copied =
+      CopyRates(g_leg_xau, PERIOD_D1, 1, 6, g_flow_xau_bars);
+   const int xag_copied =
+      CopyRates(g_leg_xag, PERIOD_D1, 1, 6, g_flow_xag_bars);
+   g_flow_window_valid = (xau_copied == 6 && xag_copied == 6);
+   g_flow_anchor_host_bar =
+      g_flow_window_valid ? g_current_host_bar : (datetime)0;
+   return g_flow_window_valid;
+  }
+
+bool Strategy_UpdateFlowWindow()
+  {
+   if(g_current_host_bar <= 0)
+      return false;
+   if(!g_flow_window_valid || g_flow_anchor_host_bar <= 0)
+      return Strategy_RefreshFlowWindow();
+   if(g_flow_anchor_host_bar == g_current_host_bar)
+      return true;
+
+   MqlRates xau_closed[];
+   MqlRates xag_closed[];
+   ArrayResize(xau_closed, 1);
+   ArrayResize(xag_closed, 1);
+   ArraySetAsSeries(xau_closed, true);
+   ArraySetAsSeries(xag_closed, true);
+   if(CopyRates(g_leg_xau, PERIOD_D1, 1, 1, xau_closed) != 1 ||
+      CopyRates(g_leg_xag, PERIOD_D1, 1, 1, xag_closed) != 1 ||
+      xau_closed[0].time != g_flow_anchor_host_bar ||
+      xag_closed[0].time != g_flow_anchor_host_bar)
+      return Strategy_RefreshFlowWindow();
+
+   for(int index = 5; index > 0; --index)
+     {
+      g_flow_xau_bars[index] = g_flow_xau_bars[index - 1];
+      g_flow_xag_bars[index] = g_flow_xag_bars[index - 1];
+     }
+   g_flow_xau_bars[0] = xau_closed[0];
+   g_flow_xag_bars[0] = xag_closed[0];
+   g_flow_anchor_host_bar = g_current_host_bar;
+   return true;
+  }
+
 bool Strategy_LoadRelativeFlow(double &overnight_relative,
                                double &session_relative,
                                int &direction)
@@ -635,66 +687,55 @@ bool Strategy_LoadRelativeFlow(double &overnight_relative,
 
    const datetime xag_current =
       iTime(g_leg_xag, PERIOD_D1, 0); // perf-allowed: entry-only sync gate.
-   if(xag_current != g_current_host_bar)
-      return false;
-
-   MqlRates xau_bars[];
-   MqlRates xag_bars[];
-   ArraySetAsSeries(xau_bars, true);
-   ArraySetAsSeries(xag_bars, true);
-   const int xau_copied =
-      CopyRates(g_leg_xau, // perf-allowed: entry-only six-bar flow window.
-                PERIOD_D1, 1, 6, xau_bars);
-   const int xag_copied =
-      CopyRates(g_leg_xag, // perf-allowed: entry-only six-bar flow window.
-                PERIOD_D1, 1, 6, xag_bars);
-   if(xau_copied != 6 || xag_copied != 6)
+   if(xag_current != g_current_host_bar ||
+      !g_flow_window_valid ||
+      g_flow_anchor_host_bar != g_current_host_bar)
       return false;
 
    const int expected_days[6] = {5, 4, 3, 2, 1, 5};
    const int expected_offsets[6] = {3, 4, 5, 6, 7, 10};
    for(int index = 0; index < 6; ++index)
      {
-      if(xau_bars[index].time <= 0 ||
-         xau_bars[index].time != xag_bars[index].time ||
-         Strategy_DayOfWeek(xau_bars[index].time) != expected_days[index] ||
-         Strategy_DayKey(xau_bars[index].time) !=
+      if(g_flow_xau_bars[index].time <= 0 ||
+         g_flow_xau_bars[index].time != g_flow_xag_bars[index].time ||
+         Strategy_DayOfWeek(g_flow_xau_bars[index].time) != expected_days[index] ||
+         Strategy_DayKey(g_flow_xau_bars[index].time) !=
             Strategy_DayKey(broker_now -
                             (datetime)(expected_offsets[index] * 86400)))
          return false;
-      if(xau_bars[index].close <= 0.0 || xag_bars[index].close <= 0.0 ||
-         !MathIsValidNumber(xau_bars[index].close) ||
-         !MathIsValidNumber(xag_bars[index].close) ||
+      if(g_flow_xau_bars[index].close <= 0.0 || g_flow_xag_bars[index].close <= 0.0 ||
+         !MathIsValidNumber(g_flow_xau_bars[index].close) ||
+         !MathIsValidNumber(g_flow_xag_bars[index].close) ||
          (index < 5 &&
-          (xau_bars[index].open <= 0.0 || xag_bars[index].open <= 0.0 ||
-           !MathIsValidNumber(xau_bars[index].open) ||
-           !MathIsValidNumber(xag_bars[index].open))))
+          (g_flow_xau_bars[index].open <= 0.0 || g_flow_xag_bars[index].open <= 0.0 ||
+           !MathIsValidNumber(g_flow_xau_bars[index].open) ||
+           !MathIsValidNumber(g_flow_xag_bars[index].open))))
          return false;
      }
 
    if(!Strategy_GapHoursAllowed(g_current_host_bar,
-                                xau_bars[0].time, 68, 76))
+                                g_flow_xau_bars[0].time, 68, 76))
       return false;
    for(int index = 0; index < 4; ++index)
      {
-      if(!Strategy_GapHoursAllowed(xau_bars[index].time,
-                                   xau_bars[index + 1].time, 20, 28))
+      if(!Strategy_GapHoursAllowed(g_flow_xau_bars[index].time,
+                                   g_flow_xau_bars[index + 1].time, 20, 28))
          return false;
      }
-   if(!Strategy_GapHoursAllowed(xau_bars[4].time,
-                                xau_bars[5].time, 68, 76))
+   if(!Strategy_GapHoursAllowed(g_flow_xau_bars[4].time,
+                                g_flow_xau_bars[5].time, 68, 76))
       return false;
 
    for(int index = 0; index < 5; ++index)
      {
       const double xau_overnight =
-         MathLog(xau_bars[index].open / xau_bars[index + 1].close);
+         MathLog(g_flow_xau_bars[index].open / g_flow_xau_bars[index + 1].close);
       const double xag_overnight =
-         MathLog(xag_bars[index].open / xag_bars[index + 1].close);
+         MathLog(g_flow_xag_bars[index].open / g_flow_xag_bars[index + 1].close);
       const double xau_session =
-         MathLog(xau_bars[index].close / xau_bars[index].open);
+         MathLog(g_flow_xau_bars[index].close / g_flow_xau_bars[index].open);
       const double xag_session =
-         MathLog(xag_bars[index].close / xag_bars[index].open);
+         MathLog(g_flow_xag_bars[index].close / g_flow_xag_bars[index].open);
       if(!MathIsValidNumber(xau_overnight) ||
          !MathIsValidNumber(xag_overnight) ||
          !MathIsValidNumber(xau_session) ||
@@ -883,6 +924,7 @@ int OnInit()
    QM_BasketWarmupHistory(basket_symbols, PERIOD_D1, 40);
    g_current_host_bar =
       iTime(g_leg_xau, PERIOD_D1, 0); // perf-allowed: restart state anchor.
+   Strategy_RefreshFlowWindow();
    Strategy_LoadAttemptState(TimeCurrent());
    g_pair_entry_time = Strategy_CurrentPairEntryTime();
    if(!Strategy_PrimeLateSignalAttach())
@@ -924,7 +966,10 @@ void OnTick()
       g_current_host_bar =
          iTime(g_leg_xau, PERIOD_D1, 0); // perf-allowed: new-bar lifecycle and entry anchor.
       if(g_is_new_bar)
+        {
+         Strategy_UpdateFlowWindow();
          QM_EquityStreamOnNewBar();
+        }
      }
 
    // Repair and lifecycle exits always precede entry filters and news gates.

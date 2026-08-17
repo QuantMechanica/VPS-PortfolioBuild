@@ -216,7 +216,7 @@ report = {"generated_at": NOW, "apply": APPLY,
           "pending_at_start": pending_now, "queue_ceiling": QUEUE_CEILING,
           "wave_budget": budget,
           "part1_never_tested": {"enqueued": [], "skipped": []},
-          "part2_stranded": {"enqueued": [], "skipped": []}}
+          "part2_stranded": {"enqueued": [], "skipped": [], "parked": []}}
 deferred_records = []
 
 def pending_active_exists(ea_id, symbol, phase):
@@ -628,6 +628,69 @@ for phase in ("Q02", "Q03", "Q08"):
             and source_payload.get("portfolio_scope") == "basket"
         )
         if is_logical_basket:
+            budget_wall_streak = farmctl._q02_budget_wall_streak(
+                con,
+                ea_id,
+                symbol,
+                setfile,
+            )
+            if budget_wall_streak:
+                breaker = {
+                    "schema": "qm.q02-basket-budget-wall-breaker/v1",
+                    "hold_code": farmctl.Q02_BASKET_BUDGET_WALL_HOLD_CODE,
+                    "threshold": farmctl.Q02_BASKET_BUDGET_WALL_BREAKER_THRESHOLD,
+                    "consecutive_failures": budget_wall_streak,
+                    "parked_at_utc": NOW,
+                }
+                if APPLY:
+                    source_payload["budget_wall_breaker"] = breaker
+                    cur.execute(
+                        """
+                        UPDATE work_items
+                        SET payload_json=?, updated_at=?
+                        WHERE id=? AND status IN ('done','failed')
+                          AND verdict='INFRA_FAIL'
+                        """,
+                        (json.dumps(source_payload, sort_keys=True), NOW, source["id"]),
+                    )
+                    cur.execute(
+                        """
+                        INSERT INTO work_item_holds
+                          (work_item_id,hold_code,reason,active,release_on_restart,
+                           created_at,updated_at,released_at,release_note)
+                        VALUES (?,?,?,1,0,?,?,NULL,NULL)
+                        ON CONFLICT(work_item_id) DO UPDATE SET
+                          hold_code=excluded.hold_code,
+                          reason=excluded.reason,
+                          active=1,
+                          release_on_restart=0,
+                          updated_at=excluded.updated_at,
+                          released_at=NULL,
+                          release_note=NULL
+                        """,
+                        (
+                            source["id"],
+                            farmctl.Q02_BASKET_BUDGET_WALL_HOLD_CODE,
+                            (
+                                "logical-basket Q02 reached its granted budget wall "
+                                f"{len(budget_wall_streak)} consecutive times; "
+                                "manual performance/budget review required"
+                            ),
+                            NOW,
+                            NOW,
+                        ),
+                    )
+                report["part2_stranded"]["parked"].append({
+                    "ea_id": ea_id,
+                    "phase": phase,
+                    "symbol": symbol,
+                    "source_work_item_id": source["id"],
+                    "hold_code": farmctl.Q02_BASKET_BUDGET_WALL_HOLD_CODE,
+                    "threshold": farmctl.Q02_BASKET_BUDGET_WALL_BREAKER_THRESHOLD,
+                    "consecutive_failures": budget_wall_streak,
+                    "applied": APPLY,
+                })
+                continue
             manifest_path = Path(str(source_payload.get("basket_manifest") or ""))
             try:
                 manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))

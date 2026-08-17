@@ -4444,6 +4444,11 @@ P2_PRESCREEN_MONTHS = 6
 P2_PRESCREEN_TIMEOUT_SECONDS = 1800
 P2_FULL_TIMEOUT_MIN_SECONDS = 7200
 P2_FULL_TIMEOUT_MAX_SECONDS = 14400
+P2_BASKET_TIMEOUT_MAX_SECONDS = 25200
+P2_BASKET_MEMBER_BASE_SECONDS = 14400
+P2_BASKET_MEMBER_INCREMENT_SECONDS = 400
+Q02_BASKET_BUDGET_WALL_BREAKER_THRESHOLD = 2
+Q02_BASKET_BUDGET_WALL_HOLD_CODE = "BASKET_BUDGET_WALL_REPEAT"
 
 # PT8 2026-05-23 — Q02 window must scale with strategy timeframe. Single-year
 # H1 was enough for HF sleeves, but D1/W1/MN1 strategies trade O(1-50) times per
@@ -4772,7 +4777,29 @@ def _payload_timeout_floor_seconds(payload: dict[str, Any]) -> int:
         return 0
     if timeout_min <= 0:
         return 0
-    return min(25200, timeout_min * 60)
+    return min(P2_BASKET_TIMEOUT_MAX_SECONDS, timeout_min * 60)
+
+
+def _p2_basket_member_timeout_floor_seconds(member_count: int) -> int:
+    """Return the bounded Q02 floor for a declared logical basket.
+
+    The previous ``1800 + n*600`` term was below the ordinary 7200-second
+    floor for every basket smaller than nine members, so it was dead code for
+    the two-member XAU/XAG class.  The replacement starts that measured class
+    at four hours and adds a small bounded cost per additional member.  The
+    seven-hour safety ceiling remains shared with the explicit payload floor.
+    """
+    try:
+        members = max(1, int(member_count))
+    except (TypeError, ValueError):
+        members = 1
+    if members <= 1:
+        return P2_FULL_TIMEOUT_MIN_SECONDS
+    return min(
+        P2_BASKET_TIMEOUT_MAX_SECONDS,
+        P2_BASKET_MEMBER_BASE_SECONDS
+        + max(0, members - 2) * P2_BASKET_MEMBER_INCREMENT_SECONDS,
+    )
 
 
 def _p2_full_timeout_seconds(payload: dict[str, Any], from_date: str, to_date: str) -> int:
@@ -4792,7 +4819,7 @@ def _p2_full_timeout_seconds(payload: dict[str, Any], from_date: str, to_date: s
     except (TypeError, ValueError):
         _basket_n = 1
     if _basket_n > 1:
-        floor_sec = max(P2_FULL_TIMEOUT_MIN_SECONDS, min(25200, 1800 + _basket_n * 600))
+        floor_sec = _p2_basket_member_timeout_floor_seconds(_basket_n)
     # Member COUNT under-budgets member WEIGHT: a 2-member XAU/XAG basket gets
     # the flat 2h floor although its full-window real-tick runtime exceeds it
     # (20206/20236/20294 burned every attempt on 2026-08-15/16). The payload
@@ -4810,10 +4837,140 @@ def _p2_full_timeout_seconds(payload: dict[str, Any], from_date: str, to_date: s
             # observed six-month real-tick runtime. Baskets floor above the
             # single-symbol MAX when member count demands it.
             estimated = int(runtime_sec * (full_days / prescreen_days) * 2 * 1.5)
-            return max(floor_sec, min(P2_FULL_TIMEOUT_MAX_SECONDS, estimated))
+            estimate_cap = (
+                P2_BASKET_TIMEOUT_MAX_SECONDS
+                if _basket_n > 1
+                else P2_FULL_TIMEOUT_MAX_SECONDS
+            )
+            return max(floor_sec, min(estimate_cap, estimated))
         except ValueError:
             pass
     return floor_sec
+
+
+def _q02_budget_wall_failure(
+    payload: dict[str, Any],
+    summary: dict[str, Any],
+) -> tuple[bool, dict[str, Any]]:
+    """Recognize a clean logical-basket Q02 death at its granted budget.
+
+    This intentionally excludes OnInit failures, log bombs, and model-4 error
+    markers.  The elapsed-time check is bound to the worker's persisted start
+    and the summary's UTC publication time; missing identity fails closed.
+    """
+    if str(payload.get("portfolio_scope") or "").strip().lower() != "basket":
+        return False, {"reason": "not_logical_basket"}
+    try:
+        if int(payload.get("basket_symbol_count") or 0) <= 1:
+            return False, {"reason": "not_multi_member"}
+    except (TypeError, ValueError):
+        return False, {"reason": "member_count_invalid"}
+    if str(summary.get("result") or "").upper() != "FAIL":
+        return False, {"reason": "summary_result_not_fail"}
+    try:
+        if int(summary.get("attempted_runs") or 0) != 1:
+            return False, {"reason": "attempted_runs_not_one"}
+    except (TypeError, ValueError):
+        return False, {"reason": "attempted_runs_invalid"}
+    if (
+        bool(summary.get("oninit_failure_detected"))
+        or bool(summary.get("log_bomb_detected"))
+        or bool(summary.get("model4_log_marker_detected"))
+    ):
+        return False, {"reason": "excluded_error_marker"}
+    reason_classes = {
+        str(value).strip().upper()
+        for value in (summary.get("reason_classes") or [])
+        if str(value).strip()
+    }
+    if "TIMEOUT" not in reason_classes or not reason_classes.issubset(
+        {"TIMEOUT", "INCOMPLETE_RUNS"}
+    ):
+        return False, {"reason": "not_clean_timeout", "reason_classes": sorted(reason_classes)}
+    runs = summary.get("runs") or []
+    if not isinstance(runs, list) or len(runs) != 1 or not isinstance(runs[0], dict):
+        return False, {"reason": "run_record_missing"}
+    if str(runs[0].get("failure") or "").upper() != "TIMEOUT":
+        return False, {"reason": "run_failure_not_timeout"}
+
+    try:
+        granted_seconds = int(payload.get("timeout_seconds") or 0)
+    except (TypeError, ValueError):
+        granted_seconds = 0
+    if granted_seconds <= 0:
+        match = re.search(
+            r"timed out after\s+(\d+)\s+seconds",
+            str(runs[0].get("error") or ""),
+            flags=re.IGNORECASE,
+        )
+        granted_seconds = int(match.group(1)) if match else 0
+    started = _parse_utc_datetime(str(payload.get("started_at_iso") or ""))
+    completed = _parse_utc_datetime(str(summary.get("timestamp_utc") or ""))
+    if granted_seconds <= 0 or started is None or completed is None:
+        return False, {"reason": "budget_identity_missing"}
+    elapsed_seconds = max(0.0, (completed - started).total_seconds())
+    tolerance_seconds = max(1.0, granted_seconds * 0.01)
+    if abs(elapsed_seconds - granted_seconds) > tolerance_seconds:
+        return False, {
+            "reason": "duration_not_at_budget_wall",
+            "elapsed_seconds": round(elapsed_seconds, 3),
+            "granted_seconds": granted_seconds,
+        }
+    return True, {
+        "reason": "budget_wall_timeout",
+        "elapsed_seconds": round(elapsed_seconds, 3),
+        "granted_seconds": granted_seconds,
+        "ratio": round(elapsed_seconds / granted_seconds, 6),
+    }
+
+
+def _q02_budget_wall_streak(
+    conn: sqlite3.Connection,
+    ea_id: str,
+    symbol: str,
+    setfile_path: str | None,
+    *,
+    threshold: int = Q02_BASKET_BUDGET_WALL_BREAKER_THRESHOLD,
+) -> list[dict[str, Any]]:
+    """Return newest consecutive clean budget-wall failures, or ``[]``.
+
+    A non-wall terminal result breaks the streak.  Evidence that is missing or
+    unreadable also breaks it, so the breaker can never absorb an OnInit fault,
+    log bomb, or ambiguous infrastructure failure.
+    """
+    required = max(1, int(threshold))
+    rows = conn.execute(
+        """
+        SELECT id, verdict, evidence_path, payload_json, updated_at
+        FROM work_items
+        WHERE ea_id=? AND phase='Q02' AND symbol=?
+          AND ifnull(setfile_path, '')=ifnull(?, '')
+          AND status IN ('done','failed') AND verdict IS NOT NULL
+        ORDER BY updated_at DESC,id DESC
+        LIMIT ?
+        """,
+        (ea_id, symbol, setfile_path, required),
+    ).fetchall()
+    streak: list[dict[str, Any]] = []
+    for row in rows:
+        if str(row["verdict"] or "").upper() != "INFRA_FAIL":
+            break
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+            evidence_path = Path(str(row["evidence_path"] or ""))
+            summary = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+        except (OSError, TypeError, json.JSONDecodeError):
+            break
+        matched, detail = _q02_budget_wall_failure(payload, summary)
+        if not matched:
+            break
+        streak.append({
+            "work_item_id": row["id"],
+            "evidence_path": str(evidence_path),
+            "updated_at": row["updated_at"],
+            **detail,
+        })
+    return streak if len(streak) >= required else []
 
 
 def _p2_active_summary_runtime_sec(item_row: sqlite3.Row, summary: dict[str, Any]) -> float | None:
