@@ -17402,4 +17402,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 35002,hlhb-trend-catcher-system,0,EURUSD.DWX,350020000,2026-08-17T20:00:00Z,Gemini,active
 35002,hlhb-trend-catcher-system,1,GBPUSD.DWX,350020001,2026-08-17T20:00:00Z,Gemini,active
 35002,hlhb-trend-catcher-system,2,USDJPY.DWX,350020002,2026-08-17T20:00:00Z,Gemini,active
+35004,babypips-asian-box-london-breakout,0,GBPUSD.DWX,350040000,2026-08-17T20:15:00Z,Gemini,active
+35004,babypips-asian-box-london-breakout,1,EURUSD.DWX,350040001,2026-08-17T20:15:00Z,Gemini,active
+35004,babypips-asian-box-london-breakout,2,USDCHF.DWX,350040002,2026-08-17T20:15:00Z,Gemini,active
+35003,three-ducks-multi-timeframe-system,0,EURUSD.DWX,350030000,2026-08-17T20:15:00Z,Gemini,active
+35003,three-ducks-multi-timeframe-system,1,GBPUSD.DWX,350030001,2026-08-17T20:15:00Z,Gemini,active
+35003,three-ducks-multi-timeframe-system,2,AUDUSD.DWX,350030002,2026-08-17T20:15:00Z,Gemini,active
+35003,three-ducks-multi-timeframe-system,3,USDJPY.DWX,350030003,2026-08-17T20:15:00Z,Gemini,active
 
