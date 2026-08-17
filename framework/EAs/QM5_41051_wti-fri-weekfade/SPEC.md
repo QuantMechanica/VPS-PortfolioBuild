@@ -1,6 +1,6 @@
 # QM5_41051 - WTI Exact-Week Pullback / Friday Bounce
 
-Status: `SOURCE APPROVED; EA ID RESERVED; MAGIC ALLOCATED; G0 PENDING`
+Status: `G0 APPROVED; MAGIC ALLOCATED; BUILD PENDING`
 
 ## Identity
 
@@ -44,10 +44,12 @@ Thursday-surge short (`QM5_20117`), unconditional Friday premium
 (`QM5_12597`), 252-D1 Friday regimes (`QM5_20145`, `QM5_20172`), first-Friday
 prior-month reversal (`QM5_41026`), and earlier/prior-week momentum families.
 
-## Safety Boundary
+## Build State
 
-This directory identity authorizes no EA source, binary, test, queue action,
-live artifact, terminal control, portfolio mutation, or performance claim.
-The active slot-0 row must survive canonical resolver regeneration, and
-development remains blocked until an approved Strategy Card plus G0 decision
-exist.
+The approved card and G0 decision now authorize exactly one branch-only,
+non-live implementation, one `RISK_FIXED` D1 backtest preset, strict Q01, and
+one paced target-only Q02 enqueue below capacity ceilings. Development must not
+change the calendar, endpoints, sign, direction, risk, or lifecycle.
+
+No live artifact, manual test, terminal control, portfolio mutation, or
+performance claim is authorized.
