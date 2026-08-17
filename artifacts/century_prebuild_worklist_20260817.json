@@ -1,0 +1,1396 @@
+{
+ "schema": "qm.century-prebuild-worklist/v1",
+ "generated_for": "OWNER 2026-08-17: build the missing 88 automatically",
+ "source_overview": "C:\\Users\\Administrator\\Desktop\\Strategy_Cards_Overview.md",
+ "counts": {
+  "overview_ids": 100,
+  "already_have_magic_rows": 12,
+  "ready_to_allocate": 70,
+  "blocked_no_card": 18,
+  "anomaly_no_target_symbols": 0,
+  "total_magic_rows_to_allocate": 220
+ },
+ "ready_to_allocate": [
+  {
+   "ea_id": "QM5_30001",
+   "slug": "bollinger-bands-grid-waka-waka",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_30001_bollinger-bands-grid-waka-waka.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "AUDCAD.DWX",
+    "AUDNZD.DWX",
+    "NZDCAD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_30005",
+   "slug": "bollinger-bands-grid-dark-venus",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_30005_bollinger-bands-grid-dark-venus.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX"
+   ],
+   "magic_rows_needed": 4,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_30006",
+   "slug": "adx-ma-trend-grid-dark-kronos",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_30006_adx-ma-trend-grid-dark-kronos.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "AUDCHF.DWX",
+    "GBPCHF.DWX",
+    "EURCHF.DWX",
+    "NZDCHF.DWX"
+   ],
+   "magic_rows_needed": 4,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_32007",
+   "slug": "london-fix-wm-reuters-currency-drift",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_32007_london-fix-wm-reuters-currency-drift.md",
+   "card_store": "repo",
+   "timeframe": "M5",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX"
+   ],
+   "magic_rows_needed": 2,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_32008",
+   "slug": "euro-triplet-statistical-arbitrage-eurostable",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_32008_euro-triplet-statistical-arbitrage-eurostable.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "EURGBP.DWX",
+    "GBPUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_33001",
+   "slug": "kaufman-adaptive-moving-average-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_33001_kaufman-adaptive-moving-average-breakout.md",
+   "card_store": "repo",
+   "timeframe": "H4",
+   "target_symbols": [
+    "XTIUSD.DWX",
+    "SP500.DWX",
+    "EURUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_33002",
+   "slug": "larry-williams-volatility-expansion-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_33002_larry-williams-volatility-expansion-breakout.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "XAUUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_33003",
+   "slug": "ehlers-superpassband-fisher-cycle-scalper",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_33003_ehlers-superpassband-fisher-cycle-scalper.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_33005",
+   "slug": "andrea-unger-dax-intraday-bias-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_33005_andrea-unger-dax-intraday-bias-breakout.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "GDAXI.DWX"
+   ],
+   "magic_rows_needed": 1,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_33006",
+   "slug": "andrea-unger-turtle-soup-false-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_33006_andrea-unger-turtle-soup-false-breakout.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "SP500.DWX",
+    "XTIUSD.DWX",
+    "EURUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_33007",
+   "slug": "george-pruitt-king-keltner-trend-buster",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_33007_george-pruitt-king-keltner-trend-buster.md",
+   "card_store": "repo",
+   "timeframe": "H4",
+   "target_symbols": [
+    "SP500.DWX",
+    "XTIUSD.DWX",
+    "EURUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_33008",
+   "slug": "thomas-stridsman-rvi-noise-buster",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_33008_thomas-stridsman-rvi-noise-buster.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "NDX.DWX",
+    "SP500.DWX"
+   ],
+   "magic_rows_needed": 2,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_34001",
+   "slug": "kalman-filter-state-estimation-scalper",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_34001_kalman-filter-state-estimation-scalper.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_34003",
+   "slug": "triple-timeframe-williams-r-champion",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_34003_triple-timeframe-williams-r-champion.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDCHF.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_34004",
+   "slug": "kositsin-step-trend-parabolic-envelope",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_34004_kositsin-step-trend-parabolic-envelope.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "XAUUSD.DWX",
+    "GBPJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_34005",
+   "slug": "sokolov-cstrategy-donchian-atr-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_34005_sokolov-cstrategy-donchian-atr-breakout.md",
+   "card_store": "repo",
+   "timeframe": "H4",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "SP500.DWX",
+    "XTIUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_34006",
+   "slug": "golubev-pricechannel-parabolic-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_34006_golubev-pricechannel-parabolic-breakout.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_34007",
+   "slug": "sergeev-hft-tick-momentum-interceptor",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_34007_sergeev-hft-tick-momentum-interceptor.md",
+   "card_store": "repo",
+   "timeframe": "M1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX"
+   ],
+   "magic_rows_needed": 2,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_34008",
+   "slug": "multicurrency-basket-dispersion-hedger",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_34008_multicurrency-basket-dispersion-hedger.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 7,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_35001",
+   "slug": "cowabunga-multi-timeframe-trend-system",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_35001_cowabunga-multi-timeframe-trend-system.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "GBPUSD.DWX",
+    "EURUSD.DWX"
+   ],
+   "magic_rows_needed": 2,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_35002",
+   "slug": "hlhb-trend-catcher-system",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_35002_hlhb-trend-catcher-system.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_35003",
+   "slug": "three-ducks-multi-timeframe-system",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_35003_three-ducks-multi-timeframe-system.md",
+   "card_store": "repo",
+   "timeframe": "M5",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 4,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_35004",
+   "slug": "babypips-asian-box-london-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_35004_babypips-asian-box-london-breakout.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "GBPUSD.DWX",
+    "EURUSD.DWX",
+    "USDCHF.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_35005",
+   "slug": "sma-crossover-pullback-system",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_35005_sma-crossover-pullback-system.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "EURJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_35006",
+   "slug": "guppy-multiple-moving-average-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_35006_guppy-multiple-moving-average-breakout.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "GBPJPY.DWX",
+    "EURUSD.DWX"
+   ],
+   "magic_rows_needed": 2,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_35007",
+   "slug": "inside-bar-momentum-breakout-system",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_35007_inside-bar-momentum-breakout-system.md",
+   "card_store": "repo",
+   "timeframe": "H4",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_35008",
+   "slug": "short-term-bollinger-reversion-system",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_35008_short-term-bollinger-reversion-system.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "USDCAD.DWX",
+    "EURCHF.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_36001",
+   "slug": "nnfx-classic-mcginley-ssl-wae",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_36001_nnfx-classic-mcginley-ssl-wae.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "USDJPY.DWX",
+    "USDCAD.DWX"
+   ],
+   "magic_rows_needed": 5,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_36002",
+   "slug": "nnfx-kijunsen-absolute-strength-damiani",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPJPY.DWX",
+    "AUDCAD.DWX",
+    "NZDUSD.DWX"
+   ],
+   "magic_rows_needed": 4,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_36003",
+   "slug": "nnfx-hull-ma-zerolag-macd-stc",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "XAUUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_36004",
+   "slug": "nnfx-alma-qqe-volume-flow-sniper",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX"
+   ],
+   "magic_rows_needed": 4,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_36005",
+   "slug": "nnfx-coral-trendlord-woodies-harvester",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_36005_nnfx-coral-trendlord-woodies-harvester.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "GBPJPY.DWX",
+    "EURJPY.DWX",
+    "AUDNZD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_36006",
+   "slug": "nnfx-halftrend-jurik-coppock-engine",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_36006_nnfx-halftrend-jurik-coppock-engine.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_36007",
+   "slug": "nnfx-vidya-trix-fisher-momentum",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_36007_nnfx-vidya-trix-fisher-momentum.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPJPY.DWX",
+    "NZDCAD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_36008",
+   "slug": "nnfx-gold-kama-vortex-supertrend",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_36008_nnfx-gold-kama-vortex-supertrend.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "XAUUSD.DWX",
+    "XTIUSD.DWX"
+   ],
+   "magic_rows_needed": 2,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_37001",
+   "slug": "ernest-chan-ornstein-uhlenbeck-statarb",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_37001_ernest-chan-ornstein-uhlenbeck-statarb.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "NZDUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_37002",
+   "slug": "dual-thrust-asymmetric-range-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_37002_dual-thrust-asymmetric-range-breakout.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "XTIUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_37003",
+   "slug": "hurst-exponent-dynamic-regime-switch",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_37003_hurst-exponent-dynamic-regime-switch.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPJPY.DWX",
+    "SP500.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_37004",
+   "slug": "volatility-targeted-momentum-kelly",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_37004_volatility-targeted-momentum-kelly.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "XTIUSD.DWX",
+    "XAUUSD.DWX"
+   ],
+   "magic_rows_needed": 4,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_37005",
+   "slug": "chan-bollinger-adx-mean-reversion",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_37005_chan-bollinger-adx-mean-reversion.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "USDCAD.DWX",
+    "AUDCAD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_37006",
+   "slug": "cusum-filter-structural-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_37006_cusum-filter-structural-breakout.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "NDX.DWX",
+    "SP500.DWX",
+    "XTIUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_37007",
+   "slug": "cross-sectional-momentum-factor-dispersion",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_37007_cross-sectional-momentum-factor-dispersion.md",
+   "card_store": "repo",
+   "timeframe": "H4",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 7,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_37008",
+   "slug": "garch-volatility-forecast-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_37008_garch-volatility-forecast-breakout.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "XAUUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_38001",
+   "slug": "codetrading-vwap-bollinger-rsi-scalper",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_38001_codetrading-vwap-bollinger-rsi-scalper.md",
+   "card_store": "repo",
+   "timeframe": "M5",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_38002",
+   "slug": "codetrading-macd-ema-trend-pullback",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_38002_codetrading-macd-ema-trend-pullback.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "EURUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_38003",
+   "slug": "codetrading-bollinger-engulfing-reversal",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_38003_codetrading-bollinger-engulfing-reversal.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPJPY.DWX",
+    "AUDUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_38004",
+   "slug": "codetrading-triple-ema-momentum-scalper",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_38004_codetrading-triple-ema-momentum-scalper.md",
+   "card_store": "repo",
+   "timeframe": "M5",
+   "target_symbols": [
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_38005",
+   "slug": "codetrading-ascending-triangle-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_38005_codetrading-ascending-triangle-breakout.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "XAUUSD.DWX",
+    "SP500.DWX",
+    "EURUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_38006",
+   "slug": "codetrading-doji-hammer-pivot-rejection",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_38006_codetrading-doji-hammer-pivot-rejection.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_38007",
+   "slug": "codetrading-python-atr-grid-engine",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_38007_codetrading-python-atr-grid-engine.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "AUDCAD.DWX",
+    "NZDCAD.DWX",
+    "EURCHF.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_38008",
+   "slug": "codetrading-optimized-bollinger-trend-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_38008_codetrading-optimized-bollinger-trend-breakout.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "XTIUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_39001",
+   "slug": "forexfactory-trading-made-simple-tms",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_39001_forexfactory-trading-made-simple-tms.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_39002",
+   "slug": "forexfactory-sonic-r-system",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_39002_forexfactory-sonic-r-system.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_39003",
+   "slug": "forexfactory-james16-price-action-ppz",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_39003_forexfactory-james16-price-action-ppz.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "XAUUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_39004",
+   "slug": "forexfactory-thv-cobra-trix-scalper",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_39004_forexfactory-thv-cobra-trix-scalper.md",
+   "card_store": "repo",
+   "timeframe": "M5",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "USDJPY.DWX",
+    "GBPUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_39005",
+   "slug": "forexfactory-genesis-matrix-scalper",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_39005_forexfactory-genesis-matrix-scalper.md",
+   "card_store": "repo",
+   "timeframe": "M5",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX"
+   ],
+   "magic_rows_needed": 2,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_39006",
+   "slug": "forexfactory-spudfyre-stochastic-ribbon",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_39007",
+   "slug": "forexfactory-100-pips-early-bird-breakout",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_39007_forexfactory-100-pips-early-bird-breakout.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "GBPUSD.DWX",
+    "EURUSD.DWX"
+   ],
+   "magic_rows_needed": 2,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_39008",
+   "slug": "forexfactory-symphonie-matrix-system",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_39008_forexfactory-symphonie-matrix-system.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDCHF.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_40002",
+   "slug": "quantpedia-fx-momentum-volatility-parity",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_40002_quantpedia-fx-momentum-volatility-parity.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 6,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_40005",
+   "slug": "tradingview-multitimeframe-supertrend-atr",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_40005_tradingview-multitimeframe-supertrend-atr.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPJPY.DWX",
+    "XAUUSD.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_40008",
+   "slug": "aqr-value-and-momentum-everywhere",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_40008_aqr-value-and-momentum-everywhere.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "XTIUSD.DWX",
+    "EURUSD.DWX"
+   ],
+   "magic_rows_needed": 4,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_41001",
+   "slug": "keith-fitschen-aberration-trading-system",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41001_keith-fitschen-aberration-trading-system.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "XTIUSD.DWX",
+    "XAUUSD.DWX",
+    "SP500.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_41002",
+   "slug": "robert-pardo-checkmate-breakout-engine",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41002_robert-pardo-checkmate-breakout-engine.md",
+   "card_store": "repo",
+   "timeframe": "H4",
+   "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_41003",
+   "slug": "kaufman-ready-set-go-momentum",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41003_kaufman-ready-set-go-momentum.md",
+   "card_store": "repo",
+   "timeframe": "H1",
+   "target_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "GDAXI.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_41005",
+   "slug": "richard-donchian-50day-cta-benchmark",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41005_richard-donchian-50day-cta-benchmark.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "XTIUSD.DWX",
+    "XAUUSD.DWX",
+    "SP500.DWX",
+    "EURUSD.DWX"
+   ],
+   "magic_rows_needed": 4,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_41006",
+   "slug": "man-ahl-multispeed-ewma-trend",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41006_man-ahl-multispeed-ewma-trend.md",
+   "card_store": "repo",
+   "timeframe": "D1",
+   "target_symbols": [
+    "NDX.DWX",
+    "SP500.DWX",
+    "XTIUSD.DWX",
+    "XAUUSD.DWX"
+   ],
+   "magic_rows_needed": 4,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_41009",
+   "slug": "volume-profile-value-area-rejection",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41009_volume-profile-value-area-rejection.md",
+   "card_store": "repo",
+   "timeframe": "M5",
+   "target_symbols": [
+    "SP500.DWX",
+    "NDX.DWX"
+   ],
+   "magic_rows_needed": 2,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_41010",
+   "slug": "developing-poc-migration-scalper",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41010_developing-poc-migration-scalper.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "NDX.DWX",
+    "SP500.DWX"
+   ],
+   "magic_rows_needed": 2,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  },
+  {
+   "ea_id": "QM5_41011",
+   "slug": "tokyo-london-bank-flow-handover",
+   "card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41011_tokyo-london-bank-flow-handover.md",
+   "card_store": "repo",
+   "timeframe": "M15",
+   "target_symbols": [
+    "EURJPY.DWX",
+    "GBPJPY.DWX",
+    "USDJPY.DWX"
+   ],
+   "magic_rows_needed": 3,
+   "ea_directory_exists": false,
+   "missing": [
+    "ea_directory",
+    "magic_rows"
+   ]
+  }
+ ],
+ "blocked_no_card": [
+  {
+   "ea_id": "QM5_30004",
+   "slug": "ann-filtered-multipair-grid-perceptrader-ai",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_30007",
+   "slug": "ai-sentiment-price-action-infinity-trader",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_31001",
+   "slug": "smc-london-silver-bullet",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_31008",
+   "slug": "gold-reaper-order-block-mitigation",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_32002",
+   "slug": "es-vwap-orderflow-topstep-scalper",
+   "ea_id_status": "allocated",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_32004",
+   "slug": "indices-overnight-gap-fill-continuation",
+   "ea_id_status": "allocated",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_32005",
+   "slug": "rty-small-cap-mean-reversion-scalper",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_32006",
+   "slug": "btcusd-weekend-range-monday-breakout",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_34002",
+   "slug": "brent-wti-crude-statistical-arbitrage",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_40001",
+   "slug": "quantpedia-turn-of-the-month-anomaly",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_40003",
+   "slug": "alvarez-connors-rsi2-mean-reversion",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_40004",
+   "slug": "alvarez-cumulative-rsi2-volatility-dip",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_40006",
+   "slug": "tradingview-lorentzian-distance-knn-classifier",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_40007",
+   "slug": "aqr-time-series-momentum-tsmom",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_41004",
+   "slug": "golden-cross-50-200-volatility-trail",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_41007",
+   "slug": "vix-volatility-spike-equity-reversion",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_41008",
+   "slug": "commodity-carry-roll-yield-arbitrage",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  },
+  {
+   "ea_id": "QM5_41012",
+   "slug": "john-carter-ttm-squeeze-momentum",
+   "ea_id_status": "retired",
+   "blocker": "no approved card in repo or runtime reservoir"
+  }
+ ],
+ "anomaly_no_target_symbols": []
+}
