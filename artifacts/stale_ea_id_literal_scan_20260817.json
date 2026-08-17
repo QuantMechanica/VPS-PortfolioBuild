@@ -1,0 +1,23 @@
+{
+ "schema": "qm.stale-ea-id-literal-scan/v1",
+ "defect": "an EA whose own identity guard compares qm_ea_id against a foreign literal rejects its own correct setfile in OnInit and dies deterministically with INIT_PARAMETERS_INCORRECT; the zero-bar report is then misclassified BARS_ZERO -> INFRA_FAIL",
+ "counts": {
+  "guard_correct": 221,
+  "no_guard": 3385,
+  "stale_literal": 1
+ },
+ "entries": [
+  {
+   "ea_dir": "QM5_41032_wti-flow-div",
+   "own_ea_id": "QM5_41032",
+   "foreign_literals": [
+    "QM5_41029"
+   ],
+   "lines": [
+    438,
+    591
+   ],
+   "source": "C:\\QM\\repo\\framework\\EAs\\QM5_41032_wti-flow-div\\QM5_41032_wti-flow-div.mq5"
+  }
+ ]
+}
