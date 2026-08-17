@@ -22,7 +22,8 @@ INPUTS
 
 OUTPUTS
 - framework/include/QM/QM_MagicResolver.mqh — rewritten in-place
-  - QM_MAGIC_REG_EA_ID / SLOT / SYMBOL / MAGIC arrays regenerated
+  - QM_MAGIC_REG_EA_ID / SLOT / SYMBOL / MAGIC arrays regenerated in strict
+    composite-key order (ea_id * 10000 + symbol_slot)
   - QM_MAGIC_REGISTRY_ROWS bumped
   - QM_MAGIC_REGISTRY_SHA256 set to sha256 of the Git-canonical LF bytes
 
@@ -98,8 +99,26 @@ def active_ea_ids(*, keep_obsolete: bool) -> set[int]:
     return ids
 
 
+def row_composite_key(row: dict) -> int:
+    """The runtime binary-search key for one generated resolver row."""
+    return int(row["ea_id"]) * 10_000 + int(row["slot"])
+
+
+def validate_row_order(rows: list[dict]) -> None:
+    """Require unique rows in strict runtime composite-key order."""
+    previous_key: int | None = None
+    for index, row in enumerate(rows):
+        key = row_composite_key(row)
+        if previous_key is not None and key <= previous_key:
+            raise ValueError(
+                "magic resolver rows must be unique and strictly increasing by "
+                f"composite key; index={index} previous={previous_key} current={key}"
+            )
+        previous_key = key
+
+
 def load_rows(*, keep_obsolete: bool) -> tuple[list[dict], list[int]]:
-    """Return (rows, dropped_ea_ids) from magic_numbers.csv, sorted by (ea_id, slot).
+    """Return rows sorted by the runtime composite key plus dropped EA IDs.
 
     dropped_ea_ids: distinct ea_ids whose EA dir is missing under framework/EAs/.
     Only populated when keep_obsolete=False (the normal path).
@@ -135,7 +154,11 @@ def load_rows(*, keep_obsolete: bool) -> tuple[list[dict], list[int]]:
                 "magic": magic,
             })
 
-    rows.sort(key=lambda r: (r["ea_id"], r["slot"]))
+    rows.sort(key=row_composite_key)
+    try:
+        validate_row_order(rows)
+    except ValueError as exc:
+        sys.exit(f"[FATAL] {exc}")
     return rows, sorted(dropped)
 
 
@@ -151,6 +174,7 @@ def render_mqh(rows: list[dict]) -> str:
     n = len(rows)
     if n == 0:
         sys.exit("[FATAL] no magic-registry rows survive filtering — refusing to write empty resolver")
+    validate_row_order(rows)
 
     def arr(values: list, fmt: callable) -> str:
         return "{" + ", ".join(fmt(v) for v in values) + "}"
@@ -235,6 +259,36 @@ int QM_Magic(const int ea_id, const int symbol_slot)
    return magic;
   }}
 
+// Rows are generated in strict order by ea_id * 10000 + symbol_slot. Search
+// the existing parallel arrays directly: no runtime allocation and O(log n).
+int QM_MagicRegistryFindIndex(const int ea_id, const int symbol_slot)
+  {{
+   const long target_key = (long)ea_id * 10000L + (long)symbol_slot;
+   int low = 0;
+   int high = QM_MAGIC_REGISTRY_ROWS - 1;
+
+   while(low <= high)
+     {{
+      const int middle = low + (high - low) / 2;
+      const long middle_key = (long)QM_MAGIC_REG_EA_ID[middle] * 10000L
+                              + (long)QM_MAGIC_REG_SLOT[middle];
+      if(middle_key == target_key)
+        {{
+         return middle;
+        }}
+      if(middle_key < target_key)
+        {{
+         low = middle + 1;
+        }}
+      else
+        {{
+         high = middle - 1;
+        }}
+     }}
+
+   return -1;
+  }}
+
 bool QM_MagicRegistered(const int ea_id, const int symbol_slot)
   {{
    const int computed_magic = QM_Magic(ea_id, symbol_slot);
@@ -243,15 +297,8 @@ bool QM_MagicRegistered(const int ea_id, const int symbol_slot)
       return false;
      }}
 
-   for(int i = 0; i < QM_MAGIC_REGISTRY_ROWS; ++i)
-     {{
-      if(QM_MAGIC_REG_EA_ID[i] == ea_id && QM_MAGIC_REG_SLOT[i] == symbol_slot)
-        {{
-         return (QM_MAGIC_REG_MAGIC[i] == computed_magic);
-        }}
-     }}
-
-   return false;
+   const int registry_index = QM_MagicRegistryFindIndex(ea_id, symbol_slot);
+   return (registry_index >= 0 && QM_MAGIC_REG_MAGIC[registry_index] == computed_magic);
   }}
 
 // R-069/18954866: the registry symbol bound to (ea_id, symbol_slot). "" if the
@@ -260,15 +307,8 @@ bool QM_MagicRegistered(const int ea_id, const int symbol_slot)
 // silently trading under a foreign symbol's magic (host-slot conflation).
 string QM_MagicRegisteredSymbol(const int ea_id, const int symbol_slot)
   {{
-   for(int i = 0; i < QM_MAGIC_REGISTRY_ROWS; ++i)
-     {{
-      if(QM_MAGIC_REG_EA_ID[i] == ea_id && QM_MAGIC_REG_SLOT[i] == symbol_slot)
-        {{
-         return QM_MAGIC_REG_SYMBOL[i];
-        }}
-     }}
-
-   return "";
+   const int registry_index = QM_MagicRegistryFindIndex(ea_id, symbol_slot);
+   return (registry_index >= 0 ? QM_MAGIC_REG_SYMBOL[registry_index] : "");
   }}
 
 string QM_MagicRegistryHash()
@@ -333,7 +373,9 @@ int QM_MagicChecked(const int ea_id, const int symbol_slot, const string expecte
       return -1;
      }}
 
-   if(!QM_MagicRegistered(ea_id, symbol_slot))
+   // One indexed lookup serves both the registration and symbol checks.
+   const int registry_index = QM_MagicRegistryFindIndex(ea_id, symbol_slot);
+   if(registry_index < 0 || QM_MAGIC_REG_MAGIC[registry_index] != magic)
      {{
       if(ea_id != chk_warn_ea || symbol_slot != chk_warn_slot)
         {{
@@ -349,7 +391,7 @@ int QM_MagicChecked(const int ea_id, const int symbol_slot, const string expecte
    // fail closed rather than silently hand back that foreign symbol's magic.
    if(expected_symbol != "")
      {{
-      const string registered_symbol = QM_MagicRegisteredSymbol(ea_id, symbol_slot);
+      const string registered_symbol = QM_MAGIC_REG_SYMBOL[registry_index];
       if(registered_symbol != "" && registered_symbol != expected_symbol)
         {{
          if(ea_id != chk_warn_ea || symbol_slot != chk_warn_slot)

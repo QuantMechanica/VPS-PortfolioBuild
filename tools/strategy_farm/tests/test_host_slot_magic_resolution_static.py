@@ -92,7 +92,8 @@ def test_basket_only_treats_actual_framework_host_as_relative_slot_zero() -> Non
 
 def test_magic_resolver_rejects_registered_slot_for_foreign_symbol() -> None:
     checked = _compact(_body(RESOLVER, "QM_MagicChecked"))
-    assert "QM_MagicRegisteredSymbol(ea_id,symbol_slot)" in checked
+    assert checked.count("QM_MagicRegistryFindIndex(ea_id,symbol_slot)") == 1
+    assert "QM_MAGIC_REG_SYMBOL[registry_index]" in checked
     assert "registered_symbol!=expected_symbol" in checked
     mismatch = checked.index("registered_symbol!=expected_symbol")
     collision = checked.index("QM_MagicCollisionWithForeignOpenPositions")
