@@ -114,6 +114,46 @@ free up. **T4 must be left alone** while `QM5_41030` runs — a 450-minute baske
 been going since 00:02Z and is the one job on the fleet where a restart would discard
 hours of work.
 
+## Closed — 2026-08-17 08:30Z, fleet is uniform
+
+All ten workers now carry `e607a1bc3`. Process creation times, all later than the fix
+commit (2026-08-17 02:30:48 local):
+
+| T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | T10 |
+|---|---|---|---|---|---|---|---|---|---|
+| 06:50 | 10:10 | 10:10 | 09:07 | 08:44 | **10:28** | 10:10 | 08:41 | 08:40 | 06:50 |
+
+T2, T3, T4, T5, T7, T8, T9 cycled on their own or were restarted earlier in the staggered
+sequence. **T6 was the last one and was restarted here**, closing the split that had made
+a work item's verdict depend on which terminal claimed it.
+
+**The reading rule above is now retired.** From 08:30Z on 2026-08-17, a `summary_missing`
+death at ~90 minutes is no longer explained by worker vintage on any terminal, and must be
+diagnosed on its own merits.
+
+### Restarting T6 required overriding step 1 of my own method
+
+Step 1 says: confirm the terminal holds **no active claim**, because restarting a busy
+worker aborts its backtest. T6 *did* hold an active claim — `e5754875`, `QM5_20085`
+`EURUSD.DWX` Q07, claimed 04:48Z. I restarted it anyway, because the condition the rule
+exists to protect had provably already failed:
+
+- the `q07_multiseed.py` runner process was **gone** (a repo-wide scan for `q07` returned
+  nothing);
+- the T6 worker had **zero child processes**;
+- **no `terminal64` was running under T6** — the only factory terminals alive were T3, T4,
+  T5 and T9;
+- the multiseed had died **during seed 3 of 5**: `20260817_044943` PASS at 06:04Z,
+  `20260817_060454` PASS at 07:16Z, `20260817_071754` started but never wrote a summary.
+
+So the restart discarded nothing that was still running. The row remains orphaned-`active`
+and is left to `QM_StrategyFarm_ReconcileOrphans_Hourly` rather than hand-mutated — the
+governed path releases it, and its two PASS seeds are on disk either way.
+
+The general form of the rule is what matters: **never restart a worker with live work.** An
+active claim is a proxy for live work, and when the proxy and the process scan disagree,
+the process scan wins.
+
 ## Prospective confirmation — 2026-08-17 08:00Z, prediction held 4 of 4
 
 The pre-registered prediction was: a symbol that died as `INFRA_FAIL` on a stale worker
