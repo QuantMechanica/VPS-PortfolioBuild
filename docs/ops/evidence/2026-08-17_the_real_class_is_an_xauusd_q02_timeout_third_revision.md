@@ -77,6 +77,35 @@ Not retention. Not a launch repair. Three real options, in increasing cost:
 
 Option 1 stops the bleeding regardless of which of 2 or 3 is right, so it should not wait for them.
 
+## Options 2 and 3 measured, and both are falsified
+
+Wall time of **successful** Q02 runs, recovered from run-directory start stamps against
+`summary.json.timestamp_utc`:
+
+| Symbol | n | median | p90 | max | runs > 7200 s |
+|---|---:|---:|---:|---:|---:|
+| **XAUUSD.DWX** | 471 | **6.4 min** | 17.2 min | 104.0 min | **0** |
+| WS30.DWX | 110 | 4.1 min | 10.4 min | 109.5 min | 0 |
+| NDX.DWX | 400 | 3.5 min | 10.4 min | 97.8 min | 0 |
+| EURUSD.DWX | 672 | 3.5 min | 8.5 min | 89.3 min | 0 |
+
+**Option 2 is wrong: the 7200 s ceiling is not mis-set for XAUUSD.** It is ~19× the median and ~7× the
+p90, and **not one of 471 successful XAUUSD Q02 runs exceeded it.** Only 1 % run beyond 60 minutes.
+
+**Option 3 is unnecessary:** WS30 carries the same 4.5-year window at a 4.1-minute median, so the
+window is affordable. XAUUSD is ~1.8× slower than the other symbols at the median — real, but nothing
+like the gap that would be needed to explain a timeout.
+
+So **QM5_20178/XAUUSD is a genuine outlier at roughly 19× the median comparable run**, and the anomaly
+lives in this EA's computation on this symbol, not in the ceiling, the window, or the symbol as such.
+Worth noting that near-ceiling runs do exist and do succeed — QM5_20176/XAUUSD took 104.0 minutes and
+passed — so the ceiling is tight for the tail but adequate.
+
+**Option 1 is therefore the whole remedy for the loop**, and the open question narrows to a single
+well-posed one: what in this EA scales with XAUUSD tick density such that it cannot finish in 120
+minutes while finishing on five other symbols? That is a code question about one EA, not an
+infrastructure question.
+
 ## The transferable lesson, stated once
 
 I asserted a mechanism three times before measuring the one thing that separated the cases — the same
