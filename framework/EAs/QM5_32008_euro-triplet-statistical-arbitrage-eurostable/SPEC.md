@@ -1,9 +1,9 @@
 # QM5_32008_euro-triplet-statistical-arbitrage-eurostable — Strategy Spec
 
-**EA ID:** QM5_32008  
-**Slug:** `euro-triplet-statistical-arbitrage-eurostable`  
-**Source:** `euro-triplet-statistical-arbitrage-eurostable-official-source`  
-**Author of this spec:** Codex  
+**EA ID:** QM5_32008
+**Slug:** `euro-triplet-statistical-arbitrage-eurostable`
+**Source:** `euro-triplet-statistical-arbitrage-eurostable-official-source`
+**Author of this spec:** Codex
 **Last revised:** 2026-08-17
 
 ---
@@ -92,12 +92,12 @@ the economic and robustness judges.
 
 ## 6. Source Citation
 
-**Source ID:** `euro-triplet-statistical-arbitrage-eurostable-official-source`  
+**Source ID:** `euro-triplet-statistical-arbitrage-eurostable-official-source`
 **Card citation:** “EuroStable Official EA Specification. 422+ days live
-verified on BlackBull.”  
+verified on BlackBull.”
 **Durable approval record:**
-`strategy-seeds/cards/approved/QM5_32008_euro-triplet-statistical-arbitrage-eurostable.md`  
-**Recorded source quality:** Tier A  
+`strategy-seeds/cards/approved/QM5_32008_euro-triplet-statistical-arbitrage-eurostable.md`
+**Recorded source quality:** Tier A
 **G0 status:** OWNER-authorized `APPROVED`
 
 This build relies on the approved card as the immutable implementation

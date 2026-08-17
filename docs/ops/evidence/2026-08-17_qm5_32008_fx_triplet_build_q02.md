@@ -55,7 +55,8 @@ catastrophe rail, while closed-bar z-state governs correlated package exits.
 - Strict compile/build check: PASS, 0 errors, 0 warnings.
 - Build report: `D:\QM\reports\framework\21\build_check_20260817_152150.json`.
 - SPEC validator: 1 PASS, 0 FAIL.
-- Basket enqueue tests: `17 passed`.
+- Basket enqueue test module: `17 passed`; related farm handoff suite:
+  `53 passed, 4 subtests passed`.
 - Magic resolver dry-run: 17,296 rows kept, 0 dropped; registry hash matched.
 - Farm DB verification: exactly one `QM5_32008` work item, `Q02_pending=1`.
 
