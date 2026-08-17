@@ -8,10 +8,15 @@
 #    D:\QM\mt5\T<n>\Tester\Agent-*   (per-agent working dirs; MT5 recreates)
 #  NEVER touches source tick data (T<n>\Bases top-level) or reports (D:\QM\reports).
 #
-#  Only acts when D: free < LowWaterGB (default 150) — most runs are no-ops.
-#  When it acts: stop only idle factory slots -> clear their caches -> start
-#  only missing workers via the interactive-session token launcher. Because MT5
-#  agents read these caches mid-run, the factory MUST be stopped first.
+#  IdleCaches acts when D: free < LowWaterGB (default 150): stop only idle
+#  factory slots -> clear their caches -> start only missing workers via the
+#  interactive-session token launcher. Because MT5 agents read these caches
+#  mid-run, the factory MUST be stopped first.
+#
+#  BusyScratch is deliberately narrower and never stops a terminal. It removes
+#  only released bar*.tmp files under T1-T10\Tester\Agent-*\temp after BOTH an
+#  age guard and a per-file exclusive-open test. All is the scheduled default:
+#  perform that safe busy-scratch sweep, then the threshold-driven idle purge.
 #
 #  The controller may run as SYSTEM, but run_in_console_session.ps1 uses the
 #  logged-on user's token, so missing daemons land in the existing desktop
@@ -25,6 +30,13 @@ param(
     [int]$LowWaterGB = 150,
     [string]$RepoRoot = "C:\QM\repo",
     [string]$FarmRoot = "D:\QM\strategy_farm",
+    [string]$Mt5Root = "D:\QM\mt5",
+    [ValidateSet('All', 'IdleCaches', 'BusyScratch')]
+    [string]$Mode = 'All',
+    [ValidateRange(1, 1440)]
+    [int]$MinAgeMinutes = 5,
+    [ValidatePattern('^(T(?:[1-9]|10))?$')]
+    [string]$Terminal = '',
     [switch]$DryRun
 )
 $ErrorActionPreference = 'Continue'
@@ -33,6 +45,88 @@ $log = "D:\QM\reports\state\tester_cache_purge.log"
 function Now { (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') }
 function FreeGB { [math]::Round((Get-PSDrive D).Free/1GB,2) }
 function Log($m) { $line = "$(Now) $m"; Write-Output $line; try { Add-Content -Path $log -Value $line -Encoding UTF8 } catch {} }
+function Invoke-BusyScratchReclaim {
+    param(
+        [string]$Root,
+        [int]$MinimumAgeMinutes,
+        [string]$OnlyTerminal,
+        [bool]$Apply
+    )
+
+    $before = FreeGB
+    $cutoff = (Get-Date).AddMinutes(-$MinimumAgeMinutes)
+    $terminalNames = if ($OnlyTerminal) { @($OnlyTerminal.ToUpperInvariant()) } else { @(1..10 | ForEach-Object { "T$_" }) }
+    [long]$totalCandidateBytes = 0
+    [long]$totalReclaimedBytes = 0
+    $totalCandidates = 0
+    $totalLocked = 0
+    $totalDeleteErrors = 0
+
+    foreach ($terminalName in $terminalNames) {
+        $testerRoot = Join-Path (Join-Path $Root $terminalName) 'Tester'
+        $terminalCandidates = 0
+        $terminalLocked = 0
+        $terminalDeleteErrors = 0
+        [long]$terminalCandidateBytes = 0
+        [long]$terminalReclaimedBytes = 0
+
+        foreach ($agent in @(Get-ChildItem -LiteralPath $testerRoot -Directory -Filter 'Agent-*' -ErrorAction SilentlyContinue)) {
+            $tempRoot = Join-Path $agent.FullName 'temp'
+            if (-not (Test-Path -LiteralPath $tempRoot -PathType Container)) { continue }
+            foreach ($file in @(Get-ChildItem -LiteralPath $tempRoot -File -Filter 'bar*.tmp' -ErrorAction SilentlyContinue |
+                    Where-Object { $_.LastWriteTime -lt $cutoff })) {
+                $terminalCandidates++
+                $terminalCandidateBytes += $file.Length
+                $stream = $null
+                try {
+                    # Share=None proves the agent has released this exact file.
+                    # Anything still held raises and is skipped; never force-delete.
+                    $stream = [System.IO.File]::Open(
+                        $file.FullName,
+                        [System.IO.FileMode]::Open,
+                        [System.IO.FileAccess]::ReadWrite,
+                        [System.IO.FileShare]::None
+                    )
+                } catch {
+                    $terminalLocked++
+                    continue
+                } finally {
+                    if ($null -ne $stream) { $stream.Dispose() }
+                }
+
+                if ($Apply) {
+                    try {
+                        Remove-Item -LiteralPath $file.FullName -ErrorAction Stop
+                        $terminalReclaimedBytes += $file.Length
+                    } catch {
+                        # A post-probe race or filesystem error is a skip, not a
+                        # reason to weaken sharing semantics or force deletion.
+                        $terminalDeleteErrors++
+                    }
+                } else {
+                    $terminalReclaimedBytes += $file.Length
+                }
+            }
+        }
+
+        $totalCandidates += $terminalCandidates
+        $totalCandidateBytes += $terminalCandidateBytes
+        $totalReclaimedBytes += $terminalReclaimedBytes
+        $totalLocked += $terminalLocked
+        $totalDeleteErrors += $terminalDeleteErrors
+        Log ("BUSY_SCRATCH terminal={0} mode={1} candidates={2} candidate_gb={3:N2} {4}_gb={5:N2} locked_skips={6} delete_error_skips={7}" -f `
+            $terminalName, $(if ($Apply) { 'APPLY' } else { 'DRYRUN' }), $terminalCandidates,
+            ($terminalCandidateBytes / 1GB), $(if ($Apply) { 'reclaimed' } else { 'reclaimable' }),
+            ($terminalReclaimedBytes / 1GB), $terminalLocked, $terminalDeleteErrors)
+    }
+
+    if ($Apply) { Start-Sleep -Seconds 2 }
+    $after = FreeGB
+    Log ("BUSY_SCRATCH_SUMMARY mode={0} min_age_minutes={1} candidates={2} candidate_gb={3:N2} {4}_gb={5:N2} locked_skips={6} delete_error_skips={7} d_free_before_gb={8:N2} d_free_after_gb={9:N2}" -f `
+        $(if ($Apply) { 'APPLY' } else { 'DRYRUN' }), $MinimumAgeMinutes, $totalCandidates,
+        ($totalCandidateBytes / 1GB), $(if ($Apply) { 'reclaimed' } else { 'reclaimable' }),
+        ($totalReclaimedBytes / 1GB), $totalLocked, $totalDeleteErrors, $before, $after)
+}
 function Invoke-InteractiveWorkerDedupe {
     $launcher = Join-Path $RepoRoot 'tools\strategy_farm\run_in_console_session.ps1'
     $starter = Join-Path $RepoRoot 'tools\strategy_farm\start_terminal_workers.py'
@@ -109,6 +203,13 @@ print(json.dumps(sorted(set(out))))
     return @($terms)
 }
 
+$runBusyScratch = $Mode -in @('All', 'BusyScratch')
+if ($runBusyScratch) {
+    Invoke-BusyScratchReclaim -Root $Mt5Root -MinimumAgeMinutes $MinAgeMinutes `
+        -OnlyTerminal $Terminal -Apply:(-not $DryRun)
+    if ($Mode -eq 'BusyScratch') { return }
+}
+
 $free = FreeGB
 if ($free -ge $LowWaterGB) { Log "SKIP: D: free ${free}GB >= ${LowWaterGB}GB threshold"; return }
 
@@ -180,7 +281,7 @@ foreach ($n in 1..10) {
         Log "SKIP_PROTECTED: $terminalName has active work_item or running terminal64; cache left intact"
         continue
     }
-    $t = "D:\QM\mt5\T$n"
+    $t = Join-Path $Mt5Root "T$n"
     if (-not (Test-Path $t)) { continue }
     Get-ChildItem "$t\Tester\bases" -ErrorAction SilentlyContinue | ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
     Get-ChildItem "$t\Tester" -Directory -Filter "Agent-*" -ErrorAction SilentlyContinue | ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }

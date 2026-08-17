@@ -40,3 +40,18 @@ def test_purge_preserves_factory_owner_state_before_interactive_restart() -> Non
     assert "--dedupe" in source
     assert "Start-ScheduledTask -TaskName $dedupeTask.TaskName" not in source
     assert "QM_StrategyFarm_WorkerDedupe" not in source
+
+
+def test_busy_scratch_mode_has_all_three_safety_layers() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert "[ValidateSet('All', 'IdleCaches', 'BusyScratch')]" in source
+    assert "'Tester'" in source
+    assert "-Filter 'Agent-*'" in source
+    assert "-Filter 'bar*.tmp'" in source
+    assert "LastWriteTime -lt $cutoff" in source
+    assert "[System.IO.FileShare]::None" in source
+    assert "Remove-Item -LiteralPath $file.FullName -ErrorAction Stop" in source
+    assert "Remove-Item -LiteralPath $file.FullName -Force" not in source
+    assert "locked_skips=" in source
+    assert "d_free_before_gb=" in source
+    assert "d_free_after_gb=" in source

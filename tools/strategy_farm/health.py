@@ -85,6 +85,11 @@ FACTORY_ON_CEREMONY_INCOMPLETE_PATH = (
 )
 Q09_SEALED_PLAN_HOLD_FAIL_HOURS = 6
 PENDING_BINDING_DRIFT_DETAIL_LIMIT = 20
+DISK_SCRATCH_WINDOW_MINUTES = 20
+DISK_SCRATCH_RATE_WARN_GB_PER_HOUR = 20.0
+DISK_SCRATCH_RATE_FAIL_GB_PER_HOUR = 80.0
+DISK_RUNWAY_WARN_HOURS = 4.0
+DISK_RUNWAY_FAIL_HOURS = 2.0
 
 # --- WS-F standing vacuousness audit (ULTRACODE 2026-07-26) ------------------
 # Detectors that authenticate provenance before flagging a gate as vacuous. Every
@@ -1949,6 +1954,115 @@ def chk_disk_free_space(con) -> dict:
                   f"D: free {free_gb:.1f}GB", "")
 
 
+def _measure_busy_scratch_writes(
+    *,
+    mt5_root: Path = MT5_ROOT,
+    now: dt.datetime | None = None,
+    window_minutes: int = DISK_SCRATCH_WINDOW_MINUTES,
+) -> dict:
+    """Measure recent writes in the exact reclaimable busy-scratch scope.
+
+    Summing files modified in a trailing window deliberately measures observed
+    writes instead of sampling free-space deltas. A free-space delta is cheaper,
+    but concurrent purging hides the producer rate; this scope also identifies
+    the offending factory terminal without walking source ticks or reports.
+    """
+    now = now or _utc_now()
+    cutoff = now.timestamp() - (window_minutes * 60)
+    total_bytes = 0
+    file_count = 0
+    read_errors = 0
+    by_terminal: dict[str, dict[str, float | int]] = {}
+    for terminal in FACTORY_TERMINALS:
+        terminal_bytes = 0
+        terminal_files = 0
+        pattern_root = mt5_root / terminal / "Tester"
+        try:
+            candidates = pattern_root.glob("Agent-*/temp/bar*.tmp")
+            for path in candidates:
+                try:
+                    stat = path.stat()
+                except OSError:
+                    read_errors += 1
+                    continue
+                if stat.st_mtime < cutoff:
+                    continue
+                terminal_bytes += stat.st_size
+                terminal_files += 1
+        except OSError:
+            read_errors += 1
+        if terminal_files:
+            by_terminal[terminal] = {
+                "files": terminal_files,
+                "gb": round(terminal_bytes / (1024 ** 3), 2),
+            }
+        total_bytes += terminal_bytes
+        file_count += terminal_files
+    recent_gb = total_bytes / (1024 ** 3)
+    rate_gb_per_hour = recent_gb * 60.0 / window_minutes
+    return {
+        "window_minutes": window_minutes,
+        "files": file_count,
+        "recent_gb": round(recent_gb, 2),
+        "rate_gb_per_hour": round(rate_gb_per_hour, 2),
+        "read_errors": read_errors,
+        "by_terminal": by_terminal,
+    }
+
+
+def _evaluate_disk_scratch_rate(*, free_gb: float, measurement: dict) -> dict:
+    rate = float(measurement.get("rate_gb_per_hour") or 0.0)
+    runway_hours = (free_gb / rate) if rate > 0 else None
+    value = dict(measurement)
+    value["free_gb"] = round(free_gb, 1)
+    value["projected_runway_hours"] = (
+        round(runway_hours, 2) if runway_hours is not None else None
+    )
+    threshold = {
+        "rate_fail_gb_per_hour": DISK_SCRATCH_RATE_FAIL_GB_PER_HOUR,
+        "runway_fail_hours": DISK_RUNWAY_FAIL_HOURS,
+    }
+    terminals = json.dumps(measurement.get("by_terminal") or {}, sort_keys=True)
+    errors = int(measurement.get("read_errors") or 0)
+    detail = (
+        f"busy-agent bar*.tmp observed-write rate={rate:.1f}GB/h over "
+        f"{measurement.get('window_minutes')}m; D: free={free_gb:.1f}GB; "
+        f"projected runway={'infinite' if runway_hours is None else f'{runway_hours:.2f}h'}; "
+        f"terminals={terminals}; read_errors={errors}"
+    )
+    hint = (
+        "Run tester_cache_purge.ps1 -Mode BusyScratch -DryRun, then apply without "
+        "-DryRun if candidates are released. It only targets aged bar*.tmp under "
+        "T1-T10/Tester/Agent-*/temp and skips files that fail exclusive-open. "
+        "Do not stop active backtests or touch T_Live, Bases source ticks, or reports."
+    )
+    if (
+        rate >= DISK_SCRATCH_RATE_FAIL_GB_PER_HOUR
+        or (runway_hours is not None and runway_hours < DISK_RUNWAY_FAIL_HOURS)
+    ):
+        return _check("disk_scratch_rate_runway", "FAIL", value, threshold, detail, hint)
+    if errors:
+        return _check(
+            "disk_scratch_rate_runway", "WARN", value, threshold,
+            detail + "; measurement incomplete", hint,
+        )
+    if (
+        rate >= DISK_SCRATCH_RATE_WARN_GB_PER_HOUR
+        or (runway_hours is not None and runway_hours < DISK_RUNWAY_WARN_HOURS)
+    ):
+        return _check("disk_scratch_rate_runway", "WARN", value, threshold, detail, hint)
+    return _check("disk_scratch_rate_runway", "OK", value, threshold, detail, "")
+
+
+def chk_disk_scratch_rate_runway() -> dict:
+    """Blocking busy-scratch write-rate and projected-runway check."""
+    free_gb = shutil.disk_usage("D:/").free / (1024 ** 3)
+    return _evaluate_disk_scratch_rate(
+        free_gb=free_gb,
+        measurement=_measure_busy_scratch_writes(),
+    )
+
+
 def chk_p_pass_stagnation(con) -> dict:
     """Information hint about recent Q03+ PASS verdict flow.
 
@@ -3410,6 +3524,7 @@ ALL_CHECKS = [
     ("codex_bridge_heartbeat", chk_codex_bridge_heartbeat, True),
     ("agent_lane_heartbeat",   chk_agent_lane_heartbeat,   True),
     ("disk_free_space",        chk_disk_free_space,        True),
+    ("disk_scratch_rate_runway", chk_disk_scratch_rate_runway, False),
     ("p_pass_stagnation",      chk_p_pass_stagnation,      True),
     ("phase_infra_graveyard",  chk_phase_infra_graveyard,  True),
     ("q02_stranded_exhausted_pairs", chk_q02_stranded_exhausted_pairs, True),

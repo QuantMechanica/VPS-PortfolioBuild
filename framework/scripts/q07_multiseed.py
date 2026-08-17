@@ -588,6 +588,46 @@ def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
             "invalid_reason": invalid_reason}
 
 
+def _reclaim_completed_seed_scratch(terminal: str, min_age_minutes: int = 5) -> None:
+    """Bound Q07 scratch accumulation without stopping the running work item.
+
+    The completed tester invocation has returned before this runs and the next
+    seed is not launched until it finishes. The PowerShell mode still enforces
+    the three independent guards: exact bar*.tmp scope, age, and exclusive-open.
+    Cleanup failure is loud but does not rewrite the pipeline verdict.
+    """
+    if not re.fullmatch(r"T(?:[1-9]|10)", terminal.upper()):
+        print(f"    scratch cleanup skipped: invalid terminal {terminal!r}")
+        return
+    repo_root = Path(__file__).resolve().parents[2]
+    purge = repo_root / "tools" / "strategy_farm" / "tester_cache_purge.ps1"
+    args = [
+        "powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+        "-File", str(purge),
+        "-Mode", "BusyScratch",
+        "-Terminal", terminal.upper(),
+        "-MinAgeMinutes", str(min_age_minutes),
+    ]
+    try:
+        proc = subprocess.run(
+            args,
+            capture_output=True,
+            text=True,
+            timeout=120,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        print(f"    scratch cleanup warning: {exc!r}")
+        return
+    output = (proc.stdout or "").strip().splitlines()
+    summary = next((line for line in reversed(output) if "BUSY_SCRATCH_SUMMARY" in line), "")
+    if proc.returncode != 0:
+        print(f"    scratch cleanup warning: rc={proc.returncode}; {summary or proc.stderr.strip()}")
+    else:
+        print(f"    scratch cleanup: {summary or 'completed without summary'}")
+
+
 def evaluate_seeds(seed_results: list[dict]) -> tuple[str, str, dict]:
     """Combined Q07 verdict from per-seed results."""
     invalid_seeds = [
@@ -730,6 +770,7 @@ def main() -> int:
                         timeout_sec=args.timeout_sec, period=period,
                         latest_full_year=args.latest_full_year,
                         full_history_from=args.full_history_from)
+        _reclaim_completed_seed_scratch(args.terminal)
         print(f"    -> PF={res['pf']}  trades={res['trades']}  exit={res['exit_code']}")
         seed_results.append(res)
 

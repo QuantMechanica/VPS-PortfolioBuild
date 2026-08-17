@@ -36,7 +36,7 @@ $action = New-ScheduledTaskAction -Execute "powershell.exe" `
 
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger `
     -Settings $settings -Principal $principal -Force `
-    -Description "Every ${EveryMinutes}min: if D: free < 150GB, preserve active slots and captured Factory ON/OFF state, purge only idle regenerable T* tester caches, then start only missing workers through the interactive-session token launcher. Never touches T_Live/FTMO/source ticks/reports." | Out-Null
+    -Description "Every ${EveryMinutes}min: reclaim only aged, exclusively-openable bar*.tmp scratch from T1-T10 agent temp; then, if D: free < 150GB, preserve active slots and captured Factory ON/OFF state, purge only idle regenerable T* tester caches, and request only missing workers. Never touches T_Live/FTMO/source ticks/reports." | Out-Null
 Enable-ScheduledTask -TaskName $taskName | Out-Null
 
 Get-ScheduledTask -TaskName $taskName | Select-Object TaskName, State,
