@@ -1,0 +1,33 @@
+{
+  "schema": "qm.prereg/v1",
+  "registered_by": "claude",
+  "note": "Registered while the deciding row is still ACTIVE and undecided, unlike artifacts/prereg_registry_coverage_20260817.json which postdated its outcomes by 2-8 minutes and is therefore not a pre-registration.",
+  "hypothesis": "The per-pair stopping rule already exists as poison_pill_quarantine, refreshed continuously inside dispatch_work_items, sealing at exactly 5 consecutive infra failures with successes_ever = 0. Therefore QM5_20178/XAUUSD.DWX/Q02 will be sealed automatically without any intervention from me.",
+  "state_at_registration": {
+    "ea": "QM5_20178", "symbol": "XAUUSD.DWX", "phase": "Q02",
+    "terminal_INFRA_FAIL_rows": 4,
+    "active_rows": 1,
+    "deciding_work_item": "1cf5109f",
+    "deciding_row_status": "active",
+    "deciding_row_created_at": "2026-08-17T14:52",
+    "quarantine_rows_now": 0,
+    "cumulative_row_lifetime_minutes": 1684,
+    "cumulative_row_lifetime_hours": 28.1
+  },
+  "threshold_evidence": {
+    "active_seals": 184,
+    "consecutive_failures_min": 5,
+    "consecutive_failures_max": 12,
+    "seals_with_prior_success": 0,
+    "sealed_at": "2026-08-17T10:59:52+00:00",
+    "dominant_reason": "summary_missing_retries_exhausted (183 of 184)"
+  },
+  "prediction": "When work item 1cf5109f terminates as INFRA_FAIL, the NEXT dispatch cycle writes a poison_pill_quarantine row for (QM5_20178, XAUUSD.DWX, Q02) with active=1, consecutive_failures=5, successes_ever=0 -- and no sixth Q02 row for that pair is ever claimed thereafter.",
+  "falsifiers": [
+    "1cf5109f terminates as INFRA_FAIL and NO quarantine row appears -> the refresh is not continuous and my correction is wrong in the other direction.",
+    "A sixth Q02 row for the pair is created and claimed after the seal -> claim-order exclusion at farmctl.py:1174 does not bind.",
+    "1cf5109f returns an economic verdict -> consecutive_failures resets and the pair was never a stopping-rule case at all."
+  ],
+  "what_this_corrects": "My own claim last round that 'nothing recognises this pair has timed out four times' and 'a sixth will follow'. The operator exists, has a release path (poison_pill_quarantine.py release), and is wired into pending_claim_order_sql.",
+  "still_open_after_this": "WHY this EA needs ~19x the median XAUUSD Q02 runtime. The seal stops the bleeding; it does not explain the cause, and a sealed pair is a withheld EA-symbol, not a resolved one."
+}
