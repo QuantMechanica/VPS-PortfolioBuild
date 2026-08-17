@@ -1,0 +1,156 @@
+{
+  "schema_version": "fx_cointegration_frontier_cpu_stop.v1",
+  "observed_at_utc": "2026-08-17T04:03:11.834111+00:00",
+  "mt5_scanned_at_utc": "2026-08-17T04:01:47+00:00",
+  "branch": "agents/board-advisor",
+  "repository_head": "a108990874382a6e69b63c0cf12c83ed6e362db9",
+  "decision": "STOP_HARD_CPU_CEILING",
+  "frontier": {
+    "scan": "analyze_cross_asset_v3.py --include-negative-hedges",
+    "relationship_count": 66,
+    "reconciliation": "fully_mechanized",
+    "new_card_or_ea_created": false
+  },
+  "anchors": [
+    {
+      "ea_id": "QM5_12532",
+      "symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "terminal_path": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "open_rows": 0
+    },
+    {
+      "ea_id": "QM5_12533",
+      "symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "terminal_path": "Q02_PASS_Q04_FAIL",
+      "open_rows": 0
+    }
+  ],
+  "selected_existing_successor": {
+    "scan_rank": 21,
+    "ea_id": "QM5_20203",
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "q02_work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+    "q02_status": "done",
+    "q02_verdict": "PASS",
+    "q04_work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+    "q04_status": "pending",
+    "q04_verdict": null,
+    "q04_attempt_count": 0,
+    "q04_claimed_by": null,
+    "open_row_count": 1,
+    "queue_mutation": "none_duplicate_guard"
+  },
+  "artifact_sha256": {
+    "mq5": "d75788d24eadcff9c699a2f8964ab2cfd5ad924296b34df0b1d4a0a6853365cb",
+    "ex5": "4d57f2bc03a14ce0be3f7f18245adfff280955287cda5af1119d502d33d96270",
+    "basket_manifest": "2f5823242ae1b2a0592d9239969e22f31ac90234d909b3eee5e1d9c635b519a9",
+    "risk_fixed_setfile": "dcac19dcd0882c24ba0c772b36e47c816c582d3f612b35445ce909bfc8e846d8",
+    "build_local_approved_card": "f5f4b1d13ace14d69ca3249b77976503f025c229598f16693ace755ba8c0043d"
+  },
+  "database": {
+    "path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "quick_check": "ok",
+    "access": "read_only",
+    "active_work_item_count": 8
+  },
+  "cpu": {
+    "threshold_percent": 97.0,
+    "sample_interval_seconds": 2,
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 100.0,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true
+  },
+  "factory": {
+    "active_terminal_count": 8,
+    "active_terminals": [
+      "T1",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "active_work_items": [
+      {
+        "terminal": "T1",
+        "work_item_id": "781778c1-caea-4269-a750-a060719e2be5",
+        "ea_id": "QM5_20178",
+        "phase": "Q02",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "e744240d-19eb-4da8-9aa1-99a3543fe268",
+        "ea_id": "QM5_20178",
+        "phase": "Q02",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "d25b62c2-c22a-4f7a-8697-0ab2a733ceab",
+        "ea_id": "QM5_41030",
+        "phase": "Q02",
+        "symbol": "QM5_41030_XAU_XAG_FLOWDIV_D1"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "452d30f1-d128-448f-823b-bcf69ee970ac",
+        "ea_id": "QM5_20086",
+        "phase": "Q07",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "65b74c41-2494-41c8-a0a7-c697798184e4",
+        "ea_id": "QM5_20085",
+        "phase": "Q06",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "e2478e15-cbe8-4f0c-b338-92808ad51588",
+        "ea_id": "QM5_20178",
+        "phase": "Q02",
+        "symbol": "WS30.DWX"
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": "84db2f1b-1523-4e07-9629-aca5c210dcdb",
+        "ea_id": "QM5_20176",
+        "phase": "Q05",
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "terminal": "T10",
+        "work_item_id": "c7a4351f-6cc8-46e6-8225-fd848a764028",
+        "ea_id": "QM5_20176",
+        "phase": "Q02",
+        "symbol": "XAUUSD.DWX"
+      }
+    ],
+    "t_live_excluded": true,
+    "ftmo_excluded": true,
+    "process_control_performed": false
+  },
+  "mutations": {
+    "queue": false,
+    "backtest_or_dispatch": false,
+    "terminal": false,
+    "ea_or_registry": false,
+    "portfolio_gate": false,
+    "t_live_or_autotrading": false
+  }
+}

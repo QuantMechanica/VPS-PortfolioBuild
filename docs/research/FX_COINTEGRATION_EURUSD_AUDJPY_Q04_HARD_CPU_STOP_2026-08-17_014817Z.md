@@ -107,6 +107,38 @@ launch, terminal action, or queue/EA-package mutation followed. The fresh
 machine-readable evidence is
 `artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T030120Z_board_advisor.json`.
 
+## 04:03Z continuation audit
+
+A second fresh read-only audit at repository head
+`a108990874382a6e69b63c0cf12c83ed6e362db9` found that the hard CPU ceiling
+remains binding. Five two-second whole-machine samples were all `100%`, above
+the explicit `97%` ceiling. The factory roster returned to eight active,
+path-bound terminals, which is materially different from the six-terminal
+03:01Z snapshot:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| `T1` | `QM5_20178` | `Q02` | `XAUUSD.DWX` |
+| `T3` | `QM5_20178` | `Q02` | `NDX.DWX` |
+| `T4` | `QM5_41030` | `Q02` | `QM5_41030_XAU_XAG_FLOWDIV_D1` |
+| `T6` | `QM5_20086` | `Q07` | `NDX.DWX` |
+| `T7` | `QM5_20085` | `Q06` | `XAUUSD.DWX` |
+| `T8` | `QM5_20178` | `Q02` | `WS30.DWX` |
+| `T9` | `QM5_20176` | `Q05` | `GBPUSD.DWX` |
+| `T10` | `QM5_20176` | `Q02` | `XAUUSD.DWX` |
+
+The canonical database again returned `PRAGMA quick_check=ok` and still has
+exactly one open row for the selected pair: Q04 work item
+`113ae6d1-33c0-42bc-b9b0-bf3a48ef3445`, `pending`, unclaimed, attempt zero.
+The exact Q02 predecessor remains `PASS`; the MQ5, EX5, basket manifest,
+fixed-risk setfile, and build-local approved Card hashes are unchanged.
+
+Because the successor is already enqueued exactly once and the CPU ceiling is
+binding, no duplicate row, dispatch tick, backtest, tester launch, priority or
+timestamp mutation, terminal action, EA-package change, or portfolio/live
+surface change followed. Machine-readable evidence is
+`artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T040311Z_board_advisor.json`.
+
 ## Safety
 
 - No portfolio-admission, portfolio KPI, or Q08-contribution path changed.
