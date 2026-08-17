@@ -189,3 +189,29 @@ a timeout.
 
 `XAUUSD.DWX` is the one symbol still unproven: it failed three times and is currently
 running on T9, a fixed worker. It is the last open item of this experiment.
+
+### Addendum 09:15Z — XAUUSD is not explained by the watchdog
+
+Five symbols passed on their second attempt once a fixed worker served them. XAUUSD has now
+had **four attempts and zero passes**:
+
+| Attempt | Created | Ended | Verdict |
+|---|---|---|---|
+| `da89eae6` | 08-16 11:52 | 08-16 20:40 | INFRA_FAIL (att 2) |
+| `73285c18` | 08-16 20:52 | 08-16 22:24 | INFRA_FAIL |
+| `781778c1` | 08-16 22:52 | 08-17 06:39 | INFRA_FAIL (att 2) |
+| `ef08a876` | 08-17 06:52 | — | claimed by T9, then T5; **T5's worker died entirely** and the row was auto-released to `pending` at 09:09:33 with att 1 |
+
+Compare the rest of the family: WS30, USDJPY, NDX and GBPUSD each needed 2 attempts and each
+passed; EURUSD passed first time.
+
+So the watchdog fix explains four of five symbols and **not** this one. XAUUSD carries by far
+the heaviest tick load, and this EA's runs already cost 209–235 minutes on lighter symbols —
+so the plausible reading is that XAUUSD on this EA exceeds a budget or a resource ceiling that
+the other symbols stay under. Losing T5's worker outright while holding this claim points the
+same way.
+
+Two things follow. First, do not count XAUUSD as watchdog-class evidence. Second, the orphan
+handling worked correctly and unaided: the row went from `active`/T5 back to `pending` with an
+incremented attempt count, no manual intervention. The fleet was respawned to 10 immediately
+(T5 pid 19872).
