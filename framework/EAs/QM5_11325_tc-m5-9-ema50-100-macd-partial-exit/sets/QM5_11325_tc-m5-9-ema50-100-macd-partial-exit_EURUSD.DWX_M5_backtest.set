@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        11325
 ; ea_slug:      tc-m5-9-ema50-100-macd-partial-exit
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   52fd8d74a95984ce05744c83d0620bfd0d077022c64048eb71340a46ec98d73d
+; build_hash:   61990249e18789bdf50b91205dcabe9f3fb4731a9010e534860d829088c6190a
 ; author:       Development
 ; date:         2026-08-10
 ;==========================================================
@@ -19,6 +19,9 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11325_tc-m5-9-ema50-100-macd-partial-exit.md
 strategy_ema_fast_period=50
