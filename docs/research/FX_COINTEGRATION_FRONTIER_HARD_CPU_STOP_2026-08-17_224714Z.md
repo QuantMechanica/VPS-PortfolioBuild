@@ -57,3 +57,35 @@ Machine-readable evidence is
 - No T_Live manifest or terminal, AutoTrading state, or live artifact changed.
 - Concurrent unrelated staged, modified, and untracked work was left
   untouched.
+
+## 23:48Z continuation audit
+
+A fresh read-only audit at repository head
+`f9aecc9f17ece7a695faa53b041939a92a735c16` found a materially changed
+factory roster but the same binding hard-CPU condition. Five one-second
+whole-machine samples were `100%`, `99.81%`, `99.03%`, `99.52%`, and
+`99.71%` (average `99.61%`, maximum `100%`). Both the average and maximum
+exceed the explicit `97%` ceiling.
+
+The path-aware operator scan observed six active factory terminals on `T1`,
+`T3`, `T5`, `T7`, `T8`, and `T9`, down from seven at 22:47Z. All six were
+already occupied by governed pipeline runs. The separately visible `T_Live`
+and FTMO terminals were excluded and neither was controlled.
+
+The frozen 66-pair frontier remains fully covered by governed work. Fresh
+supported operator reads confirm both anchors are downstream of Q02 PASS:
+`QM5_12532` at Q05 FAIL and `QM5_12533` at Q04 FAIL. The non-duplicate
+fallback remains rank-21 `QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1`: Q02 is
+PASS, and Q04 item `113ae6d1-33c0-42bc-b9b0-bf3a48ef3445` remains pending,
+unclaimed, at attempt zero. A second enqueue or requeue would duplicate that
+open successor.
+
+Fresh hashes confirm the MQ5, EX5, basket manifest, approved Card snapshot,
+and fixed-risk logical-basket setfile are unchanged. The setfile retains
+`RISK_FIXED=1000`, `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`.
+
+Per the mission stop condition, no Card, EA, registry row, magic row, queue
+row, dispatch tick, backtest, tester launch, terminal reservation, priority
+mutation, Factory state, portfolio surface, or live surface was changed.
+Machine-readable evidence is
+`artifacts/fx_cointegration_frontier_hard_cpu_stop_20260817T234822Z_board_advisor.json`.
