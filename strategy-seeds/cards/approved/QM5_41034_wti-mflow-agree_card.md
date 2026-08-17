@@ -62,8 +62,8 @@ r1_track_record: PASS_WITH_COMPOSITE_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: NOT_RUN
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a direct-WTI monthly information-flow agreement sleeve outside the certified XAU/SP500/NDX/XNG book. Verify every completed prior-month close/open endpoint, strict component agreement, reconciliation, no late/repeated new-month entry, and next-month renewal; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -375,11 +375,13 @@ new source packet, dedup review, strategy ID, card, and EA ID.
 | version | date | change | gate | status |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial monthly flow-agreement extraction | G0 | APPROVED |
+| v1-build | 2026-08-17 | deterministic EA, fixed-risk set, strict compile, focused build check, and static P1 | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 - G0: `APPROVED`.
-- Q01: `NOT_RUN` until deterministic build and strict validation complete.
+- Q01: `PASS` — deterministic implementation, 15-case reference suite,
+  strict compile, focused build checks, and static P1 all passed.
 - Q02: `NOT_ENQUEUED` until Q01 PASS and capacity preflight.
 - Q03+: not authorized by this card/build task.
 
@@ -390,4 +392,3 @@ setfile, strict Q01, and one paced Q02 enqueue if capacity permits. It excludes
 manual backtests; terminal dispatch/control; live/demo/shadow/stress/
 optimization setfiles; AutoTrading; `T_Live`; deploy or T_Live manifests;
 portfolio-gate edits; portfolio admission; and correlation waivers.
-
