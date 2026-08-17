@@ -163,7 +163,7 @@ bool QM_ReadBar(const string sym,
 // bar, because .DWX custom symbols yield 0 bars on MN1/W1 in the tester. The
 // `period` argument selects the CADENCE (how coarsely to bucket the D1 date):
 //   QM_CalendarPeriodKey(PERIOD_MN1) -> yyyymm            (e.g. 202606)
-//   QM_CalendarPeriodKey(PERIOD_W1)  -> yyyy*1000 + week  (7-day bucket of the year)
+//   QM_CalendarPeriodKey(PERIOD_W1)  -> yyyymmdd of the bucket's Monday
 //   QM_CalendarPeriodKey(PERIOD_D1)  -> yyyymmdd
 // The key is stable inside a period and changes exactly once per new period.
 // Compare it to your own stored `g_last_rebalance_key` so a rebalance fires
@@ -189,7 +189,22 @@ int QM_CalendarPeriodKey(const ENUM_TIMEFRAMES period,
    if(period == PERIOD_MN1)
       return d.year * 100 + d.mon;                 // yyyymm
    if(period == PERIOD_W1)
-      return d.year * 1000 + (d.day_of_year / 7);  // stable weekly bucket
+     {
+      // Anchor to a real Monday-Sunday market week.  The previous
+      // day_of_year/7 key restarted every January 1 and therefore created a
+      // one- or two-day final bucket each December.  Keep deriving from the
+      // reliable D1 timestamp: .DWX W1/MN1 bars can be absent in the tester.
+      const int days_since_monday = (d.day_of_week + 6) % 7;
+      d.hour = 0;
+      d.min = 0;
+      d.sec = 0;
+      const datetime monday = StructToTime(d) - days_since_monday * 86400;
+      MqlDateTime monday_parts;
+      TimeToStruct(monday, monday_parts);
+      return monday_parts.year * 10000 +
+             monday_parts.mon * 100 +
+             monday_parts.day;                    // monotonic Monday yyyymmdd
+     }
    return d.year * 10000 + d.mon * 100 + d.day;    // yyyymmdd (D1 / default)
   }
 
