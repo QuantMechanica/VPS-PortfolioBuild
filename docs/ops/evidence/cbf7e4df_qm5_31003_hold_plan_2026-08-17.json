@@ -1,0 +1,59 @@
+{
+  "hold_code": "WITHHELD_FOREIGN_SYMBOL_SCOPE",
+  "mode": "plan",
+  "reason": "QM5_31003 reads an undeclared 28-pair runtime universe; execution would yield invalid zero-trade evidence or unsafe terminal memory pressure",
+  "release_condition": "Release only after a hash-bound offline G8 cross-section removes runtime foreign access, or basket_manifest.json declares all 28 pairs and one canary measures terminal footprint",
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok",
+  "targets": [
+    {
+      "claimable": true,
+      "hold": null,
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-16T21:52:58+00:00",
+        "ea_id": "QM5_31003",
+        "id": "848e9cdd-2e03-479e-a2cc-3b874d1d1cd5",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "pending",
+        "symbol": "AUDUSD.DWX",
+        "updated_at": "2026-08-16T21:52:58+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": true,
+      "hold": null,
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-16T21:52:58+00:00",
+        "ea_id": "QM5_31003",
+        "id": "eda90444-01d5-4e30-aac3-50395ee2b1f1",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "pending",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-08-16T21:52:58+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": true,
+      "hold": null,
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-16T21:52:58+00:00",
+        "ea_id": "QM5_31003",
+        "id": "647ddb38-0cbf-45ac-bb04-348525f8c406",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "pending",
+        "symbol": "GBPJPY.DWX",
+        "updated_at": "2026-08-16T21:52:58+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "would_insert": 3
+}
