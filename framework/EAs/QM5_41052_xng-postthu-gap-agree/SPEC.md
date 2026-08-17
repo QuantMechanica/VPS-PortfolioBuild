@@ -1,6 +1,6 @@
 # QM5_41052 - XNG Post-Thursday Gap-Agreement Friday Continuation
 
-Status: `G0 APPROVED; MAGIC ALLOCATED; Q01 PASS; Q02 CAPACITY CHECK PENDING`
+Status: `G0 APPROVED; MAGIC ALLOCATED; Q01 PASS; Q02 NOT ENQUEUED - CPU CEILING`
 
 ## Identity
 
@@ -57,6 +57,8 @@ and stable attempt identity.
 Strict MetaEditor compile (0 errors, 0 warnings), generated setfile build hash,
 targeted V5 build check, static P1 artifact validation, card lint, all 15
 reference fixtures, and single-symbol scope validation pass. The compiled EX5
-is a Q01 artifact only; the capacity-gated Q02 handoff remains pending. No
-manual tester dispatch, terminal control, live artifact, portfolio mutation,
-or performance claim is authorized.
+is a Q01 artifact only. The target-only Q02 dry run selected one fresh row,
+but the governed five-sample CPU check reached 97.51% against the 97% hard
+ceiling, so no queue mutation occurred. No manual tester dispatch, terminal
+control, live artifact, portfolio mutation, or performance claim is
+authorized.
