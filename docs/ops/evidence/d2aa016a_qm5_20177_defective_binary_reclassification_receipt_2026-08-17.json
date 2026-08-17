@@ -1,0 +1,82 @@
+{
+  "applied_at_utc": "2026-08-17T03:23:09+00:00",
+  "authority_task_id": "d2aa016a-c472-492d-b165-0cc09da3be78",
+  "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_20177_defective_binary_20260817032228Z.sqlite",
+  "backup_sha256": "418f01bdf359d7e2a48181f6ee2f510fb43e424766d45ac1ba9f9e5702c7c9d1",
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "database_sha256_after": "6f6f18bf2c8f4497ebbdcf8401319656f60a85d06946ce672fe47956191d34b3",
+  "plan_sha256": "89f5daad91eb47ad627aa9e09ac7ba92d4deb5e905dbfbf9eaaac51c7892b0ae",
+  "raw_summary_evidence_mutated": false,
+  "rows": [
+    {
+      "history_count": 1,
+      "id": "90c7c269-8038-4c9c-8bbf-e8747bf4ea32",
+      "payload_sha256": "10d9248f4158fd28a7e451491bbd36bd021e94d6d92e8f866c67df5c68fdf967",
+      "status": "done",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-17T03:22:28+00:00",
+      "verdict": "DRAFT_DEFECT"
+    },
+    {
+      "history_count": 1,
+      "id": "a0c57304-3d83-4e02-a414-3561736f0eb5",
+      "payload_sha256": "801ac4a49e490544578bec2c73815d411b6c45710a8404de084bb61117b7326d",
+      "status": "done",
+      "symbol": "WS30.DWX",
+      "updated_at": "2026-08-17T03:22:28+00:00",
+      "verdict": "DRAFT_DEFECT"
+    },
+    {
+      "history_count": 1,
+      "id": "ba38e217-fc92-4265-8678-f6c910f898e8",
+      "payload_sha256": "afc6918a57b281969150e006e5bb5695459a5461fe36d7f07ba59c5d912b15c4",
+      "status": "done",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-17T03:22:28+00:00",
+      "verdict": "DRAFT_DEFECT"
+    },
+    {
+      "history_count": 1,
+      "id": "c7f7a083-837c-470e-9501-fec5eb566f28",
+      "payload_sha256": "ab70624edd0a7b1bc3698ab43027f38327b77578d2d0d906e5be605eacc12db6",
+      "status": "done",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-08-17T03:22:28+00:00",
+      "verdict": "DRAFT_DEFECT"
+    },
+    {
+      "history_count": 1,
+      "id": "cd2f56fd-ae3f-4ab0-a875-fbc77c09dc66",
+      "payload_sha256": "2eeb7168d2332b4d03bfa46a89b0bebf67fb1036e19d37b9c0aa46cec8064159",
+      "status": "done",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-08-17T03:22:28+00:00",
+      "verdict": "DRAFT_DEFECT"
+    },
+    {
+      "history_count": 1,
+      "id": "cd946f00-aa75-4d11-b119-1cd2a2e51d90",
+      "payload_sha256": "8f0186479a43749b87427442af3ff5bce149c8f3f863695a8ff3f6a638c834c8",
+      "status": "done",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-17T03:22:28+00:00",
+      "verdict": "DRAFT_DEFECT"
+    }
+  ],
+  "schema": "qm.defective-binary-work-item-reclassification-receipt/v1",
+  "selection": {
+    "ea_id": "QM5_20177",
+    "expected_count": 6,
+    "expected_ex5_sha256": "1a2f22d4edc56afdbabd403bda0bc330c0667f7c3e859b9dc3f7c5689d5e1f09",
+    "expected_ids": [
+      "90c7c269-8038-4c9c-8bbf-e8747bf4ea32",
+      "a0c57304-3d83-4e02-a414-3561736f0eb5",
+      "ba38e217-fc92-4265-8678-f6c910f898e8",
+      "c7f7a083-837c-470e-9501-fec5eb566f28",
+      "cd2f56fd-ae3f-4ab0-a875-fbc77c09dc66",
+      "cd946f00-aa75-4d11-b119-1cd2a2e51d90"
+    ],
+    "phase": "Q02"
+  },
+  "work_items_enqueued_or_rerun": 0
+}
