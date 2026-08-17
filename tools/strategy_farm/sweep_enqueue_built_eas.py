@@ -132,6 +132,7 @@ NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
 sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 import farmctl  # staging helpers (_stage_q02_setfiles, _record_q02_deferral)
 from q08_recovery_lineage import build_q08_recovery_lineage
+from review_entry_gate import build_index as build_review_entry_index, blocked as review_blocked
 REQUEUE_EXCLUDED_EAS = farmctl.load_requeue_excluded_eas()
 
 # 2026-07-19 (Q08 INFRA_FAIL storm RCA): a deterministic setgen defect in the
@@ -313,6 +314,16 @@ def insert_wi(
              json.dumps(payload), NOW, NOW))
     return work_item_id
 
+# E3 (v6): a review must precede pipeline entry. Built once here rather than per EA -- Part 1
+# iterates ~3,700 directories. EAs with no task history are absent from the index and therefore
+# not gated; see review_entry_gate for why that exemption is load-bearing.
+review_entry_index = build_review_entry_index(con)
+report["review_entry_gate"] = {
+    "schema": "qm.review-entry-gate/v1",
+    "blocked_eas": len(review_entry_index),
+    "blocked": [],
+}
+
 # ---------- Part 1: built, never tested ----------
 ea_dirs = {}
 for d in sorted(EAS.iterdir()):
@@ -358,6 +369,15 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
     if not sets:
         report["part1_never_tested"]["skipped"].append(
             {"ea_id": ea_id, "reason": "no_setfiles", "dir": pick.name})
+        continue
+    # E3 gate sits AFTER the binary/setfile checks so its reported count means exactly
+    # "would otherwise have been enqueued", not "was going to fail some other check anyway".
+    entry_block = review_blocked(review_entry_index, ea_id)
+    if entry_block:
+        report["part1_never_tested"]["skipped"].append(
+            {"ea_id": ea_id, "reason": "review_entry_gate", "detail": entry_block})
+        report["review_entry_gate"]["blocked"].append(
+            {"ea_id": ea_id, "part": "part1_never_tested", "detail": entry_block})
         continue
     manifest_path = pick / "basket_manifest.json"
     basket_manifest = None
@@ -754,6 +774,17 @@ for phase in STRANDED_INFRA_PHASES:
             report["part2_stranded"]["skipped"].append(
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,
                  "reason": "infra_retry_cap_reached", "attempts": infra_attempts})
+            continue
+        # E3 applies here too: re-running a row for an EA whose review says the build is
+        # defective spends tester capacity on evidence that will have to be superseded.
+        entry_block = review_blocked(review_entry_index, ea_id)
+        if entry_block:
+            report["part2_stranded"]["skipped"].append(
+                {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                 "reason": "review_entry_gate", "detail": entry_block})
+            report["review_entry_gate"]["blocked"].append(
+                {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                 "part": "part2_stranded", "detail": entry_block})
             continue
         if not setfile or not Path(setfile).is_file():
             report["part2_stranded"]["skipped"].append(
