@@ -1,0 +1,65 @@
+{
+ "schema": "qm.bars-zero-oninit-misclassification/v1",
+ "finding": "rows recorded INFRA_FAIL whose tester log shows the EA rejected its own inputs in OnInit; the run never started, the report had zero bars, and the classifier stamped BARS_ZERO -> INFRA_FAIL",
+ "window": "updated_at >= 2026-08-01",
+ "infra_fail_rows_with_evidence": 936,
+ "bars_zero_rows": 103,
+ "logs_checked": 4,
+ "logs_absent": 99,
+ "misclassified": 4,
+ "affected_eas": 4,
+ "oninit_detector_fired": 0,
+ "reason_class_distribution": {
+  "INCOMPLETE_RUNS": 672,
+  "ONINIT_FAILED": 373,
+  "<none>": 263,
+  "BARS_ZERO": 103,
+  "NO_HISTORY": 92,
+  "TIMEOUT": 91,
+  "METATESTER_HUNG": 36,
+  "LOG_BOMB": 30,
+  "OK": 1
+ },
+ "entries": [
+  {
+   "id": "ffc71d7e-7b55-46d6-8694-9286aa3276f6",
+   "ea_id": "QM5_41041",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "at": "2026-08-17T09:39:59+00:00",
+   "log_evidence": "OnInit reports incorrect input parameters",
+   "oninit_detector_fired": false,
+   "evidence": "D:\\QM\\reports\\work_items\\ffc71d7e-7b55-46d6-8694-9286aa3276f6\\QM5_41041\\20260817_093825\\summary.json"
+  },
+  {
+   "id": "00fee712-abc4-490c-8dc1-7384904d6dc7",
+   "ea_id": "QM5_41038",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q02",
+   "at": "2026-08-17T09:35:01+00:00",
+   "log_evidence": "OnInit reports incorrect input parameters",
+   "oninit_detector_fired": false,
+   "evidence": "D:\\QM\\reports\\work_items\\00fee712-abc4-490c-8dc1-7384904d6dc7\\QM5_41038\\20260817_092622\\summary.json"
+  },
+  {
+   "id": "ec025b29-077d-46ba-bedc-4f45033d520b",
+   "ea_id": "QM5_41032",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "at": "2026-08-17T09:24:13+00:00",
+   "log_evidence": "OnInit reports incorrect input parameters",
+   "oninit_detector_fired": false,
+   "evidence": "D:\\QM\\reports\\work_items\\ec025b29-077d-46ba-bedc-4f45033d520b\\QM5_41032\\20260817_092253\\summary.json"
+  },
+  {
+   "id": "058c59e8-99c8-4f8e-9525-453c43d966ea",
+   "ea_id": "QM5_41033",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "at": "2026-08-17T09:22:52+00:00",
+   "log_evidence": "OnInit reports incorrect input parameters",
+   "oninit_detector_fired": false,
+   "evidence": "D:\\QM\\reports\\work_items\\058c59e8-99c8-4f8e-9525-453c43d966ea\\QM5_41033\\20260817_092133\\summary.json"
+  }
+ ]
+}
