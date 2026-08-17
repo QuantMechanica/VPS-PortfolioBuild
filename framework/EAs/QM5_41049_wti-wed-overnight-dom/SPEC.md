@@ -1,6 +1,6 @@
 # QM5_41049 — WTI Standard-Wednesday Overnight-Dominant Flow
 
-Status: `SOURCE APPROVED; EA ID RESERVED; MAGIC ALLOCATED; G0 PENDING`
+Status: `G0 APPROVED; BUILD PENDING`
 
 ## Identity
 
@@ -12,9 +12,9 @@ Status: `SOURCE APPROVED; EA ID RESERVED; MAGIC ALLOCATED; G0 PENDING`
 - host: exact `XTIUSD.DWX`, D1
 - slot: `0`
 - registered magic: `410490000`
-- planned card:
+- approved card:
   `strategy-seeds/cards/approved/QM5_41049_wti-wed-overnight-dom_card.md`
-- planned G0 decision:
+- G0 decision:
   `decisions/2026-08-17_wti_wednesday_overnight_dominance_g0.md`
 
 ## Locked Mechanic
@@ -49,6 +49,7 @@ boundary.
 
 ## Build State
 
-This governed directory identity preceded the active slot-0 magic row, and
-`update_magic_resolver.py` retained that allocation. Development remains
-blocked until the approved card and G0 decision exist.
+The governed directory identity preceded the active
+`(41049, 0, XTIUSD.DWX)` magic row, and resolver regeneration retained it.
+The approved card and G0 decision now authorize the exact non-live build;
+Q01 remains pending.

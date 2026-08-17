@@ -6,14 +6,15 @@ source_type: official_event_practitioner_book_peer_reviewed_composite_lineage
 status: approved_for_cards
 approved_for_cards: true
 approval_record: decisions/2026-08-17_wti_wednesday_overnight_dominance_source_approval.md
-approval_commit: PENDING_SOURCE_APPROVAL_COMMIT
+approval_commit: 4ab03d72a
 approved_by: OWNER commodity/energy portfolio mission
 approved_at: 2026-08-17
 created: 2026-08-17
 created_by: Research+Development
 strategy_ids:
   - EIA-WILLIAMS-MOP-WTI-WEDOVERNIGHT-2026_S01
-cards_extracted: []
+cards_extracted:
+  - wti-wed-overnight-dom
 parent_sources:
   - EIA-WTI-WPSR-INTRADAY-2026
   - SRC03
