@@ -84,6 +84,7 @@ FACTORY_ON_CEREMONY_INCOMPLETE_PATH = (
     ROOT / "state" / "FACTORY_ON_CEREMONY_INCOMPLETE.json"
 )
 Q09_SEALED_PLAN_HOLD_FAIL_HOURS = 6
+PENDING_BINDING_DRIFT_DETAIL_LIMIT = 20
 
 # --- WS-F standing vacuousness audit (ULTRACODE 2026-07-26) ------------------
 # Detectors that authenticate provenance before flagging a gate as vacuous. Every
@@ -3281,6 +3282,107 @@ def chk_q09_sealed_plan_hold_age(con) -> dict:
     )
 
 
+def _line_ending_hashes(data: bytes) -> set[str]:
+    """Hashes reachable by newline conversion without changing text content."""
+    import hashlib
+
+    lf = data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    crlf = lf.replace(b"\n", b"\r\n")
+    return {hashlib.sha256(value).hexdigest() for value in (data, lf, crlf)}
+
+
+def _pending_binding_artifact_paths(row: sqlite3.Row, payload: dict) -> dict[str, Path]:
+    setfile = Path(str(row["setfile_path"])).resolve()
+    ea_dir_name = str(payload.get("ea_dir_name") or setfile.parent.parent.name).strip()
+    ea_dir = FRAMEWORK_EAS_DIR / ea_dir_name
+    return {
+        "expected_ex5_sha256": ea_dir / f"{ea_dir_name}.ex5",
+        "expected_mq5_sha256": ea_dir / f"{ea_dir_name}.mq5",
+        "expected_setfile_sha256": setfile,
+    }
+
+
+def chk_pending_artifact_binding_drift(con) -> dict:
+    """Surface pending rows that the worker's artifact preflight will refuse.
+
+    Raw SHA-256 comparison is identical to dispatch preflight. For MQ5 and SET
+    mismatches, hashes of the current bytes in raw, LF, and CRLF forms separate
+    newline-only drift (safe to adjudicate mechanically) from a content change.
+    EX5 is always binary, so every EX5 mismatch is a content-changing rebuild.
+    """
+    rows = con.execute(
+        """
+        SELECT w.id,w.ea_id,w.symbol,w.phase,w.setfile_path,w.payload_json,
+          EXISTS(SELECT 1 FROM work_item_holds h
+                 WHERE h.work_item_id=w.id AND h.active=1) AS has_active_hold
+        FROM work_items w
+        WHERE w.status='pending' AND json_valid(w.payload_json)=1
+          AND (
+            json_extract(w.payload_json,'$.expected_ex5_sha256') IS NOT NULL OR
+            json_extract(w.payload_json,'$.expected_mq5_sha256') IS NOT NULL OR
+            json_extract(w.payload_json,'$.expected_setfile_sha256') IS NOT NULL
+          )
+        ORDER BY w.created_at,w.id
+        """
+    ).fetchall()
+    findings: list[dict[str, str]] = []
+    for row in rows:
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except (json.JSONDecodeError, TypeError):
+            continue
+        paths = _pending_binding_artifact_paths(row, payload)
+        for binding, path in paths.items():
+            expected = str(payload.get(binding) or "").strip().lower()
+            if not re.fullmatch(r"[0-9a-f]{64}", expected):
+                continue
+            role = binding.removeprefix("expected_").removesuffix("_sha256")
+            try:
+                data = path.read_bytes()
+            except OSError:
+                classification = "MISSING"
+            else:
+                import hashlib
+
+                actual = hashlib.sha256(data).hexdigest()
+                if actual == expected:
+                    continue
+                if role in {"mq5", "setfile"} and expected in _line_ending_hashes(data):
+                    classification = "LINE_ENDINGS_ONLY"
+                else:
+                    classification = "CONTENT_CHANGED"
+            findings.append({
+                "id": str(row["id"]), "ea_id": str(row["ea_id"]),
+                "symbol": str(row["symbol"]), "phase": str(row["phase"]),
+                "role": role, "classification": classification,
+                "held": "HELD" if bool(row["has_active_hold"]) else "UNHELD",
+            })
+    if not findings:
+        return _check(
+            "pending_artifact_binding_drift", "OK", 0, 0,
+            f"checked {len(rows)} bound pending rows; all dispatch bindings match disk", "",
+        )
+    by_class: dict[str, int] = {}
+    for item in findings:
+        key = item["classification"]
+        by_class[key] = by_class.get(key, 0) + 1
+    rendered = [
+        f"{item['id'][:8]}:{item['ea_id']}:{item['phase']}:{item['role']}:"
+        f"{item['classification']}:{item['held']}"
+        for item in findings[:PENDING_BINDING_DRIFT_DETAIL_LIMIT]
+    ]
+    detail = (
+        f"{len(findings)} mismatched artifact binding(s) across {len({x['id'] for x in findings})} "
+        f"pending row(s); classes={json.dumps(by_class, sort_keys=True)}; " + ", ".join(rendered)
+    )
+    hint = (
+        "Activate an exact non-restart hold before dispatch. LINE_ENDINGS_ONLY may be "
+        "rebound only after normalized-byte proof; CONTENT_CHANGED/MISSING requires "
+        "per-EA review and a governed successor from the final build. Report runnable/created."
+    )
+    return _check("pending_artifact_binding_drift", "FAIL", len(findings), 0, detail, hint)
+
+
 ALL_CHECKS = [
     ("ea_id_slug_uniqueness", chk_ea_id_slug_uniqueness, False),
     ("stranded_ea_improvements", chk_stranded_ea_improvements, False),
@@ -3326,6 +3428,7 @@ ALL_CHECKS = [
     ("pending_tail_age", chk_pending_tail_age, True),
     ("q02_summary_missing_unclassified", chk_q02_summary_missing_unclassified, True),
     ("q09_sealed_plan_hold_age", chk_q09_sealed_plan_hold_age, True),
+    ("pending_artifact_binding_drift", chk_pending_artifact_binding_drift, True),
 ]
 
 

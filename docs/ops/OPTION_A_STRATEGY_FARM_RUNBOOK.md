@@ -378,3 +378,22 @@ The first farm acceptance test is not profit. It is deterministic motion:
 11. A result lands in `artifacts\verdicts`.
 12. `farmctl status` shows the next action from deterministic local state.
 
+## Requeue and re-seed acceptance
+
+A created pending row is not a completed requeue. Before reporting delivery,
+reproduce the worker artifact preflight against the new row and report
+`runnable/created` (for example, `3/3`), not only `created=3`.
+
+- Bind MQ5, EX5, and setfile hashes only after the final compile; do not run a
+  verification rebuild after binding.
+- Raw hashes must match the working-copy bytes the worker will read.
+- A text mismatch may be rebound only after CRLF/CR-to-LF normalization proves
+  content identity. An EX5 mismatch or text content change requires per-EA
+  adjudication and a governed append-only successor; never patch the old hash.
+- A row that fails the comparison must be parked under an explicit non-restart
+  hold and counted as not runnable.
+
+The standing health check `pending_artifact_binding_drift` is the fleet guard.
+Operational evidence and the exact classification are recorded in
+`docs/ops/evidence/257b5732_pending_binding_drift_guard_and_reseed_sop_2026-08-17.md`.
+
