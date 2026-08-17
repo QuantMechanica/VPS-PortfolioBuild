@@ -6,14 +6,15 @@ source_type: official_event_practitioner_book_peer_reviewed_composite_lineage
 status: approved_for_cards
 approved_for_cards: true
 approval_record: decisions/2026-08-17_wti_post_wednesday_gap_agreement_source_approval.md
-approval_commit: PENDING_SOURCE_APPROVAL_COMMIT
+approval_commit: 8ee045854
 approved_by: OWNER commodity/energy portfolio mission
 approved_at: 2026-08-17
 created: 2026-08-17
 created_by: Research+Development
 strategy_ids:
   - EIA-WILLIAMS-MOP-WTI-POSTWEDGAP-2026_S01
-cards_extracted: []
+cards_extracted:
+  - QM5_41050_wti-postwed-gap-agree
 parent_sources:
   - EIA-WTI-WPSR-INTRADAY-2026
   - SRC03

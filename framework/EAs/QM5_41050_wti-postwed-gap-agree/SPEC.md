@@ -1,6 +1,6 @@
 # QM5_41050 — WTI Post-Wednesday Gap-Agreement Continuation
 
-Status: `SOURCE APPROVED; EA ID RESERVED; G0 PENDING; MAGIC PENDING`
+Status: `G0 APPROVED; BUILD PENDING`
 
 ## Identity
 
@@ -12,10 +12,10 @@ Status: `SOURCE APPROVED; EA ID RESERVED; G0 PENDING; MAGIC PENDING`
 - source approval commit: `8ee045854`
 - host: exact `XTIUSD.DWX`, D1
 - slot: `0`
-- planned magic: `410500000`
-- planned card:
+- registered magic: `410500000`
+- approved card:
   `strategy-seeds/cards/approved/QM5_41050_wti-postwed-gap-agree_card.md`
-- planned G0 decision:
+- G0 decision:
   `decisions/2026-08-17_wti_post_wednesday_gap_agreement_g0.md`
 
 ## Locked Mechanic
@@ -50,7 +50,7 @@ field enters the signal.
 
 ## Build State
 
-This governed directory identity exists solely so the slot-0 magic allocation
-can precede EA source generation without being dropped by
-`update_magic_resolver.py`. Development remains blocked until the approved
-card and G0 decision exist and the resolver proves the magic row survived.
+The approved card, durable G0 decision, EA registry row, and active slot-0
+magic now authorize the exact non-live build. The resolver contains
+`410500000`; no alternate carrier, signal endpoint, direction, or lifecycle is
+authorized.
