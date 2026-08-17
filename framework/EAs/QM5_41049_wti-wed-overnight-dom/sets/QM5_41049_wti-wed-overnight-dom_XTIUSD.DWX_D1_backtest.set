@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41049
+; ea_slug:      wti-wed-overnight-dom
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   c36890af76ba152916c41d8a67f2116c2d86790441678ae7ba34c59916da4712
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=41049
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Native completed-price overnight-dominance signal; both news axes are intentionally OFF.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+; Friday close is the fail-safe after the ordinary next-D1 strategy exit.
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41049_wti-wed-overnight-dom_card.md
+strategy_entry_grace_minutes=180
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.0
+strategy_max_hold_days=3
+strategy_max_spread_points=1500
+strategy_reconcile_tolerance=0.0000000001
+
+

@@ -1,6 +1,6 @@
 # QM5_41049 — WTI Standard-Wednesday Overnight-Dominant Flow
 
-Status: `G0 APPROVED; BUILD PENDING`
+Status: `IMPLEMENTED; Q01 PENDING`
 
 ## Identity
 
@@ -51,5 +51,5 @@ boundary.
 
 The governed directory identity preceded the active
 `(41049, 0, XTIUSD.DWX)` magic row, and resolver regeneration retained it.
-The approved card and G0 decision now authorize the exact non-live build;
-Q01 remains pending.
+The exact non-live EA, fixed-risk setfile, card copy, and independent fixtures
+are implemented. Strict compile and Q01 validation remain pending.
