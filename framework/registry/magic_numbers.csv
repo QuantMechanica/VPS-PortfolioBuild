@@ -16142,3 +16142,31 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41036,wti-mflow-dom,0,XTIUSD.DWX,410360000,2026-08-17T02:17:17Z,Codex,active
 41037,xng-mflow-div,0,XNGUSD.DWX,410370000,2026-08-17T03:31:24Z,Codex,active
 41038,xng-mflow-dom,0,XNGUSD.DWX,410380000,2026-08-17T04:42:23Z,Codex,active
+11895,carter-ema-cross-rsi-candlestick-confirmation,0,AUDJPY.DWX,118950000,2026-08-17,Codex governed allocator,active
+11895,carter-ema-cross-rsi-candlestick-confirmation,1,AUDUSD.DWX,118950001,2026-08-17,Codex governed allocator,active
+11895,carter-ema-cross-rsi-candlestick-confirmation,2,EURJPY.DWX,118950002,2026-08-17,Codex governed allocator,active
+11895,carter-ema-cross-rsi-candlestick-confirmation,3,EURUSD.DWX,118950003,2026-08-17,Codex governed allocator,active
+11895,carter-ema-cross-rsi-candlestick-confirmation,4,GBPJPY.DWX,118950004,2026-08-17,Codex governed allocator,active
+11895,carter-ema-cross-rsi-candlestick-confirmation,5,GBPUSD.DWX,118950005,2026-08-17,Codex governed allocator,active
+11895,carter-ema-cross-rsi-candlestick-confirmation,6,NZDUSD.DWX,118950006,2026-08-17,Codex governed allocator,active
+11895,carter-ema-cross-rsi-candlestick-confirmation,7,USDCAD.DWX,118950007,2026-08-17,Codex governed allocator,active
+11895,carter-ema-cross-rsi-candlestick-confirmation,8,USDCHF.DWX,118950008,2026-08-17,Codex governed allocator,active
+11895,carter-ema-cross-rsi-candlestick-confirmation,9,USDJPY.DWX,118950009,2026-08-17,Codex governed allocator,active
+11900,kobasfx-4ema-macd-sentiment-h1,0,AUDJPY.DWX,119000000,2026-08-17,Codex governed allocator,active
+11900,kobasfx-4ema-macd-sentiment-h1,1,AUDUSD.DWX,119000001,2026-08-17,Codex governed allocator,active
+11900,kobasfx-4ema-macd-sentiment-h1,2,EURJPY.DWX,119000002,2026-08-17,Codex governed allocator,active
+11900,kobasfx-4ema-macd-sentiment-h1,3,EURUSD.DWX,119000003,2026-08-17,Codex governed allocator,active
+11900,kobasfx-4ema-macd-sentiment-h1,4,GBPJPY.DWX,119000004,2026-08-17,Codex governed allocator,active
+11900,kobasfx-4ema-macd-sentiment-h1,5,GBPUSD.DWX,119000005,2026-08-17,Codex governed allocator,active
+11900,kobasfx-4ema-macd-sentiment-h1,6,NZDUSD.DWX,119000006,2026-08-17,Codex governed allocator,active
+11900,kobasfx-4ema-macd-sentiment-h1,7,USDCAD.DWX,119000007,2026-08-17,Codex governed allocator,active
+11900,kobasfx-4ema-macd-sentiment-h1,8,USDCHF.DWX,119000008,2026-08-17,Codex governed allocator,active
+11900,kobasfx-4ema-macd-sentiment-h1,9,USDJPY.DWX,119000009,2026-08-17,Codex governed allocator,active
+32007,london-fix-wm-reuters-currency-drift,0,EURUSD.DWX,320070000,2026-08-17,Codex governed allocator,active
+32007,london-fix-wm-reuters-currency-drift,1,GBPUSD.DWX,320070001,2026-08-17,Codex governed allocator,active
+32008,euro-triplet-statistical-arbitrage-eurostable,0,EURUSD.DWX,320080000,2026-08-17,Codex governed allocator,active
+32008,euro-triplet-statistical-arbitrage-eurostable,1,EURGBP.DWX,320080001,2026-08-17,Codex governed allocator,active
+32008,euro-triplet-statistical-arbitrage-eurostable,2,GBPUSD.DWX,320080002,2026-08-17,Codex governed allocator,active
+33001,kaufman-adaptive-moving-average-breakout,0,XTIUSD.DWX,330010000,2026-08-17,Codex governed allocator,active
+33001,kaufman-adaptive-moving-average-breakout,1,SP500.DWX,330010001,2026-08-17,Codex governed allocator,active
+33001,kaufman-adaptive-moving-average-breakout,2,EURUSD.DWX,330010002,2026-08-17,Codex governed allocator,active
