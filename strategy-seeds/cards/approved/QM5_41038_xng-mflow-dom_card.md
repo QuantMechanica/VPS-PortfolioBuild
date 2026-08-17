@@ -62,8 +62,8 @@ r1_track_record: PASS_WITH_COMPOSITE_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_SESSION_LABEL_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: PENDING
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: PENDING
 review_focus: "Falsify a second XNG return driver that is structurally distinct from QM5_12567: symmetric monthly public/session flow opposition with absolute-dominance direction rather than a long-only two-day oscillator pullback. Verify every completed prior-month endpoint, strict opposition, dominance direction, reconciliation, no late/repeated entry, and next-month renewal; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -257,7 +257,7 @@ authorized.
 
 ### 6. Filters (No-Trade Module)
 
-- Exact host `XNGUSD.DWX`, D1, `qm_ea_id=41036`, and slot 0 only.
+- Exact host `XNGUSD.DWX`, D1, `qm_ea_id=41038`, and slot 0 only.
 - Exact locked risk, news, Friday-close, stress, and strategy inputs only.
 - Both news axes remain OFF; there is no event-feed dependency.
 - Fail closed on invalid label offset, date/month identity, history, OHLC,
@@ -388,14 +388,15 @@ new source packet, dedup review, strategy ID, card, and EA ID.
 | version | date | change | gate | status |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial XNG monthly opposed-flow dominance extraction | G0 | APPROVED |
-| v1-build | 2026-08-17 | deterministic EA, mechanic fixtures, fixed-risk set, strict compile and build gate | Q01 | PENDING |
+| v1-build | 2026-08-17 | deterministic EA, 20 passing mechanic fixtures, locked fixed-risk set, strict compile and build gate (0 errors, 0 warnings, 0 failures) | Q01 | PASS |
 | v1-queue | 2026-08-17 | paced target-only enqueue subject to the tester ceiling | Q02 | PENDING |
 
 ## Pipeline Phase Status
 
 - G0: `APPROVED`.
-- Q01: `PENDING` — build, reference fixtures, strict compile, and target
-  build checks remain required.
+- Q01: `PASS` — deterministic build complete; 20 reference fixtures pass,
+  strict compile reports zero errors/warnings, and target build checks report
+  zero failures/warnings.
 - Q02: `PENDING` — one paced target-only enqueue is authorized only below
   the governed tester ceiling; no manual dispatch is authorized.
 - Q03+: not authorized by this card/build task.

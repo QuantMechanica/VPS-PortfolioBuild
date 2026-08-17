@@ -1,0 +1,43 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        41038
+; ea_slug:      xng-mflow-dom
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e54070ed5f9c8764c6d143f2f93abb65548b2fa03fd222dc7c9e43b492fcdec9
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=41038
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Native-price structural signal; both news axes are intentionally OFF.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+; The authorized lifecycle is one broker month; Friday close is OFF.
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xng-mflow-dom_card.md
+strategy_min_prior_month_bars=15
+strategy_max_prior_month_bars=25
+strategy_entry_grace_minutes=180
+strategy_history_bars=90
+strategy_reconcile_tolerance=1.0e-10
+strategy_atr_period=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=3000

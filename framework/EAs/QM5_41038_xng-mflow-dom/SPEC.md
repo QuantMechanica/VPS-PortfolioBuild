@@ -91,5 +91,5 @@ authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-17 | approved build | source/G0/card and deterministic identities complete |
-| v1-build | 2026-08-17 | deterministic implementation | Q01 PENDING |
+| v1-build | 2026-08-17 | deterministic implementation | Q01 PASS: 20 fixtures; strict compile/build checks clean |
 | v1-queue | 2026-08-17 | paced Q02 handoff | PENDING capacity check and enqueue |
