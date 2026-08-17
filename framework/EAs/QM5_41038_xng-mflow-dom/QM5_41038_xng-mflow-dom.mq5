@@ -627,32 +627,35 @@ bool Strategy_PrimeLateMonthAttach()
 
 bool Strategy_NoTradeFilter()
   {
-   if(!Strategy_IsHostChart() || qm_ea_id != 41038 ||
-      qm_magic_slot_offset != 0 || qm_rng_seed != 42)
+   if(!Strategy_IsHostChart())
+     {
+      PrintFormat("QM_INPUT_REJECT predicate=host_chart observed_symbol='%s' observed_period=%d required_symbol='%s' required_period=%d",
+                  _Symbol, (int)_Period, g_strategy_symbol, (int)PERIOD_D1);
       return true;
-   if(MathAbs(RISK_PERCENT) > 1.0e-12 ||
-      MathAbs(RISK_FIXED - 1000.0) > 1.0e-12 ||
-      MathAbs(PORTFOLIO_WEIGHT - 1.0) > 1.0e-12)
-      return true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
-      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE ||
-      qm_news_mode_legacy != QM_NEWS_OFF ||
-      qm_news_stale_max_hours != 336 ||
-      qm_news_min_impact != "high")
-      return true;
-   if(qm_friday_close_enabled ||
-      qm_friday_close_hour_broker != 21 ||
-      MathAbs(qm_stress_reject_probability) > 1.0e-12)
-      return true;
-   if(strategy_min_prior_month_bars != 15 ||
-      strategy_max_prior_month_bars != 25 ||
-      strategy_entry_grace_minutes != 180 ||
-      strategy_history_bars != 90 ||
-      MathAbs(strategy_reconcile_tolerance - 1.0e-10) > 1.0e-20 ||
-      strategy_atr_period != 20 ||
-      MathAbs(strategy_atr_sl_mult - 3.5) > 1.0e-12 ||
-      strategy_max_hold_days != 40 ||
-      strategy_max_spread_points != 3000)
+     }
+   if(!QM_InputRequireLong("qm_ea_id", qm_ea_id, 41038) ||
+      !QM_InputRequireLong("qm_magic_slot_offset", qm_magic_slot_offset, 0) ||
+      !QM_InputRequireLong("qm_rng_seed", qm_rng_seed, 42) ||
+      !QM_InputRequireDouble("RISK_PERCENT", RISK_PERCENT, 0.0, 1.0e-12) ||
+      !QM_InputRequireDouble("RISK_FIXED", RISK_FIXED, 1000.0, 1.0e-12) ||
+      !QM_InputRequireDouble("PORTFOLIO_WEIGHT", PORTFOLIO_WEIGHT, 1.0, 1.0e-12) ||
+      !QM_InputRequireLong("qm_news_temporal", qm_news_temporal, QM_NEWS_TEMPORAL_OFF) ||
+      !QM_InputRequireLong("qm_news_compliance", qm_news_compliance, QM_NEWS_COMPLIANCE_NONE) ||
+      !QM_InputRequireLong("qm_news_mode_legacy", qm_news_mode_legacy, QM_NEWS_OFF) ||
+      !QM_InputRequireLong("qm_news_stale_max_hours", qm_news_stale_max_hours, 336) ||
+      !QM_InputRequireString("qm_news_min_impact", qm_news_min_impact, "high") ||
+      !QM_InputRequireLong("qm_friday_close_enabled", qm_friday_close_enabled, false) ||
+      !QM_InputRequireLong("qm_friday_close_hour_broker", qm_friday_close_hour_broker, 21) ||
+      !QM_InputRequireDouble("qm_stress_reject_probability", qm_stress_reject_probability, 0.0, 1.0e-12) ||
+      !QM_InputRequireLong("strategy_min_prior_month_bars", strategy_min_prior_month_bars, 15) ||
+      !QM_InputRequireLong("strategy_max_prior_month_bars", strategy_max_prior_month_bars, 25) ||
+      !QM_InputRequireLong("strategy_entry_grace_minutes", strategy_entry_grace_minutes, 180) ||
+      !QM_InputRequireLong("strategy_history_bars", strategy_history_bars, 90) ||
+      !QM_InputRequireDouble("strategy_reconcile_tolerance", strategy_reconcile_tolerance, 0.0000000001, 1.0e-20) ||
+      !QM_InputRequireLong("strategy_atr_period", strategy_atr_period, 20) ||
+      !QM_InputRequireDouble("strategy_atr_sl_mult", strategy_atr_sl_mult, 3.5, 1.0e-12) ||
+      !QM_InputRequireLong("strategy_max_hold_days", strategy_max_hold_days, 40) ||
+      !QM_InputRequireLong("strategy_max_spread_points", strategy_max_spread_points, 3000))
       return true;
    return false;
   }
@@ -794,9 +797,19 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   if(!SymbolSelect(g_strategy_symbol, true) ||
-      !Strategy_IsHostChart() || qm_ea_id != 41038 ||
-      qm_magic_slot_offset != 0)
+   if(!SymbolSelect(_Symbol, true))
+     {
+      PrintFormat("QM_INPUT_REJECT predicate=SymbolSelect observed=false required=true symbol='%s'", g_strategy_symbol);
+      return INIT_PARAMETERS_INCORRECT;
+     }
+   if(!Strategy_IsHostChart())
+     {
+      PrintFormat("QM_INPUT_REJECT predicate=host_chart observed_symbol='%s' observed_period=%d required_symbol='%s' required_period=%d",
+                  _Symbol, (int)_Period, g_strategy_symbol, (int)PERIOD_D1);
+      return INIT_PARAMETERS_INCORRECT;
+     }
+   if(!QM_InputRequireLong("qm_ea_id", qm_ea_id, 41038) ||
+      !QM_InputRequireLong("qm_magic_slot_offset", qm_magic_slot_offset, 0))
       return INIT_PARAMETERS_INCORRECT;
 
    if(!QM_FrameworkInit(qm_ea_id,

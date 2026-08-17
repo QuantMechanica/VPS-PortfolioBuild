@@ -452,30 +452,29 @@ void Strategy_CloseExpiredPositions()
 bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsWtiD1())
+     {
+      PrintFormat("QM_INPUT_REJECT predicate=host_chart observed_symbol='%s' observed_period=%d required_symbol='XTIUSD.DWX' required_period=%d",
+                  _Symbol, (int)_Period, (int)PERIOD_D1);
       return true;
-   if(qm_ea_id != 41041 ||
-      qm_magic_slot_offset != 0)
-      return true;
-   if(MathAbs(RISK_PERCENT) > 1.0e-12 ||
-      MathAbs(RISK_FIXED - 1000.0) > 1.0e-12 ||
-      MathAbs(PORTFOLIO_WEIGHT - 1.0) > 1.0e-12)
-      return true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
-      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE ||
-      qm_news_mode_legacy != QM_NEWS_OFF ||
-      qm_news_stale_max_hours != 336 ||
-      qm_news_min_impact != "high")
-      return true;
-   if(!qm_friday_close_enabled ||
-      qm_friday_close_hour_broker != 21)
-      return true;
-   if(strategy_entry_grace_minutes != 180 ||
-      strategy_atr_period_d1 != 20 ||
-      MathAbs(strategy_atr_sl_mult - 3.0) > 1.0e-12)
-      return true;
-   if(strategy_max_hold_days != 3 ||
-      strategy_max_spread_points != 1500 ||
-      MathAbs(strategy_reconcile_tolerance - 1.0e-10) > 1.0e-20)
+     }
+   if(!QM_InputRequireLong("qm_ea_id", qm_ea_id, 41041) ||
+      !QM_InputRequireLong("qm_magic_slot_offset", qm_magic_slot_offset, 0) ||
+      !QM_InputRequireDouble("RISK_PERCENT", RISK_PERCENT, 0.0, 1.0e-12) ||
+      !QM_InputRequireDouble("RISK_FIXED", RISK_FIXED, 1000.0, 1.0e-12) ||
+      !QM_InputRequireDouble("PORTFOLIO_WEIGHT", PORTFOLIO_WEIGHT, 1.0, 1.0e-12) ||
+      !QM_InputRequireLong("qm_news_temporal", qm_news_temporal, QM_NEWS_TEMPORAL_OFF) ||
+      !QM_InputRequireLong("qm_news_compliance", qm_news_compliance, QM_NEWS_COMPLIANCE_NONE) ||
+      !QM_InputRequireLong("qm_news_mode_legacy", qm_news_mode_legacy, QM_NEWS_OFF) ||
+      !QM_InputRequireLong("qm_news_stale_max_hours", qm_news_stale_max_hours, 336) ||
+      !QM_InputRequireString("qm_news_min_impact", qm_news_min_impact, "high") ||
+      !QM_InputRequireLong("qm_friday_close_enabled", qm_friday_close_enabled, true) ||
+      !QM_InputRequireLong("qm_friday_close_hour_broker", qm_friday_close_hour_broker, 21) ||
+      !QM_InputRequireLong("strategy_entry_grace_minutes", strategy_entry_grace_minutes, 180) ||
+      !QM_InputRequireLong("strategy_atr_period_d1", strategy_atr_period_d1, 20) ||
+      !QM_InputRequireDouble("strategy_atr_sl_mult", strategy_atr_sl_mult, 3.0, 1.0e-12) ||
+      !QM_InputRequireLong("strategy_max_hold_days", strategy_max_hold_days, 3) ||
+      !QM_InputRequireLong("strategy_max_spread_points", strategy_max_spread_points, 1500) ||
+      !QM_InputRequireDouble("strategy_reconcile_tolerance", strategy_reconcile_tolerance, 0.0000000001, 1.0e-20))
       return true;
    return false;
   }
@@ -611,10 +610,19 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   if(!SymbolSelect("XTIUSD.DWX", true) ||
-      !Strategy_IsWtiD1() ||
-      qm_ea_id != 41041 ||
-      qm_magic_slot_offset != 0)
+   if(!SymbolSelect(_Symbol, true))
+     {
+      Print("QM_INPUT_REJECT predicate=SymbolSelect observed=false required=true symbol='XTIUSD.DWX'");
+      return INIT_PARAMETERS_INCORRECT;
+     }
+   if(!Strategy_IsWtiD1())
+     {
+      PrintFormat("QM_INPUT_REJECT predicate=host_chart observed_symbol='%s' observed_period=%d required_symbol='XTIUSD.DWX' required_period=%d",
+                  _Symbol, (int)_Period, (int)PERIOD_D1);
+      return INIT_PARAMETERS_INCORRECT;
+     }
+   if(!QM_InputRequireLong("qm_ea_id", qm_ea_id, 41041) ||
+      !QM_InputRequireLong("qm_magic_slot_offset", qm_magic_slot_offset, 0))
       return INIT_PARAMETERS_INCORRECT;
 
    if(!QM_FrameworkInit(qm_ea_id,

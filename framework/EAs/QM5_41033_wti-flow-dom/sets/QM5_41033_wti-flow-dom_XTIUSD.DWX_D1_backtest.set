@@ -37,4 +37,4 @@ strategy_atr_period=20
 strategy_atr_sl_mult=3.0
 strategy_max_hold_days=8
 strategy_max_spread_points=1500
-strategy_reconcile_tolerance=1.0e-10
+strategy_reconcile_tolerance=0.0000000001

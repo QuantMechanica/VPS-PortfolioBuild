@@ -20,9 +20,11 @@ $neededFunctions = @(
     "Convert-ReportNumber",
     "Get-TesterLogCurrentRunText",
     "Test-TesterLogShowsOnInitFailure",
+    "Get-TesterLogDecisiveLines",
     "Test-TesterLogShowsSetupDataMissing",
     "Test-TesterLogHasNoHistoryForRun",
-    "Get-ReportInvalidReasons"
+    "Get-ReportInvalidReasons",
+    "Resolve-InvalidReportVerdict"
 )
 
 foreach ($name in $neededFunctions) {
@@ -98,6 +100,50 @@ BB  2  13:00:01 Tester tester stopped because OnInit returns non-zero code 1
 "@
 if (-not (Test-TesterLogShowsOnInitFailure -TesterLogTail (Get-TesterLogCurrentRunText -TesterLogTail $currentFailureLog))) {
     throw "The current EA's OnInit failure was removed by journal scoping."
+}
+
+$incorrectInputsLog = @"
+CS  0  11:21:50.949 Tester   strategy_reconcile_tolerance=1.0e-1
+CS  2  11:21:50.975 Tester tester stopped because OnInit reports incorrect input parameters
+"@
+$zeroBarReportHtml = $validReportHtml -replace '<b>3210</b>', '<b>0</b>'
+$onInitReasons = Get-ReportInvalidReasons `
+    -Html $zeroBarReportHtml `
+    -TesterLogTail $incorrectInputsLog `
+    -ExpectedSymbol "XTIUSD.DWX" `
+    -ExpectedFromDate "2018.07.02" `
+    -ExpectedToDate "2022.12.31" `
+    -HasRealTicksMarker $true `
+    -ReportTotalTrades 0
+if ($onInitReasons -notcontains "ONINIT_FAILED" -or
+    (Resolve-InvalidReportVerdict -InvalidReasons $onInitReasons) -ne "ONINIT_FAILED") {
+    throw "Incorrect-input OnInit wording did not override BARS_ZERO as ONINIT_FAILED."
+}
+
+$realZeroBarTail = @"
+CS  0  11:21:50.947 History XTIUSD.DWX,Daily: history cache allocated for 0 bars
+CS  0  11:21:50.949 Tester XTIUSD.DWX,Daily: generating based on real ticks
+"@
+$realZeroReasons = Get-ReportInvalidReasons `
+    -Html $zeroBarReportHtml `
+    -TesterLogTail $realZeroBarTail `
+    -ExpectedSymbol "XTIUSD.DWX" `
+    -ExpectedFromDate "2018.07.02" `
+    -ExpectedToDate "2022.12.31" `
+    -HasRealTicksMarker $true `
+    -ReportTotalTrades 0
+if ($realZeroReasons -contains "ONINIT_FAILED" -or
+    (Resolve-InvalidReportVerdict -InvalidReasons $realZeroReasons) -ne "BARS_ZERO") {
+    throw "A real zero-bar history failure no longer classifies as BARS_ZERO."
+}
+
+$diagnosticTail = @"
+CS  2  11:21:50.974 Experts QM_INPUT_REJECT predicate=strategy_reconcile_tolerance observed=0.1000000000000000 required=0.0000000001000000 tolerance=0.0000000000000000
+CS  2  11:21:50.975 Tester tester stopped because OnInit reports incorrect input parameters
+"@
+$decisive = @(Get-TesterLogDecisiveLines -TesterLogTail $diagnosticTail)
+if ($decisive.Count -ne 2 -or $decisive[0] -notmatch "QM_INPUT_REJECT" -or $decisive[1] -notmatch "incorrect input parameters") {
+    throw "Bounded decisive tester evidence was not extracted for summary persistence."
 }
 
 $initialDepositTail = @"

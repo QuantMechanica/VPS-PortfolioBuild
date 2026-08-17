@@ -33,6 +33,48 @@ bool g_qm_fw_initialized      = false;
 bool g_qm_fw_friday_close_enabled = true;
 int  g_qm_fw_friday_close_hour_broker = 21;
 
+// Fail-closed input contracts must also be diagnosable.  A bare
+// INIT_PARAMETERS_INCORRECT leaves the tester journal unable to distinguish a
+// deliberate input rejection from missing history.  These helpers preserve the
+// exact guard while emitting the predicate and observed/required values before
+// the caller returns INIT_PARAMETERS_INCORRECT.
+bool QM_InputRequireLong(const string predicate,
+                         const long observed,
+                         const long required)
+  {
+   if(observed == required)
+      return true;
+   PrintFormat("QM_INPUT_REJECT predicate=%s observed=%I64d required=%I64d",
+               predicate, observed, required);
+   return false;
+  }
+
+bool QM_InputRequireDouble(const string predicate,
+                           const double observed,
+                           const double required,
+                           const double tolerance)
+  {
+   if(MathAbs(observed - required) <= tolerance)
+      return true;
+   PrintFormat("QM_INPUT_REJECT predicate=%s observed=%s required=%s tolerance=%s",
+               predicate,
+               DoubleToString(observed, 16),
+               DoubleToString(required, 16),
+               DoubleToString(tolerance, 16));
+   return false;
+  }
+
+bool QM_InputRequireString(const string predicate,
+                           const string observed,
+                           const string required)
+  {
+   if(observed == required)
+      return true;
+   PrintFormat("QM_INPUT_REJECT predicate=%s observed='%s' required='%s'",
+               predicate, observed, required);
+   return false;
+  }
+
 // Card-v2 execution contract. Friday close used to be an implicit framework
 // default, which made source-defined exits and the executable strategy diverge
 // silently. Every migrated EA must now state whether Friday close is disabled,

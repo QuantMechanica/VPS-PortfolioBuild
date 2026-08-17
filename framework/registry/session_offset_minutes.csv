@@ -63,7 +63,7 @@
 #
 symbol,asset_class,offset_minutes,offset_min_measured,offset_max_measured,offset_source,measurement_ref,measured_utc,notes
 XTIUSD.DWX,commodities,61.6,60.0,61.6,measured,fea371c2,2026-08-16,"WTI energy CFD; first tradable tick 3600-3696s after D1 label in XTIUSD.DWX_D1.csv real-tick replay"
-XNGUSD.DWX,commodities,61.6,,,inferred_energy_sibling,fea371c2,2026-08-16,"NatGas energy CFD; shares NYMEX/Globex energy session with XTIUSD; offset inferred equal to XTIUSD pending own measurement; 6 confirmed-affected grace=5 cards"
+XNGUSD.DWX,commodities,60.0,,,measured,ee0922a7,2026-08-16,"NatGas energy CFD; archive-bar modal first-D1-session offset measured 60.0 min with 98.2% consistency over 1016 days; see docs/ops/evidence/2026-08-16_session_offset_registry_measurement_and_xau_reconciliation.md section 2"
 XAUUSD.DWX,commodities,60.0,,,measured,ee0922a7,2026-08-16,"Metal; archive-bar modal offset 60.0 min, 99.5% consistency over 2124 days; corrects v1's unsound default_continuous_unverified/offset=0 (see PROVENANCE); bar-level not tick-level"
 XAGUSD.DWX,commodities,60.0,,,measured,ee0922a7,2026-08-16,"Metal; archive-bar modal offset 60.0 min, 99.8% consistency over 1093 days; corrects v1's unsound default_continuous_unverified/offset=0 (see PROVENANCE); bar-level not tick-level"
 AUDCAD.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX cross; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"

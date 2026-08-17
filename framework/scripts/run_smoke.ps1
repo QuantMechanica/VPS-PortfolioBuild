@@ -282,10 +282,55 @@ function Test-TesterLogShowsOnInitFailure {
     if ([string]::IsNullOrWhiteSpace($TesterLogTail)) {
         return $false
     }
-    return [regex]::IsMatch($TesterLogTail, "(?im)\btester stopped because OnInit returns non-zero code\b") -or
+    return [regex]::IsMatch($TesterLogTail, "(?im)\btester stopped because OnInit reports incorrect input parameters\b") -or
+        [regex]::IsMatch($TesterLogTail, "(?im)\btester stopped because OnInit returns non-zero code\b") -or
+        [regex]::IsMatch($TesterLogTail, "(?im)\bOnInit\b[^\r\n]*(?:incorrect input parameters|INIT_PARAMETERS_INCORRECT)") -or
         [regex]::IsMatch($TesterLogTail, "(?im)\bOnInit\b[^\r\n]*(?:failed|INIT_FAILED|non-zero\s+code)") -or
         [regex]::IsMatch($TesterLogTail, "(?im)\bINIT_FAILED\b") -or
         [regex]::IsMatch($TesterLogTail, "(?im)\binitialization\s+failed\b")
+}
+
+function Get-TesterLogDecisiveLines {
+    param(
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]$TesterLogTail,
+        [int]$MaxLines = 8,
+        [int]$MaxLineChars = 512
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TesterLogTail) -or $MaxLines -le 0 -or $MaxLineChars -le 0) {
+        return @()
+    }
+
+    # Persist only bounded diagnosis-bearing text in summary.json.  Raw tester
+    # journals can be hundreds of MB and remain eligible for the disk-safety
+    # purge; these lines survive that purge and preserve the evidence needed to
+    # distinguish deterministic OnInit rejection from a real history failure.
+    $patterns = @(
+        "(?i)\bQM_INPUT_REJECT\b",
+        "(?i)\bOnInit\b[^\r\n]*(?:incorrect input parameters|INIT_PARAMETERS_INCORRECT|failed|INIT_FAILED|non-zero\s+code)",
+        "(?i)\b(?:no history data|history synchronization error|no history data,\s*stop testing)\b",
+        "(?i)\b(?:SETUP_DATA_MISSING|calendar_file_missing_or_unreadable|calendar_file_stale|calendar_csv_parse_failed|calendar_hash_failed|calendar_unavailable)\b",
+        "(?i)\btester not started because the account is not specified\b",
+        "(?i)\b(?:LOG_BOMB|METATESTER_HUNG)\b"
+    )
+    $decisive = @()
+    foreach ($line in ($TesterLogTail -split "\r?\n")) {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        foreach ($pattern in $patterns) {
+            if ($line -match $pattern) {
+                $trimmed = $line.Trim()
+                if ($trimmed.Length -gt $MaxLineChars) {
+                    $trimmed = $trimmed.Substring(0, $MaxLineChars)
+                }
+                $decisive += $trimmed
+                break
+            }
+        }
+        if ($decisive.Count -ge $MaxLines) { break }
+    }
+    return @($decisive)
 }
 
 function Test-TesterLogShowsSetupDataMissing {
@@ -2804,6 +2849,7 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
             report_size_bytes = 0
             tester_log_path = $testerLogPath
             tester_log_tail = $testerLogTail
+            tester_log_decisive_lines = @(Get-TesterLogDecisiveLines -TesterLogTail $testerLogTail)
             failure_hints = @($failureHints)
         }
         continue
@@ -2942,6 +2988,7 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
             report_canonical_path = $reportHtmPath
             report_size_bytes = [int64]$canonicalInfo.Length
             tester_log_path = $testerLogPath
+            tester_log_decisive_lines = @(Get-TesterLogDecisiveLines -TesterLogTail $testerLogTail)
             total_trades = $totalTrades
             total_trades_raw = $totalTradesRaw
             profit_factor = $profitFactor

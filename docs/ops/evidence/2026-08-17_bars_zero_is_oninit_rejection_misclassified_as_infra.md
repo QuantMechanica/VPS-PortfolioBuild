@@ -128,3 +128,110 @@ guessed at.
 - Summaries for QM5_41032 / 41033 / 41038 / 41041 under their work-item report roots
 - `framework/EAs/QM5_41033_wti-flow-dom/QM5_41033_wti-flow-dom.mq5:620,624,653` and
   `Strategy_NoTradeFilter` at `:458-487`
+
+## Codex resolution (router task `1a44e6a0`, 2026-08-17)
+
+### Exact predicates and observed values
+
+The surviving UTF-16 QM5_41033 journal contained the runtime input dump. It
+settled the previously silent predicate without inference:
+
+```text
+Tester  strategy_reconcile_tolerance=1.0e-1
+Tester  tester stopped because OnInit reports incorrect input parameters
+```
+
+The source requires `strategy_reconcile_tolerance=1.0e-10` within `1.0e-20`.
+MT5 read the `.set` scientific-notation token `1.0e-10` as `1.0e-1` (observed
+`0.1`; required `0.0000000001`), so `Strategy_NoTradeFilter()` returned true.
+The same token existed in QM5_41038 and QM5_41041. Their setfiles now use the
+parser-safe fixed decimal `0.0000000001`; the numerical guard is unchanged.
+
+QM5_41032 had a separate copy error: its source default, pre-init gate and
+`Strategy_NoTradeFilter()` required EA ID `41029`, while the staged set and
+registry identity correctly supplied `41032`. All three source occurrences now
+require `41032`.
+
+No news, risk or gate criterion was loosened. Every backtest set remains
+`RISK_FIXED=1000`, `RISK_PERCENT=0`, and `qm_news_stale_max_hours=336`.
+
+### Self-describing fail-closed guards
+
+`QM_Common.mqh` now provides typed `QM_InputRequireLong`,
+`QM_InputRequireDouble` and `QM_InputRequireString` helpers. A mismatch still
+fails closed, but first emits:
+
+```text
+QM_INPUT_REJECT predicate=<name> observed=<value> required=<value> [tolerance=<value>]
+```
+
+The four affected EAs use those helpers for every input predicate and emit an
+equivalent observed/required record for host-chart and `SymbolSelect` failures.
+This is the framework-level pattern for replacing bare compound input gates.
+
+### Classifier replay
+
+`run_smoke.ps1::Test-TesterLogShowsOnInitFailure` now recognizes MT5 build
+6090's `OnInit reports incorrect input parameters` wording and sibling
+`INIT_PARAMETERS_INCORRECT` wording. The resolver already gives
+`ONINIT_FAILED` precedence over `BARS_ZERO`; the missing detector was the gap.
+
+The four historical reports were replayed with their stored exact log-evidence
+phrase after the 2-hour purge removed the raw journals during this repair:
+
+| EA | Before | After | `oninit_failure_detected` |
+|---|---|---|---|
+| QM5_41032 | BARS_ZERO | ONINIT_FAILED | true |
+| QM5_41033 | BARS_ZERO | ONINIT_FAILED | true |
+| QM5_41038 | BARS_ZERO | ONINIT_FAILED | true |
+| QM5_41041 | BARS_ZERO | ONINIT_FAILED | true |
+
+`Test-RunSmokeOnInitTradeScope.ps1` also proves that a zero-bar report with no
+OnInit evidence still resolves to `BARS_ZERO`, so the two causes remain
+distinct.
+
+### Evidence retention and disk cost
+
+Keeping entire failing journals is not viable: the 2026-06-06 incident measured
+36,103 logs at 529 GB. Instead, each non-OK run now stores
+`tester_log_decisive_lines` in `summary.json` before purge. Extraction is
+bounded to 8 matching lines of at most 512 characters each. Raw logs remain
+eligible for `QM_StrategyFarm_ReportsLogPurge_12h` (currently configured for
+2-hour retention).
+
+Disk bound: at three attempts per work item this adds at most 12 KiB of text
+before JSON escaping (about 18 MiB/day at 1,500 work items/day; 6.6 GiB/year if
+every run hits the maximum). The observed OnInit case is two short lines, about
+1.2 KiB/work item across three attempts (about 1.8 MiB/day; 0.66 GiB/year).
+That preserves the decisive evidence without retaining multi-megabyte or
+multi-gigabyte journals. The purge deleted all four source logs while this task
+was executing, directly confirming the need for summary persistence.
+
+### Build and focused verification
+
+All four scoped builds compiled with 0 errors and 0 warnings:
+
+| EA | EX5 SHA-256 |
+|---|---|
+| QM5_41032 | `CB462C06256DE177829A58887B9DCD1D8415D8C8AA244C545AF71450FABA00CF` |
+| QM5_41033 | `8E82245E97CCF7030CF009857C62B0C111F85B1E188AD30DE2BA99D26E72BEA4` |
+| QM5_41038 | `F88148AE52911FD664B7EDD6BE0167A874B12710B89D18C8DE97EC34DC42737E` |
+| QM5_41041 | `46FD179C17F956D3F74C2F631230D3BE0A3ED83A9122308C2B0CF19C2B9A3EA6` |
+
+Focused checks:
+
+- smoke classifier regression: PASS;
+- symbol-scope validator: `SINGLE_SYMBOL_OK` for all four;
+- build guardrails: PASS for all four sources and exact backtest sets;
+- XNG session-offset prerequisite uses the existing archive measurement:
+  60.0 minutes, 98.2% modal consistency over 1,016 days (`ee0922a7`), now
+  recorded as measured rather than inferred;
+- QM5_41038 exact XNG Q02 successor `bcf23174-a097-4d49-b929-5d2c0f63443b`:
+  PASS after the parser-safe setfile repair. This is pipeline evidence, not an
+  inferred verdict.
+
+The other exact repaired Q02 successors were appended without interrupting any
+active terminal: QM5_41032 `845f4c93-9ebd-43da-ada9-851ca374c612`,
+QM5_41033 `d062a748-ac59-4bcf-83cd-96b85b73e8d7`, and QM5_41041
+`8242085a-b0af-4067-aea3-d7eccda674e7`. Their terminal states remain pipeline
+evidence and must not be inferred from compilation.
