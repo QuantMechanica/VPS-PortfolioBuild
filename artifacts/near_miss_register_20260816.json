@@ -3,7 +3,7 @@
  "window_hours": 72,
  "tolerance_pct": 5.0,
  "policy": "priority list for targeted rework waves; gates are NOT overridden (OWNER DL territory)",
- "count": 9,
+ "count": 10,
  "entries": [
   {
    "kind": "walkforward_folds",
@@ -151,6 +151,25 @@
    "verdict": "FAIL",
    "at": "2026-08-16T22:51:50",
    "reason": "pf_below_floor:pf=0.980:floor=1.0"
+  },
+  {
+   "kind": "q08_soft_edges_no_hard_fail",
+   "value": 3.0,
+   "floor": 0.0,
+   "gap_pct": 0.0,
+   "work_item": "20431af7-c535-46fa-b13e-641d402cb69b",
+   "ea": "QM5_20086",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q08",
+   "verdict": "FAIL_SOFT",
+   "at": "2026-08-17T01:29:34",
+   "reason": "8 of 11 sub-gates PASS plus cost_cushion PASS (4.92x); zero HARD failures; three EDGE_SOFT: 8.4_seasonal, 8.7_pbo, 8.10_regime_crisis",
+   "rework_targets": [
+    "8.4_seasonal",
+    "8.7_pbo",
+    "8.10_regime_crisis"
+   ],
+   "depth_note": "deepest entry in the register by two phases; prior lineage Q04 PF 2.57 (folds 4.035/1.209/2.461), Q05 PF 1.35 dd 6.76, Q06 HARSH PF 1.35 dd 6.03, Q07 five seeds PF 1.31-1.41 variance 7.41 pct, 445 trades"
   }
  ],
  "repeat_offenders": {}
