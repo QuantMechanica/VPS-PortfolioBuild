@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        21510
+; ea_slug:      qs-nvi-ema-sp500
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       SP500.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   35e4721548e5e0c47ac77b50d14e4d86783cff84dabeb179d902d2120050c64f
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=21510
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_21510_qs-nvi-ema-sp500.md
+strategy_nvi_ema_period=255
+strategy_warmup_buffer=20
+strategy_atr_period=14
+strategy_atr_sl_mult=3.0
+strategy_max_hold_bars=120
+strategy_max_spread_points=500

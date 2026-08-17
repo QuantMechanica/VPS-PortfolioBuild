@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        21512
+; ea_slug:      qs-fibonacci-ma-band-gbp
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       GBPUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   af2edb63e20e73bcc1123ccbd9932e7893470c54c813f055c04d2d100b2b15b2
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=21512
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_21512_qs-fibonacci-ma-band-gbp.md
+strategy_slope_lookback=5
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_max_hold_bars=90
+strategy_max_spread_points=40
