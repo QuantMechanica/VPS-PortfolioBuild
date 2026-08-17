@@ -6,7 +6,7 @@ source_type: official_government_and_peer_reviewed_composite_lineage
 status: approved_for_cards
 approved_for_cards: true
 approval_record: decisions/2026-08-17_xng_thursday_trend_pullback_source_approval.md
-approval_commit: pending_branch_commit
+approval_commit: 25f6f54fb5991ca77b6313b7133d3cdab0b3437c
 approved_by: OWNER commodity/energy portfolio mission
 approved_at: 2026-08-17
 created: 2026-08-17
