@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        11288
 ; ea_slug:      tc20-ema6-23-macd3060-stoch-h1
@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   fc9e0b8ab1f0c878861433d71c9479cd139b1ca108310355c1cde60843163c9a
 ; author:       Development
 ; date:         2026-08-06
 ;==========================================================

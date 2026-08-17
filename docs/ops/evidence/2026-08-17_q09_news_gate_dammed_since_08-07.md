@@ -145,3 +145,44 @@ no longer look like ordinary backlog, which was the acceptance test.
 - Bind CLI: `tools/strategy_farm/farmctl.py:22851`, `:23236`
 - Prior Q09 machinery work: `docs/ops/evidence/2026-08-07_q09_bundle_pin_snapshot_poison_loop.md`,
   router task `0a6f77cb`
+
+## Serial execution attempt (router task `635ad39b`, 2026-08-17)
+
+The mandated one-EA-at-a-time recovery began with the oldest row,
+QM5_11288 / USDJPY.DWX. No later EA was touched before its new Q08 aggregate,
+in accordance with the task's registry-corruption guard.
+
+### QM5_11288 report
+
+- Scoped command: `build_check.ps1 -EALabel
+  QM5_11288_tc20-ema6-23-macd3060-stoch-h1`.
+- Compile result: PASS, 0 errors, 0 warnings.
+- Exactly one final compile was performed. No verification rebuild followed.
+- Final EX5 SHA-256:
+  `2FF35242EB5D7B2BDF1C76EE997741FAC331408785AA02192F96980A19BC0CBE`.
+- Build-check report:
+  `D:\QM\reports\framework\21\build_check_20260817_102619.json`.
+- New append-only Q08 row:
+  `02196e8f-24f6-4e7f-b7f8-acd872ba6da7`, USDJPY.DWX, bound to exact Q07
+  predecessor `124269b0-fcb9-4907-a2f5-1c7f3510bfc6` and historical Q08
+  lineage `c27cab86-3761-4d81-8c26-ad69fe4e10c4`.
+- Current Q08 state at handoff: `pending`; therefore no aggregate path, Q08
+  verdict, calendar-identity values, Q09 plan, plan SHA, or claimability
+  assertion exists yet.
+
+The governed `dispatch-tick` returned `mode=idle` with no action because six
+tests occupied the CPU ceiling. T2/T6/T7/T9 were free but correctly left idle;
+active tests on T1/T3/T4/T5/T8/T10 were not interrupted. The pending Q08 row
+remained unclaimed after repeated worker polls.
+
+This is a real serial execution blocker, not permission to batch the remaining
+seven rebuilds. QM5_20266, QM5_9641, QM5_12855, QM5_12849, QM5_12708,
+QM5_13054 and QM5_1537 remain byte-untouched by this attempt. Their old Q09
+holds remain active; none was released or rebound. `q09_sealed_plan_hold_age`
+therefore remains red until governed Q08 evidence is available serially and all
+eight validated plans are bound.
+
+No pipeline verdict is inferred from the successful compile. The next operator
+must first inspect Q08 row `02196e8f-...`; only if its aggregate contains all
+three calendar identity inputs may the QM5_11288 Q09 plan be authored and the
+serial sequence continue to EA 2.
