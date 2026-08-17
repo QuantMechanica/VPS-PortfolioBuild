@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        33007
+; ea_slug:      george-pruitt-king-keltner-trend-buster
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       EURUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   7f0f88503c3a7a26415c9933c090ba9764a87520a9b951755d7aee56b407a1a2
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=33007
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_33007_george-pruitt-king-keltner-trend-buster.md
+strategy_ma_period=20
+strategy_atr_period=10
+strategy_atr_multiplier=1.50
+strategy_sl_atr_multiplier=2.0
+strategy_tp_sl_multiplier=2.0
+strategy_spread_atr_period=14
+strategy_spread_atr_mult=1.8

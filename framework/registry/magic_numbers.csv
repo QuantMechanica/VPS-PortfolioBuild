@@ -17350,3 +17350,20 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 33002,larry-williams-volatility-expansion-breakout,1,NDX.DWX,330020001,2026-08-17T18:30:00Z,Gemini,active
 33002,larry-williams-volatility-expansion-breakout,2,XAUUSD.DWX,330020002,2026-08-17T18:30:00Z,Gemini,active
 33005,andrea-unger-dax-intraday-bias-breakout,0,GDAXI.DWX,330050000,2026-08-17T18:40:00Z,Gemini,active
+30001,bollinger-bands-grid-waka-waka,0,AUDCAD.DWX,300010000,2026-08-17,Codex governed allocator,active
+30001,bollinger-bands-grid-waka-waka,1,AUDNZD.DWX,300010001,2026-08-17,Codex governed allocator,active
+30001,bollinger-bands-grid-waka-waka,2,NZDCAD.DWX,300010002,2026-08-17,Codex governed allocator,active
+30005,bollinger-bands-grid-dark-venus,0,EURUSD.DWX,300050000,2026-08-17,Codex governed allocator,active
+30005,bollinger-bands-grid-dark-venus,1,GBPUSD.DWX,300050001,2026-08-17,Codex governed allocator,active
+30005,bollinger-bands-grid-dark-venus,2,AUDUSD.DWX,300050002,2026-08-17,Codex governed allocator,active
+30005,bollinger-bands-grid-dark-venus,3,USDCAD.DWX,300050003,2026-08-17,Codex governed allocator,active
+30006,adx-ma-trend-grid-dark-kronos,0,AUDCHF.DWX,300060000,2026-08-17,Codex governed allocator,active
+30006,adx-ma-trend-grid-dark-kronos,1,GBPCHF.DWX,300060001,2026-08-17,Codex governed allocator,active
+30006,adx-ma-trend-grid-dark-kronos,2,EURCHF.DWX,300060002,2026-08-17,Codex governed allocator,active
+30006,adx-ma-trend-grid-dark-kronos,3,NZDCHF.DWX,300060003,2026-08-17,Codex governed allocator,active
+38007,codetrading-python-atr-grid-engine,0,AUDCAD.DWX,380070000,2026-08-17,Codex governed allocator,active
+38007,codetrading-python-atr-grid-engine,1,NZDCAD.DWX,380070001,2026-08-17,Codex governed allocator,active
+38007,codetrading-python-atr-grid-engine,2,EURCHF.DWX,380070002,2026-08-17,Codex governed allocator,active
+33007,george-pruitt-king-keltner-trend-buster,0,SP500.DWX,330070000,2026-08-17T19:00:00Z,Gemini,active
+33007,george-pruitt-king-keltner-trend-buster,1,XTIUSD.DWX,330070001,2026-08-17T19:00:00Z,Gemini,active
+33007,george-pruitt-king-keltner-trend-buster,2,EURUSD.DWX,330070002,2026-08-17T19:00:00Z,Gemini,active

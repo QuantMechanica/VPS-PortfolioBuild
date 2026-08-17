@@ -336,7 +336,7 @@ function Convert-EAInputValueForSetfile {
         }
         catch {
             throw ("SETFILE_FLOAT_NOT_REPRESENTABLE_IN_DECIMAL: input=$Name value=$Value " +
-                   "type=$inputType — magnitude is outside System.Decimal, so no plain-decimal " +
+                   "type=$inputType - magnitude is outside System.Decimal, so no plain-decimal " +
                    "form exists and an exponent token would be silently truncated by MT5")
         }
         # Expansion must be exact.  [decimal] flushes magnitudes below ~1e-28 to
@@ -346,7 +346,7 @@ function Convert-EAInputValueForSetfile {
         if (-not [double]::TryParse($expanded, [Globalization.NumberStyles]::Float,
                 [Globalization.CultureInfo]::InvariantCulture, [ref]$back) -or $back -ne $parsed) {
             throw ("SETFILE_FLOAT_EXPANSION_LOSSY: input=$Name value=$Value type=$inputType " +
-                   "expanded=$expanded — decimal expansion did not round-trip, refusing to " +
+                   "expanded=$expanded - decimal expansion did not round-trip, refusing to " +
                    "write a value the EA would observe differently than declared")
         }
         return $expanded
