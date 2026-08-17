@@ -52,9 +52,18 @@ feed, retry, scale-in, grid, martingale, pyramid, or second leg is authorized.
 
 Directory identity was established before magic allocation as required by the
 V5 resolver ordering contract. Slot 0 is allocated to exact `XTIUSD.DWX` as
-magic `410450000`. Source, binary, setfile, card copy, reference fixtures,
-compile evidence, and Q01 evidence remain absent until the post-allocation
-build preflight passes.
+magic `410450000`. The deterministic source and binary are present together
+with one fixed-risk backtest preset, a synchronized approved-card copy, and an
+independent 14-case reference suite. Strict targeted compilation passed with
+zero errors and zero warnings, the targeted build check passed with zero
+failures and zero warnings, static P1 artifact validation passed, and factory
+symbol-scope validation returned `SINGLE_SYMBOL_OK`.
+
+Q01 evidence:
+
+- `framework/build/compile/20260817_130817/QM5_41045_wti-wed-trend-agree.compile.log`
+- `D:/QM/reports/framework/21/build_check_20260817_130817.json`
+- `D:/QM/reports/pipeline/QM5_41045/P1/P1_QM5_41045_result.json`
 
 ## Safety Boundary
 
