@@ -181,5 +181,5 @@ economics.
 |---|---|---|---|---|
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
 | v1-card | 2026-08-17 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
-| v1-build | - | deterministic EA and fixed-risk set | Q01 | PENDING |
+| v1-build | 2026-08-17 | deterministic EA, 20 mechanic fixtures, fixed-risk set, strict compile and build gate | Q01 | PASS |
 | v1-q02 | - | paced target-only WTI baseline row | Q02 | PENDING_CAPACITY |

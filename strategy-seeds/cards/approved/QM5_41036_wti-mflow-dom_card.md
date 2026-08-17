@@ -63,7 +63,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING_BUILD
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a direct-WTI monthly opposed-flow dominance sleeve outside the certified XAU/SP500/NDX/XNG book. Verify every completed prior-month close/open endpoint, strict component opposition, absolute-dominance direction, reconciliation, no late/repeated new-month entry, and next-month renewal; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -386,13 +386,14 @@ new source packet, dedup review, strategy ID, card, and EA ID.
 | version | date | change | gate | status |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial monthly opposed-flow dominance extraction | G0 | APPROVED |
-| v1-build | - | deterministic EA and fixed-risk set | Q01 | PENDING |
+| v1-build | 2026-08-17 | deterministic EA, 20 mechanic fixtures, fixed-risk set, strict compile and build gate | Q01 | PASS |
 | v1-q02 | - | one paced WTI baseline row | Q02 | NOT_ENQUEUED |
 
 ## Pipeline Phase Status
 
 - G0: `APPROVED`.
-- Q01: `PENDING_BUILD`.
+- Q01: `PASS` — 20 independent mechanic fixtures, strict compile with zero
+  errors/warnings, and target-scoped build check with zero failures/warnings.
 - Q02: `NOT_ENQUEUED`.
 - Q03+: not authorized by this card/build task.
 
