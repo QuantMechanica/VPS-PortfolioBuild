@@ -1,6 +1,6 @@
 # QM5_41053 - WTI Post-Wednesday Counter-Gap Fade
 
-Status: `G0 APPROVED; EA ID AND MAGIC ALLOCATED; BUILD NOT STARTED`
+Status: `G0 APPROVED; BUILD IMPLEMENTED; Q01 PENDING`
 
 ## Identity
 
@@ -55,8 +55,17 @@ pullback (`QM5_12567`).
 
 ## Build State
 
-The directory identity existed before magic allocation because the governed
-resolver retains rows only for materialized EA directories. Code, binary,
-preset, Q01, and Q02 status must not be inferred from this scaffold.
-No live artifact, tester dispatch, terminal control, portfolio mutation, or
-performance claim is authorized.
+The approved card, durable G0 decision, EA registry row, and active slot-0
+magic authorize this exact non-live implementation. The resolver contains
+`410530000`; no alternate carrier, signal endpoint, direction, or lifecycle is
+authorized.
+
+Artifacts:
+
+- `QM5_41053_wti-postwed-gap-fade.mq5`
+- `docs/strategy_card.md` (byte-identical governed card mirror)
+- `docs/test_post_wednesday_countergap_fade_reference.py`
+- `sets/QM5_41053_wti-postwed-gap-fade_XTIUSD.DWX_D1_backtest.set`
+
+Strict compile, build checks, and static Q01 remain required before the
+target-only Q02 queue may be mutated.
