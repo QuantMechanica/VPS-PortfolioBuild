@@ -628,25 +628,64 @@ def _reclaim_completed_seed_scratch(terminal: str, min_age_minutes: int = 5) -> 
         print(f"    scratch cleanup: {summary or 'completed without summary'}")
 
 
+def _tester_health_invalid_reason(seed_result: dict) -> str | None:
+    """Return a reason only when the tester evidence itself is unhealthy.
+
+    ``seed_result['exit_code']`` is the run_smoke wrapper verdict.  It is 1 for
+    an economically valid MIN_TRADES_NOT_MET result, so it must not be used as
+    a tester-health proxy.  Tester health lives in the per-run records inside
+    summary.json; ``invalid_reason`` remains the fail-closed path populated by
+    _run_seed for timeouts, launch/evidence faults, and seed mismatches.
+    """
+    if seed_result.get("invalid_reason"):
+        return str(seed_result["invalid_reason"])
+    if seed_result.get("timed_out") or seed_result.get("timeout_detail"):
+        return str(seed_result.get("timeout_detail") or "timeout_expired")
+
+    summary_path = seed_result.get("summary_path")
+    if not summary_path:
+        return None  # evaluate_seeds preserves the dedicated missing-summary path.
+    path = Path(summary_path)
+    if not path.is_file():
+        # Unit/synthetic callers historically use placeholder paths.  Fresh
+        # production results always point at an existing summary; historical
+        # purges are reported by the evidence sweep rather than guessed here.
+        return None
+    try:
+        summary = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return f"summary_unreadable:{type(exc).__name__}"
+
+    if summary.get("oninit_failure_detected") is True:
+        return "oninit_failure_detected"
+    if summary.get("log_bomb_detected") is True:
+        return "log_bomb_detected"
+    runs = summary.get("runs")
+    if not isinstance(runs, list) or not runs:
+        return "summary_runs_missing"
+    for index, run in enumerate(runs, start=1):
+        status = str(run.get("status") or "").upper()
+        if status != "OK":
+            return f"run_{index}_status={status or 'MISSING'}"
+        run_exit_code = run.get("exit_code")
+        if run_exit_code not in (0, "0", None):
+            return f"run_{index}_exit_code={run_exit_code}"
+    return None
+
+
 def evaluate_seeds(seed_results: list[dict]) -> tuple[str, str, dict]:
     """Combined Q07 verdict from per-seed results."""
     invalid_seeds = [
-        (r["seed"], r.get("invalid_reason") or f"exit_code={r.get('exit_code')}")
+        (r["seed"], invalid_reason)
         for r in seed_results
-        if r.get("invalid_reason") or (
-            int(r.get("trades") or 0) < MIN_TRADES
-            and r.get("exit_code") not in (0, "0", None)
-        )
+        if (invalid_reason := _tester_health_invalid_reason(r)) is not None
     ]
     if invalid_seeds:
         return ("INVALID",
                 f"seeds_invalid_evidence:{invalid_seeds}",
                 {"per_seed_trades": [(r["seed"], r.get("trades", 0)) for r in seed_results]})
 
-    missing_summary = [
-        r["seed"] for r in seed_results
-        if not r.get("summary_path") and not r.get("report_path")
-    ]
+    missing_summary = [r["seed"] for r in seed_results if not r.get("summary_path")]
     if missing_summary:
         return ("INVALID",
                 f"seeds_missing_summary:{missing_summary}",

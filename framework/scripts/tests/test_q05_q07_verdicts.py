@@ -755,15 +755,14 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(verdict, "INVALID")
         self.assertIn("seeds_missing_summary", reason)
 
-    def test_q07_report_path_counts_as_seed_evidence(self) -> None:
+    def test_q07_report_without_summary_is_invalid(self) -> None:
         verdict, reason, metrics = q07.evaluate_seeds([
             {"seed": 42, "pf": None, "trades": 0, "summary_path": None, "report_path": "report.htm"},
             {"seed": 17, "pf": 1.2, "trades": 25, "summary_path": "summary.json"},
         ])
 
-        self.assertEqual(verdict, "FAIL")
-        self.assertIn("seed_trades_below_floor", reason)
-        self.assertEqual(metrics["per_seed_trades"][0], (42, 0))
+        self.assertEqual(verdict, "INVALID")
+        self.assertIn("seeds_missing_summary", reason)
 
     def test_q07_zero_trade_seed_is_strategy_fail(self) -> None:
         verdict, reason, metrics = q07.evaluate_seeds([
@@ -775,15 +774,82 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertIn("seed_trades_below_floor", reason)
         self.assertEqual(metrics["per_seed_trades"][0], (42, 0))
 
-    def test_q07_zero_trade_seed_with_runner_failure_is_invalid(self) -> None:
+    def test_q07_wrapper_failure_alone_does_not_invalidate_low_trades(self) -> None:
         verdict, reason, metrics = q07.evaluate_seeds([
             {"seed": 42, "pf": None, "trades": 0, "summary_path": "summary.json", "exit_code": 1},
             {"seed": 17, "pf": 1.2, "trades": 25, "summary_path": "summary.json", "exit_code": 0},
         ])
 
-        self.assertEqual(verdict, "INVALID")
-        self.assertIn("seeds_invalid_evidence", reason)
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("seed_trades_below_floor", reason)
         self.assertEqual(metrics["per_seed_trades"][0], (42, 0))
+
+    def _q07_summary_row(self, root: Path, *, status: str = "OK",
+                         run_exit_code: int = 0, oninit: bool = False,
+                         wrapper_exit_code: int = 1) -> dict:
+        summary = root / f"summary_{status}_{run_exit_code}_{int(oninit)}.json"
+        summary.write_text(
+            json.dumps({
+                "result": "FAIL",
+                "reason_classes": ["MIN_TRADES_NOT_MET"],
+                "min_trades_required": 45,
+                "deterministic": True,
+                "oninit_failure_detected": oninit,
+                "log_bomb_detected": False,
+                "model4_log_marker_detected": True,
+                "runs": [{
+                    "status": status,
+                    "exit_code": run_exit_code,
+                    "total_trades": 0,
+                    "profit_factor": 0.0,
+                    "drawdown": 0.0,
+                }],
+            }),
+            encoding="utf-8",
+        )
+        return {
+            "seed": 42,
+            "pf": 0.0,
+            "trades": 0,
+            "summary_path": str(summary),
+            "exit_code": wrapper_exit_code,
+            "timed_out": False,
+            "invalid_reason": None,
+        }
+
+    def test_q07_real_summary_healthy_low_trades_is_fail_not_invalid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            row = self._q07_summary_row(Path(tmp))
+            verdict, reason, _metrics = q07.evaluate_seeds([row])
+
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("seed_trades_below_floor", reason)
+        self.assertNotIn("INVALID", verdict)
+
+    def test_q07_non_ok_tester_run_remains_invalid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            row = self._q07_summary_row(Path(tmp), status="INVALID")
+            verdict, reason, _metrics = q07.evaluate_seeds([row])
+
+        self.assertEqual(verdict, "INVALID")
+        self.assertIn("run_1_status=INVALID", reason)
+
+    def test_q07_oninit_failure_remains_invalid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            row = self._q07_summary_row(Path(tmp), oninit=True)
+            verdict, reason, _metrics = q07.evaluate_seeds([row])
+
+        self.assertEqual(verdict, "INVALID")
+        self.assertIn("oninit_failure_detected", reason)
+
+    def test_q07_effective_seed_mismatch_remains_invalid_control(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            row = self._q07_summary_row(Path(tmp))
+            row["invalid_reason"] = "effective_seed_mismatch:requested=42:report=17"
+            verdict, reason, _metrics = q07.evaluate_seeds([row])
+
+        self.assertEqual(verdict, "INVALID")
+        self.assertIn("effective_seed_mismatch", reason)
 
     def test_q07_seed_timeout_records_invalid_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
