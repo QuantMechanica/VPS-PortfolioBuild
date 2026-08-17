@@ -169,7 +169,9 @@
     "8.7_pbo",
     "8.10_regime_crisis"
    ],
-   "depth_note": "deepest entry in the register by two phases; prior lineage Q04 PF 2.57 (folds 4.035/1.209/2.461), Q05 PF 1.35 dd 6.76, Q06 HARSH PF 1.35 dd 6.03, Q07 five seeds PF 1.31-1.41 variance 7.41 pct, 445 trades"
+   "depth_note": "deepest entry in the register by two phases; prior lineage Q04 PF 2.57 (folds 4.035/1.209/2.461), Q05 PF 1.35 dd 6.76, Q06 HARSH PF 1.35 dd 6.03, Q07 five seeds PF 1.31-1.41 variance 7.41 pct, 445 trades",
+   "second_symbol_corroboration": "QM5_20086 NDX.DWX independently reached Q07 PASS at 2026-08-17T04:04:57 (Q02 PASS, Q04 PASS_SOFT, Q05 PASS, Q06 PASS, Q07 PASS). Two independent symbols to Q07 substantially weakens the single-symbol overfit reading that a lone deep survivor invites. NDX Q08 is the decisive run: if it returns FAIL_SOFT on the same three sub-gates (8.4 seasonal, 8.7 PBO, 8.10 regime_crisis), that is a consistent structural property across symbols and therefore a fixable rework target rather than noise.",
+   "at_updated": "2026-08-17T04:10:00"
   }
  ],
  "repeat_offenders": {}
