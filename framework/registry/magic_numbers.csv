@@ -17340,3 +17340,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 40002,quantpedia-fx-momentum-volatility-parity,3,NZDUSD.DWX,400020003,2026-08-17T18:08:35Z,Codex,active
 40002,quantpedia-fx-momentum-volatility-parity,4,USDCAD.DWX,400020004,2026-08-17T18:08:35Z,Codex,active
 40002,quantpedia-fx-momentum-volatility-parity,5,USDJPY.DWX,400020005,2026-08-17T18:08:35Z,Codex,active
+21510,qs-nvi-ema-sp500,0,SP500.DWX,215100000,2026-08-17,Claude,active
+21511,qs-pvt-cross-ws30,0,WS30.DWX,215110000,2026-08-17,Claude,active
+21512,qs-fibonacci-ma-band-gbp,0,GBPUSD.DWX,215120000,2026-08-17,Claude,active
+33003,ehlers-superpassband-fisher-cycle-scalper,0,EURUSD.DWX,330030000,2026-08-17T18:30:00Z,Gemini,active
+33003,ehlers-superpassband-fisher-cycle-scalper,1,GBPUSD.DWX,330030001,2026-08-17T18:30:00Z,Gemini,active
+33003,ehlers-superpassband-fisher-cycle-scalper,2,USDJPY.DWX,330030002,2026-08-17T18:30:00Z,Gemini,active
+33002,larry-williams-volatility-expansion-breakout,0,SP500.DWX,330020000,2026-08-17T18:30:00Z,Gemini,active
+33002,larry-williams-volatility-expansion-breakout,1,NDX.DWX,330020001,2026-08-17T18:30:00Z,Gemini,active
+33002,larry-williams-volatility-expansion-breakout,2,XAUUSD.DWX,330020002,2026-08-17T18:30:00Z,Gemini,active
