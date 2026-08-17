@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        33005
+; ea_slug:      andrea-unger-dax-intraday-bias-breakout
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       GDAXI.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   5d750fd48a00796b0a4f0915ec2108ede0b8fe863f916324e098feab10294a4a
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=33005
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_range_start_hhmm=1000
+strategy_range_end_hhmm=1030
+strategy_exit_time_hhmm=1830
+strategy_breakout_offset=3.0
+strategy_sl_fraction=0.60
+strategy_tp_fraction=1.80
+strategy_atr_period=14
+strategy_spread_atr_mult=1.8

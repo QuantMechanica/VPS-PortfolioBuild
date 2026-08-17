@@ -17349,3 +17349,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 33002,larry-williams-volatility-expansion-breakout,0,SP500.DWX,330020000,2026-08-17T18:30:00Z,Gemini,active
 33002,larry-williams-volatility-expansion-breakout,1,NDX.DWX,330020001,2026-08-17T18:30:00Z,Gemini,active
 33002,larry-williams-volatility-expansion-breakout,2,XAUUSD.DWX,330020002,2026-08-17T18:30:00Z,Gemini,active
+33005,andrea-unger-dax-intraday-bias-breakout,0,GDAXI.DWX,330050000,2026-08-17T18:40:00Z,Gemini,active
