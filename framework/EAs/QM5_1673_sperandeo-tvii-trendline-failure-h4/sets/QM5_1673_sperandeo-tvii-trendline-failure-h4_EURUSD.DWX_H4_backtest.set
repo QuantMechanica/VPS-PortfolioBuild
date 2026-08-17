@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1673
+; ea_slug:      sperandeo-tvii-trendline-failure-h4
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       EURUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   6
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   a221a5fee155397df6e002fba889a36311ace8ce39fca26a234593018fd9e34c
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=1673
+qm_magic_slot_offset=6
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1673_sperandeo-tvii-trendline-failure-h4.md
+strategy_pivot_strength=5
+strategy_atr_period=14
+strategy_violation_atr_mult=0.5
+strategy_cancellation_bars=4
+strategy_trendline_max_age=144
+strategy_regime_sma_period=200
+strategy_target_retrace=0.5
+strategy_stop_buffer_atr=0.5
+strategy_stop_atr_cap=3.0
+strategy_time_stop_bars=30
+strategy_be_trigger_atr=1.5
+strategy_partial_target_frac=0.5
+strategy_partial_close_frac=0.5
+strategy_cooldown_bars=18
+strategy_spread_atr_mult=0.3
