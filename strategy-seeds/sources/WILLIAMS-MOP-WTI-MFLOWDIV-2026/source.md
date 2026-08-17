@@ -13,7 +13,8 @@ source_approval: decisions/2026-08-17_wti_monthly_flow_divergence_source_approva
 approval_commit: PENDING_BRANCH_COMMIT
 strategy_ids:
   - WILLIAMS-MOP-WTI-MFLOWDIV-2026_S01
-cards_extracted: []
+cards_extracted:
+  - strategy-seeds/cards/approved/QM5_41035_wti-mflow-div_card.md
 parent_sources:
   - SRC03
   - MOP-TSMOM-2012
@@ -177,4 +178,3 @@ economics.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
-
