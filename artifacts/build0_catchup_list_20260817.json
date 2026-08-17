@@ -1,0 +1,2253 @@
+{
+ "schema": "qm.build0-catchup-list/v1",
+ "scope": "the delivery chain only: Q10 PASS pool + live 24-sleeve roster",
+ "unit": "pairs (ea_id, symbol)",
+ "out_of_scope": "~36k inventory rows without evidence -- marked not-usable-for-book-decisions rather than re-run; wholesale re-running would take months",
+ "contract_date_used": "2026-07-29",
+ "counts": {
+  "RERUN_PRE_CONTRACT": 13,
+  "RERUN_EVIDENCE_GONE": 18,
+  "RUN_MISSING_GATE": 5
+ },
+ "runs_needed": 214,
+ "entries": [
+  {
+   "ea_id": "QM5_10123",
+   "symbol": "XAUUSD.DWX",
+   "in_pool": true,
+   "in_roster": false,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-19",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-19",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-19",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-19",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "FAIL_PORTFOLIO",
+     "at": "2026-07-19",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10128",
+   "symbol": "XAUUSD.DWX",
+   "in_pool": true,
+   "in_roster": false,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "FAIL_PORTFOLIO",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10142",
+   "symbol": "SP500.DWX",
+   "in_pool": true,
+   "in_roster": false,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-29",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-29",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "FAIL_PORTFOLIO",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q05",
+    "Q06"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10145",
+   "symbol": "XAUUSD.DWX",
+   "in_pool": true,
+   "in_roster": false,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "FAIL_PORTFOLIO",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-24",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10183",
+   "symbol": "XAUUSD.DWX",
+   "in_pool": true,
+   "in_roster": false,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS_SOFT",
+     "at": "2026-07-21",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-21",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-21",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-21",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "FAIL_PORTFOLIO",
+     "at": "2026-07-21",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-21",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10403",
+   "symbol": "XAUUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-06",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-07-07",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-06",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-15",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-07-06",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10440",
+   "symbol": "NDX.DWX",
+   "in_pool": false,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS_SOFT",
+     "at": "2026-07-07",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "NO_VERDICT"
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "FAIL",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-07-27",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-06-26",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "FAIL",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RUN_MISSING_GATE",
+   "missing_phases": [
+    "Q05"
+   ],
+   "evidence_gone_phases": [
+    "Q06"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10513",
+   "symbol": "XAUUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_SOFT",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-17",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-17",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "NEED_MORE_DATA",
+     "at": "2026-06-26",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10692",
+   "symbol": "NDX.DWX",
+   "in_pool": true,
+   "in_roster": false,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "FAIL",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "NO_VERDICT"
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-06-26",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    }
+   },
+   "classification": "RUN_MISSING_GATE",
+   "missing_phases": [
+    "Q05"
+   ],
+   "evidence_gone_phases": [
+    "Q06",
+    "Q07"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10706",
+   "symbol": "GBPUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-01",
+     "pre_contract": false
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_HARD",
+     "at": "2026-07-19",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-07-05",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10911",
+   "symbol": "GDAXI.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-07-24",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-15",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-15",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "NEED_MORE_DATA",
+     "at": "2026-06-26",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10919",
+   "symbol": "XTIUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_SOFT",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q05",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10938",
+   "symbol": "GDAXI.DWX",
+   "in_pool": true,
+   "in_roster": false,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-18",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-18",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-18",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "NEED_MORE_DATA",
+     "at": "2026-06-26",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_10939",
+   "symbol": "GBPUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-15",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-06-27",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q05",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_11132",
+   "symbol": "SP500.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-15",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-14",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-06-26",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_11165",
+   "symbol": "AUDCAD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-14",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-15",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-14",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-14",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-17",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-06-27",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q06",
+    "Q07",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_11165",
+   "symbol": "EURUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_SOFT",
+     "at": "2026-07-06",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-07-15",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-06",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-06",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_HARD",
+     "at": "2026-07-17",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-07-06",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q06",
+    "Q07",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_11421",
+   "symbol": "AUDUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_LOWFREQ",
+     "at": "2026-06-26",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-26",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_HARD",
+     "at": "2026-07-25",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-06-27",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q05",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_11421",
+   "symbol": "EURUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-06-27",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_11422",
+   "symbol": "USDCAD.DWX",
+   "in_pool": true,
+   "in_roster": false,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-07-24",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_11708",
+   "symbol": "EURUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_SOFT",
+     "at": "2026-07-05",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-05",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-05",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-06",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-07-06",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_12567",
+   "symbol": "XAUUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-06-27",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_12567",
+   "symbol": "XNGUSD.DWX",
+   "in_pool": false,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-25",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-06-25",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_HARD",
+     "at": "2026-07-25",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-06-26",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "NO_VERDICT"
+    }
+   },
+   "classification": "RUN_MISSING_GATE",
+   "missing_phases": [
+    "Q10"
+   ],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q05"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q08",
+    "Q09_PORTFOLIO"
+   ]
+  },
+  {
+   "ea_id": "QM5_12778",
+   "symbol": "AUDUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "NO_VERDICT"
+    },
+    "Q05": {
+     "state": "NO_VERDICT"
+    },
+    "Q06": {
+     "state": "NO_VERDICT"
+    },
+    "Q07": {
+     "state": "NO_VERDICT"
+    },
+    "Q08": {
+     "state": "NO_VERDICT"
+    },
+    "Q09_PORTFOLIO": {
+     "state": "NO_VERDICT"
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RUN_MISSING_GATE",
+   "missing_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO"
+   ],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_12969",
+   "symbol": "USDJPY.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-07",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-07",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-07",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-07",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-07-07",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_12989",
+   "symbol": "XAUUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PENDING_RUNNER",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q07": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PENDING_RUNNER",
+     "at": "2026-08-02",
+     "pre_contract": false
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "FAIL_PORTFOLIO",
+     "at": "2026-07-03",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_13013",
+   "symbol": "NDX.DWX",
+   "in_pool": true,
+   "in_roster": false,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS_LOWFREQ",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "FAIL_PORTFOLIO",
+     "at": "2026-07-05",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-20",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_13036",
+   "symbol": "GDAXI.DWX",
+   "in_pool": true,
+   "in_roster": false,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "FAIL_PORTFOLIO",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_13117",
+   "symbol": "EURGBP.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "NO_VERDICT"
+    },
+    "Q05": {
+     "state": "NO_VERDICT"
+    },
+    "Q06": {
+     "state": "NO_VERDICT"
+    },
+    "Q07": {
+     "state": "NO_VERDICT"
+    },
+    "Q08": {
+     "state": "NO_VERDICT"
+    },
+    "Q09_PORTFOLIO": {
+     "state": "NO_VERDICT"
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RUN_MISSING_GATE",
+   "missing_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO"
+   ],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_13128",
+   "symbol": "NDX.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-31",
+     "pre_contract": false
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-31",
+     "pre_contract": false
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-31",
+     "pre_contract": false
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-05",
+     "pre_contract": false
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "NEED_MORE_DATA",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_13213",
+   "symbol": "USDJPY.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS_SOFT",
+     "at": "2026-07-14",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-15",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-15",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-25",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "FAIL_PORTFOLIO",
+     "at": "2026-07-25",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_1328",
+   "symbol": "EURJPY.DWX",
+   "in_pool": true,
+   "in_roster": false,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "FAIL_PORTFOLIO",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_13301",
+   "symbol": "GDAXI.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS_SOFT",
+     "at": "2026-07-28",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-28",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-16",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-16",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "FAIL_PORTFOLIO",
+     "at": "2026-07-27",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-26",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_1556",
+   "symbol": "XAUUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS_LOWFREQ",
+     "at": "2026-07-16",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-05",
+     "pre_contract": true
+    },
+    "Q06": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-05",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS",
+     "at": "2026-07-05",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "FAIL_SOFT",
+     "at": "2026-07-17",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "EVIDENCE_GONE",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-07-05",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_EVIDENCE_GONE",
+   "missing_phases": [],
+   "evidence_gone_phases": [
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q09_PORTFOLIO"
+   ],
+   "pre_contract_phases": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_1567",
+   "symbol": "EURUSD.DWX",
+   "in_pool": true,
+   "in_roster": true,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS_SOFT",
+     "at": "2026-07-18",
+     "pre_contract": true
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-07-31",
+     "pre_contract": false
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-07-31",
+     "pre_contract": false
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-07-26",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "INFRA_FAIL",
+     "at": "2026-07-25",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "PASS_PORTFOLIO",
+     "at": "2026-07-19",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-25",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q04",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  },
+  {
+   "ea_id": "QM5_20048",
+   "symbol": "XTIUSD.DWX",
+   "in_pool": true,
+   "in_roster": false,
+   "phases": {
+    "Q04": {
+     "state": "OK",
+     "verdict": "PASS_SOFT",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q05": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-08-03",
+     "pre_contract": false
+    },
+    "Q06": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-22",
+     "pre_contract": true
+    },
+    "Q07": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-22",
+     "pre_contract": true
+    },
+    "Q08": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-22",
+     "pre_contract": true
+    },
+    "Q09_PORTFOLIO": {
+     "state": "OK",
+     "verdict": "FAIL_PORTFOLIO",
+     "at": "2026-07-22",
+     "pre_contract": true
+    },
+    "Q10": {
+     "state": "OK",
+     "verdict": "PASS",
+     "at": "2026-07-22",
+     "pre_contract": true
+    }
+   },
+   "classification": "RERUN_PRE_CONTRACT",
+   "missing_phases": [],
+   "evidence_gone_phases": [],
+   "pre_contract_phases": [
+    "Q06",
+    "Q07",
+    "Q08",
+    "Q09_PORTFOLIO",
+    "Q10"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,3959 @@
+{
+ "schema": "qm.behaviour-changing-commits/v1",
+ "since": "2026-06-01",
+ "method": "commits touching paths whose content can alter a backtest outcome; each class carries a stated reason. Excluded: docs, decisions, artifacts, public-data, dashboards, tests, and pump auto-commits -- none of which change results.",
+ "classes": {
+  "ea_include": {
+   "path": "framework/include/",
+   "why": "compiled into every EA; changes trade logic, filters or guards",
+   "commits": [
+    {
+     "sha": "3dc8f589b",
+     "date": "2026-08-17",
+     "subject": "registry(wti): allocate QM5_41046 magic"
+    },
+    {
+     "sha": "ab41c56fd",
+     "date": "2026-08-17",
+     "subject": "registry(wti): allocate QM5_41045 magic"
+    },
+    {
+     "sha": "d7bb1e70b",
+     "date": "2026-08-17",
+     "subject": "registry(xng): allocate QM5_41044 magic"
+    },
+    {
+     "sha": "d9de302b4",
+     "date": "2026-08-17",
+     "subject": "registry(xng): allocate QM5_41043 magic"
+    },
+    {
+     "sha": "37776b515",
+     "date": "2026-08-17",
+     "subject": "fix Q02 OnInit rejection classification and inputs"
+    },
+    {
+     "sha": "475192d59",
+     "date": "2026-08-17",
+     "subject": "registry: assign QM5_41042 WTI magic"
+    },
+    {
+     "sha": "b2057dab9",
+     "date": "2026-08-17",
+     "subject": "registry: assign QM5_41041 WTI magic"
+    },
+    {
+     "sha": "ff6476562",
+     "date": "2026-08-17",
+     "subject": "registry: assign basket magics for QM5_41040"
+    },
+    {
+     "sha": "86bf588aa",
+     "date": "2026-08-17",
+     "subject": "registry: assign basket magics for QM5_41039"
+    },
+    {
+     "sha": "389dc0474",
+     "date": "2026-08-17",
+     "subject": "registry: assign magic for QM5_21503"
+    },
+    {
+     "sha": "718dc474a",
+     "date": "2026-08-17",
+     "subject": "ops: apply DL-087 broad discovery symbols"
+    },
+    {
+     "sha": "ee93708a6",
+     "date": "2026-08-17",
+     "subject": "ops: add bounded governed magic allocator"
+    },
+    {
+     "sha": "370e6f0fb",
+     "date": "2026-08-17",
+     "subject": "registry: assign magic for QM5_41038"
+    },
+    {
+     "sha": "cb26ef6e0",
+     "date": "2026-08-17",
+     "subject": "perf: index generated magic resolver"
+    },
+    {
+     "sha": "f249b8a7d",
+     "date": "2026-08-17",
+     "subject": "registry: assign magic for QM5_41037"
+    },
+    {
+     "sha": "16361de8c",
+     "date": "2026-08-17",
+     "subject": "registry: assign magic for QM5_41036"
+    },
+    {
+     "sha": "dc526ed9f",
+     "date": "2026-08-17",
+     "subject": "registry: assign magic for QM5_41035"
+    },
+    {
+     "sha": "276b49ea9",
+     "date": "2026-08-17",
+     "subject": "registry: assign magic for QM5_41034"
+    },
+    {
+     "sha": "a9a8c24ce",
+     "date": "2026-08-17",
+     "subject": "build(century): implement batch 2 and gate dynamic baskets"
+    },
+    {
+     "sha": "ea1719076",
+     "date": "2026-08-17",
+     "subject": "feat(QM5_33004): build 3-bar energy momentum sleeve"
+    },
+    {
+     "sha": "b930122a7",
+     "date": "2026-08-16",
+     "subject": "registry: assign magic for QM5_41032"
+    },
+    {
+     "sha": "47b1395d7",
+     "date": "2026-08-16",
+     "subject": "registry: assign basket magics for QM5_41031"
+    },
+    {
+     "sha": "05e8ef8b9",
+     "date": "2026-08-16",
+     "subject": "build(century): implement batch 1 EAs"
+    },
+    {
+     "sha": "8cabfe613",
+     "date": "2026-08-16",
+     "subject": "fix(framework): suppress no-op SLTP modifies in tester and live"
+    },
+    {
+     "sha": "bcf8a757f",
+     "date": "2026-08-16",
+     "subject": "registry: assign two magics for QM5_41030"
+    },
+    {
+     "sha": "a494949bf",
+     "date": "2026-08-16",
+     "subject": "registry: assign magic for QM5_41029"
+    },
+    {
+     "sha": "a8206a743",
+     "date": "2026-08-16",
+     "subject": "registry: assign magic for QM5_41028"
+    },
+    {
+     "sha": "55a58b5c9",
+     "date": "2026-08-16",
+     "subject": "registry: assign magic for QM5_41027"
+    },
+    {
+     "sha": "dd0319ad3",
+     "date": "2026-08-16",
+     "subject": "registry: register QM5_41026 WTI magic"
+    },
+    {
+     "sha": "ba9ee2513",
+     "date": "2026-08-16",
+     "subject": "build(wti): implement QM5_41025 day-of-month momentum"
+    },
+    {
+     "sha": "10baad710",
+     "date": "2026-08-16",
+     "subject": "build(wti): implement QM5_41024 first-Wednesday momentum"
+    },
+    {
+     "sha": "bddb7600d",
+     "date": "2026-08-16",
+     "subject": "fix(fx): repair QM5_11388 Q02 infrastructure"
+    },
+    {
+     "sha": "95fbf9f4e",
+     "date": "2026-08-16",
+     "subject": "build(wti): implement QM5_41023 boundary momentum"
+    },
+    {
+     "sha": "8a51652a3",
+     "date": "2026-08-16",
+     "subject": "fix(magic): fail closed when a (ea_id,slot) registry symbol disagrees with the caller's actual s"
+    },
+    {
+     "sha": "3cc2bd31e",
+     "date": "2026-08-16",
+     "subject": "registry: allocate magic rows for 19 held EAs"
+    },
+    {
+     "sha": "b00de2104",
+     "date": "2026-08-16",
+     "subject": "build(wti): implement QM5_41022 split-week momentum"
+    },
+    {
+     "sha": "95f0cedf6",
+     "date": "2026-08-16",
+     "subject": "build(wti): implement QM5_41021 dual momentum"
+    },
+    {
+     "sha": "b2cd06d18",
+     "date": "2026-08-16",
+     "subject": "build(farm): absorb codex build-lane artifacts interrupted by OFF drain"
+    },
+    {
+     "sha": "afddde243",
+     "date": "2026-08-16",
+     "subject": "feat(wti): build QM5_41019 week-opening momentum"
+    },
+    {
+     "sha": "e208de9d3",
+     "date": "2026-08-16",
+     "subject": "feat(energy): build QM5_41018 Wednesday relative value"
+    },
+    {
+     "sha": "aa7485fe3",
+     "date": "2026-08-16",
+     "subject": "build(wti): add QM5_41017 counter-regime EA"
+    },
+    {
+     "sha": "fe12106fc",
+     "date": "2026-08-15",
+     "subject": "build(wti): register QM5_41016 magic"
+    },
+    {
+     "sha": "8dce0cefd",
+     "date": "2026-08-15",
+     "subject": "build(energy): register QM5_41015 basket magics"
+    },
+    {
+     "sha": "1cd8a2f80",
+     "date": "2026-08-15",
+     "subject": "build(energy): register QM5_41014 basket magics"
+    },
+    {
+     "sha": "883709b09",
+     "date": "2026-08-15",
+     "subject": "build(wti): add QM5_41013 month-opening momentum"
+    },
+    {
+     "sha": "bfd8b00ce",
+     "date": "2026-08-15",
+     "subject": "build(registry): allocate QM5_21527 WTI magic"
+    },
+    {
+     "sha": "3e75ce562",
+     "date": "2026-08-15",
+     "subject": "fix(registry): drop 23 stale XBRUSD magic rows colliding with 2026-08-12 XTIUSD re-symboling"
+    },
+    {
+     "sha": "b56d8f9fe",
+     "date": "2026-08-15",
+     "subject": "build(metals): register QM5_21526 basket magics"
+    },
+    {
+     "sha": "623d6ed61",
+     "date": "2026-08-15",
+     "subject": "build(registry): allocate QM5_21525 basket magics"
+    },
+    {
+     "sha": "a66fa36d8",
+     "date": "2026-08-14",
+     "subject": "build(registry): allocate QM5_21524 basket magics"
+    },
+    {
+     "sha": "d05481743",
+     "date": "2026-08-14",
+     "subject": "build(registry): allocate QM5_21523 WTI magic"
+    },
+    {
+     "sha": "d74f97fe4",
+     "date": "2026-08-14",
+     "subject": "feat(commodity): build XNG quiet-flow momentum"
+    },
+    {
+     "sha": "cef8f3042",
+     "date": "2026-08-14",
+     "subject": "feat(commodity): build Brent-confirmed WTI trend"
+    },
+    {
+     "sha": "d6e115a8a",
+     "date": "2026-08-14",
+     "subject": "feat(qm): add WTI decoupled trend candidate"
+    },
+    {
+     "sha": "095d3256a",
+     "date": "2026-08-14",
+     "subject": "chore(registry): register QM5_21504 XNG flow reversal"
+    },
+    {
+     "sha": "28444e65f",
+     "date": "2026-08-13",
+     "subject": "build(census): add QM5_21501 pattern-permission census instrument"
+    },
+    {
+     "sha": "ff37fd71c",
+     "date": "2026-08-13",
+     "subject": "build(registry): allocate QM5_20306 XNG magic"
+    },
+    {
+     "sha": "f62763300",
+     "date": "2026-08-13",
+     "subject": "feat(filter): A1/A2 straddle integration \u2014 side-effect-free plan, pure decision, pending withdra"
+    },
+    {
+     "sha": "28a7f676f",
+     "date": "2026-08-13",
+     "subject": "feat(filter): add opt-in closed-bar pattern permission gate (P1 core)"
+    },
+    {
+     "sha": "987754e28",
+     "date": "2026-08-13",
+     "subject": "build(registry): allocate QM5_20305 XNG magic"
+    },
+    {
+     "sha": "736bf721a",
+     "date": "2026-08-13",
+     "subject": "feat(ea): add WTI jump-beta regime QM5_20304"
+    },
+    {
+     "sha": "7b3441218",
+     "date": "2026-08-13",
+     "subject": "build(registry): allocate QM5_20303 WTI magic"
+    },
+    {
+     "sha": "f8ab1b30a",
+     "date": "2026-08-13",
+     "subject": "build(registry): allocate QM5_20302 WTI magic"
+    },
+    {
+     "sha": "becc17fff",
+     "date": "2026-08-13",
+     "subject": "build(registry): allocate QM5_20301 WTI magic"
+    },
+    {
+     "sha": "84d48aa37",
+     "date": "2026-08-13",
+     "subject": "build(registry): allocate QM5_20300 WTI magic"
+    },
+    {
+     "sha": "415d6a493",
+     "date": "2026-08-13",
+     "subject": "build(registry): allocate QM5_20299 XNG magic"
+    },
+    {
+     "sha": "3e8b580ef",
+     "date": "2026-08-13",
+     "subject": "build(registry): allocate QM5_20298 WTI magic"
+    },
+    {
+     "sha": "9ec73e61d",
+     "date": "2026-08-13",
+     "subject": "build QM5_11468 FX last-kiss sleeve"
+    },
+    {
+     "sha": "ba9ec343d",
+     "date": "2026-08-13",
+     "subject": "build(registry): allocate QM5_20297 XNG magic"
+    },
+    {
+     "sha": "d04e7dca2",
+     "date": "2026-08-13",
+     "subject": "build(registry): allocate QM5_20296 XNG magic"
+    },
+    {
+     "sha": "e4c93dbd4",
+     "date": "2026-08-13",
+     "subject": "build(registry): allocate QM5_20295 WTI magic"
+    },
+    {
+     "sha": "d4491d471",
+     "date": "2026-08-13",
+     "subject": "build(registry): allocate QM5_20294 metal magics"
+    },
+    {
+     "sha": "33f495a75",
+     "date": "2026-08-12",
+     "subject": "build(registry): allocate QM5_20293 WTI trend"
+    },
+    {
+     "sha": "387b7fd00",
+     "date": "2026-08-12",
+     "subject": "OWNER 2026-08-12: Reroute 23 Brent oil cards to WTI (XTIUSD) Q02"
+    },
+    {
+     "sha": "f39b73a34",
+     "date": "2026-08-12",
+     "subject": "feat(fx): enqueue QM5_20292 carry-unwind basket"
+    },
+    {
+     "sha": "3d03754b4",
+     "date": "2026-08-12",
+     "subject": "chore(registry): allocate QM5_20291 basket magics"
+    },
+    {
+     "sha": "2de008b15",
+     "date": "2026-08-12",
+     "subject": "chore(registry): allocate QM5_20290 WTI magic"
+    },
+    {
+     "sha": "44b511546",
+     "date": "2026-08-12",
+     "subject": "chore(registry): allocate QM5_20289 WTI magic"
+    },
+    {
+     "sha": "7f8b5176e",
+     "date": "2026-08-12",
+     "subject": "chore(registry): allocate QM5_20288 WTI magic"
+    },
+    {
+     "sha": "bc7a6a506",
+     "date": "2026-08-12",
+     "subject": "chore(registry): allocate QM5_20287 WTI magic"
+    },
+    {
+     "sha": "e5a0e4743",
+     "date": "2026-08-12",
+     "subject": "chore(registry): allocate QM5_20286 WTI magic"
+    },
+    {
+     "sha": "29016b885",
+     "date": "2026-08-12",
+     "subject": "chore(registry): allocate QM5_20285 WTI magic"
+    },
+    {
+     "sha": "9883f93e0",
+     "date": "2026-08-11",
+     "subject": "chore(registry): allocate QM5_20284 WTI magic"
+    },
+    {
+     "sha": "451b02315",
+     "date": "2026-08-11",
+     "subject": "chore(registry): allocate QM5_20283 WTI magic"
+    },
+    {
+     "sha": "c3b84dba0",
+     "date": "2026-08-11",
+     "subject": "chore(registry): allocate QM5_20282 WTI magic"
+    },
+    {
+     "sha": "f6f35f2b7",
+     "date": "2026-08-11",
+     "subject": "fix(Q02): cache QM5_12486 D1 SuperTrend state"
+    },
+    {
+     "sha": "0ce508dfb",
+     "date": "2026-08-11",
+     "subject": "chore(registry): allocate QM5_20281 WTI magic"
+    },
+    {
+     "sha": "8860c554d",
+     "date": "2026-08-11",
+     "subject": "chore(registry): allocate QM5_20280 WTI magic"
+    },
+    {
+     "sha": "ebb9bbd55",
+     "date": "2026-08-11",
+     "subject": "chore(registry): allocate QM5_20279 WTI magic"
+    },
+    {
+     "sha": "93c999d82",
+     "date": "2026-08-11",
+     "subject": "build: add source-exact QM5_11660 wedge EA"
+    },
+    {
+     "sha": "9dbebf1db",
+     "date": "2026-08-11",
+     "subject": "chore(registry): allocate QM5_20278 WTI magic"
+    },
+    {
+     "sha": "526d4fd9c",
+     "date": "2026-08-11",
+     "subject": "chore(registry): allocate QM5_20277 WTI magic"
+    },
+    {
+     "sha": "78569a91c",
+     "date": "2026-08-11",
+     "subject": "chore(registry): allocate QM5_20276 WTI magic"
+    },
+    {
+     "sha": "53bba06ce",
+     "date": "2026-08-11",
+     "subject": "build_ea: implement QM5_9644 (Bandy TPS Bounded Scale-In Mean-Reversion Index)"
+    },
+    {
+     "sha": "9fa85d4cd",
+     "date": "2026-08-11",
+     "subject": "build_ea: implement QM5_9641 (Bandy CCI Extreme Fade Mean-Reversion Index)"
+    },
+    {
+     "sha": "62f5c444c",
+     "date": "2026-08-11",
+     "subject": "build_ea: implement QM5_9501 (Pring KST Signal-Line Cross W1)"
+    },
+    {
+     "sha": "0a841668b",
+     "date": "2026-08-11",
+     "subject": "build(claude): QM5_20176 hopwood-ts5-standalone-h4-r1-recovery \u2014 H4 DMI/MACD/Donchian fresh-cros"
+    },
+    {
+     "sha": "9a6f8347d",
+     "date": "2026-08-11",
+     "subject": "build(claude): QM5_20086 connors-multi-day-high-low-h4-r1-recovery \u2014 H4 consecutive-extreme-stre"
+    },
+    {
+     "sha": "53e207445",
+     "date": "2026-08-11",
+     "subject": "build(claude): QM5_20085 lebeau-lucas-momentum-oscillator-h4-r1-recovery \u2014 H4 ROC-smoothed zero-"
+    },
+    {
+     "sha": "22015488a",
+     "date": "2026-08-11",
+     "subject": "build(claude): QM5_20082 connors-rsi2-pullback-h4 \u2014 H4 RSI(2) pullback-in-trend mean reversion, "
+    },
+    {
+     "sha": "e33888d3e",
+     "date": "2026-08-11",
+     "subject": "build_ea: implement QM5_20075 (Camarilla Inner-Pivot Fade H1/M15)"
+    },
+    {
+     "sha": "979060e83",
+     "date": "2026-08-11",
+     "subject": "build_ea: implement QM5_20074 (Trendline Horizontal S/R Break+Retest H1)"
+    },
+    {
+     "sha": "7ada03464",
+     "date": "2026-08-11",
+     "subject": "chore(registry): allocate QM5_20275 basket magics"
+    },
+    {
+     "sha": "6c0380694",
+     "date": "2026-08-11",
+     "subject": "build_ea: implement QM5_20076 (Trendline Diagonal Break+Retest H1)"
+    },
+    {
+     "sha": "9342c12c8",
+     "date": "2026-08-11",
+     "subject": "build_ea: implement QM5_20073 pip-hunter-heiken-ashi-r1-recovery"
+    },
+    {
+     "sha": "155d8fe76",
+     "date": "2026-08-10",
+     "subject": "build_ea: implement QM5_1626 hopwood-bermaui-stoch-h4"
+    },
+    {
+     "sha": "dff7148d2",
+     "date": "2026-08-10",
+     "subject": "build: add completed EA artifacts"
+    },
+    {
+     "sha": "aac51b3a8",
+     "date": "2026-08-10",
+     "subject": "build_ea: implement QM5_1626 (Hopwood Bermaui-Stoch H4)"
+    },
+    {
+     "sha": "288c9d833",
+     "date": "2026-08-10",
+     "subject": "registry: self-allocate magic rows for QM5_1286, QM5_1287, QM5_1312"
+    },
+    {
+     "sha": "d6363b6ce",
+     "date": "2026-08-10",
+     "subject": "build_ea: implement QM5_12436 (EA31337 Williams %R reentry)"
+    },
+    {
+     "sha": "d40c140db",
+     "date": "2026-08-10",
+     "subject": "build_ea: implement QM5_12430, QM5_12435 (EA31337 Stochastic/CCI reversals)"
+    },
+    {
+     "sha": "faa3470b2",
+     "date": "2026-08-10",
+     "subject": "chore(registry): allocate QM5_20273 WTI magic"
+    },
+    {
+     "sha": "568543bef",
+     "date": "2026-08-10",
+     "subject": "build_ea: implement QM5_11563, QM5_11539, QM5_11537 (Connors/Carter-T D1+H1 entries)"
+    },
+    {
+     "sha": "fc7151148",
+     "date": "2026-08-10",
+     "subject": "build(fx): add QM5_11904 failure-test basket"
+    },
+    {
+     "sha": "e39c32ddc",
+     "date": "2026-08-10",
+     "subject": "chore(registry): allocate QM5_20272 WTI magic"
+    },
+    {
+     "sha": "5b5c78689",
+     "date": "2026-08-10",
+     "subject": "build_ea: implement QM5_11434 (Carter SMA32 channel+PSAR+SMA200) and QM5_11435 (Carter ADX prior"
+    },
+    {
+     "sha": "e8bda9caf",
+     "date": "2026-08-10",
+     "subject": "build_ea: implement QM5_11402 (Davey dueling momentum, D1)"
+    },
+    {
+     "sha": "fb05ee30e",
+     "date": "2026-08-10",
+     "subject": "build_ea: implement QM5_11388 (Golden Strategy SMMA/WPR/Stoch) and QM5_11401 (Davey low-volume m"
+    },
+    {
+     "sha": "a0662e195",
+     "date": "2026-08-10",
+     "subject": "build_ea: implement QM5_11325 (TC-M5 System #9 EMA cascade + MACD partial exit)"
+    },
+    {
+     "sha": "908003072",
+     "date": "2026-08-10",
+     "subject": "build_ea: implement QM5_10645 and QM5_10282, update magic registry"
+    },
+    {
+     "sha": "65faee4da",
+     "date": "2026-08-10",
+     "subject": "chore(registry): allocate QM5_20271 WTI magic"
+    },
+    {
+     "sha": "33a474023",
+     "date": "2026-08-10",
+     "subject": "chore(registry): allocate QM5_20270 WTI magic"
+    },
+    {
+     "sha": "49f1d51a7",
+     "date": "2026-08-09",
+     "subject": "chore(registry): allocate QM5_20269 WTI magic"
+    },
+    {
+     "sha": "3b99583e9",
+     "date": "2026-08-09",
+     "subject": "chore(registry): allocate QM5_20268 basket magics"
+    },
+    {
+     "sha": "174ce3369",
+     "date": "2026-08-08",
+     "subject": "build(commodity): add QM5_20267 XNG rank trend"
+    },
+    {
+     "sha": "4d7b5f070",
+     "date": "2026-08-08",
+     "subject": "build(commodity): add QM5_20266 Collins WTI momentum"
+    },
+    {
+     "sha": "c8ca9e0a7",
+     "date": "2026-08-07",
+     "subject": "build(commodity): add QM5_20265 XAU/XAG failed-break reversion"
+    },
+    {
+     "sha": "bef21f297",
+     "date": "2026-08-07",
+     "subject": "build(commodity): add QM5_20263 robust XAU/XAG ratio"
+    },
+    {
+     "sha": "48e2f615b",
+     "date": "2026-08-07",
+     "subject": "chore(registry): allocate QM5_20261 WTI linear trend"
+    },
+    {
+     "sha": "2b6336466",
+     "date": "2026-08-07",
+     "subject": "chore(registry): allocate QM5_20260 XAU/XAG momentum vote"
+    },
+    {
+     "sha": "2fa603207",
+     "date": "2026-08-07",
+     "subject": "chore(registry): allocate QM5_20259 XNG momentum vote"
+    },
+    {
+     "sha": "3daeda513",
+     "date": "2026-08-07",
+     "subject": "chore(registry): allocate QM5_20258 WTI momentum vote"
+    },
+    {
+     "sha": "df733d938",
+     "date": "2026-08-07",
+     "subject": "chore(registry): allocate QM5_20257 WTI memory edge"
+    },
+    {
+     "sha": "31dea3914",
+     "date": "2026-08-07",
+     "subject": "build(fx): complete QM5_11646 D1 pending sleeve"
+    },
+    {
+     "sha": "bdb290280",
+     "date": "2026-08-07",
+     "subject": "chore(registry): allocate QM5_20256 WTI memory edge"
+    },
+    {
+     "sha": "e75a0a769",
+     "date": "2026-08-07",
+     "subject": "chore(registry): allocate QM5_20255 FX basket magics"
+    },
+    {
+     "sha": "2c20a7c0e",
+     "date": "2026-08-06",
+     "subject": "chore(registry): allocate QM5_20254 XAU XAG basket"
+    },
+    {
+     "sha": "59566086b",
+     "date": "2026-08-06",
+     "subject": "chore(registry): allocate QM5_20252 FX basket magics"
+    },
+    {
+     "sha": "9bbee050a",
+     "date": "2026-08-06",
+     "subject": "chore(registry): allocate QM5 20251 WTI magic"
+    },
+    {
+     "sha": "cfafb9a4c",
+     "date": "2026-08-06",
+     "subject": "chore(registry): allocate QM5 20249 basket magics"
+    },
+    {
+     "sha": "8dd804af1",
+     "date": "2026-08-06",
+     "subject": "build(fx): enqueue QM5_11887 H4 regime sleeve"
+    },
+    {
+     "sha": "fb6e65315",
+     "date": "2026-08-06",
+     "subject": "chore(registry): allocate QM5_20248 XNG VR window"
+    },
+    {
+     "sha": "526176565",
+     "date": "2026-08-06",
+     "subject": "build(fx): add QM5_20246 USDJPY EURGBP basket"
+    },
+    {
+     "sha": "883c12b1f",
+     "date": "2026-08-06",
+     "subject": "build: allocate QM5_20245 WTI VR RSM"
+    },
+    {
+     "sha": "71dd5ec14",
+     "date": "2026-08-06",
+     "subject": "build: allocate QM5_20244 WTI trend sign"
+    },
+    {
+     "sha": "271f89dd1",
+     "date": "2026-08-06",
+     "subject": "research: approve QM5_20242 XNG RSM window"
+    },
+    {
+     "sha": "5b23e710c",
+     "date": "2026-08-06",
+     "subject": "research: approve QM5_20241 WTI season anchor"
+    },
+    {
+     "sha": "28baf839a",
+     "date": "2026-08-06",
+     "subject": "build(fx): add QM5_20240 USDCHF GBPJPY basket"
+    },
+    {
+     "sha": "1c312453a",
+     "date": "2026-08-06",
+     "subject": "build: add QM5_20239 WTI pullback trend"
+    },
+    {
+     "sha": "67ffdfc20",
+     "date": "2026-08-06",
+     "subject": "build(fx): add QM5_20238 USDCAD EURJPY basket"
+    },
+    {
+     "sha": "608b13e32",
+     "date": "2026-08-06",
+     "subject": "research: allocate QM5_20236 XAU XAG VoV card"
+    },
+    {
+     "sha": "9e6be25cf",
+     "date": "2026-08-06",
+     "subject": "build(qm5-20234): add XAU XAG RSJ basket"
+    },
+    {
+     "sha": "cb022942d",
+     "date": "2026-08-06",
+     "subject": "build(qm5-20233): add XAU XAG skewness basket"
+    },
+    {
+     "sha": "e3606ce53",
+     "date": "2026-08-05",
+     "subject": "chore(registry): allocate QM5_20231 WTI sleeve"
+    },
+    {
+     "sha": "c0d6e7b4d",
+     "date": "2026-08-05",
+     "subject": "chore(registry): allocate QM5_20229 WTI sleeve"
+    },
+    {
+     "sha": "04852f120",
+     "date": "2026-08-05",
+     "subject": "build(fx): add QM5_20228 USDCAD GBPJPY basket"
+    },
+    {
+     "sha": "cd985ea03",
+     "date": "2026-08-05",
+     "subject": "chore(registry): allocate QM5_20227 WTI sleeve"
+    },
+    {
+     "sha": "6250fd139",
+     "date": "2026-08-05",
+     "subject": "build(fx): add QM5_20224 EURUSD EURJPY basket"
+    },
+    {
+     "sha": "babc308c0",
+     "date": "2026-08-05",
+     "subject": "build(fx): add QM5_20223 GBPUSD EURGBP basket"
+    },
+    {
+     "sha": "446211e9f",
+     "date": "2026-08-05",
+     "subject": "build: add WTI seasonal sign concordance EA"
+    },
+    {
+     "sha": "be8d728ba",
+     "date": "2026-08-05",
+     "subject": "build: add WTI winter return-sign momentum EA"
+    },
+    {
+     "sha": "336bdceee",
+     "date": "2026-08-05",
+     "subject": "build(fx): add QM5_20220 USDCAD AUDJPY basket"
+    },
+    {
+     "sha": "8763abbae",
+     "date": "2026-08-04",
+     "subject": "build(commodity): allocate QM5_20214 registry rows"
+    },
+    {
+     "sha": "d2441ba45",
+     "date": "2026-08-03",
+     "subject": "feat(fx): build QM5_20210 GBPUSD AUDJPY basket"
+    },
+    {
+     "sha": "74d9b09d3",
+     "date": "2026-08-03",
+     "subject": "chore(registry): allocate QM5_20209 WTI winter momentum"
+    },
+    {
+     "sha": "9cb7dbf83",
+     "date": "2026-08-03",
+     "subject": "feat(fx): build QM5_20208 NZDUSD EURAUD basket"
+    },
+    {
+     "sha": "20d9b04a3",
+     "date": "2026-08-03",
+     "subject": "chore(registry): allocate QM5_20206 XAU/XAG momentum IVol"
+    },
+    {
+     "sha": "6b0f1a829",
+     "date": "2026-08-03",
+     "subject": "chore(registry): allocate QM5_20205 WTI calendar momentum"
+    },
+    {
+     "sha": "f0102fbcf",
+     "date": "2026-08-03",
+     "subject": "fix(q09): bind sealed calendar inputs in tester"
+    },
+    {
+     "sha": "d2b50e7cc",
+     "date": "2026-08-02",
+     "subject": "chore(registry): allocate QM5_20202 XAU XAG basket"
+    },
+    {
+     "sha": "b1e789d0e",
+     "date": "2026-08-01",
+     "subject": "feat(fx): build QM5_20201 GBPJPY EURGBP basket"
+    },
+    {
+     "sha": "790fcf66a",
+     "date": "2026-08-01",
+     "subject": "feat(commodity): build QM5_20198 XNG Tuesday bear bounce"
+    },
+    {
+     "sha": "55db563af",
+     "date": "2026-08-01",
+     "subject": "feat(fx): build QM5_20197 EURJPY EURGBP cointegration sleeve"
+    },
+    {
+     "sha": "59c236a41",
+     "date": "2026-08-01",
+     "subject": "feat(fx): build QM5_20195 NZDUSD EURGBP cointegration sleeve"
+    },
+    {
+     "sha": "60ecf46e4",
+     "date": "2026-08-01",
+     "subject": "feat: add QM5_20192 XAU XAG ivol basket"
+    },
+    {
+     "sha": "c0fa40db8",
+     "date": "2026-08-01",
+     "subject": "feat(fx): build QM5_20191 cointegration sleeve"
+    },
+    {
+     "sha": "950270557",
+     "date": "2026-07-31",
+     "subject": "feat(commodity): build QM5_20184 xauxag xmom3"
+    },
+    {
+     "sha": "3029f1e9e",
+     "date": "2026-07-31",
+     "subject": "chore(registry): register QM5_20183 basket magics"
+    },
+    {
+     "sha": "2d8e782f7",
+     "date": "2026-07-31",
+     "subject": "build: enqueue QM5_11592 FX sleeve at Q02"
+    },
+    {
+     "sha": "bd24b37ca",
+     "date": "2026-07-30",
+     "subject": "feat(ftmo): add event-complete standalone replay evidence"
+    },
+    {
+     "sha": "ae24b4c7d",
+     "date": "2026-07-30",
+     "subject": "feat(ftmo): add event-complete standalone replay evidence"
+    },
+    {
+     "sha": "85db6178c",
+     "date": "2026-07-30",
+     "subject": "ftmo: bind Book3 full-lifecycle fidelity v2"
+    },
+    {
+     "sha": "db4de96a3",
+     "date": "2026-07-29",
+     "subject": "ftmo: harden book3 fidelity evidence"
+    },
+    {
+     "sha": "2883001bc",
+     "date": "2026-07-29",
+     "subject": "ftmo: prepare book3 fidelity measurement"
+    },
+    {
+     "sha": "21c238d5f",
+     "date": "2026-07-29",
+     "subject": "pipeline: implement W6-W8 controls and dashboard programme"
+    },
+    {
+     "sha": "ca57932a7",
+     "date": "2026-07-29",
+     "subject": "build: add QM5_20182 WTI summer counterfade"
+    },
+    {
+     "sha": "5535c3c1b",
+     "date": "2026-07-28",
+     "subject": "fix joint satellite ownership and build slot 2"
+    },
+    {
+     "sha": "afc408e85",
+     "date": "2026-07-27",
+     "subject": "ops: triage and unblock governed build cards"
+    },
+    {
+     "sha": "e40e3b94d",
+     "date": "2026-07-27",
+     "subject": "feat(ea): QM5_20180 joint FTMO backtest-only EA (USDJPY 9936+13213)"
+    },
+    {
+     "sha": "07c4b1844",
+     "date": "2026-07-27",
+     "subject": "fix(propfirm): make the account binding fail-closed for oversized sprint caps"
+    },
+    {
+     "sha": "d5917a9ff",
+     "date": "2026-07-27",
+     "subject": "fix(propfirm): per-account state, confirmed flatten, drop dead loss inputs"
+    },
+    {
+     "sha": "215d08170",
+     "date": "2026-07-27",
+     "subject": "feat(framework): prop-firm input section; target awareness is worth +28.8pp"
+    },
+    {
+     "sha": "a195fa7ac",
+     "date": "2026-07-26",
+     "subject": "feat: complete QM5_20174 WTI Tuesday bullfade"
+    },
+    {
+     "sha": "0710e29cc",
+     "date": "2026-07-26",
+     "subject": "feat: add QM5_20173 WTI Monday bull-regime fade"
+    },
+    {
+     "sha": "6f4c2eebc",
+     "date": "2026-07-26",
+     "subject": "feat(ftmo): governor closure \u2014 pulse observer-only, day-4 Option A [wsg2, Codex APPROVE R3]"
+    },
+    {
+     "sha": "a8f5a37f8",
+     "date": "2026-07-26",
+     "subject": "feat: add QM5_20172 WTI Friday bear-regime sleeve"
+    },
+    {
+     "sha": "b7516bf86",
+     "date": "2026-07-26",
+     "subject": "build(qm20170): add WTI Wednesday bear-regime sleeve"
+    },
+    {
+     "sha": "010ca20d8",
+     "date": "2026-07-25",
+     "subject": "build(qm20160): add XNG Friday trend sleeve"
+    },
+    {
+     "sha": "a2f387264",
+     "date": "2026-07-25",
+     "subject": "build(qm20159): add XNG Monday trend sleeve"
+    },
+    {
+     "sha": "873953ed9",
+     "date": "2026-07-25",
+     "subject": "build(qm20158): add XNG Tuesday trend sleeve"
+    },
+    {
+     "sha": "c7b2bf213",
+     "date": "2026-07-25",
+     "subject": "build(qm20157): add gold silver ratio basket"
+    },
+    {
+     "sha": "a31cc717e",
+     "date": "2026-07-25",
+     "subject": "build(qm20156): add XNG Wednesday trend sleeve"
+    },
+    {
+     "sha": "27be16d4f",
+     "date": "2026-07-25",
+     "subject": "build(qm20155): add WTI Tuesday trend sleeve"
+    },
+    {
+     "sha": "8dd610153",
+     "date": "2026-07-25",
+     "subject": "build QM5_20154 WTI Wednesday trend sleeve"
+    },
+    {
+     "sha": "89204d606",
+     "date": "2026-07-25",
+     "subject": "fix(framework): WP-9 \u2014 basket entries get one memoized stress draw per transaction"
+    },
+    {
+     "sha": "6c51c2452",
+     "date": "2026-07-25",
+     "subject": "feat: add QM5_20153 WTI Thursday trend sleeve"
+    },
+    {
+     "sha": "bba98d47e",
+     "date": "2026-07-25",
+     "subject": "feat(scaffold): tranche-11 reconciliation + finals + registry (QM5_20138/20139/20140)"
+    },
+    {
+     "sha": "a1139a408",
+     "date": "2026-07-25",
+     "subject": "feat: add QM5_20136 WTI calendar-trend sleeve"
+    },
+    {
+     "sha": "b0eb82758",
+     "date": "2026-07-25",
+     "subject": "feat: add QM5_20135 WTI winter trend sleeve"
+    },
+    {
+     "sha": "6ea2feb04",
+     "date": "2026-07-25",
+     "subject": "feat: add QM5_20134 WTI WPSR failure sleeve"
+    },
+    {
+     "sha": "e2097b6c7",
+     "date": "2026-07-25",
+     "subject": "feat: add QM5_20133 WTI WPSR pullback sleeve"
+    },
+    {
+     "sha": "fd7c7da88",
+     "date": "2026-07-25",
+     "subject": "feat: add QM5_20132 XNG storage release ORB"
+    },
+    {
+     "sha": "2d71303c8",
+     "date": "2026-07-25",
+     "subject": "feat(qm5): add XNG storage false-break fade sleeve"
+    },
+    {
+     "sha": "9333e4ead",
+     "date": "2026-07-25",
+     "subject": "feat(qm5): add XNG storage-release M30 sleeve"
+    },
+    {
+     "sha": "f50784beb",
+     "date": "2026-07-24",
+     "subject": "framework: add periodic equity snapshot heartbeat"
+    },
+    {
+     "sha": "7e11856d4",
+     "date": "2026-07-24",
+     "subject": "fix(cleanup): FB-11 branding phantom resolved + FB-14 strategy_id doc + ESC-04 rule amendment"
+    },
+    {
+     "sha": "5f913984b",
+     "date": "2026-07-23",
+     "subject": "build: add completed EA artifacts"
+    },
+    {
+     "sha": "d5fac5626",
+     "date": "2026-07-23",
+     "subject": "WIP snapshot agents/cto before prune 2026-07-23 (90 paths)"
+    },
+    {
+     "sha": "3f81be9c3",
+     "date": "2026-07-23",
+     "subject": "build: add QM5_20064 WTI two-month trend sleeve"
+    },
+    {
+     "sha": "9cc28ee80",
+     "date": "2026-07-23",
+     "subject": "build: add QM5_20063 XNG 3M trend sleeve"
+    },
+    {
+     "sha": "c6772f786",
+     "date": "2026-07-23",
+     "subject": "build QM5_20060 XCU XAG relative-value sleeve"
+    },
+    {
+     "sha": "62441d398",
+     "date": "2026-07-23",
+     "subject": "build QM5_20059 WTI six-month momentum sleeve"
+    },
+    {
+     "sha": "02d328f63",
+     "date": "2026-07-23",
+     "subject": "build: add completed EA artifacts"
+    },
+    {
+     "sha": "a998212ce",
+     "date": "2026-07-23",
+     "subject": "feat(qm5-20056): add WTI dual-horizon momentum sleeve"
+    },
+    {
+     "sha": "b10bab37e",
+     "date": "2026-07-23",
+     "subject": "build: add QM5_20055 WTI three-month momentum"
+    },
+    {
+     "sha": "db0fe53cd",
+     "date": "2026-07-23",
+     "subject": "fix: keep QM5_20053 build registry active"
+    },
+    {
+     "sha": "462655126",
+     "date": "2026-07-23",
+     "subject": "build: add QM5_20053 copper weekend sleeve"
+    },
+    {
+     "sha": "39f56889a",
+     "date": "2026-07-22",
+     "subject": "feat(qm20049): add WTI abnormal-return momentum sleeve"
+    },
+    {
+     "sha": "d1b12d6bd",
+     "date": "2026-07-22",
+     "subject": "build: add QM5_20032 macro0830 breakout"
+    },
+    {
+     "sha": "73294c827",
+     "date": "2026-07-22",
+     "subject": "build: add QM5_20031 asia-fx-fade"
+    },
+    {
+     "sha": "e664aa508",
+     "date": "2026-07-21",
+     "subject": "fix(qm11896): restore FX magic registration and requeue Q02"
+    },
+    {
+     "sha": "3d35ec1dc",
+     "date": "2026-07-21",
+     "subject": "build(qm20028): enqueue WTI day-one calendar sleeve"
+    },
+    {
+     "sha": "8a945aa06",
+     "date": "2026-07-21",
+     "subject": "build(qm20027): commit in-flight WTI-DOM26 build + resolver regen (unblock dirty-guard deadlock)"
+    },
+    {
+     "sha": "f6f2fc4bf",
+     "date": "2026-07-20",
+     "subject": "build: add WTI second-half monthly sleeve"
+    },
+    {
+     "sha": "6f2393373",
+     "date": "2026-07-20",
+     "subject": "fix(ks): preserve foreign-config persisted state across Init (review 5f860f79 item 1)"
+    },
+    {
+     "sha": "cffb6396d",
+     "date": "2026-07-20",
+     "subject": "build(qm20019): add XAU XAG weekend basket"
+    },
+    {
+     "sha": "fbe1facac",
+     "date": "2026-07-20",
+     "subject": "feat(monitor): read-only account monitor + light chart theme"
+    },
+    {
+     "sha": "2acf9721c",
+     "date": "2026-07-20",
+     "subject": "merge: Codex framework P1 evidence bundle into board-advisor (review-accepted, see CLAUDE_REVIEW"
+    },
+    {
+     "sha": "6e92c8062",
+     "date": "2026-07-20",
+     "subject": "framework: add P1 evidence integrity controls"
+    },
+    {
+     "sha": "7dc4751ca",
+     "date": "2026-07-20",
+     "subject": "fix(framework): adversarial-review fixes for the audit P0 bundle"
+    },
+    {
+     "sha": "37196e79d",
+     "date": "2026-07-20",
+     "subject": "fix(framework): audit P0 bundle part 2 \u2014 modify hygiene, held-period primitive, partial exit rea"
+    },
+    {
+     "sha": "ae029ce59",
+     "date": "2026-07-19",
+     "subject": "fix(ict): guard limit fills at execution time"
+    },
+    {
+     "sha": "3ce7e67e2",
+     "date": "2026-07-19",
+     "subject": "fix(news): refresh real events and warn on coverage gaps"
+    },
+    {
+     "sha": "3b179b751",
+     "date": "2026-07-17",
+     "subject": "build(20005): kurisko quad rotation structure retest \u2014 card, EA, registries, smoke PASS"
+    },
+    {
+     "sha": "978d06fc7",
+     "date": "2026-07-15",
+     "subject": "feat(13301): add Balke's 3 documented additional windows (EURJPY/GBPUSD/DE40)"
+    },
+    {
+     "sha": "5bef99fcf",
+     "date": "2026-07-15",
+     "subject": "feat(13301): +5 symbols (GBPJPY/AUDUSD/AUDCAD/CADJPY/NZDCAD) default-window sets (salvaged Sonne"
+    },
+    {
+     "sha": "a973b2531",
+     "date": "2026-07-15",
+     "subject": "feat: add QM5_13302 Monday Gap Fade EA (EURJPY/USDCHF sleeves)"
+    },
+    {
+     "sha": "73ec99657",
+     "date": "2026-07-15",
+     "subject": "fix: revert misplaced QM5_13302 EA build off agents/board-advisor"
+    },
+    {
+     "sha": "4af6b62a9",
+     "date": "2026-07-15",
+     "subject": "feat(research): QM5_13301 balke-minute-range-breakout (salvaged Sonnet build)"
+    },
+    {
+     "sha": "9a281902c",
+     "date": "2026-07-15",
+     "subject": "registry(1567): XAGUSD slot 10 (magic 15670010) \u2014 set used slot-0/SP500 fallback"
+    },
+    {
+     "sha": "476710f72",
+     "date": "2026-07-14",
+     "subject": "fix(13213): retire XAU magic slot + explicit time params in USDJPY set"
+    },
+    {
+     "sha": "46f0e2251",
+     "date": "2026-07-14",
+     "subject": "feat(research): QM5_13213 balke-gmt3-range-breakout (exact 03:00-06:00, built by Sonnet)"
+    },
+    {
+     "sha": "120b643b5",
+     "date": "2026-07-14",
+     "subject": "feat(research): QM5_13299 et-turtle20x-adx (turtle + ADX(14) regime filter, H1)"
+    },
+    {
+     "sha": "03d004afb",
+     "date": "2026-07-13",
+     "subject": "feat(master-ea): Phase-3-REST \u2014 port 4 remaining XAU modules (headless Sonnet)"
+    },
+    {
+     "sha": "42554d23d",
+     "date": "2026-07-13",
+     "subject": "feat(master-ea): Phase-3 PILOT \u2014 port 12567 as first real XAU module (GREEN regression)"
+    },
+    {
+     "sha": "f59855e87",
+     "date": "2026-07-13",
+     "subject": "feat(framework): add explicit fixed risk sizing path"
+    },
+    {
+     "sha": "430f917c5",
+     "date": "2026-07-13",
+     "subject": "merge(master-ea): Phase 2 \u2014 master-EA skeleton + module interface (GREEN no-op gate)"
+    },
+    {
+     "sha": "99587064c",
+     "date": "2026-07-13",
+     "subject": "ops(registry): commit pending Codex-lane magic reservation 13207 (132070000)"
+    },
+    {
+     "sha": "6e18eadc2",
+     "date": "2026-07-13",
+     "subject": "feat(master-ea): add XAUUSD Phase 2 skeleton"
+    },
+    {
+     "sha": "4d08f5922",
+     "date": "2026-07-13",
+     "subject": "feat(q08): emit opening magic per closed trade"
+    },
+    {
+     "sha": "2bd733c32",
+     "date": "2026-07-13",
+     "subject": "feat(framework): add per-strategy magic and risk contexts"
+    },
+    {
+     "sha": "34ee74960",
+     "date": "2026-07-13",
+     "subject": "research(QM5_13031): Wayward bot fully implemented + Part-2 matrix \u2014 documented negative"
+    },
+    {
+     "sha": "eb668adde",
+     "date": "2026-07-12",
+     "subject": "feat(qm5-13205): add XAU XAG quantile basket"
+    },
+    {
+     "sha": "ef5b0701d",
+     "date": "2026-07-12",
+     "subject": "research(QM5_13204): ICT first-swing std-dev reversal \u2014 NO mechanical edge (documented negative)"
+    },
+    {
+     "sha": "84a39712c",
+     "date": "2026-07-12",
+     "subject": "feat(qm5-13203): add energy downside-beta basket"
+    },
+    {
+     "sha": "c1282e11c",
+     "date": "2026-07-12",
+     "subject": "feat: add QM5_13151 energy smooth-vol beta"
+    },
+    {
+     "sha": "9f0348c22",
+     "date": "2026-07-12",
+     "subject": "feat(qm5-13150): add WTI return-sign momentum"
+    },
+    {
+     "sha": "1c0929c58",
+     "date": "2026-07-12",
+     "subject": "feat(qm5-13149): add 36-month energy trend basket"
+    },
+    {
+     "sha": "350bcf688",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13148): add energy rank-effect basket"
+    },
+    {
+     "sha": "30ffcf860",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13147): add energy jump-beta basket"
+    },
+    {
+     "sha": "1f4b6b599",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13146): add energy volatility-of-volatility basket"
+    },
+    {
+     "sha": "051319ac3",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13145): add energy idiosyncratic momentum basket"
+    },
+    {
+     "sha": "b13120dad",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13144): add energy microscopic momentum basket"
+    },
+    {
+     "sha": "cbc364a89",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13143): add energy expected-shortfall basket"
+    },
+    {
+     "sha": "bfae4b40b",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13142): add energy salience basket"
+    },
+    {
+     "sha": "8781aa0e3",
+     "date": "2026-07-11",
+     "subject": "build(qm5-13141): add energy IE rank basket"
+    },
+    {
+     "sha": "9565e32d9",
+     "date": "2026-07-11",
+     "subject": "build: add completed EA artifacts"
+    },
+    {
+     "sha": "26db0dd8e",
+     "date": "2026-07-11",
+     "subject": "fix(qm5-11903): revive diverse FX Q02 lane"
+    },
+    {
+     "sha": "015e3bf64",
+     "date": "2026-07-11",
+     "subject": "build: add completed EA artifacts"
+    },
+    {
+     "sha": "f3892c81d",
+     "date": "2026-07-11",
+     "subject": "fix(qm5-11906): recover diverse FX Q02 lane"
+    },
+    {
+     "sha": "112f50c3d",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13134): enqueue WTI variance-ratio sleeve"
+    },
+    {
+     "sha": "886a47d98",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13133): enqueue energy IVOL sleeve"
+    },
+    {
+     "sha": "d95be6820",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13132): enqueue energy BAB sleeve"
+    },
+    {
+     "sha": "ac6d0137a",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13131): enqueue XTI XNG kurtosis sleeve"
+    },
+    {
+     "sha": "493f63c74",
+     "date": "2026-07-11",
+     "subject": "fix(qm5-10571): repair FX magic slots and requeue Q02"
+    },
+    {
+     "sha": "ce2f5d569",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13130): enqueue XTI XNG low-MAX sleeve"
+    },
+    {
+     "sha": "9ea65cd77",
+     "date": "2026-07-11",
+     "subject": "feat(qm5-13129): enqueue energy RSJ sleeve"
+    },
+    {
+     "sha": "c2e9e0817",
+     "date": "2026-07-11",
+     "subject": "fix(qm5-11914): repair FX Q02 init and requeue"
+    },
+    {
+     "sha": "7cc4e7f42",
+     "date": "2026-07-11",
+     "subject": "feat(ea): QM5_13128 pre-FOMC drift (NDX) \u2014 framework port of secret-lab survivor"
+    },
+    {
+     "sha": "758f67cc3",
+     "date": "2026-07-10",
+     "subject": "feat(qm5-13126): enqueue energy momentum-carry sleeve"
+    },
+    {
+     "sha": "234860d6e",
+     "date": "2026-07-10",
+     "subject": "fix(framework): q08 stream captures SL/TP closes (magic-0 deal bug)"
+    },
+    {
+     "sha": "3c39004be",
+     "date": "2026-07-10",
+     "subject": "feat(qm5-13123): enqueue energy value rank sleeve"
+    },
+    {
+     "sha": "0b5a74614",
+     "date": "2026-07-10",
+     "subject": "feat(qm5-13121): enqueue energy trend momentum sleeve"
+    },
+    {
+     "sha": "249e1f13d",
+     "date": "2026-07-10",
+     "subject": "ops: allocate QM5_11912 magic slots"
+    },
+    {
+     "sha": "c844fb1b4",
+     "date": "2026-07-09",
+     "subject": "feat(qm5): add WTI monthly DMAC sleeve"
+    },
+    {
+     "sha": "628b6e31e",
+     "date": "2026-07-09",
+     "subject": "feat(qm5): add 13097 xti ethanol reblend sleeve"
+    },
+    {
+     "sha": "34f826657",
+     "date": "2026-07-08",
+     "subject": "Build QM5_13053 Brent silver spread basket"
+    },
+    {
+     "sha": "1ea2051b9",
+     "date": "2026-07-08",
+     "subject": "Build QM5_11578 FX percent filter"
+    },
+    {
+     "sha": "da128ac5f",
+     "date": "2026-07-07",
+     "subject": "build: add qm5 13039 xti gasdraw momentum sleeve"
+    },
+    {
+     "sha": "bc6ddd305",
+     "date": "2026-07-07",
+     "subject": "Add QM5_13025 XTI PSM momentum sleeve"
+    },
+    {
+     "sha": "41ce66333",
+     "date": "2026-07-06",
+     "subject": "fix(news): E5+E10 \u2014 live SKIP_DAY = current UTC calendar day (tester parity); live verdict cache"
+    },
+    {
+     "sha": "841449513",
+     "date": "2026-07-06",
+     "subject": "fix(review-83be4dd3): C-2 tester-gate the KS distribution switch + M-1..M-4 hardening"
+    },
+    {
+     "sha": "eb5195a14",
+     "date": "2026-07-06",
+     "subject": "fix(killswitch): E2/E3 wave-2 \u2014 restart persistence + configurable day anchor (pre-challenge gat"
+    },
+    {
+     "sha": "47f1d9709",
+     "date": "2026-07-05",
+     "subject": "fix(killswitch): halt-file channel was dead (invalid D:\\ sandbox paths) \u2014 sandbox-relative defau"
+    },
+    {
+     "sha": "89963ff75",
+     "date": "2026-07-05",
+     "subject": "fix(news): index symbols matched EVERY calendar event; tester staleness determinism"
+    },
+    {
+     "sha": "40770ce35",
+     "date": "2026-07-03",
+     "subject": "build: add completed EA artifacts"
+    },
+    {
+     "sha": "b1d80e723",
+     "date": "2026-07-03",
+     "subject": "build: add completed EA artifacts"
+    },
+    {
+     "sha": "b3cd10a5e",
+     "date": "2026-07-03",
+     "subject": "Add QM5_12992 EIA STEO WTI breakout"
+    },
+    {
+     "sha": "ff3722e57",
+     "date": "2026-07-03",
+     "subject": "Build QM5_12957 commodity reversal basket"
+    },
+    {
+     "sha": "37a04d701",
+     "date": "2026-07-03",
+     "subject": "build: add QM5_12984 psara oil filter"
+    },
+    {
+     "sha": "86777f96f",
+     "date": "2026-07-03",
+     "subject": "fix(ea): QM5_10050 add qm_rng_seed input + update magic resolver"
+    },
+    {
+     "sha": "c1b537e3e",
+     "date": "2026-07-03",
+     "subject": "build: add QM5_12973 month-end fix fade"
+    },
+    {
+     "sha": "6961a52df",
+     "date": "2026-07-03",
+     "subject": "Build QM5_12969 gotobi USDJPY EA"
+    },
+    {
+     "sha": "3fa646b97",
+     "date": "2026-07-03",
+     "subject": "Build QM5_9278 LW outside and enqueue Q02"
+    },
+    {
+     "sha": "30f6c3063",
+     "date": "2026-07-03",
+     "subject": "build: add QM5_9503 williams OCR extension"
+    },
+    {
+     "sha": "7048707b5",
+     "date": "2026-07-03",
+     "subject": "Build QM5_9575 monthly KST"
+    },
+    {
+     "sha": "bcc9b9733",
+     "date": "2026-07-02",
+     "subject": "Build QM5_12919 AMP value momentum"
+    },
+    {
+     "sha": "1d0ce5397",
+     "date": "2026-07-02",
+     "subject": "build: add QM5_12964 WTI June premium sleeve"
+    },
+    {
+     "sha": "c6b3d2daf",
+     "date": "2026-07-02",
+     "subject": "Build QM5_12962 WTI July premium sleeve"
+    },
+    {
+     "sha": "e53019e9d",
+     "date": "2026-07-02",
+     "subject": "fix(registry): resolver regen with swing EA dirs present (regenerator drops rows without EA dir "
+    },
+    {
+     "sha": "bd6b8fa60",
+     "date": "2026-07-02",
+     "subject": "registry(magic): allocate 11 magic rows for the 7 approved swing-slate EAs (12914-12917, 12958-1"
+    },
+    {
+     "sha": "5dfc35860",
+     "date": "2026-07-02",
+     "subject": "Build QM5_12873 XNG latewinter decay sleeve"
+    },
+    {
+     "sha": "44ad668dd",
+     "date": "2026-07-02",
+     "subject": "fix(twin): expose absolute CSM exhaustion"
+    },
+    {
+     "sha": "4e34c0dce",
+     "date": "2026-07-02",
+     "subject": "Build QM5_12874 XNG injection slope sleeve"
+    },
+    {
+     "sha": "d20fae72d",
+     "date": "2026-07-02",
+     "subject": "Add QM5_9507 Carver breakout build"
+    },
+    {
+     "sha": "bc2ed6f1b",
+     "date": "2026-07-02",
+     "subject": "Implement QM5_12821 v3 faithful exits"
+    },
+    {
+     "sha": "a095dca78",
+     "date": "2026-07-02",
+     "subject": "Add QM5_12912 rig-count WTI fade"
+    },
+    {
+     "sha": "90c92771a",
+     "date": "2026-07-02",
+     "subject": "Add QM5_12910 WTI distillate unwind sleeve"
+    },
+    {
+     "sha": "893934cd5",
+     "date": "2026-07-02",
+     "subject": "Build QM5_9352 Pring KST H4 EA"
+    },
+    {
+     "sha": "f55040e44",
+     "date": "2026-07-01",
+     "subject": "framework+guardrails: calendar-period cadence primitive + corset/R4 refinement"
+    },
+    {
+     "sha": "9667f75fd",
+     "date": "2026-07-01",
+     "subject": "Build QM5_9574 anti differential H4"
+    },
+    {
+     "sha": "928fddacc",
+     "date": "2026-07-01",
+     "subject": "Add QM5_12860 WTI-Brent return shock sleeve"
+    },
+    {
+     "sha": "f752e6e1c",
+     "date": "2026-07-01",
+     "subject": "Build QM5_12855 Brent November fade"
+    },
+    {
+     "sha": "05507092c",
+     "date": "2026-07-01",
+     "subject": "Enqueue QM5_11852 JPY mean-turn Q02"
+    },
+    {
+     "sha": "159ed4348",
+     "date": "2026-07-01",
+     "subject": "Build QM5_12854 Brent December fade"
+    },
+    {
+     "sha": "7726a3fe7",
+     "date": "2026-07-01",
+     "subject": "Build QM5_9401 DeMark TDPRL fade"
+    },
+    {
+     "sha": "548be35c9",
+     "date": "2026-07-01",
+     "subject": "Add Brent TSMOM commodity sleeve"
+    },
+    {
+     "sha": "7546963a4",
+     "date": "2026-07-01",
+     "subject": "Harden DWX FX risk sizing requeue"
+    },
+    {
+     "sha": "2c40cf381",
+     "date": "2026-07-01",
+     "subject": "Add QM5_12843 WTI Brent spread basket"
+    },
+    {
+     "sha": "6deca4354",
+     "date": "2026-07-01",
+     "subject": "Build QM5_9905 FF WMD BOP hook"
+    },
+    {
+     "sha": "7f703cfc8",
+     "date": "2026-06-30",
+     "subject": "Build QM5_1579 TLB swing pivot EA"
+    },
+    {
+     "sha": "3a18a25ae",
+     "date": "2026-06-30",
+     "subject": "build: add QM5_12830"
+    },
+    {
+     "sha": "ecfed048c",
+     "date": "2026-06-30",
+     "subject": "Build QM5_1446 DeMark TD Open H4"
+    },
+    {
+     "sha": "9d8fdf141",
+     "date": "2026-06-30",
+     "subject": "build: add completed EA artifacts"
+    },
+    {
+     "sha": "b9904072c",
+     "date": "2026-06-30",
+     "subject": "Add QM5_12811 XTI volatility breakout sleeve"
+    },
+    {
+     "sha": "4a90d05d5",
+     "date": "2026-06-30",
+     "subject": "build: add QM5_12785 timerangebreakout ORB"
+    },
+    {
+     "sha": "b8fd82584",
+     "date": "2026-06-29",
+     "subject": "Add QM5_12806 XNG reverse weekend sleeve"
+    },
+    {
+     "sha": "5a0ed46dd",
+     "date": "2026-06-29",
+     "subject": "build: add QM5_12769 XNG LNG breakout sleeve"
+    },
+    {
+     "sha": "93ffe90c2",
+     "date": "2026-06-29",
+     "subject": "Build QM5_12614 FX TSMOM basket"
+    },
+    {
+     "sha": "91dcdcfc1",
+     "date": "2026-06-28",
+     "subject": "Build QM5_12704 XNG summer power sleeve"
+    },
+    {
+     "sha": "51a3825e3",
+     "date": "2026-06-28",
+     "subject": "build: add QM5_12754 WTI hurricane fade artifacts"
+    },
+    {
+     "sha": "b1f4fe6eb",
+     "date": "2026-06-28",
+     "subject": "Fix QM5_11916 forex magic registration"
+    },
+    {
+     "sha": "88a705300",
+     "date": "2026-06-28",
+     "subject": "Build QM5_9573 H4 inside-bar failure"
+    },
+    {
+     "sha": "fc7004b64",
+     "date": "2026-06-28",
+     "subject": "build: enqueue qm5 12749 fx cointegration basket"
+    },
+    {
+     "sha": "91afe7d9c",
+     "date": "2026-06-28",
+     "subject": "Build QM5_12741 NNFX FX basket"
+    },
+    {
+     "sha": "e22af904b",
+     "date": "2026-06-28",
+     "subject": "Build QM5_12744 XNG storage fade"
+    },
+    {
+     "sha": "ebdb5b670",
+     "date": "2026-06-28",
+     "subject": "feat(news): DL-080 live native MT5 calendar news filter (backtest keeps CSV)"
+    },
+    {
+     "sha": "587fea2b0",
+     "date": "2026-06-28",
+     "subject": "Add QM5_12727 WTI April premium sleeve"
+    },
+    {
+     "sha": "a57543669",
+     "date": "2026-06-27",
+     "subject": "Add QM5_12725 XNG pre-storage sleeve"
+    },
+    {
+     "sha": "69869312e",
+     "date": "2026-06-27",
+     "subject": "build: add QM5_12616"
+    },
+    {
+     "sha": "5ef92418a",
+     "date": "2026-06-27",
+     "subject": "build: registry-clean QM5_12700 fx breakout"
+    },
+    {
+     "sha": "a89438fce",
+     "date": "2026-06-27",
+     "subject": "Build QM5_12609 WTI CAD spread basket"
+    },
+    {
+     "sha": "e67c25e9e",
+     "date": "2026-06-27",
+     "subject": "build: add QM5_12607 wti cad confirmation"
+    },
+    {
+     "sha": "e1122d10e",
+     "date": "2026-06-27",
+     "subject": "Build QM5_9416 coint pair EA"
+    },
+    {
+     "sha": "00db758ff",
+     "date": "2026-06-27",
+     "subject": "build: add chan oil-gold pair basket"
+    },
+    {
+     "sha": "4a47bf46d",
+     "date": "2026-06-27",
+     "subject": "Add QM5_12595 XNG shoulder fade sleeve"
+    },
+    {
+     "sha": "3f3ea3f42",
+     "date": "2026-06-27",
+     "subject": "build: add QM5_12594 WTI reversal sleeve"
+    },
+    {
+     "sha": "3b0b6c592",
+     "date": "2026-06-27",
+     "subject": "Add QM5_12593 WTI refinery fade sleeve"
+    },
+    {
+     "sha": "986c02b67",
+     "date": "2026-06-26",
+     "subject": "Add QM5_12588 XNG summer squeeze sleeve"
+    },
+    {
+     "sha": "087b14567",
+     "date": "2026-06-26",
+     "subject": "build: QM5_12571 ICT Silver Bullet v1 (sweep->MSS->FVG, intraday M15) \u2014 Q02 enqueued"
+    },
+    {
+     "sha": "16e39974d",
+     "date": "2026-06-25",
+     "subject": "build: QM5_12567 cum-rsi2-commodity port (survivor 11132 mechanic on energy/metals)"
+    },
+    {
+     "sha": "8fe875926",
+     "date": "2026-06-21",
+     "subject": "fix(framework): dedupe QM_Magic/QM_MagicChecked slot warnings (log-bomb root cause)"
+    },
+    {
+     "sha": "e89ba1567",
+     "date": "2026-06-18",
+     "subject": "build: wave-89 EAs (1390-1399 williams-wpr-div/harmonic-bat/wyckoff-spring/classical-h&s-top/dem"
+    },
+    {
+     "sha": "058fc5d8a",
+     "date": "2026-06-18",
+     "subject": "build: wave-88 EAs (1377-1389 schiff-pitchfork/brooks-4bar/fpl-bounded-grid[HR14 single-pos]/bro"
+    },
+    {
+     "sha": "95e24b2cd",
+     "date": "2026-06-18",
+     "subject": "build: wave-87 EAs (1368-1376 andrews-pitchfork/goodman-wave/linreg-channel/williams-ao-twin-pea"
+    },
+    {
+     "sha": "e04f46804",
+     "date": "2026-06-18",
+     "subject": "build: wave-86 EAs (1357-1367 as-pragmatic-aa/as-gpm-corrhedge baskets + brooks-2bar/wedge-3push"
+    },
+    {
+     "sha": "657cbf9c6",
+     "date": "2026-06-18",
+     "subject": "build: wave-85 EAs (1346-1353 chan-vpin/lebeau-chandelier/wilder-adx-di/williams-vol-breakout/to"
+    },
+    {
+     "sha": "cf4fcabe9",
+     "date": "2026-06-18",
+     "subject": "build: wave-84 EAs (1327-1344 brooks-pin/raschke-holy-grail/demark-td-pressure/chan-fx-local-hou"
+    },
+    {
+     "sha": "f446bc4f4",
+     "date": "2026-06-18",
+     "subject": "build: wave-83 EAs (1317-1326 kase-peak/tom-fps-donchian/carter-squeeze-4regime/vwap-sigma-fade/"
+    },
+    {
+     "sha": "cadbd3b78",
+     "date": "2026-06-18",
+     "subject": "build: wave-82 EAs (1298-1316 kst/camarilla-vwap/bressert-dss/carter-ttm-wave/heiken-ashi-smooth"
+    },
+    {
+     "sha": "999a2cbe0",
+     "date": "2026-06-18",
+     "subject": "build: wave-81 EAs (12523-12527 stoch-zone/macd-sig+zero+diverge / 1290-1297 classic-pivot/ttm-s"
+    },
+    {
+     "sha": "1f20de5e8",
+     "date": "2026-06-18",
+     "subject": "build: wave-79 EAs (12485-12499 shv rwb-ribbon+supertrend+astral / myh-turtle60 / lean fx-sma-re"
+    },
+    {
+     "sha": "6c2330b2a",
+     "date": "2026-06-18",
+     "subject": "build: wave-78 EAs (12428-12484 ea31337-bands+macd / gh-rsi+ha-momo+bb-w / shv-ema20+ma-cross; 1"
+    },
+    {
+     "sha": "babae30d0",
+     "date": "2026-06-18",
+     "subject": "build: wave-77 EAs (12378-12427 fx-top-sharpe/comm-asym/sector-mom/country-bab/stock-bab BASKETs"
+    },
+    {
+     "sha": "24ba498c1",
+     "date": "2026-06-18",
+     "subject": "build: wave-76 EAs (11882-12377 connors-double7s/floor-pivot/lien-double-bb/samuels-123/robles-c"
+    },
+    {
+     "sha": "be3686667",
+     "date": "2026-06-18",
+     "subject": "build: wave-74 EAs (11845-11853 macd-ema-stack/ema-cross/trix-zero/smi-stoch-ha/vegas-wave/bermu"
+    },
+    {
+     "sha": "d99287597",
+     "date": "2026-06-18",
+     "subject": "build: wave-73 EAs (11834-11844 robo psar-ema+cci+psar-macd+macd-adx+two-pairs / ait-macd+bb / m"
+    },
+    {
+     "sha": "e9ef9e84e",
+     "date": "2026-06-18",
+     "subject": "build: wave-72 EAs (11823-11831 carter-m5 s13+s14+s15+s17+s18+s19+s20 + scalp-macd-stoch cohort)"
+    },
+    {
+     "sha": "39b6e73f5",
+     "date": "2026-06-18",
+     "subject": "build: wave-71 EAs (11814-11822 carter-m5 s1+s2+s3+s6+s8+s9+s10+s11 macd-stoch/ema-zone/bb-rever"
+    },
+    {
+     "sha": "2778f4b36",
+     "date": "2026-06-18",
+     "subject": "build: wave-68 EAs (11781-11791 turtle-20d-breakout / sma520-scalp / rsi-counter-trend / psar-ao"
+    },
+    {
+     "sha": "2b077fae3",
+     "date": "2026-06-18",
+     "subject": "build: wave-67 EAs (11764-11780 ichimoku-cloud / ema-fib-cross / trix-zero-cross / connors-cumrs"
+    },
+    {
+     "sha": "4c9c304b0",
+     "date": "2026-06-18",
+     "subject": "build: wave-65 EAs (11735-11745 rfs psar-cci-ema/cutting-points-bb/adx-momentum/ha-adx-stoch/ema"
+    },
+    {
+     "sha": "1a04bb375",
+     "date": "2026-06-18",
+     "subject": "build: wave-64 EAs (11725-11734 tc-m5 s12-laguerre/s13-cci-macd/s15-bb-channel/s16-wma-psar/s17-"
+    },
+    {
+     "sha": "4369df8ae",
+     "date": "2026-06-18",
+     "subject": "build: wave-62 EAs (11697-11713 pl-bb-scalp+engulfing/fsr-trix+macd-stoch+ema-cross/anon-squeeze"
+    },
+    {
+     "sha": "e5c8580bc",
+     "date": "2026-06-18",
+     "subject": "build: wave-58 EAs (11634-11642 fsr double-stoch+adv6-ema-adx+ema-adx-macd / robo bb120+ma-stack"
+    },
+    {
+     "sha": "8546ca1b1",
+     "date": "2026-06-18",
+     "subject": "build: wave-57 EAs (11623-11632 ba-rsi/bb-mid/ema-dual + pj-ema + cat-dualma/rsi6070/rsi-pt/btd-"
+    },
+    {
+     "sha": "23e955465",
+     "date": "2026-06-18",
+     "subject": "build: wave-56 EAs (11613-11622 robo bb-wpr-rsi/sma-momentum/dual-sma-band/ema-cci/lwma-macd/ema"
+    },
+    {
+     "sha": "add9bab17",
+     "date": "2026-06-18",
+     "subject": "build: wave-55 EAs (11588-11612 bf-ha-ema2+break-vol/robo-ao-macd+3candle-fade+midnight-hammer+a"
+    },
+    {
+     "sha": "b3e1a7015",
+     "date": "2026-06-18",
+     "subject": "build: wave-54 EAs (11576-11587 robo-daily-break+psar-ao/neely-weller-pct-filter+channel-band/go"
+    },
+    {
+     "sha": "9b4e86cba",
+     "date": "2026-06-18",
+     "subject": "build: wave-51 EAs (11536-11546 carter H1 ema-hl-psar/ema-macd-sep/ema-rsi-candle/mtf-4candle/em"
+    },
+    {
+     "sha": "d6108b732",
+     "date": "2026-06-18",
+     "subject": "build: wave-50 EAs (11525-11535 ciurea stoch-bounce+rsi-midline+engulfing+hammer-patterns/carter"
+    },
+    {
+     "sha": "43caab65c",
+     "date": "2026-06-18",
+     "subject": "build: wave-49 EAs (11514-11524 carter macd-adx+adx-prevday-range+ema-pullbacks+ema-macd-psar/ci"
+    },
+    {
+     "sha": "ea974b066",
+     "date": "2026-06-18",
+     "subject": "build: wave-48 EAs (11505-11513 goodwin-hourly-breakout/carter ema-psar+ema-macd-buystop+ema-sto"
+    },
+    {
+     "sha": "72198ce39",
+     "date": "2026-06-18",
+     "subject": "build: wave-47 EAs (11495-11504 carter-confluence-scalp/connors-double7s+cumulative-rsi2/langer-"
+    },
+    {
+     "sha": "fe0075d16",
+     "date": "2026-06-18",
+     "subject": "build: wave-46 EAs (11487-11494 carter-ema-macd+bb-stoch+bb-slope+mtf-triple-ema/samuels-123-pul"
+    },
+    {
+     "sha": "c498429af",
+     "date": "2026-06-18",
+     "subject": "build: wave-45 EAs (11475-11486 lien-xtreme-fade+double-bb/williams-fakeout-day/carter-ny-open-b"
+    },
+    {
+     "sha": "c17bfae28",
+     "date": "2026-06-18",
+     "subject": "build: wave-44 EAs (11462-11474 goodwin-kangaroo-tail+session-breakout/robles-continuation/samue"
+    },
+    {
+     "sha": "7f87c7aff",
+     "date": "2026-06-18",
+     "subject": "build: wave-43 EAs (1272-1276/1281/1288/1289 camarilla-weekly-pivots/mtf-stoch/bressert-double-s"
+    },
+    {
+     "sha": "382489741",
+     "date": "2026-06-18",
+     "subject": "build: wave-42 EAs (1157/1223/1228/1230/1267-1269/1271 plastun-crude-seasonal/bhatti-zscore/carv"
+    },
+    {
+     "sha": "120518087",
+     "date": "2026-06-18",
+     "subject": "build: wave-40 EAs (11438-11445 td/pivot/janus-bounded-cluster/ayuk/burke-patterns cohort) + mag"
+    },
+    {
+     "sha": "20a628292",
+     "date": "2026-06-18",
+     "subject": "build: wave-39 EAs (11427-11437 connors-dup/carter-london/lien-fade/multitf/ibr cohort) + magic "
+    },
+    {
+     "sha": "67947fe86",
+     "date": "2026-06-18",
+     "subject": "build: wave-38 EAs (11417-11426 lasker/proximity/macd-stoch/squeeze/Larry-Williams-patterns coho"
+    },
+    {
+     "sha": "841373db2",
+     "date": "2026-06-18",
+     "subject": "build: wave-37 EAs (11409-11416 session-breakout/Wilder-classics/winning-pips/ichimoku-TK cohort"
+    },
+    {
+     "sha": "ead5f32a8",
+     "date": "2026-06-18",
+     "subject": "build: wave-34 EAs (11372-11384 micro/vegas/big-ben/lwma/psar-ao-ac/sma-trend/blade cohort) + ma"
+    },
+    {
+     "sha": "17c31345e",
+     "date": "2026-06-18",
+     "subject": "build: wave-33 EAs (11360-11371 robo/connors/fractal/session/demark cohort) + magic registry"
+    },
+    {
+     "sha": "ea131e6a4",
+     "date": "2026-06-18",
+     "subject": "build: wave-32 EAs (11349-11359 rbt/robo indicator cohort) + magic registry"
+    },
+    {
+     "sha": "a2d5dda65",
+     "date": "2026-06-18",
+     "subject": "build: wave-30 EAs (11321-11336 tc-m5/tc20-h1 indicator-confluence cohort) + magic registry"
+    },
+    {
+     "sha": "b60139ec9",
+     "date": "2026-06-18",
+     "subject": "build: wave-29 EAs (11313-11320 tc20/tc-m5 indicator-confluence cohort) + magic registry"
+    },
+    {
+     "sha": "d7c5aec15",
+     "date": "2026-06-18",
+     "subject": "build: wave-28 EAs (11297-11312 cs/tc/kathy-lien/alp/bf/tc20 indicator cohort) + magic registry;"
+    },
+    {
+     "sha": "a151d526d",
+     "date": "2026-06-18",
+     "subject": "build: wave-26 EAs (11261-11277 cs-mom/qt-ha/iaf-indicator/blade-scalp cohort) + magic registry;"
+    },
+    {
+     "sha": "c8fa14f84",
+     "date": "2026-06-18",
+     "subject": "build: wave-24 EAs (11245-11252 Hudson-Thames OU/cointegration/PCA stat-arb baskets, all closed-"
+    },
+    {
+     "sha": "803a0f411",
+     "date": "2026-06-17",
+     "subject": "build: wave-23 EAs (11228-11243 freqtrade + Hudson-Thames stat-arb baskets; copula=closed-form G"
+    },
+    {
+     "sha": "ca8291db0",
+     "date": "2026-06-17",
+     "subject": "build: wave-22 EAs (11197-11227 freqtrade cohort; 11197 dropped un-portable BTC branch) + magic "
+    },
+    {
+     "sha": "829680fd0",
+     "date": "2026-06-17",
+     "subject": "build: wave-20 EAs (11146-11153 vbt/clenow-rotation-basket/Connors-HPETF/ORB cohort) + magic reg"
+    },
+    {
+     "sha": "c7661179a",
+     "date": "2026-06-17",
+     "subject": "build: wave-19 EAs (11136-11145 backtrader/vectorbt cohort, incl 3-pair cointegration basket) + "
+    },
+    {
+     "sha": "5931183b6",
+     "date": "2026-06-17",
+     "subject": "build: wave-18 EAs (11105-11135 wrb/fade/rainbow/connors cohort) + magic registry; 11130 VIX->re"
+    },
+    {
+     "sha": "c48a62797",
+     "date": "2026-06-17",
+     "subject": "build: wave-17 EAs (11083-11103 dots/tlb/cvd/channel/mp/basing/psar cohort) + magic registry; GE"
+    },
+    {
+     "sha": "f7af6426d",
+     "date": "2026-06-17",
+     "subject": "build: wave-16 EAs (11064-11082 atc/han/adj/recent-hilo cohort) + magic registry"
+    },
+    {
+     "sha": "8387a6056",
+     "date": "2026-06-17",
+     "subject": "build: wave-14 EAs (11037-11044 atc cohort) + magic registry"
+    },
+    {
+     "sha": "05f5fe15a",
+     "date": "2026-06-17",
+     "subject": "build: wave-13 EAs (11020/11021 the5ers + 11027-11033 atc cohort) + magic registry"
+    },
+    {
+     "sha": "df1466796",
+     "date": "2026-06-17",
+     "subject": "build: wave-12 EAs (11012-strength-basket + 11013-11019 the5ers cohort) + magic registry"
+    },
+    {
+     "sha": "52d195c5f",
+     "date": "2026-06-17",
+     "subject": "build: wave-11 EAs (11004-11011, the5ers structural-pattern cohort) + magic registry; GER40->GDA"
+    },
+    {
+     "sha": "4dd306931",
+     "date": "2026-06-17",
+     "subject": "build: wave-10 EAs (10996-11003, ftmo-obv + the5ers cohort) + magic registry"
+    },
+    {
+     "sha": "711e70dbd",
+     "date": "2026-06-17",
+     "subject": "build: wave-9 EAs (10976/10977/10980/10982/10986/10990/10991/10994) + magic registry; GER40.DWX-"
+    },
+    {
+     "sha": "7e79308b0",
+     "date": "2026-06-17",
+     "subject": "build: wave-8 EAs (10946/10947/10948/10949/10970/10972/10974/10975) + magic registry; OIL.DWX->X"
+    },
+    {
+     "sha": "638c21f1c",
+     "date": "2026-06-04",
+     "subject": "build: add QM5_10480"
+    },
+    {
+     "sha": "79a214372",
+     "date": "2026-06-04",
+     "subject": "build: commit completed 10697/10726 artifacts + registry dedup (unblock build guard)"
+    },
+    {
+     "sha": "9b1afb60f",
+     "date": "2026-06-03",
+     "subject": "build: register + recompile the 8 previously-unregistered EAs"
+    },
+    {
+     "sha": "722d2fbb2",
+     "date": "2026-06-03",
+     "subject": "build(no-source): land 12 regenerated EAs (e4900b2c) with source + magic registry"
+    },
+    {
+     "sha": "3762759db",
+     "date": "2026-06-03",
+     "subject": "fix(q-runners): Codex cleanup of Q04-Q07 gate runners + worker plumbing"
+    },
+    {
+     "sha": "1d97fa1e2",
+     "date": "2026-06-02",
+     "subject": "build: add completed EA artifacts"
+    },
+    {
+     "sha": "31a411a68",
+     "date": "2026-06-02",
+     "subject": "fix(ea): inject strategy params into 4 more v2 set files (10042/10439/10454/10457)"
+    },
+    {
+     "sha": "ecce6bc4b",
+     "date": "2026-06-02",
+     "subject": "build(rework): _v2 EAs for QM5_10042/10439/10454/10457/12108 \u2014 ONINIT_FAILED fixes"
+    },
+    {
+     "sha": "da8a6775a",
+     "date": "2026-06-02",
+     "subject": "fix(ea): QM5_10381_v2 + QM5_10481_v2 ONINIT fixes; magic resolver 14->37 symbols for 10481"
+    },
+    {
+     "sha": "3cfb8586f",
+     "date": "2026-06-02",
+     "subject": "build: add QM5_10725 tv-nifty-orb + QM5_10776 tv-rsi-macd-ema EAs"
+    }
+   ]
+  },
+  "setfile_generator": {
+   "path": "framework/scripts/gen_setfile.ps1",
+   "why": "determines the parameter VALUES the EA observes at runtime",
+   "commits": [
+    {
+     "sha": "3844c472a",
+     "date": "2026-08-17",
+     "subject": "fix(setfile): expand exponent notation for double/float inputs, fail closed when expansion is lo"
+    },
+    {
+     "sha": "0edb2cf9d",
+     "date": "2026-07-23",
+     "subject": "chore: company maintenance sweep - decommission legacy agent-OS + doc purge"
+    },
+    {
+     "sha": "395eb5fc8",
+     "date": "2026-07-19",
+     "subject": "fix(setfiles): fall back to EA strategy defaults"
+    },
+    {
+     "sha": "6113c8927",
+     "date": "2026-07-06",
+     "subject": "fix(evidence): audit wave 1 \u2014 gate-integrity fixes across the Python/PS evidence layer (G1-G7,G9"
+    },
+    {
+     "sha": "3fd4fef65",
+     "date": "2026-07-02",
+     "subject": "fix(setgen): multi-root card lookup incl. farm cards_approved + strategy_id fallback - repairs p"
+    },
+    {
+     "sha": "3be874885",
+     "date": "2026-06-28",
+     "subject": "Harden pipeline recovery and live preflight"
+    },
+    {
+     "sha": "58c04a1d7",
+     "date": "2026-06-06",
+     "subject": "feat(framework): allow M2 timeframe in gen_setfile ValidateSet"
+    }
+   ]
+  },
+  "tester_defaults": {
+   "path": "framework/registry/tester_defaults.json",
+   "why": "tester configuration: commission, spread, model, deposit",
+   "commits": [
+    {
+     "sha": "d5fac5626",
+     "date": "2026-07-23",
+     "subject": "WIP snapshot agents/cto before prune 2026-07-23 (90 paths)"
+    },
+    {
+     "sha": "a9e97d645",
+     "date": "2026-06-04",
+     "subject": "feat(backtest): DL-067 single-run P2/Q02 full backtest (was 2-run determinism)"
+    }
+   ]
+  },
+  "phase_runner": {
+   "path": "framework/scripts/q0",
+   "why": "produces the verdict: window, seeds, floors, aggregation",
+   "commits": []
+  },
+  "run_smoke": {
+   "path": "framework/scripts/run_smoke",
+   "why": "the measurement harness every phase calls",
+   "commits": []
+  },
+  "cost_model": {
+   "path": "venue_cost_model",
+   "why": "cost assumptions applied to every stream",
+   "commits": []
+  },
+  "gate_logic": {
+   "path": "tools/strategy_farm/farmctl.py",
+   "why": "dispatch gates, phase contracts, promotion rules",
+   "commits": [
+    {
+     "sha": "952bc290f",
+     "date": "2026-08-17",
+     "subject": "fix(q02): normalize exponent setfiles and requalify"
+    },
+    {
+     "sha": "4d4759d5f",
+     "date": "2026-08-17",
+     "subject": "fix(farm): enforce poison-pill quarantine disposition"
+    },
+    {
+     "sha": "d574b6a83",
+     "date": "2026-08-17",
+     "subject": "ops: harden Q02 basket budget handling"
+    },
+    {
+     "sha": "ae59e7467",
+     "date": "2026-08-17",
+     "subject": "On agents/claude-orchestration-1: orphaned WIP found pre-task 2026-08-17T00:2x: PID-reuse kill-s"
+    },
+    {
+     "sha": "72a895057",
+     "date": "2026-08-17",
+     "subject": "fix(pump): never auto-commit an .ex5 whose own .mq5 is still dirty"
+    },
+    {
+     "sha": "7ed9ef10e",
+     "date": "2026-08-16",
+     "subject": "fix(farm): rank compact basket Q02 payloads"
+    },
+    {
+     "sha": "c6d269d2c",
+     "date": "2026-08-16",
+     "subject": "farm: requalify stale invalid Q02 rows"
+    },
+    {
+     "sha": "a9ea3d20c",
+     "date": "2026-08-16",
+     "subject": "farm: derive Q04 timeout budgets"
+    },
+    {
+     "sha": "f7853b3e8",
+     "date": "2026-08-16",
+     "subject": "fix(farm): cache the archive-admission loaders \u2014 agent router froze on every run"
+    },
+    {
+     "sha": "57e60130b",
+     "date": "2026-08-16",
+     "subject": "fix(farm): honor payload timeout_min in the basket smoke-timeout floors"
+    },
+    {
+     "sha": "7df940703",
+     "date": "2026-08-16",
+     "subject": "fix(farm): reject uncovered basket archives at admission"
+    },
+    {
+     "sha": "87de3ed70",
+     "date": "2026-08-16",
+     "subject": "fix(farm): recover Q15-seeded Q02 challenger"
+    },
+    {
+     "sha": "c51bacc47",
+     "date": "2026-08-16",
+     "subject": "fix(farm): persist Q02 basket timeout overrides"
+    },
+    {
+     "sha": "6dcb202df",
+     "date": "2026-08-15",
+     "subject": "feat(qm): claim-time backtest orchestration \u2014 stagger, resource hysteresis, cap 3"
+    },
+    {
+     "sha": "a4bbf2a9e",
+     "date": "2026-08-15",
+     "subject": "fix(qm): best-effort WAL checkpoint + 14d zerotrade scan window"
+    },
+    {
+     "sha": "5c06ab9d4",
+     "date": "2026-08-14",
+     "subject": "feat(farm): gate-compliant execution route for pattern-permission fixture harness"
+    },
+    {
+     "sha": "4b1a87397",
+     "date": "2026-08-14",
+     "subject": "perf(db): index work_items(verdict, ea_id) for replenish-path aggregations"
+    },
+    {
+     "sha": "3cc89099e",
+     "date": "2026-08-14",
+     "subject": "fix(pump): replace quadratic codex-review NOT-EXISTS with linear set lookup"
+    },
+    {
+     "sha": "d8d7c3acf",
+     "date": "2026-08-13",
+     "subject": "fix(q02): preserve progressing full-run timeout"
+    },
+    {
+     "sha": "d4156e281",
+     "date": "2026-08-12",
+     "subject": "feat(factory): add read-inert Q14-Q16 manifest extension"
+    },
+    {
+     "sha": "a3866a44e",
+     "date": "2026-08-12",
+     "subject": "feat(factory): add read-inert Q14-Q16 manifest extension"
+    },
+    {
+     "sha": "d22e81664",
+     "date": "2026-08-12",
+     "subject": "pipeline: add deterministic Q14 optimization admission"
+    },
+    {
+     "sha": "0181c8613",
+     "date": "2026-08-12",
+     "subject": "pipeline: add deterministic Q14 optimization admission"
+    },
+    {
+     "sha": "a16b80c3b",
+     "date": "2026-08-12",
+     "subject": "pipeline: add sealed Q16 head-to-head evaluator"
+    },
+    {
+     "sha": "56e3b419c",
+     "date": "2026-08-12",
+     "subject": "pipeline: add sealed Q16 head-to-head evaluator"
+    },
+    {
+     "sha": "b38ecf424",
+     "date": "2026-08-12",
+     "subject": "feat(claim): same-symbol cap CLAIM_SYMBOL_ACTIVE_CAP=4 replaces fleet-wide symbol serialization"
+    },
+    {
+     "sha": "85e1561aa",
+     "date": "2026-08-12",
+     "subject": "fix(q02): recover QM5_11405 stale binary"
+    },
+    {
+     "sha": "eca2264c0",
+     "date": "2026-08-12",
+     "subject": "ops(fx): enqueue QM5_11399 D1 sleeve"
+    },
+    {
+     "sha": "a60f693c4",
+     "date": "2026-08-12",
+     "subject": "repair QM5_9107 multisymbol Q02 isolation"
+    },
+    {
+     "sha": "9b7d2e8c4",
+     "date": "2026-08-11",
+     "subject": "ops: rebind batch \u2014 recovery occupancy escape, reservation liveness, quiet zone"
+    },
+    {
+     "sha": "3010ba2e2",
+     "date": "2026-08-11",
+     "subject": "fix(farm): recover QM5_9403 EURUSD Q02"
+    },
+    {
+     "sha": "ef8a8f0cc",
+     "date": "2026-08-11",
+     "subject": "Preserve priority track across farm promotions"
+    },
+    {
+     "sha": "1dc5856fd",
+     "date": "2026-08-10",
+     "subject": "fix(farm): enqueue repaired INFRA Q02 artifacts"
+    },
+    {
+     "sha": "6f0658b28",
+     "date": "2026-08-09",
+     "subject": "fix(factory): privatize Custom archives on claim"
+    },
+    {
+     "sha": "590362fa0",
+     "date": "2026-08-07",
+     "subject": "fix: resolve staged EX5 basename for artifact setfiles"
+    },
+    {
+     "sha": "1d1e16e58",
+     "date": "2026-08-07",
+     "subject": "fix: verify EX5 hash before every MT5 dispatch"
+    },
+    {
+     "sha": "8e56e80ea",
+     "date": "2026-08-06",
+     "subject": "fix(farm): unblock Claude review candidate spawning"
+    },
+    {
+     "sha": "b21e9d062",
+     "date": "2026-08-05",
+     "subject": "feat: reconcile canonical Q02 setfile lineage"
+    },
+    {
+     "sha": "dff3a30a0",
+     "date": "2026-08-05",
+     "subject": "ops: enqueue governed live-book Q09 news diagnostics"
+    },
+    {
+     "sha": "01a6600b9",
+     "date": "2026-08-05",
+     "subject": "fix(farm): authenticate basket Q02 reruns"
+    },
+    {
+     "sha": "8b5eb1ba0",
+     "date": "2026-08-05",
+     "subject": "guard build claims against Q02-excluded FX cards"
+    },
+    {
+     "sha": "2c02863d3",
+     "date": "2026-08-04",
+     "subject": "feat(farm): recovery-cap priority-lane stall escape (OWNER-ratified 2026-08-04)"
+    },
+    {
+     "sha": "e21136822",
+     "date": "2026-08-04",
+     "subject": "Fix Q09 sealed period dispatch"
+    },
+    {
+     "sha": "99b1d718f",
+     "date": "2026-08-04",
+     "subject": "fix(q09): gate worker claim on sealed plan"
+    },
+    {
+     "sha": "874ca33ca",
+     "date": "2026-08-03",
+     "subject": "fix(strategy_farm): bind Q08 canonical progress"
+    },
+    {
+     "sha": "840dcbcd3",
+     "date": "2026-08-03",
+     "subject": "fix(strategy_farm): aggregate phase-runner progress"
+    },
+    {
+     "sha": "068e811bc",
+     "date": "2026-08-03",
+     "subject": "fix(factory): derive phase runner scope from worker policy"
+    },
+    {
+     "sha": "8877592c2",
+     "date": "2026-08-03",
+     "subject": "fix(q03): allow sealed rerun after evidence purge"
+    },
+    {
+     "sha": "a03f4b1be",
+     "date": "2026-08-03",
+     "subject": "fix(q08): preserve recovery artifact lineage"
+    },
+    {
+     "sha": "67e6de155",
+     "date": "2026-08-03",
+     "subject": "feat(farm): add guarded fresh Q02 seed"
+    },
+    {
+     "sha": "4121c3420",
+     "date": "2026-08-02",
+     "subject": "Add fail-closed Q09 news executor"
+    },
+    {
+     "sha": "bcc049b45",
+     "date": "2026-08-02",
+     "subject": "ops: add candidate repair enqueue tooling"
+    },
+    {
+     "sha": "f8dbdc493",
+     "date": "2026-08-01",
+     "subject": "farmctl: support guarded append-only Q02 reruns"
+    },
+    {
+     "sha": "8e30c2069",
+     "date": "2026-07-31",
+     "subject": "feat(farm): add append-only per-item reruns"
+    },
+    {
+     "sha": "e4d31aed3",
+     "date": "2026-07-31",
+     "subject": "fix(ops): single-source gate display taxonomy"
+    },
+    {
+     "sha": "0dead3ff9",
+     "date": "2026-07-30",
+     "subject": "factory: harden restart queue and snapshot guards"
+    },
+    {
+     "sha": "974409369",
+     "date": "2026-07-30",
+     "subject": "ftmo: harden standalone book evaluation and T10 diagnostic"
+    },
+    {
+     "sha": "85db6178c",
+     "date": "2026-07-30",
+     "subject": "ftmo: bind Book3 full-lifecycle fidelity v2"
+    },
+    {
+     "sha": "0ba3768a7",
+     "date": "2026-07-29",
+     "subject": "ftmo: enforce exact ladder window and guarded recovery"
+    },
+    {
+     "sha": "21c238d5f",
+     "date": "2026-07-29",
+     "subject": "pipeline: implement W6-W8 controls and dashboard programme"
+    },
+    {
+     "sha": "b62cf0638",
+     "date": "2026-07-29",
+     "subject": "maintenance: implement 2026-07-29 convergence plan"
+    },
+    {
+     "sha": "cbb020d4e",
+     "date": "2026-07-29",
+     "subject": "fix(ops): separate pipeline strategy and infra state"
+    },
+    {
+     "sha": "31c51587a",
+     "date": "2026-07-29",
+     "subject": "fix: converge MNT review round 2 contracts"
+    },
+    {
+     "sha": "aa73570d7",
+     "date": "2026-07-28",
+     "subject": "fix: correct MNT live-state and pipeline contracts"
+    },
+    {
+     "sha": "41372ec98",
+     "date": "2026-07-28",
+     "subject": "ops: bind staged EX5 hash into run evidence"
+    },
+    {
+     "sha": "da0183209",
+     "date": "2026-07-28",
+     "subject": "ops: add immutable staged EX5 work item contract"
+    },
+    {
+     "sha": "461ee3f52",
+     "date": "2026-07-28",
+     "subject": "ops: add immutable staged EX5 work item contract"
+    },
+    {
+     "sha": "a4bea4483",
+     "date": "2026-07-27",
+     "subject": "ops: enqueue multisym replay and add claim age escalation"
+    },
+    {
+     "sha": "850784f97",
+     "date": "2026-07-27",
+     "subject": "fix(farm): make active reaper progress-aware"
+    },
+    {
+     "sha": "3e811661a",
+     "date": "2026-07-27",
+     "subject": "fix(q02): classify summary_missing graveyard; retire the single INFRA_FAIL label"
+    },
+    {
+     "sha": "6b750263c",
+     "date": "2026-07-27",
+     "subject": "fix(q08): distinct NOT_APPLICABLE for fixed-parameter 8.5/8.7 evidence (census rank 7)"
+    },
+    {
+     "sha": "2a555a00a",
+     "date": "2026-07-27",
+     "subject": "ops: honor expiring terminal reservations at claim time"
+    },
+    {
+     "sha": "677aa5162",
+     "date": "2026-07-27",
+     "subject": "feat(farm): expose screening-only FUND_SCORE"
+    },
+    {
+     "sha": "1061abf08",
+     "date": "2026-07-27",
+     "subject": "fix(farm): preserve Q08 invalid verdicts"
+    },
+    {
+     "sha": "7668ff0ca",
+     "date": "2026-07-27",
+     "subject": "fix(farm): restrict pump commits to generated artifacts"
+    },
+    {
+     "sha": "707729f56",
+     "date": "2026-07-26",
+     "subject": "farm: quarantine deterministic poison pills after five repeats"
+    },
+    {
+     "sha": "ac2477ca5",
+     "date": "2026-07-26",
+     "subject": "feat(farm): WS-A queue-rebalance + WS-H Q08 reason preservation [wsa2, Codex APPROVE R3]"
+    },
+    {
+     "sha": "df5215f0d",
+     "date": "2026-07-25",
+     "subject": "feat(pipeline): WP-5 + WP-6 + WP-7 \u2014 cold-cache retry, provenance-bound streams, durable Q04 evi"
+    },
+    {
+     "sha": "06c332636",
+     "date": "2026-07-25",
+     "subject": "fix(evidence): WP-3 + WP-4 \u2014 the factory's largest failure class was invisible"
+    },
+    {
+     "sha": "f39b860ed",
+     "date": "2026-07-25",
+     "subject": "fix(q08): budget legacy multisymbol FX baskets"
+    },
+    {
+     "sha": "7b7870df8",
+     "date": "2026-07-24",
+     "subject": "fix(review): incorporate codex implementation review (task 2aa92baa, 5 defects fixed)"
+    },
+    {
+     "sha": "bd9c3e049",
+     "date": "2026-07-24",
+     "subject": "fix(q03): treat None expected dates as unconstrained in evidence binding (audit FB-02)"
+    },
+    {
+     "sha": "550603304",
+     "date": "2026-07-24",
+     "subject": "fix(pump): auto-commit event_vocabulary.json + detect orphaned pump lock (audit FB-01, FB-06)"
+    },
+    {
+     "sha": "1e9ce7734",
+     "date": "2026-07-23",
+     "subject": "fix(factory): force-add allowlisted generated artifacts"
+    },
+    {
+     "sha": "a864faa48",
+     "date": "2026-07-23",
+     "subject": "fix(factory): recover source-only strategies safely"
+    },
+    {
+     "sha": "375b76af2",
+     "date": "2026-07-23",
+     "subject": "factory: raise codex_review rework cap 2->10, recalibrate per-tick QM_ read, fix QM5_20007 ATR c"
+    },
+    {
+     "sha": "4c9b64bf3",
+     "date": "2026-07-23",
+     "subject": "ops: add reboot diagnostics and harden factory recovery"
+    },
+    {
+     "sha": "0edb2cf9d",
+     "date": "2026-07-23",
+     "subject": "chore: company maintenance sweep - decommission legacy agent-OS + doc purge"
+    },
+    {
+     "sha": "0a6dd0244",
+     "date": "2026-07-22",
+     "subject": "fix(farm): resolve canonical EA label for Q04 runners"
+    },
+    {
+     "sha": "60582d248",
+     "date": "2026-07-21",
+     "subject": "fix(farm): enqueue logical baskets at Q03"
+    },
+    {
+     "sha": "f19eb2e76",
+     "date": "2026-07-20",
+     "subject": "fix(farm): prioritize fresh Q02 and gate draft defects"
+    },
+    {
+     "sha": "c5769c9df",
+     "date": "2026-07-20",
+     "subject": "feat(ea-metrics): first-class query CLI over the EA\u00d7symbol\u00d7gate archive"
+    },
+    {
+     "sha": "9fac8f12d",
+     "date": "2026-07-19",
+     "subject": "feat(q08): DL-082 SS3 \u2014 INFRA_RECYCLE for degenerate baselines, frequency-aware soft-gates, firs"
+    },
+    {
+     "sha": "c19d53f2c",
+     "date": "2026-07-19",
+     "subject": "feat(gates): DL-082 implementation \u2014 Q04 venue costs, Q02 evidence floor, Q05 DD-parking, Spur-2"
+    },
+    {
+     "sha": "87a582501",
+     "date": "2026-07-19",
+     "subject": "feat(gates): DL-082 \u2014 portfolio-first admission + r1 source-tier relaxation (OWNER mandate)"
+    },
+    {
+     "sha": "b36908a42",
+     "date": "2026-07-19",
+     "subject": "fix(farm): restore worker child cleanup and harden Codex ownership"
+    },
+    {
+     "sha": "6b40ccd0a",
+     "date": "2026-07-18",
+     "subject": "fix(q08): harden verdicts and phase deadlines"
+    },
+    {
+     "sha": "a17376efa",
+     "date": "2026-07-18",
+     "subject": "fix(q08): harden verdicts and phase deadlines"
+    },
+    {
+     "sha": "6f02e31f5",
+     "date": "2026-07-17",
+     "subject": "fix(q08): generate typed neighborhood configs"
+    },
+    {
+     "sha": "3c4628614",
+     "date": "2026-07-14",
+     "subject": "farmctl: add artifacts/ to ARTIFACT_COMMIT_ALLOWLIST (pump never swept it)"
+    },
+    {
+     "sha": "60b9dabf8",
+     "date": "2026-07-14",
+     "subject": "ops(ftmo): portfolio tooling + terminal_worker atomic claim + tests (Codex WIP)"
+    },
+    {
+     "sha": "eacd52dd6",
+     "date": "2026-07-09",
+     "subject": "farm: block non-matrix DWX Q02 aliases"
+    },
+    {
+     "sha": "0163ee6d2",
+     "date": "2026-07-09",
+     "subject": "fix: guard q02 fanout magic slots"
+    },
+    {
+     "sha": "b7e1094bc",
+     "date": "2026-07-09",
+     "subject": "farm: asset-class tie-break in Q02 claim ordering (metal/index before FX)"
+    },
+    {
+     "sha": "0ea2f9d3e",
+     "date": "2026-07-08",
+     "subject": "Honor Q05 timeout payloads in dispatcher"
+    },
+    {
+     "sha": "2cf0062a4",
+     "date": "2026-07-08",
+     "subject": "Block duplicate build tasks for pipelined EAs"
+    },
+    {
+     "sha": "bb035da76",
+     "date": "2026-07-08",
+     "subject": "infra: requeue QM5_1228 EURNZD with NZD account"
+    },
+    {
+     "sha": "b46980b7f",
+     "date": "2026-07-08",
+     "subject": "Repair duplicate Q02 work item fanout"
+    },
+    {
+     "sha": "69d68bd22",
+     "date": "2026-07-08",
+     "subject": "Fix stale worktree setfile dispatch"
+    },
+    {
+     "sha": "32b21f2d5",
+     "date": "2026-07-07",
+     "subject": "ops: requeue QM5_12781 Q07 seed timeout"
+    },
+    {
+     "sha": "31389eabd",
+     "date": "2026-07-07",
+     "subject": "Merge remote-tracking branch 'origin/main' into agents/board-advisor"
+    },
+    {
+     "sha": "9648f1b5c",
+     "date": "2026-07-07",
+     "subject": "perf(farmctl): cache registry CSV parses + cards listing in prebuild validation"
+    },
+    {
+     "sha": "33129c57b",
+     "date": "2026-07-06",
+     "subject": "fix(farmctl): retry _write_csv_atomic os.replace on Windows reader race (registry PermissionErro"
+    },
+    {
+     "sha": "45b8a8d01",
+     "date": "2026-07-05",
+     "subject": "fix(q08): extend basket-EA baseline timeout 2400s\u21925400s, phase budget 30min\u2192120min"
+    },
+    {
+     "sha": "45d4c6174",
+     "date": "2026-07-05",
+     "subject": "fix(q08): extend basket-EA baseline timeout 2400s\u21925400s, phase budget 30min\u2192120min"
+    },
+    {
+     "sha": "7afcc62e3",
+     "date": "2026-07-05",
+     "subject": "fix(pump): resolve build_result across roots + attempt names (kills rename loop)"
+    },
+    {
+     "sha": "36337782c",
+     "date": "2026-07-03",
+     "subject": "fix(farm): canonical-checkout guard layers 1-3 (task 1a52d28d)"
+    },
+    {
+     "sha": "aef8ad739",
+     "date": "2026-07-03",
+     "subject": "fix(farm): anchor FRAMEWORK_EAS_DIR to canonical checkout (guard layer 1, 07:42 incident)"
+    },
+    {
+     "sha": "3e8b9efc6",
+     "date": "2026-07-03",
+     "subject": "fix(farm): canonical-checkout guard layers 1-3 (task 1a52d28d)"
+    },
+    {
+     "sha": "dbf76debd",
+     "date": "2026-07-03",
+     "subject": "ops(d015e982): hardening P1-P5 \u2014 scaled timeouts, magic-resolver loud drops+strict, MAGIC_NOT_IN"
+    },
+    {
+     "sha": "91027e955",
+     "date": "2026-07-03",
+     "subject": "ops(d015e982): hardening P1-P5 \u2014 scaled timeouts, magic-resolver loud drops+strict, MAGIC_NOT_IN"
+    },
+    {
+     "sha": "40d9c8fb0",
+     "date": "2026-07-03",
+     "subject": "ops(hardening): P4-P5 scaled timeouts, resolver --strict, seasonal prescreen, QMProc module, evi"
+    },
+    {
+     "sha": "7fe15c1fb",
+     "date": "2026-07-03",
+     "subject": "fix(farm): canonical-checkout guard layers 1-3 (task 1a52d28d)"
+    },
+    {
+     "sha": "3f2d694df",
+     "date": "2026-07-03",
+     "subject": "ops(hardening): P4-P5 scaled timeouts, loud resolver drops, seasonal prescreen, QMProc module, e"
+    },
+    {
+     "sha": "2d129775c",
+     "date": "2026-07-03",
+     "subject": "ops(guards): canonical guards L1-L3 + claude caps + live_book_pulse (tasks 1a52d28d+e1fb9395)"
+    },
+    {
+     "sha": "7c4becc6e",
+     "date": "2026-07-03",
+     "subject": "ops(guards): canonical guards L1-L3 + claude caps + live_book_pulse (tasks 1a52d28d+e1fb9395)"
+    },
+    {
+     "sha": "f13f40efe",
+     "date": "2026-07-03",
+     "subject": "guard(farm): layers 1-3 canonical-checkout check + mass-invalidation circuit breaker"
+    },
+    {
+     "sha": "ccca6cf13",
+     "date": "2026-07-03",
+     "subject": "ops(lanes): claude lane full coding caps + Sonnet 5 headless (OWNER 2026-07-03)"
+    },
+    {
+     "sha": "881d17ee6",
+     "date": "2026-07-03",
+     "subject": "fix(farm): anchor FRAMEWORK_EAS_DIR to canonical checkout (guard layer 1, 07:42 incident)"
+    },
+    {
+     "sha": "edeef57e2",
+     "date": "2026-07-03",
+     "subject": "farm: repair FX basket phase runner repo resolution"
+    },
+    {
+     "sha": "49a8ac322",
+     "date": "2026-07-03",
+     "subject": "ops(hardening): pump janitor + router disabled-lane guard (P3 completion)"
+    },
+    {
+     "sha": "adcf144fe",
+     "date": "2026-07-03",
+     "subject": "ops(hardening): FACTORY_OFF master switch, TestWindow scripts, lane heartbeat, Gemini G: fix"
+    },
+    {
+     "sha": "d57512cef",
+     "date": "2026-07-03",
+     "subject": "ops(hardening): FACTORY_OFF flag, TestWindow scripts, lane heartbeat guard, gemini G: fix"
+    },
+    {
+     "sha": "43febbcd5",
+     "date": "2026-07-03",
+     "subject": "Record QM5_12978 Q02 CPU-ceiling state"
+    },
+    {
+     "sha": "7b886c3d3",
+     "date": "2026-07-03",
+     "subject": "Fix basket Q02 short-window dispatch"
+    },
+    {
+     "sha": "32e1912db",
+     "date": "2026-07-03",
+     "subject": "Clamp FX basket Q phase history starts"
+    },
+    {
+     "sha": "9e3288ea8",
+     "date": "2026-07-02",
+     "subject": "WS1 card inventory hygiene guards"
+    },
+    {
+     "sha": "92a51f4c4",
+     "date": "2026-07-02",
+     "subject": "Advance QM5_10009 FX basket Q04"
+    },
+    {
+     "sha": "e3409d71f",
+     "date": "2026-07-02",
+     "subject": "Fix Q05 timeout payload for FX basket retry"
+    },
+    {
+     "sha": "d12de3aa9",
+     "date": "2026-07-02",
+     "subject": "fix(farm): clamp Q05 basket latest year"
+    },
+    {
+     "sha": "1d3ab2700",
+     "date": "2026-07-02",
+     "subject": "fix(watchdog+purge+worker): protect active basket/cold-cache runs from full-reset, purge, and st"
+    },
+    {
+     "sha": "bd479ac7d",
+     "date": "2026-07-02",
+     "subject": "fix(farm): Q05/Q06 stress budget for tick-heavy EAs + binding OnTick news-order rule"
+    },
+    {
+     "sha": "ec6b8ded7",
+     "date": "2026-07-02",
+     "subject": "fix(farm): basket Q02 FULL-run timeout was still 2h \u2014 the real T-WIN starver"
+    },
+    {
+     "sha": "b6d724d88",
+     "date": "2026-07-01",
+     "subject": "fix(farm): basket Q02 timeouts were backwards \u2014 28-symbol baskets starved to INFRA_FAIL"
+    },
+    {
+     "sha": "f99a3f802",
+     "date": "2026-07-01",
+     "subject": "Fix FX basket cascade tester payload"
+    },
+    {
+     "sha": "219d74ada",
+     "date": "2026-07-01",
+     "subject": "fix(pump): dirty-guard ignores .ex5/.set artifact churn (recurring build deadlock)"
+    },
+    {
+     "sha": "18d4c3adb",
+     "date": "2026-07-01",
+     "subject": "Fix Q07 basket report latch"
+    },
+    {
+     "sha": "9e54b5647",
+     "date": "2026-07-01",
+     "subject": "Fix Q03 infra aggregate and requeue QM5_12778"
+    },
+    {
+     "sha": "b3fc94686",
+     "date": "2026-06-30",
+     "subject": "Advance QM5_12778 basket Q03 payload"
+    },
+    {
+     "sha": "745dcb45f",
+     "date": "2026-06-30",
+     "subject": "Fix Q06 basket bridge for FX cointegration"
+    },
+    {
+     "sha": "c1761ae4c",
+     "date": "2026-06-30",
+     "subject": "fix(pump): pump-cycle magic-resolver reconcile (close the concurrent-build race)"
+    },
+    {
+     "sha": "5f978d188",
+     "date": "2026-06-30",
+     "subject": "Enable Q04 requeue for FX basket probes"
+    },
+    {
+     "sha": "1ed7c24a6",
+     "date": "2026-06-30",
+     "subject": "Clamp Q04 promotions to cached history"
+    },
+    {
+     "sha": "7c40edb4c",
+     "date": "2026-06-30",
+     "subject": "Enrich FX basket Q02 payload metadata"
+    },
+    {
+     "sha": "03507643f",
+     "date": "2026-06-30",
+     "subject": "Advance QM5_12532 Q05 basket retry"
+    },
+    {
+     "sha": "544e461ef",
+     "date": "2026-06-30",
+     "subject": "Fix Q05 basket stress dispatch metadata"
+    },
+    {
+     "sha": "4a98c162e",
+     "date": "2026-06-29",
+     "subject": "fix(antigravity): run agy headless under a ConPTY (pywinpty) - solves the non-TTY hang"
+    },
+    {
+     "sha": "a19e57d57",
+     "date": "2026-06-29",
+     "subject": "feat(build-lane): route farmctl gemini build spawn to Antigravity CLI (agy)"
+    },
+    {
+     "sha": "8e3cafa82",
+     "date": "2026-06-29",
+     "subject": "Requeue FX soft-pass basket Q05"
+    },
+    {
+     "sha": "c66c39013",
+     "date": "2026-06-29",
+     "subject": "fix basket q03 date-window dispatch"
+    },
+    {
+     "sha": "f06510120",
+     "date": "2026-06-29",
+     "subject": "Recover embedded build results for Q02"
+    },
+    {
+     "sha": "286958bf3",
+     "date": "2026-06-28",
+     "subject": "Extend per-item farm timeouts for Q08 rescues"
+    },
+    {
+     "sha": "3be874885",
+     "date": "2026-06-28",
+     "subject": "Harden pipeline recovery and live preflight"
+    },
+    {
+     "sha": "066f600da",
+     "date": "2026-06-28",
+     "subject": "fix(farm): check basket legs for Q05 history"
+    },
+    {
+     "sha": "89fbf7a8e",
+     "date": "2026-06-28",
+     "subject": "Requeue 12712 Q04 with available FX history"
+    },
+    {
+     "sha": "a5054a486",
+     "date": "2026-06-27",
+     "subject": "Preserve basket host context on phase promotions"
+    },
+    {
+     "sha": "c62e2f5e7",
+     "date": "2026-06-27",
+     "subject": "farm: guard basket Q02 host-symbol fallback"
+    },
+    {
+     "sha": "a585213a4",
+     "date": "2026-06-26",
+     "subject": "Fix FX basket Q02 tester currency override"
+    },
+    {
+     "sha": "5dccefb93",
+     "date": "2026-06-26",
+     "subject": "farm: build sweep prioritizes diversifying instruments first"
+    },
+    {
+     "sha": "7ec6b2683",
+     "date": "2026-06-26",
+     "subject": "Fix basket Q04 host-symbol dispatch"
+    },
+    {
+     "sha": "790b78653",
+     "date": "2026-06-26",
+     "subject": "Guard basket Q02 auto-enqueue from leg setfiles"
+    },
+    {
+     "sha": "e1907459e",
+     "date": "2026-06-26",
+     "subject": "farm: canonicalize symbol aliases to the .DWX universe"
+    },
+    {
+     "sha": "6cbfa2645",
+     "date": "2026-06-26",
+     "subject": "Extend Q02 watchdog for basket work items"
+    },
+    {
+     "sha": "97f3801c9",
+     "date": "2026-06-26",
+     "subject": "Fix basket Q02 unenqueued detection"
+    },
+    {
+     "sha": "0b93ae8d5",
+     "date": "2026-06-26",
+     "subject": "farm: Q02 trade floor = 5/yr flat, enforce >=5/yr on OOS (Q04)"
+    },
+    {
+     "sha": "1fb651459",
+     "date": "2026-06-26",
+     "subject": "farm: auto-enqueue logical basket Q02 setfiles"
+    },
+    {
+     "sha": "1aa745e52",
+     "date": "2026-06-26",
+     "subject": "fix(portfolio): lower q09 trade floor for low-frequency sleeves"
+    },
+    {
+     "sha": "83179f310",
+     "date": "2026-06-26",
+     "subject": "fix(portfolio): dedupe q09 portfolio admissions"
+    },
+    {
+     "sha": "bd37bde09",
+     "date": "2026-06-26",
+     "subject": "fix: repair stranded EA reviews"
+    },
+    {
+     "sha": "aaa731f48",
+     "date": "2026-06-25",
+     "subject": "fix(dispatch): raise .DWX backtest floor to 2018.07.02 (index data start)"
+    },
+    {
+     "sha": "970003c09",
+     "date": "2026-06-25",
+     "subject": "fix(dispatch): floor backtest start at .DWX history start (2017.10.02)"
+    },
+    {
+     "sha": "0782810bc",
+     "date": "2026-06-23",
+     "subject": "fix(pump): skip un-buildable tasks in Claude build lane"
+    },
+    {
+     "sha": "2fe34785b",
+     "date": "2026-06-23",
+     "subject": "Q04 DL-076: low-freq pooled-OOS rescue (PASS_LOWFREQ) + repair dead PASS_SOFT live path"
+    },
+    {
+     "sha": "369ebb390",
+     "date": "2026-06-22",
+     "subject": "pump: fix \u00a710c Q02->Q03 promotion starvation (permanent p2_pass_no_p3 FAIL)"
+    },
+    {
+     "sha": "371f5018d",
+     "date": "2026-06-20",
+     "subject": "feat(enqueue): .DWX-only guard (OWNER directive 2026-06-20)"
+    },
+    {
+     "sha": "fd246e28e",
+     "date": "2026-06-20",
+     "subject": "fix(prebuild): trade-frequency inference ignores comparative/incidental prose"
+    },
+    {
+     "sha": "5be37437c",
+     "date": "2026-06-20",
+     "subject": "fix(pump): \u00a73b auto-create scans full card list + orders by priority"
+    },
+    {
+     "sha": "5a26d9470",
+     "date": "2026-06-14",
+     "subject": "fix: factory dispatch wedge \u2014 _running_mt5_terminals fail-OPEN + cache (root cause)"
+    },
+    {
+     "sha": "ea59df9d3",
+     "date": "2026-06-10",
+     "subject": "feat: DL-074 Q02-Q04 compute staging \u2014 Q04-early probe, symbol staging, prescreen fix, tiered ab"
+    },
+    {
+     "sha": "e13f0ea3a",
+     "date": "2026-06-10",
+     "subject": "ops: 2026-06-10 acceleration \u2014 R-eval drain lane, sweep-enqueue, contention retry fix, log purge"
+    },
+    {
+     "sha": "2d0f5fe73",
+     "date": "2026-06-10",
+     "subject": "feat(pump): file/env-driven Claude build parallelism (OWNER: build via Claude when Codex out)"
+    },
+    {
+     "sha": "45a714d22",
+     "date": "2026-06-09",
+     "subject": "feat(pump): env/file-driven Codex build parallelism (OWNER boost to 10 until midnight)"
+    },
+    {
+     "sha": "34fd74727",
+     "date": "2026-06-09",
+     "subject": "perf(claude lane): headless build/review/research run Sonnet 4.6, not Opus 4.7"
+    },
+    {
+     "sha": "d6d842ec8",
+     "date": "2026-06-09",
+     "subject": "fix(pump): allowlist P5 calibration auto-stub for auto-commit (kill dirty-guard build deadlock)"
+    },
+    {
+     "sha": "3d9403b50",
+     "date": "2026-06-09",
+     "subject": "feat(q04): implement DL-071 PASS_SOFT verdict + re-grade (OWNER-ratified)"
+    },
+    {
+     "sha": "a3c8d2c3c",
+     "date": "2026-06-09",
+     "subject": "chore(agents): ease throttle to 3 + kill remaining codex cry-wolf checks"
+    },
+    {
+     "sha": "470f78f76",
+     "date": "2026-06-07",
+     "subject": "chore(agents): token-reduction throttle \u2014 Claude 5->2, Codex cadence 15->30"
+    },
+    {
+     "sha": "98db2df9b",
+     "date": "2026-06-05",
+     "subject": "feat(pump): durable codex zombie-reaper (kill stuck codex procs >60min)"
+    },
+    {
+     "sha": "eec089ac5",
+     "date": "2026-06-05",
+     "subject": "chore(pump): today-boost backpressure 5000->10000 to resume builds (OWNER 2026-06-05)"
+    },
+    {
+     "sha": "bbf7ca197",
+     "date": "2026-06-05",
+     "subject": "chore(pump): today-boost Claude build parallelism (OWNER 2026-06-05, no restrictions)"
+    },
+    {
+     "sha": "c294c392a",
+     "date": "2026-06-05",
+     "subject": "feat(ea-dir): DL-069 vN versioning \u2014 highest active-registered build wins + stranded guard"
+    },
+    {
+     "sha": "61d2646f3",
+     "date": "2026-06-05",
+     "subject": "fix(ea-dir): DL-068 registry-aware EA-dir resolution (systemic ea_dir_ambiguous)"
+    },
+    {
+     "sha": "a9e97d645",
+     "date": "2026-06-04",
+     "subject": "feat(backtest): DL-067 single-run P2/Q02 full backtest (was 2-run determinism)"
+    },
+    {
+     "sha": "95213cd83",
+     "date": "2026-06-04",
+     "subject": "revert: drop T11-T14 fleet scale-up (OWNER 2026-06-04)"
+    },
+    {
+     "sha": "d5ad28ea3",
+     "date": "2026-06-04",
+     "subject": "feat(factory): scaffold T11-T14 (config + cockpit + provisioning script)"
+    },
+    {
+     "sha": "89eb1b0d1",
+     "date": "2026-06-04",
+     "subject": "feat(pump): deterministic auto-commit of factory build artifacts"
+    },
+    {
+     "sha": "8fecf163e",
+     "date": "2026-06-04",
+     "subject": "feat(pump): reactivate Claude build lane + raise build backpressure"
+    },
+    {
+     "sha": "055cf4da9",
+     "date": "2026-06-03",
+     "subject": "feat(q08): portfolio-rescue phase 4 (dashboard) + fix the 4 review findings"
+    },
+    {
+     "sha": "2da1daffe",
+     "date": "2026-06-03",
+     "subject": "feat(q08): portfolio-rescue track \u2014 3-tier taxonomy + Q09_PORTFOLIO routing"
+    },
+    {
+     "sha": "3762759db",
+     "date": "2026-06-03",
+     "subject": "fix(q-runners): Codex cleanup of Q04-Q07 gate runners + worker plumbing"
+    },
+    {
+     "sha": "8d74e5a49",
+     "date": "2026-06-02",
+     "subject": "feat(g0): also stamp expected_pf/dd in the inline Claude-G0 prompt"
+    },
+    {
+     "sha": "36178bfcf",
+     "date": "2026-06-02",
+     "subject": "feat(g0): force-forward expected_pf/expected_dd_pct on new card approvals"
+    },
+    {
+     "sha": "ad8a4ff9b",
+     "date": "2026-06-02",
+     "subject": "feat(farm): deterministic strategy build/test prioritization (v1, 65/35)"
+    },
+    {
+     "sha": "83cb432e2",
+     "date": "2026-06-01",
+     "subject": "Harden destructive farm operations"
+    },
+    {
+     "sha": "a67625738",
+     "date": "2026-06-01",
+     "subject": "fix(dl065): wire agent task spawn leases"
+    }
+   ]
+  },
+  "portfolio_rules": {
+   "path": "tools/strategy_farm/portfolio/",
+   "why": "admission and book rules (DL-079, DL-083, DL-084)",
+   "commits": [
+    {
+     "sha": "04cb636d7",
+     "date": "2026-08-12",
+     "subject": "portfolio: add dry-run dual venue book builders"
+    },
+    {
+     "sha": "c71d6e3f0",
+     "date": "2026-08-12",
+     "subject": "portfolio: add dry-run dual venue book builders"
+    },
+    {
+     "sha": "2a0a0186f",
+     "date": "2026-08-05",
+     "subject": "Fix Q09 cross-round provenance persistence"
+    },
+    {
+     "sha": "feb2be5af",
+     "date": "2026-08-04",
+     "subject": "Wire Q09 into FTMO admission"
+    },
+    {
+     "sha": "b4b64f135",
+     "date": "2026-08-02",
+     "subject": "feat(ftmo): add cost-adjusted evaluation path"
+    },
+    {
+     "sha": "2a0a329dd",
+     "date": "2026-08-02",
+     "subject": "feat(ftmo): add native daily stream exporter design"
+    },
+    {
+     "sha": "0433a9615",
+     "date": "2026-08-02",
+     "subject": "feat: add FTMO finite-horizon evaluator"
+    },
+    {
+     "sha": "d6d2a8dfc",
+     "date": "2026-07-31",
+     "subject": "feat: add hash-bound Book3 diagnostic evaluator"
+    },
+    {
+     "sha": "ab5053a66",
+     "date": "2026-07-30",
+     "subject": "strategy-farm: harden Q11 admission and router boundary"
+    },
+    {
+     "sha": "bd24b37ca",
+     "date": "2026-07-30",
+     "subject": "feat(ftmo): add event-complete standalone replay evidence"
+    },
+    {
+     "sha": "c06c6ac2d",
+     "date": "2026-07-30",
+     "subject": "strategy-farm: harden Q11 admission and router boundary"
+    },
+    {
+     "sha": "ae24b4c7d",
+     "date": "2026-07-30",
+     "subject": "feat(ftmo): add event-complete standalone replay evidence"
+    },
+    {
+     "sha": "f8593cd4b",
+     "date": "2026-07-30",
+     "subject": "ftmo: align diagnostic fidelity receipt contract"
+    },
+    {
+     "sha": "974409369",
+     "date": "2026-07-30",
+     "subject": "ftmo: harden standalone book evaluation and T10 diagnostic"
+    },
+    {
+     "sha": "85db6178c",
+     "date": "2026-07-30",
+     "subject": "ftmo: bind Book3 full-lifecycle fidelity v2"
+    },
+    {
+     "sha": "db4de96a3",
+     "date": "2026-07-29",
+     "subject": "ftmo: harden book3 fidelity evidence"
+    },
+    {
+     "sha": "b7805fb50",
+     "date": "2026-07-29",
+     "subject": "pipeline: add target-aware evidence foundations"
+    },
+    {
+     "sha": "b62cf0638",
+     "date": "2026-07-29",
+     "subject": "maintenance: implement 2026-07-29 convergence plan"
+    },
+    {
+     "sha": "08fff811d",
+     "date": "2026-07-29",
+     "subject": "chore: sweep uncommitted work before emergency VPS reboot"
+    },
+    {
+     "sha": "9b7a73bd0",
+     "date": "2026-07-28",
+     "subject": "ops: enqueue 2-sleeve joint run + recompute runner-alone P(pass) baseline"
+    },
+    {
+     "sha": "677aa5162",
+     "date": "2026-07-27",
+     "subject": "feat(farm): expose screening-only FUND_SCORE"
+    },
+    {
+     "sha": "a25caf12e",
+     "date": "2026-07-27",
+     "subject": "feat(9936): wire FTMO prop-firm phase selector + Phase 1/2 set files"
+    },
+    {
+     "sha": "50cf7f5a4",
+     "date": "2026-07-27",
+     "subject": "book: 9.1% -> 64.9% on OWNER's 60/30 KPI, out-of-sample"
+    },
+    {
+     "sha": "3d8b4f139",
+     "date": "2026-07-27",
+     "subject": "measure: both FTMO phases on calendar days with the dormancy rule enforced"
+    },
+    {
+     "sha": "1f515fbd5",
+     "date": "2026-07-27",
+     "subject": "measure: FTMO has no deadline, so the campaign was measuring the wrong thing"
+    },
+    {
+     "sha": "796e855ac",
+     "date": "2026-07-27",
+     "subject": "measure: as actually deployable today the campaign is 4.7%, not 90.2%"
+    },
+    {
+     "sha": "71b6cf87f",
+     "date": "2026-07-27",
+     "subject": "measure: the defensible campaign figure is 79.5%, not 90.2%"
+    },
+    {
+     "sha": "e7d051896",
+     "date": "2026-07-27",
+     "subject": "fix: two filters of mine were rejecting eligible sleeves -- book grows to 6 accounts"
+    },
+    {
+     "sha": "215d08170",
+     "date": "2026-07-27",
+     "subject": "feat(framework): prop-firm input section; target awareness is worth +28.8pp"
+    },
+    {
+     "sha": "ef7c4add9",
+     "date": "2026-07-27",
+     "subject": "feat: FTMO challenge campaign set files + deploy manifest"
+    },
+    {
+     "sha": "10dd4af73",
+     "date": "2026-07-26",
+     "subject": "research: close the FTMO floating-P&L gap from per-trade MAE; margin is the new binding constrai"
+    },
+    {
+     "sha": "fb7f10108",
+     "date": "2026-07-26",
+     "subject": "research: measured route to FTMO P(pass)~0.80 via parallel accounts"
+    },
+    {
+     "sha": "d13daaf7e",
+     "date": "2026-07-26",
+     "subject": "feat: sleeve_speed \u2014 screen sleeves by return per drawdown per year"
+    },
+    {
+     "sha": "b90369543",
+     "date": "2026-07-26",
+     "subject": "research: FTMO swap, not merit, is what kills our qualified book"
+    },
+    {
+     "sha": "d266127c4",
+     "date": "2026-07-26",
+     "subject": "feat: build joint-sim manifests from qualified sleeves"
+    },
+    {
+     "sha": "6f4c2eebc",
+     "date": "2026-07-26",
+     "subject": "feat(ftmo): governor closure \u2014 pulse observer-only, day-4 Option A [wsg2, Codex APPROVE R3]"
+    },
+    {
+     "sha": "a6701f813",
+     "date": "2026-07-26",
+     "subject": "feat(portfolio): live-vs-book comparator three-state repair [wse42, Codex APPROVE R3]"
+    },
+    {
+     "sha": "1fe631e85",
+     "date": "2026-07-26",
+     "subject": "feat(portfolio): swap replacement-cost scenario engine [wsd2, Codex APPROVE R3]"
+    },
+    {
+     "sha": "071aa489b",
+     "date": "2026-07-26",
+     "subject": "feat(q09): C1 hard gate DL-083 port, stricter-of-two correlation [wsc1, Codex APPROVE R3, DL 202"
+    },
+    {
+     "sha": "e49f6ee58",
+     "date": "2026-07-26",
+     "subject": "fix(ftmo): fail-closed basket-magic qualification \u2014 authoritative legs only"
+    },
+    {
+     "sha": "73317d922",
+     "date": "2026-07-26",
+     "subject": "feat(portfolio): FINAL23 OPTION-B generator + Decision C in deployment runbook"
+    },
+    {
+     "sha": "82fc893ae",
+     "date": "2026-07-25",
+     "subject": "feat(book): FINAL24b \u2014 drop 10440/NDX (Q10 FAIL dd 31%), admit 11422/USDCAD, defer 20048"
+    },
+    {
+     "sha": "df5215f0d",
+     "date": "2026-07-25",
+     "subject": "feat(pipeline): WP-5 + WP-6 + WP-7 \u2014 cold-cache retry, provenance-bound streams, durable Q04 evi"
+    },
+    {
+     "sha": "46b645bad",
+     "date": "2026-07-25",
+     "subject": "feat(portfolio): auditable preset staging for the 12.0 book \u2014 patch, not regenerate"
+    },
+    {
+     "sha": "d3d93bf8e",
+     "date": "2026-07-25",
+     "subject": "feat(portfolio): make TOTAL_RISK and the output path CLI-settable on the DXZ generator"
+    },
+    {
+     "sha": "40400dc1f",
+     "date": "2026-07-24",
+     "subject": "feat(portfolio): resolve each live sleeve's true evidence setfile"
+    },
+    {
+     "sha": "df225e149",
+     "date": "2026-07-21",
+     "subject": "research: define FTMO Phase-1 book architecture"
+    },
+    {
+     "sha": "2f70864be",
+     "date": "2026-07-21",
+     "subject": "feat(portfolio): add strict current FTMO rule screens"
+    },
+    {
+     "sha": "79045b6a5",
+     "date": "2026-07-20",
+     "subject": "feat(ftmo): Phase-1 Monte-Carlo harness + first partial-book run"
+    },
+    {
+     "sha": "bfa9ee3f7",
+     "date": "2026-07-20",
+     "subject": "fix(ftmo): harden joint equity rule edges"
+    },
+    {
+     "sha": "1f174579f",
+     "date": "2026-07-20",
+     "subject": "feat(portfolio): DL-083 \u2014 evidence-based evaluator thresholds (corr 0.15/0.40, eps_s 0.020, ops "
+    },
+    {
+     "sha": "c19d53f2c",
+     "date": "2026-07-19",
+     "subject": "feat(gates): DL-082 implementation \u2014 Q04 venue costs, Q02 evidence floor, Q05 DD-parking, Spur-2"
+    },
+    {
+     "sha": "0c9d0a681",
+     "date": "2026-07-19",
+     "subject": "fix(portfolio): PORTFOLIO_WEIGHT double-scale fix + freeze-gate/resize + FTMO readiness contract"
+    },
+    {
+     "sha": "be6cb400d",
+     "date": "2026-07-19",
+     "subject": "ops: harden DXZ live-blend HOLD evidence"
+    },
+    {
+     "sha": "ab0529cb7",
+     "date": "2026-07-19",
+     "subject": "ops: harden live-blend evidence gates"
+    },
+    {
+     "sha": "7b850b615",
+     "date": "2026-07-19",
+     "subject": "ops: add fail-closed DXZ live-blend analyzer"
+    },
+    {
+     "sha": "7dfb270b7",
+     "date": "2026-07-19",
+     "subject": "decisions: DXZ Sunday final book (wave-informed composition) + generator"
+    },
+    {
+     "sha": "7d9fde17f",
+     "date": "2026-07-17",
+     "subject": "decisions: DXZ-24 weekend book (10476 out, 13117+13301 in) + manifest generator"
+    },
+    {
+     "sha": "71dd242a6",
+     "date": "2026-07-15",
+     "subject": "feat(portfolio): whole-book re-optimizer (OWNER 2026-07-15)"
+    },
+    {
+     "sha": "10e6ee30d",
+     "date": "2026-07-15",
+     "subject": "gate(q09): challenger-swap on EVERY non-admit reason, incl. no_diversification (OWNER 2026-07-15"
+    },
+    {
+     "sha": "60b9dabf8",
+     "date": "2026-07-14",
+     "subject": "ops(ftmo): portfolio tooling + terminal_worker atomic claim + tests (Codex WIP)"
+    },
+    {
+     "sha": "480dcb159",
+     "date": "2026-07-11",
+     "subject": "book: DXZ 23-sleeve DRAFT manifest (fresh streams + 3 new candidates)"
+    },
+    {
+     "sha": "3fdddf5a1",
+     "date": "2026-07-09",
+     "subject": "tool: FTMO Phase-1 pass-rate via intraday-MAE reconstruction"
+    },
+    {
+     "sha": "14754b6ff",
+     "date": "2026-07-08",
+     "subject": "fix(portfolio): exclude codex_review_rework-flagged builds from all books"
+    },
+    {
+     "sha": "b0d95663e",
+     "date": "2026-07-06",
+     "subject": "fix(q09): review b4e2a62b blockers \u2014 central basket-key aliasing in load_streams; stale-host mti"
+    },
+    {
+     "sha": "6113c8927",
+     "date": "2026-07-06",
+     "subject": "fix(evidence): audit wave 1 \u2014 gate-integrity fixes across the Python/PS evidence layer (G1-G7,G9"
+    },
+    {
+     "sha": "f8e79266b",
+     "date": "2026-07-06",
+     "subject": "fix(q09): basket host_symbol resolution in portfolio admission \u2014 logical basket symbols never ma"
+    },
+    {
+     "sha": "17493566b",
+     "date": "2026-07-05",
+     "subject": "chore: clear dirty-guard before tonight reboot (lanes revive clean)"
+    },
+    {
+     "sha": "9f2792c5c",
+     "date": "2026-07-04",
+     "subject": "feat(prop): --pnl-from-date/--pnl-to-date input-window filter for OOS splits"
+    },
+    {
+     "sha": "87072a577",
+     "date": "2026-07-03",
+     "subject": "fix(q09): challenger-swap monthly-fallback incumbent identification"
+    },
+    {
+     "sha": "5b43197cb",
+     "date": "2026-07-03",
+     "subject": "feat(q09): challenger-swap evaluation on correlation rejection (OWNER directive 2026-07-03)"
+    },
+    {
+     "sha": "83d0e0cea",
+     "date": "2026-07-01",
+     "subject": "fix(portfolio): admission overlap gate no longer vetoes on one sparse pair"
+    },
+    {
+     "sha": "f796e4870",
+     "date": "2026-07-01",
+     "subject": "feat(portfolio): SUM-basis 42d MC-DD reference for live burn-in"
+    },
+    {
+     "sha": "fd0ab1b2f",
+     "date": "2026-07-01",
+     "subject": "feat(portfolio): live-forward burn-in from T_Live per-EA logs"
+    },
+    {
+     "sha": "8a68d45bc",
+     "date": "2026-07-01",
+     "subject": "chore(ftmo): commit Codex's completed routed FTMO-task work to clear build dirty-guard"
+    },
+    {
+     "sha": "51718422c",
+     "date": "2026-06-30",
+     "subject": "feat(portfolio): survivor_skew \u2014 per-trade skew pyramiding-candidate selector"
+    },
+    {
+     "sha": "da737f7d6",
+     "date": "2026-06-30",
+     "subject": "feat(portfolio): admission consults plausibility quarantine list"
+    },
+    {
+     "sha": "c96036fba",
+     "date": "2026-06-30",
+     "subject": "docs(ops): DXZ/FTMO book sizing at real 0.75%/trade basis + reusable tool"
+    },
+    {
+     "sha": "e7c33e4db",
+     "date": "2026-06-30",
+     "subject": "chore: clear build dirty-guard \u2014 commit session ops/research/tooling"
+    },
+    {
+     "sha": "3be874885",
+     "date": "2026-06-28",
+     "subject": "Harden pipeline recovery and live preflight"
+    },
+    {
+     "sha": "0e081520b",
+     "date": "2026-06-28",
+     "subject": "fix(portfolio): DL-079 Sharpe-protective admission (no dilution on noise-floor MaxDD gains)"
+    },
+    {
+     "sha": "4afd4d7cb",
+     "date": "2026-06-27",
+     "subject": "feat(portfolio): DL-078 portfolio-context regime admission (Q09)"
+    },
+    {
+     "sha": "4b64ccc6f",
+     "date": "2026-06-26",
+     "subject": "portfolio: hard-cap RISK_PERCENT at 1% per trade (OWNER Hard Rule)"
+    },
+    {
+     "sha": "c366ad6d7",
+     "date": "2026-06-26",
+     "subject": "portfolio: deploy-cap on robust MC-p95 DD + de-lever to fit (memo D1/D3)"
+    },
+    {
+     "sha": "e0e346856",
+     "date": "2026-06-26",
+     "subject": "fix(portfolio): manifest starting_capital from tester_defaults ($100k), not $10k"
+    },
+    {
+     "sha": "6d45eb796",
+     "date": "2026-06-26",
+     "subject": "fix(portfolio): manifest magic_number + qm_magic_slot_offset from registry"
+    },
+    {
+     "sha": "c40505dcd",
+     "date": "2026-06-26",
+     "subject": "feat(portfolio): add q12-ready-all manifest mode"
+    },
+    {
+     "sha": "39381c7fe",
+     "date": "2026-06-26",
+     "subject": "feat(portfolio): Q09 diversifies test on risk-parity weighting (review)"
+    },
+    {
+     "sha": "1aa745e52",
+     "date": "2026-06-26",
+     "subject": "fix(portfolio): lower q09 trade floor for low-frequency sleeves"
+    },
+    {
+     "sha": "f7c3dd204",
+     "date": "2026-06-26",
+     "subject": "fix(portfolio): monthly-corr fallback so low-freq sleeves can be admitted (R-064-2)"
+    },
+    {
+     "sha": "2e7cfadd9",
+     "date": "2026-06-26",
+     "subject": "fix: classify sparse portfolio admission as data gap"
+    },
+    {
+     "sha": "98dfb0e88",
+     "date": "2026-06-21",
+     "subject": "feat(portfolio): arm periodic R-064-5 portfolio report task (every 6h, SYSTEM)"
+    },
+    {
+     "sha": "9faddfed4",
+     "date": "2026-06-21",
+     "subject": "feat(portfolio): out-of-sample selection-overfit guard (select_and_validate)"
+    },
+    {
+     "sha": "d09f51a40",
+     "date": "2026-06-21",
+     "subject": "fix(portfolio): risk-parity weighting + non-empty greedy assembly"
+    },
+    {
+     "sha": "055cf4da9",
+     "date": "2026-06-03",
+     "subject": "feat(q08): portfolio-rescue phase 4 (dashboard) + fix the 4 review findings"
+    },
+    {
+     "sha": "2da1daffe",
+     "date": "2026-06-03",
+     "subject": "feat(q08): portfolio-rescue track \u2014 3-tier taxonomy + Q09_PORTFOLIO routing"
+    },
+    {
+     "sha": "386bfc567",
+     "date": "2026-06-01",
+     "subject": "Repurpose R-064-6 burn-in for DXZ live evaluation"
+    },
+    {
+     "sha": "db9777909",
+     "date": "2026-06-01",
+     "subject": "R-064-6 add portfolio demo burn-in harness"
+    }
+   ]
+  }
+ },
+ "distinct_dates": {
+  "2026-06-01": 4,
+  "2026-06-02": 8,
+  "2026-06-03": 8,
+  "2026-06-04": 8,
+  "2026-06-05": 5,
+  "2026-06-06": 1,
+  "2026-06-07": 1,
+  "2026-06-09": 5,
+  "2026-06-10": 3,
+  "2026-06-14": 1,
+  "2026-06-17": 14,
+  "2026-06-18": 49,
+  "2026-06-20": 3,
+  "2026-06-21": 4,
+  "2026-06-22": 1,
+  "2026-06-23": 2,
+  "2026-06-25": 3,
+  "2026-06-26": 23,
+  "2026-06-27": 13,
+  "2026-06-28": 16,
+  "2026-06-29": 8,
+  "2026-06-30": 18,
+  "2026-07-01": 20,
+  "2026-07-02": 21,
+  "2026-07-03": 33,
+  "2026-07-04": 1,
+  "2026-07-05": 6,
+  "2026-07-06": 8,
+  "2026-07-07": 5,
+  "2026-07-08": 8,
+  "2026-07-09": 6,
+  "2026-07-10": 5,
+  "2026-07-11": 22,
+  "2026-07-12": 6,
+  "2026-07-13": 9,
+  "2026-07-14": 6,
+  "2026-07-15": 8,
+  "2026-07-17": 3,
+  "2026-07-18": 2,
+  "2026-07-19": 13,
+  "2026-07-20": 13,
+  "2026-07-21": 6,
+  "2026-07-22": 4,
+  "2026-07-23": 18,
+  "2026-07-24": 6,
+  "2026-07-25": 24,
+  "2026-07-26": 18,
+  "2026-07-27": 23,
+  "2026-07-28": 6,
+  "2026-07-29": 13,
+  "2026-07-30": 13,
+  "2026-07-31": 6,
+  "2026-08-01": 7,
+  "2026-08-02": 6,
+  "2026-08-03": 12,
+  "2026-08-04": 5,
+  "2026-08-05": 14,
+  "2026-08-06": 18,
+  "2026-08-07": 12,
+  "2026-08-08": 2,
+  "2026-08-09": 3,
+  "2026-08-10": 18,
+  "2026-08-11": 26,
+  "2026-08-12": 22,
+  "2026-08-13": 18,
+  "2026-08-14": 9,
+  "2026-08-15": 10,
+  "2026-08-16": 29,
+  "2026-08-17": 26
+ },
+ "total_candidate_commits": 767
+}
