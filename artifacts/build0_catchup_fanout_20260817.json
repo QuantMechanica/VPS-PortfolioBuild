@@ -768,5 +768,47 @@
    }
   ],
   "note": "stable: only +6 actions over the fan-out, because most never-passed phases were already captured as evidence-gone or missing-gate"
+ },
+ "rederivation_correction_20260817": {
+  "error": "P1.4 classified 5 pre-contract Q10 rows as RE_DERIVE on the basis that a PASS_PORTFOLIO verdict with retrievable evidence exists. That tested only ONE of the two arms the contract requires.",
+  "real_contract": "assert_q10_dependency_gate (q09_news_schema.py:1307-1344) requires BOTH a Q09_PORTFOLIO dependency with verdict PASS_PORTFOLIO AND a Q09_NEWS dependency whose q09_news_tests row is CONFIG_LOCKED, whose aggregate_sha256 matches the stored parent_evidence_sha256, with exactly 2 rows in q09_news_arms plus control seeds",
+  "measured": {
+   "QM5_11422/USDCAD.DWX": {
+    "portfolio": "PASS_PORTFOLIO",
+    "news": "CONFIG_LOCKED",
+    "arms": 2,
+    "re_derivable": true
+   },
+   "QM5_10440/NDX.DWX": {
+    "portfolio": "PASS_PORTFOLIO",
+    "news": "INFRA_FAIL",
+    "test_row": null,
+    "arms": 0,
+    "re_derivable": false
+   },
+   "QM5_10692/NDX.DWX": {
+    "portfolio": "PASS_PORTFOLIO",
+    "news": "PENDING_RUNNER",
+    "test_row": null,
+    "arms": 0,
+    "re_derivable": false
+   },
+   "QM5_12969/USDJPY.DWX": {
+    "portfolio": "PASS_PORTFOLIO",
+    "news": "NO_ROW",
+    "re_derivable": false
+   },
+   "QM5_1567/EURUSD.DWX": {
+    "portfolio": "PASS_PORTFOLIO",
+    "news": "NO_ROW",
+    "re_derivable": false
+   }
+  },
+  "corrected_counts": {
+   "re_derivable": 1,
+   "moved_to_blocked_behind_q09_news_dam": 4
+  },
+  "wider_finding": "only ONE q09_news_tests row in the entire database carries CONFIG_LOCKED, against 59 done and 8 pending Q09_NEWS work items. So the Q10 contract can currently be satisfied by exactly one pair farm-wide.",
+  "action_not_taken": "no dependency rows were written. Writing them for the four without a news arm would forge a contract satisfaction the evidence does not support."
  }
 }
