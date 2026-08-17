@@ -17,7 +17,30 @@ SOURCES = (
     / "EAs"
     / "QM5_21505_xag-weekly-lowvol-momentum"
     / "QM5_21505_xag-weekly-lowvol-momentum.mq5",
+    ROOT
+    / "framework"
+    / "EAs"
+    / "QM5_21506_xau-weekly-trend-confirm"
+    / "QM5_21506_xau-weekly-trend-confirm.mq5",
+    ROOT
+    / "framework"
+    / "EAs"
+    / "QM5_21507_qs-kama-trend-xau"
+    / "QM5_21507_qs-kama-trend-xau.mq5",
+    ROOT
+    / "framework"
+    / "EAs"
+    / "QM5_21513_qs-double-seven-trend-ndx"
+    / "QM5_21513_qs-double-seven-trend-ndx.mq5",
 )
+
+PREPARE_CALL = {
+    "QM5_21502_xau-weekly-tsmom": "Strategy_PrepareWeeklySignal();",
+    "QM5_21505_xag-weekly-lowvol-momentum": "Strategy_PrepareWeeklySignal();",
+    "QM5_21506_xau-weekly-trend-confirm": "AdvanceState_OnNewBar();",
+    "QM5_21507_qs-kama-trend-xau": "AdvanceState_OnNewBar();",
+    "QM5_21513_qs-double-seven-trend-ndx": "AdvanceState_OnNewBar();",
+}
 
 
 def _function_body(source: str, signature: str) -> str:
@@ -46,7 +69,7 @@ def test_fresh_weekly_state_drives_close_before_same_bar_entry(
     on_tick = _compact(_function_body(source, "void OnTick()"))
 
     new_bar = on_tick.index("if(!QM_IsNewBar())")
-    prepare = on_tick.index("Strategy_PrepareWeeklySignal();")
+    prepare = on_tick.index(PREPARE_CALL[source_path.parent.name])
     fresh_manage = on_tick.index("Strategy_ManageOpenPosition();", prepare)
     news = on_tick.index("Strategy_NewsFilterHook(broker_now)", fresh_manage)
     entry = on_tick.index("Strategy_EntrySignal(req)", news)
