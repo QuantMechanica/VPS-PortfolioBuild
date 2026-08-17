@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        34008
+; ea_slug:      multicurrency-basket-dispersion-hedger
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       USDJPY.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   6
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   63e5fbc030a0c6975ce22c81406575fef03f1d96d91c11002d0e9587784db14b
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=34008
+qm_magic_slot_offset=6
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_34008_multicurrency-basket-dispersion-hedger.md
+strategy_lookback_hours=24
+strategy_dispersion_dev=1.20
+strategy_tp_rr_mult=2.0
+strategy_atr_period=14
+strategy_spread_atr_mult=1.8
