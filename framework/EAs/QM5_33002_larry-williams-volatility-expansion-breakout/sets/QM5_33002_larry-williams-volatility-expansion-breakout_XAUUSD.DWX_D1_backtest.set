@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        33002
+; ea_slug:      larry-williams-volatility-expansion-breakout
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   9fdc703fc37cad55b666597a8a10c1f18e64348bccbbc250b05da311aea75547
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=33002
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_range_lookback=10
+strategy_compression_thresh=0.80
+strategy_breakout_fraction=0.60
+strategy_sl_fraction=0.50
+strategy_max_hold_days=3
+strategy_atr_period=14
+strategy_spread_atr_mult=1.8
