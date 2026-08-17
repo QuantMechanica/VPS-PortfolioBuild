@@ -9,7 +9,7 @@ Status: `G0 APPROVED; DIRECTORY IDENTITY ESTABLISHED; BUILD PENDING`
 - strategy ID: `EIA-MOP-XNG-THUTRENDPB-2026_S01`
 - host: exact `XNGUSD.DWX`, D1
 - slot: `0`
-- planned magic: `410470000` (registry allocation pending)
+- registered magic: `410470000`
 - approved card:
   `strategy-seeds/cards/approved/QM5_41047_xng-thu-trend-pb_card.md`
 - G0 decision:
@@ -43,7 +43,7 @@ normal one-D1 lifecycle spans the weekend.
 
 ## Build Order
 
-This file establishes the exact EA directory before magic allocation, as
-required by the canonical resolver generator. Development may next append the
-single active `(41047, 0, XNGUSD.DWX)` row, regenerate the resolver with zero
-dropped rows, then implement and strictly validate the approved card.
+This file established the exact EA directory before magic allocation, as
+required by the canonical resolver generator. The single active
+`(41047, 0, XNGUSD.DWX)` row is now registered. Development may proceed only
+after resolver regeneration keeps this row and reports zero dropped rows.
