@@ -118,3 +118,41 @@ evidence.
 - Comparison implemented at `tools/strategy_farm/terminal_worker.py:2539-2549`
 - Codex delivery reviewed and recycled: router task `e685432a`, verdict recorded there
 - `.gitattributes` — 49 pins, 28 of them setfiles
+
+## Number correction: 18 repaired + 5 parked against a base of 20
+
+`15 + 3 + 5 = 23` against a census base of 20 looked like a subset exceeding its superset. It is
+a sequencing artefact, verified against the payload markers in the database:
+
+| Set | Count | Marker | Part of the census of 20? |
+|---|---:|---|---|
+| QM5_10413 rows repaired **before** the census ran | **3** | `ex5_rebind_reason` | **no** |
+| line-endings-only rebinds | **15** | `binding_rebind_reason` | yes |
+| parked, content genuinely changed | **5** | holds (below) | yes |
+
+`15 + 5 = 20` ✓ — the census base. The three QM5_10413 rows were fixed first, then the audit ran
+and found 20 *others*. So: **20 rows in the census, of which 15 rebound and 5 parked; plus 3
+repaired beforehand; 18 repaired in total across 23 rows touched.** The 23 is not an error, it is
+two actions summed against one action's base.
+
+Verified counts: `binding_rebind_reason` appears on exactly **15** rows across 15 distinct EAs
+(QM5_10201, 10202, 10217, 10220, 10221, 10227, 10307, 10316, 10461, 10485, 10503, 10600, 11118,
+1101, 10145). `ex5_rebind_reason` appears on **4** rows — three are mine (`5740d811` GDAXI,
+`8dc59e9a` NDX, `366b3b8a` XAUUSD, all QM5_10413) and one, `1c4f5354` QM5_11224/USDJPY, was
+written by another actor and is already `done`. The key is shared; my count of three was correct.
+
+## The fifth parked row, named
+
+I listed four EA names for five parked rows and wrote "+1", which left a row without an
+identity. **QM5_20181 contributes two rows**, not one:
+
+| Row | EA | Symbol | Phase | Active hold |
+|---|---|---|---|---|
+| `824ca951` | QM5_20181 | USDJPY.DWX | Q02 | `FTMO_BOOK3_Q02_ISOLATED_ONLY` |
+| `a0d6400a` | QM5_20181 | USDJPY.DWX | Q02 | `FTMO_BOOK3_Q02_ISOLATED_ONLY` |
+| `c2ce418a` | QM5_10649 | XAUUSD.DWX | Q04 | `ARTIFACT_BINDING_CONTENT_CHANGED` |
+| `8abafefb` | QM5_10203 | XAUUSD.DWX | Q02 | `ARTIFACT_BINDING_CONTENT_CHANGED` |
+| `48f156eb` | QM5_1443 | EURUSD.DWX | Q04 | `ARTIFACT_BINDING_CONTENT_CHANGED` |
+
+Five rows, four EAs, every one named and every one confirmed non-claimable. The two QM5_20181
+rows sit under the **pre-existing OWNER isolation hold**, which was correctly not replaced.
