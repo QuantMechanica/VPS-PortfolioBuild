@@ -1,6 +1,6 @@
 # QM5_41050 — WTI Post-Wednesday Gap-Agreement Continuation
 
-Status: `G0 APPROVED; Q01 PASS; Q02 READY`
+Status: `G0 APPROVED; Q01 PASS; Q02 ENQUEUED`
 
 ## Identity
 
@@ -63,5 +63,5 @@ Artifacts:
 - `sets/QM5_41050_wti-postwed-gap-agree_XTIUSD.DWX_D1_backtest.set`
 
 Strict compile, targeted build checks, independent fixtures, static P1, card
-lint, and single-symbol scope all pass. A target-only Q02 enqueue remains
-subject to the governed tester/CPU ceiling.
+lint, and single-symbol scope all pass. The capacity-gated target-only Q02
+work item is `5e9a6e73-0155-497a-b61b-ff6b1b77ab09`.
