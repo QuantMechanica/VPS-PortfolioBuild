@@ -461,13 +461,58 @@ class Q04WalkForwardTests(unittest.TestCase):
         mod = _load_module()
         verdict, reason = mod.aggregate_verdict([
             {"id": "F1", "summary_path": "summary.json", "pf_net": 0.91, "trades": 22},
-            {"id": "F2", "summary_path": "summary.json", "pf_net": 1.12, "trades": 26},
-            {"id": "F3", "summary_path": "summary.json", "pf_net": 74.31, "trades": 2},
+            {"id": "F2", "summary_path": "summary.json", "pf_net": 1.20, "trades": 26},
+            {"id": "F3", "summary_path": "summary.json", "pf_net": 1.30, "trades": 24},
         ])
 
         self.assertEqual(verdict, "PASS_SOFT")
         self.assertIn("soft:", reason)
         self.assertEqual(mod.exit_code_for_verdict(verdict), 0)
+
+    def test_qm5_11030_low_trade_extreme_stays_fail(self) -> None:
+        """Production contrast: [2.686, 0.000, 215.870], three pooled trades."""
+        mod = _load_module()
+        verdict, reason = mod.aggregate_verdict([
+            {"id": "F1", "summary_path": "summary.json", "pf_net": 2.686, "trades": 2},
+            {"id": "F2", "summary_path": "summary.json", "pf_net": 0.000, "trades": 1},
+            {"id": "F3", "summary_path": "summary.json", "pf_net": 215.870, "trades": 1},
+        ])
+
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("pf_net_above_plausibility_ceiling", reason)
+
+    def test_qm5_10234_high_trade_control_stays_pass(self) -> None:
+        """Real SP500 control: 1,499 fold trades and consistent positive PF."""
+        mod = _load_module()
+        verdict, _reason = mod.aggregate_verdict([
+            {"id": "F1", "summary_path": "summary.json", "pf_net": 1.04, "trades": 463},
+            {"id": "F2", "summary_path": "summary.json", "pf_net": 1.11, "trades": 419},
+            {"id": "F3", "summary_path": "summary.json", "pf_net": 1.12, "trades": 617},
+        ])
+
+        self.assertEqual(verdict, "PASS")
+
+    def test_qm5_9510_strong_non_thin_control_stays_pass(self) -> None:
+        """Real XAUUSD control: strong PF with every fold above the thin-sample floor."""
+        mod = _load_module()
+        verdict, _reason = mod.aggregate_verdict([
+            {"id": "F1", "summary_path": "summary.json", "pf_net": 1.7629957618582774, "trades": 17},
+            {"id": "F2", "summary_path": "summary.json", "pf_net": 2.85846269514324, "trades": 21},
+            {"id": "F3", "summary_path": "summary.json", "pf_net": 5.221263146870019, "trades": 21},
+        ])
+
+        self.assertEqual(verdict, "PASS")
+
+    def test_exact_999_pf_is_no_measurement_not_a_pass(self) -> None:
+        mod = _load_module()
+        verdict, reason = mod.aggregate_verdict([
+            {"id": "F1", "summary_path": "summary.json", "pf_net": 1.20, "trades": 30},
+            {"id": "F2", "summary_path": "summary.json", "pf_net": 999.0, "trades": 30},
+            {"id": "F3", "summary_path": "summary.json", "pf_net": 1.10, "trades": 30},
+        ])
+
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("pf_net_no_measurement_sentinel:999.000", reason)
 
     def test_completed_zero_trade_fold_is_strategy_fail(self) -> None:
         mod = _load_module()
@@ -554,6 +599,27 @@ class Q04LowFreqTests(unittest.TestCase):
         verdict, reason = mod.aggregate_verdict_lowfreq(folds)
         self.assertEqual(verdict, "FAIL")
         self.assertIn("below_floor", reason)
+
+    def test_pooled_pf_guard_is_two_sided(self):
+        mod = _load_module()
+        # 15 trades clears the 5/year floor but PF=28 on a <45-trade pooled
+        # low-frequency window is denominator-dominated and cannot pass.
+        folds = [self._fold("F1", 5, [7, 7, 7, 7, -1]),
+                 self._fold("F2", 5, [7, 7, 7, 7, -1]),
+                 self._fold("F3", 5, [7, 7, 7, 7, -1])]
+        verdict, reason = mod.aggregate_verdict_lowfreq(folds)
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("lowfreq_pooled_pf_unusable", reason)
+        self.assertIn("pf_net_above_plausibility_ceiling", reason)
+
+    def test_pooled_999_sentinel_never_satisfies_floor(self):
+        mod = _load_module()
+        folds = [self._fold("F1", 5, [1] * 5),
+                 self._fold("F2", 5, [1] * 5),
+                 self._fold("F3", 5, [1] * 5)]
+        verdict, reason = mod.aggregate_verdict_lowfreq(folds)
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("pf_net_no_measurement_sentinel:999.000", reason)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,151 @@
+{
+  "applied_at_utc": "2026-08-17T14:20:18+00:00",
+  "authority_task_id": "1025125e-b759-4c31-b49a-9d9442afb176",
+  "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_q04_pf_guard_20260817141931Z.sqlite",
+  "backup_sha256": "5635000971deca8f931458ea20571b40fa97f64ebb5151e8fffab189f3c9a215",
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "downstream_q10_or_live_roster_rows_mutated": 0,
+  "plan_sha256": "330a10eba73d713cd8b09aa3f4fd604c0be8d4fa10ac3ce1f1412ca805ba2ec2",
+  "raw_evidence_mutated": false,
+  "rows": [
+    {
+      "ea_id": "QM5_13147",
+      "id": "2ec6f080-9100-4887-972e-a2c9c94b22d5",
+      "payload_sha256": "0216231af5570e52f0de7606bc4ea763e5b14e3d87a73ac9918d9a8e49783bc8",
+      "status": "done",
+      "symbol": "QM5_13147_XTI_XNG_JBETA_D1",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_10114",
+      "id": "3872fd60-91dc-4ed9-9146-05d4b0807714",
+      "payload_sha256": "2ec77ffad45a6ed350b0f33b1be5f9e72f883f6913387ff4f7206a8143e1ef09",
+      "status": "done",
+      "symbol": "GDAXI.DWX",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_10431",
+      "id": "3a7a9b6b-2e34-4dd2-9069-ffebd39d631e",
+      "payload_sha256": "ac36a63101c4d7ac877b6fb615afd6d0459e24201989437cd0b4ae53495c5084",
+      "status": "done",
+      "symbol": "SP500.DWX",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_9573",
+      "id": "40653777-87a9-4e2b-9ee4-0e366bcf861f",
+      "payload_sha256": "832da34498227f2b58e525bdeeacfb170d0e3dd66b9525c34cda6c43508ae587",
+      "status": "done",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_12567",
+      "id": "55a4f344-a880-4bdf-9de7-323122bd6677",
+      "payload_sha256": "d71394707b61c2ee66c53357fc78488d718581b1bcbe951ea9ff803b2b4e9413",
+      "status": "done",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "ea_id": "QM5_10763",
+      "id": "80e0062c-5e11-4644-8565-de5dec89222b",
+      "payload_sha256": "b45306bda3ea03d98f956c8e7e04b7d196783f2ff73138cfbc47f55e30c8da3a",
+      "status": "done",
+      "symbol": "AUDUSD.DWX",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_10114",
+      "id": "89db058c-df65-4709-b9bc-170929a12cdf",
+      "payload_sha256": "a9a96258316bd102ad74f1deeaaf01bb81f2580c10e4550c3fd436c758bed425",
+      "status": "done",
+      "symbol": "GDAXI.DWX",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_13151",
+      "id": "972fe8b6-1d8a-4f72-9f22-dae5438999fc",
+      "payload_sha256": "edf146ded8f112e321c953242d3c9351d1dbc47f42bb92c65e7ffaa9e911ed52",
+      "status": "done",
+      "symbol": "QM5_13151_XTI_XNG_VBETA_D1",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_10148",
+      "id": "985340c2-87cf-4f86-be36-b143f4853d1b",
+      "payload_sha256": "b69f2983b55e60b48bbce431a7df98e5fae56349dac41bff2672cdbb0886dba4",
+      "status": "done",
+      "symbol": "EURJPY.DWX",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_10714",
+      "id": "a0f8065c-ad99-41e5-b475-3a48aae6dfe4",
+      "payload_sha256": "dffe48cd3298ad59d22d95d4a9c8c1204eba3b5e9fc3d95b479e9ffc00ddefba",
+      "status": "done",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_9576",
+      "id": "b8c2ef91-abb3-4aaa-94ae-a00891490d81",
+      "payload_sha256": "31dce5c2c33e7299bfd453d54897716f7a765e5f6c83109eede6a7404c23dc9f",
+      "status": "done",
+      "symbol": "WS30.DWX",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_1077",
+      "id": "d73fe88e-2b5f-4111-b292-bbc86937ab45",
+      "payload_sha256": "c67a2d2f8ebacd4e0249b1bb7e1ef68b30c55ec8d444683981915311fcafa10e",
+      "status": "done",
+      "symbol": "WS30.DWX",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_10114",
+      "id": "f16e756b-0862-44a4-a605-7a2eded9b415",
+      "payload_sha256": "cb7a992828caee97791dad42c2d28fe3f0afe6c1f82b55581d40ba03934456e0",
+      "status": "done",
+      "symbol": "GDAXI.DWX",
+      "updated_at": "2026-08-17T14:19:31+00:00",
+      "verdict": "FAIL"
+    }
+  ],
+  "schema": "qm.q04-pf-plausibility-reclassification-receipt/v1",
+  "selection": {
+    "expected_count": 13,
+    "expected_ids": [
+      "2ec6f080-9100-4887-972e-a2c9c94b22d5",
+      "3872fd60-91dc-4ed9-9146-05d4b0807714",
+      "3a7a9b6b-2e34-4dd2-9069-ffebd39d631e",
+      "40653777-87a9-4e2b-9ee4-0e366bcf861f",
+      "55a4f344-a880-4bdf-9de7-323122bd6677",
+      "80e0062c-5e11-4644-8565-de5dec89222b",
+      "89db058c-df65-4709-b9bc-170929a12cdf",
+      "972fe8b6-1d8a-4f72-9f22-dae5438999fc",
+      "985340c2-87cf-4f86-be36-b143f4853d1b",
+      "a0f8065c-ad99-41e5-b475-3a48aae6dfe4",
+      "b8c2ef91-abb3-4aaa-94ae-a00891490d81",
+      "d73fe88e-2b5f-4111-b292-bbc86937ab45",
+      "f16e756b-0862-44a4-a605-7a2eded9b415"
+    ],
+    "old_verdict": "PASS",
+    "phase": "Q04"
+  },
+  "work_items_enqueued_or_rerun": 0
+}

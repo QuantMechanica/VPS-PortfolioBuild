@@ -28,6 +28,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import math
 import os
 import re
 import sys
@@ -79,6 +80,16 @@ Q04_LOWFREQ_MAX_TRADES_PER_YEAR = 15
 # OOS floor: pooled trades must be >= this rate * number of OOS years (e.g. 5 * 3 = 15).
 Q04_OOS_MIN_TRADES_PER_YEAR = 5
 Q04_LOWFREQ_MIN_ACTIVE_YEARS = 2
+# Q04 thin-sample PF plausibility guard (2026-08-17).  In the production corpus
+# since 2026-07-01, every fold with PF-net >= 25 had <= 11 trades.  PF becomes
+# denominator-dominated in that region: one tiny losing trade (or no loss at all)
+# can manufacture an arbitrarily large ratio.  Bind the ceiling to the existing
+# low-frequency definition instead of applying a global PF cap: a fold is guarded
+# only below 15 trades/year, and a pooled window only below 15 * OOS-year-count.
+# This leaves well-sampled results untouched.  999.0 is the runner's explicit
+# zero-gross-loss sentinel and is never a measurement, regardless of trade count.
+Q04_LOWFREQ_PF_PLAUSIBILITY_CEILING = 25.0
+Q04_PF_NO_MEASUREMENT_SENTINELS = frozenset({999.0})
 INVALID_SUMMARY_REASON_CLASSES = {
     "NO_HISTORY",
     "NO_HISTORY_LOG",
@@ -94,6 +105,40 @@ INVALID_SUMMARY_REASON_CLASSES = {
     "TIMEOUT",
     "ACCOUNT_NOT_SPECIFIED",
 }
+
+
+def pf_measurement_issue(
+    pf_net: float | None,
+    trades: int,
+    *,
+    window_years: int = 1,
+) -> str | None:
+    """Return why a PF value cannot satisfy Q04's positive-floor comparison.
+
+    The plausibility ceiling is deliberately conditional on sample size.  PF 25
+    on a well-sampled stream is not rejected here; PF 25 on fewer than 15 trades
+    per represented OOS year is an unusable denominator-dominated metric.
+    """
+    if pf_net is None:
+        return None
+    try:
+        value = float(pf_net)
+        count = int(trades or 0)
+        years = max(1, int(window_years or 1))
+    except (TypeError, ValueError):
+        return "pf_net_unparseable"
+    if not math.isfinite(value):
+        return f"pf_net_nonfinite:{value}"
+    if value in Q04_PF_NO_MEASUREMENT_SENTINELS:
+        return f"pf_net_no_measurement_sentinel:{value:.3f}"
+    low_trade_ceiling = Q04_LOWFREQ_MAX_TRADES_PER_YEAR * years
+    if count < low_trade_ceiling and value >= Q04_LOWFREQ_PF_PLAUSIBILITY_CEILING:
+        return (
+            f"pf_net_above_plausibility_ceiling:{value:.3f}>="
+            f"{Q04_LOWFREQ_PF_PLAUSIBILITY_CEILING:.3f}:"
+            f"trades={count}<{low_trade_ceiling}"
+        )
+    return None
 INVALID_REPORT_MARKERS = {
     "EMPTY_EXPERT",
     "EMPTY_SYMBOL",
@@ -653,6 +698,15 @@ def aggregate_verdict(fold_results: list[dict]) -> tuple[str, str]:
             f"{f['id']}:{f.get('invalid_reason') or 'incomplete_fold'}"
             for f in incomplete
         )
+    unusable = [
+        (f, issue)
+        for f in fold_results
+        if (
+            issue := pf_measurement_issue(
+                f.get("pf_net"), int(f.get("trades") or 0)
+            )
+        ) is not None
+    ]
     failures = [f for f in fold_results if f.get("pf_net") is None or
                                             float(f["pf_net"]) <= PF_NET_FLOOR_PER_FOLD]
     detail = ";".join(
@@ -660,6 +714,12 @@ def aggregate_verdict(fold_results: list[dict]) -> tuple[str, str]:
         else f"{f['id']}:trades={f.get('trades', 0)}"
         for f in fold_results
     )
+    # An unusable upper-tail PF cannot be rescued by PASS_SOFT's arithmetic
+    # mean.  Treat it exactly like a failing fold so the low-frequency pooled
+    # path may evaluate the underlying trade stream, but never as a large win.
+    if unusable:
+        issues = ",".join(f"{f['id']}:{issue}" for f, issue in unusable)
+        return "FAIL", f"unusable_pf_measurement:{issues};{detail}"
     if not failures:
         return "PASS", detail
     # PASS_SOFT check: net-positive with controlled variance.
@@ -723,6 +783,13 @@ def aggregate_verdict_lowfreq(strict_folds: list[dict]) -> tuple[str, str]:
               f"active_years={active_years}/{len(strict_folds)}")
     if active_years < Q04_LOWFREQ_MIN_ACTIVE_YEARS:
         return "FAIL", f"lowfreq_single_year_wonder;{detail}"
+    issue = pf_measurement_issue(
+        pf,
+        n_trades,
+        window_years=len(strict_folds),
+    )
+    if issue is not None:
+        return "FAIL", f"lowfreq_pooled_pf_unusable:{issue};{detail}"
     if pf > PF_NET_FLOOR_PER_FOLD:
         return "PASS_LOWFREQ", f"lowfreq_pooled_pass;{detail}"
     return "FAIL", f"lowfreq_pooled_pf_below_floor;{detail}"
@@ -1011,6 +1078,7 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
             if invalid_reason
             else ("OK" if (pf_net is not None and proc.returncode == 0) else "FAIL")
         )
+        pf_issue = pf_measurement_issue(pf_net, trades)
         if invalid_reason:
             verdict_reason = invalid_reason
         elif pf_net is None or trades <= 0:
@@ -1019,6 +1087,8 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
             verdict_reason = "STRATEGY_MIN_TRADES_NOT_MET"
         elif pf_net <= PF_NET_FLOOR_PER_FOLD:
             verdict_reason = "STRATEGY_PF_AT_OR_BELOW_FLOOR"
+        elif pf_issue is not None:
+            verdict_reason = f"STRATEGY_PF_UNUSABLE:{pf_issue}"
         else:
             verdict_reason = "FOLD_COMPLETE"
         result = {

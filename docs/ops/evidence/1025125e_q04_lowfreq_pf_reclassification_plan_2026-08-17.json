@@ -1,0 +1,400 @@
+{
+  "authority_task_id": "1025125e-b759-4c31-b49a-9d9442afb176",
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "evidence_doc": "C:\\QM\\repo\\docs\\ops\\evidence\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md",
+  "guard": {
+    "lowfreq_max_trades_per_year": 15,
+    "no_measurement_sentinels": [
+      999.0
+    ],
+    "pf_ceiling": 25.0
+  },
+  "invariants": [
+    "exact target ID set is required",
+    "every target is a completed unclaimed Q04 PASS",
+    "stored aggregates are hash-bound where present",
+    "missing evidence is accepted only for the authenticated early-probe 999 sentinel class",
+    "raw evidence, Q10 rows, and live roster records are not mutated",
+    "no work item is enqueued, claimed, cancelled, or rerun"
+  ],
+  "operation": "Q04_PASS_UNUSABLE_PF_RECLASSIFICATION",
+  "planned_at_utc": "2026-08-17T14:19:31+00:00",
+  "rows": [
+    {
+      "ea_id": "QM5_13147",
+      "evidence_exists": true,
+      "evidence_path": "D:\\QM\\reports\\work_items\\2ec6f080-9100-4887-972e-a2c9c94b22d5\\QM5_13147\\Q04\\QM5_13147_XTI_XNG_JBETA_D1\\aggregate.json",
+      "evidence_sha256": "0eafae9d2c3cfe738d0698f26581cb4a30e5e2120448cc7487e10caffed71725",
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "2ec6f080-9100-4887-972e-a2c9c94b22d5",
+      "pf_issues": [
+        {
+          "fold": "F3",
+          "issue": "pf_net_above_plausibility_ceiling:91.751>=25.000:trades=4<15",
+          "pf_net": 91.75075877269632,
+          "trades": 4
+        }
+      ],
+      "preimage_payload_sha256": "10311bbbba4972e347746a8fe47f67324a8c8ad5926cba4655edb49d1e44776e",
+      "preimage_state_sha256": "5ddea60bdf3effc75a558d42436e77c20c1910228d63a3ea8631c034af92fa72",
+      "reason": "q04_unusable_pf_measurement:F3:pf_net_above_plausibility_ceiling:91.751>=25.000:trades=4<15",
+      "symbol": "QM5_13147_XTI_XNG_JBETA_D1",
+      "target_payload_json": "{\"basket_manifest\":\"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_13147_energy-jumpbeta\\\\basket_manifest.json\",\"basket_symbol_count\":2,\"basket_symbols\":[\"XTIUSD.DWX\",\"XNGUSD.DWX\"],\"claimed_at_iso\":\"2026-07-20T12:55:47+00:00\",\"claimed_by_worker_pid\":2240,\"ea_dir_name\":\"QM5_13147\",\"effective_min_trades\":5,\"evidence_provenance\":\"phase_runner\",\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"from_year\":2017,\"host_symbol\":\"XTIUSD.DWX\",\"host_timeframe\":\"D1\",\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_2ec6f080-9100-4887-972e-a2c9c94b22d5.log\",\"logical_symbol\":\"QM5_13147_XTI_XNG_JBETA_D1\",\"p2_run_stage\":null,\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":2316,\"portfolio_scope\":\"basket\",\"portfolio_weight\":1,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"23ffc0f5-d6bf-4c4d-a9d9-c671bfeb56f9\",\"promotion_source\":\"pump_q04_early_probe\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_unusable_pf_measurement:F3:pf_net_above_plausibility_ceiling:91.751>=25.000:trades=4<15\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\2ec6f080-9100-4887-972e-a2c9c94b22d5\",\"risk_fixed\":1000,\"risk_mode\":\"RISK_FIXED\",\"risk_percent\":0,\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"started_at_iso\":\"2026-07-20T12:55:48+00:00\",\"terminal\":\"T8\",\"timeout_min\":450,\"to_date\":null,\"to_year\":2022,\"traded_symbols\":[\"XTIUSD.DWX\",\"XNGUSD.DWX\"],\"verdict_reason\":\"q04_unusable_pf_measurement:F3:pf_net_above_plausibility_ceiling:91.751>=25.000:trades=4<15\",\"verdict_taxonomy\":\"strategy\"}",
+      "target_payload_sha256": "0216231af5570e52f0de7606bc4ea763e5b14e3d87a73ac9918d9a8e49783bc8",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_10114",
+      "evidence_exists": true,
+      "evidence_path": "D:\\QM\\reports\\work_items\\3872fd60-91dc-4ed9-9146-05d4b0807714\\QM5_10114\\Q04\\GDAXI.DWX\\aggregate.json",
+      "evidence_sha256": "3170b8d7d766ebf7a3135c559f60450dfa1c11c3582101022a7f09c663050fb2",
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "3872fd60-91dc-4ed9-9146-05d4b0807714",
+      "pf_issues": [
+        {
+          "fold": "F1",
+          "issue": "pf_net_above_plausibility_ceiling:28.663>=25.000:trades=6<15",
+          "pf_net": 28.662848857846154,
+          "trades": 6
+        },
+        {
+          "fold": "F2",
+          "issue": "pf_net_above_plausibility_ceiling:709.510>=25.000:trades=5<15",
+          "pf_net": 709.51,
+          "trades": 5
+        }
+      ],
+      "preimage_payload_sha256": "5a08d3f4f5663a848684218476e2a4104b111e85e15d5e454419e3db960f9a0b",
+      "preimage_state_sha256": "137b5d012146109f3843d2fbb959d9956987f1be2fd62d55670f0d8d8a9c57e4",
+      "reason": "q04_unusable_pf_measurement:F1:pf_net_above_plausibility_ceiling:28.663>=25.000:trades=6<15,F2:pf_net_above_plausibility_ceiling:709.510>=25.000:trades=5<15",
+      "symbol": "GDAXI.DWX",
+      "target_payload_json": "{\"archived_report_root_on_requeue\":\"D:\\\\QM\\\\reports\\\\work_items\\\\3872fd60-91dc-4ed9-9146-05d4b0807714.requeued_20260714T2129190000\",\"claimed_at_iso\":\"2026-07-15T02:41:38+00:00\",\"claimed_by_worker_pid\":11732,\"ea_dir_name\":\"QM5_10114\",\"effective_min_trades\":5,\"evidence_provenance\":\"phase_runner\",\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_3872fd60-91dc-4ed9-9146-05d4b0807714.log\",\"p2_run_stage\":null,\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":7096,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"5c701244-2fe8-4e2a-a878-d510c26bc532\",\"promotion_source\":\"farmctl_enqueue_backtest_ea\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_unusable_pf_measurement:F1:pf_net_above_plausibility_ceiling:28.663>=25.000:trades=6<15,F2:pf_net_above_plausibility_ceiling:709.510>=25.000:trades=5<15\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\3872fd60-91dc-4ed9-9146-05d4b0807714\",\"requeued_at\":\"2026-07-14T21:29:19+00:00\",\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"started_at_iso\":\"2026-07-15T02:41:39+00:00\",\"terminal\":\"T2\",\"to_date\":null,\"verdict_reason\":\"q04_unusable_pf_measurement:F1:pf_net_above_plausibility_ceiling:28.663>=25.000:trades=6<15,F2:pf_net_above_plausibility_ceiling:709.510>=25.000:trades=5<15\",\"verdict_taxonomy\":\"strategy\"}",
+      "target_payload_sha256": "2ec77ffad45a6ed350b0f33b1be5f9e72f883f6913387ff4f7206a8143e1ef09",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_10431",
+      "evidence_exists": true,
+      "evidence_path": "D:\\QM\\reports\\work_items\\3a7a9b6b-2e34-4dd2-9069-ffebd39d631e\\QM5_10431\\Q04\\SP500.DWX\\aggregate.json",
+      "evidence_sha256": "0bf9ed901dacbf9be5b2b51325132fd91cd883217c9d0323eb91b15505f509f7",
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "3a7a9b6b-2e34-4dd2-9069-ffebd39d631e",
+      "pf_issues": [
+        {
+          "fold": "F1",
+          "issue": "pf_net_no_measurement_sentinel:999.000",
+          "pf_net": 999.0,
+          "trades": 4
+        },
+        {
+          "fold": "F3",
+          "issue": "pf_net_no_measurement_sentinel:999.000",
+          "pf_net": 999.0,
+          "trades": 3
+        }
+      ],
+      "preimage_payload_sha256": "dc7200bfbe359e9744ed4fd4495bea4176b0d784cef66391115871340d158ac7",
+      "preimage_state_sha256": "c4683138ecc5cf8b4de2261d1d64041d6b2427a0c6eebff7577b09609a1bbd15",
+      "reason": "q04_unusable_pf_measurement:F1:pf_net_no_measurement_sentinel:999.000,F3:pf_net_no_measurement_sentinel:999.000",
+      "symbol": "SP500.DWX",
+      "target_payload_json": "{\"claimed_at_iso\":\"2026-07-19T21:59:12+00:00\",\"claimed_by_worker_pid\":9148,\"cost_variant_expected\":\"dxz\",\"dl082_spur_a\":true,\"ea_dir_name\":\"QM5_10431\",\"effective_min_trades\":5,\"enqueued_at_utc\":\"2026-07-19T21:58:02+00:00\",\"enqueued_by\":\"claude:agents/board-advisor:dl082_spur_a\",\"evidence_provenance\":\"phase_runner\",\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"host_symbol\":\"SP500.DWX\",\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_3a7a9b6b-2e34-4dd2-9069-ffebd39d631e.log\",\"p2_run_stage\":null,\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":17084,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"6043d5e5-724e-4f48-b1ad-03a58d2cfaf7\",\"promotion_source\":\"DL082_Q04_REVIVAL_20260719\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_unusable_pf_measurement:F1:pf_net_no_measurement_sentinel:999.000,F3:pf_net_no_measurement_sentinel:999.000\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\3a7a9b6b-2e34-4dd2-9069-ffebd39d631e\",\"requeue_batch\":\"DL082_Q04_REVIVAL_20260719\",\"requeue_manifest_bucket\":\"DL082_cost_victim_revival\",\"requeue_manifest_generated_utc\":\"2026-07-19T21:52:07.917134+00:00\",\"requeue_manifest_sha256\":\"613CB063C447225D75F78E446FB6F31213B8AF6C07D57B94AA6547B53AFCAFE1\",\"requeue_reason\":\"DL-082 \\u00a72 Q04 per-symbol venue cost re-grade (flat7 cost victim)\",\"requeue_setfile_mtime_utc\":\"2026-06-05T08:59:19.077277+00:00\",\"requeue_stage\":\"STAGE1\",\"requeued_at\":\"2026-07-19T21:58:02+00:00\",\"requeued_from_work_item\":\"f8f9f480-25a5-47d0-94f6-8ceb42937755\",\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"started_at_iso\":\"2026-07-19T21:59:13+00:00\",\"terminal\":\"T9\",\"to_date\":null,\"verdict_reason\":\"q04_unusable_pf_measurement:F1:pf_net_no_measurement_sentinel:999.000,F3:pf_net_no_measurement_sentinel:999.000\",\"verdict_taxonomy\":\"strategy\"}",
+      "target_payload_sha256": "ac36a63101c4d7ac877b6fb615afd6d0459e24201989437cd0b4ae53495c5084",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_9573",
+      "evidence_exists": true,
+      "evidence_path": "D:\\QM\\reports\\work_items\\40653777-87a9-4e2b-9ee4-0e366bcf861f\\QM5_9573\\Q04\\NDX.DWX\\aggregate.json",
+      "evidence_sha256": "d07d1e66526d8ee565575c52d3a48e2800648e78409ba1c1ccde943adf134f4e",
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "40653777-87a9-4e2b-9ee4-0e366bcf861f",
+      "pf_issues": [
+        {
+          "fold": "F1",
+          "issue": "pf_net_above_plausibility_ceiling:164.850>=25.000:trades=4<15",
+          "pf_net": 164.85,
+          "trades": 4
+        }
+      ],
+      "preimage_payload_sha256": "4262868b33c112fb694f39476221c1ba6d3d04c0cab4b99a3259b731dd13428f",
+      "preimage_state_sha256": "dd83a3f214495eeb318636c0dbf783c4bfdba1fe784029eeee2c3bac31040fdc",
+      "reason": "q04_unusable_pf_measurement:F1:pf_net_above_plausibility_ceiling:164.850>=25.000:trades=4<15",
+      "symbol": "NDX.DWX",
+      "target_payload_json": "{\"claimed_at_iso\":\"2026-07-21T03:27:14+00:00\",\"claimed_by_worker_pid\":12896,\"ea_dir_name\":\"QM5_9573\",\"effective_min_trades\":5,\"evidence_provenance\":\"phase_runner\",\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"from_year\":2021,\"host_symbol\":\"NDX.DWX\",\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_40653777-87a9-4e2b-9ee4-0e366bcf861f.log\",\"p2_run_stage\":null,\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":18424,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"7ddc66cf-058d-476d-b4f6-f95c8ece8993\",\"promotion_source\":\"pump_q04_early_probe\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_unusable_pf_measurement:F1:pf_net_above_plausibility_ceiling:164.850>=25.000:trades=4<15\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\40653777-87a9-4e2b-9ee4-0e366bcf861f\",\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"started_at_iso\":\"2026-07-21T03:27:14+00:00\",\"terminal\":\"T2\",\"to_date\":null,\"to_year\":2022,\"verdict_reason\":\"q04_unusable_pf_measurement:F1:pf_net_above_plausibility_ceiling:164.850>=25.000:trades=4<15\",\"verdict_taxonomy\":\"strategy\"}",
+      "target_payload_sha256": "832da34498227f2b58e525bdeeacfb170d0e3dd66b9525c34cda6c43508ae587",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_12567",
+      "evidence_exists": false,
+      "evidence_path": "D:\\QM\\reports\\work_items\\55a4f344-a880-4bdf-9de7-323122bd6677\\QM5_12567\\Q04\\XAUUSD.DWX\\aggregate.json",
+      "evidence_sha256": null,
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "55a4f344-a880-4bdf-9de7-323122bd6677",
+      "pf_issues": [],
+      "preimage_payload_sha256": "031ded243ed7c0ae15b2f0c38af62afdf06c02d032697d78c295ccbc75e45129",
+      "preimage_state_sha256": "b247daaa59bd7916d1560102cd854d86967268ba8b38b367133a4e06cc3dc119",
+      "reason": "q04_probe_evidence_missing:D:\\QM\\reports\\work_items\\55a4f344-a880-4bdf-9de7-323122bd6677\\QM5_12567\\Q04\\XAUUSD.DWX\\aggregate.json",
+      "symbol": "XAUUSD.DWX",
+      "target_payload_json": "{\"claimed_at_iso\":\"2026-06-26T00:35:25+00:00\",\"claimed_by_worker_pid\":344,\"ea_dir_name\":\"QM5_12567\",\"effective_min_trades\":5,\"evidence_provenance\":\"phase_runner\",\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_55a4f344-a880-4bdf-9de7-323122bd6677.log\",\"p2_run_stage\":null,\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":7684,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"df4a36a7-ee7d-4ad8-b14f-ea3a13a6a21e\",\"promotion_source\":\"pump_q04_early_probe\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_probe_evidence_missing:D:\\\\QM\\\\reports\\\\work_items\\\\55a4f344-a880-4bdf-9de7-323122bd6677\\\\QM5_12567\\\\Q04\\\\XAUUSD.DWX\\\\aggregate.json\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"INFRA_FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\55a4f344-a880-4bdf-9de7-323122bd6677\",\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"started_at_iso\":\"2026-06-26T00:35:25+00:00\",\"terminal\":\"T7\",\"to_date\":null,\"verdict_reason\":\"q04_probe_evidence_missing:D:\\\\QM\\\\reports\\\\work_items\\\\55a4f344-a880-4bdf-9de7-323122bd6677\\\\QM5_12567\\\\Q04\\\\XAUUSD.DWX\\\\aggregate.json\",\"verdict_taxonomy\":\"infra\"}",
+      "target_payload_sha256": "d71394707b61c2ee66c53357fc78488d718581b1bcbe951ea9ff803b2b4e9413",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "INFRA_FAIL"
+    },
+    {
+      "ea_id": "QM5_10763",
+      "evidence_exists": true,
+      "evidence_path": "D:\\QM\\reports\\work_items\\80e0062c-5e11-4644-8565-de5dec89222b\\QM5_10763\\Q04\\AUDUSD.DWX\\aggregate.json",
+      "evidence_sha256": "43fe8ddf46b6ff589f728ad107a713dcf0227d7f98c4096f7536892753cb1597",
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "80e0062c-5e11-4644-8565-de5dec89222b",
+      "pf_issues": [
+        {
+          "fold": "F1",
+          "issue": "pf_net_above_plausibility_ceiling:49.430>=25.000:trades=9<15",
+          "pf_net": 49.43,
+          "trades": 9
+        },
+        {
+          "fold": "F2",
+          "issue": "pf_net_above_plausibility_ceiling:53.220>=25.000:trades=7<15",
+          "pf_net": 53.22,
+          "trades": 7
+        }
+      ],
+      "preimage_payload_sha256": "115a865f3bc4e823b9ddb00d2f5150f77d9250c8be44b0b1a107c27002312fd4",
+      "preimage_state_sha256": "0dfc5ed5923b153cf5ded8e7142f16f02faad8c37e2188baa5d6826360337241",
+      "reason": "q04_unusable_pf_measurement:F1:pf_net_above_plausibility_ceiling:49.430>=25.000:trades=9<15,F2:pf_net_above_plausibility_ceiling:53.220>=25.000:trades=7<15",
+      "symbol": "AUDUSD.DWX",
+      "target_payload_json": "{\"claimed_at_iso\":\"2026-07-23T10:23:19+00:00\",\"claimed_by_worker_pid\":9488,\"commit_reservation_gb\":8.0,\"commit_reservation_until_utc\":\"2026-07-23T10:28:19+00:00\",\"ea_dir_name\":\"QM5_10763_fx-month-end-rebal\",\"effective_min_trades\":5,\"evidence_binding_required\":null,\"evidence_provenance\":\"phase_runner\",\"expected_ex5_sha256\":null,\"expected_expert\":null,\"expected_from_date\":null,\"expected_mq5_sha256\":null,\"expected_period\":null,\"expected_setfile_sha256\":null,\"expected_symbol\":null,\"expected_to_date\":null,\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"from_year\":2017,\"host_symbol\":\"AUDUSD.DWX\",\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_80e0062c-5e11-4644-8565-de5dec89222b.log\",\"p2_run_stage\":null,\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":18992,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"e05353e8-9e13-4edf-9981-1536edc09363\",\"promotion_source\":\"pump_q04_early_probe\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_unusable_pf_measurement:F1:pf_net_above_plausibility_ceiling:49.430>=25.000:trades=9<15,F2:pf_net_above_plausibility_ceiling:53.220>=25.000:trades=7<15\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\80e0062c-5e11-4644-8565-de5dec89222b\",\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"started_at_iso\":\"2026-07-23T10:23:19+00:00\",\"terminal\":\"T9\",\"to_date\":null,\"to_year\":2022,\"verdict_reason\":\"q04_unusable_pf_measurement:F1:pf_net_above_plausibility_ceiling:49.430>=25.000:trades=9<15,F2:pf_net_above_plausibility_ceiling:53.220>=25.000:trades=7<15\",\"verdict_taxonomy\":\"strategy\"}",
+      "target_payload_sha256": "b45306bda3ea03d98f956c8e7e04b7d196783f2ff73138cfbc47f55e30c8da3a",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_10114",
+      "evidence_exists": true,
+      "evidence_path": "D:\\QM\\reports\\work_items\\89db058c-df65-4709-b9bc-170929a12cdf\\QM5_10114\\Q04\\GDAXI.DWX\\aggregate.json",
+      "evidence_sha256": "69ea4fe6aa97ecadc72071d4ecb227db8552714c97ee579befed9a5e1eaa348e",
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "89db058c-df65-4709-b9bc-170929a12cdf",
+      "pf_issues": [
+        {
+          "fold": "F1",
+          "issue": "pf_net_above_plausibility_ceiling:783.910>=25.000:trades=6<15",
+          "pf_net": 783.91,
+          "trades": 6
+        },
+        {
+          "fold": "F2",
+          "issue": "pf_net_above_plausibility_ceiling:44.139>=25.000:trades=5<15",
+          "pf_net": 44.13944624112117,
+          "trades": 5
+        }
+      ],
+      "preimage_payload_sha256": "6a6bf17503ec089c12b6203f7676c5cd5877c9e5e15348e213a9bb23b66bba18",
+      "preimage_state_sha256": "c79d044eb616fb8f91bfc20dd2b5fe689083da398f5d96d55992f845fb832ffa",
+      "reason": "q04_unusable_pf_measurement:F1:pf_net_above_plausibility_ceiling:783.910>=25.000:trades=6<15,F2:pf_net_above_plausibility_ceiling:44.139>=25.000:trades=5<15",
+      "symbol": "GDAXI.DWX",
+      "target_payload_json": "{\"archived_report_root_on_requeue\":\"D:\\\\QM\\\\reports\\\\work_items\\\\89db058c-df65-4709-b9bc-170929a12cdf.requeued_20260714T2129190000\",\"claimed_at_iso\":\"2026-07-15T01:48:41+00:00\",\"claimed_by_worker_pid\":11732,\"ea_dir_name\":\"QM5_10114\",\"effective_min_trades\":5,\"evidence_provenance\":\"phase_runner\",\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_89db058c-df65-4709-b9bc-170929a12cdf.log\",\"p2_run_stage\":null,\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":13696,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"e48ff0aa-b1ec-48d0-8653-336501dde698\",\"promotion_source\":\"farmctl_enqueue_backtest_ea\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_unusable_pf_measurement:F1:pf_net_above_plausibility_ceiling:783.910>=25.000:trades=6<15,F2:pf_net_above_plausibility_ceiling:44.139>=25.000:trades=5<15\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\89db058c-df65-4709-b9bc-170929a12cdf\",\"requeued_at\":\"2026-07-14T21:29:19+00:00\",\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"started_at_iso\":\"2026-07-15T01:48:41+00:00\",\"terminal\":\"T2\",\"to_date\":null,\"verdict_reason\":\"q04_unusable_pf_measurement:F1:pf_net_above_plausibility_ceiling:783.910>=25.000:trades=6<15,F2:pf_net_above_plausibility_ceiling:44.139>=25.000:trades=5<15\",\"verdict_taxonomy\":\"strategy\"}",
+      "target_payload_sha256": "a9a96258316bd102ad74f1deeaaf01bb81f2580c10e4550c3fd436c758bed425",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_13151",
+      "evidence_exists": true,
+      "evidence_path": "D:\\QM\\reports\\work_items\\972fe8b6-1d8a-4f72-9f22-dae5438999fc\\QM5_13151\\Q04\\QM5_13151_XTI_XNG_VBETA_D1\\aggregate.json",
+      "evidence_sha256": "568e9c80a005fca70804fb6582ac295b69ece725815717546cc6c9a6ea2da460",
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "972fe8b6-1d8a-4f72-9f22-dae5438999fc",
+      "pf_issues": [
+        {
+          "fold": "F3",
+          "issue": "pf_net_above_plausibility_ceiling:91.753>=25.000:trades=4<15",
+          "pf_net": 91.75337667942321,
+          "trades": 4
+        }
+      ],
+      "preimage_payload_sha256": "4ddb4cacc5711032d85729b6d94bb51b34753a10d8dfad5a198a970127837294",
+      "preimage_state_sha256": "141296f1a23b645bc09fde7965cd234e55827b95e41b1b108736af14791b4efb",
+      "reason": "q04_unusable_pf_measurement:F3:pf_net_above_plausibility_ceiling:91.753>=25.000:trades=4<15",
+      "symbol": "QM5_13151_XTI_XNG_VBETA_D1",
+      "target_payload_json": "{\"basket_manifest\":\"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_13151_energy-volbeta\\\\basket_manifest.json\",\"basket_symbol_count\":2,\"basket_symbols\":[\"XTIUSD.DWX\",\"XNGUSD.DWX\"],\"claimed_at_iso\":\"2026-07-20T14:35:50+00:00\",\"claimed_by_worker_pid\":2240,\"ea_dir_name\":\"QM5_13151\",\"effective_min_trades\":5,\"evidence_provenance\":\"phase_runner\",\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"from_year\":2017,\"host_symbol\":\"XTIUSD.DWX\",\"host_timeframe\":\"D1\",\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_972fe8b6-1d8a-4f72-9f22-dae5438999fc.log\",\"logical_symbol\":\"QM5_13151_XTI_XNG_VBETA_D1\",\"p2_run_stage\":null,\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":13800,\"portfolio_scope\":\"basket\",\"portfolio_weight\":1,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"d792f306-3b9c-4ff6-b317-61c1137e6c92\",\"promotion_source\":\"pump_q04_early_probe\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_unusable_pf_measurement:F3:pf_net_above_plausibility_ceiling:91.753>=25.000:trades=4<15\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\972fe8b6-1d8a-4f72-9f22-dae5438999fc\",\"risk_fixed\":1000,\"risk_mode\":\"RISK_FIXED\",\"risk_percent\":0,\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"started_at_iso\":\"2026-07-20T14:35:50+00:00\",\"terminal\":\"T8\",\"timeout_min\":450,\"to_date\":null,\"to_year\":2022,\"traded_symbols\":[\"XTIUSD.DWX\",\"XNGUSD.DWX\"],\"verdict_reason\":\"q04_unusable_pf_measurement:F3:pf_net_above_plausibility_ceiling:91.753>=25.000:trades=4<15\",\"verdict_taxonomy\":\"strategy\"}",
+      "target_payload_sha256": "edf146ded8f112e321c953242d3c9351d1dbc47f42bb92c65e7ffaa9e911ed52",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_10148",
+      "evidence_exists": true,
+      "evidence_path": "D:\\QM\\reports\\work_items\\985340c2-87cf-4f86-be36-b143f4853d1b\\QM5_10148\\Q04\\EURJPY.DWX\\aggregate.json",
+      "evidence_sha256": "ed2fe038af309fee04ae2ac31839b9855d6e80334674b36f00f8a7a3c0863ed2",
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "985340c2-87cf-4f86-be36-b143f4853d1b",
+      "pf_issues": [
+        {
+          "fold": "F3",
+          "issue": "pf_net_above_plausibility_ceiling:75.800>=25.000:trades=4<15",
+          "pf_net": 75.8,
+          "trades": 4
+        }
+      ],
+      "preimage_payload_sha256": "cb6097469f3736a32ed0a0bafe6c3849414c5212b62fb318368a3890ed0a91fd",
+      "preimage_state_sha256": "cf3aaa67116626437fbb60509368da4b5ba111088e4ff8d5d3bcf4e839841c9e",
+      "reason": "q04_unusable_pf_measurement:F3:pf_net_above_plausibility_ceiling:75.800>=25.000:trades=4<15",
+      "symbol": "EURJPY.DWX",
+      "target_payload_json": "{\"archived_report_root_on_requeue\":\"D:\\\\QM\\\\reports\\\\work_items\\\\985340c2-87cf-4f86-be36-b143f4853d1b.requeued_20260714T2134270000\",\"claimed_at_iso\":\"2026-07-16T12:48:13+00:00\",\"claimed_by_worker_pid\":7844,\"ea_dir_name\":\"QM5_10148\",\"effective_min_trades\":5,\"evidence_provenance\":\"phase_runner\",\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"host_symbol\":\"EURJPY.DWX\",\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_985340c2-87cf-4f86-be36-b143f4853d1b.log\",\"p2_run_stage\":null,\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":10248,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"67a6de64-3c74-4dca-ae1f-1a364314f1be\",\"promotion_source\":\"farmctl_enqueue_backtest_ea\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_unusable_pf_measurement:F3:pf_net_above_plausibility_ceiling:75.800>=25.000:trades=4<15\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\985340c2-87cf-4f86-be36-b143f4853d1b\",\"requeued_at\":\"2026-07-14T21:34:27+00:00\",\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"started_at_iso\":\"2026-07-16T12:48:13+00:00\",\"terminal\":\"T3\",\"to_date\":null,\"verdict_reason\":\"q04_unusable_pf_measurement:F3:pf_net_above_plausibility_ceiling:75.800>=25.000:trades=4<15\",\"verdict_taxonomy\":\"strategy\"}",
+      "target_payload_sha256": "b69f2983b55e60b48bbce431a7df98e5fae56349dac41bff2672cdbb0886dba4",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_10714",
+      "evidence_exists": true,
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_10714\\Q04\\XAUUSD.DWX__a0f8065c-ad99-41e5-b475-3a48aae6dfe4\\aggregate.json",
+      "evidence_sha256": "85692af27c5329f2f7f1c293a107df8a9994e776ed4b35f5f74ffb7da63fe94b",
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "a0f8065c-ad99-41e5-b475-3a48aae6dfe4",
+      "pf_issues": [
+        {
+          "fold": "F3",
+          "issue": "pf_net_no_measurement_sentinel:999.000",
+          "pf_net": 999.0,
+          "trades": 1
+        }
+      ],
+      "preimage_payload_sha256": "ee9887b990d24bb0643bbc3daa8fe87df8c667f412fea7ebbc7cf75079f31779",
+      "preimage_state_sha256": "62bf9d16af77f92606f774bed780f7bd54fe769b3851a384e3e505d51964ab74",
+      "reason": "q04_unusable_pf_measurement:F3:pf_net_no_measurement_sentinel:999.000",
+      "symbol": "XAUUSD.DWX",
+      "target_payload_json": "{\"claimed_at_iso\":\"2026-08-16T07:51:07+00:00\",\"claimed_by_worker_pid\":15880,\"commit_reservation_class\":\"ordinary\",\"commit_reservation_gb\":8.0,\"commit_reservation_until_utc\":\"2026-08-16T07:56:07+00:00\",\"custom_history_copy_on_claim\":{\"activation_sha256\":\"61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e\",\"already_private_file_count\":108,\"copied_file_count\":0,\"ignored_non_custom_symbols\":[],\"manifest_sha256\":\"fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06\",\"receipt_file_sha256\":\"bbee41f894a076e08b688bf60f30d3bc2591a978947755b764d46005d8ae6039\",\"receipt_path\":\"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\ops\\\\custom_history_copy_on_claim\\\\a0f8065c-ad99-41e5-b475-3a48aae6dfe4_T7.json\",\"receipt_sha256\":\"1080c16460bd39ba0c6e7cded8b63bc351fcae7d560d644c445e950a65678de0\",\"required\":true,\"selected_file_count\":108,\"status\":\"PASS_PRIVATIZED\",\"symbols\":[\"XAUUSD.DWX\"],\"terminal\":\"T7\"},\"custom_history_post_copy_audit_sha256\":\"c511cd43e3a9efb4c58522563eac7f964e0baea0df4ae702a2c970280575c37a\",\"custom_history_pre_copy_audit_sha256\":\"c511cd43e3a9efb4c58522563eac7f964e0baea0df4ae702a2c970280575c37a\",\"dispatch_ex5_verified_at\":\"2026-08-16T07:51:09+00:00\",\"ea_dir_name\":\"QM5_10714_tv-inside-day\",\"effective_min_trades\":5,\"evidence_binding_required\":null,\"evidence_provenance\":\"phase_runner\",\"expected_ex5_path\":\"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_10714_tv-inside-day\\\\QM5_10714_tv-inside-day.ex5\",\"expected_ex5_sha256\":null,\"expected_expert\":null,\"expected_from_date\":null,\"expected_mq5_sha256\":null,\"expected_period\":null,\"expected_setfile_sha256\":null,\"expected_symbol\":null,\"expected_to_date\":null,\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"from_year\":2017,\"host_symbol\":\"XAUUSD.DWX\",\"job_object_assigned\":true,\"job_object_mode\":\"KILL_ON_JOB_CLOSE\",\"job_object_registry_key\":\"11204|windows-filetime:134313404123339788\",\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_a0f8065c-ad99-41e5-b475-3a48aae6dfe4.log\",\"p2_run_stage\":null,\"phase_evidence_path\":\"D:\\\\QM\\\\reports\\\\pipeline\\\\QM5_10714\\\\Q04\\\\XAUUSD.DWX__a0f8065c-ad99-41e5-b475-3a48aae6dfe4\\\\aggregate.json\",\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":11204,\"primary_thread_resumed\":true,\"process_creation_key\":\"windows-filetime:134313404123339788\",\"process_image_path\":\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python311\\\\python.exe\",\"process_started_at_epoch\":1786866812.333979,\"process_started_suspended\":true,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"0b5e2073-1310-4c32-8b11-625fae691035\",\"promotion_source\":\"pump_q04_early_probe\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_unusable_pf_measurement:F3:pf_net_no_measurement_sentinel:999.000\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\a0f8065c-ad99-41e5-b475-3a48aae6dfe4\",\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"staged_ex5\":{\"binding_source\":\"canonical_ex5_at_dispatch\",\"copied\":true,\"destination_path\":\"D:\\\\QM\\\\mt5\\\\T7\\\\MQL5\\\\Experts\\\\QM\\\\QM5_10714_tv-inside-day.ex5\",\"pre_run_sha256\":\"d866fd9cece9298781da3047ad446db76d0696bd5f19aaf8f3be13d2db1db61c\",\"preexisting_destination_sha256\":\"d866fd9cece9298781da3047ad446db76d0696bd5f19aaf8f3be13d2db1db61c\",\"required_sha256\":\"d866fd9cece9298781da3047ad446db76d0696bd5f19aaf8f3be13d2db1db61c\",\"restaged\":false,\"source_path\":\"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_10714_tv-inside-day\\\\QM5_10714_tv-inside-day.ex5\",\"source_sha256\":\"d866fd9cece9298781da3047ad446db76d0696bd5f19aaf8f3be13d2db1db61c\",\"verified\":true},\"started_at_iso\":\"2026-08-16T07:53:32+00:00\",\"terminal\":\"T7\",\"to_date\":null,\"to_year\":2022,\"verdict_reason\":\"q04_unusable_pf_measurement:F3:pf_net_no_measurement_sentinel:999.000\",\"verdict_taxonomy\":\"strategy\"}",
+      "target_payload_sha256": "dffe48cd3298ad59d22d95d4a9c8c1204eba3b5e9fc3d95b479e9ffc00ddefba",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_9576",
+      "evidence_exists": true,
+      "evidence_path": "D:\\QM\\reports\\pipeline\\QM5_9576\\Q04\\WS30.DWX__b8c2ef91-abb3-4aaa-94ae-a00891490d81\\aggregate.json",
+      "evidence_sha256": "bc372e894d4ea9ebb652d72c7d8c5039561cf4cc1a809ec552996854d2735e97",
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "b8c2ef91-abb3-4aaa-94ae-a00891490d81",
+      "pf_issues": [
+        {
+          "fold": "F2",
+          "issue": "pf_net_no_measurement_sentinel:999.000",
+          "pf_net": 999.0,
+          "trades": 4
+        }
+      ],
+      "preimage_payload_sha256": "702ded1e3a47f966d922f93b8ffdb76405d819f2a1e8c64c5eb1332f8292cd76",
+      "preimage_state_sha256": "1cc6f5bdcd4fe59001018ae0feb419ee31ddc16c2620bc88aff59836b452f07c",
+      "reason": "q04_unusable_pf_measurement:F2:pf_net_no_measurement_sentinel:999.000",
+      "symbol": "WS30.DWX",
+      "target_payload_json": "{\"claimed_at_iso\":\"2026-08-02T12:48:21+00:00\",\"claimed_by_worker_pid\":7896,\"commit_reservation_gb\":8.0,\"commit_reservation_until_utc\":\"2026-08-02T12:53:21+00:00\",\"ea_dir_name\":\"QM5_9576_bandy-zscore-mr-index\",\"effective_min_trades\":5,\"evidence_binding_required\":null,\"evidence_provenance\":\"phase_runner\",\"expected_ex5_sha256\":null,\"expected_expert\":null,\"expected_from_date\":null,\"expected_mq5_sha256\":null,\"expected_period\":null,\"expected_setfile_sha256\":null,\"expected_symbol\":null,\"expected_to_date\":null,\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"from_year\":2018,\"host_symbol\":\"WS30.DWX\",\"host_timeframe\":\"D1\",\"job_object_assigned\":true,\"job_object_mode\":\"KILL_ON_JOB_CLOSE\",\"job_object_registry_key\":\"3348|windows-filetime:134301485135711150\",\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_b8c2ef91-abb3-4aaa-94ae-a00891490d81.log\",\"p2_run_stage\":null,\"phase_evidence_path\":\"D:\\\\QM\\\\reports\\\\pipeline\\\\QM5_9576\\\\Q04\\\\WS30.DWX__b8c2ef91-abb3-4aaa-94ae-a00891490d81\\\\aggregate.json\",\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":3348,\"primary_thread_resumed\":true,\"process_creation_key\":\"windows-filetime:134301485135711150\",\"process_image_path\":\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python311\\\\python.exe\",\"process_started_at_epoch\":1785674913.571115,\"process_started_suspended\":true,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"c85c735c-6841-4dde-a37d-b099f59f36fa\",\"promotion_source\":\"pump_q04_early_probe\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_unusable_pf_measurement:F2:pf_net_no_measurement_sentinel:999.000\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\b8c2ef91-abb3-4aaa-94ae-a00891490d81\",\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"started_at_iso\":\"2026-08-02T12:48:33+00:00\",\"terminal\":\"T2\",\"to_date\":null,\"to_year\":2022,\"verdict_reason\":\"q04_unusable_pf_measurement:F2:pf_net_no_measurement_sentinel:999.000\",\"verdict_taxonomy\":\"strategy\"}",
+      "target_payload_sha256": "31dce5c2c33e7299bfd453d54897716f7a765e5f6c83109eede6a7404c23dc9f",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_1077",
+      "evidence_exists": true,
+      "evidence_path": "D:\\QM\\reports\\work_items\\d73fe88e-2b5f-4111-b292-bbc86937ab45\\QM5_1077\\Q04\\WS30.DWX\\aggregate.json",
+      "evidence_sha256": "60530524f0c65c69cd6b3d22cb62aca70c084b71931a6b6e775c067feaee7547",
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "d73fe88e-2b5f-4111-b292-bbc86937ab45",
+      "pf_issues": [
+        {
+          "fold": "F3",
+          "issue": "pf_net_above_plausibility_ceiling:717.100>=25.000:trades=1<15",
+          "pf_net": 717.1,
+          "trades": 1
+        }
+      ],
+      "preimage_payload_sha256": "2a143ef8c7ea457a9c2df81656839a95ef11d43f97b2aebb7bb428ca28644fa1",
+      "preimage_state_sha256": "0d406c9a6c6c9ca813f8e099fef2b05adc0587b74d70c7c5f91687dda0f65109",
+      "reason": "q04_unusable_pf_measurement:F3:pf_net_above_plausibility_ceiling:717.100>=25.000:trades=1<15",
+      "symbol": "WS30.DWX",
+      "target_payload_json": "{\"archived_report_root_on_requeue\":\"D:\\\\QM\\\\reports\\\\work_items\\\\d73fe88e-2b5f-4111-b292-bbc86937ab45.requeued_20260714T2138230000\",\"claimed_at_iso\":\"2026-07-15T00:52:12+00:00\",\"claimed_by_worker_pid\":10816,\"ea_dir_name\":\"QM5_1077\",\"effective_min_trades\":5,\"evidence_provenance\":\"phase_runner\",\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"host_symbol\":\"WS30.DWX\",\"host_timeframe\":\"D1\",\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_d73fe88e-2b5f-4111-b292-bbc86937ab45.log\",\"p2_run_stage\":null,\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":15352,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"bea3e965-478b-42c5-87d4-504dc8d41f28\",\"promotion_source\":\"farmctl_enqueue_backtest_ea\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_unusable_pf_measurement:F3:pf_net_above_plausibility_ceiling:717.100>=25.000:trades=1<15\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\d73fe88e-2b5f-4111-b292-bbc86937ab45\",\"requeued_at\":\"2026-07-14T21:38:23+00:00\",\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"started_at_iso\":\"2026-07-15T00:52:12+00:00\",\"terminal\":\"T4\",\"to_date\":null,\"verdict_reason\":\"q04_unusable_pf_measurement:F3:pf_net_above_plausibility_ceiling:717.100>=25.000:trades=1<15\",\"verdict_taxonomy\":\"strategy\"}",
+      "target_payload_sha256": "c67a2d2f8ebacd4e0249b1bb7e1ef68b30c55ec8d444683981915311fcafa10e",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "FAIL"
+    },
+    {
+      "ea_id": "QM5_10114",
+      "evidence_exists": true,
+      "evidence_path": "D:\\QM\\reports\\work_items\\f16e756b-0862-44a4-a605-7a2eded9b415\\QM5_10114\\Q04\\GDAXI.DWX\\aggregate.json",
+      "evidence_sha256": "5a5855e8c53ed2e392b449893b5259b4da957b7258dc9527a4b06102e4dad91a",
+      "from_status": "done",
+      "from_verdict": "PASS",
+      "id": "f16e756b-0862-44a4-a605-7a2eded9b415",
+      "pf_issues": [
+        {
+          "fold": "F2",
+          "issue": "pf_net_above_plausibility_ceiling:687.400>=25.000:trades=5<15",
+          "pf_net": 687.4,
+          "trades": 5
+        }
+      ],
+      "preimage_payload_sha256": "930958835eaf5a1011722e0236f852ccd3a8295e836bafaed919f0f74ce03141",
+      "preimage_state_sha256": "dba0a692eb5ac31ef14823ee4aecc8070969b8095539cfbc5874b5de5e4446d2",
+      "reason": "q04_unusable_pf_measurement:F2:pf_net_above_plausibility_ceiling:687.400>=25.000:trades=5<15",
+      "symbol": "GDAXI.DWX",
+      "target_payload_json": "{\"archived_report_root_on_requeue\":\"D:\\\\QM\\\\reports\\\\work_items\\\\f16e756b-0862-44a4-a605-7a2eded9b415.requeued_20260714T2129190000\",\"claimed_at_iso\":\"2026-07-15T04:13:24+00:00\",\"claimed_by_worker_pid\":11732,\"ea_dir_name\":\"QM5_10114\",\"effective_min_trades\":5,\"evidence_provenance\":\"phase_runner\",\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_f16e756b-0862-44a4-a605-7a2eded9b415.log\",\"p2_run_stage\":null,\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q04_walkforward.py\",\"pid\":16724,\"promoted_from_phase\":\"Q02\",\"promoted_from_work_item\":\"8e55b7c5-6cbf-4b73-b71e-b7032ae6a221\",\"promotion_source\":\"farmctl_enqueue_backtest_ea\",\"q04_default_probe\":true,\"q04_pf_plausibility_reclassifications\":[{\"authority_task_id\":\"1025125e-b759-4c31-b49a-9d9442afb176\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\1025125e_q04_lowfreq_pf_guard_2026-08-17.md\",\"from_verdict\":\"PASS\",\"reason\":\"q04_unusable_pf_measurement:F2:pf_net_above_plausibility_ceiling:687.400>=25.000:trades=5<15\",\"reclassified_at_utc\":\"2026-08-17T14:19:31+00:00\",\"schema\":\"qm.q04-pf-plausibility-reclassification/v1\",\"to_verdict\":\"FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\f16e756b-0862-44a4-a605-7a2eded9b415\",\"requeued_at\":\"2026-07-14T21:29:19+00:00\",\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"started_at_iso\":\"2026-07-15T04:13:24+00:00\",\"terminal\":\"T2\",\"to_date\":null,\"verdict_reason\":\"q04_unusable_pf_measurement:F2:pf_net_above_plausibility_ceiling:687.400>=25.000:trades=5<15\",\"verdict_taxonomy\":\"strategy\"}",
+      "target_payload_sha256": "cb7a992828caee97791dad42c2d28fe3f0afe6c1f82b55581d40ba03934456e0",
+      "target_updated_at": "2026-08-17T14:19:31+00:00",
+      "to_status": "done",
+      "to_verdict": "FAIL"
+    }
+  ],
+  "schema": "qm.q04-pf-plausibility-reclassification-plan/v1",
+  "selection": {
+    "expected_count": 13,
+    "expected_ids": [
+      "2ec6f080-9100-4887-972e-a2c9c94b22d5",
+      "3872fd60-91dc-4ed9-9146-05d4b0807714",
+      "3a7a9b6b-2e34-4dd2-9069-ffebd39d631e",
+      "40653777-87a9-4e2b-9ee4-0e366bcf861f",
+      "55a4f344-a880-4bdf-9de7-323122bd6677",
+      "80e0062c-5e11-4644-8565-de5dec89222b",
+      "89db058c-df65-4709-b9bc-170929a12cdf",
+      "972fe8b6-1d8a-4f72-9f22-dae5438999fc",
+      "985340c2-87cf-4f86-be36-b143f4853d1b",
+      "a0f8065c-ad99-41e5-b475-3a48aae6dfe4",
+      "b8c2ef91-abb3-4aaa-94ae-a00891490d81",
+      "d73fe88e-2b5f-4111-b292-bbc86937ab45",
+      "f16e756b-0862-44a4-a605-7a2eded9b415"
+    ],
+    "old_verdict": "PASS",
+    "phase": "Q04"
+  }
+}
