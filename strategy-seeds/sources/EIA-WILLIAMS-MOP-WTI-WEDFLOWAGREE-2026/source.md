@@ -10,7 +10,7 @@ last_updated: 2026-08-17
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-17"
 approved_at: 2026-08-17
 source_approval: decisions/2026-08-17_wti_wednesday_flow_agreement_source_approval.md
-approval_commit: PENDING
+approval_commit: 65df03e03
 strategy_ids:
   - EIA-WILLIAMS-MOP-WTI-WEDFLOWAGREE-2026_S01
 cards_extracted:
