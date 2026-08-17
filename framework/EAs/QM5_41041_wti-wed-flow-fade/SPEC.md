@@ -85,6 +85,28 @@ hold rather than a completed week and Monday-Friday lifecycle.
 - G0: `APPROVED`
 - EA ID registry: `41041 / wti-wed-flow-fade / active`
 - EA directory identity: established before magic allocation
-- Magic slot 0: pending governed allocation
-- Q01: pending
+- Magic slot 0: `XTIUSD.DWX / 410410000 / active`
+- Q01: PASS (14 fixtures; strict compile and targeted build check clean;
+  static P1 artifact validation PASS)
 - Q02: not enqueued
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-08-17 | approved build directory identity | source/G0/card and EA-ID registry complete |
+| v1-build | 2026-08-17 | deterministic implementation | strict compile, targeted build check, independent fixtures, and static P1 PASS |
+
+## Q01 Evidence
+
+- independent Wednesday flow-fade reference suite: 14 tests PASS
+- strict compile: 0 errors, 0 warnings
+- targeted V5 build check: 0 failures, 0 warnings
+- card copies: byte-identical; schema/ML and G0 lint PASS
+- static P1 artifact validation: PASS
+- compile log:
+  `framework/build/compile/20260817_085806/QM5_41041_wti-wed-flow-fade.compile.log`
+- build report:
+  `D:/QM/reports/framework/21/build_check_20260817_085805.json`
+- P1 report:
+  `D:/QM/reports/pipeline/QM5_41041/P1/P1_QM5_41041_result.json`
