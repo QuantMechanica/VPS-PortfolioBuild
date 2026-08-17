@@ -8,7 +8,7 @@ g0_status: APPROVED
 force_build: true
 created: 2026-08-02
 created_by: Research+Development
-last_updated: 2026-08-02
+last_updated: 2026-08-17
 source_id: claude_cross_asset_discovery_2026-06-09
 source_citations:
   - type: book
@@ -39,7 +39,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02_PENDING
+pipeline_phase: Q04_PENDING
 g0_approval_reasoning: "R1 PASS: OWNER-requested fixed FX scan plus OWNER-ratified Tier-A Chan SRC02; R2 PASS: fixed low-frequency two-leg D1 beta/z/ATR package; R3 PASS: traded and conversion histories are Darwinex-native; R4 PASS: structural, deterministic, and learned-model-free."
 ---
 
@@ -307,7 +307,8 @@ data_requirements: "EURUSD.DWX, AUDJPY.DWX, AUDUSD.DWX, and USDJPY.DWX D1 histor
 |---|---|---|---|---|
 | v1 | 2026-08-02 | next-ranked non-duplicate fixed-scan FX basket | G0 | APPROVED |
 | v2 | 2026-08-02 | initial sign-aware two-leg implementation | Q01 | PASS |
-| v3 | 2026-08-02 | logical basket priority-track enqueue | Q02 | PENDING |
+| v3 | 2026-08-02 | logical basket priority-track enqueue | Q02 | INFRA_FAIL (`NO_HISTORY`) |
+| v4 | 2026-08-05 | bounded append-only history retry; canonical automation promoted the passing lineage | Q04 | PENDING |
 
 ## 15. Pipeline Phase Status
 
@@ -315,7 +316,8 @@ data_requirements: "EURUSD.DWX, AUDJPY.DWX, AUDUSD.DWX, and USDJPY.DWX D1 histor
 |---|---|---|---|
 | G0 Research Intake | 2026-08-02 | APPROVED | this card |
 | Q01 Build Validation | 2026-08-02 | PASS | `D:\QM\reports\framework\21\build_check_20260802_132127.json` |
-| Q02 Baseline Screening | 2026-08-02 | PENDING | work item `803cfaaa-d1e4-4d5c-a599-4d33b536ea9f` |
+| Q02 Baseline Screening | 2026-08-05 | PASS | work item `85be20b6-d19d-46a2-9084-8786d9837399`; 122 trades, no ONINIT failure, stable EX5/setfile bindings |
+| Q04 Early OOS Probe | 2026-08-05 | PENDING | work item `113ae6d1-33c0-42bc-b9b0-bf3a48ef3445`, promoted from the passing Q02 lineage |
 
 ## 16. Lessons Captured
 
@@ -323,3 +325,8 @@ data_requirements: "EURUSD.DWX, AUDJPY.DWX, AUDUSD.DWX, and USDJPY.DWX D1 histor
   estimated half-life; it is admitted only as the explicitly requested
   next-best one-shot sleeve, with retirement rather than rescue after economic
   failure.
+- 2026-08-17: The initial Q02 `NO_HISTORY` row remains preserved as
+  infrastructure evidence. Its bounded append-only retry passed the Q02
+  capability gate with 122 trades but adverse PF `0.83` and net profit
+  `-2189.95`; Q04 remains the economic judge. No refit, filter, parameter
+  change, or duplicate queue row is authorized.

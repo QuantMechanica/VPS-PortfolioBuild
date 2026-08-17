@@ -1,0 +1,153 @@
+{
+  "schema_version": "qm.fx-cointegration-card-reconciliation-cpu-stop/v1",
+  "captured_at_utc": "2026-08-17T00:49:03.9009830Z",
+  "captured_at_local": "2026-08-17T02:49:03.9009830+02:00",
+  "branch": "agents/board-advisor",
+  "sampled_head": "24e5bb90ac7a1f430abe1879a67fba6c638baa75",
+  "outcome": "EXISTING_FOREX_CARD_RECONCILED_Q04_PENDING_CPU_CEILING_STOP",
+  "mission_reconciliation": {
+    "frozen_pair_count": 66,
+    "mechanized_pair_count": 66,
+    "unbuilt_pair_count": 0,
+    "duplicate_card_or_ea_created": false,
+    "anchor_state": {
+      "QM5_12532_AUDNZD_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_PASS",
+        "Q05_FAIL"
+      ],
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_FAIL"
+      ]
+    },
+    "anchor_open_work_item_count": 0,
+    "selected_existing_card": {
+      "scan_rank": 21,
+      "ea_id": "QM5_20203",
+      "pair": [
+        "EURUSD.DWX",
+        "AUDJPY.DWX"
+      ],
+      "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+      "timeframe": "D1",
+      "source": "Ernest P. Chan (2009), Quantitative Trading, OWNER-ratified Tier-A SRC02 extraction",
+      "structural_only": true,
+      "low_frequency": true,
+      "ml_or_banned_indicator": false
+    }
+  },
+  "database_read": {
+    "path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "mode": "read_only",
+    "quick_check": "ok",
+    "exact_logical_q02_row_count": 2,
+    "exact_logical_q04_row_count": 1,
+    "open_exact_logical_row_count": 1,
+    "farm_pending_q04_count": 85,
+    "farm_active_work_item_count": 6
+  },
+  "q02_lineage": {
+    "initial_work_item_id": "803cfaaa-d1e4-4d5c-a599-4d33b536ea9f",
+    "initial_status": "failed",
+    "initial_verdict": "INFRA_FAIL",
+    "initial_reason": "cold_cache_retries_exhausted:NO_HISTORY",
+    "passing_work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+    "passing_status": "done",
+    "passing_verdict": "PASS",
+    "passing_updated_at_utc": "2026-08-05T14:44:25+00:00",
+    "summary_path": "D:/QM/reports/work_items/85be20b6-d19d-46a2-9084-8786d9837399/QM5_20203/20260805_134155/summary.json",
+    "summary_sha256": "58c9ec7eb0b6b1b39a5b3a5e0158793186f18662ee4e8bb2f5542a4111c07ed1",
+    "oninit_failure_detected": false,
+    "reason_classes": [
+      "OK"
+    ],
+    "trades": 122,
+    "profit_factor": 0.83,
+    "net_profit": -2189.95,
+    "drawdown": 6775.59,
+    "drawdown_pct": 6.55
+  },
+  "q04_state": {
+    "work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+    "status": "pending",
+    "verdict": null,
+    "created_at_utc": "2026-08-05T14:53:04+00:00",
+    "updated_at_utc": "2026-08-15T23:46:58+00:00",
+    "promoted_from_work_item": "85be20b6-d19d-46a2-9084-8786d9837399",
+    "duplicate_q04_row_created": false
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "d75788d24eadcff9c699a2f8964ab2cfd5ad924296b34df0b1d4a0a6853365cb",
+    "ex5_sha256": "4d57f2bc03a14ce0be3f7f18245adfff280955287cda5af1119d502d33d96270",
+    "basket_manifest_sha256": "2f5823242ae1b2a0592d9239969e22f31ac90234d909b3eee5e1d9c635b519a9",
+    "fixed_risk_setfile_sha256": "dcac19dcd0882c24ba0c772b36e47c816c582d3f612b35445ce909bfc8e846d8",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "card_reconciliation": {
+    "path": "framework/EAs/QM5_20203_eurusd-audjpy/docs/strategy_card.md",
+    "sha256_before": "d2d842c492a5180c5736b91304cc971b56ebea8dc59a732c8aac026c61090900",
+    "sha256_after": "f5f4b1d13ace14d69ca3249b77976503f025c229598f16693ace755ba8c0043d",
+    "pipeline_phase_before": "Q02_PENDING",
+    "pipeline_phase_after": "Q04_PENDING",
+    "strategy_rules_changed": false,
+    "risk_settings_changed": false
+  },
+  "capacity_stop": {
+    "hard_cpu_ceiling_pct": 97,
+    "cpu_samples_pct": [
+      99.9,
+      99.81,
+      99.02,
+      95.31,
+      99.8
+    ],
+    "cpu_average_pct": 98.77,
+    "cpu_max_pct": 99.9,
+    "free_physical_memory_kib": 43215516,
+    "total_visible_memory_kib": 66185976,
+    "observed_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T9",
+      "T10"
+    ],
+    "active_work_items_by_phase": {
+      "Q02": 1,
+      "Q05": 3,
+      "Q06": 1,
+      "Q08": 1
+    }
+  },
+  "execution": {
+    "backtest_or_dispatch_attempted": false,
+    "queue_mutation": false,
+    "enqueue_or_requeue": false,
+    "priority_or_timestamp_mutation": false,
+    "terminal_action": false,
+    "stop_reason": "five-sample CPU average and maximum exceeded the 97 percent hard ceiling"
+  },
+  "mutations": {
+    "card_pipeline_metadata": true,
+    "repository_evidence_files": true,
+    "card_strategy_rules": false,
+    "ea_or_ex5": false,
+    "setfile_or_basket_manifest": false,
+    "registry_or_magic": false,
+    "runtime_queue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_or_factory_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_terminal": false,
+    "auto_trading": false
+  }
+}
