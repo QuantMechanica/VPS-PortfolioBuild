@@ -22090,21 +22090,25 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
     )
     for setfile_str in iter_setfiles:
         setfile_path = Path(str(setfile_str))
+        # Logical basket names can end in a timeframe-shaped token such as
+        # ``..._M15_M15_backtest.set``. The physical-set regex below then
+        # misreads the first M15 as a broker symbol and rejects it as non-DWX.
+        # Bind the manifest's exact logical setfile before generic parsing.
+        basket_match = _q02_build_setfile_basket_match(
+            str(ea_id),
+            setfile_path,
+            basket_manifest,
+            build_result,
+        )
+        if basket_match:
+            symbol, tf, payload_extra = basket_match
+            parsed.append((setfile_path, symbol, tf, payload_extra))
+            continue
         # Filename pattern: <ea_label>_<SYMBOL>_<TF>_backtest.set
         # Symbol may contain '.' (e.g. EURUSD.DWX); use regex to extract.
         m = re.search(r"_([A-Z][A-Z0-9.]{2,})_([A-Z0-9]+)_backtest\.set$",
                       setfile_path.name)
         if not m:
-            basket_match = _q02_build_setfile_basket_match(
-                str(ea_id),
-                setfile_path,
-                basket_manifest,
-                build_result,
-            )
-            if basket_match:
-                symbol, tf, payload_extra = basket_match
-                parsed.append((setfile_path, symbol, tf, payload_extra))
-                continue
             skipped.append({"setfile": str(setfile_path),
                             "reason": "setfile_name_parse_failed"})
             continue

@@ -1,0 +1,21 @@
+{
+  "logical_symbol": "QM5_32008_EUR_TRIPLET_STATARB_M15",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "M15",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "EURGBP.DWX",
+    "GBPUSD.DWX"
+  ],
+  "traded_symbols": [
+    "EURUSD.DWX",
+    "EURGBP.DWX",
+    "GBPUSD.DWX"
+  ],
+  "notes": [
+    "One logical three-leg EUR triangular-residual package. EURUSD.DWX is the only tester host; physical companion-leg tests are invalid because they do not represent the strategy.",
+    "Fixed coefficients are +1 EURUSD, -1 EURGBP, -1 GBPUSD. The canonical qualification preset is RISK_FIXED=1000 with an equal one-third risk allocation per leg. No live preset is authorized."
+  ]
+}

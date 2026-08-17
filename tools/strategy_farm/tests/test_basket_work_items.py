@@ -394,6 +394,61 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(payload["risk_mode"], "RISK_FIXED")
             self.assertEqual(payload["timeout_min"], farmctl.BASKET_Q02_ACTIVE_TIMEOUT_MIN)
 
+    def test_record_build_auto_q02_binds_m15_logical_suffix_before_physical_parser(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo_root = Path(tmp) / "repo"
+            ea_dir = repo_root / "framework" / "EAs" / "QM5_32008_euro-triplet"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            manifest = {
+                "logical_symbol": "QM5_32008_EUR_TRIPLET_STATARB_M15",
+                "host_symbol": "EURUSD.DWX",
+                "host_timeframe": "M15",
+                "tester_currency": "USD",
+                "tester_deposit": 100000,
+                "basket_symbols": ["EURUSD.DWX", "EURGBP.DWX", "GBPUSD.DWX"],
+            }
+            (ea_dir / "basket_manifest.json").write_text(
+                json.dumps(manifest), encoding="utf-8"
+            )
+            setfile = sets_dir / (
+                "QM5_32008_euro-triplet_"
+                "QM5_32008_EUR_TRIPLET_STATARB_M15_M15_backtest.set"
+            )
+            setfile.write_text("; basket setfile\n", encoding="utf-8")
+
+            farmctl.init_db(root)
+            old_repo_root = farmctl.REPO_ROOT
+            try:
+                farmctl.REPO_ROOT = repo_root
+                result = farmctl._auto_enqueue_q02_for_build(root, {
+                    "task_id": "build-task",
+                    "ea_id": "QM5_32008",
+                    "symbols": ["EURUSD.DWX", "EURGBP.DWX", "GBPUSD.DWX"],
+                    "risk_mode": "RISK_FIXED",
+                    "setfiles_generated": [str(setfile)],
+                })
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+
+            self.assertEqual(result["skipped"], [])
+            self.assertEqual(len(result["enqueued"]), 1)
+            self.assertEqual(
+                result["enqueued"][0]["symbol"],
+                "QM5_32008_EUR_TRIPLET_STATARB_M15",
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT symbol, setfile_path, payload_json FROM work_items"
+                ).fetchone()
+            self.assertEqual(row[0], "QM5_32008_EUR_TRIPLET_STATARB_M15")
+            self.assertEqual(row[1], str(setfile))
+            payload = json.loads(row[2])
+            self.assertEqual(payload["host_symbol"], "EURUSD.DWX")
+            self.assertEqual(payload["host_timeframe"], "M15")
+            self.assertEqual(payload["basket_symbol_count"], 3)
+
     def test_basket_context_survives_phase_promotion_payload(self) -> None:
         parent = {
             "payload_json": json.dumps({
