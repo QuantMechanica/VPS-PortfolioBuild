@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20086
+; ea_slug:      connors-multi-day-high-low-h4-r1-recovery
+; ea_version:   v5.0
+; set_version:  s20260817-stress-harsh
+; symbol:       NDX.DWX
+; timeframe:    H4
+; environment:  q06_stress_harsh
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=20086
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_20086_connors-multi-day-high-low-h4-r1-recovery.md
+extreme_lookback=10
+sma_fast=5
+d1_trend_sma=200
+atr_period=14
+sl_atr_mult=2.5
+time_stop_bars=8
+spread_atr_mult_cap=0.4
