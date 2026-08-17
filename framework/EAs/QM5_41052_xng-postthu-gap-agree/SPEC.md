@@ -1,6 +1,6 @@
 # QM5_41052 - XNG Post-Thursday Gap-Agreement Friday Continuation
 
-Status: `G0 APPROVED; MAGIC ALLOCATED; BUILD NOT STARTED`
+Status: `G0 APPROVED; MAGIC ALLOCATED; IMPLEMENTED; COMPILE PENDING`
 
 ## Identity
 
@@ -47,9 +47,14 @@ short (`QM5_20160`), and the incumbent cumulative-RSI pullback (`QM5_12567`).
 
 ## Build State
 
-The directory identity existed before magic allocation because the governed
-resolver retains rows only for materialized EA directories. The approved card
-is `strategy-seeds/cards/approved/QM5_41052_xng-postthu-gap-agree_card.md`.
-Code, binary, preset, Q01, and Q02 status must not be inferred from this
-scaffold. No live artifact, tester dispatch, terminal control, portfolio
-mutation, or performance claim is authorized.
+The branch implementation now contains the card-exact `.mq5`, one canonical
+`RISK_FIXED` D1 backtest preset, an exact approved-card copy, and 15 independent
+reference fixtures. The fixtures cover both governed energy-label conventions,
+exact Tuesday-through-Friday identity, frozen endpoints, all sign pairings,
+reconciliation, grace, intrabar non-leakage, Friday cutoff, later-D1 repair,
+and stable attempt identity.
+
+Strict MetaEditor compile, generated setfile build hash, V5 build check, static
+Q01 artifact validation, and Q02 handoff are still pending. No live artifact,
+tester dispatch, terminal control, portfolio mutation, or performance claim is
+authorized.
