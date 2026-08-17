@@ -219,14 +219,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             ab_bars >= 3 && ab_bars <= 60 && time_symmetry_ok)
            {
             const double d_proj = C + (B - A);
+            const double t1 = d_proj + t1_fib * (C - d_proj);
             const bool touch_ok =
                (c2.low  <= d_proj + tol) && (c2.low  >= d_proj - tol) &&
                (c2.close >= d_proj - tol) && (c2.close <= d_proj + tol);
             const bool confirm_ok = (c1.close > c2.high);
+            const bool t1_ok = (ask < t1);
             const int bars_since_long = (g_last_long_entry_time > 0)
                ? iBarShift(_Symbol, PERIOD_CURRENT, g_last_long_entry_time, false) // perf-allowed structural bar-index lookup
                : 999999;
-            const bool long_ok = touch_ok && confirm_ok && bars_since_long > cooldown_bars;
+            const bool long_ok = touch_ok && confirm_ok && t1_ok && bars_since_long > cooldown_bars;
             if(long_ok)
               {
                req.type   = QM_BUY;
@@ -263,14 +265,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             ab_bars2 >= 3 && ab_bars2 <= 60 && time_symmetry_ok)
            {
             const double d_proj = C2p - (A2 - B2);
+            const double t1 = d_proj + t1_fib * (C2p - d_proj);
             const bool touch_ok =
                (c2.high <= d_proj + tol) && (c2.high >= d_proj - tol) &&
                (c2.close >= d_proj - tol) && (c2.close <= d_proj + tol);
             const bool confirm_ok = (c1.close < c2.low);
+            const bool t1_ok = (bid > t1);
             const int bars_since_short = (g_last_short_entry_time > 0)
                ? iBarShift(_Symbol, PERIOD_CURRENT, g_last_short_entry_time, false) // perf-allowed structural bar-index lookup
                : 999999;
-            const bool short_ok = touch_ok && confirm_ok && bars_since_short > cooldown_bars;
+            const bool short_ok = touch_ok && confirm_ok && t1_ok && bars_since_short > cooldown_bars;
             if(short_ok)
               {
                req.type   = QM_SELL;
