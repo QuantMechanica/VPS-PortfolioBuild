@@ -1,6 +1,6 @@
 # QM5_41053 - WTI Post-Wednesday Counter-Gap Fade
 
-Status: `G0 APPROVED; Q01 PASS; Q02 READY`
+Status: `G0 APPROVED; Q01 PASS; Q02 NOT ENQUEUED - CPU CEILING`
 
 ## Identity
 
@@ -68,5 +68,6 @@ Artifacts:
 - `sets/QM5_41053_wti-postwed-gap-fade_XTIUSD.DWX_D1_backtest.set`
 
 Strict compile, targeted build checks, independent fixtures, static P1, card
-lint, and single-symbol scope all pass. A target-only Q02 enqueue remains
-subject to the governed tester/CPU ceiling.
+lint, and single-symbol scope all pass. The target-only Q02 dry run selected
+one fresh row, but the governed five-sample CPU check reached 100.00% against
+the 97% hard ceiling, so no queue mutation occurred.
