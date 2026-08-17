@@ -54,6 +54,7 @@ framework/EAs/QM5_20044_gap-hilo-fade/sets/QM5_20044_gap-hilo-fade_WS30.DWX_M30_
 framework/EAs/QM5_20045_london-box/sets/QM5_20045_london-box_EURGBP.DWX_M15_backtest.set -text
 framework/EAs/QM5_20045_london-box/sets/QM5_20045_london-box_GBPUSD.DWX_M15_backtest.set -text
 framework/EAs/QM5_41041_wti-wed-flow-fade/sets/QM5_41041_wti-wed-flow-fade_XTIUSD.DWX_D1_backtest.set -text
+framework/EAs/QM5_41042_wti-wed-flow-agree/sets/QM5_41042_wti-wed-flow-agree_XTIUSD.DWX_D1_backtest.set -text
 docs/ops/evidence/2026-08-03_factory_preparation_owner_decision.json -text
 docs/ops/evidence/2026-08-04_factory_preparation_owner_decision.json -text
 docs/ops/evidence/2026-08-04_factory_preparation_owner_decision_evening.json -text
