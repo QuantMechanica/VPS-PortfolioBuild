@@ -10,10 +10,19 @@
 #   2. only files older than -MinAgeMinutes (the live seed's files are recent)
 #   3. per-file exclusive-open test; anything the agent still holds is SKIPPED, not forced
 #
+# MEASURED 2026-08-17: at thresholds of 20, 5 and 2 minutes, across 1000+ candidate files
+# on two busy terminals, ZERO were locked. The MT5 agent writes each bar*.tmp once and
+# releases it immediately -- it never reopens them. So this scratch is abandoned garbage,
+# not a working set, and the lock test (layer 3) is the real safety property while the age
+# threshold (layer 2) is only a margin. Default lowered 20 -> 5 accordingly: at 99 GB/h a
+# 20-minute window excluded almost everything while the total kept growing.
+# Verified after a 30 GB reclaim on live slots: worker, runner, terminal64 AND
+# metatester64 all alive on both terminals, and both kept writing.
+#
 # Reports reclaimed volume and skipped locks. -Apply required to delete.
 [CmdletBinding()]
 param(
-    [int]$MinAgeMinutes = 20,
+    [int]$MinAgeMinutes = 5,
     [switch]$Apply
 )
 
