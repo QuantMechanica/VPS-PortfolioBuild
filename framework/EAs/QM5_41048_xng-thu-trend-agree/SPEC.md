@@ -1,6 +1,6 @@
 # QM5_41048 — XNG Standard-Thursday Event / Slow-Trend Agreement
 
-Status: `G0 APPROVED; MAGIC ALLOCATED; BUILD PENDING`
+Status: `G0 APPROVED; Q01 PASS; Q02 HANDOFF PENDING`
 
 ## Identity
 
@@ -43,6 +43,26 @@ normal one-D1 lifecycle spans the weekend.
 
 ## Build State
 
-The governed directory identity was established before the single active
-`(41048, 0, XNGUSD.DWX)` magic row. Development may proceed after resolver
-regeneration keeps that row and reports zero dropped rows.
+The directory was established before magic allocation, then the canonical
+resolver kept 17,297 rows and dropped zero. The source and binary are present
+with one fixed-risk backtest preset, a synchronized approved-card copy, and an
+independent 15-case reference suite.
+
+Q01 evidence:
+
+- strict compile PASS, zero errors and zero warnings:
+  `framework/build/compile/20260817_165733/QM5_41048_xng-thu-trend-agree.compile.log`
+- targeted build check PASS, zero failures and zero warnings:
+  `D:/QM/reports/framework/21/build_check_20260817_165858.json`
+- static P1 artifact validation PASS:
+  `D:/QM/reports/pipeline/QM5_41048/P1/P1_QM5_41048_result.json`
+- factory symbol-scope validation: `SINGLE_SYMBOL_OK`, zero violations
+- MQ5 SHA-256:
+  `D0CAFFFFEECC293285430AA5B9324E60EC83CA0FFF8230AB537F5124191F9315`
+- EX5 SHA-256:
+  `19D2C37E91752AEB12540FAC07BE855E6585EB25394A785CB79A0B8B2B340A9C`
+- setfile normalized-content build hash:
+  `80974e1c67e39ad4fecf5698b9c8f14e38881bb551f47f080a04b792354c8b7a`
+
+The only next mutation authorized by the card is one paced target-only Q02
+enqueue below the governed tester and host-CPU ceilings.

@@ -60,6 +60,7 @@ framework/EAs/QM5_41044_xng-thu-flow-fade/sets/QM5_41044_xng-thu-flow-fade_XNGUS
 framework/EAs/QM5_41045_wti-wed-trend-agree/sets/QM5_41045_wti-wed-trend-agree_XTIUSD.DWX_D1_backtest.set -text
 framework/EAs/QM5_41046_wti-wed-trend-pb/sets/QM5_41046_wti-wed-trend-pb_XTIUSD.DWX_D1_backtest.set -text
 framework/EAs/QM5_41047_xng-thu-trend-pb/sets/QM5_41047_xng-thu-trend-pb_XNGUSD.DWX_D1_backtest.set -text
+framework/EAs/QM5_41048_xng-thu-trend-agree/sets/QM5_41048_xng-thu-trend-agree_XNGUSD.DWX_D1_backtest.set -text
 docs/ops/evidence/2026-08-03_factory_preparation_owner_decision.json -text
 docs/ops/evidence/2026-08-04_factory_preparation_owner_decision.json -text
 docs/ops/evidence/2026-08-04_factory_preparation_owner_decision_evening.json -text
