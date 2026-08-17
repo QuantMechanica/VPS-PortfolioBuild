@@ -1,0 +1,179 @@
+{
+ "schema": "qm.z4-exponent-old-vs-new/v1",
+ "question": "did the exponent tolerance fix change the measured Q02 outcome?",
+ "method": "ea_metrics is append-only on work_item_id, so the superseded row survives; compare stored trades/profit_factor/drawdown_pct between the last two Q02 work items",
+ "correction": "an earlier report claimed ea_metrics had not retained the old rows. That was wrong -- the query printed only rows[-3:] by extracted_at.",
+ "confounded": [
+  "QM5_21527"
+ ],
+ "counts": {
+  "compared": 3,
+  "identical": 3,
+  "differ": 0,
+  "verdict_changed": 0
+ },
+ "entries": [
+  {
+   "ea_id": "QM5_13203",
+   "symbol": "QM5_13203_XTI_XNG_DOWNBETA_D1",
+   "old": {
+    "work_item_id": "94819763-2d8b-4f58-87aa-34d3716d9c7f",
+    "at": "2026-07-24T20:20:41",
+    "verdict": "PASS",
+    "trades": 67,
+    "profit_factor": 0.94,
+    "drawdown_pct": 3.29,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "495424b7-6438-4279-8096-6ea8607ee392",
+    "at": "2026-08-09T04:55:58",
+    "verdict": "PASS",
+    "trades": 67,
+    "profit_factor": 0.94,
+    "drawdown_pct": 3.29,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
+  },
+  {
+   "ea_id": "QM5_13205",
+   "symbol": "QM5_13205_XAU_XAG_QC_D1",
+   "old": {
+    "work_item_id": "be5ffa78-fdfb-4718-af89-5f7fc7e8dee3",
+    "at": "2026-07-20T22:47:54",
+    "verdict": "FAIL",
+    "trades": 2,
+    "profit_factor": 6.97,
+    "drawdown_pct": 0.32,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "d7f3de72-d870-441a-88b1-d18562c0863f",
+    "at": "2026-07-25T09:21:41",
+    "verdict": "FAIL",
+    "trades": 2,
+    "profit_factor": 6.97,
+    "drawdown_pct": 0.32,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
+  },
+  {
+   "ea_id": "QM5_20262",
+   "symbol": "XNGUSD.DWX",
+   "state": "METRICS_MISSING",
+   "old_present": true,
+   "new_present": false
+  },
+  {
+   "ea_id": "QM5_20289",
+   "symbol": "XTIUSD.DWX",
+   "old": {
+    "work_item_id": "41d6f237-cc5e-46ec-8048-1722c398a110",
+    "at": "2026-08-12T07:59:55",
+    "verdict": "PASS",
+    "trades": 53,
+    "profit_factor": 0.71,
+    "drawdown_pct": 11.98,
+    "source": "summary_runs"
+   },
+   "new": {
+    "work_item_id": "c1a2de16-6162-45fa-810d-be941a4ce7bd",
+    "at": "2026-08-17T13:56:24",
+    "verdict": "PASS",
+    "trades": 53,
+    "profit_factor": 0.71,
+    "drawdown_pct": 11.98,
+    "source": "summary_runs"
+   },
+   "verdict_changed": false,
+   "metrics_identical": true,
+   "confounded_by_recompile": false,
+   "state": "COMPARED"
+  },
+  {
+   "ea_id": "QM5_20290",
+   "symbol": "XTIUSD.DWX",
+   "state": "METRICS_MISSING",
+   "old_present": true,
+   "new_present": false
+  },
+  {
+   "ea_id": "QM5_20295",
+   "symbol": "XTIUSD.DWX",
+   "state": "METRICS_MISSING",
+   "old_present": true,
+   "new_present": false
+  },
+  {
+   "ea_id": "QM5_20296",
+   "symbol": "XNGUSD.DWX",
+   "state": "METRICS_MISSING",
+   "old_present": true,
+   "new_present": false
+  },
+  {
+   "ea_id": "QM5_20297",
+   "symbol": "XNGUSD.DWX",
+   "state": "METRICS_MISSING",
+   "old_present": true,
+   "new_present": false
+  },
+  {
+   "ea_id": "QM5_20298",
+   "symbol": "XTIUSD.DWX",
+   "state": "METRICS_MISSING",
+   "old_present": true,
+   "new_present": false
+  },
+  {
+   "ea_id": "QM5_20299",
+   "symbol": "XNGUSD.DWX",
+   "state": "METRICS_MISSING",
+   "old_present": true,
+   "new_present": false
+  },
+  {
+   "ea_id": "QM5_20300",
+   "symbol": "XTIUSD.DWX",
+   "state": "METRICS_MISSING",
+   "old_present": true,
+   "new_present": false
+  },
+  {
+   "ea_id": "QM5_20301",
+   "symbol": "XTIUSD.DWX",
+   "state": "METRICS_MISSING",
+   "old_present": true,
+   "new_present": false
+  },
+  {
+   "ea_id": "QM5_20302",
+   "symbol": "XTIUSD.DWX",
+   "state": "METRICS_MISSING",
+   "old_present": true,
+   "new_present": false
+  },
+  {
+   "ea_id": "QM5_21516",
+   "symbol": "XTIUSD.DWX",
+   "state": "METRICS_MISSING",
+   "old_present": true,
+   "new_present": false
+  },
+  {
+   "ea_id": "QM5_21527",
+   "symbol": "XTIUSD.DWX",
+   "state": "METRICS_MISSING",
+   "old_present": true,
+   "new_present": false
+  }
+ ]
+}
