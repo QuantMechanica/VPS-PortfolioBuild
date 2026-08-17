@@ -70,7 +70,7 @@ r3_data_available: PASS_WITH_SESSION_LABEL_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a different-logic XNG event-time sleeve outside the certified XAU/SP500/NDX/XNG book. Verify exact Tuesday-Wednesday-Thursday identity, completed Thursday event-session endpoints, frozen Friday open, strict opposition, event-session dominance, reconciliation, durable Friday attempt, counter-gap-fade side, and broker-hour-21 flattening. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -380,7 +380,7 @@ realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-18 | APPROVED | `decisions/2026-08-18_xng_post_thursday_countergap_fade_g0.md` |
 | Q01 Build Validation | 2026-08-18 | PASS | `framework/build/compile/20260817_232251/QM5_41054_xng-postthu-gap-fade.compile.log`; `D:/QM/reports/framework/21/build_check_20260817_232353.json`; `D:/QM/reports/pipeline/QM5_41054/P1/P1_QM5_41054_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | Requires an available governed tester slot and host CPU below the hard ceiling |
+| Q02 Baseline Screening | 2026-08-18 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-18_qm5_41054_xng_post_thursday_countergap_fade_q01_q02_capacity_stop.md` |
 
 ## Safety Boundary
 

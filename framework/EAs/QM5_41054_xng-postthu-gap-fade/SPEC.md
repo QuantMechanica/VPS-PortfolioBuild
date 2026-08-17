@@ -1,6 +1,6 @@
 # QM5_41054 - XNG Post-Thursday Counter-Gap Fade
 
-Status: `G0 APPROVED; Q01 PASS; Q02 READY`
+Status: `G0 APPROVED; Q01 PASS; Q02 NOT ENQUEUED - CPU CEILING`
 
 ## Identity
 
@@ -70,8 +70,10 @@ Artifacts:
 - `sets/QM5_41054_xng-postthu-gap-fade_XNGUSD.DWX_D1_backtest.set`
 
 Strict compile, targeted build checks, independent fixtures, static P1, card
-lint, and single-symbol scope all pass. A target-only Q02 enqueue remains
-subject to the governed tester/CPU ceiling.
+lint, and single-symbol scope all pass. The target-only dry run selected one
+fresh Q02 row, but the binding five-sample host check reached 100% against the
+97% hard ceiling, so no queue mutation occurred. Evidence:
+`docs/ops/evidence/2026-08-18_qm5_41054_xng_post_thursday_countergap_fade_q01_q02_capacity_stop.md`.
 
 No live artifact, tester dispatch, terminal control, portfolio mutation, or
 performance claim is authorized.
