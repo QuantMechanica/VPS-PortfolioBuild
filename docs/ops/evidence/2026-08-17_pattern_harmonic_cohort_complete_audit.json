@@ -1,0 +1,1163 @@
+{
+  "audit_scope": {
+    "total_eas_in_repo": 3624,
+    "pattern_harmonic_cohort_count": 255,
+    "keywords": [
+      "pattern",
+      "harmonic",
+      "wave",
+      "fib",
+      "abcd",
+      "gartley",
+      "butterfly",
+      "bat",
+      "cypher",
+      "drive",
+      "crab",
+      "shark",
+      "5-0",
+      "5_0",
+      "demark",
+      "sperandeo",
+      "123",
+      "goodman",
+      "unger",
+      "samuels",
+      "pesavento",
+      "carney",
+      "elliott",
+      "zigzag",
+      "sinewave",
+      "ttm",
+      "differential"
+    ]
+  },
+  "cohort_breakdown": {
+    "category_1_empty_or_time_trailing_only": 231,
+    "category_2_anchored_to_position_price_open": 18,
+    "category_3_signal_time_check_or_breakout": 5,
+    "category_4_defective_unanchored_projection": 1,
+    "sum_check": 255
+  },
+  "all_repo_cat4_defective_eas": [
+    "QM5_20177_carney-ab-cd-pattern-h4-r1-recovery"
+  ],
+  "category_1_eas": [
+    {
+      "ea": "QM5_10001_ff-static-fib-open",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_10041_ff-bb-demarker-adx-m5",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_10070_mql5-fib-pa",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_10123_don20-break",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_10184_tv-atr-zigzag-break",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_10197_tv-ssl-wavetrend",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_10395_et-ttm-squeeze",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_10413_et-123-bounce",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_10487_mql5-cho-123",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1062_unger-orb-index",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1063_unger-bollinger-fx-meanrev",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1064_unger-inside-day-bias-dax",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1065_unger-friday-close-reversal-fx",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_10689_tv-zigzag-bos",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_10789_tv-band-zigzag",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_10962_ftmo-ichi-fib",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1096_unger-donchian-channel-tf",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1097_unger-gold-intraday-bias",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_10983_ftmo-trend-123",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1098_unger-sp500-pivot-trend",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11016_the5ers-fib-breaker",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11025_atc-fib-levels",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11030_atc-zigzag-pend",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11042_atc-m15-zigzag",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11064_atc-zigzag-break",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1106_unger-nasdaq-pullback-tf",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1108_unger-gold-bb-breakout",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11103_psar-zigzag-rev",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1110_unger-crude-ma-crossover",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11123_sr-fractal-break",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11195_ft-cdlwave",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1121_unger-crude-inventory-release",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1122_unger-crude-donchian160",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11230_ft-obv-ema",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11232_ft-tr-pullback",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11233_ft-tr-ema50",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11236_ft-tr-bb",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1123_unger-crude-prevday-meanrev",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1124_unger-index-holiday-long",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1125_unger-sp500-eom-pullback",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11281_macd-5-13-1-pattern-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11293_ema5-13-fib-cross-h1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11339_tc20-h1-15-ema5-21-rsi21-candle-pattern",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11371_tom-demark-ema9-30-momentum-h1",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11387_bermuda-123-fib-retrace-h1h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11392_justforex-momentum7-divergence-fib",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11418_nordstrom-abc-fib-reversal-h1",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11466_samuels-123-pattern-fractal-d1h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1146_unger-dax-overnight-bias",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1147_unger-dax-false-break-reversal",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11488_samuels-j-123-pattern-pullback-d1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1148_unger-dax-gap-reversal",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1149_unger-dax-adx-low-breakout",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1151_unger-gold-keltner-meanrev",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1152_unger-crude-round-number-tf",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1153_unger-nasdaq-priorclose-expansion",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1154_unger-dax-4h-high-breakout",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1155_unger-nasdaq-atr-spike-short",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1161_unger-crude-intraday-bias",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1162_unger-nasdaq-close-channel",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1163_unger-dax-bb-multiday",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1164_unger-gold-donchian-bias",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1165_unger-gold-linreg-trend",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11715_tradingwalk-abc-fib-extension",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11751_nfs-tom-demark-ema-momentum-h1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11765_ema5-ema13-fibonacci-cross-h1",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11799_carter-h1-s9-psar0102-ema51234-h1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11850_vegas-wave-ema144169-h1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_11851_bermuda-123-fib-h1",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11891_unger-daily-factor-indecision-pattern",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11892_samuels-123-reversal-pattern",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11897_vegas-wave-ema144-169-fractal-h1-alt",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_11904_grimes-sperandeo-failure-test-2b-h1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12116_carter-ttm-squeeze-h1",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12117_demark-td-sequential-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1230_carver-dynvol-mav",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1231_carver-pca-alpha",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1232_carver-fastmom-cost",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1233_ict-silver-bullet",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12347_qd-threebar",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12348_liu-momo-break",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12349_sb-ema10-20",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1234_ict-golden-bullet",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12350_spec-ema20-40",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12352_orev-bb-rsi",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12354_orev-turtle40",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12355_orev-powertrend",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12356_orev-ma-break",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12357_tmom-fx-hp",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12358_tmom-fut-mom",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12359_tmom-two-ma",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1235_connors-rsi2",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12360_tmom-three-ma",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12361_tmom-ibs",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12362_nikh-supertrend",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12363_nikh-aroon",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12364_nikh-kc",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12365_nikh-ao",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12366_nikh-macd",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12367_tmom-single-ma",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12368_tmom-channel",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12369_tmom-pivots",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1236_gh-donchian-55",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12371_tmom-skew",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12372_tmom-sector-mom",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12373_tmom-alpha-rot",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12374_tmom-rsq-sel",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12375_tmom-masset-trend",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12376_tmom-fut-contr",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12377_gbc-good-carry",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12378_fx-top-sharpe",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1237_tv-supertrend-atr",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12381_btc-minmax10",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12382_ts-mom-12m",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12386_comm-mom12m",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12389_asset-rot-mom",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1238_tv-vwap-rsi-cont",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12390_paired-switch",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12391_comm-skew",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12392_comm-asym-ie",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12394_sector-mom12m",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12395_country-pairs",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12396_country-bab",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12397_oil-eq-reg",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12398_style-mom",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12399_stock-newhigh",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1239_raposa-ma-atr",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12737_eia-wti-drive",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12740_eia-wti-postdrive",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12746_eia-wti-drive-pb",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_12816_harmonic-cypher",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1291_carter-ttm-squeeze-h1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12936_demark-td-reverse-differential-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12937_demark-td-termination-count-alt-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12939_carney-alternate-bat-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_12944_sperandeo-trend-fault-line-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1296_demark-td-sequential-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1311_carter-ttm-wave-h1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_13123_energy-val-rank",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1324_carter-ttm-squeeze-pro-h1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1328_wave59-quickstrike-pivot-of-pivot-h1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1330_demark-td-pressure-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1369_goodman-wave-theory-3c-h1",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1374_carter-ttm-wave-h1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1383_wave59-quickstrike-gann-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1384_wave59-time-cycle-tlb-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1385_demark-td-range-expansion-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1394_demark-td-differential-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1401_harmonic-shark-xabcd-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1402_harmonic-cypher-xabcd-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1432_demark-td-setup-trend-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1437_carter-ttm-squeeze-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1438_demark-td-demarker-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1440_carter-ttm-wave-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1443_demark-td-lines-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1445_carney-three-drive-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1446_demark-td-open-range-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1448_demark-td-combo-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1480_carter-ttm-trend-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1482_carney-three-drive-harmonic-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1491_ehlers-sinewave-leadsine-cross-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1509_ehlers-even-better-sinewave-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1510_demark-td-camouflage-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1526_demark-td-open-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1531_demark-td-open-bar-reversal-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1547_demark-td-range-projection-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1551_demark-td-range-projection-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1562_demark-td-range-projection-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1567_demark-td-reverse-sequential-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1576_demark-td-termination-count-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1579_sperandeo-tlb-swing-pivot-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_1585_demark-td-differential-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1591_demark-td-anti-differential-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1592_ehlers-even-better-sinewave-mtf-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1593_carney-bat-pattern-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1595_sperandeo-2b-pivot-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1604_sperandeo-123-reversal-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1622_demark-td-termination-count-alt-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1636_sperandeo-3day-pivot-rule-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1645_carney-cypher-pattern-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1648_demark-td-sequential-tdst-overlay-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1649_carney-cypher-pattern-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1650_sperandeo-trader-vic-ii-pattern-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1652_demark-td-sequential-tdst-overlay-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1653_sperandeo-test-of-strength-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1673_sperandeo-tvii-trendline-failure-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1701_demark-td-sequential-tdst-overlay-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1703_sperandeo-multiple-top-bottom-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_1859_carney-pesavento-ratio-symmetry-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2003_nnfx-wave-sniper",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_20080_goodman-wave-theory-intersection-h1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_20087_carney-three-drives-h4-r1-recovery",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_20088_carney-crab-pattern-h4-r1-recovery",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_20111_london-box-fib-straddle",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_20123_dailyopen-h1-basket",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_20150_emacross-stochhook-fib-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_20179_pesavento-abcd-pattern-h4-r1-recovery",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2023_demark-td-d-wave-wave5-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2077_demark-td-rei-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_2078_ehlers-sine-wave-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_2133_demark-td-trend-factor-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_2187_demark-td-trap-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2242_demark-td-magic-letters-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2296_demark-td-diff-alt-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2297_sperandeo-channel-buster-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2351_demark-td-diff-rsi-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2355_demark-td-clopwin-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2407_demark-td-clop-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2409_demark-td-lines-active-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2462_demark-td-channel-1-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2463_sperandeo-spring-channel-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_2465_demark-td-channel-2-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_3002_alpha-unger-method",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_5001_legend-unger-breakout",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9123_aa-tes01325-cross",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9167_tv-boswaves-supertrend-extensions",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9191_mql5-butterfly",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9223_mql5-demarker-div",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9264_mql5-demarker-div",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9274_mql5-five-drives",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9281_demark-td-demand-supply-line-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9282_demark-td-stress-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9351_demark-td-demand-line-active-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9354_demark-td-dwave-wave4-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9401_demark-tdprl-fade-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9451_demark-td-dwa-fade-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9574_demark-td-anti-diff-3bar-h4",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_9638_demark-td-termination-active-h4",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9699_ff-sonicr-wave-h1",
+      "reason": "empty_manage_open_position"
+    },
+    {
+      "ea": "QM5_9952_ff-zigzag-trendline-4060-m5",
+      "reason": "time_stop_atr_trailing_or_pending_housekeeping",
+      "detail": "manages time-stops / ATR trails without geometric TP calculations"
+    },
+    {
+      "ea": "QM5_9976_ff-ema-fibo-rsi-stoch",
+      "reason": "empty_manage_open_position"
+    }
+  ],
+  "category_2_eas": [
+    {
+      "ea": "QM5_11231_ft-ema-ha-rsi",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_11234_ft-tr-rsi",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_11235_ft-tr-emax",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_11237_ft-tr-macd",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_11377_vegas-wave-ema144-169-fractal-h1",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_11451_vegas-wave-ema144ema169-fractal-h1",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_11902_bermuda-triangle-123-fib-extension-h1",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_12935_sperandeo-tlb-refinement-h4",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_1376_harmonic-gartley-xabcd-h4",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_1389_goodman-wave-theory-measured-move-h1",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_1391_harmonic-bat-xabcd-h4",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_1395_harmonic-butterfly-xabcd-h4",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_1397_harmonic-gartley-xabcd-h4",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_1403_harmonic-5-0-pattern-h4",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_1493_hopwood-pattern-recognition-master-h4",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_1506_demark-td-sequential-combo-h4",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_1628_carney-5-0-pattern-h4",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    },
+    {
+      "ea": "QM5_1630_demark-td-sequential-combo-overlay-h4",
+      "reason": "anchored_to_position_price_open",
+      "detail": "manages targets anchored directly to live PositionGetDouble(POSITION_PRICE_OPEN)"
+    }
+  ],
+  "category_3_eas": [
+    {
+      "ea": "QM5_1061_unger-larry-williams-vola-breakout",
+      "reason": "signal_time_target_check_or_breakout",
+      "detail": "validated target room at entry or breakout geometry"
+    },
+    {
+      "ea": "QM5_1107_unger-nasdaq-3pm-breakout",
+      "reason": "signal_time_target_check_or_breakout",
+      "detail": "validated target room at entry or breakout geometry"
+    },
+    {
+      "ea": "QM5_1109_unger-gold-prev-session-breakout",
+      "reason": "signal_time_target_check_or_breakout",
+      "detail": "validated target room at entry or breakout geometry"
+    },
+    {
+      "ea": "QM5_1150_unger-gold-session-breakout-tf",
+      "reason": "signal_time_target_check_or_breakout",
+      "detail": "validated target room at entry or breakout geometry"
+    },
+    {
+      "ea": "QM5_30002_zigzag-gold-breakout-happy-gold",
+      "reason": "signal_time_target_check_or_breakout",
+      "detail": "validated target room at entry or breakout geometry"
+    }
+  ],
+  "category_4_eas": [
+    {
+      "ea": "QM5_20177_carney-ab-cd-pattern-h4-r1-recovery",
+      "reason": "unanchored_geometric_target_defect",
+      "detail": "computes T1/T2 from g_position_D/C projection without POSITION_PRICE_OPEN comparison"
+    }
+  ]
+}
