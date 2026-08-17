@@ -17367,3 +17367,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 33007,george-pruitt-king-keltner-trend-buster,0,SP500.DWX,330070000,2026-08-17T19:00:00Z,Gemini,active
 33007,george-pruitt-king-keltner-trend-buster,1,XTIUSD.DWX,330070001,2026-08-17T19:00:00Z,Gemini,active
 33007,george-pruitt-king-keltner-trend-buster,2,EURUSD.DWX,330070002,2026-08-17T19:00:00Z,Gemini,active
+33006,andrea-unger-turtle-soup-false-breakout,0,SP500.DWX,330060000,2026-08-17T19:00:00Z,Gemini,active
+33006,andrea-unger-turtle-soup-false-breakout,1,XTIUSD.DWX,330060001,2026-08-17T19:00:00Z,Gemini,active
+33006,andrea-unger-turtle-soup-false-breakout,2,EURUSD.DWX,330060002,2026-08-17T19:00:00Z,Gemini,active

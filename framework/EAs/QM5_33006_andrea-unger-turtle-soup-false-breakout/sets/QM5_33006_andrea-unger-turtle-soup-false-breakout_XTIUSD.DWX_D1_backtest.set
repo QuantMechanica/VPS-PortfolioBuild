@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        33006
+; ea_slug:      andrea-unger-turtle-soup-false-breakout
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   0a758875f2b637b085bfdacf2c324b819f54cd83b2d352c417e1c0838ad59f52
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=33006
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_33006_andrea-unger-turtle-soup-false-breakout.md
+strategy_lookback_period=20
+strategy_tp_lookback=10
+strategy_buffer_ticks=1
+strategy_atr_period=14
+strategy_spread_atr_mult=1.8
