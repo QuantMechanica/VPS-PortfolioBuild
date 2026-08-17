@@ -16141,3 +16141,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41035,wti-mflow-div,0,XTIUSD.DWX,410350000,2026-08-17T01:10:50Z,Codex,active
 41036,wti-mflow-dom,0,XTIUSD.DWX,410360000,2026-08-17T02:17:17Z,Codex,active
 41037,xng-mflow-div,0,XNGUSD.DWX,410370000,2026-08-17T03:31:24Z,Codex,active
+41038,xng-mflow-dom,0,XNGUSD.DWX,410380000,2026-08-17T04:42:23Z,Codex,active
