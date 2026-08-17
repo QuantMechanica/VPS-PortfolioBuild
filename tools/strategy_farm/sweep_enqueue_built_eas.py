@@ -5,7 +5,8 @@
    OWNER gate-acceleration #2: diverse stage-1 wave (<=3 symbols across
    asset buckets), remainder deferred to the sidecar.
 2. Re-enqueue (ea, symbol, setfile) rows stranded on INFRA_FAIL at
-   Q02/Q03/Q08 with nothing pending/active and no non-INFRA done row.
+   Q02/Q03/Q08 with nothing pending/active, no terminal non-INFRA
+   disposition, and no work for the same EA/symbol at a deeper phase.
 3. Promote deferred symbols (state/q02_deferred_symbols.json): an EA's
    deferred setfiles are enqueued as soon as ANY of its Q02 rows is a done
    PASS (a chance was found -> confirm breadth), or whenever the queue has
@@ -223,6 +224,29 @@ def pending_active_exists(ea_id, symbol, phase):
         "SELECT 1 FROM work_items WHERE ea_id=? AND symbol=? AND phase=? "
         "AND status IN ('pending','active') LIMIT 1", (ea_id, symbol, phase)
     ).fetchone() is not None
+
+
+def deeper_phase_work_item(ea_id, symbol, phase):
+    """Return evidence that this pair already advanced beyond ``phase``.
+
+    An older INFRA_FAIL remains historical once any deeper-phase work exists.
+    Re-enqueueing the earlier phase would spend tester capacity on a lineage
+    that the farm has already advanced, even when that deeper row later failed.
+    """
+    phase_rank = {name: index for index, name in enumerate(farmctl.PHASE_ORDER)}
+    current_rank = phase_rank.get(phase)
+    if current_rank is None:
+        return None
+    deeper_phases = farmctl.PHASE_ORDER[current_rank + 1:]
+    if not deeper_phases:
+        return None
+    placeholders = ",".join("?" for _ in deeper_phases)
+    return cur.execute(
+        f"SELECT id,phase,status,verdict,updated_at FROM work_items "
+        f"WHERE ea_id=? AND symbol=? AND phase IN ({placeholders}) "
+        "ORDER BY updated_at DESC,id DESC LIMIT 1",
+        (ea_id, symbol, *deeper_phases),
+    ).fetchone()
 
 def insert_wi(
     phase,
@@ -491,6 +515,17 @@ for phase in ("Q02", "Q03", "Q08"):
     if TARGET_EAS:
         target_filter = "AND x.ea_id IN (%s)" % ",".join("?" for _ in TARGET_EAS)
         params.extend(sorted(TARGET_EAS))
+    phase_rank = {name: index for index, name in enumerate(farmctl.PHASE_ORDER)}
+    deeper_phases = farmctl.PHASE_ORDER[phase_rank[phase] + 1:]
+    deeper_filter = ""
+    if deeper_phases:
+        deeper_filter = (
+            "AND NOT EXISTS ("
+            "SELECT 1 FROM work_items z "
+            "WHERE z.ea_id=x.ea_id AND z.symbol=x.symbol "
+            "AND z.phase IN (%s))"
+        ) % ",".join("?" for _ in deeper_phases)
+        params.extend(deeper_phases)
     # Retry stranded infra at the symbol/setfile level. An EA can have some
     # valid phase results while other symbols remain blocked by transient MT5
     # failures, and those rows still need a chance to re-enter the funnel.
@@ -515,9 +550,11 @@ for phase in ("Q02", "Q03", "Q08"):
                 AND y.phase=x.phase
                 AND y.symbol=x.symbol
                 AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')
-                AND y.status='done'
+                AND y.status IN ('done','failed')
+                AND y.verdict IS NOT NULL
                 AND y.verdict!='INFRA_FAIL'
           )
+          {deeper_filter}
         GROUP BY x.ea_id, x.symbol, x.setfile_path
         ORDER BY MAX(x.updated_at) ASC
         """, params).fetchall()
@@ -548,6 +585,41 @@ for phase in ("Q02", "Q03", "Q08"):
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,
                  "reason": "terminal_infra_source_payload_invalid",
                  "source_work_item_id": source["id"]})
+            continue
+
+        terminal_disposition = cur.execute(
+            """
+            SELECT id,status,verdict,updated_at
+            FROM work_items
+            WHERE ea_id=? AND phase=? AND symbol=?
+              AND ifnull(setfile_path, '')=ifnull(?, '')
+              AND status IN ('done','failed')
+              AND verdict IS NOT NULL AND verdict!='INFRA_FAIL'
+            ORDER BY updated_at DESC,id DESC
+            LIMIT 1
+            """,
+            (ea_id, phase, symbol, setfile),
+        ).fetchone()
+        if terminal_disposition is not None:
+            report["part2_stranded"]["skipped"].append(
+                {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                 "reason": "terminal_noninfra_disposition",
+                 "source_work_item_id": source["id"],
+                 "disposition_work_item_id": terminal_disposition["id"],
+                 "disposition_status": terminal_disposition["status"],
+                 "disposition_verdict": terminal_disposition["verdict"]})
+            continue
+
+        advanced = deeper_phase_work_item(ea_id, symbol, phase)
+        if advanced is not None:
+            report["part2_stranded"]["skipped"].append(
+                {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                 "reason": "historical_phase_advanced",
+                 "source_work_item_id": source["id"],
+                 "advanced_work_item_id": advanced["id"],
+                 "advanced_phase": advanced["phase"],
+                 "advanced_status": advanced["status"],
+                 "advanced_verdict": advanced["verdict"]})
             continue
 
         basket_payload = None

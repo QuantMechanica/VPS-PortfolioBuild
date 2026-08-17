@@ -378,6 +378,105 @@ def test_part2_requeues_terminal_failed_logical_basket_with_auditable_source(
     }]
 
 
+def test_part2_refuses_terminal_disposition_and_historical_phase(
+    tmp_path: Path,
+) -> None:
+    farm_root = tmp_path / "farm"
+    repo_root = tmp_path / "repo"
+    report_root = tmp_path / "reports"
+    registry = repo_root / "framework" / "registry" / "ea_id_registry.csv"
+    registry.parent.mkdir(parents=True)
+    report_root.joinpath("state").mkdir(parents=True)
+
+    fixtures = {}
+    for ea_id, slug in (
+        ("QM5_9005", "terminal-disposition"),
+        ("QM5_9006", "historical-phase"),
+    ):
+        ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_{slug}"
+        sets_dir = ea_dir / "sets"
+        sets_dir.mkdir(parents=True)
+        setfile = sets_dir / f"{ea_dir.name}_EURUSD.DWX_D1_backtest.set"
+        setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+        fixtures[ea_id] = setfile.resolve()
+
+    with registry.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["ea_id", "slug", "status"])
+        writer.writeheader()
+        writer.writerow({"ea_id": "9005", "slug": "terminal-disposition", "status": "active"})
+        writer.writerow({"ea_id": "9006", "slug": "historical-phase", "status": "active"})
+
+    farmctl.init_db(farm_root)
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        rows = [
+            (
+                "terminal-infra", "Q02", "QM5_9005", str(fixtures["QM5_9005"]),
+                "failed", "INFRA_FAIL", "2026-08-01T00:00:00+00:00",
+            ),
+            (
+                "terminal-retired", "Q02", "QM5_9005", str(fixtures["QM5_9005"]),
+                "failed", "RETIRED_LOW_FREQ", "2026-08-02T00:00:00+00:00",
+            ),
+            (
+                "historical-infra", "Q02", "QM5_9006", str(fixtures["QM5_9006"]),
+                "failed", "INFRA_FAIL", "2026-08-01T00:00:00+00:00",
+            ),
+            (
+                "advanced-q04", "Q04", "QM5_9006", str(fixtures["QM5_9006"]),
+                "done", "PASS", "2026-08-02T00:00:00+00:00",
+            ),
+        ]
+        for item_id, phase, ea_id, setfile, status, verdict, stamp in rows:
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                    attempt_count,payload_json,created_at,updated_at
+                ) VALUES(?, 'backtest', ?, ?, 'EURUSD.DWX', ?, ?, ?, 0, '{}', ?, ?)
+                """,
+                (item_id, phase, ea_id, setfile, status, verdict, stamp, stamp),
+            )
+        conn.commit()
+
+    env = os.environ.copy()
+    env.update({
+        "QM_STRATEGY_FARM_ROOT": str(farm_root),
+        "QM_CANONICAL_REPO_ROOT": str(repo_root),
+        "QM_REPORT_ROOT": str(report_root),
+    })
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SWEEP),
+            "--apply",
+            "--ea",
+            "QM5_9005,QM5_9006",
+            "--max-part2-per-run",
+            "10",
+        ],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        pending = conn.execute(
+            "SELECT COUNT(*) FROM work_items WHERE status='pending'"
+        ).fetchone()[0]
+    assert pending == 0
+
+    report = json.loads(
+        (report_root / "state" / "claude_sweep_enqueue_2026-06-10.json")
+        .read_text(encoding="utf-8")
+    )
+    assert report["part2_stranded"]["enqueued"] == []
+    assert report["part2_stranded"]["rate_limited"] is False
+
+
 def test_q08_stranded_retry_carries_hash_pinned_requal_lineage(
     tmp_path: Path,
 ) -> None:
