@@ -1,6 +1,6 @@
 # QM5_41047 — XNG Thursday Counter-Move / Slow-Trend Re-entry
 
-Status: `G0 APPROVED; Q01 PASS; Q02 HANDOFF PENDING`
+Status: `G0 APPROVED; Q01 PASS; Q02 NOT ENQUEUED — CPU CEILING`
 
 ## Identity
 
@@ -58,5 +58,10 @@ Q01 evidence:
   `D:/QM/reports/pipeline/QM5_41047/P1/P1_QM5_41047_result.json`
 - factory symbol-scope validation: `SINGLE_SYMBOL_OK`, zero violations
 
-The only next mutation authorized by the card is one paced target-only Q02
-enqueue below the governed tester ceiling.
+The target-only Q02 dry run selected exactly one new row. The pre-apply census
+then found seven active exact-path research terminals and the five-sample host
+reading averaged 99.62% CPU, so the apply command was not run. A read-only
+post-check found zero `QM5_41047` work items. The only next mutation authorized
+by the card remains one paced target-only Q02 enqueue after the governed tester
+and host-CPU ceilings clear. Evidence:
+`docs/ops/evidence/2026-08-17_qm5_41047_xng_thursday_trend_pullback_q01_q02_capacity_stop.md`.
