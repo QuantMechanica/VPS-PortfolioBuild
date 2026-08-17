@@ -1,6 +1,6 @@
 # QM5_41048 — XNG Standard-Thursday Event / Slow-Trend Agreement
 
-Status: `G0 APPROVED; BUILD PENDING MAGIC ALLOCATION`
+Status: `G0 APPROVED; MAGIC ALLOCATED; BUILD PENDING`
 
 ## Identity
 
@@ -9,7 +9,7 @@ Status: `G0 APPROVED; BUILD PENDING MAGIC ALLOCATION`
 - strategy ID: `EIA-MOP-XNG-THUTRENDAGREE-2026_S01`
 - host: exact `XNGUSD.DWX`, D1
 - slot: `0`
-- planned magic: `410480000`
+- registered magic: `410480000`
 - approved card:
   `strategy-seeds/cards/approved/QM5_41048_xng-thu-trend-agree_card.md`
 - G0 decision:
@@ -43,5 +43,6 @@ normal one-D1 lifecycle spans the weekend.
 
 ## Build State
 
-The governed directory identity exists so slot-0 magic allocation can precede
-source generation without being dropped by `update_magic_resolver.py`.
+The governed directory identity was established before the single active
+`(41048, 0, XNGUSD.DWX)` magic row. Development may proceed after resolver
+regeneration keeps that row and reports zero dropped rows.

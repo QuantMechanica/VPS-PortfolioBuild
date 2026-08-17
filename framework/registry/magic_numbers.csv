@@ -17326,3 +17326,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41045,wti-wed-trend-agree,0,XTIUSD.DWX,410450000,2026-08-17T12:56:18Z,Codex,active
 41046,wti-wed-trend-pb,0,XTIUSD.DWX,410460000,2026-08-17T13:56:38Z,Codex,active
 41047,xng-thu-trend-pb,0,XNGUSD.DWX,410470000,2026-08-17T14:54:27Z,Codex,active
+41048,xng-thu-trend-agree,0,XNGUSD.DWX,410480000,2026-08-17T16:54:39Z,Codex,active
