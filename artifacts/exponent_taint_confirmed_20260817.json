@@ -1,0 +1,864 @@
+{
+ "schema": "qm.exponent-taint-confirmed/v1",
+ "method": "taint confirmed by comparing work_items.payload_json.expected_setfile_sha256 against the current file hash; a path match alone is not evidence",
+ "counts": {
+  "NO_BINDING": 22,
+  "CONFIRMED": 36,
+  "DIFFERENT": 1
+ },
+ "confirmed_by_verdict": {
+  "PASS": 19,
+  "ZERO_TRADES": 2,
+  "INFRA_FAIL": 8,
+  "FAIL": 7
+ },
+ "confirmed_favourable": 19,
+ "entries": [
+  {
+   "id": "503e2088-87a8-4663-8cec-a105bae90bfb",
+   "ea_id": "QM5_13203",
+   "symbol": "QM5_13203_XTI_XNG_DOWNBETA_D1",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-07-20T22:18:09",
+   "ea_dir": "QM5_13203_energy-downbeta",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13203_energy-downbeta\\sets\\QM5_13203_energy-downbeta_QM5_13203_XTI_XNG_DOWNBETA_D1_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_beta_tie_epsilon=1e-8"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "8e7fe867-4ba2-4683-9b2d-8422e8455841",
+   "ea_id": "QM5_13203",
+   "symbol": "QM5_13203_XTI_XNG_DOWNBETA_D1",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-07-20T23:04:23",
+   "ea_dir": "QM5_13203_energy-downbeta",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13203_energy-downbeta\\sets\\QM5_13203_energy-downbeta_QM5_13203_XTI_XNG_DOWNBETA_D1_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_beta_tie_epsilon=1e-8"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "94819763-2d8b-4f58-87aa-34d3716d9c7f",
+   "ea_id": "QM5_13203",
+   "symbol": "QM5_13203_XTI_XNG_DOWNBETA_D1",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-07-24T20:20:41",
+   "ea_dir": "QM5_13203_energy-downbeta",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13203_energy-downbeta\\sets\\QM5_13203_energy-downbeta_QM5_13203_XTI_XNG_DOWNBETA_D1_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_beta_tie_epsilon=1e-8"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "495424b7-6438-4279-8096-6ea8607ee392",
+   "ea_id": "QM5_13203",
+   "symbol": "QM5_13203_XTI_XNG_DOWNBETA_D1",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-09T04:55:58",
+   "ea_dir": "QM5_13203_energy-downbeta",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13203_energy-downbeta\\sets\\QM5_13203_energy-downbeta_QM5_13203_XTI_XNG_DOWNBETA_D1_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_beta_tie_epsilon=1e-8"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "be5ffa78-fdfb-4718-af89-5f7fc7e8dee3",
+   "ea_id": "QM5_13205",
+   "symbol": "QM5_13205_XAU_XAG_QC_D1",
+   "phase": "Q02",
+   "verdict": "FAIL",
+   "at": "2026-07-20T22:47:54",
+   "ea_dir": "QM5_13205_xau-xag-qc",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13205_xau-xag-qc\\sets\\QM5_13205_xau-xag-qc_QM5_13205_XAU_XAG_QC_D1_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_slope_unique_epsilon=1e-10"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "d7f3de72-d870-441a-88b1-d18562c0863f",
+   "ea_id": "QM5_13205",
+   "symbol": "QM5_13205_XAU_XAG_QC_D1",
+   "phase": "Q02",
+   "verdict": "FAIL",
+   "at": "2026-07-25T09:21:41",
+   "ea_dir": "QM5_13205_xau-xag-qc",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13205_xau-xag-qc\\sets\\QM5_13205_xau-xag-qc_QM5_13205_XAU_XAG_QC_D1_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_slope_unique_epsilon=1e-10"
+   ],
+   "taint_state": "DIFFERENT"
+  },
+  {
+   "id": "ab875180-bc18-48f8-85fe-c32081b2473f",
+   "ea_id": "QM5_20262",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q02",
+   "verdict": "ZERO_TRADES",
+   "at": "2026-08-07T09:55:14",
+   "ea_dir": "QM5_20262_xng-lr-trend",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20262_xng-lr-trend\\sets\\QM5_20262_xng-lr-trend_XNGUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_slope_epsilon=1.0e-10"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "41d6f237-cc5e-46ec-8048-1722c398a110",
+   "ea_id": "QM5_20289",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-12T07:59:55",
+   "ea_dir": "QM5_20289_wti-rsj-rev",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20289_wti-rsj-rev\\sets\\QM5_20289_wti-rsj-rev_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_rsj_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "8d937ada-3b92-48d1-8939-a776d28f6dfd",
+   "ea_id": "QM5_20289",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q04",
+   "verdict": "PASS",
+   "at": "2026-08-12T09:00:22",
+   "ea_dir": "QM5_20289_wti-rsj-rev",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20289_wti-rsj-rev\\sets\\QM5_20289_wti-rsj-rev_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_rsj_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "3f577c40-7204-4ac8-bba5-ddcd41d3fa25",
+   "ea_id": "QM5_20289",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q05",
+   "verdict": "FAIL",
+   "at": "2026-08-12T09:47:51",
+   "ea_dir": "QM5_20289_wti-rsj-rev",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20289_wti-rsj-rev\\sets\\QM5_20289_wti-rsj-rev_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_rsj_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "661b4c77-8fed-41ff-92e2-d4851ebcaad0",
+   "ea_id": "QM5_20290",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-12T09:21:26",
+   "ea_dir": "QM5_20290_wti-skew-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20290_wti-skew-prem\\sets\\QM5_20290_wti-skew-prem_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_skew_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "9c6c9d1f-b1eb-4a10-9ccb-ff6172a29709",
+   "ea_id": "QM5_20290",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-12T10:27:42",
+   "ea_dir": "QM5_20290_wti-skew-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20290_wti-skew-prem\\sets\\QM5_20290_wti-skew-prem_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_skew_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "35048caa-bd9c-40d6-b3bb-f632849d3392",
+   "ea_id": "QM5_20290",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q03",
+   "verdict": "PASS",
+   "at": "2026-08-12T10:32:23",
+   "ea_dir": "QM5_20290_wti-skew-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20290_wti-skew-prem\\sets\\QM5_20290_wti-skew-prem_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_skew_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "a9a08824-f88d-486f-9148-299f56e89db0",
+   "ea_id": "QM5_20290",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-12T10:40:04",
+   "ea_dir": "QM5_20290_wti-skew-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20290_wti-skew-prem\\sets\\QM5_20290_wti-skew-prem_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_skew_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "0ed36c55-2a83-49ad-a5f0-71b25700ff18",
+   "ea_id": "QM5_20295",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-13T02:58:23",
+   "ea_dir": "QM5_20295_wti-kurt-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20295_wti-kurt-prem\\sets\\QM5_20295_wti-kurt-prem_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_kurtosis_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "7be7dd45-3881-4c5c-9e2e-59786fca60a7",
+   "ea_id": "QM5_20295",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q03",
+   "verdict": "PASS",
+   "at": "2026-08-13T16:15:35",
+   "ea_dir": "QM5_20295_wti-kurt-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20295_wti-kurt-prem\\sets\\QM5_20295_wti-kurt-prem_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_kurtosis_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "e383ed93-69a0-4ff5-80ce-e0c0c016b6dd",
+   "ea_id": "QM5_20295",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-13T16:56:34",
+   "ea_dir": "QM5_20295_wti-kurt-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20295_wti-kurt-prem\\sets\\QM5_20295_wti-kurt-prem_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_kurtosis_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "36cc9282-c16c-449f-b5a1-455809f8a9d4",
+   "ea_id": "QM5_20296",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-13T02:55:20",
+   "ea_dir": "QM5_20296_xng-skew-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20296_xng-skew-prem\\sets\\QM5_20296_xng-skew-prem_XNGUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_skew_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "e388fd1e-f8d6-4b79-90de-cbe7042975fa",
+   "ea_id": "QM5_20296",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-14T02:05:14",
+   "ea_dir": "QM5_20296_xng-skew-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20296_xng-skew-prem\\sets\\QM5_20296_xng-skew-prem_XNGUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_skew_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "8a3e73ec-caca-4306-89fb-4941d953a05a",
+   "ea_id": "QM5_20297",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-13T02:54:08",
+   "ea_dir": "QM5_20297_xng-kurt-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20297_xng-kurt-prem\\sets\\QM5_20297_xng-kurt-prem_XNGUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_kurtosis_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "516dac60-34bc-4224-bbbe-ddc7f7eef448",
+   "ea_id": "QM5_20297",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q03",
+   "verdict": "INFRA_FAIL",
+   "at": "2026-08-13T15:27:24",
+   "ea_dir": "QM5_20297_xng-kurt-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20297_xng-kurt-prem\\sets\\QM5_20297_xng-kurt-prem_XNGUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_kurtosis_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "22eb9bae-e796-4bc8-bd2f-42b85bb913bf",
+   "ea_id": "QM5_20297",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q03",
+   "verdict": "PASS",
+   "at": "2026-08-13T16:02:21",
+   "ea_dir": "QM5_20297_xng-kurt-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20297_xng-kurt-prem\\sets\\QM5_20297_xng-kurt-prem_XNGUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_kurtosis_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "bb0f8ddc-d2e0-4aa5-a9f9-a1117357ce6f",
+   "ea_id": "QM5_20297",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-14T02:06:24",
+   "ea_dir": "QM5_20297_xng-kurt-prem",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20297_xng-kurt-prem\\sets\\QM5_20297_xng-kurt-prem_XNGUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_variance_floor=1.0e-12",
+    "strategy_kurtosis_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "16e088fa-2b19-49d8-b0c2-027e94ddfa50",
+   "ea_id": "QM5_20298",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-13T03:03:36",
+   "ea_dir": "QM5_20298_wti-vov-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20298_wti-vov-regime\\sets\\QM5_20298_wti-vov-regime_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_vov_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "51701426-8cff-40eb-9e43-ecb1da69262f",
+   "ea_id": "QM5_20298",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-14T02:32:26",
+   "ea_dir": "QM5_20298_wti-vov-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20298_wti-vov-regime\\sets\\QM5_20298_wti-vov-regime_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_vov_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "19cae282-9ed8-4791-b439-868b1c51e867",
+   "ea_id": "QM5_20299",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-13T04:36:10",
+   "ea_dir": "QM5_20299_xng-vov-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20299_xng-vov-regime\\sets\\QM5_20299_xng-vov-regime_XNGUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_vov_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "3b597143-37ab-4eb5-888d-4f8d32f1947f",
+   "ea_id": "QM5_20299",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q03",
+   "verdict": "FAIL",
+   "at": "2026-08-13T15:32:36",
+   "ea_dir": "QM5_20299_xng-vov-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20299_xng-vov-regime\\sets\\QM5_20299_xng-vov-regime_XNGUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_vov_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "347a0da8-39cd-405c-bd3f-0c74b562adb6",
+   "ea_id": "QM5_20299",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-14T02:05:55",
+   "ea_dir": "QM5_20299_xng-vov-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20299_xng-vov-regime\\sets\\QM5_20299_xng-vov-regime_XNGUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_vov_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "42f8f5dd-b01e-493f-ba28-c51e9ff2b9d8",
+   "ea_id": "QM5_20300",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-13T05:55:48",
+   "ea_dir": "QM5_20300_wti-max-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20300_wti-max-regime\\sets\\QM5_20300_wti-max-regime_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_max_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "ff941851-8f4d-4d8b-aa96-90622908bdca",
+   "ea_id": "QM5_20300",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q03",
+   "verdict": "FAIL",
+   "at": "2026-08-13T16:14:46",
+   "ea_dir": "QM5_20300_wti-max-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20300_wti-max-regime\\sets\\QM5_20300_wti-max-regime_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_max_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "0a96d70a-caf1-494d-9397-285d0c2677ae",
+   "ea_id": "QM5_20300",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-14T02:35:11",
+   "ea_dir": "QM5_20300_wti-max-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20300_wti-max-regime\\sets\\QM5_20300_wti-max-regime_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_max_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "391694f4-f6d3-400a-9f3b-9f8f5d700ae0",
+   "ea_id": "QM5_20301",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-13T07:53:33",
+   "ea_dir": "QM5_20301_wti-es-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20301_wti-es-regime\\sets\\QM5_20301_wti-es-regime_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_es_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "bd6edacd-9b99-47a0-bd1e-543d96888c6d",
+   "ea_id": "QM5_20301",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-14T02:37:43",
+   "ea_dir": "QM5_20301_wti-es-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20301_wti-es-regime\\sets\\QM5_20301_wti-es-regime_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_es_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "9666a9ef-f51a-464f-a883-90a89945d45d",
+   "ea_id": "QM5_20302",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-13T08:47:21",
+   "ea_dir": "QM5_20302_wti-aliq-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20302_wti-aliq-regime\\sets\\QM5_20302_wti-aliq-regime_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_aliq_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "bd7e02fa-7e16-4e47-965b-4822703d304e",
+   "ea_id": "QM5_20302",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q03",
+   "verdict": "FAIL",
+   "at": "2026-08-13T16:18:10",
+   "ea_dir": "QM5_20302_wti-aliq-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20302_wti-aliq-regime\\sets\\QM5_20302_wti-aliq-regime_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_aliq_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "13b6a165-95b5-4dcc-9d18-6b8766cebd0c",
+   "ea_id": "QM5_20302",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-14T02:39:31",
+   "ea_dir": "QM5_20302_wti-aliq-regime",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20302_wti-aliq-regime\\sets\\QM5_20302_wti-aliq-regime_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_aliq_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "81939741-407c-40dc-b6ad-91baa91c0e92",
+   "ea_id": "QM5_20303",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "FAIL",
+   "at": "2026-08-13T10:26:54",
+   "ea_dir": "QM5_20303_wti-volbeta-reg",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20303_wti-volbeta-reg\\sets\\QM5_20303_wti-volbeta-reg_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_beta_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "4da3518e-2356-425b-a2e3-0dee10ae05a7",
+   "ea_id": "QM5_20304",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "FAIL",
+   "at": "2026-08-13T11:03:29",
+   "ea_dir": "QM5_20304_wti-jumpbeta-reg",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20304_wti-jumpbeta-reg\\sets\\QM5_20304_wti-jumpbeta-reg_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_beta_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "266ead87-d0e5-4103-bfa0-881944c68b20",
+   "ea_id": "QM5_20306",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q02",
+   "verdict": "FAIL",
+   "at": "2026-08-13T13:40:31",
+   "ea_dir": "QM5_20306_xng-jumpbeta-reg",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20306_xng-jumpbeta-reg\\sets\\QM5_20306_xng-jumpbeta-reg_XNGUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_beta_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "35a76a18-9b2c-4ac3-9b96-c4096be2a460",
+   "ea_id": "QM5_21516",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-15T08:37:03",
+   "ea_dir": "QM5_21516_wti-decoup-trend",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21516_wti-decoup-trend\\sets\\QM5_21516_wti-decoup-trend_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_corr_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "c21f405a-16b1-4707-9a78-101c3984e3a3",
+   "ea_id": "QM5_21516",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q04",
+   "verdict": "INFRA_FAIL",
+   "at": "2026-08-15T09:29:17",
+   "ea_dir": "QM5_21516_wti-decoup-trend",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21516_wti-decoup-trend\\sets\\QM5_21516_wti-decoup-trend_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_corr_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "042f57b3-a033-4a16-851d-f3258354fc35",
+   "ea_id": "QM5_21516",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q03",
+   "verdict": "PASS",
+   "at": "2026-08-15T09:45:58",
+   "ea_dir": "QM5_21516_wti-decoup-trend",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21516_wti-decoup-trend\\sets\\QM5_21516_wti-decoup-trend_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_corr_tolerance=1.0e-12"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "a43b6f99-c718-4291-9cb9-b23f321687a5",
+   "ea_id": "QM5_21516",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q04",
+   "verdict": "PASS_LOWFREQ",
+   "at": "2026-08-15T22:55:30",
+   "ea_dir": "QM5_21516_wti-decoup-trend",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21516_wti-decoup-trend\\sets\\QM5_21516_wti-decoup-trend_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_corr_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "26b962c1-0fc4-4906-9863-ec64587a05dc",
+   "ea_id": "QM5_21516",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q05",
+   "verdict": "PASS",
+   "at": "2026-08-16T04:49:16",
+   "ea_dir": "QM5_21516_wti-decoup-trend",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21516_wti-decoup-trend\\sets\\QM5_21516_wti-decoup-trend_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_corr_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "6602a040-7d7c-425c-99b2-c6ce8aeaa8eb",
+   "ea_id": "QM5_21516",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q06",
+   "verdict": "FAIL",
+   "at": "2026-08-16T05:35:49",
+   "ea_dir": "QM5_21516_wti-decoup-trend",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21516_wti-decoup-trend\\sets\\QM5_21516_wti-decoup-trend_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_corr_tolerance=1.0e-12"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "baee9255-3daf-4a85-b300-07a4f57ac0cf",
+   "ea_id": "QM5_21518",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "INFRA_FAIL",
+   "at": "2026-08-14T10:40:07",
+   "ea_dir": "QM5_21518_wti-brent-cfm",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\sets\\QM5_21518_wti-brent-cfm_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_return_tolerance=1.0e-10"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "d938e1c8-50dd-402b-8f90-cf04c8381eee",
+   "ea_id": "QM5_21518",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "INFRA_FAIL",
+   "at": "2026-08-14T17:18:01",
+   "ea_dir": "QM5_21518_wti-brent-cfm",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\sets\\QM5_21518_wti-brent-cfm_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_return_tolerance=1.0e-10"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "08883210-eca7-4144-9e07-419509aea846",
+   "ea_id": "QM5_21518",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "INFRA_FAIL",
+   "at": "2026-08-15T08:37:05",
+   "ea_dir": "QM5_21518_wti-brent-cfm",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\sets\\QM5_21518_wti-brent-cfm_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_return_tolerance=1.0e-10"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "dba41b9c-357b-42e6-83cc-7952155208f2",
+   "ea_id": "QM5_21518",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "INFRA_FAIL",
+   "at": "2026-08-15T09:16:36",
+   "ea_dir": "QM5_21518_wti-brent-cfm",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\sets\\QM5_21518_wti-brent-cfm_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_return_tolerance=1.0e-10"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "9736b404-bae2-4070-b8a0-98618e3873ec",
+   "ea_id": "QM5_21518",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "INFRA_FAIL",
+   "at": "2026-08-15T10:04:13",
+   "ea_dir": "QM5_21518_wti-brent-cfm",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\sets\\QM5_21518_wti-brent-cfm_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_return_tolerance=1.0e-10"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "3c0d115a-f8d5-4ad7-b662-d24b95aa543d",
+   "ea_id": "QM5_21518",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "INFRA_FAIL",
+   "at": "2026-08-15T11:15:24",
+   "ea_dir": "QM5_21518_wti-brent-cfm",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\sets\\QM5_21518_wti-brent-cfm_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_return_tolerance=1.0e-10"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "54b465dc-ea33-4953-8802-c5ede04e25d9",
+   "ea_id": "QM5_21518",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "RETIRE",
+   "at": "2026-08-15T12:14:48",
+   "ea_dir": "QM5_21518_wti-brent-cfm",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\sets\\QM5_21518_wti-brent-cfm_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_return_tolerance=1.0e-10"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "fe4d6ae0-b23e-401a-822d-bc8a83a2bdc2",
+   "ea_id": "QM5_21522",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "FAIL",
+   "at": "2026-08-14T21:50:48",
+   "ea_dir": "QM5_21522_wti-lowdb-trend",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21522_wti-lowdb-trend\\sets\\QM5_21522_wti-lowdb-trend_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_beta_tolerance=1.0e-12",
+    "strategy_variance_epsilon=1.0e-16"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "6353edf7-625d-412e-b928-51ebe6715e7e",
+   "ea_id": "QM5_21523",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "ZERO_TRADES",
+   "at": "2026-08-15T08:32:05",
+   "ea_dir": "QM5_21523_wti-xau-div-tr",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21523_wti-xau-div-tr\\sets\\QM5_21523_wti-xau-div-tr_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_sign_deadband=1.0e-12",
+    "strategy_return_tolerance=1.0e-10"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "4ec8fc49-9460-47a1-a938-619b9d50251a",
+   "ea_id": "QM5_21527",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "INFRA_FAIL",
+   "at": "2026-08-15T17:26:05",
+   "ea_dir": "QM5_21527_wti-fallcorr-tr",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21527_wti-fallcorr-tr\\sets\\QM5_21527_wti-fallcorr-tr_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_corr_tolerance=1.0e-12",
+    "strategy_variance_epsilon=1.0e-16"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "f2e7b05f-6194-4a21-a2cc-2f71a5d52e9a",
+   "ea_id": "QM5_21527",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "verdict": "PASS",
+   "at": "2026-08-15T21:38:13",
+   "ea_dir": "QM5_21527_wti-fallcorr-tr",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21527_wti-fallcorr-tr\\sets\\QM5_21527_wti-fallcorr-tr_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_corr_tolerance=1.0e-12",
+    "strategy_variance_epsilon=1.0e-16"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "db16e50b-7244-4c8d-9baa-6889b603ef83",
+   "ea_id": "QM5_21527",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-15T22:18:29",
+   "ea_dir": "QM5_21527_wti-fallcorr-tr",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21527_wti-fallcorr-tr\\sets\\QM5_21527_wti-fallcorr-tr_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_corr_tolerance=1.0e-12",
+    "strategy_variance_epsilon=1.0e-16"
+   ],
+   "taint_state": "NO_BINDING"
+  },
+  {
+   "id": "3ec1b968-d62c-431c-8cc7-a0ec8e1ed663",
+   "ea_id": "QM5_21527",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q03",
+   "verdict": "PASS",
+   "at": "2026-08-15T22:24:29",
+   "ea_dir": "QM5_21527_wti-fallcorr-tr",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21527_wti-fallcorr-tr\\sets\\QM5_21527_wti-fallcorr-tr_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_corr_tolerance=1.0e-12",
+    "strategy_variance_epsilon=1.0e-16"
+   ],
+   "taint_state": "CONFIRMED"
+  },
+  {
+   "id": "766c54cb-c75a-43f7-a4d9-ec3b59d4ef28",
+   "ea_id": "QM5_21527",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-15T23:00:08",
+   "ea_dir": "QM5_21527_wti-fallcorr-tr",
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21527_wti-fallcorr-tr\\sets\\QM5_21527_wti-fallcorr-tr_XTIUSD.DWX_D1_backtest.set",
+   "affected_inputs": [
+    "strategy_corr_tolerance=1.0e-12",
+    "strategy_variance_epsilon=1.0e-16"
+   ],
+   "taint_state": "NO_BINDING"
+  }
+ ]
+}

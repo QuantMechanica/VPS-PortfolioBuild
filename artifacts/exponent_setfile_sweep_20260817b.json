@@ -1,0 +1,192 @@
+{
+ "schema": "qm.exponent-setfile-sweep/v2",
+ "generated_at_utc": "2026-08-17",
+ "detector": "^-?\\d+(\\.\\d+)?[eE][+-]?\\d+$ on non-comment key=value lines",
+ "detector_self_test": {
+  "must_hit": [
+   "1.0e-10",
+   "1e-10",
+   "-3.2E-7",
+   "1.5e3",
+   "2e+20"
+  ],
+  "must_miss": [
+   "0.0000000001",
+   "2.5",
+   "0",
+   "true",
+   "high",
+   "16408",
+   "-1.25",
+   "8da0d74b6416630510cffb33fa4c7a5af368d37f70cb0a38e4a22e3ce2b7135c"
+  ],
+  "result": "passed"
+ },
+ "note": "generator fixed in 3844c472a so future generations expand to plain decimal; this sweep finds setfiles generated BEFORE that fix",
+ "setfiles_scanned": 31014,
+ "hit_count": 32,
+ "distinct_setfiles": 25,
+ "queued_rows_bound_to_a_hit": [],
+ "hits": [
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13203_energy-downbeta\\sets\\QM5_13203_energy-downbeta_QM5_13203_XTI_XNG_DOWNBETA_D1_D1_backtest.set",
+   "key": "strategy_beta_tie_epsilon",
+   "value": "1e-8"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13205_xau-xag-qc\\sets\\QM5_13205_xau-xag-qc_QM5_13205_XAU_XAG_QC_D1_D1_backtest.set",
+   "key": "strategy_slope_unique_epsilon",
+   "value": "1e-10"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20262_xng-lr-trend\\sets\\QM5_20262_xng-lr-trend_XNGUSD.DWX_D1_backtest.set",
+   "key": "strategy_slope_epsilon",
+   "value": "1.0e-10"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20289_wti-rsj-rev\\sets\\QM5_20289_wti-rsj-rev_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_rsj_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20289_wti-rsj-rev\\sets\\QM5_20289_wti-rsj-rev_XTIUSD.DWX_D1_q05_stress_medium.set",
+   "key": "strategy_rsj_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20290_wti-skew-prem\\sets\\QM5_20290_wti-skew-prem_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_variance_floor",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20290_wti-skew-prem\\sets\\QM5_20290_wti-skew-prem_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_skew_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20295_wti-kurt-prem\\sets\\QM5_20295_wti-kurt-prem_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_variance_floor",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20295_wti-kurt-prem\\sets\\QM5_20295_wti-kurt-prem_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_kurtosis_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20296_xng-skew-prem\\sets\\QM5_20296_xng-skew-prem_XNGUSD.DWX_D1_backtest.set",
+   "key": "strategy_variance_floor",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20296_xng-skew-prem\\sets\\QM5_20296_xng-skew-prem_XNGUSD.DWX_D1_backtest.set",
+   "key": "strategy_skew_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20297_xng-kurt-prem\\sets\\QM5_20297_xng-kurt-prem_XNGUSD.DWX_D1_backtest.set",
+   "key": "strategy_variance_floor",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20297_xng-kurt-prem\\sets\\QM5_20297_xng-kurt-prem_XNGUSD.DWX_D1_backtest.set",
+   "key": "strategy_kurtosis_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20298_wti-vov-regime\\sets\\QM5_20298_wti-vov-regime_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_vov_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20299_xng-vov-regime\\sets\\QM5_20299_xng-vov-regime_XNGUSD.DWX_D1_backtest.set",
+   "key": "strategy_vov_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20300_wti-max-regime\\sets\\QM5_20300_wti-max-regime_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_max_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20301_wti-es-regime\\sets\\QM5_20301_wti-es-regime_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_es_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20302_wti-aliq-regime\\sets\\QM5_20302_wti-aliq-regime_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_aliq_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20303_wti-volbeta-reg\\sets\\QM5_20303_wti-volbeta-reg_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_beta_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20304_wti-jumpbeta-reg\\sets\\QM5_20304_wti-jumpbeta-reg_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_beta_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20305_xng-aliq-regime\\sets\\QM5_20305_xng-aliq-regime_XNGUSD.DWX_D1_backtest.set",
+   "key": "strategy_state_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20306_xng-jumpbeta-reg\\sets\\QM5_20306_xng-jumpbeta-reg_XNGUSD.DWX_D1_backtest.set",
+   "key": "strategy_beta_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21516_wti-decoup-trend\\sets\\QM5_21516_wti-decoup-trend_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_corr_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21516_wti-decoup-trend\\sets\\QM5_21516_wti-decoup-trend_XTIUSD.DWX_D1_q05_stress_medium.set",
+   "key": "strategy_corr_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21516_wti-decoup-trend\\sets\\QM5_21516_wti-decoup-trend_XTIUSD.DWX_D1_q06_stress_harsh.set",
+   "key": "strategy_corr_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\sets\\QM5_21518_wti-brent-cfm_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_return_tolerance",
+   "value": "1.0e-10"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21522_wti-lowdb-trend\\sets\\QM5_21522_wti-lowdb-trend_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_beta_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21522_wti-lowdb-trend\\sets\\QM5_21522_wti-lowdb-trend_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_variance_epsilon",
+   "value": "1.0e-16"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21523_wti-xau-div-tr\\sets\\QM5_21523_wti-xau-div-tr_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_sign_deadband",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21523_wti-xau-div-tr\\sets\\QM5_21523_wti-xau-div-tr_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_return_tolerance",
+   "value": "1.0e-10"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21527_wti-fallcorr-tr\\sets\\QM5_21527_wti-fallcorr-tr_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_corr_tolerance",
+   "value": "1.0e-12"
+  },
+  {
+   "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_21527_wti-fallcorr-tr\\sets\\QM5_21527_wti-fallcorr-tr_XTIUSD.DWX_D1_backtest.set",
+   "key": "strategy_variance_epsilon",
+   "value": "1.0e-16"
+  }
+ ]
+}
