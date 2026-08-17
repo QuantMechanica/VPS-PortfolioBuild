@@ -1,0 +1,22 @@
+{
+  "schema": "qm.hedge-guard-census/v1",
+  "guard_carriers": [
+    "QM5_21502",
+    "QM5_21505",
+    "QM5_21506",
+    "QM5_21507",
+    "QM5_21513"
+  ],
+  "reachable_ordering": [
+    "QM5_21502",
+    "QM5_21505",
+    "QM5_21506",
+    "QM5_21507",
+    "QM5_21513"
+  ],
+  "counts": {
+    "scanned": 3697,
+    "carriers": 5,
+    "reachable": 5
+  }
+}
