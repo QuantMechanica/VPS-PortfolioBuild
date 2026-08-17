@@ -17327,4 +17327,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41046,wti-wed-trend-pb,0,XTIUSD.DWX,410460000,2026-08-17T13:56:38Z,Codex,active
 41047,xng-thu-trend-pb,0,XNGUSD.DWX,410470000,2026-08-17T14:54:27Z,Codex,active
 41048,xng-thu-trend-agree,0,XNGUSD.DWX,410480000,2026-08-17T16:54:39Z,Codex,active
+21505,xag-weekly-lowvol-momentum,0,XAGUSD.DWX,215050000,2026-08-17T17:15:00Z,Gemini,active
+21502,xau-weekly-tsmom,0,XAUUSD.DWX,215020000,2026-08-17T17:15:00Z,Gemini,active
 41049,wti-wed-overnight-dom,0,XTIUSD.DWX,410490000,2026-08-17T17:38:15Z,Codex,active
+21507,qs-kama-trend-xau,0,XAUUSD.DWX,215070000,2026-08-17T17:45:00Z,Gemini,active
+21506,xau-weekly-trend-confirm,0,XAUUSD.DWX,215060000,2026-08-17T17:45:00Z,Gemini,active
+21513,qs-double-seven-trend-ndx,0,NDX.DWX,215130000,2026-08-17T17:45:00Z,Gemini,active
+21515,qs-acceleration-bands-xti,0,XTIUSD.DWX,215150000,2026-08-17T18:00:00Z,Gemini,active
+40002,quantpedia-fx-momentum-volatility-parity,0,EURUSD.DWX,400020000,2026-08-17T18:08:35Z,Codex,active
+40002,quantpedia-fx-momentum-volatility-parity,1,GBPUSD.DWX,400020001,2026-08-17T18:08:35Z,Codex,active
+40002,quantpedia-fx-momentum-volatility-parity,2,AUDUSD.DWX,400020002,2026-08-17T18:08:35Z,Codex,active
+40002,quantpedia-fx-momentum-volatility-parity,3,NZDUSD.DWX,400020003,2026-08-17T18:08:35Z,Codex,active
+40002,quantpedia-fx-momentum-volatility-parity,4,USDCAD.DWX,400020004,2026-08-17T18:08:35Z,Codex,active
+40002,quantpedia-fx-momentum-volatility-parity,5,USDJPY.DWX,400020005,2026-08-17T18:08:35Z,Codex,active
