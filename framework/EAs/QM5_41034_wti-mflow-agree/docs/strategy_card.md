@@ -64,7 +64,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a direct-WTI monthly information-flow agreement sleeve outside the certified XAU/SP500/NDX/XNG book. Verify every completed prior-month close/open endpoint, strict component agreement, reconciliation, no late/repeated new-month entry, and next-month renewal; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -376,13 +376,15 @@ new source packet, dedup review, strategy ID, card, and EA ID.
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial monthly flow-agreement extraction | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic EA, fixed-risk set, strict compile, focused build check, and static P1 | Q01 | PASS |
+| v1-capacity | 2026-08-17 | exact-path factory sample reached the 7/7 ceiling; no queue dry run or enqueue | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
 - G0: `APPROVED`.
 - Q01: `PASS` — deterministic implementation, 15-case reference suite,
   strict compile, focused build checks, and static P1 all passed.
-- Q02: `NOT_ENQUEUED` until Q01 PASS and capacity preflight.
+- Q02: `NOT_ENQUEUED_CPU_CEILING` — the exact-path T1-T10 sample was
+  7/7, so the binding stop condition prevented both queue dry run and enqueue.
 - Q03+: not authorized by this card/build task.
 
 ## Safety Boundary

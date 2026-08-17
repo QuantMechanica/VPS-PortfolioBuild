@@ -90,3 +90,4 @@ authorized.
 |---|---|---|---|
 | v1 | 2026-08-17 | approved build scaffold | source/G0/card and deterministic identities complete |
 | v1-build | 2026-08-17 | deterministic implementation | Q01 PASS: 15 reference cases, strict compile 0/0, build check 0/0, static P1 |
+| v1-capacity | 2026-08-17 | Q02 capacity preflight | 7/7 exact factory terminals; no queue dry run or enqueue |
