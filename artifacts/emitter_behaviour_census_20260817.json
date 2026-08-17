@@ -1,0 +1,136 @@
+{
+  "schema": "qm.emitter-behaviour-census/v1",
+  "method": "observed emission behaviour per Q04 fold; no build date used",
+  "counts": {
+    "NO_EVIDENCE": {
+      "eas": 597,
+      "queued_rows": 1034
+    },
+    "EMITS": {
+      "eas": 112,
+      "queued_rows": 171
+    },
+    "MIXED": {
+      "eas": 8,
+      "queued_rows": 9
+    },
+    "BROKEN": {
+      "eas": 8,
+      "queued_rows": 35
+    }
+  },
+  "requalification": [
+    {
+      "ea": "QM5_1119",
+      "class": "BROKEN",
+      "queued_rows": 20,
+      "emit_folds": 0,
+      "broken_folds": 3
+    },
+    {
+      "ea": "QM5_1100",
+      "class": "BROKEN",
+      "queued_rows": 8,
+      "emit_folds": 0,
+      "broken_folds": 3
+    },
+    {
+      "ea": "QM5_1208",
+      "class": "MIXED",
+      "queued_rows": 2,
+      "emit_folds": 10,
+      "broken_folds": 5
+    },
+    {
+      "ea": "QM5_1102",
+      "class": "BROKEN",
+      "queued_rows": 2,
+      "emit_folds": 0,
+      "broken_folds": 3
+    },
+    {
+      "ea": "QM5_1371",
+      "class": "BROKEN",
+      "queued_rows": 1,
+      "emit_folds": 0,
+      "broken_folds": 3
+    },
+    {
+      "ea": "QM5_12508",
+      "class": "BROKEN",
+      "queued_rows": 1,
+      "emit_folds": 0,
+      "broken_folds": 3
+    },
+    {
+      "ea": "QM5_12479",
+      "class": "BROKEN",
+      "queued_rows": 1,
+      "emit_folds": 0,
+      "broken_folds": 6
+    },
+    {
+      "ea": "QM5_1227",
+      "class": "BROKEN",
+      "queued_rows": 1,
+      "emit_folds": 0,
+      "broken_folds": 3
+    },
+    {
+      "ea": "QM5_11264",
+      "class": "MIXED",
+      "queued_rows": 1,
+      "emit_folds": 8,
+      "broken_folds": 1
+    },
+    {
+      "ea": "QM5_11244",
+      "class": "MIXED",
+      "queued_rows": 1,
+      "emit_folds": 2,
+      "broken_folds": 1
+    },
+    {
+      "ea": "QM5_11230",
+      "class": "MIXED",
+      "queued_rows": 1,
+      "emit_folds": 3,
+      "broken_folds": 3
+    },
+    {
+      "ea": "QM5_11162",
+      "class": "MIXED",
+      "queued_rows": 1,
+      "emit_folds": 2,
+      "broken_folds": 1
+    },
+    {
+      "ea": "QM5_11059",
+      "class": "MIXED",
+      "queued_rows": 1,
+      "emit_folds": 9,
+      "broken_folds": 3
+    },
+    {
+      "ea": "QM5_11056",
+      "class": "BROKEN",
+      "queued_rows": 1,
+      "emit_folds": 0,
+      "broken_folds": 6
+    },
+    {
+      "ea": "QM5_11049",
+      "class": "MIXED",
+      "queued_rows": 1,
+      "emit_folds": 6,
+      "broken_folds": 3
+    },
+    {
+      "ea": "QM5_10649",
+      "class": "MIXED",
+      "queued_rows": 1,
+      "emit_folds": 6,
+      "broken_folds": 8
+    }
+  ]
+}
