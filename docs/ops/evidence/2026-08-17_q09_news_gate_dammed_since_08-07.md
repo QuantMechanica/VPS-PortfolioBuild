@@ -80,6 +80,44 @@ pending and drains in a day. The funnel above Q09_NEWS is healthy and *feeding* 
 backlog is therefore growing, not static — three of the eight rows arrived in the last 48
 hours.
 
+## Correction, same day: the eight rows are unbindable by construction
+
+I flagged binary vintage as a risk for the oldest row and asked that it be checked before
+authoring plans. Checked across all eight (task `65cc2c1c`, evidence
+`65cc2c1c_q09_sealed_plan_dam_alarm_2026-08-17.md`), **all eight fail it.**
+
+Every current canonical EX5 still equals the SHA-256 sealed in its Q08 aggregate, and every
+current MQ5 still equals the Q08 MQ5 SHA-256 — so these are not accidental
+current-source-versus-Q08 mismatches. The blocker is conclusive instead: each exact
+Q08-tested binary **predates the sealed-calendar-inputs interface** (`f0102fbcf`, 2026-08-03)
+and cannot expose `qm_news_calendar_bundle_id`, `qm_news_calendar_expected_sha256` or
+`qm_news_calendar_common_relative_path`. A planner can append those names to a generated
+setfile, but the tested binary does not expose them, so the report cannot emit calendar
+identity and the validator fails closed — correctly.
+
+Spot-checked rather than taken on trust: `QM5_11288`'s Q08 aggregate at
+`D:\QM\reports\work_items\c27cab86-…\QM5_11288\Q08\USDJPY_DWX\aggregate.json` contains **no
+calendar-related key at all.**
+
+**So the diagnosis above needs splitting.** The *mechanism* half stands: `bind-q09-plan` has
+no caller and no schedule, and that is why nothing surfaced for ten days. The *backlog* half
+was wrong: **an attentive operator would not have been able to bind these eight either.** Each
+needs a source/interface repair, a fresh compile, and pipeline requalification producing a
+**new Q08 identity** before any plan can legitimately exist. Rebuilding and then binding the
+old Q08 row would contradict the sealed Q08 EX5 identity.
+
+The real Q09 work item is therefore **eight requalifications, not eight bindings** —
+materially more expensive than this document first estimated. Correctly, no `bind-q09-plan`
+was issued, all eight holds remain active, and none was weakened.
+
+**The absence is now alarmed.** `health.py::chk_q09_sealed_plan_hold_age` (`:3217`, registered
+as a blocking check at `:3430`) fails when any pending Q09_NEWS row holds an active
+`Q09_AWAITING_SEALED_PLAN` older than six hours — far above the historical one-to-two-minute
+binding latency, short enough to fire inside one operator shift. It is live in `health.json`
+and currently red: `completions_24h=0; pending=8; 8 Q09_NEWS sealed-plan holds`, with a
+fail-closed action hint forbidding release without a validated bound plan. The condition can
+no longer look like ordinary backlog, which was the acceptance test.
+
 ## What must happen
 
 1. **Bind the eight.** Follow the released rows as the template: a plan directory
