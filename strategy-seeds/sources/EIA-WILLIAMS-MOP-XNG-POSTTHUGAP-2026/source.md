@@ -12,7 +12,8 @@ created: 2026-08-17
 created_by: Research+Development
 strategy_ids:
   - EIA-WILLIAMS-MOP-XNG-POSTTHUGAP-2026_S01
-cards_extracted: []
+cards_extracted:
+  - strategy-seeds/cards/approved/QM5_41052_xng-postthu-gap-agree_card.md
 parent_sources:
   - EIA-WILLIAMS-MOP-XNG-THUFLOWAGREE-2026
   - EIA-WILLIAMS-MOP-WTI-POSTWEDGAP-2026
@@ -197,4 +198,3 @@ proxy.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
-

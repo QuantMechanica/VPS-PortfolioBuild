@@ -1,6 +1,6 @@
 # QM5_41052 - XNG Post-Thursday Gap-Agreement Friday Continuation
 
-Status: `SOURCE APPROVED; EA ID ALLOCATED; MAGIC PENDING; BUILD NOT STARTED`
+Status: `G0 APPROVED; MAGIC ALLOCATED; BUILD NOT STARTED`
 
 ## Identity
 
@@ -15,8 +15,9 @@ Status: `SOURCE APPROVED; EA ID ALLOCATED; MAGIC PENDING; BUILD NOT STARTED`
 - source approval commit: `2b8178970`
 - deterministic EA-ID reservation commit: `d33a6d11f`
 - host: exact `XNGUSD.DWX`, D1
-- intended slot: `0`
-- intended magic: `410520000`
+- slot: `0`
+- registered magic: `410520000`
+- magic allocation commit: `0e149bab7`
 
 ## Locked Candidate Boundary
 
@@ -46,8 +47,9 @@ short (`QM5_20160`), and the incumbent cumulative-RSI pullback (`QM5_12567`).
 
 ## Build State
 
-The directory identity exists before magic allocation because the governed
-resolver retains rows only for materialized EA directories. Source, card,
-code, binary, preset, and Q02 status must not be inferred from this scaffold.
-No live artifact, tester dispatch, terminal control, portfolio mutation, or
-performance claim is authorized.
+The directory identity existed before magic allocation because the governed
+resolver retains rows only for materialized EA directories. The approved card
+is `strategy-seeds/cards/approved/QM5_41052_xng-postthu-gap-agree_card.md`.
+Code, binary, preset, Q01, and Q02 status must not be inferred from this
+scaffold. No live artifact, tester dispatch, terminal control, portfolio
+mutation, or performance claim is authorized.
