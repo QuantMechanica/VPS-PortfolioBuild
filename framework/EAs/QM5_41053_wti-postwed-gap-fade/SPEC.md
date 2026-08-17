@@ -1,6 +1,6 @@
 # QM5_41053 - WTI Post-Wednesday Counter-Gap Fade
 
-Status: `SOURCE APPROVED; EA ID ALLOCATED; MAGIC PENDING; BUILD NOT STARTED`
+Status: `G0 APPROVED; EA ID AND MAGIC ALLOCATED; BUILD NOT STARTED`
 
 ## Identity
 
@@ -14,6 +14,9 @@ Status: `SOURCE APPROVED; EA ID ALLOCATED; MAGIC PENDING; BUILD NOT STARTED`
   `decisions/2026-08-18_wti_post_wednesday_countergap_fade_source_approval.md`
 - source approval commit: `afdedce04`
 - deterministic EA-ID reservation commit: `2cd8ff7a9`
+- deterministic magic allocation commit: `b702a0069`
+- approved card:
+  `strategy-seeds/cards/approved/QM5_41053_wti-postwed-gap-fade_card.md`
 - host: exact `XTIUSD.DWX`, D1
 - intended slot: `0`
 - intended magic: `410530000`
@@ -52,8 +55,8 @@ pullback (`QM5_12567`).
 
 ## Build State
 
-The directory identity exists before magic allocation because the governed
-resolver retains rows only for materialized EA directories. Card, code,
-binary, preset, Q01, and Q02 status must not be inferred from this scaffold.
+The directory identity existed before magic allocation because the governed
+resolver retains rows only for materialized EA directories. Code, binary,
+preset, Q01, and Q02 status must not be inferred from this scaffold.
 No live artifact, tester dispatch, terminal control, portfolio mutation, or
 performance claim is authorized.
