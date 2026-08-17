@@ -182,4 +182,4 @@ economics.
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
 | v1-card | 2026-08-17 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic EA, 20 mechanic fixtures, fixed-risk set, strict compile and build gate | Q01 | PASS |
-| v1-q02 | - | paced target-only WTI baseline row | Q02 | PENDING_CAPACITY |
+| v1-capacity | 2026-08-17 | exact-path factory sample reached 7/7; queue apply was not invoked and readback stayed empty | Q02 | NOT_ENQUEUED_CPU_CEILING |
