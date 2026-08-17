@@ -1,6 +1,6 @@
 # QM5_41049 — WTI Standard-Wednesday Overnight-Dominant Flow
 
-Status: `G0 APPROVED; Q01 PASS; Q02 NOT ENQUEUED`
+Status: `G0 APPROVED; Q01 PASS; Q02 ENQUEUED`
 
 ## Identity
 
@@ -71,3 +71,17 @@ Q01 evidence:
   `8C68C2CB03F79071E2816C0CF32B5E4342DDE37C360BA4C1A41198781399B526`
 - setfile normalized-content build hash:
   `533c40e211991aa23961e3927ce71f10824359ff8f7ecf3974c246659c3d45c9`
+
+## Q02 Handoff
+
+The capacity gate found five active exact-path research terminals against the
+seven-terminal ceiling. Five whole-host CPU samples averaged `82.19%` and
+peaked at `84.42%`, below the `97%` hard stop. The canonical target-only apply
+created one pending priority-track work item,
+`5b14781d-cb89-4543-9d4d-65d5ef424bde`, for exact `XTIUSD.DWX`, D1, with
+attempt count 0. The immediate post-apply dry run selected zero new rows. The
+scheduled fleet subsequently claimed the item on `T10`; no terminal action
+was taken by the operator.
+
+Full evidence:
+`docs/ops/evidence/2026-08-17_qm5_41049_wti_wednesday_overnight_dominance_q01_q02_enqueue.md`.
