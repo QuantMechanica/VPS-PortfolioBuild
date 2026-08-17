@@ -16139,3 +16139,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 32001,nq-micro-momentum-apex-scalper,0,NDX.DWX,320010000,2026-08-16T23:12:59Z,Codex,active
 41034,wti-mflow-agree,0,XTIUSD.DWX,410340000,2026-08-17T00:12:48Z,Codex,active
 41035,wti-mflow-div,0,XTIUSD.DWX,410350000,2026-08-17T01:10:50Z,Codex,active
+41036,wti-mflow-dom,0,XTIUSD.DWX,410360000,2026-08-17T02:17:17Z,Codex,active
