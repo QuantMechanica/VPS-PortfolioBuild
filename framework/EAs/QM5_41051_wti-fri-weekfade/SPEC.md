@@ -1,6 +1,6 @@
 # QM5_41051 - WTI Exact-Week Pullback / Friday Bounce
 
-Status: `SOURCE APPROVED; EA ID RESERVED; G0 PENDING; MAGIC PENDING`
+Status: `SOURCE APPROVED; EA ID RESERVED; MAGIC ALLOCATED; G0 PENDING`
 
 ## Identity
 
@@ -14,7 +14,7 @@ Status: `SOURCE APPROVED; EA ID RESERVED; G0 PENDING; MAGIC PENDING`
   `decisions/2026-08-17_wti_friday_week_pullback_source_approval.md`
 - host: exact `XTIUSD.DWX`, D1
 - slot: `0`
-- planned magic: `410510000`
+- registered magic: `410510000`
 - planned card:
   `strategy-seeds/cards/approved/QM5_41051_wti-fri-weekfade_card.md`
 - planned G0 decision:
@@ -48,6 +48,6 @@ prior-month reversal (`QM5_41026`), and earlier/prior-week momentum families.
 
 This directory identity authorizes no EA source, binary, test, queue action,
 live artifact, terminal control, portfolio mutation, or performance claim.
-Development remains blocked until an active slot-0 magic row survives resolver
-regeneration and an approved Strategy Card plus G0 decision exist.
-
+The active slot-0 row must survive canonical resolver regeneration, and
+development remains blocked until an approved Strategy Card plus G0 decision
+exist.

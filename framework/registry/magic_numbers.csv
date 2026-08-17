@@ -17409,4 +17409,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 35003,three-ducks-multi-timeframe-system,1,GBPUSD.DWX,350030001,2026-08-17T20:15:00Z,Gemini,active
 35003,three-ducks-multi-timeframe-system,2,AUDUSD.DWX,350030002,2026-08-17T20:15:00Z,Gemini,active
 35003,three-ducks-multi-timeframe-system,3,USDJPY.DWX,350030003,2026-08-17T20:15:00Z,Gemini,active
+41051,wti-fri-weekfade,0,XTIUSD.DWX,410510000,2026-08-17T20:24:21Z,Codex,active
 
