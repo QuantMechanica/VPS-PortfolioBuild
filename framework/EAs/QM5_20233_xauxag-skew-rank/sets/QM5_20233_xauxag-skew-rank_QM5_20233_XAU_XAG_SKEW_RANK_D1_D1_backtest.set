@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        20233
 ; ea_slug:      xauxag-skew-rank
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7cc946542aa2fd0059800b7ea07a4fbc6b799d159319975638a83ada494f3163
+; build_hash:   458924365d969f6c45027cbad4bac5bc8901573a28318bbe7be3dd9b7e41b77d
 ; author:       Development
 ; date:         2026-08-06
 ;==========================================================

@@ -3,7 +3,7 @@
 **EA ID:** QM5_20233  
 **Strategy ID:** `FERNANDEZ-SKEW-2018_XAU_XAG_S02`  
 **Source:** Fernandez-Perez et al. (2018), DOI `10.1016/j.jbankfin.2017.06.015`  
-**Last revised:** 2026-08-06
+**Last revised:** 2026-08-17
 
 ## 1. Strategy Logic
 
@@ -75,9 +75,25 @@ stop-normalized risk budget and a broker-side `3.5 * ATR(20,D1)` stop. News
 axes and Friday close are OFF for the structural baseline. No live, demo,
 shadow, optimization, stress, or deployment setfile is created.
 
+## 8. Q02 Infrastructure Repair
+
+The sealed Q02 row `92235bb9-1fc0-4aeb-90c3-f8771ca9e2bd` reached valid
+two-leg trades but timed out after 25,200 seconds. While a package was open,
+the original build scanned its positions several times on every Model-4 tick
+and each ownership check called `QM_MagicChecked`. That lookup walks the full
+generated registry, so the cost multiplied across real ticks and prevented a
+five-year run from completing.
+
+The repaired build resolves the two immutable registered magics once in
+`OnInit`. Package-composition management now runs on each D1 bar and after a
+trade transaction; the transaction latch preserves prompt orphan cleanup after
+a stop, close, entry, or rollback. Monthly formation, rank direction, entry,
+renewal, stale exit, hard stops, pair sizing, news policy, and all frozen inputs
+are unchanged. Q02 remains the authority for frequency and economics.
+
 ## Revision History
 
 | Version | Date | Reason |
 |---|---|---|
 | v1 | 2026-08-06 | initial approved XAU/XAG skewness-rank carrier build |
-
+| v2 | 2026-08-17 | remove the Q02 per-tick magic-resolution and pair-scan hot path without changing strategy mechanics |

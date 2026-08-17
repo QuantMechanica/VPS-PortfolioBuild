@@ -54,10 +54,13 @@ string g_leg_xau = "XAUUSD.DWX";
 string g_leg_xag = "XAGUSD.DWX";
 
 bool     g_monthly_rebalance_bar = false;
+bool     g_pair_management_pending = true;
 bool     g_cache_signal_valid = false;
 int      g_cache_pair_direction = 0;
 int      g_cache_month_key = 0;
 int      g_last_attempt_month_key = 0;
+int      g_xau_magic = -1;
+int      g_xag_magic = -1;
 datetime g_decision_bar_time = 0;
 datetime g_pair_entry_time = 0;
 string   g_attempt_state_key = "";
@@ -73,6 +76,15 @@ int Strategy_SlotForSymbol(const string symbol)
       return 0;
    if(symbol == g_leg_xag)
       return 1;
+   return -1;
+  }
+
+int Strategy_CachedMagicForSymbol(const string symbol)
+  {
+   if(symbol == g_leg_xau)
+      return g_xau_magic;
+   if(symbol == g_leg_xag)
+      return g_xag_magic;
    return -1;
   }
 
@@ -121,9 +133,9 @@ bool Strategy_MonthAlreadyEntered(const int month_key,
          continue;
       const string symbol = HistoryDealGetString(deal_ticket, DEAL_SYMBOL);
       const int slot = Strategy_SlotForSymbol(symbol);
-      if(slot < 0 ||
-         (int)HistoryDealGetInteger(deal_ticket, DEAL_MAGIC) !=
-            QM_MagicChecked(qm_ea_id, slot, symbol))
+      const int expected_magic = Strategy_CachedMagicForSymbol(symbol);
+      if(slot < 0 || expected_magic <= 0 ||
+         (int)HistoryDealGetInteger(deal_ticket, DEAL_MAGIC) != expected_magic)
          continue;
       const ENUM_DEAL_ENTRY entry_kind =
          (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket, DEAL_ENTRY);
@@ -186,9 +198,10 @@ bool Strategy_IsPairPosition()
   {
    const string symbol = PositionGetString(POSITION_SYMBOL);
    const int slot = Strategy_SlotForSymbol(symbol);
-   if(slot < 0)
+   const int expected_magic = Strategy_CachedMagicForSymbol(symbol);
+   if(slot < 0 || expected_magic <= 0)
       return false;
-   return ((int)PositionGetInteger(POSITION_MAGIC) == QM_MagicChecked(qm_ea_id, slot, symbol));
+   return ((int)PositionGetInteger(POSITION_MAGIC) == expected_magic);
   }
 
 int Strategy_OpenPairLegCount()
@@ -662,9 +675,21 @@ int OnInit()
       return INIT_PARAMETERS_INCORRECT;
      }
 
+   // Resolve the immutable two-leg identity once.  Calling QM_MagicChecked
+   // while a package is open is O(registry rows), and the generated registry
+   // currently contains more than sixteen thousand rows.  The previous build
+   // repeated that lookup from multiple position scans on every real tick.
+   g_xau_magic = QM_MagicChecked(qm_ea_id, 0, g_leg_xau);
+   g_xag_magic = QM_MagicChecked(qm_ea_id, 1, g_leg_xag);
+   if(g_xau_magic <= 0 || g_xag_magic <= 0 || g_xau_magic == g_xag_magic)
+     {
+      QM_FrameworkShutdown();
+      return INIT_FAILED;
+     }
+
    g_attempt_state_key =
       StringFormat("QM5_20233_MONTH_ATTEMPT_%d",
-                   QM_MagicChecked(qm_ea_id, 0, g_leg_xau));
+                   g_xau_magic);
    Strategy_LoadAttemptState();
 
    string basket_symbols[2] = {g_leg_xau, g_leg_xag};
@@ -672,6 +697,7 @@ int OnInit()
    QM_BasketWarmupHistory(basket_symbols,
                           PERIOD_D1,
                           MathMax(400, strategy_history_bars));
+   g_pair_management_pending = true;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_20233\",\"ea\":\"xauxag-skew-rank\"}");
    return INIT_SUCCEEDED;
@@ -704,8 +730,15 @@ void OnTick()
       Strategy_AdvanceSignal_OnNewBar();
      }
 
-   // Package lifecycle and orphan repair always precede entry-only gates.
-   Strategy_ManageOpenPosition();
+   // Package lifecycle is D1/month driven.  Re-scan immediately after a trade
+   // transaction (entry, stop, close, or rollback) so orphan repair remains
+   // prompt, but do not run registry-backed position scans on every real tick.
+   // The previous hot path made one five-year Q02 run exceed seven hours.
+   if(new_bar || g_pair_management_pending)
+     {
+      g_pair_management_pending = false;
+      Strategy_ManageOpenPosition();
+     }
    if(Strategy_ExitSignal())
      {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
@@ -734,6 +767,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeResult &result)
   {
    QM_FrameworkOnTradeTransaction(trans, request, result);
+   if(trans.symbol == g_leg_xau || trans.symbol == g_leg_xag)
+      g_pair_management_pending = true;
   }
 
 double OnTester()
