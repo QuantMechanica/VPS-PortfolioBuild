@@ -149,3 +149,34 @@ def test_existing_active_rows_are_idempotently_skipped_and_retired_are_reported(
 def test_full_dry_run_zero_cap_is_allowed_but_real_zero_cap_is_rejected() -> None:
     with pytest.raises(SystemExit):
         allocator.main(["--max-eas", "0"])
+
+
+def test_dl087_matrix_validation_and_fixed_slot_order(tmp_path: Path) -> None:
+    repo = _fixture_repo(tmp_path)
+    rows = [
+        {
+            "symbol": symbol,
+            "asset_class": allocator.DL087_ASSET_CLASSES[symbol],
+            "canonical_name_verified": "true",
+        }
+        for symbol in reversed(allocator.DL087_SYMBOLS)
+    ]
+    _write_csv(
+        repo / allocator.SYMBOL_MATRIX,
+        ["symbol", "asset_class", "canonical_name_verified"],
+        rows,
+    )
+    verified = allocator.validate_dl087_symbols(repo)
+    assert list(verified) == list(allocator.DL087_SYMBOLS)
+    raw = {
+        "ea_id": "QM5_1",
+        "slug": "compiled",
+        "directory": "framework/EAs/QM5_1_compiled",
+        "card": str(repo / "cards/QM5_1_compiled.md"),
+        "target_symbols_from_card": [],
+    }
+    item = allocator._candidate(raw, "compiled_ready", repo, dl087=True)
+    assert item is not None
+    assert item.symbols == allocator.DL087_SYMBOLS
+    assert item.symbol_policy == allocator.DL087_POLICY
+    assert allocator.DL087_DISCOVERY_PAYLOAD["result_authorization"] == "DISCOVERY_NOT_CARD_VALIDATED"
