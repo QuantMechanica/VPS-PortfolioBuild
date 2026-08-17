@@ -17433,4 +17433,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 36003,nnfx-hull-ma-zerolag-macd-stc,0,EURUSD.DWX,360030000,2026-08-17T21:06:00Z,Gemini,active
 36003,nnfx-hull-ma-zerolag-macd-stc,1,GBPUSD.DWX,360030001,2026-08-17T21:06:00Z,Gemini,active
 36003,nnfx-hull-ma-zerolag-macd-stc,2,XAUUSD.DWX,360030002,2026-08-17T21:06:00Z,Gemini,active
-
+41052,xng-postthu-gap-agree,0,XNGUSD.DWX,410520000,2026-08-17T21:23:34Z,Codex,active
