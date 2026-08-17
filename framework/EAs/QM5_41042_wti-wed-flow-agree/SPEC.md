@@ -101,11 +101,12 @@ opposition plus session dominance and fades rather than follows the total.
 - independent Wednesday flow-agreement reference suite: 14 tests PASS
 - strict compile: 0 errors, 0 warnings
 - targeted V5 build check: 0 failures, 0 warnings
+- factory symbol-scope validator: `SINGLE_SYMBOL_OK`
 - card copies: byte-identical; schema/ML and G0 lint PASS
 - static P1 artifact validation: PASS
 - compile log:
-  `framework/build/compile/20260817_095107/QM5_41042_wti-wed-flow-agree.compile.log`
+  `framework/build/compile/20260817_095944/QM5_41042_wti-wed-flow-agree.compile.log`
 - build report:
-  `D:/QM/reports/framework/21/build_check_20260817_095107.json`
+  `D:/QM/reports/framework/21/build_check_20260817_095944.json`
 - P1 report:
   `D:/QM/reports/pipeline/QM5_41042/P1/P1_QM5_41042_result.json`

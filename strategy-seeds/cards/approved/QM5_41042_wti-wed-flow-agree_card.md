@@ -370,7 +370,7 @@ realized correlation with the certified book.
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-17 | APPROVED | `decisions/2026-08-17_wti_wednesday_flow_agreement_g0.md` |
-| Q01 Build Validation | 2026-08-17 | PASS | `framework/build/compile/20260817_095107/QM5_41042_wti-wed-flow-agree.compile.log`; `D:/QM/reports/framework/21/build_check_20260817_095107.json`; `D:/QM/reports/pipeline/QM5_41042/P1/P1_QM5_41042_result.json` |
+| Q01 Build Validation | 2026-08-17 | PASS | `framework/build/compile/20260817_095944/QM5_41042_wti-wed-flow-agree.compile.log`; `D:/QM/reports/framework/21/build_check_20260817_095944.json`; `D:/QM/reports/pipeline/QM5_41042/P1/P1_QM5_41042_result.json` |
 | Q02 Baseline Screening | TBD | NOT_ENQUEUED | TBD |
 
 ## Safety Boundary

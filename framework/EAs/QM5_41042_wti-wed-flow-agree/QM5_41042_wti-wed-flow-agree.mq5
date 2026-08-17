@@ -607,7 +607,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   if(!SymbolSelect("XTIUSD.DWX", true) ||
+   if(!SymbolSelect(_Symbol, true) ||
       !Strategy_IsWtiD1() ||
       qm_ea_id != 41042 ||
       qm_magic_slot_offset != 0)
@@ -651,7 +651,7 @@ int OnInit()
       return INIT_FAILED;
 
    string warmup_symbols[1];
-   warmup_symbols[0] = "XTIUSD.DWX";
+   warmup_symbols[0] = _Symbol;
    QM_SymbolGuardInit(warmup_symbols);
    QM_BasketWarmupHistory(warmup_symbols,
                           PERIOD_D1,
