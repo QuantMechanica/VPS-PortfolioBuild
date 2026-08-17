@@ -250,3 +250,34 @@ no duplicate Card, EA, queue row, requeue, priority mutation, dispatch tick,
 backtest, tester launch, terminal action, or portfolio/live-surface change
 followed. Fresh machine-readable evidence is
 `artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T070138Z_board_advisor.json`.
+
+## 08:18Z continuation audit
+
+A sixth continuation audit at repository head
+`a4dace4b3ccef86bf41e7f86fd08a0660b2d97a5` found a materially changed
+eight-item factory state and the same binding hard-CPU condition. Five
+two-second whole-machine samples were `92.83%`, `94.25%`, `90.48%`,
+`97.57%`, and `93.77%` (average `93.78%`, maximum `97.57%`). The maximum
+crossed the explicit `97%` hard ceiling, so the mission stop rule applied.
+
+The canonical operator view reported eight claimed active work items: seven
+at Q02 and one at Q07. Claims occupied `T1`, `T3`, `T4`, `T5`, `T6`, `T8`,
+`T9`, and `T10`. This differs from the 07:01Z database snapshot, which had
+seven active rows with six at Q02 and one at Q07. No process scan was needed,
+and `T_Live` was neither inspected nor controlled.
+
+`QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1` still has exactly one open row:
+Q04 work item `113ae6d1-33c0-42bc-b9b0-bf3a48ef3445`, `pending`, unclaimed,
+at attempt zero. Its exact Q02 predecessor remains `PASS`. A separate
+read-only SQLite `PRAGMA quick_check` attempt did not complete within the
+bounded timeout under the loaded machine; the supported `farmctl` reads for
+both the selected EA and active queue completed successfully, so no retry was
+made after the CPU ceiling fired.
+
+Because all 66 frozen-scan relationships are already mechanized, both anchor
+baskets are terminal downstream of Q02, the selected successor is already
+enqueued exactly once, and the CPU ceiling is binding, no duplicate Card, EA,
+queue row, requeue, priority mutation, dispatch tick, backtest, tester launch,
+terminal action, or portfolio/live-surface change followed. Fresh
+machine-readable evidence is
+`artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T081753Z_board_advisor.json`.
