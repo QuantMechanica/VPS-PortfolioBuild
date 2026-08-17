@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import statistics
 import subprocess
 import sys
 import time
@@ -691,11 +692,43 @@ def evaluate_seeds(seed_results: list[dict]) -> tuple[str, str, dict]:
                 f"seeds_missing_summary:{missing_summary}",
                 {"per_seed_pf": [(r["seed"], r["pf"]) for r in seed_results]})
 
+    # A canonical Q07 cohort has five sibling seeds.  Its median is robust to
+    # one or two collapsed runs: a zero is suspect evidence only when the
+    # cohort's median still clears the economic trade floor.  Uniformly sparse
+    # cohorts therefore continue to receive the ordinary strategy FAIL below.
+    trade_counts = [int(r.get("trades") or 0) for r in seed_results]
+    sibling_trade_median = statistics.median(trade_counts) if trade_counts else 0
+    zero_trade_outliers = [
+        r["seed"]
+        for r, trades in zip(seed_results, trade_counts)
+        if trades == 0 and sibling_trade_median >= MIN_TRADES
+    ]
+    if zero_trade_outliers:
+        return (
+            "INVALID",
+            "seed_zero_trades_outlier:"
+            f"seeds={zero_trade_outliers}:"
+            f"median={float(sibling_trade_median):g}:floor={MIN_TRADES}",
+            {
+                "per_seed_trades": [
+                    (r["seed"], r.get("trades", 0)) for r in seed_results
+                ],
+                "sibling_trade_median": sibling_trade_median,
+                "zero_trade_outlier_seeds": zero_trade_outliers,
+            },
+        )
+
     low_trades = [r["seed"] for r in seed_results if int(r.get("trades") or 0) < MIN_TRADES]
     if low_trades:
         return ("FAIL",
                 f"seed_trades_below_floor:seeds={low_trades}:floor={MIN_TRADES}",
-                {"per_seed_trades": [(r["seed"], r.get("trades", 0)) for r in seed_results]})
+                {
+                    "per_seed_trades": [
+                        (r["seed"], r.get("trades", 0)) for r in seed_results
+                    ],
+                    "sibling_trade_median": sibling_trade_median,
+                    "zero_trade_outlier_seeds": [],
+                })
 
     missing_pf = [r["seed"] for r in seed_results if r.get("pf") is None]
     if missing_pf:

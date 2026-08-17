@@ -774,6 +774,63 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertIn("seed_trades_below_floor", reason)
         self.assertEqual(metrics["per_seed_trades"][0], (42, 0))
 
+    def test_q07_qm5_1077_uniform_zero_seeds_stay_strategy_fail(self) -> None:
+        seed_results = [
+            {"seed": seed, "pf": None, "trades": 0, "summary_path": "summary.json"}
+            for seed in (42, 17, 99, 7, 2026)
+        ]
+
+        verdict, reason, metrics = q07.evaluate_seeds(seed_results)
+
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("seed_trades_below_floor", reason)
+        self.assertNotIn("seed_zero_trades_outlier", reason)
+        self.assertEqual(metrics["sibling_trade_median"], 0)
+
+    def test_q07_qm5_1116_zero_seed_outlier_is_invalid(self) -> None:
+        seed_results = [
+            {"seed": seed, "pf": pf, "trades": trades, "summary_path": "summary.json"}
+            for seed, pf, trades in (
+                (42, 1.04, 602),
+                (17, 1.08, 612),
+                (99, None, 0),
+                (7, 1.11, 612),
+                (2026, 1.07, 607),
+            )
+        ]
+
+        verdict, reason, metrics = q07.evaluate_seeds(seed_results)
+
+        self.assertEqual(verdict, "INVALID")
+        self.assertEqual(reason, "seed_zero_trades_outlier:seeds=[99]:median=607:floor=20")
+        self.assertEqual(metrics["zero_trade_outlier_seeds"], [99])
+        self.assertEqual(metrics["sibling_trade_median"], 607)
+        self.assertEqual(
+            metrics["per_seed_trades"],
+            [(42, 602), (17, 612), (99, 0), (7, 612), (2026, 607)],
+        )
+
+    def test_q07_two_zero_seed_outliers_are_both_named_and_invalid(self) -> None:
+        seed_results = [
+            {"seed": seed, "pf": pf, "trades": trades, "summary_path": "summary.json"}
+            for seed, pf, trades in (
+                (42, 1.63, 271),
+                (17, 1.56, 274),
+                (99, 1.58, 273),
+                (7, None, 0),
+                (2026, None, 0),
+            )
+        ]
+
+        verdict, reason, metrics = q07.evaluate_seeds(seed_results)
+
+        self.assertEqual(verdict, "INVALID")
+        self.assertEqual(
+            reason,
+            "seed_zero_trades_outlier:seeds=[7, 2026]:median=271:floor=20",
+        )
+        self.assertEqual(metrics["zero_trade_outlier_seeds"], [7, 2026])
+
     def test_q07_wrapper_failure_alone_does_not_invalidate_low_trades(self) -> None:
         verdict, reason, metrics = q07.evaluate_seeds([
             {"seed": 42, "pf": None, "trades": 0, "summary_path": "summary.json", "exit_code": 1},

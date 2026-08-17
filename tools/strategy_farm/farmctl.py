@@ -4255,6 +4255,9 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
             "run_status_invalid",
             "seeds_invalid_evidence",
             "seeds_missing_summary",
+            # Q07 sibling-relative guard: a lone/two-seed zero collapse is
+            # suspect run evidence, never an economic FAIL for the pair.
+            "seed_zero_trades_outlier",
             "phase_runner_invalid_report",
         )
         if reason and any(token in reason.lower() for token in infra_invalid_tokens):

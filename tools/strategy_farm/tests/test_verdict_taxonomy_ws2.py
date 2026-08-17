@@ -94,6 +94,23 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
         self.assertEqual(verdict, "INFRA_FAIL")
         self.assertIn("without_real_mt5", reason)
 
+    def test_q07_zero_seed_outlier_invalid_never_becomes_strategy_fail(self) -> None:
+        reason = "seed_zero_trades_outlier:seeds=[99]:median=607:floor=20"
+        verdict, derived_reason = farmctl._derive_phase_runner_verdict(
+            {
+                "phase": "Q07",
+                "verdict": "INVALID",
+                "reason": reason,
+                "per_seed_detail": [
+                    {"seed": 42, "trades": 602},
+                    {"seed": 99, "trades": 0},
+                ],
+            },
+            phase="Q07",
+        )
+
+        self.assertEqual((verdict, derived_reason), ("INFRA_FAIL", reason))
+
     def test_q08_invalid_preserves_dominant_sub_gate_detail(self) -> None:
         # A Q08 aggregate INVALID stays non-retryable and carries
         # the dominant sub-gate detail instead of collapsing to the generic

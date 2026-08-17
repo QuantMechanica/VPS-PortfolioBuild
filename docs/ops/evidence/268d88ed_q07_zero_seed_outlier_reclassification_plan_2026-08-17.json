@@ -1,0 +1,176 @@
+{
+  "authority_task_id": "268d88ed-eec5-499c-801b-e14a3bc7ff95",
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "evidence_doc": "C:\\QM\\repo\\docs\\ops\\evidence\\268d88ed_q07_zero_seed_outlier_guard_2026-08-17.md",
+  "invariants": [
+    "exact target and preservation ID sets are required and disjoint",
+    "every target is a completed unclaimed Q07 FAIL",
+    "every target derives aggregate INVALID/seed_zero_trades_outlier",
+    "preservation rows retain their exact SQLite preimages",
+    "all stored aggregates are hash-bound and never mutated",
+    "no work item is enqueued, claimed, cancelled, or rerun"
+  ],
+  "operation": "Q07_ZERO_SEED_OUTLIER_RECLASSIFICATION",
+  "planned_at_utc": "2026-08-17T14:38:30+00:00",
+  "predicate": {
+    "candidate_trade_count": 0,
+    "description": "a zero-trade seed is suspect only when the median across its seed cohort is at or above the Q07 trade floor",
+    "sibling_cohort_median_min": 20
+  },
+  "preserved_rows": [
+    {
+      "ea_id": "QM5_20004",
+      "evidence_path": "D:\\QM\\reports\\work_items\\0e181bc9-506a-40b4-835f-29e96c6bc18b\\QM5_20004\\Q07\\NDX_DWX\\aggregate.json",
+      "evidence_sha256": "15bbce828ccae3eedb7ef474d74e71021d5f760586d1e99b34a2f80c8ee72329",
+      "id": "0e181bc9-506a-40b4-835f-29e96c6bc18b",
+      "preimage_state_sha256": "99f528eb3680beb4250f2840b48d89df6dfc7f9d256c3ec4f4722cd9343482d8",
+      "status": "done",
+      "symbol": "NDX.DWX",
+      "trade_counts": [
+        56,
+        54,
+        54,
+        0,
+        53
+      ],
+      "updated_at": "2026-07-25T22:18:45+00:00",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "ea_id": "QM5_20105",
+      "evidence_path": "D:\\QM\\reports\\work_items\\3de052c5-7d71-4473-a57e-8befc2cf435b\\QM5_20105\\Q07\\CADJPY_DWX\\aggregate.json",
+      "evidence_sha256": "737a332ed58c9ebf77a862af44cf0b53f6e5a3be50a95cab320f39be84ac48e4",
+      "id": "3de052c5-7d71-4473-a57e-8befc2cf435b",
+      "preimage_state_sha256": "99d03c86e5692162b8ba1d34a089a0ce141162f117931b72594e96757a127731",
+      "status": "done",
+      "symbol": "CADJPY.DWX",
+      "trade_counts": [
+        80,
+        79,
+        76,
+        79,
+        0
+      ],
+      "updated_at": "2026-07-27T00:17:20+00:00",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "ea_id": "QM5_13013",
+      "evidence_path": "D:\\QM\\reports\\work_items\\50afe7d8-b012-40dc-89d0-dc9f0484bb72\\QM5_13013\\Q07\\NDX_DWX\\aggregate.json",
+      "evidence_sha256": "420af1de512c9ab3f46e0c878bb4b61d84a1a9cb50f26ee76533e83126a42fc8",
+      "id": "50afe7d8-b012-40dc-89d0-dc9f0484bb72",
+      "preimage_state_sha256": "30f1217ff2fc7fe9eb460086a28beb6d5c0f4be0990b1ab685be814e740c6f9a",
+      "status": "done",
+      "symbol": "NDX.DWX",
+      "trade_counts": [
+        0,
+        61,
+        60,
+        61,
+        0
+      ],
+      "updated_at": "2026-07-26T20:52:51+00:00",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "ea_id": "QM5_9573",
+      "evidence_path": "D:\\QM\\reports\\work_items\\eb1f411b-cda6-4a8e-a1ca-da621711bf79\\QM5_9573\\Q07\\NDX_DWX\\aggregate.json",
+      "evidence_sha256": "b0410d71613646d1e6b39453431aa24e44b678e9cb2b19ce9750ece07fa98522",
+      "id": "eb1f411b-cda6-4a8e-a1ca-da621711bf79",
+      "preimage_state_sha256": "b1659aa19240c45e44d5807f742ad2fd157edf77b86cbda6d823a7837cd5bab0",
+      "status": "done",
+      "symbol": "NDX.DWX",
+      "trade_counts": [
+        68,
+        67,
+        67,
+        0,
+        0
+      ],
+      "updated_at": "2026-07-26T19:06:25+00:00",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "ea_id": "QM5_11177",
+      "evidence_path": "D:\\QM\\reports\\work_items\\eeb59ea4-9ab0-4bde-ad2b-ec4db891f41a\\QM5_11177\\Q07\\XAUUSD_DWX\\aggregate.json",
+      "evidence_sha256": "e25bbd69b309996062d4a5ee93c5112b104e76ee7df50ed06df6a864d143b19d",
+      "id": "eeb59ea4-9ab0-4bde-ad2b-ec4db891f41a",
+      "preimage_state_sha256": "ec83d478c780b4dd06c9a780d607f4890551e7309a03436ddb59e21ed12687c3",
+      "status": "done",
+      "symbol": "XAUUSD.DWX",
+      "trade_counts": [
+        271,
+        274,
+        273,
+        0,
+        0
+      ],
+      "updated_at": "2026-08-09T02:59:07+00:00",
+      "verdict": "INFRA_FAIL"
+    }
+  ],
+  "rows": [
+    {
+      "aggregate_verdict": "INVALID",
+      "derived_metrics": {
+        "per_seed_trades": [
+          [
+            42,
+            602
+          ],
+          [
+            17,
+            612
+          ],
+          [
+            99,
+            0
+          ],
+          [
+            7,
+            612
+          ],
+          [
+            2026,
+            607
+          ]
+        ],
+        "sibling_trade_median": 607,
+        "zero_trade_outlier_seeds": [
+          99
+        ]
+      },
+      "ea_id": "QM5_1116",
+      "evidence_path": "D:\\QM\\reports\\work_items\\b37c01d6-3762-4f7d-9463-0272d444c007\\QM5_1116\\Q07\\EURJPY_DWX\\aggregate.json",
+      "evidence_sha256": "fc4671d00989adff548227d56477c54c9538030bd6d1eedc0adf5a9d7dbd0ac0",
+      "from_status": "done",
+      "from_verdict": "FAIL",
+      "id": "b37c01d6-3762-4f7d-9463-0272d444c007",
+      "preimage_payload_sha256": "3fd7b838ac8a49f9c8b53364abcf74ff504f3e49f96edd71de2aa30d8cfc383c",
+      "preimage_state_sha256": "53f5962f6d2da17552ea9057d96986a026c344e68f10623283397a3916663703",
+      "reason": "seed_zero_trades_outlier:seeds=[99]:median=607:floor=20",
+      "symbol": "EURJPY.DWX",
+      "target_payload_json": "{\"adopted_active_child_at_iso\":\"2026-07-18T11:51:09+00:00\",\"archived_report_root_on_requeue\":\"D:\\\\QM\\\\reports\\\\work_items\\\\b37c01d6-3762-4f7d-9463-0272d444c007.requeued_20260817T0858410000\",\"claimed_at_iso\":\"2026-08-17T10:47:27+00:00\",\"claimed_by_worker_pid\":16692,\"commit_reservation_class\":\"ordinary\",\"commit_reservation_gb\":8.0,\"commit_reservation_until_utc\":\"2026-08-17T10:52:27+00:00\",\"custom_history_copy_on_claim\":{\"activation_sha256\":\"61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e\",\"already_private_file_count\":108,\"copied_file_count\":0,\"ignored_non_custom_symbols\":[],\"manifest_sha256\":\"fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06\",\"receipt_file_sha256\":\"3ee52bdfaa8f74612ecef2a1a26d64579c0805c14592557922ab0df0c2d8079d\",\"receipt_path\":\"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\ops\\\\custom_history_copy_on_claim\\\\b37c01d6-3762-4f7d-9463-0272d444c007_T2.json\",\"receipt_sha256\":\"70514362961d30ae4f13d5b92bc9da7ca94004d70c86076a138644274b738a67\",\"required\":true,\"selected_file_count\":108,\"status\":\"PASS_PRIVATIZED\",\"symbols\":[\"EURJPY.DWX\"],\"terminal\":\"T2\"},\"custom_history_post_copy_audit_sha256\":\"dfbd9f2943e867f2c6ab6ef9112582763aee845d4ba4e0bb006d4c90c21977f1\",\"custom_history_pre_copy_audit_sha256\":\"dfbd9f2943e867f2c6ab6ef9112582763aee845d4ba4e0bb006d4c90c21977f1\",\"dispatch_ex5_verified_at\":\"2026-08-17T10:47:33+00:00\",\"ea_dir_name\":\"QM5_1116_hopwood-asctrend-h1-tf\",\"effective_min_trades\":5,\"evidence_binding_required\":null,\"evidence_provenance\":\"phase_runner\",\"expected_ex5_path\":\"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_1116_hopwood-asctrend-h1-tf\\\\QM5_1116_hopwood-asctrend-h1-tf.ex5\",\"expected_ex5_sha256\":null,\"expected_expert\":null,\"expected_from_date\":null,\"expected_mq5_sha256\":null,\"expected_period\":null,\"expected_setfile_sha256\":null,\"expected_symbol\":null,\"expected_to_date\":null,\"expected_trades_per_year_per_symbol\":null,\"from_date\":null,\"from_year\":2017,\"host_symbol\":\"EURJPY.DWX\",\"job_object_assigned\":true,\"job_object_mode\":\"KILL_ON_JOB_CLOSE\",\"job_object_registry_key\":\"13464|windows-filetime:134314373681850638\",\"log_path\":\"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_b37c01d6-3762-4f7d-9463-0272d444c007.log\",\"orphan_child_adopted_at_iso\":\"2026-07-18T11:51:09+00:00\",\"orphan_worker_pid\":14080,\"p2_run_stage\":null,\"phase_evidence_path\":null,\"phase_runner\":\"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q07_multiseed.py\",\"pid\":13464,\"primary_thread_resumed\":true,\"prior_failure\":\"worker_process_missing_adopted_active_child\",\"process_creation_key\":\"windows-filetime:134314373681850638\",\"process_image_path\":\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python311\\\\python.exe\",\"process_started_at_epoch\":1786963768.1850638,\"process_started_suspended\":true,\"promoted_from_phase\":\"Q06\",\"promoted_from_work_item\":\"70f8df8a-4251-4082-8c8a-374c1947250a\",\"promotion_source\":\"pump_cascade\",\"q07_low_trades_reclassification\":{\"derived_reason\":\"seed_trades_below_floor:seeds=[99]:floor=20\",\"derived_verdict\":\"FAIL\",\"evidence_artifact\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\2026-08-17_q07_low_trades_evidence_reclassification.md\",\"operation\":\"q07_low_trades_evidence_reclassification\",\"original_reason\":\"seeds_invalid_evidence:[(99, 'exit_code=1')]\",\"original_verdict\":\"INFRA_FAIL\",\"reclassified_at_utc\":\"2026-08-17T13:00:51.945606+00:00\",\"rerun_performed\":false,\"source_evidence_path\":\"D:\\\\QM\\\\reports\\\\work_items\\\\b37c01d6-3762-4f7d-9463-0272d444c007\\\\QM5_1116\\\\Q07\\\\EURJPY_DWX\\\\aggregate.json\",\"task_id\":\"c6343474-97ec-410f-b258-789c333f7267\"},\"q07_zero_seed_outlier_reclassifications\":[{\"aggregate_verdict\":\"INVALID\",\"authority_task_id\":\"268d88ed-eec5-499c-801b-e14a3bc7ff95\",\"evidence_doc\":\"C:\\\\QM\\\\repo\\\\docs\\\\ops\\\\evidence\\\\268d88ed_q07_zero_seed_outlier_guard_2026-08-17.md\",\"from_verdict\":\"FAIL\",\"reason\":\"seed_zero_trades_outlier:seeds=[99]:median=607:floor=20\",\"reclassified_at_utc\":\"2026-08-17T14:38:30+00:00\",\"rerun_performed\":false,\"schema\":\"qm.q07-zero-seed-outlier-reclassification/v1\",\"to_verdict\":\"INFRA_FAIL\"}],\"report_root\":\"D:\\\\QM\\\\reports\\\\work_items\\\\b37c01d6-3762-4f7d-9463-0272d444c007\",\"requeue_prior_verdict\":\"INFRA_FAIL\",\"requeue_prior_verdict_reason\":\"seeds_invalid_evidence:[(42, 'seed_evidence_missing:requested=42:effective=None:harsh_label=42'), (17, 'seed_evidence_missing:requested=17:effective=None:harsh_label=17'), (99, 'seed_evidence_missing:requested=99:effective=None:harsh_label=99'), (7, 'seed_evidence_missing:requested=7:effective=None:harsh_label=7'), (2026, 'seed_evidence_missing:requested=2026:effective=None:harsh_label=2026')]\",\"requeue_reason\":\"stranded_infra_deep_phase\",\"requeued_at_utc\":\"2026-08-17T08:58:41+00:00\",\"requeued_by\":\"requeue_stranded_infra\",\"run_smoke_exit_code\":0,\"smoke_year_count\":null,\"staged_ex5\":{\"binding_source\":\"canonical_ex5_at_dispatch\",\"copied\":true,\"destination_path\":\"D:\\\\QM\\\\mt5\\\\T2\\\\MQL5\\\\Experts\\\\QM\\\\QM5_1116_hopwood-asctrend-h1-tf.ex5\",\"pre_run_sha256\":\"d1b1d2ebcd07e96b0978ee5ce8c1b40e5db4366920533a56fc681fdfab18c10a\",\"preexisting_destination_sha256\":\"7d92f62292cba10e82fe371ad54a2b831a3cadf8c5ba2cc580019188ee0ac2a4\",\"required_sha256\":\"d1b1d2ebcd07e96b0978ee5ce8c1b40e5db4366920533a56fc681fdfab18c10a\",\"restaged\":true,\"source_path\":\"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_1116_hopwood-asctrend-h1-tf\\\\QM5_1116_hopwood-asctrend-h1-tf.ex5\",\"source_sha256\":\"d1b1d2ebcd07e96b0978ee5ce8c1b40e5db4366920533a56fc681fdfab18c10a\",\"verified\":true},\"started_at_iso\":\"2026-08-17T10:49:28+00:00\",\"terminal\":\"T2\",\"timeout_min\":120,\"to_date\":null,\"to_year\":2022,\"verdict_reason\":\"seed_zero_trades_outlier:seeds=[99]:median=607:floor=20\",\"verdict_taxonomy\":\"infra\"}",
+      "target_payload_sha256": "585637b5e6f7add4fe3837d28283fa66903b0506d7f4b2a74766d5d82246c9c6",
+      "target_updated_at": "2026-08-17T14:38:30+00:00",
+      "to_status": "done",
+      "to_verdict": "INFRA_FAIL"
+    }
+  ],
+  "schema": "qm.q07-zero-seed-outlier-reclassification-plan/v1",
+  "selection": {
+    "expected_count": 1,
+    "expected_ids": [
+      "b37c01d6-3762-4f7d-9463-0272d444c007"
+    ],
+    "phase": "Q07",
+    "preserve_count": 5,
+    "preserve_ids": [
+      "0e181bc9-506a-40b4-835f-29e96c6bc18b",
+      "3de052c5-7d71-4473-a57e-8befc2cf435b",
+      "50afe7d8-b012-40dc-89d0-dc9f0484bb72",
+      "eb1f411b-cda6-4a8e-a1ca-da621711bf79",
+      "eeb59ea4-9ab0-4bde-ad2b-ec4db891f41a"
+    ]
+  }
+}
