@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11294
+; ea_slug:      cs-ichi-cloud
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3d0cac7f18c8752769eb357c4761a265d4e2cd76c4004b434ca1e346e1db1500
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=11294
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11294_cs-ichi-cloud.md
+strategy_tenkan_period=9
+strategy_kijun_period=26
+strategy_senkou_b_period=52
+strategy_atr_period=14
+strategy_atr_sl_mult=3.0
