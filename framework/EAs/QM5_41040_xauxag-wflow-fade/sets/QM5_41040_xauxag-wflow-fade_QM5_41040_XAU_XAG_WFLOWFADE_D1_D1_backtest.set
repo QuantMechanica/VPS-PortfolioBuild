@@ -1,0 +1,45 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41040
+; ea_slug:      xauxag-wflow-fade
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       QM5_41040_XAU_XAG_WFLOWFADE_D1
+; host_symbol:  XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   8eb356fe81b13740cb557eab2b586f92df91d0ae739dcc6030aaba221073cc4e
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=41040
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Native completed-price signal; both news axes are intentionally OFF.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+; Paired Friday close is the ordinary weekly lifecycle exit.
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41040_xauxag-wflow-fade_card.md
+strategy_xag_symbol=XAGUSD.DWX
+strategy_entry_grace_minutes=180
+strategy_reconcile_tolerance=0.0000000001
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.0
+strategy_notional_ratio=1.0
+strategy_max_notional_mismatch_pct=20.0
+strategy_max_hold_days=8
+strategy_xau_max_spread_points=1500
+strategy_xag_max_spread_points=1500

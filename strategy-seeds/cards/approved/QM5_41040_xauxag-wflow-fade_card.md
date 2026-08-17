@@ -72,7 +72,7 @@ r2_mechanical: PASS
 r3_data_available: PASS_WITH_DISCLOSED_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING_BUILD
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify an exact-calendar XAU/XAG weekly flow-conditioned relative-reversion package designed to suppress common precious-metal direction: verify every completed close/open endpoint, cross-metal subtraction, strict opposition, strict session dominance, completed-week fade sides, basket atomicity, and Friday flattening. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -310,6 +310,62 @@ card.
 - No external market-data API, futures curve, inventory series, analyst
   forecast, CSV feed, or manually maintained event calendar.
 
+## Source-Defined Rules
+
+Williams defines prior-close-to-open and open-to-close price-flow objects and
+treats their separate accumulation and disagreement as potentially informative.
+Schweikert supplies a state-dependent gold/silver relationship with adverse
+evidence against a constant automatically tradable equilibrium. CME supplies
+the intermarket gold/silver carrier. No source defines the exact synchronized
+week, dominance gate, fade direction, sizing, stops, or lifecycle.
+
+## QM Interpretations
+
+QM fixes the exact prior Monday-through-Friday synchronized endpoints, subtracts
+silver flow from gold flow, requires strict component opposition plus strict
+session dominance, reconciles all component totals, and fades the completed
+relative week. The Monday grace, durable attempt, equal-notional solve,
+aggregate fixed risk, ATR stops, spread ceilings, and paired Friday lifecycle
+are disclosed pre-result mechanizations.
+
+## Framework Execution Overrides
+
+The framework kill switch, ownership checks, fixed-risk sizing contract,
+position/deal state, and Friday-close fail-safe remain authoritative. Both news
+axes are OFF because the signal uses completed native prices and a fixed weekly
+clock. This non-live card creates no test-to-live alias, live symbol mapping,
+execution-contract registry row, or promotion entitlement.
+
+## Exit Precedence
+
+1. Framework kill switch and live broker hard stops remain authoritative.
+2. Malformed, orphaned, duplicate, same-direction, wrong-side, or missing-stop
+   exposure is flattened immediately.
+3. The ordinary paired exit is the first observable broker Friday tick at or
+   after hour 21.
+4. A first observation in a later broker week closes stale exposure.
+5. Eight elapsed calendar days is the final time-stop repair.
+6. No signal reversal, target, trail, break-even, partial exit, or discretionary
+   override is authorized.
+
+## Runtime Data Dependencies
+
+The runtime uses only native synchronized `XAUUSD.DWX` and `XAGUSD.DWX` D1 OHLC
+and timestamps, broker time, current quotes, symbol contract/tick/volume
+properties, positions, deals, and a terminal-global attempt key. It has no
+external feed, futures curve, inventory series, fitted artifact, trained
+output, manual calendar, or off-terminal signal input.
+
+## Falsification And Requalification
+
+Q02 retires the identity on zero trades, fewer than five completed packages per
+full post-warm-up year, nonpositive governed economics, or any endpoint,
+synchronization, opposition, dominance, reconciliation, side, risk, atomicity,
+or lifecycle defect. Any change to the carrier, week, component definition,
+dominance rule, fade side, sizing, stop, or hold creates a new identity and
+requires the full governed pipeline from the beginning. Q09 alone may establish
+realized portfolio correlation.
+
 ## Framework Alignment
 
 | Card rule | V5 module | Implementation obligation |
@@ -362,13 +418,14 @@ realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial XAU/XAG weekly flow-conditioned relative-reversion card | G0 | APPROVED |
+| v1-build | 2026-08-17 | deterministic synchronized logical-basket implementation and independent mechanic fixtures | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-17 | APPROVED | `decisions/2026-08-17_xauxag_weekly_flow_conditioned_reversion_g0.md` |
-| Q01 Build Validation | - | PENDING_BUILD | deterministic implementation and validation required |
+| Q01 Build Validation | 2026-08-17 | PASS | `D:/QM/reports/framework/21/build_check_20260817_075738.json`; `D:/QM/reports/pipeline/QM5_41040/P1/P1_QM5_41040_result.json` |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | paced capacity gate required after Q01 PASS |
 
 ## Safety Boundary
@@ -378,4 +435,3 @@ backtest setfile, and one paced Q02 enqueue. It does not authorize a manual
 backtest, tester control, live/demo/shadow/stress/optimization preset,
 AutoTrading, `T_Live`, a deploy or T_Live manifest, portfolio-gate change,
 portfolio admission, neutrality claim, or correlation waiver.
-
