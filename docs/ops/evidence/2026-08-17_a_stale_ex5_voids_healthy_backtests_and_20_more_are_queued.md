@@ -112,9 +112,37 @@ finding is an instance of. Builds belong to Codex under the capability contract,
 dispatched there rather than executed by me against a live factory (7 active claims, and the
 magic-resolver race requires serial builds).
 
+## Correction, appended within the hour: the predicate is build DATE, not size
+
+A second case surfaced the same day — **QM5_1169 / XAGUSD**, work item `b797a5ba`, identical
+`stream_and_selfreport_missing` on all three folds (`report_trades` 2/3/3, stream `trades` 0). Its
+binary was built **2026-06-21**, the same batch as QM5_1119 — but at **260,710 bytes it sits ABOVE
+the 200 kB cut**, so the size-keyed census above would have missed it entirely.
+
+**Size was the wrong discriminator. Build date is the right one.** Re-keyed, Q04 rows decided since
+the 07-06 wall:
+
+| `.ex5` built | rows | INFRA_FAIL | rate |
+|---|---:|---:|---:|
+| **2026-06** | 1,327 | 339 | **25.5 %** |
+| 2026-07 | 2,842 | 376 | 13.2 % |
+| 2026-08 | 877 | 94 | **10.7 %** |
+
+Monotone, 2.4× June against August. And the exposure is **640 pending rows on June-built
+binaries**, not the 57 I first reported — an **11× undercount**, caused by choosing a proxy
+(size) over the mechanism (compile date relative to the emitter landing).
+
+What still must not be overclaimed: 25.5 % is not 100 %. June-built binaries overwhelmingly produce
+economic verdicts (FAIL 881, PASS 63), so a June build is **not** evidence of breakage, and the
+gradient may be partly confounded by cohort age. Two things are established: the mechanism on two
+named pairs, and a monotone dose-response by build month. The cut date itself is unknown until the
+emitter's landing commit is identified — which is step 1 of ticket `dc283f34` and deliberately not
+guessed here.
+
 ## Evidence
 
 - work item `61ea8ed9-0846-44c6-9706-82c06be2a7af`, aggregate `q04_aggregate/v2`, 3 folds
+- work item `b797a5ba` (QM5_1169/XAGUSD) — the second proven case, 260,710 B, built 2026-06-21
 - journal `D:\QM\reports\work_items\61ea8ed9…\QM5_1119\raw\20260817.log` — 6,772 lines, retained
   **only because of the 12 h retention raise**; under the previous 2 h rule this root cause would
   have been unavailable
