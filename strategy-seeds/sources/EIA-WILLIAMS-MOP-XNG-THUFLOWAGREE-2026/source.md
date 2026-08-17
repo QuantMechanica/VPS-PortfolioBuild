@@ -194,4 +194,5 @@ risk mode, or an economically unusable calendar proxy.
 |---|---|---|---|---|
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
 | v1-build | 2026-08-17 | deterministic EA, fixed-risk preset, and static validation | Q01 | PASS |
+| v1-queue | 2026-08-17 | one paced target-only baseline handoff | Q02 | ENQUEUED |
 | v1-card | 2026-08-17 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |

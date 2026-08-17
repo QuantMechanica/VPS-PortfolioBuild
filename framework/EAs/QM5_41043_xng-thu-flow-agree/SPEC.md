@@ -89,7 +89,7 @@ cumulative-RSI pullback.
 - Magic slot 0: `XNGUSD.DWX / 410430000 / active`
 - Q01: PASS (14 fixtures; strict compile and targeted build check clean;
   static P1 artifact validation PASS)
-- Q02: not enqueued
+- Q02: ENQUEUED as one paced priority-track work item
 
 ## Revision History
 
@@ -97,6 +97,7 @@ cumulative-RSI pullback.
 |---|---|---|---|
 | v1 | 2026-08-17 | approved build directory identity | source/G0/card and EA-ID registry complete |
 | v1-build | 2026-08-17 | deterministic implementation | strict compile, targeted build check, independent fixtures, and static P1 PASS |
+| v1-queue | 2026-08-17 | paced Q02 handoff | one target-only priority-track row; no terminal action |
 
 ## Q01 Evidence
 
@@ -112,3 +113,13 @@ cumulative-RSI pullback.
   `D:/QM/reports/framework/21/build_check_20260817_104852.json`
 - P1 report:
   `D:/QM/reports/pipeline/QM5_41043/P1/P1_QM5_41043_result.json`
+
+## Q02 Enqueue
+
+- work item: `b7b2899f-9bf1-458e-8ef0-c97674a6e36c`
+- state at verification: `pending`, attempt count 0, priority track enabled
+- routed host: exact `XNGUSD.DWX`, D1
+- exact-path capacity: 4/7 factory terminals; `T_Live` excluded
+- post-apply target-only dry run selected zero additional rows
+- receipt:
+  `docs/ops/evidence/2026-08-17_qm5_41043_xng_thursday_flow_agreement_q01_q02_enqueue.md`
