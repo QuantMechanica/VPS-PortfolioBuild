@@ -15,7 +15,7 @@
 - EA allocation commit: `33dda3a60`
 - G0 approval commit: `db3baa034`
 - carrier: exact `XTIUSD.DWX`, D1, symbol slot 0
-- planned magic: `410460000`
+- allocated magic: `410460000`
 
 ## Locked Mechanic
 
