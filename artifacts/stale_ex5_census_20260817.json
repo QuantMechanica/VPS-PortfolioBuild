@@ -1,0 +1,168 @@
+{
+  "schema": "qm.stale-ex5-census/v1",
+  "generated_at_utc": "2026-08-17T17:19:57.652569Z",
+  "size_cut_bytes": 200000,
+  "eas_with_binary": 3274,
+  "eas_below_cut": 65,
+  "pending_rows_total": 1004,
+  "eas_at_risk": 23,
+  "pending_rows_at_risk": 57,
+  "controls": {
+    "wrote_stream_today": {
+      "QM5_1118": {
+        "size": 308546,
+        "built": "2026-07-14"
+      },
+      "QM5_10295": {
+        "size": 321734,
+        "built": "2026-07-14"
+      }
+    },
+    "failed_today": {
+      "QM5_1119": {
+        "size": 141840,
+        "built": "2026-06-21"
+      }
+    }
+  },
+  "at_risk": [
+    {
+      "ea": "QM5_1119",
+      "pending": 20,
+      "size": 141840,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1099",
+      "pending": 8,
+      "size": 178316,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1130",
+      "pending": 2,
+      "size": 170054,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1127",
+      "pending": 2,
+      "size": 173572,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1111",
+      "pending": 2,
+      "size": 170496,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1105",
+      "pending": 2,
+      "size": 170288,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1103",
+      "pending": 2,
+      "size": 139856,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1102",
+      "pending": 2,
+      "size": 167714,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1089",
+      "pending": 2,
+      "size": 164424,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1086",
+      "pending": 2,
+      "size": 196874,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1128",
+      "pending": 1,
+      "size": 169462,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1126",
+      "pending": 1,
+      "size": 170488,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1104",
+      "pending": 1,
+      "size": 139786,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_11023",
+      "pending": 1,
+      "size": 199464,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1095",
+      "pending": 1,
+      "size": 142994,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_10888",
+      "pending": 1,
+      "size": 199918,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_10859",
+      "pending": 1,
+      "size": 198568,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_10857",
+      "pending": 1,
+      "size": 197374,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_10829",
+      "pending": 1,
+      "size": 196040,
+      "built": "2026-06-16"
+    },
+    {
+      "ea": "QM5_10590",
+      "pending": 1,
+      "size": 195796,
+      "built": "2026-07-12"
+    },
+    {
+      "ea": "QM5_10579",
+      "pending": 1,
+      "size": 187190,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_10578",
+      "pending": 1,
+      "size": 187928,
+      "built": "2026-06-21"
+    },
+    {
+      "ea": "QM5_1047",
+      "pending": 1,
+      "size": 140888,
+      "built": "2026-06-11"
+    }
+  ]
+}

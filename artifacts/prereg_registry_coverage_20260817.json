@@ -1,0 +1,20 @@
+{
+  "schema": "qm.prereg/v1",
+  "registered_by": "claude",
+  "hypothesis": "A backtest dispatched on an (ea, symbol) pair that has NO active row in framework/registry/magic_numbers.csv completes successfully (exit_code 0, report.htm with real trades) but writes no trade stream / self-report, and is therefore voided as INVALID:stream_and_selfreport_missing. Registry coverage, not the host-slot-magic conflation, is the discriminator.",
+  "observed_case": {
+    "work_item": "61ea8ed9-0846-44c6-9706-82c06be2a7af",
+    "ea": "QM5_1119", "symbol": "XAGUSD.DWX", "phase": "Q04",
+    "registry_xagusd_row": false,
+    "outcome": "INFRA_FAIL / INVALID, F1;F2;F3 all stream_and_selfreport_missing",
+    "reports_were_real": {"F1": {"pf": 0.70, "trades": 206}, "F2": {"pf": 0.71, "trades": 197}, "F3": {"pf": 1.06, "trades": 183}}
+  },
+  "predictions": [
+    {"ea": "QM5_1118", "symbol": "XAGUSD.DWX", "phase": "Q04", "registry_row_present": false,
+     "predicted": "INVALID / stream_and_selfreport_missing on all folds", "role": "replication"},
+    {"ea": "QM5_10295", "symbol": "XAGUSD.DWX", "phase": "Q04", "registry_row_present": true,
+     "predicted": "NOT stream_and_selfreport_missing; an economic verdict (PASS or FAIL)", "role": "negative control"}
+  ],
+  "falsifier": "If QM5_10295 (row present) also returns stream_and_selfreport_missing, registry coverage is not the cause. If QM5_1118 (row absent) returns an economic verdict, coverage is not sufficient.",
+  "not_asserted": "The mechanism inside the EA/harness by which an absent row suppresses the stream is not yet read from a log; only the association is predicted here."
+}
