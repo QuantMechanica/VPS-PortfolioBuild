@@ -121,6 +121,20 @@ python tools/strategy_farm/farmctl.py work-items --ea QM5_41047
 
 No Q02 row was created by this handoff.
 
+## Capacity Recheck At 18:05 Europe/Berlin
+
+A fresh read-only census at `2026-08-17T16:05:04Z` confirmed that the stop
+remained binding. Exact-path factory terminals `T2`, `T4`, `T5`, `T6`, and
+`T7` were active; `T_Live` and the unrelated FTMO terminal were observed only
+to exclude them. The configured paced launch ceiling remained `1`.
+
+Five two-second whole-host CPU samples were `100.00`, `99.90`, `100.00`,
+`85.78`, and `98.05` percent (average `96.75`, maximum `100.00`). The maximum
+again exceeded the explicit `97%` hard host-CPU ceiling. The target-only
+read-only work-item query still returned zero rows for `QM5_41047`. Therefore
+no enqueue, dispatcher tick, backtest, terminal control, or other factory
+mutation was attempted during the recheck.
+
 ## Safety And Handoff
 
 No backtest, dispatcher tick, terminal start/stop/kill/attach, worker mutation,
