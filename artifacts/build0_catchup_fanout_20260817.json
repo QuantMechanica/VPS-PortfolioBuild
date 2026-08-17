@@ -1,0 +1,698 @@
+{
+ "schema": "qm.build0-catchup-fanout/v1",
+ "question": "of the 214 catch-up gate actions, how many need a real backtest and how many are arithmetic?",
+ "rule": "RUN when the verdict is missing or its evidence is gone. RE_DERIVE only for a pre-contract Q10 that has a PASS_PORTFOLIO verdict with retrievable evidence, since the 2026-07-29 contract added exactly that dependency. NO_ACTION_FROM_CONTRACT for a pre-contract Q04..Q09 verdict: the contract change was Q10-only, so a date earlier than 2026-07-29 is not by itself staleness for those phases.",
+ "self_correction": "my BUILD-0 catch-up list marked every phase of a pre-contract pair as pre-contract. That over-counted by 99 gate actions -- the same over-broad-predicate error BUILD-0 identified in provenance dating, repeated inside my own list.",
+ "counts": {
+  "runs": 110,
+  "re_derivations": 5,
+  "no_action_from_contract": 99,
+  "total": 214,
+  "previously_reported_as_all_runs": 214
+ },
+ "hours_at_10_7_per_h": 10.3,
+ "entries": [
+  {
+   "ea_id": "QM5_10123",
+   "symbol": "XAUUSD.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": false,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q06": "NO_ACTION_FROM_CONTRACT",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RUN"
+   },
+   "runs": 1,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_10128",
+   "symbol": "XAUUSD.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": false,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q06": "NO_ACTION_FROM_CONTRACT",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RUN"
+   },
+   "runs": 1,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_10142",
+   "symbol": "SP500.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": false,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RUN"
+   },
+   "runs": 4,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_10145",
+   "symbol": "XAUUSD.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": false,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q06": "NO_ACTION_FROM_CONTRACT",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RUN"
+   },
+   "runs": 1,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_10183",
+   "symbol": "XAUUSD.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": false,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q06": "NO_ACTION_FROM_CONTRACT",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RUN"
+   },
+   "runs": 1,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_10403",
+   "symbol": "XAUUSD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 5,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_10440",
+   "symbol": "NDX.DWX",
+   "classification": "RUN_MISSING_GATE",
+   "in_pool": false,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RE_DERIVE"
+   },
+   "runs": 2,
+   "re_derivations": 1
+  },
+  {
+   "ea_id": "QM5_10513",
+   "symbol": "XAUUSD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "NEED_MORE_DATA",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 5,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_10692",
+   "symbol": "NDX.DWX",
+   "classification": "RUN_MISSING_GATE",
+   "in_pool": true,
+   "in_roster": false,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q07": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RE_DERIVE"
+   },
+   "runs": 3,
+   "re_derivations": 1
+  },
+  {
+   "ea_id": "QM5_10706",
+   "symbol": "GBPUSD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q06": "NO_ACTION_FROM_CONTRACT",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 2,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_10911",
+   "symbol": "GDAXI.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "NEED_MORE_DATA",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q07": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 5,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_10919",
+   "symbol": "XTIUSD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 4,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_10938",
+   "symbol": "GDAXI.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": false,
+   "portfolio_verdict": "NEED_MORE_DATA",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q07": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 6,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_10939",
+   "symbol": "GBPUSD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 4,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_11132",
+   "symbol": "SP500.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 3,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_11165",
+   "symbol": "AUDCAD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q06": "RUN",
+    "Q07": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 5,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_11165",
+   "symbol": "EURUSD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q06": "RUN",
+    "Q07": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 5,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_11421",
+   "symbol": "AUDUSD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 4,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_11421",
+   "symbol": "EURUSD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 2,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_11422",
+   "symbol": "USDCAD.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": false,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RE_DERIVE"
+   },
+   "runs": 0,
+   "re_derivations": 1
+  },
+  {
+   "ea_id": "QM5_11708",
+   "symbol": "EURUSD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q07": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 6,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_12567",
+   "symbol": "XAUUSD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 5,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_12567",
+   "symbol": "XNGUSD.DWX",
+   "classification": "RUN_MISSING_GATE",
+   "in_pool": false,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RUN"
+   },
+   "runs": 3,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_12778",
+   "symbol": "AUDUSD.DWX",
+   "classification": "RUN_MISSING_GATE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": null,
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q07": "RUN",
+    "Q08": "RUN",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 7,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_12969",
+   "symbol": "USDJPY.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q06": "NO_ACTION_FROM_CONTRACT",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RE_DERIVE"
+   },
+   "runs": 0,
+   "re_derivations": 1
+  },
+  {
+   "ea_id": "QM5_12989",
+   "symbol": "XAUUSD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q07": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 6,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_13013",
+   "symbol": "NDX.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": false,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 2,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_13036",
+   "symbol": "GDAXI.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": false,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RUN"
+   },
+   "runs": 1,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_13117",
+   "symbol": "EURGBP.DWX",
+   "classification": "RUN_MISSING_GATE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": null,
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "RUN",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q07": "RUN",
+    "Q08": "RUN",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 7,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_13128",
+   "symbol": "NDX.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "NEED_MORE_DATA",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RUN"
+   },
+   "runs": 1,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_13213",
+   "symbol": "USDJPY.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q06": "NO_ACTION_FROM_CONTRACT",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RUN"
+   },
+   "runs": 1,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_1328",
+   "symbol": "EURJPY.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": false,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q06": "NO_ACTION_FROM_CONTRACT",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RUN"
+   },
+   "runs": 1,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_13301",
+   "symbol": "GDAXI.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "NO_ACTION_FROM_CONTRACT",
+    "Q06": "NO_ACTION_FROM_CONTRACT",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RUN"
+   },
+   "runs": 1,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_1556",
+   "symbol": "XAUUSD.DWX",
+   "classification": "RERUN_EVIDENCE_GONE",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": false,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q05": "RUN",
+    "Q06": "RUN",
+    "Q07": "RUN",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "RUN",
+    "Q10": "RUN"
+   },
+   "runs": 5,
+   "re_derivations": 0
+  },
+  {
+   "ea_id": "QM5_1567",
+   "symbol": "EURUSD.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": true,
+   "portfolio_verdict": "PASS_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q04": "NO_ACTION_FROM_CONTRACT",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RE_DERIVE"
+   },
+   "runs": 0,
+   "re_derivations": 1
+  },
+  {
+   "ea_id": "QM5_20048",
+   "symbol": "XTIUSD.DWX",
+   "classification": "RERUN_PRE_CONTRACT",
+   "in_pool": true,
+   "in_roster": false,
+   "portfolio_verdict": "FAIL_PORTFOLIO",
+   "portfolio_evidence_present": true,
+   "per_phase_action": {
+    "Q06": "NO_ACTION_FROM_CONTRACT",
+    "Q07": "NO_ACTION_FROM_CONTRACT",
+    "Q08": "NO_ACTION_FROM_CONTRACT",
+    "Q09_PORTFOLIO": "NO_ACTION_FROM_CONTRACT",
+    "Q10": "RUN"
+   },
+   "runs": 1,
+   "re_derivations": 0
+  }
+ ]
+}
