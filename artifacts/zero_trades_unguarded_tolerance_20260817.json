@@ -1,0 +1,39 @@
+{
+ "schema": "qm.zero-trades-unguarded-tolerance/v1",
+ "question": "which ZERO_TRADES verdicts might be a silently truncated filter input rather than a genuine no-signal strategy, as QM5_20262/XNGUSD turned out to be?",
+ "signature": "a tolerance/epsilon/floor-style double input declared in EXPONENT notation in the source, NOT protected by a QM_InputRequire* guard, on an EA that has a ZERO_TRADES verdict",
+ "note": "the setfile may already be repaired; the source literal is what identifies the EA as having been exposed. Guarded inputs fail loudly in OnInit and were already visible.",
+ "counts": {
+  "zero_trades_pairs": 1107,
+  "zero_trades_eas": 334,
+  "source_readable": 334,
+  "hits": 2,
+  "guarded": 0,
+  "unguarded": 2
+ },
+ "unguarded": [
+  {
+   "ea_id": "QM5_20262",
+   "input": "strategy_slope_epsilon",
+   "literal": "1.0e-10",
+   "guarded": false,
+   "occurrences_in_source": 3,
+   "zero_trades_symbols": [
+    "XNGUSD.DWX"
+   ],
+   "ea_dir": "QM5_20262_xng-lr-trend"
+  },
+  {
+   "ea_id": "QM5_21523",
+   "input": "strategy_return_tolerance",
+   "literal": "1.0e-10",
+   "guarded": false,
+   "occurrences_in_source": 4,
+   "zero_trades_symbols": [
+    "XTIUSD.DWX"
+   ],
+   "ea_dir": "QM5_21523_wti-xau-div-tr"
+  }
+ ],
+ "guarded": []
+}

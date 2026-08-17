@@ -1,0 +1,312 @@
+{
+ "schema": "qm.catchup-setfile-readiness/v1",
+ "question": "would any catch-up run be spent on a setfile that cannot succeed?",
+ "predicate": "parse_setfile_assignments from q08_5_neighborhood_runner, the same parser the hourly sweep uses",
+ "parser_loaded": true,
+ "counts": {
+  "OK": 98,
+  "DEFECT_empty_strategy_params": 12
+ },
+ "runs_total": 110,
+ "runs_blocked": 12,
+ "unchecked": 0,
+ "entries": [
+  {
+   "ea_id": "QM5_10123",
+   "symbol": "XAUUSD.DWX",
+   "runs": 1,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": false,
+   "setfile": "QM5_10123_don20-break_XAUUSD.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10128",
+   "symbol": "XAUUSD.DWX",
+   "runs": 1,
+   "setfile_state": "DEFECT_empty_strategy_params",
+   "in_pool": true,
+   "in_roster": false,
+   "setfile": "QM5_10128_bb-breakout_XAUUSD.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10142",
+   "symbol": "SP500.DWX",
+   "runs": 4,
+   "setfile_state": "DEFECT_empty_strategy_params",
+   "in_pool": true,
+   "in_roster": false,
+   "setfile": "QM5_10142_rsi2-sma_SP500.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10145",
+   "symbol": "XAUUSD.DWX",
+   "runs": 1,
+   "setfile_state": "DEFECT_empty_strategy_params",
+   "in_pool": true,
+   "in_roster": false,
+   "setfile": "QM5_10145_tsm-meanret_XAUUSD.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10183",
+   "symbol": "XAUUSD.DWX",
+   "runs": 1,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": false,
+   "setfile": "QM5_10183_carver-multi-sig_XAUUSD.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10403",
+   "symbol": "XAUUSD.DWX",
+   "runs": 5,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10440",
+   "symbol": "NDX.DWX",
+   "runs": 2,
+   "setfile_state": "OK",
+   "in_pool": false,
+   "in_roster": true,
+   "setfile": "QM5_10440_mql5-ohlc-mtf_NDX.DWX_H1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10513",
+   "symbol": "XAUUSD.DWX",
+   "runs": 5,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_10513_mql5-ichimoku_XAUUSD.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10692",
+   "symbol": "NDX.DWX",
+   "runs": 3,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": false,
+   "setfile": "QM5_10692_tv-ls-ms_NDX.DWX_H1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10706",
+   "symbol": "GBPUSD.DWX",
+   "runs": 2,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10911",
+   "symbol": "GDAXI.DWX",
+   "runs": 5,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_10911_grimes-complex-pb_GDAXI.DWX_H1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10919",
+   "symbol": "XTIUSD.DWX",
+   "runs": 4,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_10919_grimes-overshoot_XTIUSD.DWX_H4_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10938",
+   "symbol": "GDAXI.DWX",
+   "runs": 6,
+   "setfile_state": "DEFECT_empty_strategy_params",
+   "in_pool": true,
+   "in_roster": false,
+   "setfile": "QM5_10938_grimes-accept-high_GDAXI.DWX_H1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_10939",
+   "symbol": "GBPUSD.DWX",
+   "runs": 4,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_10939_grimes-context-pb_GBPUSD.DWX_H4_backtest.set"
+  },
+  {
+   "ea_id": "QM5_11132",
+   "symbol": "SP500.DWX",
+   "runs": 3,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_11132_tm-cum-rsi2_SP500.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_11165",
+   "symbol": "AUDCAD.DWX",
+   "runs": 5,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_11165_weiss-rsi-ma_AUDCAD.DWX_H1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_11165",
+   "symbol": "EURUSD.DWX",
+   "runs": 5,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_11165_weiss-rsi-ma_EURUSD.DWX_H1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_11421",
+   "symbol": "AUDUSD.DWX",
+   "runs": 4,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_11421_ohlc-daily-squeeze-reversal-d1_AUDUSD.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_11421",
+   "symbol": "EURUSD.DWX",
+   "runs": 2,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_11708",
+   "symbol": "EURUSD.DWX",
+   "runs": 6,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_11708_anon-market-squeeze-d1_EURUSD.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_12567",
+   "symbol": "XAUUSD.DWX",
+   "runs": 5,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_12567",
+   "symbol": "XNGUSD.DWX",
+   "runs": 3,
+   "setfile_state": "OK",
+   "in_pool": false,
+   "in_roster": true,
+   "setfile": "QM5_12567_cum-rsi2-commodity_XNGUSD.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_12778",
+   "symbol": "AUDUSD.DWX",
+   "runs": 7,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_12989",
+   "symbol": "XAUUSD.DWX",
+   "runs": 6,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_12989_grimes-nested-pb-v2_XAUUSD.DWX_H4_backtest.set"
+  },
+  {
+   "ea_id": "QM5_13013",
+   "symbol": "NDX.DWX",
+   "runs": 2,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": false,
+   "setfile": "QM5_13013_grimes-trendday-v2_NDX.DWX_M15_backtest.set"
+  },
+  {
+   "ea_id": "QM5_13036",
+   "symbol": "GDAXI.DWX",
+   "runs": 1,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": false,
+   "setfile": "QM5_13036_balke-go-long-regime_GDAXI.DWX_M15_backtest.set"
+  },
+  {
+   "ea_id": "QM5_13117",
+   "symbol": "EURGBP.DWX",
+   "runs": 7,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_13117_eurgbp-audjpy_QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_13128",
+   "symbol": "NDX.DWX",
+   "runs": 1,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_13128_pre-fomc-drift-ndx_NDX.DWX_H1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_13213",
+   "symbol": "USDJPY.DWX",
+   "runs": 1,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_1328",
+   "symbol": "EURJPY.DWX",
+   "runs": 1,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": false,
+   "setfile": "QM5_1328_brooks-3bar-reversal-h4_EURJPY.DWX_H4_backtest.set"
+  },
+  {
+   "ea_id": "QM5_13301",
+   "symbol": "GDAXI.DWX",
+   "runs": 1,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_13301_balke-minute-range-breakout_GDAXI.DWX_M5_backtest.set"
+  },
+  {
+   "ea_id": "QM5_1556",
+   "symbol": "XAUUSD.DWX",
+   "runs": 5,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": true,
+   "setfile": "QM5_1556_aa-zak-mom12_XAUUSD.DWX_D1_backtest.set"
+  },
+  {
+   "ea_id": "QM5_20048",
+   "symbol": "XTIUSD.DWX",
+   "runs": 1,
+   "setfile_state": "OK",
+   "in_pool": true,
+   "in_roster": false,
+   "setfile": "QM5_20048_wti-preholiday_XTIUSD.DWX_D1_backtest.set"
+  }
+ ]
+}
