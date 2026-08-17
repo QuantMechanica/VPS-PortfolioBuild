@@ -146,3 +146,41 @@ surface change followed. Machine-readable evidence is
 - No EA, EX5, setfile, basket manifest, Card, registry, magic row, or runtime
   queue row changed.
 - Concurrent unrelated worktree changes were left unstaged and untouched.
+
+## 05:03Z continuation audit
+
+A third continuation audit at repository head
+`73889e012fdfe43c8cb650b43820cac08e9ffd72` found a materially changed
+seven-terminal roster, but the hard CPU ceiling remains binding. Five
+two-second whole-machine samples were `99.91%`, `99.87%`, `96.30%`,
+`99.95%`, and `98.94%` (average `98.99%`, maximum `99.95%`). Both the
+average and maximum exceed the explicit `97%` ceiling.
+
+The seven active factory terminals were selected only by canonical
+`\\mt5\\T<n>\\` executable paths, with `T_Live` explicitly excluded:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| `T2` | `QM5_20086` | `Q08` | `NDX.DWX` |
+| `T3` | `QM5_20178` | `Q02` | `NDX.DWX` |
+| `T4` | `QM5_41030` | `Q02` | `QM5_41030_XAU_XAG_FLOWDIV_D1` |
+| `T5` | `QM5_20176` | `Q02` | `XAUUSD.DWX` |
+| `T6` | `QM5_20085` | `Q07` | `EURUSD.DWX` |
+| `T8` | `QM5_20178` | `Q02` | `WS30.DWX` |
+| `T9` | `QM5_20176` | `Q05` | `GBPUSD.DWX` |
+
+This differs from the 04:03Z observation: the roster fell from eight to
+seven terminals, the Q06/Q07 work advanced to Q07/Q08, and the terminal
+assignments changed. A read-only URI connection to the canonical farm
+database returned `PRAGMA quick_check=ok`. The selected rank-21
+`QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1` package still has exactly one
+open row: Q04 work item `113ae6d1-33c0-42bc-b9b0-bf3a48ef3445`, `pending`,
+unclaimed, attempt zero. Its canonical Q02 predecessor remains `PASS`.
+
+Fresh hashes confirm the approved Tier-A Chan Card, MQ5, EX5, basket
+manifest, and `RISK_FIXED=1000` setfile are unchanged. Because the pair is
+already enqueued exactly once and the CPU ceiling is binding, no duplicate
+row, dispatch tick, backtest, tester launch, terminal action, priority or
+timestamp mutation, strategy/build change, or portfolio/live-surface change
+followed. Machine-readable evidence is
+`artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T050327Z_board_advisor.json`.
