@@ -1,6 +1,6 @@
 # QM5_41054 - XNG Post-Thursday Counter-Gap Fade
 
-Status: `SOURCE APPROVED; EA ID ALLOCATED; MAGIC PENDING; BUILD NOT STARTED`
+Status: `G0 APPROVED; EA ID AND MAGIC ALLOCATED; BUILD NOT STARTED`
 
 ## Identity
 
@@ -14,6 +14,11 @@ Status: `SOURCE APPROVED; EA ID ALLOCATED; MAGIC PENDING; BUILD NOT STARTED`
   `decisions/2026-08-18_xng_post_thursday_countergap_fade_source_approval.md`
 - source approval commit: `860798f0a`
 - deterministic EA-ID reservation commit: `bd394ac36`
+- deterministic magic allocation commit: `061ebd1a4`
+- approved card:
+  `strategy-seeds/cards/approved/QM5_41054_xng-postthu-gap-fade_card.md`
+- G0 decision:
+  `decisions/2026-08-18_xng_post_thursday_countergap_fade_g0.md`
 - host: exact `XNGUSD.DWX`, D1
 - intended slot: `0`
 - intended magic: `410540000`
@@ -52,8 +57,9 @@ multiday drift, and the incumbent cumulative-RSI commodity pullback
 
 ## Build State
 
-The directory identity exists before magic allocation because the governed
-resolver retains rows only for materialized EA directories. Card, code,
-binary, preset, Q01, and Q02 status must not be inferred from this scaffold.
+The directory identity existed before magic allocation because the governed
+resolver retains rows only for materialized EA directories. G0 now authorizes
+the exact approved card, but code, binary, preset, Q01, and Q02 status must not
+be inferred from this scaffold.
 No live artifact, tester dispatch, terminal control, portfolio mutation, or
 performance claim is authorized.

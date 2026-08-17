@@ -6,12 +6,15 @@ source_type: official_event_practitioner_book_peer_reviewed_composite_lineage
 status: approved_for_cards
 approved_for_cards: true
 approval_record: decisions/2026-08-18_xng_post_thursday_countergap_fade_source_approval.md
+approval_commit: 860798f0a
 approved_by: OWNER commodity/energy portfolio mission
 approved_at: 2026-08-18
 created: 2026-08-18
 created_by: Research+Development
 strategy_ids:
   - EIA-WILLIAMS-YANG-XNG-POSTTHUGAPFADE-2026_S01
+cards_extracted:
+  - QM5_41054_xng-postthu-gap-fade
 parent_sources:
   - EIA-XNG-STORAGE-AFTERSHOCK-2026
   - SRC03
