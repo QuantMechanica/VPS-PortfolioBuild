@@ -1,0 +1,363 @@
+{
+ "schema": "qm.degenerate-pf-scan/v1",
+ "question": "can a degenerate (near-zero-denominator) profit factor carry a pair through Q04?",
+ "window": "Q04 rows since 2026-07-01",
+ "rows_examined": 4468,
+ "pass_family_rows": 543,
+ "thresholds": {
+  "10.0": {
+   "rows": 83,
+   "pass_rows": 20
+  },
+  "25.0": {
+   "rows": 59,
+   "pass_rows": 13
+  },
+  "100.0": {
+   "rows": 44,
+   "pass_rows": 9
+  }
+ },
+ "suspicious_passes": [
+  {
+   "id": "55a4f344-a880-4bdf-9de7-323122bd6677",
+   "ea_id": "QM5_12567",
+   "symbol": "XAUUSD.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-26T20:08:52",
+   "folds": [
+    999.0,
+    999.0,
+    999.0
+   ],
+   "max_fold": 999.0,
+   "min_fold": 999.0,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=999.000;F2:pf_net=999.000;F3:pf_net=999.000"
+  },
+  {
+   "id": "3a7a9b6b-2e34-4dd2-9069-ffebd39d631e",
+   "ea_id": "QM5_10431",
+   "symbol": "SP500.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-19T22:04:33",
+   "folds": [
+    999.0,
+    12.41,
+    999.0
+   ],
+   "max_fold": 999.0,
+   "min_fold": 12.41,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=999.000;F2:pf_net=12.410;F3:pf_net=999.000"
+  },
+  {
+   "id": "b8c2ef91-abb3-4aaa-94ae-a00891490d81",
+   "ea_id": "QM5_9576",
+   "symbol": "WS30.DWX",
+   "verdict": "PASS",
+   "at": "2026-08-02T12:58:51",
+   "folds": [
+    1.449,
+    999.0,
+    1.249
+   ],
+   "max_fold": 999.0,
+   "min_fold": 1.249,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=1.449;F2:pf_net=999.000;F3:pf_net=1.249"
+  },
+  {
+   "id": "a0f8065c-ad99-41e5-b475-3a48aae6dfe4",
+   "ea_id": "QM5_10714",
+   "symbol": "XAUUSD.DWX",
+   "verdict": "PASS",
+   "at": "2026-08-16T08:16:02",
+   "folds": [
+    1.09,
+    1.27,
+    999.0
+   ],
+   "max_fold": 999.0,
+   "min_fold": 1.09,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=1.090;F2:pf_net=1.270;F3:pf_net=999.000"
+  },
+  {
+   "id": "89db058c-df65-4709-b9bc-170929a12cdf",
+   "ea_id": "QM5_10114",
+   "symbol": "GDAXI.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-15T02:08:09",
+   "folds": [
+    783.91,
+    44.139,
+    6.845
+   ],
+   "max_fold": 783.91,
+   "min_fold": 6.845,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=783.910;F2:pf_net=44.139;F3:pf_net=6.845"
+  },
+  {
+   "id": "d73fe88e-2b5f-4111-b292-bbc86937ab45",
+   "ea_id": "QM5_1077",
+   "symbol": "WS30.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-15T00:56:09",
+   "folds": [
+    15.078,
+    1.714,
+    717.1
+   ],
+   "max_fold": 717.1,
+   "min_fold": 1.714,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=15.078;F2:pf_net=1.714;F3:pf_net=717.100"
+  },
+  {
+   "id": "3872fd60-91dc-4ed9-9146-05d4b0807714",
+   "ea_id": "QM5_10114",
+   "symbol": "GDAXI.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-15T02:50:38",
+   "folds": [
+    28.663,
+    709.51,
+    5.61
+   ],
+   "max_fold": 709.51,
+   "min_fold": 5.61,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=28.663;F2:pf_net=709.510;F3:pf_net=5.610"
+  },
+  {
+   "id": "f16e756b-0862-44a4-a605-7a2eded9b415",
+   "ea_id": "QM5_10114",
+   "symbol": "GDAXI.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-15T04:22:18",
+   "folds": [
+    5.191,
+    687.4,
+    5.749
+   ],
+   "max_fold": 687.4,
+   "min_fold": 5.191,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=5.191;F2:pf_net=687.400;F3:pf_net=5.749"
+  },
+  {
+   "id": "40653777-87a9-4e2b-9ee4-0e366bcf861f",
+   "ea_id": "QM5_9573",
+   "symbol": "NDX.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-21T03:31:43",
+   "folds": [
+    164.85,
+    2.53,
+    1.16
+   ],
+   "max_fold": 164.85,
+   "min_fold": 1.16,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=164.850;F2:pf_net=2.530;F3:pf_net=1.160"
+  },
+  {
+   "id": "972fe8b6-1d8a-4f72-9f22-dae5438999fc",
+   "ea_id": "QM5_13151",
+   "symbol": "QM5_13151_XTI_XNG_VBETA_D1",
+   "verdict": "PASS",
+   "at": "2026-07-20T14:50:25",
+   "folds": [
+    2.481,
+    1.564,
+    91.753
+   ],
+   "max_fold": 91.753,
+   "min_fold": 1.564,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=2.481;F2:pf_net=1.564;F3:pf_net=91.753"
+  },
+  {
+   "id": "2ec6f080-9100-4887-972e-a2c9c94b22d5",
+   "ea_id": "QM5_13147",
+   "symbol": "QM5_13147_XTI_XNG_JBETA_D1",
+   "verdict": "PASS",
+   "at": "2026-07-20T13:09:43",
+   "folds": [
+    1.81,
+    1.931,
+    91.751
+   ],
+   "max_fold": 91.751,
+   "min_fold": 1.81,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=1.810;F2:pf_net=1.931;F3:pf_net=91.751"
+  },
+  {
+   "id": "985340c2-87cf-4f86-be36-b143f4853d1b",
+   "ea_id": "QM5_10148",
+   "symbol": "EURJPY.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-16T12:52:01",
+   "folds": [
+    3.31,
+    1.124,
+    75.8
+   ],
+   "max_fold": 75.8,
+   "min_fold": 1.124,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=3.310;F2:pf_net=1.124;F3:pf_net=75.800"
+  },
+  {
+   "id": "80e0062c-5e11-4644-8565-de5dec89222b",
+   "ea_id": "QM5_10763",
+   "symbol": "AUDUSD.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-23T10:34:20",
+   "folds": [
+    49.43,
+    53.22,
+    2.372
+   ],
+   "max_fold": 53.22,
+   "min_fold": 2.372,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=49.430;F2:pf_net=53.220;F3:pf_net=2.372"
+  },
+  {
+   "id": "af73d92f-7508-4f23-a568-1c60688607f8",
+   "ea_id": "QM5_10919",
+   "symbol": "XTIUSD.DWX",
+   "verdict": "PASS_SOFT",
+   "at": "2026-07-03T05:24:12",
+   "folds": [
+    0.654,
+    23.093,
+    12.482
+   ],
+   "max_fold": 23.093,
+   "min_fold": 0.654,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "DL071_majority_reverdict:2/3_folds_pf_net_gt_1,oos_trades=13;F1:pf_net=0.654;F2:pf_net=23.093;F3:pf_net=12.482"
+  },
+  {
+   "id": "6fc4fdc5-3896-4276-bf40-ccab40b56802",
+   "ea_id": "QM5_10763",
+   "symbol": "USDCHF.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-23T11:08:48",
+   "folds": [
+    18.094,
+    3.81,
+    2.129
+   ],
+   "max_fold": 18.094,
+   "min_fold": 2.129,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=18.094;F2:pf_net=3.810;F3:pf_net=2.129"
+  },
+  {
+   "id": "4a9d43d1-37e2-4d3a-b61a-7fca9426ef86",
+   "ea_id": "QM5_10148",
+   "symbol": "XAGUSD.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-15T00:53:01",
+   "folds": [
+    16.854,
+    2.989,
+    4.063
+   ],
+   "max_fold": 16.854,
+   "min_fold": 2.989,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=16.854;F2:pf_net=2.989;F3:pf_net=4.063"
+  },
+  {
+   "id": "045b3ef2-956a-4ee9-adca-991cdf8c61fc",
+   "ea_id": "QM5_13146",
+   "symbol": "QM5_13146_XTI_XNG_VOV_D1",
+   "verdict": "PASS",
+   "at": "2026-07-20T12:11:30",
+   "folds": [
+    1.09,
+    6.643,
+    15.585
+   ],
+   "max_fold": 15.585,
+   "min_fold": 1.09,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=1.090;F2:pf_net=6.643;F3:pf_net=15.585"
+  },
+  {
+   "id": "275aff7b-1563-426a-b723-8c9ab2e318dd",
+   "ea_id": "QM5_13140",
+   "symbol": "QM5_13140_XTI_XNG_ALIQ_D1",
+   "verdict": "PASS",
+   "at": "2026-07-19T15:25:58",
+   "folds": [
+    1.61,
+    2.017,
+    14.538
+   ],
+   "max_fold": 14.538,
+   "min_fold": 1.61,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=1.610;F2:pf_net=2.017;F3:pf_net=14.538"
+  },
+  {
+   "id": "1690d5e2-03f0-4177-b74b-9d3698387c5f",
+   "ea_id": "QM5_10114",
+   "symbol": "SP500.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-14T23:12:34",
+   "folds": [
+    1.018,
+    11.701,
+    14.288
+   ],
+   "max_fold": 14.288,
+   "min_fold": 1.018,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=1.018;F2:pf_net=11.701;F3:pf_net=14.288"
+  },
+  {
+   "id": "5b2d20b8-6bb9-4587-ac88-c6012d104afd",
+   "ea_id": "QM5_12365",
+   "symbol": "XAUUSD.DWX",
+   "verdict": "PASS",
+   "at": "2026-07-23T03:18:22",
+   "folds": [
+    2.259,
+    1.411,
+    12.297
+   ],
+   "max_fold": 12.297,
+   "min_fold": 1.411,
+   "pooled_trades": null,
+   "lowfreq_mentioned": false,
+   "reason": "F1:pf_net=2.259;F2:pf_net=1.411;F3:pf_net=12.297"
+  }
+ ]
+}
