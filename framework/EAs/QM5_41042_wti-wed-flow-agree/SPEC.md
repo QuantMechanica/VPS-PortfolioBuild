@@ -95,6 +95,7 @@ opposition plus session dominance and fades rather than follows the total.
 |---|---|---|---|
 | v1 | 2026-08-17 | approved build directory identity | source/G0/card and EA-ID registry complete |
 | v1-build | 2026-08-17 | deterministic implementation | strict compile, targeted build check, independent fixtures, and static P1 PASS |
+| v1-preflight | 2026-08-17 | Q02 deterministic-gate repair | tester-loading calls use `_Symbol`; tolerance set value uses decimal serialization |
 
 ## Q01 Evidence
 
@@ -108,5 +109,7 @@ opposition plus session dominance and fades rather than follows the total.
   `framework/build/compile/20260817_095944/QM5_41042_wti-wed-flow-agree.compile.log`
 - build report:
   `D:/QM/reports/framework/21/build_check_20260817_095944.json`
+- post-repair preset validation:
+  `D:/QM/reports/framework/21/build_check_20260817_100356.json`
 - P1 report:
   `D:/QM/reports/pipeline/QM5_41042/P1/P1_QM5_41042_result.json`
