@@ -17322,3 +17322,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41041,wti-wed-flow-fade,0,XTIUSD.DWX,410410000,2026-08-17T08:49:32Z,Codex,active
 41042,wti-wed-flow-agree,0,XTIUSD.DWX,410420000,2026-08-17T09:42:08Z,Codex,active
 41043,xng-thu-flow-agree,0,XNGUSD.DWX,410430000,2026-08-17T10:40:53Z,Codex,active
+41044,xng-thu-flow-fade,0,XNGUSD.DWX,410440000,2026-08-17T11:45:40Z,Codex,active

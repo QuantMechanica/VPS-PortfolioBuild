@@ -87,7 +87,7 @@ cumulative-RSI pullback without an event clock or flow decomposition.
 - G0: `APPROVED`
 - EA ID registry: `41044 / xng-thu-flow-fade / active`
 - EA directory identity: established before magic allocation
-- Magic slot 0: pending governed allocation
+- Magic slot 0: `XNGUSD.DWX / 410440000 / active`
 - Q01: pending
 - Q02: not enqueued
 
