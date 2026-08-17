@@ -1,0 +1,25 @@
+{
+  "task_id": "0d856401-9e77-43d4-8c3c-2caae761f8ef",
+  "source_task_id": "7673bf41-8e94-4e6a-a869-3c0609a7f73b",
+  "source_agent": "gemini",
+  "ea_id": "QM5_21505",
+  "verdict": "FAIL",
+  "summary": "Compile and static guardrails pass, but the signal-flip ordering violates the approved card's atomic reverse and one-position contract.",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "title": "Opposite entry can occur before the existing position is closed",
+      "detail": "OnTick calls Strategy_ManageOpenPosition before QM_IsNewBar and Strategy_PrepareWeeklySignal. The freshly computed opposite g_cached_direction is therefore unavailable to the close path on the new-bar tick. Strategy_EntrySignal rejects only a same-direction owned position and proceeds when the owned position is opposite, so a hedging account can briefly hold both directions and a netting account can flatten instead of close-and-reopen. This contradicts the card's atomic signal-flip and one-position-per-magic rules."
+    }
+  ],
+  "independent_verification": {
+    "approved_card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_21505_xag-weekly-lowvol-momentum.md",
+    "build_check": "PASS; 0 failures; 0 warnings; D:\\QM\\reports\\framework\\21\\build_check_20260817_173749.json",
+    "strict_compile": "PASS; 0 errors; 0 warnings; C:\\QM\\repo\\framework\\build\\compile\\20260817_173821\\QM5_21505_xag-weekly-lowvol-momentum.compile.log",
+    "mq5_sha256": "ABA8CC756FB2AA5D0979520A56658430349F42FB3549E0B23FDCB993DB06ED78",
+    "ex5_sha256": "0A292B63CFECBC46C33F0DC062B0F4B332C98B2B77E4BBCAF0F393009793A852",
+    "risk_contract": "RISK_FIXED=1000, RISK_PERCENT=0",
+    "news_stale_ceiling": 336,
+    "pipeline_phase_run": false
+  }
+}

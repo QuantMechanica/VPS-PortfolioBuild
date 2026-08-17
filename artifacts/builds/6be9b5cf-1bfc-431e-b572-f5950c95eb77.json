@@ -1,0 +1,18 @@
+{
+  "task_id": "6be9b5cf-1bfc-431e-b572-f5950c95eb77",
+  "ea_id": "QM5_21508",
+  "slug": "qs-ma-envelope-eur",
+  "result": "PREFLIGHT_GATE_FAIL",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_21508_qs-ma-envelope-eur.md",
+  "card_g0_status": "APPROVED",
+  "ea_registry_row": "21508,qs-ma-envelope-eur,0b564ef2-810c-5b1d-9084-342ddb20575c,active,Research,2026-08-13",
+  "ea_directory_exists": true,
+  "magic_registry_rows": 0,
+  "failed_gate": "framework/registry/magic_numbers.csv has no active (ea_id=21508, symbol_slot) row",
+  "action_taken": "No source, registry, resolver, setfile, or binary mutation; governed build stopped before implementation.",
+  "verification": [
+    "Approved-card location and g0_status checked",
+    "ea_id_registry.csv exact slug row checked",
+    "magic_numbers.csv searched for ea_id 21508 and returned no rows"
+  ]
+}

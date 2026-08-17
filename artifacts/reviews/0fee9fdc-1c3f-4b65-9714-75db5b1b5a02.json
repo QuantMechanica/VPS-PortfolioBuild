@@ -1,0 +1,25 @@
+{
+  "task_id": "0fee9fdc-1c3f-4b65-9714-75db5b1b5a02",
+  "source_task_id": "650a6dc6-d707-4cfd-b060-0ae4253c613f",
+  "source_agent": "gemini",
+  "ea_id": "QM5_21502",
+  "verdict": "FAIL",
+  "summary": "Compile and static guardrails pass, but the signal-flip ordering violates the approved card's atomic reverse and one-position contract.",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "title": "Opposite entry can occur before the existing position is closed",
+      "detail": "OnTick calls Strategy_ManageOpenPosition before QM_IsNewBar and Strategy_PrepareWeeklySignal. The freshly computed opposite g_cached_direction is therefore unavailable to the close path on the new-bar tick. Strategy_EntrySignal rejects only a same-direction owned position and proceeds when the owned position is opposite, so a hedging account can briefly hold both directions and a netting account can flatten instead of close-and-reopen. This contradicts the card's atomic signal-flip and one-position-per-magic rules."
+    }
+  ],
+  "independent_verification": {
+    "approved_card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_21502_xau-weekly-tsmom.md",
+    "build_check": "PASS; 0 failures; 0 warnings; D:\\QM\\reports\\framework\\21\\build_check_20260817_173641.json",
+    "strict_compile": "PASS; 0 errors; 0 warnings; C:\\QM\\repo\\framework\\build\\compile\\20260817_173719\\QM5_21502_xau-weekly-tsmom.compile.log",
+    "mq5_sha256": "DD505E2C0DCDC10CC2CF87E049F8BF5A33C7B8D6C7E1FAAB1200C3545F05577F",
+    "ex5_sha256": "5F9ACE8CABCAE9330B8F89213D86E3C5F0C88B9A9335CE2050B0926F7F12E5EB",
+    "risk_contract": "RISK_FIXED=1000, RISK_PERCENT=0",
+    "news_stale_ceiling": 336,
+    "pipeline_phase_run": false
+  }
+}
