@@ -1,6 +1,6 @@
 # QM5_41050 — WTI Post-Wednesday Gap-Agreement Continuation
 
-Status: `G0 APPROVED; BUILD IMPLEMENTED; Q01 PENDING`
+Status: `G0 APPROVED; Q01 PASS; Q02 READY`
 
 ## Identity
 
@@ -62,5 +62,6 @@ Artifacts:
 - `docs/test_post_wednesday_gap_agreement_reference.py`
 - `sets/QM5_41050_wti-postwed-gap-agree_XTIUSD.DWX_D1_backtest.set`
 
-Strict compile, build checks, and static Q01 remain required before the
-target-only Q02 queue may be mutated.
+Strict compile, targeted build checks, independent fixtures, static P1, card
+lint, and single-symbol scope all pass. A target-only Q02 enqueue remains
+subject to the governed tester/CPU ceiling.

@@ -68,8 +68,8 @@ r1_track_record: PASS_WITH_COMPOSITE_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_SESSION_LABEL_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: NOT_STARTED
 review_focus: "Falsify a standard-Wednesday WTI event-session/post-event-gap continuation sleeve outside the certified XAU/SP500/NDX/XNG book. Verify exact Monday-Tuesday-Wednesday identity, frozen Thursday-open endpoint, strict cross-boundary agreement, durable Thursday attempt, and next-D1 flattening. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -367,13 +367,14 @@ realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-17 | initial post-Wednesday gap-agreement continuation card | G0 | APPROVED |
+| v1-build | 2026-08-17 | deterministic EA, fixed-risk preset, independent fixtures, and strict validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-17 | APPROVED | `decisions/2026-08-17_wti_post_wednesday_gap_agreement_g0.md` |
-| Q01 Build Validation | - | PENDING | - |
+| Q01 Build Validation | 2026-08-17 | PASS | `framework/build/compile/20260817_192000/QM5_41050_wti-postwed-gap-agree.compile.log`; `D:/QM/reports/framework/21/build_check_20260817_192000.json`; `D:/QM/reports/pipeline/QM5_41050/P1/P1_QM5_41050_result.json` |
 | Q02 Baseline Screening | - | NOT_STARTED | - |
 
 ## Safety Boundary
