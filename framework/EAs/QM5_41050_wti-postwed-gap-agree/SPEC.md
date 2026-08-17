@@ -1,6 +1,6 @@
 # QM5_41050 — WTI Post-Wednesday Gap-Agreement Continuation
 
-Status: `G0 APPROVED; BUILD PENDING`
+Status: `G0 APPROVED; BUILD IMPLEMENTED; Q01 PENDING`
 
 ## Identity
 
@@ -51,6 +51,16 @@ field enters the signal.
 ## Build State
 
 The approved card, durable G0 decision, EA registry row, and active slot-0
-magic now authorize the exact non-live build. The resolver contains
+magic authorize this exact non-live implementation. The resolver contains
 `410500000`; no alternate carrier, signal endpoint, direction, or lifecycle is
 authorized.
+
+Artifacts:
+
+- `QM5_41050_wti-postwed-gap-agree.mq5`
+- `docs/strategy_card.md` (byte-identical governed card mirror)
+- `docs/test_post_wednesday_gap_agreement_reference.py`
+- `sets/QM5_41050_wti-postwed-gap-agree_XTIUSD.DWX_D1_backtest.set`
+
+Strict compile, build checks, and static Q01 remain required before the
+target-only Q02 queue may be mutated.
