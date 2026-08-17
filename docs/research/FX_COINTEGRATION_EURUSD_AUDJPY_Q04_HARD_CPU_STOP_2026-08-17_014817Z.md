@@ -184,3 +184,37 @@ row, dispatch tick, backtest, tester launch, terminal action, priority or
 timestamp mutation, strategy/build change, or portfolio/live-surface change
 followed. Machine-readable evidence is
 `artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T050327Z_board_advisor.json`.
+
+## 06:19Z continuation audit
+
+A fourth continuation audit at repository head
+`4cf7862eb58e9f68e59b57fbfc69f6cac3ca7439` found another materially changed
+factory state and the same binding hard-CPU ceiling. Five two-second
+whole-machine samples were `100%`, `100%`, `100%`, `94.18%`, and `96.23%`
+(average `98.08%`, maximum `100%`). The average remains above the explicit
+`97%` ceiling.
+
+The path-aware factory scan observed eight active terminals: `T1`, `T2`,
+`T3`, `T4`, `T5`, `T6`, `T7`, and `T10`. This differs from the 05:03Z
+snapshot, which had seven terminals on `T2`, `T3`, `T4`, `T5`, `T6`, `T8`,
+and `T9`. The canonical database simultaneously reported eight active work
+items: six at Q02, one at Q07, and one at Q08. The T2 process used a direct
+`QM5_20086` pipeline path rather than a work-item path; that accounting
+detail was recorded but not reconciled or changed. `T_Live` and the unrelated
+FTMO terminal were excluded and neither was controlled.
+
+The read-only database connection returned `PRAGMA quick_check=ok`.
+`QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1` still has exactly one open row:
+Q04 work item `113ae6d1-33c0-42bc-b9b0-bf3a48ef3445`, `pending`, unclaimed,
+attempt zero. Its canonical Q02 predecessor remains `PASS`. The MQ5, EX5,
+basket manifest, OWNER-approved Card snapshot, and logical-basket setfile
+remain unchanged; the setfile retains `RISK_FIXED=1000`, `RISK_PERCENT=0`,
+and `PORTFOLIO_WEIGHT=1`.
+
+Because all 66 frozen-scan relationships are already mechanized, the two
+anchors are terminal beyond Q02, the selected rank-21 basket is already
+enqueued exactly once, and the CPU ceiling is binding, no duplicate Card,
+EA, row, requeue, priority mutation, dispatch tick, backtest, tester launch,
+terminal action, or portfolio/live-surface change followed. Fresh
+machine-readable evidence is
+`artifacts/fx_cointegration_eurusd_audjpy_q04_hard_cpu_stop_20260817T061930Z_board_advisor.json`.
