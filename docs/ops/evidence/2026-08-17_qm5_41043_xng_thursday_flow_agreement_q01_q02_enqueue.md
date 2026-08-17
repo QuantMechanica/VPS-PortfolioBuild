@@ -58,15 +58,17 @@ stranded recovery. The apply created exactly one work item:
 - symbol/host: exact `XNGUSD.DWX`, D1
 - setfile:
   `framework/EAs/QM5_41043_xng-thu-flow-agree/sets/QM5_41043_xng-thu-flow-agree_XNGUSD.DWX_D1_backtest.set`
-- state at verification: `pending`, attempt count 0
+- initial state: `pending`, attempt count 0
 - priority track: true
 - custom-history archive admission: `ACTIVE` for `XNGUSD.DWX`
 - queue state before apply: 980 pending rows under the 7,000-row sweep ceiling
 
 The target-only post-apply dry run selected zero new rows, so no duplicate
-pending/active item exists. The operator stopped at queue handoff and did not
-start, stop, kill, attach to, or otherwise control a terminal, worker, tester,
-or backtest process.
+pending/active item exists. Later read-only verification found the scheduled
+fleet had claimed the item `active` on T4, still at attempt count 0, and had
+verified the exact compiled-binary hash before staging it. The operator stopped
+at queue handoff and did not start, stop, kill, attach to, or otherwise control
+a terminal, worker, tester, or backtest process.
 
 ## Safety Boundary
 

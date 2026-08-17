@@ -117,7 +117,9 @@ cumulative-RSI pullback.
 ## Q02 Enqueue
 
 - work item: `b7b2899f-9bf1-458e-8ef0-c97674a6e36c`
-- state at verification: `pending`, attempt count 0, priority track enabled
+- initial state: `pending`, attempt count 0, priority track enabled
+- later read-only verification: scheduled fleet claim `active` on T4,
+  attempt count 0, exact compiled binary verified
 - routed host: exact `XNGUSD.DWX`, D1
 - exact-path capacity: 4/7 factory terminals; `T_Live` excluded
 - post-apply target-only dry run selected zero additional rows
