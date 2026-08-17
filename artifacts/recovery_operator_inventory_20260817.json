@@ -1,0 +1,481 @@
+{
+ "schema": "qm.recovery-operator-inventory/v1",
+ "question": "for each fail-closed class, has the promised recovery ever converged?",
+ "method": "convergence = the (ea, symbol, phase) triple later obtained a PASS at that phase. Measured from stored verdicts only; no scheduler introspection needed.",
+ "window": "rows since 2026-06-01",
+ "counts": {
+  "classes": 52,
+  "zero_convergence_classes": 9,
+  "stranded_triples": 9031
+ },
+ "classes": [
+  {
+   "class": "summary_missing_retries_exhausted",
+   "pairs_phase_triples": 8054,
+   "converged": 3522,
+   "stranded": 4532,
+   "convergence_pct": 43.7,
+   "first_seen": "2026-06-11",
+   "last_seen": "2026-07-29"
+  },
+  {
+   "class": "run_smoke_fail",
+   "pairs_phase_triples": 3298,
+   "converged": 2032,
+   "stranded": 1266,
+   "convergence_pct": 61.6,
+   "first_seen": "2026-06-04",
+   "last_seen": "2026-08-17"
+  },
+  {
+   "class": "F1",
+   "pairs_phase_triples": 1069,
+   "converged": 42,
+   "stranded": 1027,
+   "convergence_pct": 3.9,
+   "first_seen": "2026-06-04",
+   "last_seen": "2026-08-16"
+  },
+  {
+   "class": "<no reason> INFRA_FAIL",
+   "pairs_phase_triples": 643,
+   "converged": 218,
+   "stranded": 425,
+   "convergence_pct": 33.9,
+   "first_seen": "2026-06-21",
+   "last_seen": "2026-08-03"
+  },
+  {
+   "class": "setfile_missing",
+   "pairs_phase_triples": 403,
+   "converged": 33,
+   "stranded": 370,
+   "convergence_pct": 8.2,
+   "first_seen": "2026-06-03",
+   "last_seen": "2026-08-11"
+  },
+  {
+   "class": "ACTIVE_TIMEOUT",
+   "pairs_phase_triples": 431,
+   "converged": 151,
+   "stranded": 280,
+   "convergence_pct": 35.0,
+   "first_seen": "2026-06-05",
+   "last_seen": "2026-08-16"
+  },
+  {
+   "class": "summary_missing",
+   "pairs_phase_triples": 458,
+   "converged": 229,
+   "stranded": 229,
+   "convergence_pct": 50.0,
+   "first_seen": "2026-06-18",
+   "last_seen": "2026-08-17"
+  },
+  {
+   "class": "poison_pill",
+   "pairs_phase_triples": 183,
+   "converged": 0,
+   "stranded": 183,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-08-17",
+   "last_seen": "2026-08-17"
+  },
+  {
+   "class": "F3",
+   "pairs_phase_triples": 151,
+   "converged": 15,
+   "stranded": 136,
+   "convergence_pct": 9.9,
+   "first_seen": "2026-06-03",
+   "last_seen": "2026-08-12"
+  },
+  {
+   "class": "cold_cache_retries_exhausted",
+   "pairs_phase_triples": 173,
+   "converged": 58,
+   "stranded": 115,
+   "convergence_pct": 33.5,
+   "first_seen": "2026-07-25",
+   "last_seen": "2026-08-17"
+  },
+  {
+   "class": "F2",
+   "pairs_phase_triples": 130,
+   "converged": 17,
+   "stranded": 113,
+   "convergence_pct": 13.1,
+   "first_seen": "2026-06-05",
+   "last_seen": "2026-08-15"
+  },
+  {
+   "class": "LOG_BOMB",
+   "pairs_phase_triples": 171,
+   "converged": 89,
+   "stranded": 82,
+   "convergence_pct": 52.0,
+   "first_seen": "2026-06-27",
+   "last_seen": "2026-08-13"
+  },
+  {
+   "class": "phase runner not implemented yet -- skipping for now",
+   "pairs_phase_triples": 46,
+   "converged": 2,
+   "stranded": 44,
+   "convergence_pct": 4.3,
+   "first_seen": "2026-07-09",
+   "last_seen": "2026-08-02"
+  },
+  {
+   "class": "invalid_summary",
+   "pairs_phase_triples": 52,
+   "converged": 14,
+   "stranded": 38,
+   "convergence_pct": 26.9,
+   "first_seen": "2026-06-27",
+   "last_seen": "2026-08-09"
+  },
+  {
+   "class": "shared_bases_history_lock_transient_cap_exhausted",
+   "pairs_phase_triples": 93,
+   "converged": 57,
+   "stranded": 36,
+   "convergence_pct": 61.3,
+   "first_seen": "2026-07-21",
+   "last_seen": "2026-08-07"
+  },
+  {
+   "class": "<no reason> INVALID",
+   "pairs_phase_triples": 62,
+   "converged": 31,
+   "stranded": 31,
+   "convergence_pct": 50.0,
+   "first_seen": "2026-06-26",
+   "last_seen": "2026-07-31"
+  },
+  {
+   "class": "phase_runner_invalid_report",
+   "pairs_phase_triples": 29,
+   "converged": 6,
+   "stranded": 23,
+   "convergence_pct": 20.7,
+   "first_seen": "2026-06-15",
+   "last_seen": "2026-07-23"
+  },
+  {
+   "class": "diagnostic_non_admission",
+   "pairs_phase_triples": 17,
+   "converged": 0,
+   "stranded": 17,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-08-05",
+   "last_seen": "2026-08-08"
+  },
+  {
+   "class": "seeds_invalid_evidence",
+   "pairs_phase_triples": 14,
+   "converged": 3,
+   "stranded": 11,
+   "convergence_pct": 21.4,
+   "first_seen": "2026-07-25",
+   "last_seen": "2026-08-11"
+  },
+  {
+   "class": "G1_NO_REAL_TICKS",
+   "pairs_phase_triples": 133,
+   "converged": 123,
+   "stranded": 10,
+   "convergence_pct": 92.5,
+   "first_seen": "2026-06-05",
+   "last_seen": "2026-06-25"
+  },
+  {
+   "class": "q08_zero_trade_baseline",
+   "pairs_phase_triples": 7,
+   "converged": 0,
+   "stranded": 7,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-07-19",
+   "last_seen": "2026-08-09"
+  },
+  {
+   "class": "worker_staged_ex5_destination_path_mismatch",
+   "pairs_phase_triples": 7,
+   "converged": 0,
+   "stranded": 7,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-08-06",
+   "last_seen": "2026-08-06"
+  },
+  {
+   "class": "q08_8.5_neighborhood",
+   "pairs_phase_triples": 6,
+   "converged": 0,
+   "stranded": 6,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-07-25",
+   "last_seen": "2026-07-26"
+  },
+  {
+   "class": "<no reason> INVALID_BUILD_STATIC_FIDELITY",
+   "pairs_phase_triples": 4,
+   "converged": 0,
+   "stranded": 4,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-07-20",
+   "last_seen": "2026-07-20"
+  },
+  {
+   "class": "P2_PRESCREEN_run_smoke_fail",
+   "pairs_phase_triples": 4,
+   "converged": 0,
+   "stranded": 4,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-07-29",
+   "last_seen": "2026-07-29"
+  },
+  {
+   "class": "q08_degenerate_neighborhood_baseline",
+   "pairs_phase_triples": 4,
+   "converged": 0,
+   "stranded": 4,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-07-24",
+   "last_seen": "2026-08-17"
+  },
+  {
+   "class": "brent_to_wti_reroute_incomplete",
+   "pairs_phase_triples": 19,
+   "converged": 16,
+   "stranded": 3,
+   "convergence_pct": 84.2,
+   "first_seen": "2026-08-12",
+   "last_seen": "2026-08-12"
+  },
+  {
+   "class": "duplicate_ex5",
+   "pairs_phase_triples": 17,
+   "converged": 14,
+   "stranded": 3,
+   "convergence_pct": 82.4,
+   "first_seen": "2026-06-10",
+   "last_seen": "2026-08-06"
+  },
+  {
+   "class": "launch_fault",
+   "pairs_phase_triples": 8,
+   "converged": 5,
+   "stranded": 3,
+   "convergence_pct": 62.5,
+   "first_seen": "2026-06-27",
+   "last_seen": "2026-07-10"
+  },
+  {
+   "class": "staged_ex5_preflight_failed",
+   "pairs_phase_triples": 16,
+   "converged": 13,
+   "stranded": 3,
+   "convergence_pct": 81.2,
+   "first_seen": "2026-08-06",
+   "last_seen": "2026-08-17"
+  },
+  {
+   "class": "worker_restart_released_stale_claim",
+   "pairs_phase_triples": 11,
+   "converged": 8,
+   "stranded": 3,
+   "convergence_pct": 72.7,
+   "first_seen": "2026-06-21",
+   "last_seen": "2026-06-27"
+  },
+  {
+   "class": "INFRA_FAIL",
+   "pairs_phase_triples": 2,
+   "converged": 0,
+   "stranded": 2,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-07-25",
+   "last_seen": "2026-08-03"
+  },
+  {
+   "class": "worker_process_missing_released_stale_claim",
+   "pairs_phase_triples": 3,
+   "converged": 1,
+   "stranded": 2,
+   "convergence_pct": 33.3,
+   "first_seen": "2026-06-26",
+   "last_seen": "2026-07-10"
+  },
+  {
+   "class": "<no reason> BLOCKED_STALE_BUILD_RESULT",
+   "pairs_phase_triples": 1,
+   "converged": 0,
+   "stranded": 1,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-07-29",
+   "last_seen": "2026-07-29"
+  },
+  {
+   "class": "CONFIG_LOCKED",
+   "pairs_phase_triples": 1,
+   "converged": 0,
+   "stranded": 1,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-08-08",
+   "last_seen": "2026-08-08"
+  },
+  {
+   "class": "FAIL_SOFT",
+   "pairs_phase_triples": 1,
+   "converged": 0,
+   "stranded": 1,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-07-18",
+   "last_seen": "2026-07-18"
+  },
+  {
+   "class": "REVIEW_REQUIRED",
+   "pairs_phase_triples": 1,
+   "converged": 0,
+   "stranded": 1,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-08-04",
+   "last_seen": "2026-08-06"
+  },
+  {
+   "class": "ea_dir_ambiguous",
+   "pairs_phase_triples": 1,
+   "converged": 0,
+   "stranded": 1,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-07-10",
+   "last_seen": "2026-07-10"
+  },
+  {
+   "class": "ea_dir_missing",
+   "pairs_phase_triples": 1,
+   "converged": 0,
+   "stranded": 1,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-07-21",
+   "last_seen": "2026-07-21"
+  },
+  {
+   "class": "malformed_host_symbol_binding",
+   "pairs_phase_triples": 1,
+   "converged": 0,
+   "stranded": 1,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-08-17",
+   "last_seen": "2026-08-17"
+  },
+  {
+   "class": "q04_probe_evidence_missing",
+   "pairs_phase_triples": 1,
+   "converged": 0,
+   "stranded": 1,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-08-17",
+   "last_seen": "2026-08-17"
+  },
+  {
+   "class": "q08_8.7_pbo",
+   "pairs_phase_triples": 1,
+   "converged": 0,
+   "stranded": 1,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-07-27",
+   "last_seen": "2026-07-27"
+  },
+  {
+   "class": "seed_zero_trades_outlier",
+   "pairs_phase_triples": 1,
+   "converged": 0,
+   "stranded": 1,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-08-17",
+   "last_seen": "2026-08-17"
+  },
+  {
+   "class": "staged_ex5_post_run_sha256_mismatch",
+   "pairs_phase_triples": 1,
+   "converged": 0,
+   "stranded": 1,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-08-16",
+   "last_seen": "2026-08-16"
+  },
+  {
+   "class": "summary_missing_no_valid_native_result",
+   "pairs_phase_triples": 1,
+   "converged": 0,
+   "stranded": 1,
+   "convergence_pct": 0.0,
+   "first_seen": "2026-07-29",
+   "last_seen": "2026-07-29"
+  },
+  {
+   "class": "MIN_TRADES_NOT_MET",
+   "pairs_phase_triples": 4,
+   "converged": 4,
+   "stranded": 0,
+   "convergence_pct": 100.0,
+   "first_seen": "2026-06-26",
+   "last_seen": "2026-07-29"
+  },
+  {
+   "class": "cold_cache_retry",
+   "pairs_phase_triples": 1,
+   "converged": 1,
+   "stranded": 0,
+   "convergence_pct": 100.0,
+   "first_seen": "2026-07-29",
+   "last_seen": "2026-07-29"
+  },
+  {
+   "class": "compile_gate",
+   "pairs_phase_triples": 3,
+   "converged": 3,
+   "stranded": 0,
+   "convergence_pct": 100.0,
+   "first_seen": "2026-08-17",
+   "last_seen": "2026-08-17"
+  },
+  {
+   "class": "ex5_missing",
+   "pairs_phase_triples": 14,
+   "converged": 14,
+   "stranded": 0,
+   "convergence_pct": 100.0,
+   "first_seen": "2026-06-18",
+   "last_seen": "2026-07-23"
+  },
+  {
+   "class": "invalid_superseded_stale_worker_no_currency_override",
+   "pairs_phase_triples": 1,
+   "converged": 1,
+   "stranded": 0,
+   "convergence_pct": 100.0,
+   "first_seen": "2026-06-26",
+   "last_seen": "2026-06-26"
+  },
+  {
+   "class": "staged_ex5_sha256_mismatch_before_spawn",
+   "pairs_phase_triples": 7,
+   "converged": 7,
+   "stranded": 0,
+   "convergence_pct": 100.0,
+   "first_seen": "2026-08-11",
+   "last_seen": "2026-08-16"
+  },
+  {
+   "class": "worker_loop_released_stale_claim",
+   "pairs_phase_triples": 1,
+   "converged": 1,
+   "stranded": 0,
+   "convergence_pct": 100.0,
+   "first_seen": "2026-06-23",
+   "last_seen": "2026-06-23"
+  }
+ ]
+}
