@@ -6,6 +6,7 @@ source_type: official_government_and_peer_reviewed_composite_lineage
 status: approved_for_cards
 approved_for_cards: true
 approval_record: decisions/2026-08-17_wti_wednesday_trend_agreement_source_approval.md
+approval_commit: ebe884e63
 approved_by: OWNER commodity/energy portfolio mission
 approved_at: 2026-08-17
 created: 2026-08-17
