@@ -17317,3 +17317,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9983,bandy-wide-range-bar-fade-mr-index,12,NZDUSD.DWX,99830012,2026-08-17,Codex governed allocator,active
 41039,xauxag-mflow-div,0,XAUUSD.DWX,410390000,2026-08-17T06:46:43Z,Codex,active
 41039,xauxag-mflow-div,1,XAGUSD.DWX,410390001,2026-08-17T06:46:43Z,Codex,active
+41040,xauxag-wflow-fade,0,XAUUSD.DWX,410400000,2026-08-17T07:42:55Z,Codex,active
+41040,xauxag-wflow-fade,1,XAGUSD.DWX,410400001,2026-08-17T07:42:55Z,Codex,active
