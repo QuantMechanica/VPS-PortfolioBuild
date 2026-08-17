@@ -1,0 +1,2269 @@
+{
+  "counts": {
+    "cohort_directories": 95,
+    "dispositions": {
+      "EMPTY_MANAGEMENT_HOOK": 54,
+      "MANAGEMENT_ANCHORED_TO_FILL": 19,
+      "NO_MQ5_SOURCE": 1,
+      "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE": 20,
+      "UNANCHORED_SIGNAL_PROJECTION_TARGETS": 1
+    },
+    "ea_directories_scanned": 3610,
+    "source_bearing_cohort_directories": 94,
+    "source_files_examined": 94
+  },
+  "eas": [
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_10001_ff-static-fib-open",
+      "ea_id": "QM5_10001",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "ff-static-fib-open",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_10001_ff-static-fib-open/QM5_10001_ff-static-fib-open.mq5",
+          "sha256": "4c5dd567bd01e2bc4a7fa77c12111eb035817d0214aa985aabe10f8a40f9f847"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_10070_mql5-fib-pa",
+      "ea_id": "QM5_10070",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "mql5-fib-pa",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_10070_mql5-fib-pa/QM5_10070_mql5-fib-pa.mq5",
+          "sha256": "39d033adeedc2ad6c93b390979605c8a44dfb0e60de1e2b0bc06964eac52c184"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_10184_tv-atr-zigzag-break",
+      "ea_id": "QM5_10184",
+      "matched_terms": [
+        "zigzag"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "tv-atr-zigzag-break",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_10184_tv-atr-zigzag-break/QM5_10184_tv-atr-zigzag-break.mq5",
+          "sha256": "9938b74053304c4f807ef5635f2df29cd9edd1873b86553408b0c2637984f8b6"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_10197_tv-ssl-wavetrend",
+      "ea_id": "QM5_10197",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "tv-ssl-wavetrend",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_10197_tv-ssl-wavetrend/QM5_10197_tv-ssl-wavetrend.mq5",
+          "sha256": "3cc4c7885f22b98da2d4ffcd2ddb0552d5b8e69ef86921e97766a1325de9f9ce"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_10689_tv-zigzag-bos",
+      "ea_id": "QM5_10689",
+      "matched_terms": [
+        "zigzag"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "tv-zigzag-bos",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_10689_tv-zigzag-bos/QM5_10689_tv-zigzag-bos.mq5",
+          "sha256": "d33485ca16e7f0f6f9ef0b937cff3f1b1d1a1ba2530ee8fcc640eba31d62e852"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_10789_tv-band-zigzag",
+      "ea_id": "QM5_10789",
+      "matched_terms": [
+        "zigzag"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "tv-band-zigzag",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_10789_tv-band-zigzag/QM5_10789_tv-band-zigzag.mq5",
+          "sha256": "fceb9bb7349cb4f9c210cad7664ddee616f3b8486e8431569ca7aefda0f8719e"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_10962_ftmo-ichi-fib",
+      "ea_id": "QM5_10962",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "ftmo-ichi-fib",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_10962_ftmo-ichi-fib/QM5_10962_ftmo-ichi-fib.mq5",
+          "sha256": "c89fa77ec4e1b66e192193df969f8ddb9149881068684fdfda5d47205e5d98ea"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_11016_the5ers-fib-breaker",
+      "ea_id": "QM5_11016",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "the5ers-fib-breaker",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11016_the5ers-fib-breaker/QM5_11016_the5ers-fib-breaker.mq5",
+          "sha256": "f2a4d62ab2d52c4be65f0f3ba5c09d8d873cd19f15d7aada9fb7819effd92162"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_11025_atc-fib-levels",
+      "ea_id": "QM5_11025",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "atc-fib-levels",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11025_atc-fib-levels/QM5_11025_atc-fib-levels.mq5",
+          "sha256": "c7680dc9008b1cad82bec5e1b2ea33e21172ab9bec9f1988e9260d55ec89ecbb"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_11030_atc-zigzag-pend",
+      "ea_id": "QM5_11030",
+      "matched_terms": [
+        "zigzag"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "atc-zigzag-pend",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11030_atc-zigzag-pend/QM5_11030_atc-zigzag-pend.mq5",
+          "sha256": "edf6dbb028655d3cc33259870f5a389cf34269bddaf0f4bd64ca76a12eb3543b"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_11042_atc-m15-zigzag",
+      "ea_id": "QM5_11042",
+      "matched_terms": [
+        "zigzag"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "atc-m15-zigzag",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11042_atc-m15-zigzag/QM5_11042_atc-m15-zigzag.mq5",
+          "sha256": "83b3eedcb10cdb2c62b13890a4c0ef7a4b785cf2c94ffe220b5eb541b5a9e821"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_11064_atc-zigzag-break",
+      "ea_id": "QM5_11064",
+      "matched_terms": [
+        "zigzag"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "atc-zigzag-break",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11064_atc-zigzag-break/QM5_11064_atc-zigzag-break.mq5",
+          "sha256": "dcf663882e7647c11a2af503a8faa03f74c7c4999409d64127341cb83edf3dcb"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_11103_psar-zigzag-rev",
+      "ea_id": "QM5_11103",
+      "matched_terms": [
+        "zigzag"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "psar-zigzag-rev",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11103_psar-zigzag-rev/QM5_11103_psar-zigzag-rev.mq5",
+          "sha256": "038c8397d0fbbd6e587ff34d203b2545acc6c81737ed87c7da5847033ef5b6b1"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_11195_ft-cdlwave",
+      "ea_id": "QM5_11195",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "ft-cdlwave",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11195_ft-cdlwave/QM5_11195_ft-cdlwave.mq5",
+          "sha256": "f106c385014e6e132787e5e29e4a78018b8ece96549b76338df34f7981aa56a2"
+        }
+      ]
+    },
+    {
+      "disposition": "NO_MQ5_SOURCE",
+      "ea": "QM5_11213_ft-cofibit",
+      "ea_id": "QM5_11213",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 0,
+        "position_price_open": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "ft-cofibit",
+      "sources": []
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_11281_macd-5-13-1-pattern-h4",
+      "ea_id": "QM5_11281",
+      "matched_terms": [
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "macd-5-13-1-pattern-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11281_macd-5-13-1-pattern-h4/QM5_11281_macd-5-13-1-pattern-h4.mq5",
+          "sha256": "b9ce110d7b8b7cba5e29fdf21720dd9b0b15686dd5eaa3cf7b6b25ef0c9aa732"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_11293_ema5-13-fib-cross-h1",
+      "ea_id": "QM5_11293",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "ema5-13-fib-cross-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11293_ema5-13-fib-cross-h1/QM5_11293_ema5-13-fib-cross-h1.mq5",
+          "sha256": "c0bfca0c8c3516d458b50cb8b78b6e77e1ac0963aa25615c9a0ae30216331ef1"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_11339_tc20-h1-15-ema5-21-rsi21-candle-pattern",
+      "ea_id": "QM5_11339",
+      "matched_terms": [
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "tc20-h1-15-ema5-21-rsi21-candle-pattern",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11339_tc20-h1-15-ema5-21-rsi21-candle-pattern/QM5_11339_tc20-h1-15-ema5-21-rsi21-candle-pattern.mq5",
+          "sha256": "5cf1e0c4443eda099463c94478630a93dde71a9eebf4cf797e131c2aa598732b"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_11377_vegas-wave-ema144-169-fractal-h1",
+      "ea_id": "QM5_11377",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "vegas-wave-ema144-169-fractal-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11377_vegas-wave-ema144-169-fractal-h1/QM5_11377_vegas-wave-ema144-169-fractal-h1.mq5",
+          "sha256": "fc8fa4c3671f1743fab3d52db86cdab40e9da491ce0ee778981cac6a5ab9c299"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_11387_bermuda-123-fib-retrace-h1h4",
+      "ea_id": "QM5_11387",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "bermuda-123-fib-retrace-h1h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11387_bermuda-123-fib-retrace-h1h4/QM5_11387_bermuda-123-fib-retrace-h1h4.mq5",
+          "sha256": "e54d8aa2cf6d37ff7613fd9a84b48e3a01967b13bc13052ed72606420878f0ca"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_11392_justforex-momentum7-divergence-fib",
+      "ea_id": "QM5_11392",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "justforex-momentum7-divergence-fib",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11392_justforex-momentum7-divergence-fib/QM5_11392_justforex-momentum7-divergence-fib.mq5",
+          "sha256": "90d5e314abb5a4d42776cb854b6f7ea774246f33639978af448172705adeb673"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_11418_nordstrom-abc-fib-reversal-h1",
+      "ea_id": "QM5_11418",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "nordstrom-abc-fib-reversal-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11418_nordstrom-abc-fib-reversal-h1/QM5_11418_nordstrom-abc-fib-reversal-h1.mq5",
+          "sha256": "41e9132db4c44daa4008d19a67d10b91d293877e25d6f26b6ea4b7563758bd02"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_11451_vegas-wave-ema144ema169-fractal-h1",
+      "ea_id": "QM5_11451",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "vegas-wave-ema144ema169-fractal-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11451_vegas-wave-ema144ema169-fractal-h1/QM5_11451_vegas-wave-ema144ema169-fractal-h1.mq5",
+          "sha256": "0e21f97b9ae18c817d929ec9275f541d24d81802284d5e84bbbeca76284fc00d"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_11466_samuels-123-pattern-fractal-d1h4",
+      "ea_id": "QM5_11466",
+      "matched_terms": [
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "samuels-123-pattern-fractal-d1h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11466_samuels-123-pattern-fractal-d1h4/QM5_11466_samuels-123-pattern-fractal-d1h4.mq5",
+          "sha256": "4df660cf6ba74bf2ef8dd3ffe4373cf1c452d8a7fa35d23da399892c431781c0"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_11488_samuels-j-123-pattern-pullback-d1",
+      "ea_id": "QM5_11488",
+      "matched_terms": [
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "samuels-j-123-pattern-pullback-d1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11488_samuels-j-123-pattern-pullback-d1/QM5_11488_samuels-j-123-pattern-pullback-d1.mq5",
+          "sha256": "3bdc606148a26ea644d6072ab194a86f4793485047ea5ffbd8b1412ab551894f"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_11715_tradingwalk-abc-fib-extension",
+      "ea_id": "QM5_11715",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "tradingwalk-abc-fib-extension",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11715_tradingwalk-abc-fib-extension/QM5_11715_tradingwalk-abc-fib-extension.mq5",
+          "sha256": "a599db236e4ee5736cd82bf3b4c9b3793969cb47f335bfd103960401686717e2"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_11765_ema5-ema13-fibonacci-cross-h1",
+      "ea_id": "QM5_11765",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "ema5-ema13-fibonacci-cross-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11765_ema5-ema13-fibonacci-cross-h1/QM5_11765_ema5-ema13-fibonacci-cross-h1.mq5",
+          "sha256": "459fb7418cb9abf9dcce1da27e8839d00a59c31c717dde305c647e71c90b35a9"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_11850_vegas-wave-ema144169-h1",
+      "ea_id": "QM5_11850",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "vegas-wave-ema144169-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11850_vegas-wave-ema144169-h1/QM5_11850_vegas-wave-ema144169-h1.mq5",
+          "sha256": "1c975929291f5bfd659317966b0be494b401784983e67d1ec990e0709cba49bd"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_11851_bermuda-123-fib-h1",
+      "ea_id": "QM5_11851",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "bermuda-123-fib-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11851_bermuda-123-fib-h1/QM5_11851_bermuda-123-fib-h1.mq5",
+          "sha256": "987abe1b15a07d769b38d4f3c34b1b2d1d512744dc05806505ab0b43e098bf72"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_11891_unger-daily-factor-indecision-pattern",
+      "ea_id": "QM5_11891",
+      "matched_terms": [
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "unger-daily-factor-indecision-pattern",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11891_unger-daily-factor-indecision-pattern/QM5_11891_unger-daily-factor-indecision-pattern.mq5",
+          "sha256": "49d28c2b387a64a9efdfff24e24e7cf952f905cf9063d83e2fdc005c2fb27c09"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_11892_samuels-123-reversal-pattern",
+      "ea_id": "QM5_11892",
+      "matched_terms": [
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "samuels-123-reversal-pattern",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11892_samuels-123-reversal-pattern/QM5_11892_samuels-123-reversal-pattern.mq5",
+          "sha256": "87f1d4e8a0c499f94db92cf03d0b8a8e63417f32db23906849b97c1c5ff7bd48"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_11897_vegas-wave-ema144-169-fractal-h1-alt",
+      "ea_id": "QM5_11897",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "vegas-wave-ema144-169-fractal-h1-alt",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11897_vegas-wave-ema144-169-fractal-h1-alt/QM5_11897_vegas-wave-ema144-169-fractal-h1-alt.mq5",
+          "sha256": "63a150bb5efb0105e5ad0bcfacf67509ea3d95ca5c426d36677f3d898482dc50"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_11902_bermuda-triangle-123-fib-extension-h1",
+      "ea_id": "QM5_11902",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "bermuda-triangle-123-fib-extension-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11902_bermuda-triangle-123-fib-extension-h1/QM5_11902_bermuda-triangle-123-fib-extension-h1.mq5",
+          "sha256": "89336a26afa0b9f7def7ee4dc5c419fe8dc99599d7626d281f71f6cb538cd2b4"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_11904_grimes-sperandeo-failure-test-2b-h1",
+      "ea_id": "QM5_11904",
+      "matched_terms": [
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "grimes-sperandeo-failure-test-2b-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_11904_grimes-sperandeo-failure-test-2b-h1/QM5_11904_grimes-sperandeo-failure-test-2b-h1.mq5",
+          "sha256": "1748eb75d9a9033a117ad1105f245a2a8d44887231f302fcf99b152c8ed5e7c4"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_12737_eia-wti-drive",
+      "ea_id": "QM5_12737",
+      "matched_terms": [
+        "drive"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "eia-wti-drive",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_12737_eia-wti-drive/QM5_12737_eia-wti-drive.mq5",
+          "sha256": "9c694c3525f5fdbfff677e27166b433d542e6993fd1a27d491977bde12adad07"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_12740_eia-wti-postdrive",
+      "ea_id": "QM5_12740",
+      "matched_terms": [
+        "drive"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "eia-wti-postdrive",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_12740_eia-wti-postdrive/QM5_12740_eia-wti-postdrive.mq5",
+          "sha256": "5bd2c68fd22c828cd87ee53efa15444b6d9c01e2a6de26efccc1e4a46e36a6f6"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_12746_eia-wti-drive-pb",
+      "ea_id": "QM5_12746",
+      "matched_terms": [
+        "drive"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "eia-wti-drive-pb",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_12746_eia-wti-drive-pb/QM5_12746_eia-wti-drive-pb.mq5",
+          "sha256": "7c899bb34bca9aac1d332c23c6bb04b86bb1bb5e0f4aaa6b85c01dd9a3c11240"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_12816_harmonic-cypher",
+      "ea_id": "QM5_12816",
+      "matched_terms": [
+        "cypher",
+        "harmonic"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "harmonic-cypher",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_12816_harmonic-cypher/QM5_12816_harmonic-cypher.mq5",
+          "sha256": "af77b5c19b9c09ca1b9a017cc9cd19c5b1e401679ca8491bf8c4d5c1733e337f"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_12935_sperandeo-tlb-refinement-h4",
+      "ea_id": "QM5_12935",
+      "matched_terms": [
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "sperandeo-tlb-refinement-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_12935_sperandeo-tlb-refinement-h4/QM5_12935_sperandeo-tlb-refinement-h4.mq5",
+          "sha256": "c1e9bdc58fcc50ef288b82a05089c743ff82bd317cbd31be40610644e6ce08e9"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_12939_carney-alternate-bat-h4",
+      "ea_id": "QM5_12939",
+      "matched_terms": [
+        "bat",
+        "carney"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "carney-alternate-bat-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_12939_carney-alternate-bat-h4/QM5_12939_carney-alternate-bat-h4.mq5",
+          "sha256": "652891188c4ac9dbc86b1627b88b7829a4128ef92b8fa3f27b6b9bd53cb8df60"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_12944_sperandeo-trend-fault-line-h4",
+      "ea_id": "QM5_12944",
+      "matched_terms": [
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "sperandeo-trend-fault-line-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_12944_sperandeo-trend-fault-line-h4/QM5_12944_sperandeo-trend-fault-line-h4.mq5",
+          "sha256": "acda9944f68e8a8dd2e48276917a9d08276451504706f35dd482a457fd92e5bf"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1311_carter-ttm-wave-h1",
+      "ea_id": "QM5_1311",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "carter-ttm-wave-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1311_carter-ttm-wave-h1/QM5_1311_carter-ttm-wave-h1.mq5",
+          "sha256": "5df5b58ef7c44ef69842b29fc6fe3d2e3d4705045c228f3f6ef74c8bd124c1d0"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1328_wave59-quickstrike-pivot-of-pivot-h1",
+      "ea_id": "QM5_1328",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "wave59-quickstrike-pivot-of-pivot-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1328_wave59-quickstrike-pivot-of-pivot-h1/QM5_1328_wave59-quickstrike-pivot-of-pivot-h1.mq5",
+          "sha256": "dadb10b8f49203337e1ee34838ac084959e9a0688dbea5896ee87b330aa3f375"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_1369_goodman-wave-theory-3c-h1",
+      "ea_id": "QM5_1369",
+      "matched_terms": [
+        "goodman",
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "goodman-wave-theory-3c-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1369_goodman-wave-theory-3c-h1/QM5_1369_goodman-wave-theory-3c-h1.mq5",
+          "sha256": "0bc68d2086aa43d7d54bc06ff9934304d3767aa15c09f9d5ba2dd73638b88727"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1374_carter-ttm-wave-h1",
+      "ea_id": "QM5_1374",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "carter-ttm-wave-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1374_carter-ttm-wave-h1/QM5_1374_carter-ttm-wave-h1.mq5",
+          "sha256": "86677fc18096a7ff95bcf80d12545ccccb7513929734ba9c57b526f59c421e33"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_1376_harmonic-gartley-xabcd-h4",
+      "ea_id": "QM5_1376",
+      "matched_terms": [
+        "abcd",
+        "gartley",
+        "harmonic"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "harmonic-gartley-xabcd-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1376_harmonic-gartley-xabcd-h4/QM5_1376_harmonic-gartley-xabcd-h4.mq5",
+          "sha256": "43ab951964f826498242a04e6e44b1df01600d78c4e80e119bd295f726dc52e8"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_1383_wave59-quickstrike-gann-h4",
+      "ea_id": "QM5_1383",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "wave59-quickstrike-gann-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1383_wave59-quickstrike-gann-h4/QM5_1383_wave59-quickstrike-gann-h4.mq5",
+          "sha256": "a2ae9660b5b57995f16161f7013d2cf86940e430f7f5a684b4990857b569ab62"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1384_wave59-time-cycle-tlb-h4",
+      "ea_id": "QM5_1384",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "wave59-time-cycle-tlb-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1384_wave59-time-cycle-tlb-h4/QM5_1384_wave59-time-cycle-tlb-h4.mq5",
+          "sha256": "3e8973be76f4f3bf2ffaa5dacc51960e8fb69ae4cb4e096ed310f7c46e5d535e"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_1389_goodman-wave-theory-measured-move-h1",
+      "ea_id": "QM5_1389",
+      "matched_terms": [
+        "goodman",
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "goodman-wave-theory-measured-move-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1389_goodman-wave-theory-measured-move-h1/QM5_1389_goodman-wave-theory-measured-move-h1.mq5",
+          "sha256": "cbb994706f50c8f98f8feec540a917e2e2835da0e7c3d227d00a933b588e1097"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_1391_harmonic-bat-xabcd-h4",
+      "ea_id": "QM5_1391",
+      "matched_terms": [
+        "abcd",
+        "bat",
+        "harmonic"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "harmonic-bat-xabcd-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1391_harmonic-bat-xabcd-h4/QM5_1391_harmonic-bat-xabcd-h4.mq5",
+          "sha256": "890886a6822c30085190ca0724311f4045050a8f931e4807379a3d829ccf0b7d"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_1395_harmonic-butterfly-xabcd-h4",
+      "ea_id": "QM5_1395",
+      "matched_terms": [
+        "abcd",
+        "butterfly",
+        "harmonic"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "harmonic-butterfly-xabcd-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1395_harmonic-butterfly-xabcd-h4/QM5_1395_harmonic-butterfly-xabcd-h4.mq5",
+          "sha256": "a6a9e247e0c588afb088cea33b226008524b1dba7c7d54306f7a96d4e6558609"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_1397_harmonic-gartley-xabcd-h4",
+      "ea_id": "QM5_1397",
+      "matched_terms": [
+        "abcd",
+        "gartley",
+        "harmonic"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "harmonic-gartley-xabcd-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1397_harmonic-gartley-xabcd-h4/QM5_1397_harmonic-gartley-xabcd-h4.mq5",
+          "sha256": "a2eed9ccff3b3d6bded2c638d92253a519c6428c252bac8db3cc66a020325501"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1401_harmonic-shark-xabcd-h4",
+      "ea_id": "QM5_1401",
+      "matched_terms": [
+        "abcd",
+        "harmonic",
+        "shark"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "harmonic-shark-xabcd-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1401_harmonic-shark-xabcd-h4/QM5_1401_harmonic-shark-xabcd-h4.mq5",
+          "sha256": "a9621d4590d69e74c5626bf6cd655313d324d795fdab3bc1fdb56edaa91864e5"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1402_harmonic-cypher-xabcd-h4",
+      "ea_id": "QM5_1402",
+      "matched_terms": [
+        "abcd",
+        "cypher",
+        "harmonic"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "harmonic-cypher-xabcd-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1402_harmonic-cypher-xabcd-h4/QM5_1402_harmonic-cypher-xabcd-h4.mq5",
+          "sha256": "20b71f7032039f4d7afc1a24d4d7a88dda240b1262867cd48fc3d9654600f5ed"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_1403_harmonic-5-0-pattern-h4",
+      "ea_id": "QM5_1403",
+      "matched_terms": [
+        "5-0",
+        "harmonic",
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "harmonic-5-0-pattern-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1403_harmonic-5-0-pattern-h4/QM5_1403_harmonic-5-0-pattern-h4.mq5",
+          "sha256": "7a4aab26f6c2c49c775551c0bf5c6b92a0ac205694993a2ea6266ed7adcfb8b7"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_1440_carter-ttm-wave-h4",
+      "ea_id": "QM5_1440",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "carter-ttm-wave-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1440_carter-ttm-wave-h4/QM5_1440_carter-ttm-wave-h4.mq5",
+          "sha256": "df635cd1d8510e30f2dd6c0e8d45d1f591c309a1dbdde5fafc0a08c21a91ad47"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1445_carney-three-drive-h4",
+      "ea_id": "QM5_1445",
+      "matched_terms": [
+        "carney",
+        "drive"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "carney-three-drive-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1445_carney-three-drive-h4/QM5_1445_carney-three-drive-h4.mq5",
+          "sha256": "f52e48e9c15908e6862d9ad3395c63d6c173b4b109622c7a08103ec6cb7428da"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1482_carney-three-drive-harmonic-h4",
+      "ea_id": "QM5_1482",
+      "matched_terms": [
+        "carney",
+        "drive",
+        "harmonic"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "carney-three-drive-harmonic-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1482_carney-three-drive-harmonic-h4/QM5_1482_carney-three-drive-harmonic-h4.mq5",
+          "sha256": "ad75e3f15c8a5ac3dbdf8a0c9e75d212ea83e8eae8e90e506610e1c1fdd17cc6"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_1491_ehlers-sinewave-leadsine-cross-h4",
+      "ea_id": "QM5_1491",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "ehlers-sinewave-leadsine-cross-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1491_ehlers-sinewave-leadsine-cross-h4/QM5_1491_ehlers-sinewave-leadsine-cross-h4.mq5",
+          "sha256": "d6fbb874cd98358348f10a3cc7eee69fe9afd11fa4cfa5f41c16334fa33d4920"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_1493_hopwood-pattern-recognition-master-h4",
+      "ea_id": "QM5_1493",
+      "matched_terms": [
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "hopwood-pattern-recognition-master-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1493_hopwood-pattern-recognition-master-h4/QM5_1493_hopwood-pattern-recognition-master-h4.mq5",
+          "sha256": "85ed4c01d4eba06529c36c0b845fcbb1a51abc329afae6fdfc8110fcd6e8a7e6"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1509_ehlers-even-better-sinewave-h4",
+      "ea_id": "QM5_1509",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "ehlers-even-better-sinewave-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1509_ehlers-even-better-sinewave-h4/QM5_1509_ehlers-even-better-sinewave-h4.mq5",
+          "sha256": "af5a07cd5f10d0d019c87e675cc8095822d3359c5bc149a31e3b7a5045746b1f"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_1579_sperandeo-tlb-swing-pivot-h4",
+      "ea_id": "QM5_1579",
+      "matched_terms": [
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "sperandeo-tlb-swing-pivot-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1579_sperandeo-tlb-swing-pivot-h4/QM5_1579_sperandeo-tlb-swing-pivot-h4.mq5",
+          "sha256": "b529687edd526ec3e00cf75d41ab4e5635e56bc8075b06f1908ea27ebd902f57"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1592_ehlers-even-better-sinewave-mtf-h4",
+      "ea_id": "QM5_1592",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "ehlers-even-better-sinewave-mtf-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1592_ehlers-even-better-sinewave-mtf-h4/QM5_1592_ehlers-even-better-sinewave-mtf-h4.mq5",
+          "sha256": "8c66100253c4f37c2db8bd8bf85325bd9d2f3b1ca056975f6774f46d5d587d38"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1593_carney-bat-pattern-h4",
+      "ea_id": "QM5_1593",
+      "matched_terms": [
+        "bat",
+        "carney",
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "carney-bat-pattern-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1593_carney-bat-pattern-h4/QM5_1593_carney-bat-pattern-h4.mq5",
+          "sha256": "d4a29eb80f579fdd4266cce4e3d215bd50319aed26e77d639e04624c17c6dbea"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1595_sperandeo-2b-pivot-h4",
+      "ea_id": "QM5_1595",
+      "matched_terms": [
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "sperandeo-2b-pivot-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1595_sperandeo-2b-pivot-h4/QM5_1595_sperandeo-2b-pivot-h4.mq5",
+          "sha256": "dd2c28ab596d03486a149b0c4f4b1f1abbe0a5479c7330c2b28e84f14c3a407d"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1604_sperandeo-123-reversal-h4",
+      "ea_id": "QM5_1604",
+      "matched_terms": [
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "sperandeo-123-reversal-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1604_sperandeo-123-reversal-h4/QM5_1604_sperandeo-123-reversal-h4.mq5",
+          "sha256": "2a47ca60947eb1db10247eefa4037b693ac0ab162d8cf8a16de45ed9cf5f4510"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_1628_carney-5-0-pattern-h4",
+      "ea_id": "QM5_1628",
+      "matched_terms": [
+        "5-0",
+        "carney",
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "carney-5-0-pattern-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1628_carney-5-0-pattern-h4/QM5_1628_carney-5-0-pattern-h4.mq5",
+          "sha256": "625605c4c0c8e070f8892b8b7eab0f4e5e2084fab0187e1a0f19c110f1e1b051"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1636_sperandeo-3day-pivot-rule-h4",
+      "ea_id": "QM5_1636",
+      "matched_terms": [
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "sperandeo-3day-pivot-rule-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1636_sperandeo-3day-pivot-rule-h4/QM5_1636_sperandeo-3day-pivot-rule-h4.mq5",
+          "sha256": "1e63a8d423a94fd995c269ef83d016a1ab8f1c3fadf8c1f587573615dafa2f65"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1645_carney-cypher-pattern-h4",
+      "ea_id": "QM5_1645",
+      "matched_terms": [
+        "carney",
+        "cypher",
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "carney-cypher-pattern-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1645_carney-cypher-pattern-h4/QM5_1645_carney-cypher-pattern-h4.mq5",
+          "sha256": "d1701eeee6cf46232b801fc282369c64133398449f218c99aca9dd4a7ef85cde"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1649_carney-cypher-pattern-h4",
+      "ea_id": "QM5_1649",
+      "matched_terms": [
+        "carney",
+        "cypher",
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "carney-cypher-pattern-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1649_carney-cypher-pattern-h4/QM5_1649_carney-cypher-pattern-h4.mq5",
+          "sha256": "dfbbc69448adf8e6185b03684661b3f4ea6247f2c4af5721de00a0d5b58a7acc"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1650_sperandeo-trader-vic-ii-pattern-h4",
+      "ea_id": "QM5_1650",
+      "matched_terms": [
+        "pattern",
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "sperandeo-trader-vic-ii-pattern-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1650_sperandeo-trader-vic-ii-pattern-h4/QM5_1650_sperandeo-trader-vic-ii-pattern-h4.mq5",
+          "sha256": "e23e0361f4935d70b4f47438388b5f824f9fd726802bf06a86965b3a64c9e59d"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1653_sperandeo-test-of-strength-h4",
+      "ea_id": "QM5_1653",
+      "matched_terms": [
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "sperandeo-test-of-strength-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1653_sperandeo-test-of-strength-h4/QM5_1653_sperandeo-test-of-strength-h4.mq5",
+          "sha256": "0901ea06b58c95bcc1da6e1dbd77d4d20905dc1757d666bb03259310f27e4d21"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1673_sperandeo-tvii-trendline-failure-h4",
+      "ea_id": "QM5_1673",
+      "matched_terms": [
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "sperandeo-tvii-trendline-failure-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1673_sperandeo-tvii-trendline-failure-h4/QM5_1673_sperandeo-tvii-trendline-failure-h4.mq5",
+          "sha256": "64a955e616d0a6a5ddb5d6542aca0eab829770f192d6b5817b72515073c3c7b9"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1703_sperandeo-multiple-top-bottom-h4",
+      "ea_id": "QM5_1703",
+      "matched_terms": [
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "sperandeo-multiple-top-bottom-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1703_sperandeo-multiple-top-bottom-h4/QM5_1703_sperandeo-multiple-top-bottom-h4.mq5",
+          "sha256": "ae113e565cfa86cc2dd7bcb95ff1cf9feec3494075281d507f09032b615e60e2"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_1859_carney-pesavento-ratio-symmetry-h4",
+      "ea_id": "QM5_1859",
+      "matched_terms": [
+        "carney",
+        "pesavento"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "carney-pesavento-ratio-symmetry-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_1859_carney-pesavento-ratio-symmetry-h4/QM5_1859_carney-pesavento-ratio-symmetry-h4.mq5",
+          "sha256": "9578461b1a4938489bc14cbb7b32b91493ebd3a70c233ce9d5f9cc11656af322"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_2003_nnfx-wave-sniper",
+      "ea_id": "QM5_2003",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "nnfx-wave-sniper",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_2003_nnfx-wave-sniper/QM5_2003_nnfx-wave-sniper.mq5",
+          "sha256": "bfed9d5686210490eb6c457d51a5ff394b81f3101939f5f648c1a38c24da9765"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_20080_goodman-wave-theory-intersection-h1",
+      "ea_id": "QM5_20080",
+      "matched_terms": [
+        "goodman",
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "goodman-wave-theory-intersection-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_20080_goodman-wave-theory-intersection-h1/QM5_20080_goodman-wave-theory-intersection-h1.mq5",
+          "sha256": "d8a88301d952be4ff984ef07af6b052a2576660c9d9208ce7244916f3b915fd2"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_20087_carney-three-drives-h4-r1-recovery",
+      "ea_id": "QM5_20087",
+      "matched_terms": [
+        "carney",
+        "drive"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "carney-three-drives-h4-r1-recovery",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_20087_carney-three-drives-h4-r1-recovery/QM5_20087_carney-three-drives-h4-r1-recovery.mq5",
+          "sha256": "75ccb808207ca9bd84b4c648ee456b6345fc9b2cff37f59c3798ce28739341bc"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_20088_carney-crab-pattern-h4-r1-recovery",
+      "ea_id": "QM5_20088",
+      "matched_terms": [
+        "carney",
+        "crab",
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "carney-crab-pattern-h4-r1-recovery",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_20088_carney-crab-pattern-h4-r1-recovery/QM5_20088_carney-crab-pattern-h4-r1-recovery.mq5",
+          "sha256": "26c3febaebb483234feac9d757d9f1927de7ef05b015e40670ae3f15ea774789"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_20111_london-box-fib-straddle",
+      "ea_id": "QM5_20111",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "london-box-fib-straddle",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_20111_london-box-fib-straddle/QM5_20111_london-box-fib-straddle.mq5",
+          "sha256": "a24dba7ef0bfe60ca172605a9a862ba24d8d852d7140bce01ceb2d0c3a224ebf"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_20150_emacross-stochhook-fib-h4",
+      "ea_id": "QM5_20150",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": true
+      },
+      "slug": "emacross-stochhook-fib-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_20150_emacross-stochhook-fib-h4/QM5_20150_emacross-stochhook-fib-h4.mq5",
+          "sha256": "03d4418fb4f6a599f9e879e4add455f8f11422628e279f902b075e35a82e7ad2"
+        }
+      ]
+    },
+    {
+      "disposition": "UNANCHORED_SIGNAL_PROJECTION_TARGETS",
+      "ea": "QM5_20177_carney-ab-cd-pattern-h4-r1-recovery",
+      "ea_id": "QM5_20177",
+      "matched_terms": [
+        "carney",
+        "pattern"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": true,
+        "projection_state_d_and_c": true,
+        "strategy_close_call": true
+      },
+      "slug": "carney-ab-cd-pattern-h4-r1-recovery",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_20177_carney-ab-cd-pattern-h4-r1-recovery/QM5_20177_carney-ab-cd-pattern-h4-r1-recovery.mq5",
+          "sha256": "25ac3f5d38956c8135f8dafdbf972c493097938aaa29861515cb5ce7fee2db71"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_20179_pesavento-abcd-pattern-h4-r1-recovery",
+      "ea_id": "QM5_20179",
+      "matched_terms": [
+        "abcd",
+        "pattern",
+        "pesavento"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "pesavento-abcd-pattern-h4-r1-recovery",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_20179_pesavento-abcd-pattern-h4-r1-recovery/QM5_20179_pesavento-abcd-pattern-h4-r1-recovery.mq5",
+          "sha256": "b80a736f064d8dfd4b5f5df7871d01240d2271b11247b1a5bc6faf7d92e03191"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_2023_demark-td-d-wave-wave5-h4",
+      "ea_id": "QM5_2023",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "demark-td-d-wave-wave5-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_2023_demark-td-d-wave-wave5-h4/QM5_2023_demark-td-d-wave-wave5-h4.mq5",
+          "sha256": "561366cd44120c33d19a0dde8e38c3294bb7719d2381c8d9df4fb187f1597c82"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_2078_ehlers-sine-wave-h4",
+      "ea_id": "QM5_2078",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "ehlers-sine-wave-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_2078_ehlers-sine-wave-h4/QM5_2078_ehlers-sine-wave-h4.mq5",
+          "sha256": "f497b50397cfe71c8274cd8cdf09e87f809aa1403dd6568d51d3bf159a680ce6"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_2297_sperandeo-channel-buster-h4",
+      "ea_id": "QM5_2297",
+      "matched_terms": [
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "sperandeo-channel-buster-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_2297_sperandeo-channel-buster-h4/QM5_2297_sperandeo-channel-buster-h4.mq5",
+          "sha256": "6943c4324305af6a61ea4bfe348b1cfff5cb7f2fd930add0606348aed3e0caf2"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_2463_sperandeo-spring-channel-h4",
+      "ea_id": "QM5_2463",
+      "matched_terms": [
+        "sperandeo"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "sperandeo-spring-channel-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_2463_sperandeo-spring-channel-h4/QM5_2463_sperandeo-spring-channel-h4.mq5",
+          "sha256": "04e43ac3406d0846c673abeb390476e0b7e7213dae98afe28350018389c894e3"
+        }
+      ]
+    },
+    {
+      "disposition": "MANAGEMENT_ANCHORED_TO_FILL",
+      "ea": "QM5_30002_zigzag-gold-breakout-happy-gold",
+      "ea_id": "QM5_30002",
+      "matched_terms": [
+        "zigzag"
+      ],
+      "signals": {
+        "live_bid_or_ask": true,
+        "management_hook_count": 1,
+        "position_price_open": true,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "zigzag-gold-breakout-happy-gold",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_30002_zigzag-gold-breakout-happy-gold/QM5_30002_zigzag-gold-breakout-happy-gold.mq5",
+          "sha256": "6cb820e755545865ae51eb7bdf94dce35ebba5749c29389fa9af8a2f0ec993a6"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_9167_tv-boswaves-supertrend-extensions",
+      "ea_id": "QM5_9167",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "tv-boswaves-supertrend-extensions",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_9167_tv-boswaves-supertrend-extensions/QM5_9167_tv-boswaves-supertrend-extensions.mq5",
+          "sha256": "413166791c7ab7842e4a6f4bcc65d16235d6cbf8cc12b2df54419bb116d6e51c"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_9191_mql5-butterfly",
+      "ea_id": "QM5_9191",
+      "matched_terms": [
+        "butterfly"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "mql5-butterfly",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_9191_mql5-butterfly/QM5_9191_mql5-butterfly.mq5",
+          "sha256": "2f5326c2308819d9aee0080ac988727f589ca6980518e428aefac513a3a863bf"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_9274_mql5-five-drives",
+      "ea_id": "QM5_9274",
+      "matched_terms": [
+        "drive"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "mql5-five-drives",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_9274_mql5-five-drives/QM5_9274_mql5-five-drives.mq5",
+          "sha256": "7c716f21baf372a4444190829bf0b4bef1ab2c3d9eae5579104458242f1658b8"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_9354_demark-td-dwave-wave4-h4",
+      "ea_id": "QM5_9354",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "demark-td-dwave-wave4-h4",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_9354_demark-td-dwave-wave4-h4/QM5_9354_demark-td-dwave-wave4-h4.mq5",
+          "sha256": "4e2b63dae0c5a79f1231d3a41d87a12c16b53818bcd29cfa86cdc589238230e4"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_9699_ff-sonicr-wave-h1",
+      "ea_id": "QM5_9699",
+      "matched_terms": [
+        "wave"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "ff-sonicr-wave-h1",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_9699_ff-sonicr-wave-h1/QM5_9699_ff-sonicr-wave-h1.mq5",
+          "sha256": "7c3628ff0c6ea56401c4391cae49927a4137abb51baf25b7323bc22cfb513848"
+        }
+      ]
+    },
+    {
+      "disposition": "OTHER_MANAGEMENT_NO_EXACT_SIGNATURE",
+      "ea": "QM5_9952_ff-zigzag-trendline-4060-m5",
+      "ea_id": "QM5_9952",
+      "matched_terms": [
+        "zigzag"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "ff-zigzag-trendline-4060-m5",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_9952_ff-zigzag-trendline-4060-m5/QM5_9952_ff-zigzag-trendline-4060-m5.mq5",
+          "sha256": "6d4239f003f1e4ece9991408f726661c42fbff652b6a4008527fd0b19496758a"
+        }
+      ]
+    },
+    {
+      "disposition": "EMPTY_MANAGEMENT_HOOK",
+      "ea": "QM5_9976_ff-ema-fibo-rsi-stoch",
+      "ea_id": "QM5_9976",
+      "matched_terms": [
+        "fib"
+      ],
+      "signals": {
+        "live_bid_or_ask": false,
+        "management_hook_count": 1,
+        "position_price_open": false,
+        "projection_state_assigned_outside_manager": false,
+        "projection_state_d_and_c": false,
+        "strategy_close_call": false
+      },
+      "slug": "ff-ema-fibo-rsi-stoch",
+      "sources": [
+        {
+          "path": "framework/EAs/QM5_9976_ff-ema-fibo-rsi-stoch/QM5_9976_ff-ema-fibo-rsi-stoch.mq5",
+          "sha256": "d7894bbd7c6043930898b5e4c94b6b124dae11ebc90a83e499a0d3b50dc72198"
+        }
+      ]
+    }
+  ],
+  "method": {
+    "claim_boundary": "dispositions describe source shape for this exact defect only; they are not pipeline or strategy verdicts",
+    "exact_defect_rule": "Strategy_ManageOpenPosition references g_position_D and g_position_C, reads live bid/ask, invokes a strategy close helper, and does not reference POSITION_PRICE_OPEN",
+    "lexical_mask": "comments and string/character literals removed before analysis",
+    "source_scope": "top-level *.mq5 in each selected EA directory"
+  },
+  "schema": "qm.pattern-target-management-audit/v1",
+  "selected_source_fingerprint_sha256": "aebf7ec95d718b7e91c4232284c1ff35c1e19a88ed75f402c464ad0e53e3fca0",
+  "selection": {
+    "directory_rule": "QM5_<numeric-id>_<slug>",
+    "match_rule": "case-insensitive substring of any declared term",
+    "matching_field": "slug_only",
+    "root": "framework/EAs",
+    "terms": [
+      "pattern",
+      "harmonic",
+      "wave",
+      "fib",
+      "abcd",
+      "gartley",
+      "butterfly",
+      "bat",
+      "cypher",
+      "drive",
+      "crab",
+      "shark",
+      "5-0",
+      "5_0",
+      "carney",
+      "pesavento",
+      "goodman",
+      "sperandeo",
+      "zigzag"
+    ]
+  }
+}

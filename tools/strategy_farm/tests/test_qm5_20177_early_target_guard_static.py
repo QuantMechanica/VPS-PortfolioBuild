@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
+
 import pytest
 
 
@@ -48,33 +50,95 @@ class Bar:
     close: float
 
 
+def _assert_valid_bar(bar: Bar) -> None:
+    assert bar.low <= min(bar.open, bar.close) <= max(bar.open, bar.close) <= bar.high
+
+
+def _fractal_flags(bars: dict[int, Bar], shift: int) -> tuple[bool, bool]:
+    """Equivalent five-bar extrema used by MT5's Williams Fractals."""
+    required = (shift - 2, shift - 1, shift, shift + 1, shift + 2)
+    if any(index not in bars for index in required):
+        return False, False
+
+    center = bars[shift]
+    neighbours = [bars[index] for index in required if index != shift]
+    upper = all(center.high > bar.high for bar in neighbours)
+    lower = all(center.low < bar.low for bar in neighbours)
+    return upper, lower
+
+
+def find_abc_from_bars(
+    bars: dict[int, Bar],
+    *,
+    bullish: bool,
+    pivot_scan_start: int = 4,
+    pivot_scan_max: int = 80,
+) -> tuple[float, float, float, int, int, int] | None:
+    """Python equivalent of the EA's bounded, alternating ``FindABC`` search."""
+    prices: list[float] = []
+    shifts: list[int] = []
+    is_upper: list[bool] = []
+
+    for shift in range(pivot_scan_start, pivot_scan_max + 1):
+        upper, lower = _fractal_flags(bars, shift)
+        if not upper and not lower:
+            continue
+        if upper and lower:
+            continue
+        this_is_upper = upper
+        if is_upper and is_upper[-1] == this_is_upper:
+            continue
+        prices.append(bars[shift].high if upper else bars[shift].low)
+        shifts.append(shift)
+        is_upper.append(this_is_upper)
+        if len(prices) == 3:
+            break
+
+    if len(prices) < 3:
+        return None
+
+    C, B, A = prices
+    ab_bars = shifts[2] - shifts[1]
+    c_bars_from_b = shifts[1] - shifts[0]
+    c_shift = shifts[0]
+    polarity_ok = (
+        (not is_upper[0] and is_upper[1] and not is_upper[2] and C > A)
+        if bullish
+        else (is_upper[0] and not is_upper[1] and is_upper[2] and C < A)
+    )
+    if not polarity_ok:
+        return None
+    return A, B, C, c_bars_from_b, ab_bars, c_shift
+
+
 def simulate_strategy_entry_signal(
     *,
     bullish: bool,
+    bars: dict[int, Bar],
     atr14: float,
     spread: float,
     spread_atr_mult_cap: float = 0.35,
     d1_rsi: float = 50.0,
     d1_rsi_lo: float = 30.0,
     d1_rsi_hi: float = 70.0,
-    A: float,
-    B: float,
-    C: float,
-    ab_bars: int,
-    c_shift: int,
-    time_symmetry_tolerance: float = 0.30,
+    time_symmetry_tolerance: float = 0.20,
     bc_ab_ratio_min: float = 0.382,
     bc_ab_ratio_max: float = 0.886,
     projection_touch_atr_mult: float = 0.5,
     t1_fib: float = 0.382,
-    c2: Bar,
-    c1: Bar,
     ask: float,
     bid: float,
     bars_since_last_entry: int = 999,
     cooldown_bars: int = 18,
-) -> tuple[bool, dict[str, any]]:
-    """Complete mathematical & geometric simulation of Strategy_EntrySignal."""
+) -> tuple[bool, dict[str, Any]]:
+    """EA-equivalent search plus the mathematical entry gates."""
+    for bar in bars.values():
+        _assert_valid_bar(bar)
+    if 1 not in bars or 2 not in bars:
+        return False, {"reason": "touch_or_confirmation_bar_missing"}
+    if ask < bid:
+        return False, {"reason": "crossed_market"}
+
     if atr14 <= 0.0:
         return False, {"reason": "atr_non_positive"}
 
@@ -86,12 +150,14 @@ def simulate_strategy_entry_signal(
         return False, {"reason": "d1_regime_filter_failed"}
 
     tol = projection_touch_atr_mult * atr14
+    pivots = find_abc_from_bars(bars, bullish=bullish)
+    if pivots is None:
+        return False, {"reason": "find_abc_failed"}
+    A, B, C, c_bars_from_b, ab_bars, c_shift = pivots
+    c2 = bars[2]
+    c1 = bars[1]
 
     if bullish:
-        # Long geometry: C=low, B=high, A=low, C>A, B>A
-        if not (C > A and B > A):
-            return False, {"reason": "bullish_fractal_geometry_invalid"}
-
         ab_range = B - A
         if ab_range <= 0.0:
             return False, {"reason": "ab_range_non_positive"}
@@ -121,6 +187,12 @@ def simulate_strategy_entry_signal(
 
         long_ok = touch_ok and confirm_ok and t1_ok and cooldown_ok
         return long_ok, {
+            "A": A,
+            "B": B,
+            "C": C,
+            "c_bars_from_b": c_bars_from_b,
+            "ab_bars": ab_bars,
+            "c_shift": c_shift,
             "d_proj": d_proj,
             "t1": t1,
             "touch_ok": touch_ok,
@@ -131,10 +203,6 @@ def simulate_strategy_entry_signal(
         }
 
     else:
-        # Short geometry: C=high, B=low, A=high, C<A, A>B
-        if not (C < A and A > B):
-            return False, {"reason": "bearish_fractal_geometry_invalid"}
-
         ab_range = A - B
         if ab_range <= 0.0:
             return False, {"reason": "ab_range_non_positive"}
@@ -164,6 +232,12 @@ def simulate_strategy_entry_signal(
 
         short_ok = touch_ok and confirm_ok and t1_ok and cooldown_ok
         return short_ok, {
+            "A": A,
+            "B": B,
+            "C": C,
+            "c_bars_from_b": c_bars_from_b,
+            "ab_bars": ab_bars,
+            "c_shift": c_shift,
             "d_proj": d_proj,
             "t1": t1,
             "touch_ok": touch_ok,
@@ -174,32 +248,76 @@ def simulate_strategy_entry_signal(
         }
 
 
+def _bullish_reachable_window() -> dict[int, Bar]:
+    """Valid OHLC window whose most-recent alternating pivots are 100/110/104."""
+    return {
+        0: Bar(0, 109.90, 110.10, 109.80, 110.00),
+        1: Bar(1, 109.60, 110.05, 109.50, 109.90),
+        2: Bar(2, 109.70, 109.80, 109.50, 109.60),
+        3: Bar(3, 106.50, 109.60, 106.40, 109.40),
+        4: Bar(4, 104.50, 107.00, 104.20, 106.50),
+        5: Bar(5, 105.50, 106.00, 104.00, 104.50),  # C: lower fractal
+        6: Bar(6, 106.50, 107.50, 105.00, 105.50),
+        7: Bar(7, 108.50, 109.00, 106.00, 106.50),
+        8: Bar(8, 108.00, 110.00, 107.00, 108.50),  # B: upper fractal
+        9: Bar(9, 105.00, 108.50, 104.50, 108.00),
+        10: Bar(10, 102.00, 106.00, 101.80, 105.00),
+        11: Bar(11, 104.00, 104.50, 100.00, 102.00),  # A: lower fractal
+        12: Bar(12, 102.00, 105.00, 101.00, 104.00),
+        13: Bar(13, 103.00, 104.00, 101.50, 102.00),
+    }
+
+
+def _bullish_macro_window() -> dict[int, Bar]:
+    """Valid OHLC window with a 5x-ATR AB leg and T1 already behind fill."""
+    return {
+        0: Bar(0, 169.50, 170.10, 169.30, 169.60),
+        1: Bar(1, 167.00, 170.00, 166.50, 169.50),
+        2: Bar(2, 168.00, 169.00, 166.00, 167.00),
+        3: Bar(3, 140.00, 165.00, 139.00, 164.00),
+        4: Bar(4, 122.00, 145.00, 121.00, 140.00),
+        5: Bar(5, 125.00, 130.00, 120.00, 122.00),  # C: lower fractal
+        6: Bar(6, 132.00, 135.00, 125.00, 126.00),
+        7: Bar(7, 145.00, 147.00, 132.00, 133.00),
+        8: Bar(8, 140.00, 150.00, 139.00, 145.00),  # B: upper fractal
+        9: Bar(9, 130.00, 145.00, 129.00, 140.00),
+        10: Bar(10, 110.00, 135.00, 109.00, 130.00),
+        11: Bar(11, 120.00, 125.00, 100.00, 110.00),  # A: lower fractal
+        12: Bar(12, 110.00, 120.00, 104.00, 119.00),
+        13: Bar(13, 112.00, 115.00, 105.00, 110.00),
+    }
+
+
+def _bearish_reachable_window() -> dict[int, Bar]:
+    """Valid OHLC window whose most-recent alternating pivots are 120/110/116."""
+    return {
+        0: Bar(0, 110.00, 110.10, 109.80, 109.90),
+        1: Bar(1, 110.40, 110.45, 109.90, 110.00),
+        2: Bar(2, 110.50, 110.50, 110.20, 110.40),
+        3: Bar(3, 112.50, 112.80, 110.40, 110.50),
+        4: Bar(4, 115.00, 115.50, 112.00, 112.50),
+        5: Bar(5, 114.50, 116.00, 113.00, 115.00),  # C: upper fractal
+        6: Bar(6, 113.50, 115.00, 112.00, 114.50),
+        7: Bar(7, 111.00, 114.00, 110.80, 113.50),
+        8: Bar(8, 112.50, 113.00, 110.00, 111.00),  # B: lower fractal
+        9: Bar(9, 115.00, 115.50, 112.00, 112.50),
+        10: Bar(10, 118.00, 118.50, 114.00, 115.00),
+        11: Bar(11, 116.00, 120.00, 115.50, 118.00),  # A: upper fractal
+        12: Bar(12, 118.00, 119.00, 115.00, 116.00),
+        13: Bar(13, 117.00, 118.50, 116.00, 118.00),
+    }
+
+
 def test_qm5_20177_full_geometry_positive_acceptance_and_rejection() -> None:
-    """Pins full entry geometry simulation for both positive (accepted) and defective (rejected) cases."""
+    """Derive pivots from valid bars; accept reachable cases and reject the macro swing."""
     atr14 = 10.0
     spread = 1.0
 
-    # 1. Bullish Positive Entry: AB is tight enough that Ask < T1
-    # AB range = 10.0 (= 1.0 * ATR14 < 1.3089 * ATR14)
-    # A=100.0, B=110.0, C=104.0, D_proj = 114.0, tol = 5.0 -> [109.0, 119.0]
-    # T1 = 114.0 + 0.382 * (104.0 - 114.0) = 110.18
-    # c2: low=109.5, high=109.8, close=109.6 (within [109.0, 119.0])
-    # c1: close=109.9 (> c2.high 109.8)
-    # Ask: 110.00 (< T1 110.18) -> t1_ok is TRUE
-    c2_bull_pos = Bar(time=2, open=111.0, high=109.8, low=109.5, close=109.6)
-    c1_bull_pos = Bar(time=1, open=109.6, high=110.0, low=109.5, close=109.9)
-
     accepted, trace = simulate_strategy_entry_signal(
         bullish=True,
+        bars=_bullish_reachable_window(),
         atr14=atr14,
         spread=spread,
-        A=100.0,
-        B=110.0,
-        C=104.0,
-        ab_bars=10,
-        c_shift=12,
-        c2=c2_bull_pos,
-        c1=c1_bull_pos,
         ask=110.00,
         bid=109.90,
     )
@@ -208,28 +326,14 @@ def test_qm5_20177_full_geometry_positive_acceptance_and_rejection() -> None:
     assert trace["confirm_ok"] is True
     assert trace["t1_ok"] is True
     assert trace["cooldown_ok"] is True
-
-    # 2. Bullish Defective Entry: Standard macro swing where Ask >= T1
-    # AB range = 50.0 (= 5.0 * ATR14)
-    # A=100.0, B=150.0, C=120.0, D_proj = 170.0, tol = 5.0 -> [165.0, 175.0]
-    # T1 = 170.0 + 0.382 * (120.0 - 170.0) = 150.90
-    # c2: low=166.0, high=169.0, close=167.0
-    # c1: close=169.5 (> c2.high 169.0)
-    # Ask: 169.60 (> T1 150.90) -> t1_ok is FALSE
-    c2_bull_neg = Bar(time=2, open=168.0, high=169.0, low=166.0, close=167.0)
-    c1_bull_neg = Bar(time=1, open=167.0, high=170.0, low=166.5, close=169.5)
+    assert (trace["A"], trace["B"], trace["C"]) == (100.0, 110.0, 104.0)
+    assert (trace["ab_bars"], trace["c_shift"]) == (3, 5)
 
     rejected, trace_neg = simulate_strategy_entry_signal(
         bullish=True,
+        bars=_bullish_macro_window(),
         atr14=atr14,
         spread=spread,
-        A=100.0,
-        B=150.0,
-        C=120.0,
-        ab_bars=10,
-        c_shift=12,
-        c2=c2_bull_neg,
-        c1=c1_bull_neg,
         ask=169.60,
         bid=169.50,
     )
@@ -237,28 +341,13 @@ def test_qm5_20177_full_geometry_positive_acceptance_and_rejection() -> None:
     assert trace_neg["touch_ok"] is True
     assert trace_neg["confirm_ok"] is True
     assert trace_neg["t1_ok"] is False
-
-    # 3. Bearish Positive Entry: AB is tight enough that Bid > T1
-    # AB range = 10.0 (= 1.0 * ATR14)
-    # A=120.0, B=110.0, C=116.0, D_proj = 106.0, tol = 5.0 -> [101.0, 111.0]
-    # T1 = 106.0 + 0.382 * (116.0 - 106.0) = 109.82
-    # c2: low=110.2, high=110.5, close=110.4 (within [101.0, 111.0])
-    # c1: close=110.0 (< c2.low 110.2)
-    # Bid: 110.00 (> T1 109.82) -> t1_ok is TRUE
-    c2_bear_pos = Bar(time=2, open=109.0, high=110.5, low=110.2, close=110.4)
-    c1_bear_pos = Bar(time=1, open=110.4, high=110.4, low=109.9, close=110.0)
+    assert (trace_neg["A"], trace_neg["B"], trace_neg["C"]) == (100.0, 150.0, 120.0)
 
     accepted_bear, trace_bear = simulate_strategy_entry_signal(
         bullish=False,
+        bars=_bearish_reachable_window(),
         atr14=atr14,
         spread=spread,
-        A=120.0,
-        B=110.0,
-        C=116.0,
-        ab_bars=10,
-        c_shift=12,
-        c2=c2_bear_pos,
-        c1=c1_bear_pos,
         ask=110.10,
         bid=110.00,
     )
@@ -266,6 +355,7 @@ def test_qm5_20177_full_geometry_positive_acceptance_and_rejection() -> None:
     assert trace_bear["touch_ok"] is True
     assert trace_bear["confirm_ok"] is True
     assert trace_bear["t1_ok"] is True
+    assert (trace_bear["A"], trace_bear["B"], trace_bear["C"]) == (120.0, 110.0, 116.0)
 
 
 def test_qm5_20177_build_guardrails_compliance() -> None:
