@@ -83,6 +83,7 @@ FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS = 10 * 60.0
 FACTORY_ON_CEREMONY_INCOMPLETE_PATH = (
     ROOT / "state" / "FACTORY_ON_CEREMONY_INCOMPLETE.json"
 )
+Q09_SEALED_PLAN_HOLD_FAIL_HOURS = 6
 
 # --- WS-F standing vacuousness audit (ULTRACODE 2026-07-26) ------------------
 # Detectors that authenticate provenance before flagging a gate as vacuous. Every
@@ -3212,6 +3213,74 @@ def chk_q02_summary_missing_unclassified(con) -> dict:
                   SM_MISSING_CLASS_FAIL_FRAC, detail, "")
 
 
+def chk_q09_sealed_plan_hold_age(con) -> dict:
+    """Fail when a Q09_NEWS row waits too long for a sealed plan.
+
+    The hold is a correct fail-closed admission control, but it is not ordinary
+    queue backlog: no worker can claim the row until a hash-bound plan releases
+    it. Historically plans were bound within one or two minutes. Six hours gives
+    normal promotion/binding automation ample slack while still surfacing a dam
+    inside the same operator shift.
+    """
+    rows = con.execute(
+        """
+        SELECT w.id,w.ea_id,w.symbol,w.created_at,h.created_at AS held_at
+        FROM work_items w
+        JOIN work_item_holds h ON h.work_item_id=w.id
+        WHERE w.phase='Q09_NEWS' AND w.status='pending'
+          AND h.hold_code='Q09_AWAITING_SEALED_PLAN' AND h.active=1
+        ORDER BY h.created_at ASC,w.id ASC
+        """
+    ).fetchall()
+    completed_24h = con.execute(
+        """
+        SELECT COUNT(*) FROM work_items
+        WHERE phase='Q09_NEWS' AND status IN ('done','failed')
+          AND julianday(updated_at) >= julianday('now','-24 hours')
+        """
+    ).fetchone()[0]
+    pending = con.execute(
+        "SELECT COUNT(*) FROM work_items WHERE phase='Q09_NEWS' AND status='pending'"
+    ).fetchone()[0]
+    now = _utc_now()
+    aged: list[tuple[sqlite3.Row, float]] = []
+    for row in rows:
+        held_at = _parse_utc_ts(row["held_at"] or row["created_at"])
+        if held_at is None:
+            # An unparseable activation timestamp is itself fail-closed: treat
+            # it as beyond threshold and expose the exact row to the operator.
+            aged.append((row, float("inf")))
+            continue
+        hours = max(0.0, (now - held_at).total_seconds() / 3600.0)
+        if hours > Q09_SEALED_PLAN_HOLD_FAIL_HOURS:
+            aged.append((row, hours))
+    service = f"completions_24h={completed_24h}; pending={pending}"
+    if not aged:
+        return _check(
+            "q09_sealed_plan_hold_age", "OK", 0,
+            Q09_SEALED_PLAN_HOLD_FAIL_HOURS,
+            f"{service}; active_plan_holds={len(rows)}; none older than "
+            f"{Q09_SEALED_PLAN_HOLD_FAIL_HOURS}h", "",
+        )
+    rendered = []
+    for row, hours in aged[:12]:
+        age = "unparseable" if hours == float("inf") else f"{hours:.1f}h"
+        rendered.append(f"{row['id'][:8]}:{row['ea_id']}:{row['symbol']}:{age}")
+    detail = (
+        f"{service}; {len(aged)} Q09_NEWS sealed-plan hold(s) older than "
+        f"{Q09_SEALED_PLAN_HOLD_FAIL_HOURS}h; " + ", ".join(rendered)
+    )
+    hint = (
+        "Check Q08-bound binary/setfile vintage, deterministically author and hash-bind "
+        "a q09-news-run-plan/v2, then verify the ordinary claim predicate. Never release "
+        "Q09_AWAITING_SEALED_PLAN without a validated bound plan."
+    )
+    return _check(
+        "q09_sealed_plan_hold_age", "FAIL", len(aged),
+        Q09_SEALED_PLAN_HOLD_FAIL_HOURS, detail, hint,
+    )
+
+
 ALL_CHECKS = [
     ("ea_id_slug_uniqueness", chk_ea_id_slug_uniqueness, False),
     ("stranded_ea_improvements", chk_stranded_ea_improvements, False),
@@ -3256,6 +3325,7 @@ ALL_CHECKS = [
     # Failure-classification + tail detectors (census 2026-07-27 ranks 1/3)
     ("pending_tail_age", chk_pending_tail_age, True),
     ("q02_summary_missing_unclassified", chk_q02_summary_missing_unclassified, True),
+    ("q09_sealed_plan_hold_age", chk_q09_sealed_plan_hold_age, True),
 ]
 
 
