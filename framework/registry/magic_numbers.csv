@@ -17426,4 +17426,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 36001,nnfx-classic-mcginley-ssl-wae,2,AUDUSD.DWX,360010002,2026-08-17T20:50:00Z,Gemini,active
 36001,nnfx-classic-mcginley-ssl-wae,3,USDJPY.DWX,360010003,2026-08-17T20:50:00Z,Gemini,active
 36001,nnfx-classic-mcginley-ssl-wae,4,USDCAD.DWX,360010004,2026-08-17T20:50:00Z,Gemini,active
+36002,nnfx-kijunsen-absolute-strength-damiani,0,EURUSD.DWX,360020000,2026-08-17T21:05:00Z,Gemini,active
+36002,nnfx-kijunsen-absolute-strength-damiani,1,GBPJPY.DWX,360020001,2026-08-17T21:05:00Z,Gemini,active
+36002,nnfx-kijunsen-absolute-strength-damiani,2,AUDCAD.DWX,360020002,2026-08-17T21:05:00Z,Gemini,active
+36002,nnfx-kijunsen-absolute-strength-damiani,3,NZDUSD.DWX,360020003,2026-08-17T21:05:00Z,Gemini,active
+36003,nnfx-hull-ma-zerolag-macd-stc,0,EURUSD.DWX,360030000,2026-08-17T21:06:00Z,Gemini,active
+36003,nnfx-hull-ma-zerolag-macd-stc,1,GBPUSD.DWX,360030001,2026-08-17T21:06:00Z,Gemini,active
+36003,nnfx-hull-ma-zerolag-macd-stc,2,XAUUSD.DWX,360030002,2026-08-17T21:06:00Z,Gemini,active
 
