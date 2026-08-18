@@ -237,3 +237,42 @@ gesucht hat. CLAUDE.md verlangt `enabled:false`, aber **nichts prüft das**.
 
 Ein Alarm auf `enabled:true` — Cockpit-Banner oder FAIL-Digest — kostet fast nichts. Dieselbe
 Klasse wie die Mechanismen ohne Aufrufer: ein Zustand, den niemand beobachtet.
+
+## ● OQ-14 · `drawdown_pct` trägt nach der E-2-Reparatur je Phase eine andere Größe
+
+Codex hat die Wahl begründet und im Code kommentiert — **Headline = die Größe, nach der das Gate
+urteilt** —, und die Alternativwerte in `detail_json` erhalten. Das ist prinzipientreu. Die Folge
+muss trotzdem festgehalten werden:
+
+| Phase | was in `drawdown_pct` steht |
+|---|---|
+| Q02 / Q03 | realisierter DD aus dem Report |
+| Q05 / Q06 / Q10 | realisierter DD aus dem Aggregat |
+| **Q08** | **Monte-Carlo-p95**, nicht realisiert (`mc_maxdd_p95_pct`) |
+| Q04 | Maximum über die Folds |
+| Q07 | Maximum über die Seeds |
+
+**`SELECT drawdown_pct FROM ea_metrics` über Phasen hinweg vermischt damit Stressstatistik mit
+realisiertem Drawdown.** Für Q08 liegt `as_realized_maxdd_pct` in `detail_json` bereit.
+
+**Für Audit-Frage 4 heißt das:** die Antwort muss die Basis je Phase mitführen, sonst ist sie
+falsch. Eine `drawdown_basis`-Spalte wäre die saubere Lösung — Schemaänderung, nicht in diesem
+Ticket.
+
+## ● OQ-15 · Die E-2-Reparatur ist in Produktion **wirkungslos**, bis eine Vollextraktion läuft
+
+**[MESSUNG] nach der Reparatur:** Q04 `drawdown_pct` **0 von 4.833**, Q08 **0 von 441** — unverändert
+gegenüber der Baseline.
+
+**Ursache:** `farmctl.py:16150` ruft `ea_metrics.build(conn, full=False)`. Der inkrementelle
+Übersprung ist an `evidence_mtime` gebunden — und die Evidenz hat sich nicht geändert, **der Leser
+hat sich geändert**. mtime kann eine Extraktor-Version nicht erkennen.
+
+**Nebenwirkung, gemessen:** derselbe Lauf fasst **43.151 Zeilen** an, deren Datei gelöscht ist
+(`_mtime` liefert `None`, die Übersprungbedingung greift nie) — also genau die Zeilen, die sich nie
+verbessern können, und keine der ~19.000, bei denen die Reparatur wirkt.
+
+**Was folgt:** die Vollextraktion aus Runde 5 §4.1.4 ist keine Formalie, sondern die einzige Art,
+die Reparatur wirksam zu machen — und sie bleibt der OWNER-sequenzierte Schritt nach dem
+Baseline-Freeze. **Empfehlung für später:** die Übersprungbedingung zusätzlich an eine
+Extraktor-Version binden, sonst wiederholt sich das bei jeder künftigen Reparatur still.
