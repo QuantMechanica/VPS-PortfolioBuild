@@ -1,0 +1,201 @@
+{
+ "schema": "qm.batch-expedite-expectations/v1",
+ "rows": {
+  "0473327d-7a7b-40f0-b0eb-366e74d0e68a": {
+   "ea_id": "QM5_11288",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "af5d2c8b5f310419bbb1bbee0a7d1577c8f6ddfa4c2d67d6a6f0c0f321c07fea"
+  },
+  "a472a5f9-c614-4c7d-9ff0-8542085e9a02": {
+   "ea_id": "QM5_11421",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "40f92cfd473ba7d47e2a9c40341c3b8e083b7d4327dd71dbd83c0d0bf5a68262"
+  },
+  "6678f2c4-a590-4f81-9566-1c5b20785eaf": {
+   "ea_id": "QM5_11421",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "4eed5ee0a9c9216b6ee24ebc3bd55379fdaa6f47cb0db9f48be1726a0696064c"
+  },
+  "106b5827-acda-4294-9d06-9e215333819a": {
+   "ea_id": "QM5_11708",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "461d54f65e773085423980547b173d4ee1e99bd8f9349a6efdd26c2fef8a8c4e"
+  },
+  "49f775aa-40e6-4e0a-b446-1b4c76b36c8b": {
+   "ea_id": "QM5_1551",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "eab0a9869c7887e184eacaa26a67c23440de8c50fa8d343c77890401ad8966ad"
+  },
+  "e8c1e63a-e06c-4988-9ae7-54771bc1fe8c": {
+   "ea_id": "QM5_1567",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "ec35c519688d049544a009e9249ae09f046fa3f51e5cc2fa1479a552b1ecb379"
+  },
+  "485e7249-ed67-4953-8eae-a09bb003d431": {
+   "ea_id": "QM5_10127",
+   "symbol": "AUDCAD.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "6a2c7081d66bc9ebf992f2bef04bf9d6d67d7ad61248e0b9361fb3d47ee7a028"
+  },
+  "23c63618-67f3-4235-beed-b8dd61a5e6c7": {
+   "ea_id": "QM5_10146",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "ad9d36d9c16ebb84494dbbd795efa275e4778acceb3850a67d9cf5d7aad6f257"
+  },
+  "be9beb50-8353-49d5-bba5-0db04d24e51a": {
+   "ea_id": "QM5_10848",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "0645f8903cd3775a78b9d979caa5f214156b48b8aea3a779b6a3892e00362122"
+  },
+  "0d2e93dd-dec5-43fb-a8ee-415fb63e62e2": {
+   "ea_id": "QM5_11147",
+   "symbol": "SP500.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "58db9d9eaf15184ea13b59a15f28d287b2a54ab225a9346fa9ed69974d52305b"
+  },
+  "43c9d9d7-2b2c-43a3-bf4a-a1348d1f0ce5": {
+   "ea_id": "QM5_11476",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "aae6d1a6c0353ef72d902b0af462347df8ea5b92b13bc269bd5de30e8ce9c626"
+  },
+  "adff323e-5ff4-4af2-852a-7ffb12bdfd64": {
+   "ea_id": "QM5_12623",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "3a5259020895585bf0ef3dcad22077fcecc66bc31e7d6368a9a22d8d1c39efa2"
+  },
+  "23a44179-6f22-4777-9ec2-2033e2876e04": {
+   "ea_id": "QM5_12708",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "9bbdffcc1fae1944598cdc3298d48ec8c1ed35890e0bb144c459a87b9ccd814a"
+  },
+  "b68d05cd-e52c-43a5-96aa-5e0306efa60f": {
+   "ea_id": "QM5_12712",
+   "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "2ec8a1f25ba48d179a962a35b862259fb65bcbda31c2a7b534a681c3cb6a9670"
+  },
+  "30297fe9-ddc8-43a1-82f7-b3b617980e81": {
+   "ea_id": "QM5_12778",
+   "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "78c543cec2d34d31b44b0d3d3fd647ffb0037dd5ba6961b15175408f06b78c3f"
+  },
+  "3180c239-9c3e-486e-a087-2c3cdb4d8f5a": {
+   "ea_id": "QM5_12823",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "1e8f510055c7bb4f8eb8ed8f8fb99a107dded2683efc859a2a8d284c0968835b"
+  },
+  "5a42fc9d-c996-44bf-afff-869f02eb6e0e": {
+   "ea_id": "QM5_12831",
+   "symbol": "QM5_12831_XTI_AUDUSD_BRK_D1",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "e4fabedf14bac9eaced239ba911ea12ec7608b4704ec20cd50edea4f2cab8001"
+  },
+  "3d886f4b-d2b8-4a1f-a3fd-0a8b6c93dc4e": {
+   "ea_id": "QM5_12864",
+   "symbol": "QM5_12864_XTI_XAG_RSPREAD_D1",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "80200b09f94e74f277625153409848b6e669a051bdf1326a60ee64130299d5ac"
+  },
+  "7a690407-ba0b-4e80-8cd6-5f63bd19c3fa": {
+   "ea_id": "QM5_12958",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "5e3e3bb20e17669b1a37883782c0dbfea6f91388c00d201b72b0f0064da78063"
+  },
+  "7191fc3f-7bce-4881-835d-ea04a50a69b3": {
+   "ea_id": "QM5_12969",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "51edc2804f386988c75163593cf42536e270257bfe63f9cd948cbdb498064efa"
+  },
+  "ca1ad85d-1fea-40ff-b793-03dc2c3b485e": {
+   "ea_id": "QM5_12990",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "eca6be212d0fb974bf911ae277f8381ab870d367904ee1e4075dc14289a98d02"
+  },
+  "cc2be960-a5ab-42dc-8014-36d61b5c0941": {
+   "ea_id": "QM5_13059",
+   "symbol": "QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "39fe71ef92c0f028f0dbf78e314efa25aff1a08939e51255e948b5dbb4bf7500"
+  },
+  "1f1920cb-d7d4-481d-994d-9bdf2aa38561": {
+   "ea_id": "QM5_13076",
+   "symbol": "QM5_13076_XTI_NZDCAD_RSPREAD_D1",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "4443be9b453ee1feb518851c20dc4c2cebfb75ccd2037514bc8304b0cf36ac18"
+  },
+  "d2783b32-78fd-4068-b4e4-2b778c47b417": {
+   "ea_id": "QM5_13213",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "5f021ec210421d6ebb9a7805b26062c12445fe78f75ca2798fee32a5b09ad081"
+  },
+  "8c7db2c3-4a21-41d6-b8df-b1ab49257b37": {
+   "ea_id": "QM5_1328",
+   "symbol": "EURJPY.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "12ea71f5adf92f0a791e41d352392565a84a8d651814062d87611f0c4a1f9498"
+  },
+  "05eaa42c-a3f3-496a-a89f-cbc32d021b78": {
+   "ea_id": "QM5_20010",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "fe8ed2d86518d960535176995ea100fc783e8ede7df26fc0df8e3e97c1efeb03"
+  },
+  "196efa7a-d01a-4d2d-8416-d6d189ca16dd": {
+   "ea_id": "QM5_9503",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "fb4471af6829c53d6e2d7d7955c0f7247fb115ebcf1d414024fa2d0d172a9782"
+  },
+  "4b5171cc-afe4-4c0d-b08c-2de8ba20d2e6": {
+   "ea_id": "QM5_9936",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q08",
+   "expected_status": "pending",
+   "expected_payload_sha256": "bbebb89115beb6e92b566c7643b00d04100c494b159a6445fc12be9a2d8ee961"
+  }
+ }
+}
