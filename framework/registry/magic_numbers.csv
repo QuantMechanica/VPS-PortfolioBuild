@@ -17537,6 +17537,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 40008,aqr-value-and-momentum-everywhere,3,EURUSD.DWX,400080003,2026-08-18,Gemini,active
 41058,xng-wflow-agree,0,XNGUSD.DWX,410580000,2026-08-18T00:00:00Z,Codex,active
 41059,wti-samecal-hit,0,XTIUSD.DWX,410590000,2026-08-18T00:00:00Z,Codex,active
+41060,xauxag-week-nr7-brk,0,XAUUSD.DWX,410600000,2026-08-18T00:00:00Z,Codex,active
+41060,xauxag-week-nr7-brk,1,XAGUSD.DWX,410600001,2026-08-18T00:00:00Z,Codex,active
 41001,keith-fitschen-aberration-trading-system,0,XTIUSD.DWX,410010000,2026-08-18,Gemini,active
 41001,keith-fitschen-aberration-trading-system,1,XAUUSD.DWX,410010001,2026-08-18,Gemini,active
 41001,keith-fitschen-aberration-trading-system,2,SP500.DWX,410010002,2026-08-18,Gemini,active
