@@ -1,0 +1,43 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260818T182416Z.sqlite",
+    "sha256": "d325a0449b6697d4fc18d2040fc5a4d91df0a8551c58a543d628aae668395ca1"
+  },
+  "hold_code": "OWNER_D5_BASKET_LEASE_HOLD",
+  "inserted": 1,
+  "mode": "apply",
+  "reason": "D-5: a running basket holds the GLOBAL custom-history lease for its whole run (terminal_worker.py:4467), so all ten terminals stop claiming. Measured 2026-08-18: hold median 1.1 min, max 54.8 min on a basket; 2300 pending rows, one claim in 2.5 hours. One basket is being allowed to finish for the end-to-end proof; these are parked.",
+  "release_condition": "OWNER decides D-4 (recompile batch) or the lease scope is shortened per OQ-11. Release: governed_work_item_hold release path, or set work_item_holds.active=0 for these ids.",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-18T18:24:19+00:00",
+        "hold_code": "OWNER_D5_BASKET_LEASE_HOLD",
+        "reason": "D-5: a running basket holds the GLOBAL custom-history lease for its whole run (terminal_worker.py:4467), so all ten terminals stop claiming. Measured 2026-08-18: hold median 1.1 min, max 54.8 min on a basket; 2300 pending rows, one claim in 2.5 hours. One basket is being allowed to finish for the end-to-end proof; these are parked.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-18T18:24:19+00:00",
+        "work_item_id": "3d886f4b-d2b8-4a1f-a3fd-0a8b6c93dc4e"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-17T21:55:23+00:00",
+        "ea_id": "QM5_12864",
+        "id": "3d886f4b-d2b8-4a1f-a3fd-0a8b6c93dc4e",
+        "kind": "backtest",
+        "phase": "Q08",
+        "status": "pending",
+        "symbol": "QM5_12864_XTI_XAG_RSPREAD_D1",
+        "updated_at": "2026-08-18T14:29:47+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok"
+}
