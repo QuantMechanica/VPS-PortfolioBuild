@@ -8,7 +8,7 @@
 // QuantMechanica V5 EA: QM5_39008 forexfactory-symphonie-matrix-system
 // -----------------------------------------------------------------------------
 // Source: Symphonie (2011-2024). Symphonie Trader System. Forex Factory.
-// Card: artifacts/cards_approved/QM5_39008_forexfactory-symphonie-matrix-system.md (APPROVED)
+// Card: strategy-seeds/cards/approved/QM5_39008_forexfactory-symphonie-matrix-system.md (APPROVED)
 //
 // Mechanics (closed-bar, H1):
 //   - Multi-system 4-module consensus:
@@ -69,47 +69,51 @@ input double InpBreakEvenTriggerR       = 1.0;    // Break-even trigger in R mul
 // Symphonie 4-Light Indicator Proxies
 // -----------------------------------------------------------------------------
 
-bool Light_Trendline(const int shift)
+bool Light_Trendline(const int shift, const bool bullish)
 {
    const double ema = QM_EMA(_Symbol, PERIOD_H1, InpTrendPeriod, shift);
    const double c   = iClose(_Symbol, PERIOD_H1, shift); // perf-allowed: closed-bar trendline comparison
-   return (ema > 0.0 && c > ema);
+   if(ema <= 0.0 || c <= 0.0)
+      return false;
+   return bullish ? (c > ema) : (c < ema);
 }
 
-bool Light_Extreme(const int shift)
+bool Light_Extreme(const int shift, const bool bullish)
 {
    const double rsi = QM_RSI(_Symbol, PERIOD_H1, InpExtremePeriod, shift);
-   return (rsi > InpExtremeMidline);
+   if(rsi <= 0.0)
+      return false;
+   return bullish ? (rsi > InpExtremeMidline) : (rsi < InpExtremeMidline);
 }
 
-bool Light_Emotion(const int shift)
+bool Light_Emotion(const int shift, const bool bullish)
 {
    const double main = QM_MACD_Main(_Symbol, PERIOD_H1, InpEmotionFast, InpEmotionSlow, InpEmotionSignal, shift);
    const double sig  = QM_MACD_Signal(_Symbol, PERIOD_H1, InpEmotionFast, InpEmotionSlow, InpEmotionSignal, shift);
-   return (main > sig);
+   return bullish ? (main > sig) : (main < sig);
 }
 
-bool Light_Sentiment(const int shift)
+bool Light_Sentiment(const int shift, const bool bullish)
 {
    const double k = QM_Stoch_K(_Symbol, PERIOD_H1, InpSentimentK, InpSentimentD, InpSentimentSlow, shift);
    const double d = QM_Stoch_D(_Symbol, PERIOD_H1, InpSentimentK, InpSentimentD, InpSentimentSlow, shift);
-   return (k > d);
+   return bullish ? (k > d) : (k < d);
 }
 
 bool Symphonie_AllBull(const int shift)
 {
-   return (Light_Trendline(shift) &&
-           Light_Extreme(shift) &&
-           Light_Emotion(shift) &&
-           Light_Sentiment(shift));
+   return (Light_Trendline(shift, true) &&
+           Light_Extreme(shift, true) &&
+           Light_Emotion(shift, true) &&
+           Light_Sentiment(shift, true));
 }
 
 bool Symphonie_AllBear(const int shift)
 {
-   return (!Light_Trendline(shift) &&
-           !Light_Extreme(shift) &&
-           !Light_Emotion(shift) &&
-           !Light_Sentiment(shift));
+   return (Light_Trendline(shift, false) &&
+           Light_Extreme(shift, false) &&
+           Light_Emotion(shift, false) &&
+           Light_Sentiment(shift, false));
 }
 
 // -----------------------------------------------------------------------------

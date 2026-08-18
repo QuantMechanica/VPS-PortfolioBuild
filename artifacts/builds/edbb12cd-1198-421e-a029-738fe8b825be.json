@@ -1,0 +1,25 @@
+{
+  "task_id": "edbb12cd-1198-421e-a029-738fe8b825be",
+  "ea_id": "QM5_39008",
+  "ea_dir": "framework/EAs/QM5_39008_forexfactory-symphonie-matrix-system",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_39008_forexfactory-symphonie-matrix-system\\QM5_39008_forexfactory-symphonie-matrix-system.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_39008_forexfactory-symphonie-matrix-system\\QM5_39008_forexfactory-symphonie-matrix-system.ex5",
+  "magic_base": 390080000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDCHF.DWX"
+  ],
+  "setfiles_generated": [
+    "framework/EAs/QM5_39008_forexfactory-symphonie-matrix-system/sets/QM5_39008_forexfactory-symphonie-matrix-system_EURUSD.DWX_H1_backtest.set",
+    "framework/EAs/QM5_39008_forexfactory-symphonie-matrix-system/sets/QM5_39008_forexfactory-symphonie-matrix-system_GBPUSD.DWX_H1_backtest.set",
+    "framework/EAs/QM5_39008_forexfactory-symphonie-matrix-system/sets/QM5_39008_forexfactory-symphonie-matrix-system_USDCHF.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_39008_forexfactory-symphonie-matrix-system\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "Q01 smoke and Q02 enqueue deferred: 2026-08-18T05:01:03Z census found six occupied factory terminals and five host-CPU samples of 100,100,97,100,100 percent (99.4 percent average), at the mission hard ceiling.",
+  "open_questions": []
+}
