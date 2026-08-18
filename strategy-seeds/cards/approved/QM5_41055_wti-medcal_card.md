@@ -60,7 +60,7 @@ r3_data_available: PASS_WITH_HISTORY_AND_SESSION_LABEL_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a direct-WTI robust same-calendar-month sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform D1-label normalization, exact historical month endpoints, five-to-ten observation sample, even/odd median arithmetic, sign-only direction, durable monthly attempt, monthly renewal, and absence of current-month leakage. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -387,7 +387,7 @@ realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-18 | APPROVED | `decisions/2026-08-18_wti_median_same_calendar_g0.md` |
 | Q01 Build Validation | 2026-08-18 | PASS | `framework/build/compile/20260818_004637/QM5_41055_wti-medcal.compile.log`; `D:/QM/reports/framework/21/build_check_20260818_004637.json`; `D:/QM/reports/pipeline/QM5_41055/P1/P1_QM5_41055_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | capacity check pending |
+| Q02 Baseline Screening | 2026-08-18 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-18_qm5_41055_wti_median_same_calendar_q01_q02_capacity_stop.md` |
 
 ## Safety Boundary
 

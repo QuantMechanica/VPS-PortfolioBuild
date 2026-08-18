@@ -1,6 +1,6 @@
 # QM5_41055 - WTI Median Same-Calendar Seasonality
 
-Status: `G0 APPROVED; Q01 PASS; Q02 CAPACITY CHECK PENDING`
+Status: `G0 APPROVED; Q01 PASS; Q02 NOT ENQUEUED - CPU CEILING`
 
 ## Identity
 
@@ -88,3 +88,5 @@ complete before any Q02 capacity check.
 - static P1: `PASS`
 - P1 report:
   `D:/QM/reports/pipeline/QM5_41055/P1/P1_QM5_41055_result.json`
+- Q02 capacity stop:
+  `docs/ops/evidence/2026-08-18_qm5_41055_wti_median_same_calendar_q01_q02_capacity_stop.md`
