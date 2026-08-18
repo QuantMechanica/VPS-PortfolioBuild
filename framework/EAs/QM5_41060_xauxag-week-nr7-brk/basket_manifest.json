@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_41060_XAU_XAG_WEEKNR7_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg weekly gold/silver close-ratio NR7 breakout package. Q02 must evaluate combined package PnL, paired costs, density, and correlation; neither leg is a standalone strategy.",
+    "The EA requires an exact complete prior Monday-Friday ratio week that is strictly narrowest among seven valid complete weeks, follows only a fresh next-week completed-close break, targets equal absolute USD notionals, and caps aggregate frozen-stop risk at one RISK_FIXED budget."
+  ]
+}
