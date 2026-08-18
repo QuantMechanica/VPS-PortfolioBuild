@@ -1,0 +1,623 @@
+{
+ "component_order": [
+  "verdict_inventory",
+  "ea_metrics_coverage",
+  "sleeve_population",
+  "window_series",
+  "pool_population",
+  "artifacts"
+ ],
+ "components": {
+  "artifacts": {
+   "content_hash": "f49eb71845e90280d2be6ef617509d4a4d9fc1a92e8d107d95daa292f1055f61",
+   "files": {
+    "artifacts/audit_intraday_sizing_sweep_20260818.json": "a527e319c11012b6a4f20c1d1bb5ae8bab093c1675353933e028c3918acee14d",
+    "artifacts/batch_expedite_expectations_20260818.json": "e82db5e24d6c05a0320e93c4b0343f05b7ebd82a7fcd6b3826d182dc121d4c25",
+    "artifacts/book_q08_regeneration_cohorts_20260817.json": "6842413ba63a6c55b33245682c97654fd3ef0085f437e24153757689497d32c8",
+    "docs/ops/AUDIT_RESPONSE_2026-08-18.md": "b44b81858a3b2492075e34a1a15ffd9e3f03f52fda247eb7e824dc2edb79752a",
+    "docs/ops/audit_rev3.md": "ba775fddbf2136e5710a711cfef6573de0e7578b8dd110e02a99241acc67ebfb",
+    "docs/ops/audit_rev4.md": "d82ae6be31822f40713da87f6203d46703d896519219f50f4c168a709a8fefec",
+    "tools/strategy_farm/ea_metrics.py": "3fdf5da2664618c0961f5db0f7bb2354efda8aaf3ec0bd635eb8564437d58206",
+    "tools/strategy_farm/portfolio/audit_intraday_sizing_sweep.py": "be19320c4ebbd9c496d99560b626367d70fa94c28ba7aab2fd9d3273252d33c3",
+    "tools/strategy_farm/portfolio/challenge_book_60d.py": "2c3e4e97bd7c506cc835abd9159f611e879b94d8f685aa0b7ee3eb755a70cc32"
+   }
+  },
+  "ea_metrics_coverage": {
+   "by_phase_source": [
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 446,
+     "net_profit": 0,
+     "phase": "P2",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "missing",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 18915,
+     "net_profit": 0,
+     "phase": "Q02",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "missing",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 87,
+     "net_profit": 0,
+     "phase": "Q02",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "parse_error",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 9395,
+     "drawdown_pct": 9394,
+     "n": 9628,
+     "net_profit": 9395,
+     "phase": "Q02",
+     "profit_factor": 9395,
+     "sharpe": 0,
+     "source": "summary_runs",
+     "trades": 9395
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 1677,
+     "net_profit": 0,
+     "phase": "Q02",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "summary_runs_empty",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 11332,
+     "net_profit": 0,
+     "phase": "Q03",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "missing",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 15,
+     "net_profit": 0,
+     "phase": "Q03",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "parse_error",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 1145,
+     "drawdown_pct": 1145,
+     "n": 1147,
+     "net_profit": 1145,
+     "phase": "Q03",
+     "profit_factor": 1145,
+     "sharpe": 0,
+     "source": "summary_runs",
+     "trades": 1145
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 2,
+     "net_profit": 0,
+     "phase": "Q03",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "summary_runs_empty",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 11656,
+     "net_profit": 0,
+     "phase": "Q04",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "missing",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 1,
+     "net_profit": 0,
+     "phase": "Q04",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "parse_error",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 4833,
+     "net_profit": 3252,
+     "phase": "Q04",
+     "profit_factor": 4359,
+     "sharpe": 0,
+     "source": "q04_folds",
+     "trades": 4785
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 305,
+     "net_profit": 0,
+     "phase": "Q05",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "missing",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 715,
+     "drawdown_pct": 715,
+     "n": 723,
+     "net_profit": 0,
+     "phase": "Q05",
+     "profit_factor": 715,
+     "sharpe": 0,
+     "source": "q05q06_flat",
+     "trades": 723
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 171,
+     "net_profit": 0,
+     "phase": "Q06",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "missing",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 1,
+     "net_profit": 0,
+     "phase": "Q06",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "parse_error",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 303,
+     "drawdown_pct": 303,
+     "n": 307,
+     "net_profit": 0,
+     "phase": "Q06",
+     "profit_factor": 303,
+     "sharpe": 0,
+     "source": "q05q06_flat",
+     "trades": 307
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 123,
+     "net_profit": 0,
+     "phase": "Q07",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "missing",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 1,
+     "net_profit": 0,
+     "phase": "Q07",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "parse_error",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 235,
+     "n": 256,
+     "net_profit": 0,
+     "phase": "Q07",
+     "profit_factor": 216,
+     "sharpe": 0,
+     "source": "q07_seeds",
+     "trades": 239
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 176,
+     "net_profit": 0,
+     "phase": "Q08",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "missing",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 441,
+     "net_profit": 440,
+     "phase": "Q08",
+     "profit_factor": 430,
+     "sharpe": 0,
+     "source": "q08_subgates",
+     "trades": 440
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 42,
+     "net_profit": 0,
+     "phase": "Q09_NEWS",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "unknown_phase:Q09_NEWS",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 58,
+     "net_profit": 0,
+     "phase": "Q09_PORTFOLIO",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "missing",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 63,
+     "n": 65,
+     "net_profit": 64,
+     "phase": "Q09_PORTFOLIO",
+     "profit_factor": 63,
+     "sharpe": 63,
+     "source": "q09_portfolio",
+     "trades": 64
+    },
+    {
+     "drawdown_money": 41,
+     "drawdown_pct": 41,
+     "n": 41,
+     "net_profit": 0,
+     "phase": "Q10",
+     "profit_factor": 41,
+     "sharpe": 0,
+     "source": "q05q06_flat",
+     "trades": 41
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 11,
+     "net_profit": 0,
+     "phase": "Q14",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "unknown_phase:Q14",
+     "trades": 0
+    },
+    {
+     "drawdown_money": 0,
+     "drawdown_pct": 0,
+     "n": 1,
+     "net_profit": 0,
+     "phase": "Q15",
+     "profit_factor": 0,
+     "sharpe": 0,
+     "source": "unknown_phase:Q15",
+     "trades": 0
+    }
+   ],
+   "content_hash": "49faa69f97fa5e8fa1936681dca31fffe43e0e7d650974ee3865afd158c54ae0",
+   "missing": 43182,
+   "missing_share": 0.691343398280527,
+   "rows": 62461
+  },
+  "pool_population": {
+   "available": true,
+   "content_hash": "63b7ddffab2098017fa684be31cee044245c8f01f59d8f58b257f89da1ba79c9",
+   "n_pairs": 91
+  },
+  "sleeve_population": {
+   "content_hash": "a409ee224d5f41fbf21d39d15bd17fe10f3718a839c2beb37ecc608b6a4d1ae4",
+   "n": 21,
+   "sleeves": {
+    "10115:GDAXI": 520,
+    "10128:XAUUSD": 425,
+    "10145:XAUUSD": 306,
+    "10183:XAUUSD": 338,
+    "10291:SP500": 411,
+    "10700:XAUUSD": 373,
+    "10706:GBPUSD": 360,
+    "10848:XAUUSD": 1344,
+    "11660:NDX": 1410,
+    "12823:USDJPY": 1514,
+    "12969:USDJPY": 300,
+    "13036:GDAXI": 1172,
+    "13108:XTIUSD": 548,
+    "13213:USDJPY": 1596,
+    "13301:GDAXI": 551,
+    "20010:XAUUSD": 363,
+    "20086:EURUSD": 445,
+    "20086:NDX": 388,
+    "20266:XTIUSD": 432,
+    "9403:GDAXI": 351,
+    "9936:USDJPY": 1255
+   },
+   "span_calendar_days": 3004,
+   "trading_days": 2128
+  },
+  "verdict_inventory": {
+   "by_verdict": {
+    "BLOCKED_STALE_BUILD_RESULT": 1,
+    "CANCELLED_DUPLICATE_REQUEUE": 7,
+    "CHALLENGER_SPAWNED": 1,
+    "CONFIG_LOCKED": 1,
+    "DRAFT_DEFECT": 38,
+    "FAIL": 9529,
+    "FAIL_DD_PORTFOLIO_REVIEW": 25,
+    "FAIL_HARD": 98,
+    "FAIL_PORTFOLIO": 66,
+    "FAIL_SOFT": 56,
+    "INFRA_FAIL": 3163,
+    "INVALID": 621,
+    "INVALID_BUILD_STATIC_FIDELITY": 5,
+    "NEED_MORE_DATA": 7,
+    "OBSOLETE_NON_DWX_SYMBOL": 18,
+    "OPT_ELIGIBLE": 6,
+    "OPT_REJECTED": 3,
+    "PASS": 9091,
+    "PASS_LOWFREQ": 102,
+    "PASS_PORTFOLIO": 34,
+    "PASS_SOFT": 211,
+    "PENDING_RUNNER": 43,
+    "RETIRE": 125,
+    "RETIRED_ARCHIVED": 1,
+    "RETIRED_LOW_FREQ": 59,
+    "REVIEW_REQUIRED": 15,
+    "SUPERSEDED": 23,
+    "SUPERSEDED_BY_LOGICAL_BASKET": 67,
+    "ZERO_TRADES": 1045
+   },
+   "content_hash": "c80d7ab52f94b2d0e99a946974754982397a84fd88ee07f28ee79f68898c9da0",
+   "triples": 24461
+  },
+  "window_series": {
+   "complete": 36,
+   "content_hash": "4de9948e3ae751ffafe0723d2e6071e5e032ef4f09e68801e0e0c4a6911e184d",
+   "n": 50,
+   "windows": [
+    {
+     "complete": false,
+     "start": "2017-10-09"
+    },
+    {
+     "complete": false,
+     "start": "2017-12-08"
+    },
+    {
+     "complete": false,
+     "start": "2018-02-06"
+    },
+    {
+     "complete": false,
+     "start": "2018-04-07"
+    },
+    {
+     "complete": false,
+     "start": "2018-06-06"
+    },
+    {
+     "complete": false,
+     "start": "2018-08-05"
+    },
+    {
+     "complete": false,
+     "start": "2018-10-04"
+    },
+    {
+     "complete": false,
+     "start": "2018-12-03"
+    },
+    {
+     "complete": false,
+     "start": "2019-02-01"
+    },
+    {
+     "complete": false,
+     "start": "2019-04-02"
+    },
+    {
+     "complete": true,
+     "start": "2019-06-01"
+    },
+    {
+     "complete": true,
+     "start": "2019-07-31"
+    },
+    {
+     "complete": true,
+     "start": "2019-09-29"
+    },
+    {
+     "complete": true,
+     "start": "2019-11-28"
+    },
+    {
+     "complete": true,
+     "start": "2020-01-27"
+    },
+    {
+     "complete": false,
+     "start": "2020-03-27"
+    },
+    {
+     "complete": true,
+     "start": "2020-05-26"
+    },
+    {
+     "complete": true,
+     "start": "2020-07-25"
+    },
+    {
+     "complete": true,
+     "start": "2020-09-23"
+    },
+    {
+     "complete": true,
+     "start": "2020-11-22"
+    },
+    {
+     "complete": true,
+     "start": "2021-01-21"
+    },
+    {
+     "complete": true,
+     "start": "2021-03-22"
+    },
+    {
+     "complete": true,
+     "start": "2021-05-21"
+    },
+    {
+     "complete": true,
+     "start": "2021-07-20"
+    },
+    {
+     "complete": true,
+     "start": "2021-09-18"
+    },
+    {
+     "complete": true,
+     "start": "2021-11-17"
+    },
+    {
+     "complete": true,
+     "start": "2022-01-16"
+    },
+    {
+     "complete": false,
+     "start": "2022-03-17"
+    },
+    {
+     "complete": false,
+     "start": "2022-05-16"
+    },
+    {
+     "complete": false,
+     "start": "2022-07-15"
+    },
+    {
+     "complete": true,
+     "start": "2022-09-13"
+    },
+    {
+     "complete": true,
+     "start": "2022-11-12"
+    },
+    {
+     "complete": true,
+     "start": "2023-01-11"
+    },
+    {
+     "complete": true,
+     "start": "2023-03-12"
+    },
+    {
+     "complete": true,
+     "start": "2023-05-11"
+    },
+    {
+     "complete": true,
+     "start": "2023-07-10"
+    },
+    {
+     "complete": true,
+     "start": "2023-09-08"
+    },
+    {
+     "complete": true,
+     "start": "2023-11-07"
+    },
+    {
+     "complete": true,
+     "start": "2024-01-06"
+    },
+    {
+     "complete": true,
+     "start": "2024-03-06"
+    },
+    {
+     "complete": true,
+     "start": "2024-05-05"
+    },
+    {
+     "complete": true,
+     "start": "2024-07-04"
+    },
+    {
+     "complete": true,
+     "start": "2024-09-02"
+    },
+    {
+     "complete": true,
+     "start": "2024-11-01"
+    },
+    {
+     "complete": true,
+     "start": "2024-12-31"
+    },
+    {
+     "complete": true,
+     "start": "2025-03-01"
+    },
+    {
+     "complete": true,
+     "start": "2025-04-30"
+    },
+    {
+     "complete": true,
+     "start": "2025-06-29"
+    },
+    {
+     "complete": true,
+     "start": "2025-08-28"
+    },
+    {
+     "complete": true,
+     "start": "2025-10-27"
+    }
+   ]
+  }
+ },
+ "db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+ "schema_version": "qm.audit-baseline-snapshot/v1",
+ "short_id": "3472a5d2e1b5",
+ "snapshot_id": "3472a5d2e1b569f7ff88286b4af0a450ba1429134a80107c5bf32095747093f4",
+ "taken_at_utc": "2026-08-18T15:33:00+00:00"
+}
