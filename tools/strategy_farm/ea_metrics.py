@@ -44,7 +44,10 @@ FARM_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 # Phases that emit `runs[]`-shaped summary.json (in-sample / multi-symbol backtests).
 _SUMMARY_RUN_PHASES = {"P2", "Q02", "Q03"}
 # Walk-forward / stress / multi-seed / robustness / portfolio: each its own aggregate.json shape.
-_AGG_PHASES = {"Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10", "Q11"}
+_AGG_PHASES = {
+    "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_NEWS",
+    "Q09_PORTFOLIO", "Q10", "Q11", "Q14", "Q15", "Q16",
+}
 
 _DD_PCT_RE = re.compile(r"\(([\d.,]+)\s*%\)")
 
@@ -308,6 +311,44 @@ def _extract_q09_portfolio(d: dict) -> tuple[dict, dict, str]:
     return head, detail, "q09_portfolio"
 
 
+def _extract_metadata_phase(phase: str, d: dict) -> tuple[dict, dict, str] | None:
+    """Recognize non-performance gate artifacts without inventing metrics.
+
+    These gates emit governance/admission metadata, not the normalized P&L fields.
+    An unrecognized schema deliberately returns None so extract_one preserves the
+    visible ``unknown_phase:<phase>`` signal instead of silently storing blanks.
+    """
+    schema = d.get("schema") or d.get("schema_version") or d.get("evidence_schema")
+    known = False
+    if phase == "Q09_NEWS":
+        known = schema in {
+            "q09-live-news-diagnostic-summary/v1",
+            "q09-news-adjudication/v2",
+        } or (schema is None and d.get("phase") == "Q09_NEWS")
+    elif phase == "Q14":
+        known = schema == "qm.opt-card/v1"
+    elif phase == "Q15":
+        known = schema == "qm.opt-card-freeze/v1"
+    elif phase == "Q16":
+        known = schema in {
+            "qm.q16-head-to-head-result/v1",
+            "qm.q16-lineage/v1",
+            "qm.emit-q16-lineage-result/v1",
+        }
+    if not known:
+        return None
+
+    head = {"net_profit": None, "profit_factor": None, "trades": None,
+            "drawdown_money": None, "drawdown_pct": None, "sharpe": None}
+    detail = {
+        key: d.get(key)
+        for key in ("schema", "schema_version", "evidence_schema", "verdict", "reason",
+                    "reason_codes", "card_id", "work_item_id")
+        if key in d
+    }
+    return head, detail, f"{phase.lower()}_metadata"
+
+
 def extract_one(phase: str, evidence_path: str | None) -> tuple[dict, dict, str]:
     """Dispatch on phase → (headline, detail, source). Never raises."""
     empty = {"net_profit": None, "profit_factor": None, "trades": None,
@@ -337,6 +378,10 @@ def extract_one(phase: str, evidence_path: str | None) -> tuple[dict, dict, str]
             if d.get("runs"):
                 return _extract_summary_runs(d)
             return _extract_q05_q06(d)
+        if phase in ("Q09_NEWS", "Q14", "Q15", "Q16"):
+            metadata = _extract_metadata_phase(phase, d)
+            if metadata is not None:
+                return metadata
         # Unknown phase with a runs[] payload — best effort.
         if d.get("runs"):
             return _extract_summary_runs(d)
@@ -475,7 +520,7 @@ def build(con: sqlite3.Connection, *, full: bool = False, ea: str | None = None)
 
 # The Qxx phase order (for --latest tie-breaks and default ordering).
 _PHASE_ORDER = ["P2", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08",
-                "Q09", "Q09_PORTFOLIO", "Q10", "Q11"]
+                "Q09", "Q09_NEWS", "Q09_PORTFOLIO", "Q10", "Q11", "Q14", "Q15", "Q16"]
 
 _ORDER_COLS = {
     "pf": "profit_factor", "net": "net_profit", "trades": "trades",
