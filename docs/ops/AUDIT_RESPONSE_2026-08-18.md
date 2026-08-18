@@ -350,3 +350,190 @@ Alle Zahlen aus dem Snapshot `farm_state_20260818T130247Z.sqlite`
 `PENDING_IMPLEMENTATION`) sind aus allen Flip-Zählungen ausgeschlossen. Diese Menge stammt aus dem
 Code (`farmctl.py:9081`), nicht aus meiner Einschätzung — ein früherer Zählstand von mir nutzte einen
 engeren Filter und wies dadurch **einen Flip zu viel** aus (`FAIL_SOFT → PENDING_RUNNER`); korrigiert.
+
+---
+---
+
+# REVISION 2 — 2026-08-18, nach Rückfrage des Prüfers
+
+**Keine stille Korrektur.** Alles unterhalb dieser Linie ändert oder ersetzt Aussagen aus v1. Was in
+v1 stand, bleibt oben stehen; hier steht, was daran falsch war und was stattdessen gilt.
+
+## R-0 · Die Reihenfolge der drei Scheiter-Gründe ändert sich — und der Prüfer hat den Grund geliefert
+
+Der Prüfer hat in §3 gefragt, welche Rendite das Buch bei zulässigem Sizing erzeugt, und
+vorhergesagt, dass diese Zahl die Reihenfolge aller drei Gründe entscheidet. **Sie tut es.**
+
+**[MESSUNG]** 22 Sleeves mit Tagesreihe, gleichgewichtet, 50 nicht überlappende 60-Tage-Fenster über
+3.004 Kalendertage (2017-10-09 … 2025-12-30):
+
+| Multiplikator | Median | p20 | p80 | **Fenster >= +10 %** | negative Fenster |
+|---|---:|---:|---:|---:|---:|
+| **1,00x** | 16,17 % | 2,75 % | 28,71 % | **32 von 50 = 64 %** | 7 |
+| **0,44x** (gemessene Obergrenze) | **7,12 %** | 1,21 % | 12,63 % | **18 von 50 = 36 %** | 7 |
+
+**[SCHLUSS]** Bei dem Sizing, das die Tagesverlustgrenze überhaupt zulässt, erreicht das Buch das
++10-%-Ziel in **36 % der Fenster — gegen eine Anforderung von >= 80 %.** Der Median liegt bei 7,12 %,
+also unter dem Ziel. Das ist keine Randbedingung, das ist eine strukturelle Lücke.
+
+**Und die Größenordnung geht weiter in die falsche Richtung:** 0,44x ist eine Obergrenze auf
+**Schlusskursbasis**. FTMO misst floating intraday; der wahre schlechteste Tag ist mindestens so groß
+wie der gemessene, also ist der zulässige Multiplikator **kleiner** als 0,44x und die Trefferquote
+**kleiner** als 36 %.
+
+**Neue Priorität der Scheiter-Gründe:**
+
+| neu | alt | Grund |
+|---|---|---|
+| **1** | *(neu)* | **Bei zulässigem Sizing trägt das Buch das Ziel nicht.** 36 % gegen 80 % gefordert. Alles andere ist dieser Zahl nachgeordnet — auch ein perfekt stabiler Pool ändert sie nicht. |
+| **2** | 3 | **Die Fabrik hat keine autoritative Kennzahlenschicht** (verschärft, siehe R-2) |
+| **3** | 1 | **Verdikt-Stabilität / Pooldefinition** (abgeschwächt, siehe R-1) |
+| — | 2 | *Das 80-%-Kriterium ist nicht falsifizierbar* — bleibt gültig, wird aber Nebenpunkt: bei 36 % Trefferquote braucht es kein enges Konfidenzband, um zu wissen, dass 80 % nicht erreicht sind. Meine Zahl dazu war zudem falsch, siehe R-3. |
+
+## R-1 · "vollständig ein Binary-Effekt" war nicht gedeckt — der Prüfer hat recht
+
+**[MESSUNG]** Fisher exakt auf die 2x2-Tafel `[[0,12],[12,31]]` (Flip / kein Flip x identische /
+geänderte Binary): **einseitig p = 0,0350 · zweiseitig p = 0,0497.**
+Clopper-Pearson auf 0 Flips in n = 12: **95 % einseitige Obergrenze 22,1 %**, zweiseitig 26,5 %.
+
+**Korrigierte Fassung, ersetzt die v1-Formulierung:** die Beobachtung ist **konsistent mit einem
+überwiegenden Binary-Effekt**, und der Unterschied zwischen den Kohorten ist knapp signifikant
+(p = 0,0497). **Mit n = 12 ist aber nicht davon zu trennen, dass auch bei identischer Binary bis zu
+~22 % kippen** — dieselbe Größenordnung wie die Gesamtrate von 21,8 %. "Vollständig" war nicht
+gedeckt.
+
+**Folge für die Sanierungsbedingung, und das ist der Punkt des Prüfers:** Binary-Identität für den
+ganzen Pool ist damit **notwendig, aber nicht nachweislich hinreichend**. Eine zweite Bedingung ist
+erforderlich und in v1 nicht genannt: **wiederholte Messung bei identischer Binary**, um die
+Restunsicherheit zu schließen.
+
+**Kosten für n = 12 -> n = 40 — [MESSUNG], und es ist keine Kostenfrage.** Die eingefrorene
+Kohortendatei enthält **genau 12** C1-Paare (C2: 26, C3: 53). **40 distinkte Paare mit nachweislich
+unveränderter Binary existieren im Pool nicht.** Zwei Wege:
+
+* *Wiederholungsmessung an denselben 12* — 3 Läufe je Paar = 36 zusätzliche Beobachtungen. Bei
+  68 min Median-Laufzeit und der aktuell lease-serialisierten Nebenläufigkeit von ~2: **≈ 20 h**;
+  bei 7 gleichzeitig ≈ 6 h. Testet 12 Binaries mit höherer Schärfe, nicht 40 Binaries.
+* *Pool erweitern* — Paare außerhalb der 91 suchen, deren Binary seit ihrem Stream unverändert ist.
+  Umfang unbekannt, weil 4 von 5 Verdikten gar keine Hash-Bindung tragen (siehe R-4).
+
+**54-vs-55-Diskrepanz geklärt: [MESSUNG]** beides war richtig, die Bilanz ist ein bewegliches Ziel.
+Zum Zeitpunkt der einen Rechnung 54, der anderen 55, **jetzt 57** (C1 12 / C2 17 / C3 28) — es laufen
+weiter Zeilen fertig. Kein Datenwiderspruch, und die Kohortenzuordnung stimmt mit der eingefrorenen
+Datei überein: **0 Zeilen ohne Kohorte.**
+
+## R-2 · `source='missing'` ist der größere Befund — der Prüfer hat recht, und es ist schlimmer
+
+**[MESSUNG]** Coverage-Matrix `ea_metrics`, non-null-Anteil je Stage x Kennzahl:
+
+| Stage | Zeilen | profit_factor | drawdown_pct | sharpe | trades | net_profit |
+|---|---:|---:|---:|---:|---:|---:|
+| Q02 | 30.307 | 31 % | 31 % | **0 %** | 31 % | 31 % |
+| Q03 | 12.496 | **9 %** | **9 %** | 0 % | 9 % | 9 % |
+| **Q04** | 16.490 | 26 % | **0 %** | 0 % | 29 % | 20 % |
+| Q05 | 1.028 | 70 % | 70 % | 0 % | 70 % | 0 % |
+| Q06 | 479 | 63 % | 63 % | 0 % | 64 % | 0 % |
+| Q07 | 380 | 57 % | 62 % | 0 % | 63 % | 0 % |
+| **Q08** | 613 | 69 % | **0 %** | 0 % | 71 % | 71 % |
+| Q09_PORTFOLIO | 123 | 51 % | 51 % | 51 % | 52 % | 52 % |
+| **Q10** | 41 | **100 %** | **100 %** | 0 % | 100 % | 0 % |
+| **Q14 / Q15** | 11 / 1 | **0 %** | **0 %** | **0 %** | **0 %** | **0 %** |
+
+**Und der derived-JSON-Pfad rettet es nicht: [MESSUNG]** `detail_json` erwähnt "drawdown" in
+**0 von 16.490** Q04-Zeilen, **0 von 613** Q08-Zeilen, **0 von 11** Q14-Zeilen.
+
+**[SCHLUSS], und es dreht die Diagnose des Prüfers noch weiter:** derived JSON ist nicht die
+faktische Wahrheitsquelle — es trägt die fehlenden Kennzahlen **ebenfalls nicht**. Die Drawdown-Werte
+der entscheidenden Stufen liegen ausschließlich in **Evidenzdateien auf Platte, die keine Tabelle
+indexiert.** `ea_metrics` ist damit kein defekter Index, sondern ein **Teilindex über eine Minderheit
+der Läufe**, und Parser-Bug #3 ist nicht "liest die falsche Tabelle", sondern "es gibt keine Tabelle,
+die es lesen könnte".
+
+**Empfehlung — keine Umsetzung, Kontrakt-Ebene, Eskalation:** `ea_metrics` als autoritativ behalten
+**und befüllen**, statt den derived-Pfad zu adeln. Begründung: Q10 zeigt mit 100 % Abdeckung, dass die
+Schicht funktioniert, wenn sie beschickt wird. Kosten des Befüllens: ein Extraktionslauf über die
+Evidenzdateien der Stufen mit Lücke — nicht schätzbar, solange der Extraktor als fehlerhaft gilt;
+**erst verifizieren, dann beziffern.** Kosten der Alternative (derived adeln): unbezifferbar, weil der
+Pfad die Zahlen nicht hat.
+
+**Grund 3 aus v1 wird damit zu Grund 2 und weiter gefasst:** nicht "die Optimierungsspur hat keine
+autoritative Quelle", sondern **die Fabrik hat keine durchgängige Kennzahlenschicht.** Betroffen sind
+Q02 (31 %), Q03 (9 %), Q04 und Q08 (DD 0 %) — nicht nur Q14–Q16.
+
+## R-3 · Eigener Fehler in Grund 2: der Tagesbestand war falsch übernommen
+
+**[MESSUNG]** Gemessener Kalenderspan der Tagesreihen: **3.004 Tage** (2017-10-09 … 2025-12-30),
+**2.128** distinkte Handelstage -> **50** nicht überlappende 60-Tage-Fenster.
+
+**In v1 habe ich 1.349 Tage und 22 Fenster geschrieben. Beide Zahlen stammen aus dem Briefing, nicht
+aus einer Messung** — genau der Fehler, vor dem die eigene Regel "das Artefakt hat Vorrang vor der
+Geschichte über das Artefakt" warnt. Korrigiert:
+
+| n_eff | 95-%-KI bei p = 0,80 |
+|---:|---|
+| 22 *(v1, falsch)* | [0,63 – 0,97] |
+| **50 *(gemessen)*** | **[0,69 – 0,91]** |
+
+**Grund 2 steht inhaltlich**, aber schwächer: das Intervall enthält 0,80 weiterhin bequem, also ist
+das Kriterium mit diesem Verfahren nicht sauber falsifizierbar. Die von mir behauptete Größenordnung
+"Faktor 59" war jedoch falsch; sie beträgt **Faktor 26** (1.290 gegen 50).
+
+**Zum Nachschlag des Prüfers — [SCHLUSS], und er hat recht:** das Intervall ist ein reines
+Binomialband auf unabhängige Fenster. Es enthält **nicht**, dass auf denselben Fenstern selektiert
+wurde. Ein Band, das die Selektion mitführt, wäre breiter; um wie viel, ist ohne ein
+Selektions-Bootstrap nicht angebbar — **[NICHT ENTSCHEIDBAR]**, Beschaffung: Wiederholung der
+Buchkonstruktion je Bootstrap-Ziehung, Größenordnung Rechentage, keine Fabrikzeit. Verwendetes
+Verfahren in v1 und hier: **Wald-Normalapproximation**; Clopper-Pearson wäre bei n = 50 geringfügig
+breiter und ist die sauberere Wahl.
+
+## R-4 · §3.1.2 nachgetragen (war in v1 noch nicht enthalten)
+
+**[MESSUNG]** 3.706 EA-Verzeichnisse geprüft. **14 EAs tragen ein abweichendes `qm_ea_id`-Literal —
+und zwar durchgehend den Platzhalter `9999`**, keine geklonte Fremd-ID, und **nicht** die
+410xx-Familie. Die Magic-Registry führt 4 aktive Zeilen unter `ea_id = 9999`.
+
+Entscheidend ist, ob das Setfile den Platzhalter überschreibt (`QM_Common.mqh:225` leitet die Magic
+aus dem übergebenen `ea_id` ab):
+
+| | EAs | Verdikte | PASS |
+|---|---:|---:|---:|
+| Setfile setzt die korrekte ID | 12 | 98 | 12 |
+| **`qm_ea_id` fehlt im Setfile** | **2** (QM5_10898, QM5_9236) | **37** | **3** |
+
+**Antwort auf die gestellte Frage: 0 der 91 Kandidatenpaare sind betroffen** — entlastend für den
+Pool. Flottenweit sind es **37 Verdikte auf zwei EAs, die zur Laufzeit unter fremder Identität
+laufen.** Nicht behauptet: dass eine Kollision eingetreten ist; das verlangt gleichzeitigen Handel auf
+demselben Symbol und ist nicht geprüft.
+
+## R-5 · Aktualisierte Schlussaussage
+
+**Die Antwort ändert sich gegenüber v1 nicht im Ergebnis, aber im tragenden Grund.**
+
+v1: nicht tragfähig, weil die Evidenzbasis die Aussagen nicht trägt.
+**v2: nicht tragfähig, weil das FTMO-Buch bei dem Sizing, das die Tagesverlustgrenze zulässt, das
+Gewinnziel in 36 % statt 80 % der Fenster erreicht.** Die Evidenzprobleme bleiben real, sind aber
+diesem strukturellen Befund nachgeordnet.
+
+**Bedingungen, vollständige Liste:**
+
+1. Ein Buch, dessen Ko-Exzedenz-Struktur einen höheren Multiplikator erlaubt als 0,44x — das ist eine
+   **Konstruktionsaufgabe** (Auswahl und Gewichtung), keine Sizing-Aufgabe.
+2. Binary-Identität für den ganzen Pool **und** eine Wiederholungsmessung, die die Restunsicherheit
+   bei identischer Binary schließt (R-1).
+3. Eine durchgängige Kennzahlenschicht — mindestens `drawdown_pct` für Q04, Q08 und die
+   Optimierungsstufen (R-2).
+4. Ein Bestehenskriterium mit einem Verfahren, dessen Konfidenzband die Selektion mitführt (R-3).
+
+**Für das DZ-Buch ändert sich nichts**: es hängt an keiner Tagesverlustgrenze, und die Aussage von v1
+gilt unverändert — v1 des Buchs bleibt live, bis eine Neukonstruktion es out-of-sample schlägt.
+
+## R-6 · Was nach dieser Runde weiter offen ist
+
+| # | offen | Status |
+|---|---|---|
+| 4.1 | **Q3** Overlap Optimierungsfenster / WF-Falten in Tagen | **NICHT ENTSCHEIDBAR** — Faltengrenzen liegen in Evidenzdateien, nicht in einer Spalte; siehe OQ-3. Holdout-Design in v1 Q3 beschrieben, Einrichtung ist Gate-Änderung und damit eskalationspflichtig |
+| 4.2 | **Q2** Zufalls-Überlebende bei geltenden Schwellen | **NICHT ENTSCHEIDBAR** — verlangt eine Durchlassrate unter H0 je Gate, die die Pipeline nicht erzeugt. Universum ist beziffert: 107.446 Verdikte über 14.358 Paare |
+| 4.3 | **Q7** externe Basisrate | **NICHT ENTSCHEIDBAR intern** — n = 2 eigene Trials ist keine Basisrate; externe Recherche steht als OQ-4 zur Freigabe |
+| 4.4 | **Q8** die drei Lücken | in v1 beantwortet: Intraday-Pfad, Kostenabdeckung, FTMO-Nebenregeln, plus Regime-Abhängigkeit als vierter |
+| 4.5 | **§3.1.6** welches Gate friert Q14–Q16 | **offen** — Q14 letzter Fortschritt vor 7.707 min, Q15 vor 6.071 min, Q16 existiert nicht in `work_items`. Ursache nicht bestimmt |
+| 4.6 | Methode hinter dem KI | **beantwortet in R-3**: Wald; Clopper-Pearson wäre sauberer; Selektion nicht enthalten |
