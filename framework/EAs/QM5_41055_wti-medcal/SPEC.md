@@ -30,6 +30,10 @@ ten years. Require at least five valid exact-calendar observations, sort them,
 and use the center observation for an odd sample or the arithmetic mean of the
 two center observations for an even sample.
 
+Accept only native same-day D1 labels or one uniform `+1` calendar-day energy
+offset, require the normalized current D1 date to equal broker date, and apply
+that one offset to every historical endpoint.
+
 Trade the median sign only: positive above `1e-12` buys WTI, negative below
 `-1e-12` sells WTI, and a numerical tie consumes the month flat. The signal
 may not use current-month prices, fall back to an arithmetic mean, hard-code

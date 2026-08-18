@@ -56,16 +56,16 @@ risk_class: high
 ml_required: false
 r1_track_record: PASS_WITH_TRANSLATION_RISK
 r2_mechanical: PASS
-r3_data_available: PASS_WITH_HISTORY_WARMUP_RISK
+r3_data_available: PASS_WITH_HISTORY_AND_SESSION_LABEL_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: NOT_RUN
 q02_status: NOT_ENQUEUED
-review_focus: "Falsify a direct-WTI robust same-calendar-month sleeve outside the certified XAU/SP500/NDX/XNG book. Verify exact historical month endpoints, five-to-ten observation sample, even/odd median arithmetic, sign-only direction, durable monthly attempt, monthly renewal, and absence of current-month leakage. Q09 alone may establish realized decorrelation."
+review_focus: "Falsify a direct-WTI robust same-calendar-month sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform D1-label normalization, exact historical month endpoints, five-to-ten observation sample, even/odd median arithmetic, sign-only direction, durable monthly attempt, monthly renewal, and absence of current-month leakage. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
-hard_rules_at_risk: [exact_wti_carrier, first_month_bar_clock, exact_prior_year_same_calendar_months, completed_month_endpoints, no_current_month_price, five_sample_floor, ten_year_cap, even_odd_median, sign_only_direction, monthly_attempt_state, monthly_renewal, risk_mode_dual, hard_stop_present, friday_close_disabled, cfd_futures_basis, q02_frequency_floor, portfolio_correlation]
-g0_approval_reasoning: "R1 uses a named-author peer-reviewed Journal of Finance paper with DOI, complete-read evidence, explicit crude-oil inclusion, and explicit disclosure that the sample median is a QM robustness translation; R2 locks every endpoint, sample bound, median convention, direction, attempt, risk, and lifecycle; R3 uses registered native XTI D1 with the binding 2017-start warm-up risk explicit; R4 is deterministic calendar, sorting, logarithm, and execution arithmetic without trained logic, banned signal indicators, or an external feed; canonical dedup returned CLEAN and manual family review separated the order-statistic median from all mean-based, paired-rank, and fixed-month systems."
+hard_rules_at_risk: [exact_wti_carrier, first_month_bar_clock, uniform_energy_label_normalization, exact_prior_year_same_calendar_months, completed_month_endpoints, no_current_month_price, five_sample_floor, ten_year_cap, even_odd_median, sign_only_direction, monthly_attempt_state, monthly_renewal, risk_mode_dual, hard_stop_present, friday_close_disabled, cfd_futures_basis, q02_frequency_floor, portfolio_correlation]
+g0_approval_reasoning: "R1 uses a named-author peer-reviewed Journal of Finance paper with DOI, complete-read evidence, explicit crude-oil inclusion, and explicit disclosure that the sample median is a QM robustness translation; R2 locks every endpoint, sample bound, median convention, direction, attempt, risk, and lifecycle; R3 uses registered native XTI D1 with the binding 2017-start warm-up and D1 session-label risks explicit; R4 is deterministic calendar, sorting, logarithm, and execution arithmetic without trained logic, banned signal indicators, or an external feed; canonical dedup returned CLEAN and manual family review separated the order-statistic median from all mean-based, paired-rank, and fixed-month systems."
 ---
 
 # QM5_41055 WTI Median Same-Calendar Seasonality
@@ -129,6 +129,9 @@ Verdict:
 - Host and target: exact `XTIUSD.DWX`, D1, slot 0, magic `410550000`.
 - Decision clock: first executable tick of the first available D1 bar in a new
   broker calendar month.
+- Session labels: accept only native same-day D1 labels or one uniform `+1`
+  calendar-day energy offset. The normalized current D1 date must equal the
+  current broker date; apply that one offset to every historical endpoint.
 - Formation: exact same calendar month in years `Y-1` through `Y-10` only.
 - Minimum sample: five valid completed monthly observations; maximum ten.
 - Ordinary exit and renewal: the first executable tick in the next broker
@@ -177,9 +180,12 @@ filter is authorized.
 2. Process malformed and stale owned exposure before every entry-only gate.
 3. If owned exposure was opened in an earlier broker `yyyymm`, close it before
    considering the new month. Do not open while any owned exposure remains.
-4. Enter only on the first available D1 bar of a genuine new broker calendar
-   month. A mid-month first attachment consumes no historical opportunity and
-   must remain flat until the next genuine boundary.
+4. Accept only a native same-day D1 label or one uniform `+1` calendar-day
+   energy offset, require the normalized current D1 date to equal broker date,
+   and apply that offset to all historical labels. Enter only on the first
+   normalized D1 bar of a genuine new broker calendar month. A mid-month first
+   attachment consumes no historical opportunity and must remain flat until
+   the next genuine boundary.
 5. Derive the attempt key from the decision month's broker `yyyymm`. Persist
    it before history validation, news, spread, quote, ATR, sizing, or order
    gates. Never retry that month, including after restart or order failure.
@@ -222,9 +228,10 @@ filter is authorized.
 - Exact host, D1, EA 41055, slot 0, and registered magic.
 - Framework kill switch and ownership checks remain authoritative.
 - Both news axes are OFF; the signal uses completed native price history.
-- Genuine new-month boundary, durable attempt, exact historical endpoint
-  identity, sample floor, median arithmetic, sign tolerance, quote, spread,
-  ATR, sizing, and stop geometry must be valid.
+- Uniform native/`+1` label normalization, genuine new-month boundary, durable
+  attempt, exact historical endpoint identity, sample floor, median
+  arithmetic, sign tolerance, quote, spread, ATR, sizing, and stop geometry
+  must be valid.
 - Failure after attempt persistence consumes the month.
 
 ## 7. Trade Management Rules
@@ -284,10 +291,10 @@ this median, absolute-sign position, CFD implementation, stop, or lifecycle.
 
 ## QM Interpretations
 
-QM fixes the ten-year cap, exact monthly endpoints, even/odd sample median,
-absolute sign and epsilon, direct CFD carrier, durable attempt, fixed risk,
-ATR stop, spread ceiling, monthly renewal, and stale guard. They are
-pre-result falsification choices.
+QM fixes the native/`+1` uniform energy-label normalization, ten-year cap,
+exact monthly endpoints, even/odd sample median, absolute sign and epsilon,
+direct CFD carrier, durable attempt, fixed risk, ATR stop, spread ceiling,
+monthly renewal, and stale guard. They are pre-result falsification choices.
 
 ## Framework Execution Overrides
 
@@ -349,9 +356,10 @@ the hold.
 
 Q01 must prove:
 
-1. exact same-calendar returns use only completed month endpoints for years
-   `Y-1` through `Y-10`, with December/January wrapping and invalid years
-   skipped without substitution;
+1. native and uniform `+1` label conventions select only the exact normalized
+   month boundary, and same-calendar returns use only completed month endpoints
+   for years `Y-1` through `Y-10`, with December/January wrapping and invalid
+   years skipped without substitution;
 2. five-to-ten sample bounds plus odd/even median arithmetic, tie tolerance,
    and direction are exact, including an outlier case where mean and median
    signs disagree;

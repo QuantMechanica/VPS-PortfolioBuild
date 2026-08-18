@@ -33,10 +33,11 @@ Approved card:
 - R2 `PASS`: historical month endpoints, years, sample bounds, even/odd median
   convention, sign tolerance, consumed attempt, fixed risk, hard stop, spread
   cap, and monthly lifecycle are mechanical.
-- R3 `PASS_WITH_HISTORY_WARMUP_RISK`: registered native `XTIUSD.DWX` D1 OHLC,
-  timestamps, quotes, broker calendar, positions, deal history, and terminal
-  state supply every runtime input. Local history starts in 2017, making the
-  five-year sample floor a binding Q02 risk.
+- R3 `PASS_WITH_HISTORY_AND_SESSION_LABEL_RISK`: registered native
+  `XTIUSD.DWX` D1 OHLC, timestamps, quotes, broker calendar, positions, deal
+  history, and terminal state supply every runtime input. Local history starts
+  in 2017, making the five-year sample floor binding; native versus prior-day
+  energy labels must also normalize uniformly.
 - R4 `PASS`: deterministic timestamp, calendar, sorting, logarithm, and
   execution arithmetic only; no trained output, banned signal indicator,
   external runtime feed, grid, martingale, scale-in, hedge, or pyramid.
@@ -65,6 +66,8 @@ Verdict:
 Development may build exactly the approved card with:
 
 - exact `XTIUSD.DWX` D1 slot 0 and registered magic `410550000`;
+- native same-day or one uniform `+1` calendar-day energy-label normalization,
+  with normalized current D1 date equal to broker date;
 - first genuine broker-month D1 boundary and one durable `yyyymm` attempt
   persisted before every fallible entry gate;
 - exact same-calendar historical years `Y-1` through `Y-10`, with each return
