@@ -17531,3 +17531,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 40005,tradingview-multitimeframe-supertrend-atr,0,EURUSD.DWX,400050000,2026-08-18,Gemini,active
 40005,tradingview-multitimeframe-supertrend-atr,1,GBPJPY.DWX,400050001,2026-08-18,Gemini,active
 40005,tradingview-multitimeframe-supertrend-atr,2,XAUUSD.DWX,400050002,2026-08-18,Gemini,active
+40008,aqr-value-and-momentum-everywhere,0,SP500.DWX,400080000,2026-08-18,Gemini,active
+40008,aqr-value-and-momentum-everywhere,1,NDX.DWX,400080001,2026-08-18,Gemini,active
+40008,aqr-value-and-momentum-everywhere,2,XTIUSD.DWX,400080002,2026-08-18,Gemini,active
+40008,aqr-value-and-momentum-everywhere,3,EURUSD.DWX,400080003,2026-08-18,Gemini,active

@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        40008
+; ea_slug:      aqr-value-and-momentum-everywhere
+; ea_version:   v5.0
+; set_version:  s20260818-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-18
+;==========================================================
+qm_ea_id=40008
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+InpMomDays=252
+InpValDays=1260
+InpSMAPeriod=200
+InpScoreThresholdLong=0.70
+InpScoreThresholdShort=0.30
+InpScoreDecayLong=0.40
+InpScoreDecayShort=0.60
+InpATRPeriod=14
+InpATRMultiplier=2.5
+InpTakeProfitRR=2.0
+InpSpreadATRMult=1.8
+InpBreakEvenTriggerR=1.0
