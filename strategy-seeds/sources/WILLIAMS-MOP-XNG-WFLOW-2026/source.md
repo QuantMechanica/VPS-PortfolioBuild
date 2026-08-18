@@ -10,10 +10,11 @@ last_updated: 2026-08-18
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-18"
 approved_at: 2026-08-18
 source_approval: decisions/2026-08-18_xng_weekly_flow_agreement_source_approval.md
-approval_commit: PENDING_SOURCE_COMMIT
+approval_commit: 929a14cae
 strategy_ids:
   - WILLIAMS-MOP-XNG-WFLOW-2026_S01
-cards_extracted: []
+cards_extracted:
+  - strategy-seeds/cards/approved/QM5_41058_xng-wflow-agree_card.md
 parent_sources:
   - WILLIAMS-MOP-WTI-WFLOW-2026
   - MOP-TSMOM-2012
@@ -148,4 +149,3 @@ unusable XNG history, or nonpositive governed economics.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-18 | bounded XNG carrier extraction | G0 | APPROVED_SOURCE |
-
