@@ -1,6 +1,6 @@
 # QM5_41055 - WTI Median Same-Calendar Seasonality
 
-Status: `G0 APPROVED; IMPLEMENTED; Q01 VALIDATION IN PROGRESS`
+Status: `G0 APPROVED; Q01 PASS; Q02 CAPACITY CHECK PENDING`
 
 ## Identity
 
@@ -74,4 +74,17 @@ The EA, independent reference suite, approved-card build copy, and sole
 historical D1 scan only after a genuine monthly bar edge, validates uniform
 energy-label normalization and adjacent month identity, and computes the
 sample median without a full-sample mean fallback. Strict Q01 evidence is
-being finalized before any Q02 capacity check.
+complete before any Q02 capacity check.
+
+- source implementation commit: `d51ed3bb5`
+- independent reference suite: 13 tests `PASS`
+- card schema lint: `PASS`, both byte-identical copies
+- symbol-scope validation: `SINGLE_SYMBOL_OK`
+- strict MetaEditor compile: `PASS`, 0 errors, 0 warnings
+- compile log:
+  `framework/build/compile/20260818_004637/QM5_41055_wti-medcal.compile.log`
+- targeted build check: `PASS`, 0 failures, 0 warnings
+- build report: `D:/QM/reports/framework/21/build_check_20260818_004637.json`
+- static P1: `PASS`
+- P1 report:
+  `D:/QM/reports/pipeline/QM5_41055/P1/P1_QM5_41055_result.json`
