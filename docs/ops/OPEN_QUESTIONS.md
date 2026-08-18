@@ -128,6 +128,31 @@ gestellt. **Nicht verhandelbar vor dem Vollbatch.**
 6 von 72 Batch-Zeilen. Setfile-Integrität und Rebuild-Hypothese sind **falsifiziert**; die Ursache
 ist offen. Unverändert seit Runde 4.
 
+## ● OQ-11 · Muss der globale Custom-History-Lease über den ganzen Lauf gehalten werden?
+
+**[MESSUNG] 2026-08-18, 16:01 UTC.** `terminal_worker.py:4467` holt den globalen Lease **vor**
+`claim_atomic` und gibt ihn erst im `finally` **nach** `_run_claimed_item` frei. Solange eine Zeile
+läuft, kann kein anderes Terminal einen Anspruch versuchen.
+
+| | |
+|---|---|
+| Lease-Haltedauer | Median **1,1 min** · p90 **12,3 min** · Maximum **54,8 min** (Basket QM5_12712) |
+| Lease-Busy je Terminal und Stunde | ~**50** — jede Minute angefragt, praktisch immer abgewiesen |
+| letzter Anspruch je Terminal | T9 vor 29 min, **die übrigen neun vor 153 bis 429 min** |
+| wartende Zeilen | **2.300** (Q04 1.497, Q02 690), 10 lebende Worker |
+
+**Die Frage.** Copy-on-Claim privatisiert die Historie in das terminaleigene `Bases\Custom`; danach
+liest der Lauf nur noch private Dateien. Was der **globale** Lease während des Laufs noch schützt,
+ist nicht ersichtlich. Bei Median 1,1 min ist das für gewöhnliche Zeilen folgenlos — bei einem
+Basket, der ihn stundenlang hält, steht die gesamte Fabrik.
+
+**Warum ich nichts ändere.** Der Lease ist Teil der OWNER-ratifizierten Variante-A-Containment und
+fail-closed konstruiert. Eine Verkürzung seiner Reichweite ist keine Routinereparatur, sondern eine
+Änderung an einer Containment-Garantie.
+
+**Was daran hängt:** 6 bis 42 Fabrikstunden im Basket-Anteil des vereinten Batches, und dieselbe
+Größenordnung bei jedem künftigen Basket-Lauf.
+
 ---
 
 # Was ohne neue Daten nicht schließbar ist

@@ -117,3 +117,20 @@ Tabelle zu 69 % `source='missing'` ist und für Q04/Q08/Q14/Q15 keinen einzigen 
 | **Progress-Detektor-Reparatur** (`farmctl.py`, Commit `e1a98f77f`) | Ein Basket wurde bei laufendem Backtest als NO_FORWARD_PROGRESS getötet, weil der Detektor das Chart-Symbol des Testers gegen das synthetische Host-Label der Zeile stellt. Das ist ein Infrastrukturdefekt, der die als P1 gesetzte Basket-Kette zerstört — keine Gate-Schwelle, kein Verdikt, kein Recompile. Blast Radius: der Detektor kann Fortschritt nur **mehr** sehen, nie weniger. 11 bestehende Tests grün, Positiv- und Negativkontrolle belegt. |
 | **Requeue von QM5_12712** (`requeue_false_progress_reap.py`) | Der Reaper begründet sein INFRA_FAIL damit, dass „die stranded-INFRA-Sweep die Zeile requeuen kann". Diese Sweep hat keinen Aufrufer und `QM_StrategyFarm_Repair_Hourly` ist Disabled — die Zeile wäre für immer gescheitert geblieben. Requeued wurde **eine** Zeile von 214 geprüften, und nur mit einem Artefakt aus dem Blindfenster des Reapers als Lebendbeweis. |
 | **Baseline-Snapshot vor dem Codex-Dispatch** | §5 verlangt das Einfrieren vor der ersten Regenerierung. Die Vollextraktion ist bereits eine. Strenger als gefordert, nicht lockerer. |
+
+## Nachtrag 16:05 UTC — der Preis von D-5 ist zehnmal höher als vorgelegt
+
+Die Monitoring-Runde hat gemessen, dass ein laufender Basket den **globalen**
+Custom-History-Lease über seinen gesamten Lauf hält und damit **alle zehn Terminals** blockiert,
+nicht nur die multisym-Spur. Belege in `BATCH_SPEC_MERGED.md` §2 (Korrektur) und OQ-11.
+
+**Folge für D-5:** Option A kostet nicht 6–42 h einer Spur, sondern **6–42 h Stillstand der
+gesamten Fabrik** bei 2.300 wartenden Zeilen.
+
+**Geänderte Empfehlung, vorgelegt und nicht ausgeführt:** einen Basket zu Ende laufen lassen — der
+End-to-End-Nachweis ist der Teil, der die Invalidierung überlebt — und die restlichen vier anhalten,
+bis D-4 entschieden ist. Ersparnis geschätzt **5 bis 35 Fabrikstunden**. Bis zu einer Antwort laufen
+alle fünf wie beschlossen.
+
+**Neu: D-7 — soll die Lease-Reichweite geprüft werden?** (OQ-11). Nicht von mir geändert, weil es
+eine Containment-Garantie berührt.

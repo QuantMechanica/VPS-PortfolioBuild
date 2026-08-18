@@ -115,20 +115,45 @@ Von 21 Basket-Q08-Zeilen sind 15 abgeschlossen (9 FAIL_HARD, 6 FAIL_SOFT) — ab
 ist zweierlei: ein Lauf über **6,6 h**, und bei QM5_12712 heute eine Baseline-Stufe von **16 min**
 (14:44 → 15:00 UTC), gefolgt vom Neighborhood-Sweep.
 
-**Belastbare Spanne: 1–7 h je Basket.** Bei strikter Serialisierung und 6 Zeilen sind das
-**6–42 Stunden**, und sie laufen **parallel** zu den gewöhnlichen Zeilen (die Serialisierung bindet
-nur multisym gegen multisym: `terminal_worker.py:1911`).
+**Belastbare Spanne: 1–7 h je Basket.**
 
-### Gesamt
+### KORREKTUR 16:05 UTC — ein Basket blockiert nicht seine Spur, sondern die ganze Fabrik
 
-| Variante | Wanduhr |
-|---|---|
-| gewöhnliche Zeilen allein | ~20 h |
-| Baskets allein (seriell) | 6–42 h |
-| **vereinter Batch** | **~1 bis 2 Tage**, durch die Baskets bestimmt |
+Die erste Fassung dieses Abschnitts sagte, Baskets liefen **parallel** zu den gewöhnlichen Zeilen,
+weil `terminal_worker.py:1911` nur multisym gegen multisym serialisiert. **Das ist falsch, und die
+Monitoring-Runde hat es gemessen.**
 
-**Mit den 5 offenen (b)-Baskets im Weg:** die laufen ohnehin und blockieren die gewöhnlichen Zeilen
-nicht — **aber siehe §5.2, dort steht der eigentliche Konflikt.**
+Der bindende Mechanismus ist der **globale Custom-History-Lease**. `terminal_worker.py:4467` holt ihn
+**vor** `claim_atomic` und gibt ihn erst im `finally` **nach dem vollständigen Lauf** frei
+(`_run_claimed_item` liegt dazwischen). Solange eine Zeile läuft, kann **kein anderes Terminal
+überhaupt einen Anspruch versuchen**.
+
+**[MESSUNG] Lease-Haltedauern heute:** Median **1,1 min**, p90 **12,3 min**, Maximum **54,8 min** —
+und das Maximum ist der Basket QM5_12712, freigegeben in dem Moment, in dem der Reaper ihn tötete.
+
+**[MESSUNG] Lease-Busy je Terminal und Stunde:** rund **50 pro Stunde** — jedes Terminal fragt einmal
+je Minute an und wird praktisch jedes Mal abgewiesen, durchgehend über 13:00, 14:00 und 15:00 UTC.
+
+**[MESSUNG] Letzter Anspruch je Terminal, 16:01 UTC:** T9 vor 29 min — **alle übrigen neun zwischen
+153 und 429 Minuten**. Bei 2.300 wartenden Zeilen (Q04 1.497, Q02 690) und 10 lebenden Workern.
+
+**Bei Median 1,1 min ist der Lease für gewöhnliche Zeilen unschädlich.** Bei einem Basket, der ihn
+Stunden hält, steht die Fabrik.
+
+### Gesamt, korrigiert
+
+| Variante | Wanduhr | Kosten |
+|---|---|---|
+| gewöhnliche Zeilen allein | ~20 h | Fabrik ausgelastet |
+| **6 Baskets seriell** | **6–42 h** | **Fabrik steht — 10 Terminals, nicht eines** |
+| **vereinter Batch** | ~1 bis 2 Tage | dominiert vom Basket-Anteil, und zwar exklusiv |
+
+**Ob der Lease über den ganzen Lauf gehalten werden muss, ist eine offene Frage** (OQ-11): die
+Copy-on-Claim-Privatisierung kopiert die Historie in das terminaleigene `Bases\Custom`, danach liest
+der Lauf nur noch private Dateien. Was der globale Lease **während** des Laufs noch schützt, ist
+nicht ersichtlich. Er ist Teil der OWNER-ratifizierten Variante-A-Containment und wird deshalb
+**nicht** von mir geändert — aber die Frage gehört gestellt, weil an ihr 6 bis 42 Fabrikstunden
+hängen.
 
 ---
 
@@ -209,15 +234,26 @@ Drei Auswege, keinen davon wähle ich allein:
 
 | | Weg | Preis |
 |---|---|---|
-| **A** | Baskets laufen wie beschlossen, Batch danach mit Recompile | 6–42 h, deren Verdikte danach verworfen werden. 2.3 schließt mit Basket-Anteil — aber mit einem, der überschrieben wird. |
+| **A** | Baskets laufen wie beschlossen, Batch danach mit Recompile | 6–42 h **Stillstand der gesamten Fabrik** (Lease-Befund oben), deren Verdikte danach verworfen werden. 2.3 schließt mit Basket-Anteil — aber mit einem, der überschrieben wird. |
 | **B** | Baskets **jetzt** anhalten, Batch mit Recompile, Baskets darin | spart die 6–42 h; **widerspricht der ausdrücklichen OWNER-Entscheidung** und verzögert 2.3 um die Batch-Vorbereitung |
 | **C** | Baskets laufen, Batch **ohne** Recompile und ohne Equity-Telemetrie | keine Invalidierung, kein Konflikt — aber die Hauptunsicherheit aus rev5 bleibt ungemessen, und ein späterer Beschluss kostet einen zweiten Vollbatch |
 
-**Meine Empfehlung: A**, aber mit offenen Augen. Die fünf Baskets liefern den einzigen
-Basket-Anteil, den 2.3 überhaupt je hatte, und ihr Wert liegt weniger im Verdikt als im **Nachweis,
-dass der Basket-Pfad End-to-End trägt** — der heute überhaupt erst wiederhergestellt wurde
+**Empfehlung, nach dem Lease-Befund geändert.** Vor der Messung empfahl ich A: die fünf Baskets
+liefern den einzigen Basket-Anteil, den 2.3 je hatte, und ihr Wert liegt im **Nachweis, dass der
+Basket-Pfad End-to-End trägt** — der heute überhaupt erst wiederhergestellt wurde
 (Copy-on-Claim-Repair, Progress-Detektor-Repair). Dieser Nachweis überlebt die Invalidierung, das
 Verdikt nicht.
+
+Der Preis ist jetzt aber ein anderer: **nicht 6–42 h einer Spur, sondern 6–42 h der ganzen Fabrik**,
+bei 2.300 wartenden Zeilen. Damit kippt die Abwägung:
+
+> **Neue Empfehlung: einen Basket zu Ende laufen lassen, dann anhalten.** Ein einziger vollständiger
+> Basket-Durchlauf liefert den End-to-End-Nachweis vollständig — das ist der Teil, der die
+> Invalidierung überlebt. Die restlichen vier liefern nur Verdikte, und die werden ohnehin verworfen.
+> Ersparnis: geschätzt **5 bis 35 Fabrikstunden**.
+
+Das ist eine Änderung an einer ausdrücklichen OWNER-Entscheidung und wird deshalb **vorgelegt, nicht
+ausgeführt.** Bis zu einer Antwort laufen alle fünf wie beschlossen.
 
 ---
 
