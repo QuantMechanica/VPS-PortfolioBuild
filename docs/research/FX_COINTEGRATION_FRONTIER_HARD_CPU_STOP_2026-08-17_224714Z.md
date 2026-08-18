@@ -89,3 +89,37 @@ row, dispatch tick, backtest, tester launch, terminal reservation, priority
 mutation, Factory state, portfolio surface, or live surface was changed.
 Machine-readable evidence is
 `artifacts/fx_cointegration_frontier_hard_cpu_stop_20260817T234822Z_board_advisor.json`.
+
+## 00:48Z continuation audit
+
+A fresh read-only audit at repository head
+`d51ed3bb5b26feb6ecc95db06bc2069003aa0ae8` found a materially changed
+factory roster and a fully saturated hard-CPU condition. Five one-second
+whole-machine samples were all `100%`, above the explicit `97%` ceiling.
+
+The supported path-aware operator scan observed eight active factory
+terminals on `T1`, `T2`, `T3`, `T4`, `T5`, `T6`, `T9`, and `T10`, up from
+six at 23:48Z. `T1` and `T10` owned Q04 work items; the other six terminals
+were occupied by governed pipeline runs. The separately visible `T_Live`
+and FTMO terminals were observed only so they could be excluded; neither was
+controlled.
+
+The frozen 66-pair frontier remains fully covered by governed work, and the
+coverage reconciliation commit `a80493291` remains an ancestor of the
+observed head. Supported operator reads again confirm both anchors are
+downstream of Q02 PASS: `QM5_12532` at Q05 FAIL and `QM5_12533` at Q04
+FAIL. The non-duplicate fallback remains rank-21
+`QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1`: its canonical Q02 is PASS, and
+Q04 item `113ae6d1-33c0-42bc-b9b0-bf3a48ef3445` remains pending,
+unclaimed, at attempt zero. A second enqueue, requeue, priority change, or
+dispatch would duplicate or improperly overtake that open successor.
+
+Fresh hashes confirm the MQ5, EX5, basket manifest, approved Card snapshot,
+and fixed-risk logical-basket setfile are unchanged. The setfile retains
+`RISK_FIXED=1000`, `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`.
+
+Per the mission stop condition, no Card, EA, registry row, magic row, queue
+row, dispatch tick, backtest, tester launch, terminal reservation, priority
+mutation, Factory state, portfolio surface, or live surface was changed.
+Machine-readable evidence is
+`artifacts/fx_cointegration_frontier_hard_cpu_stop_20260818T004844Z_board_advisor.json`.
