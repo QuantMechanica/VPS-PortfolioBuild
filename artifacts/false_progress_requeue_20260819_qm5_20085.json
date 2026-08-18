@@ -1,0 +1,25 @@
+{
+ "applied_at_utc": "2026-08-18T22:41:42+00:00",
+ "changed_rows": 1,
+ "db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+ "entries": [
+  {
+   "after_payload_sha256": "b90a57f96eea70bf9ffbd8d9635803aaac89f2a7dd2ccb69af3389bed06a5cb6",
+   "before_payload_sha256": "252af0cceee4281ea683dee89b8c1c3946e9eb8a4e959cb7e45dc44713eaf0fd",
+   "ea_id": "QM5_20085",
+   "liveness_proof": {
+    "at_utc": "2026-08-18T22:28:02+00:00",
+    "path": "D:\\QM\\mt5\\T1\\logs\\20260819.log",
+    "progress_pct": 93,
+    "source": "mt5_tester_progress",
+    "window_end_utc": "2026-08-18T22:28:32+00:00",
+    "window_start_utc": "2026-08-18T21:58:31+00:00"
+   },
+   "phase": "Q07",
+   "symbol": "XAUUSD.DWX",
+   "work_item_id": "73aa9110-d14b-4483-b444-a495757fd85e"
+  }
+ ],
+ "reason": "no-forward-progress-reap-with-live-tester-session",
+ "schema_version": "qm.false-progress-requeue-journal/v1"
+}
