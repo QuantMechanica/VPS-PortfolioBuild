@@ -27,6 +27,12 @@ def _engine_rows() -> list[dict[str, Any]]:
 
 def score_all() -> list[dict[str, Any]]:
     scored = {row["k"]: row for row in _engine_rows()}
+    # Point 2.4: active_days_per_60d is produced here rather than merged in afterwards.
+    # refresh_cache() rewrites rows from scratch, so anything merged into the cache by a
+    # separate pass is erased by the next refresh -- an interim that needs a manual step
+    # after every refresh is not an interim.
+    import sleeve_density
+    density = sleeve_density.density_rows()
     result: list[dict[str, Any]] = []
     for path in sorted(STREAMS.glob("*.jsonl")):
         bare, _, stem = path.stem.partition("_")
@@ -54,13 +60,16 @@ def score_all() -> list[dict[str, Any]]:
         worst_day = abs(float(row["worst_day"]))
         wdd_p90 = float(row["wdd_p90"])
         denominator = max(2.0, 2.0 * worst_day, wdd_p90)
-        result.append({
+        entry = {
             "sleeve": key, "status": "SCORED",
             "fund_score": med60 / denominator if denominator else None,
             "med60_1x": med60, "worst_day_1x": worst_day,
             "wdd_p90_1x": wdd_p90, "denominator": denominator,
             "screening_only": True,
-        })
+        }
+        entry.update(density.get(key, {"active_days_per_60d": None,
+                                       "active_days_reason": "no_active_day_set"}))
+        result.append(entry)
     return result
 
 
