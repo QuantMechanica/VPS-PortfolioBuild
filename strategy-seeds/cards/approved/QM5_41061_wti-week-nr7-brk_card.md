@@ -59,7 +59,7 @@ r3_data_available: PASS_WITH_ENERGY_LABEL_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: READY_TO_ENQUEUE
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a direct-WTI complete-week compression/next-week expansion stream outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy-label normalization, exact Monday-Friday membership, strict seven-week range comparison, completed-close breakout chronology, durable weekly attempt, fixed-risk hard stop, and Friday-flat lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -338,6 +338,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-18 | initial WTI completed-week NR7 card | G0 | APPROVED |
 | v1-build | 2026-08-18 | deterministic WTI implementation, independent reference suite, strict compile, build checks, and static artifact validation | Q01 | PASS |
+| v1-q02-capacity | 2026-08-18 | target-only dry run selected one row; apply withheld above tester-capacity and host-CPU ceilings | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -345,7 +346,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-18 | APPROVED | `decisions/2026-08-18_qm5_41061_wti_completed_week_nr7_g0.md` |
 | Q01 Build Validation | 2026-08-18 | PASS | `D:/QM/reports/framework/21/build_check_20260818_062557.json`; `D:/QM/reports/pipeline/QM5_41061/P1/P1_QM5_41061_result.json` |
-| Q02 Baseline Screening | - | READY_TO_ENQUEUE | target-only paced handoff after fresh capacity checks |
+| Q02 Baseline Screening | 2026-08-18 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-18_qm5_41061_wti_week_nr7_q01_q02_capacity_stop.md` |
 
 ## Safety Boundary
 
