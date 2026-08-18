@@ -199,8 +199,21 @@ def _extract_q04(d: dict) -> tuple[dict, dict, str]:
 
 
 def _extract_q05_q06(d: dict) -> tuple[dict, dict, str]:
+    # The flat Q05/Q06/Q10 aggregate schema does not emit net profit.  It does
+    # bind the summary_path that the gate itself reads, and runs[-1] there emits
+    # net_profit.  Follow that exact access path; never derive a substitute from
+    # PF, drawdown, or another non-equivalent field.
+    net_profit = _to_float(d.get("net_profit"))
+    net_profit_source = "aggregate.net_profit" if net_profit is not None else None
+    if net_profit is None:
+        summary = _load_json(d.get("summary_path"))
+        runs = (summary or {}).get("runs") or []
+        if runs and isinstance(runs[-1], dict):
+            net_profit = _to_float(runs[-1].get("net_profit"))
+            if net_profit is not None:
+                net_profit_source = "summary_path.runs[-1].net_profit"
     head = {
-        "net_profit": _to_float(d.get("net_profit")),
+        "net_profit": net_profit,
         "profit_factor": _to_float(d.get("pf")),
         "trades": _to_int(d.get("trades")),
         "drawdown_money": _to_float(d.get("dd_money")),
@@ -208,6 +221,8 @@ def _extract_q05_q06(d: dict) -> tuple[dict, dict, str]:
         "sharpe": _to_float(d.get("sharpe")),
     }
     detail = {k: d.get(k) for k in ("stress_level", "rejection_probability", "reason") if k in d}
+    detail["net_profit_source"] = net_profit_source
+    detail["summary_path"] = d.get("summary_path")
     return head, detail, "q05q06_flat"
 
 
