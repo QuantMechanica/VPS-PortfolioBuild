@@ -1,0 +1,2036 @@
+{
+ "schema": "qm.pool-2p2-screening/v1",
+ "at_utc": "2026-08-18T00:24:30+00:00",
+ "pool": "C:\\QM\\repo\\artifacts\\pool_union_20260817.json",
+ "pool_size": 91,
+ "clean": 28,
+ "with_problems": 63,
+ "problem_census": {
+  "evidence_missing": 21,
+  "unstable_Q04": 13,
+  "unstable_Q08": 13,
+  "unstable_Q05": 11,
+  "promotion_source_unknown": 10,
+  "unstable_Q02": 9,
+  "unstable_Q07": 9,
+  "q04_not_before_q10": 9,
+  "chain_Q05": 8,
+  "unstable_Q06": 7,
+  "chain_Q04": 3,
+  "chain_Q08": 2,
+  "q10_without_q04": 2,
+  "chain_Q07": 2,
+  "unstable_Q03": 1,
+  "no_rows_at_all": 1,
+  "superseded_rows": 1
+ },
+ "results": [
+  {
+   "pair": "10094:GDAXI",
+   "ok": false,
+   "problems": [
+    "unstable_Q04=5pass/2fail",
+    "unstable_Q05=1pass/1fail",
+    "unstable_Q08=1pass/2fail",
+    "evidence_missing",
+    "promotion_source_unknown"
+   ],
+   "notes": [],
+   "phases": {
+    "Q02": "INFRA_FAIL",
+    "Q03": "PASS",
+    "Q04": "FAIL",
+    "Q05": "INFRA_FAIL",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-29T12:18:03+00:00",
+   "age_days": 19
+  },
+  {
+   "pair": "10114:SP500",
+   "ok": false,
+   "problems": [
+    "unstable_Q03=1pass/5fail",
+    "unstable_Q04=2pass/4fail",
+    "unstable_Q05=1pass/1fail"
+   ],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "FAIL",
+    "Q04": "FAIL",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-15T02:59:11+00:00",
+   "age_days": 33
+  },
+  {
+   "pair": "10115:GDAXI",
+   "ok": false,
+   "problems": [
+    "unstable_Q04=5pass/1fail",
+    "unstable_Q05=3pass/1fail"
+   ],
+   "notes": [
+    "origin=pump_cascade"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "INFRA_FAIL",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-29T12:18:03+00:00",
+   "age_days": 19
+  },
+  {
+   "pair": "10123:XAUUSD",
+   "ok": false,
+   "problems": [
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=pump_cascade"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_NEWS": "PENDING_RUNNER",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-07-31T06:16:49+00:00",
+   "age_days": 17
+  },
+  {
+   "pair": "10127:AUDCAD",
+   "ok": false,
+   "problems": [
+    "unstable_Q04=3pass/3fail"
+   ],
+   "notes": [
+    "origin=phase_runner"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "INFRA_FAIL",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-08-01T16:12:09+00:00",
+   "age_days": 16
+  },
+  {
+   "pair": "10128:XAUUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q08=1pass/2fail",
+    "evidence_missing",
+    "promotion_source_unknown"
+   ],
+   "notes": [],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "INFRA_FAIL",
+    "Q09_NEWS": "PENDING_RUNNER",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO",
+    "Q10": "PASS",
+    "Q14": "OPT_REJECTED"
+   },
+   "newest_at": "2026-08-13T04:49:54.097990+00:00",
+   "age_days": 4
+  },
+  {
+   "pair": "10142:SP500",
+   "ok": false,
+   "problems": [
+    "unstable_Q02=5pass/2fail",
+    "unstable_Q07=2pass/4fail",
+    "unstable_Q08=1pass/1fail",
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=pump_cascade"
+   ],
+   "phases": {
+    "Q02": "FAIL",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_NEWS": "PENDING_RUNNER",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-07-31T06:18:59+00:00",
+   "age_days": 17
+  },
+  {
+   "pair": "10145:CHFJPY",
+   "ok": false,
+   "problems": [
+    "unstable_Q05=4pass/2fail",
+    "unstable_Q06=3pass/1fail",
+    "unstable_Q07=1pass/2fail"
+   ],
+   "notes": [
+    "origin=pump_cascade"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "FAIL",
+    "Q06": "PASS",
+    "Q07": "FAIL",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-16T12:20:43+00:00",
+   "age_days": 32
+  },
+  {
+   "pair": "10145:SP500",
+   "ok": false,
+   "problems": [
+    "unstable_Q06=2pass/2fail"
+   ],
+   "notes": [
+    "origin=pump_cascade"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "FAIL",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-15T05:12:16+00:00",
+   "age_days": 33
+  },
+  {
+   "pair": "10145:XAUUSD",
+   "ok": false,
+   "problems": [
+    "evidence_missing",
+    "promotion_source_unknown"
+   ],
+   "notes": [],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_NEWS": "PENDING_RUNNER",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO",
+    "Q10": "PASS",
+    "Q14": "OPT_REJECTED"
+   },
+   "newest_at": "2026-08-13T04:49:54.097990+00:00",
+   "age_days": 4
+  },
+  {
+   "pair": "10146:AUDUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q04=4pass/52fail",
+    "unstable_Q05=2pass/2fail",
+    "unstable_Q06=1pass/1fail"
+   ],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "FAIL",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-16T07:36:19+00:00",
+   "age_days": 32
+  },
+  {
+   "pair": "10183:XAUUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=claude_book_q08_regeneration_2026-08-17.option_b"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_NEWS": "PENDING_RUNNER",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO",
+    "Q10": "PASS",
+    "Q14": "OPT_REJECTED"
+   },
+   "newest_at": "2026-08-17T23:02:45+00:00",
+   "age_days": 0
+  },
+  {
+   "pair": "10291:SP500",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-15T06:58:32+00:00",
+   "age_days": 33
+  },
+  {
+   "pair": "10403:XAUUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=farmctl.seed-fresh-q02"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "INFRA_FAIL",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "INFRA_FAIL",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-12T19:04:57+00:00",
+   "age_days": 5
+  },
+  {
+   "pair": "10494:XAUUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q04=8pass/45fail",
+    "unstable_Q05=7pass/1fail",
+    "unstable_Q08=2pass/5fail"
+   ],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "FAIL",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_HARD",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-18T05:15:46+00:00",
+   "age_days": 30
+  },
+  {
+   "pair": "10513:XAUUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q04=8pass/48fail",
+    "unstable_Q07=7pass/2fail",
+    "unstable_Q08=8pass/1fail"
+   ],
+   "notes": [
+    "origin=farmctl.seed-fresh-q02"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "NEED_MORE_DATA",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-12T19:21:36+00:00",
+   "age_days": 5
+  },
+  {
+   "pair": "10553:XAUUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-16T14:55:21+00:00",
+   "age_days": 32
+  },
+  {
+   "pair": "10569:XAUUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q04=9pass/42fail",
+    "unstable_Q05=8pass/1fail",
+    "unstable_Q06=6pass/2fail",
+    "unstable_Q07=5pass/1fail",
+    "unstable_Q08=5pass/1fail"
+   ],
+   "notes": [
+    "origin=pump_cascade"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "FAIL",
+    "Q08": "FAIL_HARD",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-18T00:16:23+00:00",
+   "age_days": 31
+  },
+  {
+   "pair": "10692:NDX",
+   "ok": false,
+   "problems": [
+    "unstable_Q04=42pass/13fail",
+    "chain_Q05=INFRA_FAIL",
+    "unstable_Q06=22pass/10fail",
+    "unstable_Q07=21pass/1fail",
+    "promotion_source_unknown"
+   ],
+   "notes": [],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "FAIL",
+    "Q05": "INFRA_FAIL",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_NEWS": "PENDING_RUNNER",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS",
+    "Q14": "OPT_ELIGIBLE"
+   },
+   "newest_at": "2026-08-13T04:49:54.054879+00:00",
+   "age_days": 4
+  },
+  {
+   "pair": "10706:GBPUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q05=3pass/1fail",
+    "unstable_Q07=1pass/2fail",
+    "unstable_Q08=1pass/1fail",
+    "q04_not_before_q10",
+    "promotion_source_unknown"
+   ],
+   "notes": [],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_HARD",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS",
+    "Q14": "OPT_ELIGIBLE"
+   },
+   "newest_at": "2026-08-13T04:49:54.039335+00:00",
+   "age_days": 4
+  },
+  {
+   "pair": "10847:GDAXI",
+   "ok": false,
+   "problems": [
+    "chain_Q05=INFRA_FAIL"
+   ],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "INFRA_FAIL",
+    "Q05": "INFRA_FAIL",
+    "Q08": "INFRA_FAIL",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-29T12:18:03+00:00",
+   "age_days": 19
+  },
+  {
+   "pair": "10848:XAUUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q05=1pass/1fail"
+   ],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-19T08:23:05+00:00",
+   "age_days": 29
+  },
+  {
+   "pair": "10911:GDAXI",
+   "ok": false,
+   "problems": [
+    "chain_Q05=INFRA_FAIL",
+    "promotion_source_unknown"
+   ],
+   "notes": [],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "INFRA_FAIL",
+    "Q04": "INFRA_FAIL",
+    "Q05": "INFRA_FAIL",
+    "Q06": "PASS",
+    "Q07": "INFRA_FAIL",
+    "Q08": "PASS",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "NEED_MORE_DATA",
+    "Q10": "PASS",
+    "Q14": "OPT_ELIGIBLE"
+   },
+   "newest_at": "2026-08-13T04:49:54.071922+00:00",
+   "age_days": 4
+  },
+  {
+   "pair": "10916:SP500",
+   "ok": false,
+   "problems": [
+    "chain_Q05=FAIL"
+   ],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "FAIL",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-14T05:05:05+00:00",
+   "age_days": 34
+  },
+  {
+   "pair": "10919:XTIUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q02=1pass/1fail"
+   ],
+   "notes": [
+    "origin=phase_runner_diagnostic_non_admission"
+   ],
+   "phases": {
+    "Q02": "FAIL",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-06T10:18:03+00:00",
+   "age_days": 11
+  },
+  {
+   "pair": "10920:XAUUSD",
+   "ok": false,
+   "problems": [
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-03T17:46:19+00:00",
+   "age_days": 45
+  },
+  {
+   "pair": "10938:GDAXI",
+   "ok": false,
+   "problems": [
+    "unstable_Q02=3pass/1fail",
+    "unstable_Q04=1pass/1fail",
+    "chain_Q05=INFRA_FAIL",
+    "unstable_Q08=3pass/1fail",
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=pump_cascade"
+   ],
+   "phases": {
+    "Q02": "FAIL",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "INFRA_FAIL",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_NEWS": "PENDING_RUNNER",
+    "Q09_PORTFOLIO": "NEED_MORE_DATA",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-07-31T06:17:19+00:00",
+   "age_days": 17
+  },
+  {
+   "pair": "10939:GBPUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=phase_runner_diagnostic_non_admission"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-07T16:16:08+00:00",
+   "age_days": 10
+  },
+  {
+   "pair": "10939:XAUUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=claude_sweep_enqueue_2026-06-10.stranded_infra_f"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-31T18:43:11+00:00",
+   "age_days": 17
+  },
+  {
+   "pair": "10943:NDX",
+   "ok": false,
+   "problems": [
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-04T02:44:32+00:00",
+   "age_days": 44
+  },
+  {
+   "pair": "11063:USDJPY",
+   "ok": false,
+   "problems": [
+    "unstable_Q04=2pass/2fail",
+    "unstable_Q05=1pass/1fail"
+   ],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "FAIL",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-08-17T13:19:04+00:00",
+   "age_days": 0
+  },
+  {
+   "pair": "11124:WS30",
+   "ok": false,
+   "problems": [
+    "unstable_Q05=1pass/3fail"
+   ],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "FAIL",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-25T21:18:01+00:00",
+   "age_days": 23
+  },
+  {
+   "pair": "11128:NDX",
+   "ok": false,
+   "problems": [
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-03T22:59:16+00:00",
+   "age_days": 45
+  },
+  {
+   "pair": "11128:SP500",
+   "ok": false,
+   "problems": [
+    "unstable_Q07=1pass/1fail"
+   ],
+   "notes": [
+    "origin=claude:agents/board-advisor:dl082_q08_ftmo_holds"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "FAIL",
+    "Q08": "INFRA_FAIL",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-20T09:37:12+00:00",
+   "age_days": 28
+  },
+  {
+   "pair": "11129:SP500",
+   "ok": false,
+   "problems": [
+    "unstable_Q07=1pass/1fail"
+   ],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-14T13:06:58+00:00",
+   "age_days": 34
+  },
+  {
+   "pair": "11132:NDX",
+   "ok": false,
+   "problems": [
+    "chain_Q05=FAIL"
+   ],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "FAIL",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-14T14:10:59+00:00",
+   "age_days": 34
+  },
+  {
+   "pair": "11132:SP500",
+   "ok": false,
+   "problems": [
+    "unstable_Q08=23pass/2fail"
+   ],
+   "notes": [
+    "origin=phase_runner_diagnostic_non_admission"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-06T09:59:37+00:00",
+   "age_days": 11
+  },
+  {
+   "pair": "11147:SP500",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-08-08T15:07:34+00:00",
+   "age_days": 9
+  },
+  {
+   "pair": "11165:AUDCAD",
+   "ok": false,
+   "problems": [
+    "unstable_Q04=1pass/1fail",
+    "unstable_Q08=1pass/1fail"
+   ],
+   "notes": [
+    "origin=phase_runner_diagnostic_non_admission"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-06T22:39:36+00:00",
+   "age_days": 11
+  },
+  {
+   "pair": "11165:EURUSD",
+   "ok": false,
+   "problems": [
+    "chain_Q05=INFRA_FAIL",
+    "chain_Q08=FAIL_HARD"
+   ],
+   "notes": [
+    "origin=phase_runner_diagnostic_non_admission"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "INFRA_FAIL",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_HARD",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-06T02:18:04+00:00",
+   "age_days": 11
+  },
+  {
+   "pair": "11288:USDJPY",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "INFRA_FAIL",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-08-17T11:03:01+00:00",
+   "age_days": 0
+  },
+  {
+   "pair": "11421:AUDUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q08=1pass/2fail"
+   ],
+   "notes": [
+    "origin=phase_runner_diagnostic_non_admission"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_HARD",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-05T20:44:00+00:00",
+   "age_days": 12
+  },
+  {
+   "pair": "11421:EURUSD",
+   "ok": false,
+   "problems": [
+    "q04_not_before_q10",
+    "evidence_missing",
+    "promotion_source_unknown"
+   ],
+   "notes": [],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "INFRA_FAIL",
+    "Q07": "INFRA_FAIL",
+    "Q08": "PASS",
+    "Q09_NEWS": "INFRA_FAIL",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-07T06:18:10+00:00",
+   "age_days": 10
+  },
+  {
+   "pair": "11422:USDCAD",
+   "ok": false,
+   "problems": [
+    "q04_not_before_q10",
+    "promotion_source_unknown"
+   ],
+   "notes": [],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_NEWS": "CONFIG_LOCKED",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS",
+    "Q14": "OPT_ELIGIBLE"
+   },
+   "newest_at": "2026-08-13T04:49:54.097990+00:00",
+   "age_days": 4
+  },
+  {
+   "pair": "11476:USDJPY",
+   "ok": false,
+   "problems": [
+    "chain_Q05=FAIL"
+   ],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "FAIL",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-13T06:49:59+00:00",
+   "age_days": 35
+  },
+  {
+   "pair": "11660:NDX",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=claude_book_q08_regeneration_2026-08-17.option_b"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-08-17T23:06:53+00:00",
+   "age_days": 0
+  },
+  {
+   "pair": "11708:EURUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=phase_runner_diagnostic_non_admission"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-06T02:16:09+00:00",
+   "age_days": 11
+  },
+  {
+   "pair": "12354:XAUUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=claude_book_q08_regeneration_2026-08-17.option_b"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS"
+   },
+   "newest_at": "2026-08-17T23:13:55+00:00",
+   "age_days": 0
+  },
+  {
+   "pair": "12475:NDX",
+   "ok": false,
+   "problems": [
+    "chain_Q04=FAIL"
+   ],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "FAIL",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-10T15:14:00+00:00",
+   "age_days": 38
+  },
+  {
+   "pair": "12567:XAUUSD",
+   "ok": false,
+   "problems": [
+    "chain_Q04=INFRA_FAIL",
+    "q04_not_before_q10",
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=pump_q04_early_probe"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "INFRA_FAIL",
+    "Q05": "PASS",
+    "Q06": "INFRA_FAIL",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-17T14:19:31+00:00",
+   "age_days": 0
+  },
+  {
+   "pair": "12623:XAUUSD",
+   "ok": false,
+   "problems": [
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-05T23:24:19+00:00",
+   "age_days": 43
+  },
+  {
+   "pair": "12708:XAUUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-08-16T06:27:45+00:00",
+   "age_days": 1
+  },
+  {
+   "pair": "12712:QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-08T19:53:24+00:00",
+   "age_days": 40
+  },
+  {
+   "pair": "12778:AUDUSD",
+   "ok": false,
+   "problems": [
+    "q10_without_q04"
+   ],
+   "notes": [
+    "origin=phase_runner"
+   ],
+   "phases": {
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-07-25T19:45:35+00:00",
+   "age_days": 23
+  },
+  {
+   "pair": "12778:QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=farmctl.seed-fresh-q02"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO"
+   },
+   "newest_at": "2026-08-05T18:43:53+00:00",
+   "age_days": 12
+  },
+  {
+   "pair": "12781:USDJPY",
+   "ok": false,
+   "problems": [
+    "no_rows_at_all"
+   ],
+   "notes": []
+  },
+  {
+   "pair": "12823:USDJPY",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=real_mt5"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-20T17:05:33+00:00",
+   "age_days": 28
+  },
+  {
+   "pair": "12831:QM5_12831_XTI_AUDUSD_BRK_D1",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-08T10:35:02+00:00",
+   "age_days": 40
+  },
+  {
+   "pair": "12847:NDX",
+   "ok": false,
+   "problems": [
+    "chain_Q04=FAIL",
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=real_mt5"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "FAIL",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-04T04:55:28+00:00",
+   "age_days": 44
+  },
+  {
+   "pair": "12849:XTIUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q02=1pass/1fail"
+   ],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "INFRA_FAIL",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-08-15T22:33:03+00:00",
+   "age_days": 2
+  },
+  {
+   "pair": "12855:XTIUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q02=1pass/1fail"
+   ],
+   "notes": [
+    "origin=pump_cascade"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-08-15T22:46:50+00:00",
+   "age_days": 2
+  },
+  {
+   "pair": "12864:QM5_12864_XTI_XAG_RSPREAD_D1",
+   "ok": false,
+   "problems": [
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-06T13:16:09+00:00",
+   "age_days": 42
+  },
+  {
+   "pair": "12915:SP500",
+   "ok": false,
+   "problems": [
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-02T20:54:24+00:00",
+   "age_days": 46
+  },
+  {
+   "pair": "12958:XAUUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-24T04:02:30+00:00",
+   "age_days": 24
+  },
+  {
+   "pair": "12969:USDJPY",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=farmctl.seed-fresh-q02"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-05T18:21:31+00:00",
+   "age_days": 12
+  },
+  {
+   "pair": "12989:XAUUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q02=1pass/1fail",
+    "unstable_Q06=1pass/1fail",
+    "unstable_Q07=1pass/1fail",
+    "unstable_Q08=1pass/1fail"
+   ],
+   "notes": [
+    "origin=phase_runner_diagnostic_non_admission"
+   ],
+   "phases": {
+    "Q02": "FAIL",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PENDING_RUNNER",
+    "Q07": "PENDING_RUNNER",
+    "Q08": "FAIL_SOFT",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-08T22:03:03+00:00",
+   "age_days": 9
+  },
+  {
+   "pair": "12990:GBPUSD",
+   "ok": false,
+   "problems": [
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-03T10:46:51+00:00",
+   "age_days": 45
+  },
+  {
+   "pair": "13013:NDX",
+   "ok": false,
+   "problems": [
+    "chain_Q07=INFRA_FAIL",
+    "q04_not_before_q10"
+   ],
+   "notes": [
+    "origin=claude_book_q08_regeneration_2026-08-17.option_b"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "INFRA_FAIL",
+    "Q08": "PASS",
+    "Q09_NEWS": "PENDING_RUNNER",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-18T00:04:47+00:00",
+   "age_days": 0
+  },
+  {
+   "pair": "13036:GDAXI",
+   "ok": false,
+   "problems": [
+    "q04_not_before_q10"
+   ],
+   "notes": [
+    "origin=claude_book_q08_regeneration_2026-08-17.option_b"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_NEWS": "PENDING_RUNNER",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-17T23:00:09+00:00",
+   "age_days": 0
+  },
+  {
+   "pair": "13054:XTIUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q02=1pass/1fail"
+   ],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-08-16T08:17:15+00:00",
+   "age_days": 1
+  },
+  {
+   "pair": "13059:QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-26T20:50:27+00:00",
+   "age_days": 22
+  },
+  {
+   "pair": "13076:QM5_13076_XTI_NZDCAD_RSPREAD_D1",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-09T07:38:07+00:00",
+   "age_days": 39
+  },
+  {
+   "pair": "13108:XTIUSD",
+   "ok": false,
+   "problems": [
+    "evidence_missing",
+    "promotion_source_unknown",
+    "superseded_rows=1"
+   ],
+   "notes": [],
+   "phases": {
+    "Q02": "INVALID",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-31T05:04:38.444824Z",
+   "age_days": 17
+  },
+  {
+   "pair": "13117:EURGBP",
+   "ok": false,
+   "problems": [
+    "q10_without_q04"
+   ],
+   "notes": [
+    "origin=phase_runner"
+   ],
+   "phases": {
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-07-25T19:45:35+00:00",
+   "age_days": 23
+  },
+  {
+   "pair": "13128:NDX",
+   "ok": false,
+   "problems": [
+    "q04_not_before_q10"
+   ],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "NEED_MORE_DATA",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-05T19:08:22+00:00",
+   "age_days": 12
+  },
+  {
+   "pair": "13213:USDJPY",
+   "ok": false,
+   "problems": [
+    "promotion_source_unknown"
+   ],
+   "notes": [],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO",
+    "Q10": "PASS",
+    "Q14": "OPT_ELIGIBLE"
+   },
+   "newest_at": "2026-08-13T04:49:54.022897+00:00",
+   "age_days": 4
+  },
+  {
+   "pair": "1328:EURJPY",
+   "ok": false,
+   "problems": [
+    "unstable_Q02=1pass/4fail",
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=pump_cascade"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_NEWS": "PENDING_RUNNER",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-07-31T06:19:05+00:00",
+   "age_days": 17
+  },
+  {
+   "pair": "13301:GDAXI",
+   "ok": false,
+   "problems": [
+    "q04_not_before_q10"
+   ],
+   "notes": [
+    "origin=claude_book_q08_regeneration_2026-08-17.option_b"
+   ],
+   "phases": {
+    "Q02": "INFRA_FAIL",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "INFRA_FAIL",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_NEWS": "PENDING_RUNNER",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO",
+    "Q10": "PASS",
+    "Q14": "OPT_ELIGIBLE"
+   },
+   "newest_at": "2026-08-17T23:35:04+00:00",
+   "age_days": 0
+  },
+  {
+   "pair": "1537:XAGUSD",
+   "ok": false,
+   "problems": [
+    "unstable_Q02=1pass/1fail"
+   ],
+   "notes": [
+    "origin=claude_book_q08_regeneration_2026-08-17.option_b"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-08-17T22:57:15+00:00",
+   "age_days": 0
+  },
+  {
+   "pair": "1551:USDJPY",
+   "ok": false,
+   "problems": [
+    "unstable_Q04=4pass/52fail",
+    "unstable_Q06=4pass/1fail",
+    "unstable_Q08=2pass/2fail",
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "INFRA_FAIL",
+    "Q06": "FAIL",
+    "Q07": "PASS",
+    "Q08": "FAIL_HARD",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-31T22:28:55+00:00",
+   "age_days": 17
+  },
+  {
+   "pair": "1556:XAUUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=farmctl.seed-fresh-q02"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_NEWS": "REVIEW_REQUIRED",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-12T17:38:01+00:00",
+   "age_days": 5
+  },
+  {
+   "pair": "1567:EURUSD",
+   "ok": false,
+   "problems": [
+    "chain_Q07=INFRA_FAIL",
+    "chain_Q08=INFRA_FAIL"
+   ],
+   "notes": [
+    "origin=farmctl.seed-fresh-q02"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "INFRA_FAIL",
+    "Q06": "INFRA_FAIL",
+    "Q07": "INFRA_FAIL",
+    "Q08": "INFRA_FAIL",
+    "Q09_PORTFOLIO": "PASS_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-05T19:25:11+00:00",
+   "age_days": 12
+  },
+  {
+   "pair": "20010:XAUUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=real_mt5"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-08-01T21:14:56+00:00",
+   "age_days": 16
+  },
+  {
+   "pair": "20047:XTIUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-23T04:34:40+00:00",
+   "age_days": 25
+  },
+  {
+   "pair": "20048:XTIUSD",
+   "ok": false,
+   "problems": [
+    "q04_not_before_q10",
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=farmctl_enqueue_backtest_ea"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "INFRA_FAIL",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_NEWS": "PENDING_RUNNER",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO",
+    "Q10": "PASS"
+   },
+   "newest_at": "2026-08-03T10:07:17+00:00",
+   "age_days": 14
+  },
+  {
+   "pair": "9403:GDAXI",
+   "ok": false,
+   "problems": [
+    "evidence_missing"
+   ],
+   "notes": [
+    "origin=sweep_enqueue.deferred_promotion"
+   ],
+   "phases": {
+    "Q02": "INFRA_FAIL",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-29T12:18:03+00:00",
+   "age_days": 19
+  },
+  {
+   "pair": "9502:SP500",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-21T05:01:12+00:00",
+   "age_days": 27
+  },
+  {
+   "pair": "9503:USDJPY",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-21T15:25:16+00:00",
+   "age_days": 27
+  },
+  {
+   "pair": "9641:WS30",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=claude_book_q08_regeneration_2026-08-17.option_b"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_LOWFREQ",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "PASS",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-08-17T23:34:06+00:00",
+   "age_days": 0
+  },
+  {
+   "pair": "9929:XAUUSD",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=pump_q08_soft_portfolio_rescue"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-08T00:20:36+00:00",
+   "age_days": 41
+  },
+  {
+   "pair": "9936:USDJPY",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "origin=real_mt5"
+   ],
+   "phases": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS_SOFT",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "FAIL_SOFT",
+    "Q09_PORTFOLIO": "FAIL_PORTFOLIO"
+   },
+   "newest_at": "2026-07-29T23:56:53+00:00",
+   "age_days": 19
+  }
+ ]
+}
