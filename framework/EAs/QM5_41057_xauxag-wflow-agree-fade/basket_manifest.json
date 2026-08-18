@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_41057_XAU_XAG_WFLOWAGREEFADE_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg weekly gold/silver relative-flow agreement-fade package. Q02 must evaluate combined package PnL, costs, density, and correlation; neither leg is a standalone strategy.",
+    "The EA subtracts silver from gold separately for the exact prior week's five close-to-open and five open-to-close log returns, requires both relative components to have the same strict sign, fades their completed total, targets equal absolute USD notionals, and caps aggregate frozen-stop risk at one RISK_FIXED budget."
+  ]
+}
