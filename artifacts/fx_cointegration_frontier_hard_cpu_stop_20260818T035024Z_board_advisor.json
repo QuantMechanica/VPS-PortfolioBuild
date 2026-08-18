@@ -1,0 +1,102 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-18T03:50:24.046790+00:00",
+  "generated_at_local": "2026-08-18T05:50:24.046790+02:00",
+  "branch": "agents/board-advisor",
+  "base_commit": "659890722c9e33d126b29c5b4c25d4010c3be28c",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_state": {
+    "scan": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a80493291",
+    "new_card_or_ea_permitted": false,
+    "reason": "Every frozen-scan relationship already maps to governed work; another pair Card or EA would be a duplicate."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "scan_rank": 21,
+    "pair": ["EURUSD.DWX", "AUDJPY.DWX"],
+    "ea_id": "QM5_20203",
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "q02": {
+      "work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "duplicate_enqueue_or_requeue_performed": false
+    }
+  },
+  "evaluated_existing_fx_fallback": {
+    "ea_id": "QM5_39008",
+    "slug": "forexfactory-symphonie-matrix-system",
+    "symbols": ["EURUSD.DWX", "GBPUSD.DWX", "USDCHF.DWX"],
+    "timeframe": "H1",
+    "g0_status": "APPROVED",
+    "ml_required": false,
+    "fixed_risk_setfiles": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "canonical_work_item_count": 0,
+    "target_only_q02_dry_run": {
+      "apply": false,
+      "enqueued": 0,
+      "skipped": 1,
+      "skip_reason": "review_entry_gate"
+    },
+    "q02_enqueue_performed": false,
+    "reason": "The canonical review-entry gate is not satisfied; bypassing it is not permitted."
+  },
+  "capacity_sample": {
+    "operator_scan_at_utc": "2026-08-18T03:48:10+00:00",
+    "running_factory_terminals": ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T10"],
+    "sampled_at_utc": "2026-08-18T03:50:24.046790+00:00",
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "cpu_percent": [100.0, 99.95, 100.0, 100.0, 100.0],
+    "average_cpu_percent": 99.99,
+    "maximum_cpu_percent": 100.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "t_live_and_unrelated_ftmo_observed_only": true,
+    "terminal_reconciliation_or_control_performed": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The frontier is exhausted, the exact pair successor already exists once, the additional FX fallback is review-gated, and the explicit host-CPU ceiling is binding."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}

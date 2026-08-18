@@ -153,3 +153,35 @@ manifest, setfile, queue row, dispatch tick, backtest, tester launch, terminal
 reservation, priority mutation, Factory state, portfolio surface, or live
 surface was changed. Machine-readable evidence is
 `artifacts/fx_cointegration_frontier_hard_cpu_stop_20260818T014856Z_board_advisor.json`.
+
+## 03:50Z continuation audit
+
+A fresh read-only audit at repository head
+`659890722c9e33d126b29c5b4c25d4010c3be28c` again found no unbuilt
+relationship in the frozen 66-pair scan. Both preferred anchors remain beyond
+Q02 PASS: `QM5_12532` is Q04 PASS then Q05 FAIL, and `QM5_12533` is Q04
+FAIL. The highest-ranked exact pair still awaiting an economic verdict remains
+rank-21 `QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1`; Q02 is PASS and its
+single Q04 item `113ae6d1-33c0-42bc-b9b0-bf3a48ef3445` remains pending,
+unclaimed, and at attempt zero. No duplicate enqueue or priority mutation was
+made.
+
+The newly built existing-FX fallback `QM5_39008` was also checked without
+mutation. Its approved Card is non-ML and its three H1 backtest sets retain
+`RISK_FIXED=1000`, `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`. The canonical
+work-item read returned zero rows, but the target-only Q02 dry run selected
+zero items and skipped the EA for `review_entry_gate`. The review gate was not
+bypassed.
+
+The path-aware operator scan observed nine occupied factory terminals on
+`T1`, `T2`, `T3`, `T4`, `T5`, `T6`, `T7`, `T8`, and `T10`. Five two-second
+whole-host CPU samples were `100%`, `99.95%`, `100%`, `100%`, and `100%`
+(average `99.99%`, maximum `100%`), above the explicit `97%` hard ceiling.
+`T_Live` and the unrelated FTMO terminal were observed only so they could be
+excluded; neither was controlled.
+
+Per the mission stop condition, no Card, EA, registry row, magic row, basket
+manifest, setfile, queue row, dispatch tick, backtest, tester launch, terminal
+reservation, Factory state, portfolio surface, or live surface was changed.
+Machine-readable evidence is
+`artifacts/fx_cointegration_frontier_hard_cpu_stop_20260818T035024Z_board_advisor.json`.
