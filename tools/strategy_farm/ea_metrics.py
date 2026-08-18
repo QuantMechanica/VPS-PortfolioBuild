@@ -211,13 +211,14 @@ def _extract_q05_q06(d: dict) -> tuple[dict, dict, str]:
 def _extract_q07(d: dict) -> tuple[dict, dict, str]:
     m = d.get("metrics") or {}
     seeds = d.get("per_seed_detail") or []
+    dd_money = [_to_float(s.get("dd_money")) for s in seeds if _to_float(s.get("dd_money")) is not None]
     dd_pcts = [_to_float(s.get("dd_pct")) for s in seeds if _to_float(s.get("dd_pct")) is not None]
     trs = [_to_int(s.get("trades")) for s in seeds if _to_int(s.get("trades")) is not None]
     head = {
         "net_profit": None,
         "profit_factor": _to_float(m.get("mean_pf")),
         "trades": (max(trs) if trs else None),
-        "drawdown_money": None,
+        "drawdown_money": (max(dd_money) if dd_money else None),
         "drawdown_pct": (max(dd_pcts) if dd_pcts else None),
         "sharpe": None,
     }
