@@ -1,6 +1,6 @@
 # QM5_41055 - WTI Median Same-Calendar Seasonality
 
-Status: `G0 APPROVED; BUILD NOT STARTED`
+Status: `G0 APPROVED; IMPLEMENTED; Q01 VALIDATION IN PROGRESS`
 
 ## Identity
 
@@ -66,3 +66,12 @@ G0 authorizes exactly the non-live implementation in the approved card, one
 fixed-risk backtest setfile, strict Q01 validation, and one paced target-only
 Q02 enqueue below the governed tester and CPU ceilings. It grants no live,
 portfolio, or deployment authority.
+
+## Implementation State
+
+The EA, independent reference suite, approved-card build copy, and sole
+`RISK_FIXED` D1 backtest preset are implemented. The source uses one bounded
+historical D1 scan only after a genuine monthly bar edge, validates uniform
+energy-label normalization and adjacent month identity, and computes the
+sample median without a full-sample mean fallback. Strict Q01 evidence is
+being finalized before any Q02 capacity check.
