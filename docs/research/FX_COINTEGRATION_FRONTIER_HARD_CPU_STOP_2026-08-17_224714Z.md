@@ -123,3 +123,33 @@ row, dispatch tick, backtest, tester launch, terminal reservation, priority
 mutation, Factory state, portfolio surface, or live surface was changed.
 Machine-readable evidence is
 `artifacts/fx_cointegration_frontier_hard_cpu_stop_20260818T004844Z_board_advisor.json`.
+
+## 01:48Z continuation audit
+
+A fresh read-only audit at repository head
+`3817b117733974763be3593a15249ad6bf993068` again reached the binding hard
+CPU ceiling. Five one-second whole-machine samples were `100%`, `100%`,
+`100%`, `100%`, and `98.16%` (average `99.63%`, maximum `100%`), above the
+explicit `97%` ceiling.
+
+The supported path-aware operator scan observed nine active factory
+terminals on `T1`, `T2`, `T3`, `T4`, `T5`, `T6`, `T7`, `T8`, and `T10`.
+`T1` owned an active Q02 work item; the other eight terminals were occupied by
+governed pipeline runs. The separately visible `T_Live` and FTMO terminals
+were observed only so they could be excluded; neither was controlled.
+
+The frozen 66-pair frontier remains fully covered by governed work, and the
+coverage reconciliation commit `a80493291` remains an ancestor of the
+observed head. Supported operator reads again confirm both anchors are past
+Q02 PASS: `QM5_12532` is Q04 PASS then Q05 FAIL, and `QM5_12533` is Q04
+FAIL. The non-duplicate fallback remains rank-21
+`QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1`: its canonical Q02 is PASS, and
+Q04 item `113ae6d1-33c0-42bc-b9b0-bf3a48ef3445` remains pending, unclaimed,
+and at attempt zero. A second enqueue or requeue would duplicate the open
+successor.
+
+Per the mission stop condition, no Card, EA, registry row, magic row, basket
+manifest, setfile, queue row, dispatch tick, backtest, tester launch, terminal
+reservation, priority mutation, Factory state, portfolio surface, or live
+surface was changed. Machine-readable evidence is
+`artifacts/fx_cointegration_frontier_hard_cpu_stop_20260818T014856Z_board_advisor.json`.
