@@ -7971,14 +7971,52 @@ def _phase_runner_report_progress(
     }
 
 
+def _row_declared_runner_symbols(payload: dict[str, Any]) -> tuple[str, ...]:
+    """Chart symbols this row itself declares, for progress binding only.
+
+    Same three payload keys the claim path reads to privatise custom history
+    (``terminal_worker._work_item_history_symbols``), so the progress detector and the claim gate
+    agree on what a basket row is made of. Deliberately not derived from the manifest: a row that
+    does not declare its constituents gets no widening, and falls back to its own symbol.
+    """
+    out: list[str] = []
+    for key in ("basket_symbols", "conversion_symbols"):
+        value = payload.get(key)
+        if isinstance(value, list):
+            out.extend(str(v) for v in value if v)
+    for key in ("runner_symbol", "host_symbol"):
+        value = payload.get(key)
+        if isinstance(value, str) and value:
+            out.append(value)
+    seen: dict[str, None] = {}
+    for s in out:
+        seen.setdefault(s, None)
+    return tuple(seen)
+
+
 def _q08_tester_ini_matches_contract(
     tester_ini: Path,
     *,
     ea_id: str,
     symbol: str,
     setfile_path: str | None,
+    runner_symbols: tuple[str, ...] = (),
 ) -> bool:
-    """Bind a canonical Q08 child session to this EA/symbol/set variant."""
+    """Bind a canonical Q08 child session to this EA/symbol/set variant.
+
+    ``runner_symbols`` are the chart symbols this row itself declares (a basket's ``.DWX``
+    constituents). A basket's work_item symbol is a synthetic host label -- e.g.
+    ``QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1`` -- that no MT5 chart ever carries: the tester runs
+    on ``EURGBP.DWX``. Comparing the tester session's ``Symbol=`` against the host label therefore
+    fails for **every** basket row, which made every Q08 tester session invisible to the progress
+    detector and got healthy baskets reaped as NO_FORWARD_PROGRESS 20 minutes into a run that had
+    just started (QM5_12712, 2026-08-18, killed at 51 min with a live backtest and a tester.ini
+    written 33 minutes earlier).
+
+    Widening is bounded by the row: only symbols the payload declares are accepted, and Expert plus
+    ExpertParameters still bind the EA and the set variant. It can only make progress *more*
+    visible, never less -- a stalled row stays stalled because no new artifact appears at all.
+    """
     try:
         text = tester_ini.read_text(encoding="utf-8-sig", errors="replace")
     except OSError:
@@ -7989,7 +8027,10 @@ def _q08_tester_ini_matches_contract(
             continue
         key, value = raw_line.split("=", 1)
         values[key.strip().casefold()] = value.strip()
-    if values.get("symbol", "").casefold() != str(symbol or "").casefold():
+    accepted = {str(symbol or "").casefold()}
+    accepted.update(str(s).casefold() for s in runner_symbols if s)
+    accepted.discard("")
+    if values.get("symbol", "").casefold() not in accepted:
         return False
     ea_num = _ea_numeric_id(ea_id)
     if ea_num is None or f"qm5_{ea_num}" not in values.get("expert", "").casefold():
@@ -8012,6 +8053,7 @@ def _phase_runner_external_report_progress(
     claimed_at: dt.datetime,
     *,
     now_dt: dt.datetime,
+    runner_symbols: tuple[str, ...] = (),
 ) -> dict[str, Any]:
     """Read only runner-contract paths that intentionally live outside a row root.
 
@@ -8100,6 +8142,7 @@ def _phase_runner_external_report_progress(
                         ea_id=normalized_ea,
                         symbol=symbol,
                         setfile_path=setfile_path,
+                        runner_symbols=runner_symbols,
                     ):
                         continue
                     terminal_marker_paths.append(str(tester_ini))
@@ -8270,6 +8313,7 @@ def _detect_active_age_timeout(
                 str(r["setfile_path"] or ""),
                 updated,
                 now_dt=now_dt,
+                runner_symbols=_row_declared_runner_symbols(payload),
             )
         progress = _terminal_progress_evidence(
             str(r["id"]),
