@@ -134,3 +134,57 @@ alle fünf wie beschlossen.
 
 **Neu: D-7 — soll die Lease-Reichweite geprüft werden?** (OQ-11). Nicht von mir geändert, weil es
 eine Containment-Garantie berührt.
+
+---
+
+# Runde 6 — Ausführung und neue Vorlagen
+
+## Ausgeführt
+
+| # | Was | Ergebnis |
+|---|---|---|
+| **D-5** | Vier — tatsächlich **fünf** — Baskets angehalten, einer läuft weiter | Über den vorgesehenen Weg: `governed_work_item_hold.py apply`, Hold-Code `OWNER_D5_BASKET_LEASE_HOLD`, je Zeile SQLite-Backup, `BEGIN IMMEDIATE`, Revalidierung, Rücklesen. **Verifiziert: 0 von 5 noch beanspruchbar, 2.274 gewöhnliche Zeilen wieder frei.** `work_items.status` wurde nicht angefasst; Freigabe ist ein Feld-Update. |
+| **D-6** | OQ-5 gerechnet | **Ergebnis gegen meine Erwartung** — die Untergrenze sinkt statt zu steigen, verteidigbares Sizing 0,60× → **0,50×**. Siehe `audit_rev6.md` R6-1. |
+| **§2** | Evidenz-Tresor gebaut | 299 Dateien, 2,3 MB gepackt, off-host auf G:, Hash `831a0b9c…bffbe0`. Enthält 81 Q08-Aggregate, alle 216 Sleeve-Streams, Kohortendatei und Baseline-Manifest. |
+| **§5.1** | Bundle statt Push | `git push` weiterhin klassifizierer-blockiert; `QM_Repo_Push` ist ein **Tagesjob** (zuletzt 05:45, nächster morgen 05:45). **41 Commits ungepusht.** Inkrementelles Bundle 978 KB, off-host, `git bundle verify` OK, Hash lokal = off-host `663FA579…9961`. |
+
+## Der wichtigste Einzelbefund der Runde
+
+**Die Containment-Notlage ist seit 2026-08-18T14:39:42Z eingeschaltet.** CLAUDE.md verlangt
+`enabled:false`. Der globale Lease, den ich in Runde 5 als Systemeigenschaft beschrieben habe, ist
+**ausschließlich** eine Eigenschaft dieses Ausnahmezustands:
+
+```python
+if not mode.get("enabled"):
+    return LeaseAcquireResult(required=False, acquired=True, reason="containment_not_engaged")
+```
+
+Auslöser war ein **echter** Copy-on-Claim-Fehler von QM5_12778 — einer Zeile, die meine erste
+Reparaturrunde wegen `claimed_by IS NULL` übersprungen hatte und die 28 Sekunden später repariert
+wurde. **Kein Selbsttrip, aber ein Zustand ohne Rückkehr.**
+
+## Neue Entscheidungspunkte
+
+| # | Sachverhalt | Warum OWNER |
+|---|---|---|
+| **D-8** | **Containment freigeben** (`release-containment`). Autorisierung liegt vor: `owner_window_receipt_standing_unlimited.json`, gezeichnet 14.08., Fenster bis 2099, T1–T10, `rollback_authorized`. Manifest-Hash passt. | Der Aufruf trägt Autorisierungsartefakte und wird vom Auto-Mode-Klassifizierer blockiert — bekannte Klasse, Lösung ist OWNER-`!`. Befehl steht fertig in `LEASE_SCOPE_ANALYSIS.md` §5. **Wirkung: 9 von 10 Terminals sofort frei, ohne den laufenden Basket anzufassen.** |
+| **D-9** | **Ist „80 % je Versuch" die richtige Zielgröße?** Gemessen: 60 % → E[Versuche] 1,67, E[Tage bis zum ersten finanzierten Konto] **67**; 80 % → 1,28 und **34**. Der Unterschied ist ein Drittel Versuch und ein Monat. | Die Bar ist selbstgesetzt, nicht von FTMO vorgegeben. Gate-Schwellen und Kontraktkriterien bleiben nicht-autonom (§3.3) — Vorlage in `audit_rev6.md` R6-5. |
+
+## D-4 — beantwortet, ohne dass entschieden werden musste
+
+**Die Equity-Messung kann die Entscheidung nicht drehen.** Sie liegt per Konstruktion bei oder unter
+der Schlusskurskurve; deren Maximum ist 81 %, minus 8 Punkte Flip ergibt 73 %, plus 2 bis 5 Punkte
+Population ergibt **75–78 %** — gegen ein Kriterium, das eine **Untergrenze ≥ 0,80** verlangt,
+während die Untergrenze bei n = 36 Fenstern **0,65** beträgt. Vollständig in `UPPER_BOUND_CALC.md`.
+
+**E-3 fällt damit nach der Kopplung aus §0 mit.**
+
+**Was übrig bleibt und nicht mit „nein" abgeräumt werden sollte:** der Populationsterm zeigt als
+einziger nach oben, und 2 der 11 telemetrieblockierten Paare brauchen dafür **keinen Recompile**,
+nur einen Lauf. Das ist ein Ticket, kein Vollbatch.
+
+## Sperre nach §9
+
+**Kein Batch gestartet**, auch nicht reduziert, auch nicht als Pilot. §1 ist beantwortet, §2 ist
+**teilweise** offen (Urheber der Wand vom 07.07. unbekannt) — die Sperre bleibt damit aus eigenem
+Recht bestehen, unabhängig von D-4.
