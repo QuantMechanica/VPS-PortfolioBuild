@@ -65,7 +65,7 @@ r3_data_available: PASS_WITH_HISTORY_AND_SESSION_LABEL_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a magnitude-free direct-WTI same-calendar-month sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform D1-label normalization, exact historical month endpoints, five-to-ten binary observations, non-negative sign map, the source-defined fixed q=0.40 inequality, durable monthly attempt, monthly renewal, and absence of current-month leakage. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -364,6 +364,7 @@ establish realized correlation with the certified book.
 | v1 | 2026-08-18 | initial WTI same-calendar hit-rate extraction | G0 | APPROVED |
 | v1-q40 | 2026-08-18 | pre-build semantic review replaced median-equivalent majority with source-defined q40 boundary | G0 | APPROVED |
 | v1-build | 2026-08-18 | deterministic V5 implementation and strict validation | Q01 | PASS |
+| v1-q02-capacity | 2026-08-18 | target-only dry run selected one row; apply withheld above tester-capacity and host-CPU ceilings | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -371,7 +372,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-18 | APPROVED | `decisions/2026-08-18_qm5_41059_q40_identity_amendment.md` |
 | Q01 Build Validation | 2026-08-18 | PASS | `D:/QM/reports/framework/21/build_check_20260818_042436.json`; `D:/QM/reports/pipeline/QM5_41059/P1/P1_QM5_41059_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-18 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-18_qm5_41059_wti_same_calendar_hit_rate_q01_q02_capacity_stop.md` |
 
 ## Safety Boundary
 
