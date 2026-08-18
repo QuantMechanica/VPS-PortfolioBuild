@@ -92,3 +92,4 @@ grid, martingale, pyramid, target, trail, or partial exit.
 |---|---|---|---|
 | v1 | 2026-08-18 | approved build directory identity | source approval `cd8ab88a1`; registry allocation `36a5d38ba` |
 | v1-q40 | 2026-08-18 | pre-build identity correction | rejected median-equivalent majority; amendment `decisions/2026-08-18_qm5_41059_q40_identity_amendment.md` |
+| v1-build | 2026-08-18 | deterministic V5 implementation | exact same-calendar q40 WTI hit-rate renewal; strict Q01 PASS |
