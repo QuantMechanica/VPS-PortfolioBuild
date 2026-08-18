@@ -1,0 +1,29 @@
+{
+  "task_id": "a0f709cd-2c0b-40db-a01b-372c715beef9",
+  "ea_id": "QM5_34005",
+  "ea_dir": "framework/EAs/QM5_34005_sokolov-cstrategy-donchian-atr-breakout",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_34005_sokolov-cstrategy-donchian-atr-breakout/QM5_34005_sokolov-cstrategy-donchian-atr-breakout.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_34005_sokolov-cstrategy-donchian-atr-breakout/QM5_34005_sokolov-cstrategy-donchian-atr-breakout.ex5",
+  "magic_base": 340050000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "SP500.DWX",
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_34005_sokolov-cstrategy-donchian-atr-breakout/sets/QM5_34005_sokolov-cstrategy-donchian-atr-breakout_EURUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_34005_sokolov-cstrategy-donchian-atr-breakout/sets/QM5_34005_sokolov-cstrategy-donchian-atr-breakout_SP500.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_34005_sokolov-cstrategy-donchian-atr-breakout/sets/QM5_34005_sokolov-cstrategy-donchian-atr-breakout_XTIUSD.DWX_H4_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_34005_sokolov-cstrategy-donchian-atr-breakout/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_enqueued_for_paced_fleet_no_manual_backtest",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "EA built cleanly from approved card QM5_34005; SPEC.md validated PASS; build_check and compile_one passed with 0 errors.",
+    "Standalone smoke deferred to paced worker queue per active Custom-history isolation governance."
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "task_id": "b42bac52-ccda-4a73-b49b-faab46b48c88",
+  "ea_id": "QM5_41006",
+  "ea_dir": "framework/EAs/QM5_41006_man-ahl-multispeed-ewma-trend",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41006_man-ahl-multispeed-ewma-trend\\QM5_41006_man-ahl-multispeed-ewma-trend.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41006_man-ahl-multispeed-ewma-trend\\QM5_41006_man-ahl-multispeed-ewma-trend.ex5",
+  "magic_base": 410060000,
+  "symbols_registered": [
+    "NDX.DWX",
+    "SP500.DWX",
+    "XTIUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41006_man-ahl-multispeed-ewma-trend\\sets\\QM5_41006_man-ahl-multispeed-ewma-trend_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41006_man-ahl-multispeed-ewma-trend\\sets\\QM5_41006_man-ahl-multispeed-ewma-trend_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41006_man-ahl-multispeed-ewma-trend\\sets\\QM5_41006_man-ahl-multispeed-ewma-trend_XTIUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41006_man-ahl-multispeed-ewma-trend\\sets\\QM5_41006_man-ahl-multispeed-ewma-trend_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41006_man-ahl-multispeed-ewma-trend\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Active Custom-history isolation requires a worker-bound work item; deferred to Q02 dispatch.",
+  "blocked_reason": "",
+  "open_questions": []
+}

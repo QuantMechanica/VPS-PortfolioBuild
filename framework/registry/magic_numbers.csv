@@ -17548,4 +17548,19 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41002,robert-pardo-checkmate-breakout-engine,0,EURUSD.DWX,410020000,2026-08-18,Codex governed allocator,active
 41002,robert-pardo-checkmate-breakout-engine,1,GBPUSD.DWX,410020001,2026-08-18,Codex governed allocator,active
 41002,robert-pardo-checkmate-breakout-engine,2,USDJPY.DWX,410020002,2026-08-18,Codex governed allocator,active
+41005,richard-donchian-50day-cta-benchmark,0,XTIUSD.DWX,410050000,2026-08-18,Gemini,active
+41005,richard-donchian-50day-cta-benchmark,1,XAUUSD.DWX,410050001,2026-08-18,Gemini,active
+41005,richard-donchian-50day-cta-benchmark,2,SP500.DWX,410050002,2026-08-18,Gemini,active
+41005,richard-donchian-50day-cta-benchmark,3,EURUSD.DWX,410050003,2026-08-18,Gemini,active
+41006,man-ahl-multispeed-ewma-trend,0,NDX.DWX,410060000,2026-08-18,Gemini,active
+41006,man-ahl-multispeed-ewma-trend,1,SP500.DWX,410060001,2026-08-18,Gemini,active
+41006,man-ahl-multispeed-ewma-trend,2,XTIUSD.DWX,410060002,2026-08-18,Gemini,active
+41006,man-ahl-multispeed-ewma-trend,3,XAUUSD.DWX,410060003,2026-08-18,Gemini,active
+41009,volume-profile-value-area-rejection,0,SP500.DWX,410090000,2026-08-18,Gemini,active
+41009,volume-profile-value-area-rejection,1,NDX.DWX,410090001,2026-08-18,Gemini,active
+41010,developing-poc-migration-scalper,0,NDX.DWX,410100000,2026-08-18,Gemini,active
+41010,developing-poc-migration-scalper,1,SP500.DWX,410100001,2026-08-18,Gemini,active
+41011,tokyo-london-bank-flow-handover,0,EURJPY.DWX,410110000,2026-08-18,Gemini,active
+41011,tokyo-london-bank-flow-handover,1,GBPJPY.DWX,410110001,2026-08-18,Gemini,active
+41011,tokyo-london-bank-flow-handover,2,USDJPY.DWX,410110002,2026-08-18,Gemini,active
 41061,wti-week-nr7-brk,0,XTIUSD.DWX,410610000,2026-08-18,Codex governed allocator,active

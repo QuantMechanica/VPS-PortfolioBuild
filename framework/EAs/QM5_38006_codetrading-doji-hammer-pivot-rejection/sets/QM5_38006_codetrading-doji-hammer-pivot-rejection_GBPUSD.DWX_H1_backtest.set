@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        38006
+; ea_slug:      codetrading-doji-hammer-pivot-rejection
+; ea_version:   v5.0
+; set_version:  s20260818-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   61871ac5b73aa26c90d991054f36955829873ad96d3d106665b02cc145063c0e
+; author:       Gemini
+; date:         2026-08-18
+;==========================================================
+qm_ea_id=38006
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_38006_codetrading-doji-hammer-pivot-rejection.md
+strategy_signal_tf=16385
+strategy_ema_period=50
+strategy_max_body_ratio=0.25
+strategy_min_wick_ratio=0.60
+strategy_zone_atr_mult=0.50
+strategy_atr_period=14
+strategy_sl_buffer_pips=2.0
+strategy_tp_rr_mult=1.8
+strategy_be_enabled=true
+strategy_be_trigger_r=1.0
+strategy_rollover_start_hhmm=2355
+strategy_rollover_end_hhmm=5
+strategy_spread_filter_mult=1.8

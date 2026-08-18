@@ -3,7 +3,7 @@
 ; ea_id:        1206
 ; ea_slug:      lento-sp500-csa-ma
 ; ea_version:   v5.0
-; set_version:  s20260729-stress-harsh
+; set_version:  s20260817-stress-harsh
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   1dbc946452c9bdb1cfaf9d91b8c520734b9e74b4010d777da0b1c6a8d916d08b
 ; author:       Development
-; date:         2026-07-29
+; date:         2026-08-17
 ;==========================================================
 qm_ea_id=1206
 qm_magic_slot_offset=0

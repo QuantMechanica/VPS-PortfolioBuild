@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        39003
+; ea_slug:      forexfactory-james16-price-action-ppz
+; ea_version:   v5.0
+; set_version:  s20260818-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b5a3c91984f164d947ee6fa0e95aeb79f1c4dce1c69d3ceb399b12e6b095ca58
+; author:       Development
+; date:         2026-08-18
+;==========================================================
+qm_ea_id=39003
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_39003_forexfactory-james16-price-action-ppz.md
+InpPPZLookback=20
+InpTrendEMA=21
+strategy_atr_period=14
+strategy_zone_atr_mult=0.50
+strategy_min_pin_atr_mult=0.50
+strategy_max_pin_atr_mult=3.50
+strategy_wick_frac=0.65
+strategy_body_frac=0.25
+strategy_sl_buffer_pips=2.0
+strategy_tp_rr=2.5

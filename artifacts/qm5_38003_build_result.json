@@ -1,0 +1,25 @@
+{
+  "task_id": "5fa16349-5252-448a-8f5d-8a7d77306f9b",
+  "ea_id": "QM5_38003",
+  "ea_dir": "framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal/QM5_38003_codetrading-bollinger-engulfing-reversal.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal/QM5_38003_codetrading-bollinger-engulfing-reversal.ex5",
+  "magic_base": 380030000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPJPY.DWX",
+    "AUDUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal/sets/QM5_38003_codetrading-bollinger-engulfing-reversal_EURUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal/sets/QM5_38003_codetrading-bollinger-engulfing-reversal_GBPJPY.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal/sets/QM5_38003_codetrading-bollinger-engulfing-reversal_AUDUSD.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "framework_error",
+  "smoke_report_path": null,
+  "blocked_reason": "framework_error: Custom-history gate/reservation refused terminal (active Custom-history isolation requires a worker-bound work item)",
+  "open_questions": []
+}

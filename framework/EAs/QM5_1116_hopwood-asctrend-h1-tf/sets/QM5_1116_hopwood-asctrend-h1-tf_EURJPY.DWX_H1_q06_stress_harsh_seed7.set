@@ -3,7 +3,7 @@
 ; ea_id:        1116
 ; ea_slug:      hopwood-asctrend-h1-tf
 ; ea_version:   v5.0
-; set_version:  s20260726-stress-harsh
+; set_version:  s20260817-stress-harsh
 ; symbol:       EURJPY.DWX
 ; timeframe:    H1
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   527877a910e90cea9d5688d87e6fbadcb1f7a1ce62e457432beb7634291dbf2b
 ; author:       Development
-; date:         2026-07-26
+; date:         2026-08-17
 ;==========================================================
 qm_magic_slot_offset=4
 qm_rng_seed=7

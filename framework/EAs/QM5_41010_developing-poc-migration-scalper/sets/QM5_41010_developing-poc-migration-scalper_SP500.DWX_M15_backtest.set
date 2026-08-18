@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41010
+; ea_slug:      developing-poc-migration-scalper
+; ea_version:   v5.0
+; set_version:  s20260818-001
+; symbol:       SP500.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Gemini
+; date:         2026-08-18
+;==========================================================
+qm_ea_id=41010
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_stale_max_hours=336
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+InpLookbackBars=4
+InpMinVolumeMult=1.20
+InpBufferTicks=4
+InpProfileWindowBars=32
+InpBucketTicks=10
+InpAtrPeriod=14
+InpSpreadAtrMult=1.8
+InpRrMultiplier=2.0
+InpEnableRatchetTrailing=true

@@ -1,0 +1,34 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        37001
+; ea_slug:      ernest-chan-ornstein-uhlenbeck-statarb
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       NZDUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   aaa7c14794139ec71107076bf1b944d6b4e316882c18bfacd5ba89f80648a7e6
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=37001
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_37001_ernest-chan-ornstein-uhlenbeck-statarb.md
+strategy_lookback_window=100
+strategy_zscore_entry=2.0
+strategy_zscore_exit_tp=0.15
+strategy_zscore_exit_sl=3.5
+strategy_min_half_life=5.0
+strategy_max_half_life=40.0
+strategy_time_stop_mult=2.5
+strategy_atr_period=14
+strategy_atr_sl_mult=3.0
+strategy_max_spread_atr=1.8
+strategy_max_spread_points=300

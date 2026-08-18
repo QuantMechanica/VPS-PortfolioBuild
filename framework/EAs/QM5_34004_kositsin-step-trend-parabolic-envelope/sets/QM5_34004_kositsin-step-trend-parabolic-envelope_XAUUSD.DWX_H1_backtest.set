@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        34004
+; ea_slug:      kositsin-step-trend-parabolic-envelope
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       XAUUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   8897f96932c61e967f55c4d792b8e44154d6e7b940803f91528693b1e693d837
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=34004
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_34004_kositsin-step-trend-parabolic-envelope.md
+strategy_atr_period=14
+strategy_step_mult=0.80
+strategy_sar_step=0.02
+strategy_sar_max=0.20
+strategy_tp_rr_mult=2.0
+strategy_spread_atr_period=14
+strategy_spread_atr_mult=1.8
+strategy_step_lookback=50

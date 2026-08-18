@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41011
+; ea_slug:      tokyo-london-bank-flow-handover
+; ea_version:   v5.0
+; set_version:  s20260818-001
+; symbol:       GBPJPY.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Gemini
+; date:         2026-08-18
+;==========================================================
+qm_ea_id=41011
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_stale_max_hours=336
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+InpRangeStartHourUTC=6
+InpRangeStartMinUTC=0
+InpRangeEndHourUTC=6
+InpRangeEndMinUTC=45
+InpEntryStartHourUTC=7
+InpEntryStartMinUTC=0
+InpEntryEndHourUTC=7
+InpEntryEndMinUTC=30
+InpTimeStopHourUTC=12
+InpBufferPips=2.0
+InpMinAtrPips=10.0
+InpAtrPeriod=14
+InpSpreadAtrMult=1.8
+InpRrMultiplier=2.0

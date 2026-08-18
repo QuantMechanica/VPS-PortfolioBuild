@@ -1,0 +1,12 @@
+{
+  "schema": "qm.density-returners-gated/v1",
+  "returns_under_E6": [],
+  "counts": {
+    "gate_blocked": 138,
+    "empty": 78,
+    "coverage_blocked": 0,
+    "admitted": 0,
+    "returns_under_E6": 0,
+    "stays_out": 0
+  }
+}

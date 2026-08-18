@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        35005
+; ea_slug:      sma-crossover-pullback-system
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=35005
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_35005_sma-crossover-pullback-system.md
+strategy_fast_sma=100
+strategy_slow_sma=200
+strategy_stoch_k=14
+strategy_stoch_d=3
+strategy_stoch_slowing=3
+strategy_stoch_oversold=20.0
+strategy_stoch_overbought=80.0
+strategy_tp_pips=300
+strategy_sl_pips=150
+strategy_trailing_trigger_pips=150
+strategy_trailing_step_pips=150
+strategy_atr_period=14
+strategy_spread_atr_mult=1.8

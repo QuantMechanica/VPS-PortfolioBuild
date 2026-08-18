@@ -1,0 +1,22 @@
+{
+  "task_id": "7673bf41-8e94-4e6a-a869-3c0609a7f73b",
+  "ea_id": "QM5_21505",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\QM5_21505_xag-weekly-lowvol-momentum.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\QM5_21505_xag-weekly-lowvol-momentum.ex5",
+  "magic_base": 215050000,
+  "symbols_registered": [
+    "XAGUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\sets\\QM5_21505_xag-weekly-lowvol-momentum_XAGUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Mission requests paced Q02 enqueue; no manual backtest authorized.",
+  "blocked_reason": "",
+  "open_questions": []
+}

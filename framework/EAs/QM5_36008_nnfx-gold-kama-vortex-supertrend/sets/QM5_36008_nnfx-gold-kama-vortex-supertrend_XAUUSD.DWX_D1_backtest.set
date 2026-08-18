@@ -1,0 +1,41 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        36008
+; ea_slug:      nnfx-gold-kama-vortex-supertrend
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   35718f9eb758e9300cf7f3daad95c7d518386f9c0a54c76e5a4d6174a8abd44a
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=36008
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_36008_nnfx-gold-kama-vortex-supertrend.md
+strategy_kama_period=20
+strategy_kama_fast=2
+strategy_kama_slow=30
+strategy_vortex_period=14
+strategy_tsi_r=25
+strategy_tsi_s=13
+strategy_wae_fast=12
+strategy_wae_slow=26
+strategy_wae_signal=9
+strategy_wae_bb_period=20
+strategy_wae_bb_deviation=2.0
+strategy_wae_sensitivity=150
+strategy_wae_deadzone_pts=150
+strategy_atr_period=14
+strategy_sl_atr_mult=1.00
+strategy_spread_atr_mult=1.80
+strategy_warmup_bars=150
+strategy_max_spread_points=300

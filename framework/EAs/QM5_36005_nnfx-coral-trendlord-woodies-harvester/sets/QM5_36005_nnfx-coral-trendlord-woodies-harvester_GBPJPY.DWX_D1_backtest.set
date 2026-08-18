@@ -1,0 +1,39 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        36005
+; ea_slug:      nnfx-coral-trendlord-woodies-harvester
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       GBPJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=36005
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_36005_nnfx-coral-trendlord-woodies-harvester.md
+strategy_coral_period=20
+strategy_coral_coeff=0.40
+strategy_coral_warmup_bars=100
+strategy_trendlord_period=50
+strategy_woodies_cci_period=14
+strategy_wae_fast=12
+strategy_wae_slow=26
+strategy_wae_signal=9
+strategy_wae_bb_period=20
+strategy_wae_bb_deviation=2.0
+strategy_wae_sensitivity=150
+strategy_wae_deadzone_pts=150
+strategy_atr_period=14
+strategy_sl_atr_mult=1.00
+strategy_tp_atr_mult=1.00
+strategy_spread_atr_mult=1.80

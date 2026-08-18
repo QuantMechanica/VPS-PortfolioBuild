@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        38001
+; ea_slug:      codetrading-vwap-bollinger-rsi-scalper
+; ea_version:   v5.0
+; set_version:  s20260817-001
+; symbol:       EURUSD.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   2c2a1f528a79e080d5fafc18ffd8fab1f8e689c329c49894126b96035f875091
+; author:       Development
+; date:         2026-08-17
+;==========================================================
+qm_ea_id=38001
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_38001_codetrading-vwap-bollinger-rsi-scalper.md
+strategy_signal_tf=5
+strategy_bb_period=20
+strategy_bb_dev=2.00
+strategy_rsi_period=14
+strategy_rsi_oversold=30.0
+strategy_rsi_overbought=70.0
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_tp_rr_mult=1.8
+strategy_use_vwap_tp=true
+strategy_be_enabled=true
+strategy_be_trigger_r=1.0
+strategy_rollover_start_hhmm=2355
+strategy_rollover_end_hhmm=5
+strategy_spread_filter_mult=1.8
