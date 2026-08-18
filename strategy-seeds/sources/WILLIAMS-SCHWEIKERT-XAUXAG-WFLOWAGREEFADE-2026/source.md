@@ -10,10 +10,11 @@ last_updated: 2026-08-18
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-18"
 approved_at: 2026-08-18
 source_approval: decisions/2026-08-18_xauxag_weekly_flow_agreement_fade_source_approval.md
-approval_commit: PENDING_SOURCE_COMMIT
+approval_commit: d50ca2929
 strategy_ids:
   - WILLIAMS-SCHWEIKERT-XAUXAG-WFLOWAGREEFADE-2026_S01
-cards_extracted: []
+cards_extracted:
+  - xauxag-wflow-agree-fade
 parent_sources:
   - SRC03
   - SCHWEIKERT-XAUXAG-RATIO-2026
@@ -196,4 +197,4 @@ mode, or nonpositive governed economics.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-18 | bounded composite source approval | G0 | APPROVED_SOURCE |
-
+| v1-card | 2026-08-18 | one approved agreement-fade card extracted | G0 | APPROVED |

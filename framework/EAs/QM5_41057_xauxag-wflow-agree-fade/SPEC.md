@@ -98,5 +98,4 @@ portfolio-gate change, or live-manifest change is authorized.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-18 | approved build directory identity | source approved; G0/card pending deterministic allocation |
-
+| v1 | 2026-08-18 | approved build contract | source, G0 card, EA ID, and two magic slots allocated |
