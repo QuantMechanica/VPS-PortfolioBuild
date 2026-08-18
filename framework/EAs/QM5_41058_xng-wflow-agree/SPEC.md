@@ -95,5 +95,5 @@ grid, martingale, pyramid, target, trail, or partial exit.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-18 | approved build directory identity | source approved at `929a14cae`; G0/card pending deterministic allocation |
-
+| v1 | 2026-08-18 | approved build directory identity | source `929a14cae`; registry `c32cc25b8`; magic `b2ae5243b`; G0/card `8a82c7968` |
+| v1-build | 2026-08-18 | deterministic V5 implementation | exact-week XNG flow agreement with endpoint reconciliation |
