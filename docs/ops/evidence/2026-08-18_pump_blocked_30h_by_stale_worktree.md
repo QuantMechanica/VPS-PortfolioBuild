@@ -116,3 +116,70 @@ report `safe: true`, then the next pump log must contain `active_timeouts`, and
 - `tools/strategy_farm/codex_kill_safety_audit.py:15,24` — `WORKTREE_PARENT`, `discover_repo_roots`
 - `tools/strategy_farm/run_agent_orchestration_task.py:550` — `ensure_worktree`, recreate-from-HEAD
 - audit re-run per root, in-process, 2026-08-18
+
+
+---
+
+# Addendum, same day — the outage had two causes, and the second only became visible after the first was fixed
+
+OWNER removed the worktree. The pump's own audit run then reported, in production
+(`pump_task_20260818T062301Z.log`):
+
+```
+{ "files_scanned": 12634, "repo_roots_scanned": 93, "safe": true, "unsafe": [] }
+```
+
+**Cause 1 is closed.** The verdict passes; `PUMP_BLOCKED` no longer fires.
+
+The pump still did not run. The log ends immediately after that JSON, and the process (pid 6812,
+started 08:23 local) is gone.
+
+## Cause 2: the audit consumes most of the task's budget, and the pump gets the remainder
+
+Timed directly, on the same host and with the worktree gone:
+
+| | |
+|---|---:|
+| audit wall time | **383 s = 6.4 min** |
+| roots scanned | 93 |
+| files scanned | 12,635 |
+| verdict | `safe=True`, 0 unsafe |
+| task `ExecutionTimeLimit` (before) | **PT10M** |
+
+**Correction to my own reporting.** In the round before this one I wrote that the audit "takes
+~11 minutes" and "exceeds the 10-minute limit". That was an inference from a poll that still showed
+the process running, not a measurement. The measurement says 6.4 minutes, and the audit alone does
+**not** exceed the limit. I stated it as fact; it was not.
+
+The corrected mechanism is sharper than the wrong one:
+
+- 08:23:01 — task starts, audit begins
+- ~08:29:30 — audit finishes, `safe: true`, **6.4 min of the 10-minute budget spent**
+- ~08:29:30 — `farmctl.py pump` starts with **~3.5 minutes left**
+- 08:33 — `ExecutionTimeLimit` expires, Task Scheduler terminates the task mid-pump
+  (`LastTaskResult 267014` = `SCHED_S_TASK_TERMINATED`)
+
+So the audit never had to overrun the limit for the pump to die; it only had to eat most of it.
+That also explains the missing `PUMP_BLOCKED` line in the pre-removal logs: those runs were
+terminated rather than reaching the block path.
+
+Raising the limit is therefore **load-bearing, not hardening**: `ExecutionTimeLimit` changed
+`PT10M → PT30M`. `MultipleInstances=IgnoreNew` plus the file lock (`LOCK_STALE_SECONDS = 20*60`)
+already prevent overlap, so the time limit was protecting nothing and truncating everything. After a
+30-hour backlog the first pump cycle in particular needs more than 3.5 minutes.
+
+## A second false alarm of mine, checked before reporting
+
+Nine concurrent processes matched `*kill_safety*` in the process list, which looked like the audit
+fanning out across all cores against the MT5 fleet. The process tree shows two four-deep chains with
+one shared parent — Git-Bash wrapper layers from my *own* background invocation, whose command line
+contains the script path. `codex_kill_safety_audit.py` contains no `multiprocessing`,
+`concurrent.futures`, or pool of any kind. No finding.
+
+## Open verification
+
+The end-to-end proof is still pending and is deliberately two independent signals, so silence cannot
+read as success: a pump log containing `active_timeouts`, **or** a `poison_pill_quarantine` row with
+an `updated_at` newer than `2026-08-17T10:59:52`. The latter would simultaneously confirm the
+poison-pill fix from the same morning, since `QM5_11287/USDJPY/Q04` currently holds a pending row
+and both its triples are `scan()`-eligible.
