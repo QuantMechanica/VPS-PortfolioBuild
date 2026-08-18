@@ -14940,6 +14940,48 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
         "disabled": True,
         "reason": "per-terminal worker daemons own work_item dispatch",
     }
+
+    # 1a-bis. Poison-pill refresh. The ONLY production caller of
+    # poison_pill_quarantine.refresh_pending() used to live inside
+    # dispatch_work_items -- which this pump disables and which no subcommand or
+    # scheduled task invokes any more. terminal_worker.py deliberately does not
+    # refresh (its claim runs inside BEGIN IMMEDIATE; a ~413ms scan per claim
+    # would serialise the fleet) and states as its premise that "farmctl's
+    # dispatch path already refreshes it every pump cycle". That premise was
+    # false, so the table had no operator at all in normal operation: on
+    # 2026-08-18 four triples were scan-eligible and none was sealed, one of them
+    # (QM5_11287/Q04) having burned 98 terminal-minutes across 9 deterministic
+    # re-runs in 48h. The pump is the right level for the limit -- once per five
+    # minutes, its own transaction, no claim lock held.
+    def _refresh_poison_pills() -> dict[str, Any]:
+        import poison_pill_quarantine
+
+        with connect(root) as conn:
+            found = poison_pill_quarantine.refresh_pending(conn)
+            conn.commit()
+        return {
+            "quarantined": [
+                {
+                    "ea_id": item["ea_id"],
+                    "symbol": item["symbol"],
+                    "phase": item["phase"],
+                    "consecutive_failures": item["consecutive_failures"],
+                    "verdict_reason": item["verdict_reason"],
+                    "sealed_pending_rows": item.get("sealed_pending_rows"),
+                }
+                for item in found
+            ],
+            "n": len(found),
+        }
+
+    try:
+        result["poison_pill_refresh"] = _with_sqlite_write_retry(_refresh_poison_pills)
+    except sqlite3.OperationalError as exc:
+        if not _is_sqlite_locked(exc):
+            raise
+        result["poison_pill_refresh"] = {"skipped": f"sqlite_locked:{exc}"}
+    except Exception as exc:  # never let bookkeeping abort the pump
+        result["poison_pill_refresh"] = {"error": repr(exc)}
     # 1b. Legacy bundled-task dispatch — handles any backtest_<phase> tasks
     #     created WITHOUT matching work_items (e.g. older runs). Will become
     #     a no-op once all enqueues create work_items.
