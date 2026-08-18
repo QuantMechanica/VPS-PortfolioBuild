@@ -3,32 +3,43 @@
 ; ea_id:        10008
 ; ea_slug:      ff-sd-first-touch-h1
 ; ea_version:   v5.0
-; set_version:  s20260611-001
+; set_version:  s20260818-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   4246d50797f5382d68da9ebae07f50376f1d98e4c3987c1ec5a249ef4dab63bb
 ; author:       Development
-; date:         2026-06-11
+; date:         2026-08-18
 ;==========================================================
+qm_ea_id=10008
 qm_magic_slot_offset=1
+qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; Structural Q02 baseline: the card defines no event dependency.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; Card-locked strategy baseline.
+strategy_atr_period=14
+strategy_min_base_bars=2
+strategy_max_base_bars=6
+strategy_base_atr_mult=1.0
+strategy_impulse_bars=3
+strategy_impulse_atr_mult=1.5
+strategy_min_impulse_closes=2
+strategy_stop_atr_buffer_mult=0.15
+strategy_max_zone_atr_mult=2.0
+strategy_reward_risk=2.0
+strategy_pending_expiry_bars=20
+strategy_trade_time_stop_bars=30
+strategy_lookback_bars=72

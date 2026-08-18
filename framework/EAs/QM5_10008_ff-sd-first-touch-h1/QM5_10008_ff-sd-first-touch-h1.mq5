@@ -362,7 +362,9 @@ bool Strategy_NoTradeFilter()
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   return (ask <= 0.0 || bid <= 0.0 || point <= 0.0 || ask <= bid);
+   // Darwinex .DWX Model-4 history can legitimately model a zero spread.
+   // Reject invalid or crossed quotes, but allow ask == bid through.
+   return (ask <= 0.0 || bid <= 0.0 || point <= 0.0 || ask < bid);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
