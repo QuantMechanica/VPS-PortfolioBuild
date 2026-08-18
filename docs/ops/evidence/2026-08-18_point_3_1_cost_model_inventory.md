@@ -89,3 +89,39 @@ snapshot entries. That discharges 3.1 step 1 and step 2 for the pool without a f
 - `framework/scripts/venue_costs.py` (fallback discipline, DL-082 §2 note)
 - consumer list: 16 files under `tools/`, `framework/scripts/`
 - pool: `artifacts/pool_union_20260817.json` (91 pairs, 22 distinct symbols)
+
+---
+
+## Correction — the consumer list was incomplete, and one consumer pins the file's hash
+
+The list of 16 above came from a search scoped to `tools/`, `framework/scripts/`,
+`framework/include/` and `scripts/`. A full repo-wide scan, which finished afterwards, found **two
+more consumers under `framework/EAs/`** that the scope excluded:
+
+- `framework/EAs/QM5_10253_tv-ifvg-sweep/tools/candidate_analysis/audit_tv_ifvg_sweep_two_arm_dev.py`
+- `framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/generate_research_sets.py`
+
+Both exist in the canonical tree, dated 2026-07-20. Neither is a pipeline gate, so **3.1's central
+conclusion is unchanged** — the gate consumer is still `q04_walkforward.py`. But one of them changes
+what step 2 costs:
+
+**`audit_tv_ifvg_sweep_two_arm_dev.py:107` pins the SHA256 of `venue_cost_model.json`:**
+
+```
+REPO_ROOT / "framework" / "registry" / "venue_cost_model.json":
+    "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7",
+```
+
+Verified: the pinned digest **matches the file byte-for-byte today**, and git shows a single commit
+touching the registry (`f36413950`, 2026-07-19 20:35) — so the snapshot is untouched since creation
+and the pin is live, not stale.
+
+**Consequence for 3.1 step 2:** adding the five FX symbols is not a free edit. It changes the file's
+digest and will fail-close that audit unless its pin is updated in the same change. That is correct
+behaviour on the audit's part — it is doing exactly what a pinned artifact should — but it has to be
+in the plan rather than discovered afterwards.
+
+**Why this correction exists at all:** scoping the search to the directories where consumers "should"
+live saved two minutes and missed a hard coupling. The full scan was already running in the
+background; had I treated the scoped result as final, the registry edit would have broken a pinned
+audit with no warning. The scoped answer was not wrong about the gate — it was wrong about the cost.
