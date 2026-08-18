@@ -187,6 +187,7 @@ def _extract_q04(d: dict) -> tuple[dict, dict, str]:
         "trades": sum(trs) if trs else None,
         "drawdown_money": max(dd_money_values) if dd_money_values else None,
         "drawdown_pct": max(dd_pct_values) if dd_pct_values else None,
+        # Q04 aggregate/fold summaries do not emit Sharpe; do not synthesize it.
         "sharpe": None,
     }
     detail = {
@@ -218,7 +219,8 @@ def _extract_q05_q06(d: dict) -> tuple[dict, dict, str]:
         "trades": _to_int(d.get("trades")),
         "drawdown_money": _to_float(d.get("dd_money")),
         "drawdown_pct": _to_float(d.get("dd_pct")),
-        "sharpe": _to_float(d.get("sharpe")),
+        # Observed Q05/Q06/Q10 aggregates and bound summaries do not emit Sharpe.
+        "sharpe": None,
     }
     detail = {k: d.get(k) for k in ("stress_level", "rejection_probability", "reason") if k in d}
     detail["net_profit_source"] = net_profit_source
@@ -238,6 +240,7 @@ def _extract_q07(d: dict) -> tuple[dict, dict, str]:
         "trades": (max(trs) if trs else None),
         "drawdown_money": (max(dd_money) if dd_money else None),
         "drawdown_pct": (max(dd_pcts) if dd_pcts else None),
+        # Q07 seed aggregates do not emit Sharpe; leave the metric unknown.
         "sharpe": None,
     }
     detail = {
@@ -273,6 +276,7 @@ def _extract_q08(d: dict) -> tuple[dict, dict, str]:
         "profit_factor": _to_float(base.get("baseline_profit_factor")),
         "trades": _to_int(d.get("n_trades")),
         "drawdown_money": mc_dd_money, "drawdown_pct": mc_dd_pct,
+        # Q08 robustness aggregates do not emit Sharpe; MC drawdown is not a proxy.
         "sharpe": None,
     }
     sgs = d.get("sub_gates") or []
