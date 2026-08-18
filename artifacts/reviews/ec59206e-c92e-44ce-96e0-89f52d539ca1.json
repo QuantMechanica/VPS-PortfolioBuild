@@ -1,0 +1,42 @@
+{
+  "review_evidence_id": "ec59206e-c92e-44ce-96e0-89f52d539ca1",
+  "governed_task_id": "5d5cc9f6-e096-44a3-af78-99abc2d9e7ed",
+  "ea_id": "QM5_41002",
+  "reviewer": "codex:agents/board-advisor",
+  "verdict": "FAIL_CODE_REVIEW_SPREAD_GATE_FIRST_SIGNAL_BYPASS",
+  "disposition": "RECYCLE",
+  "reviewed_at": "2026-08-18T05:50:43Z",
+  "repository_head": "bd672a5c204edc450911b079c222492fb84007ac",
+  "bindings": {
+    "mq5_sha256": "8D886C0564BF1FE620C853F982E292F198CE5EC1F241B3F75500C4D724D84CA3",
+    "ex5_sha256": "6A8B189114F2770C8B248BF42FB9BC18A5522CB04BE62ED421DAE3FA2E184B30"
+  },
+  "sections": {
+    "framework_corset": "FAIL",
+    "card_to_code": "FAIL",
+    "magic_registry": "PASS",
+    "fixed_risk_sets": "PASS",
+    "smoke_sanity": "DEFERRED_CPU_CEILING",
+    "build_result": "PASS",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    {
+      "severity": "HIGH",
+      "code": "ENTRY_SPREAD_GATE_FIRST_SIGNAL_BYPASS",
+      "path": "framework/EAs/QM5_41002_robert-pardo-checkmate-breakout-engine/QM5_41002_robert-pardo-checkmate-breakout-engine.mq5",
+      "line": 215,
+      "summary": "The spread filter is conditional on stale pre-refresh state, so the first post-init signal can enter without the Card-required current-spread ceiling.",
+      "required_repair": "Recheck current spread against the freshly populated ATR inside Strategy_EntrySignal, or refresh state and re-run the no-trade gate before entry."
+    }
+  ],
+  "resource_stop": {
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [100.0, 99.66, 99.32, 95.85, 96.46],
+    "cpu_average_percent": 98.26,
+    "cpu_maximum_percent": 100.0,
+    "occupied_factory_terminals": ["T1", "T2", "T3", "T4", "T5", "T7", "T8", "T9"],
+    "q02_work_item_count": 0,
+    "q02_enqueued": false
+  }
+}
