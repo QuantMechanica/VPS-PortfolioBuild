@@ -1,102 +1,142 @@
-# OPEN_QUESTIONS — Rückfragen vor Beantwortung des externen Audits
+# OPEN_QUESTIONS — was offen bleibt, und was es je kosten würde
 
-Stand 2026-08-18. Angelegt nach §5 der Work Order. Jede Zeile blockiert eine
-Audit-Antwort; keine wird durch eine plausible Zahl ersetzt.
+**Stand 2026-08-18, Snapshot `3472a5d2e1b5`.** Endfassung nach Work Order Runde 5 §11.
 
----
+Angelegt in Runde 1 als Liste blockierender Rückfragen. Jetzt zusätzlich das, was §3 ausdrücklich
+verlangt: **Messungen, die etwas ändern würden, notiert statt ausgeführt.** Keine Zeile hier wird
+durch eine plausible Zahl ersetzt.
 
-## OQ-1 · STOP-BEDINGUNG §9: die DD-Werte im Prüfdokument stammen nicht aus `ea_metrics`
-
-**Was fehlt.** Die Work Order §4.2 macht `ea_metrics` zur autoritativen Quelle. Für die
-Optimierungs-Kohorte, über die Audit-Frage 4 gestellt ist, enthält diese Tabelle die benötigten
-Werte nicht:
-
-| Phase | Zeilen in `ea_metrics` | `drawdown_pct` non-null | `profit_factor` non-null |
-|---|---:|---:|---:|
-| **Q14** | 11 | **0** | **0** |
-| **Q15** | 1 | **0** | **0** |
-| **Q16** | **0** | — | — |
-| Q10 *(zum Kontrast)* | 41 | 41 | 41 |
-
-*Query:* `SELECT phase,COUNT(*),SUM(drawdown_pct IS NOT NULL),SUM(profit_factor IS NOT NULL) FROM
-ea_metrics WHERE phase IN ('Q14','Q15','Q16','Q10') GROUP BY phase`, gelaufen 2026-08-18T13:0xZ,
-Snapshot `farm_state_20260818T130247Z.sqlite` (sha256 `35f44603…`).
-
-**Warum es blockiert.** Die im Prüfdokument genannte Spanne 1,18 %–9,81 % Max-DD über 25 Survivor
-kann aus der autoritativen Tabelle **nicht** stammen — dort steht für diese Phasen kein einziger
-DD-Wert. Sie muss aus einem abgeleiteten Pfad kommen. Work Order §9 verlangt dann ausdrücklich:
-*das Prüfdokument selbst ist zu korrigieren, bevor darauf geantwortet wird.*
-
-**Was ich NICHT behaupte.** Ich habe nicht bewiesen, dass die Zahlen aus dem in §3.1.3 genannten
-defekten Parser-Pfad stammen — nur, dass sie nicht aus `ea_metrics` stammen können. Der Unterschied
-ist wichtig: es könnte ein dritter, intakter Pfad sein.
-
-**Kosten der Beschaffung.** Zwei Wege:
-1. *Herkunft klären* — die Quelle der 1,18–9,81 % benennen lassen (Datei, Query, Lauf-Zeitstempel).
-   Kosten: eine Rückfrage, null Rechenzeit.
-2. *Selbst neu erzeugen* — `drawdown_pct` für die Q14/Q15-Kohorte aus den Evidenzartefakten
-   nachziehen. Kosten: Extraktionslauf über 14 Q14- und 1 Q15-work_item; keine Fabrikzeit, aber der
-   Extraktor ist genau die Komponente, die §3.1.3/§3.1.4 als fehlerhaft markiert — er müsste vorher
-   verifiziert werden.
-
-**Bis dahin:** Audit-Frage 4 ist als **NICHT ENTSCHEIDBAR** ausgewiesen, nicht geschätzt.
+**Legende:** ● offen · ◐ teilweise beantwortet · ○ geschlossen
 
 ---
 
-## OQ-2 · `ea_metrics` ist zu 69 % leer — gilt sie trotzdem als autoritativ?
+## ◐ OQ-1 · Die DD-Werte des Prüfdokuments stammen nicht aus `ea_metrics` *(Eskalation E-1)*
 
-| `source` | Zeilen |
-|---|---:|
-| **`missing`** | **43.182** |
-| `summary_runs` | 10.775 |
-| `q04_folds` | 4.833 |
-| `summary_runs_empty` | 1.679 |
-| `q05q06_flat` | 1.071 |
-| `q08_subgates` | 437 |
-| `q07_seeds` | 256 |
-| **`parse_error`** | **105** |
+**Status seit Runde 5: die Ursache ist jetzt belegt, nicht mehr nur eingegrenzt.**
 
-n = 62.457. Feldabdeckung: `profit_factor` 27 %, `trades` 27 %, `drawdown_pct` 19 %, `sharpe` **0 %**
-(63 von 62.457).
+`ea_metrics.py:_extract_q04` schreibt `"drawdown_money": None, "drawdown_pct": None` **als
+Konstante**; `_extract_q08` ebenso. Q14/Q15 laufen als `unknown_phase` durch. Die Tabelle konnte die
+Werte also nie enthalten — es ist kein Datenverlust, sondern ein nie geöffneter Pfad.
 
-**Warum es blockiert.** §4.2 verlangt, jede Zahl aus `ea_metrics` zu ziehen und alles andere als
-unbestätigt zu markieren. Bei 69 % `missing` und 0 % Sharpe-Abdeckung hieße das, den größten Teil
-der Audit-Antwort als unbestätigt zu kennzeichnen. **Insbesondere: `Q04` hat 16.490 Zeilen und
-`drawdown_pct` non-null = 0; `Q08` hat 613 Zeilen und ebenfalls 0.**
+**Was OWNER entschieden hat:** Werte neu erzeugen. Ausgeführt wird das über E-2 zuerst
+(`INVALIDATION_MATRIX.md` §3), weil sonst ein defektes Werkzeug eine vollständige Neubefüllung
+erzeugt.
 
-**Rückfrage.** Ist `ea_metrics` als autoritativ gemeint *für die Felder, die sie führt*, mit
-ausdrücklicher Kennzeichnung der Lücken — oder soll der Extraktor zuerst repariert und nachgezogen
-werden, bevor das Audit beantwortet wird? Das Zweite verschiebt die Antwort um die Laufzeit einer
-Vollextraktion.
+**Kosten, jetzt beziffert:** für Q08 **null Rechenzeit** — der DD steht als `mc_maxdd_p95_pct` im
+Aggregat, und **81 von 91 Pool-Paaren** haben diese Datei noch. Für Q04 eine Dateiöffnung je Fold,
+abhängig von OQ-7.
 
-**Kosten.** Eine Entscheidung, null Rechenzeit. Die Vollextraktion selbst: unbekannt, weil der
-Extraktor laut §3.1.3 defekt ist — Aufwand erst nach dessen Reparatur schätzbar.
+**Audit-Frage 4 bleibt bis zur Vollextraktion NICHT ENTSCHEIDBAR.**
 
----
+## ○ OQ-2 · Gilt `ea_metrics` trotz 69 % Lücke als autoritativ? *(Eskalation E-2)*
 
-## OQ-3 · Audit-Frage 3 braucht Fenster-Datumsbereiche, die im Zustand nicht geführt werden
+**Geschlossen durch OWNER-Entscheidung (Extraktor reparieren und nachziehen) und durch die Messung,
+die die Frage neu stellt:** die 69 % sind **gelöschte Evidenz**, kein Extraktionsfehler — 100 % der
+Mai- und Juni-Zeilen, 0 % der August-Zeilen, und in 389 von 393 Stichproben fehlt das
+Work-Item-Verzeichnis vollständig (`EXTRACTOR_FIX_REPORT.md` §0).
 
-**Was fehlt.** Frage 3 verlangt je optimiertem Kandidaten die Datumsbereiche des
-Optimierungsfensters und der drei Walk-Forward-Falten sowie den Overlap in Tagen. `work_items`
-führt `from_date`/`to_date` je Lauf, aber die **Falten**grenzen liegen in den Evidenzartefakten,
-nicht in einer abfragbaren Spalte.
+**Damit ist die ursprüngliche Rückfrage gegenstandslos:** eine Reparatur erreicht diese Zeilen nicht.
+Was sie erreicht, sind die 19.275 lesbaren Zeilen, und dort ist sie wertvoll.
 
-**Warum es blockiert.** Ohne Faltengrenzen ist „Overlap > 0" nicht ausrechenbar, und die Frage ist
-genau als Overlap-Rechnung gestellt.
+## ● OQ-3 · Fenster-Datumsbereiche für Audit-Frage 3
 
-**Kosten.** Ein Parserlauf über die Q04-Evidenzdateien der optimierten Kandidaten, um Faltengrenzen
-zu extrahieren — keine Fabrikzeit, aber wieder derselbe Extraktionspfad wie in OQ-1. Reihenfolge:
-erst OQ-1 klären, dann ist OQ-3 mit demselben Werkzeug beantwortbar.
+Unverändert offen. Die Faltengrenzen liegen in den Q04-Evidenzdateien, nicht in einer abfragbaren
+Spalte. **Neue Einschränkung aus Runde 5:** für **34 der 91 Paare** ist die Q04-Evidenz gelöscht —
+die Overlap-Rechnung ist dort auch mit einem perfekten Parser nicht mehr möglich.
+
+**Kosten:** ein Parserlauf nach E-2, für die 54 Paare mit lesbarer Q04-Evidenz. Keine Fabrikzeit.
+
+## ● OQ-4 · Externe Basisraten für Audit-Frage 7 — Quellenfreigabe?
+
+Unverändert offen. Im eigenen Bestand existieren sie nicht (n = 2 eigene Trials sind keine Basisrate).
+**Kosten:** eine Freigabeentscheidung, dann Recherche über die agy-Lane mit Zitierpflicht.
 
 ---
 
-## OQ-4 · Audit-Frage 7 verlangt externe Basisraten — Quellenfreigabe?
+# Neu in Runde 5
 
-Frage 7 verlangt Basisraten für das Überleben backtest-selektierter Portfolios im Livebetrieb und
-für FTMO-Phase-1-Bestehensquoten, und erlaubt externe Quellen ausdrücklich. **Im eigenen Bestand
-existieren diese Basisraten nicht** — es gibt zwei eigene Trials (−8,7 %, −9,9976 %), das ist n = 2
-und keine Basisrate.
+## ● OQ-5 · Der überlappungsbeschränkte MAE-Boden — **die eine Messung, für die ich eine Freigabe empfehle**
 
-**Rückfrage.** Sollen externe Quellen recherchiert und als extern gekennzeichnet werden, oder soll
-die Antwort auf „wir wissen es nicht, und n = 2 aus eigenen Trials ist keine Basis" lauten? Die Work
-Order erlaubt beides; §4.7 verlangt die ehrliche Variante, wenn die Recherche nicht erfolgt.
+**Was.** Der MAE-Boden addiert die Exkursionen aller an einem Tag schließenden Trades und unterstellt
+damit **perfekte Gleichzeitigkeit**. Das ist die Annahme, die 28 % erzeugt, und sie ist nachweislich
+zu pessimistisch.
+
+**Warum es jetzt geht.** Die Streams tragen `entry_time` und `time` als **minutengenaue**
+Epoch-Sekunden. rev4s Satz „Datums-, keine Zeitstempel" war eine Aussage über die Engine
+(`challenge_book_60d.py:157` ruft `.date()`), nicht über die Daten. **Zwei Trades können nur dann
+gemeinsam zu einem Intraday-Tief beitragen, wenn ihre Offen-Intervalle sich überschneiden** — und das
+ist aus dem vorhandenen Bestand prüfbar.
+
+**Was es ändern würde.** Es verengt die Untergrenze von 28 % nach oben, und zwar genau in dem
+Sizing-Bereich, in dem rev5 die Spanne als handlungsbestimmend ausweist. Es könnte den
+Grenz-Multiplikator von 0,60× nach oben verschieben — die einzige billige Messung, die das kann.
+
+**Kosten:** unter einer Stunde, kein MT5-Slot, kein Recompile. Auf demselben Harness, der die
+rev4-Anker reproduziert.
+
+**Nicht ausgeführt**, weil §3 den Rechenstopp auf dem alten Bestand setzt. **Ich empfehle
+ausdrücklich, für diese eine Messung eine Ausnahme zu erteilen** — sie ist der einzige Punkt, an dem
+§3 und der Erkenntnisgewinn auseinanderfallen.
+
+## ● OQ-6 · Flip-Instabilität am neuen Sizing
+
+rev4 misst −6 pp im Median und ein 17-pp-Band **bei 1,00×**. rev5 empfiehlt 0,60×. **Bei 0,60× ist
+die Flip-Sensitivität nicht gemessen**, und es gibt keinen Grund anzunehmen, dass sie dieselbe ist:
+bei niedrigerem Sizing scheitern Fenster eher am Ziel als am Limit, und der Ausfall eines Sleeves
+wirkt anders.
+
+**Kosten:** dieselbe 1.000-Ziehungen-Rechnung wie R4-5, Minuten. **Nicht ausgeführt** (§3).
+
+## ● OQ-7 · Überleben die Q04-Fold-Summaries?
+
+Der Q04-Drawdown liegt nicht im Aggregat, sondern in der je Fold referenzierten `summary_path`. Ob
+diese Dateien der Aufbewahrungsgrenze entgangen sind, ist **nicht gemessen** — es ist die einzige
+offene Zahl in `INVALIDATION_MATRIX.md`.
+
+**Wer misst:** Codex, im Zuge des E-2-Tickets `59c2e32c`. **Kosten:** ein Stat-Lauf über die
+Fold-Referenzen von 54 Paaren, Minuten.
+
+**Warum es zählt:** davon hängt ab, ob Q04-DD 4.833 Zeilen kostenlos liefert oder gar nicht.
+
+## ● OQ-8 · Wer löscht die Work-Item-Verzeichnisse?
+
+**Gemessen:** 43.182 Evidenzverzeichnisse sind weg, mit sauberem Altersprofil (100 % Mai/Juni, 0 %
+August). **Nicht gemessen: von wem.**
+
+Die beiden bekannten Aufräum-Jobs sind es nicht — `prune_workitem_logs.py` und
+`reports_log_purge.ps1` löschen ausschließlich `*.log` und halten `.json` ausdrücklich. Ein Job, der
+ganze Verzeichnisse entfernt, ist im Repo **nicht auffindbar**: weder `rmtree` noch
+`Remove-Item -Recurse` gegen `reports\work_items`.
+
+**Warum es zählt:** solange der Urheber unbekannt ist, ist auch unbekannt, ob die **neuen** Läufe des
+vereinten Batches dasselbe Schicksal erwarten. Ein Batch, dessen Evidenz in sechs Wochen still
+verschwindet, ist ein Batch, der zweimal bezahlt wird.
+
+**Kosten:** ein Suchlauf über Scheduled Tasks, Dienste und Nicht-Repo-Skripte; Stunden, keine
+Fabrikzeit. **P1 vor dem Batch, nicht danach.**
+
+## ● OQ-9 · Laufzeitaufschlag der Equity-Telemetrie
+
+Der Modulkopf begründet, warum der Aufschlag klein sein sollte (Per-Tick nur Equity-Lesen und ein
+Vergleich; der `O(PositionsTotal)`-Scan nur beim Emittieren). **Gemessen ist er nicht.**
+
+**Kosten:** der Pilot aus `BATCH_SPEC_MERGED.md` §7 — ein Sleeve, gegen seinen bestehenden Lauf
+gestellt. **Nicht verhandelbar vor dem Vollbatch.**
+
+## ● OQ-10 · Der `q08_degenerate_neighborhood_baseline`-Cluster
+
+6 von 72 Batch-Zeilen. Setfile-Integrität und Rebuild-Hypothese sind **falsifiziert**; die Ursache
+ist offen. Unverändert seit Runde 4.
+
+---
+
+# Was ohne neue Daten nicht schließbar ist
+
+Der Vollständigkeit halber, weil §11 die Endfassung verlangt — diese drei schließen sich durch
+**keine** Rechnung auf `3472a5d2e1b5`:
+
+| | warum |
+|---|---|
+| **Intraday-Amplitude** | verlangt Equity-Snapshots im Lauf. OQ-5 verengt die Schranke, ersetzt die Messung nicht. |
+| **Population** | 18 von 91 Paaren haben eine nutzbare Reihe. 61 sind `challenge_engine_ineligible` und werden es durch keinen Re-Run. |
+| **Selektion** | verlangt einen Zeitraum, den kein Gate gesehen hat → E-3. |

@@ -87,3 +87,33 @@ Tabelle zu 69 % `source='missing'` ist und für Q04/Q08/Q14/Q15 keinen einzigen 
 | E-1 | **Stop-Bedingung §9**: die DD-Werte des Prüfdokuments können nicht aus `ea_metrics` stammen (Q14/Q15/Q16 führen dort null Werte) | §9 verlangt Korrektur des Prüfdokuments **vor** der Antwort. Audit-Frage 4 bleibt NICHT ENTSCHEIDBAR |
 | E-2 | `ea_metrics` zu 69 % `source='missing'`, `sharpe` zu 0,1 % gefüllt | §4.2 macht sie autoritativ; bei dieser Abdeckung wäre der Großteil der Antwort als unbestätigt zu kennzeichnen. Entscheidung nötig — siehe OQ-2 |
 | E-3 | Ein belastbares Holdout für Q3 einzurichten verlangt eine Änderung der Gate-Fensterdefinitionen | §3.3: Gate-Schwellen und Kontrakt-Kriterien sind ausdrücklich nicht autonom |
+
+---
+
+# Nachtrag Runde 5 — Stand der Eskalationen und neue Entscheidungspunkte
+
+**Snapshot der Ausgangslage: `3472a5d2e1b5`** (`BASELINE_SNAPSHOT.md`).
+
+## Die drei Eskalationen, aktualisiert
+
+| # | Stand nach Runde 5 |
+|---|---|
+| **E-1** | **OWNER entschieden: Werte neu erzeugen.** Ausführung folgt E-2, weil sonst ein defektes Werkzeug eine vollständige Neubefüllung erzeugt. Die Ursache ist jetzt belegt: `_extract_q04`/`_extract_q08` schreiben Drawdown **als Konstante `None`**, Q14/Q15 laufen als `unknown_phase`. Kosten für Q08: **null Rechenzeit, 81 von 91 Paaren**. Audit-Frage 4 bleibt bis zur Vollextraktion NICHT ENTSCHEIDBAR. |
+| **E-2** | **OWNER entschieden: Extraktor reparieren und nachziehen.** Fehlerbild gemessen, Reparatur an Codex dispatcht (Ticket `59c2e32c`, Priorität 90). **Die Entscheidungsgrundlage hat sich dabei verschoben:** die 69 % sind gelöschte Evidenz, kein Extraktionsfehler — keine Reparatur erreicht sie. Was die Reparatur erreicht, sind 19.275 lesbare Zeilen, und dort vor allem Drawdown. |
+| **E-3** | **Bleibt offen, jetzt entscheidungsreif vorgelegt** (`E3_DECISION_BRIEF.md`). Empfehlung zur Größe: 18 Monate = 9 Holdout-Fenster, alle mit vollständigem Buch. Das Terminargument ist stärker geworden: der rev4-Behelf, der E-3 hätte aufschieben können, ist nach rev5 §2 auf +3 pp geschrumpft und nicht mehr von null unterscheidbar. |
+
+## Neue Entscheidungspunkte aus Runde 5
+
+| # | Sachverhalt | Warum es OWNER braucht |
+|---|---|---|
+| **D-4** | **Recompile für den vereinten Batch freigeben?** Die Intraday-Telemetrie verlangt den Einbau von `QM_Mod_FtmoJointEquitySampler` in den Standard-Sleeve-Bau und damit einen Recompile jeder EA im Batch. | Runde 1 §3.3 stellt Recompile im aktiven Bestand ausdrücklich unter Vorbehalt (belegt: 8 von 39 Verdikten kippten allein dadurch). Ohne Freigabe entfällt die einzige Größe, die rev5 als handlungsbestimmend ausweist. |
+| **D-5** | **Die Basket-Kollision.** Die fünf laufenden Baskets liefern 6–42 h serielle Fabrikzeit, deren Verdikte ein Batch mit Recompile nach der Invalidierungs-Matrix sofort verwirft. | OWNER hat „alle fünf durchlaufen lassen" entschieden, bevor D-4 auf dem Tisch lag. Drei Auswege in `BATCH_SPEC_MERGED.md` §5.2; meine Empfehlung ist **A** (laufen lassen), weil der Wert im End-to-End-Nachweis liegt, nicht im Verdikt. |
+| **D-6** | **Ausnahme vom Rechenstopp für OQ-5?** Der überlappungsbeschränkte MAE-Boden ist die einzige billige Messung, die den Grenz-Multiplikator von 0,60× noch nach oben verschieben könnte. | §3 setzt den Rechenstopp; ich halte ihn ein. Dies ist der einzige Punkt, an dem er und der Erkenntnisgewinn auseinanderfallen. Kosten unter einer Stunde, keine Fabrikzeit. |
+
+## Autonom entschieden und ausgeführt — mit Begründung
+
+| Eingriff | Warum ohne Rückfrage |
+|---|---|
+| **Progress-Detektor-Reparatur** (`farmctl.py`, Commit `e1a98f77f`) | Ein Basket wurde bei laufendem Backtest als NO_FORWARD_PROGRESS getötet, weil der Detektor das Chart-Symbol des Testers gegen das synthetische Host-Label der Zeile stellt. Das ist ein Infrastrukturdefekt, der die als P1 gesetzte Basket-Kette zerstört — keine Gate-Schwelle, kein Verdikt, kein Recompile. Blast Radius: der Detektor kann Fortschritt nur **mehr** sehen, nie weniger. 11 bestehende Tests grün, Positiv- und Negativkontrolle belegt. |
+| **Requeue von QM5_12712** (`requeue_false_progress_reap.py`) | Der Reaper begründet sein INFRA_FAIL damit, dass „die stranded-INFRA-Sweep die Zeile requeuen kann". Diese Sweep hat keinen Aufrufer und `QM_StrategyFarm_Repair_Hourly` ist Disabled — die Zeile wäre für immer gescheitert geblieben. Requeued wurde **eine** Zeile von 214 geprüften, und nur mit einem Artefakt aus dem Blindfenster des Reapers als Lebendbeweis. |
+| **Baseline-Snapshot vor dem Codex-Dispatch** | §5 verlangt das Einfrieren vor der ersten Regenerierung. Die Vollextraktion ist bereits eine. Strenger als gefordert, nicht lockerer. |
