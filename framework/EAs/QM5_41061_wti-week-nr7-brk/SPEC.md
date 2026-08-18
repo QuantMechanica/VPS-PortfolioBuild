@@ -91,3 +91,4 @@ grid, martingale, pyramid, target, trail, break-even move, or partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | approved build-directory identity | source approval `908ee9cc8`; deterministic registry allocation |
+| v1-build | 2026-08-18 | deterministic V5 implementation | exact WTI complete-week NR7 expansion; strict Q01 PASS |
