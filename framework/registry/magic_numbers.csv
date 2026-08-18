@@ -17467,3 +17467,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41055,wti-medcal,0,XTIUSD.DWX,410550000,2026-08-18T00:00:00Z,Codex,active
 41056,energy-rev18,0,XTIUSD.DWX,410560000,2026-08-18T00:00:00Z,Codex,active
 41056,energy-rev18,1,XNGUSD.DWX,410560001,2026-08-18T00:00:00Z,Codex,active
+41057,xauxag-wflow-agree-fade,0,XAUUSD.DWX,410570000,2026-08-18T00:00:00Z,Codex,active
+41057,xauxag-wflow-agree-fade,1,XAGUSD.DWX,410570001,2026-08-18T00:00:00Z,Codex,active
