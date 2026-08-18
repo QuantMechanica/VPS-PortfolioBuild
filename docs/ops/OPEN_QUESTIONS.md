@@ -309,3 +309,35 @@ sind. Ein Worktree enthielt zuletzt ein `decisions/`-Dokument.
 zweitgrößte Posten auf C:, und **nichts holt ihn zurück**. Er hat heute außerdem den Orphan-Scan
 verfälscht (Skripte referenzieren sich über ihre eigenen Klone) — ein Nebeneffekt, der bei jedem
 künftigen repo-weiten Werkzeug wieder auftritt.
+
+## ● OQ-17 · Die Fabrik-Terminals teilen die **Live-Kontositzung** — isoliert ist das Verzeichnis, nicht das Konto
+
+**Auslöser:** im Journal von T1 stand um 00:00:00 ein `Trades`-Eintrag mit echter Ticket-Nummer
+(`deal #152126761 buy 0.32 SP500`), obwohl T1 einen Q07-Backtest auf **XAUUSD.DWX** fuhr.
+
+**Was es NICHT ist — zuerst, weil die Verwechslung teuer wäre:** **kein Fabrik-Terminal handelt
+live.** Beweis: **dasselbe** `deal #151995398` erscheint um 04:00:00 in **T1, T2 und T5** innerhalb
+von 70 ms (`.599 / .605 / .536`). Ein Trade kann nicht dreimal ausgeführt werden — es sind
+**Konto-Ereignisse, die an jede angemeldete Sitzung gespiegelt werden**, keine Handlungen der
+Terminals. Die Trades stammen aus dem Live-Buch auf T_Live (pid 4320, `T_Live\MT5_Base`, läuft,
+`QM_Live_MT5_SessionSupervisor` Running).
+
+**Was es ist:** alle geprüften Fabrik-Terminals (T1, T2, T5, T9) sind auf **`Darwinex-Live`** am
+Konto **4000090541** angemeldet — demselben Konto wie das Live-Buch. Das ist plausibel notwendig,
+weil die `.DWX`-Historie über dieses Konto bezogen wird.
+
+**Warum es trotzdem notiert gehört:** die dokumentierte T_Live-Isolation ist eine Isolation des
+**Verzeichnisses** (`C:\QM\mt5\T_Live` gegen `D:\QM\mt5\T1..T10`), **nicht des Kontos**. Zehn von
+der Fabrikautomatik gesteuerte Terminals halten eine Live-Sitzung.
+
+**Geprüft, wie groß die Fläche wirklich ist:** T1 trägt **16** Chart-Dateien, sämtlich
+MetaQuotes-Standardprofile („British Pound", „Default") **ohne angehängten Expert**; der
+`Expert=`-Eintrag in `terminal.ini` ist der zuletzt vom **Tester** benutzte. T_Live trägt zum
+Vergleich **115** Chart-Dateien. **Das Risiko ist damit theoretisch, nicht aktuell** — es bräuchte
+einen angehängten Chart-Expert *und* eingeschaltetes AutoTrading auf einem Fabrik-Terminal.
+
+**Nichts unternommen.** Kein Logout, kein Toggle, keine Konfigurationsänderung: alles am Live-Konto
+ist OWNER-Fenster. Die offene Frage ist eine Entwurfsfrage, keine Störung:
+
+> Soll die `.DWX`-Datenversorgung der Fabrik weiterhin über die **Live**-Kontositzung laufen, oder
+> über ein getrenntes Konto? Beim jetzigen Stand fällt die Verzeichnis-Isolation auf Kontoebene aus.
