@@ -1,6 +1,6 @@
 {
  "schema": "qm.near-miss-register/v2",
- "generated_at_utc": "2026-08-18T06:23:01+00:00",
+ "generated_at_utc": "2026-08-18T07:52:48+00:00",
  "window_hours": 72,
  "tolerance_pct": 5.0,
  "policy": "priority list for targeted rework; gates are NOT overridden (OWNER DL territory)",
@@ -36,10 +36,10 @@
    "pass_requires": ">"
   }
  },
- "rows_screened": 177,
+ "rows_screened": 178,
  "evidence_unreadable": 0,
  "rows_without_parsable_pf": 6,
- "count": 12,
+ "count": 13,
  "entries": [
   {
    "work_item": "e34bbc06-b1ca-4c71-a265-9620ebc57b41",
@@ -224,6 +224,22 @@
    "floor_source": "framework/scripts/q04_walkforward.py:53",
    "pass_requires": ">",
    "gap_pct": 3.0
+  },
+  {
+   "work_item": "8d2988fd-bf27-45ee-a603-1397312b3870",
+   "ea": "QM5_13015",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q05",
+   "verdict": "FAIL",
+   "at": "2026-08-18T07:51:42+00:00",
+   "evidence": "D:\\QM\\reports\\work_items\\8d2988fd-bf27-45ee-a603-1397312b3870\\QM5_13015\\Q05\\GDAXI_DWX\\aggregate.json",
+   "metric": "pf",
+   "value": 0.96,
+   "folds": null,
+   "floor": 1.0,
+   "floor_source": "framework/scripts/q05_stress_medium.py:51",
+   "pass_requires": ">",
+   "gap_pct": 4.0
   },
   {
    "work_item": "84db2f1b-1523-4e07-9629-aca5c210dcdb",
