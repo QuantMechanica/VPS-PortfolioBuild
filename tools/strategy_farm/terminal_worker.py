@@ -4479,6 +4479,10 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                 "terminal": terminal,
                 "reason": lease_result.reason,
                 "detail": lease_result.detail,
+                # v11 7.9: an event without a time cannot answer "how often". The
+                # busy/release ratio was measurable (dimensionless); the lease cycle
+                # RATE was not, so the (b) tail ETA could not be stated at all.
+                "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             }, sort_keys=True), flush=True)
             time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 2))
             continue
@@ -4497,6 +4501,7 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                 "item_id": item["id"],
                 "custom_history_gate_audit_sha256": history_gate.get("audit_sha256"),
                 "custom_history_lease_token": lease_handle.token if lease_handle else None,
+                "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             }), flush=True)
             result = _run_claimed_item(root, item, terminal, timeout_seconds)
             stop_condition = _custom_history_stop_condition(result)
@@ -4514,6 +4519,10 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                     "event": "custom_history_lease_release",
                     "terminal": terminal,
                     "status": release_status,
+                    # The token pairs this release with its "claimed" record, so hold
+                    # duration is a subtraction rather than an inference from ordering.
+                    "lease_token": lease_handle.token,
+                    "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 }, sort_keys=True), flush=True)
     return 0
 
