@@ -13,7 +13,8 @@ created_by: Research+Development
 parent_source_id: BIANCHI-MOMREV-2015
 strategy_ids:
   - BIANCHI-MOMREV-2015_XTI_XNG_S04
-cards_extracted: []
+cards_extracted:
+  - QM5_41056_energy-rev18
 ---
 
 # XTI/XNG Pure 18-Month Reversal Source Packet

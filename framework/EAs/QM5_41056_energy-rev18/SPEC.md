@@ -100,5 +100,4 @@ waiver is authorized.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-18 | initial build from card | registry allocation and G0 pending |
-
+| v1 | 2026-08-18 | initial build from approved card | source `72bf6148c`; registry `0ceacf790`; magic `11cabe252`; G0 approved |
