@@ -1,6 +1,6 @@
 {
  "schema": "qm.near-miss-register/v2",
- "generated_at_utc": "2026-08-18T08:09:46+00:00",
+ "generated_at_utc": "2026-08-18T08:37:59+00:00",
  "window_hours": 72,
  "tolerance_pct": 5.0,
  "policy": "priority list for targeted rework; gates are NOT overridden (OWNER DL territory)",
@@ -36,7 +36,7 @@
    "pass_requires": ">"
   }
  },
- "rows_screened": 178,
+ "rows_screened": 183,
  "evidence_unreadable": 0,
  "rows_without_parsable_pf": 6,
  "count": 13,
