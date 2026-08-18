@@ -47,49 +47,55 @@ Aufgabenplaner — und sie laufen nicht.
 ## 2 · Skripte mit Wartungsverb — Ergebnis des Scans
 
 54 Kandidaten (Name enthält *sweep, purge, requeue, reconcile, refresh, prune, heal, monitor, watch,
-guard, governor, pacer, drain, cleanup, clean, reclaim, dedupe, repair, recover*):
+guard, governor, pacer, drain, cleanup, clean, reclaim, dedupe, repair, recover*), gescannt über das
+gesamte Repo **ohne verschachtelte Checkouts**:
 
 | Status | Anzahl | Bedeutung |
 |---|---:|---|
-| `scheduled` | 22 | eine aktivierte Aufgabe ruft sie auf |
-| `documented_only` | 14 | nur in Dokumentation erwähnt |
-| **`mentioned_but_not_invoked`** | **10** | in Code erwähnt, aber **nicht aufgerufen** — siehe §3 |
-| `called_from_code` | 3 | echter Aufruf nachgewiesen |
-| `scheduled_but_disabled` | 1 | `sourcing_intake_sweep.py` |
-| `orphan` | 4 | keinerlei Bezug |
+| `scheduled` | **22** | eine aktivierte Aufgabe ruft sie auf |
+| `documented_only` | **18** | nur in Dokumentation erwähnt |
+| `mentioned_but_not_invoked` | **9** | im Code erwähnt, aber nicht aufgerufen |
+| `documented_command_only` | **3** | die einzige „Aufruf"-Fundstelle ist ein Brief oder eine Result-JSON, die die Kommandozeile protokolliert |
+| `called_from_code` | **1** | echter automatischer Aufrufer nachgewiesen |
+| `scheduled_but_disabled` | **1** | `sourcing_intake_sweep.py` |
 
-Die vier `orphan` sind **falsche Treffer meiner Heuristik** und werden hier als solche benannt statt
-als Befund verkauft: drei sind Einmal-Installer bzw. Einmal-Reparaturen
-(`install_*_scheduled_task.ps1`, `repair_basket_history_symbols.py`,
-`recover_r1_source_rejections.py`) — bei denen ist „kein Aufrufer" der Sollzustand.
+**31 von 54 wartungsförmigen Skripten haben keinen automatischen Aufrufer.** Ein großer Teil davon
+ist zu Recht einmalig (Installer, Einmal-Reparaturen) — die Zahl ist der ehrliche Nenner der Klasse,
+nicht ihre Befundmenge.
 
----
-
-## 3 · Die Schwäche meines eigenen Scans, und was sie ändert
-
-Die erste Fassung zählte **jede Nennung** eines Skriptnamens als Aufruf. Damit galt
-`requeue_stranded_infra.py` als `called_from_code` — obwohl seine beiden Fundstellen der
-**Docstring meines eigenen** `requeue_false_progress_reap.py` und seine **Testdatei** sind. Keine
-davon ruft irgendetwas auf.
-
-Ein strengerer Durchlauf (Aufruf nur bei `subprocess`, `python …`, `& …` oder `import`) stuft
-**10 von 13** zurück. Damit ist die Zahl belastbarer — aber sie hat den Fehler jetzt in der anderen
-Richtung: PowerShell-Dot-Sourcing (`. .\script.ps1`) und Aufrufe über Task-Runner erkennt das Muster
-nicht, weshalb etwa `factory_restart_health.ps1` (referenziert von `Factory_ON.ps1`) und
-`public_snapshot_incident_guard.py` (referenziert von `run_public_snapshot_task.ps1`) vermutlich
-**echte** Aufrufer haben.
-
-**Was das für die Liste bedeutet:** sie ist eine **Kandidatenliste, keine Befundliste.** Jede Zeile
-braucht eine einzeilige menschliche Prüfung. Ich gebe sie so heraus, statt eine Präzision zu
-behaupten, die der Scan nicht hat.
-
-**Belastbar nachgewiesen ist genau eines:**
-
-> **`requeue_stranded_infra.py` hat keinen Aufrufer.** Keine Aufgabe im Planer nennt es, keine
-> Codestelle ruft es auf, und `QM_StrategyFarm_Repair_Hourly` — die Aufgabe, die den Vertrag
-> tragen würde — ist seit dem **1. Juni** deaktiviert.
+**Der einzige nachgewiesene automatische Aufruf im gesamten Feld** ist
+`reclaim_busy_agent_temp.ps1` ← `run_agent_temp_reclaim.ps1`.
 
 ---
+
+## 3 · Drei Fehlversuche meines eigenen Scans, und was sie ändern
+
+Der Weg zu den Zahlen oben war dreimal falsch, und jede Korrektur ging in eine andere Richtung.
+Das gehört in die Vorlage, weil es die Belastbarkeit bestimmt.
+
+**Fehler 1 — zu enger Korpus.** Die erste schnelle Fassung las nur `tools/`, `scripts/`,
+`docs/ops/` und meldete **4 „orphans"**. Über das ganze Repo sind es **0**: die vier hatten
+Referenzen außerhalb des engen Korpus.
+
+**Fehler 2 — Korpus mit Klonen.** Der erste Vollrepo-Lauf schloss `.claude/worktrees/` ein — dort
+liegen **vollständige Kopien dieses Repos**. Damit erschien `requeue_stranded_infra.py` als
+„called_from_code", weil sein eigener Klon es referenziert. Nach Ausschluss verschachtelter
+Checkouts fällt es zurück.
+
+**Fehler 3 — Dokumentation als Aufruf gezählt.** Der strenge Durchlauf akzeptierte
+`python <name>` als Aufrufnachweis. Genau so „belegt" ein Codex-Brief den Aufruf von
+`requeue_stranded_infra.py`, und Build-Result-JSONs den von `validate_build_guardrails.py`. Eine
+protokollierte Kommandozeile und ein automatischer Aufrufer sind **textlich identisch**.
+
+**Was daraus folgt — und es ist die eigentliche Aussage dieses Abschnitts:** die Klasse ist
+maschinell **nicht** abschließend entscheidbar. Der Scan verengt das Feld von 54 auf ~31; der letzte
+Schritt braucht je Zeile einen Blick. Ich gebe die Liste deshalb als **Kandidatenliste** heraus.
+
+**Belastbar nachgewiesen ist genau eines, jetzt über zwei unabhängige Wege:**
+
+> **`requeue_stranded_infra.py` hat keinen Aufrufer.** Keine Aufgabe im Planer nennt es; die einzige
+> aufrufähnliche Fundstelle ist ein Markdown-Brief. `QM_StrategyFarm_Repair_Hourly` — die Aufgabe,
+> die den Requeue-Vertrag des Reapers tragen würde — ist seit dem **1. Juni** deaktiviert.
 
 ## 4 · Der Review-Stau, gesondert
 

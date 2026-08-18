@@ -88,7 +88,10 @@ def _corpus() -> list[tuple[str, str]]:
         if p.suffix.casefold() not in {".py", ".ps1", ".md", ".json", ".xml", ".bat", ".cmd"}:
             continue
         parts = set(p.parts)
-        if ".git" in parts or "__pycache__" in parts:
+        # Exclude nested checkouts. .claude/worktrees holds full copies of this repo, so a script
+        # there is a duplicate of itself -- the first full-repo run classified
+        # requeue_stranded_infra.py as "called from code" on the strength of its own clone.
+        if parts & {".git", "__pycache__", "worktrees", ".claude", "node_modules"}:
             continue
         try:
             out.append((str(p.relative_to(ROOT)), p.read_text(encoding="utf-8",
@@ -103,7 +106,7 @@ def repo_references(name: str, self_path: Path) -> list[str]:
     """Files other than the script itself that mention it by name."""
     needle = name.casefold()
     me = str(self_path.relative_to(ROOT))
-    return [rel for rel, text in _corpus() if rel != me and needle in text][:12]
+    return [rel for rel, text in _corpus() if rel != me and needle in text]
 
 
 def classify(refs: list[str], tasks: list[dict[str, Any]]) -> str:
@@ -136,7 +139,7 @@ def main() -> int:
             "status": classify(refs, matched),
             "tasks": [{"name": t["name"], "state": t.get("state")} for t in matched],
             "repo_references": refs[:6],
-            "reference_count": len(refs),
+            "reference_count": len(refs),  # true count, not the display cap
         })
     order = {"orphan": 0, "scheduled_but_disabled": 1, "documented_only": 2,
              "called_from_code": 3, "scheduled": 4}
