@@ -99,3 +99,4 @@ portfolio-gate change, or live-manifest change is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | approved build contract | source, G0 card, EA ID, and two magic slots allocated |
+| v2 | 2026-08-18 | Q01 implementation and validation | build `d6995881f`; strict compile/build/P1 PASS; Q02 stopped before enqueue at tester-capacity and CPU ceilings |

@@ -198,3 +198,5 @@ mode, or nonpositive governed economics.
 |---|---|---|---|---|
 | v1 | 2026-08-18 | bounded composite source approval | G0 | APPROVED_SOURCE |
 | v1-card | 2026-08-18 | one approved agreement-fade card extracted | G0 | APPROVED |
+| v1-build | 2026-08-18 | deterministic basket build and static validation | Q01 | PASS |
+| v1-q02-capacity | 2026-08-18 | target-only enqueue withheld at tester-capacity and host-CPU ceilings | Q02 | NOT_ENQUEUED_CPU_CEILING |
