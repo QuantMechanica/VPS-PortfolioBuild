@@ -66,18 +66,17 @@ drawdown, CFD-equivalence, or portfolio-correlation result transfers.
   `v_y = 0` when it is negative, matching the governed Papailias sign map;
 - state: `positive_frequency = sum(v_y) / n`, with equal weight and no return
   magnitude, recency weight, fitted coefficient, or interpolation;
-- direction: BUY only when `positive_frequency > 0.5`, SELL only when it is
-  `< 0.5`, and consume the month flat on exact equality;
-- lifecycle: close and, when a strict majority exists, renew at the next
-  normalized month boundary;
+- direction: BUY when `positive_frequency >= 0.40` and SELL otherwise;
+- lifecycle: close and renew at the next normalized month boundary;
 - frozen `3.5 * ATR(20,D1)` hard stop, no target, 35-calendar-day stale guard,
   1,500-point spread ceiling, and one durable attempt per broker month; and
 - backtest-only `RISK_FIXED=1000`, `RISK_PERCENT=0`,
   `PORTFOLIO_WEIGHT=1`.
 
-The fixed `0.5` decision boundary is the estimator's strict-majority identity,
-not a data-selected threshold. It is deliberately different from the source's
-`0.4` recent-return momentum variant. Q02 has no optimization surface.
+The fixed `0.40` decision boundary is Papailias et al.'s source-defined
+threshold, transferred without a QM data sweep from consecutive recent-month
+signs to the matching-calendar-month sign sample. That conjunction is the
+disclosed translation risk. Q02 has no optimization surface.
 
 ## Non-Duplicate Boundary
 
@@ -89,9 +88,9 @@ mechanic. Manual semantic review fixes the nearest boundaries:
 - `QM5_20099_wti-samecal` takes the sign of an arithmetic mean of historical
   same-month return magnitudes. One extreme observation can change its side;
   this candidate discards every magnitude and counts equal binary signs.
-- `QM5_41055_wti-medcal` takes the sign of the sample median return. It uses
-  the central ordered magnitude; this candidate uses positive-return
-  frequency and can disagree with both mean and median.
+- `QM5_41055_wti-medcal` takes the sign of the sample median return. With five
+  observations, two small gains and three larger losses, this candidate is
+  long at the source-defined `0.40` boundary while the median is negative.
 - `QM5_20251_wti-cal-rsm` requires agreement between a same-calendar
   arithmetic mean and a separate recent twelve-month sign-momentum state.
   This candidate has one historical matching-month sign-frequency state and
@@ -99,16 +98,16 @@ mechanic. Manual semantic review fixes the nearest boundaries:
 - `QM5_20136_wti-caltrend` and `QM5_20205_wti-calmom1` combine the
   same-calendar mean with contiguous trend or the immediately completed
   month. This candidate has neither input.
-- `QM5_13150_wti-signmom` counts signs across the twelve immediately preceding
-  months with a `0.4` threshold. This candidate samples the same named month
-  across prior years and uses a strict-majority threshold.
+- `QM5_13150_wti-signmom` uses the same `0.40` threshold across the twelve
+  immediately preceding months. This candidate samples the same named month
+  across prior years instead of contiguous recent history.
 - `QM5_12567_cum-rsi2-commodity` is a long-only two-day oscillator pullback
   rather than symmetric monthly WTI seasonality.
 
 Verdict:
 `CLEAN_WTI_SAME_CALENDAR_POSITIVE_RETURN_FREQUENCY_AFTER_FAMILY_REVIEW`.
 
-The matching-month sample, binary sign map, equal weighting, strict-majority
+The matching-month sample, binary sign map, equal weighting, fixed `0.40`
 boundary, single WTI carrier, monthly decision clock, and monthly lifecycle
 are jointly load-bearing. Changing any one creates a different identity.
 
@@ -118,7 +117,7 @@ are jointly load-bearing. Changing any one creates a different identity.
   finance papers with DOI, durable complete-read records, explicit crude-oil
   membership, and a disclosed untested conjunction.
 - R2 `PASS`: exact same-calendar endpoints, five-to-ten sample bounds, binary
-  map, equal-weight hit rate, strict-majority direction, durable attempt,
+  map, equal-weight hit rate, fixed `0.40` direction, durable attempt,
   fixed stop, spread guard, and monthly exit are deterministic and locked.
 - R3 `PASS_WITH_DISCLOSED_BASIS_RISK`: registered `XTIUSD.DWX` D1 history and
   native MT5 state supply every runtime input; the continuous-CFD/futures
@@ -130,9 +129,9 @@ are jointly load-bearing. Changing any one creates a different identity.
 
 ## Kill And Safety Boundary
 
-Expected cadence is roughly ten to twelve completed monthly positions per
-full post-warm-up year, with exact even-sample ties and invalid-history months
-flat. Q02 must retire on zero trades, fewer than five completed positions per
+Expected cadence is twelve completed monthly positions per full post-warm-up
+year when history is valid; invalid-history months remain flat. Q02 must
+retire on zero trades, fewer than five completed positions per
 full post-warm-up year, nonpositive governed economics, wrong historical
 month endpoints, current-month leakage, wrong sign count or boundary, late or
 repeated entry, wrong monthly lifecycle, nondeterminism, invalid fixed-risk

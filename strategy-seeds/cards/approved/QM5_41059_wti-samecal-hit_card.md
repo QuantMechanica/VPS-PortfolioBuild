@@ -13,7 +13,7 @@ created: 2026-08-18
 created_by: Research+Development
 last_updated: 2026-08-18
 g0_status: APPROVED
-g0_decision: decisions/2026-08-18_wti_same_calendar_hit_rate_g0.md
+g0_decision: decisions/2026-08-18_qm5_41059_q40_identity_amendment.md
 source_approval: decisions/2026-08-18_wti_same_calendar_hit_rate_source_approval.md
 source_author: "Matti Keloharju; Juhani T. Linnainmaa; Peter Nyberg; Fotis Papailias; Jiadong Liu; Dimitrios D. Thomakos"
 source_authors: "Matti Keloharju; Juhani T. Linnainmaa; Peter Nyberg; Fotis Papailias; Jiadong Liu; Dimitrios D. Thomakos"
@@ -29,7 +29,7 @@ source_citations:
     location: "DOI 10.1016/j.jbankfin.2021.106063; complete accepted-manuscript record strategy-seeds/sources/PAPAILIAS-RSM-2021/source.md"
     quality_tier: A
     role: binary_return_sign_map_positive_frequency_and_explicit_wti_membership
-strategy_mechanic: prior-ten-year-same-calendar-month-log-return-positive-frequency-strict-majority-monthly-wti-renewal
+strategy_mechanic: prior-ten-year-same-calendar-month-log-return-positive-frequency-q40-direction-monthly-wti-renewal
 sources:
   - "[[sources/KELOHARJU-PAPAILIAS-WTI-SAMECALHIT-2026]]"
 concepts:
@@ -40,7 +40,7 @@ indicators:
   - "[[indicators/completed-log-return]]"
   - "[[indicators/binary-sign-frequency]]"
   - "[[indicators/atr-risk-stop]]"
-strategy_type_flags: [commodity, energy, crude-oil, calendar-seasonality, same-calendar-month, binary-hit-rate, strict-majority, monthly-renewal, atr-hard-stop, low-frequency, symmetric-long-short]
+strategy_type_flags: [commodity, energy, crude-oil, calendar-seasonality, same-calendar-month, binary-hit-rate, fixed-q40, monthly-renewal, atr-hard-stop, low-frequency, symmetric-long-short]
 markets: [commodities, energy, crude_oil]
 timeframes: [D1]
 target_symbols: [XTIUSD.DWX]
@@ -53,8 +53,8 @@ symbol_slot: 0
 magic: 410590000
 period: D1
 timeframe: D1
-expected_trade_frequency: "Approximately 10-12 completed XTI monthly positions per full post-warm-up year; exact even-sample sign ties and invalid-history months remain flat; Q02 must prove at least five/year or retire."
-expected_trades_per_year_per_symbol: 11
+expected_trade_frequency: "Approximately 12 completed XTI monthly positions per full post-warm-up year when matching-month history is valid; invalid-history months remain flat; Q02 must prove at least five/year or retire."
+expected_trades_per_year_per_symbol: 12
 expected_pf: 1.01
 expected_dd_pct: 30.0
 risk_class: high
@@ -66,11 +66,11 @@ r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PENDING
 q02_status: NOT_ENQUEUED
-review_focus: "Falsify a magnitude-free direct-WTI same-calendar-month sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform D1-label normalization, exact historical month endpoints, five-to-ten binary observations, non-negative sign map, strict-majority arithmetic, durable monthly attempt, monthly renewal, and absence of current-month leakage. Q09 alone may establish realized decorrelation."
+review_focus: "Falsify a magnitude-free direct-WTI same-calendar-month sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform D1-label normalization, exact historical month endpoints, five-to-ten binary observations, non-negative sign map, the source-defined fixed q=0.40 inequality, durable monthly attempt, monthly renewal, and absence of current-month leakage. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
-hard_rules_at_risk: [exact_wti_carrier, first_month_bar_clock, uniform_energy_label_normalization, exact_prior_year_same_calendar_months, completed_month_endpoints, no_current_month_price, five_sample_floor, ten_year_cap, binary_nonnegative_map, equal_weight_frequency, strict_majority, monthly_attempt_state, monthly_renewal, risk_mode_dual, hard_stop_present, friday_close_disabled, cfd_futures_basis, q02_frequency_floor, portfolio_correlation]
-g0_approval_reasoning: "R1 joins two named-author peer-reviewed finance papers with DOI, complete-read records, explicit WTI membership, and the same-calendar/sign-frequency conjunction disclosed as an untested QM translation; R2 locks every endpoint, sample bound, binary map, frequency, majority boundary, attempt, risk, and lifecycle; R3 uses registered native XTI D1 with binding 2017-start warm-up and energy-label risks explicit; R4 is deterministic calendar, logarithm, count, and execution arithmetic without trained logic, banned signals, or an external feed; canonical dedup returned CLEAN and manual family review separates sign frequency from same-calendar mean, median, recent sign momentum, and fixed-month systems."
+hard_rules_at_risk: [exact_wti_carrier, first_month_bar_clock, uniform_energy_label_normalization, exact_prior_year_same_calendar_months, completed_month_endpoints, no_current_month_price, five_sample_floor, ten_year_cap, binary_nonnegative_map, equal_weight_frequency, fixed_q40_boundary, monthly_attempt_state, monthly_renewal, risk_mode_dual, hard_stop_present, friday_close_disabled, cfd_futures_basis, q02_frequency_floor, portfolio_correlation]
+g0_approval_reasoning: "R1 joins two named-author peer-reviewed finance papers with DOI, complete-read records, explicit WTI membership, and the same-calendar/sign-frequency conjunction disclosed as an untested QM translation; R2 locks every endpoint, sample bound, binary map, frequency, source-defined q=0.40 boundary, attempt, risk, and lifecycle; R3 uses registered native XTI D1 with binding 2017-start warm-up and energy-label risks explicit; R4 is deterministic calendar, logarithm, count, and execution arithmetic without trained logic, banned signals, or an external feed; canonical dedup and the post-allocation q40 probe returned CLEAN, and manual family review separates the asymmetric q40 state from same-calendar mean, median, recent sign momentum, and fixed-month systems."
 ---
 
 # QM5_41059 WTI Same-Calendar Hit-Rate Seasonality
@@ -78,12 +78,12 @@ g0_approval_reasoning: "R1 joins two named-author peer-reviewed finance papers w
 ## Hypothesis
 
 WTI calendar-month returns may contain recurring information associated with
-the same named month in prior years. A strict majority of historical return
-signs may preserve recurrence without allowing one oil-shock magnitude to
-determine the side. At the first executable D1 bar of each broker month, the
-candidate counts the signs of up to ten completed returns for that same
-calendar month, trades only the strict majority, and renews at the next month
-boundary.
+the same named month in prior years. Applying the source-defined return-sign
+probability threshold to historical matching-month signs may preserve that
+recurrence without allowing one oil-shock magnitude to determine the side. At
+the first executable D1 bar of each broker month, the candidate counts up to
+ten completed signs for that same calendar month, buys at positive frequency
+`>= 0.40`, sells otherwise, and renews at the next month boundary.
 
 This is a falsifiable direct-WTI calendar/sign-frequency translation. It is
 not a replication of either source portfolio and does not establish standalone
@@ -104,7 +104,7 @@ weight positive frequency, monthly renewal, and explicit WTI membership.
 Their signal counts twelve consecutive recent months and uses a `0.4`
 threshold.
 
-The prior-year matching-month sample, strict `0.5` majority boundary,
+The prior-year matching-month sample, fixed source-defined `0.40` boundary,
 standalone continuous CFD, uniform D1-label normalization, fixed cash risk,
 ATR stop, spread cap, durable attempt, and monthly lifecycle are disclosed QM
 choices. No source return, Sharpe, coefficient, t-statistic, hit rate, trade
@@ -121,14 +121,14 @@ review fixes the load-bearing boundaries:
   calendar return magnitudes. This card discards every magnitude and counts
   equal binary signs.
 - `QM5_41055_wti-medcal` trades the sign of the central ordered return
-  magnitude. This card estimates positive frequency and can disagree with
-  both the sample mean and sample median.
+  magnitude. With two small gains and three larger losses, this card buys at
+  positive frequency `0.40` while both sample mean and median are negative.
 - `QM5_20251_wti-cal-rsm` requires agreement between a same-calendar
   arithmetic mean and a separate recent twelve-month sign state. This card
   has one prior-year matching-month state and no recent-return confirmation.
-- `QM5_13150_wti-signmom` counts the twelve immediately preceding months and
-  uses the source's `0.4` threshold. This card samples one named calendar
-  month across prior years and uses strict majority.
+- `QM5_13150_wti-signmom` uses the same source threshold on the twelve
+  immediately preceding months. This card samples one named calendar month
+  across prior years instead of contiguous recent history.
 - `QM5_20136_wti-caltrend` and `QM5_20205_wti-calmom1` add contiguous trend or
   the immediately completed return to a magnitude-based seasonal mean. This
   card contains neither input.
@@ -148,7 +148,7 @@ Verdict:
   `r_y = log(last_close(y,M) / last_close_before(y,M))`.
 - Binary map: `v_y = 1` when `r_y >= 0`, else `v_y = 0`.
 - State: `positive_frequency = sum(v_y) / n`, where `5 <= n <= 10`.
-- BUY above `0.5`, SELL below `0.5`, flat on exact equality.
+- BUY at or above `0.40`; SELL below `0.40`.
 - Ordinary exit: first observed D1 boundary of the next normalized month.
 - Q02 risk: `RISK_FIXED=1000`, `RISK_PERCENT=0`,
   `PORTFOLIO_WEIGHT=1`.
@@ -185,9 +185,9 @@ volatility signal, range, breakout, oscillator, or fitted filter is authorized.
 9. Require five to ten valid historical returns. Map each non-negative return
    to one and each negative return to zero. Sum with equal weight; return
    magnitude and year recency never change a vote.
-10. Divide the positive count by the valid count. BUY only when the result is
-    strictly greater than `0.5`, SELL only when strictly less, and consume the
-    month flat on exact equality or invalid arithmetic.
+10. Divide the positive count by the valid count. BUY when the result is at
+    least `0.40` and SELL below `0.40`. Invalid arithmetic consumes the month
+    flat. The inclusive inequality is load-bearing.
 11. Require valid completed-bar `ATR(20,D1)` and place one frozen hard stop at
     `3.5 * ATR`. Use no take-profit.
 12. Require no owned position, a valid positive quote, and no genuinely
@@ -214,7 +214,7 @@ volatility signal, range, breakout, oscillator, or fitted filter is authorized.
 - Framework kill switch and ownership checks remain authoritative.
 - Both news axes are OFF; the signal uses completed native price history.
 - Uniform label normalization, genuine month boundary, durable attempt, exact
-  endpoint identity, sample floor, binary count, strict majority, quote,
+  endpoint identity, sample floor, binary count, fixed `0.40` boundary, quote,
   spread, ATR, sizing, and stop geometry must all be valid.
 - Failure after attempt persistence consumes the month.
 
@@ -245,7 +245,7 @@ Q02 has one locked baseline and no optimization surface:
 |---|---:|---|
 | `strategy_lookback_years` | 10 | exact prior-year cap |
 | `strategy_min_observations` | 5 | exact valid-sample floor |
-| `strategy_majority_threshold` | 0.5 | strict binary boundary |
+| `strategy_positive_threshold` | 0.40 | source-defined binary boundary |
 | `strategy_entry_grace_minutes` | 180 | restart-safe month boundary |
 | `strategy_atr_period_d1` | 20 | completed-bar risk range |
 | `strategy_atr_sl_mult` | 3.5 | frozen hard-stop distance |
@@ -271,12 +271,13 @@ Keloharju et al. define recurring same-calendar-month return information,
 explicitly include crude oil, and require at least five historical years.
 Papailias et al. define the non-negative/negative binary map, equal-weight
 positive frequency, explicit WTI membership, and monthly renewal. The sources
-do not define this matching-month sign sample or strict-majority CFD package.
+do not define this matching-month sign sample on a single CFD package.
 
 ## QM Interpretations
 
 QM fixes uniform energy-label normalization, the ten-year cap, exact monthly
-endpoints, matching-month binary sample, strict `0.5` majority, direct CFD
+endpoints, matching-month binary sample, transfers the fixed source `0.40`
+inequality without fitting, and fixes the direct CFD
 carrier, durable attempt, fixed risk, ATR stop, spread ceiling, monthly
 renewal, and stale guard. They are pre-result falsification choices.
 
@@ -315,7 +316,7 @@ creates a new identity. Q09 alone may establish realized portfolio correlation.
 
 | Card rule | V5 module | Implementation obligation |
 |---|---|---|
-| exact host/period, boundary, attempt, history, endpoints, signs, majority, spread, ATR | Trade Entry | `Strategy_EntrySignal` plus deterministic helpers |
+| exact host/period, boundary, attempt, history, endpoints, signs, q40 boundary, spread, ATR | Trade Entry | `Strategy_EntrySignal` plus deterministic helpers |
 | malformed, later-month, and stale repair | Trade Management | `Strategy_ManageOpenPosition` plus lifecycle helper |
 | monthly renewal and survivor repair | Trade Close | strategy lifecycle helper; Friday close disabled |
 | kill switch, ownership, fixed-risk mode | Framework No-Trade | standard framework orchestration |
@@ -326,10 +327,10 @@ creates a new identity. Q09 alone may establish realized portfolio correlation.
 Retire rather than tune on fewer than five completed positions per full post-
 warm-up year; zero trades; nonpositive governed economics; wrong or partial
 monthly endpoints; current-month leakage; invalid sample count; wrong binary
-map, count, or strict majority; retry; missing stop; wrong monthly lifecycle;
+map, count, or fixed `0.40` inequality; retry; missing stop; wrong monthly lifecycle;
 nondeterminism; or registry/risk mismatch.
 
-No weak result may be rescued by changing the majority threshold, reverting
+No weak result may be rescued by changing the `0.40` threshold, reverting
 to mean or median magnitude, selecting months, adding recent trend, inventory,
 event, curve, volume, volatility, or price-action filters, changing sample
 bounds, or extending the hold.
@@ -342,8 +343,8 @@ Q01 must prove:
    month boundary, and matching-month returns use only completed endpoints for
    years `Y-1` through `Y-10`, including December/January wrapping;
 2. five-to-ten sample bounds, non-negative binary mapping, equal-weight count,
-   strict-majority sides, and exact even-sample tie are correct, including a
-   case where sign frequency disagrees with mean and median magnitude;
+   inclusive `>= 0.40` long and `< 0.40` short sides are correct, including a
+   two-of-five case that is long while mean and median magnitude are negative;
 3. no current-month OHLC, volume, or tick price enters the signal;
 4. persistent `yyyymm` attempts prevent same-month retry after downstream
    failure and restart;
@@ -361,12 +362,13 @@ establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-18 | initial WTI same-calendar hit-rate extraction | G0 | APPROVED |
+| v1-q40 | 2026-08-18 | pre-build semantic review replaced median-equivalent majority with source-defined q40 boundary | G0 | APPROVED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
-| G0 Research Intake | 2026-08-18 | APPROVED | `decisions/2026-08-18_wti_same_calendar_hit_rate_g0.md` |
+| G0 Research Intake | 2026-08-18 | APPROVED | `decisions/2026-08-18_qm5_41059_q40_identity_amendment.md` |
 | Q01 Build Validation | - | PENDING | - |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | - |
 
