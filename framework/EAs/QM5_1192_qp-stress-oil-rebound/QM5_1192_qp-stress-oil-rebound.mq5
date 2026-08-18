@@ -70,10 +70,6 @@ bool Strategy_SelectSymbols()
       ok = (SymbolSelect(strategy_equity_signal_symbol, true) && ok);
    if(strategy_gold_signal_symbol != "")
       ok = (SymbolSelect(strategy_gold_signal_symbol, true) && ok);
-   if(strategy_oil_primary_symbol != "")
-      SymbolSelect(strategy_oil_primary_symbol, true);
-   if(strategy_oil_fallback_symbol != "")
-      SymbolSelect(strategy_oil_fallback_symbol, true);
    return ok;
   }
 
@@ -84,11 +80,20 @@ bool Strategy_DailyReturn(const string symbol, const int shift, double &ret)
       return false;
    if(!SymbolSelect(symbol, true))
       return false;
-   if(Bars(symbol, PERIOD_D1) < MathMax(strategy_min_d1_bars, shift + 3))
+
+   const int required_bars = MathMax(strategy_min_d1_bars, shift + 3);
+   MqlRates minimum_bar;
+   if(!QM_ReadBar(symbol, PERIOD_D1, required_bars - 1, minimum_bar))
       return false;
 
-   const double close_now = iClose(symbol, PERIOD_D1, shift);
-   const double close_prev = iClose(symbol, PERIOD_D1, shift + 1);
+   MqlRates bar_now;
+   MqlRates bar_prev;
+   if(!QM_ReadBar(symbol, PERIOD_D1, shift, bar_now) ||
+      !QM_ReadBar(symbol, PERIOD_D1, shift + 1, bar_prev))
+      return false;
+
+   const double close_now = bar_now.close;
+   const double close_prev = bar_prev.close;
    if(close_now <= 0.0 || close_prev <= 0.0)
       return false;
 
@@ -103,7 +108,9 @@ bool Strategy_StressSignal(const datetime signal_day, double &equity_ret, double
 
    if(signal_day <= 0)
       return false;
-   if(iTime(_Symbol, PERIOD_D1, 1) != signal_day)
+   MqlRates host_signal_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, host_signal_bar) ||
+      host_signal_bar.time != signal_day)
       return false;
    if(!Strategy_DailyReturn(strategy_equity_signal_symbol, 1, equity_ret))
       return false;
@@ -171,7 +178,7 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_max_spread_points > 0 && SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) > strategy_max_spread_points)
       return true;
-   return !Strategy_SelectSymbols();
+   return false;
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -184,7 +191,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime signal_day = iTime(_Symbol, PERIOD_D1, 1);
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, signal_bar))
+      return false;
+   const datetime signal_day = signal_bar.time;
    if(signal_day <= 0 || g_last_entry_signal_day == signal_day)
       return false;
    g_last_entry_signal_day = signal_day;
@@ -226,7 +236,10 @@ bool Strategy_ExitSignal()
    if(!Strategy_HasOpenPosition(ticket, opened_at))
       return false;
 
-   const datetime current_day = iTime(_Symbol, PERIOD_D1, 0);
+   MqlRates current_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, current_bar))
+      return false;
+   const datetime current_day = current_bar.time;
    if(current_day <= 0)
       return false;
 
@@ -235,8 +248,8 @@ bool Strategy_ExitSignal()
    if(open_day_key > 0 && current_day_key > open_day_key)
       return true;
 
-   const int shift = iBarShift(_Symbol, PERIOD_D1, opened_at, false);
-   return (shift >= MathMax(2, strategy_safety_hold_days));
+   const int held_periods = QM_TM_HeldPeriods(_Symbol, PERIOD_D1, opened_at, current_day);
+   return (held_periods >= MathMax(2, strategy_safety_hold_days));
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -246,7 +259,11 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   Strategy_SelectSymbols();
+   // Select only this slot's required trade and signal symbols once. Repeating
+   // SymbolSelect on every tick can flood the tester journal when an unused
+   // fallback (for example the retired Brent leg on the XTI slot) is absent.
+   if(!Strategy_SelectSymbols())
+      return INIT_FAILED;
 
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
