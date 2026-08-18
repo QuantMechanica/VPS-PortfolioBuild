@@ -1,0 +1,1823 @@
+{
+ "archive": "C:\\QM\\repo\\artifacts\\audit_evidence_vault_20260818.zip",
+ "archive_bytes": 2336596,
+ "archive_sha256": "831a0b9c799f768facb206fa3c58b4615c152387a4511567fa9d590c98bffbe0",
+ "baseline_snapshot": "3472a5d2e1b5",
+ "built_at_utc": "2026-08-18T18:37:53+00:00",
+ "content_hash": "d5307abc4513b1babcbeafbac71b3e82b449b5246673743a3c51bf990c03e701",
+ "coverage": {
+  "manifests": 2,
+  "q08_aggregates": 81,
+  "q08_missing": [
+   "QM5_11132|NDX",
+   "QM5_10920|XAUUSD",
+   "QM5_10943|NDX",
+   "QM5_11063|USDJPY",
+   "QM5_11128|NDX",
+   "QM5_12778|AUDUSD",
+   "QM5_12781|USDJPY",
+   "QM5_12864|QM5_12864_XTI_XAG_RSPREAD_D1",
+   "QM5_12990|GBPUSD",
+   "QM5_13117|EURGBP"
+  ],
+  "streams": 216
+ },
+ "file_count": 299,
+ "files": [
+  {
+   "archive_name": "manifests/audit_baseline_snapshot_20260818.json",
+   "bytes": 13620,
+   "sha256": "e774f470c7bf722412bc0971c6b4f8813f1769c7dfa933632833c4e33c9f47f9",
+   "source": "C:\\QM\\repo\\artifacts\\audit_baseline_snapshot_20260818.json"
+  },
+  {
+   "archive_name": "manifests/book_q08_regeneration_cohorts_20260817.json",
+   "bytes": 34126,
+   "sha256": "6842413ba63a6c55b33245682c97654fd3ef0085f437e24153757689497d32c8",
+   "source": "C:\\QM\\repo\\artifacts\\book_q08_regeneration_cohorts_20260817.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10094_GDAXI.json",
+   "bytes": 13774,
+   "sha256": "dfc3ce6901221850d093bd1dfb1c5ae4c8542d416a0ea32adf1c847d0a88004b",
+   "source": "D:\\QM\\reports\\work_items\\d9223a2f-012d-43c6-885b-e8bd6b2e85a3\\QM5_10094\\Q08\\GDAXI_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10114_SP500.json",
+   "bytes": 13449,
+   "sha256": "5b4658cd0ff727568c70333f5a6ddf036eb5db4ff8b7fe3cd066de4ca3e9733e",
+   "source": "D:\\QM\\reports\\work_items\\e76e7c6e-cd62-4633-be47-4b077f6e93f1\\QM5_10114\\Q08\\SP500_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10115_GDAXI.json",
+   "bytes": 13776,
+   "sha256": "b99022344a3ff568b2be6d7d9edf429976b611c01dbea07f900b1c75cf909fec",
+   "source": "D:\\QM\\reports\\work_items\\0ed64130-4131-4575-8438-cb3bef1641f0\\QM5_10115\\Q08\\GDAXI_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10123_XAUUSD.json",
+   "bytes": 14233,
+   "sha256": "544314cf4dd4dfb7bb552034387ee595b8396e3442674c39e63ecd887347a74c",
+   "source": "D:\\QM\\reports\\work_items\\a370af27-1f45-4d21-834e-aad479a538b1\\QM5_10123\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10127_AUDCAD.json",
+   "bytes": 10139,
+   "sha256": "64e0eea8c0b65e5277c70a32dafad705290f7ba783cd3401ef8a9af0e75ae364",
+   "source": "D:\\QM\\reports\\work_items\\485e7249-ed67-4953-8eae-a09bb003d431\\QM5_10127\\Q08\\AUDCAD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10128_XAUUSD.json",
+   "bytes": 13778,
+   "sha256": "2652bc39fae4e29eb3fc9320eec3661054df6d1110928102dc359eb6853c4516",
+   "source": "D:\\QM\\reports\\work_items\\4af1eb52-bdc7-4bec-9711-18f19d318c91\\QM5_10128\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10142_SP500.json",
+   "bytes": 13032,
+   "sha256": "74a47849431cd93015c28e6fc64bde752b889fda7cd35f8196e3186edf668a70",
+   "source": "D:\\QM\\reports\\work_items\\ff457e7a-4536-4e2b-ac33-9e3c103886cd\\QM5_10142\\Q08\\SP500_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10145_CHFJPY.json",
+   "bytes": 13618,
+   "sha256": "450f41b4220b08387c2271c8ca9db1d0da18ffff5a31d4ee815a92215053677e",
+   "source": "D:\\QM\\reports\\work_items\\9748febb-1454-4e17-af7c-5d25ce6f6585\\QM5_10145\\Q08\\CHFJPY_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10145_SP500.json",
+   "bytes": 13785,
+   "sha256": "efcd374fee2e42c072bfdfd5c57dc84450869825b154c5e9d15fbd0dac183aee",
+   "source": "D:\\QM\\reports\\work_items\\a3e17e53-ff08-4794-9073-ef5af719e2ef\\QM5_10145\\Q08\\SP500_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10145_XAUUSD.json",
+   "bytes": 13730,
+   "sha256": "85f380ae65c5791793392850449446b39a6bc6cf6e3f1d67e9751212b1723e16",
+   "source": "D:\\QM\\reports\\work_items\\01e8d662-6a32-41ce-9028-031250d5c863\\QM5_10145\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10146_AUDUSD.json",
+   "bytes": 13778,
+   "sha256": "d97f2ca214c1dfeb0acd27b58a885b02ebc2691ee78bc313daf1e94b08eacd12",
+   "source": "D:\\QM\\reports\\work_items\\23c63618-67f3-4235-beed-b8dd61a5e6c7\\QM5_10146\\Q08\\AUDUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10183_XAUUSD.json",
+   "bytes": 12842,
+   "sha256": "cd41d65cfb9b928c723f669a95d82e424d285e02f8718929068575eaf2885aaa",
+   "source": "D:\\QM\\reports\\work_items\\11e4572f-183f-450e-99a3-0789489a10cb\\QM5_10183\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10291_SP500.json",
+   "bytes": 9465,
+   "sha256": "ac32a11a1a52f000cf60dc7b0d3ae4b6fdd26fa81e8f85d313e602c0a257ee9d",
+   "source": "D:\\QM\\reports\\work_items\\f8a1aadf-28fc-446a-976b-7175abc478af\\QM5_10291\\Q08\\SP500_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10403_XAUUSD.json",
+   "bytes": 13777,
+   "sha256": "4bc37c7837c9b386726643f7844abf14b7cb0500834c9d6031fdb3a3c3a72dca",
+   "source": "D:\\QM\\reports\\work_items\\a4d1c0a6-7692-44c3-b633-6efc79891e02\\QM5_10403\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10494_XAUUSD.json",
+   "bytes": 8556,
+   "sha256": "455f6ffa9fe24658db1c8b9239f5995684f24f91abe870afda08f637ea5cb5eb",
+   "source": "D:\\QM\\reports\\work_items\\83d8e890-786e-4b11-b2dd-ac307d874196\\QM5_10494\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10513_XAUUSD.json",
+   "bytes": 14116,
+   "sha256": "f0ebf55d8a1e1bc6a3554fda5782a486c6b0748137d385798d24c1ea02b82730",
+   "source": "D:\\QM\\reports\\work_items\\375d7f67-fb0e-4793-ac60-7bebb4f9986b\\QM5_10513\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10553_XAUUSD.json",
+   "bytes": 13625,
+   "sha256": "07c8ee7673595d568b740e02600abe60b3a4d9ab68d029e8a07143e783ca8358",
+   "source": "D:\\QM\\reports\\work_items\\324a7063-9072-4e36-b517-a50bf2195e4f\\QM5_10553\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10569_XAUUSD.json",
+   "bytes": 13754,
+   "sha256": "bee5db0223671452f863f7200846e71d1ee881fd245e0bb83b0f3e20440731d9",
+   "source": "D:\\QM\\reports\\work_items\\3426f0de-f85a-441a-8208-436d9c66c209\\QM5_10569\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10692_NDX.json",
+   "bytes": 13733,
+   "sha256": "3022588a8760122a7a7a095f16d263a1a50f6c6d62a696d88f7a1e3a39ecdd78",
+   "source": "D:\\QM\\reports\\work_items\\5f01dbc3-87c6-4198-ad0d-de9d24c9b70d\\QM5_10692\\Q08\\NDX_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10706_GBPUSD.json",
+   "bytes": 13914,
+   "sha256": "c1c10c9fabdce0e3e04786affb7b240d3add9965804c136984c6703d094c605f",
+   "source": "D:\\QM\\reports\\work_items\\335d9197-0fef-4dbb-809f-36f616c84e78\\QM5_10706\\Q08\\GBPUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10847_GDAXI.json",
+   "bytes": 13726,
+   "sha256": "e928cc6182b322990423e279960a710e8392ef766706f330fdab23278bc3a705",
+   "source": "D:\\QM\\reports\\work_items\\a201f967-887d-4d77-ac31-c3c00640e6ca\\QM5_10847\\Q08\\GDAXI_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10848_XAUUSD.json",
+   "bytes": 13813,
+   "sha256": "6d36b1c4dd85ddb64228310bd64496b28897b2d83da9dfb8bdab9860e9d859ce",
+   "source": "D:\\QM\\reports\\work_items\\be9beb50-8353-49d5-bba5-0db04d24e51a\\QM5_10848\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10911_GDAXI.json",
+   "bytes": 13625,
+   "sha256": "f7574c9e14835e2557c789e86821871451e6cbf11a740e6b9a549f4181654bd0",
+   "source": "D:\\QM\\reports\\work_items\\4701b0c0-54af-4b25-a468-ab684b1530eb\\QM5_10911\\Q08\\GDAXI_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10916_SP500.json",
+   "bytes": 13646,
+   "sha256": "40ff1a29b8028f477a40108d94ca55faa5b03b4bae7da5491c4d4890fd73983a",
+   "source": "D:\\QM\\reports\\work_items\\dbf0bee4-8f0b-40bb-9afb-2975167decb4\\QM5_10916\\Q08\\SP500_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10919_XTIUSD.json",
+   "bytes": 12998,
+   "sha256": "11c1722752a280bc855db3ca61af6a716191e83c5cc308013cb43f69692ae10e",
+   "source": "D:\\QM\\reports\\work_items\\cac0d840-73e9-4601-95dd-d37533b32f29\\QM5_10919\\Q08\\XTIUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10938_GDAXI.json",
+   "bytes": 13963,
+   "sha256": "301afb87e520182b5942322399eabfc18d9a8c523cff397e57370671984a00ac",
+   "source": "D:\\QM\\reports\\work_items\\96ba6c17-945d-45f4-b3d6-3a2adad0ec58\\QM5_10938\\Q08\\GDAXI_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10939_GBPUSD.json",
+   "bytes": 13850,
+   "sha256": "b76637d882c5e030135d5617f058c7346e315400c63667d2c865502cc2db9df8",
+   "source": "D:\\QM\\reports\\work_items\\811fc617-ee41-456b-8e3a-ce672f93c73c\\QM5_10939\\Q08\\GBPUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_10939_XAUUSD.json",
+   "bytes": 13795,
+   "sha256": "0e0770b045647ca7a415bc8b6ad4d8f925160fbdd5f91064f2e1301c560060b8",
+   "source": "D:\\QM\\reports\\work_items\\0b384c46-911f-4daa-92c9-0f261be21e70\\QM5_10939\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11124_WS30.json",
+   "bytes": 12676,
+   "sha256": "ab35061ac5bcc95ba3b23313168b0741af162209dec0250cd89290b5e39e7d7f",
+   "source": "D:\\QM\\reports\\work_items\\b3fe5bc3-cdcd-420d-b68e-2da748e641cd\\QM5_11124\\Q08\\WS30_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11128_SP500.json",
+   "bytes": 9995,
+   "sha256": "08155c9ab9e18a5e8303b150b7a301927b8e67eb18a0037442e1244510207605",
+   "source": "D:\\QM\\reports\\work_items\\5f39f98e-308e-498b-9440-0757cfb4b219\\QM5_11128\\Q08\\SP500_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11129_SP500.json",
+   "bytes": 13316,
+   "sha256": "372c0cd88bd55487aac2187fa769ec76f7e03f89d1d9d54147e025303c5fb140",
+   "source": "D:\\QM\\reports\\work_items\\5171b4bf-cbb8-4b93-9f54-af83f41d3a19\\QM5_11129\\Q08\\SP500_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11132_SP500.json",
+   "bytes": 13479,
+   "sha256": "ca357ca15c83d5cfedc5c8682786b113764e99bff9cf570dccd05f310b26f645",
+   "source": "D:\\QM\\reports\\work_items\\1759533d-7600-40d1-ad1c-914d7c47c534\\QM5_11132\\Q08\\SP500_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11147_SP500.json",
+   "bytes": 9472,
+   "sha256": "15b3c883bb01f3c59e592e4c13664a22e7476ed20778e32ab8d5150308337b46",
+   "source": "D:\\QM\\reports\\work_items\\0d2e93dd-dec5-43fb-a8ee-415fb63e62e2\\QM5_11147\\Q08\\SP500_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11165_AUDCAD.json",
+   "bytes": 13673,
+   "sha256": "db5daed6cd6b00d96b0240c4776e16caa35645cb5986bac8cdf7fbb27304aac8",
+   "source": "D:\\QM\\reports\\work_items\\565b76a0-a74c-40b2-ba4a-e5f29c334b96\\QM5_11165\\Q08\\AUDCAD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11165_EURUSD.json",
+   "bytes": 13611,
+   "sha256": "b2637f9c37768e896556483957e2a5e6f6c3cab5b0a5779a21cd462010b50444",
+   "source": "D:\\QM\\reports\\work_items\\d528948d-222a-4279-bbe8-dee17f70f3d4\\QM5_11165\\Q08\\EURUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11288_USDJPY.json",
+   "bytes": 14153,
+   "sha256": "16465342da1c0a7cc205937f3521c064934d1ecacdb32e1b7094f2f677ae7413",
+   "source": "D:\\QM\\reports\\work_items\\0473327d-7a7b-40f0-b0eb-366e74d0e68a\\QM5_11288\\Q08\\USDJPY_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11421_AUDUSD.json",
+   "bytes": 14180,
+   "sha256": "76df7ae6b76e194efb197c08abcc13703bab08e086809bd466cfc643138fbfa6",
+   "source": "D:\\QM\\reports\\work_items\\a472a5f9-c614-4c7d-9ff0-8542085e9a02\\QM5_11421\\Q08\\AUDUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11421_EURUSD.json",
+   "bytes": 14025,
+   "sha256": "0133f427b62b2ecc3c601225156ce7cde89ce61a3234022fde5199c7135edddf",
+   "source": "D:\\QM\\reports\\work_items\\6678f2c4-a590-4f81-9566-1c5b20785eaf\\QM5_11421\\Q08\\EURUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11422_USDCAD.json",
+   "bytes": 13207,
+   "sha256": "be78ca200e8fc4186a0311b0850eaa8de07e5d2d1aea4a03b95550a46ce92b9a",
+   "source": "D:\\QM\\reports\\work_items\\d3907c1a-dc69-4498-be2f-80b064a2c02f\\QM5_11422\\Q08\\USDCAD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11476_USDJPY.json",
+   "bytes": 13956,
+   "sha256": "12970be85bf9989e0b8093c2c8e778f95e315a0951eae04efb03b158b5ac0722",
+   "source": "D:\\QM\\reports\\work_items\\43c9d9d7-2b2c-43a3-bf4a-a1348d1f0ce5\\QM5_11476\\Q08\\USDJPY_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11660_NDX.json",
+   "bytes": 13239,
+   "sha256": "e0977b5ae9a8c9af04005b0b7c156ad459025af55e4de013926a585934493627",
+   "source": "D:\\QM\\reports\\work_items\\0fd00da5-b4c2-4aa2-a5d2-99fe5b62be9c\\QM5_11660\\Q08\\NDX_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_11708_EURUSD.json",
+   "bytes": 13936,
+   "sha256": "5780808f5a31dfef089cb4930bee192b72bd98be91233e8629f4ac0d37517c0e",
+   "source": "D:\\QM\\reports\\work_items\\106b5827-acda-4294-9d06-9e215333819a\\QM5_11708\\Q08\\EURUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12354_XAUUSD.json",
+   "bytes": 12966,
+   "sha256": "d0936007a09ecc768651e6d4275aee95991472d48ab81c3e5645eb54664a7576",
+   "source": "D:\\QM\\reports\\work_items\\c6fbeaea-42f6-4a8d-b897-dfe5e8e49bd8\\QM5_12354\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12475_NDX.json",
+   "bytes": 9322,
+   "sha256": "3810be2b0c008ffd3218467ed752c8bfdfd22483f10d6bbd360e55c0a691f73e",
+   "source": "D:\\QM\\reports\\work_items\\bc5db386-fae6-4c33-9b7a-907535c48751\\QM5_12475\\Q08\\NDX_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12567_XAUUSD.json",
+   "bytes": 13836,
+   "sha256": "9e3d3026f3901d5d0266ab1acf0d1b15696c6c4aa48419e3727d17e31b7f37ac",
+   "source": "D:\\QM\\reports\\work_items\\dc267677-1cec-4ec4-9a44-d5c45dd01876\\QM5_12567\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12623_XAUUSD.json",
+   "bytes": 13743,
+   "sha256": "4e1047c25bb94b6764e5c3ab692aebe3291ecec46620f71b14474b5f9efc6d8e",
+   "source": "D:\\QM\\reports\\work_items\\adff323e-5ff4-4af2-852a-7ffb12bdfd64\\QM5_12623\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12708_XAUUSD.json",
+   "bytes": 13030,
+   "sha256": "3226c8be6c406fde278672448facf522bb4bfedab4b3cd3780be6fce1045a1d5",
+   "source": "D:\\QM\\reports\\work_items\\23a44179-6f22-4777-9ec2-2033e2876e04\\QM5_12708\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12712_QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1.json",
+   "bytes": 8972,
+   "sha256": "45dbbdbc7e43b0e40f4ead3a8172c96ce5f56ad2424197fe2f9efb578cc04401",
+   "source": "D:\\QM\\reports\\work_items\\b1bd1d06-dbfb-4d16-9951-3ea89e14d64f\\QM5_12712\\Q08\\QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12778_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1.json",
+   "bytes": 10172,
+   "sha256": "28dc52ede67a165773e2ada637db8f2c357df6ff007f6493901cc995f218aa32",
+   "source": "D:\\QM\\reports\\work_items\\8637b758-4763-4a1c-a88e-f2001a1da7b4\\QM5_12778\\Q08\\QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12823_USDJPY.json",
+   "bytes": 13996,
+   "sha256": "4aaae034ebdffbc014e160fb001ce54afbef6022fb722904a7ab4d8cc11a0b81",
+   "source": "D:\\QM\\reports\\work_items\\3180c239-9c3e-486e-a087-2c3cdb4d8f5a\\QM5_12823\\Q08\\USDJPY_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12831_QM5_12831_XTI_AUDUSD_BRK_D1.json",
+   "bytes": 8873,
+   "sha256": "36ad1ac85d60d0bc6cb3d7dbb069ddd7430024349ebbc0181b1e5e5edcfea17c",
+   "source": "D:\\QM\\reports\\work_items\\4dada5a5-5418-47f7-a612-ab4eb4625d58\\QM5_12831\\Q08\\QM5_12831_XTI_AUDUSD_BRK_D1\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12847_NDX.json",
+   "bytes": 13677,
+   "sha256": "faf8f6d04d112e06007aa24bc3debd8d5b657d2ad13745c520710725c5ca595a",
+   "source": "D:\\QM\\reports\\work_items\\2f4a4f40-80c2-4973-9909-d20dcad412d3\\QM5_12847\\Q08\\NDX_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12849_XTIUSD.json",
+   "bytes": 12973,
+   "sha256": "a68c097a9fa255c598d031b3da920f4920af86c1cb66e162d2fb149a7a9e2058",
+   "source": "D:\\QM\\reports\\work_items\\a30d8bcd-a7c3-4ad4-a061-09e1fe789a35\\QM5_12849\\Q08\\XTIUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12855_XTIUSD.json",
+   "bytes": 12787,
+   "sha256": "70d23b9a9cd271528607a38edb2a1b3d219e90537e392aace8aa355f7fba7e60",
+   "source": "D:\\QM\\reports\\work_items\\7f0a919d-35de-45ce-8ca9-a9dd993520b5\\QM5_12855\\Q08\\XTIUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12915_SP500.json",
+   "bytes": 13932,
+   "sha256": "4536bdb8dd15472f25be9cf7a71208bc130baf7c2208e3d6a268da769ef5307e",
+   "source": "D:\\QM\\reports\\work_items\\591f7453-2d44-4ae3-9cd9-8378bf4f8de7\\QM5_12915\\Q08\\SP500_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12958_XAUUSD.json",
+   "bytes": 13510,
+   "sha256": "a01da34209110eb1bc0113482b2b1289bf62dd8907bb64ee8fff3c512f6a6482",
+   "source": "D:\\QM\\reports\\work_items\\7a690407-ba0b-4e80-8cd6-5f63bd19c3fa\\QM5_12958\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12969_USDJPY.json",
+   "bytes": 12983,
+   "sha256": "c68c12856c92a7edeba27b707508616b95e1352e627b34001a917b82d9177a6f",
+   "source": "D:\\QM\\reports\\work_items\\7191fc3f-7bce-4881-835d-ea04a50a69b3\\QM5_12969\\Q08\\USDJPY_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_12989_XAUUSD.json",
+   "bytes": 13943,
+   "sha256": "df779904cd9479ee020c663cb3a6109cc68916b2ed1f03ed31d26d22edac3337",
+   "source": "D:\\QM\\reports\\work_items\\86abcee3-1e53-4b6d-a576-80fea6e02219\\QM5_12989\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_13013_NDX.json",
+   "bytes": 12892,
+   "sha256": "b83ee2cba2b3ca42744651f0e93683f3e2ffbb16492bd72d1f437f97cfed295a",
+   "source": "D:\\QM\\reports\\work_items\\1090a9f7-2be9-4593-8cc9-123752ba3964\\QM5_13013\\Q08\\NDX_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_13036_GDAXI.json",
+   "bytes": 12975,
+   "sha256": "5fc13a331aa2ca37603a904a25c68cbf8609735ef145f3542938168cdd75048c",
+   "source": "D:\\QM\\reports\\work_items\\04a57ecf-7c2b-4b19-b449-cd8220b3f584\\QM5_13036\\Q08\\GDAXI_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_13054_XTIUSD.json",
+   "bytes": 12915,
+   "sha256": "db1b236f2ea2206771e06920a62981b45e93a966238eb42645464dcf928b38a1",
+   "source": "D:\\QM\\reports\\work_items\\d62d792e-442a-494b-964f-40963d8365e8\\QM5_13054\\Q08\\XTIUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_13059_QM5_13059_XTI_AUDJPY_RSPREAD_D1.json",
+   "bytes": 14106,
+   "sha256": "1ba8c47a15c87c9d47a19fc5201fba3c732961e112b48483611209f6e4aa1fe3",
+   "source": "D:\\QM\\reports\\work_items\\804a2f4d-5c38-453b-a5db-c12891b20164\\QM5_13059\\Q08\\QM5_13059_XTI_AUDJPY_RSPREAD_D1\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_13076_QM5_13076_XTI_NZDCAD_RSPREAD_D1.json",
+   "bytes": 8745,
+   "sha256": "f30512e579f9e12b34e5e18130d0b3d5d51ae6fcd71fa3409ff76df056226fab",
+   "source": "D:\\QM\\reports\\work_items\\e1ba96cd-e461-4bf4-9233-b27d2ea4b3b5\\QM5_13076\\Q08\\QM5_13076_XTI_NZDCAD_RSPREAD_D1\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_13108_XTIUSD.json",
+   "bytes": 12917,
+   "sha256": "d14c037354450f296679e991a81b71af942a1dcfac1594641701812b4a4cc830",
+   "source": "D:\\QM\\reports\\work_items\\37894f9c-0a12-4e40-ac36-ba1fc8e56b88\\QM5_13108\\Q08\\XTIUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_13128_NDX.json",
+   "bytes": 13004,
+   "sha256": "a5ad157cbbd86814533da467dfb765e27d14e15de090184f6d2e581f0c7a7007",
+   "source": "D:\\QM\\reports\\work_items\\91a6f7bc-75dc-4e57-82ef-566c6904deb2\\QM5_13128\\Q08\\NDX_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_13213_USDJPY.json",
+   "bytes": 13072,
+   "sha256": "c80c2bc29607b535a9e605cbaba9de5ac3381275e1f112283d1be524c5a56306",
+   "source": "D:\\QM\\reports\\work_items\\d2783b32-78fd-4068-b4e4-2b778c47b417\\QM5_13213\\Q08\\USDJPY_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_1328_EURJPY.json",
+   "bytes": 12690,
+   "sha256": "12a6f690d6f2fb07540cc5944aa8522cbc058fc0c9433b782db453483c9225f7",
+   "source": "D:\\QM\\reports\\work_items\\8c7db2c3-4a21-41d6-b8df-b1ab49257b37\\QM5_1328\\Q08\\EURJPY_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_13301_GDAXI.json",
+   "bytes": 13015,
+   "sha256": "f84453bcb9fac3474f11324f57381e92894b9063aa736adda6ac2676b9fdc17c",
+   "source": "D:\\QM\\reports\\work_items\\a3538dc4-e7bc-4285-ba2b-6d0858cb3f60\\QM5_13301\\Q08\\GDAXI_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_1537_XAGUSD.json",
+   "bytes": 12910,
+   "sha256": "c0429668cf7feb0b1cec01a92dddd48e994b540bae606339f7408895a6b068ea",
+   "source": "D:\\QM\\reports\\work_items\\262514ac-c3c6-4834-9e17-02a42c8878b7\\QM5_1537\\Q08\\XAGUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_1551_USDJPY.json",
+   "bytes": 12728,
+   "sha256": "34f56ab88a7658d7deacab4c670d60263f40f3fe8632dcfc82b2de02106d8f8b",
+   "source": "D:\\QM\\reports\\work_items\\49f775aa-40e6-4e0a-b446-1b4c76b36c8b\\QM5_1551\\Q08\\USDJPY_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_1556_XAUUSD.json",
+   "bytes": 13773,
+   "sha256": "32c40c1428d3fb6add071a114e1de9ee868a27ac0b9752cce6f36ab55224f64f",
+   "source": "D:\\QM\\reports\\work_items\\36d46f72-a638-4e59-be41-4bbecbe3e495\\QM5_1556\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_1567_EURUSD.json",
+   "bytes": 12542,
+   "sha256": "248346ccb524ad7927c931a71136c9ab55fe22089e5efb5de9dcd6aeef012bc6",
+   "source": "D:\\QM\\reports\\work_items\\e8c1e63a-e06c-4988-9ae7-54771bc1fe8c\\QM5_1567\\Q08\\EURUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_20010_XAUUSD.json",
+   "bytes": 12915,
+   "sha256": "f3a3e3c1c55b8e96c4acf7a080eee47ee246aea315953c71baa2989d9e15b432",
+   "source": "D:\\QM\\reports\\work_items\\05eaa42c-a3f3-496a-a89f-cbc32d021b78\\QM5_20010\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_20047_XTIUSD.json",
+   "bytes": 12905,
+   "sha256": "01734375b0fe2c20d01d00d76a9dc3c8c5552ae81b412d37df562aa630911c90",
+   "source": "D:\\QM\\reports\\work_items\\0ac2f29e-7d8c-4f3c-9b0b-cdf20db3de0e\\QM5_20047\\Q08\\XTIUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_20048_XTIUSD.json",
+   "bytes": 13400,
+   "sha256": "c3d11914d17db6329f350e912b84c0663a9533eaebbc07758e1be88a0de0a977",
+   "source": "D:\\QM\\reports\\work_items\\beae922f-84e9-4850-8325-e6fdae993c6a\\QM5_20048\\Q08\\XTIUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_9403_GDAXI.json",
+   "bytes": 12970,
+   "sha256": "7d2ded3ba654be546fad69724f33fddc4497f431494525d9d26bf4bbbeb04bc3",
+   "source": "D:\\QM\\reports\\work_items\\577cc034-e74e-4914-ba36-57fa0414ad9e\\QM5_9403\\Q08\\GDAXI_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_9502_SP500.json",
+   "bytes": 12753,
+   "sha256": "c966629e48a5851efc6cca878b3ad5b7c04f6712b1ea3a8c7450afd4ddd3b58d",
+   "source": "D:\\QM\\reports\\work_items\\87da806d-0f8a-4faa-be55-850f1644ed83\\QM5_9502\\Q08\\SP500_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_9503_USDJPY.json",
+   "bytes": 12500,
+   "sha256": "110da2e079375b9a24021fd49bedcac2144ae89a0d391bf8af81bad02aa9aa79",
+   "source": "D:\\QM\\reports\\work_items\\196efa7a-d01a-4d2d-8416-d6d189ca16dd\\QM5_9503\\Q08\\USDJPY_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_9641_WS30.json",
+   "bytes": 13055,
+   "sha256": "108b5c54117f4fbe6ab57df0b80bc335503824fe7f925eb15cbfd78a57f61a21",
+   "source": "D:\\QM\\reports\\work_items\\fe2c88a9-b0eb-424c-b5e2-f39d314071ab\\QM5_9641\\Q08\\WS30_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_9929_XAUUSD.json",
+   "bytes": 9305,
+   "sha256": "bb868f88f7b6fc0c34e7be7b60c74cb6d277544876b9f710a21b1e2b373e6121",
+   "source": "D:\\QM\\reports\\work_items\\7083e456-3de6-4547-818b-9933b008cd86\\QM5_9929\\Q08\\XAUUSD_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "q08_aggregates/QM5_9936_USDJPY.json",
+   "bytes": 13023,
+   "sha256": "031762ffba2406f045192eef2aa8a9ba25eff74b65eadc0bfc98e5b23a8f9361",
+   "source": "D:\\QM\\reports\\work_items\\4b5171cc-afe4-4c0d-b08c-2de8ba20d2e6\\QM5_9936\\Q08\\USDJPY_DWX\\aggregate.json"
+  },
+  {
+   "archive_name": "sleeve_streams/10038_XAUUSD_DWX.jsonl",
+   "bytes": 41189,
+   "sha256": "699249431846b00f733d76268f24953db479b2544af500d8e940f60640ba0b1a",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10038_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10069_XAUUSD_DWX.jsonl",
+   "bytes": 493,
+   "sha256": "8a95d66d42bc0b925b9e18c209e8d3cb7ef73622c5ac68cd3ee081de1940ee6e",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10069_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10094_GDAXI_DWX.jsonl",
+   "bytes": 115319,
+   "sha256": "dbc69163de3adbecef5dac17ac4eef9e2d342b5780f0d21a823b3609d63b3256",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10094_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10114_SP500_DWX.jsonl",
+   "bytes": 7763,
+   "sha256": "5b5d3146e5ca8321a98ec7116c2d6aac3536854b8481ea746dc8459c72a4eb57",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10114_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10115_GDAXI_DWX.jsonl",
+   "bytes": 115867,
+   "sha256": "75c607b3377f4627410a57728ee13af95cdf879293406677d204001fece18edc",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10115_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10116_XAUUSD_DWX.jsonl",
+   "bytes": 12011,
+   "sha256": "339b14d74fe274bfd5e960df28e52bfee71a06772e0ed84131948e11fb9879ec",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10116_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10122_NDX_DWX.jsonl",
+   "bytes": 10737,
+   "sha256": "0b3820da52cf358c25dd6b1df51e783132dc4e1eecd6b5741b8ce7bb64b445a0",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10122_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10123_EURNZD_DWX.jsonl",
+   "bytes": 18532,
+   "sha256": "df4edc48a62f20c574141b657f7e12f8894e0c080be0286644facb77318f9f9a",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10123_EURNZD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10123_XAGUSD_DWX.jsonl",
+   "bytes": 16985,
+   "sha256": "21050dcdaece3a6acb9b750a2c3b2aeef678432617a51ec6156e748aca0e2152",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10123_XAGUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10123_XAUUSD_DWX.jsonl",
+   "bytes": 20959,
+   "sha256": "f525c0b0447d70d89a2dfc81845769d668a0e310f78afdacf8452666a932f6e4",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10123_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10127_AUDCAD_DWX.jsonl",
+   "bytes": 34497,
+   "sha256": "b56d5173f1a4ecb24af942e3d6bab397cf6b39363514fd5f65250a538b174d65",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10127_AUDCAD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10127_AUDUSD_DWX.jsonl",
+   "bytes": 37184,
+   "sha256": "6674e1ccf8564d84f35f06f9eaa9501d1f76946a1be29dea8b462695785a39bb",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10127_AUDUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10127_NZDUSD_DWX.jsonl",
+   "bytes": 18099,
+   "sha256": "d72da58377778e18e77f3c89f4ec7f5346dff577e367bace297db31bd2bdc706",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10127_NZDUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10128_XAUUSD_DWX.jsonl",
+   "bytes": 175399,
+   "sha256": "42ec3a53637a8a2fc204b7a080f2affb0034c5c71348d18f70a7d0af7ff78c3f",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10128_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10135_XAUUSD_DWX.jsonl",
+   "bytes": 2731,
+   "sha256": "fdf3f01c65a7a7cbe1fe3d761865d546683757a99c34430fa2c321632849b148",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10135_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10142_SP500_DWX.jsonl",
+   "bytes": 5794,
+   "sha256": "19952d9833963de16a1ba558bc82436e53f26c82ac45e46028abfca7c7864470",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10142_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10145_AUDJPY_DWX.jsonl",
+   "bytes": 16171,
+   "sha256": "41ffdbd8be17d6067878a4123ed273628bce5170e364910fcc89600ba94fcb77",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10145_AUDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10145_CHFJPY_DWX.jsonl",
+   "bytes": 135203,
+   "sha256": "b12e73ff44ecb62e6332bf7c712785efb8fb2376c213c057cf178462c1666c67",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10145_CHFJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10145_SP500_DWX.jsonl",
+   "bytes": 128907,
+   "sha256": "3d1431583d41f1105192f3204c53e86b88f246b0a7ecf4542c5b026075ff8e02",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10145_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10145_XAUUSD_DWX.jsonl",
+   "bytes": 126161,
+   "sha256": "c253fe5abb0b2c92dff866797b27bcfdfd272635659b1d784c1512ddcfd9bbf4",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10145_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10146_AUDUSD_DWX.jsonl",
+   "bytes": 62445,
+   "sha256": "0a1b9aba94999b896c6f1b4a16a33fb583c2af203515caf28e293f5ceb26834f",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10146_AUDUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10146_XTIUSD_DWX.jsonl",
+   "bytes": 62782,
+   "sha256": "aa52e83bb4bdc15b6f874a3a891ffc200d56d94dc4dc618411a5b2e139e83508",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10146_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10150_XAUUSD_DWX.jsonl",
+   "bytes": 4667,
+   "sha256": "7478459296e7f4536a2df6a13345719249ec875887d9a5209883583e27c420c8",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10150_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10163_NDX_DWX.jsonl",
+   "bytes": 79935,
+   "sha256": "25d1a430df76a223618a816c94c54b8854a9ba194fb54c56415cfffc8accab21",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10163_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10170_NDX_DWX.jsonl",
+   "bytes": 6945,
+   "sha256": "04a7043cca80023bb03d6c7a73412fc144bdd9f764db01bab741dce1462ae1a1",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10170_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10183_XAUUSD_DWX.jsonl",
+   "bytes": 139238,
+   "sha256": "023e8d73fe7b27a7d935ae7a74660ab0f3dbab84923b5f832250cfddf67f685d",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10183_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10185_GBPJPY_DWX.jsonl",
+   "bytes": 61409,
+   "sha256": "1a1bf12e3e16d1d804303f46d311c089132f8606da57cb82593e3a610b4428ef",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10185_GBPJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10196_XAUUSD_DWX.jsonl",
+   "bytes": 80996,
+   "sha256": "09fd935d9d69b0ad858a5743a2f4fbe107a005780ab7070785d289521eaf972f",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10196_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10197_XAUUSD_DWX.jsonl",
+   "bytes": 65123,
+   "sha256": "89a8142be3c0f197e623ae901fa7dc97f8f1ff2337b7d8560b9c3d0376ece68a",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10197_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10260_NDX_DWX.jsonl",
+   "bytes": 2582,
+   "sha256": "8abe40449c4fd73b1d87cbd8370921652565d4cb258045ab3f27613629623af1",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10260_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10269_SP500_DWX.jsonl",
+   "bytes": 12184,
+   "sha256": "1b629a1b2e9b4c1764cba1583268b96568d2691e193724f15e40c1ca5cdffad2",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10269_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10286_XTIUSD_DWX.jsonl",
+   "bytes": 98758,
+   "sha256": "f6d03ec301ae9a609b34f3deacb3195a9d17339b25a588ba4a56ae5ddd8272fb",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10286_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10287_XAUUSD_DWX.jsonl",
+   "bytes": 51867,
+   "sha256": "142b57dd001984395fc329fd57cf45e876466cce603df6db16debcb9fe65fd71",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10287_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10289_XAUUSD_DWX.jsonl",
+   "bytes": 5315,
+   "sha256": "c37039071289ed0cf89696d3083269ff9d446d82f36c730d88280ca2e5b7d286",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10289_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10291_SP500_DWX.jsonl",
+   "bytes": 91379,
+   "sha256": "573795d42a0b9cbf6e2c9f332a43af661bc3f8e0d90f6d9760730ee36408a3a1",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10291_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10291_XAUUSD_DWX.jsonl",
+   "bytes": 13832,
+   "sha256": "0408396b8e1fb59b2f1556c430889d48109db07308fb1c1890d379aa094094b9",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10291_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10377_XAUUSD_DWX.jsonl",
+   "bytes": 9628,
+   "sha256": "4b61f95b7f92cd940a11f00436a4fffd7407bc626f4d00b2c6ead0a21629fac6",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10377_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10403_GDAXI_DWX.jsonl",
+   "bytes": 42796,
+   "sha256": "d0da5c744176e7adbd06e73dc5b768fdbcd1a4b90e44cdcc7132b6054779ccbf",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10403_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10403_XAUUSD_DWX.jsonl",
+   "bytes": 85495,
+   "sha256": "666dc6928bcb4b44086408527c7b9ebb95f179c06596a5c1200e24c94e104753",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10403_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10428_NDX_DWX.jsonl",
+   "bytes": 4609,
+   "sha256": "9cf21b1e4db5c81c4db325ff675206d61abcb0d180f44954e407044534944255",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10428_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10440_NDX_DWX.jsonl",
+   "bytes": 64315,
+   "sha256": "dfe93a33c600929a2caf36af70b7d230bc24d36f6d2b1d5140b872e966888463",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10440_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10452_NDX_DWX.jsonl",
+   "bytes": 82567,
+   "sha256": "5ef701823fd87c0721b0e7098576e3ea70dcf245a9337e0f02fc6ec510b1bd7a",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10452_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1046_NDX_DWX.jsonl",
+   "bytes": 62005,
+   "sha256": "6dbd4428a85d57413f98bfd64d8bb4aeb436a24fb0271ed63dd96301e53f2456",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1046_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10476_USDCAD_DWX.jsonl",
+   "bytes": 62316,
+   "sha256": "54d6c833f83c4a1e2fddd101c87b0622b4198a4ac1eb80224e942bd8fbad0dcd",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10476_USDCAD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10489_XAUUSD_DWX.jsonl",
+   "bytes": 27434,
+   "sha256": "a412657f27c99a322d6da2cf5617ccb4fe7a75addcfb045bcbaa6d6b5db31339",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10489_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10494_XAUUSD_DWX.jsonl",
+   "bytes": 100079,
+   "sha256": "6145bd7bf41e19dff8d28b03b780edf2523fdac9bdcdeead866b3db1801cdcba",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10494_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10513_XAUUSD_DWX.jsonl",
+   "bytes": 28156,
+   "sha256": "ff56dbcd2ba91e0f7f1270fd7011314f7b5dfc927c1e1400d0c8d73b954a48e4",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10513_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10553_XAUUSD_DWX.jsonl",
+   "bytes": 530793,
+   "sha256": "ea593a7a992e2d18ac1385842bb6055cd58c7ddef6dd5eaa27164c2db5b6098e",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10553_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10555_XAUUSD_DWX.jsonl",
+   "bytes": 33203,
+   "sha256": "30e0176cbc6c5d337a260a92528309537b040541587c779ce684c16f7ce9675e",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10555_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10558_EURUSD_DWX.jsonl",
+   "bytes": 33206,
+   "sha256": "12e26181d5a72f0b0f5e671a25920291f3fdddee4785d7b7e6c92ee1e1355cd5",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10558_EURUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10566_XAUUSD_DWX.jsonl",
+   "bytes": 36249,
+   "sha256": "cfaf114f34d1e3bd17a79689ae3cec5c2ad2b921ab8302b5bca1445807b021f7",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10566_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10567_XAUUSD_DWX.jsonl",
+   "bytes": 46879,
+   "sha256": "348c55a955ea7016be6f39433edd1a984f225f9970794455e6a1994250d692b5",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10567_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10569_EURJPY_DWX.jsonl",
+   "bytes": 75401,
+   "sha256": "68979ca9012cb6158fd8208a1ae0685f62766c9783eb3f51b12b1cc7e5a824c5",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10569_EURJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10569_XAUUSD_DWX.jsonl",
+   "bytes": 51477,
+   "sha256": "4cdc05773b4926a733a4b3a22f841d7ea173225b7b3a79d41a4779faa252034b",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10569_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10575_GBPJPY_DWX.jsonl",
+   "bytes": 117810,
+   "sha256": "c69ba59d997caddeb5c022fb5a445525c18723d3fbfc2cf287c7bbb212532c7c",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10575_GBPJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10582_XAUUSD_DWX.jsonl",
+   "bytes": 687959,
+   "sha256": "5e4c43bef23db303eb6f865a866bd97f60504d13215add3c85031c2b0d72857b",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10582_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10588_USDJPY_DWX.jsonl",
+   "bytes": 32230,
+   "sha256": "bb2c00d4adfaf4927403b95ec1e041716fc253093e0ed2edc87c8cfde3665d07",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10588_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1058_EURUSD_DWX.jsonl",
+   "bytes": 2040,
+   "sha256": "2206178a15b24dd6dbf6f877cd132e92526d8164cbcd1ce03053ed0060523985",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1058_EURUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1058_QM5_1058_EURUSD_GBPUSD_GGR_D1.jsonl",
+   "bytes": 2040,
+   "sha256": "2206178a15b24dd6dbf6f877cd132e92526d8164cbcd1ce03053ed0060523985",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1058_QM5_1058_EURUSD_GBPUSD_GGR_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10590_XAUUSD_DWX.jsonl",
+   "bytes": 244304,
+   "sha256": "fcfc2b6f74a603028ac6414303a07b4c279031295e8685f18d5908fc71d47769",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10590_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1061_NDX_DWX.jsonl",
+   "bytes": 42683,
+   "sha256": "c74e4046e218863ff53b3e4b8a9561d49721ef42b6b27edc5f99c0d3b24f0dbe",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1061_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1068_XAUUSD_DWX.jsonl",
+   "bytes": 61785,
+   "sha256": "6b68366af8adfb41245c2ec532f1e87f08fa7e132d641c2f7ee0ceeab5bd5dfd",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1068_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10692_NDX_DWX.jsonl",
+   "bytes": 151659,
+   "sha256": "b5e0d8289e3b4f3a7a4fa46d95084027d62a9c2ee169849086c25e9826b72d06",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10692_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10700_XAUUSD_DWX.jsonl",
+   "bytes": 83222,
+   "sha256": "fa7c3b491a05b48e9ebf807fad983fc8b92cc38905e7182df15bb55731be203f",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10700_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10706_GBPUSD_DWX.jsonl",
+   "bytes": 149557,
+   "sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10715_USDJPY_DWX.jsonl",
+   "bytes": 302422,
+   "sha256": "289282a816ee7aeecc7e43634b2363d53b9dbb475ec201fddf4f5ad8b9fecdd9",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10715_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10771_GDAXI_DWX.jsonl",
+   "bytes": 11721,
+   "sha256": "f12f5b89fc2a2cd9704b2279fbae8e272b9cba05abcbce6b320d59d6f371db24",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10771_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10771_USDJPY_DWX.jsonl",
+   "bytes": 4490,
+   "sha256": "bfa0aa4c9894a5908f8bdabd7ec2e509ddbde3cee0d7334e43f804fdb5cfc4c7",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10771_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10788_XAUUSD_DWX.jsonl",
+   "bytes": 1288,
+   "sha256": "00cc4238fc85dc393fef076671c9aade03233e13185ec856ce328bc27f8a4ad1",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10788_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10804_USDJPY_DWX.jsonl",
+   "bytes": 83288,
+   "sha256": "d6fc8548eadec152bac76fddac30917775d27bee54215ba82e461d9bfa675621",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10804_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10806_XAUUSD_DWX.jsonl",
+   "bytes": 108635,
+   "sha256": "2c2f16b98f8a0e34c8fb97917bf2a1f534019b40d18f12bbb3e56f937075eaf2",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10806_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10808_NDX_DWX.jsonl",
+   "bytes": 18630,
+   "sha256": "83d3bdd10f75ec2097f8b7fe363be4249dffefad49b227f0b3f395dd9ca269d0",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10808_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10808_XAUUSD_DWX.jsonl",
+   "bytes": 1134,
+   "sha256": "3d34f976c5846375184123c4f472ab2d2bc1cd86c762cf563a92e29499561708",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10808_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10815_EURUSD_DWX.jsonl",
+   "bytes": 19909,
+   "sha256": "e9c6fbd2cb9a3c58703b683f6818434924f0738cbbb47afd4dfca0c1d93cc634",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10815_EURUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10815_GDAXI_DWX.jsonl",
+   "bytes": 10554,
+   "sha256": "650b37d320c1a4d068344790af752860a3bbd461139148b3b4783c9f6678bc0f",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10815_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10823_GDAXI_DWX.jsonl",
+   "bytes": 85493,
+   "sha256": "6d1134f5e2ff83854a44882088da3c74c83009af6af9f8116fec4bbc034981b9",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10823_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10828_XAUUSD_DWX.jsonl",
+   "bytes": 55397,
+   "sha256": "a7945aad1b28e213d315f27521cc6536c09104736945d9bc657d5802a3213777",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10828_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10847_GDAXI_DWX.jsonl",
+   "bytes": 170928,
+   "sha256": "36c13fa66b0f557810f6a7f6bd9facd9efffbc31d7c984409646972d0a87f414",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10847_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10848_XAUUSD_DWX.jsonl",
+   "bytes": 298521,
+   "sha256": "ac578db80da22e17578419a3823985a69bbebc50795016fe954a929cf0473f5c",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10848_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10911_GDAXI_DWX.jsonl",
+   "bytes": 130926,
+   "sha256": "a787310216360b54704f558d6e10777458f79f9924bcf709c0b4ed077557c407",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10911_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10916_SP500_DWX.jsonl",
+   "bytes": 148899,
+   "sha256": "43e236eabb52f211efa37d7e47ef525db893ea27c37bb8f5d7ba32c894a981d0",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10916_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10919_XTIUSD_DWX.jsonl",
+   "bytes": 11506,
+   "sha256": "0094509bec3a2cfd7d8ac210fa64f4840dc0750d32b23d4d387ecea1f887dcd0",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10919_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10920_XAUUSD_DWX.jsonl",
+   "bytes": 10287,
+   "sha256": "95ee07649cd11397a8700bfa58b54290f1902e3b533f3844c60b5387e1b73182",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10920_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10938_GDAXI_DWX.jsonl",
+   "bytes": 13612,
+   "sha256": "a41726360fa97eee18f39f3286c2ad2de5b9b7e7ec5da62f474d02d3df9ad7fb",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10938_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10938_NDX_DWX.jsonl",
+   "bytes": 29208,
+   "sha256": "4d7f2a2672ac986d798f7a4796c238c435ee8d747e5dfaac15c5a9eb8b567f04",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10938_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10938_SP500_DWX.jsonl",
+   "bytes": 32396,
+   "sha256": "ce1b65d533a97a05546a05192c414eb6a85249a67d93150cf357bdcac5c3cd93",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10938_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10939_GBPUSD_DWX.jsonl",
+   "bytes": 33827,
+   "sha256": "0e82e883462e5a608f576207a79f5eec8c377a1b04a10e2221f3178a24ea0188",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10939_GBPUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10939_XAUUSD_DWX.jsonl",
+   "bytes": 36864,
+   "sha256": "6ae332605fb8f56479cfe1e594a6eb77234225e32a752a6087094a68e96f900b",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10939_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10940_XAUUSD_DWX.jsonl",
+   "bytes": 5639,
+   "sha256": "2ef38c1fdb3c97033f5c2bcf125e4e7b72fccc862ca6c3e6772269a97bc9d982",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10940_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10943_NDX_DWX.jsonl",
+   "bytes": 18426,
+   "sha256": "a02bbf651652497efc627ff2ecd30536b681aa4798467ec57628b22f42ede37e",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10943_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/10978_XAUUSD_DWX.jsonl",
+   "bytes": 34130,
+   "sha256": "94939ecf7a33d07e33ad6e727cb468580d2c485a478111bbfb8ead8b77df9915",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10978_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11063_USDJPY_DWX.jsonl",
+   "bytes": 111517,
+   "sha256": "ab1cc135e8f563c40649cec473ce38cd7f22157ac7cc60b024052691d44a79bc",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11063_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11095_GBPUSD_DWX.jsonl",
+   "bytes": 57261,
+   "sha256": "3daefb216f5c91ce8debdacbf721137f90ecf052e90e187b6489797f69528cc3",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11095_GBPUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11104_XAUUSD_DWX.jsonl",
+   "bytes": 26818,
+   "sha256": "53230b4798aa02ba5c38569ce15a452faf8298760c8fbaf7aa32858b94a3ff82",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11104_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11124_SP500_DWX.jsonl",
+   "bytes": 6597,
+   "sha256": "b61e23f1d65547655d631c849551268386d6d4f885e469d02c70092b1da2cc82",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11124_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11124_WS30_DWX.jsonl",
+   "bytes": 3930,
+   "sha256": "fd5d9231751767112054e9b81569146c9ef49c3d8180d482c9fc4bed1a41657d",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11124_WS30_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11125_WS30_DWX.jsonl",
+   "bytes": 13686,
+   "sha256": "f7e6a41da9dca5b55ab75510688f243e9ff532dd0f4a3361420d368901c16ec6",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11125_WS30_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11128_NDX_DWX.jsonl",
+   "bytes": 11954,
+   "sha256": "381dbbe7cad55fffca6d43f5c022da6b02bf66639f639f3ff0afe323badde4c7",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11128_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11128_SP500_DWX.jsonl",
+   "bytes": 13728,
+   "sha256": "4e145a65f9792f3b1b686fc1ee67f29a5c5866916445944dc0dcb2e752fd7e6e",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11128_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11129_SP500_DWX.jsonl",
+   "bytes": 6941,
+   "sha256": "bbd5c5b36cd5d547bae2b07c65148e3f265634574184fb0793aac4a1e6fd7687",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11129_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11132_NDX_DWX.jsonl",
+   "bytes": 5572,
+   "sha256": "72094b9980f5b01c8852890cbc562ab5a34682d839f039fef589ea51b8669660",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11132_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11132_SP500_DWX.jsonl",
+   "bytes": 30362,
+   "sha256": "35aef7994a5b8f57a98c8a7ed4037ebc938a0c10dbff65afe9d54c311ed4274d",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11132_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11147_SP500_DWX.jsonl",
+   "bytes": 57613,
+   "sha256": "f2bedb876325f640eb49cba530358d8caeb7e6cb585eda330d9449fcde753655",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11147_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11165_AUDCAD_DWX.jsonl",
+   "bytes": 74209,
+   "sha256": "46354e14c7ce9a31bbbcb2a32cc82e40f46993e92efa0db645a87923b605e547",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11165_AUDCAD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11165_EURUSD_DWX.jsonl",
+   "bytes": 91368,
+   "sha256": "e30270fa71a427e5494761f0ffe4a36a375be7ddcc483643f3ef31e771b78a4d",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11165_EURUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11169_XAUUSD_DWX.jsonl",
+   "bytes": 6560,
+   "sha256": "368ac4946e585934f4e57e6b1fe58a69f6196f84b6031fc80ba250f1b514355a",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11169_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11173_XAUUSD_DWX.jsonl",
+   "bytes": 2733,
+   "sha256": "ee3309b63181d752a8f63d2d1bee0b090260a27b1ddf049fcf3c2db4c869eb2b",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11173_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11177_NDX_DWX.jsonl",
+   "bytes": 6924,
+   "sha256": "e513991e56885c07a0cff5f8ec379c6b14b8365c6b71d9b4f8777f8f43a95c6f",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11177_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11177_XAUUSD_DWX.jsonl",
+   "bytes": 8855,
+   "sha256": "53d61485bad74e138db85993de41ddb1c24c29a38514a66ca49127ea1f05b12c",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11177_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11267_XAUUSD_DWX.jsonl",
+   "bytes": 14566,
+   "sha256": "b771a99662c76b65e921a01db88d36b1adfd559dee31dc6a12d25ee94b6b3542",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11267_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11288_USDJPY_DWX.jsonl",
+   "bytes": 70016,
+   "sha256": "e30f6b0c3f1777907744250c55d78506f62be84143881ff0de21985b1d39a999",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11288_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11421_AUDUSD_DWX.jsonl",
+   "bytes": 36638,
+   "sha256": "1988f2419e02f4a59790dbedb7a2c20eab93477f9230878e7692fee5dea09ed6",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_AUDUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11421_EURUSD_DWX.jsonl",
+   "bytes": 37522,
+   "sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11422_USDCAD_DWX.jsonl",
+   "bytes": 80441,
+   "sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11476_USDJPY_DWX.jsonl",
+   "bytes": 492980,
+   "sha256": "53e7282aa2582dc2a3ab32d99b5dd5b90814bea7ca2c4b0890af5c1d61c864bb",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11476_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11660_NDX_DWX.jsonl",
+   "bytes": 586266,
+   "sha256": "a3f6200fb88377fc80edf8b9ef6e054ce0222e4aad28b6cad1efba6f80bbaf21",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11660_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11708_EURUSD_DWX.jsonl",
+   "bytes": 70909,
+   "sha256": "0fbccdfed14837c8b58e983f4367be08c9f8fef02d49377d3984b663e1e5d914",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11708_EURUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11891_EURJPY_DWX.jsonl",
+   "bytes": 15315,
+   "sha256": "09ed2de625fe02c987cb8f9097dd0c7ba70fdf9f7920ae60dd1c285b953696a7",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11891_EURJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11891_USDCHF_DWX.jsonl",
+   "bytes": 12923,
+   "sha256": "07c216fb1165195a29892d5cd1278cb646e87143cd05eb0f6028e0e890bf9d48",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11891_USDCHF_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11910_NZDUSD_DWX.jsonl",
+   "bytes": 14014,
+   "sha256": "92c51571583c99de2957b894026e17fd5feb130f02e6b3494ba5b1d6f1a074d9",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/11916_GBPUSD_DWX.jsonl",
+   "bytes": 15470,
+   "sha256": "3ba1b5ab523f4da57974323ab7dceecc541a52c2fc64af01cfa31d54cde067b6",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11916_GBPUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12112_NDX_DWX.jsonl",
+   "bytes": 103614,
+   "sha256": "68329e18632e5d7411908f77508c2721bad122f9d5d3ab4ed75910a0c6bcdfec",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12112_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1230_AUDJPY_DWX.jsonl",
+   "bytes": 26693,
+   "sha256": "04a1c0f1a6872e36df02bb7bd8ac28a6102002a869278d8c906623a508341b9c",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1230_AUDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1230_XAUUSD_DWX.jsonl",
+   "bytes": 24709,
+   "sha256": "5454031e2f5d9464c2fe9e2952795bbee6cae73d195516b5663803de49b6b0f2",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1230_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12354_XAUUSD_DWX.jsonl",
+   "bytes": 39901,
+   "sha256": "bf9a50ca870e3a696207c3779d92f25336868c582ac3bd41cbb81800fee51391",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12354_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12355_XAUUSD_DWX.jsonl",
+   "bytes": 32541,
+   "sha256": "33681f9b1ec7e38688778f197f3bfc5461897eecdf8759fe7837f145a20fff75",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12355_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12361_WS30_DWX.jsonl",
+   "bytes": 19957,
+   "sha256": "ddba0c00e7f21b1109580781505b242379dd9757d205db6a3baaa6af99387d2c",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12361_WS30_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12375_XAUUSD_DWX.jsonl",
+   "bytes": 9497,
+   "sha256": "60e800912f6afe31569d1381094252931283d1a8df8f5d7844f46a580c6179ff",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12375_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12474_GBPUSD_DWX.jsonl",
+   "bytes": 97774,
+   "sha256": "2f9d9ae59edb76dbf4330846e9fcfb62f6cbb2af40697a07fb903c422f82947a",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12474_GBPUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12474_XAUUSD_DWX.jsonl",
+   "bytes": 91927,
+   "sha256": "d940f54066e2170487e845cef3a66e601f0436f608480bc6528aaa85bf020d9e",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12474_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12475_NDX_DWX.jsonl",
+   "bytes": 367414,
+   "sha256": "0fc1e3e1a6b3e46678c43f1d4749d1d8de61180a3079b8670f7e85011e9fd4dd",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12475_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12543_USDJPY_DWX.jsonl",
+   "bytes": 4227,
+   "sha256": "29b2a92ae992696697d921cd502ad565f64d8eacff1c54e10e141a608db68a77",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12543_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12567_XAUUSD_DWX.jsonl",
+   "bytes": 29651,
+   "sha256": "756b7bbcf0bf6622561e35f07dcdbeb830027d300dbdfa3160b46bcd5011b6a0",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12567_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12567_XNGUSD_DWX.jsonl",
+   "bytes": 12754,
+   "sha256": "4f89b1d2c0bf6498cf5dcf34efca66abe4f28c5ede4cdc0b8c6090bf4c2e1e43",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12567_XNGUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12580_AUDUSD_DWX.jsonl",
+   "bytes": 16767,
+   "sha256": "45f358fc56af5fc884b8f17b110294fd95141277402d69c68d4d4aceea252268",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12580_AUDUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12623_XAUUSD_DWX.jsonl",
+   "bytes": 11141,
+   "sha256": "813f619019fcaea8569ad2c666d077f9b988f4990104454d1177af03db63d00b",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12623_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12708_XAUUSD_DWX.jsonl",
+   "bytes": 17643,
+   "sha256": "7f3331063c630a844ca7793acf12879a1ad0e30b93e300452740b9025cfc60d1",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12708_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12710_XTIUSD_DWX.jsonl",
+   "bytes": 18035,
+   "sha256": "09ccf51a9e7d00e0e921328e8b57e1a3ab28afbb11dc04b68c938db59400d224",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12710_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12712_EURGBP_DWX.jsonl",
+   "bytes": 13988,
+   "sha256": "3ee28a6f5b70b515b10fa2ed4ef9a3f13d6c380a99377fab79d9301e4f205477",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12712_EURGBP_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12712_QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1.jsonl",
+   "bytes": 13988,
+   "sha256": "3ee28a6f5b70b515b10fa2ed4ef9a3f13d6c380a99377fab79d9301e4f205477",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12712_QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12772_QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1.jsonl",
+   "bytes": 45975,
+   "sha256": "f3ef3dbb4b1766b12b212c20cdc578354682ec75158064112fcd9f7b04a84b94",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12772_QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12778_AUDUSD_DWX.jsonl",
+   "bytes": 42712,
+   "sha256": "276adef910f3eca3432ee03a31f5abc0c5e7791794325c930294707be5b00186",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12778_AUDUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12778_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1.jsonl",
+   "bytes": 42712,
+   "sha256": "276adef910f3eca3432ee03a31f5abc0c5e7791794325c930294707be5b00186",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12778_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12781_QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1.jsonl",
+   "bytes": 49120,
+   "sha256": "889c765da760b27668918ecb8c3923b17a49504776e6531f13accada1d2b81d2",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12781_QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12781_USDJPY_DWX.jsonl",
+   "bytes": 49120,
+   "sha256": "889c765da760b27668918ecb8c3923b17a49504776e6531f13accada1d2b81d2",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12781_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12796_SP500_DWX.jsonl",
+   "bytes": 7959,
+   "sha256": "b718856c953ca8b786cbb40587893429edf522985caf1147f0eb4eac9837a6a8",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12796_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12823_USDJPY_DWX.jsonl",
+   "bytes": 339319,
+   "sha256": "b89f4e839bdbda45cb0efb28c31338d7bd6bebc381bfc92a6436020baf618941",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12823_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12831_QM5_12831_XTI_AUDUSD_BRK_D1.jsonl",
+   "bytes": 35738,
+   "sha256": "bf5a7838299550c83c6d873c71685dcdf0a08148637a17babcac8dbe1a88aad2",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12831_QM5_12831_XTI_AUDUSD_BRK_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12831_XTIUSD_DWX.jsonl",
+   "bytes": 35738,
+   "sha256": "bf5a7838299550c83c6d873c71685dcdf0a08148637a17babcac8dbe1a88aad2",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12831_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12847_NDX_DWX.jsonl",
+   "bytes": 15760,
+   "sha256": "4d0bb6d2c8eef5be788da7c8bbc3b493c25a592d7c960bc3fb992764f75fe94a",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12847_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12849_XTIUSD_DWX.jsonl",
+   "bytes": 34748,
+   "sha256": "9513177e28f7d8bb4644b2a85ca0628952292737afdc686ef32a89c2d5621e84",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12849_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12855_XTIUSD_DWX.jsonl",
+   "bytes": 69390,
+   "sha256": "9198da01eab7b835225127422313bb89b540fabcfa5e38c88ab38623057f355b",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12855_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12864_QM5_12864_XTI_XAG_RSPREAD_D1.jsonl",
+   "bytes": 21219,
+   "sha256": "a67bde6bff7460329ae0f860835d3524b2e8fbf9947e492d7f5ec1f90f4cc059",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12864_QM5_12864_XTI_XAG_RSPREAD_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12864_XTIUSD_DWX.jsonl",
+   "bytes": 20822,
+   "sha256": "d35df1734c2af485bdfe1570cb9dcc301b5a55bac64eea6660d5e2d91d1eee7a",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12864_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12915_SP500_DWX.jsonl",
+   "bytes": 13513,
+   "sha256": "5876ca491d1d48c690d56eee81378df1dbd37ed8adfa9e89e349561b6be1e91d",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12915_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12958_XAUUSD_DWX.jsonl",
+   "bytes": 63676,
+   "sha256": "cd439af8daee5e0ece22cdb143d70ca5e2929d21f1d78a0b5df1e224d144653b",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12958_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12966_GDAXI_DWX.jsonl",
+   "bytes": 13270,
+   "sha256": "cdaef9663c4063b3e9c09d4c2a675067fcb952c2e1a324b7acb562e4ace61fd3",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12966_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12969_USDJPY_DWX.jsonl",
+   "bytes": 66229,
+   "sha256": "1788388f79e4197739169ef4e289abd5f6104cd492b34bd30cc221f03b971f10",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12969_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12989_XAUUSD_DWX.jsonl",
+   "bytes": 17824,
+   "sha256": "0ddbdf8d467403eb4b09f1fa4b595ed825a0d8a43c1ccad8a0e3c67dd2a76e07",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12989_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/12990_GBPUSD_DWX.jsonl",
+   "bytes": 18671,
+   "sha256": "9e9b8c3271d83881d15cc34c3590fbe3728f3d24adcdd3f6240068ef2b7e3fc4",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12990_GBPUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13013_NDX_DWX.jsonl",
+   "bytes": 29110,
+   "sha256": "679ce2cd7db33a5d00bb985a8c3cedfb5a4e832bb8352b4a1d5b67a8dee0ebf5",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13013_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13017_XAUUSD_DWX.jsonl",
+   "bytes": 18943,
+   "sha256": "6b3e5df64ccb6c900aae82f0fead8fbd4d25adc728aba888e1f40e5ce7a6bc7e",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13017_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13036_GDAXI_DWX.jsonl",
+   "bytes": 487104,
+   "sha256": "6336dde9f08bbbe2e81678b60d8e8b2728db3ee4787b9d13f7972b56b1f2b145",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13036_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13054_XTIUSD_DWX.jsonl",
+   "bytes": 33657,
+   "sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13059_QM5_13059_XTI_AUDJPY_RSPREAD_D1.jsonl",
+   "bytes": 25444,
+   "sha256": "89bb048f6ba6281ac9bd93477b47b8d5755f5093e287d06727a7f0db2fc56abd",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13059_QM5_13059_XTI_AUDJPY_RSPREAD_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13059_XTIUSD_DWX.jsonl",
+   "bytes": 25444,
+   "sha256": "89bb048f6ba6281ac9bd93477b47b8d5755f5093e287d06727a7f0db2fc56abd",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13059_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13061_XTIUSD_DWX.jsonl",
+   "bytes": 68822,
+   "sha256": "b5ba88cfc8fe391a44a817b4a44101fad3c14261b143c029520c841013482f04",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13061_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13076_QM5_13076_XTI_NZDCAD_RSPREAD_D1.jsonl",
+   "bytes": 25461,
+   "sha256": "57c16b1ada7fc7fa02f54279347446970620b75fa7002f77a0715ea6b4af2ca3",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13076_QM5_13076_XTI_NZDCAD_RSPREAD_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13076_XTIUSD_DWX.jsonl",
+   "bytes": 25461,
+   "sha256": "57c16b1ada7fc7fa02f54279347446970620b75fa7002f77a0715ea6b4af2ca3",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13076_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13108_XTIUSD_DWX.jsonl",
+   "bytes": 120552,
+   "sha256": "74b96dc487d5498a076b3a8f716bcf25eca9a588ab66719743501593b3900d15",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13108_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13117_EURGBP_DWX.jsonl",
+   "bytes": 45787,
+   "sha256": "6df9a10a9f46fbd3df7dace6bc5cd448b904bcb28cbccfe91dde9d38915ec327",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13117_EURGBP_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13117_QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1.jsonl",
+   "bytes": 45787,
+   "sha256": "6df9a10a9f46fbd3df7dace6bc5cd448b904bcb28cbccfe91dde9d38915ec327",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13117_QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13128_NDX_DWX.jsonl",
+   "bytes": 12476,
+   "sha256": "f013c7c144bd716c88e38d95007dc543711fc73c2993af94cca05990ec0ac17f",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13128_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13140_QM5_13140_XTI_XNG_ALIQ_D1.jsonl",
+   "bytes": 26820,
+   "sha256": "f0f32681e88aa59bd4d0789028aad10f075115380601232e6d2ea24db0d15459",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13140_QM5_13140_XTI_XNG_ALIQ_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13140_XTIUSD_DWX.jsonl",
+   "bytes": 26820,
+   "sha256": "f0f32681e88aa59bd4d0789028aad10f075115380601232e6d2ea24db0d15459",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13140_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13144_QM5_13144_XTI_XNG_MICRO11_D1.jsonl",
+   "bytes": 29211,
+   "sha256": "029291e4c008e07f576d2962623f8417435d37bd43983b47a477265b702343e6",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13144_QM5_13144_XTI_XNG_MICRO11_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13144_XTIUSD_DWX.jsonl",
+   "bytes": 29211,
+   "sha256": "029291e4c008e07f576d2962623f8417435d37bd43983b47a477265b702343e6",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13144_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13146_QM5_13146_XTI_XNG_VOV_D1.jsonl",
+   "bytes": 26397,
+   "sha256": "d54ddd5b7f0e2a744e279f80c17435d8063fee017a20519c290fff2755da9661",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13146_QM5_13146_XTI_XNG_VOV_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13146_XTIUSD_DWX.jsonl",
+   "bytes": 26397,
+   "sha256": "d54ddd5b7f0e2a744e279f80c17435d8063fee017a20519c290fff2755da9661",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13146_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13147_QM5_13147_XTI_XNG_JBETA_D1.jsonl",
+   "bytes": 16616,
+   "sha256": "2e08c99b4bbb50ed0bedb8271e7476404d3a311f255f1546635d6ac5a038ac7d",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13147_QM5_13147_XTI_XNG_JBETA_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13147_XTIUSD_DWX.jsonl",
+   "bytes": 16616,
+   "sha256": "2e08c99b4bbb50ed0bedb8271e7476404d3a311f255f1546635d6ac5a038ac7d",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13147_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13151_QM5_13151_XTI_XNG_VBETA_D1.jsonl",
+   "bytes": 16187,
+   "sha256": "7b6583ada95d7cba1ce68283e2e4386b0a89fe95acff539daf8dc091256348ac",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13151_QM5_13151_XTI_XNG_VBETA_D1.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13151_XTIUSD_DWX.jsonl",
+   "bytes": 16187,
+   "sha256": "7b6583ada95d7cba1ce68283e2e4386b0a89fe95acff539daf8dc091256348ac",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13151_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13213_USDJPY_DWX.jsonl",
+   "bytes": 358889,
+   "sha256": "af3f9f85756755c549af6f95009efed10267a6ec127aeea2fbc7ad1a79fdcaea",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13213_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1328_EURJPY_DWX.jsonl",
+   "bytes": 12972,
+   "sha256": "3c7ce8229a3e7c91fdde53f892a06ec90ae945f91082f5f6f08b960f0c29e7a9",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1328_EURJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1328_USDCAD_DWX.jsonl",
+   "bytes": 12758,
+   "sha256": "d1db6db84cd5303fcca43b4cd34d0aad2fab1e0ceb09fb18a4aad644512653c4",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1328_USDCAD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/13301_GDAXI_DWX.jsonl",
+   "bytes": 231092,
+   "sha256": "207bc3cd4e3c65032e0aabbf29880364d712007e94313d18cf461bc2f027b274",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13301_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1537_XAGUSD_DWX.jsonl",
+   "bytes": 39136,
+   "sha256": "1885c21e4c895827c79ff3d55849308ab4ee5c0db96a7d576cd652dc3eff8658",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1551_USDJPY_DWX.jsonl",
+   "bytes": 30297,
+   "sha256": "d99cad2708b41858bbbabd6f2c613fe0aa34064cc52b6233b6d00aade3ae0a9b",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1551_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1556_XAUUSD_DWX.jsonl",
+   "bytes": 21797,
+   "sha256": "b1e84c8a1e8c74f8611d600adc1174c6269067020356969e19f35b513fa485c8",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1556_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1567_EURGBP_DWX.jsonl",
+   "bytes": 14179,
+   "sha256": "0a8c392b2ea7168959775ea6c08134129084bfd45f0b89400900aeda195ec25b",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1567_EURGBP_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1567_EURUSD_DWX.jsonl",
+   "bytes": 30262,
+   "sha256": "ddb8d5de85f52342569bafe2bf84be6f9534b1553cb508fb745fb3791b97a087",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1567_EURUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1567_GBPJPY_DWX.jsonl",
+   "bytes": 16127,
+   "sha256": "0b2cb33c31b5bd65144bac7347c169fcecb515987311c292e7ac14b6cacd2f60",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1567_GBPJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1567_GBPNZD_DWX.jsonl",
+   "bytes": 18176,
+   "sha256": "1c89860f28267fb02e808b3c4aa1d60be31be391015a1d67903e6b50f1dd3ba3",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1567_GBPNZD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1567_USDJPY_DWX.jsonl",
+   "bytes": 17540,
+   "sha256": "e7f657d9c8f77ca40d3c347279242a90fb4e80c1e5641dcd425b438598f3a798",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1567_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1567_XAGUSD_DWX.jsonl",
+   "bytes": 14248,
+   "sha256": "c4e2e73b85e7e167085d006415ff9ae4eea0dfbc3cc9fb2c02d3421c1f9179b0",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1567_XAGUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/1567_XAUUSD_DWX.jsonl",
+   "bytes": 18892,
+   "sha256": "b06d6f3150d7b5ce8106de06cf23d59cc78e281ee18e9c632e94f7f5498567fa",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1567_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/20010_XAUUSD_DWX.jsonl",
+   "bytes": 79685,
+   "sha256": "6b0696fe246bc9a44244c59f2f0db780a58c7eaeb6ed58cea4c5c67afcfb0031",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20010_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/20047_XTIUSD_DWX.jsonl",
+   "bytes": 16737,
+   "sha256": "0d640b8c45b6b1cad7bf793c3f8f34f3dc06462b832015eea76c0ade42bd0aa0",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20047_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/20048_XTIUSD_DWX.jsonl",
+   "bytes": 24488,
+   "sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/20086_EURUSD_DWX.jsonl",
+   "bytes": 182704,
+   "sha256": "dd2cc9bf5a79612544d0591ad13f721f1f87d17ac7ca94dd73e6dee55de04d13",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20086_EURUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/20086_NDX_DWX.jsonl",
+   "bytes": 160507,
+   "sha256": "3a1d4f0241dbb538bc9e27dd10129e0c601faee7d50d3821fa950e24a3bc0524",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20086_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/20266_XTIUSD_DWX.jsonl",
+   "bytes": 176778,
+   "sha256": "c70651f78c4a5cd9aec42dda4207e14d206575134ccebb058b2e3e1e42f180d3",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20266_XTIUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9403_GDAXI_DWX.jsonl",
+   "bytes": 71944,
+   "sha256": "e3f3047ef379779ae3414a31b13bd52b86f55dacea9ead736fb5678c3f72b709",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9403_GDAXI_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9403_UK100_DWX.jsonl",
+   "bytes": 92817,
+   "sha256": "12701970de47e74a88775d94084774c31494bce8bc04cd6c35453acd15411b96",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9403_UK100_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9502_SP500_DWX.jsonl",
+   "bytes": 10766,
+   "sha256": "7f7f2bae2d77d6a2949dd85ed2f78b0eb7e40af649189fda4324cd4f77c4d5d5",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9502_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9503_USDJPY_DWX.jsonl",
+   "bytes": 16623,
+   "sha256": "cba5b26e9fa295a497008a0256ae339afa471c51c433aa7a7a64056889669b03",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9503_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9515_NDX_DWX.jsonl",
+   "bytes": 11205,
+   "sha256": "c77aa5fe61a0e6552a499766901b7d57e9b5f1d341a344791e0e2c49eb330932",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9515_NDX_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9515_XAUUSD_DWX.jsonl",
+   "bytes": 10783,
+   "sha256": "46bbbf7b4371a862bfd3b4ff1ef1647b58c0a0a376d614c7c45bd08a989960c8",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9515_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9573_USDCHF_DWX.jsonl",
+   "bytes": 26213,
+   "sha256": "5b94285b41faac61cb0e2167c562522f307b36d59264c1193572e88b14f6a60c",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9573_USDCHF_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9638_XAUUSD_DWX.jsonl",
+   "bytes": 7476,
+   "sha256": "bf08d6ebaba4466385428b3cf1ea321c77735c47277d0227dc1d5f43de5e8bbc",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9638_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9641_WS30_DWX.jsonl",
+   "bytes": 26637,
+   "sha256": "4b95efd711b6c0fefa51cb344a68bffec5e3938ce489fb1572e79a8de74ccd98",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9641_WS30_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9929_SP500_DWX.jsonl",
+   "bytes": 18779,
+   "sha256": "5573839681790287a9f2c0f38533cb9206781cf7ef75ac753312a53d323cc46f",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9929_SP500_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9929_XAUUSD_DWX.jsonl",
+   "bytes": 18499,
+   "sha256": "1058673f8794eb3fd0dd6d1da6aea48162afff1e386534757043e0a675e6d824",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9929_XAUUSD_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9936_USDJPY_DWX.jsonl",
+   "bytes": 280776,
+   "sha256": "b47a397d23576bd8a854557583735ba230f49c3406386875e513e5ee83137484",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9936_USDJPY_DWX.jsonl"
+  },
+  {
+   "archive_name": "sleeve_streams/9999_EURUSD_DWX.jsonl",
+   "bytes": 36449,
+   "sha256": "85222288c4a9d918e220e2f75bde8ffcf0904fe7eccd826b19d9aba66e481f76",
+   "source": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9999_EURUSD_DWX.jsonl"
+  }
+ ],
+ "schema_version": "qm.audit-evidence-vault/v1"
+}
