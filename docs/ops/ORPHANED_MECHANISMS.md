@@ -99,8 +99,9 @@ Schritt braucht je Zeile einen Blick. Ich gebe die Liste deshalb als **Kandidate
 
 ## 4 · Der Review-Stau, gesondert
 
-**[MESSUNG]** 86 Aufgaben in `REVIEW`, sämtlich vom Typ `review_ea`, gewachsen von 56 auf 86 seit
-dem 18.08. früh.
+**[MESSUNG] Stand 19:40 UTC: 106 Aufgaben in `REVIEW`** — 56 `build_ea` und 50 `review_ea`. Die
+frühere Zählung („86, sämtlich `review_ea`") war eine Momentaufnahme **einer** Typspalte; korrekt
+sind zwei Typen. Die `ops_issue`-Lieferungen dieser Sitzung sind beide geschlossen.
 
 **Ursache — kein Operator, sondern eine Zuständigkeit.** `review_ea`-Tickets sind
 Claude-Kapazität: der Router führt Claude mit `enabled: false` und `max_parallel: 0`
