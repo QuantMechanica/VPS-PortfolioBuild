@@ -1,0 +1,617 @@
+{
+ "candidates": 54,
+ "rows": [
+  {
+   "code_refs": [],
+   "reference_count": 0,
+   "script": "tools\\strategy_farm\\install_reconcile_orphans_scheduled_task.ps1",
+   "status": "orphan",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 0,
+   "script": "tools\\strategy_farm\\install_worktree_clean_scheduled_task.ps1",
+   "status": "orphan",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 0,
+   "script": "tools\\strategy_farm\\recover_r1_source_rejections.py",
+   "status": "orphan",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 0,
+   "script": "tools\\strategy_farm\\repair_basket_history_symbols.py",
+   "status": "orphan",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\mailbox_source_intake.py"
+   ],
+   "reference_count": 2,
+   "script": "tools\\strategy_farm\\sourcing_intake_sweep.py",
+   "status": "scheduled_but_disabled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_SourcingIntakeSweep",
+     "state": "Disabled"
+    }
+   ]
+  },
+  {
+   "code_refs": [],
+   "reference_count": 2,
+   "script": "tools\\strategy_farm\\audit_q04_native_report_guard.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 1,
+   "script": "tools\\strategy_farm\\install_factory_watchdog_scheduled_task.ps1",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 1,
+   "script": "tools\\strategy_farm\\install_hourly_monitor_scheduled_task.ps1",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 1,
+   "script": "tools\\strategy_farm\\install_quota_governor_scheduled_task.ps1",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 5,
+   "script": "tools\\strategy_farm\\install_tester_cache_purge_scheduled_task.ps1",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 1,
+   "script": "tools\\strategy_farm\\install_workitem_log_pruner_scheduled_task.ps1",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 1,
+   "script": "tools\\strategy_farm\\open_recovery_window_and_release.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 2,
+   "script": "tools\\strategy_farm\\q02_disposition_repair.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 1,
+   "script": "tools\\strategy_farm\\q08_recovery_lineage.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 2,
+   "script": "tools\\strategy_farm\\reconcile_blocked_build_tasks.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 2,
+   "script": "tools\\strategy_farm\\reconcile_terminal_work_items.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 3,
+   "script": "tools\\strategy_farm\\recover_orphan_reports.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 2,
+   "script": "tools\\strategy_farm\\requeue_false_progress_reap.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [],
+   "reference_count": 5,
+   "script": "tools\\strategy_farm\\task_watch_notifier.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\farmctl.py"
+   ],
+   "reference_count": 1,
+   "script": "tools\\strategy_farm\\classify_recovery_pending.py",
+   "status": "mentioned_but_not_invoked",
+   "strict_note": "references are docstrings or tests, not invocations",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\run_worktree_clean_task.py"
+   ],
+   "reference_count": 1,
+   "script": "tools\\strategy_farm\\clean_repo_worktree.ps1",
+   "status": "mentioned_but_not_invoked",
+   "strict_note": "references are docstrings or tests, not invocations",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\pipeline_books_dashboard_status.py",
+    "tools\\strategy_farm\\test_lanes.py"
+   ],
+   "reference_count": 7,
+   "script": "tools\\strategy_farm\\dxz_10939_repair_packet.py",
+   "status": "mentioned_but_not_invoked",
+   "strict_note": "references are docstrings or tests, not invocations",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\pipeline_books_dashboard_status.py",
+    "tools\\strategy_farm\\test_lanes.py"
+   ],
+   "reference_count": 7,
+   "script": "tools\\strategy_farm\\dxz_12567_xau_repair_packet.py",
+   "status": "mentioned_but_not_invoked",
+   "strict_note": "references are docstrings or tests, not invocations",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\Factory_ON.ps1",
+    "tools\\strategy_farm\\factory_runtime_activation.py",
+    "tools\\strategy_farm\\tests\\Test-FactoryRestartPostStartHealth.ps1",
+    "tools\\strategy_farm\\tests\\test_factory_restart_post_start_health.py"
+   ],
+   "reference_count": 16,
+   "script": "tools\\strategy_farm\\factory_restart_health.ps1",
+   "status": "mentioned_but_not_invoked",
+   "strict_note": "references are docstrings or tests, not invocations",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\farmctl.py",
+    "tools\\strategy_farm\\quota_pull.py",
+    "tools\\strategy_farm\\tests\\test_health_starvation.py",
+    "tools\\strategy_farm\\tests\\test_health_vacuousness.py",
+    "tools\\strategy_farm\\tests\\test_summary_missing_classification.py"
+   ],
+   "reference_count": 47,
+   "script": "tools\\strategy_farm\\health.py",
+   "status": "called_from_code",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\agy_governor.py",
+    "tools\\strategy_farm\\tests\\test_mnt003_installer_alignment.py"
+   ],
+   "reference_count": 4,
+   "script": "tools\\strategy_farm\\install_agy_governor_scheduled_task.ps1",
+   "status": "mentioned_but_not_invoked",
+   "strict_note": "references are docstrings or tests, not invocations",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\tests\\test_mnt003_installer_alignment.py"
+   ],
+   "reference_count": 4,
+   "script": "tools\\strategy_farm\\install_codex_fleet_pacer_scheduled_task.ps1",
+   "status": "mentioned_but_not_invoked",
+   "strict_note": "references are docstrings or tests, not invocations",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\factory_runtime_activation.py",
+    "tools\\strategy_farm\\tests\\test_factory_runtime_activation.py",
+    "scripts\\run_public_snapshot_task.ps1"
+   ],
+   "reference_count": 3,
+   "script": "tools\\strategy_farm\\public_snapshot_incident_guard.py",
+   "status": "mentioned_but_not_invoked",
+   "strict_note": "references are docstrings or tests, not invocations",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\run_agent_temp_reclaim.ps1"
+   ],
+   "reference_count": 1,
+   "script": "tools\\strategy_farm\\reclaim_busy_agent_temp.ps1",
+   "status": "called_from_code",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\farmctl.py"
+   ],
+   "reference_count": 12,
+   "script": "tools\\strategy_farm\\repair.py",
+   "status": "called_from_code",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\requeue_false_progress_reap.py",
+    "tools\\strategy_farm\\tests\\test_requeue_stranded_infra.py"
+   ],
+   "reference_count": 22,
+   "script": "tools\\strategy_farm\\requeue_stranded_infra.py",
+   "status": "mentioned_but_not_invoked",
+   "strict_note": "references are docstrings or tests, not invocations",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\run_agent_orchestration_task.py"
+   ],
+   "reference_count": 155,
+   "script": "tools\\strategy_farm\\validate_build_guardrails.py",
+   "status": "mentioned_but_not_invoked",
+   "strict_note": "references are docstrings or tests, not invocations",
+   "tasks": []
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\install_live_uptime_tasks.ps1",
+    "tools\\strategy_farm\\Live_Alarm_State.ps1",
+    "tools\\strategy_farm\\Morning_Safety_Check.ps1",
+    "tools\\strategy_farm\\silent_failure_monitor.py",
+    "tools\\strategy_farm\\tests\\Test-LiveAlarmState.ps1"
+   ],
+   "reference_count": 22,
+   "script": "tools\\strategy_farm\\T_Live_Watchdog.ps1",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_T_Live_Watchdog",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\antigravity_channel_harvest.py",
+    "tools\\strategy_farm\\install_agy_governor_scheduled_task.ps1",
+    "tools\\strategy_farm\\tests\\test_mnt003_installer_alignment.py",
+    "docs\\ops\\evidence\\2026-07-31_mnt003_r2_probe_harness.ps1"
+   ],
+   "reference_count": 15,
+   "script": "tools\\strategy_farm\\agy_governor.py",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_AgyGovernor",
+     "state": "Running"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\codex_kill_safety_audit.py",
+    "tools\\strategy_farm\\Factory_OFF.ps1",
+    "tools\\strategy_farm\\Factory_ON.ps1",
+    "tools\\strategy_farm\\install_codex_fleet_pacer_scheduled_task.ps1",
+    "tools\\strategy_farm\\tests\\test_codex_kill_safety_audit.py"
+   ],
+   "reference_count": 16,
+   "script": "tools\\strategy_farm\\codex_fleet_pacer.py",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_CodexFleetPacer",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\tests\\test_evidence_cohort_watch.py"
+   ],
+   "reference_count": 2,
+   "script": "tools\\strategy_farm\\evidence_cohort_watch.py",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_EvidenceCohortWatch_Daily_0420",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\install_factory_watchdog_scheduled_task.ps1",
+    "tools\\strategy_farm\\interactive_worker_keeper.py",
+    "tools\\strategy_farm\\Morning_Safety_Check.ps1",
+    "tools\\strategy_farm\\tests\\test_factory_watchdog_interactive_heal_static.py",
+    "tools\\strategy_farm\\tests\\test_reboot_diagnostic_mail.py"
+   ],
+   "reference_count": 23,
+   "script": "tools\\strategy_farm\\factory_watchdog.ps1",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_FactoryWatchdog_15min",
+     "state": "Running"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\install_hourly_monitor_scheduled_task.ps1",
+    "tools\\strategy_farm\\tests\\test_factory_quiescence.py"
+   ],
+   "reference_count": 5,
+   "script": "tools\\strategy_farm\\hourly_monitor.ps1",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_HourlyMonitor_60min",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [],
+   "reference_count": 2,
+   "script": "tools\\strategy_farm\\inbox_cleanup.py",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_InboxCleanup_Daily",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [],
+   "reference_count": 1,
+   "script": "tools\\strategy_farm\\live_book_dd_guard.py",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_LiveBookDDGuard",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [],
+   "reference_count": 4,
+   "script": "tools\\strategy_farm\\live_supervisor_watchdog.ps1",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_LiveSupervisor_Watchdog_SYSTEM",
+     "state": "Running"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\install_hygiene_and_lsm_tasks.ps1",
+    "tools\\strategy_farm\\tests\\test_hygiene_reboot_task.py"
+   ],
+   "reference_count": 4,
+   "script": "tools\\strategy_farm\\lsm_health_probe.ps1",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_LsmHealthProbe",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [],
+   "reference_count": 0,
+   "script": "tools\\strategy_farm\\monitor_intraday_edges.py",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_IntradayEdgeWatch",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\evidence_cohort_watch.py",
+    "tools\\strategy_farm\\install_workitem_log_pruner_scheduled_task.ps1"
+   ],
+   "reference_count": 11,
+   "script": "tools\\strategy_farm\\prune_workitem_logs.py",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_WorkItemLogPruner_Daily_0310",
+     "state": "Running"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\install_quota_governor_scheduled_task.ps1"
+   ],
+   "reference_count": 5,
+   "script": "tools\\strategy_farm\\quota_governor.py",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_QuotaGovernor",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [],
+   "reference_count": 3,
+   "script": "tools\\strategy_farm\\r_eval_drain.py",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_REvalDrain_15min",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\install_reconcile_orphans_scheduled_task.ps1"
+   ],
+   "reference_count": 2,
+   "script": "tools\\strategy_farm\\reconcile_orphans.ps1",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_ReconcileOrphans_Hourly",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\Morning_Safety_Check.ps1",
+    "tools\\strategy_farm\\news_calendar_gate.py",
+    "tools\\strategy_farm\\tests\\test_news_calendar_gate.py",
+    "tools\\strategy_farm\\tests\\test_refresh_news_calendar.py"
+   ],
+   "reference_count": 8,
+   "script": "tools\\strategy_farm\\refresh_news_calendar.ps1",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_NewsCalendar_Refresh",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [],
+   "reference_count": 8,
+   "script": "tools\\strategy_farm\\reports_log_purge.ps1",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_ReportsLogPurge_12h",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [],
+   "reference_count": 0,
+   "script": "tools\\strategy_farm\\run_agent_temp_reclaim.ps1",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_AgentTempReclaim_10min",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\install_worktree_clean_scheduled_task.ps1",
+    "tools\\strategy_farm\\tests\\test_factory_mutation_lock.py"
+   ],
+   "reference_count": 3,
+   "script": "tools\\strategy_farm\\run_worktree_clean_task.py",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_WorktreeClean_4h",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [],
+   "reference_count": 5,
+   "script": "tools\\strategy_farm\\silent_failure_monitor.py",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_SilentFailureMonitor",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\backfill_active_timeout.py",
+    "tools\\strategy_farm\\prepare_book_q08_regeneration.py",
+    "tools\\strategy_farm\\requeue_stranded_infra.py",
+    "tools\\strategy_farm\\review_entry_gate.py",
+    "tools\\strategy_farm\\tests\\test_factory_mutation_lock.py"
+   ],
+   "reference_count": 156,
+   "script": "tools\\strategy_farm\\sweep_enqueue_built_eas.py",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_SweepEnqueue_Hourly",
+     "state": "Ready"
+    }
+   ]
+  },
+  {
+   "code_refs": [
+    "tools\\strategy_farm\\health.py",
+    "tools\\strategy_farm\\install_tester_cache_purge_scheduled_task.ps1",
+    "tools\\strategy_farm\\reclaim_busy_agent_temp.ps1",
+    "tools\\strategy_farm\\reports_log_purge.ps1",
+    "tools\\strategy_farm\\tests\\test_factory_watchdog_interactive_heal_static.py"
+   ],
+   "reference_count": 25,
+   "script": "tools\\strategy_farm\\tester_cache_purge.ps1",
+   "status": "scheduled",
+   "tasks": [
+    {
+     "name": "QM_StrategyFarm_TesterCachePurge",
+     "state": "Running"
+    }
+   ]
+  }
+ ],
+ "schema_version": "qm.orphaned-mechanisms/v1",
+ "strict_pass": true,
+ "summary": {
+  "called_from_code": 3,
+  "documented_only": 14,
+  "mentioned_but_not_invoked": 10,
+  "orphan": 4,
+  "scheduled": 22,
+  "scheduled_but_disabled": 1
+ }
+}
