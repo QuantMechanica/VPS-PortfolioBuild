@@ -17536,3 +17536,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 40008,aqr-value-and-momentum-everywhere,2,XTIUSD.DWX,400080002,2026-08-18,Gemini,active
 40008,aqr-value-and-momentum-everywhere,3,EURUSD.DWX,400080003,2026-08-18,Gemini,active
 41058,xng-wflow-agree,0,XNGUSD.DWX,410580000,2026-08-18T00:00:00Z,Codex,active
+41059,wti-samecal-hit,0,XTIUSD.DWX,410590000,2026-08-18T00:00:00Z,Codex,active
