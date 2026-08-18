@@ -211,11 +211,22 @@ def _extract_q08(d: dict) -> tuple[dict, dict, str]:
     gross = _to_float(d.get("gross_total"))
     comm = _to_float(d.get("commission_total"))
     base = d.get("baseline_run") or {}
+    mc = d.get("mc_shuffle_dd") or {}
+    # Q08's gate is explicitly calibrated on the Monte Carlo 95th-percentile
+    # drawdown.  baseline_run/summary carry execution metadata and counts in the
+    # observed schemas, not a realized drawdown, so the governed MC values are
+    # the headline.  Keep the as-realized values beside them in detail_json.
+    mc_dd_money = _to_float(d.get("mc_maxdd_p95"))
+    if mc_dd_money is None:
+        mc_dd_money = _to_float(mc.get("mc_maxdd_p95"))
+    mc_dd_pct = _to_float(d.get("mc_maxdd_p95_pct"))
+    if mc_dd_pct is None:
+        mc_dd_pct = _to_float(mc.get("mc_maxdd_p95_pct"))
     head = {
         "net_profit": (gross - comm) if (gross is not None and comm is not None) else gross,
         "profit_factor": _to_float(base.get("baseline_profit_factor")),
         "trades": _to_int(d.get("n_trades")),
-        "drawdown_money": None, "drawdown_pct": None,
+        "drawdown_money": mc_dd_money, "drawdown_pct": mc_dd_pct,
         "sharpe": None,
     }
     sgs = d.get("sub_gates") or []
@@ -224,6 +235,13 @@ def _extract_q08(d: dict) -> tuple[dict, dict, str]:
         "cost_cushion_tier": d.get("cost_cushion_tier"),
         "baseline_trades": _to_int(base.get("baseline_total_trades")),
         "verdict_classification": d.get("verdict_classification"),
+        "drawdown": {
+            "headline_basis": "mc_maxdd_p95",
+            "mc_maxdd_p95": mc_dd_money,
+            "mc_maxdd_p95_pct": mc_dd_pct,
+            "as_realized_maxdd": _to_float(mc.get("as_realized_maxdd")),
+            "as_realized_maxdd_pct": _to_float(mc.get("as_realized_maxdd_pct")),
+        },
         "sub_gates": [
             {"name": g.get("name"), "status": g.get("status"),
              "passed": g.get("passed"), "value": g.get("value"),
