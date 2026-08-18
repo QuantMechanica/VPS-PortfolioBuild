@@ -134,30 +134,57 @@ def _extract_summary_runs(d: dict) -> tuple[dict, dict, str]:
 def _extract_q04(d: dict) -> tuple[dict, dict, str]:
     folds = d.get("folds") or []
     fdet = []
-    pfs, nets, trs = [], [], []
+    pfs, nets, trs, dd_money_values, dd_pct_values = [], [], [], [], []
     for f in folds:
         pf_net = _to_float(f.get("pf_net"))
         gross = _to_float(f.get("gross_total"))
         comm = _to_float(f.get("sim_commission_total"))
         net = (gross - comm) if (gross is not None and comm is not None) else None
         tr = _to_int(f.get("trades"))
+        summary = None
+        summary_path_used = None
+        for summary_path in (f.get("summary_path"), f.get("source_summary_path")):
+            summary = _load_json(summary_path)
+            if summary is not None:
+                summary_path_used = summary_path
+                break
+        summary_runs = (summary or {}).get("runs") or []
+        fold_dd_money = [
+            value for run in summary_runs
+            if (value := _to_float(run.get("drawdown"))) is not None
+        ]
+        fold_dd_pct = [
+            value for run in summary_runs
+            if (value := _dd_pct_from_raw(run.get("drawdown_raw"))) is not None
+        ]
+        fold_max_dd_money = max(fold_dd_money) if fold_dd_money else None
+        fold_max_dd_pct = max(fold_dd_pct) if fold_dd_pct else None
         if pf_net is not None:
             pfs.append(pf_net)
         if net is not None:
             nets.append(net)
         if tr is not None:
             trs.append(tr)
+        if fold_max_dd_money is not None:
+            dd_money_values.append(fold_max_dd_money)
+        if fold_max_dd_pct is not None:
+            dd_pct_values.append(fold_max_dd_pct)
         fdet.append({
             "oos_start": f.get("oos_start"), "oos_end": f.get("oos_end"),
             "dev_start": f.get("dev_start"), "dev_end": f.get("dev_end"),
             "pf_net": pf_net, "trades": tr, "net_profit": net,
+            "drawdown_money": fold_max_dd_money,
+            "drawdown_pct": fold_max_dd_pct,
+            "summary_path": summary_path_used,
             "status": f.get("status") or f.get("verdict"),
         })
     head = {
         "net_profit": sum(nets) if nets else None,
         "profit_factor": (sum(pfs) / len(pfs)) if pfs else None,
         "trades": sum(trs) if trs else None,
-        "drawdown_money": None, "drawdown_pct": None, "sharpe": None,
+        "drawdown_money": max(dd_money_values) if dd_money_values else None,
+        "drawdown_pct": max(dd_pct_values) if dd_pct_values else None,
+        "sharpe": None,
     }
     detail = {
         "fold_count": d.get("fold_count") or len(folds),
