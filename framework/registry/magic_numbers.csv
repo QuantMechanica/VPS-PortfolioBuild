@@ -17543,3 +17543,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41003,kaufman-ready-set-go-momentum,0,SP500.DWX,410030000,2026-08-18,Gemini,active
 41003,kaufman-ready-set-go-momentum,1,NDX.DWX,410030001,2026-08-18,Gemini,active
 41003,kaufman-ready-set-go-momentum,2,GDAXI.DWX,410030002,2026-08-18,Gemini,active
+41002,robert-pardo-checkmate-breakout-engine,0,EURUSD.DWX,410020000,2026-08-18,Codex governed allocator,active
+41002,robert-pardo-checkmate-breakout-engine,1,GBPUSD.DWX,410020001,2026-08-18,Codex governed allocator,active
+41002,robert-pardo-checkmate-breakout-engine,2,USDJPY.DWX,410020002,2026-08-18,Codex governed allocator,active
