@@ -17548,3 +17548,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41002,robert-pardo-checkmate-breakout-engine,0,EURUSD.DWX,410020000,2026-08-18,Codex governed allocator,active
 41002,robert-pardo-checkmate-breakout-engine,1,GBPUSD.DWX,410020001,2026-08-18,Codex governed allocator,active
 41002,robert-pardo-checkmate-breakout-engine,2,USDJPY.DWX,410020002,2026-08-18,Codex governed allocator,active
+41061,wti-week-nr7-brk,0,XTIUSD.DWX,410610000,2026-08-18,Codex governed allocator,active
