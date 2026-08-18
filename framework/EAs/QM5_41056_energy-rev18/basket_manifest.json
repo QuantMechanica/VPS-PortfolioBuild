@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_41056_ENERGY_REV18_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG pure 18-month cross-sectional reversal basket from approved card BIANCHI-MOMREV-2015_XTI_XNG_S04. Run only on XTIUSD.DWX D1 and evaluate the paired package, never standalone legs. At each genuine normalized broker-month transition, rank synchronized completed 18-month returns, buy the loser, and short the winner. The runtime never calculates the sibling S01 12-month rank. Q02 is a strict narrow-carrier falsification; no source performance, neutrality, decorrelation, or portfolio admission is claimed."
+  ]
+}
