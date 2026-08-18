@@ -34,6 +34,7 @@ flat by broker Friday 21.
 | `strategy_history_bars` | 90 | bounded D1 retrieval buffer |
 | `strategy_entry_min_dow` | 2 | broker Tuesday first entry day |
 | `strategy_entry_max_dow` | 5 | broker Friday last entry day |
+| `strategy_entry_grace_minutes` | 180 | new-D1-bar execution window |
 | `strategy_atr_period_d1` | 20 | completed-bar stop estimator |
 | `strategy_atr_sl_mult` | 3.5 | frozen hard-stop distance |
 | `strategy_max_hold_days` | 8 | stale-position repair |
