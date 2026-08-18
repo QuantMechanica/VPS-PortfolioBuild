@@ -7812,6 +7812,13 @@ def _terminal_progress_evidence(
     latest_pct = 0
     latest_at = claimed_at
     source_path: Path | None = None
+    # A run that crosses local midnight writes its marker into the previous day's journal and its
+    # continuing progress into the new one. The per-file loop below skips any file without a marker,
+    # so from midnight onward the newest observation stops advancing and the row is reaped as
+    # NO_FORWARD_PROGRESS while the tester is still working (QM5_20085, 2026-08-19: killed at 93 %
+    # after 179 of 696 permitted minutes, with 6 progress lines in the new day's file the detector
+    # never read). These are collected here and folded in after the loop.
+    markerless_days: list[tuple[dt.date, Path, list[str]]] = []
     for path in candidates:
         try:
             # MT5 terminal logs are UTF-16LE (unlike Strategy Farm text logs).
@@ -7827,6 +7834,16 @@ def _terminal_progress_evidence(
             marker_indexes.append(index)
             marker_bindings.update(matched)
         if not marker_indexes:
+            # No marker of ANY tracked kind in this file. A newly launched session always writes its
+            # own tester.ini path -- and therefore its work_item id -- into the journal, so a file
+            # with no marker at all means no new session began in it. Its progress lines can only
+            # belong to the session already running. Kept aside; only files NEWER than the marker
+            # are used, so this can never credit progress that predates the claim.
+            try:
+                markerless_days.append(
+                    (dt.datetime.strptime(path.stem, "%Y%m%d").date(), path, lines))
+            except ValueError:
+                pass
             continue
         eligible_marker_indexes: list[int] = []
         for marker_index in marker_indexes:
@@ -7874,9 +7891,38 @@ def _terminal_progress_evidence(
 
     if not marker_found:
         return {"determined": False, "reason": "work_item_marker_missing"}
+
+    rollover_carried = False
+    if latest_marker_path is not None:
+        try:
+            marker_day = dt.datetime.strptime(latest_marker_path.stem, "%Y%m%d").date()
+        except ValueError:
+            marker_day = None
+        if marker_day is not None:
+            for day, path, lines in sorted(markerless_days):
+                if day <= marker_day:
+                    continue
+                for line in lines:
+                    match = _MT5_PROGRESS_RE.search(line)
+                    if not match:
+                        continue
+                    try:
+                        clock = dt.time.fromisoformat(match.group("time"))
+                        stamp = dt.datetime.combine(day, clock).astimezone().astimezone(dt.UTC)
+                    except ValueError:
+                        continue
+                    # Ordered by TIME, not by percentage: a multi-seed phase restarts the tester at
+                    # 0 %, so a high-water percentage would discard the very lines that prove the
+                    # run is alive.
+                    if claimed_at <= stamp <= now_dt + dt.timedelta(minutes=1) and stamp > latest_at:
+                        latest_at = stamp
+                        latest_pct = min(100, int(match.group("pct")))
+                        rollover_carried = True
+
     return {
         "determined": True,
         "reason": "work_item_bound_progress",
+        "rollover_carried": rollover_carried,
         "progress_pct": latest_pct,
         "progress_at": latest_at.replace(microsecond=0).isoformat(),
         "stalled_min": round(max(0.0, (now_dt - latest_at).total_seconds() / 60.0), 2),

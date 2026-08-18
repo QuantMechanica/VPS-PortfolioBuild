@@ -102,6 +102,27 @@ Schritt braucht je Zeile einen Blick. Ich gebe die Liste deshalb als **Kandidate
 > aufrufähnliche Fundstelle ist ein Markdown-Brief. `QM_StrategyFarm_Repair_Hourly` — die Aufgabe,
 > die den Requeue-Vertrag des Reapers tragen würde — ist seit dem **1. Juni** deaktiviert.
 
+## 3a · Die andere Hälfte der Klasse: **Aufrufer ohne die vermutete Wirkung**
+
+Die Suche lässt sich umgekehrt lesen, und die Rückrichtung ist die wertvollere. Nicht „Mechanismus
+ohne Aufrufer", sondern „**Aufrufer, dessen Name eine Abdeckung suggeriert, die er nicht leistet**".
+Beide erzeugen denselben blinden Fleck; die zweite Sorte ist gefährlicher, weil die Oberfläche
+Deckung meldet.
+
+**Alle 22 planmäßig aufgerufenen Skripte gegen ihre eigene Zweckbeschreibung gelesen. Ergebnis:**
+
+| Skript | Befund |
+|---|---|
+| **`run_worktree_clean_task.py`** | **Bestätigt.** Aufgabe heißt `QM_StrategyFarm_WorktreeClean_4h`; der Docstring sagt: *„Scheduled worktree janitor for completed strategy-farm **build artifacts** … commits/pushes completed EA build artifacts."* Er räumt keine Git-Worktrees. 90 registrierte Worktrees, ~64 GB auf C:, unabgedeckt → OQ-16 |
+| `sweep_enqueue_built_eas.py` | **Kein Befund, aber erwähnenswert:** der Docstring nennt sich selbst *„One-shot sweep"*, die Aufgabe läuft **stündlich**. Die Operation ist ihrer Natur nach idempotent (enqueued Q02 nur für EAs mit **null** Work-Items), deshalb harmlos — die Beschreibung ist veraltet, nicht die Wirkung. |
+| die übrigen 20 | Name und Wirkung decken sich: Watchdogs überwachen, Purges löschen, Governors drosseln, Probes prüfen. |
+
+**Eine bestätigte Fundstelle bei 22 geprüften.** Die Rückrichtung ist damit billig zu prüfen und
+sollte bei jeder neuen Scheduled Task einmal gemacht werden: *tut das Skript, was sein Aufgabenname
+verspricht?*
+
+---
+
 ## 4 · Der Review-Stau, gesondert
 
 **[MESSUNG] Stand 19:40 UTC: 106 Aufgaben in `REVIEW`** — 56 `build_ea` und 50 `review_ea`. Die

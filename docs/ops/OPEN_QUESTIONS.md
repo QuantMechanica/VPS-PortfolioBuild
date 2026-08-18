@@ -310,7 +310,19 @@ zweitgrößte Posten auf C:, und **nichts holt ihn zurück**. Er hat heute auße
 verfälscht (Skripte referenzieren sich über ihre eigenen Klone) — ein Nebeneffekt, der bei jedem
 künftigen repo-weiten Werkzeug wieder auftritt.
 
-## ● OQ-17 · Die Fabrik-Terminals teilen die **Live-Kontositzung** — isoliert ist das Verzeichnis, nicht das Konto
+## ○ OQ-17 · Die Fabrik-Terminals teilen die **Live-Kontositzung** — isoliert ist das Verzeichnis, nicht das Konto
+
+**GESCHLOSSEN 2026-08-19 — „bekannt und beabsichtigt, OWNER bestätigt."** Die Live-Anmeldung der
+Backtest-Terminals ist die Bezugsquelle der `.DWX`-Historie. Kein Handlungsbedarf, keine Prüfung,
+kein Umbau. In das Containment-Modell eingetragen (`CLAUDE.md`, Infrastructure Constants), damit
+derselbe Journal-Befund beim nächsten Blick nicht erneut als Vorfall untersucht wird — das war die
+einzige Kostenstelle.
+
+**Als bekannte, unauffällige Erscheinung notiert:** gespiegelte Konto-Ereignisse in
+Fabrik-Journalen — `Trades`-Zeilen mit echter Ticket-Nummer — sind **kein Signal**.
+**Erkennungsmerkmal:** dieselbe Deal-Nummer erscheint in mehreren Terminals binnen Millisekunden.
+
+*Der Befund unten bleibt als Herleitung stehen.*
 
 **Auslöser:** im Journal von T1 stand um 00:00:00 ein `Trades`-Eintrag mit echter Ticket-Nummer
 (`deal #152126761 buy 0.32 SP500`), obwohl T1 einen Q07-Backtest auf **XAUUSD.DWX** fuhr.

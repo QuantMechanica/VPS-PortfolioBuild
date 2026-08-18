@@ -146,7 +146,12 @@ keep the assumptions feeding it documented and correct.
   physical `Bases\Custom` (archive years content-verified against the signed manifest,
   copy-on-claim privatization, fail-closed dispatch gate). Containment watch:
   `D:\QM\strategy_farm\state\custom_history_containment_mode.json` must stay
-  `enabled:false`. Evidence:
+  `enabled:false`. **The isolation separates DIRECTORIES, not ACCOUNTS: T1–T10 are logged into the
+  same Darwinex-Live account as T_Live, deliberately, because it is the source of the `.DWX`
+  history (OWNER-confirmed 2026-08-19, OQ-17). Consequence: account-level `Trades` lines carrying
+  real ticket numbers appear in FACTORY journals. They are mirrored notifications, not executions —
+  the same deal id shows up in several terminals within milliseconds. Do not investigate them as an
+  incident.** Evidence:
   `docs/ops/evidence/2026-08-10_ramp10_serialization_gate_statonly_fix.md`.
 - Data: `D:\QM\data` · Reports: `D:\QM\reports` · Exports: `D:\QM\exports`
 - News calendar seed: `D:\QM\data\news_calendar`

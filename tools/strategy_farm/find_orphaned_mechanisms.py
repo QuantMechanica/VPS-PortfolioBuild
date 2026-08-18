@@ -26,6 +26,25 @@ A candidate with neither is an orphan. A candidate whose only caller is a Disabl
 than an orphan, because the surface says it is covered.
 
 Findings are reported, not fixed. Something may be deliberately parked.
+
+KNOWN TRAP for every repo-wide tool, not just this one
+-------------------------------------------------------
+``.claude/worktrees`` holds COMPLETE COPIES of this repository -- 19 of them, 22 GB, all carrying
+uncommitted changes so ``git worktree remove`` refuses and nothing reclaims them (OQ-16). Any tool
+that walks the repo will therefore see every file several times, and a reference search will find
+each script "referenced" by its own clones. That is not hypothetical: the first full-repo run of this
+scan classified ``requeue_stranded_infra.py`` as called-from-code on exactly that evidence, which
+would have erased the one finding the scan exists to produce.
+
+``_corpus()`` excludes ``worktrees``/``.claude``/``node_modules``/``.git``. **Copy that exclusion
+into any future repo-wide tool.** It will keep being wrong otherwise, and it fails silently -- the
+numbers look plausible, only better than the truth.
+
+READ IT BACKWARDS TOO
+---------------------
+The inverse question finds a different defect class: not "a mechanism with no caller" but "a caller
+whose NAME implies coverage it does not provide". ``QM_StrategyFarm_WorktreeClean_4h`` is enabled,
+runs, returns 0 -- and cleans build artifacts, not worktrees. See ORPHANED_MECHANISMS.md section 3a.
 """
 
 from __future__ import annotations

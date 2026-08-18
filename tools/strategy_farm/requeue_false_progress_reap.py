@@ -43,6 +43,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -125,6 +126,64 @@ def artifact_inside_blind_window(payload: dict[str, Any], after_iso: str) -> dic
             "window_end_utc": killed.replace(microsecond=0).isoformat()}
 
 
+_MT5_PROGRESS = re.compile(
+    r"(?P<time>\d{2}:\d{2}:\d{2})[.\d]*\s+AutoTesting\s+processing\s+(?P<pct>\d{1,3})\s*%",
+    re.IGNORECASE)
+
+
+def tester_progress_inside_blind_window(payload: dict[str, Any],
+                                        after_iso: str) -> dict[str, Any] | None:
+    """Liveness from the terminal journal, for phases that publish no file artifacts.
+
+    Q04 and Q08 drop artifacts under canonical roots; Q02, Q03, Q05, Q06, Q07 and Q10 do not, so the
+    artifact proof above can never clear them however alive they were. What every phase does leave is
+    the tester's own progress line in the terminal journal. A line inside the reaper's blind window
+    is the same class of evidence: the detector said "nothing since T", and MT5 says otherwise.
+
+    This is precisely how QM5_20085 was lost -- reaped at 93 % because its run crossed local midnight
+    and the marker stayed in the previous day's journal, while six progress lines sat unread in the
+    new one.
+    """
+    after = _as_utc(after_iso)
+    killed = _as_utc(payload.get("killed_at"))
+    if after is None or killed is None:
+        return None
+    lower = after + dt.timedelta(seconds=PROOF_MARGIN_SEC)
+    if lower >= killed:
+        return None
+    terminal = str(payload.get("terminal") or payload.get("claimed_by") or "").strip()
+    if not re.fullmatch(r"T\d{1,2}", terminal):
+        return None
+    log_dir = Path(r"D:\QM\mt5") / terminal / "logs"
+    best: tuple[dt.datetime, int, Path] | None = None
+    for day_delta in range(0, 3):
+        day = (killed.astimezone() - dt.timedelta(days=day_delta)).date()
+        path = log_dir / f"{day:%Y%m%d}.log"
+        if not path.is_file():
+            continue
+        try:
+            lines = path.read_text(encoding="utf-16", errors="replace").splitlines()
+        except OSError:
+            continue
+        for line in lines:
+            m = _MT5_PROGRESS.search(line)
+            if not m:
+                continue
+            try:
+                clock = dt.time.fromisoformat(m.group("time"))
+                stamp = dt.datetime.combine(day, clock).astimezone().astimezone(dt.UTC)
+            except ValueError:
+                continue
+            if lower <= stamp <= killed and (best is None or stamp > best[0]):
+                best = (stamp, int(m.group("pct")), path)
+    if best is None:
+        return None
+    return {"at_utc": best[0].replace(microsecond=0).isoformat(), "progress_pct": best[1],
+            "path": str(best[2]), "source": "mt5_tester_progress",
+            "window_start_utc": lower.replace(microsecond=0).isoformat(),
+            "window_end_utc": killed.replace(microsecond=0).isoformat()}
+
+
 def candidates(conn: sqlite3.Connection) -> list[dict[str, Any]]:
     conn.row_factory = sqlite3.Row
     out: list[dict[str, Any]] = []
@@ -147,8 +206,11 @@ def candidates(conn: sqlite3.Connection) -> list[dict[str, Any]]:
         if ceiling and age >= ceiling:
             blockers.append(f"killed at its absolute ceiling ({age:.1f} >= {ceiling:.0f} min)")
         proof = artifact_inside_blind_window(payload, progress_at) if progress_at else None
+        if proof is None and progress_at:
+            proof = tester_progress_inside_blind_window(payload, progress_at)
         if proof is None:
-            blockers.append("no artifact inside the reaper blind window: not provably alive")
+            blockers.append("no artifact and no tester progress inside the reaper blind window: "
+                            "not provably alive")
         out.append({
             "work_item_id": row["id"], "ea_id": row["ea_id"], "symbol": row["symbol"],
             "phase": row["phase"], "attempt_count": row["attempt_count"],
@@ -162,20 +224,29 @@ def candidates(conn: sqlite3.Connection) -> list[dict[str, Any]]:
     return out
 
 
-def plan(db: Path) -> dict[str, Any]:
+def plan(db: Path, only: str | None = None) -> dict[str, Any]:
+    """``only`` restricts the plan to one work item by id prefix.
+
+    Added deliberately. Widening the liveness proof to the terminal journal made 58 historical rows
+    eligible at once, spanning three weeks -- among them 8 QM5_1537 rows whose no-signal verdict is a
+    CLOSED decision that must never be requalified. A sweep discovered in passing is not a sweep that
+    should run; this makes the narrow apply the easy path.
+    """
     conn = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=30)
     try:
         rows = candidates(conn)
     finally:
         conn.close()
+    if only:
+        rows = [r for r in rows if str(r["work_item_id"]).startswith(only)]
     eligible = [r for r in rows if not r["blockers"]]
     return {"mode": "DRY_RUN", "at_utc": utc_now(), "examined": len(rows),
             "eligible": len(eligible), "rows": rows,
             "status": "READY_FOR_APPLY" if eligible else "NOTHING_TO_DO"}
 
 
-def apply(db: Path, lock_path: Path, journal_out: Path) -> dict[str, Any]:
-    pre = plan(db)
+def apply(db: Path, lock_path: Path, journal_out: Path, only: str | None = None) -> dict[str, Any]:
+    pre = plan(db, only)
     if pre["status"] != "READY_FOR_APPLY":
         raise RequeueError(f"dry run is {pre['status']}; refusing to apply")
     expected = {r["work_item_id"]: r for r in pre["rows"] if not r["blockers"]}
@@ -269,6 +340,7 @@ def main() -> int:
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--journal-out", type=Path)
     ap.add_argument("--verify", type=Path)
+    ap.add_argument("--only", help="restrict to one work_item id prefix")
     args = ap.parse_args()
     if args.verify:
         print(json.dumps(verify(args.db, args.verify), indent=1))
@@ -276,9 +348,9 @@ def main() -> int:
     if args.apply:
         if not args.journal_out:
             raise RequeueError("--apply requires --journal-out")
-        print(json.dumps(apply(args.db, args.mutation_lock, args.journal_out), indent=1))
+        print(json.dumps(apply(args.db, args.mutation_lock, args.journal_out, args.only), indent=1))
         return 0
-    print(json.dumps(plan(args.db), indent=1, default=str))
+    print(json.dumps(plan(args.db, args.only), indent=1, default=str))
     return 0
 
 
