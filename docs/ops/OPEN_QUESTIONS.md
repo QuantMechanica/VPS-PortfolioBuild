@@ -276,3 +276,36 @@ verbessern können, und keine der ~19.000, bei denen die Reparatur wirkt.
 die Reparatur wirksam zu machen — und sie bleibt der OWNER-sequenzierte Schritt nach dem
 Baseline-Freeze. **Empfehlung für später:** die Übersprungbedingung zusätzlich an eine
 Extraktor-Version binden, sonst wiederholt sich das bei jeder künftigen Reparatur still.
+
+## ● OQ-16 · 90 Worktrees, ~64 GB auf C:, und der Task, der sie aufräumen müsste, tut es nicht
+
+**[MESSUNG] 2026-08-18, 20:55 UTC.**
+
+| | |
+|---|---|
+| registrierte Git-Worktrees | **90** (`git worktree list`) |
+| `C:\QM\worktrees` | 57 Verzeichnisse (~42 GB, Messung 18.08. früh) |
+| `C:\QM\repo\.claude\worktrees` | 19 Verzeichnisse, **22 GB** |
+| C: frei | **46,7 GB (10 %)** |
+| `git worktree prune --dry-run` | **leer** — keiner ist prunebar, alle Verzeichnisse existieren |
+| davon mit unversionierten Änderungen | **19 von 19** in `.claude/worktrees` (2 bis 13 Einträge je Worktree) |
+
+**Der Task heißt so, deckt es aber nicht ab.** `QM_StrategyFarm_WorktreeClean_4h` ist aktiviert und
+lief zuletzt 23:00 lokal mit Ergebnis 0 — er ruft `run_worktree_clean_task.py`, und dessen Docstring
+sagt, was er wirklich tut: *„Scheduled worktree janitor for **completed strategy-farm build
+artifacts** … does not delete or archive in-progress EA dirs."* Er räumt Bau-Artefakte **im** Repo
+auf, nicht Git-Worktree-Verzeichnisse.
+
+**Das ist die Umkehrung der Klasse aus `ORPHANED_MECHANISMS.md`:** dort Mechanismen ohne Aufrufer,
+hier ein Aufrufer, dessen **Name eine Abdeckung suggeriert, die er nicht leistet**. Beide erzeugen
+denselben blinden Fleck.
+
+**Warum ich nichts entferne:** `git worktree remove` verweigert bei unversionierten Änderungen — und
+**alle 19** geprüften haben welche. Das ist eine gute Sicherung, aber es heißt auch: es gibt keinen
+sicheren Sammellauf. Jeder Worktree braucht einen Blick, ob die Änderungen Bau-Abfall oder Arbeit
+sind. Ein Worktree enthielt zuletzt ein `decisions/`-Dokument.
+
+**Einordnung: P2.** Kein Datenverlust, kein Durchsatzstopp. Aber nach T_Live (119,7 GB) ist das der
+zweitgrößte Posten auf C:, und **nichts holt ihn zurück**. Er hat heute außerdem den Orphan-Scan
+verfälscht (Skripte referenzieren sich über ihre eigenen Klone) — ein Nebeneffekt, der bei jedem
+künftigen repo-weiten Werkzeug wieder auftritt.

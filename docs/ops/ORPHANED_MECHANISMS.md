@@ -39,6 +39,11 @@ Aufgabenplaner — und sie laufen nicht.
 | `QM_StrategyFarm_UnreadableLinks_Friday` | 24.07. | unklar |
 | `QM_TSCon_Console_OnDisconnect` | 21.07. | Session-Handling; hing an der Session-Loss-Klasse. unklar |
 
+**Nachtrag 20:55 UTC — die Umkehrung derselben Klasse.** `QM_StrategyFarm_WorktreeClean_4h` ist
+**aktiviert** und läuft, deckt aber nicht ab, wonach sie klingt: sie räumt Bau-Artefakte im Repo auf,
+nicht die 90 registrierten Git-Worktrees (~64 GB auf einem C: mit 46,7 GB frei). Ein Aufrufer, dessen
+Name Deckung suggeriert, erzeugt denselben blinden Fleck wie ein Mechanismus ohne Aufrufer → OQ-16.
+
 **Die ersten beiden Zeilen sind die, die geprüft gehören.** Der Rest ist plausibel gewollt — aber
 „plausibel gewollt" ist keine Dokumentation, und genau diese Lücke hat die drei Fälle oben erzeugt.
 
