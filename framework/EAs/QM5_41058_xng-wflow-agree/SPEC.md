@@ -1,6 +1,6 @@
 # QM5_41058_xng-wflow-agree - Strategy Spec
 
-EA ID: `QM5_41058`
+**EA ID:** QM5_41058
 
 Slug: `xng-wflow-agree`
 
