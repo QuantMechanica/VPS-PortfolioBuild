@@ -13,7 +13,8 @@ created_by: Research+Development
 parent_source_id: KELOHARJU-RETSEAS-2016
 strategy_ids:
   - KELOHARJU-WTI-MEDCAL-2026_S01
-cards_extracted: []
+cards_extracted:
+  - QM5_41055_wti-medcal
 ---
 
 # WTI Median Same-Calendar Source Packet
@@ -154,4 +155,3 @@ waivers.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-18 | bounded peer-reviewed source extraction and median robustness translation | G0 | APPROVED_SOURCE |
-

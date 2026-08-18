@@ -1,6 +1,6 @@
 # QM5_41055 - WTI Median Same-Calendar Seasonality
 
-Status: `SOURCE APPROVED; G0 NOT YET DECIDED; BUILD NOT STARTED`
+Status: `G0 APPROVED; BUILD NOT STARTED`
 
 ## Identity
 
@@ -13,6 +13,11 @@ Status: `SOURCE APPROVED; G0 NOT YET DECIDED; BUILD NOT STARTED`
 - source approval:
   `decisions/2026-08-18_wti_median_same_calendar_source_approval.md`
 - source approval commit: `5c51e1248`
+- approved card:
+  `strategy-seeds/cards/approved/QM5_41055_wti-medcal_card.md`
+- G0 decision: `decisions/2026-08-18_wti_median_same_calendar_g0.md`
+- EA registry allocation commit: `084ebfac5`
+- magic allocation commit: `25c55d920`
 - host: exact `XTIUSD.DWX`, D1
 - planned slot: `0`
 - planned deterministic magic: `410550000`
@@ -53,6 +58,7 @@ Verdict:
 `QM5_41055` is the deterministic successor to the maximum registered numeric
 EA ID `41054` observed immediately before allocation. The directory exists
 before magic allocation, as required by the resolver regeneration contract.
-This identity grants no build, Q02, or live authorization until the remaining
-governed gates are satisfied.
-
+G0 authorizes exactly the non-live implementation in the approved card, one
+fixed-risk backtest setfile, strict Q01 validation, and one paced target-only
+Q02 enqueue below the governed tester and CPU ceilings. It grants no live,
+portfolio, or deployment authority.
