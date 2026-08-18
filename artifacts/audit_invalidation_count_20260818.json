@@ -1,0 +1,2254 @@
+{
+ "at_utc": "2026-08-18T15:36:26+00:00",
+ "baseline_snapshot": "3472a5d2e1b5",
+ "buckets": {
+  "all_phases_re_evaluate": 39,
+  "no_rows_at_all": 3,
+  "partial_re_evaluate": 44,
+  "re_run_required": 5
+ },
+ "by_cohort_bucket": {
+  "C1_determinism_control|all_phases_re_evaluate": 11,
+  "C1_determinism_control|partial_re_evaluate": 1,
+  "C2_rerun_only|all_phases_re_evaluate": 7,
+  "C2_rerun_only|partial_re_evaluate": 19,
+  "C3_rebuild_then_rerun|all_phases_re_evaluate": 21,
+  "C3_rebuild_then_rerun|no_rows_at_all": 3,
+  "C3_rebuild_then_rerun|partial_re_evaluate": 24,
+  "C3_rebuild_then_rerun|re_run_required": 5
+ },
+ "by_phase": {
+  "Q02": {
+   "evidence_gone": 32,
+   "no_row": 3,
+   "readable": 56
+  },
+  "Q04": {
+   "evidence_gone": 34,
+   "no_row": 3,
+   "readable": 54
+  },
+  "Q05": {
+   "evidence_gone": 27,
+   "no_row": 4,
+   "readable": 60
+  },
+  "Q06": {
+   "evidence_gone": 25,
+   "no_row": 7,
+   "readable": 59
+  },
+  "Q07": {
+   "evidence_gone": 20,
+   "no_row": 7,
+   "readable": 64
+  },
+  "Q08": {
+   "evidence_gone": 7,
+   "no_row": 3,
+   "readable": 81
+  }
+ },
+ "pairs": [
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C1_determinism_control",
+   "ea_id": "QM5_10145",
+   "gone": [],
+   "pair": "10145:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C1_determinism_control",
+   "ea_id": "QM5_10183",
+   "gone": [
+    "Q02"
+   ],
+   "pair": "10183:XAUUSD",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C1_determinism_control",
+   "ea_id": "QM5_11422",
+   "gone": [],
+   "pair": "11422:USDCAD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "USDCAD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C1_determinism_control",
+   "ea_id": "QM5_11660",
+   "gone": [],
+   "pair": "11660:NDX",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "NDX"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C1_determinism_control",
+   "ea_id": "QM5_12354",
+   "gone": [],
+   "pair": "12354:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C1_determinism_control",
+   "ea_id": "QM5_12849",
+   "gone": [],
+   "pair": "12849:XTIUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XTIUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C1_determinism_control",
+   "ea_id": "QM5_12855",
+   "gone": [],
+   "pair": "12855:XTIUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XTIUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C1_determinism_control",
+   "ea_id": "QM5_13036",
+   "gone": [],
+   "pair": "13036:GDAXI",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "GDAXI"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C1_determinism_control",
+   "ea_id": "QM5_13054",
+   "gone": [],
+   "pair": "13054:XTIUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XTIUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C1_determinism_control",
+   "ea_id": "QM5_13301",
+   "gone": [],
+   "pair": "13301:GDAXI",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "GDAXI"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C1_determinism_control",
+   "ea_id": "QM5_1537",
+   "gone": [],
+   "pair": "1537:XAGUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAGUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C1_determinism_control",
+   "ea_id": "QM5_9641",
+   "gone": [],
+   "pair": "9641:WS30",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "WS30"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_10128",
+   "gone": [],
+   "pair": "10128:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_10145",
+   "gone": [
+    "Q02"
+   ],
+   "pair": "10145:CHFJPY",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "CHFJPY"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_10145",
+   "gone": [
+    "Q02"
+   ],
+   "pair": "10145:SP500",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "SP500"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_10403",
+   "gone": [
+    "Q04",
+    "Q05",
+    "Q06"
+   ],
+   "pair": "10403:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_10513",
+   "gone": [
+    "Q04",
+    "Q05",
+    "Q06"
+   ],
+   "pair": "10513:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_10692",
+   "gone": [
+    "Q02",
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "10692:NDX",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q04",
+    "Q08"
+   ],
+   "symbol": "NDX"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_10706",
+   "gone": [],
+   "pair": "10706:GBPUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "GBPUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_10911",
+   "gone": [
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "10911:GDAXI",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q08"
+   ],
+   "symbol": "GDAXI"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_10919",
+   "gone": [
+    "Q04",
+    "Q05"
+   ],
+   "pair": "10919:XTIUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XTIUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_10939",
+   "gone": [
+    "Q04",
+    "Q05"
+   ],
+   "pair": "10939:GBPUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "GBPUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_10939",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "10939:XAUUSD",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_11132",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "pair": "11132:NDX",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "readable",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "evidence_gone"
+   },
+   "readable": [
+    "Q05"
+   ],
+   "symbol": "NDX"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_11132",
+   "gone": [
+    "Q04"
+   ],
+   "pair": "11132:SP500",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "SP500"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_11165",
+   "gone": [
+    "Q04",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "11165:AUDCAD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "readable",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q05",
+    "Q08"
+   ],
+   "symbol": "AUDCAD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_11165",
+   "gone": [
+    "Q04",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "11165:EURUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "readable",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q05",
+    "Q08"
+   ],
+   "symbol": "EURUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_11288",
+   "gone": [],
+   "pair": "11288:USDJPY",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "USDJPY"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_11421",
+   "gone": [
+    "Q04",
+    "Q05"
+   ],
+   "pair": "11421:AUDUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "AUDUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_11421",
+   "gone": [],
+   "pair": "11421:EURUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "EURUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_11708",
+   "gone": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "11708:EURUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q08"
+   ],
+   "symbol": "EURUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_12567",
+   "gone": [
+    "Q04",
+    "Q05",
+    "Q06"
+   ],
+   "pair": "12567:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_12989",
+   "gone": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "12989:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_13013",
+   "gone": [],
+   "pair": "13013:NDX",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "NDX"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_1551",
+   "gone": [
+    "Q02"
+   ],
+   "pair": "1551:USDJPY",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "USDJPY"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_1556",
+   "gone": [
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "1556:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_1567",
+   "gone": [],
+   "pair": "1567:EURUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "EURUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C2_rerun_only",
+   "ea_id": "QM5_20048",
+   "gone": [],
+   "pair": "20048:XTIUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XTIUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10094",
+   "gone": [
+    "Q02"
+   ],
+   "pair": "10094:GDAXI",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "GDAXI"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10114",
+   "gone": [
+    "Q02"
+   ],
+   "pair": "10114:SP500",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "SP500"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10115",
+   "gone": [
+    "Q02",
+    "Q04"
+   ],
+   "pair": "10115:GDAXI",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "GDAXI"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10123",
+   "gone": [],
+   "pair": "10123:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10127",
+   "gone": [
+    "Q02"
+   ],
+   "pair": "10127:AUDCAD",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "AUDCAD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10142",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06"
+   ],
+   "pair": "10142:SP500",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "SP500"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10146",
+   "gone": [
+    "Q02"
+   ],
+   "pair": "10146:AUDUSD",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "AUDUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10291",
+   "gone": [
+    "Q02"
+   ],
+   "pair": "10291:SP500",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "SP500"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10494",
+   "gone": [
+    "Q02",
+    "Q04"
+   ],
+   "pair": "10494:XAUUSD",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10553",
+   "gone": [],
+   "pair": "10553:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10569",
+   "gone": [],
+   "pair": "10569:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10847",
+   "gone": [],
+   "pair": "10847:GDAXI",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "no_row",
+    "Q07": "no_row",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q08"
+   ],
+   "symbol": "GDAXI"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10848",
+   "gone": [
+    "Q02",
+    "Q04"
+   ],
+   "pair": "10848:XAUUSD",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10916",
+   "gone": [
+    "Q02",
+    "Q04"
+   ],
+   "pair": "10916:SP500",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "readable",
+    "Q06": "no_row",
+    "Q07": "no_row",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q05",
+    "Q08"
+   ],
+   "symbol": "SP500"
+  },
+  {
+   "bucket": "re_run_required",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10920",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "pair": "10920:XAUUSD",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "evidence_gone"
+   },
+   "readable": [],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10938",
+   "gone": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "10938:GDAXI",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q08"
+   ],
+   "symbol": "GDAXI"
+  },
+  {
+   "bucket": "re_run_required",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_10943",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "pair": "10943:NDX",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "evidence_gone"
+   },
+   "readable": [],
+   "symbol": "NDX"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_11063",
+   "gone": [
+    "Q02",
+    "Q08"
+   ],
+   "pair": "11063:USDJPY",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "evidence_gone"
+   },
+   "readable": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "symbol": "USDJPY"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_11124",
+   "gone": [
+    "Q02",
+    "Q04"
+   ],
+   "pair": "11124:WS30",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "WS30"
+  },
+  {
+   "bucket": "re_run_required",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_11128",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "pair": "11128:NDX",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "evidence_gone"
+   },
+   "readable": [],
+   "symbol": "NDX"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_11128",
+   "gone": [],
+   "pair": "11128:SP500",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "SP500"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_11129",
+   "gone": [],
+   "pair": "11129:SP500",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "SP500"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_11147",
+   "gone": [],
+   "pair": "11147:SP500",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "SP500"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_11476",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q05"
+   ],
+   "pair": "11476:USDJPY",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "no_row",
+    "Q07": "no_row",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q08"
+   ],
+   "symbol": "USDJPY"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12475",
+   "gone": [
+    "Q02",
+    "Q04"
+   ],
+   "pair": "12475:NDX",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "no_row",
+    "Q06": "no_row",
+    "Q07": "no_row",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q08"
+   ],
+   "symbol": "NDX"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12623",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "12623:XAUUSD",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12708",
+   "gone": [],
+   "pair": "12708:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12712",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06"
+   ],
+   "pair": "12712:QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1"
+  },
+  {
+   "bucket": "no_rows_at_all",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12778",
+   "gone": [],
+   "pair": "12778:AUDUSD",
+   "phases": {
+    "Q02": "no_row",
+    "Q04": "no_row",
+    "Q05": "no_row",
+    "Q06": "no_row",
+    "Q07": "no_row",
+    "Q08": "no_row"
+   },
+   "readable": [],
+   "symbol": "AUDUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12778",
+   "gone": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "12778:QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q08"
+   ],
+   "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1"
+  },
+  {
+   "bucket": "no_rows_at_all",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12781",
+   "gone": [],
+   "pair": "12781:USDJPY",
+   "phases": {
+    "Q02": "no_row",
+    "Q04": "no_row",
+    "Q05": "no_row",
+    "Q06": "no_row",
+    "Q07": "no_row",
+    "Q08": "no_row"
+   },
+   "readable": [],
+   "symbol": "USDJPY"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12823",
+   "gone": [
+    "Q04",
+    "Q05"
+   ],
+   "pair": "12823:USDJPY",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "USDJPY"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12831",
+   "gone": [],
+   "pair": "12831:QM5_12831_XTI_AUDUSD_BRK_D1",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "QM5_12831_XTI_AUDUSD_BRK_D1"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12847",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "12847:NDX",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q08"
+   ],
+   "symbol": "NDX"
+  },
+  {
+   "bucket": "re_run_required",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12864",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "pair": "12864:QM5_12864_XTI_XAG_RSPREAD_D1",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "evidence_gone"
+   },
+   "readable": [],
+   "symbol": "QM5_12864_XTI_XAG_RSPREAD_D1"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12915",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "12915:SP500",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q08"
+   ],
+   "symbol": "SP500"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12958",
+   "gone": [
+    "Q02",
+    "Q05",
+    "Q06",
+    "Q07"
+   ],
+   "pair": "12958:XAUUSD",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q04",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12969",
+   "gone": [],
+   "pair": "12969:USDJPY",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "USDJPY"
+  },
+  {
+   "bucket": "re_run_required",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_12990",
+   "gone": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "pair": "12990:GBPUSD",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "evidence_gone",
+    "Q05": "evidence_gone",
+    "Q06": "evidence_gone",
+    "Q07": "evidence_gone",
+    "Q08": "evidence_gone"
+   },
+   "readable": [],
+   "symbol": "GBPUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_13059",
+   "gone": [],
+   "pair": "13059:QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "QM5_13059_XTI_AUDJPY_RSPREAD_D1"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_13076",
+   "gone": [],
+   "pair": "13076:QM5_13076_XTI_NZDCAD_RSPREAD_D1",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "QM5_13076_XTI_NZDCAD_RSPREAD_D1"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_13108",
+   "gone": [],
+   "pair": "13108:XTIUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XTIUSD"
+  },
+  {
+   "bucket": "no_rows_at_all",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_13117",
+   "gone": [],
+   "pair": "13117:EURGBP",
+   "phases": {
+    "Q02": "no_row",
+    "Q04": "no_row",
+    "Q05": "no_row",
+    "Q06": "no_row",
+    "Q07": "no_row",
+    "Q08": "no_row"
+   },
+   "readable": [],
+   "symbol": "EURGBP"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_13128",
+   "gone": [],
+   "pair": "13128:NDX",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "NDX"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_13213",
+   "gone": [],
+   "pair": "13213:USDJPY",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "USDJPY"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_1328",
+   "gone": [
+    "Q02"
+   ],
+   "pair": "1328:EURJPY",
+   "phases": {
+    "Q02": "evidence_gone",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "EURJPY"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_20010",
+   "gone": [],
+   "pair": "20010:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_20047",
+   "gone": [],
+   "pair": "20047:XTIUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XTIUSD"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_9403",
+   "gone": [],
+   "pair": "9403:GDAXI",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "GDAXI"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_9502",
+   "gone": [],
+   "pair": "9502:SP500",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "SP500"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_9503",
+   "gone": [],
+   "pair": "9503:USDJPY",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "USDJPY"
+  },
+  {
+   "bucket": "all_phases_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_9929",
+   "gone": [],
+   "pair": "9929:XAUUSD",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "readable",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "XAUUSD"
+  },
+  {
+   "bucket": "partial_re_evaluate",
+   "cohort": "C3_rebuild_then_rerun",
+   "ea_id": "QM5_9936",
+   "gone": [
+    "Q04"
+   ],
+   "pair": "9936:USDJPY",
+   "phases": {
+    "Q02": "readable",
+    "Q04": "evidence_gone",
+    "Q05": "readable",
+    "Q06": "readable",
+    "Q07": "readable",
+    "Q08": "readable"
+   },
+   "readable": [
+    "Q02",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+   ],
+   "symbol": "USDJPY"
+  }
+ ],
+ "pool_pairs": 91,
+ "schema_version": "qm.audit-invalidation-count/v1"
+}
