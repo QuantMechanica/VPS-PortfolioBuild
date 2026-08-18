@@ -57,9 +57,9 @@ r1_track_record: PASS_WITH_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_HISTORY_AND_BASKET_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a pure completed-18-month XTI/XNG reversal basket outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy-session labels, strictly pre-decision synchronized endpoints, loser-long/winner-short direction, absence of the sibling 12-month state, atomic package lifecycle, durable monthly attempt, and fixed aggregate risk. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -377,8 +377,8 @@ realized correlation with the certified book.
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-18 | APPROVED | `decisions/2026-08-18_qm5_41056_energy_rev18_g0.md` |
-| Q01 Build Validation | - | PENDING | `framework/EAs/QM5_41056_energy-rev18/` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | logical basket only |
+| Q01 Build Validation | 2026-08-18 | PASS | `framework/build/compile/20260818_014607/QM5_41056_energy-rev18.compile.log`; `D:/QM/reports/framework/21/build_check_20260818_014607.json`; `D:/QM/reports/pipeline/QM5_41056/P1/P1_QM5_41056_result.json` |
+| Q02 Baseline Screening | 2026-08-18 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-18_qm5_41056_energy_rev18_q01_q02_capacity_stop.md` |
 
 ## Safety Boundary
 

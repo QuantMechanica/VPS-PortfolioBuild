@@ -101,3 +101,4 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | initial build from approved card | source `72bf6148c`; registry `0ceacf790`; magic `11cabe252`; G0 approved |
+| v2 | 2026-08-18 | Q01 implementation and validation | build `3817b1177`; strict compile/build/P1 PASS; Q02 stopped before enqueue at tester and CPU ceilings |
