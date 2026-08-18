@@ -1,0 +1,851 @@
+{
+ "schema": "qm.build-review-prescreen/v1",
+ "at_utc": "2026-08-18T06:26:39+00:00",
+ "state": "REVIEW",
+ "tasks": 59,
+ "clean": 56,
+ "flagged": 3,
+ "problem_census": {
+  "unwired_input": 5,
+  "ex5_missing": 1,
+  "setfiles_0_vs_registry_3": 1
+ },
+ "results": [
+  {
+   "ea_id": "33007",
+   "slug": "george-pruitt-king-keltner-trend-buster",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=21"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_33007_george-pruitt-king-keltner-trend-buster",
+   "task": "5b130e06-566f-4ceb-897c-386e9e1f824d",
+   "verdict": "PASS",
+   "updated_at": "2026-08-17T19:06:45+00:00"
+  },
+  {
+   "ea_id": "33006",
+   "slug": "andrea-unger-turtle-soup-false-breakout",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=19"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_33006_andrea-unger-turtle-soup-false-breakout",
+   "task": "1da33eb5-f18a-4d65-9346-e7e9ef07fbf9",
+   "verdict": "PASS",
+   "updated_at": "2026-08-17T19:08:57+00:00"
+  },
+  {
+   "ea_id": "33008",
+   "slug": "thomas-stridsman-rvi-noise-buster",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=2",
+    "inputs=22"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_33008_thomas-stridsman-rvi-noise-buster",
+   "task": "4b97cf9e-7a3c-452d-bc44-964a5a85555b",
+   "verdict": "PASS",
+   "updated_at": "2026-08-17T19:10:47+00:00"
+  },
+  {
+   "ea_id": "34003",
+   "slug": "triple-timeframe-williams-r-champion",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=25"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_34003_triple-timeframe-williams-r-champion",
+   "task": "d5a96505-0d9a-4dfa-8b59-119e6b114d61",
+   "verdict": "Built QM5_34003 triple-timeframe-williams-r-champion mechanically per card. compile_ea COMPILED 0 errors/0 warnings, validate_spec_doc PASS, validate_build_guardrails PASS, setfiles generated. Artifact in REVIEW for Codex review.",
+   "updated_at": "2026-08-17T19:22:36+00:00"
+  },
+  {
+   "ea_id": "34001",
+   "slug": "kalman-filter-state-estimation-scalper",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=21"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_34001_kalman-filter-state-estimation-scalper",
+   "task": "f9a8b8f7-3307-44d7-a1c4-2ad8c2a4cac9",
+   "verdict": "Built QM5_34001 kalman-filter-state-estimation-scalper mechanically per card. compile_ea COMPILED 0 errors/0 warnings, validate_spec_doc PASS, validate_build_guardrails PASS, setfiles generated. Artifact in REVIEW for Codex review.",
+   "updated_at": "2026-08-17T19:24:26+00:00"
+  },
+  {
+   "ea_id": "34005",
+   "slug": "sokolov-cstrategy-donchian-atr-breakout",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=21"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_34005_sokolov-cstrategy-donchian-atr-breakout",
+   "task": "a0f709cd-2c0b-40db-a01b-372c715beef9",
+   "verdict": "PASS: build, compile, spec validated",
+   "updated_at": "2026-08-17T19:38:02+00:00"
+  },
+  {
+   "ea_id": "34004",
+   "slug": "kositsin-step-trend-parabolic-envelope",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=22"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_34004_kositsin-step-trend-parabolic-envelope",
+   "task": "e48c6a6c-1935-4945-9e47-e420f9fb15df",
+   "verdict": "PASS: build, compile, spec validated",
+   "updated_at": "2026-08-17T19:39:37+00:00"
+  },
+  {
+   "ea_id": "1673",
+   "slug": "sperandeo-tvii-trendline-failure-h4",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=13",
+    "inputs=29"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_1673_sperandeo-tvii-trendline-failure-h4",
+   "task": "977c8c04-f57b-40f7-9b3b-3d89d5bf237e",
+   "verdict": "BUILD PASS at commit a0bb4bf42: strict build_check PASS (0 failures, 0 warnings), compile PASS (0 errors, 0 warnings), SPEC PASS, 13 RISK_FIXED H4 setfiles. Q01 smoke and NZDUSD Q02 enqueue deferred under explicit CPU-stop condition: 93.6% average CPU and five active reserved farm terminals; no tester job launched.",
+   "updated_at": "2026-08-17T19:47:46+00:00"
+  },
+  {
+   "ea_id": "34007",
+   "slug": "sergeev-hft-tick-momentum-interceptor",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=2",
+    "inputs=24"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_34007_sergeev-hft-tick-momentum-interceptor",
+   "task": "82a3b44b-666a-45cd-9f36-d546f67dac0f",
+   "verdict": "Built QM5_34007 sergeev-hft-tick-momentum-interceptor mechanically per card. compile_ea COMPILED 0 errors/0 warnings, validate_spec_doc PASS, validate_build_guardrails PASS, setfiles generated. Artifact in REVIEW for Codex review.",
+   "updated_at": "2026-08-17T19:51:44+00:00"
+  },
+  {
+   "ea_id": "34006",
+   "slug": "golubev-pricechannel-parabolic-breakout",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=20"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_34006_golubev-pricechannel-parabolic-breakout",
+   "task": "70238994-3b68-455c-b170-034bffb81530",
+   "verdict": "Built QM5_34006 golubev-pricechannel-parabolic-breakout mechanically per card. compile_ea COMPILED 0 errors/0 warnings, validate_spec_doc PASS, validate_build_guardrails PASS, setfiles generated. Artifact in REVIEW for Codex review.",
+   "updated_at": "2026-08-17T19:53:35+00:00"
+  },
+  {
+   "ea_id": "34008",
+   "slug": "multicurrency-basket-dispersion-hedger",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=7",
+    "inputs=19"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_34008_multicurrency-basket-dispersion-hedger",
+   "task": "fa7ca587-77f8-4cea-b71b-7bb1b746b33d",
+   "verdict": "Built QM5_34008 multicurrency-basket-dispersion-hedger mechanically per card. compile_ea COMPILED 0 errors/0 warnings, validate_spec_doc PASS, validate_build_guardrails PASS, setfiles generated. Artifact in REVIEW for Codex review.",
+   "updated_at": "2026-08-17T19:56:34+00:00"
+  },
+  {
+   "ea_id": "35001",
+   "slug": "cowabunga-multi-timeframe-trend-system",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=2",
+    "inputs=28"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_35001_cowabunga-multi-timeframe-trend-system",
+   "task": "070ebd11-f252-4c4c-853a-a32d145c2148",
+   "verdict": "Built QM5_35001 cowabunga-multi-timeframe-trend-system (H4 EMA/RSI macro trend filter, M15 EMA5/10 cross + RSI9/Stoch10/MACD triggers, swing-buffer SL, 1:2.0 RR TP, BE+1 trail) against canonical checkout. Registries updated, resolver regenerated, build_check PASS, compile PASS, validate_spec_doc PASS, validate_build_guardrails PASS.",
+   "updated_at": "2026-08-17T20:09:13+00:00"
+  },
+  {
+   "ea_id": "35002",
+   "slug": "hlhb-trend-catcher-system",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=25"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_35002_hlhb-trend-catcher-system",
+   "task": "da27d5d7-b9e2-44c7-892e-7253154a7ba7",
+   "verdict": "Built QM5_35002 hlhb-trend-catcher-system (H1 EMA5/10 cross, RSI10 >/< 50 momentum, ADX14 >= 25 trend strength confirmation with DI alignment, 50-pip SL, 1:2.0 RR TP, +30-pip trigger 50-pip trailing stop) against canonical checkout. Registries updated, resolver regenerated, build_check PASS, compile PASS, validate_spec_doc PASS, validate_build_guardrails PASS.",
+   "updated_at": "2026-08-17T20:10:35+00:00"
+  },
+  {
+   "ea_id": "35004",
+   "slug": "babypips-asian-box-london-breakout",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=24"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout",
+   "task": "c2e1b160-70bb-49bf-afd2-6dc52e784ad5",
+   "verdict": "PASS: QM5_35004 compiled and verified, awaiting Codex review",
+   "updated_at": "2026-08-17T20:20:26+00:00"
+  },
+  {
+   "ea_id": "35003",
+   "slug": "three-ducks-multi-timeframe-system",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=4",
+    "inputs=20"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_35003_three-ducks-multi-timeframe-system",
+   "task": "d761b379-3b40-4fd0-b91f-bbef202d5187",
+   "verdict": "PASS: QM5_35003 compiled and verified, awaiting Codex review",
+   "updated_at": "2026-08-17T20:21:31+00:00"
+  },
+  {
+   "ea_id": "35006",
+   "slug": "guppy-multiple-moving-average-breakout",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=2",
+    "inputs=30"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_35006_guppy-multiple-moving-average-breakout",
+   "task": "348092fa-14ad-4bd0-974f-c1a360144519",
+   "verdict": "REVIEW: GMMA Breakout EA compiled and verified with SPEC.md and setfiles",
+   "updated_at": "2026-08-17T20:35:46+00:00"
+  },
+  {
+   "ea_id": "35005",
+   "slug": "sma-crossover-pullback-system",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=27"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system",
+   "task": "da39e160-b043-4528-8592-4a23f672fc55",
+   "verdict": "REVIEW: SMA Crossover Pullback EA compiled and verified with SPEC.md and setfiles",
+   "updated_at": "2026-08-17T20:36:48+00:00"
+  },
+  {
+   "ea_id": "35008",
+   "slug": "short-term-bollinger-reversion-system",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=25"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_35008_short-term-bollinger-reversion-system",
+   "task": "60e3146d-c363-4b7c-af29-18380260e8f1",
+   "verdict": "PASS: Built and verified QM5_35008 (short-term-bollinger-reversion-system), compiled 0 errors 0 warnings, guardrails and spec PASS",
+   "updated_at": "2026-08-17T20:51:06+00:00"
+  },
+  {
+   "ea_id": "35007",
+   "slug": "inside-bar-momentum-breakout-system",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=20"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_35007_inside-bar-momentum-breakout-system",
+   "task": "c0f9d1e3-582f-4842-86d4-9b37950b32c0",
+   "verdict": "PASS: Built and verified QM5_35007 (inside-bar-momentum-breakout-system), compiled 0 errors 0 warnings, guardrails and spec PASS",
+   "updated_at": "2026-08-17T20:52:40+00:00"
+  },
+  {
+   "ea_id": "36001",
+   "slug": "nnfx-classic-mcginley-ssl-wae",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=5",
+    "inputs=30"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_36001_nnfx-classic-mcginley-ssl-wae",
+   "task": "3c1da904-b03a-40d5-a1b3-c23e9ffad4b8",
+   "verdict": "PASS: Built and verified QM5_36001 (nnfx-classic-mcginley-ssl-wae), compiled 0 errors 0 warnings, guardrails and spec PASS",
+   "updated_at": "2026-08-17T20:54:31+00:00"
+  },
+  {
+   "ea_id": "36002",
+   "slug": "nnfx-kijunsen-absolute-strength-damiani",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=4",
+    "inputs=27"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani",
+   "task": "f7849572-7aad-4e79-ad7f-8c6d1fccf935",
+   "verdict": "PASS: build, compile, spec, guardrails verified; set in REVIEW for mandatory Codex review",
+   "updated_at": "2026-08-17T21:05:48+00:00"
+  },
+  {
+   "ea_id": "36003",
+   "slug": "nnfx-hull-ma-zerolag-macd-stc",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=28"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc",
+   "task": "019d50ff-a716-46a4-b097-c5c650dea63b",
+   "verdict": "PASS: build, compile, spec, guardrails verified; set in REVIEW for mandatory Codex review",
+   "updated_at": "2026-08-17T21:06:56+00:00"
+  },
+  {
+   "ea_id": "36005",
+   "slug": "nnfx-coral-trendlord-woodies-harvester",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=30"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_36005_nnfx-coral-trendlord-woodies-harvester",
+   "task": "cf9b27fd-11f6-465b-9731-8e551bb9c671",
+   "verdict": "Built QM5_36005, compile and build_check passed, setfiles generated, deferred_p2_smoke",
+   "updated_at": "2026-08-17T21:22:24+00:00"
+  },
+  {
+   "ea_id": "36004",
+   "slug": "nnfx-alma-qqe-volume-flow-sniper",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=4",
+    "inputs=27"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper",
+   "task": "22225e01-3ed6-4a1f-8fca-b55655117d01",
+   "verdict": "Built QM5_36004, compile and build_check passed, setfiles generated, deferred_p2_smoke",
+   "updated_at": "2026-08-17T21:24:20+00:00"
+  },
+  {
+   "ea_id": "36007",
+   "slug": "nnfx-vidya-trix-fisher-momentum",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=24"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_36007_nnfx-vidya-trix-fisher-momentum",
+   "task": "a7acf60d-9f28-4cfc-a080-061eb3aaedb9",
+   "verdict": "PASS: QM5_36007 implemented, compiled (0 err/0 warn), spec & build guardrails verified, ready for codex review",
+   "updated_at": "2026-08-17T21:35:24+00:00"
+  },
+  {
+   "ea_id": "36006",
+   "slug": "nnfx-halftrend-jurik-coppock-engine",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=25"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_36006_nnfx-halftrend-jurik-coppock-engine",
+   "task": "0d34c3bd-8853-499b-b357-aa59d82fb534",
+   "verdict": "PASS: QM5_36006 implemented, compiled (0 err/0 warn), spec & build guardrails verified, ready for codex review",
+   "updated_at": "2026-08-17T21:36:22+00:00"
+  },
+  {
+   "ea_id": "37001",
+   "slug": "ernest-chan-ornstein-uhlenbeck-statarb",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=25"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_37001_ernest-chan-ornstein-uhlenbeck-statarb",
+   "task": "92c3eb98-4998-40dc-b31a-8b2da987365e",
+   "verdict": "PASS: MQL5 implementation of OU statarb model compiled cleanly with 0 errors 0 warnings, build_check PASS",
+   "updated_at": "2026-08-17T21:51:45+00:00"
+  },
+  {
+   "ea_id": "36008",
+   "slug": "nnfx-gold-kama-vortex-supertrend",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=2",
+    "inputs=32"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend",
+   "task": "bab6e8bf-435d-4da2-a25f-1e651cb33960",
+   "verdict": "PASS: MQL5 implementation of NNFX commodity stack compiled cleanly with 0 errors 0 warnings, build_check PASS",
+   "updated_at": "2026-08-17T21:53:05+00:00"
+  },
+  {
+   "ea_id": "37002",
+   "slug": "dual-thrust-asymmetric-range-breakout",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=22"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_37002_dual-thrust-asymmetric-range-breakout",
+   "task": "c0b1b0f0-9945-4aa2-8dc0-43d67c1b1070",
+   "verdict": "PASS: MQL5 implementation of Dual Thrust breakout compiled cleanly with 0 errors 0 warnings, build_check PASS",
+   "updated_at": "2026-08-17T21:54:35+00:00"
+  },
+  {
+   "ea_id": "37003",
+   "slug": "hurst-exponent-dynamic-regime-switch",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=25"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_37003_hurst-exponent-dynamic-regime-switch",
+   "task": "6b9b31bd-8511-4f7b-8400-9e42162b0bd1",
+   "verdict": "PASS",
+   "updated_at": "2026-08-17T22:15:42+00:00"
+  },
+  {
+   "ea_id": "37004",
+   "slug": "volatility-targeted-momentum-kelly",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=4",
+    "inputs=21"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_37004_volatility-targeted-momentum-kelly",
+   "task": "6d2369c0-a412-427e-afab-8c5feed10cc3",
+   "verdict": "PASS",
+   "updated_at": "2026-08-17T22:16:42+00:00"
+  },
+  {
+   "ea_id": "37006",
+   "slug": "cusum-filter-structural-breakout",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=21"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_37006_cusum-filter-structural-breakout",
+   "task": "fc2c4254-fae3-4ad7-bd0c-c44be30334fb",
+   "verdict": "PASS: Built QM5_37006 CUSUM Structural Breakout, compiled and verified",
+   "updated_at": "2026-08-17T22:34:37+00:00"
+  },
+  {
+   "ea_id": "37005",
+   "slug": "chan-bollinger-adx-mean-reversion",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=22"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_37005_chan-bollinger-adx-mean-reversion",
+   "task": "98fb1997-3c5d-4bfa-af26-6f46dd7c8a1b",
+   "verdict": "PASS: Built QM5_37005 Bollinger ADX Mean Reversion, compiled and verified",
+   "updated_at": "2026-08-17T22:35:36+00:00"
+  },
+  {
+   "ea_id": "37007",
+   "slug": "cross-sectional-momentum-factor-dispersion",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=7",
+    "inputs=22"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_37007_cross-sectional-momentum-factor-dispersion",
+   "task": "43dce7e4-3d61-4362-ad12-a4504e3e5137",
+   "verdict": "PASS: Built QM5_37007 Cross-Sectional Momentum & Factor Dispersion, compiled and verified",
+   "updated_at": "2026-08-17T22:53:32+00:00"
+  },
+  {
+   "ea_id": "37008",
+   "slug": "garch-volatility-forecast-breakout",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=24"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_37008_garch-volatility-forecast-breakout",
+   "task": "dbf26171-4fbc-4ac0-bdf8-c76c761e4974",
+   "verdict": "PASS: Built QM5_37008 GARCH Volatility Forecast Breakout, compiled and verified",
+   "updated_at": "2026-08-17T22:54:31+00:00"
+  },
+  {
+   "ea_id": "38001",
+   "slug": "codetrading-vwap-bollinger-rsi-scalper",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=29"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_38001_codetrading-vwap-bollinger-rsi-scalper",
+   "task": "33322516-1797-4d97-8a74-eb4fd7385953",
+   "verdict": "QM5_38001 build_check and compile PASS; setfiles generated; awaiting Codex review",
+   "updated_at": "2026-08-17T23:09:08+00:00"
+  },
+  {
+   "ea_id": "38002",
+   "slug": "codetrading-macd-ema-trend-pullback",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=28"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_38002_codetrading-macd-ema-trend-pullback",
+   "task": "f0823eb2-3859-45a3-9fa4-a83cc44207ef",
+   "verdict": "QM5_38002 build_check and compile PASS; setfiles generated; awaiting Codex review",
+   "updated_at": "2026-08-17T23:11:33+00:00"
+  },
+  {
+   "ea_id": "38003",
+   "slug": "codetrading-bollinger-engulfing-reversal",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=27"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_38003_codetrading-bollinger-engulfing-reversal",
+   "task": "5fa16349-5252-448a-8f5d-8a7d77306f9b",
+   "verdict": "BUILT_PENDING_CODEX_REVIEW",
+   "updated_at": "2026-08-17T23:22:09+00:00"
+  },
+  {
+   "ea_id": "38004",
+   "slug": "codetrading-triple-ema-momentum-scalper",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=26"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_38004_codetrading-triple-ema-momentum-scalper",
+   "task": "952a07fb-63c7-4fc3-9582-83096a13c9e0",
+   "verdict": "BUILT_PENDING_CODEX_REVIEW",
+   "updated_at": "2026-08-17T23:24:44+00:00"
+  },
+  {
+   "ea_id": "38005",
+   "slug": "codetrading-ascending-triangle-breakout",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=28"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_38005_codetrading-ascending-triangle-breakout",
+   "task": "2f3177d2-2769-4e0d-a212-4769b908178c",
+   "verdict": "BUILT_PENDING_CODEX_REVIEW",
+   "updated_at": "2026-08-17T23:26:54+00:00"
+  },
+  {
+   "ea_id": "38007",
+   "slug": "codetrading-python-atr-grid-engine",
+   "ok": false,
+   "problems": [
+    "ex5_missing",
+    "setfiles_0_vs_registry_3"
+   ],
+   "notes": [
+    "magic_rows=3",
+    "inputs=14"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_38007_codetrading-python-atr-grid-engine",
+   "task": "2dd67414-972c-4fc4-858f-6894201b5663",
+   "verdict": "GATED: DL-082 card defect (Level-0 trigger/direction undefined); skeleton preserved",
+   "updated_at": "2026-08-17T23:35:36+00:00"
+  },
+  {
+   "ea_id": "38006",
+   "slug": "codetrading-doji-hammer-pivot-rejection",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=27"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_38006_codetrading-doji-hammer-pivot-rejection",
+   "task": "9b992eb5-9773-40ff-b4f3-ef03719e373e",
+   "verdict": "PASS: build complete, compile OK, setfiles verified, ready for Codex review",
+   "updated_at": "2026-08-17T23:40:56+00:00"
+  },
+  {
+   "ea_id": "38008",
+   "slug": "codetrading-optimized-bollinger-trend-breakout",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=28"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_38008_codetrading-optimized-bollinger-trend-breakout",
+   "task": "1f82ac59-1c1e-4e72-a1f8-4eaea2120347",
+   "verdict": "PASS: build complete, compile OK, setfiles verified, ready for Codex review",
+   "updated_at": "2026-08-17T23:43:53+00:00"
+  },
+  {
+   "ea_id": "39002",
+   "slug": "forexfactory-sonic-r-system",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=25"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_39002_forexfactory-sonic-r-system",
+   "task": "92af0f37-cfdf-41b4-b187-0fd19f00b722",
+   "verdict": "Built QM5_39002 forexfactory-sonic-r-system mechanically per card. compile_ea COMPILED 0 errors/0 warnings, validate_spec_doc PASS, validate_build_guardrails PASS, setfiles generated. Artifact in REVIEW for Codex review.",
+   "updated_at": "2026-08-18T01:28:38+00:00"
+  },
+  {
+   "ea_id": "39001",
+   "slug": "forexfactory-trading-made-simple-tms",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=30"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_39001_forexfactory-trading-made-simple-tms",
+   "task": "60d701a7-09cf-4b18-aaff-788ea1e799a5",
+   "verdict": "Built QM5_39001 forexfactory-trading-made-simple-tms mechanically per card. compile_ea COMPILED 0 errors/0 warnings, validate_spec_doc PASS, validate_build_guardrails PASS, setfiles generated. Artifact in REVIEW for Codex review.",
+   "updated_at": "2026-08-18T01:29:42+00:00"
+  },
+  {
+   "ea_id": "39003",
+   "slug": "forexfactory-james16-price-action-ppz",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=24"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_39003_forexfactory-james16-price-action-ppz",
+   "task": "f361cc66-38ca-4125-ab5f-153ce82fc340",
+   "verdict": "PASS_BUILT",
+   "updated_at": "2026-08-18T02:14:43+00:00"
+  },
+  {
+   "ea_id": "39004",
+   "slug": "forexfactory-thv-cobra-trix-scalper",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=20"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_39004_forexfactory-thv-cobra-trix-scalper",
+   "task": "d6e07850-a05d-4aa7-ad8b-5f7895fd2b36",
+   "verdict": "PASS_BUILT",
+   "updated_at": "2026-08-18T02:17:08+00:00"
+  },
+  {
+   "ea_id": "39006",
+   "slug": "forexfactory-spudfyre-stochastic-ribbon",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=21"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon",
+   "task": "68f93e30-9d19-4c6c-885e-0591cc38e19f",
+   "verdict": "Built QM5_39006 forexfactory-spudfyre-stochastic-ribbon mechanically per card. compile_ea COMPILED 0 errors/0 warnings, validate_spec_doc PASS, validate_build_guardrails PASS, setfiles generated. Artifact in REVIEW for Codex review.",
+   "updated_at": "2026-08-18T02:36:29+00:00"
+  },
+  {
+   "ea_id": "39005",
+   "slug": "forexfactory-genesis-matrix-scalper",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=2",
+    "inputs=24"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_39005_forexfactory-genesis-matrix-scalper",
+   "task": "57041b21-12da-464d-b275-c91cb3fa8673",
+   "verdict": "Built QM5_39005 forexfactory-genesis-matrix-scalper mechanically per card. compile_ea COMPILED 0 errors/0 warnings, validate_spec_doc PASS, validate_build_guardrails PASS, setfiles generated. Artifact in REVIEW for Codex review.",
+   "updated_at": "2026-08-18T02:38:39+00:00"
+  },
+  {
+   "ea_id": "39007",
+   "slug": "forexfactory-100-pips-early-bird-breakout",
+   "ok": false,
+   "problems": [
+    "unwired_input:InpBoxStartHourUTC"
+   ],
+   "notes": [
+    "magic_rows=2",
+    "inputs=22"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_39007_forexfactory-100-pips-early-bird-breakout",
+   "task": "8b09ed22-3d26-41a0-8eb3-d7df0bd66331",
+   "verdict": "Built QM5_39007 forexfactory-100-pips-early-bird-breakout mechanically per card. compile_ea COMPILED 0 errors/0 warnings, validate_spec_doc PASS, validate_build_guardrails PASS, setfiles generated. Artifact in REVIEW for Codex review.",
+   "updated_at": "2026-08-18T02:40:34+00:00"
+  },
+  {
+   "ea_id": "40005",
+   "slug": "tradingview-multitimeframe-supertrend-atr",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=21"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_40005_tradingview-multitimeframe-supertrend-atr",
+   "task": "788cf6e9-a0dc-4ccc-8462-48650989f114",
+   "verdict": "Built QM5_40005 tradingview-multitimeframe-supertrend-atr mechanically per card. compile_ea COMPILED 0 errors/0 warnings, validate_spec_doc PASS, validate_build_guardrails PASS, setfiles generated. Artifact in REVIEW for Codex review.",
+   "updated_at": "2026-08-18T02:53:21+00:00"
+  },
+  {
+   "ea_id": "40008",
+   "slug": "aqr-value-and-momentum-everywhere",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=4",
+    "inputs=26"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_40008_aqr-value-and-momentum-everywhere",
+   "task": "3e8438fe-884f-4337-974d-7c8c2a1dd459",
+   "verdict": "Built QM5_40008 aqr-value-and-momentum-everywhere mechanically per card. compile_ea COMPILED 0 errors/0 warnings, validate_spec_doc PASS, validate_build_guardrails PASS, setfiles generated. Artifact in REVIEW for Codex review.",
+   "updated_at": "2026-08-18T02:56:22+00:00"
+  },
+  {
+   "ea_id": "41001",
+   "slug": "keith-fitschen-aberration-trading-system",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=24"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41001_keith-fitschen-aberration-trading-system",
+   "task": "9fbca489-f822-4412-8066-a819bc100eb7",
+   "verdict": "PASS_COMPILED_READY_FOR_CODEX_REVIEW",
+   "updated_at": "2026-08-18T04:12:57+00:00"
+  },
+  {
+   "ea_id": "41003",
+   "slug": "kaufman-ready-set-go-momentum",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=3",
+    "inputs=25"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41003_kaufman-ready-set-go-momentum",
+   "task": "8de78517-0995-43b1-9c4e-30e0a0f1b1df",
+   "verdict": "PASS_COMPILED_READY_FOR_CODEX_REVIEW",
+   "updated_at": "2026-08-18T04:14:47+00:00"
+  },
+  {
+   "ea_id": "41005",
+   "slug": "richard-donchian-50day-cta-benchmark",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=4",
+    "inputs=19"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41005_richard-donchian-50day-cta-benchmark",
+   "task": "30ceeacd-0647-485a-9886-725af2139d61",
+   "verdict": "build_passed",
+   "updated_at": "2026-08-18T05:25:47+00:00"
+  },
+  {
+   "ea_id": "41006",
+   "slug": "man-ahl-multispeed-ewma-trend",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=4",
+    "inputs=19"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41006_man-ahl-multispeed-ewma-trend",
+   "task": "b42bac52-ccda-4a73-b49b-faab46b48c88",
+   "verdict": "build_passed",
+   "updated_at": "2026-08-18T05:28:01+00:00"
+  },
+  {
+   "ea_id": "41009",
+   "slug": "volume-profile-value-area-rejection",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=2",
+    "inputs=21"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41009_volume-profile-value-area-rejection",
+   "task": "0fd1b0a8-c415-4309-9778-4ebefa05a1cf",
+   "verdict": "build_passed",
+   "updated_at": "2026-08-18T05:30:41+00:00"
+  },
+  {
+   "ea_id": "41010",
+   "slug": "developing-poc-migration-scalper",
+   "ok": true,
+   "problems": [],
+   "notes": [
+    "magic_rows=2",
+    "inputs=23"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41010_developing-poc-migration-scalper",
+   "task": "5111533d-3668-4f98-a036-c379de89ce7c",
+   "verdict": "PASS",
+   "updated_at": "2026-08-18T05:54:44+00:00"
+  },
+  {
+   "ea_id": "41011",
+   "slug": "tokyo-london-bank-flow-handover",
+   "ok": false,
+   "problems": [
+    "unwired_input:InpRangeStartHourUTC",
+    "unwired_input:InpRangeStartMinUTC",
+    "unwired_input:InpRangeEndHourUTC",
+    "unwired_input:InpRangeEndMinUTC"
+   ],
+   "notes": [
+    "magic_rows=3",
+    "inputs=28"
+   ],
+   "dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41011_tokyo-london-bank-flow-handover",
+   "task": "fdaac67c-12cf-4c0f-a203-c19618076972",
+   "verdict": "PASS",
+   "updated_at": "2026-08-18T05:56:29+00:00"
+  }
+ ]
+}

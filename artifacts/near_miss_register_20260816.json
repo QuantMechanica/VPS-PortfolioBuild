@@ -1,179 +1,261 @@
 {
- "schema": "qm.near-miss-register/v1",
+ "schema": "qm.near-miss-register/v2",
+ "generated_at_utc": "2026-08-18T06:23:01+00:00",
  "window_hours": 72,
  "tolerance_pct": 5.0,
- "policy": "priority list for targeted rework waves; gates are NOT overridden (OWNER DL territory)",
- "count": 10,
+ "policy": "priority list for targeted rework; gates are NOT overridden (OWNER DL territory)",
+ "floors": {
+  "Q04": {
+   "floor": 1.0,
+   "constant": "PF_NET_FLOOR_PER_FOLD",
+   "source": "framework/scripts/q04_walkforward.py:53",
+   "pass_requires": ">"
+  },
+  "Q05": {
+   "floor": 1.0,
+   "constant": "PF_FLOOR",
+   "source": "framework/scripts/q05_stress_medium.py:51",
+   "pass_requires": ">"
+  },
+  "Q06": {
+   "floor": 1.0,
+   "constant": "PF_FLOOR",
+   "source": "framework/scripts/q05_stress_medium.py:51",
+   "pass_requires": ">"
+  },
+  "Q07": {
+   "floor": 1.0,
+   "constant": "PER_SEED_PF_MIN",
+   "source": "framework/scripts/q07_multiseed.py:48",
+   "pass_requires": ">="
+  },
+  "Q10": {
+   "floor": 1.0,
+   "constant": "PF_FLOOR",
+   "source": "framework/scripts/q10_confirmation.py:52",
+   "pass_requires": ">"
+  }
+ },
+ "rows_screened": 177,
+ "evidence_unreadable": 0,
+ "rows_without_parsable_pf": 6,
+ "count": 12,
  "entries": [
   {
-   "kind": "walkforward_folds",
+   "work_item": "e34bbc06-b1ca-4c71-a265-9620ebc57b41",
+   "ea": "QM5_20176",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q05",
+   "verdict": "FAIL",
+   "at": "2026-08-17T01:16:50+00:00",
+   "evidence": "D:\\QM\\reports\\work_items\\e34bbc06-b1ca-4c71-a265-9620ebc57b41\\QM5_20176\\Q05\\EURUSD_DWX\\aggregate.json",
+   "metric": "pf",
    "value": 1.0,
+   "folds": null,
    "floor": 1.0,
-   "gap_pct": 0.0,
-   "folds": [
-    1.05,
-    1.0,
-    1.15
-   ],
+   "floor_source": "framework/scripts/q05_stress_medium.py:51",
+   "pass_requires": ">",
+   "gap_pct": 0.0
+  },
+  {
    "work_item": "c334e45c-9555-4336-a6f7-cd3aa2ffb45a",
    "ea": "QM5_10132",
    "symbol": "XAUUSD.DWX",
    "phase": "Q04",
    "verdict": "FAIL",
-   "at": "2026-08-16T05:51:23",
-   "reason": "F1:pf_net=1.050;F2:pf_net=1.000;F3:pf_net=1.150"
-  },
-  {
-   "kind": "pf_below_floor",
+   "at": "2026-08-16T05:51:23+00:00",
+   "evidence": "D:\\QM\\reports\\pipeline\\QM5_10132\\Q04\\XAUUSD.DWX__c334e45c-9555-4336-a6f7-cd3aa2ffb45a\\aggregate.json",
+   "metric": "pf_net_weakest_fold",
    "value": 1.0,
+   "folds": [
+    1.05,
+    1.0,
+    1.15
+   ],
    "floor": 1.0,
-   "gap_pct": 0.0,
-   "work_item": "99d1aadd-363f-46aa-8c2d-0fafe5002b37",
-   "ea": "QM5_21504",
-   "symbol": "XNGUSD.DWX",
-   "phase": "Q05",
-   "verdict": "FAIL",
-   "at": "2026-08-14T18:22:28",
-   "reason": "pf_below_floor:pf=1.000:floor=1.0"
+   "floor_source": "framework/scripts/q04_walkforward.py:53",
+   "pass_requires": ">",
+   "gap_pct": 0.0
   },
   {
-   "kind": "pf_below_floor",
-   "value": 0.99,
-   "floor": 1.0,
-   "gap_pct": 1.0,
    "work_item": "d0049c13-0245-4851-b036-ca1d266ea026",
    "ea": "QM5_10714",
    "symbol": "XAUUSD.DWX",
    "phase": "Q06",
    "verdict": "FAIL",
-   "at": "2026-08-16T11:09:20",
-   "reason": "pf_below_floor:pf=0.990:floor=1.0"
+   "at": "2026-08-16T11:09:20+00:00",
+   "evidence": "D:\\QM\\reports\\work_items\\d0049c13-0245-4851-b036-ca1d266ea026\\QM5_10714\\Q06\\XAUUSD_DWX\\aggregate.json",
+   "metric": "pf",
+   "value": 0.99,
+   "folds": null,
+   "floor": 1.0,
+   "floor_source": "framework/scripts/q05_stress_medium.py:51",
+   "pass_requires": ">",
+   "gap_pct": 1.0
   },
   {
-   "kind": "walkforward_folds",
-   "value": 0.988,
-   "floor": 1.0,
-   "gap_pct": 1.2,
-   "folds": [
-    1.051,
-    0.988,
-    1.107
-   ],
    "work_item": "7542c68a-c37a-4dba-ada5-d120e911ed2d",
    "ea": "QM5_9940",
    "symbol": "EURJPY.DWX",
    "phase": "Q04",
    "verdict": "FAIL",
-   "at": "2026-08-16T05:59:15",
-   "reason": "F1:pf_net=1.051;F2:pf_net=0.988;F3:pf_net=1.107"
+   "at": "2026-08-16T05:59:15+00:00",
+   "evidence": "D:\\QM\\reports\\pipeline\\QM5_9940\\Q04\\EURJPY.DWX__7542c68a-c37a-4dba-ada5-d120e911ed2d\\aggregate.json",
+   "metric": "pf_net_weakest_fold",
+   "value": 0.988,
+   "folds": [
+    1.051,
+    0.988,
+    1.107
+   ],
+   "floor": 1.0,
+   "floor_source": "framework/scripts/q04_walkforward.py:53",
+   "pass_requires": ">",
+   "gap_pct": 1.2
   },
   {
-   "kind": "walkforward_folds",
+   "work_item": "aff01074-1dcb-4ea4-9a09-021f8e94fd54",
+   "ea": "QM5_20082",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q05",
+   "verdict": "FAIL",
+   "at": "2026-08-16T23:39:05+00:00",
+   "evidence": "D:\\QM\\reports\\work_items\\aff01074-1dcb-4ea4-9a09-021f8e94fd54\\QM5_20082\\Q05\\USDCAD_DWX\\aggregate.json",
+   "metric": "pf",
    "value": 0.98,
+   "folds": null,
    "floor": 1.0,
-   "gap_pct": 2.0,
-   "folds": [
-    1.05,
-    0.98,
-    1.05
-   ],
-   "work_item": "fb7864f2-a993-467f-9114-cc44485ee2db",
-   "ea": "QM5_10242",
-   "symbol": "XAUUSD.DWX",
-   "phase": "Q04",
-   "verdict": "FAIL",
-   "at": "2026-08-16T09:58:49",
-   "reason": "F1:pf_net=1.050;F2:pf_net=0.980;F3:pf_net=1.050"
+   "floor_source": "framework/scripts/q05_stress_medium.py:51",
+   "pass_requires": ">",
+   "gap_pct": 2.0
   },
   {
-   "kind": "walkforward_folds",
-   "value": 0.97,
-   "floor": 1.0,
-   "gap_pct": 3.0,
-   "folds": [
-    0.97,
-    1.03,
-    1.13
-   ],
-   "work_item": "f3f80981-0c0d-438b-9f5a-ed2ebab0310d",
-   "ea": "QM5_1638",
-   "symbol": "XAUUSD.DWX",
-   "phase": "Q04",
-   "verdict": "FAIL",
-   "at": "2026-08-16T06:05:48",
-   "reason": "F1:pf_net=0.970;F2:pf_net=1.030;F3:pf_net=1.130"
-  },
-  {
-   "kind": "walkforward_folds",
-   "value": 0.97,
-   "floor": 1.0,
-   "gap_pct": 3.0,
-   "folds": [
-    0.97,
-    1.0,
-    1.12
-   ],
-   "work_item": "c03316b9-a919-49c3-a39d-44b657e0b0cc",
-   "ea": "QM5_10515",
-   "symbol": "XAUUSD.DWX",
-   "phase": "Q04",
-   "verdict": "FAIL",
-   "at": "2026-08-15T23:47:55",
-   "reason": "F1:pf_net=0.970;F2:pf_net=1.000;F3:pf_net=1.120"
-  },
-  {
-   "kind": "walkforward_folds",
-   "value": 0.97,
-   "floor": 1.0,
-   "gap_pct": 3.0,
-   "folds": [
-    1.05,
-    0.97,
-    1.1
-   ],
-   "work_item": "479a2c88-aee9-4e3b-a6c7-13aba98886fe",
-   "ea": "QM5_10501",
-   "symbol": "XAUUSD.DWX",
-   "phase": "Q04",
-   "verdict": "FAIL",
-   "at": "2026-08-15T23:45:47",
-   "reason": "F1:pf_net=1.050;F2:pf_net=0.970;F3:pf_net=1.100"
-  },
-  {
-   "kind": "pf_below_floor",
-   "value": 0.98,
-   "floor": 1.0,
-   "gap_pct": 2.0,
    "work_item": "dd400099-7183-4f7a-bfa3-5ff166a3a42b",
    "ea": "QM5_20082",
    "symbol": "AUDUSD.DWX",
    "phase": "Q06",
    "verdict": "FAIL",
-   "at": "2026-08-16T22:51:50",
-   "reason": "pf_below_floor:pf=0.980:floor=1.0"
+   "at": "2026-08-16T22:51:50+00:00",
+   "evidence": "D:\\QM\\reports\\work_items\\dd400099-7183-4f7a-bfa3-5ff166a3a42b\\QM5_20082\\Q06\\AUDUSD_DWX\\aggregate.json",
+   "metric": "pf",
+   "value": 0.98,
+   "folds": null,
+   "floor": 1.0,
+   "floor_source": "framework/scripts/q05_stress_medium.py:51",
+   "pass_requires": ">",
+   "gap_pct": 2.0
   },
   {
-   "kind": "q08_soft_edges_no_hard_fail",
-   "value": 3.0,
-   "floor": 0.0,
-   "gap_pct": 0.0,
-   "work_item": "20431af7-c535-46fa-b13e-641d402cb69b",
-   "ea": "QM5_20086",
-   "symbol": "EURUSD.DWX",
-   "phase": "Q08",
-   "verdict": "FAIL_SOFT",
-   "at": "2026-08-17T01:29:34",
-   "reason": "8 of 11 sub-gates PASS plus cost_cushion PASS (4.92x); zero HARD failures; three EDGE_SOFT: 8.4_seasonal, 8.7_pbo, 8.10_regime_crisis",
-   "rework_targets": [
-    "8.4_seasonal",
-    "8.7_pbo",
-    "8.10_regime_crisis"
+   "work_item": "fb7864f2-a993-467f-9114-cc44485ee2db",
+   "ea": "QM5_10242",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-16T09:58:49+00:00",
+   "evidence": "D:\\QM\\reports\\pipeline\\QM5_10242\\Q04\\XAUUSD.DWX__fb7864f2-a993-467f-9114-cc44485ee2db\\aggregate.json",
+   "metric": "pf_net_weakest_fold",
+   "value": 0.98,
+   "folds": [
+    1.05,
+    0.98,
+    1.05
    ],
-   "depth_note": "deepest entry in the register by two phases; prior lineage Q04 PF 2.57 (folds 4.035/1.209/2.461), Q05 PF 1.35 dd 6.76, Q06 HARSH PF 1.35 dd 6.03, Q07 five seeds PF 1.31-1.41 variance 7.41 pct, 445 trades",
-   "second_symbol_corroboration": "QM5_20086 NDX.DWX independently reached Q07 PASS at 2026-08-17T04:04:57 (Q02 PASS, Q04 PASS_SOFT, Q05 PASS, Q06 PASS, Q07 PASS). Two independent symbols to Q07 substantially weakens the single-symbol overfit reading that a lone deep survivor invites. NDX Q08 is the decisive run: if it returns FAIL_SOFT on the same three sub-gates (8.4 seasonal, 8.7 PBO, 8.10 regime_crisis), that is a consistent structural property across symbols and therefore a fixable rework target rather than noise.",
-   "at_updated": "2026-08-17T04:10:00",
-   "status_correction": "NOT merely a rework candidate: Q08 FAIL_SOFT legitimately advances to Q09_PORTFOLIO by design (farmctl phase_prev_verdicts Q09_PORTFOLIO = {PASS, FAIL_SOFT}, DL-082 SS3c). The Q09_PORTFOLIO row was enqueued 2026-08-17T02:11 and is pending. QM5_20086 EURUSD is therefore a LIVE candidate at the first OWNER-adjacent gate, and the first in the factory history to reach it on a FAIL_SOFT - the five prior entrants (QM5_1537, 13054, 12708, 12849, 12855) all carried Q08 PASS. The three soft edges are what the portfolio gate now weighs against the rest of the book; an uncorrelated strategy with soft edges can still be a good addition, which is what that rule exists for."
+   "floor": 1.0,
+   "floor_source": "framework/scripts/q04_walkforward.py:53",
+   "pass_requires": ">",
+   "gap_pct": 2.0
+  },
+  {
+   "work_item": "f3f80981-0c0d-438b-9f5a-ed2ebab0310d",
+   "ea": "QM5_1638",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-16T06:05:48+00:00",
+   "evidence": "D:\\QM\\reports\\pipeline\\QM5_1638\\Q04\\XAUUSD.DWX__f3f80981-0c0d-438b-9f5a-ed2ebab0310d\\aggregate.json",
+   "metric": "pf_net_weakest_fold",
+   "value": 0.97,
+   "folds": [
+    0.97,
+    1.03,
+    1.13
+   ],
+   "floor": 1.0,
+   "floor_source": "framework/scripts/q04_walkforward.py:53",
+   "pass_requires": ">",
+   "gap_pct": 3.0
+  },
+  {
+   "work_item": "c03316b9-a919-49c3-a39d-44b657e0b0cc",
+   "ea": "QM5_10515",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-15T23:47:55+00:00",
+   "evidence": "D:\\QM\\reports\\pipeline\\QM5_10515\\Q04\\XAUUSD.DWX__c03316b9-a919-49c3-a39d-44b657e0b0cc\\aggregate.json",
+   "metric": "pf_net_weakest_fold",
+   "value": 0.97,
+   "folds": [
+    0.97,
+    1.0,
+    1.12
+   ],
+   "floor": 1.0,
+   "floor_source": "framework/scripts/q04_walkforward.py:53",
+   "pass_requires": ">",
+   "gap_pct": 3.0
+  },
+  {
+   "work_item": "479a2c88-aee9-4e3b-a6c7-13aba98886fe",
+   "ea": "QM5_10501",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-15T23:45:47+00:00",
+   "evidence": "D:\\QM\\reports\\pipeline\\QM5_10501\\Q04\\XAUUSD.DWX__479a2c88-aee9-4e3b-a6c7-13aba98886fe\\aggregate.json",
+   "metric": "pf_net_weakest_fold",
+   "value": 0.97,
+   "folds": [
+    1.05,
+    0.97,
+    1.1
+   ],
+   "floor": 1.0,
+   "floor_source": "framework/scripts/q04_walkforward.py:53",
+   "pass_requires": ">",
+   "gap_pct": 3.0
+  },
+  {
+   "work_item": "84db2f1b-1523-4e07-9629-aca5c210dcdb",
+   "ea": "QM5_20176",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q05",
+   "verdict": "FAIL",
+   "at": "2026-08-17T05:07:52+00:00",
+   "evidence": "D:\\QM\\reports\\work_items\\84db2f1b-1523-4e07-9629-aca5c210dcdb\\QM5_20176\\Q05\\GBPUSD_DWX\\aggregate.json",
+   "metric": "pf",
+   "value": 0.96,
+   "folds": null,
+   "floor": 1.0,
+   "floor_source": "framework/scripts/q05_stress_medium.py:51",
+   "pass_requires": ">",
+   "gap_pct": 4.0
+  },
+  {
+   "work_item": "3e43a75f-323d-46b3-aa4f-6e22769271f6",
+   "ea": "QM5_1537",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q06",
+   "verdict": "FAIL",
+   "at": "2026-08-16T12:29:52+00:00",
+   "evidence": "D:\\QM\\reports\\work_items\\3e43a75f-323d-46b3-aa4f-6e22769271f6\\QM5_1537\\Q06\\XNGUSD_DWX\\aggregate.json",
+   "metric": "pf",
+   "value": 0.96,
+   "folds": null,
+   "floor": 1.0,
+   "floor_source": "framework/scripts/q05_stress_medium.py:51",
+   "pass_requires": ">",
+   "gap_pct": 4.0
   }
- ],
- "repeat_offenders": {}
+ ]
 }
