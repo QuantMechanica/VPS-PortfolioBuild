@@ -1,16 +1,15 @@
 {
  "candidates": 54,
- "classification_limit": "a documented command line and an automated caller are textually identical; only .py/.ps1/.bat/.cmd references count as callers, and the remainder needs a human check",
- "corpus_note": "nested checkouts (.claude/worktrees) excluded; a script there is a clone of itself",
  "rows": [
   {
-   "reference_count": 5,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\ORPHANED_MECHANISMS.md",
-    "docs\\ops\\evidence\\2026-07-27_interactive_task_selfheal_fix.md",
-    "docs\\research\\FTMO_SOURCING_AND_WAVE2_2026-07-21.md",
-    "tools\\strategy_farm\\mailbox_source_intake.py"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\sourcing_intake_sweep.py",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\sourcing_intake_sweep.py",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\tools\\strategy_farm\\sourcing_intake_sweep.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\tools\\strategy_farm\\sourcing_intake_sweep.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-10\\tools\\strategy_farm\\sourcing_intake_sweep.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-3\\tools\\strategy_farm\\sourcing_intake_sweep.py"
    ],
    "script": "tools\\strategy_farm\\sourcing_intake_sweep.py",
    "status": "scheduled_but_disabled",
@@ -19,54 +18,105 @@
      "name": "QM_StrategyFarm_SourcingIntakeSweep",
      "state": "Disabled"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 3,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\QM5_11476_USDJPY_LONG_ONLY_RESCUE_2026-06-28.md",
-    "docs\\ops\\evidence\\2026-07-25_codex_build_wp57.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\QM5_11476_USDJPY_LONG_ONLY_RESCUE_2026-06-28.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\QM5_11476_USDJPY_LONG_ONLY_RESCUE_2026-06-28.md",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\docs\\ops\\QM5_11476_USDJPY_LONG_ONLY_RESCUE_2026-06-28.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\docs\\ops\\QM5_11476_USDJPY_LONG_ONLY_RESCUE_2026-06-28.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-10\\docs\\ops\\QM5_11476_USDJPY_LONG_ONLY_RESCUE_2026-06-28.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-3\\docs\\ops\\QM5_11476_USDJPY_LONG_ONLY_RESCUE_2026-06-28.md"
    ],
    "script": "tools\\strategy_farm\\audit_q04_native_report_guard.py",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
-   "reference_count": 2,
+   "reference_count": 12,
+   "repo_references": [
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\evidence\\DXZ_10939_GBPUSD_H4_REPAIR_PACKET_2026-07-16.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\evidence\\DXZ_10939_GBPUSD_H4_REPAIR_PACKET_2026-07-16.md",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\docs\\ops\\evidence\\DXZ_10939_GBPUSD_H4_REPAIR_PACKET_2026-07-16.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\docs\\ops\\evidence\\DXZ_10939_GBPUSD_H4_REPAIR_PACKET_2026-07-16.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-10\\docs\\ops\\evidence\\DXZ_10939_GBPUSD_H4_REPAIR_PACKET_2026-07-16.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-3\\docs\\ops\\evidence\\DXZ_10939_GBPUSD_H4_REPAIR_PACKET_2026-07-16.md"
+   ],
+   "script": "tools\\strategy_farm\\dxz_10939_repair_packet.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "reference_count": 12,
+   "repo_references": [
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\evidence\\DXZ_12567_XAUUSD_D1_REPAIR_PACKET_2026-07-16.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\evidence\\DXZ_12567_XAUUSD_D1_REPAIR_PACKET_2026-07-16.md",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\docs\\ops\\evidence\\DXZ_12567_XAUUSD_D1_REPAIR_PACKET_2026-07-16.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\docs\\ops\\evidence\\DXZ_12567_XAUUSD_D1_REPAIR_PACKET_2026-07-16.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-10\\docs\\ops\\evidence\\DXZ_12567_XAUUSD_D1_REPAIR_PACKET_2026-07-16.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-3\\docs\\ops\\evidence\\DXZ_12567_XAUUSD_D1_REPAIR_PACKET_2026-07-16.md"
+   ],
+   "script": "tools\\strategy_farm\\dxz_12567_xau_repair_packet.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "reference_count": 12,
    "repo_references": [
     "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\FACTORY_AUTOLOGON_2026-06-02.md"
+    "docs\\ops\\CODEX_BRIEF_2026-07-31_r2_parser_precedence_and_pump_gate.md",
+    "docs\\ops\\CODEX_BRIEF_2026-07-31_ten_worker_policy_source.md",
+    "docs\\ops\\evidence\\02d8da7b_factory_on_running_gate_ceremony_marker_2026-08-16.md",
+    "docs\\ops\\evidence\\2026-07-31_factory_on_fix_review.md",
+    "docs\\ops\\evidence\\2026-07-31_hygiene_five_fixes.md"
+   ],
+   "script": "tools\\strategy_farm\\factory_restart_health.ps1",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "reference_count": 12,
+   "repo_references": [
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\FACTORY_AUTOLOGON_2026-06-02.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\FACTORY_AUTOLOGON_2026-06-02.md",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\docs\\ops\\FACTORY_AUTOLOGON_2026-06-02.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\docs\\ops\\FACTORY_AUTOLOGON_2026-06-02.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-10\\docs\\ops\\FACTORY_AUTOLOGON_2026-06-02.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-3\\docs\\ops\\FACTORY_AUTOLOGON_2026-06-02.md"
    ],
    "script": "tools\\strategy_farm\\install_factory_watchdog_scheduled_task.ps1",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
-   "reference_count": 2,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\SCHEDULED_TASKS_INVENTORY.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-10\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-3\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md"
    ],
    "script": "tools\\strategy_farm\\install_hourly_monitor_scheduled_task.ps1",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
-   "reference_count": 3,
+   "reference_count": 12,
    "repo_references": [
     "CLAUDE.md",
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\CLAUDE.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\CLAUDE.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\CLAUDE.md"
    ],
    "script": "tools\\strategy_farm\\install_quota_governor_scheduled_task.ps1",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
    "reference_count": 1,
@@ -75,23 +125,21 @@
    ],
    "script": "tools\\strategy_farm\\install_reconcile_orphans_scheduled_task.ps1",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
-   "reference_count": 6,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\CODEX_BRIEF_2026-07-31_mnt003_r2_diagnosis.md",
-    "docs\\ops\\QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md",
-    "docs\\ops\\evidence\\2026-07-26_claude_review_of_codex_selfheal.md",
-    "docs\\ops\\evidence\\2026-07-29_mnt_round4_positions.md",
-    "docs\\ops\\evidence\\2026-07-31_mnt003_minimal_plan.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\docs\\ops\\QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md"
    ],
    "script": "tools\\strategy_farm\\install_tester_cache_purge_scheduled_task.ps1",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
    "reference_count": 2,
@@ -101,8 +149,7 @@
    ],
    "script": "tools\\strategy_farm\\install_workitem_log_pruner_scheduled_task.ps1",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
    "reference_count": 1,
@@ -111,8 +158,7 @@
    ],
    "script": "tools\\strategy_farm\\install_worktree_clean_scheduled_task.ps1",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
    "reference_count": 2,
@@ -122,8 +168,7 @@
    ],
    "script": "tools\\strategy_farm\\open_recovery_window_and_release.py",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
    "reference_count": 4,
@@ -135,8 +180,7 @@
    ],
    "script": "tools\\strategy_farm\\q02_disposition_repair.py",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
    "reference_count": 2,
@@ -146,8 +190,7 @@
    ],
    "script": "tools\\strategy_farm\\q08_recovery_lineage.py",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
    "reference_count": 3,
@@ -158,8 +201,7 @@
    ],
    "script": "tools\\strategy_farm\\reconcile_blocked_build_tasks.py",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
    "reference_count": 3,
@@ -170,175 +212,148 @@
    ],
    "script": "tools\\strategy_farm\\reconcile_terminal_work_items.py",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
-   "reference_count": 4,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\CODEX_ONBOARDING.md",
-    "docs\\ops\\GOAL_PROMPT_EA_TO_P8.md",
-    "docs\\ops\\PASS_PNL_PERSISTENCE_2026-05-19.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\CODEX_ONBOARDING.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\GOAL_PROMPT_EA_TO_P8.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\PASS_PNL_PERSISTENCE_2026-05-19.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\CODEX_ONBOARDING.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\GOAL_PROMPT_EA_TO_P8.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\PASS_PNL_PERSISTENCE_2026-05-19.md"
    ],
    "script": "tools\\strategy_farm\\recover_orphan_reports.py",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
-   "reference_count": 2,
+   "reference_count": 1,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\ORPHANED_MECHANISMS.md"
+    "artifacts\\orphaned_mechanisms_20260818.json"
    ],
    "script": "tools\\strategy_farm\\recover_r1_source_rejections.py",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
-   "reference_count": 2,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\ORPHANED_MECHANISMS.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\decisions\\DL-068_registry_aware_ea_dir_resolution.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\decisions\\DL-069_ea_versioning_and_rework_promotion.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\CODEX_ONBOARDING.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\DEEP_AUDIT_2026-05-20.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\STRATEGY_FARM_REVIEW_REPAIR_2026-06-26.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\WS1_STRATEGY_FARM_HYGIENE_2026-05-22.md"
+   ],
+   "script": "tools\\strategy_farm\\repair.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "reference_count": 1,
+   "repo_references": [
+    "artifacts\\orphaned_mechanisms_20260818.json"
    ],
    "script": "tools\\strategy_farm\\repair_basket_history_symbols.py",
    "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
-  },
-  {
-   "reference_count": 4,
-   "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\DECISIONS_2026-08-18.md",
-    "docs\\ops\\OPS_LOG_2026-08-18.md",
-    "docs\\ops\\ORPHANED_MECHANISMS.md"
-   ],
-   "script": "tools\\strategy_farm\\requeue_false_progress_reap.py",
-   "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
-  },
-  {
-   "reference_count": 6,
-   "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\COMMIT_PROTECTION_ARTIFACT_2026-05-22.md",
-    "docs\\ops\\ONE_SHOT_PING_EMAILS_DISABLED_2026-05-22.md",
-    "docs\\ops\\TASK_WATCH_FCCB8155_ARTIFACT_2026-05-22.md",
-    "docs\\ops\\TASK_WATCH_NOTIFIER_ARTIFACT_2026-05-22.md",
-    "docs\\ops\\WS3_ORCHESTRATION_HARDENING_ARTIFACT_2026-05-22.md"
-   ],
-   "script": "tools\\strategy_farm\\task_watch_notifier.py",
-   "status": "documented_only",
-   "tasks": [],
-   "verified_callers": []
+   "tasks": []
   },
   {
    "reference_count": 3,
    "repo_references": [
     "artifacts\\orphaned_mechanisms_20260818.json",
-    "decisions\\2026-07-26_queue_rebalance_recovery_idle_cap.md",
-    "tools\\strategy_farm\\farmctl.py"
+    "docs\\ops\\DECISIONS_2026-08-18.md",
+    "docs\\ops\\OPS_LOG_2026-08-18.md"
+   ],
+   "script": "tools\\strategy_farm\\requeue_false_progress_reap.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "reference_count": 12,
+   "repo_references": [
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\COMMIT_PROTECTION_ARTIFACT_2026-05-22.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\ONE_SHOT_PING_EMAILS_DISABLED_2026-05-22.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\TASK_WATCH_FCCB8155_ARTIFACT_2026-05-22.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\TASK_WATCH_NOTIFIER_ARTIFACT_2026-05-22.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\WS3_ORCHESTRATION_HARDENING_ARTIFACT_2026-05-22.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\COMMIT_PROTECTION_ARTIFACT_2026-05-22.md"
+   ],
+   "script": "tools\\strategy_farm\\task_watch_notifier.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "reference_count": 12,
+   "repo_references": [
+    ".claude\\worktrees\\agent-a2549e3973929f823\\artifacts\\qm5_11051_build_result.json",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\artifacts\\qm5_12838_build_result.json",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\artifacts\\qm5_12842_build_result.json",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\artifacts\\qm5_12844_build_result.json",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\evidence\\0304dfa3_gemini_v2_guardrails_2026-06-03.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\evidence\\05a836a7_qm5_12847_turn_of_month_fidelity_2026-07-02.md"
+   ],
+   "script": "tools\\strategy_farm\\validate_build_guardrails.py",
+   "status": "documented_only",
+   "tasks": []
+  },
+  {
+   "reference_count": 9,
+   "repo_references": [
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\decisions\\2026-07-26_queue_rebalance_recovery_idle_cap.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\tools\\strategy_farm\\classify_recovery_pending.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\tools\\strategy_farm\\farmctl.py",
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\decisions\\2026-07-26_queue_rebalance_recovery_idle_cap.md",
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\tools\\strategy_farm\\classify_recovery_pending.py",
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\tools\\strategy_farm\\farmctl.py"
    ],
    "script": "tools\\strategy_farm\\classify_recovery_pending.py",
-   "status": "mentioned_but_not_invoked",
-   "strict_note": "references are docstrings or tests, not invocations",
-   "tasks": [],
-   "verified_callers": []
+   "status": "called_from_code",
+   "tasks": []
   },
   {
-   "reference_count": 2,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "tools\\strategy_farm\\run_worktree_clean_task.py"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\run_worktree_clean_task.py",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\run_worktree_clean_task.py",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\tools\\strategy_farm\\run_worktree_clean_task.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\tools\\strategy_farm\\run_worktree_clean_task.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-10\\tools\\strategy_farm\\run_worktree_clean_task.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-3\\tools\\strategy_farm\\run_worktree_clean_task.py"
    ],
    "script": "tools\\strategy_farm\\clean_repo_worktree.ps1",
-   "status": "mentioned_but_not_invoked",
-   "strict_note": "references are docstrings or tests, not invocations",
-   "tasks": [],
-   "verified_callers": []
+   "status": "called_from_code",
+   "tasks": []
   },
   {
-   "reference_count": 20,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\evidence\\2026-07-29_integration_residual_action_plan.md",
-    "docs\\ops\\evidence\\2026-07-29_mnt009_010_read_only_forecast.md",
-    "docs\\ops\\evidence\\2026-07-29_pipeline_books_canonical_publication_receipt.md",
-    "docs\\ops\\evidence\\2026-07-29_pipeline_books_dashboard_render_receipt.md",
-    "docs\\ops\\evidence\\2026-07-30_external_residual_exit_receipt.json"
-   ],
-   "script": "tools\\strategy_farm\\dxz_10939_repair_packet.py",
-   "status": "mentioned_but_not_invoked",
-   "strict_note": "references are docstrings or tests, not invocations",
-   "tasks": [],
-   "verified_callers": []
-  },
-  {
-   "reference_count": 20,
-   "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\evidence\\2026-07-29_integration_residual_action_plan.md",
-    "docs\\ops\\evidence\\2026-07-29_mnt009_010_read_only_forecast.md",
-    "docs\\ops\\evidence\\2026-07-29_pipeline_books_canonical_publication_receipt.md",
-    "docs\\ops\\evidence\\2026-07-29_pipeline_books_dashboard_render_receipt.md",
-    "docs\\ops\\evidence\\2026-07-30_external_residual_exit_receipt.json"
-   ],
-   "script": "tools\\strategy_farm\\dxz_12567_xau_repair_packet.py",
-   "status": "mentioned_but_not_invoked",
-   "strict_note": "references are docstrings or tests, not invocations",
-   "tasks": [],
-   "verified_callers": []
-  },
-  {
-   "reference_count": 20,
-   "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\CODEX_BRIEF_2026-07-31_r2_parser_precedence_and_pump_gate.md",
-    "docs\\ops\\CODEX_BRIEF_2026-07-31_ten_worker_policy_source.md",
-    "docs\\ops\\ORPHANED_MECHANISMS.md",
-    "docs\\ops\\evidence\\02d8da7b_factory_on_running_gate_ceremony_marker_2026-08-16.md",
-    "docs\\ops\\evidence\\2026-07-31_factory_on_fix_review.md"
-   ],
-   "script": "tools\\strategy_farm\\factory_restart_health.ps1",
-   "status": "mentioned_but_not_invoked",
-   "strict_note": "references are docstrings or tests, not invocations",
-   "tasks": [],
-   "verified_callers": []
-  },
-  {
-   "reference_count": 51,
-   "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "decisions\\DL-069_ea_versioning_and_rework_promotion.md",
-    "docs\\ops\\claude_cycle_log_2026-07-05T1331Z.json",
-    "docs\\ops\\CODEX_BRIEF_2026-08-02_factory_on_hold_contract_evolution.md",
-    "docs\\ops\\CODEX_BRIEF_mnt_review_corrections_2026-07-28.md",
-    "docs\\ops\\CODEX_BRIEF_mnt_review_round2_2026-07-29.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\decisions\\DL-069_ea_versioning_and_rework_promotion.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\claude_cycle_log_2026-07-05T1331Z.json",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\CODEX_HANDOFF_2026-07-19_audit_fix_bundle.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\EA_METRICS_ARCHIVE_LAYER_2026-06-22.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\STRATEGY_FARM_REMEDIATION_PLAN_2026-05-22.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\WS3_ORCHESTRATION_HARDENING_ARTIFACT_2026-05-22.md"
    ],
    "script": "tools\\strategy_farm\\health.py",
-   "status": "mentioned_but_not_invoked",
-   "strict_note": "references are docstrings or tests, not invocations",
-   "tasks": [],
-   "verified_callers": []
+   "status": "called_from_code",
+   "tasks": []
   },
   {
-   "reference_count": 5,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\evidence\\2026-07-29_mnt_round4_positions.md",
-    "docs\\ops\\evidence\\2026-07-31_mnt003_apply_v2_observe.md",
-    "tools\\strategy_farm\\agy_governor.py",
-    "tools\\strategy_farm\\tests\\test_mnt003_installer_alignment.py"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\agy_governor.py",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\agy_governor.py",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\tools\\strategy_farm\\agy_governor.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\tools\\strategy_farm\\agy_governor.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-10\\tools\\strategy_farm\\agy_governor.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-3\\tools\\strategy_farm\\agy_governor.py"
    ],
    "script": "tools\\strategy_farm\\install_agy_governor_scheduled_task.ps1",
-   "status": "mentioned_but_not_invoked",
-   "strict_note": "references are docstrings or tests, not invocations",
-   "tasks": [],
-   "verified_callers": []
+   "status": "called_from_code",
+   "tasks": []
   },
   {
    "reference_count": 5,
@@ -350,97 +365,57 @@
     "tools\\strategy_farm\\tests\\test_mnt003_installer_alignment.py"
    ],
    "script": "tools\\strategy_farm\\install_codex_fleet_pacer_scheduled_task.ps1",
-   "status": "mentioned_but_not_invoked",
-   "strict_note": "references are docstrings or tests, not invocations",
-   "tasks": [],
-   "verified_callers": []
+   "status": "called_from_code",
+   "tasks": []
   },
   {
-   "reference_count": 7,
+   "reference_count": 6,
    "repo_references": [
     "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\ORPHANED_MECHANISMS.md",
     "docs\\ops\\evidence\\FACTORY_RUNTIME_ACTIVATION_OWNER_DECISION.json",
     "scripts\\run_public_snapshot_task.ps1",
     "tools\\strategy_farm\\factory_runtime_activation.py",
-    "tools\\strategy_farm\\factory_runtime_activation.v1.template.json"
+    "tools\\strategy_farm\\factory_runtime_activation.v1.template.json",
+    "tools\\strategy_farm\\tests\\test_factory_runtime_activation.py"
    ],
    "script": "tools\\strategy_farm\\public_snapshot_incident_guard.py",
-   "status": "mentioned_but_not_invoked",
-   "strict_note": "references are docstrings or tests, not invocations",
-   "tasks": [],
-   "verified_callers": []
+   "status": "called_from_code",
+   "tasks": []
   },
   {
-   "reference_count": 2,
+   "reference_count": 3,
    "repo_references": [
     "artifacts\\orphaned_mechanisms_20260818.json",
+    "docs\\ops\\ORPHANED_MECHANISMS.md",
     "tools\\strategy_farm\\run_agent_temp_reclaim.ps1"
    ],
    "script": "tools\\strategy_farm\\reclaim_busy_agent_temp.ps1",
    "status": "called_from_code",
-   "tasks": [],
-   "verified_callers": [
-    "tools\\strategy_farm\\run_agent_temp_reclaim.ps1"
-   ]
+   "tasks": []
   },
   {
-   "reference_count": 16,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "decisions\\DL-068_registry_aware_ea_dir_resolution.md",
-    "decisions\\DL-069_ea_versioning_and_rework_promotion.md",
-    "docs\\ops\\CODEX_ONBOARDING.md",
-    "docs\\ops\\CONVERGENCE_LEDGER_WEEKEND_2026-07-31.md",
-    "docs\\ops\\STRATEGY_FARM_REVIEW_REPAIR_2026-06-26.md"
-   ],
-   "script": "tools\\strategy_farm\\repair.py",
-   "status": "documented_command_only",
-   "strict_note": "the only 'caller' is a markdown brief or a result JSON recording the command line, not an automated invocation",
-   "tasks": [],
-   "verified_callers": []
-  },
-  {
-   "reference_count": 26,
-   "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\CODEX_BRIEF_2026-07-31_q08_frontier_steering_review.md",
-    "docs\\ops\\CODEX_BRIEF_mnt_review_corrections_2026-07-28.md",
-    "docs\\ops\\CONVERGENCE_LEDGER_WEEKEND_2026-07-31.md",
-    "docs\\ops\\OPS_LOG_2026-08-18.md",
-    "docs\\ops\\ORPHANED_MECHANISMS.md"
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\docs\\ops\\evidence\\2026-07-26_codex_review_batch3.md",
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\docs\\ops\\evidence\\2026-07-26_codex_review_batch4.md",
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\docs\\ops\\evidence\\2026-07-26_codex_review_batch5.md",
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\tools\\strategy_farm\\requeue_stranded_infra.py",
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\tools\\strategy_farm\\tests\\test_requeue_stranded_infra.py",
+    ".claude\\worktrees\\wf_4cbe25dd-172-6\\docs\\ops\\evidence\\2026-07-26_codex_review_batch3.md"
    ],
    "script": "tools\\strategy_farm\\requeue_stranded_infra.py",
-   "status": "documented_command_only",
-   "strict_note": "the only 'caller' is a markdown brief or a result JSON recording the command line, not an automated invocation",
-   "tasks": [],
-   "verified_callers": []
+   "status": "called_from_code",
+   "tasks": []
   },
   {
-   "reference_count": 168,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\fx_cointegration_frontier_factory_off_20260813T130724Z_board_advisor.json",
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "artifacts\\qm5_11051_build_result.json",
-    "artifacts\\qm5_12838_build_result.json",
-    "artifacts\\qm5_12839_build_result.attempt_0.attempt_1.attempt_2.json",
-    "artifacts\\qm5_12840_build_result.attempt_0.attempt_1.attempt_2.json"
-   ],
-   "script": "tools\\strategy_farm\\validate_build_guardrails.py",
-   "status": "documented_command_only",
-   "strict_note": "the only 'caller' is a markdown brief or a result JSON recording the command line, not an automated invocation",
-   "tasks": [],
-   "verified_callers": []
-  },
-  {
-   "reference_count": 23,
-   "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\CODEX_BRIEF_mnt_review_corrections_2026-07-28.md",
-    "docs\\ops\\FTMO_RUNNING_RECOVERY_CONTRACT_2026-08-06.md",
-    "docs\\ops\\POST_REBOOT_INSTALL_CHECKLIST_2026-07-05.md",
-    "docs\\ops\\evidence\\2026-07-22_live_mt5_session_outage.md",
-    "docs\\ops\\evidence\\2026-07-26_autostart_chain_repair.md"
+    ".claude\\worktrees\\wf_3e591487-ee9-5\\tools\\strategy_farm\\Live_Alarm_State.ps1",
+    ".claude\\worktrees\\wf_3e591487-ee9-5\\tools\\strategy_farm\\tests\\Test-LiveAlarmState.ps1",
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\docs\\ops\\POST_REBOOT_INSTALL_CHECKLIST_2026-07-05.md",
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\docs\\ops\\evidence\\2026-07-22_live_mt5_session_outage.md",
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\docs\\ops\\evidence\\2026-07-26_codex_challenge_ultracode.md",
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\docs\\ops\\plans\\2026-07-26_ULTRACODE_PROGRAMME.md"
    ],
    "script": "tools\\strategy_farm\\T_Live_Watchdog.ps1",
    "status": "scheduled",
@@ -449,18 +424,17 @@
      "name": "QM_T_Live_Watchdog",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 20,
+   "reference_count": 12,
    "repo_references": [
     "CLAUDE.md",
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\CODEX_BRIEF_2026-07-31_mnt003_r2_diagnosis.md",
-    "docs\\ops\\CODEX_BRIEF_2026-07-31_small_fixes_pulse_10513_agy401.md",
-    "docs\\ops\\evidence\\2026-07-27_interactive_task_selfheal_fix.md",
-    "docs\\ops\\evidence\\2026-07-28_mnt_review_corrections.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\CLAUDE.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\agy_governor.py",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\antigravity_channel_harvest.py",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\install_agy_governor_scheduled_task.ps1",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\CLAUDE.md"
    ],
    "script": "tools\\strategy_farm\\agy_governor.py",
    "status": "scheduled",
@@ -469,18 +443,17 @@
      "name": "QM_StrategyFarm_AgyGovernor",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 20,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\evidence\\2026-07-27_interactive_task_selfheal_fix.md",
-    "docs\\ops\\evidence\\2026-07-28_mnt_review_corrections.md",
-    "docs\\ops\\evidence\\2026-07-31_mnt003_apply_v2_observe.md",
-    "docs\\ops\\evidence\\2026-07-31_mnt003_minimal_plan.json",
-    "docs\\ops\\evidence\\2026-07-31_mnt003_minimal_plan.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\codex_kill_safety_audit.py",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\install_codex_fleet_pacer_scheduled_task.ps1",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\tests\\test_codex_kill_safety_audit.py",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\codex_kill_safety_audit.py",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\install_codex_fleet_pacer_scheduled_task.ps1",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\tests\\test_codex_kill_safety_audit.py"
    ],
    "script": "tools\\strategy_farm\\codex_fleet_pacer.py",
    "status": "scheduled",
@@ -489,8 +462,7 @@
      "name": "QM_StrategyFarm_CodexFleetPacer",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
    "reference_count": 3,
@@ -506,18 +478,17 @@
      "name": "QM_EvidenceCohortWatch_Daily_0420",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 25,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\claude_cycle_log_2026-07-05T1331Z.json",
-    "docs\\ops\\FACTORY_AUTOLOGON_2026-06-02.md",
-    "docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
-    "docs\\ops\\SESSION_LOSS_SELF_HEAL_2026-06-11.md",
-    "docs\\ops\\evidence\\2026-07-26_claude_review_of_codex_selfheal.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\claude_cycle_log_2026-07-05T1331Z.json",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\FACTORY_AUTOLOGON_2026-06-02.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\SESSION_LOSS_SELF_HEAL_2026-06-11.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\evidence\\4a18abf0-4649-4051-a8fd-df11f7517ee7_stalldump_capture_2026-06-13.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\evidence\\535d1901_watchdog_basket_guard_2026-07-02.md"
    ],
    "script": "tools\\strategy_farm\\factory_watchdog.ps1",
    "status": "scheduled",
@@ -526,18 +497,17 @@
      "name": "QM_StrategyFarm_FactoryWatchdog_15min",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 6,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
-    "docs\\ops\\evidence\\watchdog_session_resilience_2026-07-05.md",
-    "docs\\ops\\mnt_page_updates_2026-07-29\\MNT-052.md",
-    "tools\\strategy_farm\\install_hourly_monitor_scheduled_task.ps1",
-    "tools\\strategy_farm\\tests\\test_factory_quiescence.py"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\evidence\\watchdog_session_resilience_2026-07-05.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\install_hourly_monitor_scheduled_task.ps1",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\evidence\\watchdog_session_resilience_2026-07-05.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\install_hourly_monitor_scheduled_task.ps1"
    ],
    "script": "tools\\strategy_farm\\hourly_monitor.ps1",
    "status": "scheduled",
@@ -546,15 +516,17 @@
      "name": "QM_StrategyFarm_HourlyMonitor_60min",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 3,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
-    "docs\\ops\\evidence\\2026-08-15_codex_archive_eater_forensics.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\inbox_cleanup.py",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\inbox_cleanup.py",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\tools\\strategy_farm\\inbox_cleanup.py"
    ],
    "script": "tools\\strategy_farm\\inbox_cleanup.py",
    "status": "scheduled",
@@ -563,15 +535,17 @@
      "name": "QM_StrategyFarm_InboxCleanup_Daily",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 3,
+   "reference_count": 7,
    "repo_references": [
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\decisions\\2026-07-24_live_book_dd_guard.md",
+    ".claude\\worktrees\\wf_4cbe25dd-172-1\\docs\\ops\\source_harvest\\audit\\CODEX_BRIEF_implementation_review_2026-07-24.md",
+    ".claude\\worktrees\\wf_4cbe25dd-172-6\\decisions\\2026-07-24_live_book_dd_guard.md",
+    ".claude\\worktrees\\wf_4cbe25dd-172-6\\docs\\ops\\source_harvest\\audit\\CODEX_BRIEF_implementation_review_2026-07-24.md",
     "artifacts\\orphaned_mechanisms_20260818.json",
-    "decisions\\2026-07-24_live_book_dd_guard.md",
-    "docs\\ops\\source_harvest\\audit\\CODEX_BRIEF_implementation_review_2026-07-24.md"
+    "decisions\\2026-07-24_live_book_dd_guard.md"
    ],
    "script": "tools\\strategy_farm\\live_book_dd_guard.py",
    "status": "scheduled",
@@ -580,8 +554,7 @@
      "name": "QM_StrategyFarm_LiveBookDDGuard",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
    "reference_count": 5,
@@ -599,17 +572,17 @@
      "name": "QM_LiveSupervisor_Watchdog_SYSTEM",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 5,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\POST_REBOOT_INSTALL_CHECKLIST_2026-07-05.md",
-    "docs\\ops\\evidence\\watchdog_session_resilience_2026-07-05.md",
-    "tools\\strategy_farm\\install_hygiene_and_lsm_tasks.ps1",
-    "tools\\strategy_farm\\tests\\test_hygiene_reboot_task.py"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\POST_REBOOT_INSTALL_CHECKLIST_2026-07-05.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\evidence\\watchdog_session_resilience_2026-07-05.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\install_hygiene_and_lsm_tasks.ps1",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\tests\\test_hygiene_reboot_task.py",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\POST_REBOOT_INSTALL_CHECKLIST_2026-07-05.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\evidence\\watchdog_session_resilience_2026-07-05.md"
    ],
    "script": "tools\\strategy_farm\\lsm_health_probe.ps1",
    "status": "scheduled",
@@ -618,13 +591,17 @@
      "name": "QM_StrategyFarm_LsmHealthProbe",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 1,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\monitor_intraday_edges.py",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\monitor_intraday_edges.py",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\tools\\strategy_farm\\monitor_intraday_edges.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\tools\\strategy_farm\\monitor_intraday_edges.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-10\\tools\\strategy_farm\\monitor_intraday_edges.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-3\\tools\\strategy_farm\\monitor_intraday_edges.py"
    ],
    "script": "tools\\strategy_farm\\monitor_intraday_edges.py",
    "status": "scheduled",
@@ -633,18 +610,17 @@
      "name": "QM_StrategyFarm_IntradayEdgeWatch",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
    "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\CODEX_HANDOFF_2026-07-19_audit_fix_bundle.md",
-    "docs\\ops\\EXTRACTOR_FIX_REPORT.md",
-    "docs\\ops\\OPEN_QUESTIONS.md",
-    "docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
-    "docs\\ops\\evidence\\2026-07-25_codex_build_wp57.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\CODEX_HANDOFF_2026-07-19_audit_fix_bundle.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\prune_workitem_logs.py",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\CODEX_HANDOFF_2026-07-19_audit_fix_bundle.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\prune_workitem_logs.py"
    ],
    "script": "tools\\strategy_farm\\prune_workitem_logs.py",
    "status": "scheduled",
@@ -653,18 +629,17 @@
      "name": "QM_WorkItemLogPruner_Daily_0310",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 7,
+   "reference_count": 12,
    "repo_references": [
     "CLAUDE.md",
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\FACTORY_WATCH_LOOP_AND_RECOVERY_2026-06-23.md",
-    "docs\\ops\\QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md",
-    "docs\\ops\\evidence\\2026-08-04_recovery_cap_stall_escape_proposal.md",
-    "docs\\ops\\evidence\\9dd1f1f8_pre_spawn_quota_gate_2026-08-03.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\CLAUDE.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\FACTORY_WATCH_LOOP_AND_RECOVERY_2026-06-23.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\install_quota_governor_scheduled_task.ps1",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\quota_governor.py"
    ],
    "script": "tools\\strategy_farm\\quota_governor.py",
    "status": "scheduled",
@@ -673,16 +648,17 @@
      "name": "QM_StrategyFarm_QuotaGovernor",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 4,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\ACCELERATION_2026-06-10.md",
-    "docs\\ops\\MODEL_CONTINUITY_WITHOUT_FABLE_2026-07-07.md",
-    "docs\\ops\\evidence\\ws1_card_hygiene_2026-07-02.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\ACCELERATION_2026-06-10.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\MODEL_CONTINUITY_WITHOUT_FABLE_2026-07-07.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\evidence\\ws1_card_hygiene_2026-07-02.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\ACCELERATION_2026-06-10.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\MODEL_CONTINUITY_WITHOUT_FABLE_2026-07-07.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\evidence\\ws1_card_hygiene_2026-07-02.md"
    ],
    "script": "tools\\strategy_farm\\r_eval_drain.py",
    "status": "scheduled",
@@ -691,15 +667,17 @@
      "name": "QM_StrategyFarm_REvalDrain_15min",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 3,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\evidence\\ops_hardening_p1p3_2026-07-03.md",
-    "tools\\strategy_farm\\install_reconcile_orphans_scheduled_task.ps1"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\evidence\\ops_hardening_p1p3_2026-07-03.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\install_reconcile_orphans_scheduled_task.ps1",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\reconcile_orphans.ps1",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\evidence\\ops_hardening_p1p3_2026-07-03.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\install_reconcile_orphans_scheduled_task.ps1",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\reconcile_orphans.ps1"
    ],
    "script": "tools\\strategy_farm\\reconcile_orphans.ps1",
    "status": "scheduled",
@@ -708,18 +686,17 @@
      "name": "QM_StrategyFarm_ReconcileOrphans_Hourly",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 10,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\evidence\\2026-07-26_autostart_chain_repair.md",
-    "docs\\ops\\evidence\\2026-07-27_t5_repair.md",
-    "docs\\ops\\evidence\\2026-07-29_mnt_round3_positions.md",
-    "docs\\ops\\evidence\\2026-07-30_density_execution_contract_reconciliation.json",
-    "docs\\ops\\mnt_page_updates_2026-07-28\\MNT-045.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\tests\\test_refresh_news_calendar.py",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\tests\\test_refresh_news_calendar.py",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\tools\\strategy_farm\\tests\\test_refresh_news_calendar.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\tools\\strategy_farm\\tests\\test_refresh_news_calendar.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-10\\tools\\strategy_farm\\tests\\test_refresh_news_calendar.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-3\\tools\\strategy_farm\\tests\\test_refresh_news_calendar.py"
    ],
    "script": "tools\\strategy_farm\\refresh_news_calendar.ps1",
    "status": "scheduled",
@@ -728,18 +705,17 @@
      "name": "QM_NewsCalendar_Refresh",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 9,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\ACCELERATION_2026-06-10.md",
-    "docs\\ops\\EXTRACTOR_FIX_REPORT.md",
-    "docs\\ops\\OPEN_QUESTIONS.md",
-    "docs\\ops\\evidence\\2026-07-26_claude_review_of_codex_selfheal.md",
-    "docs\\ops\\evidence\\2026-08-15_codex_archive_eater_forensics.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\ACCELERATION_2026-06-10.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\ACCELERATION_2026-06-10.md",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\docs\\ops\\ACCELERATION_2026-06-10.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\docs\\ops\\ACCELERATION_2026-06-10.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-10\\docs\\ops\\ACCELERATION_2026-06-10.md",
+    ".claude\\worktrees\\wf_3e591487-ee9-3\\docs\\ops\\ACCELERATION_2026-06-10.md"
    ],
    "script": "tools\\strategy_farm\\reports_log_purge.ps1",
    "status": "scheduled",
@@ -748,13 +724,13 @@
      "name": "QM_StrategyFarm_ReportsLogPurge_12h",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 1,
+   "reference_count": 2,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json"
+    "artifacts\\orphaned_mechanisms_20260818.json",
+    "docs\\ops\\ORPHANED_MECHANISMS.md"
    ],
    "script": "tools\\strategy_farm\\run_agent_temp_reclaim.ps1",
    "status": "scheduled",
@@ -763,16 +739,17 @@
      "name": "QM_StrategyFarm_AgentTempReclaim_10min",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 4,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
-    "tools\\strategy_farm\\install_worktree_clean_scheduled_task.ps1",
-    "tools\\strategy_farm\\tests\\test_factory_mutation_lock.py"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\install_worktree_clean_scheduled_task.ps1",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\install_worktree_clean_scheduled_task.ps1",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\tools\\strategy_farm\\install_worktree_clean_scheduled_task.ps1"
    ],
    "script": "tools\\strategy_farm\\run_worktree_clean_task.py",
    "status": "scheduled",
@@ -781,18 +758,17 @@
      "name": "QM_StrategyFarm_WorktreeClean_4h",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 6,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\evidence\\2026-07-26_codex_challenge_ultracode.md",
-    "docs\\ops\\evidence\\2026-07-26_selfheal_fix_codex.md",
-    "docs\\ops\\evidence\\2026-07-28_mnt_review_corrections.md",
-    "docs\\ops\\evidence\\2026-07-29_mnt_review_round2.md",
-    "docs\\ops\\mnt_page_updates_2026-07-28\\MNT-004.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\silent_failure_monitor.py",
+    ".claude\\worktrees\\agent-a82a5a3a90aa8d41d\\tools\\strategy_farm\\silent_failure_monitor.py",
+    ".claude\\worktrees\\agent-a8fa4490f172947e1\\tools\\strategy_farm\\silent_failure_monitor.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-1\\tools\\strategy_farm\\silent_failure_monitor.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-10\\tools\\strategy_farm\\silent_failure_monitor.py",
+    ".claude\\worktrees\\wf_3e591487-ee9-3\\tools\\strategy_farm\\silent_failure_monitor.py"
    ],
    "script": "tools\\strategy_farm\\silent_failure_monitor.py",
    "status": "scheduled",
@@ -801,18 +777,17 @@
      "name": "QM_StrategyFarm_SilentFailureMonitor",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 211,
+   "reference_count": 12,
    "repo_references": [
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "artifacts\\qm5_10282_eurusd_q02_enqueue_20260810T143815Z.json",
-    "artifacts\\qm5_11399_fx_q02_handoff_20260812T012055Z_board_advisor.json",
-    "artifacts\\qm5_11423_fx_q02_cpu_ceiling_20260807T074439Z.json",
-    "artifacts\\qm5_11904_fx_q02_breadth_enqueue_20260810T170730Z.json",
-    "artifacts\\qm5_12779_build_result.json"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\artifacts\\qm5_12779_build_result.json",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\artifacts\\qm5_12785_build_result.json",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\artifacts\\qm5_12804_build_result.json",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\artifacts\\qm5_12806_build_result.json",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\artifacts\\qm5_12808_build_result.json",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\artifacts\\qm5_12809_build_result.json"
    ],
    "script": "tools\\strategy_farm\\sweep_enqueue_built_eas.py",
    "status": "scheduled",
@@ -821,18 +796,17 @@
      "name": "QM_StrategyFarm_SweepEnqueue_Hourly",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   },
   {
-   "reference_count": 28,
+   "reference_count": 12,
    "repo_references": [
     "CLAUDE.md",
-    "artifacts\\orphaned_mechanisms_20260818.json",
-    "docs\\ops\\CODEX_BRIEF_mnt_review_round4_2026-07-29.md",
-    "docs\\ops\\QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md",
-    "docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
-    "docs\\ops\\evidence\\2026-07-21_bases_dejunction_spike_findings.md"
+    ".claude\\worktrees\\agent-a2549e3973929f823\\CLAUDE.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\SCHEDULED_TASKS_INVENTORY.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\docs\\ops\\evidence\\535d1901_watchdog_basket_guard_2026-07-02.md",
+    ".claude\\worktrees\\agent-a2549e3973929f823\\tools\\strategy_farm\\install_tester_cache_purge_scheduled_task.ps1"
    ],
    "script": "tools\\strategy_farm\\tester_cache_purge.ps1",
    "status": "scheduled",
@@ -841,17 +815,13 @@
      "name": "QM_StrategyFarm_TesterCachePurge",
      "state": "Ready"
     }
-   ],
-   "verified_callers": []
+   ]
   }
  ],
  "schema_version": "qm.orphaned-mechanisms/v1",
- "strict_pass": true,
  "summary": {
-  "called_from_code": 1,
-  "documented_command_only": 3,
-  "documented_only": 18,
-  "mentioned_but_not_invoked": 9,
+  "called_from_code": 8,
+  "documented_only": 23,
   "scheduled": 22,
   "scheduled_but_disabled": 1
  }
