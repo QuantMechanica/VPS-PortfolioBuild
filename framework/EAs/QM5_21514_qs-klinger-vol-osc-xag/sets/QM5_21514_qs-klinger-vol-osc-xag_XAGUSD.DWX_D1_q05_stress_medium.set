@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        21514
+; ea_slug:      qs-klinger-vol-osc-xag
+; ea_version:   v5.0
+; set_version:  s20260819-stress-med
+; symbol:       XAGUSD.DWX
+; timeframe:    D1
+; environment:  q05_stress_medium
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   0ced3190a5d37a7d3ea7caf6b7c031264b2e340c3fda87e7a40e5a98ba7167b3
+; author:       Development
+; date:         2026-08-19
+;==========================================================
+qm_ea_id=21514
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.0000
+qm_news_stale_max_hours=336
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=artifacts/cards_approved/QM5_21514_qs-klinger-vol-osc-xag.md
+strategy_kvo_fast_period=34
+strategy_kvo_slow_period=55
+strategy_kvo_signal_period=13
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_max_hold_bars=60
+strategy_warmup_buffer=20
+strategy_max_spread_points=400
