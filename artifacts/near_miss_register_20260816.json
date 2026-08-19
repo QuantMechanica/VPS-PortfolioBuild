@@ -272,6 +272,27 @@
    "floor_source": "framework/scripts/q05_stress_medium.py:51",
    "pass_requires": ">",
    "gap_pct": 4.0
+  },
+  {
+   "work_item": "afeaf8fb-5468-4ea8-859c-8e046585564a",
+   "ea": "QM5_35006",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-19T21:11:47+00:00",
+   "evidence": "D:\\QM\\reports\\pipeline\\QM5_35006\\Q04\\EURUSD.DWX__afeaf8fb-5468-4ea8-859c-8e046585564a\\aggregate.json",
+   "metric": "pf_net_mean",
+   "value": 0.965,
+   "folds": {
+    "F1": 1.031,
+    "F2": 0.899,
+    "F3": 0.966
+   },
+   "floor": 1.0,
+   "floor_source": "Q04 fold floor; PASS_SOFT requires 2/3 folds > floor",
+   "pass_requires": ">",
+   "gap_pct": 3.5,
+   "note": "best of the 35xxx century family on FX; F1 above floor, F3 within 3.4%; only F2 (0.899) clearly below - single-symbol outlier of an otherwise deep-failing family"
   }
  ]
 }
