@@ -142,3 +142,62 @@ Q08-Bestehensquote nicht messbar über 16,7 % liegt, ist die Doktrin Folklore un
   Widerlegungskriterium, keine Messung.
 * **Nicht, dass Robustheitsgates zu streng sind.** Sie messen richtig. Was fehlt, ist die Erzeugung
   dessen, was sie messen.
+
+---
+
+## 5 · Nachtrag 2026-08-19 (Runde 8) — zwei Befunde, die die Reihenfolge der Vorfilter ändern
+
+### 5.1 V0 · Die Symbolzuteilung schlägt jeden Strategiefilter
+
+**[MESSUNG]** `FAMILY_ASSET_MATRIX.md`, gepaart über 497 EAs, die auf beiden Klassen gelaufen sind:
+
+| dieselben EAs auf | Q04-Quote |
+|---|---:|
+| Metall | **20,3 %** |
+| Index | 12,0 % |
+| **FX** | **3,9 %** |
+
+Der EA ist dabei konstant gehalten — der Unterschied gehört dem Symbol. 104 EAs schneiden auf
+Metall besser ab, 42 auf FX.
+
+**Und die Fabrik verbringt 56 % ihrer Robustheitsgate-Läufe (4.608 von 8.171) auf FX.**
+
+> **V0 (neu, vor V1–V3): Symbolzuteilung.** Ein Kandidat wird nicht auf allen zehn Symbolen
+> eingereiht, sondern zuerst auf der Klasse, auf der seine Familie trägt. Das kostet **keine**
+> zusätzliche Entwicklung und ist damit der billigste Hebel der ganzen Doktrin.
+
+**Widerlegungskriterium:** wenn ein Satz FX-Paare mit ≥ 100 Läufen eine Q04-Quote ≥ 15 % erreicht,
+oder wenn der gepaarte Test auf einer neuen Kohorte unter Faktor 2 fällt, ist V0 falsch.
+
+**Einschränkung, die dazugehört:** die Zahl sagt, wo die *heutigen Gates* durchlassen — nicht, wo
+Ertrag liegt. Ein Buch nur aus Metall wäre genau der Konzentrationsfehler, den
+`ACTIVITY_CRITERION.md` §3.1 gemessen hat (fünf XTIUSD-Sleeves auf einmal kosteten zehn Punkte
+Finanzierungswahrscheinlichkeit). V0 verschiebt die Zuteilung, es gibt keine Klasse auf.
+
+### 5.2 V1 Frequenz — der Schwellenwert, jetzt beziffert
+
+`LOWFREQ_CENSUS.md` misst die Klasse, die V1 abfangen soll:
+
+* **109 Paare** tragen `PASS_LOWFREQ`, weitere **78** `RETIRED_LOW_FREQ`
+* **null** davon sind heute buchfähig
+* nur **vier** erfüllen selbst das gelockerte 10-pro-Jahr-Kriterium
+* die Klasse **wächst** — 47 neue Zeilen allein im August
+
+> **V1, konkretisiert: eine Strategiekarte mit erwarteter Frequenz unter ~30 Trades pro Jahr und
+> Symbol wird nicht gebaut.** Nicht weil sie schlecht wäre, sondern weil die Buchaufnahme eine
+> Aktivitätsdichte verlangt, die sie nicht erreichen kann. Jede solche Karte verbraucht Q02, Q03
+> und Q04 und liefert per Konstruktion nichts.
+
+Der Q02-Frequenzboden (≥ 5 Trades/Jahr) bleibt davon unberührt — er ist eine Ökonomiegrenze und
+liegt richtig. Die Lücke zwischen 5 und der Buchfähigkeit wird an der **Erzeugung** geschlossen,
+nicht an einer Schwelle.
+
+### 5.3 Der Cross-Market-Test, neu gelesen
+
+V2 verlangte „dieselbe Strategie auf mehreren Märkten". Nach §5.1 ist das über Anlageklassen
+hinweg **kein Qualitätsmerkmal**, sondern ein Zuteilungsartefakt: ein EA, der auf XAUUSD und
+XAGUSD besteht und auf EURUSD scheitert, wurde auf einer Klasse getestet, die unsere Gates fast
+niemandem durchgehen lassen.
+
+> **V2, korrigiert: Cross-Market-Validierung wird *innerhalb* einer Anlageklasse verlangt**, nicht
+> quer über alle. Über Klassen hinweg ist sie eine Bonusbeobachtung, kein Kriterium.

@@ -1,0 +1,118 @@
+{
+  "delta": {
+    "close": {
+      "funded_rate": 0.0,
+      "p1_rate": 0.04
+    },
+    "overlap_floor": {
+      "funded_rate": -0.1,
+      "p1_rate": -0.04
+    }
+  },
+  "extended": {
+    "close": {
+      "expected_attempts": 2.94,
+      "funded": 17,
+      "funded_ci": [
+        0.2244,
+        0.4785
+      ],
+      "funded_rate": 0.34,
+      "p1_ci": [
+        0.4815,
+        0.7414
+      ],
+      "p1_pass": 31,
+      "p1_rate": 0.62
+    },
+    "overlap_floor": {
+      "expected_attempts": 6.25,
+      "funded": 8,
+      "funded_ci": [
+        0.0834,
+        0.2851
+      ],
+      "funded_rate": 0.16,
+      "p1_ci": [
+        0.2937,
+        0.5577
+      ],
+      "p1_pass": 21,
+      "p1_rate": 0.42
+    },
+    "sleeves": 31,
+    "starts": 50
+  },
+  "generated_at_utc": "2026-08-19T14:52:22+00:00",
+  "incumbent": {
+    "close": {
+      "expected_attempts": 2.94,
+      "funded": 17,
+      "funded_ci": [
+        0.2244,
+        0.4785
+      ],
+      "funded_rate": 0.34,
+      "p1_ci": [
+        0.4423,
+        0.7063
+      ],
+      "p1_pass": 29,
+      "p1_rate": 0.58
+    },
+    "overlap_floor": {
+      "expected_attempts": 3.85,
+      "funded": 13,
+      "funded_ci": [
+        0.1587,
+        0.3955
+      ],
+      "funded_rate": 0.26,
+      "p1_ci": [
+        0.3297,
+        0.596
+      ],
+      "p1_pass": 23,
+      "p1_rate": 0.46
+    },
+    "sleeves": 23,
+    "starts": 50
+  },
+  "incumbent_keys": [
+    "10115:GDAXI",
+    "10128:XAUUSD",
+    "10145:XAUUSD",
+    "10183:XAUUSD",
+    "10291:SP500",
+    "10700:XAUUSD",
+    "10706:GBPUSD",
+    "10848:XAUUSD",
+    "11294:GDAXI",
+    "11294:XAUUSD",
+    "11660:NDX",
+    "12823:USDJPY",
+    "12969:USDJPY",
+    "13036:GDAXI",
+    "13108:XTIUSD",
+    "13213:USDJPY",
+    "13301:GDAXI",
+    "20010:XAUUSD",
+    "20086:EURUSD",
+    "20086:NDX",
+    "20266:XTIUSD",
+    "9403:GDAXI",
+    "9936:USDJPY"
+  ],
+  "recovered_keys": [
+    "11422:USDCAD",
+    "11708:EURUSD",
+    "12708:XAUUSD",
+    "12710:XTIUSD",
+    "12855:XTIUSD",
+    "13140:XTIUSD",
+    "13144:XTIUSD",
+    "13146:XTIUSD"
+  ],
+  "schema": "qm.activity-criterion-contribution/v1",
+  "sizing": 0.5
+}

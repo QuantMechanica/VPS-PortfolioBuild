@@ -353,3 +353,61 @@ ist OWNER-Fenster. Die offene Frage ist eine Entwurfsfrage, keine Störung:
 
 > Soll die `.DWX`-Datenversorgung der Fabrik weiterhin über die **Live**-Kontositzung laufen, oder
 > über ein getrenntes Konto? Beim jetzigen Stand fällt die Verzeichnis-Isolation auf Kontoebene aus.
+
+---
+
+# Runde 8 — 2026-08-19
+
+## OQ-18 · Das 10-pro-Jahr-Aktivitätskriterium steht nirgends geschrieben
+
+OWNER nennt „mindestens 10 Handelstage pro Jahr" als das vertragliche Kriterium. **Im gesamten
+Bestand ist es nicht auffindbar** — weder in `decisions/`, noch in einer Spec, noch in einem
+Evidenzdokument. Was erstquellenbelegt vorliegt (`2026-07-27_ftmo_phase2_and_funded_rules.md`), ist
+etwas anderes: 4 Trading Days je Challenge-Phase, keine Inaktivitätsschwelle, für den Funded
+Account gar keine Aktivitätsregel.
+
+**Warum das zählt:** die Produktionsplanung rechnet gegen diese Zahl (`PRODUCTION_DOCTRINE.md` V1,
+`LOWFREQ_CENSUS.md`). Eine Zahl, die nur als OWNER-Wissen existiert, kann nicht geprüft werden und
+überlebt keinen Personalwechsel.
+
+**Was fehlt:** Quelle (Venue-Regel? DZ? eigene Setzung?) und Niederschrift.
+
+## OQ-19 · Fünf Live-Sleeves sind attached und haben nie gehandelt
+
+`LIVE_BOOK_INVENTORY.md` §1.3: QM5_10919/XTIUSD, 12567/XAUUSD+XNGUSD, 12989/XAUUSD, 13128/NDX,
+10939/GBPUSD schreiben seit Wochen tägliche `EQUITY_SNAPSHOT`-Zeilen und haben **null**
+`ENTRY_ACCEPTED`. Fünf von zwanzig konfigurierten Sleeves.
+
+**Zwei mögliche Lesarten, aus dem Log nicht trennbar:** echtes „kein Signal" (wie die
+1537-Rescue-Fälle, die als GENUINE no-signal geschlossen wurden) oder ein Defekt in der
+Signalkette. Der erste Fall ist eine Fehlallokation, der zweite ein Fehler — beide kosten.
+
+## OQ-20 · Eine EA-Instanz läuft auf T_Live mit `ea_id 0` und `magic 0`
+
+`QM5_0000_unconfigured.log`, zuletzt aktiv 14.08., mit `RNG_SEED_SET` auf mindestens AUDCAD,
+AUDUSD, EURGBP, EURUSD, XAUUSD. Mit Magic 0 ist die Instanz **weder der Magic-Registry zuzuordnen
+noch von der Kill-Switch-Logik adressierbar** (die `manual_halt_file` wird aus der `ea_id`
+gebildet, also `0.halt`).
+
+Zusätzlich enthält die Datei ineinander verschachtelte JSON-Zeilen — mehrere Chart-Instanzen
+schreiben gleichzeitig hinein.
+
+**Nichts angefasst.** T_Live ist OWNER-Fenster.
+
+## OQ-21 · Doppelte Q09_NEWS-Zeile für QM5_12354/XAUUSD
+
+Beide pendent, beide 18.08. 07:26:56. Bei 40 bis 145 Testerzellen je Zeile ist eine doppelte
+Ausführung teuer genug, um sie vor dem Q09-Ausrollen zu bereinigen.
+
+## OQ-22 · Warum sterben Worker an einem SQLite-Lock, statt zu warten?
+
+31 `database is locked`-Vorkommen über 9 von 10 Worker-Fehlerlogs. Die T9-Rückverfolgungen zeigen
+**zehn verschiedene Aufrufstellen** (`_claim`, `claim_atomic`, `_finish`, `_finish_work_item`,
+`_sha256_file`) — und eine davon führt **durch `_with_sqlite_retry` selbst** (`:235`), das
+Retry-Budget war also erschöpft.
+
+**Der eigentliche Defekt ist nicht eine ungeschützte Zeile, sondern die fehlende Auffanglinie:**
+die Worker-Schleife hat kein `except sqlite3.OperationalError`, also beendet ein erschöpftes
+Retry-Budget den Prozess, statt eine Runde zu kosten. Am 19.08. 12:00:45 hat das T9 getötet und
+seine Zeile (QM5_11294/NDX Q07) verwaisen lassen; sie wurde 29 min später als `INFRA_FAIL`
+eingesammelt und ist **nicht** wieder eingereiht.

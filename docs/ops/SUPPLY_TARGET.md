@@ -95,8 +95,37 @@ billiger, weil die Fabrik ohnehin nicht ausgelastet ist (§4).
 
 ## 4 · Kapazität dagegengestellt — und sie ist nicht der Engpass
 
-**[MESSUNG]** Flottendurchsatz vor der Containment-Notlage: **7,84 terminale Zeilen je Stunde** über
-16,8 Stunden gemessen. Das sind rund **1.300 Zeilen je Woche** über alle Phasen, bei zehn Terminals.
+> **Neu gerechnet 2026-08-19 nach der Containment-Freigabe (Runde 8 §5.2).** Die ursprüngliche
+> Zahl unten stand auf einem Zeitraum, in dem die Flotte bereits gebremst war.
+
+**[MESSUNG]** Drei Regime, dieselbe Zählweise (terminale Zeilen in `work_items`):
+
+| Regime | Zeitraum | Rate |
+|---|---|---:|
+| vor der Notlage | 16,8 h bis 18.08. 14:39 | **7,62 /h** |
+| **während des Containments** | 22,66 h | **0,75 /h** |
+| **nach der Freigabe** | 1,73 h ab 19.08. 13:19 | **19,6 /h** |
+
+**Die Freigabe hat den Durchsatz nicht wiederhergestellt, sondern verdreifacht** — 19,6 gegen
+7,62 je Stunde. Die alte Referenz war also selbst schon ein gebremster Zustand. In
+10-Minuten-Eimern gemessen liegt die Rate stabil bei 3 bis 5 Zeilen, ohne erkennbares Abflachen
+über die bisherige Beobachtungsdauer.
+
+**Belastbarkeitsgrenze dieser Zahl:** 1,73 Stunden sind wenig, und die Warteschlange enthält
+derzeit überdurchschnittlich viele schnelle Q04-Zeilen. Die stabile Rate ist erst nach einem
+vollen Tag zu benennen; bis dahin ist **19,6 /h die Spitze, nicht der Erwartungswert.**
+
+**CPU statt Lease als Engpass:** bei acht bis neun parallelen Läufen auf acht Kernen liegt die
+CPU-Last bei 93 bis 100 %. Ein `cpu_high`-Pausenereignis ist bislang **nicht** aufgetreten. Ob die
+Rate ab neun Läufen abflacht, ist noch nicht entschieden — dafür fehlen Beobachtungen bei
+unterschiedlicher Parallelität.
+
+**Umgerechnet:** 19,6 /h sind rund **3.300 Zeilen je Woche**; die alte Zahl von 1.300 galt für
+7,62 /h.
+
+*Ursprüngliche Fassung, zur Nachvollziehbarkeit:* Flottendurchsatz vor der Containment-Notlage
+**7,84 terminale Zeilen je Stunde** über 16,8 Stunden, rund **1.300 Zeilen je Woche** bei zehn
+Terminals.
 
 Dagegen die Zuflussseite:
 

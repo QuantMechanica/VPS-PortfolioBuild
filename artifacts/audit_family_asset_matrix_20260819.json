@@ -1,0 +1,5628 @@
+{
+  "families_with_split": [
+    {
+      "best_class": "metal",
+      "best_rate": 0.7,
+      "best_runs": 30,
+      "classes": {
+        "energy": {
+          "pairs": 10,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 10
+        },
+        "fx": {
+          "pairs": 120,
+          "passed": 9,
+          "rate": 0.07,
+          "reached": 129
+        },
+        "index": {
+          "pairs": 35,
+          "passed": 17,
+          "rate": 0.321,
+          "reached": 53
+        },
+        "metal": {
+          "pairs": 13,
+          "passed": 21,
+          "rate": 0.7,
+          "reached": 30
+        }
+      },
+      "family": "carver",
+      "gap": 0.7,
+      "worst_class": "energy",
+      "worst_rate": 0.0,
+      "worst_runs": 10
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.688,
+      "best_runs": 16,
+      "classes": {
+        "energy": {
+          "pairs": 7,
+          "passed": 3,
+          "rate": 0.3,
+          "reached": 10
+        },
+        "fx": {
+          "pairs": 62,
+          "passed": 13,
+          "rate": 0.144,
+          "reached": 90
+        },
+        "index": {
+          "pairs": 21,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 21
+        },
+        "metal": {
+          "pairs": 4,
+          "passed": 11,
+          "rate": 0.688,
+          "reached": 16
+        }
+      },
+      "family": "demark",
+      "gap": 0.688,
+      "worst_class": "index",
+      "worst_rate": 0.0,
+      "worst_runs": 21
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.593,
+      "best_runs": 27,
+      "classes": {
+        "energy": {
+          "pairs": 9,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 9
+        },
+        "fx": {
+          "pairs": 28,
+          "passed": 10,
+          "rate": 0.25,
+          "reached": 40
+        },
+        "index": {
+          "pairs": 18,
+          "passed": 2,
+          "rate": 0.095,
+          "reached": 21
+        },
+        "metal": {
+          "pairs": 10,
+          "passed": 16,
+          "rate": 0.593,
+          "reached": 27
+        }
+      },
+      "family": "weiss",
+      "gap": 0.593,
+      "worst_class": "energy",
+      "worst_rate": 0.0,
+      "worst_runs": 9
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.625,
+      "best_runs": 8,
+      "classes": {
+        "fx": {
+          "pairs": 44,
+          "passed": 2,
+          "rate": 0.043,
+          "reached": 46
+        },
+        "metal": {
+          "pairs": 4,
+          "passed": 5,
+          "rate": 0.625,
+          "reached": 8
+        }
+      },
+      "family": "nnfx",
+      "gap": 0.582,
+      "worst_class": "fx",
+      "worst_rate": 0.043,
+      "worst_runs": 46
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.7,
+      "best_runs": 10,
+      "classes": {
+        "fx": {
+          "pairs": 26,
+          "passed": 5,
+          "rate": 0.161,
+          "reached": 31
+        },
+        "index": {
+          "pairs": 5,
+          "passed": 2,
+          "rate": 0.25,
+          "reached": 8
+        },
+        "metal": {
+          "pairs": 2,
+          "passed": 7,
+          "rate": 0.7,
+          "reached": 10
+        }
+      },
+      "family": "don20",
+      "gap": 0.539,
+      "worst_class": "fx",
+      "worst_rate": 0.161,
+      "worst_runs": 31
+    },
+    {
+      "best_class": "energy",
+      "best_rate": 0.5,
+      "best_runs": 8,
+      "classes": {
+        "energy": {
+          "pairs": 4,
+          "passed": 4,
+          "rate": 0.5,
+          "reached": 8
+        },
+        "fx": {
+          "pairs": 48,
+          "passed": 13,
+          "rate": 0.21,
+          "reached": 62
+        },
+        "index": {
+          "pairs": 9,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 9
+        }
+      },
+      "family": "tii",
+      "gap": 0.5,
+      "worst_class": "index",
+      "worst_rate": 0.0,
+      "worst_runs": 9
+    },
+    {
+      "best_class": "index",
+      "best_rate": 0.5,
+      "best_runs": 10,
+      "classes": {
+        "fx": {
+          "pairs": 28,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 28
+        },
+        "index": {
+          "pairs": 5,
+          "passed": 5,
+          "rate": 0.5,
+          "reached": 10
+        }
+      },
+      "family": "don",
+      "gap": 0.5,
+      "worst_class": "fx",
+      "worst_rate": 0.0,
+      "worst_runs": 28
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.5,
+      "best_runs": 20,
+      "classes": {
+        "energy": {
+          "pairs": 11,
+          "passed": 2,
+          "rate": 0.154,
+          "reached": 13
+        },
+        "fx": {
+          "pairs": 28,
+          "passed": 4,
+          "rate": 0.121,
+          "reached": 33
+        },
+        "index": {
+          "pairs": 52,
+          "passed": 3,
+          "rate": 0.055,
+          "reached": 55
+        },
+        "metal": {
+          "pairs": 12,
+          "passed": 10,
+          "rate": 0.5,
+          "reached": 20
+        }
+      },
+      "family": "aa",
+      "gap": 0.445,
+      "worst_class": "index",
+      "worst_rate": 0.055,
+      "worst_runs": 55
+    },
+    {
+      "best_class": "index",
+      "best_rate": 0.444,
+      "best_runs": 9,
+      "classes": {
+        "fx": {
+          "pairs": 9,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 9
+        },
+        "index": {
+          "pairs": 5,
+          "passed": 4,
+          "rate": 0.444,
+          "reached": 9
+        }
+      },
+      "family": "lt",
+      "gap": 0.444,
+      "worst_class": "fx",
+      "worst_rate": 0.0,
+      "worst_runs": 9
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.429,
+      "best_runs": 14,
+      "classes": {
+        "fx": {
+          "pairs": 27,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 27
+        },
+        "index": {
+          "pairs": 41,
+          "passed": 4,
+          "rate": 0.087,
+          "reached": 46
+        },
+        "metal": {
+          "pairs": 8,
+          "passed": 6,
+          "rate": 0.429,
+          "reached": 14
+        }
+      },
+      "family": "tmom",
+      "gap": 0.429,
+      "worst_class": "fx",
+      "worst_rate": 0.0,
+      "worst_runs": 27
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.432,
+      "best_runs": 37,
+      "classes": {
+        "energy": {
+          "pairs": 21,
+          "passed": 1,
+          "rate": 0.043,
+          "reached": 23
+        },
+        "fx": {
+          "pairs": 370,
+          "passed": 4,
+          "rate": 0.011,
+          "reached": 374
+        },
+        "index": {
+          "pairs": 65,
+          "passed": 10,
+          "rate": 0.133,
+          "reached": 75
+        },
+        "metal": {
+          "pairs": 22,
+          "passed": 16,
+          "rate": 0.432,
+          "reached": 37
+        }
+      },
+      "family": "cinar",
+      "gap": 0.421,
+      "worst_class": "fx",
+      "worst_rate": 0.011,
+      "worst_runs": 374
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.8,
+      "best_runs": 10,
+      "classes": {
+        "energy": {
+          "pairs": 6,
+          "passed": 5,
+          "rate": 0.455,
+          "reached": 11
+        },
+        "metal": {
+          "pairs": 3,
+          "passed": 8,
+          "rate": 0.8,
+          "reached": 10
+        }
+      },
+      "family": "commodity",
+      "gap": 0.345,
+      "worst_class": "energy",
+      "worst_rate": 0.455,
+      "worst_runs": 11
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.364,
+      "best_runs": 11,
+      "classes": {
+        "fx": {
+          "pairs": 25,
+          "passed": 1,
+          "rate": 0.038,
+          "reached": 26
+        },
+        "metal": {
+          "pairs": 7,
+          "passed": 4,
+          "rate": 0.364,
+          "reached": 11
+        }
+      },
+      "family": "ft",
+      "gap": 0.326,
+      "worst_class": "fx",
+      "worst_rate": 0.038,
+      "worst_runs": 26
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.4,
+      "best_runs": 10,
+      "classes": {
+        "fx": {
+          "pairs": 92,
+          "passed": 9,
+          "rate": 0.087,
+          "reached": 104
+        },
+        "index": {
+          "pairs": 16,
+          "passed": 2,
+          "rate": 0.1,
+          "reached": 20
+        },
+        "metal": {
+          "pairs": 6,
+          "passed": 4,
+          "rate": 0.4,
+          "reached": 10
+        }
+      },
+      "family": "bb",
+      "gap": 0.313,
+      "worst_class": "fx",
+      "worst_rate": 0.087,
+      "worst_runs": 104
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.333,
+      "best_runs": 18,
+      "classes": {
+        "fx": {
+          "pairs": 50,
+          "passed": 3,
+          "rate": 0.056,
+          "reached": 54
+        },
+        "index": {
+          "pairs": 13,
+          "passed": 1,
+          "rate": 0.071,
+          "reached": 14
+        },
+        "metal": {
+          "pairs": 12,
+          "passed": 6,
+          "rate": 0.333,
+          "reached": 18
+        }
+      },
+      "family": "ftmo",
+      "gap": 0.277,
+      "worst_class": "fx",
+      "worst_rate": 0.056,
+      "worst_runs": 54
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.273,
+      "best_runs": 209,
+      "classes": {
+        "energy": {
+          "pairs": 9,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 9
+        },
+        "fx": {
+          "pairs": 328,
+          "passed": 37,
+          "rate": 0.101,
+          "reached": 366
+        },
+        "index": {
+          "pairs": 331,
+          "passed": 78,
+          "rate": 0.182,
+          "reached": 428
+        },
+        "metal": {
+          "pairs": 147,
+          "passed": 57,
+          "rate": 0.273,
+          "reached": 209
+        }
+      },
+      "family": "tv",
+      "gap": 0.273,
+      "worst_class": "energy",
+      "worst_rate": 0.0,
+      "worst_runs": 9
+    },
+    {
+      "best_class": "energy",
+      "best_rate": 0.5,
+      "best_runs": 8,
+      "classes": {
+        "energy": {
+          "pairs": 4,
+          "passed": 4,
+          "rate": 0.5,
+          "reached": 8
+        },
+        "fx": {
+          "pairs": 38,
+          "passed": 12,
+          "rate": 0.24,
+          "reached": 50
+        },
+        "index": {
+          "pairs": 46,
+          "passed": 27,
+          "rate": 0.346,
+          "reached": 78
+        },
+        "metal": {
+          "pairs": 22,
+          "passed": 20,
+          "rate": 0.465,
+          "reached": 43
+        }
+      },
+      "family": "grimes",
+      "gap": 0.26,
+      "worst_class": "fx",
+      "worst_rate": 0.24,
+      "worst_runs": 50
+    },
+    {
+      "best_class": "index",
+      "best_rate": 0.364,
+      "best_runs": 11,
+      "classes": {
+        "fx": {
+          "pairs": 16,
+          "passed": 2,
+          "rate": 0.111,
+          "reached": 18
+        },
+        "index": {
+          "pairs": 7,
+          "passed": 4,
+          "rate": 0.364,
+          "reached": 11
+        }
+      },
+      "family": "chande",
+      "gap": 0.253,
+      "worst_class": "fx",
+      "worst_rate": 0.111,
+      "worst_runs": 18
+    },
+    {
+      "best_class": "other",
+      "best_rate": 0.5,
+      "best_runs": 14,
+      "classes": {
+        "energy": {
+          "pairs": 89,
+          "passed": 30,
+          "rate": 0.252,
+          "reached": 119
+        },
+        "other": {
+          "pairs": 7,
+          "passed": 7,
+          "rate": 0.5,
+          "reached": 14
+        }
+      },
+      "family": "wti",
+      "gap": 0.248,
+      "worst_class": "energy",
+      "worst_rate": 0.252,
+      "worst_runs": 119
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.312,
+      "best_runs": 16,
+      "classes": {
+        "fx": {
+          "pairs": 38,
+          "passed": 3,
+          "rate": 0.071,
+          "reached": 42
+        },
+        "index": {
+          "pairs": 7,
+          "passed": 2,
+          "rate": 0.154,
+          "reached": 13
+        },
+        "metal": {
+          "pairs": 10,
+          "passed": 5,
+          "rate": 0.312,
+          "reached": 16
+        }
+      },
+      "family": "gh",
+      "gap": 0.241,
+      "worst_class": "fx",
+      "worst_rate": 0.071,
+      "worst_runs": 42
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.28,
+      "best_runs": 193,
+      "classes": {
+        "fx": {
+          "pairs": 648,
+          "passed": 32,
+          "rate": 0.046,
+          "reached": 689
+        },
+        "index": {
+          "pairs": 75,
+          "passed": 12,
+          "rate": 0.13,
+          "reached": 92
+        },
+        "metal": {
+          "pairs": 130,
+          "passed": 54,
+          "rate": 0.28,
+          "reached": 193
+        }
+      },
+      "family": "mql5",
+      "gap": 0.234,
+      "worst_class": "fx",
+      "worst_rate": 0.046,
+      "worst_runs": 689
+    },
+    {
+      "best_class": "index",
+      "best_rate": 0.385,
+      "best_runs": 13,
+      "classes": {
+        "fx": {
+          "pairs": 28,
+          "passed": 6,
+          "rate": 0.162,
+          "reached": 37
+        },
+        "index": {
+          "pairs": 5,
+          "passed": 5,
+          "rate": 0.385,
+          "reached": 13
+        }
+      },
+      "family": "tsm",
+      "gap": 0.223,
+      "worst_class": "fx",
+      "worst_rate": 0.162,
+      "worst_runs": 37
+    },
+    {
+      "best_class": "metal",
+      "best_rate": 0.222,
+      "best_runs": 9,
+      "classes": {
+        "fx": {
+          "pairs": 80,
+          "passed": 3,
+          "rate": 0.036,
+          "reached": 84
+        },
+        "index": {
+          "pairs": 11,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 11
+        },
+        "metal": {
+          "pairs": 6,
+          "passed": 2,
+          "rate": 0.222,
+          "reached": 9
+        }
+      },
+      "family": "rsi",
+      "gap": 0.222,
+      "worst_class": "index",
+      "worst_rate": 0.0,
+      "worst_runs": 11
+    },
+    {
+      "best_class": "index",
+      "best_rate": 0.25,
+      "best_runs": 16,
+      "classes": {
+        "fx": {
+          "pairs": 216,
+          "passed": 9,
+          "rate": 0.04,
+          "reached": 226
+        },
+        "index": {
+          "pairs": 12,
+          "passed": 4,
+          "rate": 0.25,
+          "reached": 16
+        },
+        "metal": {
+          "pairs": 20,
+          "passed": 6,
+          "rate": 0.214,
+          "reached": 28
+        }
+      },
+      "family": "ff",
+      "gap": 0.21,
+      "worst_class": "fx",
+      "worst_rate": 0.04,
+      "worst_runs": 226
+    },
+    {
+      "best_class": "fx",
+      "best_rate": 0.35,
+      "best_runs": 20,
+      "classes": {
+        "fx": {
+          "pairs": 12,
+          "passed": 7,
+          "rate": 0.35,
+          "reached": 20
+        },
+        "index": {
+          "pairs": 16,
+          "passed": 3,
+          "rate": 0.15,
+          "reached": 20
+        }
+      },
+      "family": "unger",
+      "gap": 0.2,
+      "worst_class": "index",
+      "worst_rate": 0.15,
+      "worst_runs": 20
+    },
+    {
+      "best_class": "index",
+      "best_rate": 0.164,
+      "best_runs": 165,
+      "classes": {
+        "fx": {
+          "pairs": 70,
+          "passed": 1,
+          "rate": 0.014,
+          "reached": 71
+        },
+        "index": {
+          "pairs": 134,
+          "passed": 27,
+          "rate": 0.164,
+          "reached": 165
+        },
+        "metal": {
+          "pairs": 37,
+          "passed": 5,
+          "rate": 0.116,
+          "reached": 43
+        }
+      },
+      "family": "et",
+      "gap": 0.15,
+      "worst_class": "fx",
+      "worst_rate": 0.014,
+      "worst_runs": 71
+    },
+    {
+      "best_class": "index",
+      "best_rate": 0.375,
+      "best_runs": 24,
+      "classes": {
+        "fx": {
+          "pairs": 50,
+          "passed": 16,
+          "rate": 0.246,
+          "reached": 65
+        },
+        "index": {
+          "pairs": 15,
+          "passed": 9,
+          "rate": 0.375,
+          "reached": 24
+        }
+      },
+      "family": "williams",
+      "gap": 0.129,
+      "worst_class": "fx",
+      "worst_rate": 0.246,
+      "worst_runs": 65
+    },
+    {
+      "best_class": "index",
+      "best_rate": 0.1,
+      "best_runs": 20,
+      "classes": {
+        "fx": {
+          "pairs": 22,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 22
+        },
+        "index": {
+          "pairs": 16,
+          "passed": 2,
+          "rate": 0.1,
+          "reached": 20
+        }
+      },
+      "family": "rw",
+      "gap": 0.1,
+      "worst_class": "fx",
+      "worst_rate": 0.0,
+      "worst_runs": 22
+    },
+    {
+      "best_class": "other",
+      "best_rate": 0.407,
+      "best_runs": 27,
+      "classes": {
+        "energy": {
+          "pairs": 8,
+          "passed": 4,
+          "rate": 0.333,
+          "reached": 12
+        },
+        "other": {
+          "pairs": 16,
+          "passed": 11,
+          "rate": 0.407,
+          "reached": 27
+        }
+      },
+      "family": "xti",
+      "gap": 0.074,
+      "worst_class": "energy",
+      "worst_rate": 0.333,
+      "worst_runs": 12
+    },
+    {
+      "best_class": "index",
+      "best_rate": 0.211,
+      "best_runs": 19,
+      "classes": {
+        "fx": {
+          "pairs": 44,
+          "passed": 8,
+          "rate": 0.154,
+          "reached": 52
+        },
+        "index": {
+          "pairs": 15,
+          "passed": 4,
+          "rate": 0.211,
+          "reached": 19
+        }
+      },
+      "family": "connors",
+      "gap": 0.057,
+      "worst_class": "fx",
+      "worst_rate": 0.154,
+      "worst_runs": 52
+    },
+    {
+      "best_class": "index",
+      "best_rate": 0.056,
+      "best_runs": 18,
+      "classes": {
+        "fx": {
+          "pairs": 19,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 19
+        },
+        "index": {
+          "pairs": 17,
+          "passed": 1,
+          "rate": 0.056,
+          "reached": 18
+        }
+      },
+      "family": "qp",
+      "gap": 0.056,
+      "worst_class": "fx",
+      "worst_rate": 0.0,
+      "worst_runs": 19
+    },
+    {
+      "best_class": "index",
+      "best_rate": 0.3,
+      "best_runs": 10,
+      "classes": {
+        "fx": {
+          "pairs": 8,
+          "passed": 3,
+          "rate": 0.273,
+          "reached": 11
+        },
+        "index": {
+          "pairs": 7,
+          "passed": 3,
+          "rate": 0.3,
+          "reached": 10
+        }
+      },
+      "family": "whc",
+      "gap": 0.027,
+      "worst_class": "fx",
+      "worst_rate": 0.273,
+      "worst_runs": 11
+    },
+    {
+      "best_class": "index",
+      "best_rate": 0.0,
+      "best_runs": 14,
+      "classes": {
+        "fx": {
+          "pairs": 12,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 12
+        },
+        "index": {
+          "pairs": 14,
+          "passed": 0,
+          "rate": 0.0,
+          "reached": 14
+        }
+      },
+      "family": "nikh",
+      "gap": 0.0,
+      "worst_class": "index",
+      "worst_rate": 0.0,
+      "worst_runs": 14
+    }
+  ],
+  "gates": [
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07",
+    "Q08"
+  ],
+  "generated_at_utc": "2026-08-19T14:55:19+00:00",
+  "matrix": {
+    "144": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "4h": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "5min": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "aa": {
+      "energy": {
+        "pairs": 11,
+        "passed": 2,
+        "rate": 0.154,
+        "reached": 13
+      },
+      "fx": {
+        "pairs": 28,
+        "passed": 4,
+        "rate": 0.121,
+        "reached": 33
+      },
+      "index": {
+        "pairs": 52,
+        "passed": 3,
+        "rate": 0.055,
+        "reached": 55
+      },
+      "metal": {
+        "pairs": 12,
+        "passed": 10,
+        "rate": 0.5,
+        "reached": 20
+      }
+    },
+    "abraham": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "ait": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "index": {
+        "pairs": 6,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 6
+      },
+      "metal": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "andrea": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "anon": {
+      "fx": {
+        "pairs": 4,
+        "passed": 5,
+        "rate": 0.556,
+        "reached": 9
+      }
+    },
+    "antor": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "ar": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "as": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "index": {
+        "pairs": 7,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 8
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 3,
+        "rate": 0.6,
+        "reached": 5
+      }
+    },
+    "asia": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "asian": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "asness": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "at": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "atc": {
+      "fx": {
+        "pairs": 46,
+        "passed": 3,
+        "rate": 0.06,
+        "reached": 50
+      },
+      "metal": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      }
+    },
+    "aud": {
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "audcad": {
+      "other": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "audnzd": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "b3": {
+      "index": {
+        "pairs": 1,
+        "passed": 1,
+        "rate": 0.5,
+        "reached": 2
+      }
+    },
+    "ba": {
+      "fx": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      }
+    },
+    "balke": {
+      "fx": {
+        "pairs": 4,
+        "passed": 10,
+        "rate": 0.714,
+        "reached": 14
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 5,
+        "rate": 1.0,
+        "reached": 5
+      }
+    },
+    "bandy": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "index": {
+        "pairs": 22,
+        "passed": 17,
+        "rate": 0.436,
+        "reached": 39
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "bb": {
+      "energy": {
+        "pairs": 6,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 6
+      },
+      "fx": {
+        "pairs": 92,
+        "passed": 9,
+        "rate": 0.087,
+        "reached": 104
+      },
+      "index": {
+        "pairs": 16,
+        "passed": 2,
+        "rate": 0.1,
+        "reached": 20
+      },
+      "metal": {
+        "pairs": 6,
+        "passed": 4,
+        "rate": 0.4,
+        "reached": 10
+      }
+    },
+    "bbadx": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "bbs": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "bbwidth": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 28,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 28
+      },
+      "index": {
+        "pairs": 5,
+        "passed": 1,
+        "rate": 0.2,
+        "reached": 5
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 4,
+        "rate": 0.667,
+        "reached": 6
+      }
+    },
+    "bell": {
+      "metal": {
+        "pairs": 1,
+        "passed": 1,
+        "rate": 0.5,
+        "reached": 2
+      }
+    },
+    "bermuda": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      }
+    },
+    "bernstein": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 13,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 13
+      },
+      "index": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "bf": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "bhatti": {
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "big": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      }
+    },
+    "bigben": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      }
+    },
+    "binario": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      }
+    },
+    "blade": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      }
+    },
+    "box": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "breadth": {
+      "index": {
+        "pairs": 2,
+        "passed": 3,
+        "rate": 0.6,
+        "reached": 5
+      }
+    },
+    "brent": {
+      "energy": {
+        "pairs": 18,
+        "passed": 18,
+        "rate": 0.529,
+        "reached": 34
+      }
+    },
+    "bressert": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "brooks": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 9,
+        "passed": 6,
+        "rate": 0.4,
+        "reached": 15
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 2,
+        "rate": 0.4,
+        "reached": 5
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "brown": {
+      "fx": {
+        "pairs": 8,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 8
+      }
+    },
+    "bt": {
+      "fx": {
+        "pairs": 8,
+        "passed": 1,
+        "rate": 0.111,
+        "reached": 9
+      },
+      "index": {
+        "pairs": 4,
+        "passed": 1,
+        "rate": 0.2,
+        "reached": 5
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "btc": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 2,
+        "rate": 0.5,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "burke": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "caldeira": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "camarilla": {
+      "fx": {
+        "pairs": 8,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 8
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 1,
+        "rate": 0.333,
+        "reached": 3
+      }
+    },
+    "capfree": {
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "capra": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "carter": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 125,
+        "passed": 6,
+        "rate": 0.046,
+        "reached": 131
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "carver": {
+      "energy": {
+        "pairs": 10,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 10
+      },
+      "fx": {
+        "pairs": 120,
+        "passed": 9,
+        "rate": 0.07,
+        "reached": 129
+      },
+      "index": {
+        "pairs": 35,
+        "passed": 17,
+        "rate": 0.321,
+        "reached": 53
+      },
+      "metal": {
+        "pairs": 13,
+        "passed": 21,
+        "rate": 0.7,
+        "reached": 30
+      }
+    },
+    "cat": {
+      "fx": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "cc": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "cci": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "chaikin": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "chan": {
+      "fx": {
+        "pairs": 6,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 6
+      },
+      "index": {
+        "pairs": 9,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 9
+      },
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "chan_pairs_stat_arb": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "chande": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 16,
+        "passed": 2,
+        "rate": 0.111,
+        "reached": 18
+      },
+      "index": {
+        "pairs": 7,
+        "passed": 4,
+        "rate": 0.364,
+        "reached": 11
+      }
+    },
+    "channel": {
+      "fx": {
+        "pairs": 7,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 7
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 4,
+        "rate": 0.8,
+        "reached": 5
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "cheng": {
+      "fx": {
+        "pairs": 10,
+        "passed": 1,
+        "rate": 0.091,
+        "reached": 11
+      }
+    },
+    "chfjpy": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "cieslak": {
+      "index": {
+        "pairs": 3,
+        "passed": 2,
+        "rate": 0.286,
+        "reached": 7
+      }
+    },
+    "cinar": {
+      "energy": {
+        "pairs": 21,
+        "passed": 1,
+        "rate": 0.043,
+        "reached": 23
+      },
+      "fx": {
+        "pairs": 370,
+        "passed": 4,
+        "rate": 0.011,
+        "reached": 374
+      },
+      "index": {
+        "pairs": 65,
+        "passed": 10,
+        "rate": 0.133,
+        "reached": 75
+      },
+      "metal": {
+        "pairs": 22,
+        "passed": 16,
+        "rate": 0.432,
+        "reached": 37
+      }
+    },
+    "ciurea": {
+      "fx": {
+        "pairs": 14,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 14
+      }
+    },
+    "cl": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "classic": {
+      "fx": {
+        "pairs": 2,
+        "passed": 1,
+        "rate": 0.333,
+        "reached": 3
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "clenow": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 4,
+        "rate": 0.667,
+        "reached": 6
+      }
+    },
+    "cliff": {
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "cme": {
+      "other": {
+        "pairs": 7,
+        "passed": 1,
+        "rate": 0.125,
+        "reached": 8
+      }
+    },
+    "coasensi": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "cointeg": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "collins": {
+      "energy": {
+        "pairs": 2,
+        "passed": 5,
+        "rate": 0.833,
+        "reached": 6
+      }
+    },
+    "comm": {
+      "energy": {
+        "pairs": 3,
+        "passed": 1,
+        "rate": 0.25,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 5,
+        "passed": 5,
+        "rate": 0.556,
+        "reached": 9
+      }
+    },
+    "commodity": {
+      "energy": {
+        "pairs": 6,
+        "passed": 5,
+        "rate": 0.455,
+        "reached": 11
+      },
+      "metal": {
+        "pairs": 3,
+        "passed": 8,
+        "rate": 0.8,
+        "reached": 10
+      },
+      "other": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "connors": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 44,
+        "passed": 8,
+        "rate": 0.154,
+        "reached": 52
+      },
+      "index": {
+        "pairs": 15,
+        "passed": 4,
+        "rate": 0.211,
+        "reached": 19
+      },
+      "metal": {
+        "pairs": 4,
+        "passed": 1,
+        "rate": 0.2,
+        "reached": 5
+      }
+    },
+    "cons": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "coppock": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "country": {
+      "index": {
+        "pairs": 10,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 10
+      }
+    },
+    "cs": {
+      "fx": {
+        "pairs": 5,
+        "passed": 1,
+        "rate": 0.167,
+        "reached": 6
+      },
+      "index": {
+        "pairs": 6,
+        "passed": 9,
+        "rate": 0.643,
+        "reached": 14
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 5,
+        "rate": 0.833,
+        "reached": 6
+      }
+    },
+    "cs2011": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "csl": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "cum": {
+      "energy": {
+        "pairs": 2,
+        "passed": 4,
+        "rate": 0.667,
+        "reached": 6
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 3,
+        "rate": 0.5,
+        "reached": 6
+      }
+    },
+    "cvd": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "daily": {
+      "fx": {
+        "pairs": 5,
+        "passed": 1,
+        "rate": 0.167,
+        "reached": 6
+      }
+    },
+    "dailyopen": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "davey": {
+      "fx": {
+        "pairs": 42,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 42
+      }
+    },
+    "dead": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "debondt": {
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "demark": {
+      "energy": {
+        "pairs": 7,
+        "passed": 3,
+        "rate": 0.3,
+        "reached": 10
+      },
+      "fx": {
+        "pairs": 62,
+        "passed": 13,
+        "rate": 0.144,
+        "reached": 90
+      },
+      "index": {
+        "pairs": 21,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 21
+      },
+      "metal": {
+        "pairs": 4,
+        "passed": 11,
+        "rate": 0.688,
+        "reached": 16
+      }
+    },
+    "don": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 28,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 28
+      },
+      "index": {
+        "pairs": 5,
+        "passed": 5,
+        "rate": 0.5,
+        "reached": 10
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "don20": {
+      "energy": {
+        "pairs": 2,
+        "passed": 3,
+        "rate": 0.429,
+        "reached": 7
+      },
+      "fx": {
+        "pairs": 26,
+        "passed": 5,
+        "rate": 0.161,
+        "reached": 31
+      },
+      "index": {
+        "pairs": 5,
+        "passed": 2,
+        "rate": 0.25,
+        "reached": 8
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 7,
+        "rate": 0.7,
+        "reached": 10
+      }
+    },
+    "donchian": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "metal": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "dpo": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "dwx": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "ea31337": {
+      "fx": {
+        "pairs": 21,
+        "passed": 1,
+        "rate": 0.045,
+        "reached": 22
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "easy": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "edgelab": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "other": {
+        "pairs": 32,
+        "passed": 16,
+        "rate": 0.327,
+        "reached": 49
+      }
+    },
+    "ehlers": {
+      "energy": {
+        "pairs": 1,
+        "passed": 1,
+        "rate": 0.5,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 5,
+        "passed": 2,
+        "rate": 0.286,
+        "reached": 7
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "eia": {
+      "energy": {
+        "pairs": 4,
+        "passed": 1,
+        "rate": 0.2,
+        "reached": 5
+      },
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "other": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "el": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "elder": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 1,
+        "rate": 0.5,
+        "reached": 2
+      }
+    },
+    "ema": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "ema144": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "ema40": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      }
+    },
+    "ema5": {
+      "fx": {
+        "pairs": 4,
+        "passed": 1,
+        "rate": 0.2,
+        "reached": 5
+      }
+    },
+    "energy": {
+      "other": {
+        "pairs": 16,
+        "passed": 17,
+        "rate": 0.472,
+        "reached": 36
+      }
+    },
+    "et": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 70,
+        "passed": 1,
+        "rate": 0.014,
+        "reached": 71
+      },
+      "index": {
+        "pairs": 134,
+        "passed": 27,
+        "rate": 0.164,
+        "reached": 165
+      },
+      "metal": {
+        "pairs": 37,
+        "passed": 5,
+        "rate": 0.116,
+        "reached": 43
+      }
+    },
+    "eurgbp": {
+      "other": {
+        "pairs": 1,
+        "passed": 4,
+        "rate": 0.8,
+        "reached": 5
+      }
+    },
+    "eurjpy": {
+      "other": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "eurnzd": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "euro": {
+      "fx": {
+        "pairs": 1,
+        "passed": 1,
+        "rate": 0.5,
+        "reached": 2
+      }
+    },
+    "eurusd": {
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "ff": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 216,
+        "passed": 9,
+        "rate": 0.04,
+        "reached": 226
+      },
+      "index": {
+        "pairs": 12,
+        "passed": 4,
+        "rate": 0.25,
+        "reached": 16
+      },
+      "metal": {
+        "pairs": 20,
+        "passed": 6,
+        "rate": 0.214,
+        "reached": 28
+      }
+    },
+    "fielder": {
+      "fx": {
+        "pairs": 8,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 8
+      }
+    },
+    "fin": {
+      "fx": {
+        "pairs": 8,
+        "passed": 3,
+        "rate": 0.273,
+        "reached": 11
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "floor": {
+      "fx": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      }
+    },
+    "forex": {
+      "fx": {
+        "pairs": 9,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 9
+      },
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "fps": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 27,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 27
+      },
+      "index": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "fractal": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "fsr": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "ft": {
+      "fx": {
+        "pairs": 25,
+        "passed": 1,
+        "rate": 0.038,
+        "reached": 26
+      },
+      "index": {
+        "pairs": 6,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 6
+      },
+      "metal": {
+        "pairs": 7,
+        "passed": 4,
+        "rate": 0.364,
+        "reached": 11
+      }
+    },
+    "ft001": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 3,
+        "rate": 0.75,
+        "reached": 4
+      }
+    },
+    "ft002": {
+      "fx": {
+        "pairs": 3,
+        "passed": 2,
+        "rate": 0.4,
+        "reached": 5
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 1,
+        "rate": 0.5,
+        "reached": 2
+      }
+    },
+    "ft003": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "ft004": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 2,
+        "rate": 0.667,
+        "reached": 3
+      }
+    },
+    "ft005": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "ftmo": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 50,
+        "passed": 3,
+        "rate": 0.056,
+        "reached": 54
+      },
+      "index": {
+        "pairs": 13,
+        "passed": 1,
+        "rate": 0.071,
+        "reached": 14
+      },
+      "metal": {
+        "pairs": 12,
+        "passed": 6,
+        "rate": 0.333,
+        "reached": 18
+      }
+    },
+    "fx": {
+      "fx": {
+        "pairs": 20,
+        "passed": 7,
+        "rate": 0.25,
+        "reached": 28
+      }
+    },
+    "gatev": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "other": {
+        "pairs": 1,
+        "passed": 4,
+        "rate": 0.8,
+        "reached": 5
+      }
+    },
+    "gawd": {
+      "index": {
+        "pairs": 7,
+        "passed": 7,
+        "rate": 0.5,
+        "reached": 14
+      },
+      "metal": {
+        "pairs": 3,
+        "passed": 3,
+        "rate": 0.5,
+        "reached": 6
+      }
+    },
+    "gbc": {
+      "fx": {
+        "pairs": 6,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 6
+      }
+    },
+    "gbpcad": {
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "gbpjpy": {
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "gdaxi": {
+      "index": {
+        "pairs": 1,
+        "passed": 4,
+        "rate": 0.8,
+        "reached": 5
+      }
+    },
+    "ger": {
+      "fx": {
+        "pairs": 12,
+        "passed": 1,
+        "rate": 0.077,
+        "reached": 13
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "gh": {
+      "fx": {
+        "pairs": 38,
+        "passed": 3,
+        "rate": 0.071,
+        "reached": 42
+      },
+      "index": {
+        "pairs": 7,
+        "passed": 2,
+        "rate": 0.154,
+        "reached": 13
+      },
+      "metal": {
+        "pairs": 10,
+        "passed": 5,
+        "rate": 0.312,
+        "reached": 16
+      }
+    },
+    "gk": {
+      "fx": {
+        "pairs": 10,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 10
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "goodwin": {
+      "fx": {
+        "pairs": 26,
+        "passed": 6,
+        "rate": 0.188,
+        "reached": 32
+      }
+    },
+    "grimes": {
+      "energy": {
+        "pairs": 4,
+        "passed": 4,
+        "rate": 0.5,
+        "reached": 8
+      },
+      "fx": {
+        "pairs": 38,
+        "passed": 12,
+        "rate": 0.24,
+        "reached": 50
+      },
+      "index": {
+        "pairs": 46,
+        "passed": 27,
+        "rate": 0.346,
+        "reached": 78
+      },
+      "metal": {
+        "pairs": 22,
+        "passed": 20,
+        "rate": 0.465,
+        "reached": 43
+      }
+    },
+    "gsr": {
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "ha": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "halloween": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "han": {
+      "fx": {
+        "pairs": 1,
+        "passed": 1,
+        "rate": 0.5,
+        "reached": 2
+      }
+    },
+    "hlhb": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "hopwood": {
+      "fx": {
+        "pairs": 37,
+        "passed": 9,
+        "rate": 0.2,
+        "reached": 45
+      },
+      "index": {
+        "pairs": 4,
+        "passed": 2,
+        "rate": 0.4,
+        "reached": 5
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "hour": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "ht": {
+      "fx": {
+        "pairs": 7,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 7
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "hui": {
+      "fx": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      }
+    },
+    "iaf": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "ichimoku": {
+      "fx": {
+        "pairs": 7,
+        "passed": 1,
+        "rate": 0.125,
+        "reached": 8
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "ict": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 10,
+        "passed": 2,
+        "rate": 0.167,
+        "reached": 12
+      },
+      "index": {
+        "pairs": 3,
+        "passed": 1,
+        "rate": 0.25,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "iea": {
+      "energy": {
+        "pairs": 1,
+        "passed": 1,
+        "rate": 0.5,
+        "reached": 2
+      }
+    },
+    "illiq": {
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "index": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 28,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 28
+      },
+      "index": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "inside": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "intraday": {
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "janus": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "jegadeesh": {
+      "fx": {
+        "pairs": 4,
+        "passed": 5,
+        "rate": 0.556,
+        "reached": 9
+      },
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "jstm": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "justforex": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "kats": {
+      "fx": {
+        "pairs": 1,
+        "passed": 3,
+        "rate": 0.75,
+        "reached": 4
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "katz": {
+      "fx": {
+        "pairs": 11,
+        "passed": 5,
+        "rate": 0.312,
+        "reached": 16
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "kaufman": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "keltner": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "ker": {
+      "index": {
+        "pairs": 2,
+        "passed": 1,
+        "rate": 0.333,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "kevin": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "kositsin": {
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "laguerre": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "larry": {
+      "fx": {
+        "pairs": 13,
+        "passed": 5,
+        "rate": 0.278,
+        "reached": 18
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "lawler": {
+      "fx": {
+        "pairs": 10,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 10
+      }
+    },
+    "lbma": {
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "lean": {
+      "fx": {
+        "pairs": 19,
+        "passed": 1,
+        "rate": 0.05,
+        "reached": 20
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "lebeau": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 5,
+        "passed": 3,
+        "rate": 0.375,
+        "reached": 8
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 1,
+        "rate": 0.5,
+        "reached": 2
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 3,
+        "rate": 0.75,
+        "reached": 4
+      }
+    },
+    "lemishko": {
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "lento": {
+      "index": {
+        "pairs": 1,
+        "passed": 4,
+        "rate": 1.0,
+        "reached": 4
+      }
+    },
+    "levich": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "lien": {
+      "fx": {
+        "pairs": 24,
+        "passed": 7,
+        "rate": 0.226,
+        "reached": 31
+      }
+    },
+    "london": {
+      "fx": {
+        "pairs": 19,
+        "passed": 1,
+        "rate": 0.05,
+        "reached": 20
+      }
+    },
+    "lou": {
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "ls": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "lt": {
+      "fx": {
+        "pairs": 9,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 9
+      },
+      "index": {
+        "pairs": 5,
+        "passed": 4,
+        "rate": 0.444,
+        "reached": 9
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 4,
+        "rate": 0.667,
+        "reached": 6
+      }
+    },
+    "ltz": {
+      "index": {
+        "pairs": 8,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 8
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 3,
+        "rate": 0.6,
+        "reached": 5
+      }
+    },
+    "ma": {
+      "fx": {
+        "pairs": 8,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 8
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "ma11": {
+      "fx": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      }
+    },
+    "macd": {
+      "fx": {
+        "pairs": 10,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 10
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "maroy": {
+      "index": {
+        "pairs": 2,
+        "passed": 4,
+        "rate": 0.667,
+        "reached": 6
+      }
+    },
+    "mcconnell": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 22,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 22
+      },
+      "index": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "menkhoff": {
+      "fx": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      }
+    },
+    "micro": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      }
+    },
+    "midnight": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "miffre": {
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "moc": {
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "morris": {
+      "fx": {
+        "pairs": 9,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 9
+      }
+    },
+    "moskowitz": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "mql5": {
+      "energy": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "fx": {
+        "pairs": 648,
+        "passed": 32,
+        "rate": 0.046,
+        "reached": 689
+      },
+      "index": {
+        "pairs": 75,
+        "passed": 12,
+        "rate": 0.13,
+        "reached": 92
+      },
+      "metal": {
+        "pairs": 130,
+        "passed": 54,
+        "rate": 0.28,
+        "reached": 193
+      }
+    },
+    "mtf": {
+      "fx": {
+        "pairs": 7,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 7
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "multisystem": {
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "munzer": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "muranno": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "murrey": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "myh": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "naked": {
+      "fx": {
+        "pairs": 2,
+        "passed": 3,
+        "rate": 0.6,
+        "reached": 5
+      }
+    },
+    "narang": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 19,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 19
+      },
+      "index": {
+        "pairs": 6,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 6
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "ndx": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "neely": {
+      "fx": {
+        "pairs": 20,
+        "passed": 5,
+        "rate": 0.2,
+        "reached": 25
+      }
+    },
+    "nekritin": {
+      "fx": {
+        "pairs": 8,
+        "passed": 1,
+        "rate": 0.111,
+        "reached": 9
+      }
+    },
+    "nested": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "nfs": {
+      "fx": {
+        "pairs": 7,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 7
+      }
+    },
+    "nikh": {
+      "fx": {
+        "pairs": 12,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 12
+      },
+      "index": {
+        "pairs": 14,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 14
+      },
+      "metal": {
+        "pairs": 4,
+        "passed": 3,
+        "rate": 0.429,
+        "reached": 7
+      }
+    },
+    "nnfx": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 44,
+        "passed": 2,
+        "rate": 0.043,
+        "reached": 46
+      },
+      "index": {
+        "pairs": 7,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 7
+      },
+      "metal": {
+        "pairs": 4,
+        "passed": 5,
+        "rate": 0.625,
+        "reached": 8
+      },
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "notable": {
+      "fx": {
+        "pairs": 3,
+        "passed": 4,
+        "rate": 0.571,
+        "reached": 7
+      }
+    },
+    "novo": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 1,
+        "rate": 0.5,
+        "reached": 2
+      }
+    },
+    "nq": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "nt": {
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "nzd": {
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "ohlc": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 3,
+        "passed": 7,
+        "rate": 0.636,
+        "reached": 11
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "oil": {
+      "other": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "oilgold": {
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "oilsilver": {
+      "other": {
+        "pairs": 1,
+        "passed": 4,
+        "rate": 0.8,
+        "reached": 5
+      }
+    },
+    "onr": {
+      "index": {
+        "pairs": 1,
+        "passed": 2,
+        "rate": 0.667,
+        "reached": 3
+      }
+    },
+    "opt": {
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "orev": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 3,
+        "rate": 0.6,
+        "reached": 5
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 9,
+        "rate": 0.9,
+        "reached": 10
+      }
+    },
+    "overnight": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "pair": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 1,
+        "rate": 0.333,
+        "reached": 3
+      }
+    },
+    "paired": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "papailias": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "payday": {
+      "index": {
+        "pairs": 3,
+        "passed": 1,
+        "rate": 0.25,
+        "reached": 4
+      }
+    },
+    "payoff": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "persistent": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      }
+    },
+    "pinbar": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "pip": {
+      "fx": {
+        "pairs": 2,
+        "passed": 1,
+        "rate": 0.333,
+        "reached": 3
+      }
+    },
+    "pivot9level": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "pl": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "postclose": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "pp": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "index": {
+        "pairs": 5,
+        "passed": 5,
+        "rate": 0.5,
+        "reached": 10
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "pre": {
+      "index": {
+        "pairs": 1,
+        "passed": 5,
+        "rate": 1.0,
+        "reached": 5
+      }
+    },
+    "prevday": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "pricebob": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "prm": {
+      "fx": {
+        "pairs": 3,
+        "passed": 1,
+        "rate": 0.25,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "profactus": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "progo": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "psar": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 29,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 29
+      },
+      "index": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "psara": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "psaradellis": {
+      "energy": {
+        "pairs": 1,
+        "passed": 3,
+        "rate": 0.75,
+        "reached": 4
+      }
+    },
+    "pst": {
+      "fx": {
+        "pairs": 13,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 13
+      },
+      "index": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "qc": {
+      "index": {
+        "pairs": 1,
+        "passed": 1,
+        "rate": 0.5,
+        "reached": 2
+      }
+    },
+    "qd": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 1,
+        "rate": 0.333,
+        "reached": 3
+      }
+    },
+    "qp": {
+      "energy": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "fx": {
+        "pairs": 19,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 19
+      },
+      "index": {
+        "pairs": 17,
+        "passed": 1,
+        "rate": 0.056,
+        "reached": 18
+      },
+      "metal": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      }
+    },
+    "qqe": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "qs": {
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 3,
+        "rate": 0.75,
+        "reached": 4
+      }
+    },
+    "qt": {
+      "fx": {
+        "pairs": 11,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 11
+      },
+      "index": {
+        "pairs": 6,
+        "passed": 1,
+        "rate": 0.143,
+        "reached": 7
+      },
+      "metal": {
+        "pairs": 3,
+        "passed": 4,
+        "rate": 0.571,
+        "reached": 7
+      }
+    },
+    "r2": {
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "raghee": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "rapidfire": {
+      "index": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "rbt": {
+      "fx": {
+        "pairs": 29,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 29
+      }
+    },
+    "recent": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "rei": {
+      "fx": {
+        "pairs": 3,
+        "passed": 4,
+        "rate": 0.571,
+        "reached": 7
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "renko": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 17,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 17
+      },
+      "index": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "rentech": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 4,
+        "passed": 1,
+        "rate": 0.2,
+        "reached": 5
+      },
+      "index": {
+        "pairs": 3,
+        "passed": 1,
+        "rate": 0.25,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 4,
+        "passed": 1,
+        "rate": 0.2,
+        "reached": 5
+      }
+    },
+    "residual": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "rfs": {
+      "fx": {
+        "pairs": 15,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 15
+      }
+    },
+    "rigcount": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "risk": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "index": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "robo": {
+      "fx": {
+        "pairs": 70,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 70
+      }
+    },
+    "roman": {
+      "fx": {
+        "pairs": 8,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 8
+      }
+    },
+    "round": {
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "rsi": {
+      "energy": {
+        "pairs": 6,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 6
+      },
+      "fx": {
+        "pairs": 80,
+        "passed": 3,
+        "rate": 0.036,
+        "reached": 84
+      },
+      "index": {
+        "pairs": 11,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 11
+      },
+      "metal": {
+        "pairs": 6,
+        "passed": 2,
+        "rate": 0.222,
+        "reached": 9
+      }
+    },
+    "rsi2": {
+      "index": {
+        "pairs": 3,
+        "passed": 7,
+        "rate": 0.778,
+        "reached": 9
+      }
+    },
+    "rsioma": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "russ": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "rw": {
+      "fx": {
+        "pairs": 22,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 22
+      },
+      "index": {
+        "pairs": 16,
+        "passed": 2,
+        "rate": 0.1,
+        "reached": 20
+      },
+      "metal": {
+        "pairs": 3,
+        "passed": 3,
+        "rate": 0.5,
+        "reached": 6
+      },
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "sb": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "schaff": {
+      "fx": {
+        "pairs": 3,
+        "passed": 1,
+        "rate": 0.25,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "shv": {
+      "fx": {
+        "pairs": 7,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 7
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 3,
+        "rate": 0.75,
+        "reached": 4
+      }
+    },
+    "sidus": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "silver": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "simple": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "singh": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "sma": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "fx": {
+        "pairs": 28,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 29
+      },
+      "index": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "sma5": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "sma50": {
+      "index": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 2,
+        "rate": 0.4,
+        "reached": 5
+      }
+    },
+    "sma520": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "smallcap": {
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "sp500": {
+      "index": {
+        "pairs": 1,
+        "passed": 4,
+        "rate": 0.8,
+        "reached": 5
+      }
+    },
+    "spec": {
+      "fx": {
+        "pairs": 3,
+        "passed": 3,
+        "rate": 0.5,
+        "reached": 6
+      },
+      "index": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "sperandeo": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 6,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 6
+      },
+      "index": {
+        "pairs": 8,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 8
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 3,
+        "rate": 0.6,
+        "reached": 5
+      }
+    },
+    "spike": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      }
+    },
+    "spx": {
+      "index": {
+        "pairs": 2,
+        "passed": 3,
+        "rate": 0.6,
+        "reached": 5
+      }
+    },
+    "sr": {
+      "fx": {
+        "pairs": 6,
+        "passed": 1,
+        "rate": 0.143,
+        "reached": 7
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 1,
+        "rate": 0.333,
+        "reached": 3
+      }
+    },
+    "stat": {
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "stoch": {
+      "fx": {
+        "pairs": 6,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 6
+      }
+    },
+    "stochrsi": {
+      "index": {
+        "pairs": 6,
+        "passed": 3,
+        "rate": 0.333,
+        "reached": 9
+      }
+    },
+    "stock": {
+      "index": {
+        "pairs": 9,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 9
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "strat": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 1,
+        "rate": 0.333,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "style": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "suhr": {
+      "fx": {
+        "pairs": 5,
+        "passed": 2,
+        "rate": 0.286,
+        "reached": 7
+      }
+    },
+    "sysls": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "tbo": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "tc": {
+      "fx": {
+        "pairs": 49,
+        "passed": 1,
+        "rate": 0.02,
+        "reached": 50
+      }
+    },
+    "tc20": {
+      "fx": {
+        "pairs": 29,
+        "passed": 5,
+        "rate": 0.147,
+        "reached": 34
+      }
+    },
+    "tdi": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "tdseq": {
+      "fx": {
+        "pairs": 3,
+        "passed": 1,
+        "rate": 0.25,
+        "reached": 4
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "the5ers": {
+      "fx": {
+        "pairs": 23,
+        "passed": 4,
+        "rate": 0.148,
+        "reached": 27
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "thomas": {
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "tii": {
+      "energy": {
+        "pairs": 4,
+        "passed": 4,
+        "rate": 0.5,
+        "reached": 8
+      },
+      "fx": {
+        "pairs": 48,
+        "passed": 13,
+        "rate": 0.21,
+        "reached": 62
+      },
+      "index": {
+        "pairs": 9,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 9
+      },
+      "metal": {
+        "pairs": 4,
+        "passed": 3,
+        "rate": 0.429,
+        "reached": 7
+      }
+    },
+    "timer": {
+      "fx": {
+        "pairs": 2,
+        "passed": 4,
+        "rate": 0.667,
+        "reached": 6
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 4,
+        "rate": 0.8,
+        "reached": 5
+      }
+    },
+    "timerangebreakout": {
+      "fx": {
+        "pairs": 6,
+        "passed": 1,
+        "rate": 0.143,
+        "reached": 7
+      },
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "tlb": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "tm": {
+      "index": {
+        "pairs": 19,
+        "passed": 35,
+        "rate": 0.583,
+        "reached": 60
+      }
+    },
+    "tmom": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 27,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 27
+      },
+      "index": {
+        "pairs": 41,
+        "passed": 4,
+        "rate": 0.087,
+        "reached": 46
+      },
+      "metal": {
+        "pairs": 8,
+        "passed": 6,
+        "rate": 0.429,
+        "reached": 14
+      }
+    },
+    "tokyo": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "tom": {
+      "index": {
+        "pairs": 4,
+        "passed": 3,
+        "rate": 0.429,
+        "reached": 7
+      }
+    },
+    "tpi": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 4,
+        "rate": 0.8,
+        "reached": 5
+      }
+    },
+    "tq": {
+      "index": {
+        "pairs": 3,
+        "passed": 2,
+        "rate": 0.286,
+        "reached": 7
+      }
+    },
+    "tr8dr": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "trade": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "treasury": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "trend": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "trendline": {
+      "fx": {
+        "pairs": 6,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 6
+      },
+      "index": {
+        "pairs": 5,
+        "passed": 1,
+        "rate": 0.167,
+        "reached": 6
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "triad": {
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      }
+    },
+    "trix": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "ts": {
+      "fx": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      }
+    },
+    "tsm": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "fx": {
+        "pairs": 28,
+        "passed": 6,
+        "rate": 0.162,
+        "reached": 37
+      },
+      "index": {
+        "pairs": 5,
+        "passed": 5,
+        "rate": 0.385,
+        "reached": 13
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 5,
+        "rate": 0.833,
+        "reached": 6
+      }
+    },
+    "tsmom": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "turn": {
+      "index": {
+        "pairs": 6,
+        "passed": 9,
+        "rate": 0.6,
+        "reached": 15
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "turnaround": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "turtle": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 20,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 20
+      }
+    },
+    "tv": {
+      "energy": {
+        "pairs": 9,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 9
+      },
+      "fx": {
+        "pairs": 328,
+        "passed": 37,
+        "rate": 0.101,
+        "reached": 366
+      },
+      "index": {
+        "pairs": 331,
+        "passed": 78,
+        "rate": 0.182,
+        "reached": 428
+      },
+      "metal": {
+        "pairs": 147,
+        "passed": 57,
+        "rate": 0.273,
+        "reached": 209
+      }
+    },
+    "twin": {
+      "fx": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "uk100": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "unger": {
+      "energy": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "fx": {
+        "pairs": 12,
+        "passed": 7,
+        "rate": 0.35,
+        "reached": 20
+      },
+      "index": {
+        "pairs": 16,
+        "passed": 3,
+        "rate": 0.15,
+        "reached": 20
+      },
+      "metal": {
+        "pairs": 6,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 6
+      }
+    },
+    "us": {
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "usdjpy": {
+      "fx": {
+        "pairs": 13,
+        "passed": 4,
+        "rate": 0.235,
+        "reached": 17
+      },
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "ust": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "vbt": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "vegas": {
+      "fx": {
+        "pairs": 9,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 9
+      }
+    },
+    "vol": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      },
+      "index": {
+        "pairs": 3,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 3
+      }
+    },
+    "vr": {
+      "index": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "vwap2s": {
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "watthana": {
+      "fx": {
+        "pairs": 12,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 12
+      }
+    },
+    "wave59": {
+      "fx": {
+        "pairs": 7,
+        "passed": 12,
+        "rate": 0.667,
+        "reached": 18
+      }
+    },
+    "wayward": {
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "weekly": {
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "weiss": {
+      "energy": {
+        "pairs": 9,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 9
+      },
+      "fx": {
+        "pairs": 28,
+        "passed": 10,
+        "rate": 0.25,
+        "reached": 40
+      },
+      "index": {
+        "pairs": 18,
+        "passed": 2,
+        "rate": 0.095,
+        "reached": 21
+      },
+      "metal": {
+        "pairs": 10,
+        "passed": 16,
+        "rate": 0.593,
+        "reached": 27
+      }
+    },
+    "whc": {
+      "fx": {
+        "pairs": 8,
+        "passed": 3,
+        "rate": 0.273,
+        "reached": 11
+      },
+      "index": {
+        "pairs": 7,
+        "passed": 3,
+        "rate": 0.3,
+        "reached": 10
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 3,
+        "rate": 0.6,
+        "reached": 5
+      }
+    },
+    "wick": {
+      "fx": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "williams": {
+      "energy": {
+        "pairs": 6,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 6
+      },
+      "fx": {
+        "pairs": 50,
+        "passed": 16,
+        "rate": 0.246,
+        "reached": 65
+      },
+      "index": {
+        "pairs": 15,
+        "passed": 9,
+        "rate": 0.375,
+        "reached": 24
+      },
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "williams18": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "winning": {
+      "fx": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "wrb": {
+      "fx": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "ws30": {
+      "index": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "wti": {
+      "energy": {
+        "pairs": 89,
+        "passed": 30,
+        "rate": 0.252,
+        "reached": 119
+      },
+      "other": {
+        "pairs": 7,
+        "passed": 7,
+        "rate": 0.5,
+        "reached": 14
+      }
+    },
+    "xag": {
+      "metal": {
+        "pairs": 4,
+        "passed": 5,
+        "rate": 0.625,
+        "reached": 8
+      }
+    },
+    "xau": {
+      "metal": {
+        "pairs": 4,
+        "passed": 8,
+        "rate": 0.8,
+        "reached": 10
+      },
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "xauxag": {
+      "other": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      }
+    },
+    "xbr": {
+      "energy": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "xng": {
+      "energy": {
+        "pairs": 36,
+        "passed": 6,
+        "rate": 0.143,
+        "reached": 42
+      },
+      "other": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    },
+    "xnggold": {
+      "other": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "xti": {
+      "energy": {
+        "pairs": 8,
+        "passed": 4,
+        "rate": 0.333,
+        "reached": 12
+      },
+      "other": {
+        "pairs": 16,
+        "passed": 11,
+        "rate": 0.407,
+        "reached": 27
+      }
+    },
+    "yang": {
+      "energy": {
+        "pairs": 1,
+        "passed": 3,
+        "rate": 0.75,
+        "reached": 4
+      }
+    },
+    "zarattini": {
+      "index": {
+        "pairs": 3,
+        "passed": 1,
+        "rate": 0.25,
+        "reached": 4
+      }
+    },
+    "zigzag": {
+      "metal": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      }
+    },
+    "zip": {
+      "fx": {
+        "pairs": 5,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 5
+      },
+      "index": {
+        "pairs": 11,
+        "passed": 6,
+        "rate": 0.353,
+        "reached": 17
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 4,
+        "rate": 0.667,
+        "reached": 6
+      }
+    },
+    "zuck": {
+      "energy": {
+        "pairs": 1,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 1
+      },
+      "fx": {
+        "pairs": 4,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 4
+      },
+      "index": {
+        "pairs": 3,
+        "passed": 3,
+        "rate": 0.5,
+        "reached": 6
+      },
+      "metal": {
+        "pairs": 2,
+        "passed": 0,
+        "rate": 0.0,
+        "reached": 2
+      }
+    }
+  },
+  "min_runs_per_cell": 8,
+  "pass_verdicts": [
+    "MULTI_SEED_PASS",
+    "PASS",
+    "PASS_LOWFREQ",
+    "PASS_SOFT"
+  ],
+  "schema": "qm.family-asset-matrix/v1"
+}

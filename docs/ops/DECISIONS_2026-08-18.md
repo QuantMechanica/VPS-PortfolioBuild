@@ -218,3 +218,84 @@ Recht bestehen, unabhängig von D-4.
 * **D-8** unverändert: Containment seit 14:39:42 UTC des 18.08. eingeschaltet, Fabrik bei einem gleichzeitigen Lauf.
 * **E-3** bleibt offen und **nicht abgehakt** — fällt die Zielgröße auf die Ertragsgröße, wird die Selektionsunsicherheit wichtiger, nicht unwichtiger.
 * **Batch weiterhin gesperrt** (OQ-8): der Tresor sichert den heutigen Bestand, nicht das, was ein Batch erzeugen würde.
+
+---
+
+# Runde 8 — 2026-08-19
+
+## D-10 · Containment freigegeben (ausgeführt)
+
+**Entschieden:** OWNER, Directive vom 19.08., Option A.
+**Ausgeführt:** 2026-08-19T13:19:07Z, `runtime_action: MODE_WRITTEN`,
+`source: dual_cutover_audits_passed_before_ramp`, Fenster
+`custom_history_variant_a_20260809_standing_unlimited`.
+
+Die Notlage lag **22 h 39 min** an (Trip 18.08. 14:39:42Z).
+
+**Zwei Korrekturen an meiner eigenen Vorlage, die beim Ausführen aufgefallen sind:**
+
+1. `LEASE_SCOPE_ANALYSIS.md` §5 nannte **einen** `--audit`-Pfad. Die CLI verlangt **exakt zwei**,
+   passend zur aktiven Aktivierung (`isolation_audit_3.json` **und** `_4.json`). Der Befehl in der
+   Vorlage war nie lauffähig.
+2. Der Aufruf verlangt zusätzlich **Quiescence** (null aktive Zeilen, null Prozesse) und eine
+   **abwesende Lease-Datei**. Das Fenster dafür wurde gemessen: **drei Sekunden breit**
+   (12:52:18 quiescent → 12:52:21 Lease wieder da). Von Hand nicht zu treffen; gelöst durch eine
+   abgekoppelte Warteschleife in OWNERs Shell, die den fail-closed Befehl alle zwei Sekunden
+   wiederholt.
+
+**Positivkontrolle bestanden**, mit dem verlangten Kriterium statt der Abwesenheit von
+`lease_busy`: 13:21:20 zwei aktive Zeilen auf T1 und T4, beide Claims nach der Freigabe, beide mit
+`custom_history_lease_token: null` (Signatur von `containment_not_engaged`); 13:24:19 laufende
+`terminal64`/`metatester64`-Prozesse auf zwei verschiedenen Terminals. Um 13:36 acht parallele
+Läufe, um 14:36 neun.
+
+**Wirkung, gemessen:** Durchsatz 0,75 → 19,6 terminale Zeilen je Stunde (`SUPPLY_TARGET.md` §4).
+
+## D-11 · Negativkontrolle ausgelassen — Begründung
+
+**Entschieden:** OWNER, Directive Runde 8 §3, unter der Bedingung einer Commit-Prüfung.
+**Bedingung erfüllt und belegt:**
+
+| Datei | letzte Änderung | relativ zum Trip (18.08. 14:39Z) |
+|---|---|---|
+| `terminal_worker.py` (enthält `_custom_history_stop_condition`) | 18.08. **12:18Z** | davor |
+| `custom_history_lease.py` | 07.08. | davor |
+| `custom_history_gate.py`, `custom_history_migration.py` | 15.08. | davor |
+
+Arbeitsbaum für diese Dateien sauber. Die beiden P1-Fixes seit dem Trip (`dfba94500`
+Mitternachtsrollover, `e1a98f77f` Basket-Symbole) liegen **beide in `farmctl.py`**.
+
+**Damit ist der Stop-Condition-Pfad byteidentisch mit dem Zustand, in dem der Trip vom 18.08.
+ausgelöst hat.** Der Trip ist nicht ein Indiz für den Fail-Safe, sondern derselbe Test unter
+denselben Bedingungen, ausgelöst durch einen echten `custom_history_copy_on_claim_failure`. Keine
+Wegwerf-Zeile, keine künstliche `failed`-Zeile, keine zweite Freigabe.
+
+## D-12 · Der 250-Tage-Filter ist ein Implementierungsfilter — Korrektur vorgelegt, nicht ausgeführt
+
+`ACTIVITY_CRITERION.md`. Kurzfassung:
+
+* **Herkunft belegt:** 600 → 500 → 250, jede Stufe im Code mit Poolvergrößerung begründet
+  (`challenge_book_60d.py:78-82`). Keine ratifizierende Quelle. **Kein Kontraktkriterium**, damit
+  nicht unter §3.3.
+* **Was er wirklich ist:** eine Stichprobenanforderung an die *Messung*, keine Zulassung. Das
+  Venue-Kriterium (4 Trading Days je Phase) steht daneben und ist korrekt implementiert
+  (`:229`).
+* **Korrektur auf 10/Jahr bringt 8 Paare zurück** — und **verschlechtert das Buch**: 26 % → 16 %
+  Finanzierungsrate am Überlappungsboden.
+* **Ursache ist Konzentration, nicht Frequenz:** fünf der acht sind XTIUSD; einzeln schadet keines,
+  drei helfen. Nur die drei auf anderen Symbolen aufzunehmen hebt die Rate auf **30 %**.
+
+**Empfehlung: Filter nicht absenken, sondern um eine Symbolgrenze ergänzen; die drei Paare auf
+USDCAD, EURUSD, XAUUSD aufnehmen.** Nicht ausgeführt — der Filter steht unverändert auf 250.
+
+## D-13 · Q09-Pilot angehalten an `--deployment-target`
+
+`Q09_PILOT_COST.md`. Elf der vierzehn Eingaben sind ableitbar; `--cost-profile` ist ein
+unvalidiertes Etikett (einziger im Code verwendeter Wert `DXZ_CANONICAL_REAL_TICKS_V1`).
+`--deployment-target` dagegen ist der Kostenschalter: FTMO/5ERS erzwingen die erweiterte Matrix,
+**145 statt 40 Zellen** — je Zeile ≈ 13,5 h statt ≈ 3,7 h Fabrikzeit, für 21 Zeilen 11,8 statt
+3,3 Tage.
+
+**Empfehlung DXZ** (die einzige je erfolgreiche Schließung wählte am Ende ohnehin DXZ).
+**Nicht gesetzt** — OWNER hat sich die Wahl vorbehalten, und der Faktor 3,6 ist zu groß, um ihn
+nebenbei zu entscheiden.

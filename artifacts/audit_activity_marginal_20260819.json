@@ -1,0 +1,128 @@
+{
+  "counts": {
+    "better": 3,
+    "neutral": 5,
+    "worse": 0
+  },
+  "generated_at_utc": "2026-08-19T14:53:27+00:00",
+  "incumbent_reference": {
+    "close": {
+      "expected_attempts": 2.94,
+      "funded": 17,
+      "funded_ci": [
+        0.2244,
+        0.4785
+      ],
+      "funded_rate": 0.34,
+      "p1_ci": [
+        0.4423,
+        0.7063
+      ],
+      "p1_pass": 29,
+      "p1_rate": 0.58
+    },
+    "overlap_floor": {
+      "expected_attempts": 3.85,
+      "funded": 13,
+      "funded_ci": [
+        0.1587,
+        0.3955
+      ],
+      "funded_rate": 0.26,
+      "p1_ci": [
+        0.3297,
+        0.596
+      ],
+      "p1_pass": 23,
+      "p1_rate": 0.46
+    },
+    "sleeves": 23,
+    "starts": 50
+  },
+  "schema": "qm.activity-criterion-marginal/v1",
+  "single_additions": {
+    "11422:USDCAD": {
+      "d_funded": 0.02,
+      "d_p1": 0.04,
+      "funded_rate": 0.28,
+      "p1_rate": 0.5
+    },
+    "11708:EURUSD": {
+      "d_funded": 0.02,
+      "d_p1": 0.0,
+      "funded_rate": 0.28,
+      "p1_rate": 0.46
+    },
+    "12708:XAUUSD": {
+      "d_funded": 0.04,
+      "d_p1": 0.0,
+      "funded_rate": 0.3,
+      "p1_rate": 0.46
+    },
+    "12710:XTIUSD": {
+      "d_funded": 0.0,
+      "d_p1": 0.0,
+      "funded_rate": 0.26,
+      "p1_rate": 0.46
+    },
+    "12855:XTIUSD": {
+      "d_funded": 0.0,
+      "d_p1": 0.0,
+      "funded_rate": 0.26,
+      "p1_rate": 0.46
+    },
+    "13140:XTIUSD": {
+      "d_funded": 0.0,
+      "d_p1": 0.0,
+      "funded_rate": 0.26,
+      "p1_rate": 0.46
+    },
+    "13144:XTIUSD": {
+      "d_funded": 0.0,
+      "d_p1": 0.0,
+      "funded_rate": 0.26,
+      "p1_rate": 0.46
+    },
+    "13146:XTIUSD": {
+      "d_funded": 0.0,
+      "d_p1": 0.0,
+      "funded_rate": 0.26,
+      "p1_rate": 0.46
+    }
+  },
+  "size_reference_15": {
+    "close": {
+      "expected_attempts": 5.0,
+      "funded": 10,
+      "funded_ci": [
+        0.1124,
+        0.3304
+      ],
+      "funded_rate": 0.2,
+      "p1_ci": [
+        0.348,
+        0.6149
+      ],
+      "p1_pass": 24,
+      "p1_rate": 0.48
+    },
+    "overlap_floor": {
+      "expected_attempts": 5.0,
+      "funded": 10,
+      "funded_ci": [
+        0.1124,
+        0.3304
+      ],
+      "funded_rate": 0.2,
+      "p1_ci": [
+        0.348,
+        0.6149
+      ],
+      "p1_pass": 24,
+      "p1_rate": 0.48
+    },
+    "sleeves": 15,
+    "starts": 50
+  },
+  "sizing": 0.5
+}
