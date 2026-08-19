@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20085
+; ea_slug:      lebeau-lucas-momentum-oscillator-h4-r1-recovery
+; ea_version:   v5.0
+; set_version:  s20260819-stress-harsh
+; symbol:       XAUUSD.DWX
+; timeframe:    H4
+; environment:  q06_stress_harsh
+; magic_slot:   7
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   55eb5b73c00cd8107689bcf097874592d5eb30fdb11b7332c0490b040d485b42
+; author:       Development
+; date:         2026-08-19
+;==========================================================
+qm_ea_id=20085
+qm_magic_slot_offset=7
+qm_rng_seed=7
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_20085_lebeau-lucas-momentum-oscillator-h4-r1-recovery.md
+roc_period=12
+llmo_smooth=8
+ema_trend_period=21
+d1_regime_ema_period=50
+atr_period=20
+sl_atr_mult=2.5
+trail_atr_mult=2.0
+trail_activate_atr_mult=1.5
+time_stop_bars=20
+spread_atr_mult_cap=0.35
