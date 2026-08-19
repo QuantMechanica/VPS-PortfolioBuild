@@ -188,3 +188,33 @@ nur einen Lauf. Das ist ein Ticket, kein Vollbatch.
 **Kein Batch gestartet**, auch nicht reduziert, auch nicht als Pilot. §1 ist beantwortet, §2 ist
 **teilweise** offen (Urheber der Wand vom 07.07. unbekannt) — die Sperre bleibt damit aus eigenem
 Recht bestehen, unabhängig von D-4.
+
+---
+
+# Runde 7 — Spurwechsel, Ergebnisse und offene Punkte
+
+## Ausgeführt
+
+| # | Was | Ergebnis |
+|---|---|---|
+| **§1 D-9** | Erwartungswert eines finanzierten Kontos | **Positiv, aber nur bei niedrigem Sizing.** Break-even-Gebühr 15.078 $ (0,44×) bzw. 15.555 $ (0,50×) **unter der pessimistischen Intraday-Schranke**; 224 $ bei 0,85× und 66 $ bei 1,00×. Erste Aussage der Serie, die die Intraday-Unsicherheit überlebt. |
+| **§2 Trichter** | über alle 14.350 Paare | Q04 **9,1 %**, Q08 **16,7 %** — beide Engpässe sind Robustheitsgates. Q09_NEWS 0/46 und Q09_PORTFOLIO 0/109 sind **Dämme**, keine Filter. Ausbeute **0,12 %**, nicht 0,5 %. |
+| **§3 Inventar** | Desktop, Downloads, Dropbox, Repo | ~70 externe Strategie-Stämme, alle mit vollem Portierungsaufwand; **428 kompilierte EAs im Repo haben die Fabrik nie betreten**, 56 davon hinter dem Review-Ventil. |
+| **§4 Doktrin** | jedes Prinzip gegen den Bestand | Einfachheit **widerlegt**, Cross-Market **bestätigt und nie erreicht** (0 von 28). Vorfilter V1–V4 spezifiziert, 6 Backtests je Kandidat. |
+| **§5 Optimierer** | DD-Hebel | **Prämisse widerlegt**: Q14 führt 11 `OPT_ELIGIBLE`, nicht 0; 56 % der Q05-Evidenz zeigt DD ≥ 12 %. Der Hebel steht hinter den falschen Filtern. Drei neue Hebel vorgeschlagen. |
+| **§6 Angebotsziel** | Skalierung und Kapazität | Auszahlung sättigt bei ~12 Sleeves, **Finanzierungsrate nicht** (1 % → 34 %). **Kapazität ist nicht der Engpass** — 1.300 Zeilen/Woche gegen 428 wartende gebaute EAs. |
+| **`main`** | Merge | `origin/main` (112 Commits) in den Branch gemergt, **konfliktfrei**, vorher mit `git merge-tree` in-memory geprüft, damit die laufende Arbeitskopie nie in einen Konfliktzustand gerät. `origin/main` ist jetzt Vorfahr von HEAD — der Tageslauf `QM_Repo_Push` kann fast-forwarden. Nach dem Merge verifiziert: `farmctl`, `terminal_worker`, `ea_metrics` importieren, beide Reaper-Fixes intakt. |
+| **Populationsticket** | 2 Paare ohne Recompile | Ticket `d8a61daa`, Priorität 80. **QM5_11132/NDX** = einfacher Re-Run (Stream ist veraltet). **QM5_11288/USDJPY** = zuerst diagnostizieren, nicht laufen lassen — Binary vom 17.08., Stream von heute, trotzdem 0 % `entry_time` (OQ-12). |
+
+## Vier Prämissen der Work Order, die die Messung nicht trägt
+
+1. **Die 24 unter 250 Handelstagen sind kein Datenproblem** — 0 zu 24. Alle haben 6–8 Jahre Historie und handeln 7–30×/Jahr. Daraus die Schwellenlücke: Q02 lässt ≥5 Trades/Jahr zu, das Buch braucht **≥31**.
+2. **Die Gate-Ablehnungen sind individuell, nicht systematisch** — Q04 verteilt 9 auf 8 Familien, Q08 sieben auf sieben. Keine Familienreparatur hebt die Ausbeute.
+3. **Der DD-Hebel ist nicht leer**, er zielt auf die falsche Kohorte.
+4. **Einfachheit ist widerlegt** — Q04 besteht 6,1 % bei 3–4 Parametern gegen 10,1 % bei 10+.
+
+## Offen
+
+* **D-8** unverändert: Containment seit 14:39:42 UTC des 18.08. eingeschaltet, Fabrik bei einem gleichzeitigen Lauf.
+* **E-3** bleibt offen und **nicht abgehakt** — fällt die Zielgröße auf die Ertragsgröße, wird die Selektionsunsicherheit wichtiger, nicht unwichtiger.
+* **Batch weiterhin gesperrt** (OQ-8): der Tresor sichert den heutigen Bestand, nicht das, was ein Batch erzeugen würde.
