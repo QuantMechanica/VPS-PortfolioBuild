@@ -2040,7 +2040,16 @@ def _report_cell_after(path: Path, label: str) -> str:
 
 
 def _finite_report_number(raw: Any, field: str) -> float:
-    text = str(raw or "").replace("\xa0", " ").strip()
+    # A numeric zero is a legitimate report value (zero trades, zero profit);
+    # `raw or ""` would silently reclassify it as missing.
+    if isinstance(raw, bool):
+        raise RunnerError(f"MT5 report {field} is not numeric")
+    if isinstance(raw, (int, float)):
+        value = float(raw)
+        if not math.isfinite(value):
+            raise RunnerError(f"MT5 report {field} is not finite")
+        return value
+    text = str(raw if raw is not None else "").replace("\xa0", " ").strip()
     match = re.search(r"-?[\d\s.,]+", text)
     if not match:
         raise RunnerError(f"MT5 report {field} is missing")
@@ -2203,6 +2212,18 @@ def _validate_window_summary(
     trades = int(run.get("total_trades"))
     if trades > 0 and original == 0:
         raise RunnerError("MT5 trades exist but the framework entry stream is empty")
+    if trades == 0 and (original - blocked) > 0:
+        # Mirror of the check above: the framework accepted entries but the
+        # report shows none.  An externally terminated tester pass writes a
+        # settings-complete report with zeroed statistics and exit code 0;
+        # that is an infrastructure event, never a measurement.  A legitimate
+        # full news block keeps accepted == 0 (original == blocked) and is
+        # not affected.
+        raise TransientCellError(
+            f"MT5 report shows zero trades but the framework logged "
+            f"{original - blocked} accepted entries; treating this as a "
+            "terminated tester pass"
+        )
     profit_factor = _finite_report_number(run.get("profit_factor"), "profit factor")
     net_profit = _finite_report_number(run.get("net_profit"), "net profit")
     sharpe = _finite_report_number(_report_cell_after(report_path, "Sharpe Ratio"), "Sharpe ratio")
