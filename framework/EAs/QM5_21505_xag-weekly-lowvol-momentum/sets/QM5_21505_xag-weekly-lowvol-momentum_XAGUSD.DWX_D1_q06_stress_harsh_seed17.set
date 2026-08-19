@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        21505
+; ea_slug:      xag-weekly-lowvol-momentum
+; ea_version:   v5.0
+; set_version:  s20260819-stress-harsh
+; symbol:       XAGUSD.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   5385763ac80853482faaf4e3642449c036e5ce415bc63d7742c443642a028854
+; author:       Development
+; date:         2026-08-19
+;==========================================================
+qm_ea_id=21505
+qm_magic_slot_offset=0
+qm_rng_seed=17
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_21505_xag-weekly-lowvol-momentum.md
+strategy_vol_lookback=40
+strategy_vol_percentile=33.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_max_hold_bars=10
+strategy_max_spread_points=250
