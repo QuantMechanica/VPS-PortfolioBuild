@@ -1,6 +1,6 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
-**Stand:** 2026-08-19 19:05 UTC · Directive §3
+**Stand:** 2026-08-19 20:00 UTC · Stehende Vollmacht §6 (wird jedem Bericht beigefügt)
 **Eine Zeile je Punkt. „Geliefert" heißt: Ergebnis steht in einem Dokument und wurde berichtet.**
 
 ---
@@ -30,6 +30,11 @@
 | Dir. §1 | Verkettungstest | Max-DD exakt rekonstruierbar (17.072,73 beidseitig), Restfehler 0,58 % im Nettogewinn (`Q09_ACCELERATION.md` §7) |
 | Dir. §2 | Seed-Sensitivität | **40 Zellen sind 8 Konfigurationen**; der RNG wird in Q09 nie gezogen (`SEED_SENSITIVITY.md`) |
 | Dir. §1 | Kontaminationsprüfung | Timeout-Verluste 0,24–1,4 %, verschieben jede Quote < 0,5 pp, und zwar **entlastend** — die Befunde halten |
+| Vollm. §8.2 | Hyonix sichern | Zip 65,2 MB, 2.742 Einträge, SHA256 `722FC306…`, off-host auf `G:\My Drive\QM_Backups\` mit Hash-Sidecar |
+| — | Q09-Pilot-Abbruch aufgeklärt | Tester extern bei 98,7 % der Ticks beendet → Null-Statistik-Report; dazu Falsy-Zero-Parserbug; **2 Runner-Fixes committed (a92c0490f), Pilot als append-only Rerun `cba63d44` neu gebunden** |
+| R10 §5.1 | Strategy-Files-Inventar: die eine Zahl | **~70 distinkte non-ML/non-ICT Quelltext-Kandidaten + 428 kompilierte Repo-EAs, die die Fabrik nie sah** (`STRATEGY_FILES_INVENTORY.md` §0, jetzt berichtet) |
+| R9 §5.4 / R10 §5.3 | Rate je Gate + Queue-Termin | Q04 11,2/h (6h-Fenster); 9/h-Einbruch = 5 von 8 Slots auf Q07/Q08 — OWNERs Transient-These **bestätigt**; Queue-Ende ≈ 26.–27.08. |
+| Vollm. §8.1 | Unger-Filter: Parameterkosten | Eingrenzung auf 1 kategorialen Parameter (feste Muster-Bänke) vorgeschlagen — Bericht 19.08. 20:00 |
 
 ## 2 · Offen
 
@@ -40,9 +45,9 @@
 | **R9 §5.1** | Watchdog-Schwelle (`MinWorkers = 8` heilt zu spät) | Vorschlag formulierbar, nicht formuliert |
 | **R9 §5.2** | SQLite-Lock-Auffanglinie (OQ-22) | Diff nicht geschrieben |
 | **R9 §5.3** | Live-Buch-Ist-**Manifest** (die Aufnahme steht, das Manifest fehlt) | Erzeugung aus `audit_live_book_inventory_20260819.json` |
-| **R9 §5.4** | stabile Rate über sechs Stunden | Fenster läuft seit 13:19 UTC, ab 19:19 auswertbar — **jetzt fällig** |
-| **R10 §5.1** | Strategy-Files-Inventar: **die eine Zahl** | Dokument existiert seit 09:31, Inhalt nie berichtet |
-| **R10 §5.3** | Queue-Ende: Mischrate, Termin, Stand der Optimierungsspur | Mischrate braucht die Sechs-Stunden-Messung |
+| **Vollm./A+B** | **Q09-Kontrakt v3 (Weg A + B) — vorab genehmigt, in Arbeit** | Kontrakt-Tiefe erfasst (Seed-Statistik + full-Metriken in Adjudikation); v2-Referenz `cba63d44` läuft parallel als Validierungsanker |
+| **Vollm. §8.3** | Bug #4 (Kurzhistorien-Sperre) vor Integration beheben | Vorbedingung jeder Pattern-Filter-Integration; kollidiert mit Erstjahr des Aktivitätskriteriums |
+| **Vollm. §8.1** | Pattern-Filter als Q14-Hebel formal aufnehmen | braucht Hypothese + Widerlegungskriterium + Frequenzprüfung + Parameterzahl (GELB-Bedingung); Entwurf im Bericht 20:00 |
 | **Q14 §3** | Episodendefinition für die Ersatzbedingung | Definition formulierbar; die Survivor-Zahl braucht die Kohorte |
 | **Q14 §3.1** | EXIT_SURGERY rückwirkend auf Rendite/Drawdown | die Läufe existieren unter `D:\QM\reports\opt_track\` |
 | **Q14 §4.1/4.2/4.4** | Kohortengröße, Reihenfolge vor/nach Q09, Wiederholung je Hebelklasse | §4.2 jetzt mit 2,8 h statt 26 h neu zu rechnen |
@@ -90,7 +95,6 @@
 
 ---
 
-**Zwei Punkte sind in dieser Aufstellung länger offen, als sie sein sollten:** das
-Strategy-Files-Inventar (R10 §5.1, geschrieben 09:31, nie berichtet) und die Filtersuche unter
-`Hyonix\`. Beide betreffen die Angebotsfrage. Die Filtersuche ist mit dieser Directive erledigt;
-das Inventar folgt als nächster Bericht.
+**20:00 UTC:** Die beiden überfälligen Punkte (Strategy-Files-Zahl, Filtersuche) sind berichtet.
+Aktive Großbaustelle ist der Q09-Kontrakt v3 (A+B, vorab genehmigt); die v2-Referenzmessung
+`cba63d44` läuft parallel und wird zum Validierungsanker der v3-Entscheidungsgleichheit.
