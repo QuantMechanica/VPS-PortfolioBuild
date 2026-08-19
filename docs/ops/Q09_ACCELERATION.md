@@ -179,3 +179,64 @@ Konstante angewandt). Weitere Kandidaten, die ich noch nicht geprüft habe: `tim
 Work-Item-Payloads (105 und 120 min beobachtet), `cell_timeout_sec = 3600` in der Q09-Bindung, und
 `ACTIVE_PROGRESS_STALL_MIN = 20` im Reaper. **Alle drei sind Wanduhrgrößen in einer Fabrik, deren
 Wanduhrzeit von der Parallelität abhängt.** → **OQ-24**
+
+---
+
+## 7 · Nachtrag: der Verkettungstest — Weg A ist fast verlustfrei
+
+**Auftrag §1 der Folge-Work-Order.** Ergebnis: **die Naht lässt sich rekonstruieren, und der
+Restfehler ist bezifferbar.**
+
+### 7.1 Die Läufe emittieren eine Reihe — §1.1
+
+Jedes Fenster schreibt `raw/run_01/logger_sample.jsonl` mit **täglichen
+`EQUITY_SNAPSHOT`-Ereignissen** plus dem vollständigen Order-Lebenszyklus. Auflösung: ein
+Snapshot je Handelstag.
+
+**[MESSUNG] Die Ereigniszahlen addieren sich exakt:**
+
+| Ereignis | selection | holdout | Summe | **full** |
+|---|---:|---:|---:|---:|
+| `EQUITY_SNAPSHOT` | 1.287 | 514 | **1.801** | **1.801** |
+| `ENTRY_ACCEPTED` | 298 | 127 | **425** | **425** |
+| `TM_CLOSE` | 214 | 84 | **298** | **298** |
+| `FRIDAY_CLOSE` | 246 | 99 | **345** | **345** |
+
+Der `full`-Lauf erzeugt also **exakt dieselben Ereignisse** wie die beiden Teilläufe zusammen —
+kein zusätzlicher Trade, kein fehlender.
+
+### 7.2 Der Verkettungstest — §1.2
+
+Die Equity-Reihen wurden verkettet (Offset = Endstand `selection` − Startstand `holdout`, bei
+fixem Risiko ein reiner Additionsschritt) und gegen den `full`-Lauf gestellt. **Beide fertigen
+Zellen, identisches Ergebnis:**
+
+| | verkettet | `full` gemessen | Abweichung |
+|---|---:|---:|---:|
+| **Max-Drawdown** | **17.072,73** | **17.072,73** | **0,00 (0,000 %)** |
+| Nettogewinn | 11.410,77 | 11.344,55 | 66,22 (**0,584 %**) |
+| Rendite/Drawdown | 0,6684 | 0,6645 | 0,0039 |
+
+> **Der Max-Drawdown über die Naht ist exakt rekonstruierbar** — die Größe, um die es bei Weg A
+> ging, geht nicht verloren.
+
+**Der Restfehler ist der Nettogewinn: 66,22 von 11.410, also 0,58 %.** Er entsteht an der Naht
+selbst — eine Position, die über den Jahreswechsel offen ist, wird im geteilten Lauf am Fensterende
+glattgestellt und im neuen Fenster neu eröffnet. Die Trade-Zahlen bleiben gleich, der Schlusskurs
+der Nahtposition unterscheidet sich.
+
+**Antwort auf §1.3:** Weg A ist damit **nicht** „46 % sparen gegen den Verlust der Naht", sondern
+**„46 % sparen gegen 0,58 % Ungenauigkeit im Nettogewinn, bei exaktem Drawdown"**. Für eine
+Verhältniszahl, die auf zwei Nachkommastellen verglichen wird, ist das unerheblich — und für die
+Frage, die Q09 beantwortet (mit oder ohne News-Filter), trifft der Nahtfehler **beide Arme gleich**
+und hebt sich im Vergleich auf.
+
+**Zusatzkosten für die Reihen-Emission: null.** Sie existiert bereits.
+
+### 7.3 Was ich zur Vorsicht anmerke
+
+Der Test lief auf **zwei Zellen desselben EA, beide `CONTROL_OFF`**. Bei einem EA, der über die
+Naht deutlich mehr offene Positionen hält, wäre der 0,58-%-Fehler größer. Die saubere Fassung der
+Kontraktänderung sollte den Nahtfehler deshalb **mitschreiben** statt ihn zu ignorieren: die
+Differenz zwischen verkettetem und direkt gemessenem Ergebnis ist genau einmal je EA bestimmbar —
+und wenn sie klein bleibt, ist die Sache erledigt.
