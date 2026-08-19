@@ -30,9 +30,35 @@ Filter, sondern **Dämme** — ihnen fehlt ein Betreiber, nicht die Qualität de
 dieselbe Klasse wie die Mechanismen ohne Aufrufer und gehört nicht in die Ausbeutediskussion,
 sondern in `ORPHANED_MECHANISMS.md`.
 
-**Die Ausbeute, ohne Beschönigung:** 14.350 Paare treten in Q02 ein, **34** bestehen Q08, **17**
-liegen im Buch. Das sind **0,12 % bis zum Buch** — noch schlechter als die 0,5 %, gegen die diese
-Runde antritt.
+### Die Ausbeute — und eine Korrektur an meiner eigenen Zahl
+
+Die Work Order warnt, die Kette `3.722 EAs → 91 Paare → 21 Sleeves` mische Einheiten. **Die Warnung
+trifft meine erste Fassung dieses Abschnitts:** ich hatte „die Ausbeute ist 0,12 %, nicht 0,5 %"
+geschrieben und das als Korrektur ausgegeben. Es war keine — es war **dieselbe Verwechslung in die
+andere Richtung.** Beide Zahlen stimmen, in verschiedenen Einheiten.
+
+**[MESSUNG] Die Umrechnung:**
+
+| | |
+|---|---|
+| distinkte EA-IDs in `work_items` | **2.934** |
+| distinkte (EA, Symbol)-Paare | **14.358** |
+| Paare je EA, Mittel | **4,89** |
+| EAs, die auf **mehr als einem** Symbol liefen | **2.170 (74 %)** |
+| EAs auf genau einem Symbol | 764 |
+| EA-Verzeichnisse auf Platte (3.722) → distinkte EA-IDs | **3.705** (die 3.722 zählen **Varianten**, nicht EAs) |
+
+**Die Ausbeute, je Einheit sauber getrennt:**
+
+| Einheit | Rechnung | Quote |
+|---|---|---:|
+| **Paare** | 14.358 eingereiht → 21 Buch-Sleeves | **0,146 %** |
+| **EAs (eingereiht)** | 2.934 → 20 distinkte Buch-EAs | **0,682 %** |
+| **EAs (gebaut)** | 3.705 → 20 | **0,540 %** |
+
+**Die 0,5 % der Work Order sind korrekt** — als EA-Quote auf gebaute EAs. Meine 0,12 % waren die
+Paar-Quote. Für die Produktionsplanung ist die **EA-Einheit** die richtige, weil **EAs gebaut
+werden** und jeder anschließend auf im Mittel 4,89 Symbolen läuft.
 
 ---
 

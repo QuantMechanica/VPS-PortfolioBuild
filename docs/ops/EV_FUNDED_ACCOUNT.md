@@ -124,3 +124,42 @@ nicht behaupte.
 
 **Damit ist die Rechnung dieser Datenbasis abgeschlossen.** Was an ihr noch offen ist, ist nicht
 rechenbar, sondern nur messbar: reale Ausführung.
+
+---
+
+## 7 · Gültigkeitsgrenze und Rückwärtsrechnung (§1.1)
+
+**Die Bruchraten, auf denen die Schlusskursspalte steht, untererfassen Brüche.** Das ist der
+Kernbefund der ganzen Serie: bei 1,00× fällt die Quote vom Schlusskursmaß (78 %) auf 10 % am
+überlappungsbeschränkten Boden, und der Einbruch geht fast vollständig auf **Limitbrüche**. Die
+Bruchrate bei 1,00× ist also nicht 16 %, sondern **unbekannt und höher**.
+
+**Kennzeichnung, wie verlangt:**
+
+| Sizing | Status der EV-Zahl |
+|---|---|
+| 0,44× · 0,50× | **belastbar** — beide Messbasen stimmen überein (R6-1: Übereinstimmung bis 0,50×) |
+| **0,60× und darüber** | **Obergrenze mit unbekanntem Abstand** — jeder Punkt ist optimistisch verzerrt |
+
+### Die Rückwärtsrechnung — und sie fällt schärfer aus als erwartet
+
+Gefragt war: *bei welcher zusätzlichen Bruchrate fällt der EV bei 0,85× und 1,00× auf den Wert bei
+0,50×?* **[MESSUNG] Die Frage hat keine Lösung, weil beide bereits darunter starten:**
+
+| Basis | Referenz 0,50× | 0,85× | 1,00× |
+|---|---:|---:|---:|
+| Schlusskurs (optimistisch) | **26.253 $** | 15.805 $ | 11.826 $ |
+| Überlappungsboden (pessimistisch) | **15.555 $** | 224 $ | 66 $ |
+
+**Auf beiden Basen, bei null zusätzlicher Untererfassung, liegen 0,85× und 1,00× unter 0,50×.**
+Es gibt keine tolerierbare Untererfassung, weil keine nötig ist — die hohen Sizings führen nie.
+
+**Die Rechnung kehrt sich also um:** nicht „wie viel Untererfassung hält die Aussage aus", sondern
+„wie falsch müsste 0,50× sein, damit 0,85× gewinnt". Antwort: **um 40 % zu hoch auf der
+Schlusskursbasis, um Faktor 69 auf dem Boden.** Das ist keine Fehlerspanne, das ist eine andere
+Messung.
+
+**Was die Kennzeichnung praktisch bedeutet:** die Kurve sieht ausgerechnet im nicht belastbaren
+Bereich *nicht* am höchsten aus — die befürchtete Verzerrung tritt nicht ein, weil der
+Überlebensverlust die höhere Rendite schon auf der optimistischen Basis überkompensiert. Die
+Empfehlung 0,50× steht damit unabhängig davon, welche Kurve stimmt.

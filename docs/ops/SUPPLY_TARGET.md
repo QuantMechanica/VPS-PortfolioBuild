@@ -68,22 +68,30 @@ Angebotsfrage ist damit **keine Frage des Erreichens mehr, sondern eine der Marg
 Ausfallsicherheit** — mehr Sleeves ersetzen ausgefallene und halten die Finanzierungsrate oben, wenn
 Verdikte kippen (rev6: −3 bis −11 Punkte Flip-Instabilität).
 
-## 3 · Produktionszahl bei heutiger Ausbeute
+## 3 · Produktionszahl bei heutiger Ausbeute — in **einer** Einheit gerechnet
 
-**[MESSUNG] Die Ausbeute ist 0,12 %, nicht 0,5 %:** 14.350 (EA, Symbol)-Paare treten in Q02 ein,
-34 bestehen Q08, **17 liegen im Buch**.
+**Korrektur gegenüber der ersten Fassung.** Ich hatte hier mit „0,12 %" gerechnet und diese Zahl als
+Korrektur der 0,5 % ausgegeben. Sie war keine: 0,12 % ist die **Paar**-Quote, 0,5 % die **EA**-Quote.
+Beide stimmen, und für die Produktionsplanung ist die EA-Einheit die richtige — **gebaut werden EAs**,
+und jeder läuft anschließend auf im Mittel **4,89** Symbolen (`FUNNEL_DIAGNOSIS.md` §1).
 
-| Ausbeute | Kandidaten je zusätzlichem Sleeve | für +5 Sleeves | für +10 |
+**[MESSUNG]** 3.705 gebaute EA-IDs → **20** distinkte Buch-EAs = **0,540 %**.
+
+| Ausbeute (EA-Einheit) | gebaute EAs je zusätzlichem Buch-EA | für +5 | für +10 |
 |---|---:|---:|---:|
-| **0,12 % (heute)** | **~845** | ~4.200 | ~8.400 |
-| 0,5 % | ~200 | ~1.000 | ~2.000 |
+| **0,54 % (heute)** | **~185** | ~925 | ~1.850 |
 | 1 % | ~100 | ~500 | ~1.000 |
 | 2 % | ~50 | ~250 | ~500 |
 
-**Das ist die Rechnung, die die Doktrin rechtfertigt oder erledigt.** Bei heutiger Ausbeute kostet
-ein zusätzlicher Sleeve rund **845 Kandidaten**. Hebt `PRODUCTION_DOCTRINE.md` die Ausbeute auf 1 %,
-sind es **100** — ein Faktor 8. **Jeder Prozentpunkt Ausbeute ist mehr wert als jede Verdopplung des
-Durchsatzes.**
+*Zur Umrechnung in Sleeves:* ein zusätzlicher Buch-**EA** bringt im Mittel etwas mehr als einen
+Sleeve, weil dieselbe Strategie auf mehreren Symbolen buchfähig sein kann — im heutigen Buch stehen
+21 Sleeves auf 20 EAs, also praktisch 1:1. **Die 185 sind damit auch die Zahl je zusätzlichem
+Sleeve.**
+
+**Das ist die Rechnung, die die Doktrin rechtfertigt oder erledigt.** Hebt `PRODUCTION_DOCTRINE.md`
+die Ausbeute von 0,54 % auf 1 %, halbiert sich der Kandidatenbedarf; auf 2 % viertelt er sich.
+**Jeder Prozentpunkt Ausbeute ist mehr wert als jede Verdopplung des Durchsatzes** — und deutlich
+billiger, weil die Fabrik ohnehin nicht ausgelastet ist (§4).
 
 ## 4 · Kapazität dagegengestellt — und sie ist nicht der Engpass
 
