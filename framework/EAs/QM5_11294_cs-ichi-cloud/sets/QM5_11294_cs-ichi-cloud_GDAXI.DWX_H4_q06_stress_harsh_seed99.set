@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11294
+; ea_slug:      cs-ichi-cloud
+; ea_version:   v5.0
+; set_version:  s20260819-stress-harsh
+; symbol:       GDAXI.DWX
+; timeframe:    H4
+; environment:  q06_stress_harsh
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   8d5918c15783eed43b3444ce7a75c485f01a9544bfa8468ef7ec6a9c54fea47c
+; author:       Development
+; date:         2026-08-19
+;==========================================================
+qm_ea_id=11294
+qm_magic_slot_offset=3
+qm_rng_seed=99
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11294_cs-ichi-cloud.md
+strategy_tenkan_period=9
+strategy_kijun_period=26
+strategy_senkou_b_period=52
+strategy_atr_period=14
+strategy_atr_sl_mult=3.0
