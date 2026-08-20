@@ -1,0 +1,40 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41065
+; ea_slug:      wti-wflip-mom
+; ea_version:   v5.0
+; set_version:  s20260820-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   57560e7f5941d666da0887de63a14616e4946203c45386e69d641c3bd087a8fb
+; author:       Development
+; date:         2026-08-20
+;==========================================================
+qm_ea_id=41065
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Native-price structural signal; both news axes are intentionally OFF.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+; Full broker-week hold; Friday flattening is intentionally disabled.
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific params from approved card; no optimization surface.
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41065_wti-wflip-mom_card.md
+strategy_entry_grace_minutes=180
+strategy_history_bars=30
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=10
+strategy_max_spread_points=1500
