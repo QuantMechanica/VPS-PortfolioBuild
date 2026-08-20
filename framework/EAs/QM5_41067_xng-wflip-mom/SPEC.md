@@ -1,16 +1,16 @@
 # QM5_41067_xng-wflip-mom - Strategy Spec
 
-EA ID: `QM5_41067`
+**EA ID:** QM5_41067
 
-Slug: `xng-wflip-mom`
+**Slug:** `xng-wflip-mom`
 
-Strategy ID: `MOP-XNG-WFLIP-MOM-2026_S01`
+**Strategy ID:** `MOP-XNG-WFLIP-MOM-2026_S01`
 
-Source: `MOP-XNG-WFLIP-MOM-2026`
+**Source:** `MOP-XNG-WFLIP-MOM-2026`
 
-Author: Codex
+**Author of this spec:** Codex
 
-Last revised: 2026-08-20
+**Last revised:** 2026-08-20
 
 ## 1. Strategy Logic
 
@@ -45,7 +45,7 @@ All strategy parameters are locked for the Q02 baseline.
 
 - Host and traded symbol: exact `XNGUSD.DWX`, D1.
 - Symbol slot: 0.
-- Magic: `410670000` (pending governed magic allocation at directory creation).
+- Magic: `410670000` (governed allocation commit `5258258d0`).
 - No companion, read-only symbol, alias, ratio, or external market series.
 
 ## 4. Timeframe
