@@ -1,16 +1,16 @@
 # QM5_41074_wti-wstreak3-mom - Strategy Spec
 
-EA ID: `QM5_41074`
+**EA ID:** QM5_41074
 
-Slug: `wti-wstreak3-mom`
+**Slug:** `wti-wstreak3-mom`
 
-Strategy ID: `MOP-WTI-WSTREAK3-MOM-2026_S01`
+**Strategy ID:** `MOP-WTI-WSTREAK3-MOM-2026_S01`
 
-Source: `MOP-WTI-WSTREAK3-MOM-2026`
+**Source:** `MOP-WTI-WSTREAK3-MOM-2026`
 
-Author: Codex
+**Author of this spec:** Codex
 
-Last revised: 2026-08-20
+**Last revised:** 2026-08-20
 
 ## 1. Strategy Logic
 
@@ -101,3 +101,4 @@ partial exit.
 | v1-card | 2026-08-20 | G0-approved execution contract | `strategy-seeds/cards/approved/QM5_41074_wti-wstreak3-mom_card.md` |
 | v1-build | 2026-08-20 | deterministic implementation and Q01 validation | 11-test reference suite; strict compile/build PASS; static P1 PASS |
 | v1-q02-capacity | 2026-08-20 | paced Q02 admission check | one target baseline eligible; not enqueued because sampled host CPU exceeded the 97% ceiling |
+| v1-q02-queue | 2026-08-20 | shared-farm queue reconciliation | exact `XTIUSD.DWX` Q02 row `059206dc-dc65-4bee-aa7c-68f5ce7be3e3` observed pending; no duplicate enqueue; SPEC metadata normalized for deterministic validation |

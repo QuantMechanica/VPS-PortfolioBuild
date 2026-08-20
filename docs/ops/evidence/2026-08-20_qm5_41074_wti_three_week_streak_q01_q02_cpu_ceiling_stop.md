@@ -101,12 +101,18 @@ controlled or modified.
 Q02 was not enqueued, dispatched, reserved, or run. No terminal was stopped,
 no manual backtest was launched, and no work-item state was mutated.
 
+## Subsequent shared-farm state
+
+This statement is scoped to the originating unit. A later read-only query found
+that the shared farm had acquired one Q02 `pending` row at
+`2026-08-20T19:52:58+00:00`. The reconciled DB-backed snapshot and duplicate
+guard are recorded in
+`docs/ops/evidence/2026-08-20_qm5_41074_q02_queue_reconciliation_cpu_stop_2000z.md`.
+
 ## Safe handoff
 
-After host CPU has durable headroom, re-run the exact target work-item check,
-target-only preview, terminal inventory, and a fresh whole-host CPU sample
-before using the target-only `--apply` path for `QM5_41074`. Do not broaden
-the sweep.
+The exact Q02 row now exists. Let the paced farm claim that row when capacity
+permits; do not use the target-only `--apply` path or enqueue a sibling.
 
 This record does not authorize AutoTrading, `T_Live`, deploy/T_Live manifest
 changes, portfolio-gate changes, portfolio admission, a correlation waiver,
