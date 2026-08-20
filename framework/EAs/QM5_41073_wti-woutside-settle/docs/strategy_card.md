@@ -60,7 +60,7 @@ r3_data_available: PASS_WITH_ENERGY_LABEL_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 q01_build_report: D:/QM/reports/framework/21/build_check_20260820_180908.json
 q01_p1_evidence: D:/QM/reports/pipeline/QM5_41073/P1/P1_QM5_41073_result.json
 review_focus: "Falsify a direct-WTI weekly outside-settlement sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact Monday anchors, two consecutive completed weekly OHLC packages, 3-5 sessions each, strict outside range, own-week direction, settlement beyond the parent extreme, strict outer-quartile close, one attempt, and next-week exit. Q09 alone may establish realized decorrelation."
@@ -350,6 +350,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-20 | initial WTI completed-week outside-settlement card | G0 | APPROVED |
 | v1-build | 2026-08-20 | deterministic implementation, reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v1-q02-capacity | 2026-08-20 | target-only preview found one row; paced terminal ceiling already binding | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -357,7 +358,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-20 | APPROVED | `decisions/2026-08-20_qm5_41073_wti_weekly_outside_settlement_momentum_g0.md` |
 | Q01 Build Validation | 2026-08-20 | PASS | `D:/QM/reports/framework/21/build_check_20260820_180908.json`; `D:/QM/reports/pipeline/QM5_41073/P1/P1_QM5_41073_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-20 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-20_qm5_41073_wti_weekly_outside_settlement_q01_q02_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 
