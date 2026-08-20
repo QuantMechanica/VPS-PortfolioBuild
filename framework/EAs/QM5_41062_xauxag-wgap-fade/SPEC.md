@@ -92,3 +92,4 @@ grid, martingale, pyramid, target, trail, break-even move, or partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-20 | approved build-directory identity | source approval `fec22cf8d`; deterministic registry allocation |
+| v1-build | 2026-08-20 | deterministic V5 implementation | strict opposed-gap fade, 9-case reference suite, compile/build-check/P1 PASS |
