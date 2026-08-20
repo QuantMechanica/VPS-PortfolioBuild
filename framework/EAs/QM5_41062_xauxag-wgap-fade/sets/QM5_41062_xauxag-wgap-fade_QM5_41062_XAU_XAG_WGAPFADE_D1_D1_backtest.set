@@ -1,0 +1,46 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41062
+; ea_slug:      xauxag-wgap-fade
+; ea_version:   v5.0
+; set_version:  s20260820-001
+; symbol:       QM5_41062_XAU_XAG_WGAPFADE_D1
+; host_symbol:  XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   9bfae4c535caddb5cd9eb5660bf5d04e93787d5b9e547de12050d7c16e7f3c31
+; author:       Development
+; date:         2026-08-20
+;==========================================================
+qm_ea_id=41062
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Native synchronized price signal; both news axes are intentionally OFF.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+; Emergency only; ordinary package exit is the next synchronized D1 boundary.
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific locked baseline from the approved execution card
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41062_xauxag-wgap-fade_card.md
+strategy_xag_symbol=XAGUSD.DWX
+strategy_entry_dow=1
+strategy_prior_dow=5
+strategy_entry_grace_minutes=180
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.0
+strategy_notional_ratio=1.0
+strategy_max_notional_mismatch_pct=20.0
+strategy_max_hold_days=4
+strategy_xau_max_spread_points=1500
+strategy_xag_max_spread_points=500

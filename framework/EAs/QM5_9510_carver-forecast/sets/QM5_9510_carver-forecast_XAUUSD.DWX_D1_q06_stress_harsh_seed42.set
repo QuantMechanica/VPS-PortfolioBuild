@@ -3,7 +3,7 @@
 ; ea_id:        9510
 ; ea_slug:      carver-forecast
 ; ea_version:   v5.0
-; set_version:  s20260802-stress-harsh
+; set_version:  s20260820-stress-harsh
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   f17e82bc782e0f256a8a13dd56eeaac33c2d62817a23902c202a7e8348edf77f
 ; author:       Development
-; date:         2026-08-02
+; date:         2026-08-20
 ;==========================================================
 qm_ea_id=9510
 qm_magic_slot_offset=4

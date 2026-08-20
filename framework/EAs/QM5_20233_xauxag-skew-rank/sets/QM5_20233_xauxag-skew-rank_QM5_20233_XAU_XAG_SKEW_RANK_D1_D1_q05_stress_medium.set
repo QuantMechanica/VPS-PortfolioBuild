@@ -3,7 +3,7 @@
 ; ea_id:        20233
 ; ea_slug:      xauxag-skew-rank
 ; ea_version:   v5.0
-; set_version:  s20260819-stress-med
+; set_version:  s20260820-stress-med
 ; symbol:       QM5_20233_XAU_XAG_SKEW_RANK_D1
 ; host_symbol:  XAUUSD.DWX
 ; timeframe:    D1
@@ -13,7 +13,7 @@
 ; portfolio_weight: 1
 ; build_hash:   458924365d969f6c45027cbad4bac5bc8901573a28318bbe7be3dd9b7e41b77d
 ; author:       Development
-; date:         2026-08-19
+; date:         2026-08-20
 ;==========================================================
 qm_ea_id=20233
 qm_magic_slot_offset=0

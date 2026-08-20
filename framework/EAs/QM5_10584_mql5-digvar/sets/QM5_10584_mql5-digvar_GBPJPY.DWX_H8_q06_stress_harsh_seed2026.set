@@ -16,7 +16,7 @@
 ;==========================================================
 qm_ea_id=10584
 qm_magic_slot_offset=0
-qm_rng_seed=42
+qm_rng_seed=2026
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
