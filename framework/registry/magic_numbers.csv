@@ -17564,3 +17564,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41011,tokyo-london-bank-flow-handover,1,GBPJPY.DWX,410110001,2026-08-18,Gemini,active
 41011,tokyo-london-bank-flow-handover,2,USDJPY.DWX,410110002,2026-08-18,Gemini,active
 41061,wti-week-nr7-brk,0,XTIUSD.DWX,410610000,2026-08-18,Codex governed allocator,active
+41062,xauxag-wgap-fade,0,XAUUSD.DWX,410620000,2026-08-20T00:00:00Z,Codex governed allocator,active
+41062,xauxag-wgap-fade,1,XAGUSD.DWX,410620001,2026-08-20T00:00:00Z,Codex governed allocator,active
