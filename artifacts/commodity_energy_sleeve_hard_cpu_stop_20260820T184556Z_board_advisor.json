@@ -1,0 +1,49 @@
+{
+  "artifact_type": "commodity_energy_sleeve_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-20T18:45:56Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "d8fa33847",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "duplicate_preflight": {
+    "plain_gold_silver_ratio_reversion": "REJECT_ALREADY_BUILT",
+    "examples": [
+      "QM5_12577_cme-xauxag-ratio",
+      "QM5_12862_xauxag-rspread",
+      "QM5_20157_xau-xag-ratio",
+      "QM5_20161_xauxag-ols-rv",
+      "QM5_21526_xau-xag-cadf"
+    ],
+    "latest_direct_wti_identity_observed": "QM5_41073_wti-woutside-settle",
+    "replacement_edge_selected": false,
+    "formal_dedup_verdict": "NOT_RUN_CPU_STOP"
+  },
+  "capacity_sample": {
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "cpu_percent": [99.76, 99.95, 99.17, 100.00, 98.00],
+    "average_cpu_percent": 99.38,
+    "maximum_cpu_percent": 100.00,
+    "explicit_hard_ceiling_percent": 97.0,
+    "samples_at_or_above_ceiling": 5,
+    "ceiling_binding": true
+  },
+  "actions_this_run": {
+    "read_only_namespace_audit": true,
+    "new_source_approval_record_created": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "resolver_regeneration": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  }
+}
