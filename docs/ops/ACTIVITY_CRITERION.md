@@ -205,3 +205,30 @@ dokumentieren.**
 
 **Nichts davon ist ausgeführt.** Der Filter steht unverändert auf 250; dieses Dokument ist die
 Vorlage, nicht die Änderung.
+
+---
+
+## R · RATIFIZIERT — OWNER-Directive 2026-08-20 (schließt OQ-18)
+
+**Regel:** Ein Paar qualifiziert, wenn es in **jedem gewerteten Jahr mindestens 10 verschiedene
+Handelstage** aufweist. Die Verteilung innerhalb des Jahres ist ausdrücklich irrelevant — keine
+Monatsbedingung. Die 10 ist ein Mindestvolumen je Jahr, kein Rhythmusmaß.
+Quelle: OWNER-Directive 2026-08-20 §1 („absolute Untergrenze … Verteilung egal").
+
+**Zählbasis (festgelegt): Eröffnungstag.** Begründung: (1) Eröffnungen sind die Entscheidungen der
+Strategie selbst; Schlusstage sind Artefakte des Exit-Managements (SL/TP/Friday-Close können
+Schlusstage erzeugen oder verschmelzen). (2) Die Optimierungsspur (EXIT_SURGERY, Q14) verändert
+Exits — auf Schlusstag-Basis könnte eine Exit-Optimierung das Aktivitätskriterium bewegen, ohne
+dass sich die Signalfrequenz ändert. Eröffnungstag ist Goodhart-resistent gegen die eigene
+Optimierung. (3) Es ist zugleich die FTMO-Definition — eine Zählweise für OWNER-Regel und
+Venue-Prüfung. **Zahl je Basis (Bestandskohorte 31 Paare): Schlusstag 8 · Eröffnungstag 10.**
+
+**Teiljahre (VORSCHLAG, nicht gesetzt):** Anteilig mit Mindestabdeckung — ein Randjahr wird
+gewertet, wenn es ≥ 3 abgedeckte Monate hat, mit skalierter Anforderung
+`ceil(10 × abgedeckte_Monate / 12)` Handelstagen; unter 3 Monaten wird es ausgelassen.
+Begründung: nutzt alle Evidenz, ist startdatum-robust (volle Wertung eines Rumpfjahres würde
+qualifizierte Kandidaten je nach Startdatum aussortieren), und bleibt ein Volumenmaß im Geist der
+Regel (10/12 ≈ 0,83 Tage je Monat). **Kopplung Bug #4:** „Abgedeckt" beginnt am ersten Bar, an dem
+der EA handeln DARF — eine Filter-Warmlaufphase (lookbackBars) zählt nicht als Abdeckung. Damit
+kann weder das Startdatum noch ein Warmlauf einen Kandidaten disqualifizieren; unabhängig davon
+wird Bug #4 (Kurzhistorien-Sperre) vor jeder Integration behoben.
