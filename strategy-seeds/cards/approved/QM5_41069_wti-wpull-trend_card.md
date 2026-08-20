@@ -59,7 +59,7 @@ r3_data_available: PASS_WITH_ENERGY_LABEL_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 q01_build_report: D:/QM/reports/framework/21/build_check_20260820_134707.json
 q01_p1_evidence: D:/QM/reports/pipeline/QM5_41069/P1/P1_QM5_41069_result.json
 review_focus: "Falsify a direct-WTI completed-week pullback sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact Monday anchors, three completed week-end closes, two disjoint weekly returns, strict sign opposition, strict smaller newest magnitude, older-sign direction, one attempt, and next-week exit. Q09 alone may establish realized decorrelation."
@@ -342,6 +342,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-20 | initial WTI completed-week pullback trend card | G0 | APPROVED |
 | v1-build | 2026-08-20 | deterministic WTI implementation, equality-safe endpoint comparison, reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v1-q02-capacity | 2026-08-20 | target-only dry run selected one fresh row; apply withheld when host CPU crossed the 97% hard ceiling | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -349,7 +350,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-20 | APPROVED | `decisions/2026-08-20_qm5_41069_wti_weekly_pullback_trend_g0.md` |
 | Q01 Build Validation | 2026-08-20 | PASS | `D:/QM/reports/framework/21/build_check_20260820_134707.json`; `D:/QM/reports/pipeline/QM5_41069/P1/P1_QM5_41069_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-20 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-20_qm5_41069_wti_weekly_pullback_q01_q02_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 
