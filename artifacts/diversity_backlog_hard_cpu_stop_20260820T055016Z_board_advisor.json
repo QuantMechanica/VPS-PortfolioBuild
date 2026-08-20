@@ -1,0 +1,117 @@
+{
+  "artifact_type": "diversity_build_backlog_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-20T05:50:16.6830156Z",
+  "generated_at_local": "2026-08-20T07:50:16.6830156+02:00",
+  "branch": "agents/board-advisor",
+  "base_commit": "92586104589af5d1494d91f03db2c3e47110b731",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "capacity_sample": {
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "cpu_percent": [
+      100.0,
+      100.0,
+      99.81,
+      99.27,
+      99.28
+    ],
+    "average_cpu_percent": 99.67,
+    "maximum_cpu_percent": 100.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "running_factory_terminal_count": 8,
+    "process_selection": "path-anchored D:/QM/mt5/T<n>/terminal64.exe; T_Live excluded"
+  },
+  "farm_backlog_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "query_mode": "read_only",
+    "pending_build_task_count": 35,
+    "pending_distinct_ea_count": 34,
+    "pending_tasks_with_existing_mq5_in_ea_dir": 35,
+    "virgin_pending_build_tasks": 0,
+    "highest_scored_pending_task": {
+      "task_id": "155ee0bb-fcca-4516-abe1-3aa4dc896c8a",
+      "ea_id": "QM5_11735",
+      "slug": "rfs-psar-cci-ema-m5",
+      "priority_score": 18.15,
+      "diversity_component": 0.027,
+      "asset_class": "fx_major",
+      "mechanism": "momentum_trend",
+      "timeframe": "M5",
+      "existing_mq5": true,
+      "work_item_count": 0,
+      "not_selected_reason": "M5 indicator stack is not a low-frequency virgin build"
+    },
+    "qualified_diverse_existing_examples": [
+      {
+        "task_id": "eba2ee32-da67-477d-9cb7-7131b40c01ad",
+        "ea_id": "QM5_12599",
+        "slug": "wti-feb-prem",
+        "asset_class": "energy",
+        "mechanism": "seasonality",
+        "timeframe": "D1",
+        "existing_mq5": true,
+        "work_item_count": 3,
+        "claim_purpose": "approved_structural_low_frequency_wti_framework_rebuild_and_q02_handoff",
+        "state": "codex_review_rework; q02_enqueued=false"
+      },
+      {
+        "task_id": "ae61ab29-c83f-4cf3-a417-afffd6b2a25d",
+        "ea_id": "QM5_11294",
+        "slug": "cs-ichi-cloud",
+        "asset_class": "fx_major",
+        "mechanism": "momentum_trend",
+        "timeframe": "H4",
+        "existing_mq5": true,
+        "work_item_count": 30,
+        "claimed_by": "codex",
+        "state": "q01_build_passed=true; q02_enqueued=false; prior capacity defer"
+      }
+    ]
+  },
+  "collision_audit": {
+    "global_priority_candidates_skipped": [
+      {
+        "ea_id": "QM5_36005",
+        "slug": "nnfx-coral-trendlord-woodies-harvester",
+        "reason": "peer-agent untracked mq5/ex5/SPEC already present in shared worktree"
+      },
+      {
+        "ea_id": "QM5_30001",
+        "slug": "bollinger-bands-grid-waka-waka",
+        "reason": "peer-agent untracked mq5 already present in shared worktree"
+      }
+    ],
+    "farm_claim_written": false,
+    "reason": "No distinct build could be claimed safely before the binding CPU stop; leaving a stale claim would reduce fleet throughput."
+  },
+  "actions_this_run": {
+    "strategy_priority_read_only": true,
+    "farm_db_read_only": true,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "resolver_regeneration": false,
+    "compile_or_build_check": false,
+    "smoke_or_backtest_run": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  }
+}
