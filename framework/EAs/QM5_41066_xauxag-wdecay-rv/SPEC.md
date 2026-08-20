@@ -1,16 +1,16 @@
 # QM5_41066_xauxag-wdecay-rv - Strategy Spec
 
-EA ID: `QM5_41066`
+**EA ID:** QM5_41066
 
-Slug: `xauxag-wdecay-rv`
+**Slug:** `xauxag-wdecay-rv`
 
-Strategy ID: `SCHWEIKERT-CME-XAUXAG-WDECAY-RV-2026_S01`
+**Strategy ID:** `SCHWEIKERT-CME-XAUXAG-WDECAY-RV-2026_S01`
 
-Source: `SCHWEIKERT-CME-XAUXAG-WDECAY-RV-2026`
+**Source:** `SCHWEIKERT-CME-XAUXAG-WDECAY-RV-2026`
 
-Author: Codex
+**Author:** Codex
 
-Last revised: 2026-08-20
+**Last revised:** 2026-08-20
 
 ## 1. Strategy Logic
 
@@ -103,4 +103,4 @@ partial exit.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v0 | 2026-08-20 | approved build-directory identity | source approval `064e189bc`; deterministic registry allocation pending commit |
+| v1 | 2026-08-20 | approved build-directory identity | source approval `064e189bc`; registry `2475a7269`; magic/resolver `9b61b28c1` |
