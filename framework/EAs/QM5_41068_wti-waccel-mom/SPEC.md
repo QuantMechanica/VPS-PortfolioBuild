@@ -95,3 +95,4 @@ partial exit.
 |---|---|---|---|
 | v0 | 2026-08-20 | approved build-directory identity | source approval `b6c50e85f`; EA registry `17fb34638`; magic registry `574a9d70c` |
 | v1-card | 2026-08-20 | G0-approved execution contract | `strategy-seeds/cards/approved/QM5_41068_wti-waccel-mom_card.md` |
+| v1-build | 2026-08-20 | deterministic implementation and Q01 validation | 9-test reference suite; strict compile/build PASS; static P1 PASS |
