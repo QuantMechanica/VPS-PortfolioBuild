@@ -17567,3 +17567,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41062,xauxag-wgap-fade,0,XAUUSD.DWX,410620000,2026-08-20T00:00:00Z,Codex governed allocator,active
 41062,xauxag-wgap-fade,1,XAGUSD.DWX,410620001,2026-08-20T00:00:00Z,Codex governed allocator,active
 41063,xng-week-nr7-brk,0,XNGUSD.DWX,410630000,2026-08-20T00:00:00Z,Codex governed allocator,active
+41064,wti-mflip-mom,0,XTIUSD.DWX,410640000,2026-08-20T00:00:00Z,Codex governed allocator,active
