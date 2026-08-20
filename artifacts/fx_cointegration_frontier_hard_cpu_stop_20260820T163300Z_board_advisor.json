@@ -1,0 +1,170 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-20T16:33:00Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "4b1bfb7b8033d9752529dc87b378bf9508303644",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_state": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a80493291",
+    "new_card_or_ea_permitted": false,
+    "reason": "The durable sign-aware reconciliation covers every frozen-scan relationship; another pair Card or EA would duplicate governed work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "scan_rank": 21,
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "ea_id": "QM5_20203",
+    "slug": "eurusd-audjpy",
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "q02_work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+    "q02_status": "done",
+    "q02_verdict": "PASS",
+    "q04_work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+    "q04_status": "pending",
+    "q04_claimed_by": null,
+    "q04_attempt_count": 0,
+    "q04_exact_row_count": 1,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "artifact_sha256": {
+      "mq5": "d75788d24eadcff9c699a2f8964ab2cfd5ad924296b34df0b1d4a0a6853365cb",
+      "ex5": "4d57f2bc03a14ce0be3f7f18245adfff280955287cda5af1119d502d33d96270",
+      "basket_manifest": "2f5823242ae1b2a0592d9239969e22f31ac90234d909b3eee5e1d9c635b519a9",
+      "backtest_setfile": "dcac19dcd0882c24ba0c772b36e47c816c582d3f612b35445ce909bfc8e846d8",
+      "strategy_card": "f5f4b1d13ace14d69ca3249b77976503f025c229598f16693ace755ba8c0043d"
+    }
+  },
+  "capacity_sample": {
+    "observation_start_utc": "2026-08-20T16:32:54.6238216Z",
+    "observation_end_utc": "2026-08-20T16:33:00.0293518Z",
+    "sample_interval_seconds": 1,
+    "cpu_percent": [
+      99.418492,
+      98.446226,
+      100.0,
+      99.322927,
+      99.716579
+    ],
+    "average_cpu_percent": 99.380845,
+    "maximum_cpu_percent": 100.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "active_work_item_count": 8,
+    "active_work_items": [
+      {
+        "terminal": "T1",
+        "work_item_id": "84b89587-e983-43cd-b1cb-cb06430b388d",
+        "ea_id": "QM5_11179",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T2",
+        "work_item_id": "1c59aaf8-284a-48d7-84e9-81dd30150403",
+        "ea_id": "QM5_20234",
+        "phase": "Q04",
+        "symbol": "QM5_20234_XAU_XAG_RSJ_D1"
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "5e8e260e-9930-41d4-826a-0475cb6aa009",
+        "ea_id": "QM5_10248",
+        "phase": "Q07",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "48832f6c-fa7f-4681-a4dc-87bcd1a77282",
+        "ea_id": "QM5_41070",
+        "phase": "Q04",
+        "symbol": "XTIUSD.DWX"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "7e08fc5e-52ac-4754-96cd-bf5cba2d108c",
+        "ea_id": "QM5_10571",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "32223428-0850-41a9-8342-2b5cdebf48c5",
+        "ea_id": "QM5_12365",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "1fac7d82-8884-468c-ad6a-bab54fe3b2f8",
+        "ea_id": "QM5_20188",
+        "phase": "Q07",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "10ee40e0-3351-4f6d-8e76-00e0b9cfc22e",
+        "ea_id": "QM5_41071",
+        "phase": "Q04",
+        "symbol": "XTIUSD.DWX"
+      }
+    ]
+  },
+  "database_check": {
+    "path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "read_only_uri",
+    "quick_check": "ok"
+  },
+  "non_duplicate_delta": {
+    "previous_same_mission_evidence_commit": "c85939167",
+    "previous_same_mission_observation_utc": "2026-08-20T15:48:43Z",
+    "current_observation_utc": "2026-08-20T16:33:00Z",
+    "elapsed_minutes_since_previous_same_mission_observation": 44.3,
+    "previous_active_work_item_count": 6,
+    "current_active_work_item_count": 8,
+    "new_queue_row_created": false,
+    "existing_queue_row_mutated": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The frozen scan is exhausted, the selected successor already exists exactly once, and the explicit CPU ceiling is binding."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
