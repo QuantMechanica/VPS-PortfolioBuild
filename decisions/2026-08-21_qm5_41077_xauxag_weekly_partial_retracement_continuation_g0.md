@@ -17,16 +17,17 @@ Approved card:
 - slug: `xauxag-wretr-rv`
 - strategy ID: `SCHWEIKERT-CME-XAUXAG-WRETR-RV-2026_S01`
 - source approval commit: `c1f1182c1`
-- magic allocation: pending before build
-- host: exact `XAUUSD.DWX`, D1, slot 0, intended magic `410770000`
-- companion: exact `XAGUSD.DWX`, D1, slot 1, intended magic `410770001`
+- magic allocation commit: `d25a853e2`
+- host: exact `XAUUSD.DWX`, D1, slot 0, active magic `410770000`
+- companion: exact `XAGUSD.DWX`, D1, slot 1, active magic `410770001`
 - logical symbol: `QM5_41077_XAU_XAG_WRETR_RV_D1`
 - mechanic: strict opposite signs and strict smaller newest magnitude between
   two adjacent completed weekly gold-minus-silver returns, following the
   newest partial retracement for one week
 
-The build remains blocked until active slot-zero and slot-one rows exist and
-the canonical resolver retains both rows.
+The governed allocation satisfied the build condition at `d25a853e2` by
+creating active slot-zero and slot-one rows and regenerating the resolver
+without dropping either row.
 
 ## Gate Findings
 
