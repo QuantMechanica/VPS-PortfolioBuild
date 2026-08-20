@@ -1,0 +1,193 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-20T07:05:31+00:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "2660f6132590486ef89ef070676141bb1f41dd56",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_state": {
+    "scan": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "scan_script_sha256": "870e3c67d7c05a75f62ab9e89d421dd94d337288f5c623395cafcf03300433d6",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a80493291",
+    "new_card_or_ea_permitted": false,
+    "reason": "The durable sign-aware reconciliation covers every frozen-scan relationship; another pair Card or EA would duplicate governed work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "selection_reason": "No unbuilt frozen-scan relationship remains; rank 21 is the highest-ranked exact relationship still awaiting its next economic verdict.",
+    "scan_rank": 21,
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "ea_id": "QM5_20203",
+    "slug": "eurusd-audjpy",
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20203_eurusd-audjpy_card.md",
+    "approved_card_sha256": "d2d842c492a5180c5736b91304cc971b56ebea8dc59a732c8aac026c61090900",
+    "g0_status": "APPROVED",
+    "ml_required": false,
+    "mq5_sha256": "d75788d24eadcff9c699a2f8964ab2cfd5ad924296b34df0b1d4a0a6853365cb",
+    "ex5_sha256": "4d57f2bc03a14ce0be3f7f18245adfff280955287cda5af1119d502d33d96270",
+    "basket_manifest": "framework/EAs/QM5_20203_eurusd-audjpy/basket_manifest.json",
+    "basket_manifest_sha256": "2f5823242ae1b2a0592d9239969e22f31ac90234d909b3eee5e1d9c635b519a9",
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "AUDUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "fixed_risk_setfile": "framework/EAs/QM5_20203_eurusd-audjpy/sets/QM5_20203_eurusd-audjpy_QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+    "fixed_risk_setfile_sha256": "dcac19dcd0882c24ba0c772b36e47c816c582d3f612b35445ce909bfc8e846d8",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "q02": {
+      "work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 0,
+      "claimed_by": null,
+      "updated_at_utc": "2026-08-15T23:46:58+00:00",
+      "exact_logical_q04_row_count": 1,
+      "duplicate_enqueue_or_requeue_performed": false
+    }
+  },
+  "validation": {
+    "card_schema_lint": "PASS",
+    "card_schema_ml_hits": [],
+    "symbol_scope": "BASKET_OK",
+    "symbol_scope_violations": 0,
+    "fx_basket_manifest_tests": {
+      "passed": 45,
+      "failed": 0
+    }
+  },
+  "capacity_sample": {
+    "operator_scan_at_utc": "2026-08-20T07:05:31+00:00",
+    "preliminary_cpu_window": {
+      "start_utc": "2026-08-20T07:02:38.2903732Z",
+      "end_utc": "2026-08-20T07:02:48.6323709Z",
+      "cpu_percent": [
+        92.69,
+        95.71,
+        92.29,
+        95.42,
+        94.88
+      ],
+      "average_cpu_percent": 94.198,
+      "maximum_cpu_percent": 95.71,
+      "ceiling_binding": false
+    },
+    "binding_cpu_window": {
+      "start_utc": "2026-08-20T07:05:03.7343134Z",
+      "end_utc": "2026-08-20T07:05:14.6400728Z",
+      "cpu_percent": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ],
+      "average_cpu_percent": 100.0,
+      "maximum_cpu_percent": 100.0,
+      "explicit_hard_ceiling_percent": 97.0,
+      "ceiling_binding": true
+    },
+    "paced_launch_gate_max": 1,
+    "factory_off_flag_present": false,
+    "running_factory_terminal_count": 7,
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T8"
+    ],
+    "active_database_work_item_count": 7,
+    "active_multisymbol_work_item": {
+      "terminal": "T5",
+      "work_item_id": "f3a54ce0-6424-4370-b420-02df3f368d70",
+      "ea_id": "QM5_20233",
+      "phase": "Q05",
+      "symbol": "QM5_20233_XAU_XAG_SKEW_RANK_D1",
+      "portfolio_scope": "basket",
+      "basket_symbols": [
+        "XAUUSD.DWX",
+        "XAGUSD.DWX"
+      ]
+    },
+    "multisymbol_serialization_binding": true,
+    "orphaned_factory_terminal_processes": [],
+    "t_live_and_unrelated_ftmo_observed_only": true,
+    "terminal_reconciliation_or_control_performed": false
+  },
+  "non_duplicate_delta_from_20260820T060342Z": {
+    "previous_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T5",
+      "T6",
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T8"
+    ],
+    "current_active_multisymbol_ea": "QM5_20233",
+    "selected_pair_state_changed": false,
+    "ceiling_remains_binding": true
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The frontier is exhausted, the selected exact Q04 successor already exists once, another basket is active, and the explicit CPU ceiling is binding."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
