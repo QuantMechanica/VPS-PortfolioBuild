@@ -1,0 +1,118 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-20T04:34:00.8626125+00:00",
+  "generated_at_local": "2026-08-20T06:34:00.8710391+02:00",
+  "branch": "agents/board-advisor",
+  "base_commit": "9ae4a413429c08d783c716793167c6d9da241006",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_state": {
+    "scan": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "scan_script_sha256": "870e3c67d7c05a75f62ab9e89d421dd94d337288f5c623395cafcf03300433d6",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a80493291",
+    "new_card_or_ea_permitted": false,
+    "reason": "Every frozen-scan relationship already maps to governed work; another pair Card or EA would be a duplicate."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "selection_reason": "No unbuilt frozen-scan relationship remains; rank 21 is the highest-ranked exact pair still awaiting its next economic verdict.",
+    "scan_rank": 21,
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "ea_id": "QM5_20203",
+    "slug": "eurusd-audjpy",
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20203_eurusd-audjpy_card.md",
+    "g0_status": "APPROVED",
+    "ml_required": false,
+    "basket_manifest": "framework/EAs/QM5_20203_eurusd-audjpy/basket_manifest.json",
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "AUDUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "fixed_risk_setfile": "framework/EAs/QM5_20203_eurusd-audjpy/sets/QM5_20203_eurusd-audjpy_QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "q02": {
+      "work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "duplicate_enqueue_or_requeue_performed": false
+    }
+  },
+  "capacity_sample": {
+    "operator_scan_at_utc": "2026-08-20T04:32:38+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "running_factory_terminal_count": 7,
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "cpu_percent": [
+      99.66,
+      99.86,
+      100.0,
+      100.0,
+      99.95
+    ],
+    "average_cpu_percent": 99.89,
+    "maximum_cpu_percent": 100.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "t_live_and_unrelated_ftmo_observed_only": true,
+    "terminal_reconciliation_or_control_performed": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The frontier is exhausted, the selected existing pair already has one exact pending Q04 row, and the explicit host-CPU ceiling is binding."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
