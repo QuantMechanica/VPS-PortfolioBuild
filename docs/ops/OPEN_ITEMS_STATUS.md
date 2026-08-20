@@ -1,6 +1,6 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
-**Stand:** 2026-08-19 20:00 UTC · Stehende Vollmacht §6 (wird jedem Bericht beigefügt)
+**Stand:** 2026-08-20 06:05 UTC · Stehende Vollmacht §6 (wird jedem Bericht beigefügt)
 **Eine Zeile je Punkt. „Geliefert" heißt: Ergebnis steht in einem Dokument und wurde berichtet.**
 
 ---
@@ -28,6 +28,8 @@
 | Q14 §4.3 | Q09-Zerlegung | 197 s Fixkosten je Testerlauf + 0,343 s/Kalendertag; Datumsfenster-Weg scheitert um eine Größenordnung (`Q09_ACCELERATION.md`) |
 | Q14 §4.5 | Schätzfehler | Faktor 7 gegen die Evidenzdoku; Zellzeit ist auslastungsabhängig (`Q09_ACCELERATION.md`) |
 | Dir. §1 | Verkettungstest | Max-DD exakt rekonstruierbar (17.072,73 beidseitig), Restfehler 0,58 % im Nettogewinn (`Q09_ACCELERATION.md` §7) |
+| R9 §1 / Dir. 20.08. | Aktivitätsregel ratifiziert | ≥10 Handelstage je gewertetem Jahr, Zählbasis **Eröffnungstag** (begründet), Teiljahres-Pro-rata als Vorschlag beim OWNER; Zählungen 8 (Schluss) / 10 (Eröffnung) auf der 31er-Kohorte (`ACTIVITY_CRITERION.md` §R) |
+| eigener Plan #3 | Commit-Nachtzeitreihe | Nachtserie vollständig: Peak 108,2/122,6 GB 05:18 UTC bei 3,8 GB phys. frei; Admissions-Gate feuerte korrekt (Reservierungs-Logs aller Worker) — Decke wird durch **In-Flight-Wachstum** erreicht, nicht durch blinde Claims; Pagefile C: zu 97 % voll, C: nur 44 GB frei → Decken-Anhebung braucht D:-Pagefile + Reboot (Wartungsfenster-Vorlage) (`D:\QMeports\state\commit_sampler.log`, `commit_wave_snapshot_20260820_0553utc.txt`) |
 | Dir. §2 | Seed-Sensitivität | **40 Zellen sind 8 Konfigurationen**; der RNG wird in Q09 nie gezogen (`SEED_SENSITIVITY.md`) |
 | Dir. §1 | Kontaminationsprüfung | Timeout-Verluste 0,24–1,4 %, verschieben jede Quote < 0,5 pp, und zwar **entlastend** — die Befunde halten |
 | Vollm. §8.2 | Hyonix sichern | Zip 65,2 MB, 2.742 Einträge, SHA256 `722FC306…`, off-host auf `G:\My Drive\QM_Backups\` mit Hash-Sidecar |
@@ -40,7 +42,6 @@
 
 | aus | Punkt | warum noch offen |
 |---|---|---|
-| **R9 §1** | Aktivitätsregel ratifizieren: Zählbasis (Schluss- vs. Eröffnungstag), Teiljahre | reine Schreibarbeit, verdrängt von P0-Messungen |
 | **R9 §3** | `BOOK_CONSTRUCTION_RULES.md`: Symbol-/Klassengrenze, Stapelblindheit, Mindesthistorie | braucht die Mindesthistorie aus der Fensterlogik — rechenbar, nicht gerechnet |
 | **R9 §5.1** | Watchdog-Schwelle (`MinWorkers = 8` heilt zu spät) | Vorschlag formulierbar, nicht formuliert |
 | **R9 §5.2** | SQLite-Lock-Auffanglinie (OQ-22) | Diff nicht geschrieben |
@@ -57,6 +58,7 @@
 | **Dir. §2** | Ursachenanalyse: korreliert `q02_full_runtime_sec` mit der Auslastung? | die Claim-Zeitstempel liegen vor |
 | **Dir. §3** | Timeout → Requeue: Diff + 3 retrospektive Zeilen | Prinzip freigegeben, Diff offen |
 | **aktuell** | `WALLCLOCK_CONSTANTS.md` | Belege vollständig, Dokument nicht geschrieben |
+| **aktuell** | REVIEW-Rückstau: 110 agent_tasks (≈60 build_ea/agy, ≈50 review_ea/codex, seit 17./18.08.) | Batch-Review eingeplant; Intake ist nicht der Engpass (Queue-Ende ≈ 26.–28.08.), aber der Stau verletzt die Review-SLA |
 
 ## 3 · Entfallen
 
