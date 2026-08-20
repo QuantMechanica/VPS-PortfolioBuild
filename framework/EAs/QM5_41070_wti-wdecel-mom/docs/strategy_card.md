@@ -59,7 +59,7 @@ r3_data_available: PASS_WITH_ENERGY_LABEL_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 q01_build_report: D:/QM/reports/framework/21/build_check_20260820_142753.json
 q01_p1_evidence: D:/QM/reports/pipeline/QM5_41070/P1/P1_QM5_41070_result.json
 review_focus: "Falsify a direct-WTI weekly deceleration sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact Monday anchors, three completed week-end closes, two disjoint weekly returns, strict common sign, strict newest-magnitude deceleration, shared-sign direction, one attempt, and next-week exit. Q09 alone may establish realized decorrelation."
@@ -335,6 +335,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-20 | initial WTI completed-week deceleration-momentum card | G0 | APPROVED |
 | v1-build | 2026-08-20 | deterministic WTI implementation, reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v1-q02-capacity | 2026-08-20 | target-only dry run selected one fresh row; apply withheld at eight active research terminals and 99.99% average host CPU | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -342,7 +343,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-20 | APPROVED | `decisions/2026-08-20_qm5_41070_wti_weekly_deceleration_momentum_g0.md` |
 | Q01 Build Validation | 2026-08-20 | PASS | `D:/QM/reports/framework/21/build_check_20260820_142753.json`; `D:/QM/reports/pipeline/QM5_41070/P1/P1_QM5_41070_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-20 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-20_qm5_41070_wti_weekly_deceleration_q01_q02_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 
