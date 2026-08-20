@@ -100,3 +100,4 @@ partial exit.
 | v0 | 2026-08-20 | approved build-directory identity | source approval `c0fe1591d`; deterministic registry reservation in the commit containing this spec |
 | v1-card | 2026-08-20 | G0-approved execution contract | `strategy-seeds/cards/approved/QM5_41074_wti-wstreak3-mom_card.md` |
 | v1-build | 2026-08-20 | deterministic implementation and Q01 validation | 11-test reference suite; strict compile/build PASS; static P1 PASS |
+| v1-q02-capacity | 2026-08-20 | paced Q02 admission check | one target baseline eligible; not enqueued because sampled host CPU exceeded the 97% ceiling |
