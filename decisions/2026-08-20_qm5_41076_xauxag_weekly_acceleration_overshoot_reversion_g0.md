@@ -17,7 +17,7 @@ Approved card:
 - slug: `xauxag-waccel-rv`
 - strategy ID: `SCHWEIKERT-CME-XAUXAG-WACCEL-RV-2026_S01`
 - source approval commit: `9d8585d00`
-- magic allocation: pending before build
+- magic allocation commit: `1ca20ca8c`
 - host: exact `XAUUSD.DWX`, D1, slot 0, active magic `410760000`
 - companion: exact `XAGUSD.DWX`, D1, slot 1, active magic `410760001`
 - logical symbol: `QM5_41076_XAU_XAG_WACCEL_RV_D1`
@@ -25,8 +25,9 @@ Approved card:
   between two adjacent completed weekly gold-minus-silver returns, with the
   shared accelerating direction faded for one week
 
-The build remains blocked until active slot-zero and slot-one rows exist and
-the canonical resolver retains both rows.
+The governed allocation satisfied the build condition at `1ca20ca8c` by
+creating active slot-zero and slot-one rows and regenerating the resolver
+without dropping either row.
 
 ## Gate Findings
 

@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_41076_XAU_XAG_WACCEL_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg completed-week gold/silver acceleration-overshoot reversion package. Q02 must evaluate combined package PnL, paired costs, density, and later Q09 correlation; neither leg is a standalone strategy.",
+    "The EA uses three synchronized completed week-end close pairs, fades two same-sign relative returns only when the newest absolute move is strictly larger, targets equal absolute USD notionals, and caps aggregate frozen-stop risk at one RISK_FIXED budget."
+  ]
+}

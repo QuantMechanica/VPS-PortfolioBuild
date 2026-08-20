@@ -105,3 +105,4 @@ partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-20 | approved build-directory identity | source approval `9d8585d00`; EA ID allocated deterministically as QM5_41076 |
+| v2 | 2026-08-20 | Q01 build complete | deterministic paired EA; 9 reference tests; strict compile/build and static P1 PASS |
