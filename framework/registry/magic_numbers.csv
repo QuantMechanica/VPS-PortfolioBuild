@@ -17578,3 +17578,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41071,wti-wresume-dom,0,XTIUSD.DWX,410710000,2026-08-20T00:00:00Z,Codex governed allocator,active
 41072,wti-wcounter-dom,0,XTIUSD.DWX,410720000,2026-08-20T00:00:00Z,Codex governed allocator,active
 41073,wti-woutside-settle,0,XTIUSD.DWX,410730000,2026-08-20T00:00:00Z,Codex governed allocator,active
+41074,wti-wstreak3-mom,0,XTIUSD.DWX,410740000,2026-08-20T00:00:00Z,Codex governed allocator,active
