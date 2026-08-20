@@ -65,7 +65,7 @@ r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 q01_build_report: D:/QM/reports/framework/21/build_check_20260820_105857.json
 q01_p1_evidence: D:/QM/reports/pipeline/QM5_41066/P1/P1_QM5_41066_result.json
 review_focus: "Falsify a completed-week gold/silver relative deceleration fade outside the certified XAU/SP500/NDX/XNG book. Verify exact synchronized week ends, chronological non-overlapping returns, strict same sign, strict magnitude decay, inverse sides, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
@@ -376,6 +376,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-20 | initial completed-week XAU/XAG deceleration-reversion card | G0 | APPROVED |
 | v1-build | 2026-08-20 | deterministic paired implementation, reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v1-q02-capacity | 2026-08-20 | target-only dry run selected one fresh row; apply withheld at 98.34% average host CPU | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -383,7 +384,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-20 | APPROVED | `decisions/2026-08-20_qm5_41066_xauxag_weekly_deceleration_reversion_g0.md` |
 | Q01 Build Validation | 2026-08-20 | PASS | `D:/QM/reports/framework/21/build_check_20260820_105857.json`; `D:/QM/reports/pipeline/QM5_41066/P1/P1_QM5_41066_result.json` |
-| Q02 Baseline Screening | - | NOT ENQUEUED | fresh capacity check required |
+| Q02 Baseline Screening | 2026-08-20 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-20_qm5_41066_xauxag_weekly_deceleration_reversion_q01_q02_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 

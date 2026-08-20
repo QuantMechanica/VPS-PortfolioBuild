@@ -105,3 +105,4 @@ partial exit.
 |---|---|---|---|
 | v1 | 2026-08-20 | approved build-directory identity | source approval `064e189bc`; registry `2475a7269`; magic/resolver `9b61b28c1` |
 | v2 | 2026-08-20 | Q01 deterministic build | reference suite PASS; strict compile/build check and static P1 artifact validation PASS |
+| v3 | 2026-08-20 | Q02 paced capacity stop | target-only dry run selected one row; enqueue withheld at 98.34% average host CPU |
