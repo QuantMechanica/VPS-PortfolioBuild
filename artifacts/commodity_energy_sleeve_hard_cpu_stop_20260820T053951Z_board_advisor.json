@@ -1,0 +1,70 @@
+{
+  "artifact_type": "commodity_energy_sleeve_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-20T05:39:51.9310441Z",
+  "generated_at_local": "2026-08-20T07:39:51.9348465+02:00",
+  "branch": "agents/board-advisor",
+  "base_commit": "f8081378e5724a0eabafeef4a6ae0133186d202c",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "candidate_preflight": {
+    "candidate": "MISHRA-SMYTH-XNG-1W-2016_S03",
+    "working_slug": "xng-1w-sign-contr",
+    "carrier": "XNGUSD.DWX",
+    "period": "D1",
+    "mechanic": "fixed-complete-week single-symbol time-series sign contrarian with weekly renewal and Friday-flat lifecycle",
+    "source_packet": "strategy-seeds/sources/MISHRA-SMYTH-XNG-PRED-2016/source.md",
+    "source_quality": "peer-reviewed Economic Modelling paper with DOI, university record, and repository-recorded complete 36-page author-manuscript review",
+    "source_router": {
+      "url": "https://doi.org/10.1016/j.econmod.2015.12.034",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter": "generic",
+      "adapter_state": "ROUTER_ONLY",
+      "alternate_retrieval_attempted": false
+    },
+    "non_duplicate_boundary": [
+      "QM5_12567 is a long-only two-day cumulative-RSI pullback aligned to a slow trend, not a symmetric weekly sign fade.",
+      "QM5_13102 admits only thresholded high-volatility five-D1 shocks and uses a normalization exit; this candidate is unconditional and fixed-horizon.",
+      "QM5_21504 admits only high tick-volume weeks; this candidate has no volume state.",
+      "QM5_1132 is a cross-sectional 37-market high-volume winner/loser selection, not a standalone XNG time-series package.",
+      "QM5_20054 and QM5_20013 use one- and two-month endpoint states, not exact completed-week renewal."
+    ],
+    "formal_dedup_verdict": "NOT_RUN_CPU_STOP",
+    "source_approval_addendum_created": false,
+    "card_created": false,
+    "g0_approved": false,
+    "ea_id_allocated": false,
+    "replacement_edge_selected_for_build": false
+  },
+  "capacity_sample": {
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "cpu_percent": [99.80, 96.29, 99.90, 100.00, 99.95],
+    "average_cpu_percent": 99.19,
+    "maximum_cpu_percent": 100.00,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "running_factory_terminals": ["T2", "T3", "T6", "T10"],
+    "running_factory_terminal_count": 4,
+    "process_selection": "path-anchored D:/QM/mt5/T<n>/terminal64.exe with T_Live excluded"
+  },
+  "actions_this_run": {
+    "source_router_check": true,
+    "semantic_family_preflight": true,
+    "new_source_approval_record_created": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "resolver_regeneration": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  }
+}
