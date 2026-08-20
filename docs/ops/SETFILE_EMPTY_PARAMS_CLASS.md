@@ -53,6 +53,19 @@ Ampel: **(a) ist reguläre Fabrikarbeit** (Build-Lane, Survivor-Port-Prozess) �
 Auffangregel-fähig eingestuft (reversibel: Build-Task stornierbar, keine Gate-Logik
 berührt). (b)/(c) sind OWNER-Präferenzfragen.
 
+## 3a · KORREKTUR 05:30 UTC — die Mauer ist schmaler als der Zensus
+
+**QM5_10114 (parameterlos, `not_found`) hat Q08-8.5 BESTANDEN** (Verdikt FAIL_SOFT via
+PBO/LOW_SAMPLE, 8.5 = PASS; Polster 80×, MC-DD 3,3 %, 37 Trades). Das Prädikat „keine
+`strategy_*`-Schlüssel ⇒ 8.5-INVALID" ist damit **widerlegt**. Der wahre Auslöser bei
+10771/11132 ist ein Defekt in der **Nachbarschafts-Evidenz-Lineage** (vermutlich
+Q03-Plateau-Herkunft), nicht die leere Parameterliste allein — 8.5 kann Nachbarschaft
+offenbar aus der Plateau-Lineage beziehen. Die 1.557-EA-Exposition aus §2 ist eine
+**Obergrenze**, die tatsächliche Mauer-Population ist unbekannt und vermutlich deutlich
+kleiner. Die Survivor-Port-Empfehlung (a) bleibt für die konkreten INVALID-Fälle richtig,
+ihre Dringlichkeit sinkt; vor jedem proaktiven Port (b) steht jetzt zwingend die
+Lineage-Analyse: **was unterscheidet 10771/11132 von 10114?**
+
 ## 4 · Nebenbefund fürs Protokoll
 
 Der Zeilenzahl-Zensus der ersten Iteration (≤20 Zeilen ⇒ defekt) war das falsche
