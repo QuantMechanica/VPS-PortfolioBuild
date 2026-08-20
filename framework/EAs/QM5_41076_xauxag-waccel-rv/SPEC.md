@@ -106,3 +106,4 @@ partial exit.
 |---|---|---|---|
 | v1 | 2026-08-20 | approved build-directory identity | source approval `9d8585d00`; EA ID allocated deterministically as QM5_41076 |
 | v2 | 2026-08-20 | Q01 build complete | deterministic paired EA; 9 reference tests; strict compile/build and static P1 PASS |
+| v3 | 2026-08-20 | Q02 capacity stop | dry-run selected one target row, but eight governed research terminals exceeded the paced ceiling of seven; no enqueue or tester mutation |

@@ -1,0 +1,90 @@
+{
+  "artifact_type": "qm5_41076_q02_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-20T21:45:34Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "366a8cafd",
+  "ea_id": "QM5_41076",
+  "ea_label": "QM5_41076_xauxag-waccel-rv",
+  "mission_outcome": "Q01_PASS_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "strategy_identity": {
+    "logical_symbol": "QM5_41076_XAU_XAG_WACCEL_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "mechanic": "same-sign adjacent completed-week XAU-minus-XAG relative-return acceleration overshoot fade",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "governance_commits": [
+    "9d8585d00",
+    "bfabac2e1",
+    "567040b36",
+    "1ca20ca8c",
+    "366a8cafd"
+  ],
+  "q01_evidence": {
+    "reference_test_count": 9,
+    "reference_tests_passed": true,
+    "card_schema_lint_passed": true,
+    "strict_compile_errors": 0,
+    "strict_compile_warnings": 0,
+    "targeted_build_check": "PASS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260820_214352.json",
+    "build_check_report_sha256": "BF159B326FE1E28F1BF1878FF596F7BBAAE4E210FDA94BFB823879D41C5192EF",
+    "static_p1_validation": "PASS",
+    "p1_report": "D:/QM/reports/pipeline/QM5_41076/P1/P1_QM5_41076_result.json",
+    "p1_report_sha256": "B0CBFFD7964D6321DCD0ABE20CA198CD130ECD4CEBE67F865FE9415322868801",
+    "mq5_sha256": "75799C462F16684DE24A8C6C9FDDAFFDDB31BCF34F248F06B340055524B8BB75",
+    "ex5_sha256": "4B071D824CC68942EACB927D08077C7393CF8FDFF5F8C1CA5E8261EEA388AB5D",
+    "setfile_bytes_sha256": "0B8B137E0427960DD269FB67398A5A47743D5A3706C65C41275B61EA5418A410",
+    "setfile_normalized_build_hash": "8e11b27171efcb67543831579d93815c6fe2344310e783b8cc40c8d5ef419204",
+    "basket_manifest_sha256": "069B23656F0604BC24636C37D683E3D7021E6D402F9E9759F82BC3BE757CEC0B",
+    "reference_test_sha256": "749637209B199CE198F87FEEDF66694E1E16560A8AF7CEFF06B5FF5EBD56FF31"
+  },
+  "farm_db_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "query_mode": "read_only_via_farmctl_work_items",
+    "work_item_count": 0,
+    "collision_decision": "no_existing_row_but_capacity_stop_forbids_enqueue"
+  },
+  "target_only_enqueue_dry_run": {
+    "command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_41076 --max-part2-per-run 0",
+    "apply": false,
+    "never_tested_selected": 1,
+    "never_tested_skipped": 0,
+    "priority_track_items": 1,
+    "evidence": "D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json"
+  },
+  "capacity_sample": {
+    "slot_inventory_at_utc": "2026-08-20T21:45:34+00:00",
+    "running_factory_terminals": ["T1", "T2", "T3", "T5", "T6", "T7", "T8", "T10"],
+    "running_factory_terminal_count": 8,
+    "paced_terminal_ceiling": 7,
+    "terminal_ceiling_binding": true,
+    "whole_host_cpu_probe": "NOT_RUN_TERMINAL_CEILING_ALREADY_BINDING",
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "process_selection": "farmctl mt5-slots; governed D:/QM/mt5/T<n>/terminal64.exe only; T_Live and FTMO excluded"
+  },
+  "actions_this_run": {
+    "farm_db_read_only": true,
+    "new_source_approval_created": true,
+    "new_card_or_ea_created": true,
+    "registry_mutation": true,
+    "resolver_regeneration": true,
+    "compile_or_build_check": true,
+    "reference_tests_run": true,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "smoke_tester_or_backtest_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  }
+}
