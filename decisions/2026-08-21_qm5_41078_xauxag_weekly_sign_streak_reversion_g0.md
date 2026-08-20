@@ -17,14 +17,16 @@ Approved card:
 - slug: `xauxag-wstreak3-rv`
 - strategy ID: `SCHWEIKERT-CME-XAUXAG-WSTREAK3-RV-2026_S01`
 - source approval commit: `83ec155ac`
-- intended host: exact `XAUUSD.DWX`, D1, slot 0, magic `410780000`
-- intended companion: exact `XAGUSD.DWX`, D1, slot 1, magic `410780001`
+- magic allocation commit: `319d1c7fd`
+- host: exact `XAUUSD.DWX`, D1, slot 0, active magic `410780000`
+- companion: exact `XAGUSD.DWX`, D1, slot 1, active magic `410780001`
 - logical symbol: `QM5_41078_XAU_XAG_WSTREAK3_RV_D1`
 - mechanic: fade the first completion of three strict same-sign weekly gold-
   minus-silver returns after one strict opposite predecessor, for one week
 
-Active slot-zero and slot-one magic allocation plus resolver regeneration are
-mandatory before Development invokes the build skill.
+The governed allocation satisfied the build condition at `319d1c7fd` by
+creating active slot-zero and slot-one rows and regenerating the resolver
+without dropping either row.
 
 ## Gate Findings
 
