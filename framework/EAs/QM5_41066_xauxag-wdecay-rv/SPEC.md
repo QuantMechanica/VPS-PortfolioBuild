@@ -32,7 +32,7 @@ shares one fixed-risk budget, and carries frozen per-leg ATR hard stops.
 | Parameter | Value | Meaning |
 |---|---:|---|
 | `strategy_entry_grace_minutes` | 180 | first-week-bar execution window |
-| `strategy_history_bars` | 30 | bounded D1 week-end buffer |
+| `strategy_history_bars_d1` | 30 | bounded D1 week-end buffer |
 | `strategy_atr_period_d1` | 20 | completed-bar per-leg risk range |
 | `strategy_atr_sl_mult` | 3.5 | frozen hard-stop distance |
 | `strategy_notional_ratio` | 1.0 | equal absolute entry notional target |
@@ -104,3 +104,4 @@ partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-20 | approved build-directory identity | source approval `064e189bc`; registry `2475a7269`; magic/resolver `9b61b28c1` |
+| v2 | 2026-08-20 | Q01 deterministic build | reference suite PASS; strict compile/build check and static P1 artifact validation PASS |
