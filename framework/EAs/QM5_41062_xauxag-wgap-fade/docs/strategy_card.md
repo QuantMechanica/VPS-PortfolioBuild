@@ -70,7 +70,7 @@ r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 q01_build_report: D:/QM/reports/framework/21/build_check_20260820_065321.json
 q01_p1_evidence: D:/QM/reports/pipeline/QM5_41062/P1/P1_QM5_41062_result.json
 review_focus: "Falsify a one-session gold/silver opposed-weekend-gap ratio fade outside the certified XAU/SP500/NDX/XNG book. Verify exact synchronized Friday/Monday endpoints, current-open-only chronology, strict component opposition, two-sided fade mapping, durable Monday attempt, aggregate fixed risk, atomic basket repair, and next-D1 lifecycle. Q09 alone may establish realized decorrelation."
@@ -355,6 +355,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-20 | initial opposed-weekend-gap XAU/XAG card | G0 | APPROVED |
 | v1-build | 2026-08-20 | deterministic basket implementation, reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v1-queue | 2026-08-20 | one paced Q02 work item was present; duplicate apply was skipped and the operator stopped at the hard host-CPU ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -362,7 +363,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-20 | APPROVED | `decisions/2026-08-20_qm5_41062_xauxag_opposed_weekend_gap_fade_g0.md` |
 | Q01 Build Validation | 2026-08-20 | PASS | `D:/QM/reports/framework/21/build_check_20260820_065321.json`; `D:/QM/reports/pipeline/QM5_41062/P1/P1_QM5_41062_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-20 | ENQUEUED; pending and unclaimed at handoff | work item `d570870f-d792-4adc-98d6-1ef5b7895b19`; `docs/ops/evidence/2026-08-20_qm5_41062_xauxag_opposed_weekend_gap_fade_q01_q02_cpu_stop.md` |
 
 ## Safety Boundary
 
