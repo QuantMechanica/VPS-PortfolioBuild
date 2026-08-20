@@ -93,3 +93,4 @@ grid, martingale, pyramid, target, trail, break-even move, or partial exit.
 |---|---|---|---|
 | v1 | 2026-08-20 | approved build-directory identity | source approval `e37db06b8`; deterministic registry allocation `b5584210d` |
 | v1-build | 2026-08-20 | deterministic V5 implementation and validation | 9 reference tests PASS; strict compile/build check PASS with 0 errors and 0 warnings; static P1 PASS |
+| v1-q02-capacity | 2026-08-20 | paced Q02 handoff | target-only dry run selected one fresh row; apply withheld at eight active governed terminals and 99.58% average host CPU; no Q02 row exists |
