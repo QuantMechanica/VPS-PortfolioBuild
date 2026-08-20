@@ -102,3 +102,4 @@ partial exit.
 | v0 | 2026-08-20 | approved build-directory identity | source approval `83b83ee3a`; deterministic registry reservation in the commit containing this spec |
 | v1-card | 2026-08-20 | G0-approved execution contract | `strategy-seeds/cards/approved/QM5_41072_wti-wcounter-dom_card.md` |
 | v1-build | 2026-08-20 | deterministic implementation and Q01 validation | 9-test reference suite; strict compile/build PASS; static P1 PASS |
+| v1-q02-capacity | 2026-08-20 | paced Q02 preflight stopped at the tester/CPU ceiling | one fresh target-only row found; no enqueue mutation; evidence in `docs/ops/evidence/2026-08-20_qm5_41072_wti_weekly_countershock_q01_q02_cpu_ceiling_stop.md` |
