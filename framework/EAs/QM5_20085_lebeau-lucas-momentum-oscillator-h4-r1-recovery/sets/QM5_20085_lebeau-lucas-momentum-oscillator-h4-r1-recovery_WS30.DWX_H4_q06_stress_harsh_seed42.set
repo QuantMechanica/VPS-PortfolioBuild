@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20085
+; ea_slug:      lebeau-lucas-momentum-oscillator-h4-r1-recovery
+; ea_version:   v5.0
+; set_version:  s20260820-stress-harsh
+; symbol:       WS30.DWX
+; timeframe:    H4
+; environment:  q06_stress_harsh
+; magic_slot:   6
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3b2762bc07254aca0bee058b09d09e5f03df471dcee18b353ea1c3ecdaf4b103
+; author:       Development
+; date:         2026-08-20
+;==========================================================
+qm_ea_id=20085
+qm_magic_slot_offset=6
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_20085_lebeau-lucas-momentum-oscillator-h4-r1-recovery.md
+roc_period=12
+llmo_smooth=8
+ema_trend_period=21
+d1_regime_ema_period=50
+atr_period=20
+sl_atr_mult=2.5
+trail_atr_mult=2.0
+trail_activate_atr_mult=1.5
+time_stop_bars=20
+spread_atr_mult_cap=0.35
