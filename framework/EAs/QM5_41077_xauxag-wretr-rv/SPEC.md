@@ -109,3 +109,4 @@ partial exit.
 |---|---|---|---|
 | v1 | 2026-08-21 | approved build-directory identity | source approval `c1f1182c1`; EA ID allocated deterministically as QM5_41077 |
 | v2 | 2026-08-21 | Q01 build complete | deterministic paired EA; 9 reference tests; strict compile/build and static P1 PASS |
+| v3 | 2026-08-21 | paced Q02 handoff | this lane withheld apply at seven running research terminals and 100% host CPU; concurrent fleet state subsequently showed pending row `8a5bd279-0a00-4bbc-a24b-77ab1f5b48fa` |

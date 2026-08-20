@@ -63,9 +63,9 @@ r1_track_record: PASS_WITH_WEEKLY_RETRACEMENT_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_PASS
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED_PENDING_CPU_CEILING
 q01_build_report: D:/QM/reports/framework/21/build_check_20260820_224413.json
 q01_p1_evidence: D:/QM/reports/pipeline/QM5_41077/P1/P1_QM5_41077_result.json
 review_focus: "Falsify a completed-week gold/silver partial-retracement continuation outside the certified XAU/SP500/NDX/XNG book. Verify exact synchronized week ends, chronological non-overlapping returns, strict sign opposition, strict smaller newest magnitude, newest-return sides, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
@@ -395,6 +395,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-21 | initial completed-week XAU/XAG partial-retracement continuation card | G0 | APPROVED |
 | v1-build | 2026-08-21 | paired V5 implementation, 9-test reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v1-q02-hold | 2026-08-21 | target-only preview selected one item; this lane withheld apply at seven running terminals and 100% CPU; a concurrent fleet actor subsequently created one pending Q02 row | Q02 | ENQUEUED_PENDING_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -402,7 +403,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-21 | APPROVED | `decisions/2026-08-21_qm5_41077_xauxag_weekly_partial_retracement_continuation_g0.md` |
 | Q01 Build Validation | 2026-08-21 | PASS | `D:/QM/reports/framework/21/build_check_20260820_224413.json`; `D:/QM/reports/pipeline/QM5_41077/P1/P1_QM5_41077_result.json` |
-| Q02 Baseline Screening | 2026-08-21 | NOT_ENQUEUED | paced capacity preflight required after Q01 PASS |
+| Q02 Baseline Screening | 2026-08-21 | ENQUEUED_PENDING_CPU_CEILING | pending work item `8a5bd279-0a00-4bbc-a24b-77ab1f5b48fa`; `docs/ops/evidence/2026-08-21_qm5_41077_xauxag_weekly_retracement_q02_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 

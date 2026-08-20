@@ -1,0 +1,112 @@
+{
+  "artifact_type": "qm5_41077_q02_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-20T22:54:32Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "2d4b072ad",
+  "ea_id": "QM5_41077",
+  "ea_label": "QM5_41077_xauxag-wretr-rv",
+  "mission_outcome": "Q01_PASS_Q02_ENQUEUED_PENDING_CPU_CEILING_STOP",
+  "strategy_identity": {
+    "logical_symbol": "QM5_41077_XAU_XAG_WRETR_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "mechanic": "opposite-sign adjacent completed-week XAU-minus-XAG partial-retracement continuation",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "governance_commits": [
+    "c1f1182c1",
+    "8799a0bbe",
+    "368cca0fc",
+    "d25a853e2",
+    "2d4b072ad"
+  ],
+  "q01_evidence": {
+    "reference_test_count": 9,
+    "reference_tests_passed": true,
+    "card_schema_lint_passed": true,
+    "strict_compile_errors": 0,
+    "strict_compile_warnings": 0,
+    "targeted_build_check": "PASS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260820_224413.json",
+    "build_check_report_sha256": "ACDE38578CAE8A2BD5E910D85953858EB049130311337AED0F625CF5FC5ED029",
+    "static_p1_validation": "PASS",
+    "p1_report": "D:/QM/reports/pipeline/QM5_41077/P1/P1_QM5_41077_result.json",
+    "p1_report_sha256": "5C7F74AD5B395582FDA82768B13DB2980B10D62647190796F547CCBF30543683",
+    "mq5_sha256": "2D1A321EC1850AE7A267921C6160188EBCF5B5A2DCAC5F15E302027D3C93DD1B",
+    "ex5_sha256": "FF553FEC0C7CDCD68B64B3C76EE590B8C6569266B01B409D259A775250FD3083",
+    "setfile_bytes_sha256": "4672EFF39ADF9A204386F3F410D213453DE450FFE91CD612A442EA128EFC81B3",
+    "setfile_normalized_build_hash": "961ebf885088f8dc026c6111c47e7028da50045506d0b56cbc81548da7cd674a",
+    "basket_manifest_sha256": "BF49B0F1AAAE37D80CD4A3649A81D8E1CE0BF8A89E00A0703A27FE3A4E4822C0",
+    "reference_test_sha256": "4389406B615E3609744F1D544DC86B1BEC7730FE509104E04DCC1CB1521BA4C2"
+  },
+  "farm_db_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "query_mode": "read_only_via_farmctl_work_items",
+    "initial_work_item_count": 0,
+    "reconciled_at_utc": "2026-08-20T22:54:31Z",
+    "reconciled_work_item_count": 1,
+    "collision_decision": "one_concurrently_created_row_exists_leave_singular_no_duplicate",
+    "reconciled_work_item": {
+      "id": "8a5bd279-0a00-4bbc-a24b-77ab1f5b48fa",
+      "created_at": "2026-08-20T22:52:59+00:00",
+      "phase": "Q02",
+      "kind": "backtest",
+      "symbol": "QM5_41077_XAU_XAG_WRETR_RV_D1",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "enqueue_actor_attributed_by_this_lane": false
+    }
+  },
+  "target_only_enqueue_dry_run": {
+    "command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_41077 --max-part2-per-run 0",
+    "apply": false,
+    "never_tested_selected": 1,
+    "never_tested_skipped": 0,
+    "stranded_selected": 0,
+    "priority_track_items": 1,
+    "evidence": "D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json"
+  },
+  "capacity_sample": {
+    "slot_inventory_at_utc": "2026-08-20T22:50:12+00:00",
+    "running_factory_terminals": ["T1", "T3", "T4", "T5", "T7", "T8", "T9"],
+    "running_factory_terminal_count": 7,
+    "paced_terminal_ceiling": 7,
+    "terminal_ceiling_binding": true,
+    "research_terminal_reservation_count": 8,
+    "additional_reserved_slot_not_yet_running": "T6",
+    "whole_host_cpu_probe": "Get-CimInstance Win32_Processor",
+    "whole_host_cpu_load_pct": 100,
+    "whole_host_logical_processors": 16,
+    "whole_host_cpu_hard_ceiling_pct": 97,
+    "whole_host_cpu_ceiling_binding": true,
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "all_terminal64_process_count_including_excluded": 9,
+    "process_selection": "farmctl mt5-slots; governed D:/QM/mt5/T<n>/terminal64.exe only; T_Live and FTMO excluded"
+  },
+  "actions_this_run": {
+    "farm_db_read_only_by_this_lane": true,
+    "shared_farm_row_appeared_concurrently": true,
+    "new_source_approval_created": true,
+    "new_card_or_ea_created": true,
+    "registry_mutation": true,
+    "resolver_regeneration": true,
+    "compile_or_build_check": true,
+    "reference_tests_run": true,
+    "queue_enqueue_requeue_or_priority_mutation_by_this_lane": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "smoke_tester_or_backtest_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  }
+}
