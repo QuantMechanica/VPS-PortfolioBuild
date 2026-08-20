@@ -1,0 +1,66 @@
+{
+  "artifact_type": "commodity_energy_sleeve_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-20T04:47:48.1190000Z",
+  "generated_at_local": "2026-08-20T06:47:48.1190000+02:00",
+  "branch": "agents/board-advisor",
+  "base_commit": "a83e2a2bb2a949eb79a8cd1a44b08cbf61b4b07a",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "candidate_preflight": {
+    "obvious_gold_silver_ratio_rejected_as_duplicate": true,
+    "representative_existing_eas": [
+      "QM5_12577_cme-xauxag-ratio",
+      "QM5_12862_xauxag-rspread",
+      "QM5_20157_xau-xag-ratio",
+      "QM5_20161_xauxag-ols-rv",
+      "QM5_21526_xau-xag-cadf"
+    ],
+    "xng_comparison_ea_present": "QM5_12567_cum-rsi2-commodity",
+    "replacement_edge_selected": false,
+    "reason": "The CPU stop fired before reputable-source approval and full semantic deduplication of a replacement mechanic."
+  },
+  "capacity_sample": {
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "cpu_percent": [
+      99.66,
+      95.66,
+      99.42,
+      98.79,
+      99.86
+    ],
+    "average_cpu_percent": 98.68,
+    "maximum_cpu_percent": 99.86,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "running_factory_terminal_count": 8,
+    "t_live_and_unrelated_ftmo_observed_only": true
+  },
+  "actions_this_run": {
+    "new_source_approval_record_created": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "resolver_regeneration": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  }
+}
