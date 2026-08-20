@@ -3,7 +3,7 @@
 ; ea_id:        20085
 ; ea_slug:      lebeau-lucas-momentum-oscillator-h4-r1-recovery
 ; ea_version:   v5.0
-; set_version:  s20260820-stress-harsh
+; set_version:  s20260821-stress-harsh
 ; symbol:       WS30.DWX
 ; timeframe:    H4
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   3b2762bc07254aca0bee058b09d09e5f03df471dcee18b353ea1c3ecdaf4b103
 ; author:       Development
-; date:         2026-08-20
+; date:         2026-08-21
 ;==========================================================
 qm_ea_id=20085
 qm_magic_slot_offset=6
