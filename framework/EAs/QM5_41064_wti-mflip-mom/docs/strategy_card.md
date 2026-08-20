@@ -59,7 +59,7 @@ r3_data_available: PASS_WITH_ENERGY_LABEL_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED_PENDING_CPU_CEILING
 q01_build_report: D:/QM/reports/framework/21/build_check_20260820_084922.json
 q01_p1_evidence: D:/QM/reports/pipeline/QM5_41064/P1/P1_QM5_41064_result.json
 review_focus: "Falsify a low-frequency WTI trend-transition stream for the index/metal/XNG book. Verify uniform energy-label normalization, three consecutive completed month ends, two non-overlapping returns, strict sign transition, newest-sign direction, durable monthly attempt, fixed-risk hard stop, and next-month lifecycle. Q09 alone may establish realized decorrelation."
@@ -324,6 +324,7 @@ realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-20 | initial WTI adjacent-month sign-handoff card | G0 | APPROVED |
 | v1-build | 2026-08-20 | deterministic WTI implementation, reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v1-q02-capacity | 2026-08-20 | target-only dry run selected one row; this lane withheld apply above terminal and host-CPU ceilings; concurrent fleet state subsequently showed one pending Q02 row | Q02 | ENQUEUED_PENDING_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -331,7 +332,7 @@ realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-20 | APPROVED | `decisions/2026-08-20_qm5_41064_wti_month_flip_momentum_g0.md` |
 | Q01 Build Validation | 2026-08-20 | PASS | `D:/QM/reports/framework/21/build_check_20260820_084922.json`; `D:/QM/reports/pipeline/QM5_41064/P1/P1_QM5_41064_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-20 | ENQUEUED_PENDING_CPU_CEILING | pending work item `e5d1dfa2-a198-4769-9a41-f9c99e7d191a`; `docs/ops/evidence/2026-08-20_qm5_41064_wti_month_sign_handoff_q01_q02_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 
