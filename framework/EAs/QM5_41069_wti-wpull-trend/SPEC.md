@@ -96,3 +96,4 @@ partial exit.
 |---|---|---|---|
 | v0 | 2026-08-20 | approved build-directory identity | source approval `c655c2d6a`; EA registry `af2e427b6`; magic registry `734c0f565` |
 | v1-card | 2026-08-20 | G0-approved execution contract | `strategy-seeds/cards/approved/QM5_41069_wti-wpull-trend_card.md` |
+| v1-build | 2026-08-20 | deterministic implementation and Q01 validation | 10-test reference suite; strict compile/build PASS; static P1 PASS |
