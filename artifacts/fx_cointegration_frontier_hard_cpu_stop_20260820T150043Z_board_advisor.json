@@ -1,0 +1,97 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-20T15:00:43Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "3e4b417b2972d1fb3de12c04cf8474109d448eb8",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_state": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a80493291",
+    "new_card_or_ea_permitted": false,
+    "reason": "The durable sign-aware reconciliation covers every frozen-scan relationship; another pair Card or EA would duplicate governed work."
+  },
+  "anchor_triage_from_latest_governed_evidence": {
+    "source_commit": "7b40450907cdbab5f2b37070b67c9846a87e133f",
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair_from_latest_governed_evidence": {
+    "source_commit": "7b40450907cdbab5f2b37070b67c9846a87e133f",
+    "scan_rank": 21,
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "ea_id": "QM5_20203",
+    "slug": "eurusd-audjpy",
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "q02_work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+    "q02_last_observed_status": "done",
+    "q02_last_observed_verdict": "PASS",
+    "q04_work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+    "q04_last_observed_status": "pending",
+    "q04_exact_row_count_last_observed": 1,
+    "queue_observation_refreshed_after_capacity_became_binding": false,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "capacity_sample": {
+    "observation_start_utc": "2026-08-20T15:00:37.9944455Z",
+    "observation_end_utc": "2026-08-20T15:00:43.3828258Z",
+    "sample_interval_seconds": 1,
+    "cpu_percent": [
+      98.05,
+      98.64,
+      98.35,
+      98.06,
+      98.83
+    ],
+    "average_cpu_percent": 98.39,
+    "maximum_cpu_percent": 98.83,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "previous_same_mission_evidence_commit": "7b40450907cdbab5f2b37070b67c9846a87e133f",
+    "previous_same_mission_observation_utc": "2026-08-20T14:01:21Z",
+    "current_observation_utc": "2026-08-20T15:00:43Z",
+    "elapsed_minutes_since_previous_same_mission_observation": 59.37,
+    "new_queue_row_created": false,
+    "existing_queue_row_mutated": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_query_after_binding_sample": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The frozen scan is exhausted and the explicit CPU ceiling is binding."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
