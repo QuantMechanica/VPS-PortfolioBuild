@@ -17,15 +17,16 @@ Approved card:
 - slug: `xauxag-wovershoot-rv`
 - strategy ID: `SCHWEIKERT-CME-XAUXAG-WOVERSHOOT-RV-2026_S01`
 - source approval commit: `9f30c75c8`
-- host: exact `XAUUSD.DWX`, D1, slot 0, expected formula magic `410750000`
-- companion: exact `XAGUSD.DWX`, D1, slot 1, expected formula magic `410750001`
+- magic allocation commit: `fe825090c`
+- host: exact `XAUUSD.DWX`, D1, slot 0, active magic `410750000`
+- companion: exact `XAGUSD.DWX`, D1, slot 1, active magic `410750001`
 - logical symbol: `QM5_41075_XAU_XAG_WOVERSHOOT_RV_D1`
 - mechanic: strict sign opposition and strict newest absolute dominance
   between two adjacent completed weekly gold-minus-silver returns, with the
   newest relative reversal faded for one week
 
-The build authorization becomes operative only after the governed allocator
-has created active slot-zero and slot-one rows and regenerated the resolver
+The governed allocator satisfied the build condition at `fe825090c` by
+creating active slot-zero and slot-one rows and regenerating the resolver
 without dropping either row.
 
 ## Gate Findings
@@ -104,4 +105,3 @@ This decision excludes live/demo/shadow/stress/optimization presets,
 AutoTrading, `T_Live`, deploy or T_Live manifests, portfolio-gate edits,
 portfolio admission, decorrelation claims, neutrality claims, and correlation
 waivers.
-
