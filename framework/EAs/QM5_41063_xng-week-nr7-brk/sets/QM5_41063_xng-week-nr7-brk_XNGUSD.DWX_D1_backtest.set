@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41063
+; ea_slug:      xng-week-nr7-brk
+; ea_version:   v5.0
+; set_version:  s20260820-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   8132622c6d6454fb0673c0e291570b5e392594a87177004d22287d24dace115d
+; author:       Development
+; date:         2026-08-20
+;==========================================================
+qm_ea_id=41063
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Native completed-D1 XNG weekly compression/expansion; both news axes OFF.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+; Friday-flat is load-bearing strategy identity.
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41063_xng-week-nr7-brk_card.md
+strategy_week_lookback=7
+strategy_history_bars=90
+strategy_entry_min_dow=2
+strategy_entry_max_dow=5
+strategy_entry_grace_minutes=180
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=8
+strategy_max_spread_points=1500
