@@ -91,4 +91,4 @@ grid, martingale, pyramid, target, trail, break-even move, or partial exit.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-20 | approved build-directory identity | source approval `e37db06b8`; deterministic registry allocation `PENDING_COMMIT` |
+| v1 | 2026-08-20 | approved build-directory identity | source approval `e37db06b8`; deterministic registry allocation `b5584210d` |
