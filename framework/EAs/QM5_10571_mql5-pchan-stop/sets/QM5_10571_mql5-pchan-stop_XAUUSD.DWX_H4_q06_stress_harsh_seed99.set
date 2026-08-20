@@ -16,7 +16,7 @@
 ;==========================================================
 qm_ea_id=10571
 qm_magic_slot_offset=3
-qm_rng_seed=17
+qm_rng_seed=99
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
