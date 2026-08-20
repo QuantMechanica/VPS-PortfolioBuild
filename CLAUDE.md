@@ -218,6 +218,43 @@ constraints. Over-specification trains agents to be passive; under-specifying a 
 constraint corrupts the evidence trail. Know which is which.
 
 
+## Stehende Vollmacht (OWNER 2026-08-20) — Autonomiezonen
+
+The OWNER granted a standing authorization replacing escalate-by-default. Full text:
+vault `02 Org/Stehende Vollmacht Factory CEO 2026-08-20.md`.
+
+- **GRÜN (autonomous, report afterwards):** operate existing tools with unchanged criteria;
+  re-enqueue rows without a verdict (timeouts, INFRA_FAIL, orphaned claims — canonical path:
+  `farmctl enqueue-backtest --append-only-rerun-of <id>`, old row stays as evidence); queue
+  order/priority changes (no deletions); infra repairs that do not touch verdict logic (test
+  first, rollback documented, blast radius named); measurements up to 1h factory time; backups
+  (never escalation-worthy); documents; worker restarts.
+- **GELB (pre-approved on condition):** 12%-threshold replacement (once cohort stands); raise
+  timeout budgets to phase median for rows already timeout-killed without verdict; symbol
+  prioritization (done); **Q09 acceleration Weg A+B (approved — contract v3 in progress)**;
+  >1h factory time if it answers an open P0 and cost is reported; new Q14 levers (needs
+  hypothesis, refutation criterion, frequency check, parameter count).
+- **ROT (never autonomous):** gate thresholds & contract criteria; recompile in active
+  inventory; delete/overwrite verdicts or trade streams; candidate-pool definition & card
+  universes; containment scope; anything touching the live account/Darwinex book; constructing
+  a new book.
+- **Auffangregel:** for reversible actions with a submitted Vorlage (options, recommendation,
+  rollback, cost of waiting): if OWNER does not answer within 12h, execute own recommendation
+  and mark it explicitly as Auffangregel execution. Never for ROT.
+- **Entscheidungsschlange** (max 5 entries) in every report instead of blocking; work continues.
+- **`docs/ops/OPEN_ITEMS_STATUS.md` accompanies every report.** An order counts as done only
+  when its RESULT is reported; a written document alone is not delivery.
+
+## Ratified Rules (recent)
+
+- **Aktivitätskriterium (OWNER 2026-08-20, OQ-18 closed):** a pair qualifies with ≥10 distinct
+  trading days in every scored year; distribution within the year irrelevant; counting basis =
+  **entry day** (Goodhart-resistant vs exit optimization; equals the FTMO definition). Partial
+  years: pro-rata proposal pending OWNER (see `docs/ops/ACTIVITY_CRITERION.md` §R).
+- **Q09_NEWS seeds are inert** (RNG never drawn when `qm_stress_reject_probability=0`):
+  40 cells = 8 configs. A+B contract v3 (1 seed + seam-reconstructed full window) is
+  OWNER-approved; the 40-cell v2 pilot (`cba63d44`) runs as the reference measurement.
+
 ## Current Operating Rules
 
 Read **`docs/ops/OPERATING_RULES_2026-07-03.md`** (OWNER-ratified 2026-07-03) before factory
