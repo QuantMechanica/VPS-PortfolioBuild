@@ -231,13 +231,23 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!g_state_ready || g_signal == 0 || g_atr_1 <= 0.0)
       return false;
 
+   // Re-evaluate the card-authorized spread ceiling after the current H4
+   // cache is populated.  The per-tick no-trade hook runs before
+   // AdvanceState_OnNewBar(), so relying on it alone would let the first
+   // post-init signal bypass the spread check.
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask < bid)
+      return false;
+   if((ask - bid) > g_atr_1 * strategy_spread_filter_mult)
+      return false;
+
    const int magic = QM_FrameworkMagic();
    if(magic <= 0 || QM_TM_OpenPositionCount(magic) >= strategy_max_positions)
       return false;
 
    const QM_OrderType side = (g_signal > 0) ? QM_BUY : QM_SELL;
-   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double entry = (side == QM_BUY) ? ask : bid;
    if(entry <= 0.0)
       return false;
 

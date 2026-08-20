@@ -16,6 +16,9 @@ that prior upper boundary or sells below the prior lower boundary only when
 ATR(14)[1] is greater than ATR(14)[5]. Including the signal bar in its own
 channel would make a close breakout impossible, so the approved card's
 Donchian notation is implemented as the standard prior-channel test.
+Immediately before submitting an entry, the EA rechecks the current spread
+against the freshly cached `1.8 * ATR(14)[1]` ceiling; zero modeled DWX spread
+is valid and only an actually wider spread blocks the signal.
 
 The initial stop is 1.5 times ATR(14)[1] from entry and the take-profit is 2R.
 For an open long, the stop follows the lowest low of the latest ten completed
@@ -115,3 +118,4 @@ backtest setfiles only and does not authorize live use.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from approved card | Task 5d5cc9f6-e096-44a3-af78-99abc2d9e7ed |
+| v2 | 2026-08-20 | Entry-permission repair | Recheck current spread after closed-bar state refresh; no signal thresholds changed |

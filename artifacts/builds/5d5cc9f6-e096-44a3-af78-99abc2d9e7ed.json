@@ -1,0 +1,26 @@
+{
+  "task_id": "5d5cc9f6-e096-44a3-af78-99abc2d9e7ed",
+  "ea_id": "QM5_41002",
+  "ea_dir": "framework/EAs/QM5_41002_robert-pardo-checkmate-breakout-engine",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41002_robert-pardo-checkmate-breakout-engine/QM5_41002_robert-pardo-checkmate-breakout-engine.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41002_robert-pardo-checkmate-breakout-engine/QM5_41002_robert-pardo-checkmate-breakout-engine.ex5",
+  "magic_base": 410020000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41002_robert-pardo-checkmate-breakout-engine/sets/QM5_41002_robert-pardo-checkmate-breakout-engine_EURUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_41002_robert-pardo-checkmate-breakout-engine/sets/QM5_41002_robert-pardo-checkmate-breakout-engine_GBPUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_41002_robert-pardo-checkmate-breakout-engine/sets/QM5_41002_robert-pardo-checkmate-breakout-engine_USDJPY.DWX_H4_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41002_robert-pardo-checkmate-breakout-engine/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Governed pre-dispatch census found all ten T1-T10 terminals active or reserved; five host CPU samples averaged 99.8% against the 97% ceiling.",
+  "blocked_reason": "Backtest capacity ceiling at 2026-08-20T17:29:42Z: CPU samples 100/100/100/100/99% (average 99.8%, peak 100%); T1-T10 all active or reserved. No smoke or Q02 enqueue was attempted.",
+  "open_questions": []
+}
