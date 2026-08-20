@@ -65,7 +65,7 @@ r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 q01_build_report: D:/QM/reports/framework/21/build_check_20260820_204617.json
 q01_p1_evidence: D:/QM/reports/pipeline/QM5_41075/P1/P1_QM5_41075_result.json
 review_focus: "Falsify a completed-week gold/silver relative reversal-overshoot fade outside the certified XAU/SP500/NDX/XNG book. Verify exact synchronized week ends, chronological non-overlapping returns, strict sign opposition, strict newest absolute dominance, inverse-newest-return sides, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
@@ -382,6 +382,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-20 | initial completed-week XAU/XAG reversal-overshoot reversion card | G0 | APPROVED |
 | v1-build | 2026-08-20 | deterministic paired implementation, 9-test reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v1-q02-capacity | 2026-08-20 | exact farm query found no target row, but seven occupied research terminals and sampled host CPU bound the paced stop | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -389,7 +390,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-20 | APPROVED | `decisions/2026-08-20_qm5_41075_xauxag_weekly_reversal_overshoot_reversion_g0.md` |
 | Q01 Build Validation | 2026-08-20 | PASS | `D:/QM/reports/framework/21/build_check_20260820_204617.json`; `D:/QM/reports/pipeline/QM5_41075/P1/P1_QM5_41075_result.json` |
-| Q02 Baseline Screening | 2026-08-20 | NOT_ENQUEUED | capacity preflight pending |
+| Q02 Baseline Screening | 2026-08-20 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-20_qm5_41075_xauxag_weekly_overshoot_q02_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 

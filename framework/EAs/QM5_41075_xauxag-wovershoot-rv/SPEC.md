@@ -105,3 +105,4 @@ partial exit.
 |---|---|---|---|
 | v1 | 2026-08-20 | approved build-directory identity | source approval `9f30c75c8`; EA ID `ecc559ee0`; active basket magics `fe825090c` |
 | v2 | 2026-08-20 | Q01 build complete | deterministic paired EA; 9 reference tests; strict compile/build and static P1 PASS |
+| v3 | 2026-08-20 | paced Q02 capacity preflight | exact target query found no Q02 row; no enqueue because seven factory terminals and sampled host CPU reached the binding ceilings |

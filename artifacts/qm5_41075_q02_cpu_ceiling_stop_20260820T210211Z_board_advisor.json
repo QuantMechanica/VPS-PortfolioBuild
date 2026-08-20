@@ -1,0 +1,50 @@
+{
+  "artifact_type": "qm5_41075_q02_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-20T21:02:11Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "c43a745b9",
+  "ea_id": "QM5_41075",
+  "ea_label": "QM5_41075_xauxag-wovershoot-rv",
+  "mission_outcome": "Q01_PASS_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "farm_db_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "query_mode": "read_only_via_farmctl_work_items",
+    "work_item_count": 0,
+    "collision_decision": "no_existing_row_but_capacity_stop_forbids_enqueue"
+  },
+  "capacity_sample": {
+    "slot_inventory_at_utc": "2026-08-20T21:00:18+00:00",
+    "sample_interval_seconds": 2,
+    "sample_count": 5,
+    "cpu_percent": [100.0, 94.84, 99.76, 94.98, 98.1],
+    "average_cpu_percent": 97.54,
+    "maximum_cpu_percent": 100.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "samples_above_ceiling": 3,
+    "ceiling_binding": true,
+    "running_factory_terminals": ["T1", "T2", "T3", "T5", "T6", "T7", "T8"],
+    "running_factory_terminal_count": 7,
+    "paced_terminal_ceiling": 7,
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "process_selection": "farmctl mt5-slots; governed D:/QM/mt5/T<n>/terminal64.exe only; T_Live and FTMO excluded"
+  },
+  "actions_this_run": {
+    "farm_db_read_only": true,
+    "new_card_or_ea_created": false,
+    "farm_claim_written": false,
+    "registry_mutation": false,
+    "resolver_regeneration": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "smoke_tester_or_backtest_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  }
+}
