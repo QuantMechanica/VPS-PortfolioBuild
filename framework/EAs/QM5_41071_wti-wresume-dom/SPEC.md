@@ -96,4 +96,5 @@ partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-08-20 | approved build-directory identity | source approval `b3f0cbd8e`; deterministic registry reservation in the commit containing this spec |
-
+| v1-card | 2026-08-20 | G0-approved execution contract | `strategy-seeds/cards/approved/QM5_41071_wti-wresume-dom_card.md` |
+| v1-build | 2026-08-20 | deterministic implementation and Q01 validation | 9-test reference suite; strict compile/build PASS; static P1 PASS |
