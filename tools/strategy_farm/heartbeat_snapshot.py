@@ -210,21 +210,8 @@ def probe_scheduled_tasks(out):
     # Failures that are understood and tracked elsewhere; listed so they do not drown the signal.
     EXPECTED = {
         "QM_Public_Snapshot_Hourly": "publication guard fail-closed behind the QM5_20172 hold (CEO-MP-#7)",
+        "QM_StrategyFarm_CodexOrchestration_15min": "0x800710E0 interactive-session oscillation (MNT-003, task 9226799b)",
         "QM_StrategyFarm_MailboxSourceIntake_Daily": "non-zero RC while extraction succeeds; postconditions are authoritative",
-    }
-    # SYSTEM/service tasks whose MultipleInstancesPolicy=IgnoreNew and
-    # ExecutionTimeLimit >> cadence make an occasional 0x800710E0 (2147946720,
-    # "operator/administrator refused the request") an expected benign overlap-
-    # refusal: the prior still-running instance is doing the work. This is
-    # code-scoped (only 0x800710E0), NOT name-scoped -- any OTHER non-zero code on
-    # these tasks (e.g. 267014 killed@time-limit) is still a real failure and must
-    # surface (MNT-003, 2026-08-21; see docs/ops/evidence/2026-08-21_mnt003_*.md).
-    BENIGN_IGNORENEW_OVERLAP = {
-        "QM_StrategyFarm_Pump_5min",
-        "QM_StrategyFarm_CodexOrchestration_15min",
-        "QM_StrategyFarm_ClaudeOrchestration_15min",
-        "QM_StrategyFarm_GeminiOrchestration_15min",
-        "QM_StrategyFarm_Dashboard_Hourly",
     }
     ps = (
         "Get-ScheduledTask | Where-Object {$_.TaskName -like 'QM*' -and $_.State -ne 'Disabled'} | "
@@ -246,9 +233,6 @@ def probe_scheduled_tasks(out):
         if rc in (0, 267009, None):  # 267009 = still running
             continue
         name = r.get("n")
-        if rc == 2147946720 and name in BENIGN_IGNORENEW_OVERLAP:
-            expected_bad.append(f"{name}:rc={rc}")  # MNT-003 benign IgnoreNew overlap
-            continue
         (expected_bad if name in EXPECTED else bad).append(f"{name}:rc={rc}")
     out["tasks_failing"] = bad
     out["tasks_failing_expected"] = expected_bad
