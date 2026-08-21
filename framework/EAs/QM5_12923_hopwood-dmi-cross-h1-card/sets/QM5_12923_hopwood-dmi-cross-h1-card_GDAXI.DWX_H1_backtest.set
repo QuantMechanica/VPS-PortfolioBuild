@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12923
+; ea_slug:      hopwood-dmi-cross-h1-card
+; ea_version:   v5.0
+; set_version:  s20260821-001
+; symbol:       GDAXI.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   48437a298ce322d1cebb3734440059ef6f3b7b2d1e67d0065801220437b2fd86
+; author:       Development
+; date:         2026-08-21
+;==========================================================
+qm_ea_id=12923
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12923_hopwood-dmi-cross-h1-card.md
+strategy_dmi_period=14
+strategy_adx_threshold=22.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_take_profit_rr=2.0
+strategy_adx_exit_threshold=18.0
+strategy_require_h1=true
