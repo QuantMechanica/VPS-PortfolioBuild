@@ -14379,6 +14379,46 @@ def _migrate_legacy_q08_verdicts(conn: sqlite3.Connection) -> int:
     return migrated
 
 
+def _q08_cost_cushion_edge_soft(wi: sqlite3.Row) -> bool:
+    """True iff this Q08 row's DL-072 cost-cushion tier is EDGE_SOFT (the thin 1x-2x
+    cushion band). Read from the stored per-gate classification, matching the precedence
+    used by _q08_verdict_from_classification / _migrate_legacy_q08_verdicts, with a
+    fallback to the top-level tier the aggregate also records."""
+    try:
+        payload = json.loads(wi["payload_json"] or "{}")
+    except (TypeError, ValueError):
+        return False
+    classification = payload.get("q08_verdict_classification")
+    if isinstance(classification, dict):
+        if str(classification.get("cost_cushion") or "").upper() == "EDGE_SOFT":
+            return True
+    return str(payload.get("cost_cushion_tier") or "").upper() == "EDGE_SOFT"
+
+
+def _q06_soft_probation_present(
+    conn: sqlite3.Connection, ea_id: str, symbol: str
+) -> bool:
+    """True iff this (ea, symbol) advanced past Q06 on a PASS_SOFT probation
+    (OWNER Option A 2026-08-21). The authoritative signal is a Q06 row with
+    verdict=PASS_SOFT; the `probation:q06_soft` marker in the Q06 verdict_reason is
+    accepted as corroboration for legacy/backfilled rows."""
+    rows = conn.execute(
+        "SELECT verdict, payload_json FROM work_items "
+        "WHERE phase='Q06' AND ea_id=? AND symbol=?",
+        (ea_id, symbol),
+    ).fetchall()
+    for r in rows:
+        if str(r["verdict"] or "").upper() == "PASS_SOFT":
+            return True
+        try:
+            payload = json.loads(r["payload_json"] or "{}")
+        except (TypeError, ValueError):
+            continue
+        if "probation:q06_soft" in str(payload.get("verdict_reason") or ""):
+            return True
+    return False
+
+
 def _promote_q08_soft_fails_to_q09_portfolio(
     conn: sqlite3.Connection,
     result: dict[str, Any],
@@ -14419,6 +14459,61 @@ def _promote_q08_soft_fails_to_q09_portfolio(
                 "from_work_item_id": wi["id"],
                 "reason": "q08_evidence_missing_or_unreadable",
             })
+            continue
+        # Anti-stacking (OWNER Option A 2026-08-21, Q05_Q06_FAIL_SOFT_VORLAGE
+        # §Anti-Stacking): two soft verdicts never stack. An (ea, symbol) that advanced
+        # past Q06 on a PASS_SOFT probation AND whose Q08 outcome is the DL-072 thin
+        # cost-cushion EDGE_SOFT is TERMINAL FAIL — it is not routed onto the Q09
+        # portfolio-rescue track. Append-only: the Q08 verdict itself is untouched; a
+        # terminal Q09_PORTFOLIO FAIL row records the block (mirrors the below-min
+        # NEED_MORE_DATA terminal-row idiom in this same function).
+        if _q08_cost_cushion_edge_soft(wi) and _q06_soft_probation_present(
+            conn, str(wi["ea_id"]), str(wi["symbol"])
+        ):
+            new_id = str(uuid.uuid4())
+            now = utc_now()
+            payload = {
+                "promoted_from_phase": "Q08",
+                "promoted_from_work_item": wi["id"],
+                "promotion_source": "q08_soft_stacking_forbidden",
+                "q08_evidence_path": wi["evidence_path"],
+                "verdict_reason": "soft_stacking_forbidden:q06_soft+q08_edge_soft",
+            }
+            conn.execute(
+                """
+                INSERT INTO work_items
+                  (id, kind, phase, ea_id, symbol, setfile_path, status,
+                   verdict, attempt_count, parent_task_id, evidence_path,
+                   payload_json, created_at, updated_at)
+                VALUES (?, 'backtest', 'Q09_PORTFOLIO', ?, ?, ?, 'done',
+                        'FAIL', 0, NULL, ?, ?, ?, ?)
+                """,
+                (
+                    new_id,
+                    wi["ea_id"],
+                    wi["symbol"],
+                    wi["setfile_path"],
+                    wi["evidence_path"],
+                    json.dumps(payload, sort_keys=True),
+                    now,
+                    now,
+                ),
+            )
+            _add_q08_input_dependency(
+                conn,
+                child_work_item_id=new_id,
+                q08_work_item=wi,
+                evidence_sha256=q08_evidence_sha256,
+            )
+            result["q09_portfolio_promotions_skipped"].append({
+                "work_item_id": new_id,
+                "ea_id": wi["ea_id"],
+                "symbol": wi["symbol"],
+                "from_work_item_id": wi["id"],
+                "reason": "soft_stacking_forbidden:q06_soft+q08_edge_soft",
+                "verdict": "FAIL",
+            })
+            promoted += 1
             continue
         trade_count = _q08_trade_count_from_work_item(wi)
         if trade_count is None:
@@ -16335,7 +16430,8 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
         "Q03": {"PASS"},
         "Q04": {"PASS", "PASS_SOFT", "PASS_LOWFREQ"},  # DL-071 soft-pass + DL-076 low-freq pooled pass advance
         "Q05": {"PASS"},
-        "Q06": {"PASS"},
+        # OWNER Option A 2026-08-21: Q06 PASS_SOFT (probation:q06_soft band) advances to Q07.
+        "Q06": {"PASS", "PASS_SOFT"},
         "Q07": {"PASS"},
         "Q08": {"PASS"},
         "Q09_NEWS": Q09_NEWS_SUCCESS_VERDICTS,
@@ -19933,7 +20029,8 @@ def enqueue_cascade_backtest_for_ea(
         "Q04": {"PASS"},
         "Q05": {"PASS", "PASS_SOFT", "PASS_LOWFREQ"},
         "Q06": {"PASS"},
-        "Q07": {"PASS"},
+        # OWNER Option A 2026-08-21: creating Q07 accepts a Q06 PASS_SOFT predecessor.
+        "Q07": {"PASS", "PASS_SOFT"},
         "Q08": {"PASS", "MULTI_SEED_PASS"},  # Q07 = multi-seed phase
         "Q09_NEWS": {"PASS"},
         "Q09_PORTFOLIO": {"PASS", "FAIL_SOFT"},

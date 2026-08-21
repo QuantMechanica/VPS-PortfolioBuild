@@ -1682,6 +1682,7 @@ ARCHIVE_CSS = """
 .archive-table .progress-bar .pcell.p-current{background:var(--live);border-color:var(--live)}
 .archive-table .progress-bar .pcell.p-failed{background:var(--fail);border-color:var(--fail)}
 .archive-table .v-pass{color:var(--pass);font-weight:600}
+.archive-table .v-passsoft{color:var(--signal);font-weight:600}
 .archive-table .net-pos{color:var(--profit);font-weight:600}
 .archive-table .v-fail{color:var(--fail);font-weight:600}
 .archive-table .net-neg{color:var(--loss);font-weight:600}
@@ -1755,6 +1756,7 @@ EA_DETAIL_CSS = """
 .wi-table td.col-spark{padding:6px 12px}
 .wi-table td.col-spark svg{display:block}
 .wi-table .v-pass{color:var(--pass);font-weight:600}
+.wi-table .v-passsoft{color:var(--signal);font-weight:600}
 .wi-table .v-fail{color:var(--fail);font-weight:600}
 .wi-table .v-invalid{color:var(--promising);font-weight:600}
 .wi-table .v-pending{color:var(--text-3)}
@@ -1892,6 +1894,7 @@ DETAIL2_CSS = """
 .att-table td.col-num{text-align:right;font-variant-numeric:tabular-nums}
 .att-table tr:last-child td{border-bottom:none}
 .att-table .v-pass{color:var(--pass);font-weight:600}
+.att-table .v-passsoft{color:var(--signal);font-weight:600}
 .att-table .v-fail{color:var(--fail);font-weight:600}
 .att-table .v-invalid{color:var(--promising);font-weight:600}
 .att-table .v-completed{color:var(--text-2);font-weight:600}
@@ -2372,6 +2375,10 @@ def _verdict_family(v: str | None) -> str:
     if not v:
         return "other"
     u = v.upper()
+    # OWNER Option A 2026-08-21: Q06 PASS_SOFT is a probationary pass — its own chip,
+    # never collapsed into the clean-PASS chip. It still counts as gate advancement.
+    if u == "PASS_SOFT":
+        return "passsoft"
     if u.startswith("PASS"):
         return "pass"
     if u == "INFRA_FAIL":
@@ -2381,7 +2388,8 @@ def _verdict_family(v: str | None) -> str:
     return "other"
 
 
-_VCLS = {"pass": "v-pass", "fail": "v-fail", "infra": "v-infra", "other": "v-other"}
+_VCLS = {"pass": "v-pass", "fail": "v-fail", "infra": "v-infra", "other": "v-other",
+         "passsoft": "v-passsoft"}
 
 
 def _build_slug_map(repo_root: Path) -> dict[str, str]:
@@ -2488,11 +2496,13 @@ def collect_archive_v2(root: Path, slug_map: dict[str, str]) -> dict[str, Any]:
                                      "hp_idx": -1, "hp": None, "adv_idx": -1,
                                      "adv": None, "n": 0, "n_pass": 0}
             a["n"] += 1
-            if fam == "pass":
+            # A PASS_SOFT probation is still gate advancement, so it counts toward
+            # n_pass / highest-pass-phase even though its chip renders distinctly.
+            if fam in ("pass", "passsoft"):
                 a["n_pass"] += 1
             if bidx > a["adv_idx"]:
                 a["adv_idx"], a["adv"] = bidx, base
-            if fam == "pass" and bidx > a["hp_idx"]:
+            if fam in ("pass", "passsoft") and bidx > a["hp_idx"]:
                 a["hp_idx"], a["hp"] = bidx, base
             if not future and upd > a["last_upd"]:
                 a["last_upd"], a["last_verdict"], a["last_phase"] = (
@@ -4041,7 +4051,8 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
         rows_html = []
         for w in items:
             verd = w.get("verdict") or "—"
-            v_cls = {"PASS": "v-pass", "FAIL": "v-fail", "INVALID": "v-invalid",
+            v_cls = {"PASS": "v-pass", "PASS_SOFT": "v-passsoft", "FAIL": "v-fail",
+                     "INVALID": "v-invalid",
                      "COMPLETED": "v-completed"}.get(verd, "v-pending")
             # Numeric-cell convention (REVISED 2026-06-07, OWNER): missing data
             # must read as "no evidence" (—), NOT as a real 0. The prior
@@ -4140,7 +4151,8 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
                     a_reason_raw = a.get("reason") or ""
                     if av == "INVALID" and _is_pass_reason(a_reason_raw):
                         av = "COMPLETED"
-                    a_cls = {"PASS": "v-pass", "FAIL": "v-fail",
+                    a_cls = {"PASS": "v-pass", "PASS_SOFT": "v-passsoft",
+                             "FAIL": "v-fail",
                              "INVALID": "v-invalid",
                              "COMPLETED": "v-completed"}.get(av, "v-pending")
                     a_when = (a.get("created_at") or "")[:19].replace("T", " ")

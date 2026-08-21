@@ -1323,5 +1323,129 @@ class AppendOnlyCascadeRerunTests(unittest.TestCase):
             self.assertEqual(payload["promoted_from_work_item"], "q05-source")
 
 
+class Q06SoftStackingTests(unittest.TestCase):
+    """OWNER Option A 2026-08-21: Q06 PASS_SOFT probation + anti-stacking at Q08."""
+
+    def _insert(self, conn, *, wid, phase, ea_id, symbol, verdict, payload,
+                status="done", evidence_path=None):
+        now = farmctl.utc_now()
+        conn.execute(
+            """
+            INSERT INTO work_items
+              (id, kind, phase, ea_id, symbol, setfile_path, status,
+               verdict, attempt_count, evidence_path, payload_json,
+               created_at, updated_at)
+            VALUES (?, 'backtest', ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
+            """,
+            (wid, phase, ea_id, symbol, "s.set", status, verdict,
+             evidence_path, json.dumps(payload), now, now),
+        )
+
+    def test_cost_cushion_edge_soft_detection(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            farmctl.init_db(root)
+            with farmctl.connect(root) as conn:
+                self._insert(conn, wid="soft", phase="Q08", ea_id="QM5_1",
+                             symbol="XAUUSD.DWX", verdict="FAIL_SOFT",
+                             payload={"q08_verdict_classification":
+                                      {"8.1": "PASS", "cost_cushion": "EDGE_SOFT"}})
+                self._insert(conn, wid="clean", phase="Q08", ea_id="QM5_2",
+                             symbol="XAUUSD.DWX", verdict="PASS",
+                             payload={"q08_verdict_classification":
+                                      {"8.1": "PASS", "cost_cushion": "PASS"}})
+                self._insert(conn, wid="toplevel", phase="Q08", ea_id="QM5_3",
+                             symbol="XAUUSD.DWX", verdict="FAIL_SOFT",
+                             payload={"cost_cushion_tier": "EDGE_SOFT"})
+                conn.commit()
+                rows = {r["id"]: r for r in conn.execute(
+                    "SELECT * FROM work_items WHERE phase='Q08'")}
+            self.assertTrue(farmctl._q08_cost_cushion_edge_soft(rows["soft"]))
+            self.assertFalse(farmctl._q08_cost_cushion_edge_soft(rows["clean"]))
+            self.assertTrue(farmctl._q08_cost_cushion_edge_soft(rows["toplevel"]))
+
+    def test_q06_soft_probation_present(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            farmctl.init_db(root)
+            with farmctl.connect(root) as conn:
+                self._insert(conn, wid="q6soft", phase="Q06", ea_id="QM5_1",
+                             symbol="XAUUSD.DWX", verdict="PASS_SOFT",
+                             payload={"verdict_reason":
+                                      "pass_soft_band:pf=0.970:dd_pct=12.40:probation:q06_soft"})
+                self._insert(conn, wid="q6pass", phase="Q06", ea_id="QM5_2",
+                             symbol="XAUUSD.DWX", verdict="PASS",
+                             payload={"verdict_reason": "pf=1.300:dd_pct=8.10:stress=HARSH"})
+                self._insert(conn, wid="q6marker", phase="Q06", ea_id="QM5_3",
+                             symbol="XAUUSD.DWX", verdict="FAIL",
+                             payload={"verdict_reason": "probation:q06_soft"})
+                conn.commit()
+                self.assertTrue(
+                    farmctl._q06_soft_probation_present(conn, "QM5_1", "XAUUSD.DWX"))
+                self.assertFalse(
+                    farmctl._q06_soft_probation_present(conn, "QM5_2", "XAUUSD.DWX"))
+                self.assertTrue(
+                    farmctl._q06_soft_probation_present(conn, "QM5_3", "XAUUSD.DWX"))
+                # No Q06 row at all -> absent.
+                self.assertFalse(
+                    farmctl._q06_soft_probation_present(conn, "QM5_9", "XAUUSD.DWX"))
+
+    def _promote_result(self):
+        return {"q09_portfolio_promotions": [],
+                "q09_portfolio_promotions_skipped": [],
+                "q09_portfolio_admissions": []}
+
+    def test_promote_blocks_soft_stacking_as_terminal_fail(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            farmctl.init_db(root)
+            evidence = Path(tmp) / "aggregate.json"
+            evidence.write_text('{"verdict": "FAIL_SOFT"}', encoding="utf-8")
+            with farmctl.connect(root) as conn:
+                # (ea1) stacks: Q06 PASS_SOFT + Q08 FAIL_SOFT thin cost cushion.
+                self._insert(conn, wid="e1q6", phase="Q06", ea_id="QM5_1",
+                             symbol="XAUUSD.DWX", verdict="PASS_SOFT",
+                             payload={"verdict_reason": "probation:q06_soft"})
+                self._insert(conn, wid="e1q8", phase="Q08", ea_id="QM5_1",
+                             symbol="XAUUSD.DWX", verdict="FAIL_SOFT",
+                             evidence_path=str(evidence),
+                             payload={"q08_verdict_classification":
+                                      {"cost_cushion": "EDGE_SOFT"}})
+                # (ea2) control: same Q08 thin cushion but Q06 was a clean PASS.
+                self._insert(conn, wid="e2q6", phase="Q06", ea_id="QM5_2",
+                             symbol="XAUUSD.DWX", verdict="PASS",
+                             payload={"verdict_reason": "stress=HARSH"})
+                self._insert(conn, wid="e2q8", phase="Q08", ea_id="QM5_2",
+                             symbol="XAUUSD.DWX", verdict="FAIL_SOFT",
+                             evidence_path=str(evidence),
+                             payload={"q08_verdict_classification":
+                                      {"cost_cushion": "EDGE_SOFT"},
+                                      "q08_trade_count": 300})
+                conn.commit()
+                result = self._promote_result()
+                farmctl._promote_q08_soft_fails_to_q09_portfolio(conn, result)
+                conn.commit()
+                q09 = [dict(r) for r in conn.execute(
+                    "SELECT ea_id, status, verdict, payload_json FROM work_items "
+                    "WHERE phase='Q09_PORTFOLIO'")]
+
+            def _reason(row):
+                return json.loads(row["payload_json"] or "{}").get("verdict_reason")
+
+            ea1 = [r for r in q09 if r["ea_id"] == "QM5_1"]
+            ea2 = [r for r in q09 if r["ea_id"] == "QM5_2"]
+            # ea1: anti-stacking fired -> exactly one terminal FAIL row, no rescue row.
+            self.assertEqual(len(ea1), 1)
+            self.assertEqual((ea1[0]["status"], ea1[0]["verdict"]), ("done", "FAIL"))
+            self.assertEqual(
+                _reason(ea1[0]), "soft_stacking_forbidden:q06_soft+q08_edge_soft")
+            # ea2 (no Q06 probation): promoted through the normal path, NEVER soft-stacked.
+            self.assertEqual(len(ea2), 1)
+            self.assertNotEqual(
+                _reason(ea2[0]), "soft_stacking_forbidden:q06_soft+q08_edge_soft")
+            self.assertNotEqual(
+                (ea2[0]["status"], ea2[0]["verdict"]), ("done", "FAIL"))
+
+
 if __name__ == "__main__":
     unittest.main()

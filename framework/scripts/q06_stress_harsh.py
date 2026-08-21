@@ -41,6 +41,15 @@ from framework.scripts.gen_stress_setfile import stress_setfile_text
 GATE_NAME = "Q06"
 LEVEL = "HARSH"
 
+# OWNER Option A 2026-08-21 (docs/ops/Q05_Q06_FAIL_SOFT_VORLAGE_2026-08-21.md, band
+# measured at 40.3% in docs/ops/evidence/2026-08-21_q06_fail_soft_band_sizing.md):
+# a gross-profitable EA (Q05-PASS is a precondition) that slips only MARGINALLY under
+# the PF floor under the synthetic 10% trade-rejection stress advances to Q07 on a
+# `probation:q06_soft` flag as PASS_SOFT, provided every OTHER hard check passes
+# (DD < ceiling, trades >= floor). PF in [SOFT_PF_FLOOR, PF_FLOOR) is the band; DD and
+# frequency stay hard and unchanged.
+SOFT_PF_FLOOR = 0.95
+
 
 def gen_harsh_setfile_for(baseline: Path) -> Path:
     if not baseline.exists():
@@ -198,7 +207,19 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     elif dd_money is None:
         verdict, reason = "FAIL", f"missing_dd_in_summary:trades={trades}"
     elif pf <= PF_FLOOR:
-        verdict, reason = "FAIL", f"pf_below_floor:pf={pf:.3f}:floor={PF_FLOOR}"
+        # OWNER Option A 2026-08-21 PASS_SOFT band. CRITICAL ORDERING: this branch
+        # fires BEFORE the dd_above_ceiling check below, so the DD guard is applied
+        # HERE explicitly — otherwise a DD>=ceiling row in the PF band would leak into
+        # PASS_SOFT. The band is PF in [SOFT_PF_FLOOR, PF_FLOOR) (PF==1.0 stays FAIL,
+        # correctly outside the < 1.00 band). DD < ceiling reuses the exact hard-gate
+        # predicate (dd_pct <= DD_PCT_MAX); trades >= MIN_TRADES is already guaranteed
+        # by the trades_below_floor branch above. The persistent probation marker
+        # `probation:q06_soft` rides in the reason string (-> payload_json.verdict_reason).
+        if SOFT_PF_FLOOR <= pf < PF_FLOOR and dd_pct is not None and dd_pct <= DD_PCT_MAX:
+            verdict = "PASS_SOFT"
+            reason = f"pass_soft_band:pf={pf:.3f}:dd_pct={dd_pct:.2f}:probation:q06_soft"
+        else:
+            verdict, reason = "FAIL", f"pf_below_floor:pf={pf:.3f}:floor={PF_FLOOR}"
     elif dd_pct > DD_PCT_MAX:
         verdict, reason = "FAIL", f"dd_above_ceiling:dd_pct={dd_pct:.2f}:max={DD_PCT_MAX}"
     else:
@@ -285,7 +306,12 @@ def main() -> int:
     out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q06" / evidence_symbol.replace(".", "_"))
     write_json(out_dir / "aggregate.json", res)
     print(f"Q06 {args.ea} {evidence_symbol}: {res['verdict']}  pf={res['pf']}  dd_pct={res['dd_pct']}")
-    return 0 if res["verdict"] == "PASS" else (1 if res["verdict"] == "FAIL" else 3)
+    # PASS_SOFT is an advancing verdict (OWNER Option A 2026-08-21) — exit 0 like PASS,
+    # matching q04_walkforward.exit_code_for_verdict. The authoritative work-item verdict
+    # is the aggregate.json `verdict` (terminal_worker), not this exit code.
+    if res["verdict"] in ("PASS", "PASS_SOFT"):
+        return 0
+    return 1 if res["verdict"] == "FAIL" else 3
 
 
 if __name__ == "__main__":

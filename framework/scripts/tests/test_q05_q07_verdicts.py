@@ -643,6 +643,94 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertFalse(result["stress_input_authenticated"])
         self.assertIn("stress_input_not_effective", result["reason"])
 
+    def _run_q06_band(self, root: Path, *, pf: float, drawdown: float,
+                      trades: int) -> dict:
+        """Drive q06.run_harsh_backtest with a fake tester producing a summary+report
+        carrying an authenticated stress input, at the given pf/drawdown/trades."""
+        summary = root / "QM5_12969" / "20260713_072000" / "summary.json"
+        report = summary.parent / "raw" / "run_01" / "report.htm"
+        setfile = root / "12969.set"
+        setfile.write_text("qm_stress_reject_probability=0.1000\n", encoding="utf-8")
+
+        def fake_run(_args, **_kwargs):
+            summary.parent.mkdir(parents=True)
+            report.parent.mkdir(parents=True)
+            report.write_text(
+                "<html><b>qm_stress_reject_probability=0.1000</b></html>",
+                encoding="utf-16",
+            )
+            summary.write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "ea_id": 12969,
+                    "expert": r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                    "symbol": "USDJPY.DWX",
+                    "period": "M30",
+                    "terminal": "T1",
+                    "runs": [{
+                        "profit_factor": pf,
+                        "drawdown": drawdown,
+                        "total_trades": trades,
+                        "report_canonical_path": str(report),
+                    }],
+                }),
+                encoding="utf-8",
+            )
+            return SimpleNamespace(
+                returncode=0, stdout=f"run_smoke.summary={summary}\n", stderr="")
+
+        with patch.object(q06.subprocess, "run", side_effect=fake_run):
+            return q06.run_harsh_backtest(
+                ea_id=12969,
+                ea_expert=r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                symbol="USDJPY.DWX",
+                setfile=setfile,
+                terminal="T1",
+                period="M30",
+                report_root=root,
+            )
+
+    def test_q06_pass_soft_band_with_ok_dd_advances(self) -> None:
+        # OWNER Option A 2026-08-21: PF in [0.95, 1.00) with DD < 25% and trades >= 20
+        # -> PASS_SOFT on probation, carrying the persistent probation:q06_soft marker.
+        with tempfile.TemporaryDirectory() as tmp:
+            result = self._run_q06_band(Path(tmp), pf=0.97, drawdown=12_400.0, trades=200)
+        self.assertEqual(result["verdict"], "PASS_SOFT", result)
+        self.assertIn("pass_soft_band", result["reason"])
+        self.assertIn("probation:q06_soft", result["reason"])
+        self.assertIn("pf=0.970", result["reason"])
+
+    def test_q06_pass_soft_band_with_high_dd_stays_fail(self) -> None:
+        # CRITICAL ORDERING caveat: a PF-band row whose DD >= 25% must NOT slip into
+        # PASS_SOFT — the DD guard fires inside the pf_below_floor branch. It stays a
+        # terminal pf_below_floor FAIL (DD hard ceiling untouched).
+        with tempfile.TemporaryDirectory() as tmp:
+            result = self._run_q06_band(Path(tmp), pf=0.97, drawdown=30_000.0, trades=200)
+        self.assertEqual(result["verdict"], "FAIL", result)
+        self.assertIn("pf_below_floor", result["reason"])
+        self.assertNotIn("probation:q06_soft", result["reason"])
+
+    def test_q06_pf_at_floor_is_fail_not_soft(self) -> None:
+        # PF == 1.00 is OUTSIDE the < 1.00 band and remains a pf_below_floor FAIL.
+        with tempfile.TemporaryDirectory() as tmp:
+            result = self._run_q06_band(Path(tmp), pf=1.00, drawdown=12_400.0, trades=200)
+        self.assertEqual(result["verdict"], "FAIL", result)
+        self.assertIn("pf_below_floor", result["reason"])
+
+    def test_q06_pf_above_floor_is_clean_pass(self) -> None:
+        # PF > 1.00 is a clean PASS, unchanged by the soft band.
+        with tempfile.TemporaryDirectory() as tmp:
+            result = self._run_q06_band(Path(tmp), pf=1.30, drawdown=12_400.0, trades=200)
+        self.assertEqual(result["verdict"], "PASS", result)
+        self.assertIn("stress=HARSH", result["reason"])
+
+    def test_q06_pf_below_band_is_fail(self) -> None:
+        # PF < 0.95 is below the band -> ordinary pf_below_floor FAIL.
+        with tempfile.TemporaryDirectory() as tmp:
+            result = self._run_q06_band(Path(tmp), pf=0.90, drawdown=12_400.0, trades=200)
+        self.assertEqual(result["verdict"], "FAIL", result)
+        self.assertIn("pf_below_floor", result["reason"])
+
     def test_q05_passes_basket_manifest_tester_overrides(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
