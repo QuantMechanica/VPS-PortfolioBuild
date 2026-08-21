@@ -2,70 +2,57 @@
 
 **EA ID:** QM5_36007
 **Slug:** `nnfx-vidya-trix-fisher-momentum`
-**Source:** `nnfx-vidya-trix-fisher-momentum-official-source` (see `strategy-seeds/sources/nnfx-vidya-trix-fisher-momentum/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-08-17
+**Source:** `nnfx-vidya-trix-fisher-momentum-official-source`
+**Author of this spec:** Codex
+**Last revised:** 2026-08-21
 
 ---
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_36007_nnfx-vidya-trix-fisher-momentum.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
+On each completed D1 bar, the EA buys when the close is above VIDYA(9, CMO 12), TRIX(14) is above its signal line, Fisher is positive, and MFI(14) is at least 50; it sells on the exact inverse conditions. Each entry receives a server-side stop one ATR(14) from the market price. At a one-ATR gain, the EA closes 50% and moves the remaining stop to entry plus or minus one pip; the runner closes when TRIX crosses back through its signal line. Entry is suppressed during the card's GMT rollover window, on a genuinely wide spread, after the card's loss limits, or while this EA already has a position.
 
-Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_36007_nnfx-vidya-trix-fisher-momentum.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
-
-The high-speed NNFX algorithmic framework on D1 combines Variable Index Dynamic Average (Baseline), TRIX (C1 Trigger), Fisher Transform (C2 Confirmation), and Money Flow Index (Volume Gate):
-- Baseline: Variable Index Dynamic Average (VIDYA 9 adjusted by Chande Momentum Oscillator 12) evaluated on completed D1 bars (Shift=1).
-- C1 Trigger: TRIX (triple EMA 14, signal 9) comparing TRIX line to its signal line.
-- C2 Confirmation: Fisher Transform (period 10) confirming momentum direction (Fisher > 0.0 for Long, Fisher < 0.0 for Short).
-- Volume Gate: Money Flow Index (MFI 14) confirming tick volume flow (MFI >= 50.0 for Long, MFI <= 50.0 for Short).
-- Long Entry: Close[1] > VIDYA[1] AND TRIX[1] > TRIX_Signal[1] AND Fisher[1] > 0.0 AND MFI(14)[1] >= 50.0.
-- Short Entry: Close[1] < VIDYA[1] AND TRIX[1] < TRIX_Signal[1] AND Fisher[1] < 0.0 AND MFI(14)[1] <= 50.0.
-- Stop Loss: Placed at 1.0 * ATR(14, D1)[1] from entry.
-- Take Profit: Placed at 1.0 * ATR(14, D1)[1] from entry.
-- Break-Even: Move SL to Entry + 1.0 pip when open profit reaches +1.0R (1.0x ATR).
-- Runner Exit: Close position when TRIX crosses opposing signal line (TRIX < TRIX_Signal for Long, TRIX > TRIX_Signal for Short).
-- No-Trade Filter: Dynamic spread filter (Spread > 1.8 * ATR(14, D1)[1]) and rollover blackout 23:55–00:05 GMT.
+The approved card does not state the TRIX signal smoothing period or Fisher lookback, so this build fixes them at conventional EMA(9) and 10-bar defaults and reports that interpretation for review.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_vidya_period` | 9 | 5 - 15 | VIDYA base smoothing period |
-| `strategy_cmo_period` | 12 | 8 - 20 | Chande Momentum volatility period |
-| `strategy_trix_period` | 14 | 9 - 21 | TRIX triple EMA smoothing period |
-| `strategy_trix_signal` | 9 | 5 - 15 | TRIX signal line averaging period |
-| `strategy_fisher_period` | 10 | 5 - 20 | Fisher Transform lookback period |
-| `strategy_mfi_period` | 14 | 10 - 20 | Money Flow Index period |
-| `strategy_atr_period` | 14 | 10 - 20 | ATR period for stop loss and spread filter |
-| `strategy_sl_atr_mult` | 1.00 | 0.8 - 1.5 | Stop loss distance as ATR multiplier |
-| `strategy_tp_atr_mult` | 1.00 | 0.8 - 1.5 | Take profit distance as ATR multiplier |
-| `strategy_spread_atr_mult` | 1.80 | 1.0 - 2.5 | Spread filter ATR multiplier |
+|---|---:|---|---|
+| `strategy_vidya_period` | 9 | 5–15 | VIDYA base smoothing period. |
+| `strategy_cmo_period` | 12 | 8–20 | CMO lookback controlling VIDYA's adaptive alpha. |
+| `strategy_trix_period` | 14 | 9–21 | Period of each of the three TRIX EMA stages. |
+| `strategy_trix_signal_period` | 9 | fixed pending review | EMA period for the card's otherwise unspecified TRIX signal line. |
+| `strategy_fisher_period` | 10 | fixed pending review | Lookback for the card's otherwise unspecified Fisher transform. |
+| `strategy_mfi_period` | 14 | fixed | Tick-volume MFI lookback stated by the card. |
+| `strategy_atr_period` | 14 | fixed | ATR lookback used by stops, TP1, and spread admission. |
+| `strategy_mfi_midline` | 50.0 | fixed | Long/short MFI dividing level. |
+| `strategy_sl_atr_mult` | 1.0 | fixed | Initial stop distance in ATR units. |
+| `strategy_tp1_atr_mult` | 1.0 | fixed | Distance at which 50% is closed. |
+| `strategy_spread_atr_mult` | 1.8 | fixed | Blocks entry only when positive spread exceeds this ATR multiple. |
+| `strategy_daily_loss_limit_pct` | 2.0 | fixed | Daily realized-loss entry halt. |
+| `strategy_daily_drawdown_hard_stop_pct` | 2.5 | fixed | Daily equity hard-stop measured from starting balance. |
+| `strategy_total_drawdown_stop_pct` | 5.0 | fixed | Total equity hard-stop measured from initial equity. |
+| `strategy_max_slippage_ticks` | 3.0 | fixed | Maximum entry deviation converted from trade ticks to MT5 points. |
 
-> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
-> qm_friday_close_*) are documented in
-> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
+Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — registered in magic_numbers.csv for this EA (slot 0)
-- `GBPJPY.DWX` — registered in magic_numbers.csv for this EA (slot 1)
-- `NZDCAD.DWX` — registered in magic_numbers.csv for this EA (slot 2)
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the `QM_SymbolGuard` framework helper
-rejects foreign symbols).
+- `EURUSD.DWX` — the card's primary liquid FX trend instrument and smoke target.
+- `GBPJPY.DWX` — the card's higher-volatility portable FX cross for D1 momentum.
+- `NZDCAD.DWX` — the card's lower-correlation portable FX cross for D1 momentum.
+
+All three symbols are present in `framework/registry/dwx_symbol_matrix.csv` and have active, distinct slots in `magic_numbers.csv`.
+
+**Explicitly NOT for:**
+
+- Any symbol outside those three rows — the approved card names a finite FX basket and does not authorize expansion.
 
 ---
 
@@ -75,7 +62,7 @@ rejects foreign symbols).
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` for entry; `QM_CalendarPeriodKey(PERIOD_D1)` advances the closed-bar cache without consuming the entry gate. |
 
 ---
 
@@ -84,11 +71,11 @@ rejects foreign symbols).
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 25 |
-| Cadence note | "80-160 high-conviction trades per year across 3 pairs" |
-| Typical hold time | Daily swing (several D1 bars, up to 1-3 weeks) |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | Multi-indicator trend consensus with confirmed fast momentum |
-| Win rate target (qualitative) | high |
+| Expected trade frequency | 80–160 high-conviction trades per year across the basket, as stated in frontmatter |
+| Typical hold time | Not specified in card; a D1 trade remains open until SL, TP1 protection plus TRIX recross, or framework Friday close |
+| Expected drawdown profile | 18% expected drawdown in card frontmatter, with 2.0% daily realized, 2.5% daily equity, and 5.0% total hard limits |
+| Regime preference | trend-following / momentum |
+| Win rate target (qualitative) | not governed; source performance claims were explicitly ignored by G0 approval reasoning |
 
 ---
 
@@ -97,9 +84,9 @@ rejects foreign symbols).
 This card was mechanised from:
 
 **Source ID:** `nnfx-vidya-trix-fisher-momentum-official-source`
-**Pointer:** `strategy-seeds/sources/nnfx-vidya-trix-fisher-momentum/`
-**R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_36007_nnfx-vidya-trix-fisher-momentum.md`
+**Source type:** verified quantitative model
+**Pointer:** `D:/QM/strategy_farm/artifacts/cards_approved/QM5_36007_nnfx-vidya-trix-fisher-momentum.md` and local build copy `docs/strategy_card.md`
+**R1–R4 verdict (Q00):** R1 lineage recorded and R2–R4 PASS per `artifacts/cards_approved/QM5_36007_nnfx-vidya-trix-fisher-momentum.md`.
 
 ---
 
@@ -114,3 +101,9 @@ This card was mechanised from:
 ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-08-21 | Initial build from card | de0f1ea4-6465-4ba0-836d-483d4fd8dbeb |
