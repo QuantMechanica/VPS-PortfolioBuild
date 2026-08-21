@@ -138,3 +138,22 @@ Aktive Großbaustelle ist der Q09-Kontrakt v3 (A+B, vorab genehmigt); die v2-Ref
 | TODO-203 | Symbol-List-Seite generieren | Deterministischer Generator + Drift-Test, Seite auf 37 Symbole inkl. SP500; Folgepunkt: `company_manifest.json`-Symbolblock driftet weiter (769d09e6e) |
 
 Alle 7 Router-Tasks APPROVED geschlossen; adversariale Verify-Agents je Task = PASS. Verbleibend auf dem Codex-Board: die Architektur-Brocken MNT-011/-038/-030/-016/-031/-032/-035 und die blockierten -020/-006/-013/-039.
+
+## Nachtrag 2026-08-21 (abends) · Ultracode-Wellen 2/2b/3 — kompletter Maintenance-Ledger reviewt und geschlossen
+
+| aus | Punkt | Ergebnis in einem Satz |
+|---|---|---|
+| MNT-011 | Dirty-Guard entkoppelt | Doppelreview APPROVED: strukturelle Generated-Klassifikation fail-closed (bfce1fa3a), Pump-Blocking 165→6; Spawn-Beobachtung im generated-only-Fenster folgt beim nächsten natürlich sauberen Baum |
+| MNT-038 | Canary-vor-Fanout | Codex-Lieferung + Claude-Härtung nach Review-Bounce: Cross-Asset-Null-Bestätigung, K=3-Infra-Bestätigung, STOPPED-Revival; adversarial APPROVE, live via SweepEnqueue_Hourly (`2026-08-21_mnt038_canary_gate_hardening.md`) |
+| MNT-016 | Verdikt-Taxonomie | Abgeleitete ro-TEMP-View, Basisrows byte-intakt, Invariante 0 Verletzungen über 110k Rows, Dashboards lesen die View — APPROVED |
+| MNT-032 | Headroom-Governor | Echt gemessener Disk/RAM/Commit-Headroom, drosselt nur Spawns, fail-closed, unplausibler Reclaim → TELEMETRY_ERROR — APPROVED |
+| MNT-035 | Ein Health-Vertrag | qm.health.contract.v1 über alle Wächter, 7 Widersprüche als grüne Fixtures, komponiert mit MNT-003 — APPROVED |
+| MNT-031 | Worktree-Vertrag | 8 Klauseln + gemessenes 59-Worktree-Inventar, reine Doku/Tooling — APPROVED |
+| MNT-013 | Card-Buckets | 365 Karten in benannten Buckets (324/33/8), Summen exakt, kein Sammelbau — APPROVED |
+| MNT-030 | Source-Ingestion | Prämisse hielt nicht (gemessen): Pool 12 pending, SLOs getrennt, Intake sauber — APPROVED als Premise-Check |
+| MNT-039 | Limbo-Sweeper | PIPELINE-Klasse geliefert (13→BLOCKED, 1 echter Q10-Passer→PASSED, idempotent); Rest kommissioniert als `1d8e74a0` |
+| MNT-020 | BarsCalculated-Kohorte | Source-Repair + D6-Linter APPROVED; QM5_20096-Runtime-Beweis kommissioniert als `c010ccb7`, wartet auf OWNER (ROT-Recompile) |
+| MNT-006 | 275 Stranded-Paare | Alle 275 klassifiziert+disponiert (bit-identisch reproduziert); Drain kommissioniert als `7333402c`, wartet auf MNT-038-Aktivierung + OWNER |
+
+**Entscheidungsschlange (2):** `OWNER-DEC-MNT020-RECOMPILE` (QM5_20096-Rebuild freigeben) · `OWNER-DEC-MNT006-CANARY` (10-Zeilen-Drain freigeben) — beide in `12 ToDo/AI ToDos/OWNER.md` mit Empfehlung + Cost of Wait.
+**Cleanup-Batch:** 5 Review-Notizen als Router-Task `db470d0a` (P40). Das Codex-Board steht auf 18/18 erledigt; der Maintenance-Ledger vom 28.07. ist damit vollständig disponiert.
