@@ -1,7 +1,9 @@
 # Agent-Registry: Capabilities flattern zwischen zwei Checkouts
 
 **Datum:** 2026-08-21 · **Befund von:** Claude (Orchestrator) · **Ticket:** `cd982cfc`
-**Klasse:** Routing-Infrastruktur, verdikt-neutral · **Status:** Ursache belegt, Fix offen
+**Klasse:** Routing-Infrastruktur, verdikt-neutral · **Status:** Ursache belegt,
+Fix behoben in Commit `9c8f5ab8e` (siehe Abschnitt „Fix umgesetzt" unten und
+Schwester-Dok `2026-08-21_router_registry_authority_repair.md`)
 
 ## Kurzfassung
 
@@ -90,3 +92,100 @@ python -c "import sqlite3;c=sqlite3.connect(r'D:/QM/strategy_farm/state/farm_sta
 ```
 
 Zweimal im Abstand von ~10 Minuten ausführen und die Zeilen vergleichen.
+
+---
+
+## Fix umgesetzt (2026-08-21, ticket cd982cfc, Commit `9c8f5ab8e`)
+
+Betroffene Dateien: `tools/strategy_farm/agent_router.py`,
+`tools/strategy_farm/tests/test_agent_router.py` (beide in `9c8f5ab8e`),
+`docs/ops/evidence/2026-08-21_router_registry_authority_repair.md`
+(Rollback-SQL + Init-Beleg) und dieses Root-Cause-Dokument.
+
+### Teil 1 — genau ein schreibender Checkout
+
+`sync_default_registry` schreibt nur noch, wenn der ausführende Checkout ein
+*primärer* Checkout ist. Gate: `_registry_writer_authorized()` prüft
+`(ROUTER_CHECKOUT_ROOT / ".git").is_dir()`, wobei
+`ROUTER_CHECKOUT_ROOT = Path(__file__).resolve().parents[2]`. Ein normaler
+Checkout (`C:/QM/repo`) hat ein `.git`-**Verzeichnis** → schreibberechtigt. Ein
+Git-Linked-Worktree (die Orchestrierungs-Worktrees) hat eine `.git`-**Datei** →
+nicht berechtigt, kehrt read-only zurück (`{"synced":[], "read_only":true,
+"reason":"linked_worktree_registry_reader"}`) und liest nur die Contract-Lage.
+Das deckt automatisch alle sechs Aufrufstellen von `sync_default_registry` ab
+(`route_once`, `route_many`→`route_once`, `replenish`, `run_once`, `status`,
+`enqueue_friday_smoke_tasks`), da alle durch dieselbe Funktion laufen. Der
+kanonische Schreiber ist der 5-Minuten-Task `QM_StrategyFarm_AgentRouter_5min`
+(`run_agent_router_task.py`, hartkodiert `REPO_ROOT=C:\QM\repo`, importiert
+`tools.strategy_farm.agent_router` aus dem kanonischen Baum → `.git`-Verzeichnis
+→ schreibt den kanonischen Stand). Die Orchestrierungs-Worktrees rufen
+`agent_router.py` aus ihrem eigenen (linked) Checkout auf und können die Zeilen
+nicht mehr überschreiben.
+
+### Teil 2 — Superset-Test
+
+Neuer Test `test_default_and_live_registry_cover_each_lane_contract`
+(`tests/test_agent_router.py`). Er prüft für jede Lane in
+`AGENT_TASK_TYPE_LANES` (codex/claude → `ops_issue`,`triage_failure`; gemini →
+`research_strategy`) plus `AGENT_EXTRA_REQUIRED_CAPABILITIES`
+(gemini → `video_analysis`), dass die deklarierten Capabilities eine **Obermenge**
+der geforderten sind — sowohl im `DEFAULT_AGENT_REGISTRY` als auch in der per
+`sync_default_registry` geschriebenen Live-Registry (`registry_contract`). Ein
+zweiter Test `test_linked_worktree_is_registry_reader_and_cannot_overwrite_rows`
+belegt, dass ein Linked-Worktree eine zuvor eingeschmuggelte schmale
+`claude`-Zeile NICHT überschreibt (read-only) und der Contract die Lücke meldet.
+Ergebnis (2026-08-21, aus `C:/QM/repo`):
+
+```
+python -m pytest tools/strategy_farm/tests/test_agent_router.py -q
+27 passed in 70.13s
+```
+
+Gegen das heutige „schmal gewinnt"-Szenario (claude ohne `ops`) meldet
+`registry_contract(...)["ok"]==False` mit
+`gaps=[{agent_id:"claude", missing:["ops"], ...}]`.
+
+### Teil 3 — fail-loud statt stiller Skip
+
+`route_once` prüft vor der Agentenauswahl `_capability_profile_gap(conn, required)`:
+existiert KEIN Agent, dessen Capabilities die geforderten enthalten, dann
+- persistiert `_record_capability_warning` eine sichtbare Warnung in
+  `payload_json.router_capability_warning` (`code=ROUTER_CAPABILITY_UNROUTABLE`,
+  `required`, `missing_by_agent`) UND ein Event `routing_capability_unroutable`,
+  ohne Queue-Alter/Priorität zu ändern;
+- die `RouteDecision.reason` wird `capability_unavailable:<caps>` statt des
+  generischen `no_available_agent`.
+Sichtbar zusätzlich in `agent_router.py status` über das Feld
+`registry_contract` (Lücken pro Lane), das die Orchestrierungs-Prompt jeden
+Zyklus ausführt und das Dashboards/Menschen lesen. So sieht man „N Tasks haben
+keinen fähigen Agenten" statt gewöhnlichen Rückstaus.
+
+### Scope-Korrektur (gemini bleibt unverändert)
+
+Ein zuvor uncommitteter Arbeitsstand hatte `gemini` im `DEFAULT_AGENT_REGISTRY`
+**verschmälert** (`code`,`tests`,`repo_edit` entfernt). Das verletzt die
+Ticket-Vorgabe („gemini-Set exakt wie im kanonischen Repo lassen; die
+gemini-Frage ist eine separate OWNER-Entscheidung, nicht Teil dieses Fixes")
+und brach drei Bestandstests (build_ea routete auf codex statt gemini, die
+Review-Dispatch-Gate greift nur bei gemini-Builds). Korrigiert: `gemini` steht
+wieder auf dem kanonischen Satz
+`["code","tests","repo_edit","research","strategy","source_discovery","video_analysis"]`.
+Die Entscheidung, ob `code`/`tests`/`repo_edit` auf der Research/Video-Lane
+bleiben, ist weiterhin OWNER-Vorlage (siehe Abschnitt „Empfohlene Richtung" Pkt 3).
+
+## Rollback-Record (Live-Stand bei Fix-Beginn, 2026-08-21 ~13:18Z)
+
+Falls der Fix rückgängig gemacht werden muss, sind dies die exakten
+`capabilities_json`-Werte, wie sie bei Beginn in
+`D:/QM/strategy_farm/state/agent_registry` standen (kanonischer/breiter Stand,
+der zu diesem Zeitpunkt gerade gewonnen hatte):
+
+| agent_id | enabled | max_parallel | cost_rank | capabilities_json |
+|---|---|---|---|---|
+| claude | 1 | 3 | 30 | `["code","tests","repo_edit","repo","ops","research","review","strategy","summary"]` |
+| codex  | 1 | 5 | 20 | `["code","tests","repo_edit","review","ops","research","strategy"]` |
+| gemini | 1 | 2 | 10 | `["code","tests","repo_edit","research","strategy","source_discovery","video_analysis"]` |
+
+`cost_rank` und `max_parallel` wurden vom Fix NICHT verändert (nur Eligibility /
+Schreib-Gate). Rückabwicklung: die drei Zeilen mit obigen Werten neu schreiben
+und den `_registry_writer_authorized`-Gate in `sync_default_registry` entfernen.
