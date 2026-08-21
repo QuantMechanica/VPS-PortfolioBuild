@@ -284,6 +284,10 @@ HARNESS_PP_FIXTURE_PHASE = "HARNESS_PP_FIXTURE"
 HARNESS_PP_FIXTURE_EA_ID = "QM_PP_FIXTURE_HARNESS"
 HARNESS_PP_FIXTURE_EA_LABEL = "QM_pattern_permission_fixture_runner"
 HARNESS_PP_FIXTURE_SOURCE_DIR = REPO_ROOT / "framework" / "tests"
+# run_smoke requires a positive numeric logger/evidence namespace even for a
+# non-strategy harness. This reserved diagnostic id is never registered,
+# reviewed, promoted, or used as a magic number.
+HARNESS_RUN_SMOKE_EA_ID = 999999
 # The factory terminals (T1-T10) always run as Administrator; the shared
 # MQL5 FILE_COMMON root every other consumer in this codebase hardcodes
 # (analyze_ftmo_costs.py, health.py, repair.py, isolated_work_item_runner.py, ...).
@@ -5696,7 +5700,7 @@ def _spawn_harness_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     cmd = [
         "pwsh.exe", "-NoProfile", "-File",
         str(REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"),
-        "-EAId", "0",
+        "-EAId", str(HARNESS_RUN_SMOKE_EA_ID),
         "-EALabel", harness_label,
         "-Symbol", symbol,
         "-Year", str(item_payload.get("harness_year") or 2024),

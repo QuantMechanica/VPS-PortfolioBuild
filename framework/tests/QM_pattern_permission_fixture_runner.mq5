@@ -166,6 +166,24 @@ int OnInit()
    FileClose(in_handle);
    FileClose(out_handle);
 
+   // Bug #4 evidence probe: exercise the public history-loading path with the
+   // deepest predicate in the 77-predicate bank. The fixture assertions above
+   // remain pure-data tests; this extra call exists only to make the first bar
+   // at which the fail-closed history gate becomes tradable visible in the
+   // sanctioned tester evidence. It never places or modifies an order.
+   QM_PatternProfile warmup_profile;
+   QM_PP_ProfileInit(warmup_profile, "BUG4_MAX_DEPTH", PERIOD_D1, 1);
+   const bool warmup_added =
+      QM_PP_ProfileAddBuy(warmup_profile, QM_PP_VOL_PERCENTILE_HIGH);
+   const QM_PermissionResult warmup_result =
+      QM_PatternPermissionEvaluate(_Symbol, PERIOD_D1, 1, warmup_profile);
+   PrintFormat("QM_PATTERN_WARMUP_PROBE added=%s valid=%s required_bars=%d reference_bar_time=%I64d reason=%s",
+               (string)warmup_added,
+               (string)warmup_result.valid,
+               QM_PP_ProfileRequiredBars(warmup_profile),
+               (long)warmup_result.reference_bar_time,
+               warmup_result.reason);
+
    PrintFormat("QM_FIXTURE_RUNNER done pass=%d fail=%d short=%d malformed=%d out=%s",
                pass_count, fail_count, short_count, malformed, qm_fixture_output);
 

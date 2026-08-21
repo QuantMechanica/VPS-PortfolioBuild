@@ -1,0 +1,278 @@
+{
+  "cache_scope": {
+    "components": [
+      "symbol",
+      "reference_tf",
+      "ref_bar",
+      "QM_PP_ProfileKey(profile)"
+    ],
+    "expression": "symbol + \"|\" + IntegerToString((int)reference_tf) + \"|\" + IntegerToString((int)ref_bar) + \"|\" + QM_PP_ProfileKey(profile)",
+    "reason": "ref_bar is part of the key, so a cached denial cannot be reused for the next reference bar",
+    "verdict": "NO_DEFECT_REFERENCE_BAR_SCOPED"
+  },
+  "calculation_basis": {
+    "bar_required": "need closed bars exist; first history-valid evaluation",
+    "bar_zero": "no closed reference bar; reference_bar_unavailable",
+    "bars_one_through_required_minus_one": "CopyRates returns fewer than need; insufficient_or_invalid_history",
+    "timeframe_duration": "nominal bar duration only; weekends and exchange closures are not converted into wall-clock estimates"
+  },
+  "depth_distribution": {
+    "1": 2,
+    "101": 2,
+    "11": 7,
+    "12": 2,
+    "21": 3,
+    "22": 3,
+    "3": 47,
+    "4": 3,
+    "6": 6,
+    "7": 1,
+    "8": 1
+  },
+  "depth_measurements": [
+    {
+      "first_tradable_current_bar_index": 1,
+      "insufficient_history_denied_bars": 0,
+      "predicate_count": 2,
+      "predicates": [
+        "QM_PP_QUARTER_END",
+        "QM_PP_THIRD_FRIDAY"
+      ],
+      "reference_unavailable_denied_bars": 1,
+      "required_closed_bars": 1,
+      "total_start_bars_denied": 1
+    },
+    {
+      "first_tradable_current_bar_index": 3,
+      "insufficient_history_denied_bars": 2,
+      "predicate_count": 47,
+      "predicates": [
+        "QM_PP_BELT_HOLD_BEAR",
+        "QM_PP_BELT_HOLD_BULL",
+        "QM_PP_CLOSE_ABOVE_PREV_HIGH",
+        "QM_PP_CLOSE_BELOW_PREV_LOW",
+        "QM_PP_DARK_CLOUD_COVER",
+        "QM_PP_DOJI",
+        "QM_PP_DOUBLE_INSIDE_BAR",
+        "QM_PP_DRAGONFLY_DOJI",
+        "QM_PP_ENGULFING_BEAR",
+        "QM_PP_ENGULFING_BULL",
+        "QM_PP_EVENING_STAR",
+        "QM_PP_EXHAUSTION_GAP_DOWN",
+        "QM_PP_EXHAUSTION_GAP_UP",
+        "QM_PP_GAP_AND_GO_BEAR",
+        "QM_PP_GAP_AND_GO_BULL",
+        "QM_PP_GAP_DOWN",
+        "QM_PP_GAP_UP",
+        "QM_PP_GRAVESTONE_DOJI",
+        "QM_PP_HAMMER",
+        "QM_PP_HANGING_MAN",
+        "QM_PP_HARAMI_BEAR",
+        "QM_PP_HARAMI_BULL",
+        "QM_PP_HIGHER_HIGH",
+        "QM_PP_INSIDE_BAR",
+        "QM_PP_INVERTED_HAMMER",
+        "QM_PP_LONG_LOWER_WICK",
+        "QM_PP_LONG_UPPER_WICK",
+        "QM_PP_LOWER_LOW",
+        "QM_PP_MARUBOZU_BEAR",
+        "QM_PP_MARUBOZU_BULL",
+        "QM_PP_MORNING_STAR",
+        "QM_PP_OUTSIDE_BAR",
+        "QM_PP_PIERCING_LINE",
+        "QM_PP_PIN_BAR_BEAR",
+        "QM_PP_PIN_BAR_BULL",
+        "QM_PP_SHOOTING_STAR",
+        "QM_PP_SPINNING_TOP",
+        "QM_PP_THREE_BLACK_CROWS",
+        "QM_PP_THREE_INSIDE_DOWN",
+        "QM_PP_THREE_INSIDE_UP",
+        "QM_PP_THREE_OUTSIDE_DOWN",
+        "QM_PP_THREE_OUTSIDE_UP",
+        "QM_PP_THREE_WHITE_SOLDIERS",
+        "QM_PP_TWEEZER_BOTTOM",
+        "QM_PP_TWEEZER_TOP",
+        "QM_PP_VOL_CONTRACTION",
+        "QM_PP_VOL_EXPANSION"
+      ],
+      "reference_unavailable_denied_bars": 1,
+      "required_closed_bars": 3,
+      "total_start_bars_denied": 3
+    },
+    {
+      "first_tradable_current_bar_index": 4,
+      "insufficient_history_denied_bars": 3,
+      "predicate_count": 3,
+      "predicates": [
+        "QM_PP_NR4",
+        "QM_PP_THREE_DAY_FALLING",
+        "QM_PP_THREE_DAY_RISING"
+      ],
+      "reference_unavailable_denied_bars": 1,
+      "required_closed_bars": 4,
+      "total_start_bars_denied": 4
+    },
+    {
+      "first_tradable_current_bar_index": 6,
+      "insufficient_history_denied_bars": 5,
+      "predicate_count": 6,
+      "predicates": [
+        "QM_PP_FALLING_THREE_METHODS",
+        "QM_PP_FRACTAL_BREAKOUT",
+        "QM_PP_MAT_HOLD_BEAR",
+        "QM_PP_MAT_HOLD_BULL",
+        "QM_PP_RISING_THREE_METHODS",
+        "QM_PP_TREND_EXHAUSTION"
+      ],
+      "reference_unavailable_denied_bars": 1,
+      "required_closed_bars": 6,
+      "total_start_bars_denied": 6
+    },
+    {
+      "first_tradable_current_bar_index": 7,
+      "insufficient_history_denied_bars": 6,
+      "predicate_count": 1,
+      "predicates": [
+        "QM_PP_NR7"
+      ],
+      "reference_unavailable_denied_bars": 1,
+      "required_closed_bars": 7,
+      "total_start_bars_denied": 7
+    },
+    {
+      "first_tradable_current_bar_index": 8,
+      "insufficient_history_denied_bars": 7,
+      "predicate_count": 1,
+      "predicates": [
+        "QM_PP_WIDE_RANGE_BAR"
+      ],
+      "reference_unavailable_denied_bars": 1,
+      "required_closed_bars": 8,
+      "total_start_bars_denied": 8
+    },
+    {
+      "first_tradable_current_bar_index": 11,
+      "insufficient_history_denied_bars": 10,
+      "predicate_count": 7,
+      "predicates": [
+        "QM_PP_EFFICIENCY_RATIO_HIGH",
+        "QM_PP_EFFICIENCY_RATIO_LOW",
+        "QM_PP_RANGING",
+        "QM_PP_TREND_STRENGTH_DOWN_STRONG",
+        "QM_PP_TREND_STRENGTH_DOWN_WEAK",
+        "QM_PP_TREND_STRENGTH_UP_STRONG",
+        "QM_PP_TREND_STRENGTH_UP_WEAK"
+      ],
+      "reference_unavailable_denied_bars": 1,
+      "required_closed_bars": 11,
+      "total_start_bars_denied": 11
+    },
+    {
+      "first_tradable_current_bar_index": 12,
+      "insufficient_history_denied_bars": 11,
+      "predicate_count": 2,
+      "predicates": [
+        "QM_PP_HIGH_VOLATILITY",
+        "QM_PP_LOW_VOLATILITY"
+      ],
+      "reference_unavailable_denied_bars": 1,
+      "required_closed_bars": 12,
+      "total_start_bars_denied": 12
+    },
+    {
+      "first_tradable_current_bar_index": 21,
+      "insufficient_history_denied_bars": 20,
+      "predicate_count": 3,
+      "predicates": [
+        "QM_PP_MEAN_REVERSION_SETUP",
+        "QM_PP_ZSCORE_HIGH",
+        "QM_PP_ZSCORE_LOW"
+      ],
+      "reference_unavailable_denied_bars": 1,
+      "required_closed_bars": 21,
+      "total_start_bars_denied": 21
+    },
+    {
+      "first_tradable_current_bar_index": 22,
+      "insufficient_history_denied_bars": 21,
+      "predicate_count": 3,
+      "predicates": [
+        "QM_PP_HIGH_VOL_REGIME",
+        "QM_PP_REGIME_TRANSITION",
+        "QM_PP_VOLUME_CLIMAX"
+      ],
+      "reference_unavailable_denied_bars": 1,
+      "required_closed_bars": 22,
+      "total_start_bars_denied": 22
+    },
+    {
+      "first_tradable_current_bar_index": 101,
+      "insufficient_history_denied_bars": 100,
+      "predicate_count": 2,
+      "predicates": [
+        "QM_PP_VOL_PERCENTILE_HIGH",
+        "QM_PP_VOL_PERCENTILE_LOW"
+      ],
+      "reference_unavailable_denied_bars": 1,
+      "required_closed_bars": 101,
+      "total_start_bars_denied": 101
+    }
+  ],
+  "generated_at_utc": "2026-08-21T08:28:44+00:00",
+  "predicate_count": 77,
+  "schema": "qm.pattern-warmup-measurement/v1",
+  "source_path": "C:\\QM\\repo\\framework\\include\\QM\\QM_PatternPermission.mqh",
+  "timeframe_worst_case": [
+    {
+      "first_tradable_current_bar_index": 101,
+      "nominal_elapsed_hours_to_first_tradable_bar": 8.4167,
+      "nominal_elapsed_minutes_to_first_tradable_bar": 505,
+      "timeframe": "M5",
+      "worst_required_closed_bars": 101,
+      "worst_total_start_bars_denied": 101
+    },
+    {
+      "first_tradable_current_bar_index": 101,
+      "nominal_elapsed_hours_to_first_tradable_bar": 25.25,
+      "nominal_elapsed_minutes_to_first_tradable_bar": 1515,
+      "timeframe": "M15",
+      "worst_required_closed_bars": 101,
+      "worst_total_start_bars_denied": 101
+    },
+    {
+      "first_tradable_current_bar_index": 101,
+      "nominal_elapsed_hours_to_first_tradable_bar": 101.0,
+      "nominal_elapsed_minutes_to_first_tradable_bar": 6060,
+      "timeframe": "H1",
+      "worst_required_closed_bars": 101,
+      "worst_total_start_bars_denied": 101
+    },
+    {
+      "first_tradable_current_bar_index": 101,
+      "nominal_elapsed_hours_to_first_tradable_bar": 404.0,
+      "nominal_elapsed_minutes_to_first_tradable_bar": 24240,
+      "timeframe": "H4",
+      "worst_required_closed_bars": 101,
+      "worst_total_start_bars_denied": 101
+    },
+    {
+      "first_tradable_current_bar_index": 101,
+      "nominal_elapsed_hours_to_first_tradable_bar": 2424.0,
+      "nominal_elapsed_minutes_to_first_tradable_bar": 145440,
+      "timeframe": "D1",
+      "worst_required_closed_bars": 101,
+      "worst_total_start_bars_denied": 101
+    }
+  ],
+  "worst_case": {
+    "first_tradable_current_bar_index": 101,
+    "insufficient_history_denied_bars": 100,
+    "predicates": [
+      "QM_PP_VOL_PERCENTILE_HIGH",
+      "QM_PP_VOL_PERCENTILE_LOW"
+    ],
+    "reference_unavailable_denied_bars": 1,
+    "required_closed_bars": 101,
+    "total_start_bars_denied": 101
+  }
+}

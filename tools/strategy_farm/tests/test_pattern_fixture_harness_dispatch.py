@@ -161,6 +161,9 @@ class PatternFixtureHarnessDispatchTests(unittest.TestCase):
             deployed_ex5.unlink()  # test cleanup: this path lives outside tmp
 
             self.assertEqual(cmd[cmd.index("-Expert") + 1], f"QM\\{harness_label}")
+            self.assertEqual(
+                cmd[cmd.index("-EAId") + 1], str(farmctl.HARNESS_RUN_SMOKE_EA_ID)
+            )
             self.assertEqual(cmd[cmd.index("-Symbol") + 1], "EURUSD.DWX")
             self.assertEqual(cmd[cmd.index("-MinTrades") + 1], "0")
             self.assertEqual(cmd[cmd.index("-Model") + 1], "4")

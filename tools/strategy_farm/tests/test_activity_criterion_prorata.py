@@ -16,7 +16,10 @@ filesystem/DB, so importing the module is safe.
 from __future__ import annotations
 
 import datetime as dt
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
 from tools.strategy_farm.portfolio import audit_activity_criterion as ac
 
@@ -165,6 +168,104 @@ class ClassifyIntegrationTests(unittest.TestCase):
         self.assertIn(2019, rec["skipped_partial_years_entry"])
         self.assertNotIn(2019, rec["years_below_criterion_entry"])
         self.assertTrue(rec["meets_10_per_year_entry"])
+
+    def test_real_first_tradable_marker_controls_boundary_coverage(self):
+        # Four Sep entries satisfy the historical earliest-trade substitute
+        # (Sep..Dec => ceil(10*4/12)=4). A measured July first-tradable marker
+        # proves six covered months, so the real threshold is 5 and must fail.
+        ev = (
+            self._entries(2019, 4, start_month=9)
+            + self._entries(2020, 12)
+        )
+        fallback = ac.classify(ev, coverage=1.0)
+        self.assertTrue(fallback["meets_10_per_year_entry"])
+        self.assertEqual(
+            fallback["coverage_start_source_entry"],
+            "earliest_trade_fallback_marker_absent",
+        )
+
+        measured = ac.classify(
+            ev,
+            coverage=1.0,
+            first_tradable_marker={
+                "status": "present",
+                "date": D(2019, 7, 1),
+                "source_evidence_path": "summary.json",
+            },
+        )
+        self.assertFalse(measured["meets_10_per_year_entry"])
+        self.assertIn(2019, measured["years_below_criterion_entry"])
+        self.assertEqual(
+            measured["coverage_start_source_entry"],
+            "pattern_first_tradable_bar",
+        )
+        self.assertEqual(measured["coverage_start_entry"], "2019-07-01")
+
+    def test_invalid_late_marker_falls_back_visibly(self):
+        ev = self._entries(2020, 12)
+        rec = ac.classify(
+            ev,
+            coverage=1.0,
+            first_tradable_marker={"status": "present", "date": D(2020, 12, 31)},
+        )
+        self.assertEqual(
+            rec["coverage_start_source_entry"],
+            "earliest_trade_fallback_invalid_marker_after_trade",
+        )
+        self.assertEqual(rec["first_tradable_marker_status_entry"], "invalid")
+
+
+class MarkerSummaryTests(unittest.TestCase):
+    def test_generation_bound_summary_marker_is_parsed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "summary.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "frequency_floor": {
+                            "schema": "qm.q02-frequency-coverage/v1",
+                            "coverage_start_source": "pattern_first_tradable_bar",
+                            "first_tradable_bar": {
+                                "tradable_bar_date": "2019.07.01",
+                                "required_bars": 101,
+                                "profile_key": "MAX_DEPTH",
+                            },
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+            marker = ac._summary_first_tradable_marker(path)
+        self.assertIsNotNone(marker)
+        self.assertEqual(marker["date"], D(2019, 7, 1))
+        self.assertEqual(marker["required_bars"], 101)
+
+    def test_old_summary_without_marker_is_explicitly_absent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "summary.json"
+            path.write_text(json.dumps({"evidence_schema": "run_smoke/v2"}), encoding="utf-8")
+            marker = ac._summary_first_tradable_marker(path)
+        self.assertIsNone(marker)
+
+    def test_malformed_required_bars_is_rejected_without_crashing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "summary.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "frequency_floor": {
+                            "coverage_start_source": "pattern_first_tradable_bar",
+                            "first_tradable_bar": {
+                                "tradable_bar_date": "2019.07.01",
+                                "required_bars": "not-a-number",
+                            },
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+            marker = ac._summary_first_tradable_marker(path)
+        self.assertIsNone(marker)
 
 
 if __name__ == "__main__":

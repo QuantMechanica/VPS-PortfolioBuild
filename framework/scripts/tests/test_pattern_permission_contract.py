@@ -147,6 +147,39 @@ def test_cache_key_covers_symbol_tf_bar_and_profile():
     assert "QM_PP_ProfileKey(profile)" in key
 
 
+def test_cached_denial_cannot_outlive_its_reference_bar():
+    """Bug #4 B4-2: ref_bar changes the key before the next-bar lookup."""
+    m = re.search(r"const string key = (.*?);", SRC, re.S)
+    assert m
+    key = " ".join(m.group(1).split())
+    assert key.index("ref_bar") < key.index("QM_PP_ProfileKey(profile)")
+    assert "IntegerToString((int)ref_bar)" in key
+
+
+def test_first_tradable_marker_is_emitted_only_after_history_load_succeeds():
+    call = CODE.index("QM_PP_RecordFirstTradable(symbol,")
+    load = CODE.index("if(!QM_PP_LoadBars(symbol, reference_tf, closed_shift, need, bars))")
+    predicate_loop = CODE.index("for(int i = 0; i < profile.buy_count; ++i)", load)
+    assert load < call < predicate_loop
+    marker_body = re.search(r"void QM_PP_RecordFirstTradable\(.*?\n  \}", SRC, re.S)
+    assert marker_body
+    body = marker_body.group(0)
+    assert "PATTERN_FIRST_TRADABLE_BAR" in body
+    assert "qm.pattern-first-tradable-bar/v1" in body
+    assert "tradable_bar_date" in body
+    assert "required_bars" in body
+
+
+def test_marker_scope_covers_symbol_timeframe_and_full_profile():
+    marker_body = re.search(r"void QM_PP_RecordFirstTradable\(.*?\n  \}", SRC, re.S)
+    assert marker_body
+    body = marker_body.group(0)
+    assert "symbol" in body
+    assert "reference_tf" in body
+    assert "QM_PP_ProfileKey(profile)" in body
+    assert "QM_PP_MarkerScopeSeen(scope_key)" in body
+
+
 def test_profile_key_includes_both_direction_lists():
     m = re.search(r"string QM_PP_ProfileKey\(.*?\n  \}", SRC, re.S)
     assert m

@@ -68,6 +68,12 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+$patternWarmupEvidencePath = Join-Path $PSScriptRoot 'pattern_warmup_evidence.ps1'
+if (-not (Test-Path -LiteralPath $patternWarmupEvidencePath -PathType Leaf)) {
+    throw "Pattern warm-up evidence helper missing: $patternWarmupEvidencePath"
+}
+. $patternWarmupEvidencePath
+
 if (($Terminal -ieq "DEV1") -and $AllowRunningTerminal.IsPresent) {
     throw "Refusing -Terminal DEV1 with -AllowRunningTerminal. DEV1 smoke runs require an idle terminal."
 }
@@ -3063,6 +3069,36 @@ $attemptedRunCount = @($runResults).Count
 $nonOkRunCount = @($runResults | Where-Object { $_.status -ne "OK" }).Count
 $tradeGatePassed = $false
 $deterministic = $false
+$loggerPathsForFrequency = @($loggerSampleCaptures | ForEach-Object {
+    if ($_.PSObject.Properties.Name -contains 'path') { [string]$_.path }
+})
+$testerLogPathsForFrequency = @($completedRuns | ForEach-Object {
+    if ($_.PSObject.Properties.Name -contains 'tester_log_path') { [string]$_.tester_log_path }
+})
+$frequencyFloorEvidence = Get-QmPatternFrequencyFloorEvidence `
+    -LoggerSamplePaths $loggerPathsForFrequency `
+    -TesterLogPaths $testerLogPathsForFrequency `
+    -FallbackStartDate $fromDate `
+    -EndDate $toDate `
+    -RatePerYear $Q02MinTradesPerYear
+$frequencyFloorEvidence['calculated_min_trades_required'] = [int]$frequencyFloorEvidence.min_trades_required
+if ($SmokeMode) {
+    $frequencyFloorEvidence['applied'] = $false
+    $frequencyFloorEvidence['application_reason'] = 'smoke_mode_explicit_min_trades'
+    $frequencyFloorEvidence['min_trades_required'] = $MinTrades
+} else {
+    $frequencyFloorEvidence['applied'] = $true
+    $frequencyFloorEvidence['application_reason'] = 'q02_frequency_floor'
+    $MinTrades = [int]$frequencyFloorEvidence.min_trades_required
+}
+Write-Host ("run_smoke.frequency_floor source={0} marker_status={1} start={2} end={3} years={4} min_trades={5} applied={6}" -f `
+    $frequencyFloorEvidence.coverage_start_source,
+    $frequencyFloorEvidence.marker_status,
+    $frequencyFloorEvidence.coverage_start,
+    $frequencyFloorEvidence.coverage_end,
+    $frequencyFloorEvidence.year_count,
+    $MinTrades,
+    $frequencyFloorEvidence.applied)
 
 if ($completedRunCount -eq $Runs) {
     $reasonClasses = New-Object System.Collections.Generic.List[string]
@@ -3223,6 +3259,7 @@ $summary = [ordered]@{
     attempted_runs = $attemptedRunCount
     non_ok_attempts = $nonOkRunCount
     min_trades_required = $MinTrades
+    frequency_floor = $frequencyFloorEvidence
     deterministic = $deterministic
     oninit_failure_detected = $globalOnInitFailure
     log_bomb_detected = $globalLogBombFailure

@@ -36,6 +36,9 @@
 #define QM_PP_MAX_LOOKBACK 120
 //--- Predicate list capacity inside one compiled profile.
 #define QM_PP_MAX_PREDICATES 8
+//--- Bounded per-run marker registry. Optimization wiring has at most three
+//--- profile slots; 32 leaves ample diagnostic headroom without dynamic state.
+#define QM_PP_MAX_MARKER_SCOPES 32
 
 //+------------------------------------------------------------------+
 //| Predicate identifiers (source-traceable numbering)                |
@@ -877,6 +880,64 @@ bool     g_qm_pp_cache_allow_sell = false;
 bool     g_qm_pp_cache_valid = false;
 datetime g_qm_pp_cache_bar = 0;
 string   g_qm_pp_cache_reason = "";
+string   g_qm_pp_marker_scopes[QM_PP_MAX_MARKER_SCOPES];
+int      g_qm_pp_marker_scope_count = 0;
+
+bool QM_PP_MarkerScopeSeen(const string scope_key)
+  {
+   for(int i = 0; i < g_qm_pp_marker_scope_count; ++i)
+      if(g_qm_pp_marker_scopes[i] == scope_key)
+         return true;
+   if(g_qm_pp_marker_scope_count >= QM_PP_MAX_MARKER_SCOPES)
+      return true; // bounded diagnostics must never alter the gate decision
+   g_qm_pp_marker_scopes[g_qm_pp_marker_scope_count++] = scope_key;
+   return false;
+  }
+
+void QM_PP_RecordFirstTradable(const string symbol,
+                               const ENUM_TIMEFRAMES reference_tf,
+                               const int closed_shift,
+                               const int required_bars,
+                               const datetime reference_bar,
+                               const QM_PatternProfile &profile)
+  {
+   const string profile_key = QM_PP_ProfileKey(profile);
+   const string scope_key = symbol + "|" + IntegerToString((int)reference_tf) +
+                            "|" + profile_key;
+   if(QM_PP_MarkerScopeSeen(scope_key))
+      return;
+
+   datetime tradable_bar = iTime(symbol, reference_tf, 0);
+   if(tradable_bar <= 0)
+      tradable_bar = TimeCurrent();
+   const string tradable_date = TimeToString(tradable_bar, TIME_DATE);
+
+#ifdef QM_LOGGER_MQH
+   QM_LogEvent(QM_INFO,
+               "PATTERN_FIRST_TRADABLE_BAR",
+               StringFormat("{\"marker_schema\":\"qm.pattern-first-tradable-bar/v1\",\"symbol\":\"%s\",\"reference_timeframe\":%d,\"closed_shift\":%d,\"tradable_bar_date\":\"%s\",\"tradable_bar_time\":%I64d,\"reference_bar_time\":%I64d,\"required_bars\":%d,\"profile_key\":\"%s\"}",
+                            QM_LoggerEscapeJson(symbol),
+                            (int)reference_tf,
+                            closed_shift,
+                            tradable_date,
+                            (long)tradable_bar,
+                            (long)reference_bar,
+                            required_bars,
+                            QM_LoggerEscapeJson(profile_key)));
+#endif
+
+   string printable_profile = profile_key;
+   StringReplace(printable_profile, " ", "_");
+   StringReplace(printable_profile, "\t", "_");
+   PrintFormat("QM_PATTERN_FIRST_TRADABLE_BAR schema=qm.pattern-first-tradable-bar/v1 symbol=%s reference_timeframe=%d tradable_bar_date=%s tradable_bar_time=%I64d reference_bar_time=%I64d required_bars=%d profile_key=%s",
+               symbol,
+               (int)reference_tf,
+               tradable_date,
+               (long)tradable_bar,
+               (long)reference_bar,
+               required_bars,
+               printable_profile);
+  }
 
 void QM_PP_Deny(QM_PermissionResult &out, const string reason)
   {
@@ -941,6 +1002,13 @@ QM_PermissionResult QM_PatternPermissionEvaluate(const string symbol,
       g_qm_pp_cache_reason = out.reason;
       return out;
      }
+
+   QM_PP_RecordFirstTradable(symbol,
+                             reference_tf,
+                             closed_shift,
+                             need,
+                             bars.time[0],
+                             profile);
 
    bool allow_buy = true;
    bool allow_sell = true;

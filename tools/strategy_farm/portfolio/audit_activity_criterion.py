@@ -23,7 +23,7 @@ import json
 import math
 import sqlite3
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 STREAMS = Path(r"D:\QM\reports\portfolio\sleeve_streams\QM\q08_trades")
@@ -61,15 +61,76 @@ def parse_ts(v):
     return None
 
 
-def verdict_map():
+def _summary_first_tradable_marker(path_value):
+    """Return a validated run_smoke first-tradable marker, or None.
+
+    The marker is generation-bound inside the run summary. Old summaries and
+    non-pattern runs intentionally return None; callers must expose their
+    fallback rather than silently pretending a marker existed.
+    """
+    path = Path(str(path_value or ""))
+    if not path.is_file() or path.suffix.lower() != ".json":
+        return None
+    try:
+        summary = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    floor = summary.get("frequency_floor")
+    if not isinstance(floor, dict):
+        return None
+    marker = floor.get("first_tradable_bar")
+    if not isinstance(marker, dict):
+        return None
+    if floor.get("coverage_start_source") != "pattern_first_tradable_bar":
+        return None
+    try:
+        marker_date = datetime.strptime(
+            str(marker["tradable_bar_date"]), "%Y.%m.%d"
+        ).date()
+        required_bars = int(marker.get("required_bars") or 0)
+    except (KeyError, TypeError, ValueError):
+        return None
+    return {
+        "status": "present",
+        "date": marker_date,
+        "tradable_bar_date": marker_date.isoformat(),
+        "required_bars": required_bars,
+        "profile_key": str(marker.get("profile_key") or ""),
+        "source_evidence_path": str(path.resolve()),
+        "source_schema": str(floor.get("schema") or ""),
+    }
+
+
+def runtime_maps():
     con = sqlite3.connect(DB, uri=True, timeout=30)
     con.row_factory = sqlite3.Row
     latest = {}
-    for r in con.execute("select ea_id,symbol,phase,verdict from work_items "
+    markers = {}
+    for r in con.execute("select id,ea_id,symbol,phase,verdict,evidence_path from work_items "
                          "where status='done' order by updated_at"):
-        latest[(r["ea_id"], str(r["symbol"]).upper(), r["phase"])] = str(r["verdict"] or "")
+        pair = (r["ea_id"], str(r["symbol"]).upper())
+        latest[(*pair, r["phase"])] = str(r["verdict"] or "")
+        # Q02 is the consumer named in Bug #4 and its run_smoke/v2 summary is
+        # the authoritative place where the generation-bound marker lives.
+        # A newer Q02 without a marker replaces an older one with an explicit
+        # absence, so stale-generation markers cannot leak forward.
+        if str(r["phase"]).upper() in {"Q02", "P2"}:
+            marker = _summary_first_tradable_marker(r["evidence_path"])
+            markers[pair] = marker or {
+                "status": "absent",
+                "date": None,
+                "source_work_item_id": str(r["id"]),
+                "source_evidence_path": str(r["evidence_path"] or ""),
+            }
+            if marker:
+                markers[pair]["source_work_item_id"] = str(r["id"])
     con.close()
-    return latest
+    return latest, markers
+
+
+def verdict_map():
+    """Backward-compatible verdict-only view used by older callers/tests."""
+    return runtime_maps()[0]
 
 
 def read_stream(path: Path):
@@ -118,15 +179,10 @@ def covered_months(first_date, last_date, year):
     through December; for the last boundary year it is January through
     `last_date.month`; for a single-year span it is `first`..`last`.
 
-    Bug #4 coupling (documented, NOT fixed here): "covered" is defined to start
-    at the first BAR on which the EA is allowed to trade -- i.e. AFTER the
-    lookbackBars warm-up -- not the first bar of data.  That bar is not carried
-    in the q08 trade stream this tool reads, so the earliest/latest TRADE dates
-    substitute for the tradable window.  Using the first trade can only
-    over-state coverage (the true tradable start is >= the first trade), so the
-    substitution errs toward admitting a candidate, never toward disqualifying
-    one on a start date.  Wiring the true tradable-start needs the
-    short-history-lock fix (Bug #4, a separate Codex work item).
+    Bug #4 contract: `first_date` is the generation-bound marker emitted when
+    the pattern gate first has sufficient closed-bar history. If an old run has
+    no marker, classify() visibly falls back to the earliest trade date -- the
+    historical substitute -- and labels that fallback in every output row.
     """
     start_month = first_date.month if year == first_date.year else 1
     end_month = last_date.month if year == last_date.year else 12
@@ -150,10 +206,9 @@ def scored_years(by_year, first_date, last_date):
     stays visible rather than silently dropped.  A pair meets the criterion iff
     at least one year is scored and no scored year falls below its threshold.
     """
-    years = sorted(by_year)
-    if not years:
+    if not by_year:
         return {"scored": {}, "skipped": {}, "below": [], "meets": False}
-    first_y, last_y = years[0], years[-1]
+    first_y, last_y = first_date.year, last_date.year
     inner_years = list(range(first_y + 1, last_y))
     boundary_years = {first_y, last_y}
     scored, skipped, below = {}, {}, []
@@ -174,19 +229,38 @@ def scored_years(by_year, first_date, last_date):
             "below": sorted(below), "meets": bool(scored) and not below}
 
 
-def classify(ev, coverage):
+def _coverage_start(marker, trade_first):
+    """Resolve the measured start or a visible earliest-trade fallback."""
+    marker_date = marker.get("date") if isinstance(marker, dict) else None
+    if isinstance(marker_date, datetime):
+        marker_date = marker_date.date()
+    if isinstance(marker_date, date) and marker_date <= trade_first:
+        return marker_date, "pattern_first_tradable_bar", "present"
+    if isinstance(marker_date, date):
+        return trade_first, "earliest_trade_fallback_invalid_marker_after_trade", "invalid"
+    status = str((marker or {}).get("status") or "absent") if isinstance(marker, dict) else "absent"
+    return trade_first, "earliest_trade_fallback_marker_absent", status
+
+
+def classify(ev, coverage, first_tradable_marker=None):
     close_days = {c for _, c, _ in ev}
     entry_days = {e for e, _, _ in ev}
     by_year_close = per_year_days(ev, 1)
     by_year_entry = per_year_days(ev, 0)
-    first, last = min(close_days), max(close_days)
+    first_trade_close, last = min(close_days), max(close_days)
+    first, close_source, close_marker_status = _coverage_start(
+        first_tradable_marker, first_trade_close
+    )
     span_days = (last - first).days + 1
     years = sorted(by_year_close)
     # Partial (boundary) years are now scored pro-rata rather than skipped -- see
     # scored_years() and docs/ops/ACTIVITY_CRITERION.md §R (OWNER 2026-08-21,
     # CEO-MP-#4).  Each date basis is scored against its own span endpoints.
     close_score = scored_years(by_year_close, first, last)
-    entry_first, entry_last = min(entry_days), max(entry_days)
+    first_trade_entry, entry_last = min(entry_days), max(entry_days)
+    entry_first, entry_source, entry_marker_status = _coverage_start(
+        first_tradable_marker, first_trade_entry
+    )
     entry_score = scored_years(by_year_entry, entry_first, entry_last)
     # full_years / inner_years keep their historical close-basis meaning for the
     # summary print (worst-inner-year); a gap year inside the span with no rows
@@ -200,7 +274,19 @@ def classify(ev, coverage):
         "close_days": len(close_days),
         "entry_days": len(entry_days),
         "first": first.isoformat(),
+        "first_trade_close": first_trade_close.isoformat(),
+        "first_trade_entry": first_trade_entry.isoformat(),
         "last": last.isoformat(),
+        "coverage_start_close": first.isoformat(),
+        "coverage_start_entry": entry_first.isoformat(),
+        "coverage_start_source_close": close_source,
+        "coverage_start_source_entry": entry_source,
+        "first_tradable_marker_status_close": close_marker_status,
+        "first_tradable_marker_status_entry": entry_marker_status,
+        "first_tradable_marker": {
+            key: (value.isoformat() if isinstance(value, date) else value)
+            for key, value in (first_tradable_marker or {}).items()
+        },
         "span_days": span_days,
         "span_years": round(span_days / 365.25, 2),
         "close_days_per_year": round(len(close_days) / max(span_days / 365.25, 1e-9), 1),
@@ -221,7 +307,7 @@ def classify(ev, coverage):
 
 
 def main():
-    latest = verdict_map()
+    latest, first_tradable_markers = runtime_maps()
     rows = {}
     for path in sorted(STREAMS.glob("*.jsonl")):
         bare, _, stem = path.stem.partition("_")
@@ -234,7 +320,8 @@ def main():
         ev, coverage, n = read_stream(path)
         if not n:
             continue
-        rec = classify(ev, coverage)
+        marker = first_tradable_markers.get((ea, sym), {"status": "absent_no_q02_evidence", "date": None})
+        rec = classify(ev, coverage, marker)
         rec.update({"ea": ea, "symbol": sym, "gates_failed": bad,
                     "gates_ok": not bad,
                     "coverage_ok": coverage >= 0.99})
@@ -256,6 +343,7 @@ def main():
         "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "min_days_incumbent": MIN_DAYS,
         "criterion_per_year": PER_YEAR,
+        "coverage_start_contract": "pattern_first_tradable_bar_else_visible_earliest_trade_fallback",
         "streams_scanned": len(rows),
         "admitted_today": len(admitted),
         "blocked_by_min_days_only": len(blocked),
