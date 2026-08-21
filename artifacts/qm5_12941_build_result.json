@@ -1,0 +1,20 @@
+{
+  "task_id": "18520109-5583-4027-95f3-9865f04c7664",
+  "ea_id": "QM5_12941",
+  "slug": "hopwood-bermaui-macd-h4-card",
+  "ea_dir": "framework/EAs/QM5_12941_hopwood-bermaui-macd-h4-card",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12941_hopwood-bermaui-macd-h4-card/QM5_12941_hopwood-bermaui-macd-h4-card.mq5",
+  "ex5_path": null,
+  "magic_base": 129410000,
+  "symbols_registered": [],
+  "setfiles_generated": [],
+  "spec_md_path": null,
+  "build_check_passed": false,
+  "compile_succeeded": false,
+  "smoke_result": "build_check_failed",
+  "smoke_report_path": null,
+  "blocked_reason": "card in cards_rejected: R1 track record FAIL (multiple sources in sources array violating single canonical source constraint)",
+  "open_questions": [
+    "Strategy card QM5_12941 resides in cards_rejected/ due to R1 FAIL; cannot build from rejected card."
+  ]
+}

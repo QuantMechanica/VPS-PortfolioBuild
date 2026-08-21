@@ -1,0 +1,20 @@
+{
+  "task_id": "0d36cc20-3a16-4da4-b0de-bb8b500cf2f1",
+  "ea_id": "QM5_12942",
+  "slug": "ehlers-ebsw-cycle-composite-h4",
+  "ea_dir": "framework/EAs/QM5_12942_ehlers-ebsw-cycle-composite-h4",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12942_ehlers-ebsw-cycle-composite-h4/QM5_12942_ehlers-ebsw-cycle-composite-h4.mq5",
+  "ex5_path": null,
+  "magic_base": 129420000,
+  "symbols_registered": [],
+  "setfiles_generated": [],
+  "spec_md_path": null,
+  "build_check_passed": false,
+  "compile_succeeded": false,
+  "smoke_result": "build_check_failed",
+  "smoke_report_path": null,
+  "blocked_reason": "card in cards_rejected: R1 track record FAIL (multiple sources in sources array violating single canonical source constraint)",
+  "open_questions": [
+    "Strategy card QM5_12942 resides in cards_rejected/ due to R1 FAIL; cannot build from rejected card."
+  ]
+}
