@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "as_of_utc": "2026-08-21T12:08:51Z",
+  "branch": "agents/board-advisor",
+  "outcome": "Q01_PASS_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "ea": {
+    "ea_id": "QM5_41090",
+    "slug": "wti-wmid-overlap-mom",
+    "strategy_id": "MOP-WTI-WMID-OVERLAP-MOM-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 410900000
+  },
+  "commits": {
+    "source_approval": "1cd9eafe8f92b85850e2dfb6124110b4918c570a",
+    "source_packet": "2a07d20bc269aaa1910c060f21c766e8ab0fd27d",
+    "ea_id_reservation": "baca6a1bff1ea801a272c8b539ee6c985cd35202",
+    "g0_card": "84da6d784c65419153c32b6e68f60a3f70f7755c",
+    "magic_and_resolver": "0417c441f27e24193287189d62fa7407049fccf0",
+    "implementation_q01": "2143db94d271a857a4b5ad9646deb1c5e6ee902f"
+  },
+  "duplicate_review": {
+    "status": "CLEAN",
+    "registry_identities_checked": 4579,
+    "cards_checked": 625,
+    "vault_nodes_checked": 0,
+    "mechanic_separation": "positive weekly high-low overlap plus arithmetic midpoint drift; package opens and closes excluded from the signal"
+  },
+  "q01": {
+    "status": "PASS",
+    "card_lint": "PASS",
+    "build_guard": "PASS",
+    "reference_tests": {
+      "passed": 12,
+      "failed": 0
+    },
+    "compile": {
+      "status": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "summary": "D:/QM/reports/compile/20260821_120607/summary.csv"
+    },
+    "build_check": {
+      "status": "PASS",
+      "failures": 0,
+      "warnings": 2,
+      "report": "D:/QM/reports/framework/21/build_check_20260821_120607.json"
+    },
+    "p1": {
+      "status": "PASS",
+      "report": "D:/QM/reports/pipeline/QM5_41090/P1/P1_QM5_41090_result.json"
+    },
+    "sha256": {
+      "mq5": "3CE14A194ACAF47C536CE3A81A7D41EAC398DA0BFB561D294199C211AB2D8452",
+      "ex5": "74E21FA158807136FB784930014F504FC1EE21E335855C7A883BB91540B14292",
+      "setfile_bytes": "2653D3D1BB61ADE7967AC69952E4D6456B2995F37D9F498820BE9E5841BE9932",
+      "normalized_set_build_hash": "8f241de5ef45aa7c506e4485fa5a77405ca17d74076f06cf08e081656718aac0",
+      "compile_summary": "3466CC8B550FCFB95FCA7A64DE319F3CFB6C4C8082D3750E580AF87F8088016D",
+      "build_report": "642D0C0124418F15F41E5D8B049B89CBDAF5F795782C576FA4EC2BFB17680E04",
+      "p1_report": "5EDFFDB143E0EF518EC8663B8A93A2B70E9819127F51B952E44D80AD0D2E76C4"
+    }
+  },
+  "capacity_preflight": {
+    "slot_scan_utc": "2026-08-21T12:07:26Z",
+    "governed_running_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "governed_running_count": 7,
+    "terminal_ceiling": 7,
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "cpu_hard_ceiling_percent": 97,
+    "cpu_samples_percent": [
+      100,
+      100,
+      100,
+      100,
+      100
+    ],
+    "cpu_sample_utc": [
+      "2026-08-21T12:08:35.2590000Z",
+      "2026-08-21T12:08:39.2980000Z",
+      "2026-08-21T12:08:43.3150000Z",
+      "2026-08-21T12:08:47.3310000Z",
+      "2026-08-21T12:08:51.3410000Z"
+    ],
+    "capacity_decision": "STOP_CPU_AND_TERMINAL_CEILING"
+  },
+  "q02": {
+    "preexisting_target_rows": 0,
+    "target_preview_selected": 1,
+    "stranded_preview_selected": 0,
+    "apply": false,
+    "enqueued": false,
+    "work_item_count_after_stop": 0,
+    "reason": "CPU_HARD_CEILING_REACHED"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "q02_minimum_full_year_trades": 5
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick": false,
+    "terminal_control": false,
+    "autotrading_changed": false,
+    "t_live_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "work_item_state_mutated": false
+  }
+}
