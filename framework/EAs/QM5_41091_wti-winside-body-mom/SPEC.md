@@ -31,14 +31,14 @@ broker week with fixed-dollar risk and a frozen completed-bar ATR hard stop.
 | Parameter | Value | Meaning |
 |---|---:|---|
 | `strategy_label_offset_seconds` | 86400 | uniform raw-to-energy-session label offset |
-| `strategy_entry_grace_minutes` | 180 | first-week-bar execution window |
+| `strategy_entry_lateness_minutes` | 180 | first-week-bar execution window |
 | `strategy_history_bars` | 30 | bounded D1 weekly OHLC buffer |
 | `strategy_required_weeks` | 2 | exact consecutive completed packages |
 | `strategy_min_week_bars` | 3 | minimum sessions per package |
 | `strategy_max_week_bars` | 5 | maximum sessions per package |
-| `strategy_atr_period_d1` | 20 | completed-bar risk range |
-| `strategy_atr_sl_mult` | 3.5 | frozen hard-stop distance |
-| `strategy_max_hold_days` | 10 | stale-position repair |
+| `strategy_atr_period` | 20 | completed-bar risk range |
+| `strategy_atr_stop_mult` | 3.5 | frozen hard-stop distance |
+| `strategy_stale_calendar_days` | 10 | stale-position repair |
 | `strategy_max_spread_points` | 1500 | WTI entry cost guard |
 | `qm_friday_close_enabled` | false | preserve full-week ownership |
 | `qm_friday_close_hour_broker` | 21 | locked inactive framework input |
@@ -103,3 +103,4 @@ grid, martingale, pyramid, target, trail, break-even move, or partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `9f47d0a0d`; source packet `70ab22cd8`; EA-ID reservation `df65b49a4`; Q00 card `8ba0e1d6a`; governed magic `410910000` |
+| v1 | 2026-08-21 | governed V5 implementation | strict compile 0/0; V5 build check PASS; 13 reference checks PASS; static P1 PASS |

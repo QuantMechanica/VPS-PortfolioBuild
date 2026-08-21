@@ -57,8 +57,8 @@ r1_track_record: PASS_WITH_WEEKLY_INSIDE_BODY_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_ENERGY_LABEL_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING_BUILD
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: NOT_QUEUED
 review_focus: "Falsify a direct-WTI completed inside-week body continuation sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact Monday anchors, two consecutive completed weekly OHLC packages, three-to-five sessions each, strict full containment, contained-week own-body direction, all equality/non-inside states flat, one attempt, fixed risk, and next-week exit. Q09 alone may measure realized correlation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -319,13 +319,14 @@ reference test suite before Q02 handoff.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1-card | 2026-08-21 | new OWNER-authorized WTI structural sleeve | Q00 | APPROVED |
+| v1-build | 2026-08-21 | first governed V5 implementation and fixed-risk preset | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | Q00 Research Intake | 2026-08-21 | APPROVED | this card plus declared decision record |
-| Q01 Build and Spec | - | NOT_STARTED | - |
+| Q01 Build and Spec | 2026-08-21 | PASS | `D:/QM/reports/pipeline/QM5_41091/P1/P1_QM5_41091_result.json` |
 | Q02 Baseline | - | NOT_QUEUED | - |
 
 No Q11 portfolio or live decision is made by this card.
