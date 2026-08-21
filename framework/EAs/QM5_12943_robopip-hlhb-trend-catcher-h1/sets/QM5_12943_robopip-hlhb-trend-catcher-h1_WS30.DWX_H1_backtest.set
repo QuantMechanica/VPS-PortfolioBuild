@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12943
+; ea_slug:      robopip-hlhb-trend-catcher-h1
+; ea_version:   v5.0
+; set_version:  s20260821-001
+; symbol:       WS30.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   0493abd256b4f7bf388436e73e87e8ef129849e2075adcb228f139b1cc77b138
+; author:       Development
+; date:         2026-08-21
+;==========================================================
+qm_ea_id=12943
+qm_magic_slot_offset=4
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12943_robopip-hlhb-trend-catcher-h1.md
+strategy_ema_fast_period=5
+strategy_ema_slow_period=10
+strategy_rsi_period=10
+strategy_rsi_midline=50.0
+strategy_daily_atr_period=14
+strategy_min_daily_atr_pips=30.0
+strategy_tp_pips=100.0
+strategy_sl_pips=50.0
+strategy_time_stop_bars=96
+strategy_max_spread_pips=3.0
+strategy_asian_filter=false
+strategy_asian_start_hour=0
+strategy_asian_end_hour=7
