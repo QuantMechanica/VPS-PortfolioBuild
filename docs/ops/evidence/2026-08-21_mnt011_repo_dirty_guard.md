@@ -3,10 +3,10 @@
 Router task: `df0cfed8-cc0c-431d-a13b-be914eee3bc3`
 
 Status at this handoff: implementation and deterministic absorption are complete,
-but the router task remains `IN_PROGRESS`. The acceptance condition requiring a
-real post-fix build spawn and recovery of `codex_zero_activity` has not yet occurred.
-An unrelated human edit to `CLAUDE.md` correctly remains build-blocking, and the
-scheduled pump also reported an orphan lock below. Neither was altered.
+and the router task is being submitted to `REVIEW` with a clearly stated runtime
+residual. The acceptance condition requiring a real post-fix generated-only build
+spawn has not yet occurred. Unrelated human edits correctly remain build-blocking;
+none was altered.
 
 ## M011-1 — measured live classification
 
@@ -166,11 +166,40 @@ The same health run also reported `pump_task.lock` owned by dead PID 11748, age
 threshold. Per task constraints, this cycle did not remove the lock or invoke the
 pump manually.
 
-Required continuation before REVIEW:
+Runtime acceptance continuation recorded at that point:
 
 1. Allow the owner of `CLAUDE.md` to commit or otherwise resolve that edit.
 2. Observe one scheduler-owned full pump cycle using `bfce1fa3a` or later.
 3. Record `repo_dirty_build_guard.blocked=false` with generated-only churn and a
    real build spawn.
-4. Re-run health and record recovery of `codex_zero_activity` before moving the
-   router task to `REVIEW`.
+4. Re-run health and record recovery of `codex_zero_activity` before considering
+   the runtime acceptance clause complete.
+
+## Final single-pass recheck
+
+The implementation tests were repeated immediately before handoff:
+
+```text
+41 passed, 12 subtests passed in 10.73s
+```
+
+At `2026-08-21T10:37:09Z`, the requested health command reported
+`codex_zero_activity=OK` with `2 codex, 37 pending`. This is not accepted as the
+missing build-spawn proof: the health implementation in the scheduled worktree
+counts live `codex.exe` processes, and the visible process was this orchestration
+cycle rather than a terminal `build_ea` transition. The canonical task table had
+no newly terminal build row in the relevant window.
+
+The contemporaneous v2 guard census found nine entries: one generated setfile
+correctly ignored by the guard and eight blocking human-class changes belonging
+to concurrent work (`CLAUDE.md`, two ops evidence files, one framework include,
+one registry, and three tools/test files). Thus the guard still behaves
+fail-closed in live state, but this cycle cannot manufacture a generated-only
+tree or consume other agents' edits merely to satisfy the demonstration.
+
+The router handoff verdict is therefore
+`IMPLEMENTATION_PASS; GENERATED_ONLY_REAL_SPAWN_PROOF_PENDING`. A reviewer must
+not interpret the process-count health recovery as completion of the final
+acceptance clause. The continuation remains: wait for human-class dirt to clear,
+observe a scheduler-owned pump spawning a real build amid generated churn, and
+record the resulting task transition.
