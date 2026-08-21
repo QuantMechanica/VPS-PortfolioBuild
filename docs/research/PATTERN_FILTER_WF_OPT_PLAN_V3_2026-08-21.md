@@ -77,7 +77,7 @@ neues Reportformat.
 
 ## 3 · Bau-Aufträge (Router-ToDos, Reihenfolge)
 
-**OPT-P0 (Codex) — `_opt`-EA bauen.** `QM5_13213` → neue EA-Identität mit Suffix `_opt`
+**OPT-S0 (Codex) — `_opt`-EA bauen.** `QM5_13213` → neue EA-Identität mit Suffix `_opt`
 (eigene ea_id nach Registry-SOP, mirror sibling, Magic-Rows, Resolver-Regen, seriell).
 Basis ist das A1-korrigierte Zensus-Instrument QM5_21501 (nebenwirkungsfreier
 Straddle-Plan, symmetrisches Veto VOR Platzierung). Inputs: `opt_pp_buy1..3`,
@@ -87,28 +87,28 @@ Phase-2-Nutzung, im Pilot auf Elternwerten fixiert). Kompilieren, `build_check
 -EALabel`, 0/0. **Vorbedingung:** MQL5-Fixture-Harness-Verdikt grün (Work-Item
 `83b89730`, steht auf Queue-Platz 1) — vorher läuft kein Zensus.
 
-**OPT-P1 (Codex) — Jahresmatrix-Tooling.** Generator für (Jahr × Arm)-Setfiles
+**OPT-S1 (Codex) — Jahresmatrix-Tooling.** Generator für (Jahr × Arm)-Setfiles
 (Datumsfenster je Kalenderjahr; ENV=backtest, RISK_FIXED; Pattern-Inputs je Arm) und
 Enqueue-Werkzeug, das die 1 085er-Matrix als append-only Work-Items mit eigener
 Phase `OPT_CENSUS` einreiht (eigener Pool, zählt NICHT in Q02-Metriken; Ledger mit
 `declared_trial_count=154` wird beim Anlegen geschrieben, Schema `qm.opt-census.v1`).
 Idempotent: erneutes Enqueue erzeugt keine Duplikate.
 
-**OPT-P2 (Fabrik) — Matrix messen.** Normale Dispatch-/Worker-Strecke.
+**OPT-S2 (Fabrik) — Matrix messen.** Normale Dispatch-/Worker-Strecke.
 
-**OPT-P3 (Claude) — WF-Auswertung + Auswahl.** Regelanwendung exakt nach §2, Ledger
+**OPT-S3 (Claude) — WF-Auswertung + Auswahl.** Regelanwendung exakt nach §2, Ledger
 vollständig (jede Zelle, jede Ausschlussursache, jede Schrittauswahl), Empfehlungsbericht
 an OWNER mit der gewählten Kombination.
 
-**OPT-P4 (Fabrik) — Gesamttest.** Kombination + Baseline über 2019–2026-max; DSR
+**OPT-S4 (Fabrik) — Gesamttest.** Kombination + Baseline über 2019–2026-max; DSR
 (deflationiert mit 154) und PBO nach DL-088 auf der Ledger-Matrix.
 
-**OPT-P5 — Q15/Q16-Anschluss.** Die bestätigte `_opt`-Kombination wird als Q15-Challenger
+**OPT-S5 — Q15/Q16-Anschluss.** Die bestätigte `_opt`-Kombination wird als Q15-Challenger
 eingefroren und läuft das bestehende, unveränderte Q16-Head-to-Head gegen den
 Amtsinhaber (inkl. unveränderter Q02→Q10-Kaskade als „Gesamttest mit besten Parametern"
 im Sinne von DL-088 §3).
 
-**OPT-P6 (Claude) — Portfolio.** Getrennte Bewertung FTMO/DXZ nach deren jeweiligen
+**OPT-S6 (Claude) — Portfolio.** Getrennte Bewertung FTMO/DXZ nach deren jeweiligen
 Regeln; Vorlage an OWNER (Buch-Aufnahme ist Q11/Q12 = OWNER-Gate).
 
 **Phase 2 (separat, nach Pilot):** numerische Parameter-Optimierung auf denselben
