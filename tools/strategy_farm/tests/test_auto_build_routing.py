@@ -91,7 +91,49 @@ class RGateBuildReadinessTests(unittest.TestCase):
             card = cards / "QM5_20061_demo.md"
             _write_card(card, _ready_frontmatter())
 
-            with mock.patch.object(farmctl, "FRAMEWORK_EAS_DIR", eas):
+            with (
+                mock.patch.object(farmctl, "FRAMEWORK_EAS_DIR", eas),
+                mock.patch.object(farmctl, "CANONICAL_REPO_ROOT", Path(tmp) / "repo"),
+            ):
+                detected = farmctl._detect_unbuilt_cards(root)
+
+        self.assertEqual([item["ea_id"] for item in detected], ["QM5_20061"])
+
+    def test_unbuilt_scan_skips_retired_registry_ids(self) -> None:
+        """2026-08-21: a card can sit in cards_approved/ after its EA ID was
+        retired in the registry (card-pool cleanup lags registry updates).
+        _detect_unbuilt_cards had no registry-status check at all, so a
+        retired card with a passing R-gate and no .ex5 was live-eligible for
+        an auto-build task -- confirmed for QM5_38007 against the real farm
+        DB/registry. Mirrors sweep_enqueue_built_eas.py's identical check."""
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            cards = root / "artifacts" / "cards_approved"
+            repo = Path(tmp) / "repo"
+            eas = repo / "framework" / "EAs"
+            registry_dir = repo / "framework" / "registry"
+            cards.mkdir(parents=True)
+            eas.mkdir(parents=True)
+            registry_dir.mkdir(parents=True)
+            _write_card(
+                cards / "QM5_38007_retired-demo.md",
+                _ready_frontmatter(ea_id="QM5_38007", slug="retired-demo"),
+            )
+            _write_card(
+                cards / "QM5_20061_demo.md",
+                _ready_frontmatter(ea_id="QM5_20061", slug="demo"),
+            )
+            (registry_dir / "ea_id_registry.csv").write_text(
+                "ea_id,slug,strategy_id,status,owner,created_at\n"
+                "38007,retired-demo,S1,retired,Claude,2026-08-15\n"
+                "20061,demo,S2,active,Research,2026-07-26\n",
+                encoding="utf-8",
+            )
+
+            with (
+                mock.patch.object(farmctl, "FRAMEWORK_EAS_DIR", eas),
+                mock.patch.object(farmctl, "CANONICAL_REPO_ROOT", repo),
+            ):
                 detected = farmctl._detect_unbuilt_cards(root)
 
         self.assertEqual([item["ea_id"] for item in detected], ["QM5_20061"])

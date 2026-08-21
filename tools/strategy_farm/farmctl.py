@@ -2039,6 +2039,7 @@ def _q02_priority_track_required(
 _CSV_DICT_CACHE: dict[str, tuple[tuple[int, int], list[dict[str, str]]]] = {}
 _MAGIC_DUP_CACHE: dict[str, tuple[tuple[int, int], list[str]]] = {}
 _EA_SLUG_INDEX_CACHE: dict[str, tuple[tuple[int, int], dict[str, list[str]]]] = {}
+_EA_REGISTRY_STATUS_CACHE: dict[str, tuple[tuple[int, int], dict[str, str]]] = {}
 _CARDS_NAME_CACHE: dict[str, tuple[tuple[int, int], list[str]]] = {}
 
 
@@ -2107,6 +2108,35 @@ def _ea_registry_slug_index(path: Path) -> dict[str, list[str]]:
         if row_slug:
             index.setdefault(row_ea, []).append(row_slug)
     _EA_SLUG_INDEX_CACHE[key] = (token, index)
+    return index
+
+
+def _ea_registry_status_index(path: Path) -> dict[str, str]:
+    """ea_id (bare numeric string, no QM5_ prefix) -> lowercased registry status (cached).
+
+    Mirrors sweep_enqueue_built_eas.py's registry-status skip so every card-pool
+    reader agrees on the same source of truth (2026-08-21: found _detect_unbuilt_cards
+    had no such check at all, so a retired card with a passing R-gate and no .ex5
+    was live-eligible for an auto-build task despite the registry already marking it
+    retired -- registry status must gate every claim path, not just this one)."""
+    token = _stat_token(path)
+    if token is None:
+        return {}
+    key = str(path)
+    cached = _EA_REGISTRY_STATUS_CACHE.get(key)
+    if cached and cached[0] == token:
+        return cached[1]
+    index: dict[str, str] = {}
+    for row in _read_csv_dicts_if_exists(path):
+        row_ea = str(row.get("ea_id") or row.get("id") or "").strip()
+        if row_ea.upper().startswith("QM5_"):
+            row_ea = row_ea[4:]
+        if not row_ea:
+            continue
+        status = str(row.get("status") or "").strip().lower()
+        if status:
+            index[row_ea] = status
+    _EA_REGISTRY_STATUS_CACHE[key] = (token, index)
     return index
 
 
@@ -13136,12 +13166,25 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
     if not cards_dir.is_dir():
         return []
 
+    registry_status = _ea_registry_status_index(
+        CANONICAL_REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv"
+    )
     unbuilt: list[dict[str, Any]] = []
     for card_md in sorted(cards_dir.glob("QM5_*.md")):
         m = re.match(r"(QM5_\d+)_(.+)\.md$", card_md.name)
         if not m:
             continue
         ea_id, slug = m.group(1), m.group(2)
+        # Card-pool membership and registry status must agree: a card sitting
+        # in cards_approved/ for a retired ID is stale bookkeeping, not a live
+        # build candidate. Mirrors sweep_enqueue_built_eas.py's identical check.
+        numeric_id = ea_id[4:] if ea_id.upper().startswith("QM5_") else ea_id
+        # A totally empty index means the registry CSV was unreadable this
+        # call (see _ea_registry_status_index / _stat_token) -- treat that as
+        # an infra hiccup, not "every card is retired", so a transient read
+        # failure can't silently stall the whole build pump.
+        if registry_status and registry_status.get(numeric_id) != "active":
+            continue
         label = f"{ea_id}_{slug}"
         ea_dir = FRAMEWORK_EAS_DIR / label
         ex5 = ea_dir / f"{label}.ex5"
@@ -18737,7 +18780,11 @@ def enqueue_fresh_q02_seed(
         ).fetchone()
         source_matches = bool(
             source
-            and source["kind"] == "backtest"
+            # The first OWNER-ratified logical-basket row predates the
+            # canonical work-item kind and was sealed as ``backtest_p2``.
+            # Admit that one legacy kind through the same exact-row guards;
+            # every other legacy/custom kind remains fail-closed.
+            and source["kind"] in {"backtest", "backtest_p2"}
             and source["ea_id"] == ea_id
             and source["phase"] in {"Q02", "P2"}
             and source["status"] in {"done", "failed"}
