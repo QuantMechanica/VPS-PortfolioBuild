@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12945
+; ea_slug:      tv-kn-ema-cross-atr-tp
+; ea_version:   v5.0
+; set_version:  s20260821-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   7
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e2931c6a892c6f2b070372065aadd5753afd58d2f791be313d17ba058f72951a
+; author:       Development
+; date:         2026-08-21
+;==========================================================
+qm_ea_id=12945
+qm_magic_slot_offset=7
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12945_tv-kn-ema-cross-atr-tp.md
+strategy_signal_tf=16385
+strategy_ema_fast_period=9
+strategy_ema_slow_period=21
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_atr_tp_mult=1.0
