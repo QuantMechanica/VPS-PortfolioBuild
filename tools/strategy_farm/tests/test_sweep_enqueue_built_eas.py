@@ -845,3 +845,318 @@ def test_q08_stranded_retry_carries_hash_pinned_requal_lineage(
         .read_text(encoding="utf-8")
     )
     assert report["part2_stranded"]["enqueued"][0]["work_item_id"] == new_id
+
+
+def _canary_apply_env(
+    tmp_path: Path, ea_id: str
+) -> tuple[Path, Path, dict[str, str]]:
+    """Common apply-mode scaffold for MNT-038 canary/fanout subprocess tests."""
+    farm_root = tmp_path / "farm"
+    repo_root = tmp_path / "repo"
+    report_root = tmp_path / "reports"
+    eas_dir = repo_root / "framework" / "EAs"
+    registry = repo_root / "framework" / "registry" / "ea_id_registry.csv"
+    eas_dir.mkdir(parents=True)
+    registry.parent.mkdir(parents=True)
+    report_root.joinpath("state").mkdir(parents=True)
+    registry.write_text("ea_id,slug,status\n", encoding="utf-8")
+    _init_test_db(farm_root)
+    env = os.environ.copy()
+    env.update({
+        "QM_STRATEGY_FARM_ROOT": str(farm_root),
+        "QM_CANONICAL_REPO_ROOT": str(repo_root),
+        "QM_REPORT_ROOT": str(report_root),
+    })
+    return farm_root, report_root, env
+
+
+def _insert_canary_row(
+    conn: sqlite3.Connection,
+    ea_id: str,
+    work_item_id: str,
+    symbol: str,
+    verdict: str,
+    reason: str,
+    build_task_id: str,
+    *,
+    setfile_path: str,
+    updated_at: str = "2026-08-21T09:00:00+00:00",
+) -> None:
+    # A DB trigger requires terminal INFRA_FAIL rows to carry evidence.
+    evidence_path = "EVIDENCE_UNAVAILABLE" if verdict == "INFRA_FAIL" else None
+    conn.execute(
+        """
+        INSERT INTO work_items(
+            id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+            attempt_count,evidence_path,payload_json,created_at,updated_at
+        ) VALUES(?, 'backtest', 'Q02', ?, ?, ?, 'done', ?, 0, ?, ?, ?, ?)
+        """,
+        (
+            work_item_id,
+            ea_id,
+            symbol,
+            setfile_path,
+            verdict,
+            evidence_path,
+            json.dumps({"build_task_id": build_task_id, "verdict_reason": reason}),
+            "2026-08-21T08:00:00+00:00",
+            updated_at,
+        ),
+    )
+
+
+def test_mixed_cohort_null_promotes_gold_before_stop_in_apply_mode(
+    tmp_path: Path,
+) -> None:
+    """DEFECT 1 e2e: two identical FX nulls must not kill a gold strategy - the
+    deferred XAUUSD host is promoted, and the cohort is NOT stopped."""
+    ea_id = "QM5_9006"
+    farm_root, report_root, env = _canary_apply_env(tmp_path, ea_id)
+    build_task_id = "build-9006"
+    gold_setfile = tmp_path / f"{ea_id}_XAUUSD.DWX_D1_backtest.set"
+    gold_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        for wi, symbol in (("c-eur", "EURUSD.DWX"), ("c-jpy", "USDJPY.DWX")):
+            _insert_canary_row(
+                conn, ea_id, wi, symbol, "ZERO_TRADES", "Q02_ZERO_TRADES",
+                build_task_id, setfile_path=str(tmp_path / f"{symbol}.set"),
+            )
+        conn.commit()
+
+    deferred_file = farm_root / "state" / "q02_deferred_symbols.json"
+    deferred_file.write_text(
+        json.dumps({
+            ea_id: {
+                "setfiles": [{
+                    "setfile": str(gold_setfile),
+                    "symbol": "XAUUSD.DWX",
+                    "tf": "D1",
+                }],
+                "source": "fixture",
+                "deferred_at": "2026-08-21T07:59:00+00:00",
+                "build_task_id": build_task_id,
+                "canary_symbols": ["EURUSD.DWX", "USDJPY.DWX"],
+                "fanout_policy": farmctl.Q02_CANARY_FANOUT_POLICY,
+                "fanout_state": "AWAITING_CONFIRMATION",
+            }
+        }),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(SWEEP), "--apply", "--ea", ea_id],
+        cwd=REPO, env=env, capture_output=True, text=True,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC, check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        pending = conn.execute(
+            "SELECT symbol FROM work_items WHERE ea_id=? AND status='pending'",
+            (ea_id,),
+        ).fetchall()
+    assert [row[0] for row in pending] == ["XAUUSD.DWX"]
+
+    state = json.loads(deferred_file.read_text(encoding="utf-8"))
+    assert ea_id in state
+    assert state[ea_id]["fanout_state"] != "STOPPED"
+    assert "XAUUSD.DWX" in state[ea_id]["canary_symbols"]
+    report = json.loads(
+        (report_root / "state" / "claude_sweep_enqueue_2026-06-10.json")
+        .read_text(encoding="utf-8")
+    )
+    assert report["part3_deferred_promotion"]["stopped"] == []
+    assert any(
+        p["symbol"] == "XAUUSD.DWX"
+        for p in report["part3_deferred_promotion"]["promoted"]
+    )
+
+
+def test_deterministic_defect_canary_stops_cohort_in_apply_mode(
+    tmp_path: Path,
+) -> None:
+    """GAP 3 e2e: a hard-defect canary persists fanout_state=STOPPED, keeps the
+    cohort deferred, and enqueues zero new Q02 rows."""
+    ea_id = "QM5_9007"
+    farm_root, report_root, env = _canary_apply_env(tmp_path, ea_id)
+    build_task_id = "build-9007"
+    deferred_setfile = tmp_path / f"{ea_id}_USDJPY.DWX_D1_backtest.set"
+    deferred_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        _insert_canary_row(
+            conn, ea_id, "c-eur", "EURUSD.DWX", "INVALID", "INVALID_EVIDENCE",
+            build_task_id, setfile_path=str(tmp_path / "EURUSD.DWX.set"),
+        )
+        conn.commit()
+
+    deferred_file = farm_root / "state" / "q02_deferred_symbols.json"
+    deferred_file.write_text(
+        json.dumps({
+            ea_id: {
+                "setfiles": [{
+                    "setfile": str(deferred_setfile),
+                    "symbol": "USDJPY.DWX",
+                    "tf": "D1",
+                }],
+                "source": "fixture",
+                "deferred_at": "2026-08-21T07:59:00+00:00",
+                "build_task_id": build_task_id,
+                "canary_symbols": ["EURUSD.DWX"],
+                "fanout_policy": farmctl.Q02_CANARY_FANOUT_POLICY,
+                "fanout_state": "AWAITING_CANARY",
+            }
+        }),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(SWEEP), "--apply", "--ea", ea_id],
+        cwd=REPO, env=env, capture_output=True, text=True,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC, check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        pending = conn.execute(
+            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND status='pending'",
+            (ea_id,),
+        ).fetchone()[0]
+    assert pending == 0
+
+    state = json.loads(deferred_file.read_text(encoding="utf-8"))
+    assert state[ea_id]["fanout_state"] == "STOPPED"
+    assert [sf["symbol"] for sf in state[ea_id]["setfiles"]] == ["USDJPY.DWX"]
+    report = json.loads(
+        (report_root / "state" / "claude_sweep_enqueue_2026-06-10.json")
+        .read_text(encoding="utf-8")
+    )
+    assert any(
+        e["ea_id"] == ea_id
+        for e in report["part3_deferred_promotion"]["stopped"]
+    )
+
+
+def test_legacy_requeue_excluded_entry_is_annotated_in_apply_mode(
+    tmp_path: Path,
+) -> None:
+    """GAP 4: a legacy sidecar entry without fanout fields must not be rewritten
+    unannotated - the sweep stamps the policy and a LEGACY_EXCLUDED marker."""
+    ea_id = "QM5_10001"
+    farm_root, report_root, env = _canary_apply_env(tmp_path, ea_id)
+    (farm_root / "state" / "requeue_excluded_eas.txt").write_text(
+        f"{ea_id}\n", encoding="utf-8"
+    )
+    legacy_setfile = tmp_path / f"{ea_id}_EURUSD.DWX_D1_backtest.set"
+    legacy_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+
+    deferred_file = farm_root / "state" / "q02_deferred_symbols.json"
+    deferred_file.write_text(
+        json.dumps({
+            ea_id: {
+                "setfiles": [{
+                    "setfile": str(legacy_setfile),
+                    "symbol": "EURUSD.DWX",
+                    "tf": "D1",
+                }],
+                "source": "claude_sweep_enqueue_2026-06-10",
+                "deferred_at": "2026-06-29T00:00:00+00:00",
+            }
+        }),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(SWEEP), "--apply", "--ea", ea_id],
+        cwd=REPO, env=env, capture_output=True, text=True,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC, check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+    state = json.loads(deferred_file.read_text(encoding="utf-8"))
+    assert state[ea_id]["fanout_policy"] == farmctl.Q02_CANARY_FANOUT_POLICY
+    assert state[ea_id]["fanout_state"] == "LEGACY_EXCLUDED"
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        pending = conn.execute(
+            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND status='pending'",
+            (ea_id,),
+        ).fetchone()[0]
+    assert pending == 0
+
+
+def test_stopped_cohort_unstops_on_later_pass_in_apply_mode(
+    tmp_path: Path,
+) -> None:
+    """DEFECT 2(b) e2e: a STOPPED cohort whose canary later PASSes is re-opened
+    and its deferred symbol promoted, idempotently."""
+    ea_id = "QM5_9009"
+    farm_root, report_root, env = _canary_apply_env(tmp_path, ea_id)
+    build_task_id = "build-9009"
+    canary_setfile = str(tmp_path / "EURUSD.DWX.set")
+    deferred_setfile = tmp_path / f"{ea_id}_USDJPY.DWX_D1_backtest.set"
+    deferred_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        # Same setfile_path so Part 2 sees the newer non-INFRA verdict and does
+        # not requeue the (now healthy) canary as stranded infra.
+        _insert_canary_row(
+            conn, ea_id, "c-infra", "EURUSD.DWX", "INFRA_FAIL", "NO_HISTORY",
+            build_task_id, setfile_path=canary_setfile,
+            updated_at="2026-08-21T04:00:00+00:00",
+        )
+        _insert_canary_row(
+            conn, ea_id, "c-pass", "EURUSD.DWX", "PASS", "OK",
+            build_task_id, setfile_path=canary_setfile,
+            updated_at="2026-08-21T09:00:00+00:00",
+        )
+        conn.commit()
+
+    deferred_file = farm_root / "state" / "q02_deferred_symbols.json"
+    deferred_file.write_text(
+        json.dumps({
+            ea_id: {
+                "setfiles": [{
+                    "setfile": str(deferred_setfile),
+                    "symbol": "USDJPY.DWX",
+                    "tf": "D1",
+                }],
+                "source": "fixture",
+                "deferred_at": "2026-08-21T03:59:00+00:00",
+                "build_task_id": build_task_id,
+                "canary_symbols": ["EURUSD.DWX"],
+                "fanout_policy": farmctl.Q02_CANARY_FANOUT_POLICY,
+                "fanout_state": "STOPPED",
+                "fanout_stopped_at": "2026-08-21T05:00:00+00:00",
+                "fanout_stop": {"reason": "confirmed_infra_canary_failure"},
+            }
+        }),
+        encoding="utf-8",
+    )
+
+    def _run() -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [sys.executable, str(SWEEP), "--apply", "--ea", ea_id],
+            cwd=REPO, env=env, capture_output=True, text=True,
+            timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC, check=False,
+        )
+
+    first = _run()
+    assert first.returncode == 0, first.stdout + first.stderr
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        pending = conn.execute(
+            "SELECT symbol FROM work_items WHERE ea_id=? AND status='pending'",
+            (ea_id,),
+        ).fetchall()
+    assert [row[0] for row in pending] == ["USDJPY.DWX"]
+    assert ea_id not in json.loads(deferred_file.read_text(encoding="utf-8"))
+
+    # Idempotent: a second sweep must not enqueue a duplicate.
+    second = _run()
+    assert second.returncode == 0, second.stdout + second.stderr
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        pending2 = conn.execute(
+            "SELECT symbol FROM work_items WHERE ea_id=? AND status='pending'",
+            (ea_id,),
+        ).fetchall()
+    assert [row[0] for row in pending2] == ["USDJPY.DWX"]

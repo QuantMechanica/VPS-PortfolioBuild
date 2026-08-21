@@ -893,25 +893,6 @@ if deferred_state:
             continue
         entry = deferred_state[ea_id]
         deferred_setfiles = list(entry.get("setfiles") or [])
-        if entry.get("fanout_state") == "STOPPED":
-            report["part3_deferred_promotion"]["stopped"].append({
-                "ea_id": ea_id,
-                "reason": (entry.get("fanout_stop") or {}).get("reason")
-                or "previous_canary_stop",
-                "deferred_setfiles": len(deferred_setfiles),
-            })
-            report["part3_deferred_promotion"]["kept_deferred"] += len(
-                deferred_setfiles
-            )
-            continue
-        if farmctl.is_q02_requeue_excluded(ea_id, REQUEUE_EXCLUDED_EAS):
-            report["part3_deferred_promotion"].setdefault("skipped", []).append(
-                {"ea_id": ea_id, "reason": "requeue_excluded_q02",
-                 "deferred_setfiles": len(deferred_setfiles)})
-            report["part3_deferred_promotion"]["kept_deferred"] += len(
-                deferred_setfiles
-            )
-            continue
 
         all_rows = cur.execute(
             "SELECT * FROM work_items WHERE ea_id=? AND phase IN ('Q02','P2') "
@@ -942,7 +923,59 @@ if deferred_state:
                 for row in all_rows
                 if str(row["symbol"] or "") not in deferred_symbols
             ))
-        decision = farmctl._q02_canary_fanout_decision(all_rows, canary_symbols)
+
+        # DEFECT 2(b): STOPPED is not a terminal sink. Re-evaluate cheaply every
+        # sweep — if a canary produced a fresh economic verdict after the stop
+        # (self-healed cold cache, or a late PASS), the stop is contradicted and
+        # the cohort re-opens for a fresh decision. No verdict is ever written.
+        if entry.get("fanout_state") == "STOPPED":
+            revival = farmctl._q02_canary_revival(
+                all_rows, entry.get("fanout_stopped_at")
+            )
+            if revival is None:
+                report["part3_deferred_promotion"]["stopped"].append({
+                    "ea_id": ea_id,
+                    "reason": (entry.get("fanout_stop") or {}).get("reason")
+                    or "previous_canary_stop",
+                    "deferred_setfiles": len(deferred_setfiles),
+                })
+                report["part3_deferred_promotion"]["kept_deferred"] += len(
+                    deferred_setfiles
+                )
+                continue
+            entry["fanout_state"] = "AWAITING_CANARY"
+            entry["fanout_revived_at"] = NOW
+            entry["release_reason"] = revival["release_reason"]
+            entry.setdefault("fanout_revival_history", []).append(revival)
+            report["part3_deferred_promotion"].setdefault("revived", []).append({
+                "ea_id": ea_id,
+                "reason": revival["release_reason"],
+                "symbol": revival.get("symbol"),
+                "verdict": revival.get("verdict"),
+            })
+            # fall through to the normal decision path below
+
+        if farmctl.is_q02_requeue_excluded(ea_id, REQUEUE_EXCLUDED_EAS):
+            # GAP 4: never rewrite a legacy sidecar entry in an unevaluated
+            # format. Stamp the policy and an explicit terminal marker so nothing
+            # rides the sidecar unannotated.
+            entry["fanout_policy"] = farmctl.Q02_CANARY_FANOUT_POLICY
+            entry["fanout_state"] = "LEGACY_EXCLUDED"
+            report["part3_deferred_promotion"].setdefault("skipped", []).append(
+                {"ea_id": ea_id, "reason": "requeue_excluded_q02",
+                 "deferred_setfiles": len(deferred_setfiles)})
+            report["part3_deferred_promotion"]["kept_deferred"] += len(
+                deferred_setfiles
+            )
+            continue
+
+        cohort_symbols = list(dict.fromkeys(
+            canary_symbols
+            + [str(item.get("symbol") or "") for item in deferred_setfiles]
+        ))
+        decision = farmctl._q02_canary_fanout_decision(
+            all_rows, canary_symbols, cohort_symbols
+        )
         entry["fanout_policy"] = farmctl.Q02_CANARY_FANOUT_POLICY
         entry["canary_symbols"] = canary_symbols
         entry["fanout_last_decision"] = decision
@@ -1036,8 +1069,22 @@ if deferred_state:
                     "reason": "null_signal_no_confirmation_host",
                 }
                 continue
+            # Cross-asset confirmation (DEFECT 1): when the decision names the
+            # unprobed asset classes to reach, promote the lowest-ranked deferred
+            # host from those classes first so a metal/index strategy is probed
+            # before any identical-null stop. Otherwise confirm the next liquid
+            # host overall (first-null single confirmation).
+            confirmation_pool = deferred_setfiles
+            promote_classes = decision.get("promote_asset_classes")
+            if promote_classes:
+                targeted = [
+                    item for item in deferred_setfiles
+                    if farmctl._q02_asset_class(item["symbol"]) in set(promote_classes)
+                ]
+                if targeted:
+                    confirmation_pool = targeted
             confirmation = min(
-                deferred_setfiles,
+                confirmation_pool,
                 key=lambda item: farmctl._q02_canary_symbol_rank(item["symbol"]),
             )
             confirmation_index = len(canary_symbols) + 1

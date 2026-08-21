@@ -22284,6 +22284,27 @@ def record_build_result(
 Q02_DEFERRED_SYMBOLS_FILE = DEFAULT_ROOT / "state" / "q02_deferred_symbols.json"
 Q02_CANARY_FANOUT_POLICY = "qm-q02-canary-fanout/v1"
 Q02_STAGE1_MAX_SYMBOLS = 1
+# MNT-038 hardening: a transient-infra canary (NO_HISTORY / INCOMPLETE_RUNS is a
+# documented first-attempt cold-cache failure that self-heals) must not write a
+# terminal STOP on first sight. It is stopped only once its infra class has
+# persisted across this many terminal attempts, driven by Part 2's requeue loop.
+Q02_CANARY_INFRA_STOP_ATTEMPTS = 3
+# Reason tokens that mark a deterministic-stop signature as a genuine defect (fast
+# STOP) rather than a transient MT5/cold-cache condition (confirm before STOP).
+Q02_CANARY_HARD_DEFECT_TOKENS = (
+    "ONINIT",
+    "INVALID",
+    "DRAFT_DEFECT",
+    "COMPILE",
+    "MAGIC",
+    "PIN",
+    "SETFILE",
+)
+Q02_CANARY_TRANSIENT_INFRA_TOKENS = (
+    "NO_HISTORY",
+    "INCOMPLETE_RUNS",
+    "COLD_CACHE",
+)
 
 Q02_CANARY_SYMBOL_PRIORITY = (
     "EURUSD.DWX",
@@ -22307,6 +22328,91 @@ def _q02_symbol_bucket(symbol: str) -> str:
     if len(base) == 6 and base.isalpha():
         return "fx"
     return "index"
+
+
+_Q02_ASSET_CLASS_CACHE: dict[str, str] | None = None
+
+
+def _q02_asset_class(symbol: str) -> str:
+    """Authoritative asset class for a DWX symbol (forex/commodities/indices).
+
+    Reads ``dwx_symbol_matrix.csv`` (cached for the process) so cohort-aware
+    null confirmation can tell an FX canary apart from a metal/index host. Falls
+    back to the coarse ``_q02_symbol_bucket`` heuristic when the symbol is absent
+    from the matrix (e.g. logical baskets in an isolated test repo).
+    """
+    global _Q02_ASSET_CLASS_CACHE
+    s = str(symbol or "").strip().upper()
+    if _Q02_ASSET_CLASS_CACHE is None:
+        cache: dict[str, str] = {}
+        matrix = REPO_ROOT / "framework" / "registry" / "dwx_symbol_matrix.csv"
+        try:
+            with matrix.open(encoding="utf-8-sig", newline="") as handle:
+                for row in csv.DictReader(handle):
+                    sym = (row.get("symbol") or "").strip().upper()
+                    cls = (row.get("asset_class") or "").strip().lower()
+                    if sym and cls:
+                        cache[sym] = cls
+        except OSError:
+            cache = {}
+        _Q02_ASSET_CLASS_CACHE = cache
+    if s in _Q02_ASSET_CLASS_CACHE:
+        return _Q02_ASSET_CLASS_CACHE[s]
+    return {"fx": "forex", "metal": "commodities", "index": "indices"}.get(
+        _q02_symbol_bucket(s), _q02_symbol_bucket(s)
+    )
+
+
+def _q02_terminal_infra_attempts(
+    rows: list[sqlite3.Row | dict[str, Any]], symbol: str
+) -> int:
+    """Count terminal INFRA_FAIL rows for one canary symbol (append-only reruns)."""
+    target = str(symbol or "")
+    count = 0
+    for row in rows:
+        if str(_work_item_value(row, "symbol", "") or "") != target:
+            continue
+        if str(_work_item_value(row, "status", "") or "").upper() not in {
+            "DONE",
+            "FAILED",
+        }:
+            continue
+        if str(_work_item_value(row, "verdict", "") or "").upper() == "INFRA_FAIL":
+            count += 1
+    return count
+
+
+def _q02_canary_revival(
+    rows: list[sqlite3.Row | dict[str, Any]], stopped_at: str | None
+) -> dict[str, Any] | None:
+    """Detect terminal canary evidence that postdates and contradicts a STOP.
+
+    A STOPPED cohort is not a terminal sink: if a canary later produces a fresh
+    economic verdict (PASS or any per-symbol economic outcome) after the stop
+    timestamp, the transient/null stop is contradicted and the cohort re-opens.
+    Cheap and idempotent — inspects already-fetched rows, writes no verdict.
+    """
+    threshold = str(stopped_at or "")
+    best: dict[str, Any] | None = None
+    for row in rows:
+        updated = str(_work_item_value(row, "updated_at", "") or "")
+        if threshold and updated <= threshold:
+            continue
+        outcome = _q02_canary_outcome(row)
+        if outcome["kind"] != "economic":
+            continue
+        if best is None or updated >= str(best.get("observed_at") or ""):
+            best = {
+                "symbol": outcome["symbol"],
+                "verdict": outcome["verdict"],
+                "observed_at": updated,
+            }
+    if best is None:
+        return None
+    return {
+        "release_reason": "stopped_canary_contradicted_by_economic_verdict",
+        **best,
+    }
 
 
 def _q02_canary_symbol_rank(symbol: str) -> tuple[int, str]:
@@ -22388,26 +22494,60 @@ def _q02_canary_outcome(row: sqlite3.Row | dict[str, Any]) -> dict[str, Any]:
         kind = "economic"
     else:
         kind = "unclassified"
+
+    # Sub-classify a deterministic stop so the dispatch gate can distinguish a
+    # genuine defect (fast STOP) from a transient MT5/cold-cache infra failure
+    # (confirm across attempts before any terminal STOP). A hard-defect token in
+    # the signature (e.g. ONINIT_FAILED) always wins over a co-present transient
+    # token; a bare INFRA_FAIL with only transient/unknown tokens is transient.
+    stop_class = None
+    if kind == "deterministic_stop":
+        if verdict == "INFRA_FAIL" and not any(
+            token in signature for token in Q02_CANARY_HARD_DEFECT_TOKENS
+        ):
+            stop_class = "transient_infra"
+        else:
+            stop_class = "hard_defect"
+
     return {
         "symbol": symbol,
         "status": status,
         "verdict": verdict,
         "kind": kind,
         "signature": signature,
+        "stop_class": stop_class,
     }
 
 
 def _q02_canary_fanout_decision(
     rows: list[sqlite3.Row | dict[str, Any]],
     expected_symbols: list[str] | tuple[str, ...],
+    cohort_symbols: list[str] | tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
     """Decide whether a deferred Q02 cohort may advance.
 
     A first valid economic outcome releases the cohort. A first null signal
     earns exactly one sequential confirmation so a heterogeneous strategy is
-    not killed by a poor host. Two identical null signals stop. Any
-    infrastructure/invalid/draft-defect canary stops without fanout. Unknown or
-    incomplete evidence waits rather than guessing.
+    not killed by a poor host.
+
+    MNT-038 hardening (this dispatch gate must never preempt per-symbol Q02
+    economics):
+
+    * Identical bare ``ZERO_TRADES`` signatures on the liquidity-ranked FX
+      canaries do NOT stop a cohort whose remaining symbols span a different
+      asset class than the probed hosts. ``cohort_symbols`` (canaries plus the
+      still-deferred setfiles) is consulted: a canary is promoted from every
+      unprobed asset class before an identical-null STOP is allowed. Only when
+      every asset class present in the cohort has produced the identical bare
+      null may the cohort be null-stopped.
+    * A hard-defect canary (invalid/draft-defect/oninit/failed-without-verdict)
+      keeps today's fast STOP. A transient-infra canary (bare INFRA_FAIL,
+      NO_HISTORY/INCOMPLETE_RUNS) only stops once its infra class has persisted
+      across ``Q02_CANARY_INFRA_STOP_ATTEMPTS`` terminal attempts; before that
+      the decision waits so the self-healing cold cache is not treated as a
+      permanent stop.
+
+    Unknown or incomplete evidence waits rather than guessing.
     """
     latest_by_symbol: dict[str, sqlite3.Row | dict[str, Any]] = {}
     for row in rows:
@@ -22449,11 +22589,34 @@ def _q02_canary_fanout_decision(
             "action": "RELEASE",
             "reason": "economic_or_heterogeneous_canary",
         }
-    if any(outcome["kind"] == "deterministic_stop" for outcome in outcomes):
+    deterministic = [
+        outcome for outcome in outcomes if outcome["kind"] == "deterministic_stop"
+    ]
+    if deterministic:
+        if any(outcome.get("stop_class") == "hard_defect" for outcome in deterministic):
+            return {
+                **base,
+                "action": "STOP",
+                "reason": "deterministic_canary_failure",
+            }
+        # Every deterministic canary is transient infra: require confirmation
+        # across attempts before a terminal stop (Part 2 requeues these rows).
+        infra_attempts = max(
+            _q02_terminal_infra_attempts(rows, outcome["symbol"])
+            for outcome in deterministic
+        )
+        if infra_attempts >= Q02_CANARY_INFRA_STOP_ATTEMPTS:
+            return {
+                **base,
+                "action": "STOP",
+                "reason": "confirmed_infra_canary_failure",
+                "infra_attempts": infra_attempts,
+            }
         return {
             **base,
-            "action": "STOP",
-            "reason": "deterministic_canary_failure",
+            "action": "WAIT",
+            "reason": "transient_infra_awaiting_confirmation",
+            "infra_attempts": infra_attempts,
         }
     if len(outcomes) == 1 and outcomes[0]["kind"] == "null_signal":
         return {
@@ -22467,6 +22630,21 @@ def _q02_canary_fanout_decision(
         if outcome["kind"] == "null_signal"
     }
     if len(outcomes) >= 2 and len(null_signatures) == 1:
+        # Cohort-aware null confirmation: a bare identical null on the probed
+        # (liquidity-ranked FX) canaries must not kill a cohort whose remaining
+        # symbols reach an unprobed asset class. Promote a canary from every such
+        # class before a terminal null stop is permitted.
+        probed_classes = {_q02_asset_class(outcome["symbol"]) for outcome in outcomes}
+        cohort = [str(symbol) for symbol in (cohort_symbols or expected) if str(symbol)]
+        cohort_classes = {_q02_asset_class(symbol) for symbol in cohort}
+        unprobed_classes = sorted(cohort_classes - probed_classes)
+        if unprobed_classes:
+            return {
+                **base,
+                "action": "CONFIRM",
+                "reason": "identical_null_requires_cross_asset_confirmation",
+                "promote_asset_classes": unprobed_classes,
+            }
         return {
             **base,
             "action": "STOP",
