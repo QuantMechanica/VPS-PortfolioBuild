@@ -63,8 +63,8 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED
+q01_status: PENDING_GOVERNED_COMPILE
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a direct-WTI completed-week failed-auction reversal sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact Monday anchors, one immediately completed 3-5-session weekly OHLC package, strict high-open versus open-low 2:1 inequality, opposing settlement sign, agreement/equality flat, one attempt, fixed risk, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -395,14 +395,15 @@ establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-21 | initial WTI completed-week excursion-rejection reversal card | G0 | APPROVED |
+| v2 | 2026-08-21 | source-only EA, deterministic reference suite, and fixed-risk preset committed; governed compile queued under rollout hold | Q01 | PENDING_GOVERNED_COMPILE |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-21 | APPROVED | `decisions/2026-08-21_qm5_41096_wti_weekly_excursion_rejection_reversal_g0.md` |
-| Q01 Build Validation | 2026-08-21 | NOT_STARTED | none |
-| Q02 Baseline Screening | 2026-08-21 | NOT_ENQUEUED | Q01 prerequisite absent |
+| Q01 Build Validation | 2026-08-21 | PENDING_GOVERNED_COMPILE | source commit `198006a73`; 12 reference checks and source guardrails PASS; compile item `678881b9-d266-4cb4-9b92-1bf1b85b7030` is held for reviewed worker rollout |
+| Q02 Baseline Screening | 2026-08-21 | NOT_ENQUEUED_CPU_CEILING | Q01 is not yet PASS; five fresh CPU samples were 98.46%-100.00%, above the 97% ceiling; `docs/ops/evidence/2026-08-21_qm5_41096_wti_weekly_excursion_rejection_source_build_cpu_stop.md` |
 
 ## Safety Boundary
 

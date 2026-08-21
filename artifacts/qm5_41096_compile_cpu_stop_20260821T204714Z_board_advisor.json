@@ -1,0 +1,54 @@
+{
+  "schema": "qm.build-capacity-stop/v1",
+  "recorded_at_utc": "2026-08-21T20:47:14.767Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41096",
+  "ea_label": "QM5_41096_wti-wexcursion-reject-rv",
+  "source_commit": "198006a739da033af0ad89ae58320f923d54d0f9",
+  "mq5_sha256": "84CA1D4783B928CF548D488832403FE38A864B8E9D8919542159044E6F526240",
+  "setfile_sha256_precompile": "F0F5D5552137B08EB9264E4DB005E6E2909BABE1C303A1DC76F36BC90A5F17C8",
+  "source_validation": {
+    "reference_tests_passed": 12,
+    "reference_tests_failed": 0,
+    "build_guardrails": "PASS",
+    "spec_validation": "PASS",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS"
+  },
+  "direct_compile": {
+    "result": "FAIL_SAFE",
+    "reason_class": "INCLUDE_MIRROR_REFUSED",
+    "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "retry_attempted": false,
+    "log": "C:/QM/repo/framework/build/compile/20260821_204557/QM5_41096_wti-wexcursion-reject-rv.compile.log"
+  },
+  "governed_compile": {
+    "work_item_id": "678881b9-d266-4cb4-9b92-1bf1b85b7030",
+    "status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "verdict": null,
+    "ex5_sha256": null
+  },
+  "capacity": {
+    "scanned_at_utc": "2026-08-21T20:46:55Z",
+    "cpu_hard_ceiling_percent": 97.0,
+    "cpu_ceiling_breached": true,
+    "cpu_samples": [
+      {"timestamp_utc": "2026-08-21T20:46:58.749Z", "percent": 99.41},
+      {"timestamp_utc": "2026-08-21T20:47:02.753Z", "percent": 98.46},
+      {"timestamp_utc": "2026-08-21T20:47:06.759Z", "percent": 100.0},
+      {"timestamp_utc": "2026-08-21T20:47:10.759Z", "percent": 99.88},
+      {"timestamp_utc": "2026-08-21T20:47:14.767Z", "percent": 99.44}
+    ],
+    "active_governed_terminals": ["T1", "T2", "T4", "T6", "T10"],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": []
+  },
+  "q01_status": "PENDING_GOVERNED_COMPILE",
+  "q02_enqueued": false,
+  "q02_status": "NOT_ENQUEUED_CPU_CEILING",
+  "manual_backtest_run": false,
+  "terminal_control_performed": false,
+  "live_or_portfolio_files_changed": false
+}
