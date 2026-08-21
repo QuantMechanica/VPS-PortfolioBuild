@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12939
+; ea_slug:      carney-alternate-bat-h4
+; ea_version:   v5.0
+; set_version:  s20260821-001
+; symbol:       XAUUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   5
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3c7031a27617950dd15878f130de961134badbe4c009464c7a0ae15bf8aedd7b
+; author:       Development
+; date:         2026-08-21
+;==========================================================
+qm_ea_id=12939
+qm_magic_slot_offset=5
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_fractal_wing_bars=2
+strategy_scan_bars=96
+strategy_ratio_tolerance=0.05
+strategy_ab_xa_ratio=0.382
+strategy_bc_ab_min=1.130
+strategy_bc_ab_max=2.618
+strategy_cd_bc_min=2.000
+strategy_cd_bc_max=3.618
+strategy_d_xa_ratio=1.130
+strategy_rsi_d1_min=25.0
+strategy_rsi_d1_max=75.0
+strategy_atr_period=14
+strategy_atr_sl_mult=1.27
+strategy_tp_ad_retracement=0.382
+strategy_max_hold_bars=30
+strategy_cooldown_bars=18
+strategy_spread_max_atr_mult=0.3
