@@ -2,69 +2,56 @@
 
 **EA ID:** QM5_36005
 **Slug:** `nnfx-coral-trendlord-woodies-harvester`
-**Source:** `nnfx-coral-trendlord-woodies-harvester-official-source` (see `strategy-seeds/sources/nnfx-coral-trendlord-woodies-harvester/`)
-**Author of this spec:** Development (Gemini)
-**Last revised:** 2026-08-17
+**Source:** `nnfx-coral-trendlord-woodies-harvester-official-source`
+**Author of this spec:** Codex
+**Last revised:** 2026-08-21
 
 ---
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card `artifacts/cards_approved/QM5_36005_nnfx-coral-trendlord-woodies-harvester.md`. See that card's body for the full entry/exit/stop/sizing rules; this SPEC summarises the implementation surface.
-
-Entry/exit logic is encoded in the five `Strategy_*` hooks in `QM5_36005_nnfx-coral-trendlord-woodies-harvester.mq5`. Framework wiring (risk, magic, news, Friday close) is inherited from `QM_Common.mqh` and is not redocumented here.
-
-The official NNFX trend-following momentum algorithm on D1 combines Coral (Baseline), Trend Lord (C1 Trigger), Woodies CCI (C2 Confirmation), and Waddah Attar Explosion (Volume):
-- Baseline: Coral Trend Indicator(20, 0.40) evaluated on completed D1 bars (Shift=1).
-- C1 Trigger: Trend Lord(50) directional slope color (Green for Long, Red for Short).
-- C2 Confirmation: Woodies CCI(14) (> 0 for Long, < 0 for Short).
-- Volume Gate: Waddah Attar Explosion (MACD(12,26,9) momentum exceeding Bollinger Bands(20,2.0) explosion threshold or deadzone).
-- Long Entry: Close[1] > Coral[1] AND TrendLord[1] == GREEN (+1) AND Woodies_CCI[1] > 0 AND WAE > ExplosionLine.
-- Short Entry: Close[1] < Coral[1] AND TrendLord[1] == RED (-1) AND Woodies_CCI[1] < 0 AND WAE > ExplosionLine.
-- Stop Loss: Placed at 1.0 * ATR(14, D1)[1] from entry.
-- Take Profit: Placed at 1.0 * ATR(14, D1)[1] from entry.
-- Break-Even: Move SL to Entry + 1.0 pip when open profit reaches +1.0R (1.0x ATR).
-- Indicator Exit: Close position when Trend Lord flips color (RED for Long, GREEN for Short) or Woodies CCI crosses 0 against the trade.
-- No-Trade Filter: Dynamic spread filter (Spread > 1.8 * ATR(14, D1)[1]) and rollover blackout 23:55–00:05 GMT.
+On each completed D1 bar, the EA buys when price is above the 20-period Coral SMMA, the Trend Lord proxy is green, Woodies CCI is positive, and Waddah Attar momentum exceeds its Bollinger explosion line; it sells on the inverse state. Every order receives a hard one-ATR stop and no full-volume take-profit. At plus one ATR the EA closes 50% and moves the remaining stop to entry plus or minus one pip, leaving the runner open until Trend Lord changes color. New entries are blocked during the GMT rollover window, genuinely excessive spreads, the card's daily loss limits, or the framework news blackout.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_coral_period` | 20 | 14 - 30 | Coral SMMA/T3 smoothing period |
-| `strategy_coral_coeff` | 0.40 | 0.20 - 0.80 | Coral smoothing coefficient |
-| `strategy_coral_warmup_bars` | 100 | 50 - 200 | Closed-bar lookback warmup depth for Coral |
-| `strategy_trendlord_period` | 50 | 20 - 70 | Trend Lord lookback period |
-| `strategy_woodies_cci_period` | 14 | 10 - 20 | Woodies CCI period |
-| `strategy_wae_fast` | 12 | 8 - 16 | WAE MACD fast EMA period |
-| `strategy_wae_slow` | 26 | 20 - 32 | WAE MACD slow EMA period |
-| `strategy_wae_signal` | 9 | 5 - 12 | WAE MACD signal SMA period |
-| `strategy_wae_bb_period` | 20 | 14 - 26 | WAE Bollinger Bands period |
-| `strategy_wae_bb_deviation` | 2.0 | 1.5 - 2.5 | WAE Bollinger Bands deviation |
-| `strategy_wae_sensitivity` | 150 | 100 - 200 | WAE sensitivity multiplier |
-| `strategy_wae_deadzone_pts` | 150 | 100 - 200 | WAE deadzone in points |
-| `strategy_atr_period` | 14 | 10 - 20 | ATR period for stop loss and spread filter |
-| `strategy_sl_atr_mult` | 1.00 | 0.8 - 1.5 | Stop loss distance as ATR multiplier |
-| `strategy_tp_atr_mult` | 1.00 | 0.8 - 1.5 | Take profit distance as ATR multiplier |
-| `strategy_spread_atr_mult` | 1.80 | 1.0 - 2.5 | Spread filter ATR multiplier |
+|---|---:|---|---|
+| `strategy_coral_period` | 20 | 14–30 | Period of the card-defined Coral SMMA baseline. |
+| `strategy_trendlord_period` | 50 | reviewer confirmation required | Period of the deterministic LWMA-slope color proxy used because the card gives no Trend Lord formula. |
+| `strategy_woodies_cci_period` | 14 | 10–20 | Woodies CCI confirmation period. |
+| `strategy_wae_fast` | 12 | fixed baseline | Fast MACD period in the deterministic WAE mapping. |
+| `strategy_wae_slow` | 26 | fixed baseline | Slow MACD period in the deterministic WAE mapping. |
+| `strategy_wae_signal` | 9 | fixed baseline | MACD signal period in the deterministic WAE mapping. |
+| `strategy_wae_bb_period` | 20 | fixed baseline | Bollinger period for the WAE explosion line. |
+| `strategy_wae_bb_deviation` | 2.0 | fixed baseline | Bollinger deviation for the WAE explosion line. |
+| `strategy_wae_sensitivity` | 150 | 100–200 | WAE momentum sensitivity from the card. |
+| `strategy_atr_period` | 14 | fixed | ATR period for entry stop, TP1 trigger, and spread filter. |
+| `strategy_sl_atr_mult` | 1.0 | fixed | Initial stop distance in ATR units. |
+| `strategy_tp1_atr_mult` | 1.0 | fixed | Partial-profit trigger in ATR units. |
+| `strategy_tp1_fraction` | 0.50 | fixed | Fraction of position volume closed at TP1. |
+| `strategy_be_buffer_pips` | 1 | fixed | Runner stop buffer beyond entry after TP1. |
+| `strategy_spread_atr_mult` | 1.8 | fixed | Blocks entry when positive modeled spread exceeds this ATR multiple. |
+| `strategy_daily_entry_halt_pct` | 2.0 | fixed | Blocks new entries after this daily realized loss. |
+| `strategy_daily_hard_stop_pct` | 2.5 | fixed | Closes exposure and blocks entries at this daily equity loss from starting balance. |
+| `strategy_total_hard_stop_pct` | 5.0 | fixed | Closes exposure and blocks entries at this equity loss from the first attach equity. |
 
-> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
-> qm_friday_close_*) are documented in
-> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
+Framework inputs, including `RISK_PERCENT`, `RISK_FIXED`, `PORTFOLIO_WEIGHT`, news controls, stress seed, and Friday close, are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `GBPJPY.DWX` — registered in magic_numbers.csv for this EA (slot 0)
-- `EURJPY.DWX` — registered in magic_numbers.csv for this EA (slot 1)
-- `AUDNZD.DWX` — registered in magic_numbers.csv for this EA (slot 2)
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit universe expansion at runtime; the `QM_SymbolGuard` framework helper rejects foreign symbols).
+- `GBPJPY.DWX` — the card's primary liquid JPY-cross target, registered at slot 0.
+- `EURJPY.DWX` — a second liquid JPY cross in the card's portable D1 basket, registered at slot 1.
+- `AUDNZD.DWX` — the card's non-JPY cross diversifier, registered at slot 2.
+
+**Explicitly NOT for:**
+
+- Any symbol outside the three approved card targets — no unapproved universe expansion is implemented.
 
 ---
 
@@ -74,7 +61,7 @@ The official NNFX trend-following momentum algorithm on D1 combines Coral (Basel
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` |
 
 ---
 
@@ -83,11 +70,11 @@ The official NNFX trend-following momentum algorithm on D1 combines Coral (Basel
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 25 |
-| Cadence note | "80-160 high-conviction trades per year across 3 pairs" |
-| Typical hold time | Daily swing (several D1 bars, up to 1-3 weeks) |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | Multi-indicator trend consensus with confirmed volume expansion |
-| Win rate target (qualitative) | high |
+| Expected trade frequency | 80–160 high-conviction trades per year |
+| Typical hold time | Not stated in frontmatter; the D1 runner holds until Trend Lord changes color. |
+| Expected drawdown profile | Card prior: 18% expected maximum drawdown; hard strategy gates act at 2.5% daily and 5.0% from initial equity. |
+| Regime preference | Not stated in frontmatter; the approved thesis is trend/momentum with volatility expansion. |
+| Win rate target (qualitative) | Not used as a build gate; the card records a source claim only. |
 
 ---
 
@@ -96,8 +83,9 @@ The official NNFX trend-following momentum algorithm on D1 combines Coral (Basel
 This card was mechanised from:
 
 **Source ID:** `nnfx-coral-trendlord-woodies-harvester-official-source`
-**Pointer:** `strategy-seeds/sources/nnfx-coral-trendlord-woodies-harvester/`
-**R1–R4 verdict (Q00):** all PASS — see `artifacts/cards_approved/QM5_36005_nnfx-coral-trendlord-woodies-harvester.md`
+**Source type:** verified quantitative model, as recorded by the approved card
+**Pointer:** `D:/QM/strategy_farm/artifacts/cards_approved/QM5_36005_nnfx-coral-trendlord-woodies-harvester.md`
+**R1–R4 verdict (Q00):** R1 lineage recorded and R2–R4 PASS per `artifacts/cards_approved/QM5_36005_nnfx-coral-trendlord-woodies-harvester.md`.
 
 ---
 
@@ -112,3 +100,9 @@ This card was mechanised from:
 ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-08-21 | Initial build from card | 0d80f4b9-bd2e-4719-a877-b015aea4cd23 |

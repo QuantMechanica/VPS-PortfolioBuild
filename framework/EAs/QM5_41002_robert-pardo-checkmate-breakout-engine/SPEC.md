@@ -4,7 +4,7 @@
 **Slug:** robert-pardo-checkmate-breakout-engine
 **Source:** robert-pardo-checkmate-breakout-engine-official-source (see `D:/QM/strategy_farm/artifacts/cards_approved/QM5_41002_robert-pardo-checkmate-breakout-engine.md`)
 **Author of this spec:** Codex
-**Last revised:** 2026-08-18
+**Last revised:** 2026-08-21
 
 ---
 
@@ -18,7 +18,9 @@ channel would make a close breakout impossible, so the approved card's
 Donchian notation is implemented as the standard prior-channel test.
 Immediately before submitting an entry, the EA rechecks the current spread
 against the freshly cached `1.8 * ATR(14)[1]` ceiling; zero modeled DWX spread
-is valid and only an actually wider spread blocks the signal.
+is valid and only an actually wider spread blocks the signal. The card's
+23:55-00:05 GMT rollover blackout is evaluated after converting Darwinex
+broker time to UTC with the framework DST helper.
 
 The initial stop is 1.5 times ATR(14)[1] from entry and the take-profit is 2R.
 For an open long, the stop follows the lowest low of the latest ten completed
@@ -38,8 +40,8 @@ backtest sizing, daily-loss halt, and total-drawdown signal threshold.
 | `strategy_atr_slope_shift` | `5` | fixed | Reference shift in ATR[1] minus ATR[5] |
 | `strategy_atr_sl_mult` | `1.5` | fixed | Initial stop distance in ATR units |
 | `strategy_tp_rr_mult` | `2.0` | fixed | Take-profit distance in initial-risk units |
-| `strategy_rollover_start_hhmm` | `2355` | fixed | Broker/server-time rollover blackout start |
-| `strategy_rollover_end_hhmm` | `5` | fixed | Broker/server-time rollover blackout end |
+| `strategy_rollover_start_hhmm` | `2355` | fixed | GMT rollover blackout start |
+| `strategy_rollover_end_hhmm` | `5` | fixed | GMT rollover blackout end |
 | `strategy_spread_filter_mult` | `1.8` | fixed | Maximum spread as a fraction of ATR multiple |
 | `strategy_max_positions` | `1` | fixed | Maximum host-symbol positions for this magic |
 | `strategy_max_slippage_ticks` | `3` | fixed | Entry deviation converted from ticks to points |
@@ -82,6 +84,7 @@ not repeated here.
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 40 (card prior; Q02 measures reality) |
+| Expected trade frequency | 80-160 high-conviction trades per year across the authorized basket |
 | Typical hold time | Not asserted; exits are 2R, 1.5 ATR, opposite-channel, or Friday close |
 | Expected drawdown profile | Conservative card prior 15%; 5% external drawdown-signal halt |
 | Regime preference | H4 volatility expansion and directional breakout |
@@ -96,7 +99,7 @@ This card was mechanised from:
 **Source ID:** `robert-pardo-checkmate-breakout-engine-official-source`
 **Source type:** book
 **Pointer:** Pardo, R. (2008), *The Evaluation and Optimization of Trading Strategies*, John Wiley & Sons.
-**R1–R4 verdict (Q00):** all PASS / see `strategy-seeds/cards/approved/QM5_41002_robert-pardo-checkmate-breakout-engine.md`
+**R1–R4 verdict (Q00):** R1 lineage recorded and R2-R4 PASS per `artifacts/cards_approved/QM5_41002_robert-pardo-checkmate-breakout-engine.md`
 
 ---
 
@@ -119,3 +122,4 @@ backtest setfiles only and does not authorize live use.
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from approved card | Task 5d5cc9f6-e096-44a3-af78-99abc2d9e7ed |
 | v2 | 2026-08-20 | Entry-permission repair | Recheck current spread after closed-bar state refresh; no signal thresholds changed |
+| v3 | 2026-08-21 | Card-time normalization repair | Task 5b0eb50d-de0a-4d75-a461-4a08cc03c2c9; convert broker time to GMT before the rollover blackout |
