@@ -284,6 +284,10 @@ HARNESS_PP_FIXTURE_PHASE = "HARNESS_PP_FIXTURE"
 HARNESS_PP_FIXTURE_EA_ID = "QM_PP_FIXTURE_HARNESS"
 HARNESS_PP_FIXTURE_EA_LABEL = "QM_pattern_permission_fixture_runner"
 HARNESS_PP_FIXTURE_SOURCE_DIR = REPO_ROOT / "framework" / "tests"
+# Governed non-trading utility work. COMPILE_EA consumes a quiescent factory
+# slot but never launches terminal64 and never emits a Q-gate verdict.
+COMPILE_WORK_ITEM_KIND = "compile"
+COMPILE_EA_PHASE = "COMPILE_EA"
 # run_smoke requires a positive numeric logger/evidence namespace even for a
 # non-strategy harness. This reserved diagnostic id is never registered,
 # reviewed, promoted, or used as a magic number.
@@ -6005,6 +6009,70 @@ def _worker_staged_ex5_spawn_failure(
     return None
 
 
+def enqueue_compile_eas(
+    root: Path,
+    ea_labels: list[str],
+    *,
+    from_file: str | None = None,
+    apply: bool = False,
+) -> dict[str, Any]:
+    """Create guarded COMPILE_EA utility work items.
+
+    Positional labels are the narrow/manual form and enqueue immediately. A
+    file is the batch form and is dry-run unless ``--apply`` is explicit.
+    Candidate classification and the worker implementation live in the small
+    compile_work_items module so terminal_worker can reuse the exact contract.
+    """
+    try:
+        import compile_work_items as _compile_work_items
+    except ModuleNotFoundError:
+        from tools.strategy_farm import compile_work_items as _compile_work_items
+
+    init_db(root)
+    mutates = bool(apply or not from_file)
+    if mutates:
+        with connect(root) as audit_conn:
+            try:
+                _scope_guard(
+                    "ea.compile",
+                    tool="enqueue_compile_eas",
+                    args_summary=f"labels={len(ea_labels)}:from_file={from_file}:apply={apply}",
+                    conn=audit_conn,
+                )
+            except Exception:
+                audit_conn.commit()
+                raise
+            else:
+                audit_conn.commit()
+    return _compile_work_items.enqueue_compile_eas(
+        root,
+        REPO_ROOT,
+        ea_labels,
+        from_file=from_file,
+        apply=apply,
+    )
+
+
+def compile_batch_status(
+    root: Path,
+    ea_labels: list[str],
+    *,
+    from_file: str | None = None,
+) -> dict[str, Any]:
+    """Read-only per-EA COMPILE_EA status and failure-class report."""
+    try:
+        import compile_work_items as _compile_work_items
+    except ModuleNotFoundError:
+        from tools.strategy_farm import compile_work_items as _compile_work_items
+    init_db(root)
+    return _compile_work_items.compile_batch_status(
+        root,
+        REPO_ROOT,
+        ea_labels,
+        from_file=from_file,
+    )
+
+
 def enqueue_pattern_fixture_harness(
     root: Path,
     *,
@@ -7839,6 +7907,15 @@ def record_work_item_spawn_refusal(
 
 def _spawn_work_item_runner(root: Path, item_row: sqlite3.Row,
                             terminal: str) -> dict[str, Any]:
+    if (
+        item_row["kind"] == COMPILE_WORK_ITEM_KIND
+        or item_row["phase"] == COMPILE_EA_PHASE
+    ):
+        return {
+            "spawned": False,
+            "reason": "COMPILE_EA is owned synchronously by terminal_worker",
+            "compile_terminal_worker_only": True,
+        }
     if (
         item_row["phase"] in REAL_PHASE_RUNNER_PHASES
         and not is_phase_runner_terminal_name(terminal)
@@ -10109,6 +10186,22 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         terminal = item["claimed_by"]
         if terminal:
             busy_terminals.add(terminal)
+        if (
+            item["kind"] == COMPILE_WORK_ITEM_KIND
+            or item["phase"] == COMPILE_EA_PHASE
+        ):
+            # A compile intentionally keeps its claimed terminal quiescent, so
+            # generic active-item polling must not misclassify "terminal64 is
+            # absent" as terminal_died. The resident terminal worker owns the
+            # synchronous compile and its evidence/terminal transition.
+            actions.append({
+                "action": "compile_ea_observed_active",
+                "item_id": item["id"],
+                "ea_id": item["ea_id"],
+                "terminal": terminal,
+                "claimed_by_worker_pid": payload.get("claimed_by_worker_pid"),
+            })
+            continue
         # Find newest summary.json/aggregate.json under the work-item report root.
         # Q-rewrite phase runners write under D:\QM\reports\work_items\<id>;
         # legacy phase runners may still publish to the EA phase directory.
@@ -10423,6 +10516,17 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             except (TypeError, ValueError):
                 item_payload = {}
             item_is_recovery = is_recovery_payload(item_payload)
+            if (
+                item["kind"] == COMPILE_WORK_ITEM_KIND
+                or item["phase"] == COMPILE_EA_PHASE
+            ):
+                actions.append({
+                    "action": "compile_ea_deferred_to_terminal_worker",
+                    "reason": "synchronous_quiescent_slot_owner",
+                    "item_id": item["id"],
+                    "ea_id": item["ea_id"],
+                })
+                continue
             if item_payload.get("diagnostic_non_admission") is True:
                 # The resident terminal worker owns manifest-pinned EX5 staging
                 # and enforces avoid_terminals.  This older secondary claimant
@@ -24726,6 +24830,35 @@ def build_parser() -> argparse.ArgumentParser:
     normalize_slugs.add_argument("--evidence", required=True, help="Durable evidence path authorizing this mechanical normalization")
     normalize_slugs.add_argument("--apply", action="store_true", help="Apply the atomic registry rewrite; default is dry-run")
 
+    enqueue_compile = sub.add_parser(
+        "enqueue-compile",
+        help="Enqueue governed COMPILE_EA utility work; --from-file is dry-run by default",
+    )
+    enqueue_compile.add_argument(
+        "ea_labels",
+        nargs="*",
+        metavar="EA_LABEL",
+        help="Exact QM5_<id>_<slug> label(s); positional/manual form enqueues immediately",
+    )
+    enqueue_compile.add_argument(
+        "--from-file",
+        help="Batch CSV (ea_label/label column) or newline list; dry-run unless --apply",
+    )
+    enqueue_compile.add_argument(
+        "--apply",
+        action="store_true",
+        help="Apply the batch form; positional/manual labels already imply apply",
+    )
+    compile_status = sub.add_parser(
+        "compile-status",
+        help="Report latest COMPILE_EA status and failure classes per EA",
+    )
+    compile_status.add_argument("ea_labels", nargs="*", metavar="EA_LABEL")
+    compile_status.add_argument(
+        "--from-file",
+        help="Batch CSV (ea_label/label column) or newline list",
+    )
+
     set_status = sub.add_parser("set-source-status", help="Move one source to a new explicit status")
     set_status.add_argument("source_id")
     set_status.add_argument("status")
@@ -25012,6 +25145,8 @@ _STATE_MUTATING_COMMANDS = frozenset({
 
 
 def _command_mutates_state(args: argparse.Namespace) -> bool:
+    if args.command == "enqueue-compile":
+        return bool(args.apply or not args.from_file)
     if args.command in {"admit-optimization", "enqueue-opt-admission"}:
         return bool(args.apply)
     if args.command == "enqueue-head-to-head":
@@ -25230,6 +25365,25 @@ def main(argv: list[str] | None = None) -> int:
             challenger_q10_work_item_id=args.challenger_q10_work_item_id,
             apply=args.apply,
         ))
+    elif args.command == "enqueue-compile":
+        compile_enqueue_result = enqueue_compile_eas(
+            root,
+            args.ea_labels,
+            from_file=args.from_file,
+            apply=args.apply,
+        )
+        print_json(compile_enqueue_result)
+        if not compile_enqueue_result.get("ok", False):
+            return 2
+    elif args.command == "compile-status":
+        compile_status_result = compile_batch_status(
+            root,
+            args.ea_labels,
+            from_file=args.from_file,
+        )
+        print_json(compile_status_result)
+        if not compile_status_result.get("ok", False):
+            return 2
     elif args.command == "mt5-slots":
         print_json(get_mt5_status(root))
     elif args.command == "reserve-terminal":
