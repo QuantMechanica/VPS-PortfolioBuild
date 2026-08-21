@@ -17631,3 +17631,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41097,balke-gmt3-range-breakout-opt,0,USDJPY.DWX,410970000,2026-08-21,Codex governed allocator,active
 41098,wti-wextreme-sequence-mom,0,XTIUSD.DWX,410980000,2026-08-21,Codex governed allocator,active
 41099,wti-wclose-turn-mom,0,XTIUSD.DWX,410990000,2026-08-21,Codex governed allocator,active
+41100,xng-wclose-turn-mom,0,XNGUSD.DWX,411000000,2026-08-21,Codex governed allocator,active
