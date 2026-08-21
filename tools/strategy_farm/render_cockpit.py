@@ -34,6 +34,8 @@ import re
 import sqlite3
 import subprocess
 import sys
+import time
+import traceback
 from pathlib import Path
 
 try:  # package import in tests and module consumers
@@ -4181,15 +4183,36 @@ a.frontier-tile:hover { background: var(--surface-2); }
     # 2-min task renders cockpit.html via render_cockpit_v2. A v2 failure must
     # surface as a non-zero task result instead of silently leaving the
     # primary page stale.
-    try:
-        import render_cockpit_v2 as _v2
-        _v2.main([])
-    except SystemExit as exc:  # v2 main() may sys.exit
-        if exc.code not in (0, None):
-            print(f"render_cockpit_v2 failed: exit {exc.code}")
-            return 1
-    except Exception as exc:
-        print(f"render_cockpit_v2 failed: {exc}")
+    # One retry absorbs a transient collision (this 2-min task can overlap a
+    # manual render, and both write the same files). A failure that survives
+    # the retry is real: it is logged with a traceback and reported non-zero.
+    v2_error = None
+    for _attempt in (1, 2):
+        try:
+            import render_cockpit_v2 as _v2
+            rc = _v2.main([])
+            if rc in (0, None):
+                v2_error = None
+                break
+            v2_error = f"render_cockpit_v2.main returned {rc}"
+        except SystemExit as exc:  # v2 main() may sys.exit
+            if exc.code in (0, None):
+                v2_error = None
+                break
+            v2_error = f"render_cockpit_v2 exited {exc.code}"
+        except Exception:
+            v2_error = traceback.format_exc()
+        if _attempt == 1:
+            time.sleep(2.0)
+    if v2_error:
+        try:
+            (REPORTS_STATE / "render_cockpit_v2_error.log").write_text(
+                f"{dt.datetime.now(dt.timezone.utc).isoformat()}\n{v2_error}\n",
+                encoding="utf-8",
+            )
+        except OSError:
+            pass
+        print(f"render_cockpit_v2 failed after retry: {v2_error.splitlines()[-1]}")
         return 1
     return 0
 
