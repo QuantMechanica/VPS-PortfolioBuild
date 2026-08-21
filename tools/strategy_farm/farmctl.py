@@ -646,12 +646,83 @@ def active_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
 
 
 
+def _parse_porcelain_v1_entry(line: str) -> tuple[str, str]:
+    """Return the XY status and repository-relative path from porcelain v1."""
+    if len(line) < 4 or line[2] != " ":
+        raise ValueError(f"malformed porcelain-v1 entry: {line!r}")
+    status = line[:2]
+    path = line[3:]
+    if " -> " in path:
+        path = path.split(" -> ", 1)[1]
+    path = path.strip().strip('"').replace("\\", "/")
+    if not path or "\x00" in path or Path(path).is_absolute() or ".." in Path(path).parts:
+        raise ValueError(f"unsafe porcelain-v1 path: {path!r}")
+    return status, path
+
+
+def _generated_ea_artifact_kind(status: str, path: str) -> str | None:
+    """Classify narrowly-scoped EA outputs which cannot be human source edits.
+
+    A canonical ``.mq5`` is considered generated scaffolding only while it is
+    untracked. Once tracked, any modification to it is human source and must
+    stop new builds. The other exact paths are build products or redundant
+    mirrors, irrespective of their porcelain XY status.
+    """
+    normalized = path.replace("\\", "/")
+    match = re.fullmatch(r"framework/EAs/(QM5_\d+_[^/]+)/(.+)", normalized)
+    if not match:
+        return None
+    ea_label, relative = match.groups()
+    if relative.endswith(".ex5") and "/" not in relative:
+        return "compiled_binary"
+    if re.fullmatch(r"sets/[^/]+\.set", relative):
+        return "generated_setfile"
+    if relative == "SPEC.md":
+        return "generated_spec"
+    if relative == "docs/strategy_card.md":
+        return "generated_card_mirror"
+    if status == "??" and relative == f"{ea_label}.mq5":
+        return "generated_ea_scaffold"
+    return None
+
+
+def _blocking_repo_path_class(path: str) -> str:
+    """Stable diagnostic class for content which remains build-blocking."""
+    normalized = path.replace("\\", "/")
+    for prefix, name in (
+        ("framework/include/", "framework_include"),
+        ("framework/scripts/", "framework_scripts"),
+        ("framework/registry/", "framework_registry"),
+        ("tools/", "tools"),
+        ("scripts/", "scripts"),
+        ("docs/", "docs"),
+    ):
+        if normalized.startswith(prefix):
+            return name
+    if re.fullmatch(r"framework/EAs/QM5_\d+_[^/]+/[^/]+\.mq5", normalized):
+        return "tracked_ea_source"
+    return "other"
+
+
+def _increment_count(counts: dict[str, int], key: str) -> None:
+    counts[key] = counts.get(key, 0) + 1
+
+
 def _repo_dirty_status(root_path: Path = REPO_ROOT) -> dict[str, Any]:
     if os.environ.get(DIRTY_REPO_BUILD_GUARD_ENV) == "1":
-        return {"blocked": False, "override": True, "entries": [], "count": 0}
+        return {
+            "blocked": False,
+            "override": True,
+            "entries": [],
+            "count": 0,
+            "total_count": 0,
+            "generated_count": 0,
+            "generated_by_class": {},
+            "blocking_by_class": {},
+        }
     try:
         proc = subprocess.run(
-            ["git", "-C", str(root_path), "status", "--porcelain=v1", "--untracked-files=normal"],
+            ["git", "-C", str(root_path), "status", "--porcelain=v1", "--untracked-files=all"],
             capture_output=True,
             text=True,
             timeout=20,
@@ -666,30 +737,46 @@ def _repo_dirty_status(root_path: Path = REPO_ROOT) -> dict[str, Any]:
             "error": (proc.stderr or proc.stdout or "").strip(),
             "entries": entries[:DIRTY_REPO_GUARD_DETAIL_LIMIT],
             "count": len(entries),
+            "total_count": len(entries),
+            "generated_count": 0,
+            "generated_by_class": {},
+            "blocking_by_class": {"git_status_error": len(entries)},
         }
-    # 2026-07-01 (Claude): build ARTIFACTS (.ex5 compiled binary, .set generated set
-    # file) churn continuously as the 7 terminals backtest/recompile, so the tree is
-    # almost never clean. With the prior no-allowlist guard that perpetually blocked
-    # ALL build spawns even when only artifact churn was present -- the recurring
-    # dirty-guard deadlock (the pump's _auto_commit_build_artifacts can't outrun
-    # continuous churn). .ex5/.set are machine-generated OUTPUTS, never human-edited
-    # source, so their transient dirtiness must NOT gate builds. Source (.mq5, .mqh,
-    # tools/, scripts/, registries, docs, etc.) STILL blocks -> build reproducibility
-    # from committed source is preserved. Narrow by extension only.
-    def _is_build_artifact(line: str) -> bool:
-        p = line[3:] if len(line) > 3 else line
-        if " -> " in p:  # rename
-            p = p.split(" -> ", 1)[1]
-        p = p.strip().strip('"').replace("\\", "/").lower()
-        return p.endswith(".ex5") or p.endswith(".set")
-    blocking = [ln for ln in entries if not _is_build_artifact(ln)]
-    artifact_churn = len(entries) - len(blocking)
+    # MNT-011: classify individual files (not collapsed untracked directories)
+    # so the pump's own card mirrors, SPECs and new canonical EA scaffolds cannot
+    # deadlock the next build. Everything outside these exact forms remains
+    # fail-closed. In particular, a tracked/modified .mq5 is source, never
+    # scaffolding.
+    blocking: list[str] = []
+    generated: list[str] = []
+    generated_by_class: dict[str, int] = {}
+    blocking_by_class: dict[str, int] = {}
+    for line in entries:
+        try:
+            status, path = _parse_porcelain_v1_entry(line)
+            generated_kind = _generated_ea_artifact_kind(status, path)
+        except (TypeError, ValueError):
+            blocking.append(line)
+            _increment_count(blocking_by_class, "invalid_git_status")
+            continue
+        if generated_kind:
+            generated.append(line)
+            _increment_count(generated_by_class, generated_kind)
+            continue
+        blocking.append(line)
+        _increment_count(blocking_by_class, _blocking_repo_path_class(path))
     return {
         "blocked": bool(blocking),
         "override": False,
         "entries": blocking[:DIRTY_REPO_GUARD_DETAIL_LIMIT],
         "count": len(blocking),
-        "artifact_churn_ignored": artifact_churn,
+        "total_count": len(entries),
+        "generated_count": len(generated),
+        "generated_by_class": dict(sorted(generated_by_class.items())),
+        "blocking_by_class": dict(sorted(blocking_by_class.items())),
+        "artifact_churn_ignored": len(generated),
+        "generated_entries": generated[:DIRTY_REPO_GUARD_DETAIL_LIMIT],
+        "classification_rule": "qm-repo-dirty-classification/v2",
     }
 
 # Known-good fallback paths for codex.cmd / claude.cmd. Required because
@@ -14648,19 +14735,22 @@ ARTIFACT_COMMIT_ALLOWLIST = (
 )
 
 
-def _is_generated_factory_artifact(path: str) -> bool:
-    """Return true only for machine-generated factory outputs.
+def _is_auto_committable_factory_artifact(status: str, path: str) -> bool:
+    """Return true only for generated output the pump may batch-commit.
 
-    EA source/SPEC files and arbitrary include headers are deliberately excluded:
-    they require an intentional feature commit even when they sit beside generated
-    binaries and set files.
+    Strategy-card mirrors are intentionally absent: they are retained on disk but
+    ignored by git as redundant copies of the approved card of record. Untracked
+    canonical EA source and SPEC files are build-lane products and are committed
+    with their binary; modified tracked EA source remains excluded.
     """
     pu = path.replace("\\", "/")
-    ea_output = re.fullmatch(
-        r"framework/EAs/QM5_\d+_[^/]+/(?:[^/]+\.ex5|sets/[^/]+\.set)",
-        pu,
-    )
-    if ea_output:
+    generated_kind = _generated_ea_artifact_kind(status, pu)
+    if generated_kind in {
+        "compiled_binary",
+        "generated_setfile",
+        "generated_spec",
+        "generated_ea_scaffold",
+    }:
         return True
     for allowed in ARTIFACT_COMMIT_ALLOWLIST:
         if allowed.endswith("/") and pu.startswith(allowed):
@@ -14677,14 +14767,7 @@ def _artifact_path_from_porcelain_line(line: str) -> str:
     dropping a dirty path.  Rename records use the destination path, matching the
     historical auto-commit behavior.
     """
-    if len(line) < 4 or line[2] != " ":
-        raise ValueError(f"malformed porcelain-v1 entry: {line!r}")
-    path = line[3:]
-    if " -> " in path:
-        path = path.split(" -> ", 1)[1]
-    path = path.strip().strip('"').replace("\\", "/")
-    if not path or "\x00" in path or Path(path).is_absolute() or ".." in Path(path).parts:
-        raise ValueError(f"unsafe porcelain-v1 path: {path!r}")
+    _, path = _parse_porcelain_v1_entry(line)
     return path
 
 
@@ -14710,16 +14793,16 @@ def _plan_artifact_auto_commit(
         # porcelain listing, so this costs no I/O.
         source_dirty_eas: set[str] = set()
         for line in entries:
-            probe = _artifact_path_from_porcelain_line(line)
-            if probe.endswith(".mq5"):
+            probe_status, probe = _parse_porcelain_v1_entry(line)
+            if probe.endswith(".mq5") and not _generated_ea_artifact_kind(probe_status, probe):
                 m = re.match(r"framework/EAs/(QM5_\d+_[^/]+)/", probe)
                 if m:
                     source_dirty_eas.add(m.group(1))
 
         for line in entries:
-            path = _artifact_path_from_porcelain_line(line)
+            status, path = _parse_porcelain_v1_entry(line)
             dirty_paths.append(path)
-            if not _is_generated_factory_artifact(path):
+            if not _is_auto_committable_factory_artifact(status, path):
                 rejected_dirty.append(path)
                 continue
             ea_match = re.match(r"framework/EAs/(QM5_\d+)_[^/]+/", path)

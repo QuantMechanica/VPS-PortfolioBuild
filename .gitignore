@@ -108,3 +108,8 @@ artifacts/**/*attempt*.json
 # whole build lane (farmctl.py:654 uses --untracked-files=normal), so it is ignored
 # rather than left to gate builds. The file itself is untouched.
 /download_cli.ps1
+
+# Generated per-EA mirrors duplicate the approved card of record under
+# D:/QM/strategy_farm/artifacts/cards_approved. Keep mirrors on disk for build
+# locality, but do not let new copies enter git status or gate the build lane.
+framework/EAs/QM5_*/docs/strategy_card.md
