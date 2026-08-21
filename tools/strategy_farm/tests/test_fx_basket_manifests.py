@@ -247,6 +247,49 @@ def test_qm5_9184_manifest_has_logical_audusd_nzdusd_setfile() -> None:
     assert _mq5_allowed_symbols(ea_dir) <= declared
 
 
+def test_qm5_11145_uses_one_bound_eurusd_gbpusd_logical_pair() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_11145_vbt-pair-z"
+    manifest = json.loads(
+        (ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig")
+    )
+    source = (ea_dir / f"{ea_dir.name}.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    logical = manifest["logical_symbol"]
+    logical_setfile = (
+        ea_dir
+        / "sets"
+        / f"{ea_dir.name}_{logical}_{manifest['host_timeframe']}_backtest.set"
+    )
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+
+    assert logical == "QM5_11145_EURUSD_GBPUSD_PAIR_Z_D1"
+    assert manifest["host_symbol"] == "EURUSD.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert set(manifest["basket_symbols"]) == {"EURUSD.DWX", "GBPUSD.DWX"}
+    assert list((ea_dir / "sets").glob("*.set")) == [logical_setfile]
+
+    assert "qm_magic_slot_offset=0" in set_text
+    assert "strategy_partner_symbol=GBPUSD.DWX" in set_text
+    assert "strategy_partner_slot=1" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+
+    # Both legs use explicit model-distance lots on the basket path. A failed
+    # host submission rolls back the already-open foreign leg, and the hook
+    # returns false so OnTick cannot submit a duplicate host order.
+    assert "bool QM_CalculatePairLots" in source
+    assert "const bool partner_ok = QM_OpenPairLeg(g_partner" in source
+    assert "const bool host_ok = partner_ok && QM_OpenPairLeg(_Symbol" in source
+    assert "if(partner_ok && !host_ok)" in source
+    assert "QM_ClosePair(QM_EXIT_STRATEGY);" in source
+    assert source.count("QM_FrameworkRegisterMagicSymbol(qm_ea_id") == 2
+    assert source.index("if(QM_OpenPair(dir))") < source.index(
+        "return false;\n  }", source.index("if(QM_OpenPair(dir))")
+    )
+
+
 def test_qm5_10309_is_one_logical_eurusd_gbpusd_two_leg_package() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_10309_cointeg-hft-pairs"
     manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))

@@ -25,13 +25,12 @@
 // when |z| expands beyond `SafetyZ` after entry; time stop after `TimeStopBars`
 // D1 bars. All legs of the pair are closed together.
 //
-// BASKET WIRING. The host leg trades `_Symbol` through the standard framework
-// magic (slot = qm_magic_slot_offset). The partner leg trades a FOREIGN .DWX
-// symbol via QM_BasketOpenPosition with its own registered symbol_slot. The
-// partner's bars are read for the spread; both legs are warmed in OnInit so the
-// foreign-symbol reads return real data in the .DWX tester. One position per
-// (magic, symbol): the host magic holds at most one host-leg position, the
-// partner magic at most one partner-leg position.
+// BASKET WIRING. Both legs trade through QM_BasketOpenPosition with explicit
+// model-distance lots. This is the established legacy-card basket path for a
+// pair whose approved exits are z-score based and therefore have no native
+// price stop. The host uses qm_magic_slot_offset; the foreign partner uses its
+// registered symbol_slot. Both histories are warmed in OnInit. One position per
+// (magic, symbol), with immediate rollback if the second leg cannot open.
 //
 // Pair model (host = leg1, partner = leg2), registered in magic_numbers.csv:
 //   slot 0 EURUSD.DWX (host A) / slot 1 GBPUSD.DWX (partner A)
@@ -85,7 +84,7 @@ input double strategy_z_lower           = 1.96;  // long-spread threshold magnit
 input double strategy_safety_z          = 3.25;  // pair safety exit |z| (P3 {3.0,3.25,3.5})
 input int    strategy_time_stop_bars    = 30;    // close pair after N D1 bars held
 input int    strategy_min_d1_bars       = 160;   // need >= Period+buffer synced D1 bars
-input double strategy_leg_risk_split    = 0.5;   // share of RISK_FIXED per leg (0.5 each)
+input double strategy_leg_risk_split    = 0.5;   // RISK_FIXED share per leg (0 < share <= 0.5)
 
 // -----------------------------------------------------------------------------
 // File-scope cached pair state, advanced once per closed D1 bar.
@@ -95,6 +94,8 @@ double   g_z_curr           = 0.0;    // last closed-bar spread z-score
 double   g_z_prev           = 0.0;    // prior closed-bar spread z-score
 bool     g_z_ready          = false;  // both legs had clean synced data
 double   g_z_at_entry       = 0.0;    // |z| latched on entry (for safety expansion ref)
+double   g_hedge_slope      = 0.0;    // rolling OLS beta of log(partner)
+double   g_spread_std       = 0.0;    // rolling log-spread standard deviation
 
 // -----------------------------------------------------------------------------
 // Rolling-OLS spread z-score over the last `Period` CLOSED D1 bars.
@@ -103,10 +104,16 @@ double   g_z_at_entry       = 0.0;    // |z| latched on entry (for safety expans
 // degenerate data (zero std, missing bars) so the EA simply does not trade —
 // matching the card's "do not trade if std==0 or missing bars" rule.
 // -----------------------------------------------------------------------------
-bool QM_ComputePairZ(const int period, double &z_last, double &z_prev_out)
+bool QM_ComputePairZ(const int period,
+                     double &z_last,
+                     double &z_prev_out,
+                     double &slope_out,
+                     double &spread_std_out)
   {
    z_last     = 0.0;
    z_prev_out = 0.0;
+   slope_out = 0.0;
+   spread_std_out = 0.0;
    if(period < 5)
       return false;
 
@@ -126,8 +133,12 @@ bool QM_ComputePairZ(const int period, double &z_last, double &z_prev_out)
       // computed once per closed D1 bar (OnTick gates this via QM_IsNewBar).
       const double ch = iClose(_Symbol,  PERIOD_D1, i + 1);   // perf-allowed: closed-bar host close for OLS window
       const double cp = iClose(g_partner, PERIOD_D1, i + 1);   // perf-allowed: closed-bar partner close for OLS window
+      const datetime th = iTime(_Symbol, PERIOD_D1, i + 1);    // perf-allowed: closed-bar synchronization check
+      const datetime tp = iTime(g_partner, PERIOD_D1, i + 1);  // perf-allowed: closed-bar synchronization check
       if(ch <= 0.0 || cp <= 0.0)
          return false;                  // missing bar inside lookback -> no trade
+      if(th <= 0 || tp <= 0 || th != tp)
+         return false;                  // pair bars must be timestamp-synchronized
       lh[i] = MathLog(ch);
       lp[i] = MathLog(cp);
      }
@@ -176,22 +187,28 @@ bool QM_ComputePairZ(const int period, double &z_last, double &z_prev_out)
    // z of the prior closed bar (index 1) using the SAME fit window, so the
    // zero-cross / threshold-cross logic compares like with like.
    z_prev_out = (spread[1] - smean) / sstd;
+   slope_out = slope;
+   spread_std_out = sstd;
    return true;
   }
 
 // Advance cached z-score state once per closed D1 bar.
 void QM_AdvancePairState()
   {
-   double zl = 0.0, zp = 0.0;
-   if(QM_ComputePairZ(strategy_period, zl, zp))
+   double zl = 0.0, zp = 0.0, slope = 0.0, spread_std = 0.0;
+   if(QM_ComputePairZ(strategy_period, zl, zp, slope, spread_std))
      {
-      g_z_prev  = zp;
-      g_z_curr  = zl;
-      g_z_ready = true;
+      g_z_prev      = zp;
+      g_z_curr      = zl;
+      g_hedge_slope = slope;
+      g_spread_std  = spread_std;
+      g_z_ready     = true;
      }
    else
      {
       g_z_ready = false;
+      g_hedge_slope = 0.0;
+      g_spread_std = 0.0;
      }
   }
 
@@ -288,22 +305,137 @@ void QM_ClosePair(const QM_ExitReason reason)
      }
   }
 
-// Open the partner (leg2) market order on the FOREIGN symbol via the basket path.
-bool QM_OpenPartnerLeg(const QM_OrderType ot, const string reason)
+// Validate the only three pair bindings approved by the card. Q02 uses the
+// primary EURUSD/GBPUSD identity; keeping the alternates explicit prevents a
+// stale physical-leg preset from silently running the default pair on the
+// wrong host.
+bool QM_PairBindingAllowed()
   {
+   if(_Period != PERIOD_D1)
+      return false;
+   if(_Symbol == "EURUSD.DWX" && qm_magic_slot_offset == 0 &&
+      g_partner == "GBPUSD.DWX" && strategy_partner_slot == 1)
+      return true;
+   if(_Symbol == "AUDUSD.DWX" && qm_magic_slot_offset == 2 &&
+      g_partner == "NZDUSD.DWX" && strategy_partner_slot == 3)
+      return true;
+   if(_Symbol == "GDAXI.DWX" && qm_magic_slot_offset == 4 &&
+      g_partner == "NDX.DWX" && strategy_partner_slot == 5)
+      return true;
+   return false;
+  }
+
+// Convert the card's absolute safety-z boundary into a model-distance sizing
+// rail. The approved exit remains the pair-level z stop (no native price SL),
+// while explicit basket lots allocate RISK_FIXED equally across both legs.
+bool QM_CalculatePairLots(double &host_lots, double &partner_lots)
+  {
+   host_lots = 0.0;
+   partner_lots = 0.0;
+   // The approved pairs are positively related and use opposite-side legs.
+   // A non-positive beta would invert that hedge direction, so fail closed.
+   if(!g_z_ready || g_spread_std <= 0.0 || g_hedge_slope <= 1e-6)
+      return false;
+   if(strategy_leg_risk_split <= 0.0 || strategy_leg_risk_split > 0.5)
+      return false;
+
+   const double remaining_sigma = strategy_safety_z - MathAbs(g_z_curr);
+   if(remaining_sigma <= 0.0)
+      return false;
+   const double spread_distance = MathMax(0.25, remaining_sigma) * g_spread_std;
+   const double partner_log_distance = spread_distance / MathAbs(g_hedge_slope);
+   if(spread_distance <= 0.0 || spread_distance > 1.0 ||
+      partner_log_distance <= 0.0 || partner_log_distance > 1.0)
+      return false;
+
+   const double host_price = iClose(_Symbol, PERIOD_D1, 1);       // perf-allowed: cached closed-bar sizing anchor
+   const double partner_price = iClose(g_partner, PERIOD_D1, 1); // perf-allowed: cached closed-bar sizing anchor
+   const double host_point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double partner_point = SymbolInfoDouble(g_partner, SYMBOL_POINT);
+   if(host_price <= 0.0 || partner_price <= 0.0 ||
+      host_point <= 0.0 || partner_point <= 0.0)
+      return false;
+
+   const double host_price_distance = host_price * (MathExp(spread_distance) - 1.0);
+   const double partner_price_distance = partner_price * (MathExp(partner_log_distance) - 1.0);
+   const double host_full_risk_lots = QM_LotsForRisk(_Symbol, host_price_distance / host_point);
+   const double partner_full_risk_lots = QM_LotsForRisk(g_partner, partner_price_distance / partner_point);
+   if(host_full_risk_lots <= 0.0 || partner_full_risk_lots <= 0.0)
+      return false;
+
+   host_lots = QM_TM_NormalizeVolume(_Symbol,
+                                      host_full_risk_lots * strategy_leg_risk_split);
+   partner_lots = QM_TM_NormalizeVolume(g_partner,
+                                         partner_full_risk_lots * strategy_leg_risk_split);
+   return (host_lots > 0.0 && partner_lots > 0.0);
+  }
+
+bool QM_OpenPairLeg(const string symbol,
+                    const int slot,
+                    const QM_OrderType order_type,
+                    const double lots,
+                    const string reason)
+  {
+   if(lots <= 0.0)
+      return false;
+
    QM_BasketOrderRequest br;
-   br.symbol             = g_partner;
-   br.type               = ot;
-   br.price              = 0.0;     // basket path fills market price at send
-   br.sl                 = 0.0;     // pair-level exits manage the position
+   br.symbol             = symbol;
+   br.type               = order_type;
+   br.price              = 0.0;
+   br.sl                 = 0.0;     // pair-level z/time exits manage the position
    br.tp                 = 0.0;
-   br.lots               = 0.0;     // 0 -> basket sizes via QM_LotsForRisk(partner, sl_pts)
+   br.lots               = lots;    // explicit model-distance RISK_FIXED share
    br.reason             = reason;
-   br.symbol_slot        = strategy_partner_slot;
+   br.symbol_slot        = slot;
    br.expiration_seconds = 0;
 
    ulong tk = 0;
    return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, br, tk);
+  }
+
+bool QM_OpenPair(const int direction)
+  {
+   if(direction == 0 || QM_PairHasPosition())
+      return false;
+
+   double host_lots = 0.0;
+   double partner_lots = 0.0;
+   if(!QM_CalculatePairLots(host_lots, partner_lots))
+      return false;
+
+   const bool long_spread = (direction > 0);
+   const QM_OrderType host_type = long_spread ? QM_BUY : QM_SELL;
+   const QM_OrderType partner_type = long_spread ? QM_SELL : QM_BUY;
+   const string reason = long_spread ? "pair_z_long_spread" : "pair_z_short_spread";
+
+   // Open the foreign leg first. If the host cannot open, immediately flatten
+   // the partner so a dispatch or broker fault cannot leave a naked exposure.
+   const bool partner_ok = QM_OpenPairLeg(g_partner,
+                                          strategy_partner_slot,
+                                          partner_type,
+                                          partner_lots,
+                                          reason);
+   const bool host_ok = partner_ok && QM_OpenPairLeg(_Symbol,
+                                                     qm_magic_slot_offset,
+                                                     host_type,
+                                                     host_lots,
+                                                     reason);
+   if(partner_ok && !host_ok)
+      QM_ClosePair(QM_EXIT_STRATEGY);
+
+   QM_LogEvent((host_ok && partner_ok) ? QM_INFO : QM_WARN,
+               "PAIR_OPEN_RESULT",
+               StringFormat("{\"direction\":%d,\"host_ok\":%s,\"partner_ok\":%s,\"host_lots\":%.8f,\"partner_lots\":%.8f,\"z\":%.6f,\"beta\":%.8f,\"spread_std\":%.8f}",
+                            direction,
+                            host_ok ? "true" : "false",
+                            partner_ok ? "true" : "false",
+                            host_lots,
+                            partner_lots,
+                            g_z_curr,
+                            g_hedge_slope,
+                            g_spread_std));
+   return (host_ok && partner_ok);
   }
 
 // -----------------------------------------------------------------------------
@@ -314,6 +446,8 @@ bool QM_OpenPartnerLeg(const QM_OrderType ot, const string reason)
 // pair logic itself runs on closed bars. No session restriction (D1 pairs).
 bool Strategy_NoTradeFilter()
   {
+   if(!QM_PairBindingAllowed())
+      return true;
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
@@ -328,11 +462,19 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-// Entry on a freshly closed D1 bar. The host leg is opened here through the
-// framework path; the partner leg is opened immediately via the basket path so
-// both legs go on together. Caller guarantees QM_IsNewBar()==true.
+// Entry on a freshly closed D1 bar. Both legs open through the explicit-lot
+// basket path because the card's safety stop is expressed in z-space rather
+// than as a native price SL. Caller guarantees QM_IsNewBar()==true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "pair_z_basket_host";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One pair state at a time: skip if either leg already open.
    if(QM_PairHasPosition())
       return false;
@@ -340,6 +482,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double zc = g_z_curr;
+   if(MathAbs(zc) >= strategy_safety_z)
+      return false;
    int dir = 0;                         // +1 long-spread, -1 short-spread
    if(zc > strategy_z_upper)
       dir = -1;                         // spread rich -> SHORT spread
@@ -348,33 +492,23 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(dir == 0)
       return false;
 
-   // Host (leg1) direction: long-spread -> BUY host; short-spread -> SELL host.
-   const QM_OrderType host_ot    = (dir > 0) ? QM_BUY : QM_SELL;
-   // Partner (leg2) takes the OPPOSITE side for market-neutral exposure.
-   const QM_OrderType partner_ot = (dir > 0) ? QM_SELL : QM_BUY;
-
-   // Open the partner leg FIRST through the basket path. If it fails (e.g. data
-   // gap), abort the pair so we never carry a naked single leg.
-   const string rsn = (dir > 0) ? "pair_z_long_spread" : "pair_z_short_spread";
-   if(!QM_OpenPartnerLeg(partner_ot, rsn))
-      return false;
-
-   // Build the host leg for the framework to send. No fixed SL/TP — the pair is
-   // managed by the z-score / safety / time-stop exits at the basket level.
-   req.type        = host_ot;
-   req.price       = 0.0;               // framework fills market price at send
-   req.sl          = 0.0;
-   req.tp          = 0.0;
-   req.reason      = rsn;
-   req.symbol_slot = qm_magic_slot_offset;  // host leg slot
-
-   g_z_at_entry = MathAbs(zc);          // latch entry |z| for safety reference
-   return true;
+   if(QM_OpenPair(dir))
+      g_z_at_entry = MathAbs(zc);
+   // The basket path executed the whole package; never ask OnTick to submit a
+   // second host order through the single-symbol framework entry path.
+   return false;
   }
 
-// No active per-position trade management; pair exits are rule-based.
+// Pair exits are rule-based. The only tick-level management is orphan cleanup.
 void Strategy_ManageOpenPosition()
   {
+   const int open_legs = QM_LegOpenCount(qm_magic_slot_offset, _Symbol) +
+                         QM_LegOpenCount(strategy_partner_slot, g_partner);
+   if(open_legs == 1)
+     {
+      QM_LogEvent(QM_WARN, "PAIR_PARTIAL_ROLLBACK", "{\"reason\":\"single_leg_detected\"}");
+      QM_ClosePair(QM_EXIT_STRATEGY);
+     }
   }
 
 // Pair-level exits: mean-reversion zero-cross, |z| safety expansion, time stop.
@@ -433,6 +567,22 @@ bool Strategy_ExitSignal()
 // Defer to the central two-axis news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   if(!QM_PairBindingAllowed())
+      return true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+     {
+      if(!QM_NewsAllowsTrade2(_Symbol, broker_time, qm_news_temporal, qm_news_compliance))
+         return true;
+      if(!QM_NewsAllowsTrade2(g_partner, broker_time, qm_news_temporal, qm_news_compliance))
+         return true;
+     }
+   else
+     {
+      if(!QM_NewsAllowsTrade(_Symbol, broker_time, qm_news_mode_legacy))
+         return true;
+      if(!QM_NewsAllowsTrade(g_partner, broker_time, qm_news_mode_legacy))
+         return true;
+     }
    return false;
   }
 
@@ -465,6 +615,37 @@ int OnInit()
    g_partner = strategy_partner_symbol;
    if(StringLen(g_partner) == 0)
       g_partner = _Symbol;
+   if(!QM_PairBindingAllowed())
+     {
+      QM_LogEvent(QM_ERROR,
+                  "INIT_FAILED",
+                  StringFormat("{\"reason\":\"pair_binding_invalid\",\"host\":\"%s\",\"partner\":\"%s\",\"host_slot\":%d,\"partner_slot\":%d,\"period\":%d}",
+                               _Symbol,
+                               g_partner,
+                               qm_magic_slot_offset,
+                               strategy_partner_slot,
+                               (int)_Period));
+      return INIT_FAILED;
+     }
+   const int host_magic = QM_FrameworkRegisterMagicSymbol(qm_ea_id,
+                                                           qm_magic_slot_offset,
+                                                           _Symbol);
+   const int partner_magic = QM_FrameworkRegisterMagicSymbol(qm_ea_id,
+                                                              strategy_partner_slot,
+                                                              g_partner);
+   if(host_magic <= 0 || partner_magic <= 0)
+     {
+      QM_LogEvent(QM_ERROR,
+                  "BASKET_MAGIC_REGISTRATION_FAILED",
+                  StringFormat("{\"host\":\"%s\",\"partner\":\"%s\",\"host_slot\":%d,\"partner_slot\":%d,\"host_magic\":%d,\"partner_magic\":%d}",
+                               _Symbol,
+                               g_partner,
+                               qm_magic_slot_offset,
+                               strategy_partner_slot,
+                               host_magic,
+                               partner_magic));
+      return INIT_FAILED;
+     }
 
    // BASKET wiring: register host + partner and warm their D1 history so the
    // foreign-symbol close reads return real data in the .DWX tester.

@@ -1,13 +1,20 @@
 {
-  "logical_symbol": "QM5_11145_VBT_PAIR_Z_D1",
-  "host_symbol": "_per_instance",
+  "logical_symbol": "QM5_11145_EURUSD_GBPUSD_PAIR_Z_D1",
+  "host_symbol": "EURUSD.DWX",
   "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
   "basket_symbols": [
-    "EURUSD.DWX", "GBPUSD.DWX",
-    "AUDUSD.DWX", "NZDUSD.DWX",
-    "GDAXI.DWX", "NDX.DWX"
+    "EURUSD.DWX",
+    "GBPUSD.DWX"
+  ],
+  "traded_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX"
   ],
   "notes": [
-    "Two-leg cointegration pairs trade (rolling-OLS spread z-score, +/-1.96 entry, zero-cross exit). Three pairs registered as host/partner slot pairs: EURUSD/GBPUSD (slots 0/1), AUDUSD/NZDUSD (slots 2/3), GDAXI/NDX (slots 4/5). Each instance trades a host leg via the framework magic and the partner leg via QM_BasketOpenPosition at the partner's registered slot; both legs open/close together, partner opened first so a failed partner aborts the pair (no naked leg). Spread z-score computed in-EA from host+partner .DWX D1 closes only — no external feed. Card's GER40.DWX index leg ported to GDAXI.DWX (the DAX-40 matrix symbol). All six legs verified present in dwx_symbol_matrix.csv. Set strategy_partner_symbol + strategy_partner_slot + qm_magic_slot_offset per-setfile to select the pair."
+    "Primary approved P2 basket for the vectorbt rolling-OLS pair: EURUSD.DWX is the D1 host at registry slot 0 and GBPUSD.DWX is the traded hedge leg at slot 1.",
+    "This logical basket supersedes the legacy physical-leg fan-out. Those presets omitted the partner binding, and the former _per_instance host was not an MT5 symbol, so their Q02 outcomes are not evidence for a configured two-leg pair.",
+    "AUDUSD.DWX/NZDUSD.DWX and the card's optional GER40.DWX/NDX.DWX pair remain approved alternates but are not mixed into this one-instance Q02 identity. GER40.DWX maps to registry symbol GDAXI.DWX if an alternate receives a dedicated logical basket."
   ]
 }

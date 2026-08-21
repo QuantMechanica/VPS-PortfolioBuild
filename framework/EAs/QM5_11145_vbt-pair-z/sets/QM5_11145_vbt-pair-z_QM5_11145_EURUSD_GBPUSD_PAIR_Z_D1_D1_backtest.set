@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11145
+; ea_slug:      vbt-pair-z
+; ea_version:   v5.1
+; set_version:  s20260821-001
+; symbol:       QM5_11145_EURUSD_GBPUSD_PAIR_Z_D1
+; host_symbol:  EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   815824b60f38dce3eae913d79945b67f5819bdac6340bd2201e9ccac09a1cbbe
+; author:       Development
+; date:         2026-08-21
+;==========================================================
+qm_ea_id=11145
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Q02 structural baseline: no external calendar dependency.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+; Approved primary pair and deterministic vectorbt defaults.
+strategy_partner_symbol=GBPUSD.DWX
+strategy_partner_slot=1
+strategy_period=100
+strategy_z_upper=1.96
+strategy_z_lower=1.96
+strategy_safety_z=3.25
+strategy_time_stop_bars=30
+strategy_min_d1_bars=160
+strategy_leg_risk_split=0.5

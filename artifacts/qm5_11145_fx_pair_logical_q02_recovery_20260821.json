@@ -1,0 +1,77 @@
+{
+  "artifact_type": "q02_infra_repair_requeue",
+  "created_at_utc": "2026-08-21T06:33:00+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_11145",
+  "ea_label": "QM5_11145_vbt-pair-z",
+  "result": "REPAIRED_COMPILE_PASS_Q02_PENDING",
+  "farm_claim": {
+    "agent_task_id": "f0ba16e1-6c7a-4498-8124-c6f11c607a48",
+    "claimed_by": "codex:agents/board-advisor",
+    "source_work_item_id": "1e550769-acdd-4b02-87c1-36560504d04a",
+    "claim_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11145_q02_repair_claim_20260821T061611Z.sqlite",
+    "enqueue_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11145_logical_q02_enqueue_20260821T062806Z.sqlite"
+  },
+  "diagnosis": {
+    "classification": "INFRA_LOGICAL_BASKET_MISTEST_AND_STALE_EX5",
+    "invalid_manifest_host": "_per_instance",
+    "logical_q02_rows_before": 0,
+    "legacy_component_setfiles_retired": 6,
+    "legacy_setfiles_missing_partner_binding": 6,
+    "obsolete_alias": "GER40.DWX",
+    "current_registry_alias": "GDAXI.DWX",
+    "old_mq5_sha256": "779cef36f6c6846dc8f6c5ccd57165893a12672999bb8a7e4ba21c32104ac6fa",
+    "old_ex5_sha256": "b0dac0665864d4866238ca227160d672f8ea51bf0f464a84b95a3b24485cdc5b",
+    "old_manifest_sha256": "9d81f3eac5503b1de955725bafad33209e01c26ee21c1e87eaac2f57cad609f7"
+  },
+  "repair": {
+    "logical_symbol": "QM5_11145_EURUSD_GBPUSD_PAIR_Z_D1",
+    "host_symbol": "EURUSD.DWX",
+    "partner_symbol": "GBPUSD.DWX",
+    "host_slot": 0,
+    "partner_slot": 1,
+    "timeframe": "D1",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "entry_exit_thresholds_changed": false,
+    "mq5_sha256": "1a4244c42fb7955a9c0b6c0197e3bae1b70154d04b7a74bae890fc6eb8f6cb17",
+    "ex5_sha256": "40d3fb46de28a3f94993c8438d77c2d482db76b95a56296a9fd0cebe16ba2f1e",
+    "manifest_sha256": "8c9fa7bf8570e73ef320b1ffd5bf9845be8de2decd8a5dc786c5e2bc42716fef",
+    "setfile_sha256": "2bbcf0ac2df6e9685324cb1b9f728f0b566ad744a9c197fd125763a3bb84e100",
+    "setfile_build_hash": "815824b60f38dce3eae913d79945b67f5819bdac6340bd2201e9ccac09a1cbbe"
+  },
+  "validation": {
+    "strict_compile": "PASS_0E_0W",
+    "compile_log": "C:/QM/repo/framework/build/compile/20260821_063150/QM5_11145_vbt-pair-z.compile.log",
+    "compile_summary": "D:/QM/reports/compile/20260821_063150/summary.csv",
+    "build_check": "PASS_0F_0W",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260821_063229.json",
+    "build_guardrails": "PASS_0_FINDINGS",
+    "spec": "PASS",
+    "symbol_scope": "BASKET_OK_0_VIOLATIONS",
+    "basket_tests": "PASS_46"
+  },
+  "q02_handoff": {
+    "enqueue_method": "farmctl._auto_enqueue_q02_for_build",
+    "work_item_id": "c3e3ab1f-b65d-47c5-a303-645f3200bf81",
+    "symbol": "QM5_11145_EURUSD_GBPUSD_PAIR_Z_D1",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "priority_track": true,
+    "timeout_min": 450
+  },
+  "capacity": {
+    "cpu_load_pct": 99,
+    "running_factory_terminals": 8,
+    "terminal64_running_count": 10,
+    "manual_smoke_started": false,
+    "dispatch_requested": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
