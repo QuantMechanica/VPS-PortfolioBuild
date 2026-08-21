@@ -14,7 +14,7 @@
 //   - Rank_k = percentile((Close[1] - Close[1+60]) / Close[1+60])
 //   - Long Entry:  Rank_k >= 85.0% (Top Decile Performer) -> BUY
 //   - Short Entry: Rank_k <= 15.0% (Bottom Decile Performer) -> SELL
-//   - SL = 2.0 * ATR(14, H4), TP = 2.0 * SL_Distance (1:2.0 R:R)
+//   - SL = 2.0 * ATR(14, H4); positions rebalance at the weekly boundary
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -47,9 +47,11 @@ input double strategy_top_percentile      = 85.0;   // Top decile threshold for 
 input double strategy_bottom_percentile   = 15.0;   // Bottom decile threshold for short entry
 input int    strategy_atr_period          = 14;     // ATR period for stop loss and spread filter
 input double strategy_sl_atr_mult         = 2.00;   // Stop loss ATR multiplier
-input double strategy_tp_rr_mult          = 2.00;   // Take profit R:R multiplier
 input double strategy_spread_atr_mult     = 1.80;   // Spread filter ATR multiplier
-input int    strategy_max_spread_points   = 100;    // Absolute spread cap in points
+input double strategy_daily_loss_limit_pct         = 2.00; // Block new entries after realized daily loss.
+input double strategy_daily_drawdown_hard_stop_pct = 2.50; // Flatten after daily equity drawdown.
+input double strategy_total_drawdown_stop_pct      = 5.00; // Flatten after drawdown from initial equity.
+input double strategy_max_slippage_ticks           = 3.00; // Card execution tolerance.
 
 const int STRATEGY_UNIVERSE_SIZE = 7;
 string g_universe_symbols[7] =
@@ -66,6 +68,14 @@ int g_universe_slots[7] = {0, 1, 2, 3, 4, 5, 6};
 double g_cached_percentile = 50.0;
 double g_cached_atr1       = 0.0;
 bool   g_cached_valid      = false;
+int    g_last_observed_week_key = 0;
+int    g_last_entry_week_key    = 0;
+int    g_risk_day_key           = 0;
+double g_initial_equity         = 0.0;
+double g_day_start_balance      = 0.0;
+bool   g_daily_realized_halt    = false;
+bool   g_daily_drawdown_halt    = false;
+bool   g_total_drawdown_halt    = false;
 
 int Strategy_SymbolSlot()
 {
@@ -84,7 +94,9 @@ bool Strategy_ReadSymbolReturn(const string symbol, const int lookback, double &
 
    double closes[];
    ArraySetAsSeries(closes, true);
-   const int copied = CopyClose(symbol, PERIOD_H4, 1, lookback + 1, closes);
+   // perf-allowed: bounded cross-sectional return window; caller runs only
+   // from AdvanceState_OnNewBar after the framework closed-bar gate.
+   const int copied = CopyClose(symbol, PERIOD_H4, 1, lookback + 1, closes); // perf-allowed
    if(copied < lookback + 1) return false;
 
    const double c_recent = closes[0];
@@ -97,6 +109,10 @@ bool Strategy_ReadSymbolReturn(const string symbol, const int lookback, double &
 
 void AdvanceState_OnNewBar()
 {
+   const int week_key = QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
+   if(g_last_observed_week_key <= 0 && week_key > 0)
+      g_last_observed_week_key = week_key;
+
    g_cached_atr1 = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
    if(g_cached_atr1 <= 0.0)
    {
@@ -141,7 +157,9 @@ void AdvanceState_OnNewBar()
       double hist_closes[];
       ArraySetAsSeries(hist_closes, true);
       const int needed = strategy_lookback_bars + 60;
-      const int copied = CopyClose(_Symbol, PERIOD_H4, 1, needed, hist_closes);
+      // perf-allowed: bounded single-symbol fallback, reached only once per
+      // closed H4 bar when the wider cross-section is not yet synchronized.
+      const int copied = CopyClose(_Symbol, PERIOD_H4, 1, needed, hist_closes); // perf-allowed
       if(copied >= needed)
       {
          const double cur_ret = (hist_closes[0] - hist_closes[strategy_lookback_bars]) / hist_closes[strategy_lookback_bars];
@@ -181,23 +199,112 @@ bool IsRolloverBlackout()
    return false;
 }
 
+bool Strategy_RiskInputsValid()
+{
+   return (strategy_daily_loss_limit_pct > 0.0 &&
+           strategy_daily_drawdown_hard_stop_pct > 0.0 &&
+           strategy_total_drawdown_stop_pct > 0.0 &&
+           strategy_max_slippage_ticks > 0.0);
+}
+
+void Strategy_RefreshRiskState()
+{
+   const double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(g_initial_equity <= 0.0 && equity > 0.0)
+      g_initial_equity = equity;
+
+   const int day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 0);
+   if(day_key > 0 && day_key != g_risk_day_key)
+   {
+      g_risk_day_key = day_key;
+      g_day_start_balance = balance;
+      g_daily_realized_halt = false;
+      g_daily_drawdown_halt = false;
+   }
+   else if(g_day_start_balance <= 0.0 && balance > 0.0)
+      g_day_start_balance = balance;
+
+   if(g_day_start_balance > 0.0)
+   {
+      const double realized_loss_pct =
+         ((g_day_start_balance - balance) / g_day_start_balance) * 100.0;
+      const double daily_drawdown_pct =
+         ((g_day_start_balance - equity) / g_day_start_balance) * 100.0;
+      if(realized_loss_pct >= strategy_daily_loss_limit_pct)
+         g_daily_realized_halt = true;
+      if(daily_drawdown_pct >= strategy_daily_drawdown_hard_stop_pct)
+         g_daily_drawdown_halt = true;
+   }
+
+   if(g_initial_equity > 0.0)
+   {
+      const double total_drawdown_pct =
+         ((g_initial_equity - equity) / g_initial_equity) * 100.0;
+      if(total_drawdown_pct >= strategy_total_drawdown_stop_pct)
+         g_total_drawdown_halt = true;
+   }
+}
+
+void Strategy_EnforceHardRiskStop()
+{
+   if(!g_daily_drawdown_halt && !g_total_drawdown_halt)
+      return;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      QM_TM_ClosePosition(ticket, QM_EXIT_KILLSWITCH);
+   }
+}
+
+void Strategy_ConfigureEntrySlippage()
+{
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   int deviation_points = 1;
+   if(point > 0.0 && tick_size > 0.0)
+   {
+      deviation_points = (int)MathCeil(strategy_max_slippage_ticks * tick_size / point);
+      if(deviation_points < 1)
+         deviation_points = 1;
+   }
+   QM_EntryConfigure(qm_ea_id,
+                     qm_news_mode_legacy,
+                     deviation_points,
+                     qm_stress_reject_probability,
+                     qm_news_temporal,
+                     qm_news_compliance,
+                     QM_FrameworkMagic());
+}
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
 bool Strategy_NoTradeFilter()
 {
+   if(!Strategy_RiskInputsValid())
+      return true;
+
+   Strategy_RefreshRiskState();
+   Strategy_EnforceHardRiskStop();
+   if(g_daily_realized_halt || g_daily_drawdown_halt || g_total_drawdown_halt)
+      return true;
+
    if(IsRolloverBlackout())
       return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(ask > 0.0 && bid > 0.0 && ask > bid)
    {
       if(g_cached_atr1 > 0.0 && (ask - bid) > (strategy_spread_atr_mult * g_cached_atr1))
-         return true;
-      if(point > 0.0 && strategy_max_spread_points > 0 && (ask - bid) > (strategy_max_spread_points * point))
          return true;
    }
    return false;
@@ -219,13 +326,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!g_cached_valid)
       return false;
 
+   // The card defines a weekly rebalance cycle. Permit at most one entry
+   // signal attempt per symbol in each calendar week so an ATR stop cannot
+   // turn a low-frequency cross-sectional sleeve into H4 re-entry churn.
+   const int week_key = QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
+   if(week_key <= 0 || week_key == g_last_entry_week_key)
+      return false;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
    const double sl_dist = strategy_sl_atr_mult * g_cached_atr1;
-   const double tp_dist = strategy_tp_rr_mult * sl_dist;
    if(sl_dist <= 0.0)
       return false;
 
@@ -235,7 +348,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type   = QM_BUY;
       req.reason = "QM5_37007_XSMOM_BUY";
       req.sl     = ask - sl_dist;
-      req.tp     = ask + tp_dist;
+      req.tp     = 0.0; // card exit is the weekly rebalance, not a fixed target
+      g_last_entry_week_key = week_key;
+      Strategy_ConfigureEntrySlippage();
       return true;
    }
 
@@ -245,7 +360,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type   = QM_SELL;
       req.reason = "QM5_37007_XSMOM_SELL";
       req.sl     = bid + sl_dist;
-      req.tp     = bid - tp_dist;
+      req.tp     = 0.0; // card exit is the weekly rebalance, not a fixed target
+      g_last_entry_week_key = week_key;
+      Strategy_ConfigureEntrySlippage();
       return true;
    }
 
@@ -258,7 +375,22 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
 {
-   return false;
+   // Rebalance at the first tick whose framework-derived calendar week key
+   // differs from the key initialized on attach. This avoids a false exit on
+   // mid-week restart while closing any carried sleeve at the true boundary.
+   const int week_key = QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
+   if(week_key <= 0)
+      return false;
+   if(g_last_observed_week_key <= 0)
+   {
+      g_last_observed_week_key = week_key;
+      return false;
+   }
+   if(week_key == g_last_observed_week_key)
+      return false;
+
+   g_last_observed_week_key = week_key;
+   return (QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0);
 }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)

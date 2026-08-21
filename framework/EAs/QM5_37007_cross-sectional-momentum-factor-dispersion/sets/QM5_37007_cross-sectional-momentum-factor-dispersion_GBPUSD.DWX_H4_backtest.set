@@ -3,16 +3,16 @@
 ; ea_id:        37007
 ; ea_slug:      cross-sectional-momentum-factor-dispersion
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260821-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   657d9f4b1a7d7c62af96146606fcf0af8355ec0fb42ceb318b1d686eaffd85fd
+; build_hash:   321acc584f9ae093f7b449a48b5c17235a94d8b4ffd169c72af8b1bdeeca0ee1
 ; author:       Development
-; date:         2026-08-17
+; date:         2026-08-21
 ;==========================================================
 qm_ea_id=37007
 qm_magic_slot_offset=1
@@ -26,6 +26,8 @@ strategy_top_percentile=85.0
 strategy_bottom_percentile=15.0
 strategy_atr_period=14
 strategy_sl_atr_mult=2.00
-strategy_tp_rr_mult=2.00
 strategy_spread_atr_mult=1.80
-strategy_max_spread_points=100
+strategy_daily_loss_limit_pct=2.00
+strategy_daily_drawdown_hard_stop_pct=2.50
+strategy_total_drawdown_stop_pct=5.00
+strategy_max_slippage_ticks=3.00
