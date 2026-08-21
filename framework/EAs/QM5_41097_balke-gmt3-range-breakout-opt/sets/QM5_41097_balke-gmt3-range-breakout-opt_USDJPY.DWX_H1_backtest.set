@@ -35,7 +35,7 @@ opt_pp_buy3=0
 opt_pp_sell1=0
 opt_pp_sell2=0
 opt_pp_sell3=0
-; Phase-2 placeholders are deliberately inert during the DL-089 pattern pilot.
-opt_stop_distance_range_mult=1.0
-opt_take_profit_r_multiple=0.0
-opt_range_window_hours=3
+; DL-089 stage S5 optimizes the parent's already-wired numeric levers
+; (strategy_max_range_atr_mult, strategy_trail_trigger_r, strategy_range_end_hour),
+; one per trial with the parent value as control — see opt_param_grid.json.
+; Their pattern-pilot values are already set above at their parent defaults.

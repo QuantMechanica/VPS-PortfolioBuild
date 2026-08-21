@@ -1,0 +1,60 @@
+{
+  "schema": "qm.opt-param-grid.v1",
+  "ea_id": 41097,
+  "ea_label": "QM5_41097_balke-gmt3-range-breakout-opt",
+  "parent_ea": "QM5_13213_balke-gmt3-range-breakout",
+  "census_instrument": "QM5_21501_balke-gmt3-range-breakout-ppcensus",
+  "decision": "DL-089",
+  "governing_plan": "docs/research/PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md",
+  "stage": "S5",
+  "lever_class": "AI_PARAM",
+  "symbol": "USDJPY.DWX",
+  "timeframe": "H1",
+  "created": "2026-08-22",
+  "author": "Claude (Orchestrator) — review R1 repair",
+  "notes": "S5 numeric optimization uses the parent's ALREADY-WIRED strategy inputs; no new numeric inputs are introduced. Each lever is optimized on the frozen S3/S4 pattern-filter combination. This grid is registered evidence; the OPT_CENSUS/S5 ledger owns declared_trial_count.",
+  "selection_rule": {
+    "objective": "return_to_maxdd",
+    "baseline": "same-year all-parent configuration",
+    "consistency": ">= 2/3 of selection years improve, each by >= +5% relative",
+    "walk_forward": "anchored/expanding, minimum window 3 years, selection years 2019-2025, test years 2022-2025",
+    "activity_floor": ">= 10 distinct entry trading days per scored year (pro-rata for partial years); a break in ANY year makes the value inadmissible, excluded BEFORE return is measured",
+    "pick": "plateau median, never the best value (DL-088 section 3)"
+  },
+  "control_discipline": {
+    "cells_per_trial": "one lever varied per trial; all other levers held at parent value (DL-088 AI_PARAM)",
+    "mandatory_control": "each lever's parent_value is a required candidate and the control cell",
+    "max_candidates_per_lever": 5,
+    "no_take_profit_lever": "the parent has no TP mechanic; req.tp is fixed at 0.0, so no TP parameter exists to optimize"
+  },
+  "trial_accounting": {
+    "candidate_cells_total": 14,
+    "note": "5 + 5 + 4 candidate cells. The all-parent control config is mechanically shared across levers and is measured once. declared_trial_count for the Q16 DSR deflation is written by the S5 ledger per plan section S5 (154 pattern trials + numeric trials); this file does not set it."
+  },
+  "parameters": [
+    {
+      "name": "strategy_max_range_atr_mult",
+      "parent_value": 2.5,
+      "candidate_values": [1.5, 2.0, 2.5, 3.0, 3.5],
+      "control_cell": 2.5,
+      "bounds": {"type": "double", "min": 0.5, "max": 5.0, "constraint": "must exceed strategy_min_range_atr_mult (0.4)"},
+      "rationale": "This multiple is both the upper edge of the ATR(14,H1) range-admission band and the hard SL cap (parent SPEC section 2). Lowering it rejects the widest overnight ranges — starving the strategy of exactly the high-volatility breakout days Balke's method targets; raising it admits ranges whose ATR-multiple stop is uneconomically wide, inflating per-trade risk and MaxDD. A symmetric step-0.5 ladder brackets the parent 2.5 with two values on each side so a return_to_maxdd plateau (if any) can be identified and its median taken, rather than chasing a single best point."
+    },
+    {
+      "name": "strategy_trail_trigger_r",
+      "parent_value": 1.0,
+      "candidate_values": [0.5, 0.75, 1.0, 1.25, 1.5],
+      "control_cell": 1.0,
+      "bounds": {"type": "double", "min": 0.0, "max": 3.0},
+      "rationale": "Profit in R before the prior-two-bar swing trail engages (parent SPEC section 2). A smaller trigger locks the swing stop earlier, protecting open profit but cutting continuation runs on strong breakout days; a larger trigger lets the runner extend before trailing, at the cost of giving back more on reversals. return_to_maxdd is directly sensitive to where trailing begins. A tight symmetric step-0.25 ladder centered on the parent 1.0 (two below, two above) reads the local plateau around the parent without leaving the swing-trail's economically meaningful neighbourhood."
+    },
+    {
+      "name": "strategy_range_end_hour",
+      "parent_value": 6,
+      "candidate_values": [5, 6, 7, 8],
+      "control_cell": 6,
+      "bounds": {"type": "int", "min": 4, "max": 12, "constraint": "must exceed strategy_range_start_hour (3); bars_in_range must reach (end - start)"},
+      "rationale": "First GMT+3 hour after the accumulation range; with strategy_range_start_hour fixed at 3 this sets both the range width and the order-placement hour. The parent value 6 is Balke's exact 3-hour window (03:00-06:00). The ladder spans one shorter window (5 = 2-hour range, earlier entry on a tighter range) through the ancestor QM5_9936's 5-hour width (8), which is the card-grounded economic range: a longer window builds a wider, more-tested range with fewer but higher-quality breakouts and a later entry, a shorter window gives earlier entries on a thinner range. A 1-hour window (end = 4) is excluded as economically degenerate — it collapses the range to a single H1 bar's high/low, defeating the multi-hour accumulation the strategy relies on."
+    }
+  ]
+}

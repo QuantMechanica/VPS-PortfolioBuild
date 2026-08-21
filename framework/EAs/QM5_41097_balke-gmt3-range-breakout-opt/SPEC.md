@@ -34,16 +34,23 @@ fail closed with `PP_CENSUS_CONFIG_INVALID`. Six zeros form the baseline.
 
 ## 2. Parameters
 
-These numeric inputs are present for the later DL-089 phase and deliberately
-inert in the pattern-only pilot:
+The DL-089 stage-S5 numeric optimization uses the parent's **already-wired**
+strategy inputs — it introduces no new numeric knobs. There are deliberately no
+inert placeholder inputs: an input with no mechanical use site would violate the
+wired-input rule (QM5_1355) and could not carry an S5 trial. The S5 levers, their
+parent (control) values, and candidate ladders are defined in
+`opt_param_grid.json` (schema `qm.opt-param-grid.v1`):
 
-| Input | Default | Preserved parent behavior |
-|---|---:|---|
-| `opt_stop_distance_range_mult` | 1.0 | Stop distance remains one range height. |
-| `opt_take_profit_r_multiple` | 0.0 | No fixed take-profit. |
-| `opt_range_window_hours` | 3 | Range remains 03:00-06:00 GMT+3. |
+| S5 lever (wired input) | Parent / control | Candidate ladder | Mechanical role |
+|---|---:|---|---|
+| `strategy_max_range_atr_mult` | 2.5 | 1.5, 2.0, 2.5, 3.0, 3.5 | Upper edge of the ATR range-admission band and the hard SL cap. |
+| `strategy_trail_trigger_r` | 1.0 | 0.5, 0.75, 1.0, 1.25, 1.5 | Profit in R before the two-bar swing trail starts. |
+| `strategy_range_end_hour` | 6 | 5, 6, 7, 8 | First GMT+3 hour after the range; sets range width and the order-placement hour. |
 
-Changing these inputs has no mechanical effect in this build.
+There is no take-profit lever: the parent has no TP mechanic and `req.tp` is
+fixed at `0.0`. In the pattern-only pilot these inputs stay at their parent
+defaults; S5 varies exactly one of them per trial with the parent value as the
+mandatory control cell (DL-088 `AI_PARAM`).
 
 ## 3. Symbol Universe
 
@@ -59,8 +66,8 @@ swing/scalping-horizon strategy and is not HFT.
 
 The six-zero baseline must preserve QM5_21501 behavior. A populated profile may
 only suppress planned entry legs; it cannot create an entry. Invalid pattern
-state fails closed. Phase-2 placeholder changes must produce no mechanical
-change in this pilot.
+state fails closed. In the pattern-only pilot the S5 numeric levers stay at
+their parent defaults, so the build reproduces the parent mechanics exactly.
 
 ## 6. Source Citation
 

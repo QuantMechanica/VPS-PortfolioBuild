@@ -7,17 +7,21 @@
 #include <QM/QM_PatternPermissionStraddle.mqh>
 
 // =============================================================================
-// CENSUS INSTRUMENT — NOT A DEPLOYABLE STRATEGY
+// OPTIMIZATION INSTRUMENT — NOT A DEPLOYABLE STRATEGY
 // -----------------------------------------------------------------------------
 // This EA exists to MEASURE, one predicate at a time, what the pattern-
-// permission filter does to QM5_13213's straddle. It is the executable subject
-// of the P3 census (plan v2 finding A5: no trial without a lawful subject).
+// permission filter does to QM5_13213's straddle, and then (DL-089 stage S5)
+// to optimize the parent's already-wired numeric levers on the frozen filter.
+// It is the executable subject of the DL-089 census (plan v2 finding A5, still
+// valid under v3: no trial without a lawful subject).
 //
-// Identity band: 21001-21499 = promotion challengers, 21500+ = census
-// instruments. A census instrument must never reach a book: its parameter
-// surface is deliberately open (one predicate id fed in per trial), which is
-// exactly what a live EA must not have. Promotion (P4) compiles the surviving
-// predicates into a FIXED profile under a fresh challenger identity.
+// Identity: QM5_41097 is the DL-089 optimization instrument (_opt). Its parent
+// is QM5_13213; it inherits the A1-fixed, side-effect-free straddle from the
+// census instrument QM5_21501. An optimization instrument must never reach a
+// book: its parameter surface is deliberately open (one predicate id per trial
+// in phase 1, one already-wired numeric lever per trial in S5), which is
+// exactly what a live EA must not have. Q15/Q16 freeze the surviving filter +
+// parameter profile under the sealed overfit contract before any promotion.
 //
 // Mechanics are byte-for-byte the parent's, with one structural change:
 //
@@ -39,7 +43,7 @@
 // filter and nothing else.
 //
 // Reference TF and closed shift are compile-time constants, not inputs. The
-// census fixes 1,386 cells; every extra knob is another way to corrupt the
+// census fixes 1,085 cells; every extra knob is another way to corrupt the
 // whole grid from a setfile typo. A sleeve needing a different reference bar
 // gets its own instrument.
 // =============================================================================
@@ -90,12 +94,13 @@ input int opt_pp_sell1 = 0;
 input int opt_pp_sell2 = 0;
 input int opt_pp_sell3 = 0;
 
-// DL-089 phase-2 placeholders. They preserve the parent's concrete mechanics
-// and are deliberately inert during the pattern-only pilot.
-input group "Optimization Phase 2 (Inert)"
-input double opt_stop_distance_range_mult = 1.0;
-input double opt_take_profit_r_multiple    = 0.0;
-input int    opt_range_window_hours        = 3;
+// DL-089 stage S5 optimizes the parent's ALREADY-WIRED numeric levers
+// (strategy_max_range_atr_mult, strategy_trail_trigger_r, strategy_range_end_hour;
+// candidate ladders in opt_param_grid.json) — one lever per trial, parent value
+// as the mandatory control cell. No inert placeholder inputs exist here: an
+// input with no mechanical use site would violate the wired-input rule
+// (QM5_1355) and could carry no S5 trial. There is deliberately no take-profit
+// lever — the parent has no TP mechanic (req.tp is fixed 0.0).
 
 // Card-declared, deliberately not inputs — see header.
 const ENUM_TIMEFRAMES QM_PPC_REFERENCE_TF = PERIOD_D1;

@@ -32,7 +32,8 @@ def _plan(tmp_path: Path) -> dict:
     )
 
 
-def _db(path: Path, *, harness_pass: bool = True) -> Path:
+def _db(path: Path, *, harness_pass: bool = True, q02_pass: bool = True,
+        ea_id: str = "QM5_29999") -> Path:
     conn = sqlite3.connect(path)
     conn.execute("""CREATE TABLE work_items (
         id TEXT PRIMARY KEY, kind TEXT NOT NULL, phase TEXT NOT NULL,
@@ -48,6 +49,12 @@ def _db(path: Path, *, harness_pass: bool = True) -> Path:
          "done" if harness_pass else "failed", "PASS" if harness_pass else "INFRA_FAIL",
          0, None, "harness.json", None, "{}", "now", "now"),
     )
+    if q02_pass:
+        conn.execute(
+            "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            ("q02-" + ea_id, "backtest", "Q02", ea_id, "USDJPY.DWX", "base.set",
+             "done", "PASS", 0, None, "q02_summary.json", None, "{}", "now", "now"),
+        )
     conn.commit()
     conn.close()
     return path
@@ -85,7 +92,11 @@ def test_enqueue_is_idempotent_and_keeps_opt_phase(tmp_path: Path) -> None:
     assert second["existing"] == 1085
     conn = sqlite3.connect(db)
     assert conn.execute("SELECT COUNT(*) FROM work_items WHERE phase='OPT_CENSUS'").fetchone()[0] == 1085
-    assert conn.execute("SELECT COUNT(*) FROM work_items WHERE phase='Q02'").fetchone()[0] == 0
+    # Enqueue never leaks into the funnel: the only Q02 row is the precondition fixture.
+    assert conn.execute("SELECT COUNT(*) FROM work_items WHERE phase='Q02'").fetchone()[0] == 1
+    assert conn.execute(
+        "SELECT COUNT(*) FROM work_items WHERE phase='Q02' AND kind='backtest' AND ea_id='QM5_29999'"
+    ).fetchone()[0] == 1
     payload = json.loads(conn.execute(
         "SELECT payload_json FROM work_items WHERE phase='OPT_CENSUS' LIMIT 1"
     ).fetchone()[0])
@@ -119,3 +130,77 @@ def test_base_setfile_guardrails(tmp_path: Path, fixed: str, percent: str,
     path.write_text(text, encoding="utf-8")
     with pytest.raises(subject.CensusError, match=message):
         subject.validate_base_setfile(path, "QM5_29999")
+
+
+# ---------------------------------------------------------------------------
+# Ledger sealing (F2 R2 #1): the selection contract is frozen before measurement.
+# ---------------------------------------------------------------------------
+def test_sealed_rule_is_verbatim_from_plan_and_hash_is_stable() -> None:
+    text = subject.extract_sealed_rule_text()
+    # The seal is a verbatim quote from the authority document (plan v3 §2).
+    plan = subject.PLAN_DOC.read_text(encoding="utf-8")
+    assert text in plan
+    assert text.startswith("Je Schritt: Regel")
+    # Stable, pinned hash (ROT tamper guard).
+    import hashlib
+    assert hashlib.sha256(text.encode("utf-8")).hexdigest() == subject.SEALED_RULE_SHA256
+    # Second extraction is identical (deterministic).
+    assert subject.extract_sealed_rule_text() == text
+
+
+def test_sealed_header_carries_the_frozen_contract(tmp_path: Path) -> None:
+    grid = tmp_path / "opt_param_grid.json"
+    grid.write_text('{"schema": "qm.opt-param-grid.v1", "parameters": []}', encoding="utf-8")
+    header = subject.sealed_header(param_grid=grid)
+    assert header["sealed_rule_sha256"] == subject.SEALED_RULE_SHA256
+    assert header["activity_floor"] == 10
+    assert header["relative_improve_min"] == 0.05
+    assert header["selection_year_quorum"] == "2/3"
+    assert [w["test_year"] for w in header["wf_windows"]] == [2022, 2023, 2024, 2025]
+    assert [w["select_years"][0] for w in header["wf_windows"]] == [2019, 2019, 2019, 2019]
+    # The param grid is sealed by content hash so S5 can detect any post-plan edit.
+    import hashlib
+    assert header["param_grid_sha256"] == hashlib.sha256(grid.read_bytes()).hexdigest()
+
+
+def test_plan_embeds_the_sealed_header(tmp_path: Path) -> None:
+    grid = tmp_path / "opt_param_grid.json"
+    grid.write_text('{"schema": "qm.opt-param-grid.v1", "parameters": []}', encoding="utf-8")
+    plan = subject.build_plan(
+        ea_id="QM5_29999", ea_label="QM5_29999_test_opt", symbol="USDJPY.DWX",
+        timeframe="H1", base_setfile=_base_setfile(tmp_path / "base.set"),
+        output_dir=tmp_path / "sets", param_grid=grid,
+    )
+    for key in ("sealed_rule_text", "sealed_rule_sha256", "activity_floor",
+                "relative_improve_min", "selection_year_quorum", "wf_windows",
+                "param_grid_sha256"):
+        assert key in plan
+    assert plan["declared_trial_count"] == 154
+
+
+# ---------------------------------------------------------------------------
+# Q02 precondition (F2 R2 #2): 1,085 backtests only after the _opt baseline is alive.
+# ---------------------------------------------------------------------------
+def test_enqueue_refuses_without_done_pass_q02(tmp_path: Path) -> None:
+    plan = _plan(tmp_path)
+    db = _db(tmp_path / "farm.sqlite", q02_pass=False)
+    with pytest.raises(subject.CensusError, match="no done/PASS Q02"):
+        subject.enqueue(plan, db_path=db, ledger_path=tmp_path / "ledger.json")
+    assert not (tmp_path / "sets").exists()
+
+
+def test_enqueue_ledger_records_q02_and_seal(tmp_path: Path) -> None:
+    grid = tmp_path / "opt_param_grid.json"
+    grid.write_text('{"schema": "qm.opt-param-grid.v1", "parameters": []}', encoding="utf-8")
+    plan = subject.build_plan(
+        ea_id="QM5_29999", ea_label="QM5_29999_test_opt", symbol="USDJPY.DWX",
+        timeframe="H1", base_setfile=_base_setfile(tmp_path / "base.set"),
+        output_dir=tmp_path / "sets", param_grid=grid,
+    )
+    db = _db(tmp_path / "farm.sqlite")
+    ledger_path = tmp_path / "ledger.json"
+    subject.enqueue(plan, db_path=db, ledger_path=ledger_path)
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    assert ledger["q02_precondition"]["verdict"] == "PASS"
+    assert ledger["sealed_rule_sha256"] == subject.SEALED_RULE_SHA256
+    assert ledger["param_grid_sha256"] is not None

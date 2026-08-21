@@ -37,6 +37,28 @@ SET_KEYS = (
     "opt_pp_sell1", "opt_pp_sell2", "opt_pp_sell3",
 )
 
+# ---------------------------------------------------------------------------
+# Sealed selection rule (DL-089 §2 / plan v3) — ROT.  The verbatim rule text is
+# NOT retyped here (unicode transcription risk); it is extracted live from the
+# authority document between two ASCII anchors and pinned by SHA-256.  Any edit
+# to the plan's §2 walk-forward protocol changes the extracted SHA and makes the
+# seal fail closed — which is exactly the tamper-detection the ROT zone requires.
+# ---------------------------------------------------------------------------
+PLAN_DOC = REPO_ROOT / "docs" / "research" / "PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md"
+SEALED_RULE_START_ANCHOR = "Je Schritt: Regel"
+SEALED_RULE_END_ANCHOR = "erzeugen neue L"  # ASCII prefix of "erzeugen neue Laufe."
+SEALED_RULE_SHA256 = "4cc2bbd108bf500f33ef5eee30536c9a4afe58dc2684116a972c0bfb65f3d383"
+ACTIVITY_FLOOR = 10
+RELATIVE_IMPROVE_MIN = 0.05
+SELECTION_YEAR_QUORUM = "2/3"
+# Anchored/expanding walk-forward, minimum window 3 (plan §2 table).
+WF_WINDOWS = (
+    {"step": 1, "select_years": [2019, 2020, 2021], "test_year": 2022},
+    {"step": 2, "select_years": [2019, 2020, 2021, 2022], "test_year": 2023},
+    {"step": 3, "select_years": [2019, 2020, 2021, 2022, 2023], "test_year": 2024},
+    {"step": 4, "select_years": [2019, 2020, 2021, 2022, 2023, 2024], "test_year": 2025},
+)
+
 
 class CensusError(RuntimeError):
     pass
@@ -62,6 +84,61 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def extract_sealed_rule_text(plan_doc: Path = PLAN_DOC) -> str:
+    """Return the verbatim DL-089 §2 walk-forward selection rule, SHA-pinned.
+
+    Fails closed if the authority document no longer contains the sealed block
+    or if its SHA-256 drifts from ``SEALED_RULE_SHA256`` (ROT tamper guard).
+    """
+    if not plan_doc.is_file():
+        raise CensusError(f"sealed-rule authority missing: {plan_doc}")
+    text = plan_doc.read_text(encoding="utf-8")
+    try:
+        start = text.index(SEALED_RULE_START_ANCHOR)
+        end = text.index(".", text.index(SEALED_RULE_END_ANCHOR, start)) + 1
+    except ValueError as exc:
+        raise CensusError(f"sealed-rule anchors not found in {plan_doc}: {exc}") from exc
+    block = text[start:end]
+    actual = _sha256_bytes(block.encode("utf-8"))
+    if actual != SEALED_RULE_SHA256:
+        raise CensusError(
+            "sealed selection rule drifted (ROT): "
+            f"expected sha256 {SEALED_RULE_SHA256}, extracted {actual}"
+        )
+    return block
+
+
+def sealed_header(*, param_grid: Path | None, plan_doc: Path = PLAN_DOC) -> dict[str, Any]:
+    """The frozen selection contract written into every census ledger header.
+
+    All fields bind the *evaluation* before any data is seen (DL-089 §2, DL-088).
+    ``param_grid_sha256`` seals the S5 numeric grid so the driver can later verify
+    it never changed between planning and numeric optimisation.
+    """
+    rule_text = extract_sealed_rule_text(plan_doc)
+    header: dict[str, Any] = {
+        "sealed_rule_text": rule_text,
+        "sealed_rule_sha256": SEALED_RULE_SHA256,
+        "sealed_rule_source": f"{plan_doc.name}#2",
+        "activity_floor": ACTIVITY_FLOOR,
+        "relative_improve_min": RELATIVE_IMPROVE_MIN,
+        "selection_year_quorum": SELECTION_YEAR_QUORUM,
+        "wf_windows": [dict(window) for window in WF_WINDOWS],
+        "param_grid_path": None,
+        "param_grid_sha256": None,
+    }
+    if param_grid is not None:
+        if not param_grid.is_file():
+            raise CensusError(f"opt_param_grid.json missing: {param_grid}")
+        header["param_grid_path"] = str(param_grid.resolve())
+        header["param_grid_sha256"] = _sha256(param_grid)
+    return header
 
 
 def predicate_ids(path: Path = PREDICATE_HEADER) -> tuple[int, ...]:
@@ -149,8 +226,11 @@ def _arm_inputs(arm: Arm) -> dict[str, str]:
 
 
 def build_plan(*, ea_id: str, ea_label: str, symbol: str, timeframe: str,
-               base_setfile: Path, output_dir: Path) -> dict[str, Any]:
+               base_setfile: Path, output_dir: Path,
+               param_grid: Path | None = None,
+               plan_doc: Path = PLAN_DOC) -> dict[str, Any]:
     validate_base_setfile(base_setfile, ea_id)
+    seal = sealed_header(param_grid=param_grid, plan_doc=plan_doc)
     predicates = predicate_ids()
     matrix_arms = arms(predicates)
     program_id = f"DL089_{ea_id}_{symbol.replace('.', '_')}_2019_2025"
@@ -175,7 +255,7 @@ def build_plan(*, ea_id: str, ea_label: str, symbol: str, timeframe: str,
             })
     if len(cells) != 1085 or len({cell["cell_key"] for cell in cells}) != 1085:
         raise CensusError("plan must contain exactly 1085 unique cells")
-    return {
+    plan: dict[str, Any] = {
         "schema": SCHEMA,
         "program_id": program_id,
         "phase": PHASE,
@@ -192,8 +272,10 @@ def build_plan(*, ea_id: str, ea_label: str, symbol: str, timeframe: str,
         "base_setfile_path": str(base_setfile.resolve()),
         "base_setfile_sha256": _sha256(base_setfile),
         "output_dir": str(output_dir.resolve()),
-        "cells": cells,
     }
+    plan.update(seal)  # sealed selection contract (verbatim rule, floors, quorum, WF, grid sha)
+    plan["cells"] = cells
+    return plan
 
 
 def _render_cell_setfile(base_setfile: Path, cell: dict[str, Any]) -> str:
@@ -223,18 +305,45 @@ def _harness_pass(conn: sqlite3.Connection, harness_id: str) -> dict[str, Any]:
     return result
 
 
+def _q02_pass(conn: sqlite3.Connection, ea_id: str) -> dict[str, Any]:
+    """Fail-closed precondition: the census EA must own a done/PASS Q02 work item.
+
+    Spending 1,085 census backtests is only justified once the ``_opt`` EA's own
+    six-zero baseline has proven economically alive through the funnel.  Storage
+    keeps the legacy ``P2`` phase key alongside ``Q02`` (CLAUDE.md compatibility),
+    so both are accepted.  Any absence / non-done / non-PASS row refuses the batch.
+    """
+    row = conn.execute(
+        """SELECT id,phase,status,verdict,evidence_path,updated_at
+             FROM work_items
+            WHERE ea_id=? AND phase IN ('Q02','P2')
+              AND status='done' AND verdict='PASS'
+         ORDER BY updated_at DESC LIMIT 1""",
+        (ea_id,),
+    ).fetchone()
+    if row is None:
+        raise CensusError(
+            f"census precondition unmet: no done/PASS Q02 work item for EA {ea_id!r} "
+            "(the _opt baseline must clear Q02 before the census is enqueued)"
+        )
+    return dict(zip(("id", "phase", "status", "verdict", "evidence_path", "updated_at"), row))
+
+
 def enqueue(plan: dict[str, Any], *, db_path: Path, ledger_path: Path,
-            harness_id: str = HARNESS_WORK_ITEM_ID) -> dict[str, Any]:
+            harness_id: str = HARNESS_WORK_ITEM_ID,
+            q02_ea_id: str | None = None) -> dict[str, Any]:
     if plan.get("schema") != SCHEMA or plan.get("planned_trials") != 1085:
         raise CensusError("invalid or incomplete census plan")
     conn = sqlite3.connect(db_path, timeout=60)
     try:
         harness = _harness_pass(conn, harness_id)
+        q02 = _q02_pass(conn, q02_ea_id or plan["ea_id"])
         ledger = {key: value for key, value in plan.items() if key != "cells"}
         ledger.update({
             "status": "PLANNED",
             "harness_work_item_id": harness_id,
             "harness_evidence": harness,
+            "q02_precondition": q02,
             "created_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
             "cells": [{key: cell[key] for key in (
                 "cell_key", "work_item_id", "year", "arm", "direction",
@@ -350,6 +459,8 @@ def _build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--timeframe", required=True)
     plan.add_argument("--base-setfile", type=Path, required=True)
     plan.add_argument("--output-dir", type=Path, required=True)
+    plan.add_argument("--param-grid", type=Path,
+                      help="EA opt_param_grid.json; its sha256 is sealed into the ledger for S5")
     plan.add_argument("--plan-out", type=Path)
 
     apply = sub.add_parser("enqueue")
@@ -359,10 +470,26 @@ def _build_parser() -> argparse.ArgumentParser:
     apply.add_argument("--db", type=Path, default=DEFAULT_DB)
     apply.add_argument("--ledger", type=Path, required=True)
     apply.add_argument("--harness-work-item-id", default=HARNESS_WORK_ITEM_ID)
+    apply.add_argument("--q02-ea-id", default=None,
+                       help="override the EA whose done/PASS Q02 gates the census (default: --ea-id)")
 
     report = sub.add_parser("report-cell")
     report.add_argument("--summary", type=Path, required=True)
     report.add_argument("--out", type=Path)
+
+    # WF-selection + advance driver (delegates to opt_census_select).
+    drive = sub.add_parser("advance", help="advance the DL-089 pilot state machine one step")
+    drive.add_argument("--ledger", type=Path, required=True)
+    drive.add_argument("--db", type=Path, default=DEFAULT_DB)
+    drive.add_argument("--param-grid", type=Path,
+                       help="opt_param_grid.json for S5 (must match the sealed sha256)")
+    drive.add_argument("--dry-run", action="store_true",
+                       help="evaluate and print the next transition without writing")
+
+    status = sub.add_parser("report", help="human-readable state of the DL-089 pilot")
+    status.add_argument("--ledger", type=Path, required=True)
+    status.add_argument("--db", type=Path, default=DEFAULT_DB)
+    status.add_argument("--out", type=Path)
     return parser
 
 
@@ -375,10 +502,23 @@ def main(argv: list[str] | None = None) -> int:
                 _atomic_write(args.out, json.dumps(result, indent=2, sort_keys=True) + "\n")
             print(json.dumps(result, indent=2, sort_keys=True))
             return 0
+        if args.command in ("advance", "report"):
+            from tools.strategy_farm import opt_census_select as driver
+            if args.command == "advance":
+                result = driver.advance(
+                    ledger_path=args.ledger, db_path=args.db,
+                    param_grid=args.param_grid, dry_run=args.dry_run,
+                )
+            else:
+                result = driver.report(ledger_path=args.ledger, db_path=args.db)
+                if args.out:
+                    _atomic_write(args.out, json.dumps(result, indent=2, sort_keys=True) + "\n")
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 0
         plan = build_plan(
             ea_id=args.ea_id, ea_label=args.ea_label, symbol=args.symbol,
             timeframe=args.timeframe, base_setfile=args.base_setfile,
-            output_dir=args.output_dir,
+            output_dir=args.output_dir, param_grid=args.param_grid,
         )
         if args.command == "plan":
             if args.plan_out:
@@ -387,7 +527,7 @@ def main(argv: list[str] | None = None) -> int:
                              indent=2, sort_keys=True))
             return 0
         result = enqueue(plan, db_path=args.db, ledger_path=args.ledger,
-                         harness_id=args.harness_work_item_id)
+                         harness_id=args.harness_work_item_id, q02_ea_id=args.q02_ea_id)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     except (CensusError, OSError, ValueError, json.JSONDecodeError, sqlite3.Error) as exc:
