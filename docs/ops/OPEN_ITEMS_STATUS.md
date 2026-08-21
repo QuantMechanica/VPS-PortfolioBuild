@@ -38,6 +38,9 @@
 | R9 §5.4 / R10 §5.3 | Rate je Gate + Queue-Termin | Q04 11,2/h (6h-Fenster); 9/h-Einbruch = 5 von 8 Slots auf Q07/Q08 — OWNERs Transient-These **bestätigt**; Queue-Ende ≈ 26.–27.08. |
 | Vollm. §8.1 | Unger-Filter: Parameterkosten | Eingrenzung auf 1 kategorialen Parameter (feste Muster-Bänke) vorgeschlagen — Bericht 19.08. 20:00 |
 | Dir. 21.08. (ULTRACODE) | Firmen-Vollaudit + CEO-Masterplan | 8-Agenten-Audit abgeschlossen (`COMPANY_AUDIT_ULTRACODE_2026-08-21.md`); Masterplan T1–T12 im Vault (`12 ToDo/00_CEO_Masterplan_2026-08-21.md`); T1 (T_Live-Authority-Falschdoku „OWNER + Claude" auf 5 Vault-Seiten) sofort korrigiert auf Kanon OWNER-only |
+| Masterplan T2 | Identity-Core-Rebuild | Business Model neu (DXZ+FTMO gleichwertig), Hard-Rules-Amendments 2026-08 + Rollen-Modernisierung, Lint-Legacy-Rollen-Check mit 17-Seiten-Debt-Allowlist; Lint PASS |
+| Masterplan T3 | Pipeline-Seiten-Rebuild | Q00 R1/R4 (OWNER: R4 bleibt), Q02-Kanon (Rate-Floor), Q05-Rename, **DD-Schwellen-Drift 15→25 % auf Q05/Q06/Q10 gegen Code-Kanon korrigiert**, Q06 tote Multiplikatoren raus, Q09 Zwei-Achsen, Q11 dual-book, Q14 Numerik-Pointer + Fork bei Q10 (OWNER-bestätigt); Lint PASS |
+| Masterplan #2 | Fail-Soft-Vorlage Q05/Q06 | Eingereicht: `Q05_Q06_FAIL_SOFT_VORLAGE_2026-08-21.md` — Q06 `PASS_SOFT` Band PF 0,95–1,00 + Probation + Anti-Stacking; Empfehlung Option A (erst Band messen); ROT, wartet auf OWNER |
 
 ## 2 · Offen
 
@@ -60,7 +63,7 @@
 | **Dir. §3** | Timeout → Requeue: Diff + 3 retrospektive Zeilen | Prinzip freigegeben, Diff offen |
 | **aktuell** | `WALLCLOCK_CONSTANTS.md` | Belege vollständig, Dokument nicht geschrieben |
 | **aktuell** | REVIEW-Rückstau: 110 agent_tasks (≈60 build_ea/agy, ≈50 review_ea/codex, seit 17./18.08.) | Batch-Review eingeplant; Intake ist nicht der Engpass (Queue-Ende ≈ 26.–28.08.), aber der Stau verletzt die Review-SLA |
-| **Dir. 21.08.** | Masterplan T2–T12 (Vault-Rebuild, Gate-Redesign-Vorlage T7, Pattern-Fixes T8/T9, Fail-Soft T10, public-data T11) | seriell in Abarbeitung, ein ToDo zur Zeit; T7-Freigaben + Entscheidungsschlange #1–#5 beim OWNER (`12 ToDo/00_CEO_Masterplan_2026-08-21.md` §C) |
+| **Dir. 21.08.** | Masterplan T4–T12 (Infra-Seiten, Website-Doku, ToDo-Hub, Track-v2-Design T7, Pattern-Fixes T8/T9, Fail-Soft-Impl T10, public-data T11) | seriell in Abarbeitung, ein ToDo zur Zeit; beim OWNER offen: Fail-Soft-Freigabe (#2), Teiljahres-Pro-Rata (#4) (`12 ToDo/00_CEO_Masterplan_2026-08-21.md` §C) |
 
 ## 3 · Entfallen
 
