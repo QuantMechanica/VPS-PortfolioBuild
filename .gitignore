@@ -102,3 +102,9 @@ artifacts/*build_result.attempt*.json
 state/
 artifacts/*attempt*.json
 artifacts/**/*attempt*.json
+
+# stray third-party CLI installer downloaded into the repo root (goose CLI, not a
+# QuantMechanica component). Untracked files block repo_dirty_build_guard and thus the
+# whole build lane (farmctl.py:654 uses --untracked-files=normal), so it is ignored
+# rather than left to gate builds. The file itself is untouched.
+/download_cli.ps1
