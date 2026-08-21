@@ -1,0 +1,47 @@
+{
+  "after_block_invariant": {
+    "sample_ids": [],
+    "valid": true,
+    "violation_count": 0
+  },
+  "by_ea": {
+    "QM5_10648": 11,
+    "QM5_10649": 12,
+    "QM5_10973": 19,
+    "QM5_11301": 4,
+    "QM5_11302": 6,
+    "QM5_11689": 4,
+    "QM5_11897": 9,
+    "QM5_11898": 8,
+    "QM5_12352": 3,
+    "QM5_20070": 6,
+    "QM5_20071": 8,
+    "QM5_20179": 3,
+    "QM5_2076": 4,
+    "QM5_9354": 3,
+    "QM5_9501": 3
+  },
+  "by_phase": {
+    "Q02": 56,
+    "Q03": 8,
+    "Q04": 39
+  },
+  "by_verdict": {
+    "<null>": 1,
+    "FAIL": 31,
+    "INFRA_FAIL": 18,
+    "PASS": 44,
+    "ZERO_TRADES": 9
+  },
+  "generated_at_utc": "2026-08-21T18:44:54+00:00",
+  "pass_row_count": 44,
+  "pass_rows_by_phase": {
+    "Q02": 36,
+    "Q03": 8
+  },
+  "registry_eas_with_no_work_items": [],
+  "registry_size": 15,
+  "schema": "qm.work_items.defect_block_taint_view.v1",
+  "source_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "tainted_row_count": 103
+}
