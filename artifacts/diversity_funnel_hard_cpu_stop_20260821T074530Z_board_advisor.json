@@ -1,0 +1,152 @@
+{
+  "schema": "qm.paced_fleet.diversity_cpu_ceiling_stop/v1",
+  "recorded_at_utc": "2026-08-21T07:45:30.4785165Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "a616d3e66",
+  "outcome": "NO_CLAIM_NO_BUILD_NO_ENQUEUE_CPU_CEILING",
+  "mission": "advance V5 toward more certified portfolio sleeves with diversity and funnel throughput first",
+  "farm_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "read_only",
+    "quick_check": "ok",
+    "pending_build_tasks": 37,
+    "build_claim_guard_codes": {
+      "Q02_EXCLUDED": 3,
+      "active_blocked_at_utc": 4,
+      "active_blocked_reason": 3,
+      "card_missing": 2,
+      "eligible": 2,
+      "r_gate_not_ready": 5,
+      "terminal_final_failure": 18
+    },
+    "eligible_build_rows": [
+      {
+        "ea_id": "QM5_11483",
+        "task_id": "557db8df-51ab-4636-b361-58b314813f0b",
+        "disposition": "duplicate_completed_work",
+        "reason": "MQ5 and EX5 already exist and the farm has 16 completed work items through Q07, including five Q02 PASS rows"
+      },
+      {
+        "ea_id": "QM5_11657",
+        "task_id": "593a9825-a8dc-462f-bdda-c00ddb710d58",
+        "disposition": "built_but_cpu_deferred_before_smoke_and_q02",
+        "reason": "MQ5, EX5, SPEC, and five H4 RISK_FIXED setfiles already exist; the pending task retains prior manual-claim/defer evidence and has no work item"
+      }
+    ],
+    "work_item_counts": {
+      "active": 6,
+      "pending": 2239,
+      "done": 59268,
+      "failed": 48540
+    },
+    "active_by_phase": {
+      "Q03": 1,
+      "Q06": 2,
+      "Q07": 3
+    },
+    "active_work_items": [
+      {
+        "terminal": "T2",
+        "ea_id": "QM5_20234",
+        "phase": "Q03",
+        "symbol": "QM5_20234_XAU_XAG_RSJ_D1",
+        "work_item_id": "8583021d-b8e3-4ed1-b99f-52a0ac9e318e"
+      },
+      {
+        "terminal": "T3",
+        "ea_id": "QM5_10280",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "e3b6b401-2a8c-41ab-bce0-25ad978aa111"
+      },
+      {
+        "terminal": "T4",
+        "ea_id": "QM5_12365",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "7e67c687-bce7-491c-9e4c-03154dcbba80"
+      },
+      {
+        "terminal": "T6",
+        "ea_id": "QM5_11172",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "e38acc2b-603d-42f1-9032-52217ce9d37a"
+      },
+      {
+        "terminal": "T8",
+        "ea_id": "QM5_10163",
+        "phase": "Q06",
+        "symbol": "SP500.DWX",
+        "work_item_id": "95e34cbf-ea1d-42ee-8809-f751cbb0ee80"
+      },
+      {
+        "terminal": "T10",
+        "ea_id": "QM5_9641",
+        "phase": "Q06",
+        "symbol": "SP500.DWX",
+        "work_item_id": "091c2385-fc89-41f0-80d7-eda0eceb5dcb"
+      }
+    ],
+    "new_claim_taken": false
+  },
+  "capacity": {
+    "hard_cpu_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_gte_hard_ceiling",
+    "ceiling_binding": true,
+    "sampling_method": "Win32_PerfFormattedData_PerfOS_Processor _Total PercentProcessorTime",
+    "sample_interval_seconds": 2,
+    "sampled_from_utc": "2026-08-21T07:45:30.4785165Z",
+    "sampled_through_utc": "2026-08-21T07:45:39.6043692Z",
+    "samples_percent": [
+      100.0,
+      99.0,
+      98.0,
+      86.0,
+      98.0
+    ],
+    "average_percent": 96.2,
+    "maximum_percent": 100.0,
+    "mt5_slot_scan_at_utc": "2026-08-21T07:45:31Z",
+    "governed_factory_process_count_at_scan": 4,
+    "governed_factory_terminals_at_scan": [
+      "T2",
+      "T3",
+      "T4",
+      "T6"
+    ],
+    "database_active_claim_count_after_scan": 6,
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": [],
+    "observation_note": "T8 and T10 had newly active SQLite claims in the later read but were absent from the earlier process census. The observations are not presented as atomic; the 100 percent CPU maximum independently binds the stop."
+  },
+  "non_duplicate_delta": {
+    "previous_same_branch_observation_utc": "2026-08-21T07:35:42Z",
+    "elapsed_minutes": 9.81,
+    "previous_average_cpu_percent": 99.28,
+    "current_average_cpu_percent": 96.2,
+    "previous_factory_process_count": 6,
+    "current_factory_process_count_at_scan": 4,
+    "current_active_phase_mix": {
+      "Q03": 1,
+      "Q06": 2,
+      "Q07": 3
+    },
+    "hard_ceiling_remains_binding": true
+  },
+  "actions_not_taken": [
+    "farm claim or agent task claim",
+    "Strategy Card mutation",
+    "EA source or binary mutation",
+    "registry or magic resolver mutation",
+    "build check or compile",
+    "smoke test",
+    "Q02 enqueue, re-enqueue, priority mutation, or dispatch",
+    "terminal reservation or process control",
+    "portfolio gate mutation",
+    "deploy manifest mutation",
+    "T_Live file or terminal-state access",
+    "AutoTrading action"
+  ],
+  "next_safe_action": "After sustained whole-host CPU stays below 97 percent with maximum headroom, recheck ownership of QM5_11657, run its one standard smoke, then record-build/enqueue its existing five-symbol H4 RISK_FIXED basket exactly once."
+}
