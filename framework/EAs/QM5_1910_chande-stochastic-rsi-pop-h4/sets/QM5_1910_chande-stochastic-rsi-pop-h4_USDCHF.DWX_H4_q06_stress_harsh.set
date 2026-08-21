@@ -3,7 +3,7 @@
 ; ea_id:        1910
 ; ea_slug:      chande-stochastic-rsi-pop-h4
 ; ea_version:   v5.0
-; set_version:  s20260720-stress-harsh
+; set_version:  s20260821-stress-harsh
 ; symbol:       USDCHF.DWX
 ; timeframe:    H4
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-07-20
+; date:         2026-08-21
 ;==========================================================
 qm_ea_id=1910
 qm_magic_slot_offset=8
