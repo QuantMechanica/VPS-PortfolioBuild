@@ -1,0 +1,220 @@
+{
+  "artifact_type": "fx_cointegration_existing_pair_q04_priority_advance",
+  "generated_at_utc": "2026-08-21T17:54:42Z",
+  "branch": "agents/board-advisor",
+  "repo_head_at_evidence_seal": "ad4ebe8dec0e1bdc96f6e9826f6e9d815c64f639",
+  "mission_outcome": "EXISTING_NON_DUPLICATE_FX_BASKET_ADVANCED_IN_PLACE",
+  "frontier_state": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a804932912a449aed19bbc8fe61f1f5846556743",
+    "new_card_or_ea_created": false,
+    "reason": "The governed sign-aware reconciliation already maps every frozen-scan relationship to a built sleeve. Creating another Card, registry allocation, EA, or logical basket manifest would duplicate governed work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selection_context": [
+    {
+      "scan_rank": 27,
+      "ea_id": "QM5_20208",
+      "pair": [
+        "NZDUSD.DWX",
+        "EURAUD.DWX"
+      ],
+      "state": "Q02_PASS_Q04_PRIORITY_PENDING",
+      "q04_work_item_id": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+      "decision": "preserve the existing priority row; do not duplicate or restamp it"
+    },
+    {
+      "scan_rank": 28,
+      "ea_id": "QM5_12735",
+      "pair": [
+        "EURUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "state": "Q02_PASS_Q04_FAIL",
+      "q04_work_item_id": "7560be98-4f16-4850-b565-44390c3e54ac",
+      "decision": "terminal economic failure; do not requeue"
+    }
+  ],
+  "selected_existing_pair": {
+    "selection_reason": "Rank 27 was already advanced once and remains ahead in the serialized basket lane, while rank 28 has a terminal Q04 failure. Rank 29 is therefore the highest-ranked unboosted frozen-scan D1 successor that can be advanced without duplicating a row or verdict.",
+    "scan_rank": 29,
+    "pair": [
+      "GBPUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "ea_id": "QM5_20210",
+    "slug": "gbpusd-audjpy",
+    "logical_symbol": "QM5_20210_GBPUSD_AUDJPY_COINTEGRATION_D1",
+    "scan_evidence": {
+      "dev_net_sharpe": -0.166819,
+      "oos_net_sharpe": 0.304341,
+      "oos_return_percent": 2.906184,
+      "oos_state_changes": 17,
+      "dev_beta": -0.038239845,
+      "half_life_d1_bars": 104.649,
+      "disposition": "one_shot_pipeline_test_no_refit_or_rescue"
+    },
+    "card_status": "APPROVED",
+    "g0_status": "APPROVED",
+    "source_id": "claude_cross_asset_discovery_2026-06-09",
+    "source_criteria": {
+      "primary_source": "Chan, Ernest P. (2009), Quantitative Trading, OWNER-ratified Tier-A SRC02 extraction",
+      "research_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+      "r1_track_record": "PASS",
+      "r2_mechanical": "PASS",
+      "r3_data_available": "PASS",
+      "r4_ml_forbidden": "PASS"
+    },
+    "q02": {
+      "work_item_id": "7890c8f1-7df4-41ab-90cd-4f0183a5cda4",
+      "status": "done",
+      "verdict": "PASS",
+      "oninit_failure_detected": false,
+      "reason_classes": [
+        "OK"
+      ],
+      "total_trades": 124,
+      "profit_factor": 0.65,
+      "net_profit": -6260.98,
+      "drawdown": 7376.1,
+      "from_date": "2018.07.02",
+      "to_date": "2022.12.31",
+      "note": "Q02 established an executable, sufficiently active logical package; Q04 remains the terminal economic judge."
+    },
+    "q04": {
+      "work_item_id": "a2c1175e-ed1f-4521-980a-2daadb48588c",
+      "status_after_action": "pending",
+      "verdict_after_action": null,
+      "attempt_count_after_action": 0,
+      "claimed_by_after_action": null,
+      "updated_at_preserved": "2026-08-03T17:41:03+00:00",
+      "exact_open_row_count": 1,
+      "final_observed_at_utc": "2026-08-21T17:53:00Z"
+    },
+    "risk_contract": {
+      "environment": "backtest",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "artifact_sha256": {
+      "mq5": "7ae820b372d8afb787a8eb6a1e89d015a74cd2a80e24567b683bcbe597c37c69",
+      "ex5": "6152449cdf43df0856902a4651d59ce4a7b83cdfd8593f5651b852a1556f5b57",
+      "basket_manifest": "25cc0b96b89e3aca3884b91dcf1ad528e58f00e80f3b3b408c1eebedf044f459",
+      "logical_backtest_setfile": "9a803b40857b9023b702f2b0e597ac253bf0bc75a62ffa0c3a9bd9055a216e63",
+      "approved_card": "51ccf7dbf475e132e19fa942de11ad403fadcdaa9cb80bae120768d812cf1db3",
+      "ea_card_snapshot": "51ccf7dbf475e132e19fa942de11ad403fadcdaa9cb80bae120768d812cf1db3"
+    }
+  },
+  "priority_action": {
+    "authority": "OWNER 2026-08-21 forex portfolio mission (current prompt); rank-29 existing-pair fallback",
+    "applied_at_utc": "2026-08-21T17:51:50+00:00",
+    "work_item_id": "a2c1175e-ed1f-4521-980a-2daadb48588c",
+    "database_event_id": 368557,
+    "database_event": "priority_boost_applied",
+    "before_payload_sha256": "b0437b37e9b41300bcf2cd3b37043372155693adf4eaf2c1aec86043de5f5f64",
+    "after_payload_sha256": "07e2229d84f0633fb0d68c132e716928116f16fe17c32cd0ed434238f6f64c3f",
+    "fields_added": {
+      "priority_track": true,
+      "priority_boost_applied_at_utc": "2026-08-21T17:51:50+00:00",
+      "priority_boost_authority": "OWNER 2026-08-21 forex portfolio mission (current prompt); rank-29 existing-pair fallback",
+      "priority_reason": "Frozen 66-pair frontier is fully mechanized; anchors are past Q02; rank 27 is already priority-queued and rank 28 has terminal Q04 evidence; advance the existing non-duplicate rank-29 GBPUSD/AUDJPY D1 Q04 successor in place; paced worker only."
+    },
+    "cas_row_count": 1,
+    "new_work_item_created": false,
+    "pipeline_verdict_changed": false,
+    "work_item_updated_at_preserved": "2026-08-03T17:41:03+00:00",
+    "canonical_scheduler_rank_before": 60,
+    "canonical_scheduler_rank_after": 3,
+    "claimable_rows_before": 2147,
+    "claimable_rows_after": 2147,
+    "sqlite_quick_check": "ok",
+    "factory_mutation_lock_release_status": "released",
+    "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_pre_qm5_20210_q04_priority_20260821T175150Z.sqlite",
+    "backup_sha256": "11c6354f68da78adc29f5ec62ca270e3bd399b36cebd012e3b91d8d2feb3713a"
+  },
+  "validation": {
+    "strategy_card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "symbol_scope_violations": 0,
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 2,
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260821_175006.json",
+    "build_check_warning_scope": [
+      "EA_CARD_LOSS_LIMIT_UNDECIDABLE",
+      "EA_BROKER_TIME_WINDOW_UNDECIDABLE"
+    ],
+    "build_check_setfile_refresh_restored_to_head": true,
+    "package_changed": false
+  },
+  "capacity_evidence": {
+    "explicit_hard_ceiling_percent": 97.0,
+    "initial_cpu_load_percent": [
+      74.87,
+      70.23,
+      54.96,
+      77.31,
+      65.28
+    ],
+    "pre_apply_cpu_load_percent": [
+      64.67,
+      65.25,
+      66.81
+    ],
+    "post_apply_cpu_load_percent": [
+      45.56,
+      71.9,
+      85.67
+    ],
+    "maximum_observed_percent": 85.67,
+    "ceiling_binding": false,
+    "disk_free_gb_post_apply": 145.25,
+    "ram_available_gb_post_apply": 33.6,
+    "commit_free_gb_post_apply": 80.2,
+    "active_work_items_post_apply": 4,
+    "active_multisymbol_work_item_post_apply": {
+      "id": "a070ff3f-aec1-4d32-b2c4-3444a42a4d54",
+      "ea_id": "QM5_20202",
+      "phase": "Q02",
+      "terminal": "T1"
+    },
+    "paced_worker_note": "The selected Q04 row remains pending at canonical rank 3 behind the already-prioritized rank-27 FX basket and current serialized basket activity. No dispatch tick, tester launch, terminal reservation, reconciliation, or control was performed."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "new_queue_row_created": false,
+    "existing_queue_row_priority_mutated": true,
+    "dispatch_tick": false,
+    "manual_tester_or_backtest_run": false,
+    "terminal_reservation_reconciliation_or_control": false,
+    "repository_evidence_created": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
