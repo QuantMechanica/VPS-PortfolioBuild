@@ -70,6 +70,11 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm import quota_spawn_gate
 
+try:
+    import agent_router
+except ModuleNotFoundError:
+    from tools.strategy_farm import agent_router
+
 
 REPO_ROOT = Path(r"C:\QM\repo")
 WORKTREE_ROOT = Path(os.environ.get("QM_AGENT_WORKTREE_ROOT", r"C:\QM\worktrees"))
@@ -802,43 +807,36 @@ def claude_work_available() -> dict[str, Any]:
 
     Claude is quota-constrained. It should only wake for explicit router work
     already assigned to Claude, or for unrouted premium work that asks for
-    Claude-only capabilities such as `summary`. G0/card mass review is handled
-    by Codex while the pump Claude lane is disabled.
+    Claude-only capabilities such as `summary`. Candidate eligibility is
+    delegated to `_quota_lane_candidates`, so skills and human-lane holds are
+    enforced identically by the wake gate and the quota gate. G0/card mass
+    review is handled by Codex while the pump Claude lane is disabled.
     """
-    import sqlite3 as _sqlite3
-    db = FARM_ROOT / "state" / "farm_state.sqlite"
-    if not db.exists():
-        return {"any_work": True, "reason": "db_missing_assume_work"}
-    try:
-        con = _sqlite3.connect(db)
-        con.row_factory = _sqlite3.Row
-        n_assigned = con.execute(
-            """
-            SELECT COUNT(*) FROM agent_tasks
-            WHERE assigned_agent='claude' AND state IN ('TODO','IN_PROGRESS')
-            """
-        ).fetchone()[0]
-        n_premium_backlog = con.execute(
-            """
-            SELECT COUNT(*) FROM agent_tasks
-            WHERE state IN ('BACKLOG','TODO')
-              AND assigned_agent IS NULL
-              AND (
-                required_capabilities_json LIKE '%"summary"%'
-                OR budget_class IN ('premium','claude','owner')
-              )
-            """
-        ).fetchone()[0]
-        con.close()
-        any_work = (n_assigned + n_premium_backlog) > 0
-        return {
-            "any_work": any_work,
-            "claude_assigned": n_assigned,
-            "premium_backlog": n_premium_backlog,
-        }
-    except Exception as exc:
+    candidates, candidate_status = _quota_lane_candidates("claude")
+    if candidate_status != "ok":
         # Fail OPEN — if the check fails, spawn anyway rather than starve Claude.
-        return {"any_work": True, "reason": f"work_check_error:{exc!r}"}
+        return {
+            "any_work": True,
+            "reason": f"work_check_{candidate_status}",
+            "candidate_status": candidate_status,
+        }
+
+    assigned = [candidate for candidate in candidates if candidate["assigned"]]
+    premium = [
+        candidate
+        for candidate in candidates
+        if not candidate["assigned"]
+        and (
+            "summary" in candidate["required_capabilities"]
+            or candidate["budget_class"] in {"premium", "claude"}
+        )
+    ]
+    return {
+        "any_work": bool(assigned or premium),
+        "claude_assigned": len(assigned),
+        "premium_backlog": len(premium),
+        "candidate_status": candidate_status,
+    }
 
 
 def _parse_dt(value: str) -> dt.datetime | None:
@@ -943,50 +941,36 @@ def claude_budget_check(max_sessions: int) -> dict[str, Any]:
 def _agent_tasks_work_available(agent: str) -> dict[str, Any]:
     """Pre-spawn guard for Codex/Gemini: skip if no actionable work in agent_tasks.
 
-    Checks two signals:
-    - Tasks already assigned to this agent with state TODO or IN_PROGRESS
-    - Unrouted BACKLOG tasks (route-many might assign them to this agent)
+    Candidate eligibility is delegated to `_quota_lane_candidates`, so this
+    wake gate cannot revive work that the capability/skill contract rejects.
     Fails OPEN so a DB error never starves the agent.
     """
-    import sqlite3 as _sqlite3
-    db = FARM_ROOT / "state" / "farm_state.sqlite"
-    if not db.exists():
-        return {"any_work": True, "reason": "db_missing_assume_work"}
-    try:
-        con = _sqlite3.connect(db)
-        con.row_factory = _sqlite3.Row
-        n_assigned = con.execute(
-            "SELECT COUNT(*) FROM agent_tasks WHERE assigned_agent=? AND state IN ('TODO','IN_PROGRESS')",
-            (agent,),
-        ).fetchone()[0]
-        # Unassigned tickets sit in TODO (enqueue default), not only BACKLOG.
-        # Counting BACKLOG alone dead-locked the codex lane 2026-07-04..07: lane
-        # drains -> skip before heartbeat -> heartbeat goes stale -> router skips
-        # the lane -> waiting unassigned TODO tickets are never routed -> "no
-        # work" forever.
-        n_backlog = con.execute(
-            "SELECT COUNT(*) FROM agent_tasks WHERE state='BACKLOG' "
-            "OR (state='TODO' AND (assigned_agent IS NULL OR assigned_agent=''))",
-        ).fetchone()[0]
-        con.close()
-        any_work = (n_assigned + n_backlog) > 0
+    candidates, candidate_status = _quota_lane_candidates(agent)
+    if candidate_status != "ok":
         return {
-            "any_work": any_work,
-            f"{agent}_assigned": n_assigned,
-            "backlog_unrouted": n_backlog,
+            "any_work": True,
+            "reason": f"work_check_{candidate_status}",
+            "candidate_status": candidate_status,
         }
-    except Exception as exc:
-        # Fail OPEN — if the check fails, spawn anyway rather than starve the agent.
-        return {"any_work": True, "reason": f"work_check_error:{exc!r}"}
+
+    n_assigned = sum(1 for candidate in candidates if candidate["assigned"])
+    n_backlog = len(candidates) - n_assigned
+    return {
+        "any_work": bool(candidates),
+        f"{agent}_assigned": n_assigned,
+        "backlog_unrouted": n_backlog,
+        "candidate_status": candidate_status,
+    }
 
 
 def _quota_lane_candidates(agent: str) -> tuple[list[dict[str, Any]], str]:
-    """Return assigned or capability-compatible unrouted work for one lane."""
+    """Return work that satisfies one lane's full capability/skill contract."""
     import sqlite3 as _sqlite3
 
     db = FARM_ROOT / "state" / "farm_state.sqlite"
     if not db.exists():
         return [], "db_missing"
+    con: _sqlite3.Connection | None = None
     try:
         con = _sqlite3.connect(db)
         con.row_factory = _sqlite3.Row
@@ -997,23 +981,34 @@ def _quota_lane_candidates(agent: str) -> tuple[list[dict[str, Any]], str]:
         capabilities = None
         if registry is not None:
             capabilities = set(json.loads(registry["capabilities_json"] or "[]"))
+        declared_caps = agent_router._declared_registry_capabilities(con)
+        governed_caps = agent_router._governed_routing_capabilities()
         rows = con.execute(
             """
-            SELECT id, task_type, priority, assigned_agent, required_capabilities_json, payload_json
+            SELECT id, task_type, priority, assigned_agent, budget_class,
+                   required_capabilities_json, required_skills_json, payload_json
             FROM agent_tasks
             WHERE (assigned_agent=? AND state IN ('TODO','IN_PROGRESS'))
                OR (state IN ('BACKLOG','TODO') AND (assigned_agent IS NULL OR assigned_agent=''))
             ORDER BY priority DESC, updated_at ASC
-            LIMIT 100
             """,
             (agent,),
         ).fetchall()
-        con.close()
         candidates: list[dict[str, Any]] = []
         for row in rows:
             required = set(json.loads(row["required_capabilities_json"] or "[]"))
+            skills = set(json.loads(row["required_skills_json"] or "[]"))
+            # Match agent_router.route_once exactly: declared/governed skills
+            # are binding capabilities, while undeclared skill labels remain
+            # descriptive metadata and do not strand otherwise-routable work.
+            required |= skills & (declared_caps | governed_caps)
             assigned = str(row["assigned_agent"] or "")
-            if not assigned and capabilities is not None and not required.issubset(capabilities):
+            # A human-owned task is never offered to an automated lane, even
+            # if a stale assignment or registry drift says otherwise.
+            human_holder = agent_router._human_lane_holder(con, required)
+            if human_holder is not None and human_holder != agent:
+                continue
+            if capabilities is not None and not required.issubset(capabilities):
                 continue
             candidates.append(
                 {
@@ -1021,12 +1016,17 @@ def _quota_lane_candidates(agent: str) -> tuple[list[dict[str, Any]], str]:
                     "task_type": row["task_type"],
                     "priority": int(row["priority"]),
                     "assigned": bool(assigned),
+                    "budget_class": str(row["budget_class"] or "standard"),
+                    "required_capabilities": sorted(required),
                     "payload": json.loads(row["payload_json"] or "{}"),
                 }
             )
         return candidates, "ok"
     except Exception as exc:
         return [], f"db_error:{exc!r}"
+    finally:
+        if con is not None:
+            con.close()
 
 
 def _quota_lane_check(

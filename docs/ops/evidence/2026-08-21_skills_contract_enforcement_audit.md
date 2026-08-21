@@ -91,3 +91,66 @@ GAP — but it is not a dead end either.
 `4b52f1b2` passed 29 router tests and a live routing proof and still reached a lane that could
 not do the work. A guard proven in one path is not proven in the system. The cheapest defence
 against that is knowing how many paths there are before you fix one of them.
+
+## Implementation record — Codex
+
+**Task:** `eb2dc100-58d3-4786-be6d-5622306f118c`
+**Branch:** `agents/board-advisor`
+**Status:** implemented; focused verification PASS; awaiting review
+
+`tools/strategy_farm/run_agent_orchestration_task.py` now makes
+`_quota_lane_candidates` apply the router's exact effective requirement:
+
+```text
+required = required_capabilities
+required |= required_skills & (declared_registry_capabilities | governed_default_capabilities)
+```
+
+It calls `agent_router._human_lane_holder`, filters incompatible unassigned work and stale
+pre-assignments, and leaves undeclared skill labels as descriptive metadata. The returned
+candidate carries its effective requirements and budget class, so wake gates do not reimplement
+the contract.
+
+The wake-only paths now consume that filtered candidate set:
+
+- `_agent_tasks_work_available` for Codex/Gemini, closing the practical Gemini wake path;
+- `claude_work_available`, avoiding a wake for work Claude must decline.
+
+The open contract question is resolved fail-closed: `budget_class=owner` alone does **not** wake
+Claude. Compatible `premium`/`claude` work, `summary` work, and valid explicit Claude assignments
+still do. The pre-filter SQL limit was removed so 100 incompatible high-priority rows cannot hide
+eligible lower-priority work.
+
+### Verification
+
+```text
+python -m pytest \
+  tools/strategy_farm/tests/test_agent_selection_skill_contract.py \
+  tools/strategy_farm/tests/test_agent_router.py \
+  tools/strategy_farm/tests/test_agent_orchestration_lock.py \
+  tools/strategy_farm/tests/test_run_agent_orchestration_heartbeat.py \
+  tools/strategy_farm/tests/test_quota_spawn_gate.py -q
+
+69 passed in 24.76s
+```
+
+The new system invariant covers `route_once`, quota candidates for Gemini/Codex/Claude, both
+wake-gate classes, stale incorrect assignments, governed-default enforcement during live
+registry drift, and descriptive non-governing skills. Existing router, lock, heartbeat, and quota
+tests remain green.
+
+Read-only live smoke after the fix:
+
+```text
+codex:  status=ok, candidates=[eb2dc100-...], work_available=true
+gemini: status=ok, candidates=[], work_available=false
+claude: status=ok, candidates=[], work_available=false
+```
+
+A re-scan at implementation time found 308 non-empty skill rows, 53 whose skills intersect the
+current declared/governed capability universe, and the same six current-registry mismatches.
+The temporal audit conclusion above remains authoritative: five are July contract anachronisms;
+`4b52f1b2` is the sole genuine skills-blind bypass.
+
+No terminal, AutoTrading, work-item, setfile, phase, pipeline verdict, or deployment state was
+changed.
