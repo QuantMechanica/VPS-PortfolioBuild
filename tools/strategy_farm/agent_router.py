@@ -1627,6 +1627,21 @@ def _ea_pipeline_verdict(conn: sqlite3.Connection, ea_id: str | None) -> str | N
     return None
 
 
+def _ea_has_work_items(conn: sqlite3.Connection, ea_id: str) -> bool:
+    """Whether the EA has ANY work_items row at all (not merely a closing verdict).
+
+    Distinguishes "legitimately in flight" (has rows, none closing yet) from
+    "structurally orphaned" (no rows were ever created for this EA, so no
+    pipeline activity can ever produce a closing verdict) -- the latter is a
+    permanent limbo unless dispositioned, not a transient in-flight state.
+    """
+    try:
+        row = conn.execute("SELECT 1 FROM work_items WHERE ea_id=? LIMIT 1", (ea_id,)).fetchone()
+    except sqlite3.OperationalError:
+        return True  # table absent (never in production) -> don't manufacture a false BLOCKED
+    return row is not None
+
+
 def _compute_task_exit(
     conn: sqlite3.Connection, row: sqlite3.Row
 ) -> tuple[str | None, str, dict[str, Any]]:
@@ -1663,11 +1678,22 @@ def _compute_task_exit(
         return "PASSED", "approved_accepted_terminal", {}
 
     if state == "PIPELINE":
-        verdict = _ea_pipeline_verdict(conn, _task_ea_id(payload))
+        ea_id = _task_ea_id(payload)
+        if ea_id is None:
+            # No ea_id/card_id the pipeline could ever bind a verdict to --
+            # this row can never resolve via _ea_pipeline_verdict. Named
+            # terminal instead of eternal "in flight".
+            return "BLOCKED", "pipeline_no_ea_binding", {}
+        verdict = _ea_pipeline_verdict(conn, ea_id)
         if verdict == "PASS":
             return "PASSED", "pipeline_closing_verdict_pass", {}
         if verdict == "FAIL":
             return "FAILED", "pipeline_closing_verdict_fail", {}
+        if not _ea_has_work_items(conn, ea_id):
+            # Has a resolvable ea_id but the pipeline never created a single
+            # work_items row for it -- nothing is running that could ever
+            # produce a closing verdict. Structurally orphaned, not in flight.
+            return "BLOCKED", "pipeline_no_work_items", {}
         return None, "pipeline_in_flight_no_closing_verdict", {}
 
     if state == "RECYCLE":

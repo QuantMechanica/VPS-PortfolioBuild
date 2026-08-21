@@ -145,6 +145,46 @@ class ReconcileExitsTests(unittest.TestCase):
             self.assertEqual(_state_of(root, tid), "PIPELINE")
             self.assertIn("pipeline_in_flight_no_closing_verdict", result["left_in_place"])
 
+    def test_pipeline_with_no_ea_binding_resolves_to_blocked(self) -> None:
+        # No ea_id/card_id at all -> _ea_pipeline_verdict can never see a
+        # closing row for this task. Must not sit "in flight" forever.
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            farmctl.init_db(root)
+            tid = _insert_task(root, task_type="build_ea", state="PIPELINE", payload={})
+            result = agent_router.reconcile_task_exits(root, apply=True)
+            self.assertEqual(_state_of(root, tid), "BLOCKED")
+            self.assertIn("PIPELINE->BLOCKED:pipeline_no_ea_binding", result["would_move"])
+
+    def test_pipeline_with_zero_work_items_resolves_to_blocked(self) -> None:
+        # Has a resolvable ea_id but the pipeline never created a single
+        # work_items row for it -- structurally orphaned, not in flight.
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            farmctl.init_db(root)
+            tid = _insert_task(root, task_type="build_ea", state="PIPELINE",
+                               payload={"ea_id": "QM5_555008"})
+            result = agent_router.reconcile_task_exits(root, apply=True)
+            self.assertEqual(_state_of(root, tid), "BLOCKED")
+            self.assertIn("PIPELINE->BLOCKED:pipeline_no_work_items", result["would_move"])
+
+    def test_pipeline_orphan_dispositions_are_idempotent(self) -> None:
+        # Re-running the reconciler over an unchanged snapshot must not
+        # re-move already-dispositioned rows or change their payload again.
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            farmctl.init_db(root)
+            no_ea = _insert_task(root, task_type="build_ea", state="PIPELINE", payload={})
+            no_wi = _insert_task(root, task_type="build_ea", state="PIPELINE",
+                                 payload={"ea_id": "QM5_555009"})
+            first = agent_router.reconcile_task_exits(root, apply=True)
+            self.assertEqual(first["moved_count"], 2)
+            second = agent_router.reconcile_task_exits(root, apply=True)
+            self.assertEqual(second["moved_count"], 0)
+            self.assertEqual(second["would_move"], {})
+            self.assertEqual(_state_of(root, no_ea), "BLOCKED")
+            self.assertEqual(_state_of(root, no_wi), "BLOCKED")
+
     def test_recycle_requeues_to_todo_and_increments_count(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
