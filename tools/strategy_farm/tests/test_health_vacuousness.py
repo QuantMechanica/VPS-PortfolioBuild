@@ -599,6 +599,86 @@ class KsBaselineDormancyTest(unittest.TestCase):
         self.assertEqual(res["status"], "OK", res["detail"])
         self.assertIn("loaded_ok=4", res["detail"])
 
+    def test_stale_manifest_warns_even_when_otherwise_clean(self):
+        """MNT-001 secondary finding: chk_ks_baseline_dormancy trusted whatever file
+        DXZ_BOOK_MANIFEST pointed at with no check that a newer book manifest existed
+        alongside it -- confirmed live for portfolio_manifest_live_24sleeve_20260724.json
+        vs the 2026-07-26 FINAL24b decision's manifest sitting in the same directory."""
+        tmp = Path(self.enterContext(_tmpdir()))
+        bdir, ldir, old_manifest = self._fixture(tmp, with_mismatch=False, with_dormant=False)
+        _write_json(bdir / "QM5_9404_EURGBP.json", {"hash": "DDD"})
+        rec = json.dumps({"ts_utc": "2026-07-25T00:00:00Z", "ea_id": 9404, "symbol": "EURGBP",
+                          "event": "KS_BASELINE_LOADED", "payload": {"hash": "DDD"}})
+        with (ldir / "QM5_book.log").open("a", encoding="utf-8") as fh:
+            fh.write(rec + "\n")
+
+        # A "portfolio_manifest_*" naming convention matters here: the configured
+        # manifest and the newer sibling must both match it for the staleness scan
+        # to compare them (bare "manifest.json" fixtures used by the other tests in
+        # this class deliberately never match, so they stay unaffected).
+        configured = old_manifest.parent / "portfolio_manifest_live_24sleeve_20260724.json"
+        configured.write_text(old_manifest.read_text(encoding="utf-8"), encoding="utf-8")
+        newer = old_manifest.parent / "portfolio_manifest_sunday_FINAL24b_TOTALRISK12_20260726.json"
+        newer.write_text(old_manifest.read_text(encoding="utf-8"), encoding="utf-8")
+        past = time.time() - 3600
+        import os as _os
+        _os.utime(configured, (past, past))  # older than `newer`, which keeps "now"
+
+        with mock.patch.object(health, "LIVE_TERMINAL_BASELINE_DIR", tmp / "no_local"), \
+                mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", bdir), \
+                mock.patch.object(health, "LIVE_QM_LOG_DIR", ldir), \
+                mock.patch.object(health, "DXZ_BOOK_MANIFEST", configured):
+            res = health.chk_ks_baseline_dormancy()
+
+        self.assertEqual(res["status"], "WARN", res["detail"])
+        self.assertIn("manifest_staleness=newer_candidate_unreconciled", res["detail"])
+        self.assertIn(newer.name, res["detail"])
+
+    def test_manifest_with_no_newer_sibling_is_not_flagged_stale(self):
+        tmp = Path(self.enterContext(_tmpdir()))
+        bdir, ldir, old_manifest = self._fixture(tmp, with_mismatch=False, with_dormant=False)
+        _write_json(bdir / "QM5_9404_EURGBP.json", {"hash": "DDD"})
+        rec = json.dumps({"ts_utc": "2026-07-25T00:00:00Z", "ea_id": 9404, "symbol": "EURGBP",
+                          "event": "KS_BASELINE_LOADED", "payload": {"hash": "DDD"}})
+        with (ldir / "QM5_book.log").open("a", encoding="utf-8") as fh:
+            fh.write(rec + "\n")
+        configured = old_manifest.parent / "portfolio_manifest_live_24sleeve_20260724.json"
+        configured.write_text(old_manifest.read_text(encoding="utf-8"), encoding="utf-8")
+
+        with mock.patch.object(health, "LIVE_TERMINAL_BASELINE_DIR", tmp / "no_local"), \
+                mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", bdir), \
+                mock.patch.object(health, "LIVE_QM_LOG_DIR", ldir), \
+                mock.patch.object(health, "DXZ_BOOK_MANIFEST", configured):
+            res = health.chk_ks_baseline_dormancy()
+
+        self.assertEqual(res["status"], "OK", res["detail"])
+        self.assertNotIn("manifest_staleness", res["detail"])
+
+    def test_draft_sibling_manifest_never_counts_as_a_newer_candidate(self):
+        tmp = Path(self.enterContext(_tmpdir()))
+        bdir, ldir, old_manifest = self._fixture(tmp, with_mismatch=False, with_dormant=False)
+        _write_json(bdir / "QM5_9404_EURGBP.json", {"hash": "DDD"})
+        rec = json.dumps({"ts_utc": "2026-07-25T00:00:00Z", "ea_id": 9404, "symbol": "EURGBP",
+                          "event": "KS_BASELINE_LOADED", "payload": {"hash": "DDD"}})
+        with (ldir / "QM5_book.log").open("a", encoding="utf-8") as fh:
+            fh.write(rec + "\n")
+        configured = old_manifest.parent / "portfolio_manifest_live_24sleeve_20260724.json"
+        configured.write_text(old_manifest.read_text(encoding="utf-8"), encoding="utf-8")
+        draft = old_manifest.parent / "portfolio_manifest_sunday_25sleeve_DRAFT_20260801.json"
+        draft.write_text(old_manifest.read_text(encoding="utf-8"), encoding="utf-8")
+        import os as _os
+        past = time.time() - 3600
+        _os.utime(configured, (past, past))  # draft keeps "now", strictly newer
+
+        with mock.patch.object(health, "LIVE_TERMINAL_BASELINE_DIR", tmp / "no_local"), \
+                mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", bdir), \
+                mock.patch.object(health, "LIVE_QM_LOG_DIR", ldir), \
+                mock.patch.object(health, "DXZ_BOOK_MANIFEST", configured):
+            res = health.chk_ks_baseline_dormancy()
+
+        self.assertEqual(res["status"], "OK", res["detail"])
+        self.assertNotIn("manifest_staleness", res["detail"])
+
     def test_loaded_event_without_hash_is_intentional_mismatch(self):
         tmp = Path(self.enterContext(_tmpdir()))
         bdir, ldir, manifest = self._fixture(tmp, with_mismatch=False, with_dormant=False)

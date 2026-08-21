@@ -3227,22 +3227,46 @@ def chk_ks_baseline_dormancy() -> dict:
 
     total = len(expected)
     dormant_total = len(dormant) + len(no_file)
+    staleness = _dxz_manifest_staleness(DXZ_BOOK_MANIFEST)
     detail = (f"manifest={DXZ_BOOK_MANIFEST.name} live_logs={LIVE_QM_LOG_DIR} sleeves={total} "
               f"loader_precedence=terminal_local_then_file_common baseline_sources={sources} "
               f"loaded_ok={loaded_ok} dormant={len(dormant)} no_baseline_file={len(no_file)} "
               f"hash_mismatch={len(mismatch)} mirror_divergent={len(mirror_divergent)} "
               f"dormant_list={dormant[:8]} "
               f"nofile={no_file[:8]} mismatch={mismatch[:8]}")
+    if staleness:
+        # MNT-001 secondary finding: a newer non-DRAFT manifest sits unreconciled next
+        # to the one this check trusts. This never decides which manifest is actually
+        # live (that needs T_Live verification, out of scope here) -- it only stops the
+        # check from silently reporting against a possibly-superseded book.
+        detail += (
+            f" manifest_staleness=newer_candidate_unreconciled newest={staleness['newest_candidate']} "
+            f"newest_mtime={staleness['newest_candidate_mtime_utc']} "
+            f"configured_mtime={staleness['configured_mtime_utc']} "
+            f"all_newer={staleness['newer_candidates']}"
+        )
     hint = ("Live sleeves without a loaded KS baseline run with the divergence kill-switch DORMANT. "
             "Generate/deploy the Q10 baseline (gen_q10_baseline.py --deploy-live, OWNER-gated) and "
             "confirm KS_BASELINE_LOADED in the live QM logs.")
+    staleness_hint = (
+        " A newer portfolio manifest exists unreconciled next to DXZ_BOOK_MANIFEST -- "
+        "confirm which book T_Live actually runs (per any recent decisions/*book*.md) and "
+        "repoint DXZ_BOOK_MANIFEST (env QM_DXZ_BOOK_MANIFEST) if it is stale, rather than "
+        "trusting sleeve dormancy/coverage findings against a possibly-superseded book."
+        if staleness else ""
+    )
     if mismatch or mirror_divergent:
         value = f"hash_mismatch={len(mismatch)},mirror_divergent={len(mirror_divergent)}"
         return _check("ks_baseline_dormancy", "FAIL", value, 0, detail,
                       "KS baseline roots disagree or a live sleeve loaded a hash other than the "
-                      "effective terminal-local/Common baseline. Reconcile to one source of truth. " + hint)
+                      "effective terminal-local/Common baseline. Reconcile to one source of truth. "
+                      + hint + staleness_hint)
     if dormant_total:
-        return _check("ks_baseline_dormancy", "WARN", dormant_total, 0, detail, hint)
+        return _check("ks_baseline_dormancy", "WARN", dormant_total, 0, detail, hint + staleness_hint)
+    if staleness:
+        return _check("ks_baseline_dormancy", "WARN", "manifest_stale", "current", detail,
+                      "No dormancy/coverage gap found against the configured manifest, but it is "
+                      "not the newest one on disk." + staleness_hint)
     return _check("ks_baseline_dormancy", "OK", 0, 0, detail, "")
 
 
