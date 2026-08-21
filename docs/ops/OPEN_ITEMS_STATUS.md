@@ -66,7 +66,8 @@
 | **Dir. §3** | Timeout → Requeue: Diff + 3 retrospektive Zeilen | Prinzip freigegeben, Diff offen |
 | **aktuell** | `WALLCLOCK_CONSTANTS.md` | Belege vollständig, Dokument nicht geschrieben |
 | **aktuell** | REVIEW-Rückstau: 110 agent_tasks (≈60 build_ea/agy, ≈50 review_ea/codex, seit 17./18.08.) | Batch-Review eingeplant; Intake ist nicht der Engpass (Queue-Ende ≈ 26.–28.08.), aber der Stau verletzt die Review-SLA |
-| **Dir. 21.08.** | Masterplan-Rest: T6 (ToDo-Hub, läuft), T7 (Track-v2-Design, Claude), T8/T9 (Pattern, Codex) | T4/T5/T10/T11 geliefert+reviewt; beim OWNER offen: Pro-Rata (#4), Retro-Reruns (#6), public-data-Holds (#7) (`12 ToDo/00_CEO_Masterplan_2026-08-21.md` §C) |
+| **Dir. 21.08.** | Masterplan-Rest | T1–T8, T10, T11 geliefert+reviewt (Stufe 0–2 bis auf T9). Offen: T9 (wartet auf #8 + Bug#4), MT5-Pattern-Harness-Lauf (Factory-Fenster, vor Pilot), T12-Programme. Beim OWNER: #4 Pro-Rata, #6 Retro-Reruns, #7 public-data-Holds, #8 Opt-Track v2 — kanonisch in Vault `12 ToDo/AI ToDos/OWNER.md`; Termin MNT-036 = 24.08. |
+| Masterplan T8 | Pattern-Prädikate 31/32/92/100 | Repariert (Commit `014c214ad`): 3-Bar-THREE_INSIDE, FRACTAL ohne Widerspruchsklausel, QUARTER_END letzte 2 Kalendertage; 35 Tests grün, QM5_21501 kompiliert; MT5-Harness-Lauf als Folge-Messung offen |
 | Masterplan T11 | public-data-Export | **Diagnose statt Fix (korrekt):** Export gesund, Publikation fail-closed hinter 2 Q02-Bypass-Holds vom 29.07.; QM5_20182-Hold = stale Orphan (Remediation belegt), QM5_20172 echt offen (DRAFT_DEFECT) → Entscheidungsschlange #7 (`evidence/2026-08-21_public_snapshot_export_repair.md`, Commit 511d85fea) |
 
 ## 3 · Entfallen
