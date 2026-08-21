@@ -46,3 +46,16 @@ sind aber Phase 2").
 Auswahlregel, Trial-Zahl und OOS-Protokoll sind Gate-Vertragsgrößen (ROT-Zone der
 Stehenden Vollmacht) — sie binden die Auswertung, bevor Daten gesehen werden, und
 dürfen nachträglich nur durch neuen OWNER-Entscheid geändert werden.
+
+## Nachtrag (2026-08-21, später am Abend — OWNER)
+
+„Zwischen 4 und 5 gehören die numerischen Parameter Optimization Tests rein!" —
+Die numerische Parameter-Optimierung ist damit **Stufe S5 der Pilotkette** (zwischen
+Gesamttest und Q15/Q16), nicht ein separates Nachprogramm. Methodik: identische
+Jahres-Einzeltests + ankernder Walk-Forward + versiegelte Konsistenzregel auf der
+eingefrorenen Filter-Kombination; je Parameter ein Trial mit ≤ 5 Kandidatenwerten und
+Elternwert als Pflicht-Kontrollzelle (DL-088), Auswahl = Plateau-Median. Die
+numerischen Zellen erhöhen `declared_trial_count` VOR ihrer Messung; die Q16-Deflation
+läuft über die Gesamt-Trial-Zahl (154 + numerische Trials). Umsetzung + kompletter
+automatisierter Pilot-Durchlauf QM5_13213/USDJPY per Ultracode OWNER-beauftragt
+(„Baue die Pipeline damit das automatisch funktioniert und überwache").

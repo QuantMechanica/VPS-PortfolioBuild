@@ -10,9 +10,11 @@ Entscheidungsrecord: `decisions/DL-089_pattern_filter_wf_census_v3.md`)
 Codex erweitert den Q10-Überlebenden um Pattern-Filter- und numerische Inputs und baut ihn
 als `_opt`-Variante; die Fabrik misst **jedes Pattern je Richtung in jedem Einzeljahr**;
 die KI wählt daraus per vorregistrierter Walk-Forward-Regel bis zu **3 Buy- und 3
-Sell-Filter**; ein **Gesamttest über den maximalen Zeitraum** bestätigt; der bestätigte
-Challenger läuft durch **Q15/Q16** (Overfit-Vertrag) und wird für **FTMO und DXZ getrennt**
-portfolio-bewertet.
+Sell-Filter**; ein **Gesamttest über den maximalen Zeitraum** bestätigt; auf der
+eingefrorenen Filter-Konfiguration folgen die **numerischen
+Parameter-Optimierungstests** (S5, gleiche Jahres-/WF-Methodik, Plateau-Median); die
+bestätigte Endkonfiguration läuft durch **Q15/Q16** (Overfit-Vertrag, Deflation über die
+Gesamt-Trial-Zahl) und wird für **FTMO und DXZ getrennt** portfolio-bewertet.
 
 ## 1 · OWNER-Entscheide (ratifiziert 2026-08-21, vollständig)
 
@@ -25,7 +27,7 @@ portfolio-bewertet.
 | 5 | Auswahltiefe | bis zu **3 Buy + 3 Sell** (0 = „kein Filter" ist immer Kandidat und Pflicht-Kontrollarm) |
 | 6 | Frequenz-Boden | Aktivitätskriterium (≥ 10 Entry-Handelstage je gewertetem Jahr, pro-rata) — **reißt EIN Jahr, ist der Filter unzulässig**, ausgeschlossen VOR der Messung der Rendite |
 | 7 | DSR-Trial-Zahl | **154** (77 Muster × 2 Richtungen = Suchraum; Einzeljahre sind wiederholte Messung derselben Hypothese, keine eigenen Trials) |
-| 8 | _opt-Umfang | Pattern-Filter-Inputs **und** numerische Parameter-Inputs werden JETZT eingebaut; **optimiert wird in Phase 1 nur der Pattern-Filter** — die numerische Optimierung ist Phase 2 |
+| 8 | _opt-Umfang | Pattern-Filter-Inputs **und** numerische Parameter-Inputs werden JETZT eingebaut; die Pattern-Auswahl (S2–S4) läuft zuerst, die **numerische Optimierung folgt als eigene Stufe S5 ZWISCHEN Gesamttest und Q15/Q16** (OWNER-Korrektur 2026-08-21 spät) |
 | 9 | Pilot | QM5_13213/USDJPY, ein Paar komplett durch, dann Skalierungsentscheid |
 | 10 | Portfolio | **beide Bücher getrennt** bewertet (FTMO-Regeln ≠ DXZ-Regeln) |
 | 11 | Jahres-Einzeltests | Kernprinzip: jedes Jahr wird einzeln getestet — Konsistenz über Jahre ist der Overfitting-Schutz |
@@ -103,16 +105,28 @@ an OWNER mit der gewählten Kombination.
 **OPT-S4 (Fabrik) — Gesamttest.** Kombination + Baseline über 2019–2026-max; DSR
 (deflationiert mit 154) und PBO nach DL-088 auf der Ledger-Matrix.
 
-**OPT-S5 — Q15/Q16-Anschluss.** Die bestätigte `_opt`-Kombination wird als Q15-Challenger
-eingefroren und läuft das bestehende, unveränderte Q16-Head-to-Head gegen den
-Amtsinhaber (inkl. unveränderter Q02→Q10-Kaskade als „Gesamttest mit besten Parametern"
-im Sinne von DL-088 §3).
+**OPT-S5 (Fabrik + Claude) — numerische Parameter-Optimierung** *(OWNER-Korrektur
+2026-08-21 spät: gehört ZWISCHEN Gesamttest und Q15/Q16, nicht hinter den Piloten).*
+Auf dem EA mit der **eingefrorenen** Filter-Kombination aus S3/S4 werden die in S0
+eingebauten numerischen Parameter optimiert — nach denselben ratifizierten Regeln:
+AI_PARAM-Hebel je DL-088 (**ein Parameter je Trial, ≤ 5 Kandidatenwerte, Elternwert als
+Pflicht-Kontrollzelle**), gemessen mit derselben Jahres-Einzeltest-Methodik
+(Kalenderjahre 2019–2025) und ausgewertet mit derselben versiegelten Konsistenzregel
+(≥ 2/3 der Auswahljahre, je ≥ +5 % relativ auf return_to_maxdd, Frequenz-Boden
+fail-closed) im identischen ankernden WF-Protokoll. Auswahl je Parameter =
+**Plateau-Median**, nie der Bestwert (DL-088 §3). Danach ein Bestätigungs-Gesamtlauf
+der finalen Konfiguration (Filter + Parameter) über den vollen Zeitraum.
+**Ledger-Pflicht:** die numerischen Zellen werden VOR ihrer Messung als
+`declared_trial_count`-Zuwachs registriert (Σ Parameter × gemessene Werte); die
+Q16-Deflation läuft über die GESAMTE Trial-Zahl (154 + numerische Trials).
 
-**OPT-S6 (Claude) — Portfolio.** Getrennte Bewertung FTMO/DXZ nach deren jeweiligen
+**OPT-S6 — Q15/Q16-Anschluss.** Die bestätigte Endkonfiguration (Filter + Parameter)
+wird als Q15-Challenger eingefroren und läuft das bestehende, unveränderte
+Q16-Head-to-Head gegen den Amtsinhaber (inkl. unveränderter Q02→Q10-Kaskade als
+„Gesamttest mit besten Parametern" im Sinne von DL-088 §3).
+
+**OPT-S7 (Claude) — Portfolio.** Getrennte Bewertung FTMO/DXZ nach deren jeweiligen
 Regeln; Vorlage an OWNER (Buch-Aufnahme ist Q11/Q12 = OWNER-Gate).
-
-**Phase 2 (separat, nach Pilot):** numerische Parameter-Optimierung auf denselben
-`_opt`-Inputs (AI_PARAM-Hebel, ≤ 5 Werte je Parameter je DL-088, Plateau-Median).
 
 ## 4 · Nicht verhandelbar (geerbt)
 
