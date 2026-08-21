@@ -1,0 +1,53 @@
+{
+  "candidate": {
+    "author": "Robert J. Bianchi; Michael E. Drew; John Hua Fan; Liu Yang; Bige Kahraman Goncu; Athanasios A. Pantelous",
+    "mechanic": "normalized-week-boundary-wti-one-immediately-completed-weekly-ohlc-package-strict-open-centred-directional-excursion-two-to-one-imbalance-with-settlement-sign-rejection-fade-one-week-hold",
+    "slug": "wti-wexcursion-reject-rv",
+    "strategy_id": "BIANCHI-YANG-WTI-WEXCURSION-REJECT-RV-2026_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 2,
+  "generated_at_utc": "2026-08-21T20:37:56+00:00",
+  "matches": [
+    {
+      "ea_id": "41096",
+      "match_type": "slug",
+      "slug": "wti-wexcursion-reject-rv",
+      "source": "ea_id_registry",
+      "strategy_id": "BIANCHI-YANG-WTI-WEXCURSION-REJECT-RV-2026_S01"
+    },
+    {
+      "ea_id": "41096",
+      "match_type": "strategy_id",
+      "slug": "wti-wexcursion-reject-rv",
+      "source": "ea_id_registry",
+      "strategy_id": "BIANCHI-YANG-WTI-WEXCURSION-REJECT-RV-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4586,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1265,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "DUPLICATE"
+}
