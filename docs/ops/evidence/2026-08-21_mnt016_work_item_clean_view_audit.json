@@ -1,0 +1,609 @@
+{
+  "derived_combinations": [
+    {
+      "count": 7,
+      "status": "active",
+      "taxonomy": "open",
+      "verdict": "<null>"
+    },
+    {
+      "count": 1,
+      "status": "done",
+      "taxonomy": "review",
+      "verdict": "CHALLENGER_SPAWNED"
+    },
+    {
+      "count": 1,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "CONFIG_LOCKED"
+    },
+    {
+      "count": 49,
+      "status": "done",
+      "taxonomy": "draft_defect",
+      "verdict": "DRAFT_DEFECT"
+    },
+    {
+      "count": 21569,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "FAIL"
+    },
+    {
+      "count": 31,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "FAIL_DD_PORTFOLIO_REVIEW"
+    },
+    {
+      "count": 150,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "FAIL_HARD"
+    },
+    {
+      "count": 83,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "FAIL_PORTFOLIO"
+    },
+    {
+      "count": 218,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "FAIL_SOFT"
+    },
+    {
+      "count": 14,
+      "status": "done",
+      "taxonomy": "review",
+      "verdict": "NEED_MORE_DATA"
+    },
+    {
+      "count": 11,
+      "status": "done",
+      "taxonomy": "review",
+      "verdict": "OPT_ELIGIBLE"
+    },
+    {
+      "count": 3,
+      "status": "done",
+      "taxonomy": "review",
+      "verdict": "OPT_REJECTED"
+    },
+    {
+      "count": 26005,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "PASS"
+    },
+    {
+      "count": 134,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "PASS_LOWFREQ"
+    },
+    {
+      "count": 39,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "PASS_PORTFOLIO"
+    },
+    {
+      "count": 350,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "PASS_SOFT"
+    },
+    {
+      "count": 49,
+      "status": "done",
+      "taxonomy": "review",
+      "verdict": "PENDING_RUNNER"
+    },
+    {
+      "count": 132,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "RETIRE"
+    },
+    {
+      "count": 1,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "RETIRED_ARCHIVED"
+    },
+    {
+      "count": 89,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "RETIRED_LOW_FREQ"
+    },
+    {
+      "count": 1,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "RETIRED_WITHOUT_BUILD"
+    },
+    {
+      "count": 41,
+      "status": "done",
+      "taxonomy": "review",
+      "verdict": "REVIEW_REQUIRED"
+    },
+    {
+      "count": 1164,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "ZERO_TRADES"
+    },
+    {
+      "count": 1,
+      "status": "failed",
+      "taxonomy": "governance",
+      "verdict": "BLOCKED_FACTORY_OFF"
+    },
+    {
+      "count": 20,
+      "status": "failed",
+      "taxonomy": "governance",
+      "verdict": "BLOCKED_STALE_BUILD_RESULT"
+    },
+    {
+      "count": 9,
+      "status": "failed",
+      "taxonomy": "governance",
+      "verdict": "CANCELLED_DUPLICATE_REQUEUE"
+    },
+    {
+      "count": 55570,
+      "status": "failed",
+      "taxonomy": "infra",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "count": 1786,
+      "status": "failed",
+      "taxonomy": "invalid",
+      "verdict": "INVALID"
+    },
+    {
+      "count": 5,
+      "status": "failed",
+      "taxonomy": "invalid",
+      "verdict": "INVALID_BUILD_STATIC_FIDELITY"
+    },
+    {
+      "count": 1,
+      "status": "failed",
+      "taxonomy": "invalid",
+      "verdict": "INVALID_EVIDENCE"
+    },
+    {
+      "count": 196,
+      "status": "failed",
+      "taxonomy": "governance",
+      "verdict": "OBSOLETE_NON_DWX_SYMBOL"
+    },
+    {
+      "count": 26,
+      "status": "failed",
+      "taxonomy": "governance",
+      "verdict": "SUPERSEDED"
+    },
+    {
+      "count": 83,
+      "status": "failed",
+      "taxonomy": "governance",
+      "verdict": "SUPERSEDED_BY_LOGICAL_BASKET"
+    },
+    {
+      "count": 1,
+      "status": "failed",
+      "taxonomy": "governance",
+      "verdict": "SUPERSEDED_DUPLICATE"
+    },
+    {
+      "count": 2246,
+      "status": "pending",
+      "taxonomy": "open",
+      "verdict": "<null>"
+    }
+  ],
+  "generated_at_utc": "2026-08-21T11:47:55+00:00",
+  "invariant": {
+    "sample_ids": [],
+    "valid": true,
+    "violation_count": 0
+  },
+  "raw_combinations": [
+    {
+      "count": 7,
+      "status": "active",
+      "taxonomy": "<missing>",
+      "verdict": "<null>"
+    },
+    {
+      "count": 1,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "CHALLENGER_SPAWNED"
+    },
+    {
+      "count": 1,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "CONFIG_LOCKED"
+    },
+    {
+      "count": 43,
+      "status": "done",
+      "taxonomy": "draft_defect",
+      "verdict": "DRAFT_DEFECT"
+    },
+    {
+      "count": 6,
+      "status": "done",
+      "taxonomy": "implementation",
+      "verdict": "DRAFT_DEFECT"
+    },
+    {
+      "count": 16,
+      "status": "done",
+      "taxonomy": "infra",
+      "verdict": "FAIL"
+    },
+    {
+      "count": 21553,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "FAIL"
+    },
+    {
+      "count": 31,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "FAIL_DD_PORTFOLIO_REVIEW"
+    },
+    {
+      "count": 150,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "FAIL_HARD"
+    },
+    {
+      "count": 83,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "FAIL_PORTFOLIO"
+    },
+    {
+      "count": 218,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "FAIL_SOFT"
+    },
+    {
+      "count": 461,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "count": 8659,
+      "status": "done",
+      "taxonomy": "infra",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "count": 26,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "count": 2,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "INVALID"
+    },
+    {
+      "count": 5,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "INVALID"
+    },
+    {
+      "count": 1,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "INVALID_EVIDENCE"
+    },
+    {
+      "count": 3,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "NEED_MORE_DATA"
+    },
+    {
+      "count": 11,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "NEED_MORE_DATA"
+    },
+    {
+      "count": 11,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "OPT_ELIGIBLE"
+    },
+    {
+      "count": 3,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "OPT_REJECTED"
+    },
+    {
+      "count": 2,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "PASS"
+    },
+    {
+      "count": 11,
+      "status": "done",
+      "taxonomy": "pass",
+      "verdict": "PASS"
+    },
+    {
+      "count": 25992,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "PASS"
+    },
+    {
+      "count": 134,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "PASS_LOWFREQ"
+    },
+    {
+      "count": 3,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "PASS_PORTFOLIO"
+    },
+    {
+      "count": 36,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "PASS_PORTFOLIO"
+    },
+    {
+      "count": 350,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "PASS_SOFT"
+    },
+    {
+      "count": 49,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "PENDING_RUNNER"
+    },
+    {
+      "count": 48,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "RETIRE"
+    },
+    {
+      "count": 1,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "RETIRED_ARCHIVED"
+    },
+    {
+      "count": 8,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "RETIRED_LOW_FREQ"
+    },
+    {
+      "count": 1,
+      "status": "done",
+      "taxonomy": "infra",
+      "verdict": "RETIRED_LOW_FREQ"
+    },
+    {
+      "count": 80,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "RETIRED_LOW_FREQ"
+    },
+    {
+      "count": 1,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "RETIRED_WITHOUT_BUILD"
+    },
+    {
+      "count": 32,
+      "status": "done",
+      "taxonomy": "review",
+      "verdict": "REVIEW_REQUIRED"
+    },
+    {
+      "count": 9,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "REVIEW_REQUIRED"
+    },
+    {
+      "count": 1,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "SUPERSEDED"
+    },
+    {
+      "count": 2,
+      "status": "done",
+      "taxonomy": "infra",
+      "verdict": "SUPERSEDED"
+    },
+    {
+      "count": 74,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "SUPERSEDED_BY_LOGICAL_BASKET"
+    },
+    {
+      "count": 3,
+      "status": "done",
+      "taxonomy": "infra",
+      "verdict": "SUPERSEDED_BY_LOGICAL_BASKET"
+    },
+    {
+      "count": 6,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "SUPERSEDED_BY_LOGICAL_BASKET"
+    },
+    {
+      "count": 1,
+      "status": "done",
+      "taxonomy": "<missing>",
+      "verdict": "SUPERSEDED_DUPLICATE"
+    },
+    {
+      "count": 1164,
+      "status": "done",
+      "taxonomy": "strategy",
+      "verdict": "ZERO_TRADES"
+    },
+    {
+      "count": 1,
+      "status": "failed",
+      "taxonomy": "<missing>",
+      "verdict": "BLOCKED_FACTORY_OFF"
+    },
+    {
+      "count": 20,
+      "status": "failed",
+      "taxonomy": "<missing>",
+      "verdict": "BLOCKED_STALE_BUILD_RESULT"
+    },
+    {
+      "count": 9,
+      "status": "failed",
+      "taxonomy": "<missing>",
+      "verdict": "CANCELLED_DUPLICATE_REQUEUE"
+    },
+    {
+      "count": 45203,
+      "status": "failed",
+      "taxonomy": "<missing>",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "count": 933,
+      "status": "failed",
+      "taxonomy": "infra",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "count": 288,
+      "status": "failed",
+      "taxonomy": "strategy",
+      "verdict": "INFRA_FAIL"
+    },
+    {
+      "count": 1432,
+      "status": "failed",
+      "taxonomy": "<missing>",
+      "verdict": "INVALID"
+    },
+    {
+      "count": 56,
+      "status": "failed",
+      "taxonomy": "infra",
+      "verdict": "INVALID"
+    },
+    {
+      "count": 191,
+      "status": "failed",
+      "taxonomy": "invalid",
+      "verdict": "INVALID"
+    },
+    {
+      "count": 100,
+      "status": "failed",
+      "taxonomy": "strategy",
+      "verdict": "INVALID"
+    },
+    {
+      "count": 5,
+      "status": "failed",
+      "taxonomy": "<missing>",
+      "verdict": "INVALID_BUILD_STATIC_FIDELITY"
+    },
+    {
+      "count": 13,
+      "status": "failed",
+      "taxonomy": "<missing>",
+      "verdict": "OBSOLETE_NON_DWX_SYMBOL"
+    },
+    {
+      "count": 22,
+      "status": "failed",
+      "taxonomy": "infra",
+      "verdict": "OBSOLETE_NON_DWX_SYMBOL"
+    },
+    {
+      "count": 161,
+      "status": "failed",
+      "taxonomy": "strategy",
+      "verdict": "OBSOLETE_NON_DWX_SYMBOL"
+    },
+    {
+      "count": 84,
+      "status": "failed",
+      "taxonomy": "<missing>",
+      "verdict": "RETIRE"
+    },
+    {
+      "count": 23,
+      "status": "failed",
+      "taxonomy": "governance",
+      "verdict": "SUPERSEDED"
+    },
+    {
+      "count": 2190,
+      "status": "pending",
+      "taxonomy": "<missing>",
+      "verdict": "<null>"
+    },
+    {
+      "count": 1,
+      "status": "pending",
+      "taxonomy": "infra",
+      "verdict": "<null>"
+    },
+    {
+      "count": 55,
+      "status": "pending",
+      "taxonomy": "strategy",
+      "verdict": "<null>"
+    }
+  ],
+  "restamp_counts": {
+    "reason_suppressed": 3737,
+    "status_restamped": 9325,
+    "taxonomy_derived": 49633,
+    "taxonomy_restamped": 780
+  },
+  "schema": "qm.work_items.clean_view.v1",
+  "source_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "total_rows": 110086
+}

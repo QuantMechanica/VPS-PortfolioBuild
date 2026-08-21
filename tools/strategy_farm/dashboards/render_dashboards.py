@@ -36,6 +36,7 @@ from tools.strategy_farm.phase_ids import (
     next_phase_id,
     phase_label,
 )
+from tools.strategy_farm.work_item_clean_view import open_clean_view_connection
 
 PHASE_DISPLAY = PHASE_QID
 PHASE_LABEL_FROM_KIND = {
@@ -62,18 +63,10 @@ def utc_now_iso() -> str:
 
 
 def _connect_readonly(database: Path) -> sqlite3.Connection:
-    """Open a dashboard source without creating or mutating SQLite state."""
+    """Open immutable state through the MNT-016 derived clean view."""
 
-    resolved = database.resolve()
-    connection = sqlite3.connect(resolved.as_uri() + "?mode=ro", uri=True)
-    try:
-        connection.execute("PRAGMA query_only=ON")
-        enabled = connection.execute("PRAGMA query_only").fetchone()
-        if enabled is None or int(enabled[0]) != 1:
-            raise sqlite3.OperationalError("SQLite query_only could not be asserted")
-    except BaseException:
-        connection.close()
-        raise
+    connection = open_clean_view_connection(database)
+    connection.execute("PRAGMA query_only=ON")
     return connection
 
 
@@ -593,7 +586,7 @@ def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[di
                 with _connect_readonly(db) as conn:
                     conn.row_factory = sqlite3.Row
                     rows = conn.execute(
-                        "SELECT ea_id, phase, status, verdict, updated_at FROM work_items"
+                        "SELECT ea_id, phase, status, verdict, updated_at FROM work_items_clean"
                     ).fetchall()
             except sqlite3.Error:
                 rows = []
@@ -913,7 +906,7 @@ def collect_cockpit_data(root: Path, eas: list[dict]) -> dict[str, Any]:
         conn.row_factory = sqlite3.Row
         wi = [dict(r) for r in conn.execute(
             "SELECT id,phase,ea_id,symbol,status,verdict,claimed_by,evidence_path,"
-            "setfile_path,payload_json,created_at,updated_at FROM work_items")]
+            "setfile_path,payload_json,created_at,updated_at FROM work_items_clean")]
         atasks = [dict(r) for r in conn.execute(
             "SELECT id,task_type,state,priority,assigned_agent,artifact_path,"
             "verdict,payload_json,created_at,updated_at FROM agent_tasks "
@@ -2094,7 +2087,7 @@ def collect_q08_portfolio_rescue_for_ea(ea_id: str, root: Path) -> list[dict[str
         conn.row_factory = sqlite3.Row
         q08_rows = [dict(r) for r in conn.execute(
             """
-            SELECT * FROM work_items
+            SELECT * FROM work_items_clean
             WHERE ea_id=? AND phase='Q08' AND status='done'
               AND verdict IN ('FAIL_SOFT','FAIL_HARD','FAIL','INVALID')
             ORDER BY updated_at DESC
@@ -2103,7 +2096,7 @@ def collect_q08_portfolio_rescue_for_ea(ea_id: str, root: Path) -> list[dict[str
         )]
         q09_rows = [dict(r) for r in conn.execute(
             """
-            SELECT * FROM work_items
+            SELECT * FROM work_items_clean
             WHERE ea_id=? AND phase='Q09_PORTFOLIO'
             ORDER BY updated_at DESC
             """,
@@ -2200,7 +2193,7 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
         conn.row_factory = sqlite3.Row
         rows = list(conn.execute(
             f"SELECT ea_id, phase, symbol, status, verdict, payload_json, evidence_path, updated_at "
-            f"FROM work_items WHERE ea_id IN ({placeholders}) "
+            f"FROM work_items_clean WHERE ea_id IN ({placeholders}) "
             f"ORDER BY ea_id, phase, symbol, updated_at DESC",
             ea_ids,
         ))
@@ -2477,7 +2470,7 @@ def collect_archive_v2(root: Path, slug_map: dict[str, str]) -> dict[str, Any]:
 
     with _connect_readonly(db) as conn:
         cur = conn.execute(
-            "SELECT ea_id, phase, symbol, status, verdict, updated_at FROM work_items")
+            "SELECT ea_id, phase, symbol, status, verdict, updated_at FROM work_items_clean")
         for ea_id, phase, symbol, status, verdict, updated_at in cur:
             if not ea_id:
                 continue
@@ -2517,8 +2510,11 @@ def collect_archive_v2(root: Path, slug_map: dict[str, str]) -> dict[str, Any]:
                                        "phase": base, "status": st}
 
             if win_start <= upd < win_end and st in ("done", "failed"):
-                rb = recent.setdefault(base, {"pass": 0, "fail": 0, "infra": 0,
-                                              "other": 0, "total": 0})
+                rb = recent.setdefault(
+                    base,
+                    {"pass": 0, "passsoft": 0, "fail": 0, "infra": 0,
+                     "other": 0, "total": 0},
+                )
                 rb[fam] += 1
                 rb["total"] += 1
                 if fam == "pass":
@@ -3130,18 +3126,20 @@ def render_strategies(state: dict, root: Path) -> str:
     # ── RECENT VERDICTS — last 7 days by phase + top movers ──────
     recent = data["recent"]
     rv_cells = ""
-    rv_tot = {"pass": 0, "fail": 0, "infra": 0, "total": 0}
+    rv_tot = {"pass": 0, "passsoft": 0, "fail": 0, "infra": 0, "total": 0}
     for base in PHASE_ORDER:
         rb = recent.get(base)
         if not rb:
             continue
         rv_tot["pass"] += rb["pass"]
+        rv_tot["passsoft"] += rb["passsoft"]
         rv_tot["fail"] += rb["fail"]
         rv_tot["infra"] += rb["infra"]
         rv_tot["total"] += rb["total"]
         rv_cells += (
             f'<div class="rv-cell"><div class="rv-phase">{e(phase_label(base))}{" legacy" if base == "Q08" else ""}</div>'
             f'<div class="rv-nums"><span class="v-pass">{rb["pass"]}</span>/'
+            f'<span class="v-passsoft">{rb["passsoft"]}</span>/'
             f'<span class="v-fail">{rb["fail"]}</span>/'
             f'<span class="v-infra">{rb["infra"]}</span></div>'
             f'<div class="rv-tot">{rb["total"]} runs</div></div>'
@@ -3253,8 +3251,8 @@ def render_strategies(state: dict, root: Path) -> str:
 </section>
 
 <section class="arch2-sec">
-  <div class="sec-head"><span class="sec-kicker">Recent</span><h2>Verdicts · last 7 days</h2><span class="sec-meta"><span class="v-pass">{rv_tot["pass"]}</span> pass / <span class="v-fail">{rv_tot["fail"]}</span> fail / <span class="v-infra">{rv_tot["infra"]}</span> infra · {rv_tot["total"]} graded</span></div>
-  <div class="rv-legend">Each cell: <span class="v-pass">PASS</span> / <span class="v-fail">FAIL</span> / <span class="v-infra">INFRA</span> counts per gate (since {e(data["win_start"])}).</div>
+  <div class="sec-head"><span class="sec-kicker">Recent</span><h2>Verdicts · last 7 days</h2><span class="sec-meta"><span class="v-pass">{rv_tot["pass"]}</span> pass / <span class="v-passsoft">{rv_tot["passsoft"]}</span> pass-soft / <span class="v-fail">{rv_tot["fail"]}</span> fail / <span class="v-infra">{rv_tot["infra"]}</span> infra · {rv_tot["total"]} graded</span></div>
+  <div class="rv-legend">Each cell: <span class="v-pass">PASS</span> / <span class="v-passsoft">PASS_SOFT</span> / <span class="v-fail">FAIL</span> / <span class="v-infra">INFRA</span> counts per gate (since {e(data["win_start"])}).</div>
   <div class="rv-grid">{rv_cells}</div>
   <p class="sec-note" style="margin-top:6px">Top movers — EAs with the most PASS verdicts this week (badge shows highest gate passed):</p>
   <div class="movers">{movers_html}</div>
@@ -3328,7 +3326,7 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
         with _connect_readonly(db) as conn:
             conn.row_factory = sqlite3.Row
             rows = [dict(r) for r in conn.execute(
-                "SELECT * FROM work_items WHERE ea_id = ? ORDER BY phase, symbol, updated_at DESC",
+                "SELECT * FROM work_items_clean WHERE ea_id = ? ORDER BY phase, symbol, updated_at DESC",
                 (ea_id,)
             )]
             # Normalized metric layer (ea_metrics): the headline scalars and
@@ -3360,7 +3358,7 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
             except Exception:
                 pl = {}
             rs = pl.get("recovered_stats") or {}
-            reason = (pl.get("blocked_reason") or pl.get("verdict_reason")
+            reason = (w.get("verdict_reason") or pl.get("blocked_reason") or pl.get("verdict_reason")
                       or pl.get("reason") or "")
             m = metrics_by_wid.get(w.get("id")) or {}
             attempts_by_key[key].append({
@@ -3534,7 +3532,8 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
                         pass
             verd = w.get("verdict") or ""
             reason = (
-                payload.get("blocked_reason")
+                w.get("verdict_reason")
+                or payload.get("blocked_reason")
                 or payload.get("verdict_reason")
                 or payload.get("reason")
                 or ""
@@ -5137,7 +5136,7 @@ def main() -> int:
         try:
             with _connect_readonly(db_path) as _conn:
                 for _eid, _mx in _conn.execute(
-                        "SELECT ea_id, MAX(updated_at) FROM work_items "
+                        "SELECT ea_id, MAX(updated_at) FROM work_items_clean "
                         "WHERE ea_id IS NOT NULL GROUP BY ea_id"):
                     wi_eas.add(_eid)
                     wi_watermark[_eid] = _mx or ""

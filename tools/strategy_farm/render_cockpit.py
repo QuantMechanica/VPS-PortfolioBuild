@@ -61,6 +61,11 @@ try:  # package import in tests and module consumers
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
     from phase_ids import PHASE_ORDER as Q_DISPLAY_ORDER, Q_TO_LEGACY_ALIASES, phase_label
 
+try:  # package import in tests and module consumers
+    from tools.strategy_farm.work_item_clean_view import install_clean_view
+except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
+    from work_item_clean_view import install_clean_view
+
 ROOT = Path(r"D:\QM\strategy_farm")
 REPO = Path(r"C:\QM\repo")
 DB = ROOT / "state" / "farm_state.sqlite"
@@ -304,6 +309,7 @@ def db_rows(query: str, params: tuple = ()) -> list[dict]:
     con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
     con.row_factory = sqlite3.Row
     try:
+        install_clean_view(con)
         con.execute("PRAGMA query_only=ON")
         return [dict(r) for r in con.execute(query, params).fetchall()]
     finally:
@@ -319,6 +325,7 @@ def db_rows_ro(query: str, params: tuple = ()) -> list[dict]:
     con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
     con.row_factory = sqlite3.Row
     try:
+        install_clean_view(con)
         con.execute("PRAGMA query_only=ON")
         return [dict(r) for r in con.execute(query, params).fetchall()]
     finally:
@@ -360,7 +367,7 @@ def pipeline_cohort_snapshot() -> dict:
             ), upstream AS (
               SELECT t.label,t.upstream_phase,t.next_phase,t.ordinal,w.ea_id,w.symbol
               FROM transitions t
-              JOIN work_items w
+              JOIN work_items_clean w
                 ON UPPER(w.phase)=t.upstream_phase AND UPPER(w.verdict)='PASS'
               GROUP BY t.label,t.upstream_phase,t.next_phase,t.ordinal,w.ea_id,w.symbol
             ), flags AS (
@@ -381,7 +388,7 @@ def pipeline_cohort_snapshot() -> dict:
                                    OR LOWER(COALESCE(w.status,''))='failed'
                               THEN 1 ELSE 0 END) AS is_infra
               FROM upstream u
-              LEFT JOIN work_items w
+              LEFT JOIN work_items_clean w
                 ON UPPER(w.phase)=u.next_phase
                AND w.ea_id=u.ea_id AND w.symbol=u.symbol
               GROUP BY u.label,u.upstream_phase,u.next_phase,u.ordinal,u.ea_id,u.symbol
@@ -428,7 +435,7 @@ def pipeline_cohort_snapshot() -> dict:
             """
             WITH source AS (
               SELECT DISTINCT ea_id,symbol
-              FROM work_items
+              FROM work_items_clean
               WHERE UPPER(phase)='Q08' AND UPPER(verdict)='PASS'
             ), arms(arm) AS (
               VALUES ('Q09_NEWS'),('Q09_PORTFOLIO')
@@ -456,7 +463,7 @@ def pipeline_cohort_snapshot() -> dict:
                                    OR w.verdict IS NULL
                               THEN 1 ELSE 0 END) AS is_open
               FROM source s CROSS JOIN arms a
-              LEFT JOIN work_items w
+              LEFT JOIN work_items_clean w
                 ON UPPER(w.phase)=a.arm
                AND w.ea_id=s.ea_id AND w.symbol=s.symbol
               GROUP BY a.arm,s.ea_id,s.symbol
@@ -472,11 +479,11 @@ def pipeline_cohort_snapshot() -> dict:
               FROM flags
             ), news_authenticated AS (
               SELECT DISTINCT s.ea_id,s.symbol
-              FROM source s JOIN work_items w USING(ea_id,symbol)
+              FROM source s JOIN work_items_clean w USING(ea_id,symbol)
               WHERE UPPER(w.phase)='Q09_NEWS' AND UPPER(w.verdict)='CONFIG_LOCKED'
             ), portfolio_authenticated AS (
               SELECT DISTINCT s.ea_id,s.symbol
-              FROM source s JOIN work_items w USING(ea_id,symbol)
+              FROM source s JOIN work_items_clean w USING(ea_id,symbol)
               WHERE UPPER(w.phase)='Q09_PORTFOLIO' AND UPPER(w.verdict)='PASS_PORTFOLIO'
             )
             SELECT 'ARM' AS row_type,arm AS label,bucket,COUNT(*) AS pairs
@@ -523,16 +530,16 @@ def pipeline_cohort_snapshot() -> dict:
                 WHEN UPPER(phase)='Q10' AND UPPER(COALESCE(verdict,''))='PASS'
                  AND EXISTS (
                    SELECT 1 FROM work_item_dependencies d
-                   WHERE d.child_work_item_id=work_items.id
+                   WHERE d.child_work_item_id=work_items_clean.id
                      AND d.dependency_role='Q09_NEWS'
                  )
                  AND EXISTS (
                    SELECT 1 FROM work_item_dependencies d
-                   WHERE d.child_work_item_id=work_items.id
+                   WHERE d.child_work_item_id=work_items_clean.id
                      AND d.dependency_role='Q09_PORTFOLIO'
                  )
                 THEN ea_id || '|' || symbol END) AS current_contract_bound
-            FROM work_items
+            FROM work_items_clean
             """
         )
         if q10_rows:
@@ -797,7 +804,7 @@ def q08_portfolio_rescue_snapshot(limit: int = 8) -> dict:
         q08_rows = db_rows(
             """
             SELECT ea_id, symbol, verdict, payload_json, evidence_path, updated_at
-            FROM work_items
+            FROM work_items_clean
             WHERE phase='Q08' AND status='done'
               AND verdict IN ('FAIL_SOFT','FAIL_HARD','FAIL','INVALID')
             ORDER BY updated_at DESC
@@ -806,7 +813,7 @@ def q08_portfolio_rescue_snapshot(limit: int = 8) -> dict:
         q09_rows = db_rows(
             """
             SELECT ea_id, symbol, status, verdict, payload_json, evidence_path, updated_at
-            FROM work_items
+            FROM work_items_clean
             WHERE phase='Q09_PORTFOLIO'
             ORDER BY updated_at DESC
             """
@@ -1131,7 +1138,7 @@ def frontier_next_book_snapshot(since_iso: str = "2026-07-19T18:00", limit: int 
         fresh = db_rows_ro(
             """
             SELECT ea_id, symbol, phase, MAX(updated_at) AS updated_at
-            FROM work_items
+            FROM work_items_clean
             WHERE verdict='PASS' AND phase IN ('Q08','Q09','Q10','P5c','P6','P7')
               AND updated_at >= ?
             GROUP BY ea_id, symbol, phase
@@ -1160,14 +1167,14 @@ def frontier_next_book_snapshot(since_iso: str = "2026-07-19T18:00", limit: int 
         q07 = db_rows_ro(
             """
             SELECT ea_id, symbol, MAX(updated_at) AS updated_at
-            FROM work_items
+            FROM work_items_clean
             WHERE phase IN ('Q07','P5b') AND verdict='PASS'
             GROUP BY ea_id, symbol
             ORDER BY updated_at DESC
             """
         )
         q08_rows = db_rows_ro(
-            "SELECT ea_id, symbol, status FROM work_items "
+            "SELECT ea_id, symbol, status FROM work_items_clean "
             "WHERE phase IN ('Q08','P5c') ORDER BY updated_at ASC"
         )
     except sqlite3.Error:
@@ -1787,7 +1794,7 @@ def mt5_active_work() -> list[dict]:
     """Per-MT5-terminal current work (from work_items active)."""
     rows = db_rows(
         "SELECT ea_id, phase, symbol, claimed_by, payload_json, updated_at "
-        "FROM work_items WHERE status='active' ORDER BY updated_at"
+        "FROM work_items_clean WHERE status='active' ORDER BY updated_at"
     )
     out = []
     for r in rows:
@@ -1819,7 +1826,7 @@ def queue_snapshot() -> dict:
     out["backtest_p3_done"] = bd.get("backtest_p3_done", 0)
 
     # Work items per status
-    wi = db_rows("SELECT phase, status, verdict, COUNT(*) AS c FROM work_items "
+    wi = db_rows("SELECT phase, status, verdict, COUNT(*) AS c FROM work_items_clean "
                  "GROUP BY phase, status, verdict")
     out["work_items"] = wi
     out["work_items_pending"] = sum(int(r.get("c") or 0) for r in wi if r.get("status") == "pending")
@@ -1969,7 +1976,7 @@ def pipeline_backlog_snapshot() -> dict:
         out["pass_by_phase"] = db_rows(
             """
             SELECT phase, COUNT(DISTINCT ea_id) AS c, COUNT(*) AS c_items
-            FROM work_items
+            FROM work_items_clean
             WHERE verdict='PASS'
             GROUP BY phase
             ORDER BY CASE phase
@@ -1984,16 +1991,16 @@ def pipeline_backlog_snapshot() -> dict:
             """
         )
         pass_total = db_rows(
-            "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items WHERE verdict='PASS'"
+            "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items_clean WHERE verdict='PASS'"
         )
         out["pass_total"] = pass_total[0]["c"] if pass_total else 0
         p4plus = db_rows(
-            "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items "
+            "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items_clean "
             "WHERE verdict='PASS' AND phase IN ('Q05','Q06','Q07','Q08','Q09','Q10','Q11','P4','P5','P5b','P5c','P6','P7','P8')"
         )
         out["p4plus_pass_total"] = p4plus[0]["c"] if p4plus else 0
         p8 = db_rows(
-            "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items WHERE verdict='PASS' AND phase IN ('Q11','P8')"
+            "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items_clean WHERE verdict='PASS' AND phase IN ('Q11','P8')"
         )
         out["p8_pass_total"] = p8[0]["c"] if p8 else 0
         try:
@@ -2002,11 +2009,11 @@ def pipeline_backlog_snapshot() -> dict:
         except sqlite3.Error:
             out["portfolio_candidates_total"] = 0
         p4_pending = db_rows(
-            "SELECT COUNT(*) AS c FROM work_items WHERE phase IN ('Q05','P4') AND verdict='PENDING_IMPLEMENTATION'"
+            "SELECT COUNT(*) AS c FROM work_items_clean WHERE phase IN ('Q05','P4') AND verdict='PENDING_IMPLEMENTATION'"
         )
         out["p4_pending_implementation"] = p4_pending[0]["c"] if p4_pending else 0
         out["work_active_by_phase"] = db_rows(
-            "SELECT phase, COUNT(*) AS c FROM work_items "
+            "SELECT phase, COUNT(*) AS c FROM work_items_clean "
             """
             WHERE status IN ('active','pending','claimed') GROUP BY phase
             ORDER BY CASE phase
@@ -2099,6 +2106,7 @@ def main() -> int:
         try:
             con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
             con.row_factory = sqlite3.Row
+            install_clean_view(con)
             con.execute("PRAGMA query_only=ON")
             rows = list(con.execute("""
                 SELECT DATE(ts) day, event, COUNT(*) c FROM events
@@ -2115,16 +2123,17 @@ def main() -> int:
         try:
             con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
             con.row_factory = sqlite3.Row
+            install_clean_view(con)
             con.execute("PRAGMA query_only=ON")
             for r in con.execute("""
-                SELECT DATE(updated_at) day, COUNT(*) c FROM work_items
+                SELECT DATE(updated_at) day, COUNT(*) c FROM work_items_clean
                 WHERE phase IN ('Q02','P2') AND status='done' AND verdict='PASS'
                   AND updated_at >= date('now', '-7 days')
                 GROUP BY day
             """):
                 days.setdefault(r["day"], {})["_q02_pass"] = r["c"]
             for r in con.execute("""
-                SELECT DATE(updated_at) day, COUNT(*) c FROM work_items
+                SELECT DATE(updated_at) day, COUNT(*) c FROM work_items_clean
                 WHERE phase IN ('Q03','P3') AND status='done' AND verdict='PASS'
                   AND updated_at >= date('now', '-7 days')
                 GROUP BY day
@@ -2145,7 +2154,7 @@ def main() -> int:
         rows = db_rows(
             """
             SELECT phase, status, verdict, ea_id, symbol, payload_json, updated_at
-            FROM work_items
+            FROM work_items_clean
             WHERE updated_at >= date('now', '-30 days')
             """
         )
@@ -2768,7 +2777,7 @@ def main() -> int:
     def _pass_pairs(phases: tuple[str, ...]) -> int:
         ph = ",".join(f"'{p}'" for p in phases)
         rows_ = db_rows(
-            "SELECT COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
+            "SELECT COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items_clean "
             f"WHERE verdict='PASS' AND UPPER(phase) IN ({ph})"
         )
         return int(rows_[0]["c"] or 0) if rows_ else 0
@@ -2787,7 +2796,7 @@ def main() -> int:
     robust_phase_sql = ",".join(f"'{phase}'" for phase in robust_phase_keys)
     robust_by_q: dict[str, int] = {}
     for r in db_rows(
-        "SELECT phase, COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
+        "SELECT phase, COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items_clean "
         f"WHERE verdict='PASS' AND UPPER(phase) IN ({robust_phase_sql}) GROUP BY phase"
     ):
         qk = phase_label(r.get("phase"))
@@ -2888,7 +2897,7 @@ def main() -> int:
     bt_done = 0
     bt_open = 0
     for r in db_rows(
-        "SELECT status, COUNT(*) AS c FROM work_items GROUP BY status"
+        "SELECT status, COUNT(*) AS c FROM work_items_clean GROUP BY status"
     ):
         if r.get("status") == "done":
             bt_done += int(r.get("c") or 0)
@@ -2917,7 +2926,7 @@ def main() -> int:
     # 0 against 33 real portfolio passes). PENDING_RUNNER placeholders are
     # sealed plans, not passes, and stay excluded.
     q09_rows = db_rows(
-        "SELECT COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
+        "SELECT COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items_clean "
         "WHERE (UPPER(phase)='Q09_PORTFOLIO' AND verdict='PASS_PORTFOLIO') "
         "   OR (UPPER(phase)='Q09_NEWS' AND verdict='CONFIG_LOCKED') "
         "   OR (UPPER(phase)='Q09' AND verdict='PASS')"
@@ -2930,7 +2939,7 @@ def main() -> int:
     # carries the strict-PASS subset as a parenthesised sub-line.
     q08_strict_pass = q_counts.get("Q08", 0)
     q08_adv_rows = db_rows(
-        "SELECT COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
+        "SELECT COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items_clean "
         "WHERE UPPER(phase) IN ('Q08','P7','P8') "
         "  AND verdict IN ('PASS','FAIL_SOFT')"
     )
