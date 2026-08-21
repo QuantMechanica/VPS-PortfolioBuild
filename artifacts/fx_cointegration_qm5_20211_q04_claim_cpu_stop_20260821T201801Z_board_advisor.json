@@ -1,0 +1,129 @@
+{
+  "artifact_type": "fx_cointegration_existing_pair_q04_claim_verification_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-21T20:18:01Z",
+  "branch": "agents/board-advisor",
+  "repo_head_observed": "102ef599ecdffe55e185c1c0ec7b098a4942fb3a",
+  "mission_outcome": "EXISTING_NON_DUPLICATE_FX_BASKET_ACTIVE_AT_Q04_STOPPED_AT_CPU_CEILING",
+  "frontier_state": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a804932912a449aed19bbc8fe61f1f5846556743",
+    "new_card_or_ea_created": false,
+    "reason": "The governed sign-aware reconciliation already maps every frozen-scan relationship to a built sleeve."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "completed_predecessor_fallback": {
+    "scan_rank": 21,
+    "ea_id": "QM5_20203",
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "q02_work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+    "q02_verdict": "PASS",
+    "q04_work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+    "q04_status": "done",
+    "q04_verdict": "FAIL",
+    "q04_updated_at": "2026-08-21T16:57:05+00:00",
+    "action": "Preserved terminal verdict; no requeue."
+  },
+  "selected_existing_pair": {
+    "selection_authority_commit": "e61b1b5d6",
+    "scan_rank": 31,
+    "pair": [
+      "GBPJPY.DWX",
+      "EURAUD.DWX"
+    ],
+    "ea_id": "QM5_20211",
+    "slug": "gbpjpy-euraud",
+    "logical_symbol": "QM5_20211_GBPJPY_EURAUD_COINTEGRATION_D1",
+    "source_criteria": {
+      "primary_source": "Chan, Ernest P. (2009), Quantitative Trading, OWNER-ratified Tier-A SRC02 extraction",
+      "research_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+      "card_status": "APPROVED",
+      "r1_track_record": "PASS",
+      "r2_mechanical": "PASS",
+      "r3_data_available": "PASS",
+      "r4_ml_forbidden": "PASS"
+    },
+    "q02": {
+      "work_item_id": "21db772c-c974-4a05-8e21-5ec78659e988",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "8135f97c-fd0d-4435-b713-87fa74fe0053",
+      "status": "active",
+      "verdict": null,
+      "attempt_count": 0,
+      "claimed_by": "T6",
+      "created_at": "2026-08-04T04:51:39+00:00",
+      "updated_at": "2026-08-21T19:48:11+00:00",
+      "observed_at_utc": "2026-08-21T20:18:01Z",
+      "duplicate_successor_created": false
+    },
+    "risk_contract": {
+      "environment": "backtest",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "basket_contract": {
+      "host_symbol": "GBPJPY.DWX",
+      "host_timeframe": "D1",
+      "traded_symbols": [
+        "GBPJPY.DWX",
+        "EURAUD.DWX"
+      ],
+      "basket_manifest": "framework/EAs/QM5_20211_gbpjpy-euraud/basket_manifest.json"
+    }
+  },
+  "capacity_evidence": {
+    "explicit_hard_ceiling_percent": 97.0,
+    "cpu_load_percent": [
+      99.81,
+      99.91,
+      100.0,
+      100.0,
+      98.75
+    ],
+    "average_percent": 99.69,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "stop_action": "No enqueue, requeue, priority mutation, dispatch, tester launch, terminal reservation, reconciliation, or control followed."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutation": false,
+    "queue_mutation": false,
+    "dispatch_tick": false,
+    "manual_tester_or_backtest_run": false,
+    "terminal_reservation_reconciliation_or_control": false,
+    "repository_evidence_created": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
