@@ -296,6 +296,36 @@ COMMON_FILES_ROOT = Path(
 )
 Q09_PORTFOLIO_MIN_TRADES = 20
 Q09_NEWS_SUCCESS_VERDICTS = frozenset({"CONFIG_LOCKED"})
+
+
+def _defect_block_exclusion_clause(
+    include_defect_blocked_evidence: bool,
+    ea_col: str = "w.ea_id",
+) -> str:
+    """Return ``" AND NOT (<predicate>)"`` (default-on), or ``""`` when overridden.
+
+    Task 5343f90a: the build-decision promotion/expansion pumps read the raw
+    ``work_items`` table directly and carry no ``agent_tasks`` BLOCKED exclusion,
+    so a PASS row from a 2026-08-16 defect-blocked EA could be re-promoted (or
+    ablation-expanded). The gate keys on EA-membership in the frozen defect-block
+    cohort, NOT on the clean view's time-gated ``defect_blocked_at_production_time``
+    marker: ``updated_at`` is mutable (the ablation spawner bumps it), so a time
+    gate can be silently defeated, and no row of a currently-open-defect-blocked
+    EA should ever advance regardless of when it was produced. Excluding by
+    default is the safe posture; the caller must name
+    ``include_defect_blocked_evidence`` to opt the cohort rows back in.
+    """
+
+    if include_defect_blocked_evidence:
+        return ""
+    try:
+        from work_item_clean_view import defect_block_ea_predicate_sql
+    except ImportError:
+        import sys as _sys
+
+        _sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from work_item_clean_view import defect_block_ea_predicate_sql
+    return f" AND NOT ({defect_block_ea_predicate_sql(ea_col)})"
 Q08_NEIGHBORHOOD_MAX_PARAMS = 2
 # Keep these budgets aligned with q08_davey.aggregate and
 # q08_5_neighborhood_runner.  The phase process runs a canonical baseline,
@@ -14857,6 +14887,7 @@ def _q06_soft_probation_present(
 def _promote_q08_soft_fails_to_q09_portfolio(
     conn: sqlite3.Connection,
     result: dict[str, Any],
+    include_defect_blocked_evidence: bool = False,
 ) -> int:
     if conn.execute(
         "SELECT 1 FROM sqlite_master WHERE type='table' AND name='work_item_dependencies'"
@@ -14865,12 +14896,15 @@ def _promote_q08_soft_fails_to_q09_portfolio(
         return 0
     _migrate_legacy_q08_verdicts(conn)
     promoted = 0
+    # Task 5343f90a: never advance a defect-blocked EA's pre-block Q08 evidence.
+    _defect_exclusion = _defect_block_exclusion_clause(include_defect_blocked_evidence)
     q08_soft_rows = conn.execute(
-        """
+        f"""
         SELECT w.* FROM work_items w
         WHERE w.status='done'
           AND w.phase='Q08'
           AND w.verdict IN ('FAIL_SOFT','PASS')  -- DL-082 SS3c: clean Q08 PASS advances too
+          {_defect_exclusion}
           AND NOT EXISTS (
             SELECT 1 FROM work_items w2
             WHERE w2.ea_id = w.ea_id
@@ -15458,7 +15492,9 @@ def _reconcile_magic_resolver(root: Path) -> dict[str, Any]:
         return {"regenerated": False, "reason": f"exception:{exc!r}"[:200]}
 
 
-def _pump_unlocked(root: Path) -> dict[str, Any]:
+def _pump_unlocked(
+    root: Path, include_defect_blocked_evidence: bool = False
+) -> dict[str, Any]:
     """Continuous deterministic worker — run every 5 min.
 
     Does the no-LLM-needed work that previously waited for hourly Claude
@@ -16663,10 +16699,17 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
     # The setfile name (`*_ablation_NN.set` / `*_grid_NNN.set`) is the only
     # reliable lineage marker that survives worker overwrites.
     with connect(root) as conn:
+        # Task 5343f90a: never ablation-expand a defect-blocked EA's PASS row
+        # (this path also bumps updated_at, which is why the gate is EA-membership
+        # based rather than time-gated). No table alias here, so gate on ea_id.
+        _abl_defect_exclusion = _defect_block_exclusion_clause(
+            include_defect_blocked_evidence, ea_col="ea_id"
+        )
         p2_pass = conn.execute(
-            """
+            f"""
             SELECT * FROM work_items
             WHERE status='done' AND verdict='PASS' AND phase in ('Q02', 'P2')
+              {_abl_defect_exclusion}
               AND setfile_path NOT LIKE '%_ablation_%'
               AND setfile_path NOT LIKE '%_grid_%'
               AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
@@ -16735,9 +16778,12 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
         # why p2_pass_no_p3 sat at a permanent FAIL). Pre-filter to profitable
         # candidates via ea_metrics so unprofitable rows never consume the window;
         # the loop below still applies the authoritative evidence-based gate.
+        # Task 5343f90a: exclude defect-blocked EAs' pre-block Q02 PASS rows.
+        _defect_exclusion = _defect_block_exclusion_clause(include_defect_blocked_evidence)
         _base_q = (
             "SELECT w.* FROM work_items w "
             "WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02', 'P2') "
+            f"{_defect_exclusion} "
             "AND NOT EXISTS ("
             "  SELECT 1 FROM work_items w2 "
             "  WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol "
@@ -16880,6 +16926,11 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
         "P6": {"PASS", "MULTI_SEED_PASS"},
         "P7": {"PASS"},
     }
+    # Task 5343f90a: defect-blocked EAs' pre-block PASS rows (notably Q03 PASS)
+    # must not cascade to the next phase.
+    _cascade_defect_exclusion = _defect_block_exclusion_clause(
+        include_defect_blocked_evidence
+    )
     with connect(root) as conn:
         conn.execute("BEGIN IMMEDIATE")
         reopened_parents: set[str] = set()
@@ -16890,6 +16941,7 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                 f"""
                 SELECT w.* FROM work_items w
                 WHERE w.status='done' AND w.phase=? AND w.verdict in ({placeholders})
+                  {_cascade_defect_exclusion}
                   AND NOT (
                     w.phase='Q09_NEWS'
                     AND json_valid(w.payload_json)=1
@@ -17054,9 +17106,10 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
         # the grid on parameter sets that were never walk-forward-robust.
         # Gate criteria are unchanged — only the order of compute moves.
         q04_probe_rows = conn.execute(
-            """
+            f"""
             SELECT w.* FROM work_items w
             WHERE w.status='done' AND w.phase='Q02' AND w.verdict='PASS'
+              {_cascade_defect_exclusion}
               AND w.setfile_path NOT LIKE '%_ablation_%'
               AND w.setfile_path NOT LIKE '%_grid_%'
               AND w.setfile_path NOT LIKE '%_synth_%'
@@ -17105,7 +17158,9 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                 "reopened_parent": False,
                 "q04_default_probe": True,
             })
-        q09_promoted = _promote_q08_soft_fails_to_q09_portfolio(conn, result)
+        q09_promoted = _promote_q08_soft_fails_to_q09_portfolio(
+            conn, result, include_defect_blocked_evidence=include_defect_blocked_evidence
+        )
         q09_admitted = 0
         if result["cascade_promotions"] or q09_promoted or q09_admitted:
             conn.commit()
@@ -17189,7 +17244,9 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
     return result
 
 
-def pump(root: Path) -> dict[str, Any]:
+def pump(
+    root: Path, include_defect_blocked_evidence: bool = False
+) -> dict[str, Any]:
     """Run one globally serialized pump cycle.
 
     The pump computes process counts and then dispatches several independent
@@ -17212,7 +17269,9 @@ def pump(root: Path) -> dict[str, Any]:
             "skipped": "another strategy-farm pump cycle is already running",
         }
     try:
-        return _pump_unlocked(root)
+        return _pump_unlocked(
+            root, include_defect_blocked_evidence=include_defect_blocked_evidence
+        )
     finally:
         _release_build_dispatch_claim(claim)
 

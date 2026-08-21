@@ -20,11 +20,17 @@ TEMP view:
 
 - `defect_blocked_at_production_time` — integer `0/1`; `1` when the row's EA is
   in the frozen cohort AND its `updated_at` is at or before that EA's block
-  moment (the pre-block evidence). A row *after* the block moment is deliberately
-  `0` — that would be a block leak (a separate incident), not pre-block evidence.
+  moment. This tags **all** such pre-block rows, of any verdict — **103** rows in
+  production, of which **44** are PASS (the rest FAIL / INFRA_FAIL / ZERO_TRADES,
+  including the INFRA_FAIL residue the magic-conflation defect itself produced).
+  The origin doc's headline "44" is the PASS subset; the column deliberately
+  covers the wider 103 (the INFRA/FAIL rows are just as much tainted evidence). A
+  row *after* the block moment is `0` — a block leak (separate incident), not
+  pre-block evidence.
 - `defect_block_reason` — the defect class for a cohort EA
   (`host_slot_magic_conflation`, `unwired_strategy_inputs`,
-  `withdrawn_mechanical_approval`), else `NULL`.
+  `withdrawn_mechanical_approval`), else `NULL`. Set for **every** cohort-EA row
+  (EA-membership), independent of the time gate.
 - `defect_block_schema` — `qm.work_items.defect_block_cohort.2026-08-16.v1` for a
   cohort EA, else `NULL`.
 
@@ -34,6 +40,26 @@ Derivation is pure: the columns are computed from `work_items.ea_id` /
 existing `INFRA_REASON_TOKENS`). No join to `agent_tasks`, no stored `work_items`
 row touched. The block moments were looked up live from each EA's latest
 2026-08-16 `agent_tasks` BLOCKED transition (`build_ea` and/or `review_ea`).
+
+### Correction after peer selection-path audit
+
+The clean-view columns above are **display-only insulation**. A peer audit
+correctly flagged that they do **not** gate the build-decision **promotion /
+expansion pumps** in `farmctl.py`, which read the **raw** `work_items` table with
+no BLOCKED exclusion, so a cohort EA's PASS row could be re-promoted today. My
+first-pass conclusion — "no selection path can pick these rows" — was wrong: it
+only checked the display/cohort surfaces, not the pumps. Five raw-`work_items`
+pump queries are now gated (see criterion 3), each behind a default-`False`
+`include_defect_blocked_evidence` override.
+
+Building the pump gate also surfaced a subtlety: `updated_at` is **mutable** (the
+ablation spawner bumps it when it spawns children), so a time-gated predicate can
+be silently defeated. The pump gate therefore keys on **EA-membership** in the
+open-defect-block cohort (`work_item_clean_view.defect_block_ea_predicate_sql`),
+not on the time-gated column — no row of a currently-blocked defective EA may
+advance regardless of when it was produced. In production the two predicates
+select the same rows today (the blocks held; zero rows post-block), so the audit
+numbers are unchanged; EA-membership is simply robust to later mutation.
 
 ## Derived marker definition
 
@@ -82,8 +108,8 @@ By defect class the 103 tagged rows split 42 magic-conflation / 13 unwired-input
 
 Machine report: `docs/ops/evidence/2026-08-21_defect_blocked_gate_row_marker_5343f90a_audit.json`
 (the full clean-view audit with the `defect_block_cohort` block appended). At
-generation it measured 110,129 source rows, 0 invariant violations, and the
-cohort figures above.
+generation it measured ~110,130 source rows (the DB grows live), 0 invariant
+violations, and the cohort figures above.
 
 Command:
 
@@ -113,46 +139,80 @@ all of which read `work_items_clean`:
 cohort, so there is no book exposure today. These are all statistics/display
 reads; none of them *acts on* (promotes, enqueues, admits) the rows.
 
-## Acceptance criterion 3 — can any selection path pick these rows?
+## Acceptance criterion 3 — selection paths that could pick these rows
 
-**No selection path can currently pick them, and none required a code change.**
+**Yes — five raw-`work_items` pump queries could pick them. All five are now
+gated by default; each takes a named `include_defect_blocked_evidence` override.**
 
-- The only active enqueue-selection path, `sweep_enqueue_built_eas.py`, is already
-  gated by `review_entry_gate.build_index` (E3), which bars any EA carrying a
-  live `BLOCKED`/`FAILED`/`RECYCLE`/`OPS_FIX_REQUIRED` `build_ea`/`review_ea`
-  task. I verified live that all 15 cohort EAs are in that index with
-  `reason=review_fail_or_blocked, task_state=BLOCKED`. A regression test
-  (`test_review_entry_gate_already_excludes_the_cohort`) pins this.
-- The book-selection path (`portfolio_candidates`) is structurally unreachable:
-  the cohort's deepest phase is Q04, promotion into `portfolio_candidates`
-  happens at Q11, and the blocks (live and correct) prevent any advance. Zero
-  cohort rows exist in `portfolio_candidates`.
+Two paths were already safe and needed no change:
 
-Because the guidance is explicit — *if NO selection path can currently pick them,
-state that and do not invent a fix for a non-existent path* — I did **not** modify
-any selection query. The new marker is provided so every surface that reads
-`work_items_clean` can now exclude the taint (`WHERE
-defect_blocked_at_production_time=0`), and so any **future** cohort selector must
-name the override to include it. Rewriting the cockpit's published funnel/pass-rate
-counts is a statistics-editorial decision left to Claude/OWNER, not silently
-changed here.
+- `sweep_enqueue_built_eas.py` (enqueue) is gated by `review_entry_gate.build_index`
+  (E3), which bars any EA with a live `BLOCKED`/`FAILED`/`RECYCLE`/`OPS_FIX_REQUIRED`
+  task. Verified live: all 15 cohort EAs are in that index
+  (`reason=review_fail_or_blocked, task_state=BLOCKED`); pinned by
+  `test_review_entry_gate_already_excludes_the_cohort`.
+- `portfolio_candidates` (book selection) holds **zero** cohort rows and is
+  structurally unreachable (deepest phase Q04; admission is at Q11).
+
+But the **build-decision promotion / expansion pumps** in `farmctl.py` read the
+**raw** `work_items` table with no BLOCKED exclusion, so a cohort EA's PASS row
+would be re-promoted on the next pump cycle. These are the real gaps (all
+confirmed against current line numbers):
+
+1. Cascade promoter (`cascade_phase_map`, incl. `Q03→Q04`), `farmctl.py`
+   ~L16930: cohort's 8 **Q03 PASS** rows → Q04. **Highest risk.**
+2. Q02/P2 → Q03/P3 promoter (`_base_q`), ~L16768: cohort's 36 **Q02 PASS** rows.
+3. Q02 → Q04 early probe, ~L17088: cohort's Q02 PASS rows → Q04.
+4. Q08 → Q09_PORTFOLIO feeder (`_promote_q08_soft_fails_to_q09_portfolio`),
+   ~L14892: reachable only if a cohort EA left a Q08 PASS/FAIL_SOFT row — it
+   didn't (residue is Q02/Q03/Q04) — covered **defensively**.
+5. **Ablation spawner** (§10a P2-PASS → random variants), ~L16711 — found while
+   building the fix: it also selects the cohort's Q02 PASS rows, spawns children,
+   **and bumps `updated_at`**. This is why the gate is EA-membership based, not
+   time-gated (a time gate would be silently un-tagged by this very path).
+
+Fix: a shared default-on `_defect_block_exclusion_clause(...)` injects
+`AND NOT (<ea-membership predicate>)` from
+`work_item_clean_view.defect_block_ea_predicate_sql` into all five queries. The
+override threads as `include_defect_blocked_evidence: bool = False` through
+`pump(root, ...)` → `_pump_unlocked(...)` →
+`_promote_q08_soft_fails_to_q09_portfolio(...)`; passing `True` restores the old
+behaviour. Default posture excludes; the operator must name the flag to include.
+
+Display surfaces (criterion 2) are unchanged: they read `work_items_clean` and
+can now filter on the derived columns (`defect_block_reason IS NULL` for
+EA-membership, or `defect_blocked_at_production_time=0` for the time-gated
+subset). Rewriting the cockpit's published funnel/pass-rate counts remains a
+statistics-editorial decision left to Claude/OWNER, not silently changed here.
 
 ## Verification
 
 ```text
-python -m py_compile tools/strategy_farm/work_item_clean_view.py tools/strategy_farm/tests/test_defect_block_cohort_marker.py
+python -m py_compile tools/strategy_farm/work_item_clean_view.py tools/strategy_farm/farmctl.py \
+  tools/strategy_farm/tests/test_defect_block_cohort_marker.py tools/strategy_farm/tests/test_farmctl_cascade.py
 # COMPILE OK
 
-python -m pytest -q tools/strategy_farm/tests/test_defect_block_cohort_marker.py tools/strategy_farm/tests/test_work_item_clean_view.py tools/strategy_farm/tests/test_render_cockpit_cohorts.py tools/strategy_farm/tests/test_render_cockpit_pipeline_books.py
+python -m pytest -q tools/strategy_farm/tests/test_defect_block_cohort_marker.py \
+  tools/strategy_farm/tests/test_work_item_clean_view.py \
+  tools/strategy_farm/tests/test_render_cockpit_cohorts.py \
+  tools/strategy_farm/tests/test_render_cockpit_pipeline_books.py
 # 36 passed
+
+python -m pytest -q tools/strategy_farm/tests/test_farmctl_cascade.py::DefectBlockExclusionTests
+# 4 passed, 2 subtests passed
+
+python -m pytest -q tools/strategy_farm/tests/test_farmctl_cascade.py
+# 30 passed, 6 subtests passed  (no regression in the existing pump/cascade suite)
 ```
 
-The new test file proves: the cohort is exactly the documented fifteen; the
-marker is time-gated (pre/at-block tagged, post-block not); `derive_work_item`
-and the SQL view expose the three fields without restamping PASS merit; the view
-stays query-only and does not rewrite the source; the audit reproduces the PASS
-counts and `block_held=True`; and the review-entry gate already excludes the
-whole cohort.
+The marker test proves: the cohort is exactly the documented fifteen; the
+time-gated column tags pre/at-block rows and not post-block; `derive_work_item`
+and the SQL view expose the fields without restamping PASS merit; the view stays
+query-only and does not rewrite the source; the audit reproduces 44 PASS /
+`block_held=True`; and the review-entry gate already excludes the whole cohort.
+The `DefectBlockExclusionTests` prove each pump excludes the cohort's tainted
+rows by default and includes them only under the named override, while clean
+(non-cohort) EAs always promote.
 
 No factory, terminal, scheduled task, T_Live, AutoTrading, backtest, work-item,
 or historical verdict state was started, stopped, rewritten, or advanced. The 15

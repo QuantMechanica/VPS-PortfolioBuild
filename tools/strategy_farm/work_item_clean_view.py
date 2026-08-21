@@ -230,6 +230,71 @@ def defect_blocked_at_production_time(ea_id: Any, updated_at: Any) -> bool:
     return stamp <= record["blocked_at"]
 
 
+def _defect_block_ts_case_sql(ea_col: str) -> str:
+    """CASE mapping ``ea_col`` to its frozen block-moment timestamp, else NULL."""
+
+    cases = "\n".join(
+        f"          WHEN {ea_col} = '{ea}' THEN '{rec['blocked_at']}'"
+        for ea, rec in DEFECT_BLOCK_COHORT.items()
+    )
+    return f"CASE\n{cases}\n          ELSE NULL\n        END"
+
+
+def _defect_block_reason_case_sql(ea_col: str) -> str:
+    """CASE mapping ``ea_col`` to its defect class, else NULL."""
+
+    cases = "\n".join(
+        f"          WHEN {ea_col} = '{ea}' THEN '{rec['reason']}'"
+        for ea, rec in DEFECT_BLOCK_COHORT.items()
+    )
+    return f"CASE\n{cases}\n          ELSE NULL\n        END"
+
+
+def defect_blocked_marker_sql(ea_col: str = "ea_id", updated_col: str = "updated_at") -> str:
+    """Return the ``0/1`` marker CASE for the given raw column names.
+
+    Same derivation as :func:`defect_blocked_at_production_time`, expressed in
+    SQL so it can be injected against the raw ``work_items`` table (the clean
+    view is not always in scope for the build-decision promotion pumps). Keys are
+    literal ``QM5_<num>`` and ISO timestamps, both SQL-safe by construction.
+    """
+
+    ts = _defect_block_ts_case_sql(ea_col)
+    return (
+        "CASE\n"
+        f"          WHEN ({ts}) IS NOT NULL\n"
+        f"            AND ({updated_col} IS NULL OR {updated_col} <= ({ts})) THEN 1\n"
+        "          ELSE 0\n"
+        "        END"
+    )
+
+
+def defect_block_predicate_sql(ea_col: str = "ea_id", updated_col: str = "updated_at") -> str:
+    """SQL boolean expression, TRUE for a defect-block *pre-block* row.
+
+    Time-gated (``updated_at <= block moment``). Intended for audit/leak
+    surfaces. NOT for promotion gating — ``updated_at`` is mutable (the pump
+    bumps it when it spawns ablation children), so a time gate can be silently
+    defeated. Use :func:`defect_block_ea_predicate_sql` to gate promotions.
+    """
+
+    return f"({defect_blocked_marker_sql(ea_col, updated_col)}) = 1"
+
+
+def defect_block_ea_predicate_sql(ea_col: str = "ea_id") -> str:
+    """SQL boolean expression, TRUE for *any* row of a cohort EA (EA-membership).
+
+    This — not the time-gated predicate — is the correct promotion gate: no row
+    belonging to a currently-open-defect-blocked EA may be promoted or expanded,
+    regardless of its ``updated_at`` (which the pump mutates). In production the
+    two predicates currently select the same rows (the blocks held: zero rows
+    post-block), but EA-membership is robust to later row mutation.
+    """
+
+    members = ",".join(f"'{ea}'" for ea in DEFECT_BLOCK_COHORT)
+    return f"{ea_col} IN ({members})"
+
+
 def derive_work_item(row: Mapping[str, Any]) -> dict[str, Any]:
     """Return one immutable-source row projected through the clean contract."""
 
@@ -402,29 +467,13 @@ def install_clean_view(connection: sqlite3.Connection) -> None:
     # ISO timestamps, both SQL-safe by construction.
     ea_col = source("ea_id")
     upd_col = source("updated_at")
-    block_ts_cases = "\n".join(
-        f"          WHEN {ea_col} = '{ea}' THEN '{rec['blocked_at']}'"
-        for ea, rec in DEFECT_BLOCK_COHORT.items()
+    defect_block_ts_sql = _defect_block_ts_case_sql(ea_col)
+    defect_block_reason_sql = _defect_block_reason_case_sql(ea_col)
+    defect_blocked_marker_col_sql = defect_blocked_marker_sql(ea_col, upd_col)
+    defect_block_schema_sql = (
+        f"CASE WHEN ({defect_block_ts_sql}) IS NOT NULL "
+        f"THEN '{DEFECT_BLOCK_SCHEMA}' ELSE NULL END"
     )
-    block_reason_cases = "\n".join(
-        f"          WHEN {ea_col} = '{ea}' THEN '{rec['reason']}'"
-        for ea, rec in DEFECT_BLOCK_COHORT.items()
-    )
-    defect_block_ts_sql = f"CASE\n{block_ts_cases}\n          ELSE NULL\n        END"
-    defect_block_reason_sql = (
-        f"CASE\n{block_reason_cases}\n          ELSE NULL\n        END"
-    )
-    defect_blocked_marker_sql = f"""
-        CASE
-          WHEN ({defect_block_ts_sql}) IS NOT NULL
-            AND ({upd_col} IS NULL OR {upd_col} <= ({defect_block_ts_sql})) THEN 1
-          ELSE 0
-        END
-    """.strip()
-    defect_block_schema_sql = f"""
-        CASE WHEN ({defect_block_ts_sql}) IS NOT NULL
-          THEN '{DEFECT_BLOCK_SCHEMA}' ELSE NULL END
-    """.strip()
 
     connection.execute(
         f"""
@@ -454,7 +503,7 @@ def install_clean_view(connection: sqlite3.Connection) -> None:
             '{CLEAN_VIEW_SCHEMA}' AS clean_view_schema,
             qm_clean_clean_view_flags({raw_status}, {raw_verdict}, {raw_payload}) AS clean_view_flags,
             qm_clean_clean_view_valid({raw_status}, {raw_verdict}, {raw_payload}) AS clean_view_valid,
-            ({defect_blocked_marker_sql}) AS defect_blocked_at_production_time,
+            ({defect_blocked_marker_col_sql}) AS defect_blocked_at_production_time,
             ({defect_block_reason_sql}) AS defect_block_reason,
             ({defect_block_schema_sql}) AS defect_block_schema
         FROM main.work_items

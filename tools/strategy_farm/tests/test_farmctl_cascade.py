@@ -1449,5 +1449,164 @@ class Q06SoftStackingTests(unittest.TestCase):
                 (ea2[0]["status"], ea2[0]["verdict"]), ("done", "FAIL"))
 
 
+class DefectBlockExclusionTests(unittest.TestCase):
+    """Task 5343f90a: the build-decision promotion pumps read the raw work_items
+    table with no BLOCKED exclusion. A pre-block PASS row from a 2026-08-16
+    defect-blocked EA must not be re-promoted by default; a named override opts
+    the tainted rows back in. Clean (non-cohort) EAs are always unaffected.
+    """
+
+    COHORT_EA = "QM5_10648"           # host_slot_magic_conflation
+    COHORT_EA_2 = "QM5_10649"         # host_slot_magic_conflation
+    PRE_BLOCK = "2026-08-15T00:00:00+00:00"
+
+    def _insert(self, conn, *, wid, phase, ea_id, symbol, verdict, setfile_path,
+                updated_at, status="done", evidence_path=None, payload=None):
+        conn.execute(
+            """
+            INSERT INTO work_items
+              (id, kind, phase, ea_id, symbol, setfile_path, status,
+               verdict, attempt_count, evidence_path, payload_json,
+               created_at, updated_at)
+            VALUES (?, 'backtest', ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
+            """,
+            (wid, phase, ea_id, symbol, setfile_path, status, verdict,
+             evidence_path, json.dumps(payload or {}), updated_at, updated_at),
+        )
+
+    # ---- Site 4: Q08 -> Q09_PORTFOLIO feeder (direct) --------------------
+
+    def _promote_result(self):
+        return {"q09_portfolio_promotions": [],
+                "q09_portfolio_promotions_skipped": []}
+
+    def test_q08_to_q09_portfolio_excludes_cohort_by_default_and_override_includes(self) -> None:
+        for include, expect_cohort in ((False, False), (True, True)):
+            with self.subTest(include=include):
+                with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+                    root = Path(tmp) / "farm"
+                    farmctl.init_db(root)
+                    evidence = Path(tmp) / "aggregate.json"
+                    evidence.write_text('{"q08_trade_count": 300}', encoding="utf-8")
+                    with farmctl.connect(root) as conn:
+                        self._insert(conn, wid="cohort", phase="Q08",
+                                     ea_id=self.COHORT_EA, symbol="XAUUSD.DWX",
+                                     verdict="PASS", setfile_path="s.set",
+                                     updated_at=self.PRE_BLOCK,
+                                     evidence_path=str(evidence),
+                                     payload={"q08_trade_count": 300})
+                        self._insert(conn, wid="clean", phase="Q08",
+                                     ea_id="QM5_2", symbol="XAUUSD.DWX",
+                                     verdict="PASS", setfile_path="s.set",
+                                     updated_at=self.PRE_BLOCK,
+                                     evidence_path=str(evidence),
+                                     payload={"q08_trade_count": 300})
+                        conn.commit()
+                        result = self._promote_result()
+                        farmctl._promote_q08_soft_fails_to_q09_portfolio(
+                            conn, result,
+                            include_defect_blocked_evidence=include,
+                        )
+                        conn.commit()
+                        q09_eas = {r[0] for r in conn.execute(
+                            "SELECT DISTINCT ea_id FROM work_items WHERE phase='Q09_PORTFOLIO'")}
+                    # The clean EA always advances; the cohort EA only under override.
+                    self.assertIn("QM5_2", q09_eas)
+                    self.assertEqual(self.COHORT_EA in q09_eas, expect_cohort)
+
+    # ---- Sites 1 & 3: cascade Q03->Q04 and Q02->Q04 probe (full pump) -----
+
+    def _pump_q04_eas(self, include_defect_blocked_evidence: bool) -> set[str]:
+        tmp = tempfile.mkdtemp()
+        self.addCleanup(lambda: __import__("shutil").rmtree(tmp, ignore_errors=True))
+        root = Path(tmp) / "farm"
+        repo_root = Path(tmp) / "repo"
+        sets_dir = Path(tmp) / "sets"
+        sets_dir.mkdir(parents=True)
+
+        def _set(name: str) -> str:
+            p = sets_dir / name
+            p.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            return str(p)
+
+        farmctl.init_db(root)
+        with farmctl.connect(root) as conn:
+            # Cohort EA A: pre-block Q03 PASS -> cascade Q03->Q04 (site 1).
+            self._insert(conn, wid="a-q03", phase="Q03", ea_id=self.COHORT_EA,
+                         symbol="EURUSD.DWX", verdict="PASS",
+                         setfile_path=_set("a.set"), updated_at=self.PRE_BLOCK)
+            # Cohort EA B: pre-block Q02 PASS -> Q04 early probe (site 3).
+            self._insert(conn, wid="b-q02", phase="Q02", ea_id=self.COHORT_EA_2,
+                         symbol="EURUSD.DWX", verdict="PASS",
+                         setfile_path=_set("b.set"), updated_at=self.PRE_BLOCK)
+            # Clean control EAs (never in the cohort): both must promote.
+            self._insert(conn, wid="c-q03", phase="Q03", ea_id="QM5_9992",
+                         symbol="EURUSD.DWX", verdict="PASS",
+                         setfile_path=_set("c.set"), updated_at=self.PRE_BLOCK)
+            self._insert(conn, wid="d-q02", phase="Q02", ea_id="QM5_9991",
+                         symbol="EURUSD.DWX", verdict="PASS",
+                         setfile_path=_set("d.set"), updated_at=self.PRE_BLOCK)
+            conn.commit()
+
+        old_repo_root = farmctl.REPO_ROOT
+        try:
+            farmctl.REPO_ROOT = repo_root
+            farmctl.pump(
+                root,
+                include_defect_blocked_evidence=include_defect_blocked_evidence,
+            )
+        finally:
+            farmctl.REPO_ROOT = old_repo_root
+
+        with farmctl.connect(root) as conn:
+            return {r[0] for r in conn.execute(
+                "SELECT DISTINCT ea_id FROM work_items WHERE phase='Q04'")}
+
+    def test_pump_excludes_cohort_q03_and_q02_pass_by_default(self) -> None:
+        q04_eas = self._pump_q04_eas(include_defect_blocked_evidence=False)
+        # Clean EAs promote to Q04; the two cohort EAs do not.
+        self.assertIn("QM5_9992", q04_eas)   # cascade Q03->Q04
+        self.assertIn("QM5_9991", q04_eas)   # Q02->Q04 probe
+        self.assertNotIn(self.COHORT_EA, q04_eas)
+        self.assertNotIn(self.COHORT_EA_2, q04_eas)
+
+    def test_pump_includes_cohort_under_named_override(self) -> None:
+        q04_eas = self._pump_q04_eas(include_defect_blocked_evidence=True)
+        self.assertIn(self.COHORT_EA, q04_eas)
+        self.assertIn(self.COHORT_EA_2, q04_eas)
+
+    # ---- Site 2: Q02/P2 -> Q03/P3 promoter query core --------------------
+
+    def test_q02_to_q03_base_query_excludes_cohort_pre_block_rows(self) -> None:
+        # The site-2 promoter's base query, with the shared default-on exclusion
+        # clause applied, must drop the cohort's pre-block Q02 PASS and keep the
+        # clean EA. (End-to-end promotion additionally gates on ea_metrics profit;
+        # this proves the row is filtered before that gate is ever reached.)
+        conn = sqlite3.connect(":memory:")
+        conn.execute(
+            "CREATE TABLE work_items (id TEXT, ea_id TEXT, phase TEXT, "
+            "status TEXT, verdict TEXT, setfile_path TEXT, updated_at TEXT)"
+        )
+        conn.executemany(
+            "INSERT INTO work_items VALUES (?,?,?,?,?,?,?)",
+            [
+                ("cohort", self.COHORT_EA, "Q02", "done", "PASS", "s.set", self.PRE_BLOCK),
+                ("clean", "QM5_9990", "Q02", "done", "PASS", "s.set", self.PRE_BLOCK),
+            ],
+        )
+        base = (
+            "SELECT w.id FROM work_items w "
+            "WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02','P2')"
+        )
+        excl = farmctl._defect_block_exclusion_clause(False)
+        default_ids = [r[0] for r in conn.execute(base + excl + " ORDER BY w.id")]
+        self.assertEqual(default_ids, ["clean"])
+        override_ids = [
+            r[0] for r in conn.execute(
+                base + farmctl._defect_block_exclusion_clause(True) + " ORDER BY w.id")
+        ]
+        self.assertEqual(override_ids, ["clean", "cohort"])
+
+
 if __name__ == "__main__":
     unittest.main()
