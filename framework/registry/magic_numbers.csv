@@ -17605,3 +17605,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41089,wti-wrange-migrate-mom,0,XTIUSD.DWX,410890000,2026-08-21,Codex governed allocator,active
 41090,wti-wmid-overlap-mom,0,XTIUSD.DWX,410900000,2026-08-21,Codex governed allocator,active
 41091,wti-winside-body-mom,0,XTIUSD.DWX,410910000,2026-08-21,Codex governed allocator,active
+41092,wti-wbody-dominance-mom,0,XTIUSD.DWX,410920000,2026-08-21,Codex governed allocator,active
