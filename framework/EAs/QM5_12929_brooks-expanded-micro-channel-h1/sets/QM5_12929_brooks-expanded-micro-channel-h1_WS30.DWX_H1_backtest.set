@@ -1,0 +1,46 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12929
+; ea_slug:      brooks-expanded-micro-channel-h1
+; ea_version:   v5.0
+; set_version:  s20260821-001
+; symbol:       WS30.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   0fcd48721648d54986f1ec8e701c9b8d7d8d30d3f499fd3151e95d620d76ae16
+; author:       Development
+; date:         2026-08-21
+;==========================================================
+qm_ea_id=12929
+qm_magic_slot_offset=4
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12929_brooks-expanded-micro-channel-h1.md
+strategy_tf=16385
+strategy_atr_period=14
+strategy_fast_sma_period=50
+strategy_slow_sma_period=200
+strategy_channel_min_bars=8
+strategy_channel_max_bars=20
+strategy_stair_noise_atr=0.25
+strategy_max_body_atr=1.50
+strategy_min_slope_atr_per_bar=0.15
+strategy_max_range_atr_per_bar=0.50
+strategy_entry_buffer_atr=0.50
+strategy_initial_sl_buffer_atr=0.50
+strategy_initial_sl_cap_atr=3.00
+strategy_tp_atr=2.00
+strategy_pending_valid_bars=3
+strategy_trail_lookback_bars=3
+strategy_trail_buffer_atr=0.10
+strategy_time_stop_bars=36
+strategy_reuse_guard_bars=12
+strategy_spread_lookback_bars=20
+strategy_spread_average_multiplier=1.50
+strategy_session_start_hour=7
+strategy_session_end_hour=21

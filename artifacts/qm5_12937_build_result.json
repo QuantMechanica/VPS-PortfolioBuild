@@ -1,0 +1,20 @@
+{
+  "task_id": "0a7dec9e-8ff0-488b-a587-6dc3ad49af61",
+  "ea_id": "QM5_12937",
+  "slug": "demark-td-termination-count-alt-h4",
+  "ea_dir": "framework/EAs/QM5_12937_demark-td-termination-count-alt-h4",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12937_demark-td-termination-count-alt-h4/QM5_12937_demark-td-termination-count-alt-h4.mq5",
+  "ex5_path": null,
+  "magic_base": 129370000,
+  "symbols_registered": [],
+  "setfiles_generated": [],
+  "spec_md_path": null,
+  "build_check_passed": false,
+  "compile_succeeded": false,
+  "smoke_result": "build_check_failed",
+  "smoke_report_path": null,
+  "blocked_reason": "card in cards_rejected: strategy card retired per governance decision 2026-07-19 (retire_approved_cards.py: TD_COUNTDOWN_OFF_EURUSD)",
+  "open_questions": [
+    "Strategy card QM5_12937 resides in cards_rejected/ following 2026-07-19 book retirement; cannot build from rejected/retired card."
+  ]
+}
