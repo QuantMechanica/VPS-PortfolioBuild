@@ -92,3 +92,28 @@ def test_purger_routes_observed_delta_through_the_validated_policy() -> None:
     assert "before_bytes=" in source and "after_bytes=" in source
     assert "target_outside_tester_root" in source
     assert "if ($telemetryErrors.Count -gt 0) { exit 2 }" in source
+
+
+def test_running_workers_are_not_charged_twice_against_free_ram() -> None:
+    """Regression: the fleet froze at whatever size it happened to have.
+
+    The probe reports FREE resources, so each capacity is headroom for
+    ADDITIONAL workers.  Treating it as an absolute fleet cap made
+    ``max_workers == running`` self-fulfilling: on 2026-08-21 the live fleet
+    sat at 4/10 with 39.8GB free RAM (cap 4 == running 4), so the 5-minute
+    watchdog heal reported ``heal_failed`` on every single run for hours.
+    """
+    decision = headroom.concurrency_decision(
+        snapshot(144.0, 39.8, 79.0), installed_workers=10, running_workers=4
+    )
+    assert decision["additional_capacity"] == 4  # (39.8 - 6) / 8
+    assert decision["max_workers"] == 8          # 4 running + 4 additional
+    assert decision["allow_new_workers"] is True
+    # ...and the guard still refuses to grow when no per-worker headroom is free
+    starved = headroom.concurrency_decision(
+        snapshot(144.0, 12.0, 79.0), installed_workers=10, running_workers=4
+    )
+    assert starved["additional_capacity"] == 0
+    assert starved["max_workers"] == 4
+    assert starved["allow_new_workers"] is False
+    assert starved["state"] == "THROTTLED"

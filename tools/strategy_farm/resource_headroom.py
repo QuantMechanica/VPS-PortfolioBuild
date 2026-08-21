@@ -117,18 +117,31 @@ def concurrency_decision(
             "snapshot": dict(snapshot),
         }
 
+    # The probe measures FREE resources, so each capacity is how many ADDITIONAL
+    # workers currently fit — the running ones already consumed their share and
+    # must not be charged twice.  Treating these as an absolute fleet cap froze
+    # the fleet wherever it happened to stand (4/10 on 2026-08-21: free RAM
+    # 39.8GB -> cap 4 == running 4 -> allow_new False on every 5-minute watchdog
+    # heal, forever).  Crediting the running workers keeps the guard's intent
+    # (never start a worker without per-worker headroom free right now, reserves
+    # untouched) while letting the fleet grow while headroom lasts.
     capacities = {
         "disk": max(0, math.floor((disk - DISK_STOP_GB) / DISK_PER_WORKER_GB)),
         "ram": max(0, math.floor((ram - RAM_RESERVE_GB) / RAM_PER_WORKER_GB)),
         "commit": max(0, math.floor((commit - COMMIT_RESERVE_GB) / COMMIT_PER_WORKER_GB)),
     }
-    resource_cap = min(installed, *capacities.values())
+    additional_cap = min(capacities.values())
+    resource_cap = min(installed, running + additional_cap)
     max_workers = max(running, resource_cap)
     bottleneck = min(capacities, key=capacities.get)
     allow_new = running < max_workers
     return {
         "schema": SCHEMA,
-        "state": "OPEN" if resource_cap >= installed else "THROTTLED",
+        # THROTTLED states resource PRESSURE, not fleet fullness: either the
+        # measured headroom cannot carry the fleet up to ``installed``, or there
+        # is no per-worker headroom left at all (a full fleet on a tight host is
+        # still an observation worth surfacing — it is never an interrupt order).
+        "state": "THROTTLED" if (resource_cap < installed or additional_cap == 0) else "OPEN",
         "allow_new_workers": allow_new,
         "max_workers": max_workers,
         "resource_cap": resource_cap,
@@ -136,6 +149,7 @@ def concurrency_decision(
         "running_workers": running,
         "bottleneck": bottleneck,
         "capacities": capacities,
+        "additional_capacity": additional_cap,
         "thresholds": {
             "disk_stop_gb": DISK_STOP_GB,
             "ram_reserve_gb": RAM_RESERVE_GB,
