@@ -124,3 +124,17 @@ eports\state\commit_sampler.log`, `commit_wave_snapshot_20260820_0553utc.txt`) |
 **20:00 UTC:** Die beiden überfälligen Punkte (Strategy-Files-Zahl, Filtersuche) sind berichtet.
 Aktive Großbaustelle ist der Q09-Kontrakt v3 (A+B, vorab genehmigt); die v2-Referenzmessung
 `cba63d44` läuft parallel und wird zum Validierungsanker der v3-Entscheidungsgleichheit.
+
+## Nachtrag 2026-08-21 · Ultracode-Welle 1 — Codex-Board durch Claude abgearbeitet (Quota-Schonung, OWNER-Auftrag)
+
+| aus | Punkt | Ergebnis in einem Satz |
+|---|---|---|
+| MNT-009 | Runner-Completion atomar | Fail-closed DB-Trigger + EVIDENCE_UNAVAILABLE-Sentinel live in farm_state.sqlite, 24 Tests grün (b1f959027; Evidenz `2026-08-21_mnt009_infra_fail_evidence_binding.md`) |
+| MNT-003 | 0x800710E0-Oszillation | Als benigner IgnoreNew-Overlap bewiesen; Monitore adjudizieren nach Principal/Code, 267014 alarmiert weiter, Task-XML unangetastet (19ae99a42 + e62de0f9e) |
+| MNT-026 | Dedup nie CLEAN bei kaputtem Input | Drei fail-closed-Tests gepinnt, 13108-Recheck reproduziert DUPLICATE (e45a42e08, Re-Verifikation 8812cc62a) |
+| MNT-012 | R3-Frontmatter 1457/1459 | Beide Karten stimmen auf evidenziertes UNKNOWN überein (Serien fehlen in dwx_symbol_matrix.csv) |
+| TODO-201 | Qxx-only Health-Texte | Displaytexte bereinigt, Echo-Sidecar zurückgesetzt, Heartbeat sauber, Vault-Lint PASS (299727da5) |
+| TODO-202 | pipeline_state.json | REAKTIVIERT: frischer Snapshot + stündlicher Task `QM_StrategyFarm_PipelineState` (rc=0), vom fail-closed Public-Guard entkoppelt (b9d91741e) |
+| TODO-203 | Symbol-List-Seite generieren | Deterministischer Generator + Drift-Test, Seite auf 37 Symbole inkl. SP500; Folgepunkt: `company_manifest.json`-Symbolblock driftet weiter (769d09e6e) |
+
+Alle 7 Router-Tasks APPROVED geschlossen; adversariale Verify-Agents je Task = PASS. Verbleibend auf dem Codex-Board: die Architektur-Brocken MNT-011/-038/-030/-016/-031/-032/-035 und die blockierten -020/-006/-013/-039.
