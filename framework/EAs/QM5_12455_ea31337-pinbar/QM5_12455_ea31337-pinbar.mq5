@@ -141,7 +141,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    MqlRates bar[];
    ArraySetAsSeries(bar, true);
    // perf-allowed: one closed candle read for bespoke EA31337 spinning-top pattern logic.
-   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_pattern_shift, 1, bar) != 1)
+   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_pattern_shift, 1, bar) != 1) // perf-allowed: one closed candle after framework new-bar gate
       return false;
 
    const double range = bar[0].high - bar[0].low;
@@ -276,7 +276,7 @@ bool Strategy_ExitSignal()
    MqlRates bar[];
    ArraySetAsSeries(bar, true);
    // perf-allowed: one closed candle read for opposite spinning-top exit.
-   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_pattern_shift, 1, bar) != 1)
+   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_pattern_shift, 1, bar) != 1) // perf-allowed: one closed candle for position-only exit evaluation
       return false;
 
    const double range = bar[0].high - bar[0].low;
@@ -355,6 +355,11 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return. Keep the explicit current-template hook even though the kill
+   // switch retains a compatibility fallback for older builds.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
