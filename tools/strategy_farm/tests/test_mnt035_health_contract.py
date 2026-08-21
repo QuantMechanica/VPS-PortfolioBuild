@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -79,3 +80,56 @@ def test_farm_health_reads_registered_contract_sidecar(tmp_path: Path, monkeypat
     assert rows[0]["status"] == "OK"
     assert rows[1]["status"] == "FAIL"
     assert rows[1]["source"] == "fixture_pulse"
+
+
+def test_unwrap_escalation_condition_peels_nested_echo_layers() -> None:
+    assert health._unwrap_escalation_condition(
+        "FAIL:mt5_worker_saturation:4/10 alive"
+    ) == "mt5_worker_saturation"
+    assert health._unwrap_escalation_condition(
+        "FAIL:task_monitor_escalation:FAIL:task_monitor_escalation:"
+        "FAIL:mt5_worker_saturation:4/10 alive"
+    ) == "mt5_worker_saturation"
+    assert health._unwrap_escalation_condition("not an escalation string") is None
+    assert health._unwrap_escalation_condition(None) is None
+
+
+def test_run_all_dedupes_task_monitor_echo_of_still_native_fail(monkeypatch, tmp_path: Path) -> None:
+    """MNT-035: hourly_monitor.ps1's sidecar re-emits farm_health FAILs as
+    task_monitor_escalation rows; _external_health_checks folds that sidecar
+    back into the next farm_health run. Before the fix, a condition that is
+    still natively FAILing (mt5_worker_saturation) was counted twice in
+    summary.fail -- once as the native check, once as the echoed sidecar row
+    (itself growing one FAIL:task_monitor_escalation: wrapper layer deeper
+    every cycle). After the fix only the live native check survives."""
+    monkeypatch.setattr(
+        health,
+        "ALL_CHECKS",
+        [("mt5_worker_saturation",
+          lambda: health._check("mt5_worker_saturation", "FAIL", 4, 7, "4/10 alive", ""),
+          False)],
+    )
+
+    def _no_db():
+        raise sqlite3.Error("no db in this test")
+
+    monkeypatch.setattr(health, "_connect", _no_db)
+    monkeypatch.setattr(
+        health,
+        "_external_health_checks",
+        lambda now=None: [
+            contract.check(
+                "task_monitor_escalation", "FAIL",
+                value="FAIL:task_monitor_escalation:FAIL:mt5_worker_saturation:4/10 alive",
+                detail="FAIL:task_monitor_escalation:FAIL:mt5_worker_saturation:4/10 alive",
+                source="task_monitor",
+            ),
+        ],
+    )
+    monkeypatch.setattr(health, "HEALTH_FILE", tmp_path / "health.json")
+
+    result = health.run_all()
+    names = [c["name"] for c in result["checks"]]
+    assert names.count("mt5_worker_saturation") == 1
+    assert "task_monitor_escalation" not in names
+    assert result["summary"]["fail"] == 1

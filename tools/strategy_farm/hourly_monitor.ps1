@@ -47,6 +47,12 @@ try {
 $fails = @(); $warns = @()
 if ($health) {
     foreach ($c in $health.checks) {
+        # MNT-035: checks with source=task_monitor were folded into this farm_health
+        # read from OUR OWN prior sidecar (task_monitor_health.json). Re-escalating
+        # them here would re-wrap them one FAIL:task_monitor_escalation: layer deeper
+        # every cycle forever, even after the underlying condition clears. Only
+        # escalate findings that are native to this farm_health run.
+        if ($c.source -eq 'task_monitor') { continue }
         if ($c.status -eq 'FAIL') { $fails += $c }
         elseif ($c.status -eq 'WARN') { $warns += $c }
     }

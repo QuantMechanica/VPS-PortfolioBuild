@@ -3198,6 +3198,63 @@ STRANDED_TASK_STALE_DAYS = 3
 # genuine growth beyond it (a new leak) escalates to FAIL. Retune here.
 STRANDED_TASK_FAIL_TOTAL = 900
 
+# MNT-039: these are the three disposition classes with an explicit 3-day
+# operator SLO. This is separate from the inherited aggregate stranded census:
+# one stale row in any class must alarm, even when the total remains below the
+# legacy backlog threshold.
+AGENT_TASK_AGING_SLO_STATES = ("RECYCLE", "PIPELINE", "BLOCKED")
+AGENT_TASK_AGING_SLO_DAYS = 3
+
+
+def chk_agent_task_aging_slo(con) -> dict:
+    """Fail when any RECYCLE/PIPELINE/BLOCKED agent task is older than 3d."""
+    tbl = con.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='agent_tasks'"
+    ).fetchone()
+    if not tbl:
+        return _check(
+            "agent_task_aging_slo", "OK", 0, 0, "agent_tasks table absent", ""
+        )
+    cutoff = (
+        _utc_now() - dt.timedelta(days=AGENT_TASK_AGING_SLO_DAYS)
+    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+    placeholders = ",".join("?" for _ in AGENT_TASK_AGING_SLO_STATES)
+    rows = con.execute(
+        f"""
+        SELECT state, COUNT(*) n, MIN(updated_at) oldest
+        FROM agent_tasks
+        WHERE state IN ({placeholders}) AND updated_at < ?
+        GROUP BY state ORDER BY state
+        """,
+        (*AGENT_TASK_AGING_SLO_STATES, cutoff),
+    ).fetchall()
+    by_state = {str(r["state"]): int(r["n"]) for r in rows}
+    oldest = {str(r["state"]): r["oldest"] for r in rows}
+    total = sum(by_state.values())
+    detail = ", ".join(
+        f"{state}={by_state.get(state, 0)}"
+        + (f" oldest={oldest[state]}" if state in oldest else "")
+        for state in AGENT_TASK_AGING_SLO_STATES
+    )
+    if total:
+        return _check(
+            "agent_task_aging_slo",
+            "FAIL",
+            total,
+            0,
+            f">{AGENT_TASK_AGING_SLO_DAYS}d agent tasks: {detail}",
+            "Disposition each stale class with its named sweeper/rule; dry-run first. "
+            "Do not overwrite pipeline verdict evidence.",
+        )
+    return _check(
+        "agent_task_aging_slo",
+        "OK",
+        0,
+        0,
+        f"no RECYCLE/PIPELINE/BLOCKED task exceeds {AGENT_TASK_AGING_SLO_DAYS}d",
+        "",
+    )
+
 
 def chk_agent_task_state_stranded(con) -> dict:
     """Agent tasks parked in a router-exitless limbo state (RECYCLE/APPROVED/
@@ -3574,6 +3631,7 @@ ALL_CHECKS = [
     ("seed_auth_failure_rate", chk_seed_auth_failure_rate,  True),
     # Agent-task state-machine liveness (census 2026-07-27 ranks 4/5/8/9)
     ("agent_task_state_stranded", chk_agent_task_state_stranded, True),
+    ("agent_task_aging_slo", chk_agent_task_aging_slo, True),
     # Failure-classification + tail detectors (census 2026-07-27 ranks 1/3)
     ("pending_tail_age", chk_pending_tail_age, True),
     ("q02_summary_missing_unclassified", chk_q02_summary_missing_unclassified, True),
@@ -3660,6 +3718,33 @@ def _external_health_checks(now: dt.datetime | None = None) -> list[dict]:
     return results
 
 
+_ESCALATION_ECHO_PREFIX = re.compile(r"^FAIL:task_monitor_escalation:")
+_ESCALATION_CONDITION_NAME = re.compile(r"^FAIL:([A-Za-z0-9_]+):")
+
+
+def _unwrap_escalation_condition(text: Any) -> str | None:
+    """Peel repeated ``FAIL:task_monitor_escalation:`` echo wrapping and
+    return the innermost condition name, or None if the text doesn't match
+    the ``FAIL:<name>:...`` shape hourly_monitor.ps1 emits.
+
+    MNT-035: hourly_monitor.ps1 reads farm_health, re-emits every FAIL as a
+    task_monitor_escalation row in its own sidecar, and _external_health_checks
+    folds that sidecar back into the next farm_health run — so a condition
+    that is still natively failing gets wrapped one layer deeper every cycle
+    (``FAIL:task_monitor_escalation:FAIL:task_monitor_escalation:FAIL:...``).
+    """
+    if not isinstance(text, str):
+        return None
+    remaining = text
+    for _ in range(20):  # guard against pathological/adversarial nesting
+        match = _ESCALATION_ECHO_PREFIX.match(remaining)
+        if not match:
+            break
+        remaining = remaining[match.end():]
+    condition = _ESCALATION_CONDITION_NAME.match(remaining)
+    return condition.group(1) if condition else None
+
+
 def run_all() -> dict:
     """Run all health checks. Returns the result dict and writes health.json.
 
@@ -3688,7 +3773,20 @@ def run_all() -> dict:
         if con is not None:
             con.close()
 
-    results.extend(_external_health_checks())
+    native_names = {r.get("name") for r in results}
+    for row in _external_health_checks():
+        if row.get("source") == "task_monitor" and row.get("name") == "task_monitor_escalation":
+            condition = _unwrap_escalation_condition(row.get("detail") or row.get("value"))
+            if condition and condition in native_names:
+                # Already represented by this run's own native check (e.g.
+                # mt5_worker_saturation) -- the sidecar row is an echo of a
+                # farm_health FAIL a prior hourly_monitor cycle read back from
+                # farm_health itself. Drop it so summary.fail counts the
+                # condition once instead of once natively + once per echo
+                # layer, and so the next hourly_monitor cycle has nothing
+                # stale left in farm_health to re-wrap.
+                continue
+        results.append(row)
     payload = health_contract.build(
         "farm_health",
         results,
