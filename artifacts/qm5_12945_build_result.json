@@ -1,0 +1,52 @@
+{
+  "task_id": "e3e1d19f-afc3-47be-93f1-9b4008808f20",
+  "ea_id": "QM5_12945",
+  "slug": "tv-kn-ema-cross-atr-tp",
+  "ea_dir": "framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/QM5_12945_tv-kn-ema-cross-atr-tp.mq5",
+  "mq5_sha256": "5fa4b832b7909c3dcb373605ff2b46e76c5d8e2544b0290f60a17d7ae315c164",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/QM5_12945_tv-kn-ema-cross-atr-tp.ex5",
+  "ex5_sha256": "fafba5fa8b718f507ea3bf9c96d27effad36e5db16f68851b4d8cea1abb356d6",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/SPEC.md",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12945_tv-kn-ema-cross-atr-tp.md",
+  "magic_base": 129450000,
+  "symbols_registered": [
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "SP500.DWX",
+    "UK100.DWX",
+    "WS30.DWX",
+    "XAUUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "USDCHF.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_AUDUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_EURUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_GBPUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_GDAXI.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_NDX.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_NZDUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_SP500.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_UK100.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_USDCAD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_USDCHF.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_USDJPY.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_WS30.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12945_tv-kn-ema-cross-atr-tp/sets/QM5_12945_tv-kn-ema-cross-atr-tp_XAUUSD.DWX_H1_backtest.set"
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "Approved card frontmatter is QM5_12945, but its retained body heading says QM5_9166; the build follows the governed frontmatter and registry allocation.",
+    "The governed registry contains 13 active symbol slots while the card names a four-symbol default shortlist; all 13 registered symbols received H1 Q02 setfiles."
+  ]
+}
