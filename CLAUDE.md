@@ -218,7 +218,7 @@ operational state. Essentials:
   aborted ON rewrites the flag to `OFF_RECOVERY_REQUIRED` — re-run Factory_OFF (it
   preserves the saved task map) before re-minting. A worker-only restart does NOT fix a
   wedge. **Do NOT VPS-reboot** (stops T_Live live trading) unless OFF/ON fails.
-- **Disk (D:) fast-burn:** `tester_cache_purge.ps1` runs every **20min** (no-op ≥150GB free; LowWater 80→150 seit 2026-07-21).
+- **Disk (D:) fast-burn:** `tester_cache_purge.ps1` runs every **10min** (task `QM_StrategyFarm_TesterCachePurge`; no-op ≥150GB free; LowWater 80→150 seit 2026-07-21).
   `NO_HISTORY;INCOMPLETE_RUNS` = first-attempt cold-cache transient (self-heals; do NOT
   re-import .DWX history — ops 6e26c61f for the worker-retry fix).
 
@@ -267,8 +267,8 @@ vault `02 Org/Stehende Vollmacht Claude 2026-08-20.md`.
   first, rollback documented, blast radius named); measurements up to 1h factory time; backups
   (never escalation-worthy); documents; worker restarts.
 - **GELB (pre-approved on condition):** 12%-threshold replacement (once cohort stands); raise
-  timeout budgets to phase median for rows already timeout-killed without verdict; symbol
-  prioritization (done); **Q09 acceleration Weg A+B (approved — contract v3 in progress)**;
+  timeout budgets to phase median for rows already timeout-killed without verdict;
+  **Q09 acceleration Weg A+B (approved — contract v3 in progress)**;
   >1h factory time if it answers an open P0 and cost is reported; new Q14 levers (needs
   hypothesis, refutation criterion, frequency check, parameter count).
 - **ROT (never autonomous):** gate thresholds & contract criteria; recompile in active
