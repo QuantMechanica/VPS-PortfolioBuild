@@ -152,3 +152,25 @@ resolver already present and verified before compile); DB written only via
 `farmctl` CLI; reads via read-only SQLite with `busy_timeout=5000`; no git
 commit/add (left for the orchestrator). Working-tree changes: the 4 QM5_20096
 setfiles (build_hash restamp) and the rebuilt `.ex5`.
+
+## Codex review addendum: binary omitted from commit, canary not yet valid
+
+Post-commit review found that commit `334e3199d` included the four restamped
+setfiles and this evidence document but omitted the rebuilt EX5. The canonical
+tracked binary had therefore returned to stale SHA-256 `a343d30a...`, while the
+pending canary `256846e2-edce-4354-a346-0a428dafcc1b` remained bound to the
+uncommitted `531e8e75...` bytes. That is an execution-identity mismatch and the
+runtime acceptance claim above is not yet satisfied.
+
+Codex repeated the OWNER-authorized, single-EA compile through `compile_ea.py`:
+0 errors, 0 warnings, `SINGLE_SYMBOL_OK`. The exact rebuilt binary now has
+SHA-256 `4a60bfcdb...` (the included resolver changed after the first compile,
+so a byte-identical `531e8e75...` reproduction is not expected). Scoped
+`build_check.ps1 -EALabel QM5_20096_ha-stoch-h4-swing -SkipCompile` remains
+PASS with the same two undecidable-card warnings and no failure.
+
+The pending canary still expects `531e8e75...`; it was not claimed or rewritten
+in this review. A governed successor/rebinding step must preserve the stale
+pending row as evidence and bind the runnable successor to canonical EX5
+`4a60bfcdb...`. Until that happens and a terminal result lands, the correct
+task verdict is `DEFER_IDENTITY_MISMATCH`, not PASS and not a strategy verdict.
