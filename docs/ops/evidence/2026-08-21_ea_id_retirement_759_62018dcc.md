@@ -1,10 +1,15 @@
 # Governed EA-ID retirement: task 62018dcc
 
-Date: 2026-08-21  
-Task: `62018dcc-de2f-489a-ab35-eab61efc89f5`  
-Branch: `agents/board-advisor`  
-Mechanism commit: `d48c256a9`  
-Disposition source: `docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv`  
+Date: 2026-08-21
+
+Task: `62018dcc-de2f-489a-ab35-eab61efc89f5`
+
+Branch: `agents/board-advisor`
+
+Mechanism commit: `d48c256a9`
+
+Disposition source: `docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv`
+
 Disposition source SHA-256: `b3bba0e9ae27124906708c77361bb25f9a8587d9939f1239a28d7af35ce29924`
 
 ## Outcome
@@ -21,7 +26,8 @@ The 204 rows with decisions `ADJUDICATE` (191), `INVESTIGATE` (8), or `RECHECK` 
 | Decision rows retired with complete provenance | 0 | 759 |
 | Non-RETIRE decision rows still active | 204 | 204 |
 
-Registry SHA-256 before: `9f6ce5af4b4d2bb445033171fdd62f6bb145635ffb68fbbe272f5ac520bd4e19`  
+Registry SHA-256 before: `9f6ce5af4b4d2bb445033171fdd62f6bb145635ffb68fbbe272f5ac520bd4e19`
+
 Registry SHA-256 after: `25d90fbde6a51e5e43516f1ee74f872ea3ee7fd2b9e3f04b8bc43ff5132383a4`
 
 Every transitioned row records:
