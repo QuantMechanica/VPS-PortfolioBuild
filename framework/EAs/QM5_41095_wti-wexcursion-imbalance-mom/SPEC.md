@@ -105,3 +105,4 @@ trail, break-even move, or partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `0f68d9807`; source packet `12e5ede4e`; EA-ID reservation `07d849d91`; Q00 card `98f19dfad`; governed magic `410950000` |
+| v1 | 2026-08-21 | source-only build and capacity handoff | implementation commit `b74533ddb`; 12 reference checks and guardrails PASS; governed compile `c88b39a4-1220-4894-a2c3-9818651c763e` pending under rollout hold; Q02 not enqueued after CPU reached 100% |
