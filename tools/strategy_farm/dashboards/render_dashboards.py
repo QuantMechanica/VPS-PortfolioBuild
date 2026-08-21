@@ -2088,8 +2088,11 @@ def collect_q08_portfolio_rescue_for_ea(ea_id: str, root: Path) -> list[dict[str
         q08_rows = [dict(r) for r in conn.execute(
             """
             SELECT * FROM work_items_clean
-            WHERE ea_id=? AND phase='Q08' AND status='done'
-              AND verdict IN ('FAIL_SOFT','FAIL_HARD','FAIL','INVALID')
+            WHERE ea_id=? AND phase='Q08'
+              AND (
+                (status='done' AND verdict IN ('FAIL_SOFT','FAIL_HARD','FAIL'))
+                OR (status='failed' AND verdict='INVALID')
+              )
             ORDER BY updated_at DESC
             """,
             (ea_id,),

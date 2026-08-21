@@ -793,6 +793,7 @@ def q08_portfolio_rescue_snapshot(limit: int = 8) -> dict:
     out = {
         "soft": 0,
         "hard": 0,
+        "invalid": 0,
         "need_more_data": 0,
         "pending": 0,
         "pass_portfolio": 0,
@@ -805,8 +806,11 @@ def q08_portfolio_rescue_snapshot(limit: int = 8) -> dict:
             """
             SELECT ea_id, symbol, verdict, payload_json, evidence_path, updated_at
             FROM work_items_clean
-            WHERE phase='Q08' AND status='done'
-              AND verdict IN ('FAIL_SOFT','FAIL_HARD','FAIL','INVALID')
+            WHERE phase='Q08'
+              AND (
+                (status='done' AND verdict IN ('FAIL_SOFT','FAIL_HARD','FAIL'))
+                OR (status='failed' AND verdict='INVALID')
+              )
             ORDER BY updated_at DESC
             """
         )
@@ -865,6 +869,8 @@ def q08_portfolio_rescue_snapshot(limit: int = 8) -> dict:
             out["soft"] += 1
         elif tier == "FAIL_HARD":
             out["hard"] += 1
+        elif tier == "INVALID":
+            out["invalid"] += 1
         q09 = latest_q09.get(key)
         q09_payload = _json_payload(q09) if q09 else {}
         q09_artifact = _json_from_path(q09.get("evidence_path") if q09 else None)
