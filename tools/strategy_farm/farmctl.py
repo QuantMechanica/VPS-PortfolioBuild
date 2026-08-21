@@ -1590,6 +1590,37 @@ def init_db(root: Path) -> None:
                 SELECT RAISE(ABORT, 'terminal work_item requires verdict');
             END;
 
+            -- MNT-009 (2026-08-21): a verdict without evidence is a claim, not
+            -- a result -- "evidence over claims" is the shop's first rule.
+            -- Scoped to verdict='INFRA_FAIL' specifically (the measured gap:
+            -- 70/167 recent INFRA_FAIL rows had no evidence_path) rather than
+            -- every terminal verdict, because several non-INFRA sentinel
+            -- verdicts (WAITING_INPUT, PENDING_RUNNER, HARNESS_OK/FAIL, etc.)
+            -- legitimately never carried an evidence_path and auditing every
+            -- one of those call sites is a separate, unscoped effort. Every
+            -- INFRA_FAIL terminal write must either bind a canonical
+            -- evidence_path or the explicit EVIDENCE_UNAVAILABLE:<reason>
+            -- sentinel (see _evidence_unavailable_sentinel); a silently
+            -- NULL/empty evidence_path on an INFRA_FAIL row fails closed
+            -- here, same pattern as trg_work_items_terminal_requires_verdict_*.
+            -- Legacy rows (created before this trigger) are out of scope --
+            -- low-value backfill, deliberately not attempted.
+            CREATE TRIGGER IF NOT EXISTS trg_work_items_infra_fail_requires_evidence_update
+            BEFORE UPDATE OF status, verdict ON work_items
+            WHEN NEW.status IN ('done', 'failed') AND NEW.verdict = 'INFRA_FAIL'
+                 AND (NEW.evidence_path IS NULL OR trim(NEW.evidence_path) = '')
+            BEGIN
+                SELECT RAISE(ABORT, 'terminal INFRA_FAIL work_item requires evidence_path or EVIDENCE_UNAVAILABLE sentinel');
+            END;
+
+            CREATE TRIGGER IF NOT EXISTS trg_work_items_infra_fail_requires_evidence_insert
+            BEFORE INSERT ON work_items
+            WHEN NEW.status IN ('done', 'failed') AND NEW.verdict = 'INFRA_FAIL'
+                 AND (NEW.evidence_path IS NULL OR trim(NEW.evidence_path) = '')
+            BEGIN
+                SELECT RAISE(ABORT, 'terminal INFRA_FAIL work_item requires evidence_path or EVIDENCE_UNAVAILABLE sentinel');
+            END;
+
             -- MNT-010: parent completion is a separate, append-only state
             -- transition.  The child-state hash makes every CAS closure
             -- reconstructable without rewriting raw child history.
@@ -4025,6 +4056,19 @@ def _ensure_verdict_reason(payload: dict[str, Any]) -> dict[str, Any]:
             payload["verdict_reason"] = val
             break
     return payload
+
+
+EVIDENCE_UNAVAILABLE_PREFIX = "EVIDENCE_UNAVAILABLE:"
+
+
+def _evidence_unavailable_sentinel(reason: str) -> str:
+    """MNT-009: the explicit, machine-readable stand-in for a terminal write
+    that has no canonical evidence file (e.g. the runner was killed/refused
+    before producing a report). Never leave evidence_path NULL/empty on a
+    terminal (status IN done/failed) row with a verdict -- either bind a real
+    path or bind this sentinel, so a missing-evidence write is never silent.
+    """
+    return f"{EVIDENCE_UNAVAILABLE_PREFIX}{reason}"
 
 
 # --- Q02/Q03 summary-missing failure classification (census rank 1, 2026-07-27) ---
@@ -7456,10 +7500,13 @@ def record_work_item_spawn_refusal(
             """
             UPDATE work_items
             SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
-                payload_json=?, updated_at=?
+                evidence_path=?, payload_json=?, updated_at=?
             WHERE id=? AND status='active' AND upper(claimed_by)=upper(?)
             """,
-            (json.dumps(payload, sort_keys=True), now, work_item_id, terminal),
+            (
+                _evidence_unavailable_sentinel(f"spawn_refusal:{reason}"),
+                json.dumps(payload, sort_keys=True), now, work_item_id, terminal,
+            ),
         )
         if cur.rowcount != 1:
             conn.rollback()
@@ -8518,10 +8565,13 @@ def _detect_active_age_timeout(
             """
             UPDATE work_items
             SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
-                payload_json=?, updated_at=?
+                evidence_path=?, payload_json=?, updated_at=?
             WHERE id=? AND status='active'
             """,
-            (json.dumps(payload, sort_keys=True), now, r["id"]),
+            (
+                _evidence_unavailable_sentinel(f"active_timeout:{reap_reason}"),
+                json.dumps(payload, sort_keys=True), now, r["id"],
+            ),
         )
         flagged.append({
             "id": r["id"],
@@ -9972,8 +10022,10 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 )
                 with connect(root) as conn2:
                     conn2.execute(
-                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', payload_json=?, updated_at=? WHERE id=?",
-                        (json.dumps(final_payload, sort_keys=True),
+                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', "
+                        "evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
+                        (_evidence_unavailable_sentinel(f"{fast_failure}_retries_exhausted"),
+                         json.dumps(final_payload, sort_keys=True),
                          started_iso, item["id"]),
                     )
                     conn2.commit()
@@ -10002,8 +10054,10 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 )
                 with connect(root) as conn2:
                     conn2.execute(
-                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', payload_json=?, updated_at=? WHERE id=?",
-                        (json.dumps(final_payload, sort_keys=True),
+                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', "
+                        "evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
+                        (_evidence_unavailable_sentinel("timeout_retries_exhausted"),
+                         json.dumps(final_payload, sort_keys=True),
                          started_iso, item["id"]),
                     )
                     conn2.commit()

@@ -38,13 +38,19 @@ def _work_item(
     status: str,
     verdict: str | None,
     updated_at: str,
+    evidence_path: str | None = None,
 ) -> None:
+    # MNT-009: an INFRA_FAIL row needs a non-NULL evidence_path (real path or
+    # the EVIDENCE_UNAVAILABLE sentinel) to satisfy the DB guard; callers that
+    # don't care about evidence for their assertion can omit the parameter.
+    if verdict == "INFRA_FAIL" and not evidence_path:
+        evidence_path = farmctl._evidence_unavailable_sentinel("test_fixture")
     con.execute(
         "INSERT INTO work_items "
         "(id, kind, phase, ea_id, symbol, setfile_path, status, verdict, "
         "attempt_count, parent_task_id, evidence_path, claimed_by, payload_json, "
         "created_at, updated_at) "
-        "VALUES (?, 'backtest', ?, ?, ?, ?, ?, ?, 1, NULL, NULL, NULL, '{}', ?, ?)",
+        "VALUES (?, 'backtest', ?, ?, ?, ?, ?, ?, 1, NULL, ?, NULL, '{}', ?, ?)",
         (
             item_id,
             phase,
@@ -53,6 +59,7 @@ def _work_item(
             f"sets/{ea_id}_{symbol}_{phase}.set",
             status,
             verdict,
+            evidence_path,
             updated_at,
             updated_at,
         ),

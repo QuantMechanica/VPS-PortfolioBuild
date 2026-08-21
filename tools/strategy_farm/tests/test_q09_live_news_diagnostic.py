@@ -463,9 +463,13 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
                 "last_launch_fault_terminal": "T3",
             })
             connection.execute(
-                "UPDATE work_items SET status='failed',verdict='INFRA_FAIL',payload_json=? "
-                "WHERE id=?",
-                (json.dumps(payload, sort_keys=True), self.work_item_id),
+                "UPDATE work_items SET status='failed',verdict='INFRA_FAIL',"
+                "evidence_path=?,payload_json=? WHERE id=?",
+                (
+                    farmctl._evidence_unavailable_sentinel("test_fixture"),
+                    json.dumps(payload, sort_keys=True),
+                    self.work_item_id,
+                ),
             )
             connection.commit()
 
@@ -611,8 +615,11 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
             })
             connection.execute(
                 "UPDATE work_items SET status='failed',verdict='INFRA_FAIL',"
-                "claimed_by=NULL,payload_json=?,updated_at=? WHERE id=?",
-                (json.dumps(payload, sort_keys=True), failed_at, self.work_item_id),
+                "claimed_by=NULL,evidence_path=?,payload_json=?,updated_at=? WHERE id=?",
+                (
+                    farmctl._evidence_unavailable_sentinel("test_fixture"),
+                    json.dumps(payload, sort_keys=True), failed_at, self.work_item_id,
+                ),
             )
             predecessor = connection.execute(
                 "SELECT * FROM work_items WHERE id=?",
@@ -709,7 +716,13 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
                 "SELECT payload_json FROM work_items WHERE id=?",
                 (receipt["work_item_id"],),
             ).fetchone()["payload_json"])
-        self.assertIsNone(predecessor["evidence_path"])
+        # MNT-009 (2026-08-21): a spawn refusal has no report to point at, but
+        # record_work_item_spawn_refusal now stamps the explicit
+        # EVIDENCE_UNAVAILABLE sentinel instead of leaving evidence_path NULL.
+        self.assertEqual(
+            predecessor["evidence_path"],
+            "EVIDENCE_UNAVAILABLE:spawn_refusal:worker_staged_ex5_destination_path_mismatch",
+        )
         self.assertNotIn("terminal", json.loads(predecessor["payload_json"]))
         self.assertEqual(
             set(rerun_payload["avoid_terminals"]),

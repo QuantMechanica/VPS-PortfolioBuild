@@ -3248,14 +3248,20 @@ def _finish_work_item(
                 # Transient cap exhausted -> real INFRA_FAIL for manual attention.
                 payload["final_failure"] = "shared_bases_history_lock_transient_cap_exhausted"
                 farmctl._ensure_verdict_reason(payload)
+                storm_log_path = payload.get("transient_infra_evidence_path")
+                evidence_path = (
+                    str(storm_log_path)
+                    if isinstance(storm_log_path, str) and storm_log_path.strip()
+                    else farmctl._evidence_unavailable_sentinel(payload["final_failure"])
+                )
                 conn.execute(
                     """
                     UPDATE work_items
                     SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
-                        payload_json=?, updated_at=?
+                        evidence_path=?, payload_json=?, updated_at=?
                     WHERE id=?
                     """,
-                    (json.dumps(payload, sort_keys=True), now, item_id),
+                    (evidence_path, json.dumps(payload, sort_keys=True), now, item_id),
                 )
                 conn.commit()
                 aggregate = _aggregate_finished_parent(root, item["parent_task_id"])
@@ -3323,14 +3329,19 @@ def _finish_work_item(
                     verdict = "INVALID"
                     payload["verdict_taxonomy"] = "invalid"
                 farmctl._ensure_verdict_reason(payload)
+                evidence_path = (
+                    str(log_path)
+                    if isinstance(log_path, str) and log_path.strip()
+                    else farmctl._evidence_unavailable_sentinel(payload["final_failure"])
+                )
                 conn.execute(
                     """
                     UPDATE work_items
                     SET status='failed', verdict=?, claimed_by=NULL,
-                        payload_json=?, updated_at=?
+                        evidence_path=?, payload_json=?, updated_at=?
                     WHERE id=?
                     """,
-                    (verdict, json.dumps(payload, sort_keys=True), now, item_id),
+                    (verdict, evidence_path, json.dumps(payload, sort_keys=True), now, item_id),
                 )
                 status = "failed"
             conn.commit()
@@ -3755,10 +3766,11 @@ def _monitor_spawned_work_item(
                     payload["log_bomb_evidence_path"] = str(evidence_path)
                 conn.execute(
                     "UPDATE work_items SET status='done', verdict='INFRA_FAIL', "
-                    "attempt_count=99, evidence_path=COALESCE(?, evidence_path), "
+                    "attempt_count=99, evidence_path=COALESCE(?, evidence_path, ?), "
                     "claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
                     (
                         str(evidence_path) if evidence_path is not None else None,
+                        farmctl._evidence_unavailable_sentinel("log_bomb"),
                         json.dumps(payload, sort_keys=True),
                         killed_at,
                         item["id"],

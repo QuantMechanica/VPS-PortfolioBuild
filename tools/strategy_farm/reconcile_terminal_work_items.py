@@ -130,6 +130,21 @@ BEFORE INSERT ON work_items
 WHEN NEW.status IN ('done', 'failed') AND NEW.verdict IS NULL
 BEGIN SELECT RAISE(ABORT, 'terminal work_item requires verdict'); END;
 
+-- MNT-009 (2026-08-21): mirrors farmctl.py's init_db schema -- see there for
+-- the full rationale (scoped to verdict='INFRA_FAIL' only). Kept in lockstep
+-- because this tool applies its own schema independently against the same
+-- farm_state.sqlite.
+CREATE TRIGGER IF NOT EXISTS trg_work_items_infra_fail_requires_evidence_update
+BEFORE UPDATE OF status, verdict ON work_items
+WHEN NEW.status IN ('done', 'failed') AND NEW.verdict = 'INFRA_FAIL'
+     AND (NEW.evidence_path IS NULL OR trim(NEW.evidence_path) = '')
+BEGIN SELECT RAISE(ABORT, 'terminal INFRA_FAIL work_item requires evidence_path or EVIDENCE_UNAVAILABLE sentinel'); END;
+CREATE TRIGGER IF NOT EXISTS trg_work_items_infra_fail_requires_evidence_insert
+BEFORE INSERT ON work_items
+WHEN NEW.status IN ('done', 'failed') AND NEW.verdict = 'INFRA_FAIL'
+     AND (NEW.evidence_path IS NULL OR trim(NEW.evidence_path) = '')
+BEGIN SELECT RAISE(ABORT, 'terminal INFRA_FAIL work_item requires evidence_path or EVIDENCE_UNAVAILABLE sentinel'); END;
+
 CREATE TABLE IF NOT EXISTS parent_task_transition_ledger (
     seq INTEGER PRIMARY KEY AUTOINCREMENT,
     idempotency_key TEXT NOT NULL UNIQUE,

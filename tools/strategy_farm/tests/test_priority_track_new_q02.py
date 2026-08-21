@@ -217,13 +217,14 @@ def test_existing_owner_registry_priority_is_inherited_by_future_q02(
             """
             INSERT INTO work_items(
                 id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
-                attempt_count, payload_json, created_at, updated_at
+                attempt_count, evidence_path, payload_json, created_at, updated_at
             ) VALUES (
                 'prior-20007', 'backtest', 'Q02', 'QM5_20007', 'GDAXI.DWX',
-                'prior.set', 'failed', 'INFRA_FAIL', 0, '{}',
+                'prior.set', 'failed', 'INFRA_FAIL', 0, ?, '{}',
                 '2026-07-30T00:00:00+00:00', '2026-07-30T00:00:00+00:00'
             )
-            """
+            """,
+            (farmctl._evidence_unavailable_sentinel("test_fixture"),),
         )
         conn.commit()
         assert farmctl._q02_priority_track_required(conn, root, "QM5_20007") is True

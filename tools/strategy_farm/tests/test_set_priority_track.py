@@ -80,6 +80,15 @@ def _insert_row(
     updated_at: str = "2026-07-31T12:00:00Z",
 ) -> str:
     raw = json.dumps(payload or {}, sort_keys=True, separators=(",", ":"))
+    # MNT-009: an INFRA_FAIL terminal row needs a non-NULL evidence_path (real
+    # path or the EVIDENCE_UNAVAILABLE sentinel); irrelevant to what these
+    # fixtures assert, so fill it in automatically rather than threading a
+    # new kwarg through every call site.
+    evidence_path = (
+        farmctl._evidence_unavailable_sentinel("test_fixture")
+        if status in {"done", "failed"} and verdict == "INFRA_FAIL"
+        else None
+    )
     conn.execute(
         """
         INSERT INTO work_items(
@@ -99,7 +108,7 @@ def _insert_row(
             verdict,
             0,
             None,
-            None,
+            evidence_path,
             claimed_by,
             raw,
             "2026-07-31T12:00:00Z",

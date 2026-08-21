@@ -73,11 +73,21 @@ def _insert_work_item(
 ) -> None:
     now = "2026-07-29T10:00:00+00:00"
     legacy_null = status in {"done", "failed"} and verdict is None
+    legacy_evidence_missing = (
+        status in {"done", "failed"}
+        and verdict == "INFRA_FAIL"
+        and not (evidence_path and evidence_path.strip())
+    )
     with sqlite3.connect(db) as conn:
         if legacy_null:
             # Seed a pre-guard historical defect, then reinstall the forward
             # trigger immediately after the fixture insert.
             conn.execute("DROP TRIGGER trg_work_items_terminal_requires_verdict_insert")
+        if legacy_evidence_missing:
+            # MNT-009: same pattern for the evidence-binding guard -- seed a
+            # pre-guard historical defect (INFRA_FAIL with no evidence_path),
+            # then reinstall the forward trigger immediately after.
+            conn.execute("DROP TRIGGER trg_work_items_infra_fail_requires_evidence_insert")
         conn.execute(
             """
             INSERT INTO work_items(
@@ -100,7 +110,7 @@ def _insert_work_item(
             ),
         )
         conn.commit()
-    if legacy_null:
+    if legacy_null or legacy_evidence_missing:
         farmctl.init_db(db.parent.parent)
 
 

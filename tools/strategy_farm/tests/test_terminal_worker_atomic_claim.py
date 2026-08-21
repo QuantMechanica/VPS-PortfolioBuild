@@ -1790,17 +1790,17 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                     """
                     INSERT INTO work_items(
                         id, kind, phase, ea_id, symbol, setfile_path, status,
-                        verdict, attempt_count, parent_task_id, payload_json,
-                        created_at, updated_at
+                        verdict, attempt_count, parent_task_id, evidence_path,
+                        payload_json, created_at, updated_at
                     )
                     VALUES (
                         'wi-infra', 'backtest', 'Q03', 'QM5_9998',
                         'QM5_9998_EURUSD_GBPUSD_COINTEGRATION_D1',
                         'dummy.set', 'done', 'INFRA_FAIL', 0,
-                        'parent-q03', '{}', ?, ?
+                        'parent-q03', ?, '{}', ?, ?
                     )
                     """,
-                    (now, now),
+                    (farmctl._evidence_unavailable_sentinel("test_fixture"), now, now),
                 )
                 conn.commit()
 

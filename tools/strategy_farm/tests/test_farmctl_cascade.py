@@ -435,12 +435,12 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
                     """
                     INSERT INTO work_items
                       (id, kind, phase, ea_id, symbol, setfile_path, status,
-                       verdict, attempt_count, payload_json, created_at, updated_at)
+                       verdict, attempt_count, evidence_path, payload_json, created_at, updated_at)
                     VALUES
                       ('q02-pass', 'backtest', 'Q02', ?, ?, ?,
-                       'done', 'PASS', 0, ?, ?, ?),
+                       'done', 'PASS', 0, NULL, ?, ?, ?),
                       ('q04-infra', 'backtest', 'Q04', ?, ?, ?,
-                       'done', 'INFRA_FAIL', 2, ?, ?, ?)
+                       'done', 'INFRA_FAIL', 2, ?, ?, ?, ?)
                     """,
                     (
                         ea_id,
@@ -458,6 +458,7 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
                         ea_id,
                         logical,
                         str(setfile),
+                        farmctl._evidence_unavailable_sentinel("test_fixture"),
                         json.dumps({"prior_failure": "runner_invalid"}),
                         now,
                         now,
@@ -532,14 +533,14 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
                     """
                     INSERT INTO work_items
                       (id, kind, phase, ea_id, symbol, setfile_path, status,
-                       verdict, attempt_count, payload_json, created_at, updated_at)
+                       verdict, attempt_count, evidence_path, payload_json, created_at, updated_at)
                     VALUES
                       ('q02-old-pass', 'backtest', 'Q02', ?, ?, ?,
-                       'done', 'PASS', 0, ?, ?, ?),
+                       'done', 'PASS', 0, NULL, ?, ?, ?),
                       ('q02-new-pass', 'backtest', 'Q02', ?, ?, ?,
-                       'done', 'PASS', 0, ?, ?, ?),
+                       'done', 'PASS', 0, NULL, ?, ?, ?),
                       ('q04-infra', 'backtest', 'Q04', ?, ?, ?,
-                       'done', 'INFRA_FAIL', 1, ?, ?, ?)
+                       'done', 'INFRA_FAIL', 1, ?, ?, ?, ?)
                     """,
                     (
                         ea_id,
@@ -557,6 +558,7 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
                         ea_id,
                         logical,
                         str(setfile),
+                        farmctl._evidence_unavailable_sentinel("test_fixture"),
                         json.dumps({"prior_failure": "runner_invalid"}),
                         older,
                         older,

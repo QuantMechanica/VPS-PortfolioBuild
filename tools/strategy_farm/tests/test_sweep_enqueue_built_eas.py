@@ -430,9 +430,9 @@ def test_part2_requeues_terminal_failed_logical_basket_with_auditable_source(
             """
             INSERT INTO work_items(
                 id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
-                attempt_count,payload_json,created_at,updated_at
+                attempt_count,evidence_path,payload_json,created_at,updated_at
             ) VALUES(?, 'backtest', 'Q02', ?, ?, ?, 'failed', 'INFRA_FAIL',
-                     0, ?, '2026-08-06T00:00:00+00:00',
+                     0, ?, ?, '2026-08-06T00:00:00+00:00',
                      '2026-08-06T01:00:00+00:00')
             """,
             (
@@ -440,6 +440,7 @@ def test_part2_requeues_terminal_failed_logical_basket_with_auditable_source(
                 ea_id,
                 logical_symbol,
                 str(setfile.resolve()),
+                farmctl._evidence_unavailable_sentinel("test_fixture"),
                 json.dumps({
                     "basket_manifest": str(manifest_path.resolve()),
                     "portfolio_scope": "basket",
@@ -559,14 +560,19 @@ def test_part2_refuses_terminal_disposition_and_historical_phase(
             ),
         ]
         for item_id, phase, ea_id, setfile, status, verdict, stamp in rows:
+            evidence_path = (
+                farmctl._evidence_unavailable_sentinel("test_fixture")
+                if verdict == "INFRA_FAIL"
+                else None
+            )
             conn.execute(
                 """
                 INSERT INTO work_items(
                     id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
-                    attempt_count,payload_json,created_at,updated_at
-                ) VALUES(?, 'backtest', ?, ?, 'EURUSD.DWX', ?, ?, ?, 0, '{}', ?, ?)
+                    attempt_count,evidence_path,payload_json,created_at,updated_at
+                ) VALUES(?, 'backtest', ?, ?, 'EURUSD.DWX', ?, ?, ?, 0, ?, '{}', ?, ?)
                 """,
-                (item_id, phase, ea_id, setfile, status, verdict, stamp, stamp),
+                (item_id, phase, ea_id, setfile, status, verdict, evidence_path, stamp, stamp),
             )
         conn.commit()
 
@@ -659,11 +665,15 @@ def test_part2_requeues_q04_and_q07_but_preserves_infra_cap(
                 """
                 INSERT INTO work_items(
                     id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
-                    attempt_count,payload_json,created_at,updated_at
+                    attempt_count,evidence_path,payload_json,created_at,updated_at
                 ) VALUES(?, 'backtest', ?, ?, 'EURUSD.DWX', ?, 'done',
-                         'INFRA_FAIL', 0, '{}', ?, ?)
+                         'INFRA_FAIL', 0, ?, '{}', ?, ?)
                 """,
-                (item_id, phase, ea_id, str(fixtures[ea_id]), stamp, stamp),
+                (
+                    item_id, phase, ea_id, str(fixtures[ea_id]),
+                    farmctl._evidence_unavailable_sentinel("test_fixture"),
+                    stamp, stamp,
+                ),
             )
         conn.commit()
 
@@ -772,7 +782,10 @@ def test_q08_stranded_retry_carries_hash_pinned_requal_lineage(
                 "old", json.dumps(old_payload), "2026-07-27T00:00:00Z",
                 str(archive_leaf / "aggregate.json"),
             ),
-            ("latest-failed", "{}", "2026-08-02T00:00:00Z", None),
+            (
+                "latest-failed", "{}", "2026-08-02T00:00:00Z",
+                farmctl._evidence_unavailable_sentinel("test_fixture"),
+            ),
         ]
         for item_id, payload, stamp, evidence_path in rows:
             conn.execute(
