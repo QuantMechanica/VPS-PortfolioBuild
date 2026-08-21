@@ -61,6 +61,13 @@ except ModuleNotFoundError:
     from tools.strategy_farm.process_identity import get_process_identity
 
 try:
+    from defect_block_taint_view import taint_record as defect_block_taint_record
+except ModuleNotFoundError:
+    from tools.strategy_farm.defect_block_taint_view import (
+        taint_record as defect_block_taint_record,
+    )
+
+try:
     from q09_news_schema import (
         ACTIVATION_HOLD_CODE as Q09_ACTIVATION_HOLD_CODE,
         ACTIVATION_STATE_AWAITING as Q09_ACTIVATION_AWAITING_PLAN,
@@ -1213,6 +1220,15 @@ def pending_claim_order_sql() -> str:
           CASE w.phase
             -- Downstream phases first so work drains rather than re-pooling at the
             -- head of the pipeline. Legacy P-keys preserved at their original ranks.
+            -- A harness is a single short diagnostic run that gates a whole
+            -- programme (the pattern-permission census cannot start until the
+            -- MQL5 fixture verdict exists). Left in the ELSE-9 bucket it can never
+            -- win the main ordering term against a deep aged backlog -- the
+            -- HARNESS_PP_FIXTURE row sat pending from 2026-08-21T08:31 behind
+            -- ~2350 rows with no hold and no defect, simply out-ranked. Harness
+            -- rows are rare and terminal, so a head-of-queue rank cannot starve
+            -- production throughput.
+            WHEN 'HARNESS_PP_FIXTURE' THEN 0
             WHEN 'Q10'  THEN 0
             WHEN 'Q09_PORTFOLIO' THEN 1
             WHEN 'Q09_NEWS' THEN 1
@@ -6129,6 +6145,13 @@ def enqueue_pattern_fixture_harness(
     now = utc_now()
     item_id = str(uuid.uuid4())
     payload = {
+        # A harness is a rare, short, terminal diagnostic that GATES a whole
+        # programme (no pattern census may start before the MQL5 fixture verdict
+        # exists). Without the priority-track flag it competes on the ordinary
+        # ``priority_track*10 + phase_rank - age_weeks`` term with no age credit
+        # and loses to every aged backlog row: the 2026-08-21T08:31 row was still
+        # unclaimed hours later behind ~2350 rows, with no hold and no defect.
+        "priority_track": True,
         "harness_type": "pattern_permission_fixture",
         "harness_ea_label": HARNESS_PP_FIXTURE_EA_LABEL,
         "harness_source_dir": str(HARNESS_PP_FIXTURE_SOURCE_DIR),
@@ -21658,7 +21681,28 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                     # task. Only when next phase is supported AND no successor
                     # already exists for the same EA. Saves the wait for the
                     # next hourly wake + manual enqueue.
-                    if verdict == "PASS":
+                    #
+                    # 2026-08-21 defect-block-taint guard: this verdict alone
+                    # cannot tell a clean PASS from one produced by an EA that
+                    # was later formally BLOCKED for a documented correctness
+                    # defect (see defect_block_taint_view.py / evidence doc
+                    # docs/ops/evidence/2026-08-21_defect_block_taint_marker.md).
+                    # Skip the auto-cascade for those by default; the block
+                    # itself is untouched (no un-blocking here), only this
+                    # convenience side-effect is suppressed. Named override:
+                    # set payload["allow_defect_blocked_auto_cascade"]=true on
+                    # the task (e.g. after a governed repair + rebuild) to
+                    # resume normal cascading for that EA.
+                    defect_taint = defect_block_taint_record(ea_id)
+                    taint_override = bool(payload.get("allow_defect_blocked_auto_cascade"))
+                    if verdict == "PASS" and defect_taint and not taint_override:
+                        auto_enqueued = {
+                            "skipped": "defect_block_taint",
+                            "defect_class": defect_taint.get("defect_class"),
+                            "source_task_id": defect_taint.get("source_task_id"),
+                            "override_field": "allow_defect_blocked_auto_cascade",
+                        }
+                    elif verdict == "PASS":
                         next_phase_map = {"P2": "P3", "P3": "P3.5", "P3.5": "P4"}  # extend as adapters come online
                         next_phase = next_phase_map.get(phase)
                         if next_phase and next_phase in SUPPORTED_BACKTEST_PHASES:
