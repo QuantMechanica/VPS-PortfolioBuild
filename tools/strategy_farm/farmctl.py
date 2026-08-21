@@ -24032,6 +24032,24 @@ def _write_csv_atomic(path: Path, fieldnames: list[str], rows: list[dict[str, An
             time.sleep(0.2 * (attempt + 1))
 
 
+def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
+    """Write one JSON document by same-directory replace."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + f".{os.getpid()}.{uuid.uuid4().hex}.tmp")
+    try:
+        tmp.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        tmp.replace(path)
+    except BaseException:
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+        raise
+
+
 def reserve_ea_ids(
     root: Path,
     slugs: list[str],
@@ -24118,6 +24136,344 @@ def reserve_ea_ids(
             "registry": str(registry),
             "rows": reserved_rows,
             "count": len(reserved_rows),
+        }
+    finally:
+        _release_registry_lock(lock)
+
+
+EA_ID_RETIREMENT_FIELDS = (
+    "retired_at",
+    "retired_reason",
+    "retired_evidence",
+)
+
+
+def _normalize_retirement_ea_id(value: Any) -> str | None:
+    text = str(value or "").strip().upper()
+    match = re.fullmatch(r"(?:QM5_)?([0-9]+)", text)
+    if not match or int(match.group(1)) <= 0:
+        return None
+    return str(int(match.group(1)))
+
+
+def _normalize_stored_ea_reference(value: Any) -> str | None:
+    """Normalize an ID or materialized QM5 label stored in runtime tables."""
+    normalized = _normalize_retirement_ea_id(value)
+    if normalized:
+        return normalized
+    text = str(value or "").strip().upper()
+    match = re.fullmatch(r"QM5_([0-9]+)_[A-Z0-9][A-Z0-9_-]*", text)
+    if not match or int(match.group(1)) <= 0:
+        return None
+    return str(int(match.group(1)))
+
+
+def load_retirement_ea_ids(
+    ea_ids: list[str] | None,
+    from_file: str | None,
+    *,
+    repo_root: Path | None = None,
+) -> tuple[list[str], dict[str, Any]]:
+    """Load explicit IDs and, for decision CSVs, select only action=RETIRE."""
+    repo = (repo_root or REPO_ROOT).resolve()
+    loaded = list(ea_ids or [])
+    metadata: dict[str, Any] = {
+        "explicit_id_count": len(loaded),
+        "from_file": None,
+        "filtered_non_retire_count": 0,
+        "filtered_actions": {},
+    }
+    if from_file:
+        source = Path(from_file).expanduser()
+        if not source.is_absolute():
+            source = repo / source
+        source = source.resolve()
+        if not source.is_file():
+            raise ValueError(f"retirement input file does not exist: {source}")
+        metadata["from_file"] = str(source)
+        if source.suffix.lower() == ".csv":
+            with source.open("r", encoding="utf-8-sig", newline="") as handle:
+                reader = csv.DictReader(handle)
+                fields = set(reader.fieldnames or [])
+                if "ea_id" not in fields:
+                    raise ValueError("retirement CSV must contain an ea_id column")
+                action_counts: dict[str, int] = {}
+                for row in reader:
+                    action = str(row.get("action") or "RETIRE").strip().upper()
+                    action_counts[action] = action_counts.get(action, 0) + 1
+                    if "action" in fields and action != "RETIRE":
+                        metadata["filtered_non_retire_count"] += 1
+                        continue
+                    loaded.append(str(row.get("ea_id") or ""))
+                metadata["filtered_actions"] = dict(sorted(action_counts.items()))
+        else:
+            for line in source.read_text(encoding="utf-8-sig").splitlines():
+                value = line.strip()
+                if value and not value.startswith("#"):
+                    loaded.append(value)
+    return loaded, metadata
+
+
+def _registry_status_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        status = str(row.get("status") or "").strip() or "<blank>"
+        counts[status] = counts.get(status, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _retirement_receipt_path(repo_root: Path, *, apply: bool) -> Path:
+    now = dt.datetime.now(dt.UTC)
+    stamp = now.strftime("%Y%m%dT%H%M%SZ")
+    mode = "apply" if apply else "dry_run"
+    return (
+        repo_root
+        / "docs"
+        / "ops"
+        / "evidence"
+        / f"{now.date().isoformat()}_ea_id_retirement_{mode}_{stamp}_{uuid.uuid4().hex[:8]}.json"
+    )
+
+
+def retire_ea_ids(
+    root: Path,
+    ea_ids: list[str],
+    *,
+    reason: str,
+    evidence: str,
+    apply: bool = False,
+    limit: int | None = None,
+    repo_root: Path | None = None,
+    input_metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Retire eligible registry IDs under the reservation lock and atomic writer.
+
+    Dry-run is the default. Apply requires an explicit positive limit. Every
+    active target is classified independently; EA directories, any work-item
+    history, and any magic row are fail-loud refusal guards. Retirement
+    provenance lives on the same registry row so status and reason transition
+    in one atomic file replace.
+    """
+    repo = (repo_root or REPO_ROOT).resolve()
+    init_db(root)
+    with connect(root) as audit_conn:
+        try:
+            _scope_guard(
+                "registry.reserve_ea_ids",
+                tool="retire_ea_ids",
+                args_summary=f"apply={apply}:limit={limit}:ids={len(ea_ids)}",
+                conn=audit_conn,
+            )
+        except Exception:
+            audit_conn.commit()
+            raise
+        else:
+            audit_conn.commit()
+
+    clean_reason = str(reason or "").strip()
+    if not clean_reason:
+        return {"ok": False, "retired": False, "reason": "retirement_reason_required"}
+    if apply and (limit is None or limit <= 0):
+        return {
+            "ok": False,
+            "retired": False,
+            "reason": "apply_requires_explicit_positive_limit",
+        }
+    if limit is not None and limit <= 0:
+        return {"ok": False, "retired": False, "reason": "limit_must_be_positive"}
+
+    evidence_path = Path(str(evidence or "").strip()).expanduser()
+    if not evidence_path.is_absolute():
+        evidence_path = repo / evidence_path
+    evidence_path = evidence_path.resolve()
+    evidence_root = (repo / "docs" / "ops" / "evidence").resolve()
+    try:
+        evidence_relative = evidence_path.relative_to(repo).as_posix()
+        evidence_path.relative_to(evidence_root)
+    except ValueError:
+        return {
+            "ok": False,
+            "retired": False,
+            "reason": "evidence_must_be_under_canonical_docs_ops_evidence",
+            "evidence": str(evidence_path),
+        }
+    if not evidence_path.is_file():
+        return {
+            "ok": False,
+            "retired": False,
+            "reason": "evidence_file_missing",
+            "evidence": str(evidence_path),
+        }
+
+    normalized: list[str] = []
+    invalid: list[str] = []
+    for raw_id in ea_ids:
+        value = _normalize_retirement_ea_id(raw_id)
+        if value is None:
+            invalid.append(str(raw_id))
+        elif value not in normalized:
+            normalized.append(value)
+    normalized.sort(key=int)
+    if invalid:
+        return {
+            "ok": False,
+            "retired": False,
+            "reason": "invalid_ea_ids",
+            "invalid_ea_ids": invalid,
+        }
+    if not normalized:
+        return {"ok": False, "retired": False, "reason": "no_ea_ids_provided"}
+
+    registry = repo / "framework" / "registry" / "ea_id_registry.csv"
+    magics = repo / "framework" / "registry" / "magic_numbers.csv"
+    eas_root = repo / "framework" / "EAs"
+    if not registry.is_file() or not magics.is_file() or not eas_root.is_dir():
+        return {
+            "ok": False,
+            "retired": False,
+            "reason": "retirement_guard_input_missing",
+            "registry_exists": registry.is_file(),
+            "magic_registry_exists": magics.is_file(),
+            "ea_root_exists": eas_root.is_dir(),
+        }
+
+    lock = _acquire_registry_lock()
+    if lock is None:
+        return {
+            "ok": False,
+            "retired": False,
+            "reason": "registry_lock_timeout",
+            "lock_path": str(_registry_lock_path()),
+        }
+    try:
+        registry_sha_before = hashlib.sha256(registry.read_bytes()).hexdigest()
+        fieldnames, rows = _read_csv_dicts_with_columns(registry)
+        if not fieldnames:
+            return {"ok": False, "retired": False, "reason": "registry_empty"}
+        before_counts = _registry_status_counts(rows)
+
+        registry_indices: dict[str, list[int]] = {}
+        for index, row in enumerate(rows):
+            row_id = _normalize_retirement_ea_id(row.get("ea_id"))
+            if row_id:
+                registry_indices.setdefault(row_id, []).append(index)
+
+        with magics.open("r", encoding="utf-8-sig", newline="") as handle:
+            magic_ids = {
+                normalized_magic
+                for magic_row in csv.DictReader(handle)
+                if (normalized_magic := _normalize_retirement_ea_id(magic_row.get("ea_id")))
+            }
+
+        ea_dir_ids: set[str] = set()
+        for directory in eas_root.iterdir():
+            if not directory.is_dir():
+                continue
+            match = re.match(r"(?i)^QM5_([0-9]+)(?:_|$)", directory.name)
+            if match:
+                ea_dir_ids.add(str(int(match.group(1))))
+
+        with connect(root) as conn:
+            work_item_ids = {
+                normalized_work
+                for row in conn.execute("SELECT DISTINCT ea_id FROM work_items")
+                if (normalized_work := _normalize_stored_ea_reference(row[0]))
+            }
+
+        eligible: list[str] = []
+        already_retired: list[str] = []
+        refused: list[dict[str, Any]] = []
+        for ea_id in normalized:
+            indices = registry_indices.get(ea_id, [])
+            if len(indices) != 1:
+                refused.append(
+                    {
+                        "ea_id": f"QM5_{ea_id}",
+                        "reasons": [
+                            "registry_row_missing" if not indices else "duplicate_registry_rows"
+                        ],
+                    }
+                )
+                continue
+            row = rows[indices[0]]
+            status = str(row.get("status") or "").strip().lower()
+            if status == "retired":
+                if all(str(row.get(field) or "").strip() for field in EA_ID_RETIREMENT_FIELDS):
+                    already_retired.append(ea_id)
+                else:
+                    refused.append(
+                        {
+                            "ea_id": f"QM5_{ea_id}",
+                            "reasons": ["retired_without_complete_provenance"],
+                        }
+                    )
+                continue
+            reasons: list[str] = []
+            if status != "active":
+                reasons.append(f"status_not_retirable:{status or '<blank>'}")
+            if ea_id in ea_dir_ids:
+                reasons.append("ea_directory_exists")
+            if ea_id in work_item_ids:
+                reasons.append("work_items_exist")
+            if ea_id in magic_ids:
+                reasons.append("magic_rows_exist")
+            if reasons:
+                refused.append({"ea_id": f"QM5_{ea_id}", "reasons": reasons})
+            else:
+                eligible.append(ea_id)
+
+        selected = eligible[:limit] if limit is not None else eligible
+        deferred = eligible[len(selected) :]
+        transitioned_at = utc_now()
+        if apply and selected:
+            for field in EA_ID_RETIREMENT_FIELDS:
+                if field not in fieldnames:
+                    fieldnames.append(field)
+            for ea_id in selected:
+                row = rows[registry_indices[ea_id][0]]
+                row["status"] = "retired"
+                row["retired_at"] = transitioned_at
+                row["retired_reason"] = clean_reason
+                row["retired_evidence"] = evidence_relative
+            _write_csv_atomic(registry, fieldnames, rows)
+
+        after_rows = _read_csv_dicts_with_columns(registry)[1]
+        after_counts = _registry_status_counts(after_rows)
+        registry_sha_after = hashlib.sha256(registry.read_bytes()).hexdigest()
+        receipt_path = _retirement_receipt_path(repo, apply=apply)
+        receipt = {
+            "schema_version": "qm.ea-id-retirement-wave/v1",
+            "created_at": utc_now(),
+            "mode": "apply" if apply else "dry_run",
+            "reason": clean_reason,
+            "evidence": evidence_relative,
+            "input_metadata": input_metadata or {},
+            "limit": limit,
+            "requested_count": len(normalized),
+            "eligible_count": len(eligible),
+            "planned_count": len(selected),
+            "applied_count": len(selected) if apply else 0,
+            "already_retired_count": len(already_retired),
+            "refused_count": len(refused),
+            "deferred_count": len(deferred),
+            "planned_or_applied_ids": [f"QM5_{ea_id}" for ea_id in selected],
+            "already_retired_ids": [f"QM5_{ea_id}" for ea_id in already_retired],
+            "refused": refused,
+            "deferred_ids": [f"QM5_{ea_id}" for ea_id in deferred],
+            "registry": str(registry),
+            "registry_sha256_before": registry_sha_before,
+            "registry_sha256_after": registry_sha_after,
+            "registry_status_counts_before": before_counts,
+            "registry_status_counts_after": after_counts,
+            "registry_lock": str(_registry_lock_path()),
+            "atomic_writer": "farmctl._write_csv_atomic",
+            "receipt_path": str(receipt_path),
+        }
+        _write_json_atomic(receipt_path, receipt)
+        return {
+            "ok": not refused,
+            "retired": bool(apply and selected),
+            **receipt,
         }
     finally:
         _release_registry_lock(lock)
@@ -24350,6 +24706,17 @@ def build_parser() -> argparse.ArgumentParser:
     reserve_ids.add_argument("--status", default="active")
     reserve_ids.add_argument("--created-at", help="YYYY-MM-DD; defaults to today")
     reserve_ids.add_argument("--start-after", type=int, help="Optional lower bound for the first allocated numeric EA ID")
+
+    retire_ids = sub.add_parser(
+        "retire-ea-ids",
+        help="Dry-run or atomically retire guarded EA IDs with durable provenance",
+    )
+    retire_ids.add_argument("--ea-id", action="append", default=[], help="EA ID to retire; repeat for batches")
+    retire_ids.add_argument("--from-file", help="CSV (action=RETIRE rows only) or newline-delimited EA IDs")
+    retire_ids.add_argument("--reason", required=True, help="Durable reason recorded on every transitioned registry row")
+    retire_ids.add_argument("--evidence", required=True, help="Existing path under canonical docs/ops/evidence")
+    retire_ids.add_argument("--limit", type=int, help="Maximum eligible transitions in this wave; required with --apply")
+    retire_ids.add_argument("--apply", action="store_true", help="Apply one bounded atomic wave; default is dry-run")
 
     normalize_slugs = sub.add_parser(
         "normalize-ea-id-slugs",
@@ -24638,7 +25005,7 @@ _STATE_MUTATING_COMMANDS = frozenset({
     "enqueue-pattern-fixture-harness",
     "reject-card", "seed-sources", "record-build", "record-review",
     "claude-prompt", "build-ea", "claude-review-prompt", "claim-source", "set-source-status",
-    "reserve-ea-ids", "reserve-terminal", "release-terminal",
+    "reserve-ea-ids", "retire-ea-ids", "reserve-terminal", "release-terminal",
     "normalize-ea-id-slugs",
     "resume-mining", "add-source",
 })
@@ -24760,6 +25127,29 @@ def main(argv: list[str] | None = None) -> int:
             created_at=args.created_at,
             start_after=args.start_after,
         ))
+    elif args.command == "retire-ea-ids":
+        try:
+            retirement_ids, input_metadata = load_retirement_ea_ids(
+                args.ea_id,
+                args.from_file,
+                repo_root=REPO_ROOT,
+            )
+        except (OSError, ValueError) as exc:
+            print_json({"ok": False, "retired": False, "reason": str(exc)})
+            return 2
+        retirement_result = retire_ea_ids(
+            root,
+            retirement_ids,
+            reason=args.reason,
+            evidence=args.evidence,
+            apply=args.apply,
+            limit=args.limit,
+            repo_root=REPO_ROOT,
+            input_metadata=input_metadata,
+        )
+        print_json(retirement_result)
+        if not retirement_result.get("ok", False):
+            return 2
     elif args.command == "normalize-ea-id-slugs":
         print_json(normalize_ea_id_slugs(
             args.ea_id,
