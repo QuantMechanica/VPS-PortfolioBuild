@@ -1,8 +1,11 @@
 # MNT-020 — BarsCalculated-first cohort recovery
 
-**Task:** `663ba5f6-69fa-42b2-9ce3-c78d52f452a6`  
-**Measured:** 2026-08-21 10:15 UTC against the live farm database opened read-only  
-**Source implementation:** `b4745f5b2a00bd4eae66df7c9be23adcd5a40d74` on `agents/board-advisor`  
+**Task:** `663ba5f6-69fa-42b2-9ce3-c78d52f452a6`
+
+**Measured:** 2026-08-21 10:15 UTC against the live farm database opened read-only
+
+**Source implementation:** `b4745f5b2a00bd4eae66df7c9be23adcd5a40d74` on `agents/board-advisor`
+
 **Disposition:** `SOURCE_REPAIRED_RUNTIME_PROOF_DEFERRED` — this is not a pipeline verdict and not a live-use authorization.
 
 ## Result
