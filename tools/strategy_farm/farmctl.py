@@ -18811,6 +18811,21 @@ def enqueue_fresh_q02_seed(
                 "reason": "fresh_q02_seed_source_payload_invalid",
                 "old_work_item_id": source_id,
             }
+        source_logical_symbol = str(
+            source_payload.get("logical_symbol") or ""
+        ).strip()
+        if source["kind"] == "backtest_p2" and (
+            not source_logical_symbol
+            or str(source["symbol"]) != source_logical_symbol
+            or not isinstance(source_payload.get("basket_symbols"), list)
+        ):
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "fresh_q02_seed_legacy_kind_requires_logical_basket_identity",
+                "old_work_item_id": source_id,
+            }
         present_bindings = [
             key
             for key in _Q02_EXECUTION_BINDING_KEYS
@@ -18874,26 +18889,97 @@ def enqueue_fresh_q02_seed(
                 "custom_history_archive_admission": archive_admission,
             }
 
-        open_row = conn.execute(
+        open_rows = conn.execute(
             """
-            SELECT id,status,setfile_path FROM work_items
-            WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=?
+            SELECT id,symbol,setfile_path,status,verdict,claimed_by,
+                   evidence_path,payload_json
+            FROM work_items
+            WHERE ea_id=? AND phase IN ('Q02','P2')
               AND status IN ('pending','active')
-            ORDER BY created_at ASC LIMIT 1
+            ORDER BY created_at ASC
             """,
-            (ea_id, source["symbol"]),
-        ).fetchone()
-        if open_row:
+            (ea_id,),
+        ).fetchall()
+        exact_open_row = next(
+            (
+                row
+                for row in open_rows
+                if str(row["symbol"]) == str(source["symbol"])
+            ),
+            None,
+        )
+        if exact_open_row:
             return {
                 "enqueued": False,
                 "ea_id": ea_id,
                 "phase": phase,
                 "reason": "fresh_q02_seed_open_row_exists",
                 "old_work_item_id": source_id,
-                "existing_work_item_id": open_row["id"],
-                "existing_status": open_row["status"],
-                "existing_setfile_path": open_row["setfile_path"],
+                "existing_work_item_id": exact_open_row["id"],
+                "existing_status": exact_open_row["status"],
+                "existing_setfile_path": exact_open_row["setfile_path"],
             }
+
+        logical_symbol = source_logical_symbol
+        logical_basket_siblings: list[tuple[sqlite3.Row, dict[str, Any]]] = []
+        if logical_symbol and str(source["symbol"]) == logical_symbol:
+            raw_basket_symbols = source_payload.get("basket_symbols")
+            basket_symbols = {
+                str(value).strip()
+                for value in raw_basket_symbols
+                if str(value).strip()
+            } if isinstance(raw_basket_symbols, list) else set()
+            if not basket_symbols:
+                return {
+                    "enqueued": False,
+                    "ea_id": ea_id,
+                    "phase": phase,
+                    "reason": "fresh_q02_seed_logical_basket_members_missing_or_invalid",
+                    "old_work_item_id": source_id,
+                    "logical_symbol": logical_symbol,
+                }
+            active_siblings = [row for row in open_rows if row["status"] == "active"]
+            if active_siblings:
+                return {
+                    "enqueued": False,
+                    "ea_id": ea_id,
+                    "phase": phase,
+                    "reason": "fresh_q02_seed_active_sibling_exists",
+                    "old_work_item_id": source_id,
+                    "active_sibling_work_item_ids": [
+                        row["id"] for row in active_siblings
+                    ],
+                }
+            unexpected_siblings = [
+                row for row in open_rows if str(row["symbol"]) not in basket_symbols
+            ]
+            if unexpected_siblings:
+                return {
+                    "enqueued": False,
+                    "ea_id": ea_id,
+                    "phase": phase,
+                    "reason": "fresh_q02_seed_unexpected_open_sibling",
+                    "old_work_item_id": source_id,
+                    "unexpected_siblings": [
+                        {"id": row["id"], "symbol": row["symbol"]}
+                        for row in unexpected_siblings
+                    ],
+                }
+            for row in open_rows:
+                try:
+                    sibling_payload = json.loads(row["payload_json"] or "{}")
+                except json.JSONDecodeError:
+                    sibling_payload = None
+                if not isinstance(sibling_payload, dict):
+                    return {
+                        "enqueued": False,
+                        "ea_id": ea_id,
+                        "phase": phase,
+                        "reason": "fresh_q02_seed_open_sibling_payload_invalid",
+                        "old_work_item_id": source_id,
+                        "sibling_work_item_id": row["id"],
+                    }
+                logical_basket_siblings.append((row, sibling_payload))
 
         current_terminal = conn.execute(
             """
@@ -19001,6 +19087,63 @@ def enqueue_fresh_q02_seed(
             ea_id=str(ea_id),
             symbol=str(source["symbol"]),
         )
+        superseded_siblings: list[dict[str, Any]] = []
+        supersede_reason = (
+            "OWNER-ratified logical-basket contract: per-pair Q02 fan-out is "
+            "forbidden; replaced by one exact logical fresh-Q02 seed "
+            "(decisions/2026-07-15_multicurrency_logical_basket_workitem.md)."
+        )
+        supersede_evidence = _evidence_unavailable_sentinel(
+            "governance_disposition_logical_basket_supersede"
+        )
+        for sibling, sibling_payload in logical_basket_siblings:
+            sibling_evidence = str(sibling["evidence_path"] or "").strip()
+            if not sibling_evidence:
+                sibling_evidence = supersede_evidence
+            sibling_payload.update({
+                "historical_work_item_preserved": True,
+                "invalidated_reason": supersede_reason,
+                "prior_status_before_supersede": sibling["status"],
+                "prior_verdict_before_supersede": sibling["verdict"],
+                "superseded_at_utc": now,
+                "superseded_by_fresh_q02_seed_source": source_id,
+                "superseded_by_logical_symbol": logical_symbol,
+                "superseded_evidence_binding": sibling_evidence,
+                "superseded_reason": supersede_reason,
+                "superseded_scope": "Q02_per_pair_fanout",
+            })
+            updated = conn.execute(
+                """
+                UPDATE work_items
+                SET status='done', verdict='SUPERSEDED_BY_LOGICAL_BASKET',
+                    evidence_path=COALESCE(NULLIF(trim(evidence_path), ''), ?),
+                    payload_json=?, updated_at=?
+                WHERE id=? AND status='pending' AND verdict IS NULL
+                  AND claimed_by IS NULL
+                """,
+                (
+                    sibling_evidence,
+                    json.dumps(sibling_payload, sort_keys=True),
+                    now,
+                    sibling["id"],
+                ),
+            )
+            if updated.rowcount != 1:
+                conn.rollback()
+                return {
+                    "enqueued": False,
+                    "ea_id": ea_id,
+                    "phase": phase,
+                    "reason": "fresh_q02_seed_sibling_supersede_race",
+                    "old_work_item_id": source_id,
+                    "sibling_work_item_id": sibling["id"],
+                }
+            superseded_siblings.append({
+                "id": sibling["id"],
+                "symbol": sibling["symbol"],
+                "prior_status": sibling["status"],
+                "verdict": "SUPERSEDED_BY_LOGICAL_BASKET",
+            })
         wid = str(uuid.uuid4())
         conn.execute(
             """
@@ -19038,6 +19181,7 @@ def enqueue_fresh_q02_seed(
                 "requalification_reason": reason,
                 "old_work_item_id": source_id,
                 "setfile_reconciliation": reconciliation,
+                "superseded_per_pair_work_items": superseded_siblings,
             },
         )
         conn.commit()
@@ -19046,6 +19190,7 @@ def enqueue_fresh_q02_seed(
         "ea_id": ea_id,
         "phase": phase,
         "created": created,
+        "superseded_per_pair_work_items": superseded_siblings,
         "requeued": [],
         "skipped": [],
         "skipped_count": 0,

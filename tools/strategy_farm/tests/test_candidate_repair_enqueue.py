@@ -79,6 +79,7 @@ def _insert_work_item(
     artifacts: dict[str, object],
     *,
     item_id: str,
+    kind: str = "backtest",
     phase: str,
     status: str,
     verdict: str | None,
@@ -101,10 +102,11 @@ def _insert_work_item(
                 id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
                 attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,
                 created_at,updated_at
-            ) VALUES(?, 'backtest', ?, ?, ?, ?, ?, ?, 0, NULL, ?, NULL, ?, ?, ?)
+            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, ?, NULL, ?, ?, ?)
             """,
             (
                 item_id,
+                kind,
                 phase,
                 artifacts["ea_id"],
                 symbol,
@@ -1228,6 +1230,170 @@ def test_fresh_q02_seed_is_sealed_append_only_and_double_enqueue_safe(
     }
     assert payload["risk_fixed"] == 1000.0
     assert payload["risk_percent"] == 0.0
+
+
+def test_fresh_q02_seed_accepts_legacy_backtest_p2_logical_basket_kind(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-prebinding-logical-basket",
+        kind="backtest_p2",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload={
+            **_prebinding_payload(),
+            "basket_manifest": "basket_manifest.json",
+            "basket_symbol_count": 2,
+            "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX"],
+            "logical_symbol": "FX8_BASKET_D1",
+        },
+        symbol="FX8_BASKET_D1",
+    )
+    for item_id, symbol in (
+        ("q02-stale-eurusd-fanout", "EURUSD.DWX"),
+        ("q02-stale-gbpusd-fanout", "GBPUSD.DWX"),
+    ):
+        _insert_work_item(
+            art,
+            item_id=item_id,
+            phase="Q02",
+            status="pending",
+            verdict=None,
+            payload=_prebinding_payload(symbol),
+            symbol=symbol,
+        )
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.execute(
+            "UPDATE work_items SET evidence_path=NULL WHERE id=?",
+            ("q02-stale-gbpusd-fanout",),
+        )
+        conn.commit()
+
+    result = farmctl.enqueue_fresh_q02_seed(
+        art["root"],
+        art["ea_id"],
+        old_work_item_id="q02-prebinding-logical-basket",
+        requal_reason="owner-ratified logical-basket infrastructure repair",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        source = conn.execute(
+            "SELECT kind,status,verdict FROM work_items WHERE id=?",
+            ("q02-prebinding-logical-basket",),
+        ).fetchone()
+        created = conn.execute(
+            "SELECT kind,symbol,status,payload_json FROM work_items WHERE id=?",
+            (result["created"][0]["id"],),
+        ).fetchone()
+        siblings = conn.execute(
+            """
+            SELECT id,status,verdict,evidence_path,payload_json FROM work_items
+            WHERE id IN ('q02-stale-eurusd-fanout','q02-stale-gbpusd-fanout')
+            ORDER BY id
+            """
+        ).fetchall()
+    assert source == ("backtest_p2", "failed", "INFRA_FAIL")
+    assert created is not None
+    assert created[:3] == ("backtest", "FX8_BASKET_D1", "pending")
+    payload = json.loads(created[3])
+    assert payload["fresh_q02_seed"] is True
+    assert payload["logical_symbol"] == "FX8_BASKET_D1"
+    assert payload["basket_symbol_count"] == 2
+    assert payload["basket_symbols"] == ["EURUSD.DWX", "GBPUSD.DWX"]
+    assert len(result["superseded_per_pair_work_items"]) == 2
+    assert all(
+        row[1:3] == ("done", "SUPERSEDED_BY_LOGICAL_BASKET")
+        for row in siblings
+    )
+    by_id = {row[0]: row for row in siblings}
+    assert Path(by_id["q02-stale-eurusd-fanout"][3]).is_file()
+    assert by_id["q02-stale-gbpusd-fanout"][3] == (
+        "EVIDENCE_UNAVAILABLE:"
+        "governance_disposition_logical_basket_supersede"
+    )
+    for row in siblings:
+        sibling_payload = json.loads(row[4])
+        assert sibling_payload["superseded_by_logical_symbol"] == "FX8_BASKET_D1"
+        assert sibling_payload["superseded_evidence_binding"] == row[3]
+        assert sibling_payload["superseded_scope"] == "Q02_per_pair_fanout"
+
+
+def test_fresh_q02_seed_refuses_active_logical_basket_sibling(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-prebinding-logical-basket",
+        kind="backtest_p2",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload={
+            **_prebinding_payload(),
+            "basket_symbol_count": 2,
+            "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX"],
+            "logical_symbol": "FX8_BASKET_D1",
+        },
+        symbol="FX8_BASKET_D1",
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-active-eurusd-fanout",
+        phase="Q02",
+        status="active",
+        verdict=None,
+        payload=_prebinding_payload(),
+    )
+
+    result = farmctl.enqueue_fresh_q02_seed(
+        art["root"],
+        art["ea_id"],
+        old_work_item_id="q02-prebinding-logical-basket",
+        requal_reason="must not supersede an active sibling",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "fresh_q02_seed_active_sibling_exists"
+    assert result["active_sibling_work_item_ids"] == ["q02-active-eurusd-fanout"]
+    assert _work_item_count(art) == 2
+
+
+def test_fresh_q02_seed_refuses_nonbasket_legacy_backtest_p2_kind(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-prebinding-nonbasket",
+        kind="backtest_p2",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_prebinding_payload(),
+    )
+
+    result = farmctl.enqueue_fresh_q02_seed(
+        art["root"],
+        art["ea_id"],
+        old_work_item_id="q02-prebinding-nonbasket",
+        requal_reason="legacy kind must remain narrow",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == (
+        "fresh_q02_seed_legacy_kind_requires_logical_basket_identity"
+    )
+    assert _work_item_count(art) == 1
 
 
 def test_fresh_q02_seed_spawn_guard_refuses_setfile_drift(
