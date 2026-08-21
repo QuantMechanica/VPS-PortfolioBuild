@@ -40,7 +40,9 @@
 | Dir. 21.08. (ULTRACODE) | Firmen-Vollaudit + CEO-Masterplan | 8-Agenten-Audit abgeschlossen (`COMPANY_AUDIT_ULTRACODE_2026-08-21.md`); Masterplan T1–T12 im Vault (`12 ToDo/00_CEO_Masterplan_2026-08-21.md`); T1 (T_Live-Authority-Falschdoku „OWNER + Claude" auf 5 Vault-Seiten) sofort korrigiert auf Kanon OWNER-only |
 | Masterplan T2 | Identity-Core-Rebuild | Business Model neu (DXZ+FTMO gleichwertig), Hard-Rules-Amendments 2026-08 + Rollen-Modernisierung, Lint-Legacy-Rollen-Check mit 17-Seiten-Debt-Allowlist; Lint PASS |
 | Masterplan T3 | Pipeline-Seiten-Rebuild | Q00 R1/R4 (OWNER: R4 bleibt), Q02-Kanon (Rate-Floor), Q05-Rename, **DD-Schwellen-Drift 15→25 % auf Q05/Q06/Q10 gegen Code-Kanon korrigiert**, Q06 tote Multiplikatoren raus, Q09 Zwei-Achsen, Q11 dual-book, Q14 Numerik-Pointer + Fork bei Q10 (OWNER-bestätigt); Lint PASS |
-| Masterplan #2 | Fail-Soft-Vorlage Q05/Q06 | Eingereicht: `Q05_Q06_FAIL_SOFT_VORLAGE_2026-08-21.md` — Q06 `PASS_SOFT` Band PF 0,95–1,00 + Probation + Anti-Stacking; Empfehlung Option A (erst Band messen); ROT, wartet auf OWNER |
+| Masterplan #2 | Fail-Soft-Vorlage Q05/Q06 | **OWNER 2026-08-21: Option A genehmigt** — Band-Messung dispatcht (read-only); Scharfschaltung nur bei Band ≥ 2 % der Q06-FAILs (`Q05_Q06_FAIL_SOFT_VORLAGE_2026-08-21.md`) |
+| Dir. 21.08. | FTMO-Buch-Symbolregel | **OWNER-Ruling: mehrere EAs/Strategien pro Symbol im FTMO-Buch erlaubt** — Q11-Seite aktualisiert; Code-Drift dokumentiert: `build_book_ftmo.py` erzwingt noch `select_one_per_symbol` (Z. 95/261) → Umbau = Masterplan-T7-Arbeitspaket |
+| Dir. 21.08. | Subagent-Ökonomie | OWNER: Umsetzung über Codex/Opus/Sonnet-Subagents, Fable nur Orchestrierung/Review — als Feedback-Memory verankert; T4 + Band-Messung laufen bereits so |
 
 ## 2 · Offen
 
