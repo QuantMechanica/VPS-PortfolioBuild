@@ -17606,3 +17606,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41090,wti-wmid-overlap-mom,0,XTIUSD.DWX,410900000,2026-08-21,Codex governed allocator,active
 41091,wti-winside-body-mom,0,XTIUSD.DWX,410910000,2026-08-21,Codex governed allocator,active
 41092,wti-wbody-dominance-mom,0,XTIUSD.DWX,410920000,2026-08-21,Codex governed allocator,active
+12921,qp-january-barometer-card,0,SP500.DWX,129210000,2026-08-21,Codex,active
+12921,qp-january-barometer-card,1,NDX.DWX,129210001,2026-08-21,Codex,active
+12921,qp-january-barometer-card,2,WS30.DWX,129210002,2026-08-21,Codex,active
+12921,qp-january-barometer-card,3,GDAXI.DWX,129210003,2026-08-21,Codex,active
+12921,qp-january-barometer-card,4,UK100.DWX,129210004,2026-08-21,Codex,active

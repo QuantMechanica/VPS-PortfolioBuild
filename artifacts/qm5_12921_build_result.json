@@ -1,0 +1,31 @@
+{
+  "task_id": "63c95ae9-d593-403a-928b-c51ac9848a1b",
+  "ea_id": "QM5_12921",
+  "ea_dir": "framework/EAs/QM5_12921_qp-january-barometer-card",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12921_qp-january-barometer-card/QM5_12921_qp-january-barometer-card.mq5",
+  "mq5_sha256": "ecf9d15035a8afbaa8daa0b795be545ff96e55173ee8fcac9d67cf8e31113f14",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12921_qp-january-barometer-card/QM5_12921_qp-january-barometer-card.ex5",
+  "ex5_sha256": "72a3ea9eba7d08eee05e7f16ebac2f72f11f2dda82732d301c0d0ee838923112",
+  "magic_base": 129210000,
+  "symbols_registered": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "UK100.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12921_qp-january-barometer-card/sets/QM5_12921_qp-january-barometer-card_SP500.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12921_qp-january-barometer-card/sets/QM5_12921_qp-january-barometer-card_NDX.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12921_qp-january-barometer-card/sets/QM5_12921_qp-january-barometer-card_WS30.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12921_qp-january-barometer-card/sets/QM5_12921_qp-january-barometer-card_GDAXI.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12921_qp-january-barometer-card/sets/QM5_12921_qp-january-barometer-card_UK100.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12921_qp-january-barometer-card/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "framework_error",
+  "smoke_report_path": null,
+  "blocked_reason": "active Custom-history isolation requires a worker-bound work item whose archives were privatized before run_smoke",
+  "open_questions": []
+}
