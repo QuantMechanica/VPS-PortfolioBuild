@@ -111,3 +111,4 @@ partial exit.
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `f0d8fe585`; source packet `cfaabdb97`; EA-ID reservation `2a20468ce`; Q00 card `04cbd4f8f`; planned governed magic `410930000` |
 | v1 | 2026-08-21 | Q01 implementation PASS | exact two-week final-close breakout implementation; 13 reference checks; strict compile 0/0; static build check 0 failures; backtest-only fixed-risk preset |
+| v2 | 2026-08-21 | paced Q02 handoff | exact target-only `XTIUSD.DWX` D1 item `be766bd9-7310-45bc-8cbc-c2fdbe90b00b` queued pending below CPU and terminal ceilings; no dispatcher or tester launch |

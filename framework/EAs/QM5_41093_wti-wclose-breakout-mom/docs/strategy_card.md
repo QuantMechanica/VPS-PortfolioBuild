@@ -65,7 +65,7 @@ r3_data_available: PASS_WITH_ENERGY_LABEL_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: QUEUED
 q01_build_report: D:/QM/reports/framework/21/build_check_20260821_160421.json
 q01_p1_evidence: D:/QM/reports/pipeline/QM5_41093/P1/P1_QM5_41093_result.json
 review_focus: "Falsify a direct-WTI completed-week closing-breakout sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact Monday anchors, two consecutive 3-5-session completed packages, parent high-low aggregation, newest chronologically final close, strict outside-range comparisons, equality flat, one attempt, and next-week exit. Q09 alone may establish realized decorrelation."
@@ -406,6 +406,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-21 | initial WTI completed-week closing-breakout card | G0 | APPROVED |
 | v2 | 2026-08-21 | exact card implementation, deterministic reference contract, strict compile, and static build validation | Q01 | PASS |
+| v3 | 2026-08-21 | one target-only fixed-risk baseline admitted below paced fleet ceilings | Q02 | QUEUED |
 
 ## Pipeline Phase Status
 
@@ -413,7 +414,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-21 | APPROVED | `decisions/2026-08-21_qm5_41093_wti_weekly_closing_breakout_momentum_g0.md` |
 | Q01 Build Validation | 2026-08-21 | PASS | 13 deterministic reference checks; strict compile 0 errors/0 warnings; build check 0 failures |
-| Q02 Baseline Screening | pending | NOT_ENQUEUED | one paced target-only handoff after capacity preflight |
+| Q02 Baseline Screening | 2026-08-21 | QUEUED | pending work item `be766bd9-7310-45bc-8cbc-c2fdbe90b00b`; exact `XTIUSD.DWX` D1 fixed-risk baseline |
 
 ## Safety Boundary
 
