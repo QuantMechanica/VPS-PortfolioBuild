@@ -17627,3 +17627,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11899,psar-ao-ac-confluence-h1,9,AUDJPY.DWX,118990009,2026-08-21,Codex governed allocator,active
 41094,xng-wbody-dominance-mom,0,XNGUSD.DWX,410940000,2026-08-21,Codex governed allocator,active
 41095,wti-wexcursion-imbalance-mom,0,XTIUSD.DWX,410950000,2026-08-21,Codex governed allocator,active
+41096,wti-wexcursion-reject-rv,0,XTIUSD.DWX,410960000,2026-08-21,Codex governed allocator,active
