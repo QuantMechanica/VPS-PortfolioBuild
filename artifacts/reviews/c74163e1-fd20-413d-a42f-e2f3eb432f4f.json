@@ -1,0 +1,24 @@
+{
+  "review_task_id": "c74163e1-fd20-413d-a42f-e2f3eb432f4f",
+  "build_task_id": "01bd8a9d-bd3f-4da5-a275-be9192a763ed",
+  "ea_id": "QM5_12944",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "PASS",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "[FRAMEWORK] OnTick starts with QM_KillSwitchCheck at line 384 and omits the current skeleton's QM_FrameworkTrackOpenPositionMae() call before all per-tick guards, so this build cannot emit the required Q08 open-position MAE evidence lifecycle.",
+    "[CARD-FIDELITY] Strategy_NoTradeFilter lines 193-200 compares current spread with ATR(20) times a scalar; the approved card requires current spread versus two times the rolling mean spread of the last 100 bars. The implemented gate is not the approved spread filter.",
+    "[CARD-FIDELITY] Volatility expansion at lines 230-232 uses the breaking bar's high-low range. The approved rule specifies ATR(1)/true range versus 1.5 times ATR(20), so gap-inclusive expansion is not implemented.",
+    "[CARD-FIDELITY] Pivot deviation checks at lines 128 and 174 multiply the fixed 0.5 percent input by 0.5, admitting 0.25 percent pivot separation; strategy_min_pivots is also exposed but never controls the hard-coded three-pivot searches.",
+    "[CARD-FIDELITY] Entry lines 245-246 and 269-270 only test that the latest close is beyond the fault line; they never require the preceding close to be on the other side. After a TP, the EA can re-enter a persistent already-broken condition instead of a new fault-line break.",
+    "[CARD-FIDELITY] The approved reverse-signal rule is absent. Strategy_EntrySignal rejects whenever a position is open at line 217, while Strategy_ExitSignal only checks failed breaks of the same-direction fault line and never closes explicitly on a qualifying opposite breakout."
+  ],
+  "reviewed_at": "2026-08-21T17:05:45Z"
+}

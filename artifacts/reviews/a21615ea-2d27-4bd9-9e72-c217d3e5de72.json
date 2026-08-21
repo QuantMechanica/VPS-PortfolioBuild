@@ -1,0 +1,22 @@
+{
+  "review_task_id": "a21615ea-2d27-4bd9-9e72-c217d3e5de72",
+  "build_task_id": "e3a2083b-eeb7-40e0-b865-0cc7d001997e",
+  "ea_id": "QM5_12943",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "PASS",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "[FRAMEWORK] OnTick starts with QM_KillSwitchCheck at line 241 and omits the current skeleton's QM_FrameworkTrackOpenPositionMae() call before all per-tick guards, so this build cannot emit the required Q08 open-position MAE evidence lifecycle.",
+    "[CARD-FIDELITY] The approved volatility gate is H1 ATR(14) multiplied by 24. Lines 102-107 instead prefer native D1 ATR(14) and use H1 ATR times 24 only as a missing-data fallback, producing materially different entry eligibility.",
+    "[CARD-FIDELITY] The approved time stop is 96 closed H1 bars and specifies break-even handling. Lines 167-184 convert 96 to wall-clock seconds from POSITION_TIME and close unconditionally at market; weekends and market closures therefore shorten the bar count, and no break-even condition is implemented.",
+    "[CARD-SCOPE] The approved card names only EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX and XAUUSD.DWX. The build artifact and set directory contain 13 symbols, adding nine unapproved FX/index hosts; registry consistency does not make that expanded strategy universe card-authorized."
+  ],
+  "reviewed_at": "2026-08-21T17:05:45Z"
+}
