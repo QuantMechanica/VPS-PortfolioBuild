@@ -2411,13 +2411,13 @@ QM5_10386,et-lunch-brk,d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe,active,Research,2026
 11530,carter-t-h1-sma9-100-cross,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11531,carter-t-h1-ema6-23-stoch-macd,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11532,carter-t-h1-ema5-15-60-pullback,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
-11533,carter-t-h1-ema3-5-13-21-80-rsi21,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
+11533,carter-t-h1-ema3-5-13-21-80-rsi21,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Claude,2026-05-23
 11534,carter-t-h1-bb20-ema3-macd617-rsi14,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Development,2026-06-20
 11535,carter-t-h1-psar01-ema5-12-34,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Development,2026-05-23
 11536,carter-t-h1-ema14hl-psar,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Development,2026-06-26
-11537,carter-t-h1-ema5s5-ema75-bb-rsi,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
+11537,carter-t-h1-ema5s5-ema75-bb-rsi,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Claude,2026-05-23
 11538,carter-t-h1-ema3-5-34-89-rsi3-stoch-adx,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
-11539,carter-t-h1-ema5-10-rsi10-median,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
+11539,carter-t-h1-ema5-10-rsi10-median,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Claude,2026-05-23
 11540,carter-t-h1-ema5-13-62-macd3060-sep,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11541,carter-t-h1-ema5-21-rsi21-candlestick,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Claude,2026-05-23
 11542,carter-t-h1-mtf-4candle-align,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Development,2026-05-23
@@ -2441,7 +2441,7 @@ QM5_10386,et-lunch-brk,d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe,active,Research,2026
 QM5_11560,lien-xtreme-fade-bb3-adx25-m15,f8b7c68d-870a-5568-81ff-9b825dcddd32,active,Development,2026-06-20
 11561,singh-good-morning-asia-d1-usdjpy,a655746e-8011-56d9-8d9b-0020a8a2ae89,active,Development,2026-05-23
 11562,watthana-2018-candlestick-rsi14-stoch14-h4,85985515-bee5-5f5d-a618-9bd9fc924907,active,Claude,2026-05-23
-11563,connors-rsi2-sma200-mean-reversion-d1,278c6e13-0726-5779-83fe-a38f5a2e480f,pending,Claude,2026-05-23
+11563,connors-rsi2-sma200-mean-reversion-d1,278c6e13-0726-5779-83fe-a38f5a2e480f,active,Claude,2026-05-23
 11564,connors-double7s-sma200-d1,278c6e13-0726-5779-83fe-a38f5a2e480f,active,Development,2026-06-25
 11565,connors-3down-days-sma200-d1,278c6e13-0726-5779-83fe-a38f5a2e480f,active,Development,2026-05-23
 11566,davey-momentum-big-range-d1,57b37e6a-9b9f-550b-a023-e0d6947ad2e8,pending,Claude,2026-05-23
