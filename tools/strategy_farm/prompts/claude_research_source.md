@@ -8,7 +8,7 @@ Read and follow these process documents:
 
 - `G:\My Drive\QuantMechanica - Company Reference\_HOME.md`
 - `G:\My Drive\QuantMechanica - Company Reference\04 Processes\Research Methodology.md`
-- `G:\My Drive\QuantMechanica - Company Reference\03 Pipeline\G0 Research Intake.md`
+- `G:\My Drive\QuantMechanica - Company Reference\03 Pipeline\Q00 Research Intake.md`
 - `G:\My Drive\QuantMechanica - Company Reference\03 Pipeline\Pipeline Overview.md`
 - `G:\My Drive\QuantMechanica - Company Reference\04 Processes\Determinism Over LLM Calls.md`
 - `G:\My Drive\QuantMechanica - Company Reference\09 Strategy Wiki\_SCHEMA.md`

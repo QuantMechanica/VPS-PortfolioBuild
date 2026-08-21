@@ -9,7 +9,7 @@ handed back to Codex if rejected.
 ## Binding Process
 
 - `G:\My Drive\QuantMechanica - Company Reference\01 Identity\Hard Rules.md`
-- `G:\My Drive\QuantMechanica - Company Reference\03 Pipeline\P1 Build Validation.md`
+- `G:\My Drive\QuantMechanica - Company Reference\03 Pipeline\Q01 Build & Spec.md`
 - `G:\My Drive\QuantMechanica - Company Reference\06 Infrastructure\EA Framework.md`
 - `G:\My Drive\QuantMechanica - Company Reference\06 Infrastructure\Risk Conventions.md`
 

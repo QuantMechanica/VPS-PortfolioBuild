@@ -11,7 +11,7 @@ No improvisation, no second card, no other pipeline phase work.
 Read and follow these documents:
 
 - `C:\QM\repo\framework\V5_FRAMEWORK_DESIGN.md`
-- `G:\My Drive\QuantMechanica - Company Reference\03 Pipeline\P1 Build Validation.md`
+- `G:\My Drive\QuantMechanica - Company Reference\03 Pipeline\Q01 Build & Spec.md`
 - `G:\My Drive\QuantMechanica - Company Reference\06 Infrastructure\EA Framework.md`
 - `G:\My Drive\QuantMechanica - Company Reference\06 Infrastructure\Risk Conventions.md`
 - `G:\My Drive\QuantMechanica - Company Reference\01 Identity\Hard Rules.md`

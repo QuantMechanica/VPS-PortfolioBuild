@@ -193,7 +193,7 @@ def build_prompt(agent: str, cwd: Path) -> str:
         vault_lines = (
             "- G:/My Drive/QuantMechanica - Company Reference/08 Current State/Current Operating State.md\n"
             "- G:/My Drive/QuantMechanica - Company Reference/02 Org/AI Agent Routing and Role Contracts.md\n"
-            "- G:/My Drive/QuantMechanica - Company Reference/_OPEN ITEMS.md\n"
+            "- G:/My Drive/QuantMechanica - Company Reference/12 ToDo/_INDEX.md\n"
         )
     return f"""You are {agent} for QuantMechanica, launched by a headless scheduled task.
 
