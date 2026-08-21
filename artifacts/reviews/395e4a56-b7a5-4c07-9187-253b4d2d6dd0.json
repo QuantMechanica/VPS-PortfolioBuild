@@ -1,0 +1,24 @@
+{
+  "review_task_id": "395e4a56-b7a5-4c07-9187-253b4d2d6dd0",
+  "build_task_id": "f2e0fa39-1871-43b8-a282-e0f2ea55e1cf",
+  "ea_id": "QM5_12940",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "PASS",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "[FRAMEWORK] OnTick calls QM_IsNewBar(_Symbol, _Period) at lines 352 and 374. The first call consumes the single per-key new-bar event, so the entry block at lines 374-381 can never execute.",
+    "[RUNTIME] DSS_ComputeAtShift allocates k1_count=25 (last index 24) but the default nested loop reads k1[25] when m=13 and s=25, causing an array-out-of-range failure before a signal can be produced.",
+    "[FRAMEWORK] QM_EntryRequest req at line 376 is not passed through ZeroMemory, and Strategy_EntrySignal does not assign expiration_seconds, leaving request state indeterminate.",
+    "[CARD-FIDELITY] strategy_trigger_period is exposed and documented but only affects the warmup count; trigger values are hard-coded as a 3-value average, so non-default parameter values do not change the trigger line.",
+    "[CARD-FIDELITY] The approved card requires a 50% partial close at T1 followed by trailing. The EA sets a full-position broker TP and calls QM_TM_TrailATR immediately, with no QM_TM_PartialClose or T1 activation gate.",
+    "[ONTICK-ORDER-ADVISORY] The news return at lines 343-348 precedes management at line 359. Because entries carry server-side stops this remains an advisory under the review contract, but canonical ordering should still be restored."
+  ],
+  "reviewed_at": "2026-08-21T16:52:47Z"
+}
