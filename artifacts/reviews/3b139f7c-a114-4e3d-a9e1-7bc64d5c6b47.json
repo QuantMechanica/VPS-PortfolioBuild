@@ -1,0 +1,4506 @@
+{
+  "after": {
+    "active_embedded_id_slug_count": 256,
+    "rejected_pool_draft_card_count": 0,
+    "remaining_dispositions": [
+      "RETIRE"
+    ],
+    "remaining_rows": [
+      {
+        "ea_id": "12077",
+        "embedded_ea_id": "1228",
+        "normalized_slug": "hopwood-stochastic-cross-h1",
+        "row": "2964",
+        "slug": "QM5_1228_hopwood-stochastic-cross-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12078",
+        "embedded_ea_id": "1229",
+        "normalized_slug": "hopwood-ma-rainbow-h4",
+        "row": "2965",
+        "slug": "QM5_1229_hopwood-ma-rainbow-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12079",
+        "embedded_ea_id": "1230",
+        "normalized_slug": "renko-color-streak-h1",
+        "row": "2966",
+        "slug": "QM5_1230_renko-color-streak-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12080",
+        "embedded_ea_id": "1327",
+        "normalized_slug": "chande-vidya-trend-h4",
+        "row": "2967",
+        "slug": "QM5_1327_chande-vidya-trend-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12081",
+        "embedded_ea_id": "1330",
+        "normalized_slug": "renko-double-flip-confirm-h1",
+        "row": "2968",
+        "slug": "QM5_1330_renko-double-flip-confirm-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12082",
+        "embedded_ea_id": "1404",
+        "normalized_slug": "brooks-expanded-micro-channel-h1",
+        "row": "2969",
+        "slug": "QM5_1404_brooks-expanded-micro-channel-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12083",
+        "embedded_ea_id": "1405",
+        "normalized_slug": "classical-ascending-triangle-breakout-h4",
+        "row": "2970",
+        "slug": "QM5_1405_classical-ascending-triangle-breakout-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12084",
+        "embedded_ea_id": "1424",
+        "normalized_slug": "classical-triple-top-reversal-h4",
+        "row": "2971",
+        "slug": "QM5_1424_classical-triple-top-reversal-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12085",
+        "embedded_ea_id": "1428",
+        "normalized_slug": "wyckoff-phase-e-markdown-continuation-h4",
+        "row": "2972",
+        "slug": "QM5_1428_wyckoff-phase-e-markdown-continuation-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12086",
+        "embedded_ea_id": "1582",
+        "normalized_slug": "ehlers-super-smoother-h4",
+        "row": "2973",
+        "slug": "QM5_1582_ehlers-super-smoother-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12087",
+        "embedded_ea_id": "1583",
+        "normalized_slug": "sperandeo-tlb-refinement-h4",
+        "row": "2974",
+        "slug": "QM5_1583_sperandeo-tlb-refinement-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12088",
+        "embedded_ea_id": "1601",
+        "normalized_slug": "demark-td-reverse-differential-h4",
+        "row": "2975",
+        "slug": "QM5_1601_demark-td-reverse-differential-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12089",
+        "embedded_ea_id": "1617",
+        "normalized_slug": "mql5-sar-sma-rapid",
+        "row": "2976",
+        "slug": "QM5_1617_mql5-sar-sma-rapid",
+        "status": "active"
+      },
+      {
+        "ea_id": "12090",
+        "embedded_ea_id": "1618",
+        "normalized_slug": "mql5-ma-support",
+        "row": "2977",
+        "slug": "QM5_1618_mql5-ma-support",
+        "status": "active"
+      },
+      {
+        "ea_id": "12091",
+        "embedded_ea_id": "1635",
+        "normalized_slug": "mql5-donchian-break",
+        "row": "2978",
+        "slug": "QM5_1635_mql5-donchian-break",
+        "status": "active"
+      },
+      {
+        "ea_id": "12092",
+        "embedded_ea_id": "1637",
+        "normalized_slug": "mql5-golden-death",
+        "row": "2979",
+        "slug": "QM5_1637_mql5-golden-death",
+        "status": "active"
+      },
+      {
+        "ea_id": "12093",
+        "embedded_ea_id": "1647",
+        "normalized_slug": "hopwood-bermaui-macd-h4",
+        "row": "2980",
+        "slug": "QM5_1647_hopwood-bermaui-macd-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12094",
+        "embedded_ea_id": "1648",
+        "normalized_slug": "ehlers-ebsw-cycle-composite-h4",
+        "row": "2981",
+        "slug": "QM5_1648_ehlers-ebsw-cycle-composite-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12095",
+        "embedded_ea_id": "1649",
+        "normalized_slug": "robopip-hlhb-trend-catcher-h1",
+        "row": "2982",
+        "slug": "QM5_1649_robopip-hlhb-trend-catcher-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12096",
+        "embedded_ea_id": "1649",
+        "normalized_slug": "sperandeo-trend-fault-line-h4",
+        "row": "2983",
+        "slug": "QM5_1649_sperandeo-trend-fault-line-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12097",
+        "embedded_ea_id": "9166",
+        "normalized_slug": "tv-kn-ema-cross-atr-tp",
+        "row": "2984",
+        "slug": "QM5_9166_tv-kn-ema-cross-atr-tp",
+        "status": "active"
+      },
+      {
+        "ea_id": "12100",
+        "embedded_ea_id": "9199",
+        "normalized_slug": "mql5-mfi-trend",
+        "row": "2987",
+        "slug": "QM5_9199_mql5-mfi-trend",
+        "status": "active"
+      },
+      {
+        "ea_id": "12101",
+        "embedded_ea_id": "9220",
+        "normalized_slug": "mql5-rvi-ma",
+        "row": "2988",
+        "slug": "QM5_9220_mql5-rvi-ma",
+        "status": "active"
+      },
+      {
+        "ea_id": "12102",
+        "embedded_ea_id": "9221",
+        "normalized_slug": "mql5-chaikin-zero",
+        "row": "2989",
+        "slug": "QM5_9221_mql5-chaikin-zero",
+        "status": "active"
+      },
+      {
+        "ea_id": "12103",
+        "embedded_ea_id": "9221",
+        "normalized_slug": "mql5-stddev-ma",
+        "row": "2990",
+        "slug": "QM5_9221_mql5-stddev-ma",
+        "status": "active"
+      },
+      {
+        "ea_id": "12104",
+        "embedded_ea_id": "9222",
+        "normalized_slug": "mql5-force-ema",
+        "row": "2991",
+        "slug": "QM5_9222_mql5-force-ema",
+        "status": "active"
+      },
+      {
+        "ea_id": "12105",
+        "embedded_ea_id": "9222",
+        "normalized_slug": "mql5-gator-ma",
+        "row": "2992",
+        "slug": "QM5_9222_mql5-gator-ma",
+        "status": "active"
+      },
+      {
+        "ea_id": "12106",
+        "embedded_ea_id": "9283",
+        "normalized_slug": "pring-coppock-h4-variant",
+        "row": "2993",
+        "slug": "QM5_9283_pring-coppock-h4-variant",
+        "status": "active"
+      },
+      {
+        "ea_id": "12107",
+        "embedded_ea_id": "9284",
+        "normalized_slug": "mql5-aroon-cross",
+        "row": "2994",
+        "slug": "QM5_9284_mql5-aroon-cross",
+        "status": "active"
+      },
+      {
+        "ea_id": "12118",
+        "embedded_ea_id": "1297",
+        "normalized_slug": "coppock-curve-cross-zero-w1",
+        "row": "3005",
+        "slug": "QM5_1297_coppock-curve-cross-zero-w1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12119",
+        "embedded_ea_id": "1298",
+        "normalized_slug": "kst-know-sure-thing-cross-d1",
+        "row": "3006",
+        "slug": "QM5_1298_kst-know-sure-thing-cross-d1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12120",
+        "embedded_ea_id": "1305",
+        "normalized_slug": "camarilla-vwap-confluence-intraday",
+        "row": "3007",
+        "slug": "QM5_1305_camarilla-vwap-confluence-intraday",
+        "status": "active"
+      },
+      {
+        "ea_id": "12121",
+        "embedded_ea_id": "1309",
+        "normalized_slug": "bressert-dss-slope-h1",
+        "row": "3008",
+        "slug": "QM5_1309_bressert-dss-slope-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12122",
+        "embedded_ea_id": "1311",
+        "normalized_slug": "carter-ttm-wave-h1",
+        "row": "3009",
+        "slug": "QM5_1311_carter-ttm-wave-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12123",
+        "embedded_ea_id": "1313",
+        "normalized_slug": "heiken-ashi-smoothed-flip-h1",
+        "row": "3010",
+        "slug": "QM5_1313_heiken-ashi-smoothed-flip-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12124",
+        "embedded_ea_id": "1314",
+        "normalized_slug": "vwap-sigma-bands-breakout-m15",
+        "row": "3011",
+        "slug": "QM5_1314_vwap-sigma-bands-breakout-m15",
+        "status": "active"
+      },
+      {
+        "ea_id": "12125",
+        "embedded_ea_id": "1315",
+        "normalized_slug": "alma-ichimoku-h1",
+        "row": "3012",
+        "slug": "QM5_1315_alma-ichimoku-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12126",
+        "embedded_ea_id": "1316",
+        "normalized_slug": "tom-fps-stochastic-h1",
+        "row": "3013",
+        "slug": "QM5_1316_tom-fps-stochastic-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12127",
+        "embedded_ea_id": "1317",
+        "normalized_slug": "kase-peak-oscillator-h1",
+        "row": "3014",
+        "slug": "QM5_1317_kase-peak-oscillator-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12128",
+        "embedded_ea_id": "1318",
+        "normalized_slug": "tom-fps-donchian-h1",
+        "row": "3015",
+        "slug": "QM5_1318_tom-fps-donchian-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12129",
+        "embedded_ea_id": "1319",
+        "normalized_slug": "carter-squeeze-pro-4regime-h1",
+        "row": "3016",
+        "slug": "QM5_1319_carter-squeeze-pro-4regime-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12130",
+        "embedded_ea_id": "1320",
+        "normalized_slug": "vwap-sigma-band-fade-intraday",
+        "row": "3017",
+        "slug": "QM5_1320_vwap-sigma-band-fade-intraday",
+        "status": "active"
+      },
+      {
+        "ea_id": "12131",
+        "embedded_ea_id": "1322",
+        "normalized_slug": "connors-rsi2-fx-port-d1",
+        "row": "3018",
+        "slug": "QM5_1322_connors-rsi2-fx-port-d1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12132",
+        "embedded_ea_id": "1324",
+        "normalized_slug": "carter-ttm-squeeze-pro-h1",
+        "row": "3019",
+        "slug": "QM5_1324_carter-ttm-squeeze-pro-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12133",
+        "embedded_ea_id": "1325",
+        "normalized_slug": "connors-rsi2-fx-intraday-h1",
+        "row": "3020",
+        "slug": "QM5_1325_connors-rsi2-fx-intraday-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12134",
+        "embedded_ea_id": "1326",
+        "normalized_slug": "tom-fps-donchian-h4",
+        "row": "3021",
+        "slug": "QM5_1326_tom-fps-donchian-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12135",
+        "embedded_ea_id": "1327",
+        "normalized_slug": "brooks-pin-bar-reversal-h4",
+        "row": "3022",
+        "slug": "QM5_1327_brooks-pin-bar-reversal-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12136",
+        "embedded_ea_id": "1327",
+        "normalized_slug": "chande-vidya-trend-h4",
+        "row": "3023",
+        "slug": "QM5_1327_chande-vidya-trend-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12137",
+        "embedded_ea_id": "1329",
+        "normalized_slug": "raschke-holy-grail-adx-pullback-h1",
+        "row": "3024",
+        "slug": "QM5_1329_raschke-holy-grail-adx-pullback-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12138",
+        "embedded_ea_id": "1330",
+        "normalized_slug": "demark-td-pressure-h4",
+        "row": "3025",
+        "slug": "QM5_1330_demark-td-pressure-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12139",
+        "embedded_ea_id": "1330",
+        "normalized_slug": "renko-double-flip-confirm-h1",
+        "row": "3026",
+        "slug": "QM5_1330_renko-double-flip-confirm-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12140",
+        "embedded_ea_id": "1347",
+        "normalized_slug": "lebeau-chandelier-exit-trail-h4",
+        "row": "3027",
+        "slug": "QM5_1347_lebeau-chandelier-exit-trail-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12141",
+        "embedded_ea_id": "1348",
+        "normalized_slug": "wilder-adx-di-cross-system-h1",
+        "row": "3028",
+        "slug": "QM5_1348_wilder-adx-di-cross-system-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12142",
+        "embedded_ea_id": "1349",
+        "normalized_slug": "williams-vol-breakout-prevday-range-h1",
+        "row": "3029",
+        "slug": "QM5_1349_williams-vol-breakout-prevday-range-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12143",
+        "embedded_ea_id": "1350",
+        "normalized_slug": "tom-fps-williams-percent-r-h1",
+        "row": "3030",
+        "slug": "QM5_1350_tom-fps-williams-percent-r-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12144",
+        "embedded_ea_id": "1351",
+        "normalized_slug": "frankfurt-box-first-hour-breakout-m30",
+        "row": "3031",
+        "slug": "QM5_1351_frankfurt-box-first-hour-breakout-m30",
+        "status": "active"
+      },
+      {
+        "ea_id": "12145",
+        "embedded_ea_id": "1352",
+        "normalized_slug": "murrey-math-octave-reaction-h1",
+        "row": "3032",
+        "slug": "QM5_1352_murrey-math-octave-reaction-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12146",
+        "embedded_ea_id": "1353",
+        "normalized_slug": "fisher-transform-zerocross-h1",
+        "row": "3033",
+        "slug": "QM5_1353_fisher-transform-zerocross-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12147",
+        "embedded_ea_id": "1362",
+        "normalized_slug": "brooks-2bar-reversal-h4",
+        "row": "3034",
+        "slug": "QM5_1362_brooks-2bar-reversal-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12148",
+        "embedded_ea_id": "1363",
+        "normalized_slug": "brooks-wedge-3push-h4",
+        "row": "3035",
+        "slug": "QM5_1363_brooks-wedge-3push-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12149",
+        "embedded_ea_id": "1364",
+        "normalized_slug": "brooks-double-top-bottom-h4",
+        "row": "3036",
+        "slug": "QM5_1364_brooks-double-top-bottom-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12150",
+        "embedded_ea_id": "1365",
+        "normalized_slug": "tokyo-open-fade-asian-short-m15",
+        "row": "3037",
+        "slug": "QM5_1365_tokyo-open-fade-asian-short-m15",
+        "status": "active"
+      },
+      {
+        "ea_id": "12151",
+        "embedded_ea_id": "1366",
+        "normalized_slug": "brooks-micro-channel-h1",
+        "row": "3038",
+        "slug": "QM5_1366_brooks-micro-channel-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12152",
+        "embedded_ea_id": "1367",
+        "normalized_slug": "schaff-trend-cycle-stc-h1",
+        "row": "3039",
+        "slug": "QM5_1367_schaff-trend-cycle-stc-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12153",
+        "embedded_ea_id": "1368",
+        "normalized_slug": "andrews-pitchfork-median-line-h4",
+        "row": "3040",
+        "slug": "QM5_1368_andrews-pitchfork-median-line-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12154",
+        "embedded_ea_id": "1369",
+        "normalized_slug": "goodman-wave-theory-3c-h1",
+        "row": "3041",
+        "slug": "QM5_1369_goodman-wave-theory-3c-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12155",
+        "embedded_ea_id": "1370",
+        "normalized_slug": "linreg-channel-slope-flip-h1",
+        "row": "3042",
+        "slug": "QM5_1370_linreg-channel-slope-flip-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12156",
+        "embedded_ea_id": "1372",
+        "normalized_slug": "williams-awesome-oscillator-twin-peaks-h1",
+        "row": "3043",
+        "slug": "QM5_1372_williams-awesome-oscillator-twin-peaks-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12157",
+        "embedded_ea_id": "1373",
+        "normalized_slug": "williams-accelerator-decelerator-zerocross-h1",
+        "row": "3044",
+        "slug": "QM5_1373_williams-accelerator-decelerator-zerocross-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12158",
+        "embedded_ea_id": "1374",
+        "normalized_slug": "carter-ttm-wave-h1",
+        "row": "3045",
+        "slug": "QM5_1374_carter-ttm-wave-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12159",
+        "embedded_ea_id": "1375",
+        "normalized_slug": "heiken-ashi-sma-smoothed-color-flip-h1",
+        "row": "3046",
+        "slug": "QM5_1375_heiken-ashi-sma-smoothed-color-flip-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12160",
+        "embedded_ea_id": "1376",
+        "normalized_slug": "harmonic-gartley-xabcd-h4",
+        "row": "3047",
+        "slug": "QM5_1376_harmonic-gartley-xabcd-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12161",
+        "embedded_ea_id": "1377",
+        "normalized_slug": "schiff-pitchfork-median-h4",
+        "row": "3048",
+        "slug": "QM5_1377_schiff-pitchfork-median-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12162",
+        "embedded_ea_id": "1378",
+        "normalized_slug": "brooks-4bar-continuation-h4",
+        "row": "3049",
+        "slug": "QM5_1378_brooks-4bar-continuation-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12163",
+        "embedded_ea_id": "1379",
+        "normalized_slug": "forex-profit-loader-bounded-grid-h1",
+        "row": "3050",
+        "slug": "QM5_1379_forex-profit-loader-bounded-grid-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12164",
+        "embedded_ea_id": "1380",
+        "normalized_slug": "brooks-h2l2-second-pullback-h4",
+        "row": "3051",
+        "slug": "QM5_1380_brooks-h2l2-second-pullback-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12165",
+        "embedded_ea_id": "1382",
+        "normalized_slug": "darvas-box-breakout-h1",
+        "row": "3052",
+        "slug": "QM5_1382_darvas-box-breakout-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12166",
+        "embedded_ea_id": "1384",
+        "normalized_slug": "wave59-time-cycle-tlb-h4",
+        "row": "3053",
+        "slug": "QM5_1384_wave59-time-cycle-tlb-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12167",
+        "embedded_ea_id": "1388",
+        "normalized_slug": "brooks-micro-channel-failed-test-h1",
+        "row": "3054",
+        "slug": "QM5_1388_brooks-micro-channel-failed-test-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12168",
+        "embedded_ea_id": "1389",
+        "normalized_slug": "goodman-wave-theory-measured-move-h1",
+        "row": "3055",
+        "slug": "QM5_1389_goodman-wave-theory-measured-move-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12169",
+        "embedded_ea_id": "1390",
+        "normalized_slug": "williams-percent-r-divergence-h4",
+        "row": "3056",
+        "slug": "QM5_1390_williams-percent-r-divergence-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12170",
+        "embedded_ea_id": "1391",
+        "normalized_slug": "harmonic-bat-xabcd-h4",
+        "row": "3057",
+        "slug": "QM5_1391_harmonic-bat-xabcd-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12171",
+        "embedded_ea_id": "1392",
+        "normalized_slug": "wyckoff-spring-test-h4",
+        "row": "3058",
+        "slug": "QM5_1392_wyckoff-spring-test-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12172",
+        "embedded_ea_id": "1393",
+        "normalized_slug": "classical-head-shoulders-top-h4",
+        "row": "3059",
+        "slug": "QM5_1393_classical-head-shoulders-top-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12173",
+        "embedded_ea_id": "1394",
+        "normalized_slug": "demark-td-differential-h4",
+        "row": "3060",
+        "slug": "QM5_1394_demark-td-differential-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12174",
+        "embedded_ea_id": "1396",
+        "normalized_slug": "brooks-tight-micro-channel-trend-h1",
+        "row": "3061",
+        "slug": "QM5_1396_brooks-tight-micro-channel-trend-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12175",
+        "embedded_ea_id": "1397",
+        "normalized_slug": "harmonic-gartley-xabcd-h4",
+        "row": "3062",
+        "slug": "QM5_1397_harmonic-gartley-xabcd-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12176",
+        "embedded_ea_id": "1399",
+        "normalized_slug": "classical-double-top-h4",
+        "row": "3063",
+        "slug": "QM5_1399_classical-double-top-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12177",
+        "embedded_ea_id": "1407",
+        "normalized_slug": "classical-symmetric-triangle-breakout-h4",
+        "row": "3064",
+        "slug": "QM5_1407_classical-symmetric-triangle-breakout-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12178",
+        "embedded_ea_id": "1408",
+        "normalized_slug": "classical-bull-flag-continuation-h1",
+        "row": "3065",
+        "slug": "QM5_1408_classical-bull-flag-continuation-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12179",
+        "embedded_ea_id": "1409",
+        "normalized_slug": "wyckoff-sign-of-strength-phase-d-h4",
+        "row": "3066",
+        "slug": "QM5_1409_wyckoff-sign-of-strength-phase-d-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12180",
+        "embedded_ea_id": "1410",
+        "normalized_slug": "bressert-dual-cycle-oscillator-h4",
+        "row": "3067",
+        "slug": "QM5_1410_bressert-dual-cycle-oscillator-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12181",
+        "embedded_ea_id": "1416",
+        "normalized_slug": "classical-bear-flag-continuation-h1",
+        "row": "3068",
+        "slug": "QM5_1416_classical-bear-flag-continuation-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12182",
+        "embedded_ea_id": "1417",
+        "normalized_slug": "classical-pennant-continuation-h1",
+        "row": "3069",
+        "slug": "QM5_1417_classical-pennant-continuation-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12183",
+        "embedded_ea_id": "1418",
+        "normalized_slug": "classical-falling-wedge-reversal-h4",
+        "row": "3070",
+        "slug": "QM5_1418_classical-falling-wedge-reversal-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12184",
+        "embedded_ea_id": "1419",
+        "normalized_slug": "wyckoff-lpsy-distribution-phase-d-h4",
+        "row": "3071",
+        "slug": "QM5_1419_wyckoff-lpsy-distribution-phase-d-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12185",
+        "embedded_ea_id": "1420",
+        "normalized_slug": "bressert-cycle-counting-h4",
+        "row": "3072",
+        "slug": "QM5_1420_bressert-cycle-counting-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12186",
+        "embedded_ea_id": "1421",
+        "normalized_slug": "classical-rising-wedge-reversal-h4",
+        "row": "3073",
+        "slug": "QM5_1421_classical-rising-wedge-reversal-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12187",
+        "embedded_ea_id": "1422",
+        "normalized_slug": "classical-broadening-formation-h4",
+        "row": "3074",
+        "slug": "QM5_1422_classical-broadening-formation-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12188",
+        "embedded_ea_id": "1423",
+        "normalized_slug": "wyckoff-sign-of-weakness-phase-d-h4",
+        "row": "3075",
+        "slug": "QM5_1423_wyckoff-sign-of-weakness-phase-d-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12189",
+        "embedded_ea_id": "1424",
+        "normalized_slug": "bressert-short-cycle-counting-h4",
+        "row": "3076",
+        "slug": "QM5_1424_bressert-short-cycle-counting-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12190",
+        "embedded_ea_id": "1424",
+        "normalized_slug": "classical-triple-top-reversal-h4",
+        "row": "3077",
+        "slug": "QM5_1424_classical-triple-top-reversal-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12191",
+        "embedded_ea_id": "1425",
+        "normalized_slug": "classical-triple-bottom-reversal-h4",
+        "row": "3078",
+        "slug": "QM5_1425_classical-triple-bottom-reversal-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12192",
+        "embedded_ea_id": "1426",
+        "normalized_slug": "classical-complex-head-shoulders-h4",
+        "row": "3079",
+        "slug": "QM5_1426_classical-complex-head-shoulders-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12193",
+        "embedded_ea_id": "1428",
+        "normalized_slug": "wyckoff-phase-e-mark-up-continuation-h4",
+        "row": "3080",
+        "slug": "QM5_1428_wyckoff-phase-e-mark-up-continuation-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12194",
+        "embedded_ea_id": "1428",
+        "normalized_slug": "wyckoff-phase-e-markdown-continuation-h4",
+        "row": "3081",
+        "slug": "QM5_1428_wyckoff-phase-e-markdown-continuation-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12195",
+        "embedded_ea_id": "1429",
+        "normalized_slug": "wyckoff-phase-e-mark-down-continuation-h4",
+        "row": "3082",
+        "slug": "QM5_1429_wyckoff-phase-e-mark-down-continuation-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12196",
+        "embedded_ea_id": "1430",
+        "normalized_slug": "andrews-pitchfork-parallel-line-h4",
+        "row": "3083",
+        "slug": "QM5_1430_andrews-pitchfork-parallel-line-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12197",
+        "embedded_ea_id": "1431",
+        "normalized_slug": "williams-r-hidden-divergence-h4",
+        "row": "3084",
+        "slug": "QM5_1431_williams-r-hidden-divergence-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12198",
+        "embedded_ea_id": "1432",
+        "normalized_slug": "demark-td-setup-trend-h4",
+        "row": "3085",
+        "slug": "QM5_1432_demark-td-setup-trend-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12199",
+        "embedded_ea_id": "1436",
+        "normalized_slug": "williams-r-cross-zero-h4",
+        "row": "3086",
+        "slug": "QM5_1436_williams-r-cross-zero-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12200",
+        "embedded_ea_id": "1437",
+        "normalized_slug": "carter-ttm-squeeze-h4",
+        "row": "3087",
+        "slug": "QM5_1437_carter-ttm-squeeze-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12201",
+        "embedded_ea_id": "1438",
+        "normalized_slug": "demark-td-demarker-h4",
+        "row": "3088",
+        "slug": "QM5_1438_demark-td-demarker-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12202",
+        "embedded_ea_id": "1439",
+        "normalized_slug": "wyckoff-spring-test-phase-c-h4",
+        "row": "3089",
+        "slug": "QM5_1439_wyckoff-spring-test-phase-c-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12203",
+        "embedded_ea_id": "1441",
+        "normalized_slug": "aroon-up-down-crossover-h4",
+        "row": "3090",
+        "slug": "QM5_1441_aroon-up-down-crossover-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12204",
+        "embedded_ea_id": "1444",
+        "normalized_slug": "vortex-indicator-cross-h4",
+        "row": "3091",
+        "slug": "QM5_1444_vortex-indicator-cross-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12205",
+        "embedded_ea_id": "1445",
+        "normalized_slug": "carney-three-drive-h4",
+        "row": "3092",
+        "slug": "QM5_1445_carney-three-drive-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12206",
+        "embedded_ea_id": "1446",
+        "normalized_slug": "demark-td-open-range-h4",
+        "row": "3093",
+        "slug": "QM5_1446_demark-td-open-range-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12207",
+        "embedded_ea_id": "1447",
+        "normalized_slug": "wilder-parabolic-sar-atr-h4",
+        "row": "3094",
+        "slug": "QM5_1447_wilder-parabolic-sar-atr-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12208",
+        "embedded_ea_id": "1449",
+        "normalized_slug": "wilder-adx-dmi-crossover-h4",
+        "row": "3095",
+        "slug": "QM5_1449_wilder-adx-dmi-crossover-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12209",
+        "embedded_ea_id": "1480",
+        "normalized_slug": "carter-ttm-trend-h4",
+        "row": "3096",
+        "slug": "QM5_1480_carter-ttm-trend-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12210",
+        "embedded_ea_id": "1481",
+        "normalized_slug": "wilder-adx-dmi-crossover-h4",
+        "row": "3097",
+        "slug": "QM5_1481_wilder-adx-dmi-crossover-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12211",
+        "embedded_ea_id": "1482",
+        "normalized_slug": "carney-three-drive-harmonic-h4",
+        "row": "3098",
+        "slug": "QM5_1482_carney-three-drive-harmonic-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12212",
+        "embedded_ea_id": "1490",
+        "normalized_slug": "raschke-anti-pullback-reversal-h4",
+        "row": "3099",
+        "slug": "QM5_1490_raschke-anti-pullback-reversal-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12213",
+        "embedded_ea_id": "1491",
+        "normalized_slug": "ehlers-sinewave-leadsine-cross-h4",
+        "row": "3100",
+        "slug": "QM5_1491_ehlers-sinewave-leadsine-cross-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12214",
+        "embedded_ea_id": "1502",
+        "normalized_slug": "hopwood-reversal-indicator-h4",
+        "row": "3101",
+        "slug": "QM5_1502_hopwood-reversal-indicator-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12215",
+        "embedded_ea_id": "1503",
+        "normalized_slug": "ehlers-decycler-low-pass-h4",
+        "row": "3102",
+        "slug": "QM5_1503_ehlers-decycler-low-pass-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12216",
+        "embedded_ea_id": "1504",
+        "normalized_slug": "raschke-three-little-indians-h4",
+        "row": "3103",
+        "slug": "QM5_1504_raschke-three-little-indians-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12217",
+        "embedded_ea_id": "1505",
+        "normalized_slug": "connors-cumulative-rsi-h4",
+        "row": "3104",
+        "slug": "QM5_1505_connors-cumulative-rsi-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12218",
+        "embedded_ea_id": "1506",
+        "normalized_slug": "demark-td-sequential-combo-h4",
+        "row": "3105",
+        "slug": "QM5_1506_demark-td-sequential-combo-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12219",
+        "embedded_ea_id": "1507",
+        "normalized_slug": "ehlers-mama-fama-cross-h4",
+        "row": "3106",
+        "slug": "QM5_1507_ehlers-mama-fama-cross-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12220",
+        "embedded_ea_id": "1508",
+        "normalized_slug": "hopwood-triple-trend-h4",
+        "row": "3107",
+        "slug": "QM5_1508_hopwood-triple-trend-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12221",
+        "embedded_ea_id": "1509",
+        "normalized_slug": "ehlers-even-better-sinewave-h4",
+        "row": "3108",
+        "slug": "QM5_1509_ehlers-even-better-sinewave-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12222",
+        "embedded_ea_id": "1511",
+        "normalized_slug": "connors-tps-time-price-score-h4",
+        "row": "3109",
+        "slug": "QM5_1511_connors-tps-time-price-score-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12223",
+        "embedded_ea_id": "1521",
+        "normalized_slug": "ehlers-predictive-moving-average-h4",
+        "row": "3110",
+        "slug": "QM5_1521_ehlers-predictive-moving-average-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12224",
+        "embedded_ea_id": "1524",
+        "normalized_slug": "williams-r-of-rsi-composite-h4",
+        "row": "3111",
+        "slug": "QM5_1524_williams-r-of-rsi-composite-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12225",
+        "embedded_ea_id": "1525",
+        "normalized_slug": "ehlers-empirical-mode-decomp-h4",
+        "row": "3112",
+        "slug": "QM5_1525_ehlers-empirical-mode-decomp-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12226",
+        "embedded_ea_id": "1526",
+        "normalized_slug": "demark-td-open-h4",
+        "row": "3113",
+        "slug": "QM5_1526_demark-td-open-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12227",
+        "embedded_ea_id": "1527",
+        "normalized_slug": "connors-crsi-composite-h4",
+        "row": "3114",
+        "slug": "QM5_1527_connors-crsi-composite-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12228",
+        "embedded_ea_id": "1529",
+        "normalized_slug": "ehlers-reflex-indicator-h4",
+        "row": "3115",
+        "slug": "QM5_1529_ehlers-reflex-indicator-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12229",
+        "embedded_ea_id": "1530",
+        "normalized_slug": "connors-double-sevens-h4",
+        "row": "3116",
+        "slug": "QM5_1530_connors-double-sevens-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12230",
+        "embedded_ea_id": "1531",
+        "normalized_slug": "demark-td-open-bar-reversal-h4",
+        "row": "3117",
+        "slug": "QM5_1531_demark-td-open-bar-reversal-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12231",
+        "embedded_ea_id": "1532",
+        "normalized_slug": "ehlers-stochastic-rsi-h4",
+        "row": "3118",
+        "slug": "QM5_1532_ehlers-stochastic-rsi-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12232",
+        "embedded_ea_id": "1533",
+        "normalized_slug": "williams-sentiment-index-h4",
+        "row": "3119",
+        "slug": "QM5_1533_williams-sentiment-index-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12233",
+        "embedded_ea_id": "1546",
+        "normalized_slug": "connors-multi-day-high-low-h4",
+        "row": "3120",
+        "slug": "QM5_1546_connors-multi-day-high-low-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12234",
+        "embedded_ea_id": "1547",
+        "normalized_slug": "demark-td-range-projection-h4",
+        "row": "3121",
+        "slug": "QM5_1547_demark-td-range-projection-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12235",
+        "embedded_ea_id": "1550",
+        "normalized_slug": "bressert-double-cycle-composite-h4",
+        "row": "3122",
+        "slug": "QM5_1550_bressert-double-cycle-composite-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12236",
+        "embedded_ea_id": "1563",
+        "normalized_slug": "ehlers-hilbert-transform-dft-h4",
+        "row": "3123",
+        "slug": "QM5_1563_ehlers-hilbert-transform-dft-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12237",
+        "embedded_ea_id": "1577",
+        "normalized_slug": "ehlers-super-smoother-2pole-h4",
+        "row": "3124",
+        "slug": "QM5_1577_ehlers-super-smoother-2pole-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12238",
+        "embedded_ea_id": "1578",
+        "normalized_slug": "hopwood-ts3-standalone-h4",
+        "row": "3125",
+        "slug": "QM5_1578_hopwood-ts3-standalone-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12239",
+        "embedded_ea_id": "1579",
+        "normalized_slug": "sperandeo-tlb-swing-pivot-h4",
+        "row": "3126",
+        "slug": "QM5_1579_sperandeo-tlb-swing-pivot-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12240",
+        "embedded_ea_id": "1591",
+        "normalized_slug": "demark-td-anti-differential-h4",
+        "row": "3127",
+        "slug": "QM5_1591_demark-td-anti-differential-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12241",
+        "embedded_ea_id": "1592",
+        "normalized_slug": "ehlers-even-better-sinewave-mtf-h4",
+        "row": "3128",
+        "slug": "QM5_1592_ehlers-even-better-sinewave-mtf-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12242",
+        "embedded_ea_id": "1593",
+        "normalized_slug": "carney-bat-pattern-h4",
+        "row": "3129",
+        "slug": "QM5_1593_carney-bat-pattern-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12243",
+        "embedded_ea_id": "1594",
+        "normalized_slug": "hopwood-ts6-standalone-h4",
+        "row": "3130",
+        "slug": "QM5_1594_hopwood-ts6-standalone-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12244",
+        "embedded_ea_id": "1595",
+        "normalized_slug": "sperandeo-2b-pivot-h4",
+        "row": "3131",
+        "slug": "QM5_1595_sperandeo-2b-pivot-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12245",
+        "embedded_ea_id": "1622",
+        "normalized_slug": "demark-td-termination-count-alt-h4",
+        "row": "3132",
+        "slug": "QM5_1622_demark-td-termination-count-alt-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12246",
+        "embedded_ea_id": "1623",
+        "normalized_slug": "hopwood-bermaui-dss-h4",
+        "row": "3133",
+        "slug": "QM5_1623_hopwood-bermaui-dss-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12248",
+        "embedded_ea_id": "1629",
+        "normalized_slug": "ehlers-cybernetic-cycle-h4",
+        "row": "3135",
+        "slug": "QM5_1629_ehlers-cybernetic-cycle-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12250",
+        "embedded_ea_id": "1645",
+        "normalized_slug": "carney-cypher-pattern-h4",
+        "row": "3137",
+        "slug": "QM5_1645_carney-cypher-pattern-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12251",
+        "embedded_ea_id": "1647",
+        "normalized_slug": "ehlers-ebsw-cycle-extraction-h4",
+        "row": "3138",
+        "slug": "QM5_1647_ehlers-ebsw-cycle-extraction-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12252",
+        "embedded_ea_id": "1647",
+        "normalized_slug": "hopwood-bermaui-macd-h4",
+        "row": "3139",
+        "slug": "QM5_1647_hopwood-bermaui-macd-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12253",
+        "embedded_ea_id": "1648",
+        "normalized_slug": "demark-td-sequential-tdst-overlay-h4",
+        "row": "3140",
+        "slug": "QM5_1648_demark-td-sequential-tdst-overlay-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12254",
+        "embedded_ea_id": "1648",
+        "normalized_slug": "ehlers-ebsw-cycle-composite-h4",
+        "row": "3141",
+        "slug": "QM5_1648_ehlers-ebsw-cycle-composite-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12255",
+        "embedded_ea_id": "1649",
+        "normalized_slug": "carney-cypher-pattern-h4",
+        "row": "3142",
+        "slug": "QM5_1649_carney-cypher-pattern-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12256",
+        "embedded_ea_id": "1649",
+        "normalized_slug": "robopip-hlhb-trend-catcher-h1",
+        "row": "3143",
+        "slug": "QM5_1649_robopip-hlhb-trend-catcher-h1",
+        "status": "active"
+      },
+      {
+        "ea_id": "12257",
+        "embedded_ea_id": "1649",
+        "normalized_slug": "sperandeo-trend-fault-line-h4",
+        "row": "3144",
+        "slug": "QM5_1649_sperandeo-trend-fault-line-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12258",
+        "embedded_ea_id": "1650",
+        "normalized_slug": "sperandeo-trader-vic-ii-pattern-h4",
+        "row": "3145",
+        "slug": "QM5_1650_sperandeo-trader-vic-ii-pattern-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12259",
+        "embedded_ea_id": "1651",
+        "normalized_slug": "ehlers-ebsw-cycle-extract-composite-h4",
+        "row": "3146",
+        "slug": "QM5_1651_ehlers-ebsw-cycle-extract-composite-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12260",
+        "embedded_ea_id": "1652",
+        "normalized_slug": "demark-td-sequential-tdst-overlay-h4",
+        "row": "3147",
+        "slug": "QM5_1652_demark-td-sequential-tdst-overlay-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12261",
+        "embedded_ea_id": "1653",
+        "normalized_slug": "sperandeo-test-of-strength-h4",
+        "row": "3148",
+        "slug": "QM5_1653_sperandeo-test-of-strength-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12262",
+        "embedded_ea_id": "1701",
+        "normalized_slug": "demark-td-sequential-tdst-overlay-h4",
+        "row": "3149",
+        "slug": "QM5_1701_demark-td-sequential-tdst-overlay-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12263",
+        "embedded_ea_id": "1702",
+        "normalized_slug": "ehlers-ebsw-cycle-extraction-h4",
+        "row": "3150",
+        "slug": "QM5_1702_ehlers-ebsw-cycle-extraction-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12264",
+        "embedded_ea_id": "1751",
+        "normalized_slug": "ehlers-hilbert-fft-cleanup-h4",
+        "row": "3151",
+        "slug": "QM5_1751_ehlers-hilbert-fft-cleanup-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12265",
+        "embedded_ea_id": "1801",
+        "normalized_slug": "chande-momentum-oscillator-h4",
+        "row": "3152",
+        "slug": "QM5_1801_chande-momentum-oscillator-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12266",
+        "embedded_ea_id": "1802",
+        "normalized_slug": "elder-impulse-system-h4",
+        "row": "3153",
+        "slug": "QM5_1802_elder-impulse-system-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12267",
+        "embedded_ea_id": "1803",
+        "normalized_slug": "elder-triple-screen-h4",
+        "row": "3154",
+        "slug": "QM5_1803_elder-triple-screen-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12268",
+        "embedded_ea_id": "1856",
+        "normalized_slug": "elder-force-index-spike-reversal-h4",
+        "row": "3155",
+        "slug": "QM5_1856_elder-force-index-spike-reversal-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12269",
+        "embedded_ea_id": "1857",
+        "normalized_slug": "chande-forecast-oscillator-h4",
+        "row": "3156",
+        "slug": "QM5_1857_chande-forecast-oscillator-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12270",
+        "embedded_ea_id": "1858",
+        "normalized_slug": "elder-ray-bull-bear-power-zerocross-h4",
+        "row": "3157",
+        "slug": "QM5_1858_elder-ray-bull-bear-power-zerocross-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12271",
+        "embedded_ea_id": "1859",
+        "normalized_slug": "carney-pesavento-ratio-symmetry-h4",
+        "row": "3158",
+        "slug": "QM5_1859_carney-pesavento-ratio-symmetry-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12272",
+        "embedded_ea_id": "1910",
+        "normalized_slug": "chande-stochastic-rsi-pop-h4",
+        "row": "3159",
+        "slug": "QM5_1910_chande-stochastic-rsi-pop-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12273",
+        "embedded_ea_id": "1911",
+        "normalized_slug": "elder-macd-histogram-hook-h4",
+        "row": "3160",
+        "slug": "QM5_1911_elder-macd-histogram-hook-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12274",
+        "embedded_ea_id": "1912",
+        "normalized_slug": "hopwood-asc-trend-channel-h4",
+        "row": "3161",
+        "slug": "QM5_1912_hopwood-asc-trend-channel-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12275",
+        "embedded_ea_id": "1913",
+        "normalized_slug": "hutson-dpo-zero-cross-h4",
+        "row": "3162",
+        "slug": "QM5_1913_hutson-dpo-zero-cross-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12276",
+        "embedded_ea_id": "1914",
+        "normalized_slug": "colby-mfi-divergence-h4",
+        "row": "3163",
+        "slug": "QM5_1914_colby-mfi-divergence-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12277",
+        "embedded_ea_id": "1965",
+        "normalized_slug": "elder-bull-bear-power-confirm-h4",
+        "row": "3164",
+        "slug": "QM5_1965_elder-bull-bear-power-confirm-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12278",
+        "embedded_ea_id": "1966",
+        "normalized_slug": "colby-demand-index-h4",
+        "row": "3165",
+        "slug": "QM5_1966_colby-demand-index-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12279",
+        "embedded_ea_id": "1967",
+        "normalized_slug": "pring-kst-h4",
+        "row": "3166",
+        "slug": "QM5_1967_pring-kst-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12280",
+        "embedded_ea_id": "1968",
+        "normalized_slug": "chande-aroon-oscillator-cross-h4",
+        "row": "3167",
+        "slug": "QM5_1968_chande-aroon-oscillator-cross-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12281",
+        "embedded_ea_id": "1969",
+        "normalized_slug": "chande-fo-histogram-h4",
+        "row": "3168",
+        "slug": "QM5_1969_chande-fo-histogram-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12282",
+        "embedded_ea_id": "2020",
+        "normalized_slug": "chaikin-volatility-h4",
+        "row": "3169",
+        "slug": "QM5_2020_chaikin-volatility-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12283",
+        "embedded_ea_id": "2021",
+        "normalized_slug": "chaikin-money-flow-h4",
+        "row": "3170",
+        "slug": "QM5_2021_chaikin-money-flow-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12284",
+        "embedded_ea_id": "2022",
+        "normalized_slug": "ehlers-hilbert-phase-trend-h4",
+        "row": "3171",
+        "slug": "QM5_2022_ehlers-hilbert-phase-trend-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12285",
+        "embedded_ea_id": "2023",
+        "normalized_slug": "demark-td-d-wave-wave5-h4",
+        "row": "3172",
+        "slug": "QM5_2023_demark-td-d-wave-wave5-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12286",
+        "embedded_ea_id": "2024",
+        "normalized_slug": "pring-trend-deviation-oscillator-h4",
+        "row": "3173",
+        "slug": "QM5_2024_pring-trend-deviation-oscillator-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12287",
+        "embedded_ea_id": "2025",
+        "normalized_slug": "williams-accumulation-distribution-h4",
+        "row": "3174",
+        "slug": "QM5_2025_williams-accumulation-distribution-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12288",
+        "embedded_ea_id": "2077",
+        "normalized_slug": "demark-td-rei-h4",
+        "row": "3175",
+        "slug": "QM5_2077_demark-td-rei-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12289",
+        "embedded_ea_id": "2078",
+        "normalized_slug": "ehlers-sine-wave-h4",
+        "row": "3176",
+        "slug": "QM5_2078_ehlers-sine-wave-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12290",
+        "embedded_ea_id": "2079",
+        "normalized_slug": "williams-ultimate-oscillator-h4",
+        "row": "3177",
+        "slug": "QM5_2079_williams-ultimate-oscillator-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12291",
+        "embedded_ea_id": "2080",
+        "normalized_slug": "pring-special-k-h4",
+        "row": "3178",
+        "slug": "QM5_2080_pring-special-k-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12292",
+        "embedded_ea_id": "2131",
+        "normalized_slug": "ehlers-laguerre-filter-h4",
+        "row": "3179",
+        "slug": "QM5_2131_ehlers-laguerre-filter-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12293",
+        "embedded_ea_id": "2132",
+        "normalized_slug": "pring-kst-histogram-h4",
+        "row": "3180",
+        "slug": "QM5_2132_pring-kst-histogram-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12294",
+        "embedded_ea_id": "2133",
+        "normalized_slug": "demark-td-trend-factor-h4",
+        "row": "3181",
+        "slug": "QM5_2133_demark-td-trend-factor-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12295",
+        "embedded_ea_id": "2134",
+        "normalized_slug": "brooks-major-trend-reversal-h4",
+        "row": "3182",
+        "slug": "QM5_2134_brooks-major-trend-reversal-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12296",
+        "embedded_ea_id": "2135",
+        "normalized_slug": "chande-trendscore-h4",
+        "row": "3183",
+        "slug": "QM5_2135_chande-trendscore-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12297",
+        "embedded_ea_id": "2186",
+        "normalized_slug": "ehlers-frama-cross-h4",
+        "row": "3184",
+        "slug": "QM5_2186_ehlers-frama-cross-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12298",
+        "embedded_ea_id": "2187",
+        "normalized_slug": "demark-td-trap-h4",
+        "row": "3185",
+        "slug": "QM5_2187_demark-td-trap-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12299",
+        "embedded_ea_id": "2188",
+        "normalized_slug": "chande-ravi-regime-cross-h4",
+        "row": "3186",
+        "slug": "QM5_2188_chande-ravi-regime-cross-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12300",
+        "embedded_ea_id": "2189",
+        "normalized_slug": "brooks-h1-l1-pullback-h4",
+        "row": "3187",
+        "slug": "QM5_2189_brooks-h1-l1-pullback-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12301",
+        "embedded_ea_id": "2190",
+        "normalized_slug": "chande-qstick-zero-cross-h4",
+        "row": "3188",
+        "slug": "QM5_2190_chande-qstick-zero-cross-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12302",
+        "embedded_ea_id": "2241",
+        "normalized_slug": "ehlers-inverse-fisher-transform-h4",
+        "row": "3189",
+        "slug": "QM5_2241_ehlers-inverse-fisher-transform-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12303",
+        "embedded_ea_id": "2242",
+        "normalized_slug": "demark-td-magic-letters-h4",
+        "row": "3190",
+        "slug": "QM5_2242_demark-td-magic-letters-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12304",
+        "embedded_ea_id": "2243",
+        "normalized_slug": "chande-aroon-divergence-h4",
+        "row": "3191",
+        "slug": "QM5_2243_chande-aroon-divergence-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12305",
+        "embedded_ea_id": "2244",
+        "normalized_slug": "brooks-h2-l2-pullback-h4",
+        "row": "3192",
+        "slug": "QM5_2244_brooks-h2-l2-pullback-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12306",
+        "embedded_ea_id": "2296",
+        "normalized_slug": "demark-td-diff-alt-h4",
+        "row": "3193",
+        "slug": "QM5_2296_demark-td-diff-alt-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12307",
+        "embedded_ea_id": "2297",
+        "normalized_slug": "sperandeo-channel-buster-h4",
+        "row": "3194",
+        "slug": "QM5_2297_sperandeo-channel-buster-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12308",
+        "embedded_ea_id": "2298",
+        "normalized_slug": "williams-smash-day-h4",
+        "row": "3195",
+        "slug": "QM5_2298_williams-smash-day-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12309",
+        "embedded_ea_id": "2299",
+        "normalized_slug": "brooks-final-flag-h4",
+        "row": "3196",
+        "slug": "QM5_2299_brooks-final-flag-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12310",
+        "embedded_ea_id": "2300",
+        "normalized_slug": "chande-vidya-slope-h4",
+        "row": "3197",
+        "slug": "QM5_2300_chande-vidya-slope-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12311",
+        "embedded_ea_id": "2351",
+        "normalized_slug": "demark-td-diff-rsi-h4",
+        "row": "3198",
+        "slug": "QM5_2351_demark-td-diff-rsi-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12312",
+        "embedded_ea_id": "2352",
+        "normalized_slug": "williams-3day-failure-h4",
+        "row": "3199",
+        "slug": "QM5_2352_williams-3day-failure-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12313",
+        "embedded_ea_id": "2353",
+        "normalized_slug": "ehlers-voss-predictor-h4",
+        "row": "3200",
+        "slug": "QM5_2353_ehlers-voss-predictor-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12314",
+        "embedded_ea_id": "2354",
+        "normalized_slug": "brooks-failed-final-flag-h4",
+        "row": "3201",
+        "slug": "QM5_2354_brooks-failed-final-flag-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12315",
+        "embedded_ea_id": "2355",
+        "normalized_slug": "demark-td-clopwin-h4",
+        "row": "3202",
+        "slug": "QM5_2355_demark-td-clopwin-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12316",
+        "embedded_ea_id": "2406",
+        "normalized_slug": "brooks-triangle-h4",
+        "row": "3203",
+        "slug": "QM5_2406_brooks-triangle-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12317",
+        "embedded_ea_id": "2407",
+        "normalized_slug": "demark-td-clop-h4",
+        "row": "3204",
+        "slug": "QM5_2407_demark-td-clop-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12318",
+        "embedded_ea_id": "2408",
+        "normalized_slug": "williams-mmm-h4",
+        "row": "3205",
+        "slug": "QM5_2408_williams-mmm-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12319",
+        "embedded_ea_id": "2409",
+        "normalized_slug": "demark-td-lines-active-h4",
+        "row": "3206",
+        "slug": "QM5_2409_demark-td-lines-active-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12320",
+        "embedded_ea_id": "2410",
+        "normalized_slug": "ehlers-universal-oscillator-h4",
+        "row": "3207",
+        "slug": "QM5_2410_ehlers-universal-oscillator-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12321",
+        "embedded_ea_id": "2461",
+        "normalized_slug": "brooks-failed-wedge-h4",
+        "row": "3208",
+        "slug": "QM5_2461_brooks-failed-wedge-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12322",
+        "embedded_ea_id": "2462",
+        "normalized_slug": "demark-td-channel-1-h4",
+        "row": "3209",
+        "slug": "QM5_2462_demark-td-channel-1-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12323",
+        "embedded_ea_id": "2463",
+        "normalized_slug": "sperandeo-spring-channel-h4",
+        "row": "3210",
+        "slug": "QM5_2463_sperandeo-spring-channel-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12324",
+        "embedded_ea_id": "2464",
+        "normalized_slug": "pring-special-k-histogram-h4",
+        "row": "3211",
+        "slug": "QM5_2464_pring-special-k-histogram-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12325",
+        "embedded_ea_id": "2465",
+        "normalized_slug": "demark-td-channel-2-h4",
+        "row": "3212",
+        "slug": "QM5_2465_demark-td-channel-2-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12326",
+        "embedded_ea_id": "3005",
+        "normalized_slug": "alpha-inst-magnet",
+        "row": "3213",
+        "slug": "QM5_3005_alpha-inst-magnet",
+        "status": "active"
+      },
+      {
+        "ea_id": "12327",
+        "embedded_ea_id": "9147",
+        "normalized_slug": "aa-ew6-ma12",
+        "row": "3214",
+        "slug": "QM5_9147_aa-ew6-ma12",
+        "status": "active"
+      },
+      {
+        "ea_id": "12328",
+        "embedded_ea_id": "9176",
+        "normalized_slug": "mql5-sar-rvi-reverse",
+        "row": "3215",
+        "slug": "QM5_9176_mql5-sar-rvi-reverse",
+        "status": "active"
+      },
+      {
+        "ea_id": "12329",
+        "embedded_ea_id": "9177",
+        "normalized_slug": "mql5-sar-rvi-zero",
+        "row": "3216",
+        "slug": "QM5_9177_mql5-sar-rvi-zero",
+        "status": "active"
+      },
+      {
+        "ea_id": "12330",
+        "embedded_ea_id": "9181",
+        "normalized_slug": "jstm-dual-thrust-fx-intraday",
+        "row": "3217",
+        "slug": "QM5_9181_jstm-dual-thrust-fx-intraday",
+        "status": "active"
+      },
+      {
+        "ea_id": "12331",
+        "embedded_ea_id": "9182",
+        "normalized_slug": "jstm-heikin-ashi-trend-long",
+        "row": "3218",
+        "slug": "QM5_9182_jstm-heikin-ashi-trend-long",
+        "status": "active"
+      },
+      {
+        "ea_id": "12332",
+        "embedded_ea_id": "9183",
+        "normalized_slug": "jstm-parabolic-sar-flip",
+        "row": "3219",
+        "slug": "QM5_9183_jstm-parabolic-sar-flip",
+        "status": "active"
+      },
+      {
+        "ea_id": "12333",
+        "embedded_ea_id": "9184",
+        "normalized_slug": "jstm-pair-cointegration-fx",
+        "row": "3220",
+        "slug": "QM5_9184_jstm-pair-cointegration-fx",
+        "status": "active"
+      },
+      {
+        "ea_id": "12334",
+        "embedded_ea_id": "9220",
+        "normalized_slug": "mql5-alligator-trend",
+        "row": "3221",
+        "slug": "QM5_9220_mql5-alligator-trend",
+        "status": "active"
+      },
+      {
+        "ea_id": "12335",
+        "embedded_ea_id": "9220",
+        "normalized_slug": "mql5-rvi-ma",
+        "row": "3222",
+        "slug": "QM5_9220_mql5-rvi-ma",
+        "status": "active"
+      },
+      {
+        "ea_id": "12336",
+        "embedded_ea_id": "9221",
+        "normalized_slug": "mql5-ad-price",
+        "row": "3223",
+        "slug": "QM5_9221_mql5-ad-price",
+        "status": "active"
+      },
+      {
+        "ea_id": "12337",
+        "embedded_ea_id": "9221",
+        "normalized_slug": "mql5-chaikin-zero",
+        "row": "3224",
+        "slug": "QM5_9221_mql5-chaikin-zero",
+        "status": "active"
+      },
+      {
+        "ea_id": "12338",
+        "embedded_ea_id": "9221",
+        "normalized_slug": "mql5-stddev-ma",
+        "row": "3225",
+        "slug": "QM5_9221_mql5-stddev-ma",
+        "status": "active"
+      },
+      {
+        "ea_id": "12339",
+        "embedded_ea_id": "9222",
+        "normalized_slug": "mql5-bwmfi-ma",
+        "row": "3226",
+        "slug": "QM5_9222_mql5-bwmfi-ma",
+        "status": "active"
+      },
+      {
+        "ea_id": "12340",
+        "embedded_ea_id": "9222",
+        "normalized_slug": "mql5-force-ema",
+        "row": "3227",
+        "slug": "QM5_9222_mql5-force-ema",
+        "status": "active"
+      },
+      {
+        "ea_id": "12341",
+        "embedded_ea_id": "9222",
+        "normalized_slug": "mql5-gator-ma",
+        "row": "3228",
+        "slug": "QM5_9222_mql5-gator-ma",
+        "status": "active"
+      },
+      {
+        "ea_id": "12342",
+        "embedded_ea_id": "9223",
+        "normalized_slug": "mql5-demarker-div",
+        "row": "3229",
+        "slug": "QM5_9223_mql5-demarker-div",
+        "status": "active"
+      },
+      {
+        "ea_id": "12343",
+        "embedded_ea_id": "9224",
+        "normalized_slug": "mql5-vol-ma-cross",
+        "row": "3230",
+        "slug": "QM5_9224_mql5-vol-ma-cross",
+        "status": "active"
+      },
+      {
+        "ea_id": "12344",
+        "embedded_ea_id": "9265",
+        "normalized_slug": "mql5-adx-di-trend",
+        "row": "3231",
+        "slug": "QM5_9265_mql5-adx-di-trend",
+        "status": "active"
+      },
+      {
+        "ea_id": "12345",
+        "embedded_ea_id": "9284",
+        "normalized_slug": "brooks-tight-trading-range-h4",
+        "row": "3232",
+        "slug": "QM5_9284_brooks-tight-trading-range-h4",
+        "status": "active"
+      },
+      {
+        "ea_id": "12346",
+        "embedded_ea_id": "9284",
+        "normalized_slug": "mql5-aroon-cross",
+        "row": "3233",
+        "slug": "QM5_9284_mql5-aroon-cross",
+        "status": "active"
+      }
+    ]
+  },
+  "applied": {
+    "materialized_registry_slugs_normalized": 9,
+    "normalized_ea_ids": [
+      "QM5_12108",
+      "QM5_12109",
+      "QM5_12111",
+      "QM5_12112",
+      "QM5_12113",
+      "QM5_12114",
+      "QM5_12115",
+      "QM5_12116",
+      "QM5_12117"
+    ],
+    "registry_command_idempotence_verified": true,
+    "rejected_cards_normalized": 3
+  },
+  "authoritative_sources": {
+    "card_decision": "Strategy Card g0_status; leading rejection audit comments and cards_rejected placement corroborate the three mechanical corrections",
+    "materialized_slug": "exact QM5_<ea_id>_<slug> directory plus every active magic_numbers.csv ea_slug",
+    "registry_numeric_identity": "framework/registry/ea_id_registry.csv ea_id",
+    "unmaterialized_disposition": "docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv"
+  },
+  "before": {
+    "active_embedded_id_slug_count": 265,
+    "active_embedded_id_slug_rows": [
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12077",
+        "embedded_ea_id": "1228",
+        "normalized_slug": "hopwood-stochastic-cross-h1",
+        "row": "2964",
+        "slug": "QM5_1228_hopwood-stochastic-cross-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12078",
+        "embedded_ea_id": "1229",
+        "normalized_slug": "hopwood-ma-rainbow-h4",
+        "row": "2965",
+        "slug": "QM5_1229_hopwood-ma-rainbow-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12079",
+        "embedded_ea_id": "1230",
+        "normalized_slug": "renko-color-streak-h1",
+        "row": "2966",
+        "slug": "QM5_1230_renko-color-streak-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12080",
+        "embedded_ea_id": "1327",
+        "normalized_slug": "chande-vidya-trend-h4",
+        "row": "2967",
+        "slug": "QM5_1327_chande-vidya-trend-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12081",
+        "embedded_ea_id": "1330",
+        "normalized_slug": "renko-double-flip-confirm-h1",
+        "row": "2968",
+        "slug": "QM5_1330_renko-double-flip-confirm-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12082",
+        "embedded_ea_id": "1404",
+        "normalized_slug": "brooks-expanded-micro-channel-h1",
+        "row": "2969",
+        "slug": "QM5_1404_brooks-expanded-micro-channel-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12083",
+        "embedded_ea_id": "1405",
+        "normalized_slug": "classical-ascending-triangle-breakout-h4",
+        "row": "2970",
+        "slug": "QM5_1405_classical-ascending-triangle-breakout-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12084",
+        "embedded_ea_id": "1424",
+        "normalized_slug": "classical-triple-top-reversal-h4",
+        "row": "2971",
+        "slug": "QM5_1424_classical-triple-top-reversal-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12085",
+        "embedded_ea_id": "1428",
+        "normalized_slug": "wyckoff-phase-e-markdown-continuation-h4",
+        "row": "2972",
+        "slug": "QM5_1428_wyckoff-phase-e-markdown-continuation-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12086",
+        "embedded_ea_id": "1582",
+        "normalized_slug": "ehlers-super-smoother-h4",
+        "row": "2973",
+        "slug": "QM5_1582_ehlers-super-smoother-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12087",
+        "embedded_ea_id": "1583",
+        "normalized_slug": "sperandeo-tlb-refinement-h4",
+        "row": "2974",
+        "slug": "QM5_1583_sperandeo-tlb-refinement-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12088",
+        "embedded_ea_id": "1601",
+        "normalized_slug": "demark-td-reverse-differential-h4",
+        "row": "2975",
+        "slug": "QM5_1601_demark-td-reverse-differential-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12089",
+        "embedded_ea_id": "1617",
+        "normalized_slug": "mql5-sar-sma-rapid",
+        "row": "2976",
+        "slug": "QM5_1617_mql5-sar-sma-rapid",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12090",
+        "embedded_ea_id": "1618",
+        "normalized_slug": "mql5-ma-support",
+        "row": "2977",
+        "slug": "QM5_1618_mql5-ma-support",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12091",
+        "embedded_ea_id": "1635",
+        "normalized_slug": "mql5-donchian-break",
+        "row": "2978",
+        "slug": "QM5_1635_mql5-donchian-break",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12092",
+        "embedded_ea_id": "1637",
+        "normalized_slug": "mql5-golden-death",
+        "row": "2979",
+        "slug": "QM5_1637_mql5-golden-death",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12093",
+        "embedded_ea_id": "1647",
+        "normalized_slug": "hopwood-bermaui-macd-h4",
+        "row": "2980",
+        "slug": "QM5_1647_hopwood-bermaui-macd-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12094",
+        "embedded_ea_id": "1648",
+        "normalized_slug": "ehlers-ebsw-cycle-composite-h4",
+        "row": "2981",
+        "slug": "QM5_1648_ehlers-ebsw-cycle-composite-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12095",
+        "embedded_ea_id": "1649",
+        "normalized_slug": "robopip-hlhb-trend-catcher-h1",
+        "row": "2982",
+        "slug": "QM5_1649_robopip-hlhb-trend-catcher-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12096",
+        "embedded_ea_id": "1649",
+        "normalized_slug": "sperandeo-trend-fault-line-h4",
+        "row": "2983",
+        "slug": "QM5_1649_sperandeo-trend-fault-line-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12097",
+        "embedded_ea_id": "9166",
+        "normalized_slug": "tv-kn-ema-cross-atr-tp",
+        "row": "2984",
+        "slug": "QM5_9166_tv-kn-ema-cross-atr-tp",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12100",
+        "embedded_ea_id": "9199",
+        "normalized_slug": "mql5-mfi-trend",
+        "row": "2987",
+        "slug": "QM5_9199_mql5-mfi-trend",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12101",
+        "embedded_ea_id": "9220",
+        "normalized_slug": "mql5-rvi-ma",
+        "row": "2988",
+        "slug": "QM5_9220_mql5-rvi-ma",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12102",
+        "embedded_ea_id": "9221",
+        "normalized_slug": "mql5-chaikin-zero",
+        "row": "2989",
+        "slug": "QM5_9221_mql5-chaikin-zero",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12103",
+        "embedded_ea_id": "9221",
+        "normalized_slug": "mql5-stddev-ma",
+        "row": "2990",
+        "slug": "QM5_9221_mql5-stddev-ma",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12104",
+        "embedded_ea_id": "9222",
+        "normalized_slug": "mql5-force-ema",
+        "row": "2991",
+        "slug": "QM5_9222_mql5-force-ema",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12105",
+        "embedded_ea_id": "9222",
+        "normalized_slug": "mql5-gator-ma",
+        "row": "2992",
+        "slug": "QM5_9222_mql5-gator-ma",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12106",
+        "embedded_ea_id": "9283",
+        "normalized_slug": "pring-coppock-h4-variant",
+        "row": "2993",
+        "slug": "QM5_9283_pring-coppock-h4-variant",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12107",
+        "embedded_ea_id": "9284",
+        "normalized_slug": "mql5-aroon-cross",
+        "row": "2994",
+        "slug": "QM5_9284_mql5-aroon-cross",
+        "status": "active"
+      },
+      {
+        "disposition_action": "NOT_IN_DECISION",
+        "ea_id": "12108",
+        "embedded_ea_id": "1271",
+        "normalized_slug": "hopwood-cup-of-coffee-h1",
+        "row": "2995",
+        "slug": "QM5_1271_hopwood-cup-of-coffee-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "NOT_IN_DECISION",
+        "ea_id": "12109",
+        "embedded_ea_id": "1272",
+        "normalized_slug": "camarilla-weekly-pivots-swing",
+        "row": "2996",
+        "slug": "QM5_1272_camarilla-weekly-pivots-swing",
+        "status": "active"
+      },
+      {
+        "disposition_action": "NOT_IN_DECISION",
+        "ea_id": "12111",
+        "embedded_ea_id": "1274",
+        "normalized_slug": "bressert-double-stochastic-h1",
+        "row": "2998",
+        "slug": "QM5_1274_bressert-double-stochastic-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "NOT_IN_DECISION",
+        "ea_id": "12112",
+        "embedded_ea_id": "1275",
+        "normalized_slug": "channel-keltner-trend",
+        "row": "2999",
+        "slug": "QM5_1275_channel-keltner-trend",
+        "status": "active"
+      },
+      {
+        "disposition_action": "NOT_IN_DECISION",
+        "ea_id": "12113",
+        "embedded_ea_id": "1288",
+        "normalized_slug": "bb-width-regime-breakout",
+        "row": "3000",
+        "slug": "QM5_1288_bb-width-regime-breakout",
+        "status": "active"
+      },
+      {
+        "disposition_action": "NOT_IN_DECISION",
+        "ea_id": "12114",
+        "embedded_ea_id": "1289",
+        "normalized_slug": "donchian-vegas-hybrid",
+        "row": "3001",
+        "slug": "QM5_1289_donchian-vegas-hybrid",
+        "status": "active"
+      },
+      {
+        "disposition_action": "NOT_IN_DECISION",
+        "ea_id": "12115",
+        "embedded_ea_id": "1290",
+        "normalized_slug": "classic-pivot-points-fade-break",
+        "row": "3002",
+        "slug": "QM5_1290_classic-pivot-points-fade-break",
+        "status": "active"
+      },
+      {
+        "disposition_action": "NOT_IN_DECISION",
+        "ea_id": "12116",
+        "embedded_ea_id": "1291",
+        "normalized_slug": "carter-ttm-squeeze-h1",
+        "row": "3003",
+        "slug": "QM5_1291_carter-ttm-squeeze-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "NOT_IN_DECISION",
+        "ea_id": "12117",
+        "embedded_ea_id": "1296",
+        "normalized_slug": "demark-td-sequential-h4",
+        "row": "3004",
+        "slug": "QM5_1296_demark-td-sequential-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12118",
+        "embedded_ea_id": "1297",
+        "normalized_slug": "coppock-curve-cross-zero-w1",
+        "row": "3005",
+        "slug": "QM5_1297_coppock-curve-cross-zero-w1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12119",
+        "embedded_ea_id": "1298",
+        "normalized_slug": "kst-know-sure-thing-cross-d1",
+        "row": "3006",
+        "slug": "QM5_1298_kst-know-sure-thing-cross-d1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12120",
+        "embedded_ea_id": "1305",
+        "normalized_slug": "camarilla-vwap-confluence-intraday",
+        "row": "3007",
+        "slug": "QM5_1305_camarilla-vwap-confluence-intraday",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12121",
+        "embedded_ea_id": "1309",
+        "normalized_slug": "bressert-dss-slope-h1",
+        "row": "3008",
+        "slug": "QM5_1309_bressert-dss-slope-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12122",
+        "embedded_ea_id": "1311",
+        "normalized_slug": "carter-ttm-wave-h1",
+        "row": "3009",
+        "slug": "QM5_1311_carter-ttm-wave-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12123",
+        "embedded_ea_id": "1313",
+        "normalized_slug": "heiken-ashi-smoothed-flip-h1",
+        "row": "3010",
+        "slug": "QM5_1313_heiken-ashi-smoothed-flip-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12124",
+        "embedded_ea_id": "1314",
+        "normalized_slug": "vwap-sigma-bands-breakout-m15",
+        "row": "3011",
+        "slug": "QM5_1314_vwap-sigma-bands-breakout-m15",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12125",
+        "embedded_ea_id": "1315",
+        "normalized_slug": "alma-ichimoku-h1",
+        "row": "3012",
+        "slug": "QM5_1315_alma-ichimoku-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12126",
+        "embedded_ea_id": "1316",
+        "normalized_slug": "tom-fps-stochastic-h1",
+        "row": "3013",
+        "slug": "QM5_1316_tom-fps-stochastic-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12127",
+        "embedded_ea_id": "1317",
+        "normalized_slug": "kase-peak-oscillator-h1",
+        "row": "3014",
+        "slug": "QM5_1317_kase-peak-oscillator-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12128",
+        "embedded_ea_id": "1318",
+        "normalized_slug": "tom-fps-donchian-h1",
+        "row": "3015",
+        "slug": "QM5_1318_tom-fps-donchian-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12129",
+        "embedded_ea_id": "1319",
+        "normalized_slug": "carter-squeeze-pro-4regime-h1",
+        "row": "3016",
+        "slug": "QM5_1319_carter-squeeze-pro-4regime-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12130",
+        "embedded_ea_id": "1320",
+        "normalized_slug": "vwap-sigma-band-fade-intraday",
+        "row": "3017",
+        "slug": "QM5_1320_vwap-sigma-band-fade-intraday",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12131",
+        "embedded_ea_id": "1322",
+        "normalized_slug": "connors-rsi2-fx-port-d1",
+        "row": "3018",
+        "slug": "QM5_1322_connors-rsi2-fx-port-d1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12132",
+        "embedded_ea_id": "1324",
+        "normalized_slug": "carter-ttm-squeeze-pro-h1",
+        "row": "3019",
+        "slug": "QM5_1324_carter-ttm-squeeze-pro-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12133",
+        "embedded_ea_id": "1325",
+        "normalized_slug": "connors-rsi2-fx-intraday-h1",
+        "row": "3020",
+        "slug": "QM5_1325_connors-rsi2-fx-intraday-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12134",
+        "embedded_ea_id": "1326",
+        "normalized_slug": "tom-fps-donchian-h4",
+        "row": "3021",
+        "slug": "QM5_1326_tom-fps-donchian-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12135",
+        "embedded_ea_id": "1327",
+        "normalized_slug": "brooks-pin-bar-reversal-h4",
+        "row": "3022",
+        "slug": "QM5_1327_brooks-pin-bar-reversal-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12136",
+        "embedded_ea_id": "1327",
+        "normalized_slug": "chande-vidya-trend-h4",
+        "row": "3023",
+        "slug": "QM5_1327_chande-vidya-trend-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12137",
+        "embedded_ea_id": "1329",
+        "normalized_slug": "raschke-holy-grail-adx-pullback-h1",
+        "row": "3024",
+        "slug": "QM5_1329_raschke-holy-grail-adx-pullback-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12138",
+        "embedded_ea_id": "1330",
+        "normalized_slug": "demark-td-pressure-h4",
+        "row": "3025",
+        "slug": "QM5_1330_demark-td-pressure-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12139",
+        "embedded_ea_id": "1330",
+        "normalized_slug": "renko-double-flip-confirm-h1",
+        "row": "3026",
+        "slug": "QM5_1330_renko-double-flip-confirm-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12140",
+        "embedded_ea_id": "1347",
+        "normalized_slug": "lebeau-chandelier-exit-trail-h4",
+        "row": "3027",
+        "slug": "QM5_1347_lebeau-chandelier-exit-trail-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12141",
+        "embedded_ea_id": "1348",
+        "normalized_slug": "wilder-adx-di-cross-system-h1",
+        "row": "3028",
+        "slug": "QM5_1348_wilder-adx-di-cross-system-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12142",
+        "embedded_ea_id": "1349",
+        "normalized_slug": "williams-vol-breakout-prevday-range-h1",
+        "row": "3029",
+        "slug": "QM5_1349_williams-vol-breakout-prevday-range-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12143",
+        "embedded_ea_id": "1350",
+        "normalized_slug": "tom-fps-williams-percent-r-h1",
+        "row": "3030",
+        "slug": "QM5_1350_tom-fps-williams-percent-r-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12144",
+        "embedded_ea_id": "1351",
+        "normalized_slug": "frankfurt-box-first-hour-breakout-m30",
+        "row": "3031",
+        "slug": "QM5_1351_frankfurt-box-first-hour-breakout-m30",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12145",
+        "embedded_ea_id": "1352",
+        "normalized_slug": "murrey-math-octave-reaction-h1",
+        "row": "3032",
+        "slug": "QM5_1352_murrey-math-octave-reaction-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12146",
+        "embedded_ea_id": "1353",
+        "normalized_slug": "fisher-transform-zerocross-h1",
+        "row": "3033",
+        "slug": "QM5_1353_fisher-transform-zerocross-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12147",
+        "embedded_ea_id": "1362",
+        "normalized_slug": "brooks-2bar-reversal-h4",
+        "row": "3034",
+        "slug": "QM5_1362_brooks-2bar-reversal-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12148",
+        "embedded_ea_id": "1363",
+        "normalized_slug": "brooks-wedge-3push-h4",
+        "row": "3035",
+        "slug": "QM5_1363_brooks-wedge-3push-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12149",
+        "embedded_ea_id": "1364",
+        "normalized_slug": "brooks-double-top-bottom-h4",
+        "row": "3036",
+        "slug": "QM5_1364_brooks-double-top-bottom-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12150",
+        "embedded_ea_id": "1365",
+        "normalized_slug": "tokyo-open-fade-asian-short-m15",
+        "row": "3037",
+        "slug": "QM5_1365_tokyo-open-fade-asian-short-m15",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12151",
+        "embedded_ea_id": "1366",
+        "normalized_slug": "brooks-micro-channel-h1",
+        "row": "3038",
+        "slug": "QM5_1366_brooks-micro-channel-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12152",
+        "embedded_ea_id": "1367",
+        "normalized_slug": "schaff-trend-cycle-stc-h1",
+        "row": "3039",
+        "slug": "QM5_1367_schaff-trend-cycle-stc-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12153",
+        "embedded_ea_id": "1368",
+        "normalized_slug": "andrews-pitchfork-median-line-h4",
+        "row": "3040",
+        "slug": "QM5_1368_andrews-pitchfork-median-line-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12154",
+        "embedded_ea_id": "1369",
+        "normalized_slug": "goodman-wave-theory-3c-h1",
+        "row": "3041",
+        "slug": "QM5_1369_goodman-wave-theory-3c-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12155",
+        "embedded_ea_id": "1370",
+        "normalized_slug": "linreg-channel-slope-flip-h1",
+        "row": "3042",
+        "slug": "QM5_1370_linreg-channel-slope-flip-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12156",
+        "embedded_ea_id": "1372",
+        "normalized_slug": "williams-awesome-oscillator-twin-peaks-h1",
+        "row": "3043",
+        "slug": "QM5_1372_williams-awesome-oscillator-twin-peaks-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12157",
+        "embedded_ea_id": "1373",
+        "normalized_slug": "williams-accelerator-decelerator-zerocross-h1",
+        "row": "3044",
+        "slug": "QM5_1373_williams-accelerator-decelerator-zerocross-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12158",
+        "embedded_ea_id": "1374",
+        "normalized_slug": "carter-ttm-wave-h1",
+        "row": "3045",
+        "slug": "QM5_1374_carter-ttm-wave-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12159",
+        "embedded_ea_id": "1375",
+        "normalized_slug": "heiken-ashi-sma-smoothed-color-flip-h1",
+        "row": "3046",
+        "slug": "QM5_1375_heiken-ashi-sma-smoothed-color-flip-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12160",
+        "embedded_ea_id": "1376",
+        "normalized_slug": "harmonic-gartley-xabcd-h4",
+        "row": "3047",
+        "slug": "QM5_1376_harmonic-gartley-xabcd-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12161",
+        "embedded_ea_id": "1377",
+        "normalized_slug": "schiff-pitchfork-median-h4",
+        "row": "3048",
+        "slug": "QM5_1377_schiff-pitchfork-median-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12162",
+        "embedded_ea_id": "1378",
+        "normalized_slug": "brooks-4bar-continuation-h4",
+        "row": "3049",
+        "slug": "QM5_1378_brooks-4bar-continuation-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12163",
+        "embedded_ea_id": "1379",
+        "normalized_slug": "forex-profit-loader-bounded-grid-h1",
+        "row": "3050",
+        "slug": "QM5_1379_forex-profit-loader-bounded-grid-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12164",
+        "embedded_ea_id": "1380",
+        "normalized_slug": "brooks-h2l2-second-pullback-h4",
+        "row": "3051",
+        "slug": "QM5_1380_brooks-h2l2-second-pullback-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12165",
+        "embedded_ea_id": "1382",
+        "normalized_slug": "darvas-box-breakout-h1",
+        "row": "3052",
+        "slug": "QM5_1382_darvas-box-breakout-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12166",
+        "embedded_ea_id": "1384",
+        "normalized_slug": "wave59-time-cycle-tlb-h4",
+        "row": "3053",
+        "slug": "QM5_1384_wave59-time-cycle-tlb-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12167",
+        "embedded_ea_id": "1388",
+        "normalized_slug": "brooks-micro-channel-failed-test-h1",
+        "row": "3054",
+        "slug": "QM5_1388_brooks-micro-channel-failed-test-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12168",
+        "embedded_ea_id": "1389",
+        "normalized_slug": "goodman-wave-theory-measured-move-h1",
+        "row": "3055",
+        "slug": "QM5_1389_goodman-wave-theory-measured-move-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12169",
+        "embedded_ea_id": "1390",
+        "normalized_slug": "williams-percent-r-divergence-h4",
+        "row": "3056",
+        "slug": "QM5_1390_williams-percent-r-divergence-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12170",
+        "embedded_ea_id": "1391",
+        "normalized_slug": "harmonic-bat-xabcd-h4",
+        "row": "3057",
+        "slug": "QM5_1391_harmonic-bat-xabcd-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12171",
+        "embedded_ea_id": "1392",
+        "normalized_slug": "wyckoff-spring-test-h4",
+        "row": "3058",
+        "slug": "QM5_1392_wyckoff-spring-test-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12172",
+        "embedded_ea_id": "1393",
+        "normalized_slug": "classical-head-shoulders-top-h4",
+        "row": "3059",
+        "slug": "QM5_1393_classical-head-shoulders-top-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12173",
+        "embedded_ea_id": "1394",
+        "normalized_slug": "demark-td-differential-h4",
+        "row": "3060",
+        "slug": "QM5_1394_demark-td-differential-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12174",
+        "embedded_ea_id": "1396",
+        "normalized_slug": "brooks-tight-micro-channel-trend-h1",
+        "row": "3061",
+        "slug": "QM5_1396_brooks-tight-micro-channel-trend-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12175",
+        "embedded_ea_id": "1397",
+        "normalized_slug": "harmonic-gartley-xabcd-h4",
+        "row": "3062",
+        "slug": "QM5_1397_harmonic-gartley-xabcd-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12176",
+        "embedded_ea_id": "1399",
+        "normalized_slug": "classical-double-top-h4",
+        "row": "3063",
+        "slug": "QM5_1399_classical-double-top-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12177",
+        "embedded_ea_id": "1407",
+        "normalized_slug": "classical-symmetric-triangle-breakout-h4",
+        "row": "3064",
+        "slug": "QM5_1407_classical-symmetric-triangle-breakout-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12178",
+        "embedded_ea_id": "1408",
+        "normalized_slug": "classical-bull-flag-continuation-h1",
+        "row": "3065",
+        "slug": "QM5_1408_classical-bull-flag-continuation-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12179",
+        "embedded_ea_id": "1409",
+        "normalized_slug": "wyckoff-sign-of-strength-phase-d-h4",
+        "row": "3066",
+        "slug": "QM5_1409_wyckoff-sign-of-strength-phase-d-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12180",
+        "embedded_ea_id": "1410",
+        "normalized_slug": "bressert-dual-cycle-oscillator-h4",
+        "row": "3067",
+        "slug": "QM5_1410_bressert-dual-cycle-oscillator-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12181",
+        "embedded_ea_id": "1416",
+        "normalized_slug": "classical-bear-flag-continuation-h1",
+        "row": "3068",
+        "slug": "QM5_1416_classical-bear-flag-continuation-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12182",
+        "embedded_ea_id": "1417",
+        "normalized_slug": "classical-pennant-continuation-h1",
+        "row": "3069",
+        "slug": "QM5_1417_classical-pennant-continuation-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12183",
+        "embedded_ea_id": "1418",
+        "normalized_slug": "classical-falling-wedge-reversal-h4",
+        "row": "3070",
+        "slug": "QM5_1418_classical-falling-wedge-reversal-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12184",
+        "embedded_ea_id": "1419",
+        "normalized_slug": "wyckoff-lpsy-distribution-phase-d-h4",
+        "row": "3071",
+        "slug": "QM5_1419_wyckoff-lpsy-distribution-phase-d-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12185",
+        "embedded_ea_id": "1420",
+        "normalized_slug": "bressert-cycle-counting-h4",
+        "row": "3072",
+        "slug": "QM5_1420_bressert-cycle-counting-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12186",
+        "embedded_ea_id": "1421",
+        "normalized_slug": "classical-rising-wedge-reversal-h4",
+        "row": "3073",
+        "slug": "QM5_1421_classical-rising-wedge-reversal-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12187",
+        "embedded_ea_id": "1422",
+        "normalized_slug": "classical-broadening-formation-h4",
+        "row": "3074",
+        "slug": "QM5_1422_classical-broadening-formation-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12188",
+        "embedded_ea_id": "1423",
+        "normalized_slug": "wyckoff-sign-of-weakness-phase-d-h4",
+        "row": "3075",
+        "slug": "QM5_1423_wyckoff-sign-of-weakness-phase-d-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12189",
+        "embedded_ea_id": "1424",
+        "normalized_slug": "bressert-short-cycle-counting-h4",
+        "row": "3076",
+        "slug": "QM5_1424_bressert-short-cycle-counting-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12190",
+        "embedded_ea_id": "1424",
+        "normalized_slug": "classical-triple-top-reversal-h4",
+        "row": "3077",
+        "slug": "QM5_1424_classical-triple-top-reversal-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12191",
+        "embedded_ea_id": "1425",
+        "normalized_slug": "classical-triple-bottom-reversal-h4",
+        "row": "3078",
+        "slug": "QM5_1425_classical-triple-bottom-reversal-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12192",
+        "embedded_ea_id": "1426",
+        "normalized_slug": "classical-complex-head-shoulders-h4",
+        "row": "3079",
+        "slug": "QM5_1426_classical-complex-head-shoulders-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12193",
+        "embedded_ea_id": "1428",
+        "normalized_slug": "wyckoff-phase-e-mark-up-continuation-h4",
+        "row": "3080",
+        "slug": "QM5_1428_wyckoff-phase-e-mark-up-continuation-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12194",
+        "embedded_ea_id": "1428",
+        "normalized_slug": "wyckoff-phase-e-markdown-continuation-h4",
+        "row": "3081",
+        "slug": "QM5_1428_wyckoff-phase-e-markdown-continuation-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12195",
+        "embedded_ea_id": "1429",
+        "normalized_slug": "wyckoff-phase-e-mark-down-continuation-h4",
+        "row": "3082",
+        "slug": "QM5_1429_wyckoff-phase-e-mark-down-continuation-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12196",
+        "embedded_ea_id": "1430",
+        "normalized_slug": "andrews-pitchfork-parallel-line-h4",
+        "row": "3083",
+        "slug": "QM5_1430_andrews-pitchfork-parallel-line-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12197",
+        "embedded_ea_id": "1431",
+        "normalized_slug": "williams-r-hidden-divergence-h4",
+        "row": "3084",
+        "slug": "QM5_1431_williams-r-hidden-divergence-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12198",
+        "embedded_ea_id": "1432",
+        "normalized_slug": "demark-td-setup-trend-h4",
+        "row": "3085",
+        "slug": "QM5_1432_demark-td-setup-trend-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12199",
+        "embedded_ea_id": "1436",
+        "normalized_slug": "williams-r-cross-zero-h4",
+        "row": "3086",
+        "slug": "QM5_1436_williams-r-cross-zero-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12200",
+        "embedded_ea_id": "1437",
+        "normalized_slug": "carter-ttm-squeeze-h4",
+        "row": "3087",
+        "slug": "QM5_1437_carter-ttm-squeeze-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12201",
+        "embedded_ea_id": "1438",
+        "normalized_slug": "demark-td-demarker-h4",
+        "row": "3088",
+        "slug": "QM5_1438_demark-td-demarker-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12202",
+        "embedded_ea_id": "1439",
+        "normalized_slug": "wyckoff-spring-test-phase-c-h4",
+        "row": "3089",
+        "slug": "QM5_1439_wyckoff-spring-test-phase-c-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12203",
+        "embedded_ea_id": "1441",
+        "normalized_slug": "aroon-up-down-crossover-h4",
+        "row": "3090",
+        "slug": "QM5_1441_aroon-up-down-crossover-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12204",
+        "embedded_ea_id": "1444",
+        "normalized_slug": "vortex-indicator-cross-h4",
+        "row": "3091",
+        "slug": "QM5_1444_vortex-indicator-cross-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12205",
+        "embedded_ea_id": "1445",
+        "normalized_slug": "carney-three-drive-h4",
+        "row": "3092",
+        "slug": "QM5_1445_carney-three-drive-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12206",
+        "embedded_ea_id": "1446",
+        "normalized_slug": "demark-td-open-range-h4",
+        "row": "3093",
+        "slug": "QM5_1446_demark-td-open-range-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12207",
+        "embedded_ea_id": "1447",
+        "normalized_slug": "wilder-parabolic-sar-atr-h4",
+        "row": "3094",
+        "slug": "QM5_1447_wilder-parabolic-sar-atr-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12208",
+        "embedded_ea_id": "1449",
+        "normalized_slug": "wilder-adx-dmi-crossover-h4",
+        "row": "3095",
+        "slug": "QM5_1449_wilder-adx-dmi-crossover-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12209",
+        "embedded_ea_id": "1480",
+        "normalized_slug": "carter-ttm-trend-h4",
+        "row": "3096",
+        "slug": "QM5_1480_carter-ttm-trend-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12210",
+        "embedded_ea_id": "1481",
+        "normalized_slug": "wilder-adx-dmi-crossover-h4",
+        "row": "3097",
+        "slug": "QM5_1481_wilder-adx-dmi-crossover-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12211",
+        "embedded_ea_id": "1482",
+        "normalized_slug": "carney-three-drive-harmonic-h4",
+        "row": "3098",
+        "slug": "QM5_1482_carney-three-drive-harmonic-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12212",
+        "embedded_ea_id": "1490",
+        "normalized_slug": "raschke-anti-pullback-reversal-h4",
+        "row": "3099",
+        "slug": "QM5_1490_raschke-anti-pullback-reversal-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12213",
+        "embedded_ea_id": "1491",
+        "normalized_slug": "ehlers-sinewave-leadsine-cross-h4",
+        "row": "3100",
+        "slug": "QM5_1491_ehlers-sinewave-leadsine-cross-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12214",
+        "embedded_ea_id": "1502",
+        "normalized_slug": "hopwood-reversal-indicator-h4",
+        "row": "3101",
+        "slug": "QM5_1502_hopwood-reversal-indicator-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12215",
+        "embedded_ea_id": "1503",
+        "normalized_slug": "ehlers-decycler-low-pass-h4",
+        "row": "3102",
+        "slug": "QM5_1503_ehlers-decycler-low-pass-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12216",
+        "embedded_ea_id": "1504",
+        "normalized_slug": "raschke-three-little-indians-h4",
+        "row": "3103",
+        "slug": "QM5_1504_raschke-three-little-indians-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12217",
+        "embedded_ea_id": "1505",
+        "normalized_slug": "connors-cumulative-rsi-h4",
+        "row": "3104",
+        "slug": "QM5_1505_connors-cumulative-rsi-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12218",
+        "embedded_ea_id": "1506",
+        "normalized_slug": "demark-td-sequential-combo-h4",
+        "row": "3105",
+        "slug": "QM5_1506_demark-td-sequential-combo-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12219",
+        "embedded_ea_id": "1507",
+        "normalized_slug": "ehlers-mama-fama-cross-h4",
+        "row": "3106",
+        "slug": "QM5_1507_ehlers-mama-fama-cross-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12220",
+        "embedded_ea_id": "1508",
+        "normalized_slug": "hopwood-triple-trend-h4",
+        "row": "3107",
+        "slug": "QM5_1508_hopwood-triple-trend-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12221",
+        "embedded_ea_id": "1509",
+        "normalized_slug": "ehlers-even-better-sinewave-h4",
+        "row": "3108",
+        "slug": "QM5_1509_ehlers-even-better-sinewave-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12222",
+        "embedded_ea_id": "1511",
+        "normalized_slug": "connors-tps-time-price-score-h4",
+        "row": "3109",
+        "slug": "QM5_1511_connors-tps-time-price-score-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12223",
+        "embedded_ea_id": "1521",
+        "normalized_slug": "ehlers-predictive-moving-average-h4",
+        "row": "3110",
+        "slug": "QM5_1521_ehlers-predictive-moving-average-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12224",
+        "embedded_ea_id": "1524",
+        "normalized_slug": "williams-r-of-rsi-composite-h4",
+        "row": "3111",
+        "slug": "QM5_1524_williams-r-of-rsi-composite-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12225",
+        "embedded_ea_id": "1525",
+        "normalized_slug": "ehlers-empirical-mode-decomp-h4",
+        "row": "3112",
+        "slug": "QM5_1525_ehlers-empirical-mode-decomp-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12226",
+        "embedded_ea_id": "1526",
+        "normalized_slug": "demark-td-open-h4",
+        "row": "3113",
+        "slug": "QM5_1526_demark-td-open-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12227",
+        "embedded_ea_id": "1527",
+        "normalized_slug": "connors-crsi-composite-h4",
+        "row": "3114",
+        "slug": "QM5_1527_connors-crsi-composite-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12228",
+        "embedded_ea_id": "1529",
+        "normalized_slug": "ehlers-reflex-indicator-h4",
+        "row": "3115",
+        "slug": "QM5_1529_ehlers-reflex-indicator-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12229",
+        "embedded_ea_id": "1530",
+        "normalized_slug": "connors-double-sevens-h4",
+        "row": "3116",
+        "slug": "QM5_1530_connors-double-sevens-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12230",
+        "embedded_ea_id": "1531",
+        "normalized_slug": "demark-td-open-bar-reversal-h4",
+        "row": "3117",
+        "slug": "QM5_1531_demark-td-open-bar-reversal-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12231",
+        "embedded_ea_id": "1532",
+        "normalized_slug": "ehlers-stochastic-rsi-h4",
+        "row": "3118",
+        "slug": "QM5_1532_ehlers-stochastic-rsi-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12232",
+        "embedded_ea_id": "1533",
+        "normalized_slug": "williams-sentiment-index-h4",
+        "row": "3119",
+        "slug": "QM5_1533_williams-sentiment-index-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12233",
+        "embedded_ea_id": "1546",
+        "normalized_slug": "connors-multi-day-high-low-h4",
+        "row": "3120",
+        "slug": "QM5_1546_connors-multi-day-high-low-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12234",
+        "embedded_ea_id": "1547",
+        "normalized_slug": "demark-td-range-projection-h4",
+        "row": "3121",
+        "slug": "QM5_1547_demark-td-range-projection-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12235",
+        "embedded_ea_id": "1550",
+        "normalized_slug": "bressert-double-cycle-composite-h4",
+        "row": "3122",
+        "slug": "QM5_1550_bressert-double-cycle-composite-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12236",
+        "embedded_ea_id": "1563",
+        "normalized_slug": "ehlers-hilbert-transform-dft-h4",
+        "row": "3123",
+        "slug": "QM5_1563_ehlers-hilbert-transform-dft-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12237",
+        "embedded_ea_id": "1577",
+        "normalized_slug": "ehlers-super-smoother-2pole-h4",
+        "row": "3124",
+        "slug": "QM5_1577_ehlers-super-smoother-2pole-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12238",
+        "embedded_ea_id": "1578",
+        "normalized_slug": "hopwood-ts3-standalone-h4",
+        "row": "3125",
+        "slug": "QM5_1578_hopwood-ts3-standalone-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12239",
+        "embedded_ea_id": "1579",
+        "normalized_slug": "sperandeo-tlb-swing-pivot-h4",
+        "row": "3126",
+        "slug": "QM5_1579_sperandeo-tlb-swing-pivot-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12240",
+        "embedded_ea_id": "1591",
+        "normalized_slug": "demark-td-anti-differential-h4",
+        "row": "3127",
+        "slug": "QM5_1591_demark-td-anti-differential-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12241",
+        "embedded_ea_id": "1592",
+        "normalized_slug": "ehlers-even-better-sinewave-mtf-h4",
+        "row": "3128",
+        "slug": "QM5_1592_ehlers-even-better-sinewave-mtf-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12242",
+        "embedded_ea_id": "1593",
+        "normalized_slug": "carney-bat-pattern-h4",
+        "row": "3129",
+        "slug": "QM5_1593_carney-bat-pattern-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12243",
+        "embedded_ea_id": "1594",
+        "normalized_slug": "hopwood-ts6-standalone-h4",
+        "row": "3130",
+        "slug": "QM5_1594_hopwood-ts6-standalone-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12244",
+        "embedded_ea_id": "1595",
+        "normalized_slug": "sperandeo-2b-pivot-h4",
+        "row": "3131",
+        "slug": "QM5_1595_sperandeo-2b-pivot-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12245",
+        "embedded_ea_id": "1622",
+        "normalized_slug": "demark-td-termination-count-alt-h4",
+        "row": "3132",
+        "slug": "QM5_1622_demark-td-termination-count-alt-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12246",
+        "embedded_ea_id": "1623",
+        "normalized_slug": "hopwood-bermaui-dss-h4",
+        "row": "3133",
+        "slug": "QM5_1623_hopwood-bermaui-dss-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12248",
+        "embedded_ea_id": "1629",
+        "normalized_slug": "ehlers-cybernetic-cycle-h4",
+        "row": "3135",
+        "slug": "QM5_1629_ehlers-cybernetic-cycle-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12250",
+        "embedded_ea_id": "1645",
+        "normalized_slug": "carney-cypher-pattern-h4",
+        "row": "3137",
+        "slug": "QM5_1645_carney-cypher-pattern-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12251",
+        "embedded_ea_id": "1647",
+        "normalized_slug": "ehlers-ebsw-cycle-extraction-h4",
+        "row": "3138",
+        "slug": "QM5_1647_ehlers-ebsw-cycle-extraction-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12252",
+        "embedded_ea_id": "1647",
+        "normalized_slug": "hopwood-bermaui-macd-h4",
+        "row": "3139",
+        "slug": "QM5_1647_hopwood-bermaui-macd-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12253",
+        "embedded_ea_id": "1648",
+        "normalized_slug": "demark-td-sequential-tdst-overlay-h4",
+        "row": "3140",
+        "slug": "QM5_1648_demark-td-sequential-tdst-overlay-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12254",
+        "embedded_ea_id": "1648",
+        "normalized_slug": "ehlers-ebsw-cycle-composite-h4",
+        "row": "3141",
+        "slug": "QM5_1648_ehlers-ebsw-cycle-composite-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12255",
+        "embedded_ea_id": "1649",
+        "normalized_slug": "carney-cypher-pattern-h4",
+        "row": "3142",
+        "slug": "QM5_1649_carney-cypher-pattern-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12256",
+        "embedded_ea_id": "1649",
+        "normalized_slug": "robopip-hlhb-trend-catcher-h1",
+        "row": "3143",
+        "slug": "QM5_1649_robopip-hlhb-trend-catcher-h1",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12257",
+        "embedded_ea_id": "1649",
+        "normalized_slug": "sperandeo-trend-fault-line-h4",
+        "row": "3144",
+        "slug": "QM5_1649_sperandeo-trend-fault-line-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12258",
+        "embedded_ea_id": "1650",
+        "normalized_slug": "sperandeo-trader-vic-ii-pattern-h4",
+        "row": "3145",
+        "slug": "QM5_1650_sperandeo-trader-vic-ii-pattern-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12259",
+        "embedded_ea_id": "1651",
+        "normalized_slug": "ehlers-ebsw-cycle-extract-composite-h4",
+        "row": "3146",
+        "slug": "QM5_1651_ehlers-ebsw-cycle-extract-composite-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12260",
+        "embedded_ea_id": "1652",
+        "normalized_slug": "demark-td-sequential-tdst-overlay-h4",
+        "row": "3147",
+        "slug": "QM5_1652_demark-td-sequential-tdst-overlay-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12261",
+        "embedded_ea_id": "1653",
+        "normalized_slug": "sperandeo-test-of-strength-h4",
+        "row": "3148",
+        "slug": "QM5_1653_sperandeo-test-of-strength-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12262",
+        "embedded_ea_id": "1701",
+        "normalized_slug": "demark-td-sequential-tdst-overlay-h4",
+        "row": "3149",
+        "slug": "QM5_1701_demark-td-sequential-tdst-overlay-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12263",
+        "embedded_ea_id": "1702",
+        "normalized_slug": "ehlers-ebsw-cycle-extraction-h4",
+        "row": "3150",
+        "slug": "QM5_1702_ehlers-ebsw-cycle-extraction-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12264",
+        "embedded_ea_id": "1751",
+        "normalized_slug": "ehlers-hilbert-fft-cleanup-h4",
+        "row": "3151",
+        "slug": "QM5_1751_ehlers-hilbert-fft-cleanup-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12265",
+        "embedded_ea_id": "1801",
+        "normalized_slug": "chande-momentum-oscillator-h4",
+        "row": "3152",
+        "slug": "QM5_1801_chande-momentum-oscillator-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12266",
+        "embedded_ea_id": "1802",
+        "normalized_slug": "elder-impulse-system-h4",
+        "row": "3153",
+        "slug": "QM5_1802_elder-impulse-system-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12267",
+        "embedded_ea_id": "1803",
+        "normalized_slug": "elder-triple-screen-h4",
+        "row": "3154",
+        "slug": "QM5_1803_elder-triple-screen-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12268",
+        "embedded_ea_id": "1856",
+        "normalized_slug": "elder-force-index-spike-reversal-h4",
+        "row": "3155",
+        "slug": "QM5_1856_elder-force-index-spike-reversal-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12269",
+        "embedded_ea_id": "1857",
+        "normalized_slug": "chande-forecast-oscillator-h4",
+        "row": "3156",
+        "slug": "QM5_1857_chande-forecast-oscillator-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12270",
+        "embedded_ea_id": "1858",
+        "normalized_slug": "elder-ray-bull-bear-power-zerocross-h4",
+        "row": "3157",
+        "slug": "QM5_1858_elder-ray-bull-bear-power-zerocross-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12271",
+        "embedded_ea_id": "1859",
+        "normalized_slug": "carney-pesavento-ratio-symmetry-h4",
+        "row": "3158",
+        "slug": "QM5_1859_carney-pesavento-ratio-symmetry-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12272",
+        "embedded_ea_id": "1910",
+        "normalized_slug": "chande-stochastic-rsi-pop-h4",
+        "row": "3159",
+        "slug": "QM5_1910_chande-stochastic-rsi-pop-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12273",
+        "embedded_ea_id": "1911",
+        "normalized_slug": "elder-macd-histogram-hook-h4",
+        "row": "3160",
+        "slug": "QM5_1911_elder-macd-histogram-hook-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12274",
+        "embedded_ea_id": "1912",
+        "normalized_slug": "hopwood-asc-trend-channel-h4",
+        "row": "3161",
+        "slug": "QM5_1912_hopwood-asc-trend-channel-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12275",
+        "embedded_ea_id": "1913",
+        "normalized_slug": "hutson-dpo-zero-cross-h4",
+        "row": "3162",
+        "slug": "QM5_1913_hutson-dpo-zero-cross-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12276",
+        "embedded_ea_id": "1914",
+        "normalized_slug": "colby-mfi-divergence-h4",
+        "row": "3163",
+        "slug": "QM5_1914_colby-mfi-divergence-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12277",
+        "embedded_ea_id": "1965",
+        "normalized_slug": "elder-bull-bear-power-confirm-h4",
+        "row": "3164",
+        "slug": "QM5_1965_elder-bull-bear-power-confirm-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12278",
+        "embedded_ea_id": "1966",
+        "normalized_slug": "colby-demand-index-h4",
+        "row": "3165",
+        "slug": "QM5_1966_colby-demand-index-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12279",
+        "embedded_ea_id": "1967",
+        "normalized_slug": "pring-kst-h4",
+        "row": "3166",
+        "slug": "QM5_1967_pring-kst-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12280",
+        "embedded_ea_id": "1968",
+        "normalized_slug": "chande-aroon-oscillator-cross-h4",
+        "row": "3167",
+        "slug": "QM5_1968_chande-aroon-oscillator-cross-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12281",
+        "embedded_ea_id": "1969",
+        "normalized_slug": "chande-fo-histogram-h4",
+        "row": "3168",
+        "slug": "QM5_1969_chande-fo-histogram-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12282",
+        "embedded_ea_id": "2020",
+        "normalized_slug": "chaikin-volatility-h4",
+        "row": "3169",
+        "slug": "QM5_2020_chaikin-volatility-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12283",
+        "embedded_ea_id": "2021",
+        "normalized_slug": "chaikin-money-flow-h4",
+        "row": "3170",
+        "slug": "QM5_2021_chaikin-money-flow-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12284",
+        "embedded_ea_id": "2022",
+        "normalized_slug": "ehlers-hilbert-phase-trend-h4",
+        "row": "3171",
+        "slug": "QM5_2022_ehlers-hilbert-phase-trend-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12285",
+        "embedded_ea_id": "2023",
+        "normalized_slug": "demark-td-d-wave-wave5-h4",
+        "row": "3172",
+        "slug": "QM5_2023_demark-td-d-wave-wave5-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12286",
+        "embedded_ea_id": "2024",
+        "normalized_slug": "pring-trend-deviation-oscillator-h4",
+        "row": "3173",
+        "slug": "QM5_2024_pring-trend-deviation-oscillator-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12287",
+        "embedded_ea_id": "2025",
+        "normalized_slug": "williams-accumulation-distribution-h4",
+        "row": "3174",
+        "slug": "QM5_2025_williams-accumulation-distribution-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12288",
+        "embedded_ea_id": "2077",
+        "normalized_slug": "demark-td-rei-h4",
+        "row": "3175",
+        "slug": "QM5_2077_demark-td-rei-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12289",
+        "embedded_ea_id": "2078",
+        "normalized_slug": "ehlers-sine-wave-h4",
+        "row": "3176",
+        "slug": "QM5_2078_ehlers-sine-wave-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12290",
+        "embedded_ea_id": "2079",
+        "normalized_slug": "williams-ultimate-oscillator-h4",
+        "row": "3177",
+        "slug": "QM5_2079_williams-ultimate-oscillator-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12291",
+        "embedded_ea_id": "2080",
+        "normalized_slug": "pring-special-k-h4",
+        "row": "3178",
+        "slug": "QM5_2080_pring-special-k-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12292",
+        "embedded_ea_id": "2131",
+        "normalized_slug": "ehlers-laguerre-filter-h4",
+        "row": "3179",
+        "slug": "QM5_2131_ehlers-laguerre-filter-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12293",
+        "embedded_ea_id": "2132",
+        "normalized_slug": "pring-kst-histogram-h4",
+        "row": "3180",
+        "slug": "QM5_2132_pring-kst-histogram-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12294",
+        "embedded_ea_id": "2133",
+        "normalized_slug": "demark-td-trend-factor-h4",
+        "row": "3181",
+        "slug": "QM5_2133_demark-td-trend-factor-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12295",
+        "embedded_ea_id": "2134",
+        "normalized_slug": "brooks-major-trend-reversal-h4",
+        "row": "3182",
+        "slug": "QM5_2134_brooks-major-trend-reversal-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12296",
+        "embedded_ea_id": "2135",
+        "normalized_slug": "chande-trendscore-h4",
+        "row": "3183",
+        "slug": "QM5_2135_chande-trendscore-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12297",
+        "embedded_ea_id": "2186",
+        "normalized_slug": "ehlers-frama-cross-h4",
+        "row": "3184",
+        "slug": "QM5_2186_ehlers-frama-cross-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12298",
+        "embedded_ea_id": "2187",
+        "normalized_slug": "demark-td-trap-h4",
+        "row": "3185",
+        "slug": "QM5_2187_demark-td-trap-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12299",
+        "embedded_ea_id": "2188",
+        "normalized_slug": "chande-ravi-regime-cross-h4",
+        "row": "3186",
+        "slug": "QM5_2188_chande-ravi-regime-cross-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12300",
+        "embedded_ea_id": "2189",
+        "normalized_slug": "brooks-h1-l1-pullback-h4",
+        "row": "3187",
+        "slug": "QM5_2189_brooks-h1-l1-pullback-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12301",
+        "embedded_ea_id": "2190",
+        "normalized_slug": "chande-qstick-zero-cross-h4",
+        "row": "3188",
+        "slug": "QM5_2190_chande-qstick-zero-cross-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12302",
+        "embedded_ea_id": "2241",
+        "normalized_slug": "ehlers-inverse-fisher-transform-h4",
+        "row": "3189",
+        "slug": "QM5_2241_ehlers-inverse-fisher-transform-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12303",
+        "embedded_ea_id": "2242",
+        "normalized_slug": "demark-td-magic-letters-h4",
+        "row": "3190",
+        "slug": "QM5_2242_demark-td-magic-letters-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12304",
+        "embedded_ea_id": "2243",
+        "normalized_slug": "chande-aroon-divergence-h4",
+        "row": "3191",
+        "slug": "QM5_2243_chande-aroon-divergence-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12305",
+        "embedded_ea_id": "2244",
+        "normalized_slug": "brooks-h2-l2-pullback-h4",
+        "row": "3192",
+        "slug": "QM5_2244_brooks-h2-l2-pullback-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12306",
+        "embedded_ea_id": "2296",
+        "normalized_slug": "demark-td-diff-alt-h4",
+        "row": "3193",
+        "slug": "QM5_2296_demark-td-diff-alt-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12307",
+        "embedded_ea_id": "2297",
+        "normalized_slug": "sperandeo-channel-buster-h4",
+        "row": "3194",
+        "slug": "QM5_2297_sperandeo-channel-buster-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12308",
+        "embedded_ea_id": "2298",
+        "normalized_slug": "williams-smash-day-h4",
+        "row": "3195",
+        "slug": "QM5_2298_williams-smash-day-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12309",
+        "embedded_ea_id": "2299",
+        "normalized_slug": "brooks-final-flag-h4",
+        "row": "3196",
+        "slug": "QM5_2299_brooks-final-flag-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12310",
+        "embedded_ea_id": "2300",
+        "normalized_slug": "chande-vidya-slope-h4",
+        "row": "3197",
+        "slug": "QM5_2300_chande-vidya-slope-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12311",
+        "embedded_ea_id": "2351",
+        "normalized_slug": "demark-td-diff-rsi-h4",
+        "row": "3198",
+        "slug": "QM5_2351_demark-td-diff-rsi-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12312",
+        "embedded_ea_id": "2352",
+        "normalized_slug": "williams-3day-failure-h4",
+        "row": "3199",
+        "slug": "QM5_2352_williams-3day-failure-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12313",
+        "embedded_ea_id": "2353",
+        "normalized_slug": "ehlers-voss-predictor-h4",
+        "row": "3200",
+        "slug": "QM5_2353_ehlers-voss-predictor-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12314",
+        "embedded_ea_id": "2354",
+        "normalized_slug": "brooks-failed-final-flag-h4",
+        "row": "3201",
+        "slug": "QM5_2354_brooks-failed-final-flag-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12315",
+        "embedded_ea_id": "2355",
+        "normalized_slug": "demark-td-clopwin-h4",
+        "row": "3202",
+        "slug": "QM5_2355_demark-td-clopwin-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12316",
+        "embedded_ea_id": "2406",
+        "normalized_slug": "brooks-triangle-h4",
+        "row": "3203",
+        "slug": "QM5_2406_brooks-triangle-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12317",
+        "embedded_ea_id": "2407",
+        "normalized_slug": "demark-td-clop-h4",
+        "row": "3204",
+        "slug": "QM5_2407_demark-td-clop-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12318",
+        "embedded_ea_id": "2408",
+        "normalized_slug": "williams-mmm-h4",
+        "row": "3205",
+        "slug": "QM5_2408_williams-mmm-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12319",
+        "embedded_ea_id": "2409",
+        "normalized_slug": "demark-td-lines-active-h4",
+        "row": "3206",
+        "slug": "QM5_2409_demark-td-lines-active-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12320",
+        "embedded_ea_id": "2410",
+        "normalized_slug": "ehlers-universal-oscillator-h4",
+        "row": "3207",
+        "slug": "QM5_2410_ehlers-universal-oscillator-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12321",
+        "embedded_ea_id": "2461",
+        "normalized_slug": "brooks-failed-wedge-h4",
+        "row": "3208",
+        "slug": "QM5_2461_brooks-failed-wedge-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12322",
+        "embedded_ea_id": "2462",
+        "normalized_slug": "demark-td-channel-1-h4",
+        "row": "3209",
+        "slug": "QM5_2462_demark-td-channel-1-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12323",
+        "embedded_ea_id": "2463",
+        "normalized_slug": "sperandeo-spring-channel-h4",
+        "row": "3210",
+        "slug": "QM5_2463_sperandeo-spring-channel-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12324",
+        "embedded_ea_id": "2464",
+        "normalized_slug": "pring-special-k-histogram-h4",
+        "row": "3211",
+        "slug": "QM5_2464_pring-special-k-histogram-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12325",
+        "embedded_ea_id": "2465",
+        "normalized_slug": "demark-td-channel-2-h4",
+        "row": "3212",
+        "slug": "QM5_2465_demark-td-channel-2-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12326",
+        "embedded_ea_id": "3005",
+        "normalized_slug": "alpha-inst-magnet",
+        "row": "3213",
+        "slug": "QM5_3005_alpha-inst-magnet",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12327",
+        "embedded_ea_id": "9147",
+        "normalized_slug": "aa-ew6-ma12",
+        "row": "3214",
+        "slug": "QM5_9147_aa-ew6-ma12",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12328",
+        "embedded_ea_id": "9176",
+        "normalized_slug": "mql5-sar-rvi-reverse",
+        "row": "3215",
+        "slug": "QM5_9176_mql5-sar-rvi-reverse",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12329",
+        "embedded_ea_id": "9177",
+        "normalized_slug": "mql5-sar-rvi-zero",
+        "row": "3216",
+        "slug": "QM5_9177_mql5-sar-rvi-zero",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12330",
+        "embedded_ea_id": "9181",
+        "normalized_slug": "jstm-dual-thrust-fx-intraday",
+        "row": "3217",
+        "slug": "QM5_9181_jstm-dual-thrust-fx-intraday",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12331",
+        "embedded_ea_id": "9182",
+        "normalized_slug": "jstm-heikin-ashi-trend-long",
+        "row": "3218",
+        "slug": "QM5_9182_jstm-heikin-ashi-trend-long",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12332",
+        "embedded_ea_id": "9183",
+        "normalized_slug": "jstm-parabolic-sar-flip",
+        "row": "3219",
+        "slug": "QM5_9183_jstm-parabolic-sar-flip",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12333",
+        "embedded_ea_id": "9184",
+        "normalized_slug": "jstm-pair-cointegration-fx",
+        "row": "3220",
+        "slug": "QM5_9184_jstm-pair-cointegration-fx",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12334",
+        "embedded_ea_id": "9220",
+        "normalized_slug": "mql5-alligator-trend",
+        "row": "3221",
+        "slug": "QM5_9220_mql5-alligator-trend",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12335",
+        "embedded_ea_id": "9220",
+        "normalized_slug": "mql5-rvi-ma",
+        "row": "3222",
+        "slug": "QM5_9220_mql5-rvi-ma",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12336",
+        "embedded_ea_id": "9221",
+        "normalized_slug": "mql5-ad-price",
+        "row": "3223",
+        "slug": "QM5_9221_mql5-ad-price",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12337",
+        "embedded_ea_id": "9221",
+        "normalized_slug": "mql5-chaikin-zero",
+        "row": "3224",
+        "slug": "QM5_9221_mql5-chaikin-zero",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12338",
+        "embedded_ea_id": "9221",
+        "normalized_slug": "mql5-stddev-ma",
+        "row": "3225",
+        "slug": "QM5_9221_mql5-stddev-ma",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12339",
+        "embedded_ea_id": "9222",
+        "normalized_slug": "mql5-bwmfi-ma",
+        "row": "3226",
+        "slug": "QM5_9222_mql5-bwmfi-ma",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12340",
+        "embedded_ea_id": "9222",
+        "normalized_slug": "mql5-force-ema",
+        "row": "3227",
+        "slug": "QM5_9222_mql5-force-ema",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12341",
+        "embedded_ea_id": "9222",
+        "normalized_slug": "mql5-gator-ma",
+        "row": "3228",
+        "slug": "QM5_9222_mql5-gator-ma",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12342",
+        "embedded_ea_id": "9223",
+        "normalized_slug": "mql5-demarker-div",
+        "row": "3229",
+        "slug": "QM5_9223_mql5-demarker-div",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12343",
+        "embedded_ea_id": "9224",
+        "normalized_slug": "mql5-vol-ma-cross",
+        "row": "3230",
+        "slug": "QM5_9224_mql5-vol-ma-cross",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12344",
+        "embedded_ea_id": "9265",
+        "normalized_slug": "mql5-adx-di-trend",
+        "row": "3231",
+        "slug": "QM5_9265_mql5-adx-di-trend",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12345",
+        "embedded_ea_id": "9284",
+        "normalized_slug": "brooks-tight-trading-range-h4",
+        "row": "3232",
+        "slug": "QM5_9284_brooks-tight-trading-range-h4",
+        "status": "active"
+      },
+      {
+        "disposition_action": "RETIRE",
+        "ea_id": "12346",
+        "embedded_ea_id": "9284",
+        "normalized_slug": "mql5-aroon-cross",
+        "row": "3233",
+        "slug": "QM5_9284_mql5-aroon-cross",
+        "status": "active"
+      }
+    ],
+    "rejected_pool_draft_card_count": 3,
+    "rejected_pool_draft_cards": [
+      {
+        "after_g0_status": "REJECTED",
+        "before_g0_status": "DRAFT",
+        "ea_id": "11956",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_11956_waka-waka-grid.md",
+        "pool": "cards_rejected",
+        "rejection_reason": "R1/R4 FAIL: martingale and grid mechanics are prohibited by the active Edge Lab charter."
+      },
+      {
+        "after_g0_status": "REJECTED",
+        "before_g0_status": "DRAFT",
+        "ea_id": "12007",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_12007_ssrn-agentic-factor-miner.md",
+        "pool": "cards_rejected",
+        "rejection_reason": "R4 FAIL: ML, symbolic-regression mining, and agentic model discovery are prohibited in the EA."
+      },
+      {
+        "after_g0_status": "REJECTED",
+        "before_g0_status": "DRAFT",
+        "ea_id": "12040",
+        "path": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_12040_ru-catboost-classifier.md",
+        "pool": "cards_rejected",
+        "rejection_reason": "R4 FAIL: CatBoost and embedded ML inference are prohibited in the EA."
+      }
+    ]
+  },
+  "observed_date": "2026-08-21",
+  "schema_version": "qm.card-registry-integrity-receipt/v1",
+  "task_id": "3b139f7c-a114-4e3d-a9e1-7bc64d5c6b47",
+  "verification": {
+    "code_commit": "96ee7ecab",
+    "focused_tests": "15 passed",
+    "health_check": "FAIL until the independently routed RETIRE wave consumes the 256 decision-backed rows"
+  }
+}
