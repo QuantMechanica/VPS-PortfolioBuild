@@ -59,7 +59,9 @@ r3_data_available: PASS_WITH_ENERGY_LABEL_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_QUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
+q01_build_report: D:/QM/reports/framework/21/build_check_20260821_132505.json
+q01_p1_evidence: D:/QM/reports/pipeline/QM5_41091/P1/P1_QM5_41091_result.json
 review_focus: "Falsify a direct-WTI completed inside-week body continuation sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact Monday anchors, two consecutive completed weekly OHLC packages, three-to-five sessions each, strict full containment, contained-week own-body direction, all equality/non-inside states flat, one attempt, fixed risk, and next-week exit. Q09 alone may measure realized correlation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -320,13 +322,14 @@ reference test suite before Q02 handoff.
 |---|---|---|---|---|
 | v1-card | 2026-08-21 | new OWNER-authorized WTI structural sleeve | Q00 | APPROVED |
 | v1-build | 2026-08-21 | first governed V5 implementation and fixed-risk preset | Q01 | PASS |
+| v1-q02-capacity | 2026-08-21 | exact target was unqueued; whole-host CPU reached the 97% hard ceiling during paced preflight | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | Q00 Research Intake | 2026-08-21 | APPROVED | this card plus declared decision record |
-| Q01 Build and Spec | 2026-08-21 | PASS | `D:/QM/reports/pipeline/QM5_41091/P1/P1_QM5_41091_result.json` |
-| Q02 Baseline | - | NOT_QUEUED | - |
+| Q01 Build and Spec | 2026-08-21 | PASS | `D:/QM/reports/framework/21/build_check_20260821_132505.json`; `D:/QM/reports/pipeline/QM5_41091/P1/P1_QM5_41091_result.json` |
+| Q02 Baseline | 2026-08-21 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-21_qm5_41091_wti_weekly_inside_body_q01_q02_cpu_ceiling_stop.md` |
 
 No Q11 portfolio or live decision is made by this card.

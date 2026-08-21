@@ -104,3 +104,4 @@ grid, martingale, pyramid, target, trail, break-even move, or partial exit.
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `9f47d0a0d`; source packet `70ab22cd8`; EA-ID reservation `df65b49a4`; Q00 card `8ba0e1d6a`; governed magic `410910000` |
 | v1 | 2026-08-21 | governed V5 implementation | strict compile 0/0; V5 build check PASS; 13 reference checks PASS; static P1 PASS |
+| v1-q02-capacity | 2026-08-21 | paced Q02 handoff stopped | exact target had zero work items; whole-host CPU maximum reached 100%, above the 97% hard ceiling; no queue mutation |
