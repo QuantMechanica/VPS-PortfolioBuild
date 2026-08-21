@@ -25,6 +25,7 @@ approval gates.
 | T6 deploy boundary | [`DL-025_t6_deploy_boundary_refinement.md`](DL-025_t6_deploy_boundary_refinement.md) |
 | Housekeeping/freeze safety | [`DL-051_housekeeping_freeze_rule.md`](DL-051_housekeeping_freeze_rule.md) |
 | Anti-theater evidence gates | [`DL-054_anti_theater_pass_criteria.md`](DL-054_anti_theater_pass_criteria.md) |
+| Optimization branch Q14–Q16 (levers + overfit contract) | [`DL-088_optimization_track_v2_levers_and_overfit_contract.md`](DL-088_optimization_track_v2_levers_and_overfit_contract.md) |
 
 ## New decisions
 
