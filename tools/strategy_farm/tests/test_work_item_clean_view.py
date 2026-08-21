@@ -57,6 +57,9 @@ def _row(status: str, verdict: str | None, payload: dict | str) -> dict:
         ("done", "DRAFT_DEFECT", "draft_defect", "done"),
         ("done", "REVIEW_REQUIRED", "review", "done"),
         ("done", "SUPERSEDED", "governance", "failed"),
+        # DL-089 §3 measurement family (OPT_CENSUS): terminal 'done', its own
+        # 'measurement' taxonomy — never 'strategy', so it stays out of gate_pass.
+        ("done", "MEASURED", "measurement", "done"),
     ],
 )
 def test_allowed_status_verdict_taxonomy_invariant(

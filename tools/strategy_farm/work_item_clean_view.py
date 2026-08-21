@@ -61,6 +61,11 @@ TERMINAL_STATUS_BY_TAXONOMY = {
     "strategy": "done",
     "draft_defect": "done",
     "review": "done",
+    # DL-089 §3 measurement family (OPT_CENSUS): a completed measurement is a
+    # terminal 'done' row with its OWN taxonomy, deliberately DISJOINT from
+    # 'strategy' so a MEASURED verdict never lands in gate_pass / economic_fail
+    # counts. Verdict token: MEASURED.
+    "measurement": "done",
 }
 
 # These are execution/transport residue, not a merit explanation.  If one of
@@ -136,6 +141,9 @@ def verdict_taxonomy(status: Any, verdict: Any) -> str:
         return "invalid"
     if token == "DRAFT_DEFECT":
         return "draft_defect"
+    if token == "MEASURED":
+        # DL-089 §3 measurement family — its own taxonomy, never 'strategy'.
+        return "measurement"
     if token.startswith(("PASS", "FAIL", "ZERO", "RETIR")) or token in {
         "AUTO_PASS",
         "CONFIG_LOCKED",
@@ -431,6 +439,7 @@ def install_clean_view(connection: sqlite3.Connection) -> None:
           WHEN {token} = 'INFRA_FAIL' THEN 'infra'
           WHEN {token} LIKE 'INVALID%' THEN 'invalid'
           WHEN {token} = 'DRAFT_DEFECT' THEN 'draft_defect'
+          WHEN {token} = 'MEASURED' THEN 'measurement'
           WHEN {token} LIKE 'PASS%' OR {token} LIKE 'FAIL%'
             OR {token} LIKE 'ZERO%' OR {token} LIKE 'RETIR%'
             OR {token} IN ('AUTO_PASS','CONFIG_LOCKED','MODE_SELECTED',
@@ -450,6 +459,7 @@ def install_clean_view(connection: sqlite3.Connection) -> None:
             OR {token} LIKE 'SUPERSEDED%' OR {token} LIKE 'CANCELLED%'
             OR {token} LIKE 'BLOCKED%' OR {token} LIKE 'OBSOLETE%' THEN 'failed'
           WHEN {token} = 'DRAFT_DEFECT'
+            OR {token} = 'MEASURED'
             OR {token} LIKE 'PASS%' OR {token} LIKE 'FAIL%'
             OR {token} LIKE 'ZERO%' OR {token} LIKE 'RETIR%'
             OR {token} LIKE 'REVIEW%' OR {token} LIKE 'NEED_%'

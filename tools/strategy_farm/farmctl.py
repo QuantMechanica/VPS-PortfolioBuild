@@ -308,6 +308,20 @@ COMMON_FILES_ROOT = Path(
 Q09_PORTFOLIO_MIN_TRADES = 20
 Q09_NEWS_SUCCESS_VERDICTS = frozenset({"CONFIG_LOCKED"})
 
+# OPT_CENSUS (DL-089 §3 / OPT-S1) — the optimization-track measurement pool. One
+# OPT_CENSUS work_item = ONE windowed single-year backtest of an `_opt` EA, with
+# the calendar-year window carried in the row payload (opt_from_date/opt_to_date,
+# YYYY.MM.DD). It runs the ordinary run_smoke path (not a phase runner) and
+# produces the standard summary.json + self-report stream, but it is a
+# MEASUREMENT, never a gate: on healthy completion it is scored MEASURED (its own
+# taxonomy family in the MNT-016 clean view) so it never enters gate_pass /
+# economic_fail counts, and it is deliberately kept OUT of MT5_TESTER_PHASES so it
+# never inflates Q02 throughput/health metrics. It does NOT cascade (no next
+# phase). Infra failures keep the standard INFRA_FAIL retry/binding path.
+OPT_CENSUS_PHASE = "OPT_CENSUS"
+MEASUREMENT_PHASES = frozenset({OPT_CENSUS_PHASE})
+MEASURED_VERDICT = "MEASURED"
+
 
 def _defect_block_exclusion_clause(
     include_defect_blocked_evidence: bool,
@@ -1238,6 +1252,14 @@ def pending_claim_order_sql() -> str:
             WHEN 'Q06'  THEN 4
             WHEN 'Q05'  THEN 5
             WHEN 'Q04'  THEN 6
+            -- OPT_CENSUS (DL-089 §3) shares Q04's tier-6 rank on purpose: the
+            -- optimization measurement pool must INTERLEAVE with the funnel, not
+            -- run ahead of it and not starve it. OPT_CENSUS rows are never
+            -- priority_track, so their effective term is 10+6-age = a plain Q04
+            -- row's rank; every downstream funnel phase (Q05..Q10 at ranks 5..0)
+            -- and every priority_track row still drains first, while measurement
+            -- interleaves with ordinary Q04 admissions and out-ages Q02.
+            WHEN 'OPT_CENSUS' THEN 6
             WHEN 'Q03'  THEN 7
             WHEN 'Q02'  THEN 8
             WHEN 'P8'   THEN 0
@@ -3651,6 +3673,35 @@ def _valid_ymd_date(value: Any) -> str | None:
     return None
 
 
+def _opt_census_window(payload: dict[str, Any]) -> tuple[str, str] | None:
+    """Return the authoritative OPT_CENSUS single-year window, or None if absent.
+
+    DL-089 §3: an OPT_CENSUS cell is measured over an EXPLICIT calendar-year
+    window supplied by the enqueue tool (``YYYY.MM.DD``). Unlike Q02, the window
+    is not derived from the period — it is immutable evidence input for that
+    (arm x year) cell, so a malformed or missing bound must fail closed rather
+    than silently fall back to a full-history run. Both bounds must be present,
+    well-formed, and ordered.
+
+    Key precedence: the ``opt_from_date``/``opt_to_date`` spelling wins when
+    present; the committed OPT-S1 generator (``opt_census.py``, DL-089 ledger
+    ``qm.opt-census.v1``) writes the plain ``from_date``/``to_date`` keys, which
+    are accepted as the fallback so the two stay wired to the same window. Keep
+    both here until the generator's payload key names are standardised.
+    """
+    from_date = (
+        _valid_ymd_date(payload.get("opt_from_date"))
+        or _valid_ymd_date(payload.get("from_date"))
+    )
+    to_date = (
+        _valid_ymd_date(payload.get("opt_to_date"))
+        or _valid_ymd_date(payload.get("to_date"))
+    )
+    if not from_date or not to_date or from_date > to_date:
+        return None
+    return from_date, to_date
+
+
 # Q02 absolute trade floor (OWNER 2026-06-26): 5 trades/year is a sufficient sample at
 # Q02 for low-frequency structural edges; the per-window floor is this rate * window years.
 Q02_MIN_TRADES_PER_YEAR = 5
@@ -4885,6 +4936,37 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
     return "PASS", ""
 
 
+def _apply_measurement_phase_verdict(
+    phase: Any,
+    verdict: str,
+    reason: str,
+    payload: dict[str, Any],
+) -> tuple[str, str, str]:
+    """Project a derived gate verdict onto the measurement family (DL-089 §3).
+
+    Measurement phases (``OPT_CENSUS``) are NOT gates: a healthy completion with
+    valid evidence is scored ``MEASURED`` (taxonomy ``measurement`` → status
+    ``done`` in the MNT-016 clean view), so it never enters gate_pass /
+    economic_fail counts. Whatever gate token ``_derive_verdict_from_summary``
+    produced (PASS/FAIL/ZERO_TRADES — all meaningless for a measurement) is
+    preserved in the payload for the S3 walk-forward analysis but kept OUT of
+    ``verdict_reason`` so gate-reason heuristics (e.g. the cockpit zero-trade
+    scan) never pick it up. An ``INFRA_FAIL`` keeps the standard infra path
+    (retry / evidence-binding), exactly like any Q02 row.
+
+    Returns ``(verdict, reason, verdict_taxonomy)``. For non-measurement phases
+    the result is the standard ``(verdict, reason, 'infra'|'strategy')`` tuple,
+    so callers can replace their inline taxonomy assignment with one call.
+    """
+    if str(phase or "").strip().upper() not in MEASUREMENT_PHASES:
+        return verdict, reason, ("infra" if verdict == "INFRA_FAIL" else "strategy")
+    if verdict == "INFRA_FAIL":
+        return verdict, reason, "infra"
+    payload["opt_census_underlying_verdict"] = verdict
+    payload["opt_census_underlying_reason"] = reason
+    return MEASURED_VERDICT, "opt_census_measured", "measurement"
+
+
 def _summary_exact_total_trades(summary: dict[str, Any]) -> int | None:
     """Return an evidence-backed total, never treating a missing metric as zero."""
     runs = summary.get("runs")
@@ -5246,6 +5328,20 @@ def _payload_timeout_floor_seconds(payload: dict[str, Any]) -> int:
     if timeout_min <= 0:
         return 0
     return min(P2_BASKET_TIMEOUT_MAX_SECONDS, timeout_min * 60)
+
+
+def _opt_census_timeout_seconds(payload: dict[str, Any]) -> int:
+    """Per-run watchdog budget for one OPT_CENSUS single-year window.
+
+    A single calendar-year single-symbol model-4 backtest is short, but a fresh
+    terminal's first-claim cold tick-sync can add real time. Preserve the
+    committed OPT-S1 floor of ``P2_FULL_TIMEOUT_MIN_SECONDS`` (a safe ceiling that
+    never starves a cold cell); the payload ``timeout_min`` override can only
+    EXTEND it (capped like every other budget, via the shared floor helper)."""
+    return max(
+        P2_FULL_TIMEOUT_MIN_SECONDS,
+        _payload_timeout_floor_seconds(payload),
+    )
 
 
 def _p2_basket_member_timeout_floor_seconds(member_count: int) -> int:
@@ -6478,25 +6574,26 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             # P2/Q02 full ONLY — Q03/Q04 keep their default run count.
             n_runs = "1"
             timeout_seconds = _p2_full_timeout_seconds(item_payload, from_date, to_date)
-    elif phase == "OPT_CENSUS":
+    elif phase == OPT_CENSUS_PHASE:
         # DL-089 annual pattern census: the exact calendar-year window is part
         # of each immutable cell payload.  It is neither a Q02 prescreen nor a
-        # basket alias, and every cell is a single measurement run.
-        from_date = _valid_ymd_date(item_payload.get("from_date"))
-        to_date = _valid_ymd_date(item_payload.get("to_date"))
-        if not from_date or not to_date or from_date > to_date:
+        # basket alias, and every cell is a single measurement run. The window is
+        # authoritative evidence for this (arm x year) cell — fail closed if it is
+        # missing/malformed rather than silently running full-history.
+        opt_window = _opt_census_window(item_payload)
+        if opt_window is None:
             return {
                 "spawned": False,
                 "reason": "opt_census_window_invalid",
+                "opt_from_date": item_payload.get("opt_from_date"),
+                "opt_to_date": item_payload.get("opt_to_date"),
                 "from_date": item_payload.get("from_date"),
                 "to_date": item_payload.get("to_date"),
             }
+        from_date, to_date = opt_window
         n_runs = "1"
         p2_run_stage = None
-        timeout_seconds = max(
-            P2_FULL_TIMEOUT_MIN_SECONDS,
-            _payload_timeout_floor_seconds(item_payload),
-        )
+        timeout_seconds = _opt_census_timeout_seconds(item_payload)
     else:
         from_date, to_date = _basket_payload_date_window(item_payload)
         p2_run_stage = None
@@ -6531,8 +6628,13 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     # (2018.07.02) so every possible member has data — costs ~9 months of FX history
     # (6.5y remains, ample) for guaranteed multi-symbol correctness. 2026-06-25.
     # Date strings are "YYYY.MM.DD" so lexical < is chronological <.
+    # OPT_CENSUS is exempt for the same reason as the FTMO book-3 window: its
+    # per-cell calendar-year bounds are immutable measurement evidence (the
+    # single-symbol `_opt` EA has no cross-symbol member gap to protect), so a
+    # silent start-shift would corrupt the (arm x year) ledger.
     if (
         ftmo_book3_exact_window is None
+        and phase != OPT_CENSUS_PHASE
         and from_date
         and from_date < DWX_MULTI_SYMBOL_FULL_HISTORY_FROM
     ):
@@ -9646,6 +9748,12 @@ CANONICAL_PARENT_CHILD_VERDICTS = frozenset({
     "OBSOLETE_NON_DWX_SYMBOL",
     "BLOCKED_STALE_BUILD_RESULT",
     "BLOCKED_FACTORY_OFF",
+    # DL-089 §3 measurement-family terminal verdict (OPT_CENSUS). A recognised
+    # terminal child verdict so parent-closure and the lifecycle inventory accept
+    # it; it is NOT a gate pass (kept out of gate_pass via the 'measurement'
+    # clean-view taxonomy) and OPT_CENSUS rows carry no parent, so it never
+    # participates in a Q02→Q10 cascade aggregation.
+    "MEASURED",
 })
 PHYSICALLY_TERMINAL_WORK_ITEM_STATUSES = frozenset({"done", "failed"})
 PARENT_PROGRESSION_MAP = {
@@ -10297,7 +10405,12 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 updated_payload["evidence_provenance"] = (
                     "phase_runner" if item["phase"] in REAL_PHASE_RUNNER_PHASES else "real_mt5"
                 )
-                updated_payload["verdict_taxonomy"] = "infra" if verdict == "INFRA_FAIL" else "strategy"
+                verdict, reason, updated_payload["verdict_taxonomy"] = (
+                    _apply_measurement_phase_verdict(
+                        item["phase"], verdict, reason, updated_payload
+                    )
+                )
+                updated_payload["verdict_reason"] = reason
                 if item["phase"] == "P2" and payload.get("p2_run_stage") == "prescreen":
                     runtime_sec = _p2_active_summary_runtime_sec(item, summary)
                     if verdict == "PASS":

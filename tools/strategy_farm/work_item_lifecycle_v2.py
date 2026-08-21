@@ -44,6 +44,13 @@ SUCCEEDED_VERDICTS = frozenset(
         "PROMOTE_CHALLENGER",
         "KEEP_INCUMBENT",
         "ADMIT_BOTH",
+        # DL-089 §3 measurement family (OPT_CENSUS): a completed single-year
+        # measurement is a terminal 'done' success in lifecycle terms. It is NOT
+        # a gate pass — the MNT-016 clean view scores it under its own
+        # 'measurement' taxonomy so it never enters gate_pass counts; here it
+        # only needs a terminal-success lifecycle bucket so the read-only
+        # inventory does not fail closed on the new verdict token.
+        "MEASURED",
     }
 )
 WAITING_INPUT_VERDICTS = frozenset(

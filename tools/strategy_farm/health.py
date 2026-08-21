@@ -3426,6 +3426,15 @@ AGENT_TASK_AGING_SLO_DAYS = 3
 WORK_ITEM_PHASE_AGE_SLO_PERCENTILE = 0.95
 WORK_ITEM_PHASE_AGE_DETAIL_LIMIT = 3
 
+# Measurement-family phases (DL-089 §3, e.g. OPT_CENSUS) are a separate pool
+# OUTSIDE the funnel: an enqueue writes hundreds of single-year measurement rows
+# at once, and they carry no drain SLO. Including them would read a fresh batch
+# as an UNKNOWN-threshold WARN (or, once terminal samples exist, as a mass
+# violation) — a false alarm on a pool that is deliberately allowed to age while
+# the funnel drains first. They are excluded from the per-phase age SLO entirely;
+# their throughput is tracked by the OPT-S1 ledger, not this funnel check.
+PHASE_AGE_SLO_EXCLUDED_PHASES = frozenset({"OPT_CENSUS"})
+
 
 def _canonical_q_phase(value: object) -> str:
     phase = str(value or "").strip().upper()
@@ -3456,7 +3465,7 @@ def phase_age_slo_snapshot(con, *, now: dt.datetime | None = None) -> dict:
     for row in rows:
         phase = _canonical_q_phase(row["phase"])
         created = _parse_utc_ts(row["created_at"])
-        if not phase or created is None:
+        if not phase or created is None or phase in PHASE_AGE_SLO_EXCLUDED_PHASES:
             continue
         if row["status"] in ("done", "failed"):
             updated = _parse_utc_ts(row["updated_at"])

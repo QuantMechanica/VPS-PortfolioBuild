@@ -3120,7 +3120,14 @@ def _finish_work_item(
                     )
                     _mirror_real_phase_artifacts(item, summary_path, verdict)
                     payload["evidence_provenance"] = "phase_runner" if item["phase"] in farmctl.REAL_PHASE_RUNNER_PHASES else "real_mt5"
-                    payload["verdict_taxonomy"] = "infra" if verdict == "INFRA_FAIL" else "strategy"
+                    # Measurement family (OPT_CENSUS): a healthy completion is
+                    # MEASURED, never a gate PASS/FAIL; INFRA_FAIL keeps the infra
+                    # path. Non-measurement phases pass through unchanged.
+                    verdict, reason, payload["verdict_taxonomy"] = (
+                        farmctl._apply_measurement_phase_verdict(
+                            item["phase"], verdict, reason, payload
+                        )
+                    )
                 payload["verdict_reason"] = reason
                 payload["run_smoke_exit_code"] = exit_code
                 # 2026-06-10 — two-stage prescreen, worker path (mirrors the
