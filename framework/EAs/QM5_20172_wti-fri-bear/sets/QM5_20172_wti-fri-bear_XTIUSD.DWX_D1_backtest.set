@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c4aae3c24a2cc124603a81513b3bf82a4047e596ea8c32535e074aec7865383b
+; build_hash:   8cb9278c48fac4610c679033a5faf6792344dc39b7ca02cc2b338d594026fe7d
 ; author:       Development
 ; date:         2026-07-26
 ;==========================================================
@@ -19,11 +19,14 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_mode_legacy=0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
 strategy_momentum_lookback_d1=252
 strategy_min_abs_return_pct=0.0
-strategy_entry_grace_minutes=5
+strategy_entry_grace_minutes=67
 strategy_atr_period=20
 strategy_atr_sl_mult=3.0
 strategy_max_hold_days=2
