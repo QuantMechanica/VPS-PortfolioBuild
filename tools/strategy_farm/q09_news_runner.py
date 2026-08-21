@@ -76,8 +76,14 @@ TERMINAL_EXIT_WAIT_SEC = 180
 TERMINAL_EXIT_POLL_SEC = 2.0
 # This is the same terminal-worker attempt ceiling.  A transient cell may
 # force the work item back through that existing retry lane, but must not
-# create a second, unbounded retry budget inside the Q09 runner.
+# create a second, unbounded retry budget inside the Q09 runner.  Retained for
+# identity with terminal_worker.MAX_WORK_ITEM_RETRIES; the executor no longer
+# requeues the whole work item for a single failing cell (see execute_run_plan).
 WORK_ITEM_ATTEMPT_CEILING = 3
+# Bounded per-cell transient retry budget (attempts *beyond* the first).  A
+# single failing cell is retried at most this many extra times on a transient
+# class, then recorded as failed so the remaining planned cells still run.
+DEFAULT_CELL_RETRY_BUDGET = 2
 WINDOW_NAMES = ("selection", "holdout", "full")
 FACTORY_DB_RELATIVE_PATH = Path("state") / "farm_state.sqlite"
 FACTORY_MT5_ROOT = Path(r"D:\QM\mt5")
@@ -1626,8 +1632,11 @@ def collect_run_plan_status(
                     missing.append(cell_id)
                     continue
                 else:
-                    # Backward-compatible read path for pre-v2 artifacts that
-                    # did not publish an execution_failure pointer.
+                    # Primary continue-on-failure path: the executor records
+                    # each failed cell as its own immutable cell_failure sidecar
+                    # (no single execution_failure pointer), so authenticate this
+                    # cell's sidecar directly.  Also the backward-compatible read
+                    # path for pre-v2 artifacts that never published a pointer.
                     failure = _authenticated_cell_failure(
                         spec, work_item_id=str(plan["work_item_id"])
                     )
@@ -1701,12 +1710,20 @@ def collect_run_plan_status(
         adjudication=adjudication,
         output_root=output_root or plan_path.parent,
     )
+    planned = int(plan["cell_count"])
+    accounted = len(cells) + len(failed) + len(missing) + len(invalid)
     result.update({
-        "planned_cell_count": int(plan["cell_count"]),
+        "planned_cell_count": planned,
         "authenticated_cell_count": len(cells),
         "failed_cell_count": len(failed),
         "missing_cell_count": len(missing),
         "invalid_cell_count": len(invalid),
+        # Every planned cell lands in exactly one bucket
+        # (authenticated | failed | missing | invalid); this guards the
+        # matrix-scope accounting so a partial run can never silently drop a
+        # cell from the aggregate.
+        "accounted_cell_count": accounted,
+        "accounting_reconciled": accounted == planned,
     })
     return result
 
@@ -2645,8 +2662,16 @@ def execute_run_plan(
     repo_root: Path,
     common_root: Path,
     dispatch_cell: Callable[[Mapping[str, Any], Mapping[str, Any]], None] | None = None,
+    cell_retry_budget: int = DEFAULT_CELL_RETRY_BUDGET,
 ) -> dict[str, Any]:
-    """Execute missing plan cells serially inside one claimed factory slot."""
+    """Execute missing plan cells serially inside one claimed factory slot.
+
+    A single failing cell never aborts the experiment: each cell is retried up
+    to ``cell_retry_budget`` extra times on a transient class, then recorded as
+    a failed cell so the remaining planned cells still run.  The run ends with a
+    maximal authenticated set plus precise failed/missing accounting, and the
+    fail-closed contract adjudication decides the verdict.
+    """
 
     plan_path = plan_path.resolve()
     plan, input_manifest = load_authenticated_plan(
@@ -2723,65 +2748,72 @@ def execute_run_plan(
         ),
     }
     dispatcher = dispatch_cell or _production_dispatch_cell
+    budget = int(cell_retry_budget)
+    if budget < 0:
+        raise RunnerError("Q09 cell retry budget must be non-negative")
 
-    def adjudicate_cell_failure(
-        spec: Mapping[str, Any],
-        exc: Exception,
-        cell_failure_path: Path,
-    ) -> dict[str, Any]:
-        failure_path = output_root.resolve() / "execution_failure.json"
-        _atomic_write(
-            failure_path,
-            contract.canonical_json_bytes({
-                "schema_version": EXECUTION_FAILURE_SCHEMA,
-                "work_item_id": str(work_item_id),
-                "run_identity_sha256": spec["run_identity_sha256"],
-                "error_type": type(exc).__name__,
-                "error": str(exc),
-                "cell_failure_path": str(cell_failure_path.resolve()),
-                "cell_failure_sha256": contract.sha256_file(cell_failure_path),
-                "cell_failure_occurrence": _cell_failure_occurrence(
-                    cell_failure_path
-                ),
-            }),
-        )
-        result = collect_run_plan_status(
-            plan_path,
-            output_root=output_root,
-            expected_plan_file_sha256=expected_plan_file_sha256,
-        )
-        result["execution_failure_path"] = str(failure_path)
-        result["execution_failure_sha256"] = contract.sha256_file(failure_path)
-        result["sidecar"] = _persist_q09_result(
+    def _reverify_before_attempt() -> None:
+        # A child can exit before its terminal process fully releases the
+        # claimed profile.  Each retry waits for that exact terminal root to
+        # clear and re-verifies the claim is still ours (and, for the diagnostic
+        # lane, that the staged expert binary is unchanged) before re-dispatch.
+        _wait_for_claimed_terminal_exit(Path(str(context["terminal_root"])))
+        assert_factory_capacity(
             farm_root,
             work_item_id=work_item_id,
             terminal=terminal,
             plan_path=plan_path,
             expected_plan_file_sha256=expected_plan_file_sha256,
-            result=result,
         )
-        return result
+        if diagnostic_expert_stage is not None:
+            _verify_hash(
+                Path(diagnostic_expert_stage["destination_path"]),
+                diagnostic_expert_stage["sha256"],
+                "effective Q09 diagnostic expert EX5",
+            )
+
+    def _run_one_cell(spec: Mapping[str, Any]) -> None:
+        """Dispatch a single cell with a bounded transient retry budget.
+
+        A ``CapacityError`` is re-raised so the ordinary worker can requeue the
+        whole work item (genuine claim/host loss).  Every other failure is
+        cell-scoped: a transient class is retried up to ``budget`` extra times,
+        and any residual transient exhaustion or non-transient tester error is
+        written as an immutable ``cell_failure`` sidecar and swallowed, so the
+        outer loop records the cell as failed and continues with the remaining
+        planned cells.  One flaky cell can no longer abort the experiment.
+        """
+
+        transient_retries_used = 0
+        while True:
+            try:
+                dispatcher(spec, context)
+                _receipt_to_cell(spec)
+                return
+            except CapacityError:
+                raise
+            except TransientCellError as exc:
+                _write_cell_failure(
+                    spec, work_item_id=str(work_item_id), exc=exc
+                )
+                if transient_retries_used >= budget:
+                    return
+                transient_retries_used += 1
+                _reverify_before_attempt()
+            except Exception as exc:  # noqa: BLE001 - cell-scoped, non-transient
+                _write_cell_failure(
+                    spec, work_item_id=str(work_item_id), exc=exc
+                )
+                return
 
     for spec in plan["cells"]:
         receipt_path = Path(str(spec["receipt_path"]))
         if receipt_path.is_file():
-            try:
-                _receipt_to_cell(spec)
-            except RunnerError:
-                result = collect_run_plan_status(
-                    plan_path,
-                    output_root=output_root,
-                    expected_plan_file_sha256=expected_plan_file_sha256,
-                )
-                result["sidecar"] = _persist_q09_result(
-                    farm_root,
-                    work_item_id=work_item_id,
-                    terminal=terminal,
-                    plan_path=plan_path,
-                    expected_plan_file_sha256=expected_plan_file_sha256,
-                    result=result,
-                )
-                return result
+            # An already-present receipt is immutable and must not be
+            # re-dispatched.  Its authentication is deferred to the terminal
+            # collection: a good receipt is counted, a contradictory one is
+            # classified as invalid evidence.  Either way a single pre-existing
+            # receipt never aborts the remaining planned cells.
             continue
         assert_factory_capacity(
             farm_root,
@@ -2796,81 +2828,8 @@ def execute_run_plan(
                 diagnostic_expert_stage["sha256"],
                 "effective Q09 diagnostic expert EX5",
             )
-        try:
-            dispatcher(spec, context)
-            _receipt_to_cell(spec)
-        except CapacityError:
-            raise
-        except TransientCellError as first_error:
-            _write_cell_failure(
-                spec,
-                work_item_id=str(work_item_id),
-                exc=first_error,
-            )
-            try:
-                # A child can exit before its terminal process fully releases
-                # the claimed profile.  The single in-attempt retry is allowed
-                # only after that exact terminal root is clear and the claim is
-                # still ours.
-                _wait_for_claimed_terminal_exit(Path(str(context["terminal_root"])))
-                assert_factory_capacity(
-                    farm_root,
-                    work_item_id=work_item_id,
-                    terminal=terminal,
-                    plan_path=plan_path,
-                    expected_plan_file_sha256=expected_plan_file_sha256,
-                )
-                if diagnostic_expert_stage is not None:
-                    _verify_hash(
-                        Path(diagnostic_expert_stage["destination_path"]),
-                        diagnostic_expert_stage["sha256"],
-                        "effective Q09 diagnostic expert EX5",
-                    )
-                dispatcher(spec, context)
-                _receipt_to_cell(spec)
-            except CapacityError:
-                raise
-            except TransientCellError as second_error:
-                second_failure_path = _write_cell_failure(
-                    spec,
-                    work_item_id=str(work_item_id),
-                    exc=second_error,
-                )
-                # The ordinary worker normally advances attempt_count for a
-                # summary-missing CapacityError.  Its independently governed
-                # history-lock recovery lane advances transient_infra_attempts
-                # instead.  Count both persisted lanes so a mixed sequence is
-                # still bounded by the Q09 work-item ceiling.
-                attempt_count = (
-                    int(row["attempt_count"] or 0)
-                    + int(payload.get("transient_infra_attempts") or 0)
-                )
-                if attempt_count + 1 < WORK_ITEM_ATTEMPT_CEILING:
-                    raise CapacityError(
-                        "Q09 transient cell exhausted its bounded in-attempt retry; "
-                        f"requeue work item at attempt {attempt_count + 1}/"
-                        f"{WORK_ITEM_ATTEMPT_CEILING}"
-                    ) from second_error
-                return adjudicate_cell_failure(
-                    spec, second_error, second_failure_path
-                )
-            except Exception as retry_error:
-                retry_failure_path = _write_cell_failure(
-                    spec,
-                    work_item_id=str(work_item_id),
-                    exc=retry_error,
-                )
-                return adjudicate_cell_failure(
-                    spec, retry_error, retry_failure_path
-                )
-            continue
-        except Exception as exc:
-            cell_failure_path = _write_cell_failure(
-                spec,
-                work_item_id=str(work_item_id),
-                exc=exc,
-            )
-            return adjudicate_cell_failure(spec, exc, cell_failure_path)
+        _run_one_cell(spec)
+
     result = collect_run_plan_status(
         plan_path,
         output_root=output_root,
