@@ -42,7 +42,11 @@ import gmail_alarm as ga  # noqa: E402
 
 EXPECTED_RECIPIENT = "fabian.grabner@gmail.com"
 VAULT_NOTE = Path(
-    r"G:\My Drive\QuantMechanica - Company Reference\Strategie Links.md"
+    # 2026-08-21 (Claude, MNT-025): the 2026-08-21 vault rebuild archived this note to
+    # _ARCHIV/Root/. The scheduled task QM_StrategyFarm_UnreadableLinks_Friday is Disabled,
+    # so nothing reads it today; the path is corrected rather than deleted so the tool
+    # still works if the task is ever re-enabled against the archived list.
+    r"G:\My Drive\QuantMechanica - Company Reference\_ARCHIV\Root\Strategie Links.md"
 )
 LEADS_CSV = Path(r"D:\QM\reports\sourcing_intake\leads.csv")
 STATE_FILE = Path(
