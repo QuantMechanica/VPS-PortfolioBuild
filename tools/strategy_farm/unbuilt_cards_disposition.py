@@ -50,30 +50,14 @@ DB_PATH = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 
 
 def _enumerate_unbuilt(con: sqlite3.Connection) -> list[tuple[str, str, Path, dict]]:
-    """Same enumeration as health.chk_unbuilt_cards_count: R-gate-ready approved
-    cards with no .ex5 and no auto-build task. Returns (ea_id, slug, card_path, fm)."""
-    cards_dir = health.ROOT / "artifacts" / "cards_approved"
-    out = []
-    if not cards_dir.is_dir():
-        return out
-    for card_md in sorted(cards_dir.glob("QM5_*.md")):
-        m = health.re.match(r"(QM5_\d{4,5})_(.+)\.md$", card_md.name)
-        if not m:
-            continue
-        ea_id, slug = m.group(1), m.group(2)
-        label = f"{ea_id}_{slug}"
-        ex5 = health.FRAMEWORK_EAS_DIR / label / f"{label}.ex5"
-        if ex5.exists() or health._has_auto_build_task_file(ea_id) or health._has_auto_build_task(con, ea_id):
-            continue
-        fm = health._card_frontmatter(card_md)
-        # Mirror chk_unbuilt_cards_count exactly (frontmatter-only R-gate check,
-        # no card_path) so this script's total matches the health WARN count.
-        # The stricter body-vs-frontmatter consistency check is a separate,
-        # already-distinct health signal and is not this ticket's scope.
-        if not farmctl._card_r_gate_ready(fm):
-            continue
-        out.append((ea_id, slug, card_md, fm))
-    return out
+    """R-gate-ready approved cards with no .ex5 and no auto-build task.
+
+    Thin wrapper over the shared ``health.enumerate_unbuilt_cards`` (MNT-013)
+    so this script's total is guaranteed to match chk_unbuilt_cards_count's
+    WARN/FAIL count -- both now run the identical enumeration rather than two
+    hand-synced copies of the same loop."""
+    rows, _not_build_ready = health.enumerate_unbuilt_cards(con)
+    return rows
 
 
 def _classify(ea_id: str, card_path: Path, fm: dict) -> tuple[str, str]:

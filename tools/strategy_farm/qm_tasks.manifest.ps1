@@ -63,7 +63,8 @@ $QM_ALWAYSON_TASKS = @(
     'QM_StrategyFarm_LiveBookPulse',          # DXZ read-only live telemetry
     'QM_FTMO_TrialPulse',                     # FTMO read-only live telemetry
     'QM_StrategyFarm_LsmHealthProbe',          # session-manager health evidence
-    'QM_StrategyFarm_SilentFailureMonitor'    # alarm-sidecar producer
+    'QM_StrategyFarm_SilentFailureMonitor',    # alarm-sidecar producer
+    'QM_StrategyFarm_UnbuiltCardsDisposition_Hourly'  # READY/NEEDS_SOURCE/DATA_BLOCKED backlog snapshot (MNT-013)
 )
 
 # --- must stay disabled: unsafe paths + explicit OWNER opt-outs -----

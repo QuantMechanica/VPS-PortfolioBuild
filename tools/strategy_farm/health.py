@@ -1705,13 +1705,20 @@ def _has_auto_build_task(con, ea_id: str) -> bool:
     return bool(row)
 
 
-def chk_unbuilt_cards_count(con) -> dict:
-    """Build-ready approved cards with no matching .ex5 and no auto-build task."""
+def enumerate_unbuilt_cards(con) -> tuple[list[tuple[str, str, Path, dict]], int]:
+    """R-gate-ready approved cards with no .ex5 and no auto-build task.
+
+    MNT-013: the single canonical enumeration behind both
+    ``chk_unbuilt_cards_count`` (bare WARN/FAIL count) and
+    ``unbuilt_cards_disposition.py`` (READY/NEEDS_SOURCE/DATA_BLOCKED bucket
+    snapshot). Previously each reimplemented this loop by hand with a comment
+    promising they'd stay identical -- one real drift risk. Returns
+    ``([(ea_id, slug, card_path, frontmatter), ...], not_build_ready_count)``.
+    """
     cards_dir = ROOT / "artifacts" / "cards_approved"
     if not cards_dir.is_dir():
-        return _check("unbuilt_cards_count", "OK", 0, 3,
-                      "cards_approved missing or empty", "")
-    unbuilt = []
+        return [], 0
+    out: list[tuple[str, str, Path, dict]] = []
     not_build_ready = 0
     for card_md in sorted(cards_dir.glob("QM5_*.md")):
         m = re.match(r"(QM5_\d{4,5})_(.+)\.md$", card_md.name)
@@ -1726,11 +1733,53 @@ def chk_unbuilt_cards_count(con) -> dict:
         if not farmctl._card_r_gate_ready(fm):
             not_build_ready += 1
             continue
-        unbuilt.append(ea_id)
+        out.append((ea_id, slug, card_md, fm))
+    return out, not_build_ready
+
+
+UNBUILT_DISPOSITION_DIR = Path(r"D:\QM\reports\state\unbuilt_cards_disposition")
+UNBUILT_DISPOSITION_STALE_MINUTES = 180  # snapshot writer runs hourly; 3x its period
+
+
+def _latest_unbuilt_disposition_snapshot() -> dict | None:
+    """Most recent unbuilt_cards_disposition.py snapshot, if recent enough to trust."""
+    try:
+        snapshots = sorted(UNBUILT_DISPOSITION_DIR.glob("snapshot_*.json"))
+    except OSError:
+        return None
+    if not snapshots:
+        return None
+    path = snapshots[-1]
+    try:
+        age_minutes = (_utc_now().timestamp() - path.stat().st_mtime) / 60.0
+        if age_minutes > UNBUILT_DISPOSITION_STALE_MINUTES:
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+
+
+def chk_unbuilt_cards_count(con) -> dict:
+    """Build-ready approved cards with no matching .ex5 and no auto-build task."""
+    cards_dir = ROOT / "artifacts" / "cards_approved"
+    if not cards_dir.is_dir():
+        return _check("unbuilt_cards_count", "OK", 0, 3,
+                      "cards_approved missing or empty", "")
+    rows, not_build_ready = enumerate_unbuilt_cards(con)
+    unbuilt = [ea_id for ea_id, _slug, _path, _fm in rows]
     n = len(unbuilt)
     detail = ", ".join(unbuilt[:10]) if unbuilt else "no approved cards waiting for auto-build task"
     if not_build_ready:
         detail = f"{detail}; {not_build_ready} approved cards are waiting on R-gates"
+    snapshot = _latest_unbuilt_disposition_snapshot()
+    if snapshot and abs(int(snapshot.get("total_unbuilt", -1)) - n) <= max(5, n // 20):
+        buckets = snapshot.get("buckets") or {}
+        detail = (
+            f"{detail}; buckets READY={buckets.get('READY', '?')} "
+            f"NEEDS_SOURCE={buckets.get('NEEDS_SOURCE', '?')} "
+            f"DATA_BLOCKED={buckets.get('DATA_BLOCKED', '?')} "
+            f"(disposition snapshot {snapshot.get('generated_at_utc', '?')})"
+        )
     pending_work_items = con.execute(
         "SELECT COUNT(*) FROM work_items WHERE status='pending'"
     ).fetchone()[0]
