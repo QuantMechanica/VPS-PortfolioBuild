@@ -107,20 +107,35 @@ The guarded append-only `farmctl seed-fresh-q02` path created:
 - custom-history archive admission: ACTIVE for `XTIUSD.DWX`
 - initial queue state: pending, unclaimed, no work-item hold
 
-At the last observation in this cycle the row was position 32 in the canonical
-eligible queue. Six terminal workers were already executing higher-ranked work
-under the CPU ceiling. No worker was interrupted and no queue rank was changed.
+The scheduler subsequently dispatched the row to T10 without manual terminal
+start, interruption, or queue manipulation. It completed at
+`2026-08-21T09:46:41Z` with evidence:
+
+`D:/QM/reports/work_items/bf7b7bfe-4dd3-4a11-8904-1a6b081717b0/QM5_20172/20260821_094120/summary.json`
+
+The fresh summary reports:
+
+- `result=PASS`, `reason_classes=[OK]`, one deterministic attempted run;
+- 94 trades over the bound `2018.07.02..2022.12.31` XTIUSD.DWX D1 window;
+- no OnInit failure and a real-ticks marker;
+- required, deployed, observed-after, and post-run EX5 SHA-256 all equal
+  `0e01ada7d9f9711e70a20f032f5f0a6e5bb63adb3b5f6d26f1f295202412a2d5`;
+- the current canonical EX5 independently hashes to the same value;
+- setfile source/deployed/observed-after SHA-256 remains
+  `300e991b723da79eb95973242bdfef88d5d4a094fe1951349915946fba45d55c`;
+- fixed-risk binding remains `RISK_FIXED=1000`, `RISK_PERCENT=0`; and
+- news calendar status is `OK`, with `max_age_hours=336`.
 
 ## Required zero-trades recovery record
 
 | EA | Bound run | Root cause | Repair | Compile | Entry events | Trades | Remaining gaps |
 |---|---|---|---|---|---:|---:|---|
-| QM5_20172 | original `ab8d8b7a` valid zero-trade Q02; fresh `bf7b7bfe` pending | 5-minute nominal grace was below the measured 61.6-minute XTI D1 session offset | 67-minute nominal allowance preserving five executable minutes; bounded entry diagnostics; mandatory news blackout | PASS, 0/0; build check PASS, 0/0 | pending fresh Q02 | pending fresh Q02 | execution identity, entry-event counts, trade count/economic verdict, and incident-hold release verification |
+| QM5_20172 | original `ab8d8b7a` valid zero-trade Q02; fresh `bf7b7bfe` PASS | 5-minute nominal grace was below the measured 61.6-minute XTI D1 session offset | 67-minute nominal allowance preserving five executable minutes; bounded entry diagnostics; mandatory news blackout | PASS, 0/0; build check PASS, 0/0 | fresh run exercised entry path and completed without OnInit failure | 94 | incident-hold release is deliberately outside this task and remains for the subsequent verifier |
 
 ## Current verdict
 
-`GENERATION_REPAIRED_Q02_PENDING` — not `Q02-ready`, not a strategy success,
-and not authority to release the incident hold. Acceptance requires the fresh
-Q02 summary to bind the EX5 hash above and produce either `PASS` with
-`reason_classes=[OK]` or a legitimate economic verdict. The hold may be released
-only by the subsequent verifier after that evidence exists.
+`GENERATION_BOUND_Q02_PASS` — the task's fresh-evidence acceptance criterion is
+met by work item `bf7b7bfe-4dd3-4a11-8904-1a6b081717b0`. This is the recorded Q02
+pipeline verdict, not an independent profitability claim and not authority to
+release the retained incident hold. Per the task contract, hold release remains
+the responsibility of the subsequent verifier and was not performed here.
