@@ -16,7 +16,7 @@ other." Premised on `source_pool_drained` reading 0 pending sources.
   runtime 4.6s, 0 unresolved errors.
 - **Extraction and dispatch work.** Leads land in `leads.csv` (179 rows) and get judged
   by a headless Codex analyst against the source doctrine; `farmctl add-source` is the
-  write path (`farmctl.py:21276`) and is reachable and functioning.
+  write path (`farmctl.py:21334`, `def add_source`) and is reachable and functioning.
 - **Why the pool read 0**: every mailbox-forwarded lead in the current batch was
   REJECTED (`NO_TRADING_STRATEGY`, `NO_MECHANICAL_RULES`, `NO_STRUCTURAL_EDGE`) or
   DEFERRED (`SOURCE_POLICY` — mostly Reddit links, which the doctrine can't fetch/verify).
@@ -27,9 +27,10 @@ other." Premised on `source_pool_drained` reading 0 pending sources.
   2026-08-21T09:35:16Z–09:35:50Z (books, papers, MQL5 articles, blogs — Radge, Hoffstein,
   Baltas/Kosowski, Lempérière/CFM, etc.), confirmed live in the `sources` table.
 - **The two SLOs already exist as separate health rows.** `source_pool_drained`
-  (`health.py:1559`) and `unbuilt_cards_count` (`health.py:1673`) are independent checks
-  in the CHECKS registry (`health.py:3520`/`3522`) — neither is derived from or masks the
-  other today. There is no combined metric to un-conflate.
+  (`health.py:1594`, `def chk_source_pool`) and `unbuilt_cards_count`
+  (`health.py:1708`, `def chk_unbuilt_cards_count`) are independent checks in the CHECKS
+  registry (`health.py:3555`/`3557`) — neither is derived from or masks the other today.
+  There is no combined metric to un-conflate.
 
 ## Disposition: close as no-defect, not implemented
 
