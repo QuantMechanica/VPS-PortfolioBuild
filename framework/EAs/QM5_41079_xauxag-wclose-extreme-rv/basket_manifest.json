@@ -1,0 +1,21 @@
+{
+  "logical_symbol": "QM5_41079_XAU_XAG_WCLOSE_EXTREME_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg completed-week gold/silver closing-extreme reversion package. Q02 must evaluate combined package PnL, paired costs, density, and later Q09 correlation; neither leg is a standalone strategy.",
+    "The EA ranks every synchronized completed D1 log-ratio close in the immediately preceding three-to-five-session broker week, fades a strict newest upper/lower rank, targets equal absolute USD notionals, and caps aggregate frozen-stop risk at one RISK_FIXED budget."
+  ]
+}

@@ -6,8 +6,8 @@
 - Strategy ID: `SCHWEIKERT-CME-XAUXAG-WCLOSE-EXTREME-RV-2026_S01`
 - Approved card:
   `strategy-seeds/cards/approved/QM5_41079_xauxag-wclose-extreme-rv_card.md`
-- Exact host: `XAUUSD.DWX`, D1, slot 0, intended magic `410790000`
-- Exact companion: `XAGUSD.DWX`, D1, slot 1, intended magic `410790001`
+- Exact host: `XAUUSD.DWX`, D1, slot 0, active magic `410790000`
+- Exact companion: `XAGUSD.DWX`, D1, slot 1, active magic `410790001`
 - Logical symbol: `QM5_41079_XAU_XAG_WCLOSE_EXTREME_RV_D1`
 
 ## Mechanic
@@ -49,3 +49,4 @@ portfolio-gate, T_Live, manifest, or AutoTrading action is authorized.
 | Version | Date | Change |
 |---|---|---|
 | v1 | 2026-08-21 | approved build-directory identity; source approval `37d65f4e0`; EA ID allocation `4a7c2d633` |
+| v2 | 2026-08-21 | active basket magics `89c51ac42`; paired implementation; 10-test reference suite; Q01 strict build and static validation PASS |

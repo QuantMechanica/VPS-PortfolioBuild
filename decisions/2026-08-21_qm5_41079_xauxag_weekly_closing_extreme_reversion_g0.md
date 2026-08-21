@@ -17,15 +17,16 @@ Approved card:
 - slug: `xauxag-wclose-extreme-rv`
 - strategy ID: `SCHWEIKERT-CME-XAUXAG-WCLOSE-EXTREME-RV-2026_S01`
 - source approval commit: `37d65f4e0`
-- intended host: exact `XAUUSD.DWX`, D1, slot 0, magic `410790000`
-- intended companion: exact `XAGUSD.DWX`, D1, slot 1, magic `410790001`
+- magic allocation and resolver commit: `89c51ac42`
+- active host: exact `XAUUSD.DWX`, D1, slot 0, magic `410790000`
+- active companion: exact `XAGUSD.DWX`, D1, slot 1, magic `410790001`
 - logical symbol: `QM5_41079_XAU_XAG_WCLOSE_EXTREME_RV_D1`
 - mechanic: fade the final synchronized ratio close of the immediately
   completed broker week when it is strictly above or below every earlier
   synchronized ratio close in that same week
 
-Build remains gated until the governed allocator creates active slot-zero and
-slot-one magic rows and the regenerated resolver retains both rows.
+The governed allocator created active slot-zero and slot-one magic rows at
+commit `89c51ac42`; the regenerated resolver retained both without drops.
 
 ## Gate Findings
 
