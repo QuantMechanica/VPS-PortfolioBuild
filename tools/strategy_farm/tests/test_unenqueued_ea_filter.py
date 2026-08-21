@@ -139,6 +139,62 @@ class UnenqueuedEaFilterTests(unittest.TestCase):
             self.assertEqual(check["value"], 1)
             self.assertIn("QM5_9003", check["detail"])
 
+    def test_warn_branch_message_is_qxx_only(self) -> None:
+        # Operator-facing detail/hint of the WARN branch (n>3) must display the
+        # canonical Qxx id only, never the legacy P-key (Qxx-only rule for
+        # operator surfaces; QM-TODO-20260821-201). Regression guard for the
+        # health.py escalation-text cleanup.
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo = Path(tmp) / "repo"
+            eas = repo / "framework" / "EAs"
+            eas.mkdir(parents=True)
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            ea_ids = [f"QM5_95{n:02d}" for n in range(4)]  # 4 > WARN threshold of 3
+            with farmctl.connect(root) as conn:
+                for ea_id in ea_ids:
+                    ea_dir = eas / f"{ea_id}_warn"
+                    ea_dir.mkdir(parents=True)
+                    (ea_dir / f"{ea_dir.name}.ex5").write_text("compiled", encoding="utf-8")
+                    conn.execute(
+                        "INSERT INTO tasks(id, kind, status, card_id, payload_json, "
+                        "created_at, updated_at) VALUES (?, 'ea_review', 'done', ?, ?, ?, ?)",
+                        (
+                            f"review-{ea_id}",
+                            ea_id,
+                            json.dumps({"ea_id": ea_id, "verdict": {"verdict": "APPROVE_FOR_BACKTEST"}}),
+                            now,
+                            now,
+                        ),
+                    )
+                conn.commit()
+
+            old_farm_eas = farmctl.FRAMEWORK_EAS_DIR
+            old_health_eas = health.FRAMEWORK_EAS_DIR
+            old_repo_root = farmctl.REPO_ROOT
+            try:
+                farmctl.REPO_ROOT = repo
+                farmctl.FRAMEWORK_EAS_DIR = eas
+                health.FRAMEWORK_EAS_DIR = eas
+                with farmctl.connect(root) as conn:
+                    check = health.chk_unenqueued_eas_count(conn)
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+                farmctl.FRAMEWORK_EAS_DIR = old_farm_eas
+                health.FRAMEWORK_EAS_DIR = old_health_eas
+
+            self.assertEqual(check["status"], "WARN")
+            self.assertEqual(check["value"], 4)
+            surface = f"{check['detail']} {check['action_hint']}"
+            self.assertIn("Q02", surface)
+            # No legacy P-gate token in operator-facing text.
+            import re
+            self.assertIsNone(
+                re.search(r"(?<![A-Za-z0-9])P(?:2|3)(?![A-Za-z0-9])", surface),
+                f"legacy P-gate token leaked into operator text: {surface!r}",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

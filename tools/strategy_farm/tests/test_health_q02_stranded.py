@@ -107,7 +107,8 @@ def test_legacy_p2_is_included_in_same_invariant():
     result = chk_q02_stranded_exhausted_pairs(con)
     assert result["status"] == "FAIL"
     assert result["value"] == 1
-    assert "Q02/P2" in result["detail"]
+    assert "Q02" in result["detail"]
+    assert "P2" not in result["detail"]
 
 
 def test_q02_and_legacy_p2_rows_form_one_logical_pair():

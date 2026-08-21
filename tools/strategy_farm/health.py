@@ -1851,15 +1851,15 @@ def chk_unenqueued_eas_count(con) -> dict:
             continue
         waiting.append(ea_id)
     n = len(waiting)
-    detail = ", ".join(waiting[:10]) if waiting else "no reviewed built EAs waiting for P2 enqueue"
+    detail = ", ".join(waiting[:10]) if waiting else "no reviewed built EAs waiting for Q02 enqueue"
     if n > 10:
         return _check("unenqueued_eas_count", "FAIL", n, 10,
-                      f"{n} reviewed built EAs have no P2 work_items ({detail})",
-                      "Run farmctl pump; it should enqueue up to 3 EAs into P2 per cycle.")
+                      f"{n} reviewed built EAs have no Q02 work_items ({detail})",
+                      "Run farmctl pump; it should enqueue up to 3 EAs into Q02 per cycle.")
     if n > 3:
         return _check("unenqueued_eas_count", "WARN", n, 3,
-                      f"{n} reviewed built EAs have no P2 work_items ({detail})",
-                      "Next pump cycles should enqueue P2 work_items.")
+                      f"{n} reviewed built EAs have no Q02 work_items ({detail})",
+                      "Next pump cycles should enqueue Q02 work_items.")
     return _check("unenqueued_eas_count", "OK", n, 3, detail, "")
 
 
@@ -2244,7 +2244,7 @@ def chk_q02_stranded_exhausted_pairs(con) -> dict:
     if stranded:
         return _check(
             "q02_stranded_exhausted_pairs", "FAIL", stranded, 0,
-            f"{stranded} Q02/P2 EA/symbol pairs have no non-infra terminal "
+            f"{stranded} Q02 EA/symbol pairs have no non-infra terminal "
             f"disposition, no queued successor, and >= {retry_cap} INFRA_FAIL rows",
             "Classify the cohort by row-bound aggregate and verdict_reason; "
             "route valid zero-trade outcomes to RETIRE/frequency-floor and INVALID "
@@ -2253,7 +2253,7 @@ def chk_q02_stranded_exhausted_pairs(con) -> dict:
         )
     return _check(
         "q02_stranded_exhausted_pairs", "OK", 0, 0,
-        "no retry-exhausted Q02/P2 pair has vanished without a non-infra disposition", "",
+        "no retry-exhausted Q02 pair has vanished without a non-infra disposition", "",
     )
 
 
