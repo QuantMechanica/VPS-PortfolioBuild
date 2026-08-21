@@ -3,16 +3,16 @@
 ; ea_id:        41002
 ; ea_slug:      robert-pardo-checkmate-breakout-engine
 ; ea_version:   v5.0
-; set_version:  s20260818-001
+; set_version:  s20260821-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   da03d35a0f442fb988f84dfa047c44112a156ae4c78688ad285369d5ba219433
+; build_hash:   fdf7279b372fbf58c53ccca0cb38ef156fc6950a257646a3883a45b9c0212ad3
 ; author:       Development
-; date:         2026-08-18
+; date:         2026-08-21
 ;==========================================================
 qm_ea_id=41002
 qm_magic_slot_offset=2
@@ -33,5 +33,6 @@ strategy_spread_filter_mult=1.8
 strategy_max_positions=1
 strategy_max_slippage_ticks=3
 strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
 strategy_total_dd_halt_pct=5.0
 strategy_per_trade_risk_cap_pct=0.5

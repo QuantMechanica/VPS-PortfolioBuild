@@ -26,7 +26,10 @@ The initial stop is 1.5 times ATR(14)[1] from entry and the take-profit is 2R.
 For an open long, the stop follows the lowest low of the latest ten completed
 bars; for an open short, it follows the corresponding highest high. The
 framework also applies the approved news pause, Friday close, fixed-risk
-backtest sizing, daily-loss halt, and total-drawdown signal threshold.
+backtest sizing, and total-drawdown signal threshold. New entries stop at a
+2.0% broker-day equity loss while existing exposure remains managed; the
+framework kill switch closes exposure and halts the EA at the card's separate
+2.5% daily hard-stop threshold.
 
 ---
 
@@ -45,7 +48,8 @@ backtest sizing, daily-loss halt, and total-drawdown signal threshold.
 | `strategy_spread_filter_mult` | `1.8` | fixed | Maximum spread as a fraction of ATR multiple |
 | `strategy_max_positions` | `1` | fixed | Maximum host-symbol positions for this magic |
 | `strategy_max_slippage_ticks` | `3` | fixed | Entry deviation converted from ticks to points |
-| `strategy_daily_loss_halt_pct` | `2.0` | fixed | Framework kill-switch daily-loss threshold |
+| `strategy_daily_loss_halt_pct` | `2.0` | fixed | Entry halt against the framework's restart-safe broker-day equity anchor |
+| `strategy_daily_hard_stop_pct` | `2.5` | fixed | Framework kill-switch daily hard-stop threshold |
 | `strategy_total_dd_halt_pct` | `5.0` | fixed | Portfolio drawdown-signal threshold |
 | `strategy_per_trade_risk_cap_pct` | `0.5` | fixed | Percent-risk ceiling outside fixed-risk tests |
 
@@ -123,3 +127,4 @@ backtest setfiles only and does not authorize live use.
 | v1 | 2026-08-18 | Initial build from approved card | Task 5d5cc9f6-e096-44a3-af78-99abc2d9e7ed |
 | v2 | 2026-08-20 | Entry-permission repair | Recheck current spread after closed-bar state refresh; no signal thresholds changed |
 | v3 | 2026-08-21 | Card-time normalization repair | Task 5b0eb50d-de0a-4d75-a461-4a08cc03c2c9; convert broker time to GMT before the rollover blackout |
+| v4 | 2026-08-21 | Card loss-limit reconciliation | Preserve the 2.0% entry halt and wire the distinct 2.5% framework hard stop |

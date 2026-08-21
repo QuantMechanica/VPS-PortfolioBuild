@@ -45,6 +45,7 @@ input double          strategy_spread_filter_mult        = 1.8;
 input int             strategy_max_positions            = 1;
 input int             strategy_max_slippage_ticks        = 3;
 input double          strategy_daily_loss_halt_pct       = 2.0;
+input double          strategy_daily_hard_stop_pct       = 2.5;
 input double          strategy_total_dd_halt_pct         = 5.0;
 input double          strategy_per_trade_risk_cap_pct    = 0.5;
 
@@ -73,7 +74,9 @@ bool StrategyConfigValid()
       return false;
    if(strategy_max_slippage_ticks <= 0)
       return false;
-   if(strategy_daily_loss_halt_pct <= 0.0 || strategy_total_dd_halt_pct <= 0.0)
+   if(strategy_daily_loss_halt_pct <= 0.0 || strategy_daily_hard_stop_pct <= 0.0 ||
+      strategy_daily_loss_halt_pct > strategy_daily_hard_stop_pct ||
+      strategy_total_dd_halt_pct <= 0.0)
       return false;
    if(strategy_per_trade_risk_cap_pct <= 0.0 || strategy_per_trade_risk_cap_pct > 1.0)
       return false;
@@ -99,6 +102,24 @@ bool StrategyInRolloverWindow(const datetime value)
    if(strategy_rollover_start_hhmm > strategy_rollover_end_hhmm)
       return (hhmm >= strategy_rollover_start_hhmm || hhmm < strategy_rollover_end_hhmm);
    return (hhmm >= strategy_rollover_start_hhmm && hhmm < strategy_rollover_end_hhmm);
+  }
+
+bool StrategyDailyEntryHalt()
+  {
+   // The approved card declares a 2.0% entry halt and a distinct 2.5% hard
+   // stop. Reuse the framework's restart-safe broker-day equity anchor so the
+   // entry layer cannot reset its daily budget after an EA restart. Existing
+   // exposure remains manageable until the framework hard stop trips.
+   if(g_qm_ks_day_start_equity <= 0.0)
+      return true;
+
+   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(equity_now <= 0.0)
+      return true;
+
+   const double pnl_pct = ((equity_now - g_qm_ks_day_start_equity) /
+                           g_qm_ks_day_start_equity) * 100.0;
+   return (pnl_pct <= -strategy_daily_loss_halt_pct);
   }
 
 bool StrategyReadChannel(const int first_shift,
@@ -204,7 +225,7 @@ int StrategyDeviationPoints()
 
 bool Strategy_NoTradeFilter()
   {
-   if(StrategyInRolloverWindow(TimeCurrent()))
+   if(StrategyInRolloverWindow(QM_BrokerToUTC(TimeCurrent())))
       return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -229,6 +250,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    if(!g_state_ready || g_signal == 0 || g_atr_1 <= 0.0)
+      return false;
+   if(StrategyDailyEntryHalt())
       return false;
 
    // Re-evaluate the card-authorized spread ceiling after the current H4
@@ -366,7 +389,7 @@ int OnInit()
                      QM_FrameworkMagic());
    if(!QM_KillSwitchInit(qm_ea_id,
                          QM_FrameworkMagic(),
-                         strategy_daily_loss_halt_pct,
+                         strategy_daily_hard_stop_pct,
                          strategy_total_dd_halt_pct,
                          strategy_per_trade_risk_cap_pct))
       return INIT_FAILED;
