@@ -68,7 +68,31 @@ CELL_FAILURE_ATTEMPT_DIR = "failure_attempts"
 CELL_FAILURE_ATTEMPT_RE = re.compile(
     r"^attempt_([0-9]+)(?:\.tmp)?$"
 )
-CELL_FAILURE_SNAPSHOT_LAYOUT = "FLAT_INDEXED_SHA256_V1"
+# Immutable failure-snapshot naming layouts.
+#   V1 (legacy): snapshot copies keep the source file's own suffix verbatim.
+#     This let an ops retention sweep (reports_log_purge.ps1 deletes
+#     D:\QM\reports\work_items\**\*.log) silently gut the snapshot — the pilot
+#     cba63d44 cell_failure.json listed three .log evidence files (a 2.0MB
+#     tester journal, a 1.16MB EA logger .log, run_smoke.log) that had been
+#     copied and then deleted from failure_attempts/attempt_0001.
+#   V2 (current): copies of purge-swept extensions are renamed to a neutral,
+#     never-swept suffix (.log -> .evidence) so the immutable snapshot survives
+#     the sweep byte-for-byte.  The true origin is still authenticated via each
+#     artifact's source_relative_path.  Both layouts are accepted on read.
+CELL_FAILURE_SNAPSHOT_LAYOUT_V1 = "FLAT_INDEXED_SHA256_V1"
+CELL_FAILURE_SNAPSHOT_LAYOUT_V2 = "FLAT_INDEXED_SHA256_V2"
+CELL_FAILURE_SNAPSHOT_LAYOUT = CELL_FAILURE_SNAPSHOT_LAYOUT_V2
+CELL_FAILURE_SNAPSHOT_LAYOUTS = frozenset(
+    {CELL_FAILURE_SNAPSHOT_LAYOUT_V1, CELL_FAILURE_SNAPSHOT_LAYOUT_V2}
+)
+# Suffixes an ops retention sweep deletes recursively under the reports tree
+# (reports_log_purge.ps1: -Recurse -Filter *.log).  A snapshot copy of such a
+# file must not carry this extension, or the immutable evidence is destroyed.
+PURGE_SWEPT_SNAPSHOT_SUFFIXES = frozenset({".log"})
+# Neutral terminal suffix given to a snapshot copy whose source extension is
+# purge-swept.  Chosen so no `*.log`-style filter matches it (it does not end
+# in, or begin its extension with, "log").
+CELL_FAILURE_SNAPSHOT_PRESERVED_SUFFIX = ".evidence"
 COMPLIANCE_MODE_IDS = {"NONE": 0, "DXZ": 1, "FTMO": 2, "5ERS": 3}
 DEFAULT_CELL_TIMEOUT_SEC = 3600
 CELL_TIMEOUT_HEADROOM_SEC = 600
@@ -84,6 +108,23 @@ WORK_ITEM_ATTEMPT_CEILING = 3
 # single failing cell is retried at most this many extra times on a transient
 # class, then recorded as failed so the remaining planned cells still run.
 DEFAULT_CELL_RETRY_BUDGET = 2
+# run_smoke reason classes that describe a transient / cold-cache / infra flake
+# rather than a genuine tester result.  When a child exits 1 WITH a fresh FAIL
+# summary whose reason classes are ALL within this set, the cell is routed into
+# the bounded per-cell retry lane (see _production_dispatch_cell); any other or
+# unknown reason class (genuine zero-signal, PF-missing validation, non-
+# determinism, ...) is a real result and is recorded-and-continued without
+# retry.  This is a retry-ROUTING decision only: it changes no gate threshold
+# and no adjudication rule.
+Q09_TRANSIENT_REASON_CLASSES = frozenset(
+    {
+        "TIMEOUT",
+        "BARS_ZERO",
+        "INCOMPLETE_RUNS",
+        "NO_HISTORY",
+        "MODEL4_MARKER_REQUIRED",
+    }
+)
 WINDOW_NAMES = ("selection", "holdout", "full")
 FACTORY_DB_RELATIVE_PATH = Path("state") / "farm_state.sqlite"
 FACTORY_MT5_ROOT = Path(r"D:\QM\mt5")
@@ -1151,6 +1192,8 @@ def _failure_attempt_root(cell_dir: Path, occurrence: int) -> Path:
 def _failure_snapshot_artifact_name(
     source_relative_path: Path | PurePosixPath,
     index: int,
+    *,
+    layout: str = CELL_FAILURE_SNAPSHOT_LAYOUT,
 ) -> str:
     """Return a short deterministic name for one snapshotted artifact.
 
@@ -1158,15 +1201,29 @@ def _failure_snapshot_artifact_name(
     otherwise valid cell past the legacy Windows MAX_PATH boundary.  The
     sidecar already preserves the authenticated source-relative path, so the
     immutable copy only needs a unique, deterministic flat name.
+
+    Under the V2 layout a copy whose source extension is purge-swept (``.log``)
+    is renamed to a neutral suffix so an ops ``*.log`` retention sweep cannot
+    delete the immutable evidence.  V1 keeps the source suffix verbatim so
+    already-written sidecars authenticate unchanged.
     """
 
     if index < 1:
         raise RunnerError("cell failure artifact index must be positive")
+    if layout not in CELL_FAILURE_SNAPSHOT_LAYOUTS:
+        raise RunnerError(
+            f"cell failure artifact snapshot layout is unsupported: {layout}"
+        )
     source = PurePosixPath(source_relative_path.as_posix())
     digest = hashlib.sha256(source.as_posix().encode("utf-8")).hexdigest()[:16]
     suffix = source.suffix.lower()
     if re.fullmatch(r"\.[a-z0-9]{1,10}", suffix) is None:
         suffix = ""
+    if (
+        layout == CELL_FAILURE_SNAPSHOT_LAYOUT_V2
+        and suffix in PURGE_SWEPT_SNAPSHOT_SUFFIXES
+    ):
+        suffix = CELL_FAILURE_SNAPSHOT_PRESERVED_SUFFIX
     return f"artifact_{index:04d}_{digest}{suffix}"
 
 
@@ -1354,7 +1411,7 @@ def _authenticated_cell_failure(
         raw_layout = failure.get("artifact_snapshot_layout")
         if raw_layout is not None:
             snapshot_layout = str(raw_layout)
-            if snapshot_layout != CELL_FAILURE_SNAPSHOT_LAYOUT:
+            if snapshot_layout not in CELL_FAILURE_SNAPSHOT_LAYOUTS:
                 raise RunnerError(
                     f"cell failure artifact snapshot layout is unsupported: {path}"
                 )
@@ -1395,11 +1452,13 @@ def _authenticated_cell_failure(
                     f"cell failure source artifact path is contradictory: {path}"
                 )
             seen_sources.add(source_relative_path)
-            if snapshot_layout == CELL_FAILURE_SNAPSHOT_LAYOUT:
+            if snapshot_layout in CELL_FAILURE_SNAPSHOT_LAYOUTS:
                 expected_artifact_path = (
                     snapshot_root
                     / _failure_snapshot_artifact_name(
-                        PurePosixPath(source_relative_path), artifact_index
+                        PurePosixPath(source_relative_path),
+                        artifact_index,
+                        layout=snapshot_layout,
                     )
                 ).resolve()
             else:
@@ -2136,6 +2195,34 @@ def _latest_summary(report_root: Path, started_at: float) -> Path:
     return max(candidates, key=lambda path: path.stat().st_mtime)
 
 
+def _summary_reason_classes(summary_path: Path) -> list[str]:
+    """Return the run_smoke FAIL summary's reason classes as plain strings.
+
+    A malformed or absent ``reason_classes`` list yields ``[]`` (which the
+    caller treats as a non-transient, non-retryable result).
+    """
+
+    summary = _load_json(summary_path, "run_smoke summary")
+    raw = summary.get("reason_classes")
+    if not isinstance(raw, list):
+        return []
+    return [str(item) for item in raw]
+
+
+def _fail_summary_is_transient(summary_path: Path) -> bool:
+    """True iff every reason class in the fresh FAIL summary is transient/infra.
+
+    An empty (or unclassified) reason-class list is NOT transient: a FAIL with
+    no explained class is a genuine result and must not be silently retried.
+    """
+
+    reason_classes = _summary_reason_classes(summary_path)
+    return bool(reason_classes) and all(
+        reason_class in Q09_TRANSIENT_REASON_CLASSES
+        for reason_class in reason_classes
+    )
+
+
 def _single_ok_run(summary: Mapping[str, Any]) -> Mapping[str, Any]:
     """Return the sole successful attempt from a run_smoke summary."""
 
@@ -2482,12 +2569,31 @@ def _production_dispatch_cell(
         if completed.returncode != 0:
             if completed.returncode == 1:
                 try:
-                    _latest_summary(run_root, started_at)
+                    summary_path = _latest_summary(run_root, started_at)
                 except RunnerError as summary_error:
+                    # Child exit 1 with NO fresh tester summary at all: a cold-
+                    # cache/wedge flake -> transient retry lane.
                     raise TransientCellError(
                         f"Q09 {window_name} run_smoke exited with code 1 "
                         "without a fresh run_smoke summary or cell receipt"
                     ) from summary_error
+                # A fresh FAIL summary exists.  If every reason class is within
+                # the transient/infra set (cold-cache BARS_ZERO/NO_HISTORY,
+                # TIMEOUT, INCOMPLETE_RUNS, MODEL4_MARKER_REQUIRED), route it
+                # into the same bounded per-cell retry lane.  Any other/unknown
+                # reason class (genuine zero-signal, PF-missing validation, ...)
+                # stays a non-transient result: recorded-and-continue, no retry.
+                if _fail_summary_is_transient(summary_path):
+                    raise TransientCellError(
+                        f"Q09 {window_name} run_smoke FAIL is transient "
+                        f"(reason_classes="
+                        f"{sorted(_summary_reason_classes(summary_path))})"
+                    )
+                raise RunnerError(
+                    f"Q09 {window_name} run_smoke exited with code 1 "
+                    f"(reason_classes="
+                    f"{sorted(_summary_reason_classes(summary_path))})"
+                )
             raise RunnerError(
                 f"Q09 {window_name} run_smoke exited with code {completed.returncode}"
             )

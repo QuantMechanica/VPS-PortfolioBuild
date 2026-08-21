@@ -139,3 +139,129 @@ python tools/strategy_farm/farmctl.py bind-q09-plan `
 After binding, the pump/terminal worker claims the pending `Q09_NEWS` row and runs the fixed
 executor. A single flaky cell now yields a maximal-authenticated + precise-failed/missing
 aggregate (`REVIEW_REQUIRED`) rather than aborting the rerun.
+
+## Addendum 2026-08-21 (Claude, board-advisor) — two precise runner additions
+
+Building on `fa49b2c84` (continue-on-cell-failure + K=2 transient retry). ROT untouched:
+`q09_news_contract.py` `adjudicate()` remains byte-for-byte unchanged; both changes below are
+retry-**routing** / evidence-**retention** only — no gate threshold, no adjudication rule.
+
+### Item 1 — semi-transient FAIL summaries route into the K=2 retry lane
+
+`_production_dispatch_cell` previously split a `run_smoke` child exit-1 two ways: **no** fresh
+tester summary → `TransientCellError` (retry lane); a fresh summary present → `RunnerError`
+(recorded-and-continue, no retry). A cold-cache `BARS_ZERO`/`NO_HISTORY` or a `TIMEOUT` often
+**does** publish a fresh FAIL summary, so those first-attempt flakes were recorded failed without
+ever retrying.
+
+Now, when a fresh FAIL summary is present, the runner reads its `reason_classes`
+(`_summary_reason_classes`) and, if the list is non-empty **and every entry** is within the
+transient/infra set `Q09_TRANSIENT_REASON_CLASSES = {TIMEOUT, BARS_ZERO, INCOMPLETE_RUNS,
+NO_HISTORY, MODEL4_MARKER_REQUIRED}` (`_fail_summary_is_transient`), it raises `TransientCellError`
+→ the same bounded K=2 per-cell retry lane (terminal-clear + capacity + EX5 re-verify between
+attempts). Any other/unknown class (genuine zero-signal, `MIN_TRADES_NOT_MET`, `NON_DETERMINISTIC`,
+PF-missing validation, a mixed list containing a non-transient class) stays `RunnerError`:
+recorded-and-continue, **no** retry. An empty/unclassified `reason_classes` is treated as
+non-transient (a FAIL with no explained class is a real result, not a flake). `reason_classes`
+comes from `run_smoke.ps1`'s `run_smoke/v2` summary top-level.
+
+### Item 2 — the immutable failure snapshot survives the ops `*.log` retention sweep
+
+The task premise ("the copy skips `.log`") is corrected by the evidence: the copy never skipped
+them. In the pilot `cba63d44` cell `policy_on__m1__c1__s7`, `cell_failure.json` lists 10 artifacts
+with correct `size_bytes`/`sha256`, including three logs — a 2.00 MB tester journal
+(`raw/run_01/20260820.log`), a 1.16 MB EA logger `.log`
+(`pre_run_logger_archive/000_QM5_11294_ea-11294.log`), and `runs/selection/run_smoke.log`.
+`_snapshot_failure_artifacts` builds that manifest **from the copied files** (`snapshot_root /
+snapshot_name`, `stat()` + `sha256_file`), so every listed file existed in
+`failure_attempts/attempt_0001` at write time. They are absent now because the snapshot copies
+kept their `.log` suffix and were later deleted by the ops retention job
+`tools/strategy_farm/reports_log_purge.ps1` (`Get-ChildItem D:\QM\reports\work_items -Recurse
+-File -Filter *.log … Remove-Item -Force`), which recurses **into** `failure_attempts/`. Only the
+non-`.log` copies (`.set/.jsonl/.json/.htm/.ini`) — including a 673 KB `.jsonl` — survived, proving
+it is extension-specific, not a size cap. `tester_cache_purge.ps1` only sweeps `bar*.tmp` under the
+Tester agent temp dirs and is not involved.
+
+Fix (in the snapshot naming, `_failure_snapshot_artifact_name`): a new layout
+`FLAT_INDEXED_SHA256_V2` renames a copy whose source extension is purge-swept
+(`PURGE_SWEPT_SNAPSHOT_SUFFIXES = {.log}`) to a neutral, never-swept suffix
+(`.evidence`) so `reports_log_purge.ps1`'s `*.log` filter can no longer match and delete the
+immutable evidence. Bytes are unchanged and the true origin stays authenticated via each
+artifact's `source_relative_path`. `_authenticated_cell_failure` accepts **both** layouts
+(`CELL_FAILURE_SNAPSHOT_LAYOUTS`) and recomputes the expected name with the sidecar's recorded
+layout, so V1 sidecars still authenticate unchanged and only new writes use V2. No size cap
+exists; the copy is unconditional, so no truncation is needed. (A hardening follow-up in
+`reports_log_purge.ps1` to skip `failure_attempts/` entirely is worth an OWNER-noted GRÜN item,
+but is out of this file's scope.)
+
+### Tests (`test_q09_news_runner_v2.py`, full file: 31 passed, was 27)
+
+- `test_transient_reason_class_fail_summary_routes_to_retry_lane` — (i): FAIL summary
+  `reason_classes=[TIMEOUT]` drives the real `_production_dispatch_cell` fork (patched
+  `subprocess.run` returns rc=1 + a fresh FAIL summary); the target selection window is
+  re-dispatched `DEFAULT_CELL_RETRY_BUDGET + 1` times, then recorded failed
+  (`TransientCellError`); run continues → 39 authenticated + 1 failed, `REVIEW_REQUIRED`.
+- `test_unknown_reason_class_fail_summary_is_not_retried` — (ii): `reason_classes=[MIN_TRADES_NOT_MET]`
+  → dispatched exactly once (`RunnerError`, no retry), recorded-and-continue → 39 + 1, one sidecar.
+- `test_mixed_reason_classes_with_one_unknown_is_not_retried` — a `[TIMEOUT, NON_DETERMINISTIC]`
+  mix is not all-transient → no retry (`RunnerError`).
+- `test_failure_snapshot_copies_log_artifact_byte_true_and_purge_safe` — (iii): a `run_smoke.log`
+  source is copied byte-true into the attempt snapshot (`read_bytes()` equality, `size_bytes` +
+  `sha256` match), the copy name does **not** end in `.log` and ends in `.evidence` (purge-safe),
+  layout is V2, and it authenticates.
+
+The pre-existing unrelated failure in `test_q09_live_news_diagnostic.py` (Windows 8.3 short-path
+`ADMINI~1` vs `Administrator` tempdir normalization) is unchanged by this work.
+
+### Append-only pilot rerun of `cba63d44` (QM5_11294 / XAUUSD Q09_NEWS) — raised sealed timeout
+
+Research only; commands verified against `--help`/source, **not executed**. GELB basis: "raise
+timeout budgets to phase median for rows already timeout-killed without verdict." The pilot was
+sealed at `q09_cell_timeout_sec=3600` per window (DB payload of `cba63d44`). Per-window duration is
+not cleanly measurable from the artifacts (the `run_smoke/v2` summary has no duration field; the
+only proxy — run-dir start-name → `summary.json` mtime, n=72 windows — reads a median ≈ 8030 s and
+max ≈ 10832 s, but those exceed the 3600 s the pilot actually ran under, i.e. the proxy is
+contaminated by queue/archival idle and overstates true tester time). Because a clean measurement
+is not available, use the task's specified fallback **`--cell-timeout-sec 10800`** (3 h): 3× the
+pilot's sealed 3600 s, comfortably below the runner guard (`q09_news_runner.py:579`,
+`60 ≤ cell_timeout_sec ≤ 28800`).
+
+```powershell
+cd C:\QM\repo
+$oldWid = "cba63d44-ca33-4c64-990d-a1c2ea63eaca"   # terminal REVIEW_REQUIRED Q09_NEWS row (preserved)
+$ex5Sha = (Get-FileHash -LiteralPath <current repo QM5_11294 .ex5> -Algorithm SHA256).Hash.ToLowerInvariant()
+
+# 1. ENQUEUE — create a fresh *pending* Q09_NEWS rerun row; the old terminal row stays as evidence.
+#    append-only-rerun requires an exact predecessor (--from-work-item-id) and an audit reason;
+#    the target verdict is REVIEW_REQUIRED (not INFRA_FAIL) so the current-EX5 binding is required.
+python tools/strategy_farm/farmctl.py enqueue-backtest `
+  --ea QM5_11294 --phase Q09_NEWS `
+  --append-only-rerun-of $oldWid `
+  --from-work-item-id $oldWid `
+  --rerun-reason "rerun 40-cell v2 pilot under fixed runner fa49b2c84 + this addendum; raised sealed per-cell timeout (GELB, timeout-killed rows)" `
+  --expected-current-ex5-sha256 $ex5Sha
+# -> prints created[].id = $rerunWid  (a new pending row held Q09_AWAITING_SEALED_PLAN,
+#    Q08 input dependency re-added). Capture $rerunWid from the JSON `created` list.
+```
+
+Then seal an immutable plan for `$rerunWid` (identical to the `q09_news_runner.py plan` step in
+the section above, `--work-item-id $rerunWid`), compute `$planSha`, and bind it with the raised
+timeout:
+
+```powershell
+# 2. BIND — hash-bind the sealed plan to the pending rerun row with the raised per-cell timeout.
+python tools/strategy_farm/farmctl.py bind-q09-plan `
+  --work-item-id $rerunWid --plan $plan --plan-file-sha256 $planSha `
+  --cell-timeout-sec 10800
+# releases the Q09_AWAITING_SEALED_PLAN hold -> activation_state RUNNABLE_BOUND.
+```
+
+3. DISPATCH pickup — no manual `execute`. The running factory pump / terminal-worker
+(`QM_StrategyFarm_TerminalWorkers`; `farmctl pump`) claims the `RUNNABLE_BOUND` pending `Q09_NEWS`
+row on a free T1–T10 terminal, `assert_factory_capacity` re-verifies the sealed dispatch binding
+(plan path + `plan_file_sha256` + `q09_cell_timeout_sec`), and spawns the fixed executor
+(`q09_news_runner.py execute --plan … --expected-plan-file-sha256 … --output-root …`), passing
+`10800` to each window's `run_smoke -TimeoutSeconds`. Under the fixed runner a first-attempt
+transient (now including a transient-classed FAIL summary) is retried K=2 and a genuinely failing
+cell is recorded-and-continued, so the rerun ends with a maximal-authenticated aggregate instead
+of aborting.

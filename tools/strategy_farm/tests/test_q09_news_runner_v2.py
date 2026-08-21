@@ -1127,6 +1127,208 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             40,
         )
 
+    def _drive_one_failing_cell_through_fork(
+        self,
+        *,
+        output: str,
+        reason_classes: list[str],
+    ) -> tuple[dict, dict, Path]:
+        """Run execute_run_plan through the REAL _production_dispatch_cell fork.
+
+        The first plan cell's ``selection`` window exits 1 with a fresh FAIL
+        summary carrying ``reason_classes``; every other window/cell exits 0
+        with a valid summary.  Returns (result, call_counts, target_cell_dir).
+        """
+
+        plan = self.build(output=output)
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        target_cell_dir = Path(plan["cells"][0]["receipt_path"]).parent.resolve()
+        counts = {"target_selection": 0, "total": 0}
+
+        def fake_run(command: list[str], **_kwargs: object) -> SimpleNamespace:
+            counts["total"] += 1
+            report_root = Path(command[command.index("-ReportRoot") + 1])
+            window = report_root.name
+            cell_dir = report_root.parent.parent.resolve()
+            summary = report_root / "QM5_9999" / "fixture" / "summary.json"
+            summary.parent.mkdir(parents=True, exist_ok=True)
+            if cell_dir == target_cell_dir and window == "selection":
+                counts["target_selection"] += 1
+                summary.write_text(
+                    json.dumps(
+                        {
+                            "evidence_schema": "run_smoke/v2",
+                            "result": "FAIL",
+                            "reason_classes": list(reason_classes),
+                        }
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(returncode=1, stdout="fixture FAIL\n", stderr="")
+            summary.write_text("{}\n", encoding="utf-8")
+            return SimpleNamespace(returncode=0, stdout="fixture PASS\n", stderr="")
+
+        def fake_validate(summary_path: Path, **kwargs: object) -> tuple[dict, dict]:
+            spec = kwargs["spec"]
+            window = next(
+                name for name in runner.WINDOW_NAMES if name in summary_path.parts
+            )
+            seed_index = contract.SEEDS.index(spec["seed"])
+            selection = 0.50 + seed_index * 0.01
+            holdout = 0.40 + seed_index * 0.01
+            values = {
+                "selection": selection,
+                "holdout": holdout,
+                "full": (selection + holdout) / 2,
+            }
+            delta = (
+                0.10
+                if spec["arm"] == "POLICY_ON" and spec["temporal_mode"] == "PRE30"
+                else 0.0
+            )
+            return metrics(values[window] + delta), {
+                "cost_execution_identity_sha256": "c" * 64,
+            }
+
+        with (
+            patch.object(runner.subprocess, "run", side_effect=fake_run),
+            patch.object(runner, "_wait_for_claimed_terminal_exit"),
+            patch.object(runner, "_validate_window_summary", side_effect=fake_validate),
+        ):
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / f"{output}-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / f"common-{output}",
+            )
+        return result, counts, target_cell_dir
+
+    def test_transient_reason_class_fail_summary_routes_to_retry_lane(self) -> None:
+        # Requirement (i): a child exit-1 WITH a fresh FAIL summary whose reason
+        # classes are all transient (TIMEOUT) is reclassified into the bounded
+        # per-cell retry lane -- the selection window is re-dispatched
+        # budget+1 times before the cell is recorded as failed.
+        result, counts, target_cell_dir = self._drive_one_failing_cell_through_fork(
+            output="fork-transient-timeout",
+            reason_classes=["TIMEOUT"],
+        )
+        self.assertEqual(
+            counts["target_selection"], runner.DEFAULT_CELL_RETRY_BUDGET + 1
+        )
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(
+            result["adjudication"]["reason_codes"], ["cell_execution_failed"]
+        )
+        self.assertEqual(result["authenticated_cell_count"], 39)
+        self.assertEqual(result["failed_cell_count"], 1)
+        self.assertEqual(result["missing_cell_count"], 0)
+        self.assertTrue(result["accounting_reconciled"])
+        failure = result["adjudication"]["details"]["failed_cells"][0]
+        self.assertEqual(failure["error_type"], "TransientCellError")
+        self.assertIn("run_smoke FAIL is transient", failure["error"])
+        self.assertIn("TIMEOUT", failure["error"])
+        # The retry lane records a distinct immutable sidecar per occurrence.
+        self.assertTrue((target_cell_dir / "cell_failure.json").is_file())
+        self.assertTrue((target_cell_dir / "cell_failure_2.json").is_file())
+
+    def test_unknown_reason_class_fail_summary_is_not_retried(self) -> None:
+        # Requirement (ii): a child exit-1 WITH a fresh FAIL summary whose reason
+        # class is genuine (MIN_TRADES_NOT_MET, i.e. real zero/low-signal) is NOT
+        # transient: it is recorded-and-continued with NO retry, and the run
+        # still completes every remaining planned cell.
+        result, counts, target_cell_dir = self._drive_one_failing_cell_through_fork(
+            output="fork-nontransient-mintrades",
+            reason_classes=["MIN_TRADES_NOT_MET"],
+        )
+        self.assertEqual(counts["target_selection"], 1)
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(
+            result["adjudication"]["reason_codes"], ["cell_execution_failed"]
+        )
+        self.assertEqual(result["authenticated_cell_count"], 39)
+        self.assertEqual(result["failed_cell_count"], 1)
+        self.assertEqual(result["missing_cell_count"], 0)
+        self.assertTrue(result["accounting_reconciled"])
+        failure = result["adjudication"]["details"]["failed_cells"][0]
+        self.assertEqual(failure["error_type"], "RunnerError")
+        self.assertIn("exited with code 1", failure["error"])
+        self.assertIn("MIN_TRADES_NOT_MET", failure["error"])
+        # No retry: exactly one immutable failure sidecar, no occurrence 2.
+        self.assertTrue((target_cell_dir / "cell_failure.json").is_file())
+        self.assertFalse((target_cell_dir / "cell_failure_2.json").exists())
+
+    def test_mixed_reason_classes_with_one_unknown_is_not_retried(self) -> None:
+        # A FAIL summary that mixes a transient class with a genuine one is NOT
+        # all-transient, so it must stay in the non-retried RunnerError lane.
+        result, counts, _ = self._drive_one_failing_cell_through_fork(
+            output="fork-mixed-reason",
+            reason_classes=["TIMEOUT", "NON_DETERMINISTIC"],
+        )
+        self.assertEqual(counts["target_selection"], 1)
+        failure = result["adjudication"]["details"]["failed_cells"][0]
+        self.assertEqual(failure["error_type"], "RunnerError")
+
+    def test_failure_snapshot_copies_log_artifact_byte_true_and_purge_safe(
+        self,
+    ) -> None:
+        # Requirement (iii): a .log run-log listed in the failure manifest is
+        # copied into the immutable attempt snapshot byte-for-byte, and the copy
+        # is renamed to a non-.log suffix so the ops `*.log` retention sweep
+        # (reports_log_purge.ps1) cannot delete the evidence (root cause of the
+        # cba63d44 pilot's gutted attempt_0001).
+        plan = self.build(output="failure-log-snapshot")
+        spec = plan["cells"][0]
+        cell_dir = Path(spec["receipt_path"]).parent
+        run_root = cell_dir / "runs" / "selection"
+        run_root.mkdir(parents=True, exist_ok=True)
+        # A large-ish binary-ish payload so the assertion is meaningfully byte-true.
+        log_bytes = b"line-0\n" + bytes(range(256)) * 4096 + b"\ntail\n"
+        (run_root / "run_smoke.log").write_bytes(log_bytes)
+
+        failure_path = runner._write_cell_failure(
+            spec,
+            work_item_id="q09-news-1",
+            exc=runner.RunnerError("fixture .log snapshot"),
+        )
+        payload = json.loads(failure_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            payload["artifact_snapshot_layout"],
+            runner.CELL_FAILURE_SNAPSHOT_LAYOUT_V2,
+        )
+        artifact = next(
+            row
+            for row in payload["artifacts"]
+            if row["source_relative_path"] == "runs/selection/run_smoke.log"
+        )
+        snapshot_path = Path(artifact["path"])
+        # Byte-true copy of the source log.
+        self.assertTrue(snapshot_path.is_file())
+        self.assertEqual(snapshot_path.read_bytes(), log_bytes)
+        self.assertEqual(artifact["size_bytes"], len(log_bytes))
+        self.assertEqual(artifact["sha256"], contract.sha256_file(snapshot_path))
+        # Purge-safe: the immutable copy must NOT carry a `*.log`-swept name.
+        self.assertFalse(snapshot_path.name.endswith(".log"))
+        self.assertTrue(snapshot_path.name.endswith(".evidence"))
+        # And it still authenticates end-to-end.
+        self.assertIsNotNone(
+            runner._authenticated_cell_failure(
+                spec,
+                work_item_id="q09-news-1",
+                failure_path=failure_path,
+                expected_failure_sha256=contract.sha256_file(failure_path),
+            )
+        )
+
     def test_plan_binding_refuses_file_hash_drift(self) -> None:
         plan = self.build(output="binding-drift")
         farm_root, _ = self.setup_bound_farm(plan, activate=False)
