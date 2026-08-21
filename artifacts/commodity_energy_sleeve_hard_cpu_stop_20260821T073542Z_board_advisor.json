@@ -1,0 +1,97 @@
+{
+  "schema": "qm.paced_fleet.commodity_energy_cpu_ceiling_stop/v1",
+  "recorded_at_utc": "2026-08-21T07:35:42Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "e116d503c",
+  "outcome": "NO_CARD_NO_BUILD_NO_ENQUEUE_CPU_CEILING",
+  "mission": "build one new low-frequency structural commodity or energy sleeve and enqueue Q02",
+  "namespace_preflight": {
+    "candidate_selected": false,
+    "gold_silver_ratio_disposition": "duplicate",
+    "gold_silver_duplicate_examples": [
+      "QM5_12577_cme-xauxag-ratio",
+      "QM5_12862_xauxag-rspread",
+      "QM5_20157_xau-xag-ratio",
+      "QM5_20161_xauxag-ols-rv",
+      "QM5_21526_xau-xag-cadf"
+    ],
+    "wti_recent_family_examples": [
+      "QM5_21521_wti-flow-switch",
+      "QM5_21524_wti-xcu-relmom",
+      "QM5_21525_wti-xcu-cadf",
+      "QM5_41084_wti-wdaybreadth-mom"
+    ],
+    "reason_selection_stopped": "The mandatory capacity preflight bound before a non-duplicate source/card candidate could be selected and governed."
+  },
+  "capacity": {
+    "hard_cpu_ceiling_percent": 97.0,
+    "sampling_method": "Windows Get-Counter Processor(_Total) percent Processor Time",
+    "sample_interval_seconds": 1,
+    "samples_percent": [
+      97.86,
+      99.22,
+      99.80,
+      100.00,
+      99.51
+    ],
+    "average_percent": 99.28,
+    "maximum_percent": 100.00,
+    "ceiling_rule": "average_or_maximum_gte_hard_ceiling",
+    "ceiling_binding": true,
+    "path_filtered_factory_process_count": 6,
+    "path_filtered_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "t_live_excluded_by_path_filter": true,
+    "terminal_reconciliation_or_control": false
+  },
+  "non_duplicate_delta": {
+    "previous_same_branch_cpu_stop_commit": "c1156474c",
+    "previous_observation_utc": "2026-08-21T07:07:28Z",
+    "elapsed_minutes": 28.23,
+    "previous_process_roster": [
+      "T1",
+      "T2",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "current_process_roster": [
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "arrived_processes": [
+      "T3",
+      "T4",
+      "T6"
+    ],
+    "departed_processes": [
+      "T1",
+      "T9"
+    ],
+    "hard_ceiling_remains_binding": true
+  },
+  "actions_not_taken": [
+    "source approval",
+    "Strategy Card creation or approval",
+    "EA ID or magic allocation",
+    "EA source or binary creation",
+    "magic resolver regeneration",
+    "build check or compile",
+    "smoke test or backtest",
+    "Q02 enqueue, re-enqueue, priority mutation, or dispatch",
+    "portfolio gate mutation",
+    "deploy manifest mutation",
+    "T_Live access or AutoTrading action"
+  ],
+  "next_safe_action": "After sustained whole-host CPU is below 97 percent, restart from source and canonical namespace dedup; select one non-duplicate structural WTI or XNG mechanism, then complete governed source approval, G0 card, allocation, build, and exactly one RISK_FIXED Q02 enqueue."
+}
