@@ -42,7 +42,20 @@ def test_v1_manifest_remains_a_valid_closed_fixture() -> None:
     assert contract.phase_ids == tuple(f"Q{i:02d}" for i in range(14))
     assert contract.extension_topology is None
     assert contract.next_by_phase["Q13"] is None
-    assert current.gates[:14] == contract.gates
+    # v2 must not redefine the Q00-Q13 topology.  Display names are exempt from
+    # that freeze -- OWNER-DEC-GATEMANIFEST-Q05 (2026-08-21) renamed Q05 from
+    # "Stress MEDIUM" to "Gross Full-History Robustness".  The exemption is
+    # enumerated, not open: any *other* renamed gate still fails here.
+    def topology(gate: gate_manifest.Gate) -> tuple[object, ...]:
+        return (gate.id, gate.ordinal, gate.authority, gate.runner, gate.evidence_role, gate.next)
+
+    assert [topology(g) for g in current.gates[:14]] == [topology(g) for g in contract.gates]
+    renamed = {
+        g.id: (old.name, g.name)
+        for g, old in zip(current.gates[:14], contract.gates)
+        if g.name != old.name
+    }
+    assert renamed == {"Q05": ("Stress MEDIUM", "Gross Full-History Robustness")}
     assert dict(current.legacy_aliases) == dict(contract.legacy_aliases)
     assert current.verdict_dimensions == contract.verdict_dimensions
     assert gate_manifest.write_phase_id("Q13", contract) == "Q13"

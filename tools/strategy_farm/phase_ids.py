@@ -14,7 +14,7 @@ Mapping reference (legacy → new):
     P3             →   Q03 Parameter Sweep
     (P3.5 dropped — old "Q04 Cross-Sectional Robustness" was redundant)
     P4             →   Q04 Walk-Forward + Commission
-    P5             →   Q05 Stress MEDIUM
+    P5             →   Q05 Gross Full-History Robustness (was "Stress MEDIUM")
     (P5b dropped — old "Calibrated Noise" folded into Stress)
     (P5c dropped — old "Crisis Slices" folded into Q08.10 Regime)
     (new)          →   Q06 Stress HARSH
