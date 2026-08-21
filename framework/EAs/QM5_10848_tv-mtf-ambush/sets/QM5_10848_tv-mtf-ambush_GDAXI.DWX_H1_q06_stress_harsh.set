@@ -1,21 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10280
-; ea_slug:      whc-rsrs
+; ea_id:        10848
+; ea_slug:      tv-mtf-ambush
 ; ea_version:   v5.0
 ; set_version:  s20260821-stress-harsh
-; symbol:       XAUUSD.DWX
-; timeframe:    D1
+; symbol:       GDAXI.DWX
+; timeframe:    H1
 ; environment:  q06_stress_harsh
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   31f7c9958aed74213c98bb8e6f403d7cb7e2e85c36c144b8cbcd4ef37fae56ce
+; build_hash:   cdd41213b3516bab83fe8b60c83efde0b9581ed8bbbfe91abef2bab60ce06676
 ; author:       Development
 ; date:         2026-08-21
 ;==========================================================
 qm_magic_slot_offset=3
-qm_rng_seed=99
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
