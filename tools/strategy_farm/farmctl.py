@@ -21494,7 +21494,9 @@ def update_card_frontmatter(card_path: Path, updates: dict[str, str]) -> None:
     Replaces existing keys; appends new ones at the end of the frontmatter block.
     Preserves the rest of the file verbatim.
     """
-    text = card_path.read_text(encoding="utf-8")
+    raw = card_path.read_bytes()
+    encoding = "utf-8-sig" if raw.startswith(b"\xef\xbb\xbf") else "utf-8"
+    text = raw.decode(encoding)
     m = re.match(r"^(---\s*\n)(.*?)(\n---)", text, re.DOTALL)
     if not m:
         raise ValueError(f"No YAML frontmatter found in {card_path}")
@@ -21513,7 +21515,7 @@ def update_card_frontmatter(card_path: Path, updates: dict[str, str]) -> None:
             lines.append(f"{key}: {value}")
     new_fm = "\n".join(lines)
     new_text = m.group(1) + new_fm + m.group(3) + text[m.end():]
-    card_path.write_text(new_text, encoding="utf-8", newline="\n")
+    card_path.write_text(new_text, encoding=encoding, newline="\n")
 
 
 VALID_SOURCE_TYPES = (
