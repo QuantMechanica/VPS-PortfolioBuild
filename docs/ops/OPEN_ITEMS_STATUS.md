@@ -66,7 +66,8 @@
 | **Dir. §3** | Timeout → Requeue: Diff + 3 retrospektive Zeilen | Prinzip freigegeben, Diff offen |
 | **aktuell** | `WALLCLOCK_CONSTANTS.md` | Belege vollständig, Dokument nicht geschrieben |
 | **aktuell** | REVIEW-Rückstau: 110 agent_tasks (≈60 build_ea/agy, ≈50 review_ea/codex, seit 17./18.08.) | Batch-Review eingeplant; Intake ist nicht der Engpass (Queue-Ende ≈ 26.–28.08.), aber der Stau verletzt die Review-SLA |
-| **Dir. 21.08.** | Masterplan T4–T12 (Infra-Seiten, Website-Doku, ToDo-Hub, Track-v2-Design T7, Pattern-Fixes T8/T9, Fail-Soft-Impl T10, public-data T11) | seriell in Abarbeitung, ein ToDo zur Zeit; beim OWNER offen: Fail-Soft-Freigabe (#2), Teiljahres-Pro-Rata (#4) (`12 ToDo/00_CEO_Masterplan_2026-08-21.md` §C) |
+| **Dir. 21.08.** | Masterplan-Rest: T6 (ToDo-Hub, läuft), T7 (Track-v2-Design, Claude), T8/T9 (Pattern, Codex) | T4/T5/T10/T11 geliefert+reviewt; beim OWNER offen: Pro-Rata (#4), Retro-Reruns (#6), public-data-Holds (#7) (`12 ToDo/00_CEO_Masterplan_2026-08-21.md` §C) |
+| Masterplan T11 | public-data-Export | **Diagnose statt Fix (korrekt):** Export gesund, Publikation fail-closed hinter 2 Q02-Bypass-Holds vom 29.07.; QM5_20182-Hold = stale Orphan (Remediation belegt), QM5_20172 echt offen (DRAFT_DEFECT) → Entscheidungsschlange #7 (`evidence/2026-08-21_public_snapshot_export_repair.md`, Commit 511d85fea) |
 
 ## 3 · Entfallen
 
