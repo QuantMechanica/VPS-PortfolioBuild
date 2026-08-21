@@ -17599,3 +17599,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41085,xauxag-wdaybreadth-rv,1,XAGUSD.DWX,410850001,2026-08-21,Codex governed allocator,active
 41086,xauxag-commonshock-rv,0,XAUUSD.DWX,410860000,2026-08-21,Codex governed allocator,active
 41086,xauxag-commonshock-rv,1,XAGUSD.DWX,410860001,2026-08-21,Codex governed allocator,active
+41087,wti-wr4-close-mom,0,XTIUSD.DWX,410870000,2026-08-21,Codex governed allocator,active
