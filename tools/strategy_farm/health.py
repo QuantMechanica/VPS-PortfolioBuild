@@ -2610,6 +2610,90 @@ def chk_ea_id_slug_uniqueness(repo_root: Path | None = None) -> dict:
     )
 
 
+def chk_card_registry_identity_integrity(
+    strategy_root: Path | None = None,
+    repo_root: Path | None = None,
+) -> dict:
+    """Fail when card placement and registry identity fields disagree.
+
+    Card frontmatter is the authoritative G0 decision field. A DRAFT card in
+    the rejected pool is therefore an internally contradictory record. The
+    numeric ``ea_id`` column is the registry identity authority; active slugs
+    must not carry another embedded ``QM5_<id>_`` identity. Structured lists
+    are returned so health evidence names every affected row, not a sample.
+    """
+
+    farm_root = strategy_root or ROOT
+    code_root = repo_root or REPO_ROOT
+    rejected_dir = farm_root / "artifacts" / "cards_rejected"
+    registry = code_root / "framework" / "registry" / "ea_id_registry.csv"
+
+    rejected_drafts: list[dict[str, str]] = []
+    card_parse_errors: list[dict[str, str]] = []
+    if rejected_dir.is_dir():
+        for card in sorted(rejected_dir.glob("*.md"), key=lambda path: path.name.casefold()):
+            try:
+                frontmatter = farmctl.parse_card_frontmatter(card)
+            except (OSError, UnicodeError, ValueError) as exc:
+                card_parse_errors.append({"path": str(card), "error": str(exc)})
+                continue
+            if str(frontmatter.get("g0_status") or "").strip().upper() == "DRAFT":
+                rejected_drafts.append({
+                    "ea_id": str(frontmatter.get("ea_id") or "").strip(),
+                    "slug": str(frontmatter.get("slug") or "").strip(),
+                    "path": str(card),
+                    "pool": "cards_rejected",
+                    "g0_status": "DRAFT",
+                })
+
+    embedded_slugs: list[dict[str, str]] = []
+    if registry.is_file():
+        with registry.open(encoding="utf-8-sig", newline="") as handle:
+            for row_number, row in enumerate(csv.DictReader(handle), start=2):
+                if str(row.get("status") or "").strip().lower() != "active":
+                    continue
+                ea_id = _normalized_registry_ea_id(row.get("ea_id"))
+                slug = str(row.get("slug") or "").strip()
+                match = re.fullmatch(r"QM5_(\d+)_(.+)", slug, flags=re.IGNORECASE)
+                if match:
+                    embedded_slugs.append({
+                        "row": str(row_number),
+                        "ea_id": ea_id,
+                        "slug": slug,
+                        "embedded_ea_id": match.group(1),
+                        "normalized_slug": match.group(2),
+                        "status": "active",
+                    })
+
+    affected = len(rejected_drafts) + len(card_parse_errors) + len(embedded_slugs)
+    status = "FAIL" if affected else "OK"
+    detail = (
+        f"rejected_pool_draft_cards={len(rejected_drafts)}; "
+        f"card_parse_errors={len(card_parse_errors)}; "
+        f"active_registry_embedded_id_slugs={len(embedded_slugs)}"
+        if affected
+        else "rejected card statuses and active registry slug identities agree"
+    )
+    result = _check(
+        "card_registry_identity_integrity",
+        status,
+        affected,
+        0,
+        detail,
+        (
+            "Use governed reject-card normalization for evidence-backed card decisions; "
+            "normalize only registry rows corroborated by the exact EA directory and active "
+            "magic rows, or retire unmaterialized rows through the decided disposition wave."
+            if affected
+            else ""
+        ),
+    )
+    result["rejected_pool_draft_cards"] = rejected_drafts
+    result["card_parse_errors"] = card_parse_errors
+    result["active_registry_embedded_id_slugs"] = embedded_slugs
+    return result
+
+
 _LSM_HEALTH_FILE = Path(r"D:\QM\reports\state\lsm_health.json")
 
 
@@ -3867,6 +3951,7 @@ def chk_pending_artifact_binding_drift(con) -> dict:
 
 ALL_CHECKS = [
     ("ea_id_slug_uniqueness", chk_ea_id_slug_uniqueness, False),
+    ("card_registry_identity_integrity", chk_card_registry_identity_integrity, False),
     ("stranded_ea_improvements", chk_stranded_ea_improvements, False),
     ("codex_review_fail_rate", chk_codex_review_fail_rate, True),  # needs con
     ("cards_ready_stagnation", chk_cards_ready_stagnation, True),

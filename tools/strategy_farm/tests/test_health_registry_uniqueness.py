@@ -142,3 +142,52 @@ def test_missing_registry_warns(tmp_path: Path) -> None:
 
 def test_uniqueness_check_is_wired_into_health() -> None:
     assert any(name == "ea_id_slug_uniqueness" for name, _, _ in health.ALL_CHECKS)
+
+
+def test_card_registry_identity_integrity_lists_every_disagreement(tmp_path: Path) -> None:
+    root = _fixture(
+        tmp_path,
+        [_registry("12001", "QM5_9001_old-name"), _registry("12002", "healthy")],
+        [],
+        (),
+    )
+    rejected = tmp_path / "farm" / "artifacts" / "cards_rejected"
+    rejected.mkdir(parents=True)
+    (rejected / "QM5_12003_rejected.md").write_text(
+        "---\nea_id: 12003\nslug: rejected\ng0_status: DRAFT\n---\n",
+        encoding="utf-8",
+    )
+
+    result = health.chk_card_registry_identity_integrity(tmp_path / "farm", root)
+
+    assert result["status"] == "FAIL"
+    assert result["value"] == 2
+    assert [row["ea_id"] for row in result["rejected_pool_draft_cards"]] == ["12003"]
+    assert [row["ea_id"] for row in result["active_registry_embedded_id_slugs"]] == ["12001"]
+
+
+def test_card_registry_identity_integrity_ignores_retired_embedded_slug(tmp_path: Path) -> None:
+    root = _fixture(
+        tmp_path,
+        [_registry("12001", "QM5_9001_old-name", "retired"), _registry("12002", "healthy")],
+        [],
+        (),
+    )
+    rejected = tmp_path / "farm" / "artifacts" / "cards_rejected"
+    rejected.mkdir(parents=True)
+    (rejected / "QM5_12003_rejected.md").write_text(
+        "---\nea_id: 12003\nslug: rejected\ng0_status: REJECTED\n---\n",
+        encoding="utf-8",
+    )
+
+    result = health.chk_card_registry_identity_integrity(tmp_path / "farm", root)
+
+    assert result["status"] == "OK"
+    assert result["value"] == 0
+
+
+def test_identity_integrity_check_is_wired_into_health() -> None:
+    assert any(
+        name == "card_registry_identity_integrity"
+        for name, _, _ in health.ALL_CHECKS
+    )

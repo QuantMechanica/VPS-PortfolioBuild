@@ -1959,7 +1959,10 @@ def parse_card_frontmatter(card_path: Path) -> dict[str, Any]:
     pipeline_phase, last_updated). Skips list/dict values silently.
     """
     text = card_path.read_text(encoding="utf-8-sig")
-    m = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
+    # A small legacy cohort carries a durable ``<!-- REJECTED ... -->`` audit
+    # comment before the YAML delimiter. Treat leading HTML comments as a
+    # preamble, not as a reason to silently lose the card's decision fields.
+    m = re.match(r"^(?:\s*<!--.*?-->\s*)*---\s*\n(.*?)\n---", text, re.DOTALL)
     if not m:
         return {}
     block = m.group(1)
@@ -21497,10 +21500,14 @@ def update_card_frontmatter(card_path: Path, updates: dict[str, str]) -> None:
     raw = card_path.read_bytes()
     encoding = "utf-8-sig" if raw.startswith(b"\xef\xbb\xbf") else "utf-8"
     text = raw.decode(encoding)
-    m = re.match(r"^(---\s*\n)(.*?)(\n---)", text, re.DOTALL)
+    m = re.match(
+        r"^((?:\s*<!--.*?-->\s*)*)(---\s*\n)(.*?)(\n---)",
+        text,
+        re.DOTALL,
+    )
     if not m:
         raise ValueError(f"No YAML frontmatter found in {card_path}")
-    fm_block = m.group(2)
+    fm_block = m.group(3)
     lines = fm_block.split("\n")
     handled: set[str] = set()
     for i, line in enumerate(lines):
@@ -21514,7 +21521,7 @@ def update_card_frontmatter(card_path: Path, updates: dict[str, str]) -> None:
         if key not in handled:
             lines.append(f"{key}: {value}")
     new_fm = "\n".join(lines)
-    new_text = m.group(1) + new_fm + m.group(3) + text[m.end():]
+    new_text = m.group(1) + m.group(2) + new_fm + m.group(4) + text[m.end():]
     card_path.write_text(new_text, encoding=encoding, newline="\n")
 
 
@@ -22086,6 +22093,16 @@ def reject_card(root: Path, card_path_str: str, reason: str) -> dict[str, Any]:
     fm = parse_card_frontmatter(card_path)
     ea_id = fm.get("ea_id", "UNKNOWN")
 
+    target_dir = root / "artifacts" / "cards_rejected"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target = target_dir / card_path.name
+    same_target = target.resolve() == card_path
+    if target.exists() and not same_target:
+        return {
+            "rejected": False,
+            "reason": f"Rejected card already at {target} — manual reconciliation needed",
+        }
+
     today = dt.datetime.now(dt.UTC).strftime("%Y-%m-%d")
     quoted = '"' + reason.replace('"', "'").replace("\n", " ").strip()[:300] + '"'
     update_card_frontmatter(card_path, {
@@ -22093,15 +22110,6 @@ def reject_card(root: Path, card_path_str: str, reason: str) -> dict[str, Any]:
         "g0_rejection_reason": quoted,
         "last_updated": today,
     })
-
-    target_dir = root / "artifacts" / "cards_rejected"
-    target_dir.mkdir(parents=True, exist_ok=True)
-    target = target_dir / card_path.name
-    if target.exists():
-        return {
-            "rejected": False,
-            "reason": f"Rejected card already at {target} — manual reconciliation needed",
-        }
 
     if "cards_draft" in card_path.parts:
         import shutil
@@ -23797,6 +23805,193 @@ def reserve_ea_ids(
         _release_registry_lock(lock)
 
 
+def normalize_ea_id_slugs(
+    ea_ids: list[str],
+    *,
+    evidence: str,
+    apply: bool = False,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    """Remove a stale ``QM5_<old-id>_`` prefix from selected registry slugs.
+
+    This is intentionally narrower than a general registry editor. A row is
+    eligible only when its numeric registry ID, exact materialized EA directory,
+    and every active magic row independently agree on the prefix-free slug. The
+    full batch validates before the atomic write, so one refusal prevents every
+    mutation. Re-running an already-normalized batch is a successful no-op.
+    """
+
+    code_root = repo_root or REPO_ROOT
+    registry = code_root / "framework" / "registry" / "ea_id_registry.csv"
+    magics = code_root / "framework" / "registry" / "magic_numbers.csv"
+    eas_dir = code_root / "framework" / "EAs"
+    requested: list[str] = []
+    for raw in ea_ids:
+        normalized = str(raw or "").strip().upper().removeprefix("QM5_")
+        if not normalized.isdigit():
+            return {
+                "applied": False,
+                "dry_run": not apply,
+                "refused": [{"ea_id": str(raw), "reason": "invalid_ea_id"}],
+                "evidence": evidence,
+            }
+        if normalized not in requested:
+            requested.append(normalized)
+    if not requested:
+        return {
+            "applied": False,
+            "dry_run": not apply,
+            "refused": [{"ea_id": "", "reason": "at_least_one_ea_id_required"}],
+            "evidence": evidence,
+        }
+    if not str(evidence or "").strip():
+        return {
+            "applied": False,
+            "dry_run": not apply,
+            "refused": [{"ea_id": "", "reason": "evidence_required"}],
+            "evidence": evidence,
+        }
+    if not registry.is_file() or not magics.is_file():
+        missing = [str(path) for path in (registry, magics) if not path.is_file()]
+        return {
+            "applied": False,
+            "dry_run": not apply,
+            "refused": [{"ea_id": "", "reason": "registry_file_missing", "paths": missing}],
+            "evidence": evidence,
+        }
+
+    lock = _acquire_registry_lock()
+    if lock is None:
+        return {
+            "applied": False,
+            "dry_run": not apply,
+            "refused": [{"ea_id": "", "reason": "registry_lock_timeout"}],
+            "evidence": evidence,
+        }
+    try:
+        with registry.open(encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            fieldnames = list(reader.fieldnames or [])
+            rows = list(reader)
+        with magics.open(encoding="utf-8-sig", newline="") as handle:
+            magic_rows = list(csv.DictReader(handle))
+
+        plans: list[dict[str, Any]] = []
+        refused: list[dict[str, Any]] = []
+        for ea_id in requested:
+            matches = [
+                (index, row)
+                for index, row in enumerate(rows)
+                if str(row.get("ea_id") or "").strip().upper().removeprefix("QM5_") == ea_id
+            ]
+            if len(matches) != 1:
+                refused.append({
+                    "ea_id": ea_id,
+                    "reason": "registry_row_count_not_one",
+                    "row_count": len(matches),
+                })
+                continue
+            row_index, row = matches[0]
+            if str(row.get("status") or "").strip().lower() != "active":
+                refused.append({"ea_id": ea_id, "reason": "registry_row_not_active"})
+                continue
+
+            current_slug = str(row.get("slug") or "").strip()
+            embedded = re.fullmatch(r"QM5_(\d+)_(.+)", current_slug, flags=re.IGNORECASE)
+            candidate_slug = embedded.group(2).strip() if embedded else current_slug
+            materialized = [
+                path
+                for path in eas_dir.glob(f"QM5_{ea_id}_*")
+                if path.is_dir()
+            ]
+            if len(materialized) != 1:
+                refused.append({
+                    "ea_id": ea_id,
+                    "reason": "materialized_ea_directory_count_not_one",
+                    "directories": [path.name for path in materialized],
+                })
+                continue
+            directory_slug = materialized[0].name[len(f"QM5_{ea_id}_"):]
+            active_magics = [
+                str(magic.get("ea_slug") or "").strip()
+                for magic in magic_rows
+                if str(magic.get("ea_id") or "").strip().upper().removeprefix("QM5_") == ea_id
+                and str(magic.get("status") or "").strip().lower() == "active"
+            ]
+            if not active_magics:
+                refused.append({"ea_id": ea_id, "reason": "active_magic_rows_missing"})
+                continue
+            if (
+                not candidate_slug
+                or directory_slug.casefold() != candidate_slug.casefold()
+                or any(slug.casefold() != candidate_slug.casefold() for slug in active_magics)
+            ):
+                refused.append({
+                    "ea_id": ea_id,
+                    "reason": "identity_sources_disagree",
+                    "registry_candidate_slug": candidate_slug,
+                    "directory_slug": directory_slug,
+                    "active_magic_slugs": sorted(set(active_magics)),
+                })
+                continue
+            collisions = [
+                str(other.get("ea_id") or "").strip()
+                for other in rows
+                if other is not row
+                and str(other.get("status") or "").strip().lower() == "active"
+                and str(other.get("slug") or "").strip().casefold() == candidate_slug.casefold()
+            ]
+            if collisions:
+                refused.append({
+                    "ea_id": ea_id,
+                    "reason": "normalized_slug_already_active",
+                    "conflicting_ea_ids": collisions,
+                })
+                continue
+            plans.append({
+                "ea_id": ea_id,
+                "row_index": row_index,
+                "before_slug": current_slug,
+                "after_slug": candidate_slug,
+                "embedded_ea_id": embedded.group(1) if embedded else None,
+                "ea_directory": materialized[0].name,
+                "active_magic_row_count": len(active_magics),
+                "already_normalized": embedded is None,
+            })
+
+        if refused:
+            return {
+                "applied": False,
+                "dry_run": not apply,
+                "registry": str(registry),
+                "planned": plans,
+                "refused": refused,
+                "evidence": evidence,
+            }
+
+        changed = [plan for plan in plans if not plan["already_normalized"]]
+        if apply and changed:
+            for plan in changed:
+                rows[int(plan["row_index"])]["slug"] = plan["after_slug"]
+            _write_csv_atomic(registry, fieldnames, rows)
+        rendered_plans = [
+            {key: value for key, value in plan.items() if key != "row_index"}
+            for plan in plans
+        ]
+        return {
+            "applied": bool(apply and changed),
+            "dry_run": not apply,
+            "idempotent_noop": not changed,
+            "registry": str(registry),
+            "planned": rendered_plans,
+            "changed_count": len(changed) if apply else 0,
+            "refused": [],
+            "evidence": evidence,
+        }
+    finally:
+        _release_registry_lock(lock)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="QuantMechanica Option A strategy farm controller")
     parser.add_argument("--root", default=str(DEFAULT_ROOT), help="Runtime root. Default: %(default)s")
@@ -23833,6 +24028,14 @@ def build_parser() -> argparse.ArgumentParser:
     reserve_ids.add_argument("--status", default="active")
     reserve_ids.add_argument("--created-at", help="YYYY-MM-DD; defaults to today")
     reserve_ids.add_argument("--start-after", type=int, help="Optional lower bound for the first allocated numeric EA ID")
+
+    normalize_slugs = sub.add_parser(
+        "normalize-ea-id-slugs",
+        help="Remove stale embedded EA-ID prefixes when registry, EA dir, and active magics agree",
+    )
+    normalize_slugs.add_argument("--ea-id", action="append", required=True, help="EA ID to normalize; repeat for batches")
+    normalize_slugs.add_argument("--evidence", required=True, help="Durable evidence path authorizing this mechanical normalization")
+    normalize_slugs.add_argument("--apply", action="store_true", help="Apply the atomic registry rewrite; default is dry-run")
 
     set_status = sub.add_parser("set-source-status", help="Move one source to a new explicit status")
     set_status.add_argument("source_id")
@@ -24114,6 +24317,7 @@ _STATE_MUTATING_COMMANDS = frozenset({
     "reject-card", "seed-sources", "record-build", "record-review",
     "claude-prompt", "build-ea", "claude-review-prompt", "claim-source", "set-source-status",
     "reserve-ea-ids", "reserve-terminal", "release-terminal",
+    "normalize-ea-id-slugs",
     "resume-mining", "add-source",
 })
 
@@ -24231,6 +24435,12 @@ def main(argv: list[str] | None = None) -> int:
             status=args.status,
             created_at=args.created_at,
             start_after=args.start_after,
+        ))
+    elif args.command == "normalize-ea-id-slugs":
+        print_json(normalize_ea_id_slugs(
+            args.ea_id,
+            evidence=args.evidence,
+            apply=args.apply,
         ))
     elif args.command == "set-source-status":
         print_json(set_source_status(root, args.source_id, args.status, args.notes_path))
