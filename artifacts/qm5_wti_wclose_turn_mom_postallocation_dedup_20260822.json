@@ -1,0 +1,53 @@
+{
+  "candidate": {
+    "author": "Robert J. Bianchi; Michael E. Drew; John Hua Fan; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "normalized completed WTI week three-to-five chronological session closes strict single interior turning point full recovery continuation next-week hold",
+    "slug": "wti-wclose-turn-mom",
+    "strategy_id": "BIANCHI-MOP-WTI-WCLOSE-TURN-MOM-2026_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 2,
+  "generated_at_utc": "2026-08-21T22:40:00+00:00",
+  "matches": [
+    {
+      "ea_id": "41099",
+      "match_type": "slug",
+      "slug": "wti-wclose-turn-mom",
+      "source": "ea_id_registry",
+      "strategy_id": "BIANCHI-MOP-WTI-WCLOSE-TURN-MOM-2026_S01"
+    },
+    {
+      "ea_id": "41099",
+      "match_type": "strategy_id",
+      "slug": "wti-wclose-turn-mom",
+      "source": "ea_id_registry",
+      "strategy_id": "BIANCHI-MOP-WTI-WCLOSE-TURN-MOM-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4589,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1267,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "DUPLICATE"
+}
