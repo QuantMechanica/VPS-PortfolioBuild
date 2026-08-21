@@ -1,4 +1,4 @@
-"""Mission Control v2 — SHADOW renderer (``qm.mission_control.v2``).
+"""Mission Control v2 — primary cockpit renderer (``qm.mission_control.v2``).
 
 Renders the Mission Control v2 data contract to a single self-contained HTML
 page at ``D:\\QM\\strategy_farm\\dashboards\\cockpit_v2.html`` — a **shadow**
@@ -47,8 +47,10 @@ except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpi
     from mission_control_v2_data import build_contract
 
 
-# Shadow output — parallel to cockpit.html, never overwrites it.
-OUTPUT_PATH = Path(r"D:\QM\strategy_farm\dashboards\cockpit_v2.html")
+# Primary cockpit since OWNER approval 2026-08-21; cockpit_v2.html stays as an
+# alias so pre-approval links keep working. Legacy layout: cockpit_advanced.html.
+OUTPUT_PATH = Path(r"D:\QM\strategy_farm\dashboards\cockpit.html")
+ALIAS_PATH = Path(r"D:\QM\strategy_farm\dashboards\cockpit_v2.html")
 
 
 # ---------------------------------------------------------------------------
@@ -784,7 +786,7 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
         "<!doctype html>\n<html lang=\"en\">\n<head>\n"
         "<meta charset=\"utf-8\">\n"
         "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
-        "<title>Mission Control v2 — SHADOW</title>\n"
+        "<title>QuantMechanica // MISSION CONTROL</title>\n"
         "<link rel=\"stylesheet\" href=\"style.css\">\n"
         "<style>\n" + _PAGE_CSS + "\n</style>\n"
         "</head>\n<body>\n"
@@ -799,7 +801,8 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
         "\n  <div class=\"mc-footer\">\n"
         f"    <span>{e(schema)} · {e(source_db)}</span>\n"
         f"    <span>generated_at {e(generated_at)} · Renderdauer {e(dur)}</span>\n"
-        "    <span class=\"mc-shadow\">SHADOW — Referenz bleibt cockpit.html bis zur OWNER-Abnahme</span>\n"
+        "    <span class=\"mc-shadow\"><a href=\"cockpit_advanced.html\">Advanced (Legacy-Cockpit)</a>"
+        " · MC-v2 primär seit OWNER-Abnahme 2026-08-21</span>\n"
         "  </div>\n"
         "</div>\n"
         "<script>\n" + _REL_SCRIPT + "\n</script>\n"
@@ -823,7 +826,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--from-json", type=Path, default=None,
                         help="render from a contract snapshot JSON instead of a fresh build")
     parser.add_argument("--output", type=Path, default=OUTPUT_PATH,
-                        help="output HTML path (default: shadow cockpit_v2.html)")
+                        help="output HTML path (default: primary cockpit.html; cockpit_v2.html alias is co-written)")
     parser.add_argument("--stdout", action="store_true",
                         help="also print the HTML to stdout")
     args = parser.parse_args(argv)
@@ -846,6 +849,8 @@ def main(argv: list[str] | None = None) -> int:
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(doc, encoding="utf-8", newline="\n")
+    if output == OUTPUT_PATH:
+        ALIAS_PATH.write_text(doc, encoding="utf-8", newline="\n")
     if args.stdout:
         sys.stdout.write(doc)
 

@@ -70,7 +70,7 @@ ROOT = Path(r"D:\QM\strategy_farm")
 REPO = Path(r"C:\QM\repo")
 DB = ROOT / "state" / "farm_state.sqlite"
 DASH = ROOT / "dashboards"
-COCKPIT = DASH / "cockpit.html"
+COCKPIT = DASH / "cockpit_advanced.html"  # legacy layout -> Advanced (OWNER-Abnahme MC-v2 2026-08-21)
 LOG_DIR = ROOT / "logs"
 CARDS_DRAFT = ROOT / "artifacts" / "cards_draft"
 CARDS_APPROVED = ROOT / "artifacts" / "cards_approved"
@@ -4175,7 +4175,22 @@ a.frontier-tile:hover { background: var(--surface-2); }
         + '\n</body></html>\n'
     )
     COCKPIT.write_text(html_doc, encoding="utf-8")
-    print(f"cockpit written: {COCKPIT}")
+    print(f"cockpit (advanced/legacy) written: {COCKPIT}")
+
+    # MC-v2 is the primary cockpit since OWNER approval 2026-08-21: the same
+    # 2-min task renders cockpit.html via render_cockpit_v2. A v2 failure must
+    # surface as a non-zero task result instead of silently leaving the
+    # primary page stale.
+    try:
+        import render_cockpit_v2 as _v2
+        _v2.main([])
+    except SystemExit as exc:  # v2 main() may sys.exit
+        if exc.code not in (0, None):
+            print(f"render_cockpit_v2 failed: exit {exc.code}")
+            return 1
+    except Exception as exc:
+        print(f"render_cockpit_v2 failed: {exc}")
+        return 1
     return 0
 
 
