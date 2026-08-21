@@ -57,9 +57,11 @@ r1_track_record: PASS_WITH_WEEKLY_BODY_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q00
-q01_status: NOT_RUN
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: NOT_QUEUED
+q01_build_report: D:/QM/reports/framework/21/build_check_20260821_183207.json
+q01_p1_evidence: D:/QM/reports/pipeline/QM5_41094/P1/P1_QM5_41094_result.json
 review_focus: "Falsify a structurally distinct direct-XNG completed-week body-dominance momentum sleeve alongside certified QM5_12567. Verify uniform energy labels, exact Monday anchors, one immediately completed 3-5-session weekly OHLC package, strict 3*abs(close-open)>2*(high-low), own-body side, threshold equality flat, one attempt, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -367,14 +369,15 @@ establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-21 | initial XNG completed-week body-dominance card | G0 | APPROVED |
+| v2 | 2026-08-21 | exact card implementation, deterministic reference contract, strict compile, and static build validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-21 | APPROVED | `decisions/2026-08-21_qm5_41094_xng_weekly_body_dominance_momentum_g0.md` |
-| Q01 Build Validation | 2026-08-21 | NOT_RUN | card-approved build pending |
-| Q02 Baseline Screening | 2026-08-21 | NOT_QUEUED | Q01 prerequisite pending |
+| Q01 Build Validation | 2026-08-21 | PASS | 11 deterministic reference checks; strict compile 0 errors/0 warnings; build check 0 failures |
+| Q02 Baseline Screening | 2026-08-21 | NOT_QUEUED | Q01 PASS; paced admission pending |
 
 ## Safety Boundary
 
@@ -384,4 +387,3 @@ tester and CPU ceilings. It does not authorize a manual backtest, terminal
 control, live/demo/shadow/stress/optimization preset, AutoTrading, `T_Live`,
 deploy or T_Live manifest, portfolio-gate change, portfolio admission,
 decorrelation claim, or correlation waiver.
-
