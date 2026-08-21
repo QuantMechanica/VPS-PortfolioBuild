@@ -1,0 +1,230 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-21T02:34:28.203086Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "1366ff93876be92b48cc04988fb01675443ab9f3",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_state": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a804932912a449aed19bbc8fe61f1f5846556743",
+    "new_card_or_ea_permitted": false,
+    "reason": "The durable sign-aware reconciliation covers every frozen-scan relationship; another pair Card or EA would duplicate governed work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "scan_rank": 21,
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "ea_id": "QM5_20203",
+    "slug": "eurusd-audjpy",
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "card_status": "APPROVED",
+    "g0_status": "APPROVED",
+    "source_id": "claude_cross_asset_discovery_2026-06-09",
+    "source_criteria": {
+      "primary_source": "Chan, Ernest P. (2009), Quantitative Trading, OWNER-ratified Tier-A SRC02 extraction",
+      "research_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+      "r1_track_record": "PASS",
+      "r2_mechanical": "PASS",
+      "r3_data_available": "PASS",
+      "r4_ml_forbidden": "PASS"
+    },
+    "q02_work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+    "q02_status": "done",
+    "q02_verdict": "PASS",
+    "q04_work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+    "q04_status": "pending",
+    "q04_claimed_by": null,
+    "q04_attempt_count": 0,
+    "q04_exact_row_count": 1,
+    "q04_open_row_count": 1,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "artifact_sha256": {
+      "mq5": "d75788d24eadcff9c699a2f8964ab2cfd5ad924296b34df0b1d4a0a6853365cb",
+      "ex5": "4d57f2bc03a14ce0be3f7f18245adfff280955287cda5af1119d502d33d96270",
+      "basket_manifest": "2f5823242ae1b2a0592d9239969e22f31ac90234d909b3eee5e1d9c635b519a9",
+      "backtest_setfile": "dcac19dcd0882c24ba0c772b36e47c816c582d3f612b35445ce909bfc8e846d8",
+      "strategy_card_snapshot": "f5f4b1d13ace14d69ca3249b77976503f025c229598f16693ace755ba8c0043d"
+    }
+  },
+  "capacity_sample": {
+    "database_observation_utc": "2026-08-21T02:34:28.203086Z",
+    "cpu_sample_times_utc": [
+      "2026-08-21T02:33:00.1605839Z",
+      "2026-08-21T02:33:02.2629337Z",
+      "2026-08-21T02:33:04.3392864Z",
+      "2026-08-21T02:33:06.3799510Z",
+      "2026-08-21T02:33:08.4490600Z"
+    ],
+    "requested_inter_sample_sleep_seconds": 1,
+    "whole_host_cpu_load_percent": [
+      99.0,
+      100.0,
+      96.0,
+      99.0,
+      100.0
+    ],
+    "average_cpu_percent": 98.8,
+    "maximum_cpu_percent": 100.0,
+    "logical_processors": 16,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_gte_hard_ceiling",
+    "ceiling_binding": true,
+    "active_work_item_count": 8,
+    "active_work_items": [
+      {
+        "terminal": "T10",
+        "work_item_id": "3c522d1a-dac9-4438-b0f5-afdaf0e80e35",
+        "ea_id": "QM5_11205",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "9bdd0edc-209d-458e-9cbf-3ef40f65ade2",
+        "ea_id": "QM5_11172",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "8583021d-b8e3-4ed1-b99f-52a0ac9e318e",
+        "ea_id": "QM5_20234",
+        "phase": "Q03",
+        "symbol": "QM5_20234_XAU_XAG_RSJ_D1"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "2f48af5f-14de-4592-b25d-78679f348a39",
+        "ea_id": "QM5_10248",
+        "phase": "Q07",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "72479f8f-9e31-48b4-84c5-becc0f149b5d",
+        "ea_id": "QM5_20176",
+        "phase": "Q05",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "07208954-1e90-4614-a47d-8441dc9ef3cf",
+        "ea_id": "QM5_20188",
+        "phase": "Q07",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "a51b97c4-d1bb-4e6e-85b8-af586f12953b",
+        "ea_id": "QM5_12484",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": "08055e0d-f986-49f4-8c61-aa5d6b1b044a",
+        "ea_id": "QM5_20085",
+        "phase": "Q07",
+        "symbol": "WS30.DWX"
+      }
+    ],
+    "pending_work_item_count": 2220,
+    "pending_phase_counts": {
+      "Q02": 698,
+      "Q03": 41,
+      "Q04": 1434,
+      "Q05": 5,
+      "Q06": 1,
+      "Q07": 11,
+      "Q08": 6,
+      "Q09_NEWS": 24
+    },
+    "nearby_path_filtered_factory_process_snapshot": [
+      "T3",
+      "T4",
+      "T6",
+      "T8",
+      "T9"
+    ],
+    "process_snapshot_note": "The path-filtered process census was taken near the CPU sample and before the database observation. No terminal reconciliation or control followed because the CPU ceiling was already binding.",
+    "t_live_excluded_by_path_filter": true,
+    "t_live_manifest_or_autotrading_queried_or_controlled": false
+  },
+  "database_check": {
+    "path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "read_only_uri",
+    "quick_check": "ok"
+  },
+  "non_duplicate_delta": {
+    "previous_same_mission_evidence_commit": "996fd1cbf68b3dea4c8f97bc6f825af63bc1e5dd",
+    "previous_same_mission_observation_utc": "2026-08-21T01:53:09.069974Z",
+    "current_observation_utc": "2026-08-21T02:34:28.203086Z",
+    "elapsed_minutes_since_previous_same_mission_observation": 41.32,
+    "previous_active_work_item_count": 7,
+    "current_active_work_item_count": 8,
+    "active_work_item_delta": 1,
+    "departed_active_work_item_ids": [
+      "881f3977-9d27-4d63-ac2f-8a63a968ac14",
+      "923997c7-067d-49f8-ad15-f15bb628519f",
+      "5799b3c2-d432-473e-b983-5ab5b07bfda2",
+      "8705414c-c23c-4a9a-8286-25536402a9c9"
+    ],
+    "arrived_active_work_item_ids": [
+      "3c522d1a-dac9-4438-b0f5-afdaf0e80e35",
+      "9bdd0edc-209d-458e-9cbf-3ef40f65ade2",
+      "72479f8f-9e31-48b4-84c5-becc0f149b5d",
+      "07208954-1e90-4614-a47d-8441dc9ef3cf",
+      "a51b97c4-d1bb-4e6e-85b8-af586f12953b"
+    ],
+    "previous_pending_work_item_count": 2223,
+    "current_pending_work_item_count": 2220,
+    "pending_work_item_delta": -3,
+    "hard_ceiling_remains_binding": true,
+    "selected_q04_row_state_changed": false,
+    "new_queue_row_created": false,
+    "existing_queue_row_mutated": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The frozen scan is exhausted, the selected successor already exists exactly once, and the explicit CPU ceiling is binding."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
