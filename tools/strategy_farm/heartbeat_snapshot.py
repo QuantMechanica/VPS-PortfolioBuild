@@ -293,6 +293,131 @@ def deltas(out, prev):
     return d
 
 
+ARTIFACT_MD = Path(r"D:/QM/reports/state/heartbeat.md")
+# G: is Google Drive for Desktop -- a PER-USER mount. It exists for qm-admin (the account the
+# proven Vault-writing tasks run under) and does NOT exist for SYSTEM. The write is therefore
+# best-effort: D: always holds the truth, the Vault copy is the operator's window onto it.
+VAULT_MD = Path(r"G:/My Drive/QuantMechanica - Company Reference/08 Current State/Heartbeat.md")
+EVENTS = Path(r"D:/QM/reports/state/heartbeat_events.jsonl")
+EVENT_RENDER_LIMIT = 25
+
+# Flags that mean "the factory is not doing its job right now" rather than "worth a look".
+CRITICAL = ("FACTORY_IDLE_WITH_QUEUE", "FACTORY_THROUGHPUT_LOW", "DB_UNREACHABLE",
+            "LANE_HEADBLOCKED", "INFRA_WAVE")
+
+
+def _flag_key(flag: str) -> str:
+    """Flag identity without its measured value, so a moving number is not a new event."""
+    return flag.split(":", 1)[0]
+
+
+def record_events(out, prev):
+    """Append only TRANSITIONS -- a flag that appears or clears. A flag that merely persists
+    is not news, and a ledger that repeats it every 15 minutes buries the one that matters."""
+    now_keys = {_flag_key(f): f for f in out.get("flags", [])}
+    prev_keys = {_flag_key(f): f for f in (prev.get("flags") or [])}
+    events = []
+    for k, f in now_keys.items():
+        if k not in prev_keys:
+            events.append({"ts": out["ts"], "kind": "RAISED", "flag": f})
+    for k, f in prev_keys.items():
+        if k not in now_keys:
+            events.append({"ts": out["ts"], "kind": "CLEARED", "flag": f})
+    if not events:
+        return []
+    try:
+        with EVENTS.open("a", encoding="utf-8") as fh:
+            for e in events:
+                fh.write(json.dumps(e) + "\n")
+    except Exception as exc:  # noqa: BLE001
+        out["flags"].append(f"EVENT_LOG_WRITE_FAILED:{type(exc).__name__}")
+    return events
+
+
+def render_markdown(out) -> str:
+    """A page an operator can read in fifteen seconds, worst news first."""
+    flags = out.get("flags", [])
+    crit = [f for f in flags if _flag_key(f) in CRITICAL]
+    verdict = "KRITISCH" if crit else ("AUFMERKSAMKEIT" if flags else "RUHIG")
+    fa, at = out.get("factory", {}), out.get("agent_tasks", {})
+    q, h = out.get("quota", {}), out.get("health", {})
+    sl, fu = out.get("source_lane", {}), out.get("funnel", {})
+
+    L = []
+    L.append("# Heartbeat — Fabrik & Agenten")
+    L.append("")
+    L.append(f"> **{verdict}** · gemessen {out.get('ts', '?')} UTC · alle 15 Minuten von")
+    L.append("> `QM_Orchestrator_Heartbeat_15min`. Diese Seite wird **überschrieben** — sie zeigt")
+    L.append("> immer den letzten Stand. Was sich geändert hat, steht unten im Ereignisprotokoll.")
+    L.append("")
+    if flags:
+        L.append("## Auffälligkeiten")
+        L.append("")
+        for f in flags:
+            L.append(f"- {'**' + f + '**' if _flag_key(f) in CRITICAL else f}")
+        L.append("")
+    else:
+        L.append("Keine Auffälligkeiten. Alle Prüfungen im erwarteten Bereich.")
+        L.append("")
+
+    L.append("## Kennzahlen")
+    L.append("")
+    L.append("| Bereich | Stand |")
+    L.append("|---|---|")
+    L.append(f"| Fabrik | {fa.get('done_1h')} Läufe/h · {fa.get('active')} aktiv · "
+             f"{fa.get('pending')} in der Queue |")
+    L.append(f"| Agenten-Tasks | " + " · ".join(f"{k} {v}" for k, v in sorted(at.items())) + " |")
+    for name, v in q.items():
+        L.append(f"| Quote {name} | {v.get('used_pct')} % verbraucht bei {v.get('elapsed_pct')} % "
+                 f"Wochenzeit · Hochrechnung {v.get('projected_eow_pct')} % · {v.get('action')} |")
+    L.append(f"| Health | {len(h.get('fail', []))} FAIL · {len(h.get('warn', []))} WARN |")
+    if h.get("fail"):
+        L.append(f"| Health-FAIL | {', '.join(h['fail'])} |")
+    if sl:
+        L.append(f"| Quellen-Zulauf | {sl.get('leads_total')} Leads · **{sl.get('QUALIFIED')} qualifiziert** "
+                 f"· {sl.get('REJECTED')} abgelehnt · {sl.get('NEW')} offen |")
+    L.append(f"| Trichter | Q10-PASS {fu.get('Q10_PASS')} · Q14 {fu.get('Q14_rows')} · "
+             f"Q09_NEWS offen {fu.get('Q09_NEWS_pending')} · Q06 PASS_SOFT {fu.get('pass_soft_q06')} |")
+    tf = out.get("tasks_failing") or []
+    if tf:
+        L.append(f"| Fehlschlagende Aufgaben | {', '.join(tf)} |")
+    L.append("")
+
+    if out.get("stuck_in_progress"):
+        L.append("## Hängende Tickets")
+        L.append("")
+        for s in out["stuck_in_progress"]:
+            L.append(f"- `{s['id']}` {s['type']} bei {s['agent']} — still seit {s['since']}")
+        L.append("")
+
+    L.append("## Ereignisprotokoll")
+    L.append("")
+    L.append("Nur Übergänge: eine Auffälligkeit, die auftaucht oder verschwindet. Eine, die")
+    L.append("einfach bestehen bleibt, ist keine Neuigkeit.")
+    L.append("")
+    try:
+        lines = EVENTS.read_text(encoding="utf-8").strip().splitlines()[-EVENT_RENDER_LIMIT:]
+        if lines:
+            L.append("| Zeit (UTC) | | Auffälligkeit |")
+            L.append("|---|---|---|")
+            for ln in reversed(lines):
+                e = json.loads(ln)
+                mark = "🔴 neu" if e["kind"] == "RAISED" else "🟢 weg"
+                L.append(f"| {e['ts'][:16]} | {mark} | `{e['flag']}` |")
+        else:
+            L.append("*(noch keine Übergänge aufgezeichnet)*")
+    except Exception:  # noqa: BLE001
+        L.append("*(Ereignisprotokoll nicht lesbar)*")
+    L.append("")
+    L.append("---")
+    L.append("")
+    L.append("Rohdaten: `D:\\QM\\reports\\state\\heartbeat_state.json` · Protokoll:")
+    L.append("`D:\\QM\\reports\\state\\heartbeat_events.jsonl` · Messung:")
+    L.append("`tools/strategy_farm/heartbeat_snapshot.py`")
+    L.append("")
+    return "\n".join(L)
+
+
 def main() -> int:
     out = {"ts": _iso(_now()), "flags": []}
     probe_quota(out)
@@ -315,10 +440,24 @@ def main() -> int:
     except Exception:  # noqa: BLE001 - first run, or a corrupted state file
         pass
     out["delta"] = deltas(out, prev)
+    out["events"] = record_events(out, prev)
+
+    md = render_markdown(out)
+
+    # Best-effort Vault mirror FIRST, so its outcome is part of the state we persist.
+    # A missing G: is not an incident -- it means this run happened without the user mount
+    # (e.g. as SYSTEM), and D: still carries the full result.
+    try:
+        VAULT_MD.parent.mkdir(parents=True, exist_ok=True)
+        VAULT_MD.write_text(md, encoding="utf-8")
+        out["vault_mirror"] = "ok"
+    except Exception as exc:  # noqa: BLE001
+        out["vault_mirror"] = f"unavailable:{type(exc).__name__}"
 
     try:
         STATE.parent.mkdir(parents=True, exist_ok=True)
         STATE.write_text(json.dumps(out, indent=1), encoding="utf-8")
+        ARTIFACT_MD.write_text(md, encoding="utf-8")
     except Exception as exc:  # noqa: BLE001
         out["flags"].append(f"STATE_WRITE_FAILED:{type(exc).__name__}")
 
