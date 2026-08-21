@@ -157,3 +157,15 @@ Alle 7 Router-Tasks APPROVED geschlossen; adversariale Verify-Agents je Task = P
 
 **Entscheidungsschlange (2):** `OWNER-DEC-MNT020-RECOMPILE` (QM5_20096-Rebuild freigeben) · `OWNER-DEC-MNT006-CANARY` (10-Zeilen-Drain freigeben) — beide in `12 ToDo/AI ToDos/OWNER.md` mit Empfehlung + Cost of Wait.
 **Cleanup-Batch:** 5 Review-Notizen als Router-Task `db470d0a` (P40). Das Codex-Board steht auf 18/18 erledigt; der Maintenance-Ledger vom 28.07. ist damit vollständig disponiert.
+
+## Nachtrag 2026-08-21 (spät) · Wellen 4+5 — Programme 002/003/004 geliefert, OWNER-Freigaben ausgeführt
+
+| aus | Punkt | Ergebnis in einem Satz |
+|---|---|---|
+| TODO-002 | MC-v2-Datenvertrag | `qm.mission_control.v2` + read-only Emitter (Preview-JSON live validiert, exakte DB-Spot-Checks); Renderer = separater Claude-Design-Schritt (`MISSION_CONTROL_V2_DATA_CONTRACT.md`) |
+| TODO-003 | Website-Archiv-Vertrag | Staging-only redigierter Vertrag EA→Card→Gate→Report; Security-Verify fing 2334 Pfad- + 5 Mail-Leaks → Redaktion gehärtet (inkl. Hyonix/Dropbox-Token), Re-Scan 0 Treffer über alle Klassen (`WEBSITE_STRATEGY_ARCHIVE_CONTRACT.md`) |
+| TODO-004 | Dateisystem-Inventar | Read-only Dry-Run-Tool, T_Live hard-skip; Befunde: 31 SQLite-State-Backups ohne Hash-Sidecar, 244GB unknown→Review (`2026-08-21_filesystem_inventory_dryrun.md`) |
+| MNT-020-Beweis | QM5_20096 | Rebuild a343d30a→531e8e75 (0/0), EIN append-only Q02-Canary `256846e2` auf USDCHF; Adjudikationsregel im Close-Verdikt (SHA-Match, zero-trades-alone nie PASS) |
+| MNT-006 Phase 1 | 275er-Drain | 2 Row-1-Canaries enqueued (`cc347183` XAUUSD/ONINIT nach Pin-Screen, `6384b2f7` NDX/NO_HISTORY); 3 Klassen regelkonform blockiert (2× identity_mismatch, 1× LOG_BOMB repair_first); Phase 2 = Task `626975ca` |
+
+Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im Archiv + owner_decisions.json verbucht. Codex-Board: 21/21 erledigt, 0 offen.
