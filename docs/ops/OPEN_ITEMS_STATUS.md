@@ -169,3 +169,18 @@ Alle 7 Router-Tasks APPROVED geschlossen; adversariale Verify-Agents je Task = P
 | MNT-006 Phase 1 | 275er-Drain | 2 Row-1-Canaries enqueued (`cc347183` XAUUSD/ONINIT nach Pin-Screen, `6384b2f7` NDX/NO_HISTORY); 3 Klassen regelkonform blockiert (2× identity_mismatch, 1× LOG_BOMB repair_first); Phase 2 = Task `626975ca` |
 
 Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im Archiv + owner_decisions.json verbucht. Codex-Board: 21/21 erledigt, 0 offen.
+
+## Nachtrag 2026-08-21 (Nacht) · Neues Zwischenziel „Pipeline leerlaufen", REVIEW-Stau auf 0, Videolane an OWNER
+
+| aus | Punkt | Ergebnis in einem Satz |
+|---|---|---|
+| **OWNER 21.08.** | **Zwischenziel: erst leerlaufen, dann Buch** | Verankert in `Current Objective` (Zwischenziel-Block) + neues Vault-Programm `12 ToDo/10_Pipeline_Leerlauf`; testbare Definition D1–D5, Census, Wellenplan (`evidence/2026-08-21_pipeline_drain_census_and_programme.md`) |
+| Census D1 | **1 470 aktive EA-IDs haben nie ein Gate gesehen** | 963 ohne Verzeichnis, 8 ohne Quelle, 195 Quelle-nie-kompiliert, **304 mit fertiger `.ex5` und null Work-Items** — der teure Teil bezahlt, der billige nie gemacht |
+| Census D2 | **1 185 Paare ohne je ein Verdikt** | `failed` auf Infra-Klasse **und** nie ein `done` am selben Gate: Q02 1 010 · Q04 127 · Q07 20 · Q05 16 · Q06 5 · P2 4 · Q03 3 — keine Fehlschläge, **Abwesenheiten** |
+| Census D3 | RECYCLE-Klassifikation | Von 384 scheinbar bearbeitbaren Zeilen waren **113 (29 %) längst durch** (EA später gebaut, `done`-Work-Items). Bulk-Requeue hätte 113 Builds umsonst gefahren — Preis der Bulk-Variante ist mit Recovery-814 gemessen (122,4 h für 30,2 % PASS) |
+| Welle 1 | angewandt | `reconcile-exits --state APPROVED` (39), 113 veraltete RECYCLE-Zeilen → PASSED mit Begründung, 25 echt ungebaute → TODO. **RECYCLE 567 → 429**, kein Verdikt überschrieben, alles über den Transition-Ledger reversibel |
+| **Review-Pflicht** | **REVIEW-Stau 28 → 0** | Alle 28 Zeilen an einem Tag geschlossen: 3 `review_ea` APPROVED, 3 RECYCLE (11533 vier Blocker inkl. Spread-Guard, der den Karten-Exit unterdrückt; 11537 H1-Vertrag; 41002 zwei strict-`build_check`-FAILs), 17 `ops_issue` + 3 `build_ea` + 2 `research_strategy` adjudiziert |
+| Beauftragt | 8 Router-Tasks | Codex `4fa07877` Drain-Engine · `a3ba2414` 304 einschleusen · `b2bf2460` DL-089 Batch 2 · `e7cc7b8a` 195 kompilieren · `5c73b39f` Health-Manifest · `8c685237` retirete Karten · `46afeb2b` Phasen-SLO; Claude `6ea89ca8` review_ea 11657 |
+| **Videolane** | **an OWNER übergeben** | agy ist video-blind (3× verifiziert, VPS-IP YouTube-blockiert — heute erneut belegt); Liste bewusst **kurz und abschlussorientiert**: 3 XAG-Videos (Revisit-Bedingung eingetreten, QM5_13018 Q04 FAIL 19.07.), 6 Mulham-Videos geparkt bis 13209/13212 ein echtes Q02-Verdikt haben (`12 ToDo/AI ToDos/OWNER Videoanalysen`) |
+
+**Offen und benannt:** (1) die Review-Lane ist die Decke des Drain-Programms — 268 Rebuilds ≈ zehn Review-Sitzungen; (2) Q09_NEWS steht weiter bei **0 PASS**, Volumen staut sich dahinter; (3) Prioritätsboden: RECYCLE-Build-Zeilen tragen p1–15 und würden nie gezogen, der Requeue normalisiert auf 50 — ob Drain vor Neu-Builds rangiert, ist eine bewusste Reihenfolge-Entscheidung; (4) drei neue OWNER-Entscheidungen auf der Decision-Surface (`OWNER-DEC-GATECONTRACT`, `OWNER-DEC-EVIDENCE-RETENTION`, `OWNER-DEC-FTMO-THRESHOLDS`).
