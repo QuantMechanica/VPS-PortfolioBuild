@@ -2495,12 +2495,22 @@ def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any]:
     payload = _json_loads(item["payload_json"])
     raw_path = payload.get("staged_ex5_path")
     raw_sha = payload.get("staged_ex5_sha256")
-    ea_dir = farmctl._ea_dir_from_setfile_path(Path(str(item["setfile_path"])), str(item["ea_id"]))
-    if ea_dir is None:
-        ea_dir = farmctl._preferred_ea_dir(str(item["ea_id"]))
-    if ea_dir is None:
-        raise ValueError("staged_ex5_ea_dir_unresolved")
-    canonical_source = ea_dir / f"{ea_dir.name}.ex5"
+    if "kind" in item.keys() and str(item["kind"]) == farmctl.HARNESS_WORK_ITEM_KIND:
+        # Harness pseudo-EAs live outside framework/EAs with no setfile and no
+        # registry row, so the EA-dir resolution below can only fail (row
+        # cb5e3cd3 died staged_ex5_ea_dir_unresolved right after the generic
+        # preflight learned the same lesson). Their canonical binary is the
+        # harness .ex5 itself; the verified-copy staging below still applies.
+        canonical_source = farmctl.HARNESS_PP_FIXTURE_SOURCE_DIR / (
+            f"{farmctl.HARNESS_PP_FIXTURE_EA_LABEL}.ex5"
+        )
+    else:
+        ea_dir = farmctl._ea_dir_from_setfile_path(Path(str(item["setfile_path"])), str(item["ea_id"]))
+        if ea_dir is None:
+            ea_dir = farmctl._preferred_ea_dir(str(item["ea_id"]))
+        if ea_dir is None:
+            raise ValueError("staged_ex5_ea_dir_unresolved")
+        canonical_source = ea_dir / f"{ea_dir.name}.ex5"
 
     if raw_path is not None or raw_sha is not None:
         if not raw_path or not raw_sha:
