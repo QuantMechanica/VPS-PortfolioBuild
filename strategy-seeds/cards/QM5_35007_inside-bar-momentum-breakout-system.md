@@ -10,7 +10,9 @@ status: APPROVED
 g0_status: APPROVED
 created: 2026-08-15
 created_by: Research+Development
-last_updated: 2026-08-15
+last_updated: 2026-08-21
+card_amendment: "471cffc3 re-specification 2026-08-21 (Claude, orchestrator): R:R contradiction reconciled (SL=0.20xMR, TP=0.40xMR = exact 1:2.0); dual-leg OCO stop bracket with 3-bar expiry specified"
+card_amendment_evidence: "docs/ops/evidence/471cffc3_strategy_cards_respecification_or_retirement_2026-08-21.md"
 source_authors: "Robopip"
 strategy_mechanic: inside-bar-momentum-breakout-system-quantitative-production-blueprint
 source_citation: "Robopip (2016-2024). Inside Bar Momentum Mechanical System. BabyPips.com."
@@ -88,15 +90,19 @@ The strategy remains in an inactive (`STATE_IDLE`) state if any of the following
 4. **Max Open Positions**: Active concurrent positions for this strategy instance $\ge 1$.
 
 ### 3.2 Long Entry Conditions (`Strategy_EntrySignal` $\rightarrow$ `BUY`)
-$$\text{Inside\_Bar == TRUE} \implies \text{Place BUY\_STOP at } \text{High}[2] + 2.0\text{ pips}$$
+When an inside bar completes ($\text{High}[1] < \text{High}[2]$ and $\text{Low}[1] > \text{Low}[2]$):
+* **Mother Range**: $\text{Mother\_Range} = \text{High}[2] - \text{Low}[2]$.
+* **SL Distance**: $\text{SL\_Distance} = 0.20 \times \text{Mother\_Range}$.
+* **TP Distance**: $\text{TP\_Distance} = 2.0 \times \text{SL\_Distance} = 0.40 \times \text{Mother\_Range}$ (exact 1:2.0 R:R).
+* **Long Pending Leg**: `BUY_STOP` at $\text{High}[2] + 2.0\text{ pips}$, $\text{SL} = \text{Price} - \text{SL\_Distance}$, $\text{TP} = \text{Price} + \text{TP\_Distance}$.
 
 ### 3.3 Short Entry Conditions (`Strategy_EntrySignal` $\rightarrow$ `SELL`)
-$$\text{Inside\_Bar == TRUE} \implies \text{Place SELL\_STOP at } \text{Low}[2] - 2.0\text{ pips}$$
+* **Short Pending Leg**: `SELL_STOP` at $\text{Low}[2] - 2.0\text{ pips}$, $\text{SL} = \text{Price} + \text{SL\_Distance}$, $\text{TP} = \text{Price} - \text{TP\_Distance}$. ($\text{Mother\_Range}$, $\text{SL\_Distance}$ and $\text{TP\_Distance}$ as defined in 3.2.)
 
 ### 3.4 Position Exit Conditions (`Strategy_ExitSignal`)
-* **Take Profit (TP)**: Set to $2.0 \times \text{Mother\_Range}$ ($1:2.0\text{ R:R}$).
-* **Stop Loss (SL)**: Placed at $0.20 \times \text{Mother\_Range}$ from entry price.
-* **Cancellation**: Cancel unfulfilled pending orders after 3 bars.
+* **OCO Linked Lifecycle**: Upon execution fill of either pending order leg, the opposing unfilled stop order leg is cancelled immediately.
+* **Pending Expiry**: If neither pending leg is filled within 3 completed H4 bars ($12\text{ hours}$ of active trading), both pending orders are cancelled.
+* **Risk-Reward Metrics**: Strict 1:2.0 R:R with no additional unapproved breakeven moves or market fallbacks.
 
 ---
 
@@ -224,3 +230,15 @@ bool CheckEntrySignal(const string symbol, const ENUM_TIMEFRAMES timeframe,
 * **Timeframe**: H4
 * **Conservative expected frequency**: 40 trades per year per symbol (ordering prior only; Q02 measures reality).
 * Symbols normalized to the DWX tradeable universe (`framework/registry/dwx_symbol_matrix.csv`); futures/index aliases from the source document were mapped to their CFD equivalents.
+
+---
+
+## Amendment Provenance (2026-08-21)
+
+* **Amended by**: Claude (orchestrator), after the `471cffc3` re-specification pass.
+* **Authority**: 471cffc3 strategy-card re-specification (Claude, orchestrator, 2026-08-21).
+* **Defect corrected**: `SL = 0.20 x Mother_Range` with `TP = 2.0 x Mother_Range` yielded an effective 1:10 target while the card labelled the trade 1:2.0; the two-sided pending-order OCO bracket lifecycle was unspecified.
+* **Corrected sections**: Sections 3.2 & 3.3 (order generation: `TP_Distance = 2.0 x SL_Distance = 0.40 x Mother_Range`, exact 1:2.0 R:R; explicit Long/Short pending legs), and Section 3.4 (OCO linked lifecycle, 3-bar / 12h pending expiry, strict R:R metrics).
+* **Evidence**: `docs/ops/evidence/471cffc3_strategy_cards_respecification_or_retirement_2026-08-21.md`
+
+This card was BLOCKED on 2026-08-21 because the CARD, not the code, was the defect: a rule without a mechanical definition cannot be faithfully mechanized. The passages above were re-specified to be closed-form and source-traceable; every entry/exit rule is now mechanically computable. No EA code was rebuilt or recompiled (deferred to a later build-gate hardening task).

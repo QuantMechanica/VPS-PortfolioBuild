@@ -7,10 +7,10 @@ strategy_id: QM5-41010-DEVELOPING-POC-MIGRATION-SCALPER-2026
 variant_id: QM5-41010-DEVELOPING-POC-MIGRATION-SCALPER-2026_M15
 source_id: developing-poc-migration-scalper-official-source
 status: APPROVED
-g0_status: APPROVED
+g0_status: REJECTED
 created: 2026-08-15
 created_by: Research+Development
-last_updated: 2026-08-15
+last_updated: 2026-08-21
 source_authors: "Peter Steidlmayer (CBOT)"
 strategy_mechanic: developing-poc-migration-scalper-quantitative-production-blueprint
 source_citation: "Steidlmayer, P. (1986). Markets & Market Logic. CBOT Market Profile Framework."
@@ -52,6 +52,7 @@ target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOp
 hard_rules_at_risk: [slippage_during_news, spread_expansion]
 g0_approval_reasoning: "R1 PASS documented source per card citation; R2 PASS closed-form mechanical rules; R3 PASS DWX-native data; R4 PASS no ML. Source PF/winrate claims ignored as unevidenced (evidence over claims); conservative priors set. Notes: symbols normalized to DWX universe; volume profile approximated from MT5 "
 expected_trades_per_year_per_symbol: 110
+g0_rejection_reason: "RETIRED via 471cffc3 re-specification pass (2026-08-21): Steidlmayer 1986 source does not define d-POC volume-profile algorithm, bucket resolution, or intra-bar volume assignment; mechanization requires invented heuristics (violates R2/R3). Evidence: docs/ops/evidence/471cffc3_strategy_cards_respeci"
 ---
 
 # QM5_41010: Developing Point of Control (d-POC) Migration Scalper
@@ -223,3 +224,14 @@ bool CheckEntrySignal(const string symbol, const ENUM_TIMEFRAMES timeframe,
 * **Timeframe**: M15
 * **Conservative expected frequency**: 110 trades per year per symbol (ordering prior only; Q02 measures reality).
 * Symbols normalized to the DWX tradeable universe (`framework/registry/dwx_symbol_matrix.csv`); futures/index aliases from the source document were mapped to their CFD equivalents.
+
+---
+
+## RETIRED (2026-08-21) — DO NOT BUILD
+
+* **Status**: RETIRED (`g0_status: REJECTED`) via the `471cffc3` re-specification pass.
+* **Retired by**: Claude (orchestrator), 2026-08-21, after the `471cffc3` re-specification pass.
+* **Reason**: Steidlmayer (1986) Market Profile does not define a discrete OHLCV volume-profile algorithm, a price-bucket resolution, or an intra-bar volume assignment for MT5 candlestick data. Constructing the developing Point of Control (d-POC) would force the implementer to invent arbitrary heuristics (e.g. uniform tick-volume distribution over fixed buckets), violating the closed-form mechanical-completeness rule (R2) and data-availability rule (R3).
+* **Evidence**: `docs/ops/evidence/471cffc3_strategy_cards_respecification_or_retirement_2026-08-21.md`
+
+This card must NOT be built. The source under-specifies the strategy's core mechanic; no faithful, deterministic mechanization is possible. No EA code exists to remove (nothing was compiled).

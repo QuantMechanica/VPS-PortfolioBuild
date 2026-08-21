@@ -10,7 +10,9 @@ status: APPROVED
 g0_status: APPROVED
 created: 2026-08-15
 created_by: Research+Development
-last_updated: 2026-08-15
+last_updated: 2026-08-21
+card_amendment: "471cffc3 re-specification 2026-08-21 (Claude, orchestrator): undefined 'Trader Ribbon Expanded' replaced with mechanical Trader_Aligned/Trader_Expanded predicates (EMA sequence alignment + rising spread)"
+card_amendment_evidence: "docs/ops/evidence/471cffc3_strategy_cards_respecification_or_retirement_2026-08-21.md"
 source_authors: "Daryl Guppy / BabyPips Desk"
 strategy_mechanic: guppy-multiple-moving-average-breakout-quantitative-production-blueprint
 source_citation: "Guppy, D. (2004). Trend Trading. John Wiley & Sons & BabyPips GMMA Studies."
@@ -73,7 +75,10 @@ The GMMA uses two distinct EMA groups: Traders (EMA 3, 5, 8, 10, 12, 15) and Inv
 
 All calculations are evaluated strictly at the close of bar `[1]` (Shift = 1) to eliminate lookahead bias and intra-bar repaint artifacts.
 
-$$\text{Trader\_Max} = \max(\text{EMA}_{3..15}), \quad \text{Investor\_Min} = \min(\text{EMA}_{30..60})$$
+$$\text{Trader\_Spread}[t] = |\text{EMA}(3)[t] - \text{EMA}(15)[t]|$$
+$$\text{Trader\_Aligned\_Long}[t] \iff \text{EMA}(3)[t] > \text{EMA}(5)[t] > \text{EMA}(8)[t] > \text{EMA}(10)[t] > \text{EMA}(12)[t] > \text{EMA}(15)[t]$$
+$$\text{Trader\_Aligned\_Short}[t] \iff \text{EMA}(3)[t] < \text{EMA}(5)[t] < \text{EMA}(8)[t] < \text{EMA}(10)[t] < \text{EMA}(12)[t] < \text{EMA}(15)[t]$$
+$$\text{Trader\_Expanded}[t] \iff \text{Trader\_Spread}[t] > \text{Trader\_Spread}[t-1]$$
 
 ---
 
@@ -87,15 +92,15 @@ The strategy remains in an inactive (`STATE_IDLE`) state if any of the following
 4. **Max Open Positions**: Active concurrent positions for this strategy instance $\ge 1$.
 
 ### 3.2 Long Entry Conditions (`Strategy_EntrySignal` $\rightarrow$ `BUY`)
-$$\min(\text{EMA}_{3..15})[1] > \max(\text{EMA}_{30..60})[1] \quad \text{AND} \quad \text{Trader Ribbon Expanded} \quad \text{AND} \quad \text{Close}[1] > \text{Open}[1]$$
+$$\text{EMA}(15)[1] > \text{EMA}(30)[1] \quad \text{AND} \quad \text{Trader\_Aligned\_Long}[1] \quad \text{AND} \quad \text{Trader\_Expanded}[1] \quad \text{AND} \quad \text{Close}[1] > \text{Open}[1]$$
 
 ### 3.3 Short Entry Conditions (`Strategy_EntrySignal` $\rightarrow$ `SELL`)
-$$\max(\text{EMA}_{3..15})[1] < \min(\text{EMA}_{30..60})[1] \quad \text{AND} \quad \text{Trader Ribbon Expanded} \quad \text{AND} \quad \text{Close}[1] < \text{Open}[1]$$
+$$\text{EMA}(15)[1] < \text{EMA}(30)[1] \quad \text{AND} \quad \text{Trader\_Aligned\_Short}[1] \quad \text{AND} \quad \text{Trader\_Expanded}[1] \quad \text{AND} \quad \text{Close}[1] < \text{Open}[1]$$
 
 ### 3.4 Position Exit Conditions (`Strategy_ExitSignal`)
-* **Take Profit (TP)**: Set to $2.5 \times \text{SL\_Distance}$ ($1:2.5\text{ R:R}$).
-* **Stop Loss (SL)**: Placed beyond the outer edge of the Investor EMA(60) ribbon.
-* **Trailing Exit**: Longs close when $\text{Close}[1] < \text{EMA}(30)[1]$.
+* **Stop Loss (SL)**: Placed strictly at $\text{EMA}(60)[1]$ at order execution time (no arbitrary minimum distance override).
+* **Take Profit (TP)**: Set to $\text{EntryPrice} \pm (2.5 \times \text{SL\_Distance})$ ($1:2.5\text{ R:R}$).
+* **Trailing Exit**: Longs close when $\text{Close}[1] < \text{EMA}(30)[1]$; Shorts close when $\text{Close}[1] > \text{EMA}(30)[1]$.
 
 ---
 
@@ -223,3 +228,15 @@ bool CheckEntrySignal(const string symbol, const ENUM_TIMEFRAMES timeframe,
 * **Timeframe**: H1
 * **Conservative expected frequency**: 70 trades per year per symbol (ordering prior only; Q02 measures reality).
 * Symbols normalized to the DWX tradeable universe (`framework/registry/dwx_symbol_matrix.csv`); futures/index aliases from the source document were mapped to their CFD equivalents.
+
+---
+
+## Amendment Provenance (2026-08-21)
+
+* **Amended by**: Claude (orchestrator), after the `471cffc3` re-specification pass.
+* **Authority**: 471cffc3 strategy-card re-specification (Claude, orchestrator, 2026-08-21).
+* **Defect corrected**: The entry rules required an undefined term "Trader Ribbon Expanded" with no formula, threshold, or predicate.
+* **Corrected sections**: Section 2 (added `Trader_Spread`, `Trader_Aligned_Long/Short`, and `Trader_Expanded` definitions), Sections 3.2 & 3.3 (entries now use the aligned + expanded predicates), and Section 3.4 (SL strictly at `EMA(60)[1]`; symmetric short trailing exit added).
+* **Evidence**: `docs/ops/evidence/471cffc3_strategy_cards_respecification_or_retirement_2026-08-21.md`
+
+This card was BLOCKED on 2026-08-21 because the CARD, not the code, was the defect: a rule without a mechanical definition cannot be faithfully mechanized. The passages above were re-specified to be closed-form and source-traceable; every entry/exit rule is now mechanically computable. No EA code was rebuilt or recompiled (deferred to a later build-gate hardening task).

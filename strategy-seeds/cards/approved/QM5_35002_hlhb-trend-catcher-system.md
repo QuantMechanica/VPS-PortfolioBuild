@@ -10,7 +10,9 @@ status: APPROVED
 g0_status: APPROVED
 created: 2026-08-15
 created_by: Research+Development
-last_updated: 2026-08-15
+last_updated: 2026-08-21
+card_amendment: "471cffc3 re-specification 2026-08-21 (Claude, orchestrator): symmetric +DI/-DI directional conditions restored on entries; SL fixed at 50.0 pips (swing-extreme alternative removed)"
+card_amendment_evidence: "docs/ops/evidence/471cffc3_strategy_cards_respecification_or_retirement_2026-08-21.md"
 source_authors: "Huck (BabyPips)"
 strategy_mechanic: hlhb-trend-catcher-system-quantitative-production-blueprint
 source_citation: "Huck (2012-2024). Huck Loves Her Bucks (HLHB) Trend-Catcher System. BabyPips.com."
@@ -73,7 +75,8 @@ The HLHB (Huck Loves Her Bucks) system is an audited BabyPips mechanical strateg
 
 All calculations are evaluated strictly at the close of bar `[1]` (Shift = 1) to eliminate lookahead bias and intra-bar repaint artifacts.
 
-$$\text{ADX\_Filter}: \text{ADX}(14, \text{H1})[1] \ge 25.0 \quad \text{AND} \quad +\text{DI}[1] > -\text{DI}[1]$$
+$$\text{Long\_Directional\_Filter}: \text{ADX}(14, \text{H1})[1] \ge 25.0 \quad \text{AND} \quad +\text{DI}(14)[1] > -\text{DI}(14)[1]$$
+$$\text{Short\_Directional\_Filter}: \text{ADX}(14, \text{H1})[1] \ge 25.0 \quad \text{AND} \quad -\text{DI}(14)[1] > +\text{DI}(14)[1]$$
 
 ---
 
@@ -87,15 +90,15 @@ The strategy remains in an inactive (`STATE_IDLE`) state if any of the following
 4. **Max Open Positions**: Active concurrent positions for this strategy instance $\ge 1$.
 
 ### 3.2 Long Entry Conditions (`Strategy_EntrySignal` $\rightarrow$ `BUY`)
-$$\text{EMA}(5)[1] > \text{EMA}(10)[1] \quad \text{AND} \quad \text{EMA}(5)[2] \le \text{EMA}(10)[2] \quad \text{AND} \quad \text{RSI}(10)[1] > 50.0 \quad \text{AND} \quad \text{ADX}(14)[1] \ge 25.0$$
+$$\text{EMA}(5)[1] > \text{EMA}(10)[1] \quad \text{AND} \quad \text{EMA}(5)[2] \le \text{EMA}(10)[2] \quad \text{AND} \quad \text{RSI}(10)[1] > 50.0 \quad \text{AND} \quad \text{ADX}(14)[1] \ge 25.0 \quad \text{AND} \quad +\text{DI}(14)[1] > -\text{DI}(14)[1]$$
 
 ### 3.3 Short Entry Conditions (`Strategy_EntrySignal` $\rightarrow$ `SELL`)
-$$\text{EMA}(5)[1] < \text{EMA}(10)[1] \quad \text{AND} \quad \text{EMA}(5)[2] \ge \text{EMA}(10)[2] \quad \text{AND} \quad \text{RSI}(10)[1] < 50.0 \quad \text{AND} \quad \text{ADX}(14)[1] \ge 25.0$$
+$$\text{EMA}(5)[1] < \text{EMA}(10)[1] \quad \text{AND} \quad \text{EMA}(5)[2] \ge \text{EMA}(10)[2] \quad \text{AND} \quad \text{RSI}(10)[1] < 50.0 \quad \text{AND} \quad \text{ADX}(14)[1] \ge 25.0 \quad \text{AND} \quad -\text{DI}(14)[1] > +\text{DI}(14)[1]$$
 
 ### 3.4 Position Exit Conditions (`Strategy_ExitSignal`)
-* **Take Profit (TP)**: Set to $2.0 \times \text{SL\_Distance}$ ($1:2.0\text{ R:R}$).
-* **Stop Loss (SL)**: Hard $-50.0\text{ pips}$ (or recent H1 swing extreme).
-* **HLHB Trailing**: Trail at $50.0\text{ pips}$ behind highest price once trade reaches $+30.0\text{ pips}$.
+* **Stop Loss (SL)**: Hard fixed $50.0\text{ pips}$ ($500\text{ points}$). The swing-extreme alternative is removed.
+* **Take Profit (TP)**: Set to $2.0 \times \text{SL} = 100.0\text{ pips}$ ($1000\text{ points}$, 1:2.0 R:R).
+* **HLHB Trailing Stop**: Once trade floating profit reaches $+30.0\text{ pips}$ ($+300\text{ points}$), trail SL at $50.0\text{ pips}$ behind highest high (Long) or lowest low (Short). Position trailing management runs unblocked by entry filters.
 
 ---
 
@@ -225,3 +228,15 @@ bool CheckEntrySignal(const string symbol, const ENUM_TIMEFRAMES timeframe,
 * **Timeframe**: H1
 * **Conservative expected frequency**: 70 trades per year per symbol (ordering prior only; Q02 measures reality).
 * Symbols normalized to the DWX tradeable universe (`framework/registry/dwx_symbol_matrix.csv`); futures/index aliases from the source document were mapped to their CFD equivalents.
+
+---
+
+## Amendment Provenance (2026-08-21)
+
+* **Amended by**: Claude (orchestrator), after the `471cffc3` re-specification pass.
+* **Authority**: 471cffc3 strategy-card re-specification (Claude, orchestrator, 2026-08-21).
+* **Defect corrected**: The directional filter was asymmetric (`+DI > -DI` only) and the directional DI condition was omitted from the Long/Short entry rules; the Stop Loss carried a non-mechanical `(or recent H1 swing extreme)` alternative.
+* **Corrected sections**: Section 2 (symmetric Long/Short directional filters), Sections 3.2 & 3.3 (directional `+DI`/`-DI` condition added to each entry), and Section 3.4 (SL hard-fixed at 50.0 pips, swing-extreme alternative removed).
+* **Evidence**: `docs/ops/evidence/471cffc3_strategy_cards_respecification_or_retirement_2026-08-21.md`
+
+This card was BLOCKED on 2026-08-21 because the CARD, not the code, was the defect: a rule without a mechanical definition cannot be faithfully mechanized. The passages above were re-specified to be closed-form and source-traceable; every entry/exit rule is now mechanically computable. No EA code was rebuilt or recompiled (deferred to a later build-gate hardening task).

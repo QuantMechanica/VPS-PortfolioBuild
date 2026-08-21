@@ -10,7 +10,9 @@ status: APPROVED
 g0_status: APPROVED
 created: 2026-08-15
 created_by: Research+Development
-last_updated: 2026-08-15
+last_updated: 2026-08-21
+card_amendment: "471cffc3 re-specification 2026-08-21 (Claude, orchestrator): PriceChannel window i=2..25 excl. signal bar; SL bound strictly to Parabolic SAR (no ATR substitution)"
+card_amendment_evidence: "docs/ops/evidence/471cffc3_strategy_cards_respecification_or_retirement_2026-08-21.md"
 source_authors: "Sergey Golubev"
 strategy_mechanic: golubev-pricechannel-parabolic-breakout-quantitative-production-blueprint
 source_citation: "Golubev, S. (2016). PriceChannel and Parabolic SAR Trading System. MQL5 Community Standard."
@@ -73,7 +75,9 @@ Golubev's MQL5 forum standard system combines PriceChannel high/low penetration 
 
 All calculations are evaluated strictly at the close of bar `[1]` (Shift = 1) to eliminate lookahead bias and intra-bar repaint artifacts.
 
-$$\text{PC\_High} = \max_{i=1..24}(\text{High}[i]), \quad \text{PC\_Low} = \min_{i=1..24}(\text{Low}[i])$$
+$$\text{PC\_High}[1] = \max_{i=2..25}(\text{High}[i]), \quad \text{PC\_Low}[1] = \min_{i=2..25}(\text{Low}[i])$$
+
+*(The PriceChannel high and low are calculated over the 24 completed bars immediately preceding the signal bar [1]).*
 
 ---
 
@@ -93,8 +97,8 @@ $$\text{Close}[1] > \text{PC\_High}[1] \quad \text{AND} \quad \text{Parabolic\_S
 $$\text{Close}[1] < \text{PC\_Low}[1] \quad \text{AND} \quad \text{Parabolic\_SAR}[1] > \text{High}[1]$$
 
 ### 3.4 Position Exit Conditions (`Strategy_ExitSignal`)
-* **Take Profit (TP)**: Set to $2.0 \times \text{SL\_Distance}$ ($1:2.0\text{ R:R}$).
-* **Stop Loss (SL)**: Placed at the current Parabolic SAR dot.
+* **Stop Loss (SL)**: Placed strictly at $\text{Parabolic\_SAR}[1]$. No ATR corridor clamping is permitted. If $\text{SL\_Distance} < \text{BrokerStopLevel}$, the order fails closed and is rejected.
+* **Take Profit (TP)**: Set to $\text{EntryPrice} \pm (2.0 \times \text{SL\_Distance})$ (exact 1:2.0 R:R).
 
 ---
 
@@ -223,3 +227,15 @@ bool CheckEntrySignal(const string symbol, const ENUM_TIMEFRAMES timeframe,
 * **Timeframe**: H1
 * **Conservative expected frequency**: 70 trades per year per symbol (ordering prior only; Q02 measures reality).
 * Symbols normalized to the DWX tradeable universe (`framework/registry/dwx_symbol_matrix.csv`); futures/index aliases from the source document were mapped to their CFD equivalents.
+
+---
+
+## Amendment Provenance (2026-08-21)
+
+* **Amended by**: Claude (orchestrator), after the `471cffc3` re-specification pass.
+* **Authority**: 471cffc3 strategy-card re-specification (Claude, orchestrator, 2026-08-21).
+* **Defect corrected**: The PriceChannel window (`i=1..24`) included the signal bar `[1]`, making `Close[1] > PC_High[1]` unsatisfiable on every bar; the Stop Loss was allowed an ATR substitution instead of being bound strictly to the Parabolic SAR.
+* **Corrected sections**: Section 2 (channel window `i=2..25`, signal bar excluded) and Section 3.4 (SL strictly at `Parabolic_SAR[1]`, no ATR corridor; TP at exact 1:2.0 R:R).
+* **Evidence**: `docs/ops/evidence/471cffc3_strategy_cards_respecification_or_retirement_2026-08-21.md`
+
+This card was BLOCKED on 2026-08-21 because the CARD, not the code, was the defect: a rule without a mechanical definition cannot be faithfully mechanized. The passages above were re-specified to be closed-form and source-traceable; every entry/exit rule is now mechanically computable. No EA code was rebuilt or recompiled (deferred to a later build-gate hardening task).

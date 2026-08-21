@@ -7,10 +7,10 @@ strategy_id: QM5-38007-CODETRADING-PYTHON-ATR-GRID-ENGINE-2026
 variant_id: QM5-38007-CODETRADING-PYTHON-ATR-GRID-ENGINE-2026_M15
 source_id: codetrading-python-atr-grid-engine-official-source
 status: APPROVED
-g0_status: APPROVED
+g0_status: REJECTED
 created: 2026-08-15
 created_by: Research+Development
-last_updated: 2026-08-15
+last_updated: 2026-08-21
 source_authors: "CodeTrading (@CodeTradingCafe)"
 strategy_mechanic: codetrading-python-atr-grid-engine-quantitative-production-blueprint
 source_citation: "CodeTrading (2023). Building a Python Grid Trading Bot with Dynamic ATR Spacing. YouTube."
@@ -52,6 +52,7 @@ target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOp
 hard_rules_at_risk: [slippage_during_news, spread_expansion]
 g0_approval_reasoning: "R1 PASS documented source per card citation; R2 PASS closed-form mechanical rules; R3 PASS DWX-native data; R4 PASS no ML. Source PF/winrate claims ignored as unevidenced (evidence over claims); conservative priors set. Notes: V5 grid cap binds: per-grid-cycle risk <=1% equity + KillSwitch; source-E"
 expected_trades_per_year_per_symbol: 110
+g0_rejection_reason: "RETIRED via 471cffc3 re-specification pass (2026-08-21): CodeTrading 2023 source never determines the Level-0 entry trigger/direction; card's 1-position cap (3.1) is irreconcilable with its 5-tier grid (3.2-3.4); grid/averaging-down prohibited by Edge Lab Charter. Evidence: docs/ops/evidence/471cffc"
 ---
 
 # QM5_38007: CodeTrading Python ATR-Spaced Grid Engine
@@ -225,3 +226,14 @@ bool CheckEntrySignal(const string symbol, const ENUM_TIMEFRAMES timeframe,
 * **Timeframe**: M15
 * **Conservative expected frequency**: 110 trades per year per symbol (ordering prior only; Q02 measures reality).
 * Symbols normalized to the DWX tradeable universe (`framework/registry/dwx_symbol_matrix.csv`); futures/index aliases from the source document were mapped to their CFD equivalents.
+
+---
+
+## RETIRED (2026-08-21) — DO NOT BUILD
+
+* **Status**: RETIRED (`g0_status: REJECTED`) via the `471cffc3` re-specification pass.
+* **Retired by**: Claude (orchestrator), 2026-08-21, after the `471cffc3` re-specification pass.
+* **Reason**: The cited source (CodeTrading 2023) never determines the Level-0 entry trigger or direction — it assumes an initial position at bar index 0 of a static dataframe, giving no reproducible live-market entry event. The card also carries an irreconcilable contradiction: Section 3.1 caps open positions at 1 (blocking any further entries) while Sections 3.2-3.4 specify a 5-tier grid. Grid / averaging-down is additionally prohibited under the Edge Lab Charter, and DL-082 cannot supply the missing Level-0 logic.
+* **Evidence**: `docs/ops/evidence/471cffc3_strategy_cards_respecification_or_retirement_2026-08-21.md`
+
+This card must NOT be built. The source under-specifies the strategy's core mechanic; no faithful, deterministic mechanization is possible. No EA code exists to remove (nothing was compiled).
