@@ -1,0 +1,122 @@
+{
+  "schema": "qm.paced_fleet.qm5_q02_enqueue/v1",
+  "recorded_at_utc": "2026-08-21T14:32:19Z",
+  "branch": "agents/board-advisor",
+  "ea": "QM5_41092_wti-wbody-dominance-mom",
+  "ea_id": "QM5_41092",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "outcome": "Q01_PASS_Q02_PENDING",
+  "build": {
+    "implementation_commit": "aed1d6072",
+    "magic": 410920000,
+    "risk_mode": "FIXED",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0,
+    "reference_tests_passed": 11,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_failures": 0,
+    "build_check_warnings": 2,
+    "p1_verdict": "PASS",
+    "mq5_sha256": "8ab57c0fede965dcdf4435dd3e153725f1a8525b340bcf31ba78859dee55f14f",
+    "ex5_sha256": "da0e57dee8b4b16887ee74f5ce2627a1b029553d489fbdd2cb43862a8fb9e224",
+    "setfile_sha256": "1ab7ce5e4ebd8019b08295bcccc5f689dd2a8f8888fc86a186c8152c22d145bc",
+    "normalized_set_build_hash": "1e2f782016e8a2a81e403c8940d2a971cb182af90fda43e4657b5d5b36adaefb",
+    "build_report": "D:/QM/reports/framework/21/build_check_20260821_142337.json",
+    "build_report_sha256": "deb858f1a0679f5e7560ea1ce8d39ede6b833fd9a1406d34db3e65c358cc4a3f",
+    "p1_report": "D:/QM/reports/pipeline/QM5_41092/P1/P1_QM5_41092_result.json",
+    "p1_report_sha256": "3a7a9cb7fcefc75895bf89ffccbc9a8e4291857cc47faf191f94befbd65fa935"
+  },
+  "q02_target_preflight": {
+    "work_items_count_before": 0,
+    "dry_run_selected": 1,
+    "dry_run_skipped": 0,
+    "target_eas": [
+      "QM5_41092"
+    ],
+    "target_symbols": [
+      "XTIUSD.DWX"
+    ],
+    "max_part2_per_run": 0,
+    "pending_at_start": 2252,
+    "queue_ceiling": 7000,
+    "wave_budget": 4748
+  },
+  "capacity": {
+    "hard_cpu_ceiling_percent": 97.0,
+    "sampling_method": "Windows Get-Counter Processor(_Total) percent Processor Time",
+    "sample_interval_seconds": 4,
+    "samples": [
+      {
+        "utc": "2026-08-21T14:31:47.3100000Z",
+        "cpu_percent": 68.36
+      },
+      {
+        "utc": "2026-08-21T14:31:51.3120000Z",
+        "cpu_percent": 67.27
+      },
+      {
+        "utc": "2026-08-21T14:31:55.3130000Z",
+        "cpu_percent": 75.96
+      },
+      {
+        "utc": "2026-08-21T14:31:59.3130000Z",
+        "cpu_percent": 63.09
+      },
+      {
+        "utc": "2026-08-21T14:32:03.3140000Z",
+        "cpu_percent": 74.35
+      }
+    ],
+    "average_percent": 69.81,
+    "maximum_percent": 75.96,
+    "ceiling_rule": "average_or_maximum_gte_hard_ceiling",
+    "ceiling_binding": false,
+    "mt5_slot_scan_at_utc": "2026-08-21T14:31:03Z",
+    "running_governed_terminal_count": 2,
+    "running_governed_terminals": [
+      "T1",
+      "T2"
+    ],
+    "resident_worker_slot_count": 4,
+    "resident_worker_slots": [
+      "T1",
+      "T2",
+      "T3",
+      "T4"
+    ],
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "t_live_excluded": true,
+    "ftmo_excluded": true,
+    "terminal_reconciliation_or_control": false
+  },
+  "enqueue": {
+    "apply": true,
+    "selected": 1,
+    "skipped": 0,
+    "priority_track": true,
+    "work_item_id": "1c0dcc3a-69cf-46dc-96fb-e8f111c949ac",
+    "phase": "Q02",
+    "kind": "backtest",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at_utc": "2026-08-21T14:32:19Z",
+    "farm_evidence": "D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json",
+    "farm_evidence_sha256": "69b4792d7d536e330156bfc38ca0248d6677a0e0358c1d0b71c006dafdd976ff"
+  },
+  "actions_not_taken": [
+    "dispatcher tick",
+    "tester reservation or launch",
+    "terminal control",
+    "smoke or manual backtest",
+    "portfolio-gate mutation",
+    "deploy or T_Live manifest mutation",
+    "T_Live access",
+    "AutoTrading action"
+  ],
+  "next_safe_action": "Allow the paced fleet to claim the single pending Q02 item; do not duplicate, manually dispatch, or run a tester outside the queue."
+}
