@@ -186,7 +186,7 @@ python -m pytest \
   tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py \
   tools/strategy_farm/tests/test_farmctl_scope_audit_isolation.py \
   tools/strategy_farm/tests/test_build_guardrails.py -q
-99 passed in 49.31s
+100 passed in 40.91s
 ```
 
 After adding the explicit unresolved-timeframe refusal, the focused three-file rerun was
@@ -209,6 +209,7 @@ Post-apply database verification:
 COMPILE_EA: total=82 pending=82 active=0 verdicts=0 symbol_nonblank=0 setfile_nonblank=0
 holds: total=82 active=82 release_on_restart=82 correct_hold_code=82
 compile-status: compiled=0 failed=0 pending=82 activation_held=82 not_enqueued=0
+canonical claim selector: COMPILE_EA pending=82 visible-to-claim=0
 ```
 
 No `T_Live`, AutoTrading, terminal process, gate threshold, news-staleness limit, or active
