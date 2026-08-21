@@ -14794,7 +14794,9 @@ def _plan_artifact_auto_commit(
         source_dirty_eas: set[str] = set()
         for line in entries:
             probe_status, probe = _parse_porcelain_v1_entry(line)
-            if probe.endswith(".mq5") and not _generated_ea_artifact_kind(probe_status, probe):
+            if probe.endswith(".mq5") and not _generated_ea_artifact_kind(
+                probe_status, probe
+            ):
                 m = re.match(r"framework/EAs/(QM5_\d+_[^/]+)/", probe)
                 if m:
                     source_dirty_eas.add(m.group(1))
@@ -14971,11 +14973,12 @@ def _auto_commit_build_artifacts(root: Path, within_sec: int = 90) -> dict[str, 
     Safety: per-EA gating. An EA dir under framework/EAs/ is committed only if
     that EA has no build live-log grown in the last `within_sec`s (i.e. not
     mid-write). Shared artifacts (magic_numbers.csv append is line-atomic, the
-    resolver .mqh is regenerated atomically, public-data is exporter output,
-    strategy-seeds are research drafts) are committed when present. Only paths
-    on ARTIFACT_COMMIT_ALLOWLIST are touched — never code (tools/, scripts/),
-    so a human mid-edit still (correctly) blocks builds. Commit only, no push.
-    OWNER 2026-06-04.
+    resolver .mqh is regenerated atomically, public-data is exporter output)
+    are committed when present. In an EA directory, only exact generated
+    binaries, setfiles, SPECs, and untracked canonical .mq5 scaffolds are
+    eligible. A modified tracked .mq5 and all tools/, scripts/, ordinary docs,
+    includes, and non-allowlisted registry paths remain excluded and therefore
+    build-blocking. Commit only, no push. OWNER 2026-06-04; MNT-011 2026-08-21.
     """
     import subprocess as _sp
     if os.environ.get(DIRTY_REPO_BUILD_GUARD_ENV) == "1":
