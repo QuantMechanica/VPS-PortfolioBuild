@@ -50,3 +50,4 @@ portfolio-gate, T_Live, manifest, or AutoTrading action is authorized.
 |---|---|---|
 | v1 | 2026-08-21 | approved build-directory identity; source approval `37d65f4e0`; EA ID allocation `4a7c2d633` |
 | v2 | 2026-08-21 | active basket magics `89c51ac42`; paired implementation; 10-test reference suite; Q01 strict build and static validation PASS |
+| v3 | 2026-08-21 | paced Q02 handoff; enqueue withheld with zero existing target rows at eight running research terminals and five consecutive 100% CPU samples |
