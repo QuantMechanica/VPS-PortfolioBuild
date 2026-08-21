@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12928
+; ea_slug:      renko-double-flip-confirm-h1
+; ea_version:   v5.0
+; set_version:  s20260821-001
+; symbol:       AUDUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   10
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e4763618c3add761b2a3e41de27d1b489b6072e4d2168196aed154d8e2ecf5d9
+; author:       Development
+; date:         2026-08-21
+;==========================================================
+qm_ea_id=12928
+qm_magic_slot_offset=10
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12928_renko-double-flip-confirm-h1.md
+strategy_atr_period=14
+strategy_brick_atr_mult=0.5
+strategy_reversal_rule=2
+strategy_tp_brick_mult=3.0
+strategy_sl_brick_mult=2.0
+strategy_trail_brick_threshold=2
+strategy_time_stop_bars=48
+strategy_max_spread_mult=1.5
