@@ -3121,6 +3121,60 @@ def _scan_ks_events(log_dir: Path) -> tuple[dict, str]:
     return observed, "ok"
 
 
+def _dxz_manifest_staleness(manifest_path: Path) -> dict[str, Any] | None:
+    """Detect a newer non-DRAFT portfolio manifest sitting next to the configured
+    DXZ_BOOK_MANIFEST (secondary finding from MNT-001, 2026-08-21).
+
+    chk_ks_baseline_dormancy trusted the manifest named by DXZ_BOOK_MANIFEST as
+    ground truth for the live book with no check that it was still current --
+    a 2026-07-26 book decision (decisions/2026-07-26_book_final24b_minus10440_plus11422.md)
+    named portfolio_manifest_sunday_FINAL24b_TOTALRISK12_20260726.json as the accepted
+    manifest, but the health check kept reading the superseded 2026-07-24 file, so a
+    stale-manifest WARN could misattribute a sleeve that already left the book.
+
+    This does NOT determine which manifest is actually deployed to T_Live (that
+    requires live-account verification, out of scope / ROT for an unattended
+    health check) -- it only makes "a newer candidate exists and nobody
+    reconciled it" visible instead of silently trusting whichever file
+    DXZ_BOOK_MANIFEST happens to point at. Returns None if the configured
+    manifest is current (or the directory/file can't be read)."""
+    try:
+        configured_mtime = manifest_path.stat().st_mtime
+    except OSError:
+        return None
+    try:
+        candidates = sorted(manifest_path.parent.glob("portfolio_manifest_*.json"))
+    except OSError:
+        return None
+    resolved_configured = manifest_path.resolve()
+    newer: list[tuple[float, str]] = []
+    for candidate in candidates:
+        if "DRAFT" in candidate.name.upper():
+            continue
+        try:
+            if candidate.resolve() == resolved_configured:
+                continue
+            mtime = candidate.stat().st_mtime
+        except OSError:
+            continue
+        if mtime > configured_mtime:
+            newer.append((mtime, candidate.name))
+    if not newer:
+        return None
+    newer.sort(reverse=True)
+    return {
+        "configured": manifest_path.name,
+        "configured_mtime_utc": utc_now_iso_from_ts(configured_mtime),
+        "newer_candidates": [name for _, name in newer[:5]],
+        "newest_candidate": newer[0][1],
+        "newest_candidate_mtime_utc": utc_now_iso_from_ts(newer[0][0]),
+    }
+
+
+def utc_now_iso_from_ts(ts: float) -> str:
+    return dt.datetime.fromtimestamp(ts, dt.timezone.utc).replace(microsecond=0).isoformat()
+
+
 def chk_ks_baseline_dormancy() -> dict:
     """(d) KS divergence kill-switch dormancy on live sleeves. Binds each manifest sleeve
     to its on-disk baseline hash and requires an observed KS_BASELINE_LOADED event whose
@@ -3253,6 +3307,155 @@ STRANDED_TASK_FAIL_TOTAL = 900
 # legacy backlog threshold.
 AGENT_TASK_AGING_SLO_STATES = ("RECYCLE", "PIPELINE", "BLOCKED")
 AGENT_TASK_AGING_SLO_DAYS = 3
+
+# MNT-039 follow-up: a work-item age SLO must reflect the phase's own measured
+# completion distribution.  Use the empirical nearest-rank p95 of elapsed time
+# from created_at to the terminal update (done/failed), after folding legacy Pn
+# labels into their operator-facing Qnn name.  There is deliberately no fixed
+# hour floor or hand-tuned per-phase table: every threshold below comes from the
+# rows it governs.  Phases with open rows but no terminal history are UNKNOWN,
+# never silently green.
+WORK_ITEM_PHASE_AGE_SLO_PERCENTILE = 0.95
+WORK_ITEM_PHASE_AGE_DETAIL_LIMIT = 3
+
+
+def _canonical_q_phase(value: object) -> str:
+    phase = str(value or "").strip().upper()
+    match = re.fullmatch(r"[PQ](\d+)", phase)
+    if match:
+        return f"Q{int(match.group(1)):02d}"
+    return phase
+
+
+def _nearest_rank(values: list[float], percentile: float) -> float:
+    ordered = sorted(values)
+    rank = max(1, int(len(ordered) * percentile + 0.999999999))
+    return ordered[min(rank, len(ordered)) - 1]
+
+
+def phase_age_slo_snapshot(con, *, now: dt.datetime | None = None) -> dict:
+    """Return the empirical per-Q-phase SLO derivation and current violations."""
+    observed_at = now or _utc_now()
+    terminal: dict[str, list[float]] = {}
+    open_rows: dict[str, list[dict]] = {}
+    rows = con.execute(
+        """
+        SELECT id, phase, status, ea_id, symbol, created_at, updated_at
+        FROM work_items
+        WHERE status IN ('pending', 'active', 'done', 'failed')
+        """
+    ).fetchall()
+    for row in rows:
+        phase = _canonical_q_phase(row["phase"])
+        created = _parse_utc_ts(row["created_at"])
+        if not phase or created is None:
+            continue
+        if row["status"] in ("done", "failed"):
+            updated = _parse_utc_ts(row["updated_at"])
+            if updated is not None and updated >= created:
+                terminal.setdefault(phase, []).append(
+                    (updated - created).total_seconds()
+                )
+            continue
+        age_seconds = max(0.0, (observed_at - created).total_seconds())
+        open_rows.setdefault(phase, []).append(
+            {
+                "id": str(row["id"]),
+                "ea_id": str(row["ea_id"]),
+                "symbol": str(row["symbol"]),
+                "status": str(row["status"]),
+                "created_at": str(row["created_at"]),
+                "age_seconds": age_seconds,
+            }
+        )
+
+    phases: dict[str, dict] = {}
+    for phase in sorted(set(terminal) | set(open_rows)):
+        durations = terminal.get(phase, [])
+        threshold = (
+            _nearest_rank(durations, WORK_ITEM_PHASE_AGE_SLO_PERCENTILE)
+            if durations
+            else None
+        )
+        pending = sorted(
+            open_rows.get(phase, []), key=lambda row: row["age_seconds"], reverse=True
+        )
+        violations = (
+            [row for row in pending if row["age_seconds"] > threshold]
+            if threshold is not None
+            else []
+        )
+        phases[phase] = {
+            "terminal_sample_count": len(durations),
+            "percentile": WORK_ITEM_PHASE_AGE_SLO_PERCENTILE,
+            "threshold_seconds": threshold,
+            "open_count": len(pending),
+            "violation_count": len(violations),
+            "violations": violations,
+            "threshold_status": "MEASURED" if threshold is not None else "UNKNOWN",
+        }
+    return {
+        "schema": "qm.work_item_phase_age_slo.v1",
+        "observed_at": observed_at.isoformat(),
+        "derivation": "nearest-rank p95(created_at to terminal updated_at), by canonical Q phase",
+        "phases": phases,
+    }
+
+
+def chk_work_item_phase_age_slo(con) -> dict:
+    """Alarm when an open work item exceeds its phase's empirical p95 age."""
+    tbl = con.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='work_items'"
+    ).fetchone()
+    if not tbl:
+        return _check(
+            "work_item_phase_age_slo", "WARN", "UNKNOWN", "measured_p95",
+            "work_items table absent; per-phase age SLO cannot be derived",
+            "Restore the work-item ledger and rerun farm health.",
+        )
+    snapshot = phase_age_slo_snapshot(con)
+    phases = snapshot["phases"]
+    violating = {p: v for p, v in phases.items() if v["violation_count"]}
+    unknown = {p: v for p, v in phases.items() if v["open_count"] and v["threshold_status"] == "UNKNOWN"}
+    parts = []
+    for phase, data in violating.items():
+        threshold_h = data["threshold_seconds"] / 3600.0
+        oldest = data["violations"][:WORK_ITEM_PHASE_AGE_DETAIL_LIMIT]
+        ids = ",".join(row["id"][:8] for row in oldest)
+        parts.append(
+            f"{phase}={data['violation_count']}/{data['open_count']} "
+            f">p95 {threshold_h:.2f}h (n={data['terminal_sample_count']}; oldest={ids})"
+        )
+    if violating:
+        total = sum(data["violation_count"] for data in violating.values())
+        if unknown:
+            parts.append(
+                "unmeasured="
+                + ",".join(
+                    f"{phase}:{data['open_count']}"
+                    for phase, data in unknown.items()
+                )
+            )
+        return _check(
+            "work_item_phase_age_slo", "FAIL", total, 0, "; ".join(parts),
+            "Inspect this check in state/health.json (also shown by the cockpit); "
+            "drain the named Q-phase rows without overwriting verdict evidence.",
+        )
+    if unknown:
+        detail = ", ".join(
+            f"{phase}={data['open_count']} open/no terminal sample"
+            for phase, data in unknown.items()
+        )
+        return _check(
+            "work_item_phase_age_slo", "WARN", "UNKNOWN", "measured_p95", detail,
+            "Establish terminal evidence for each named Q phase; absence is not green.",
+        )
+    measured = sum(1 for data in phases.values() if data["threshold_status"] == "MEASURED")
+    return _check(
+        "work_item_phase_age_slo", "OK", 0, 0,
+        f"no open row exceeds its own empirical p95 across {measured} measured Q phases",
+        "",
+    )
 
 
 def chk_agent_task_aging_slo(con) -> dict:
@@ -3681,6 +3884,7 @@ ALL_CHECKS = [
     # Agent-task state-machine liveness (census 2026-07-27 ranks 4/5/8/9)
     ("agent_task_state_stranded", chk_agent_task_state_stranded, True),
     ("agent_task_aging_slo", chk_agent_task_aging_slo, True),
+    ("work_item_phase_age_slo", chk_work_item_phase_age_slo, True),
     # Failure-classification + tail detectors (census 2026-07-27 ranks 1/3)
     ("pending_tail_age", chk_pending_tail_age, True),
     ("q02_summary_missing_unclassified", chk_q02_summary_missing_unclassified, True),

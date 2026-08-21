@@ -141,3 +141,67 @@ def test_per_class_aging_slo_is_registered_and_green_without_stale_rows(monkeypa
     result = health.chk_agent_task_aging_slo(con)
     assert result["status"] == "OK"
     assert any(name == "agent_task_aging_slo" for name, _, _ in health.ALL_CHECKS)
+
+
+def _phase_slo_db() -> sqlite3.Connection:
+    con = sqlite3.connect(":memory:")
+    con.row_factory = sqlite3.Row
+    con.execute(
+        """
+        CREATE TABLE work_items (
+            id TEXT PRIMARY KEY, phase TEXT, status TEXT, ea_id TEXT, symbol TEXT,
+            created_at TEXT, updated_at TEXT
+        )
+        """
+    )
+    return con
+
+
+def test_phase_age_slo_uses_own_measured_p95_and_refuses_stale_row() -> None:
+    con = _phase_slo_db()
+    # Twenty terminal Q02/P2 rows make nearest-rank p95 exactly 19 hours.
+    for hour in range(1, 21):
+        con.execute(
+            "INSERT INTO work_items VALUES (?,?,?,?,?,?,?)",
+            (
+                f"done-{hour}", "P2" if hour % 2 else "Q02", "done", "QM5_9",
+                "EURUSD.DWX", "2026-08-01T00:00:00Z",
+                f"2026-08-01T{hour:02d}:00:00Z",
+            ),
+        )
+    con.execute(
+        "INSERT INTO work_items VALUES (?,?,?,?,?,?,?)",
+        (
+            "stale", "Q02", "pending", "QM5_10", "GBPUSD.DWX",
+            "2026-08-01T00:00:00Z", "2026-08-01T00:00:00Z",
+        ),
+    )
+    snapshot = health.phase_age_slo_snapshot(
+        con, now=dt.datetime(2026, 8, 1, 20, 0, tzinfo=dt.timezone.utc)
+    )
+    q02 = snapshot["phases"]["Q02"]
+    assert q02["terminal_sample_count"] == 20
+    assert q02["threshold_seconds"] == 19 * 3600
+    assert q02["violation_count"] == 1
+    assert q02["violations"][0]["id"] == "stale"
+
+
+def test_phase_age_slo_surfaces_unknown_history_and_is_registered(monkeypatch) -> None:
+    con = _phase_slo_db()
+    con.execute(
+        "INSERT INTO work_items VALUES (?,?,?,?,?,?,?)",
+        (
+            "open", "Q09_NEWS", "pending", "QM5_11", "USDJPY.DWX",
+            "2026-08-01T00:00:00Z", "2026-08-01T00:00:00Z",
+        ),
+    )
+    monkeypatch.setattr(
+        health,
+        "_utc_now",
+        lambda: dt.datetime(2026, 8, 2, 0, 0, tzinfo=dt.timezone.utc),
+    )
+    result = health.chk_work_item_phase_age_slo(con)
+    assert result["status"] == "WARN"
+    assert result["value"] == "UNKNOWN"
+    assert "Q09_NEWS=1 open/no terminal sample" in result["detail"]
+    assert any(name == "work_item_phase_age_slo" for name, _, _ in health.ALL_CHECKS)
