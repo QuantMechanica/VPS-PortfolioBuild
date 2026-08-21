@@ -186,10 +186,17 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             (linked_checkout / ".git").write_text("gitdir: elsewhere\n", encoding="utf-8")
             farmctl.init_db(root)
             agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+            # Full drift: strip the governed capability from BOTH the research
+            # lane and the human lane that owns it, so no declared row can
+            # satisfy the task at all.
             with agent_router.connect(root) as conn:
                 conn.execute(
                     "UPDATE agent_registry SET capabilities_json=? WHERE agent_id='gemini'",
                     (json.dumps(["research", "strategy", "source_discovery"]),),
+                )
+                conn.execute(
+                    "UPDATE agent_registry SET capabilities_json=? WHERE agent_id='owner'",
+                    (json.dumps(["research", "strategy"]),),
                 )
                 conn.commit()
             task = agent_router.enqueue_task(
@@ -218,6 +225,95 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             self.assertIsNone(row["assigned_agent"])
             self.assertEqual(warning["code"], "ROUTER_CAPABILITY_UNROUTABLE")
             self.assertEqual(event["event"], "routing_capability_unroutable")
+
+    def test_video_task_is_held_for_the_owner_human_lane(self) -> None:
+        """OWNER 2026-08-21: OWNER is the assignee of the video_analysis lane.
+
+        The ticket must be HELD and marked, never routed to an AI seat that
+        cannot watch a video and never silently skipped — the silent skip is
+        what made the blind agy video lane read as ordinary backlog.
+        """
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            flag = root / "missing.flag"
+            farmctl.init_db(root)
+            agent_router.sync_default_registry(root, claude_disabled_flag=flag)
+            task = agent_router.enqueue_task(
+                root,
+                "research_strategy",
+                priority=99,
+                required_skills=["video_analysis"],
+            )
+
+            decision = agent_router.route_once(root, claude_disabled_flag=flag)
+
+            self.assertEqual(decision.task_id, task["task_id"])
+            self.assertIsNone(decision.assigned_agent)
+            self.assertEqual(decision.reason, "awaiting_human_lane:owner")
+            with agent_router.connect(root) as conn:
+                row = conn.execute(
+                    "SELECT state, assigned_agent, payload_json FROM agent_tasks WHERE id=?",
+                    (task["task_id"],),
+                ).fetchone()
+                event = conn.execute(
+                    "SELECT event FROM events WHERE entity_type='agent_task' AND entity_id=? "
+                    "ORDER BY ts DESC LIMIT 1",
+                    (task["task_id"],),
+                ).fetchone()
+                owner = conn.execute(
+                    "SELECT enabled, max_parallel, capabilities_json FROM agent_registry "
+                    "WHERE agent_id='owner'"
+                ).fetchone()
+                gemini = conn.execute(
+                    "SELECT capabilities_json FROM agent_registry WHERE agent_id='gemini'"
+                ).fetchone()
+            hold = json.loads(row["payload_json"])["router_human_lane_hold"]
+            self.assertEqual(row["state"], "TODO")
+            self.assertIsNone(row["assigned_agent"])
+            self.assertEqual(hold["code"], "ROUTER_AWAITING_HUMAN_LANE")
+            self.assertEqual(hold["lane"], "owner")
+            self.assertIn("video_analysis", hold["required"])
+            self.assertEqual(event["event"], "routing_awaiting_human_lane")
+            # The human lane is declared but unstaffed, and the capability is
+            # gone from the research lane that could never deliver it.
+            self.assertFalse(bool(owner["enabled"]))
+            self.assertEqual(int(owner["max_parallel"]), 0)
+            self.assertIn("video_analysis", json.loads(owner["capabilities_json"]))
+            self.assertNotIn("video_analysis", json.loads(gemini["capabilities_json"]))
+
+    def test_ordinary_task_is_not_held_for_the_human_lane(self) -> None:
+        """The hold must be narrow: only tasks that need the human-owned
+        capability wait for OWNER. An ordinary ticket whose requirements happen
+        to be a subset of the human lane's declared set must still report the
+        normal reason when the AI seats cannot take it."""
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            flag = root / "missing.flag"
+            farmctl.init_db(root)
+            agent_router.sync_default_registry(root, claude_disabled_flag=flag)
+            # Disable every AI seat at the DEFAULT registry, not in the live
+            # table: route_once re-syncs the defaults on entry, so a direct
+            # UPDATE would be overwritten before routing.
+            no_ai_seats = {
+                agent_id: (cfg if agent_id in agent_router.HUMAN_LANES
+                           else {**cfg, "enabled": False, "max_parallel": 0})
+                for agent_id, cfg in agent_router.DEFAULT_AGENT_REGISTRY.items()
+            }
+            task = agent_router.enqueue_task(root, "review_strategy", priority=99)
+
+            with patch.object(agent_router, "DEFAULT_AGENT_REGISTRY", no_ai_seats):
+                decision = agent_router.route_once(root, claude_disabled_flag=flag)
+
+            self.assertEqual(decision.task_id, task["task_id"])
+            self.assertIsNone(decision.assigned_agent)
+            self.assertNotIn("awaiting_human_lane", decision.reason)
+            with agent_router.connect(root) as conn:
+                payload = json.loads(
+                    conn.execute(
+                        "SELECT payload_json FROM agent_tasks WHERE id=?", (task["task_id"],)
+                    ).fetchone()["payload_json"]
+                )
+            self.assertNotIn("router_human_lane_hold", payload)
 
     def test_codex_enabled_cap_is_five(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

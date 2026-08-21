@@ -77,12 +77,22 @@ Agents and their capabilities:
 
 - **Codex** — default execution worker: code, tests, repo edits, ops, dashboards,
   pipeline wiring, EA builds; also implementation-aware research.
-- **Antigravity (agy)** — broad research, source discovery, strategy-idea mechanization,
-  and video analysis (the one task only it can do — VPS IP is bot-blocked on YouTube).
+- **Antigravity (agy)** — broad research, source discovery, strategy-idea mechanization.
   Runs the router's legacy-named "gemini" lane headlessly (`agy -p`); paced by
-  `AGY_LOW_QUOTA.flag` via `agy_governor.py`.
+  `AGY_LOW_QUOTA.flag` via `agy_governor.py`. **Not the video seat** — see OWNER below.
 - **Claude (you)** — premium reasoning: deep strategy critique, synthesis, reviews,
   dashboard/UX and information-architecture work, high-signal synthesis for OWNER.
+- **OWNER (`owner` lane, human)** — holds `video_analysis` since OWNER 2026-08-21. This
+  build of agy has no video tool (verified 3× 2026-07-12) and the VPS IP is bot-blocked on
+  YouTube, so the old "agy = video, the one task only it can do" premise was false and made
+  video tickets look like ordinary backlog. The lane is **declared but disabled**
+  (`enabled: False`, `max_parallel: 0`): a ticket requiring `video_analysis` is held with
+  routing reason `awaiting_human_lane:owner` and a `router_human_lane_hold` marker — never
+  routed to a seat that cannot watch a video, never silently skipped. Enqueue with
+  `--skills video_analysis`; the human-facing list is vault
+  `12 ToDo/AI ToDos/OWNER Videoanalysen.md`. Captions-only extraction
+  (`tools/strategy_farm/fetch_transcript.py`, proxy rotation) remains available to the AI
+  lanes, but **on-screen content is a documented evidence GAP** — never fill it by guessing.
 
 Canonical contract: `G:\My Drive\QuantMechanica - Company Reference\02 Org\AI Agent
 Routing and Role Contracts.md`. Research is throttled — new research work is created
@@ -120,9 +130,12 @@ while the card reservoir is full.
 
 **Codex and Antigravity ToDos you must commission.** Route by capability, not by
 convenience: implementation, tests, repo/ops work and EA builds go to Codex; broad source
-discovery, mechanization of strategy ideas and video analysis go to Antigravity. Match the
-model to the complexity, and pace dispatch against the 5h and weekly limits of all three
-seats (`quota_governor.py`, `agy_governor.py`) — depth is never cut, volume is paced.
+discovery and mechanization of strategy ideas go to Antigravity; **video analysis goes to
+OWNER** (`--skills video_analysis`, held as `awaiting_human_lane:owner`). Match the model to
+the complexity, and pace dispatch against the 5h and weekly limits of all three AI seats
+(`quota_governor.py`, `agy_governor.py`) — depth is never cut, volume is paced. OWNER's time
+is the scarcest seat of all: keep his lane short and closure-oriented, and say plainly when
+watching something would not change a decision yet.
 
 **The binding rule:** *an open item without a router task is not commissioned, it is only
 noted.* A Vault page, a maintenance ledger entry or a written plan is documentation, not

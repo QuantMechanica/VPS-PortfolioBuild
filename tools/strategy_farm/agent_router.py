@@ -85,10 +85,24 @@ AGENT_TASK_TYPE_LANES: dict[str, tuple[str, ...]] = {
     "codex": ("ops_issue", "triage_failure"),
     "claude": ("ops_issue", "triage_failure"),
     "gemini": ("research_strategy",),
+    "owner": (),
 }
 AGENT_EXTRA_REQUIRED_CAPABILITIES: dict[str, set[str]] = {
-    "gemini": {"video_analysis"},
+    # OWNER 2026-08-21: `video_analysis` moved off the gemini lane. The routing
+    # contract had named agy as the video seat since the beginning, but that
+    # build has no video tool (verified three times 2026-07-12) and the VPS IP
+    # is bot-blocked on YouTube — so the lane could never deliver, and a video
+    # ticket sitting there was indistinguishable from ordinary backlog. OWNER
+    # holds this capability personally now.
+    "owner": {"video_analysis"},
 }
+
+# Lanes with NO automated worker. A task whose requirements only a human lane
+# can satisfy must never be silently skipped (that is what made the blind agy
+# video lane look like backlog) and must never fall through to a seat that
+# cannot do the work. It is held, marked, and surfaced — see
+# `_human_lane_holder` and the `awaiting_human_lane` routing decision.
+HUMAN_LANES: frozenset[str] = frozenset({"owner"})
 
 # Task types deliberately removed from the agent lane. `pipeline_run` required
 # capability `pipeline`, which no enabled agent declares — so it was
@@ -146,16 +160,33 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     },
     "gemini": {
         "enabled": True,
-        # Research/video lane. video_analysis is the governed specialist
-        # capability that only agy can perform (VPS IP is YouTube-blocked).
+        # Research lane. `video_analysis` was REMOVED here on OWNER instruction
+        # 2026-08-21 and now lives on the `owner` lane: this build has no video
+        # tool and the VPS IP is YouTube-blocked, so the capability was declared
+        # but undeliverable — see AGENT_EXTRA_REQUIRED_CAPABILITIES.
         # Whether code/tests/repo_edit belong on this lane is a SEPARATE OWNER
         # decision after the 2026-08-21 agy build-wave review (49/50 negative);
-        # the flapping fix (ticket cd982cfc) deliberately does NOT change this
-        # set — it only stops stale worktree checkouts from overwriting it.
-        # Leave exactly as-is until that decision lands.
-        "capabilities": ["code", "tests", "repo_edit", "research", "strategy", "source_discovery", "video_analysis"],
+        # the flapping fix (ticket cd982cfc) deliberately does NOT change those
+        # — it only stops stale worktree checkouts from overwriting them.
+        # Leave the rest exactly as-is until that decision lands.
+        "capabilities": ["code", "tests", "repo_edit", "research", "strategy", "source_discovery"],
         "max_parallel": 2,
         "cost_rank": 10,
+    },
+    "owner": {
+        # OWNER 2026-08-21: the human lane. Declared so that routing KNOWS who
+        # holds `video_analysis`; disabled with max_parallel 0 because there is
+        # no worker process to execute it. The combination is deliberate: a
+        # declared-but-unexecutable lane makes a video ticket wait visibly
+        # (reason `awaiting_human_lane`) instead of either falling to a seat
+        # that cannot watch a video or vanishing into a silent skip.
+        # The extra capabilities beyond video_analysis exist so that a normal
+        # research_strategy ticket carrying the video_analysis skill resolves to
+        # this lane as a whole rather than tripping the unroutable path.
+        "enabled": False,
+        "capabilities": ["video_analysis", "research", "strategy", "review", "summary"],
+        "max_parallel": 0,
+        "cost_rank": 99,
     },
 }
 
@@ -701,6 +732,57 @@ def _record_capability_warning(
     _record_lease_event(conn, task["id"], "routing_capability_unroutable", warning)
 
 
+def _human_lane_holder(conn: sqlite3.Connection, required: set[str]) -> str | None:
+    """Name the human lane that alone can satisfy `required`, if any.
+
+    A human lane is declared in the registry but has no worker process
+    (``enabled=0`` / ``max_parallel=0``). The caller uses this to HOLD the task
+    visibly rather than skipping it silently — the failure mode that made the
+    blind agy video lane look like ordinary backlog for five weeks.
+
+    The hold only applies when the task really needs the capability the human
+    lane owns (``AGENT_EXTRA_REQUIRED_CAPABILITIES``). Without that guard every
+    ordinary review/research ticket would be held for OWNER whenever the AI
+    lanes are merely at capacity, because their requirements happen to be a
+    subset of the human lane's declared set.
+    """
+    if not required:
+        return None
+    for row in conn.execute(
+        "SELECT agent_id, capabilities_json FROM agent_registry ORDER BY agent_id"
+    ).fetchall():
+        agent_id = str(row["agent_id"])
+        if agent_id not in HUMAN_LANES:
+            continue
+        owned = set(AGENT_EXTRA_REQUIRED_CAPABILITIES.get(agent_id, set()))
+        if not (required & owned):
+            continue
+        capabilities = set(json.loads(row["capabilities_json"] or "[]"))
+        if required.issubset(capabilities):
+            return agent_id
+    return None
+
+
+def _record_human_lane_hold(
+    conn: sqlite3.Connection,
+    task: sqlite3.Row,
+    hold: dict[str, Any],
+) -> None:
+    """Persist one visible hold without changing queue age or priority."""
+    try:
+        payload = json.loads(task["payload_json"] or "{}")
+    except (TypeError, json.JSONDecodeError):
+        payload = {}
+    if payload.get("router_human_lane_hold") == hold:
+        return
+    payload["router_human_lane_hold"] = hold
+    conn.execute(
+        "UPDATE agent_tasks SET payload_json=? WHERE id=? AND state IN ('BACKLOG', 'TODO')",
+        (_json(payload), task["id"]),
+    )
+    _record_lease_event(conn, task["id"], "routing_awaiting_human_lane", hold)
+
+
 def _eligible_agents(conn: sqlite3.Connection, required: set[str], root: Path = DEFAULT_ROOT) -> list[sqlite3.Row]:
     rows = conn.execute(
         """
@@ -786,6 +868,7 @@ def route_once(
         governed_caps = _governed_routing_capabilities()
         skipped: list[str] = []
         capability_gaps: list[tuple[sqlite3.Row, dict[str, Any]]] = []
+        human_lane_holds: list[tuple[sqlite3.Row, dict[str, Any]]] = []
         selected: tuple[sqlite3.Row, sqlite3.Row, set[str], dict[str, Any]] | None = None
         quota_blocked: list[dict[str, Any]] = []
         for task in tasks:
@@ -809,6 +892,15 @@ def route_once(
                 continue
             agents = _eligible_agents(conn, required, root)
             if not agents:
+                holder = _human_lane_holder(conn, required)
+                if holder is not None:
+                    hold = {
+                        "code": "ROUTER_AWAITING_HUMAN_LANE",
+                        "lane": holder,
+                        "required": sorted(required),
+                    }
+                    _record_human_lane_hold(conn, task, hold)
+                    human_lane_holds.append((task, hold))
                 skipped.append(task["id"])
                 continue
             chosen_agent: sqlite3.Row | None = None
@@ -853,12 +945,23 @@ def route_once(
                     None,
                     f"capability_unavailable:{missing}",
                 )
+            if human_lane_holds:
+                # Reported ahead of the generic no_available_agent so an
+                # unstaffed human lane never reads as "the AI seats are busy".
+                hold_task, hold = human_lane_holds[0]
+                return RouteDecision(
+                    hold_task["id"],
+                    hold_task["task_type"],
+                    None,
+                    f"awaiting_human_lane:{hold['lane']}",
+                )
             first = tasks[0]
             reason = "quota_gate_blocked" if quota_blocked else "no_available_agent"
             return RouteDecision(first["id"], first["task_type"], None, reason)
         task, agent, required, gate = selected
         payload = json.loads(task["payload_json"] or "{}")
         payload.pop("router_capability_warning", None)
+        payload.pop("router_human_lane_hold", None)
         payload["routed_at"] = now
         payload["required_capabilities"] = sorted(required)
         if gate.get("enforced"):
