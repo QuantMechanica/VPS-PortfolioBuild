@@ -3,18 +3,19 @@
 ; ea_id:        11165
 ; ea_slug:      weiss-rsi-ma
 ; ea_version:   v5.0
-; set_version:  s20260614-stress-harsh
+; set_version:  s20260821-stress-harsh
 ; symbol:       AUDCAD.DWX
 ; timeframe:    H1
 ; environment:  q06_stress_harsh
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e9999eb2eeb22ae16b985037d60c986b0749e5acd77063543d22510a97629e08
+; build_hash:   442cd33203870dc01d4ad507d9de43c414193e3052a47d5acae7b5bb856c7105
 ; author:       Development
-; date:         2026-06-14
+; date:         2026-08-21
 ;==========================================================
 qm_magic_slot_offset=2
+qm_rng_seed=17
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

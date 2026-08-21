@@ -3,16 +3,16 @@
 ; ea_id:        1556
 ; ea_slug:      aa-zak-mom12
 ; ea_version:   v5.0
-; set_version:  s20260725-stress-harsh
+; set_version:  s20260821-stress-harsh
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  q06_stress_harsh
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   38b875db26441121cd33cac1137b066bbeaa73f18e5f58cb96a1ca5c3414c38e
+; build_hash:   4d7dde3e07fecae6ed72156562a12dfb8add331398185298e7236b84364ad549
 ; author:       Development
-; date:         2026-07-25
+; date:         2026-08-21
 ;==========================================================
 qm_magic_slot_offset=4
 qm_rng_seed=17

@@ -3,18 +3,19 @@
 ; ea_id:        11132
 ; ea_slug:      tm-cum-rsi2
 ; ea_version:   v5.0
-; set_version:  s20260704-stress-harsh
+; set_version:  s20260821-stress-harsh
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  q06_stress_harsh
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   de42cf4225cbba52fb43dbd48601c63bc8e44d52dfef13317d98dfc32aa71239
+; build_hash:   6444392bd349ee179690b541b57a2fecc31671f0581d6191d780bad88e0f84de
 ; author:       Development
-; date:         2026-07-04
+; date:         2026-08-21
 ;==========================================================
 qm_magic_slot_offset=1
+qm_rng_seed=7
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
