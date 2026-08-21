@@ -20,6 +20,7 @@ Read-only.  Writes a JSON artifact and prints a summary.
 from __future__ import annotations
 
 import json
+import math
 import sqlite3
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -30,7 +31,12 @@ DB = "file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro"
 OUT = Path(r"C:\QM\repo\artifacts\audit_activity_criterion_20260819.json")
 
 MIN_DAYS = 250            # the incumbent close-day floor
-PER_YEAR = 10             # OWNER-stated contractual criterion
+PER_YEAR = 10             # OWNER-stated contractual criterion (full scored year)
+# Ratified partial-year rule (OWNER 2026-08-21, CEO-MP-#4): a boundary/partial
+# year is SCORED when it covers >= 3 months, with a scaled distinct-day
+# requirement ceil(10 * covered_months / 12); a boundary year covering fewer
+# months is skipped entirely (neither scored nor failed).
+PARTIAL_MIN_COVERED_MONTHS = 3
 EARLY_OK = {"PASS", "PASS_SOFT", "PASS_LOWFREQ"}
 Q08_OK = {"PASS", "PASS_SOFT", "MULTI_SEED_PASS", "FAIL_SOFT"}
 EARLY_GATES = ("Q02", "Q03", "Q04", "Q05", "Q06", "Q07")
@@ -104,6 +110,70 @@ def per_year_days(ev, index):
     return {y: len(s) for y, s in sorted(days.items())}
 
 
+def covered_months(first_date, last_date, year):
+    """Number of covered months of a boundary (partial) `year`.
+
+    Coverage runs from the first tradable date to the last observed date,
+    clipped to `year`.  For the first boundary year that is `first_date.month`
+    through December; for the last boundary year it is January through
+    `last_date.month`; for a single-year span it is `first`..`last`.
+
+    Bug #4 coupling (documented, NOT fixed here): "covered" is defined to start
+    at the first BAR on which the EA is allowed to trade -- i.e. AFTER the
+    lookbackBars warm-up -- not the first bar of data.  That bar is not carried
+    in the q08 trade stream this tool reads, so the earliest/latest TRADE dates
+    substitute for the tradable window.  Using the first trade can only
+    over-state coverage (the true tradable start is >= the first trade), so the
+    substitution errs toward admitting a candidate, never toward disqualifying
+    one on a start date.  Wiring the true tradable-start needs the
+    short-history-lock fix (Bug #4, a separate Codex work item).
+    """
+    start_month = first_date.month if year == first_date.year else 1
+    end_month = last_date.month if year == last_date.year else 12
+    return max(0, end_month - start_month + 1)
+
+
+def partial_threshold(months):
+    """Scaled distinct-day requirement for a partial year: ceil(10 * m / 12)."""
+    return math.ceil(PER_YEAR * months / 12)
+
+
+def scored_years(by_year, first_date, last_date):
+    """Apply the ratified activity criterion to one date basis.
+
+    Full inner years (strictly inside the span, INCLUDING gap years that carry
+    no rows at all, which therefore count as zero distinct days) require
+    PER_YEAR (10) distinct days.  The two boundary/partial years are scored
+    pro-rata when they cover >= PARTIAL_MIN_COVERED_MONTHS months, with
+    threshold partial_threshold(covered_months); a boundary year covering fewer
+    months is SKIPPED -- neither scored nor failed -- and reported so the skip
+    stays visible rather than silently dropped.  A pair meets the criterion iff
+    at least one year is scored and no scored year falls below its threshold.
+    """
+    years = sorted(by_year)
+    if not years:
+        return {"scored": {}, "skipped": {}, "below": [], "meets": False}
+    first_y, last_y = years[0], years[-1]
+    inner_years = list(range(first_y + 1, last_y))
+    boundary_years = {first_y, last_y}
+    scored, skipped, below = {}, {}, []
+    for y in inner_years:
+        scored[y] = PER_YEAR
+        if by_year.get(y, 0) < PER_YEAR:
+            below.append(y)
+    for y in sorted(boundary_years):
+        months = covered_months(first_date, last_date, y)
+        if months < PARTIAL_MIN_COVERED_MONTHS:
+            skipped[y] = months
+            continue
+        thr = partial_threshold(months)
+        scored[y] = thr
+        if by_year.get(y, 0) < thr:
+            below.append(y)
+    return {"scored": scored, "skipped": skipped,
+            "below": sorted(below), "meets": bool(scored) and not below}
+
+
 def classify(ev, coverage):
     close_days = {c for _, c, _ in ev}
     entry_days = {e for e, _, _ in ev}
@@ -112,17 +182,18 @@ def classify(ev, coverage):
     first, last = min(close_days), max(close_days)
     span_days = (last - first).days + 1
     years = sorted(by_year_close)
-    # Partial first/last calendar years are not held to the full-year criterion.
+    # Partial (boundary) years are now scored pro-rata rather than skipped -- see
+    # scored_years() and docs/ops/ACTIVITY_CRITERION.md §R (OWNER 2026-08-21,
+    # CEO-MP-#4).  Each date basis is scored against its own span endpoints.
+    close_score = scored_years(by_year_close, first, last)
+    entry_first, entry_last = min(entry_days), max(entry_days)
+    entry_score = scored_years(by_year_entry, entry_first, entry_last)
+    # full_years / inner_years keep their historical close-basis meaning for the
+    # summary print (worst-inner-year); a gap year inside the span with no rows
+    # still counts as zero trading days -- a hard fail of the full-year floor.
     partial = {years[0], years[-1]} if years else set()
     full_years = [y for y in years if y not in partial]
-    # A year inside the span with no stream rows at all is zero trading days,
-    # so the criterion is evaluated over the full calendar range, not only
-    # over years that happen to appear in the stream.
     inner_years = list(range(years[0] + 1, years[-1])) if len(years) >= 2 else []
-    below = [y for y in inner_years if by_year_close.get(y, 0) < PER_YEAR]
-    below_entry = [y for y in inner_years if by_year_entry.get(y, 0) < PER_YEAR]
-    meets_close = bool(inner_years) and not below
-    meets_entry = bool(inner_years) and not below_entry
     return {
         "trades": len(ev),
         "entry_coverage": round(coverage, 4),
@@ -137,10 +208,14 @@ def classify(ev, coverage):
         "by_year_entry": by_year_entry,
         "full_years": full_years,
         "inner_years": inner_years,
-        "years_below_criterion": below,
-        "years_below_criterion_entry": below_entry,
-        "meets_10_per_year_close": meets_close,
-        "meets_10_per_year_entry": meets_entry,
+        "scored_years_close": close_score["scored"],
+        "scored_years_entry": entry_score["scored"],
+        "skipped_partial_years_close": close_score["skipped"],
+        "skipped_partial_years_entry": entry_score["skipped"],
+        "years_below_criterion": close_score["below"],
+        "years_below_criterion_entry": entry_score["below"],
+        "meets_10_per_year_close": close_score["meets"],
+        "meets_10_per_year_entry": entry_score["meets"],
         "meets_min_days_250": len(close_days) >= MIN_DAYS,
     }
 

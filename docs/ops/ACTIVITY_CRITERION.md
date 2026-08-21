@@ -223,12 +223,26 @@ dass sich die Signalfrequenz ändert. Eröffnungstag ist Goodhart-resistent gege
 Optimierung. (3) Es ist zugleich die FTMO-Definition — eine Zählweise für OWNER-Regel und
 Venue-Prüfung. **Zahl je Basis (Bestandskohorte 31 Paare): Schlusstag 8 · Eröffnungstag 10.**
 
-**Teiljahre (VORSCHLAG, nicht gesetzt):** Anteilig mit Mindestabdeckung — ein Randjahr wird
-gewertet, wenn es ≥ 3 abgedeckte Monate hat, mit skalierter Anforderung
-`ceil(10 × abgedeckte_Monate / 12)` Handelstagen; unter 3 Monaten wird es ausgelassen.
-Begründung: nutzt alle Evidenz, ist startdatum-robust (volle Wertung eines Rumpfjahres würde
-qualifizierte Kandidaten je nach Startdatum aussortieren), und bleibt ein Volumenmaß im Geist der
-Regel (10/12 ≈ 0,83 Tage je Monat). **Kopplung Bug #4:** „Abgedeckt" beginnt am ersten Bar, an dem
-der EA handeln DARF — eine Filter-Warmlaufphase (lookbackBars) zählt nicht als Abdeckung. Damit
-kann weder das Startdatum noch ein Warmlauf einen Kandidaten disqualifizieren; unabhängig davon
-wird Bug #4 (Kurzhistorien-Sperre) vor jeder Integration behoben.
+**Teiljahre — RATIFIZIERT, OWNER 2026-08-21 (`CEO-MP-#4`):** Anteilig mit Mindestabdeckung — ein
+Randjahr wird gewertet, wenn es ≥ 3 abgedeckte Monate hat, mit skalierter Anforderung
+`ceil(10 × abgedeckte_Monate / 12)` Handelstagen; unter 3 Monaten wird es ausgelassen (nicht
+gewertet, nicht durchgefallen — die Auslassung bleibt im Output sichtbar). Begründung: nutzt alle
+Evidenz, ist startdatum-robust (volle Wertung eines Rumpfjahres würde qualifizierte Kandidaten je
+nach Startdatum aussortieren), und bleibt ein Volumenmaß im Geist der Regel (10/12 ≈ 0,83 Tage je
+Monat). **Kopplung Bug #4:** „Abgedeckt" beginnt am ersten Bar, an dem der EA handeln DARF — eine
+Filter-Warmlaufphase (lookbackBars) zählt nicht als Abdeckung. Damit kann weder das Startdatum noch
+ein Warmlauf einen Kandidaten disqualifizieren; unabhängig davon wird Bug #4 (Kurzhistorien-Sperre)
+vor jeder Integration behoben.
+
+**Implementierung (2026-08-21):** Das Kriterium wird an genau einer Stelle berechnet —
+`tools/strategy_farm/portfolio/audit_activity_criterion.py`. Die Teiljahres-Logik liegt in den
+Funktionen `covered_months()`, `partial_threshold()` und `scored_years()`; `classify()` wertet
+beide Zählbasen (Eröffnung/Schluss) gegen ihre eigenen Spannenränder und meldet gewertete Jahre
+(`scored_years_*`) sowie ausgelassene Randjahre (`skipped_partial_years_*`). `audit_activity_-
+contribution.py` und `audit_activity_marginal.py` sind reine Verbraucher des JSON-Artefakts
+(`recovered_keys`) und rechnen das Kriterium nicht nach. **Bug-#4-Substitution:** der q08-Trade-
+Stream trägt den ersten *handelbaren Bar* nicht — als Abdeckungsstart dient ersatzweise das
+früheste Trade-Datum (kann Abdeckung nur über-, nie unterschätzen; Substitution im Code-Kommentar
+von `covered_months()` dokumentiert). Tests: `tools/strategy_farm/tests/test_activity_criterion_-
+prorata.py` (15 Fälle: Volljahr 9-vs-10, 3-Monats-Schwelle=3, 2-Monate=ausgelassen,
+6-Monats-Schwelle=5, Schaltjahr/Jahresgrenze).
