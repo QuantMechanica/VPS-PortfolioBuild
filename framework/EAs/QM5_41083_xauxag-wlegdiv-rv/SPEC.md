@@ -103,3 +103,4 @@ grid, martingale, pyramid, target, trail, break-even move, or partial exit.
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `55a658719`; atomic EA-ID reservation `b1c4e3988`; G0 card |
 | v1-build | 2026-08-21 | deterministic implementation and Q01 validation | 9-test reference suite; strict compile/build PASS; static P1 PASS |
+| v1-q02-capacity | 2026-08-21 | Q02 capacity handoff | target-only preflight eligible; no enqueue because five whole-host CPU samples were 100% against the 97% ceiling |

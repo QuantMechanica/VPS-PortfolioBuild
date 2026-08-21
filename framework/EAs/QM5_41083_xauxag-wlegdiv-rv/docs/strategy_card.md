@@ -64,7 +64,7 @@ r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q01_PASS
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a completed-week gold/silver individual-leg sign-divergence fade outside the certified XAU/SP500/NDX/XNG book. Verify exact prior-two-week membership, synchronized three-to-five-session close pairs, week-end endpoint selection, strict individual leg-sign opposition, contrarian relative-winner sides, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -380,6 +380,7 @@ realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-21 | initial XAU/XAG completed-week leg-divergence reversion card | G0 | APPROVED |
 | v1-build | 2026-08-21 | deterministic implementation, reference suite, strict compile/build checks, basket manifest, and static artifact validation | Q01 | PASS |
+| v1-q02-capacity | 2026-08-21 | target-only Q02 preflight found no existing work item and one eligible baseline, then stopped before mutation after five 100% whole-host CPU samples exceeded the 97% ceiling | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -387,7 +388,7 @@ realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-21 | APPROVED | `decisions/2026-08-21_qm5_41083_xauxag_weekly_leg_divergence_reversion_g0.md` |
 | Q01 Build Validation | 2026-08-21 | PASS | `D:/QM/reports/framework/21/build_check_20260821_040527.json`; `D:/QM/reports/pipeline/QM5_41083/P1/P1_QM5_41083_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | pending |
+| Q02 Baseline Screening | 2026-08-21 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-21_qm5_41083_xauxag_weekly_leg_divergence_q01_q02_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 

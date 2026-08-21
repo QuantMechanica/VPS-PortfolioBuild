@@ -1,0 +1,109 @@
+{
+  "artifact_type": "qm5_41083_q02_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-21T04:08:07Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "16e4801dc",
+  "ea_id": "QM5_41083",
+  "ea_label": "QM5_41083_xauxag-wlegdiv-rv",
+  "mission_outcome": "Q01_PASS_Q02_NOT_ENQUEUED_CPU_CEILING_STOP",
+  "strategy_identity": {
+    "logical_symbol": "QM5_41083_XAU_XAG_WLEGDIV_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "mechanic": "strict opposite signs in synchronized completed-week gold and silver log returns; fade the relative winner for one broker week",
+    "market_neutral_design": "opposite-side equal-absolute-notional two-leg basket",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "governance_commits": [
+    "55a658719",
+    "b1c4e3988",
+    "d5c6a3428",
+    "3dc125b72",
+    "16e4801dc"
+  ],
+  "q01_evidence": {
+    "reference_test_count": 9,
+    "reference_tests_passed": true,
+    "card_schema_lint_passed": true,
+    "g0_card_lint_passed": true,
+    "canonical_dedup_before_allocation": "CLEAN",
+    "strict_compile_errors": 0,
+    "strict_compile_warnings": 0,
+    "compile_summary": "D:/QM/reports/compile/20260821_040436/summary.csv",
+    "targeted_build_check": "PASS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260821_040527.json",
+    "build_check_report_sha256": "24795E338811B6EE1C53767B6FD7983AC60C6788BF107BC5914B763425838E3A",
+    "static_p1_validation": "PASS",
+    "p1_report": "D:/QM/reports/pipeline/QM5_41083/P1/P1_QM5_41083_result.json",
+    "p1_report_sha256": "F8022CC606453B29FF3F5BF434BDB2B6D77922D1485DA0DDA7CE3707DDCA5BA4",
+    "mq5_sha256": "24E2CE2A20D330653451D146C457B5530C3996F139C52839B309A38B37FA5202",
+    "ex5_sha256": "2AF6DFF7A31A0A2B6B7C846E73C23263523A7796153144B655FC28C59AB7D2AC",
+    "setfile_bytes_sha256": "D2207083C81C3A69B2ABA5292D421048039AAF8AE331E56DB84D59377EE285BF",
+    "setfile_normalized_build_hash": "3e3eab75a717a0aceea55564e517101e2ccd7080de24162119fc3dd86a827581"
+  },
+  "q02_preflight": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "query_mode": "read_only_via_farmctl_work_items",
+    "reconciled_work_item_count": 0,
+    "target_only_preview_apply": false,
+    "preview_part1_never_tested_enqueued_candidate_count": 1,
+    "preview_part1_never_tested_skipped_count": 0,
+    "preview_priority_track_item_count": 1,
+    "collision_decision": "no_existing_row_but_cpu_gate_forbids_enqueue"
+  },
+  "capacity_sample": {
+    "cpu_sample_times_utc": [
+      "2026-08-21T04:07:51.1962796Z",
+      "2026-08-21T04:07:55.3118102Z",
+      "2026-08-21T04:07:59.3384539Z",
+      "2026-08-21T04:08:03.3980827Z",
+      "2026-08-21T04:08:07.4886403Z"
+    ],
+    "whole_host_cpu_load_pct": [100, 100, 100, 100, 100],
+    "whole_host_cpu_max_pct": [100, 100, 100, 100, 100],
+    "whole_host_logical_processors": 16,
+    "whole_host_cpu_hard_ceiling_pct": 97,
+    "whole_host_cpu_ceiling_binding": true,
+    "slot_inventory_at_utc": "2026-08-21T04:07:17Z",
+    "running_factory_terminals": ["T1", "T2", "T3", "T4", "T6", "T8"],
+    "running_factory_terminal_count": 6,
+    "paced_terminal_ceiling": 7,
+    "terminal_ceiling_binding": false,
+    "research_terminal_reservation_count": 6,
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "active_assignments": [
+      {"terminal": "T1", "ea_id": "QM5_12935", "phase": "Q07", "symbol": "XAUUSD.DWX"},
+      {"terminal": "T2", "ea_id": "QM5_10796", "phase": "Q07", "symbol": "XAUUSD.DWX"},
+      {"terminal": "T3", "ea_id": "QM5_10135", "phase": "Q08", "symbol": "baseline", "work_item_id": null, "process_label": "pipeline_run"},
+      {"terminal": "T4", "ea_id": "QM5_20234", "phase": "Q03", "symbol": "QM5_20234_XAU_XAG_RSJ_D1"},
+      {"terminal": "T6", "ea_id": "QM5_20176", "phase": "Q05", "symbol": "USDJPY.DWX"},
+      {"terminal": "T8", "ea_id": "QM5_11167", "phase": "Q07", "symbol": "XAUUSD.DWX"}
+    ],
+    "process_selection": "farmctl mt5-slots; governed D:/QM/mt5/T<n>/terminal64.exe only; T_Live and FTMO observed only for exclusion"
+  },
+  "actions_this_run": {
+    "farm_db_read_only": true,
+    "target_only_non_apply_preview_invoked": true,
+    "new_source_approval_created": true,
+    "new_card_or_ea_created": true,
+    "registry_mutation": true,
+    "resolver_regeneration": true,
+    "compile_or_build_check": true,
+    "reference_tests_run": true,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "smoke_tester_or_backtest_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  }
+}
