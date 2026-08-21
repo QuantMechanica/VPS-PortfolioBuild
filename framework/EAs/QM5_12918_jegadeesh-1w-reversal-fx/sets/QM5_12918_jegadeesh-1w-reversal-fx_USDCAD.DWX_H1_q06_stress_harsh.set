@@ -3,7 +3,7 @@
 ; ea_id:        12918
 ; ea_slug:      jegadeesh-1w-reversal-fx
 ; ea_version:   v5.0
-; set_version:  s20260806-stress-harsh
+; set_version:  s20260821-stress-harsh
 ; symbol:       USDCAD.DWX
 ; timeframe:    H1
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   84fc408d1b2d582a634b1f80a4d81985b7bd9cb5f4c59ea47d7df5f742b6bb92
 ; author:       Development
-; date:         2026-08-06
+; date:         2026-08-21
 ;==========================================================
 qm_ea_id=12918
 qm_magic_slot_offset=4
