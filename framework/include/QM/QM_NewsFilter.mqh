@@ -885,16 +885,22 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
    if(!QM_NewsReadFileBytes(g_qm_news_calendar_path_primary, bytes_primary, modified_primary) ||
       !QM_NewsReadFileBytes(g_qm_news_calendar_path_secondary, bytes_secondary, modified_secondary))
      {
-      // 2026-07-20 framework audit P0.6 (P1.11 completion): the CSVs are the
-      // TESTER data source — live verdicts come from the native MT5 calendar.
-      // Outside the tester a missing/unreadable seed must degrade instead of
-      // bricking OnInit on a foreign or freshly-provisioned server. The CSV
+      // 2026-07-20 framework audit P0.6 (P1.11 completion), extended 2026-08-21
+      // MNT-045: the CSVs are the TESTER data source — live verdicts come from
+      // the native MT5 calendar. A missing/unreadable seed must degrade
+      // instead of bricking OnInit, in the tester exactly as it already does
+      // live — the preflight claim gate (_news_calendar_preflight) is what
+      // keeps a truly missing seed from ever reaching a backtest at all; this
+      // branch covers a gate-passed run whose data degrades mid-init. The CSV
       // features stay unavailable (g_qm_news_available=false), which keeps
-      // the legacy NEWS_ONLY mode fail-closed and fully logged.
+      // the legacy NEWS_ONLY mode fail-closed and fully logged; the run
+      // itself completes and carries a NEWS_CSV_DEGRADED[/_LIVE] marker
+      // instead of reading as an economic strategy failure.
       if(MQLInfoInteger(MQL_TESTER) != 0)
         {
-         QM_NewsLogSetupMissing("calendar_file_missing_or_unreadable");
-         return false;
+         QM_LogEvent(QM_WARN, "NEWS_CSV_DEGRADED",
+                     "{\"detail\":\"calendar_file_missing_or_unreadable\",\"tester_source\":\"none\"}");
+         return true;
         }
       QM_LogEvent(QM_WARN, "NEWS_CSV_DEGRADED_LIVE",
                   "{\"detail\":\"calendar_file_missing_or_unreadable\",\"live_source\":\"native_mt5_calendar\"}");
@@ -926,8 +932,9 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
       // audit P0.6: same live-degrade contract as the missing-file branch.
       if(MQLInfoInteger(MQL_TESTER) != 0)
         {
-         QM_NewsLogSetupMissing("calendar_csv_parse_failed");
-         return false;
+         QM_LogEvent(QM_WARN, "NEWS_CSV_DEGRADED",
+                     "{\"detail\":\"calendar_csv_parse_failed\",\"tester_source\":\"none\"}");
+         return true;
         }
       QM_LogEvent(QM_WARN, "NEWS_CSV_DEGRADED_LIVE",
                   "{\"detail\":\"calendar_csv_parse_failed\",\"live_source\":\"native_mt5_calendar\"}");
@@ -945,8 +952,9 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
       // audit P0.6: same live-degrade contract as the missing-file branch.
       if(MQLInfoInteger(MQL_TESTER) != 0)
         {
-         QM_NewsLogSetupMissing("calendar_zero_rows_parsed");
-         return false;
+         QM_LogEvent(QM_WARN, "NEWS_CSV_DEGRADED",
+                     "{\"detail\":\"calendar_zero_rows_parsed\",\"tester_source\":\"none\"}");
+         return true;
         }
       QM_LogEvent(QM_WARN, "NEWS_CSV_DEGRADED_LIVE",
                   "{\"detail\":\"calendar_zero_rows_parsed\",\"live_source\":\"native_mt5_calendar\"}");

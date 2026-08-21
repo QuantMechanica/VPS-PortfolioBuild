@@ -216,6 +216,7 @@
         "NEWS_CALENDAR_COVERAGE_GAP",
         "NEWS_CALENDAR_LOADED",
         "NEWS_CALENDAR_SKIPPED",
+        "NEWS_CSV_DEGRADED",
         "NEWS_CSV_DEGRADED_LIVE",
         "NEWS_LIVE_CALENDAR_SELFTEST",
         "NEWS_TESTER_CALENDAR_SELFTEST",
@@ -359,7 +360,7 @@
         "event",
         "payload"
       ],
-      "resolved_call_count": 7445,
+      "resolved_call_count": 7448,
       "schema_version": 1,
       "stream": "qm_events"
     }
