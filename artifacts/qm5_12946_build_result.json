@@ -1,0 +1,23 @@
+{
+  "task_id": "f3254781-8a6f-4d7b-bf99-8183ca5c892a",
+  "ea_id": "QM5_12946",
+  "slug": "mql5-macd-obv-div-card",
+  "ea_dir": "framework/EAs/QM5_12946_mql5-macd-obv-div-card",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12946_mql5-macd-obv-div-card/QM5_12946_mql5-macd-obv-div-card.mq5",
+  "mq5_sha256": "2c04e592e9e86ab86ecc180b0379369db93054f5b3c6fc521316d24515ac1ac5",
+  "ex5_path": null,
+  "spec_md_path": null,
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12946_mql5-macd-obv-div-card.md",
+  "magic_base": 129460000,
+  "symbols_registered": [],
+  "setfiles_generated": [],
+  "build_check_passed": false,
+  "compile_succeeded": false,
+  "smoke_result": "build_check_failed",
+  "smoke_report_path": null,
+  "blocked_reason": "preflight_failed: ea_id 12946 has zero active magic_numbers.csv rows and no generated resolver entry; governed allocation is required before build",
+  "open_questions": [
+    "An OWNER-governed allocator must create active (12946, symbol_slot) rows after confirming the required card symbol surface, then regenerate and verify QM_MagicResolver.mqh.",
+    "The existing MQ5 is still the tracked TODO skeleton; no source, registry, SPEC, setfile, or binary mutation was authorized after the failed preflight."
+  ]
+}
