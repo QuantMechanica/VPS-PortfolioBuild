@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import hashlib
+import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,6 +12,44 @@ from tools.strategy_farm import farmctl
 
 
 class AgentRouterTests(unittest.TestCase):
+    def _write_build_identity_fixture(self, root: Path, *, commit: bool) -> Path:
+        label = "QM5_99002_router-gate-fixture"
+        ea_dir = root / "framework" / "EAs" / label
+        set_dir = ea_dir / "sets"
+        set_dir.mkdir(parents=True, exist_ok=True)
+        mq5 = ea_dir / f"{label}.mq5"
+        ex5 = ea_dir / f"{label}.ex5"
+        setfile = set_dir / f"{label}_EURUSD.DWX_H1_backtest.set"
+        mq5.write_text("void OnTick() {}\n", encoding="utf-8")
+        ex5.write_bytes(b"fixture-ex5")
+        setfile.write_text("; build_hash:   " + ("a" * 64) + "\nRISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+
+        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        subprocess.run(["git", "-C", str(root), "config", "user.email", "fixture@example.test"], check=True)
+        subprocess.run(["git", "-C", str(root), "config", "user.name", "Fixture"], check=True)
+        if commit:
+            subprocess.run(
+                ["git", "-C", str(root), "add", "--", str(mq5.relative_to(root)), str(ex5.relative_to(root)), str(setfile.relative_to(root))],
+                check=True,
+            )
+            subprocess.run(["git", "-C", str(root), "commit", "-q", "-m", "fixture identity"], check=True)
+
+        artifact = root / "gemini_build_result.json"
+        artifact.write_text(
+            json.dumps(
+                {
+                    "build_check_passed": True,
+                    "mq5_path": str(mq5),
+                    "mq5_sha256": hashlib.sha256(mq5.read_bytes()).hexdigest(),
+                    "ex5_path": str(ex5),
+                    "ex5_sha256": hashlib.sha256(ex5.read_bytes()).hexdigest(),
+                    "setfiles_generated": [str(setfile)],
+                }
+            ),
+            encoding="utf-8",
+        )
+        return artifact
+
     def _write_ready_card(self, path: Path, ea_id: str, slug: str) -> None:
         path.write_text(
             f"""---
@@ -130,8 +171,7 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             routed = agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
             self.assertEqual(routed.assigned_agent, "gemini")
 
-            artifact = root / "gemini_build_result.md"
-            artifact.write_text("draft build complete\n", encoding="utf-8")
+            artifact = self._write_build_identity_fixture(root, commit=True)
             updated = agent_router.update_task(
                 root,
                 build["task_id"],
@@ -145,6 +185,70 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             review_route = agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
             self.assertEqual(review_route.task_id, updated["codex_review_task_id"])
             self.assertEqual(review_route.assigned_agent, "codex")
+
+    def test_strict_build_fail_refuses_review_dispatch_and_logs_event(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            farmctl.init_db(root)
+            agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+            build = agent_router.enqueue_task(root, "build_ea", priority=10)
+            routed = agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
+            self.assertEqual(routed.assigned_agent, "gemini")
+            artifact = root / "strict_fail.json"
+            artifact.write_text(json.dumps({"build_check_passed": False}), encoding="utf-8")
+
+            refused = agent_router.update_task(
+                root,
+                build["task_id"],
+                state="REVIEW",
+                artifact_path=str(artifact),
+                verdict="SHOULD_NOT_ROUTE",
+            )
+            self.assertFalse(refused["updated"])
+            self.assertEqual(refused["gate_code"], "D1_STRICT_BUILD_FAIL")
+            self.assertEqual(refused["reason"], "strict_build_check_failed_review_dispatch_refused")
+            with agent_router.connect(root) as conn:
+                task = conn.execute("SELECT state FROM agent_tasks WHERE id=?", (build["task_id"],)).fetchone()
+                reviews = conn.execute("SELECT COUNT(*) AS n FROM agent_tasks WHERE task_type='review_ea'").fetchone()
+                event = conn.execute(
+                    "SELECT event FROM events WHERE entity_type='agent_task' AND entity_id=? ORDER BY ts DESC LIMIT 1",
+                    (build["task_id"],),
+                ).fetchone()
+            self.assertEqual(task["state"], "IN_PROGRESS")
+            self.assertEqual(reviews["n"], 0)
+            self.assertEqual(event["event"], "review_dispatch_refused")
+
+    def test_untracked_build_identity_refuses_review_until_committed(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+            build = agent_router.enqueue_task(root, "build_ea", priority=10)
+            agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
+            artifact = self._write_build_identity_fixture(root, commit=False)
+
+            refused = agent_router.update_task(
+                root,
+                build["task_id"],
+                state="REVIEW",
+                artifact_path=str(artifact),
+                verdict="UNTRACKED",
+            )
+            self.assertFalse(refused["updated"])
+            self.assertEqual(refused["gate_code"], "D6_BUILD_IDENTITY_UNTRACKED")
+
+            payload = json.loads(artifact.read_text(encoding="utf-8"))
+            paths = [payload["mq5_path"], payload["ex5_path"], *payload["setfiles_generated"]]
+            subprocess.run(["git", "-C", str(root), "add", "--", *paths], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-q", "-m", "bind build identity"], check=True)
+            accepted = agent_router.update_task(
+                root,
+                build["task_id"],
+                state="REVIEW",
+                artifact_path=str(artifact),
+                verdict="COMMITTED",
+            )
+            self.assertTrue(accepted["updated"])
+            self.assertTrue(accepted["codex_review_task_id"])
 
     def test_route_once_skips_temporarily_unavailable_head_task(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

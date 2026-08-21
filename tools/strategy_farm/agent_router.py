@@ -11,9 +11,11 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import re
 import sqlite3
+import subprocess
 import uuid
 from contextlib import closing
 from dataclasses import dataclass
@@ -1055,6 +1057,200 @@ def _normalize_card_ea_id(value: Any) -> str:
     return text.upper()
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _git_result(cwd: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-C", str(cwd), *args],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+
+
+def _git_root_for(path: Path) -> Path | None:
+    result = _git_result(path.parent, "rev-parse", "--show-toplevel")
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+    return Path(result.stdout.strip()).resolve()
+
+
+def _tracked_clean_at_head(git_root: Path, path: Path) -> tuple[bool, str]:
+    try:
+        relative = path.resolve().relative_to(git_root).as_posix()
+    except ValueError:
+        return False, "outside_git_root"
+    tracked = _git_result(git_root, "ls-files", "--error-unmatch", "--", relative)
+    if tracked.returncode != 0:
+        return False, "untracked"
+    clean = _git_result(git_root, "diff", "--quiet", "HEAD", "--", relative)
+    if clean.returncode != 0:
+        return False, "not_committed_at_head"
+    return True, relative
+
+
+def _refuse_review(code: str, reason: str, **detail: Any) -> dict[str, Any]:
+    return {"allowed": False, "gate_code": code, "reason": reason, **detail}
+
+
+def _build_review_dispatch_gate(artifact_path: str | None) -> dict[str, Any]:
+    """Fail closed before a Gemini build can mint a Codex review task.
+
+    D1 rejects an explicit strict-build failure. D6 then requires the producer
+    packet to bind committed MQ5/EX5/setfile bytes at the current Git HEAD.
+    This is intentionally a review-dispatch gate: compile/build_check may
+    regenerate EX5 bytes, after which the builder must commit the exact result
+    before asking a reviewer to inspect it.
+    """
+    artifact = Path(str(artifact_path or ""))
+    if not artifact.is_file() or artifact.suffix.lower() != ".json":
+        return _refuse_review(
+            "D6_BUILD_IDENTITY_MISSING",
+            "build_identity_json_missing_review_dispatch_refused",
+            artifact_path=str(artifact),
+        )
+    try:
+        payload = json.loads(artifact.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        return _refuse_review(
+            "D6_BUILD_IDENTITY_INVALID",
+            "build_identity_json_invalid_review_dispatch_refused",
+            artifact_path=str(artifact),
+            detail=str(exc),
+        )
+    if not isinstance(payload, dict):
+        return _refuse_review(
+            "D6_BUILD_IDENTITY_INVALID",
+            "build_identity_json_not_object_review_dispatch_refused",
+            artifact_path=str(artifact),
+        )
+
+    build_check = payload.get("build_check")
+    nested_fail = isinstance(build_check, dict) and (
+        str(build_check.get("result") or build_check.get("status") or "").upper() == "FAIL"
+        or (
+            build_check.get("exit_code") is not None
+            and str(build_check.get("exit_code")) not in {"0", "0.0"}
+        )
+    )
+    if payload.get("build_check_passed") is False or nested_fail:
+        return _refuse_review(
+            "D1_STRICT_BUILD_FAIL",
+            "strict_build_check_failed_review_dispatch_refused",
+            artifact_path=str(artifact.resolve()),
+        )
+    if payload.get("build_check_passed") is not True:
+        return _refuse_review(
+            "D6_BUILD_IDENTITY_MISSING",
+            "strict_build_pass_evidence_missing_review_dispatch_refused",
+            artifact_path=str(artifact.resolve()),
+        )
+
+    bound_specs = (
+        ("mq5_path", "mq5_sha256"),
+        ("ex5_path", "ex5_sha256"),
+    )
+    bound_paths: list[Path] = []
+    for path_key, hash_key in bound_specs:
+        raw_path = str(payload.get(path_key) or "").strip()
+        expected_hash = str(payload.get(hash_key) or "").strip().lower()
+        if not raw_path or not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
+            return _refuse_review(
+                "D6_BUILD_IDENTITY_MISSING",
+                "build_identity_path_or_hash_missing_review_dispatch_refused",
+                missing_path_key=path_key if not raw_path else None,
+                missing_hash_key=hash_key if not re.fullmatch(r"[0-9a-f]{64}", expected_hash) else None,
+            )
+        bound_path = Path(raw_path)
+        if not bound_path.is_file():
+            return _refuse_review(
+                "D6_BUILD_IDENTITY_MISSING",
+                "build_identity_bound_file_missing_review_dispatch_refused",
+                bound_path=str(bound_path),
+            )
+        actual_hash = _sha256_file(bound_path)
+        if actual_hash != expected_hash:
+            return _refuse_review(
+                "D6_BUILD_IDENTITY_HASH_MISMATCH",
+                "build_identity_hash_mismatch_review_dispatch_refused",
+                bound_path=str(bound_path.resolve()),
+                expected_sha256=expected_hash,
+                actual_sha256=actual_hash,
+            )
+        bound_paths.append(bound_path.resolve())
+
+    git_root = _git_root_for(bound_paths[0])
+    if git_root is None:
+        return _refuse_review(
+            "D6_BUILD_IDENTITY_UNTRACKED",
+            "build_identity_git_root_missing_review_dispatch_refused",
+            bound_path=str(bound_paths[0]),
+        )
+    for bound_path in bound_paths:
+        ok, track_detail = _tracked_clean_at_head(git_root, bound_path)
+        if not ok:
+            return _refuse_review(
+                "D6_BUILD_IDENTITY_UNTRACKED",
+                "build_identity_not_committed_review_dispatch_refused",
+                bound_path=str(bound_path),
+                track_detail=track_detail,
+            )
+
+    setfiles = payload.get("setfiles_generated")
+    if not isinstance(setfiles, list) or not setfiles:
+        return _refuse_review(
+            "D6_BUILD_IDENTITY_MISSING",
+            "build_identity_setfiles_missing_review_dispatch_refused",
+        )
+    for raw_setfile in setfiles:
+        setfile = Path(str(raw_setfile or "")).resolve()
+        if not setfile.is_file():
+            return _refuse_review(
+                "D6_BUILD_IDENTITY_MISSING",
+                "build_identity_setfile_missing_review_dispatch_refused",
+                setfile=str(setfile),
+            )
+        try:
+            set_text = setfile.read_text(encoding="utf-8-sig")
+        except (OSError, UnicodeError) as exc:
+            return _refuse_review(
+                "D6_BUILD_IDENTITY_INVALID",
+                "build_identity_setfile_unreadable_review_dispatch_refused",
+                setfile=str(setfile),
+                detail=str(exc),
+            )
+        if not re.search(r"(?im)^\s*;\s*build_hash\s*:\s*[0-9a-f]{64}\s*$", set_text):
+            return _refuse_review(
+                "D6_BUILD_HASH_MISSING",
+                "build_hash_missing_review_dispatch_refused",
+                setfile=str(setfile),
+            )
+        ok, track_detail = _tracked_clean_at_head(git_root, setfile)
+        if not ok:
+            return _refuse_review(
+                "D6_BUILD_IDENTITY_UNTRACKED",
+                "build_identity_setfile_not_committed_review_dispatch_refused",
+                setfile=str(setfile),
+                track_detail=track_detail,
+            )
+
+    head = _git_result(git_root, "rev-parse", "HEAD")
+    return {
+        "allowed": True,
+        "gate_code": "BUILD_REVIEW_DISPATCH_PASS",
+        "identity_commit": head.stdout.strip() if head.returncode == 0 else None,
+        "artifact_path": str(artifact.resolve()),
+    }
+
+
 def update_task(
     root: Path,
     task_id: str,
@@ -1073,6 +1269,21 @@ def update_task(
         dir_err = _directory_artifact_error(artifact_path)
         if dir_err is not None:
             return {"updated": False, "task_id": task_id, **dir_err}
+        if row["task_type"] == "build_ea" and row["assigned_agent"] == "gemini" and state == "REVIEW":
+            review_gate = _build_review_dispatch_gate(artifact_path or row["artifact_path"])
+            if not review_gate["allowed"]:
+                _record_lease_event(
+                    conn,
+                    task_id,
+                    "review_dispatch_refused",
+                    {
+                        "requested_state": state,
+                        "artifact_path": artifact_path or row["artifact_path"],
+                        **review_gate,
+                    },
+                )
+                conn.commit()
+                return {"updated": False, "task_id": task_id, **review_gate}
         if row["task_type"] == "research_strategy" and state == "REVIEW" and artifact_path:
             try:
                 resolved_artifact = Path(artifact_path).resolve()

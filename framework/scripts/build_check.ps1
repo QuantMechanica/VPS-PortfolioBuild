@@ -1047,6 +1047,51 @@ function Invoke-PerfStaticCheck {
     }
 }
 
+function Invoke-BuildGateHardeningCheck {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    $checkerPath = Join-Path $PSScriptRoot "..\..\tools\strategy_farm\build_gate_hardening.py"
+    if (-not (Test-Path -LiteralPath $checkerPath -PathType Leaf)) {
+        Add-Failure "BUILD_GATE_HARDENING_CHECKER_MISSING: $checkerPath."
+        return
+    }
+    $python = Get-Command python -ErrorAction SilentlyContinue
+    if ($null -eq $python) {
+        Add-Failure "BUILD_GATE_HARDENING_PYTHON_MISSING: python is required for the deterministic static gate."
+        return
+    }
+
+    $arguments = @($checkerPath, "--repo-root", $ResolvedRepoRoot)
+    if ($EALabel) {
+        $arguments += @("--ea-label", $EALabel)
+    }
+    $raw = & $python.Source @arguments 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Add-Failure "BUILD_GATE_HARDENING_EXECUTION_FAILED: exit=$LASTEXITCODE output=$($raw | Out-String)"
+        return
+    }
+    try {
+        $result = ($raw | Out-String) | ConvertFrom-Json -ErrorAction Stop
+    }
+    catch {
+        Add-Failure "BUILD_GATE_HARDENING_RESULT_INVALID: $($_.Exception.Message)"
+        return
+    }
+    if ([string]$result.schema -cne "qm.build-gate-hardening/v1") {
+        Add-Failure "BUILD_GATE_HARDENING_SCHEMA_INVALID: expected qm.build-gate-hardening/v1, got '$($result.schema)'."
+        return
+    }
+    foreach ($failure in @($result.failures)) {
+        Add-Failure ([string]$failure)
+    }
+    foreach ($warning in @($result.warnings)) {
+        Add-Warning ([string]$warning)
+    }
+}
+
 function Write-GateEvidence {
     param(
         [Parameter(Mandatory = $true)]
@@ -1209,6 +1254,7 @@ if (-not $SkipMaeHookCheck.IsPresent) {
 if (-not $SkipPerfStaticCheck.IsPresent) {
     Invoke-PerfStaticCheck -ResolvedRepoRoot $resolvedRepoRoot
 }
+Invoke-BuildGateHardeningCheck -ResolvedRepoRoot $resolvedRepoRoot
 
 Write-GateEvidence -ResolvedReportRoot $ReportRoot
 
