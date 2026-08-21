@@ -1,0 +1,153 @@
+{
+  "artifact_type": "fx_cointegration_existing_pair_q04_priority_advance",
+  "generated_at_utc": "2026-08-21T13:56:21.7511461Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "557c1f9488e8fcb8252233f511c0ca68496fe242",
+  "mission_outcome": "EXISTING_NON_DUPLICATE_FX_BASKET_ADVANCED_IN_PLACE",
+  "frontier_state": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a804932912a449aed19bbc8fe61f1f5846556743",
+    "new_card_or_ea_created": false,
+    "reason": "Every frozen-scan relationship is already mechanized; a new Card or EA would duplicate governed work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "scan_rank": 21,
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "ea_id": "QM5_20203",
+    "slug": "eurusd-audjpy",
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "card_status": "APPROVED",
+    "g0_status": "APPROVED",
+    "source_id": "claude_cross_asset_discovery_2026-06-09",
+    "source_criteria": {
+      "primary_source": "Chan, Ernest P. (2009), Quantitative Trading, OWNER-ratified Tier-A SRC02 extraction",
+      "research_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+      "r1_track_record": "PASS",
+      "r2_mechanical": "PASS",
+      "r3_data_available": "PASS",
+      "r4_ml_forbidden": "PASS"
+    },
+    "q02_work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+    "q02_status": "done",
+    "q02_verdict": "PASS",
+    "q04_work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+    "q04_status_after_action": "pending",
+    "q04_claimed_by_after_action": null,
+    "q04_attempt_count_after_action": 0,
+    "q04_exact_open_row_count": 1,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "artifact_sha256": {
+      "mq5": "d75788d24eadcff9c699a2f8964ab2cfd5ad924296b34df0b1d4a0a6853365cb",
+      "ex5": "4d57f2bc03a14ce0be3f7f18245adfff280955287cda5af1119d502d33d96270",
+      "basket_manifest": "2f5823242ae1b2a0592d9239969e22f31ac90234d909b3eee5e1d9c635b519a9",
+      "backtest_setfile": "dcac19dcd0882c24ba0c772b36e47c816c582d3f612b35445ce909bfc8e846d8",
+      "approved_card": "d2d842c492a5180c5736b91304cc971b56ebea8dc59a732c8aac026c61090900",
+      "ea_card_snapshot": "f5f4b1d13ace14d69ca3249b77976503f025c229598f16693ace755ba8c0043d"
+    }
+  },
+  "priority_action": {
+    "authority": "OWNER 2026-08-21 forex portfolio mission (current prompt); GRUEN queue-priority raise",
+    "applied_at_utc": "2026-08-21T13:52:10+00:00",
+    "work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+    "database_event_id": 367875,
+    "database_event": "priority_boost_applied",
+    "before_payload_sha256": "0799d25cec6e704c0226c333b807922a36855f0362af898db0213caff0bec930",
+    "after_payload_sha256": "a8aed2b5504e16aa0e4f3d57bc6294a20426ca2c85266c2038d14639cb7c08cd",
+    "fields_added": {
+      "priority_track": true,
+      "priority_boost_applied_at_utc": "2026-08-21T13:52:10+00:00",
+      "priority_boost_authority": "OWNER 2026-08-21 forex portfolio mission (current prompt); GRUEN queue-priority raise",
+      "priority_reason": "Frozen 66-pair frontier is fully mechanized and anchors are past Q02; advance the existing non-duplicate rank-21 EURUSD/AUDJPY Q04 successor in place; paced worker only."
+    },
+    "cas_row_count": 1,
+    "new_work_item_created": false,
+    "pipeline_verdict_changed": false,
+    "work_item_updated_at_preserved": "2026-08-15T23:46:58+00:00",
+    "canonical_scheduler_rank_before": 78,
+    "claimable_rows_before": 2170,
+    "canonical_scheduler_rank_after": 2,
+    "claimable_rows_after": 2168
+  },
+  "capacity_evidence": {
+    "explicit_hard_ceiling_percent": 97.0,
+    "initial_cpu_load_percent": [
+      50.15,
+      45.23,
+      31.94,
+      42.04,
+      37.01
+    ],
+    "initial_average_percent": 41.27,
+    "initial_maximum_percent": 50.15,
+    "pre_apply_cpu_load_percent": [
+      82.96,
+      81.81,
+      85.26
+    ],
+    "pre_apply_average_percent": 83.34,
+    "pre_apply_maximum_percent": 85.26,
+    "post_apply_cpu_load_percent": [
+      76.51,
+      86.46,
+      63.2
+    ],
+    "post_apply_average_percent": 75.39,
+    "post_apply_maximum_percent": 86.46,
+    "final_cpu_load_percent": [
+      39.22,
+      94.78,
+      79.84
+    ],
+    "final_average_percent": 71.28,
+    "final_maximum_percent": 94.78,
+    "ceiling_binding": false,
+    "disk_free_gb_pre_apply": 155.49,
+    "ram_available_gb_pre_apply": 43.8,
+    "commit_free_gb_pre_apply": 101.53,
+    "active_multisymbol_work_item_at_final_read": null,
+    "paced_worker_note": "The exact Q04 row remained pending at canonical rank 2 while five ordinary single-symbol rows were active. No manual dispatcher or tester was launched."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "new_queue_row_created": false,
+    "existing_queue_row_priority_mutated": true,
+    "dispatch_tick": false,
+    "manual_tester_or_backtest_run": false,
+    "terminal_reservation_reconciliation_or_control": false,
+    "repository_evidence_created": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
