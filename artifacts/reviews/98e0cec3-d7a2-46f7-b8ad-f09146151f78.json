@@ -1,0 +1,23 @@
+{
+  "review_task_id": "98e0cec3-d7a2-46f7-b8ad-f09146151f78",
+  "build_task_id": "2a3580e3-ddbf-4853-b012-0cab4471109e",
+  "ea_id": "QM5_12939",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "PASS",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "[FRAMEWORK] OnTick calls QM_IsNewBar(_Symbol, _Period) at lines 391 and 413. The first call consumes the single per-key new-bar event, so the entry block at lines 413-420 can never execute.",
+    "[FRAMEWORK] QM_EntryRequest req at line 415 is not passed through ZeroMemory, and Strategy_EntrySignal does not assign expiration_seconds, leaving request state indeterminate.",
+    "[CARD-FIDELITY] The approved card requires 50% at T1, the remaining 50% at T2, and ATR trailing after T1. The EA places a full-position T1 broker target only; it has no QM_TM_PartialClose, T2 target, or post-T1 trail state.",
+    "[CARD-FIDELITY] The approved card requires an opposite-direction Alternate-Bat to close the current position before reversal. Strategy_ExitSignal always returns false, OnTick never invokes it, and Strategy_ManageOpenPosition implements only the time stop.",
+    "[ONTICK-ORDER-ADVISORY] The news return at lines 382-387 precedes Friday close and position management. Because entries carry server-side stops this remains an advisory under the review contract, but canonical ordering should still be restored."
+  ],
+  "reviewed_at": "2026-08-21T16:54:45Z"
+}
