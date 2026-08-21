@@ -31,15 +31,15 @@ dollar risk and a frozen completed-bar ATR hard stop.
 | Parameter | Value | Meaning |
 |---|---:|---|
 | `strategy_label_offset_seconds` | 86400 | uniform raw-to-energy-session label offset |
-| `strategy_entry_lateness_minutes` | 180 | first-week-bar execution window |
+| `strategy_entry_grace_minutes` | 180 | first-week-bar execution window |
 | `strategy_history_bars` | 16 | bounded D1 weekly OHLC buffer |
 | `strategy_required_weeks` | 1 | exact immediately completed package |
 | `strategy_min_week_bars` | 3 | minimum sessions in the package |
 | `strategy_max_week_bars` | 5 | maximum sessions in the package |
 | `strategy_excursion_multiplier` | 2 | strict dominant/opposing excursion multiple |
-| `strategy_atr_period` | 20 | completed-bar risk range |
-| `strategy_atr_stop_mult` | 3.5 | frozen hard-stop distance |
-| `strategy_stale_calendar_days` | 10 | stale-position repair |
+| `strategy_atr_period_d1` | 20 | completed-bar risk range |
+| `strategy_atr_sl_mult` | 3.5 | frozen hard-stop distance |
+| `strategy_max_hold_days` | 10 | stale-position repair |
 | `strategy_max_spread_points` | 1500 | WTI entry cost guard |
 | `qm_friday_close_enabled` | false | preserve full-week ownership |
 | `qm_friday_close_hour_broker` | 21 | locked inactive framework input |
