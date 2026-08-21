@@ -11,7 +11,7 @@ execution_contract_ref: strategy-seeds/cards/approved/QM5_41098_wti-wextreme-seq
 execution_contract_status: APPROVED
 created: 2026-08-21
 created_by: Research+Development
-last_updated: 2026-08-21
+last_updated: 2026-08-22
 g0_status: APPROVED
 g0_decision: decisions/2026-08-21_qm5_41098_wti_weekly_extreme_sequence_momentum_g0.md
 source_approval: decisions/2026-08-21_wti_weekly_extreme_sequence_momentum_source_approval.md
@@ -58,8 +58,8 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED
+q01_status: PENDING_GOVERNED_COMPILE
+q02_status: NOT_ENQUEUED_Q01_PENDING
 review_focus: "Falsify a direct-WTI completed-week extreme-sequence momentum sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact Monday anchors, one immediately completed 3-5-session week, unique weekly high and low sessions, chronological low-before-high or high-before-low order, matching settlement sign, ambiguous/disagreement flat, one attempt, fixed risk, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -403,14 +403,15 @@ establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-21 | initial WTI completed-week extreme-sequence momentum card | G0 | APPROVED |
+| v2 | 2026-08-22 | source build, deterministic reference suite, and fixed-risk preset committed; governed compile queued under rollout hold | Q01 | PENDING_GOVERNED_COMPILE |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-21 | APPROVED | `decisions/2026-08-21_qm5_41098_wti_weekly_extreme_sequence_momentum_g0.md` |
-| Q01 Build Validation | 2026-08-21 | PENDING_BUILD | G0 permits one source-faithful non-live build after governed magic allocation |
-| Q02 Baseline Screening | 2026-08-21 | NOT_ENQUEUED | requires Q01 PASS and fresh CPU headroom |
+| Q01 Build Validation | 2026-08-22 | PENDING_GOVERNED_COMPILE | source commit `a4d2dc36d`; 13 reference checks and source guardrails PASS; compile item `089fc9d1-dff7-4204-9a8c-70c915ec7943` is held for reviewed worker rollout |
+| Q02 Baseline Screening | 2026-08-22 | NOT_ENQUEUED_Q01_PENDING | fresh CPU max was 81.91%, below the 97% ceiling, but no EX5/Q01 PASS exists; `docs/ops/evidence/2026-08-22_qm5_41098_wti_weekly_extreme_sequence_compile_handoff.md` |
 
 ## Safety Boundary
 

@@ -1,0 +1,110 @@
+{
+  "schema": "qm.build-compile-handoff/v1",
+  "recorded_at_utc": "2026-08-21T22:00:38Z",
+  "local_record_date": "2026-08-22",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41098",
+  "ea_label": "QM5_41098_wti-wextreme-sequence-mom",
+  "strategy_id": "MOP-WTI-WEXTREME-SEQUENCE-MOM-2026_S01",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "magic": 410980000,
+  "commits": {
+    "source_approval": "e45984a09",
+    "source_packet": "2b76aa74d",
+    "ea_id_reservation": "001defa79",
+    "g0_card": "87d826de8",
+    "magic_allocation": "024acdd6a",
+    "source_build": "a4d2dc36dec67553f0a1066b6e622eb3833433c9"
+  },
+  "mq5_sha256": "8CFF83546AD0F5FFA60D4F8B144E3B6E204A6C01A1B519E60F0D9F1DF1058866",
+  "setfile_sha256_precompile": "5FE9BCBE9306BD961677185D245D38A582073BFE0F1F3534F5BE39EA26F53C61",
+  "card_sha256": "20383E66101C13A394F2E69A442561F6E2EC2FDBF9733B209D04EC99F406FC3A",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "build_hash": "pending"
+  },
+  "source_validation": {
+    "reference_tests_passed": 13,
+    "reference_tests_failed": 0,
+    "build_prerequisite_guard": "PASS",
+    "build_guardrails": "PASS",
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "symbol_scope_violations": 0,
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS"
+  },
+  "duplicate_boundary": {
+    "registry_rows_checked": 4587,
+    "cards_checked": 1266,
+    "exact_identity_found": false,
+    "fuzzy_identity_found": false,
+    "optional_strategy_wiki_status": "INPUT_ERROR_FAIL_CLOSED",
+    "manual_family_review_completed": true
+  },
+  "direct_compile": {
+    "result": "FAIL_SAFE",
+    "reason_class": "INCLUDE_MIRROR_REFUSED",
+    "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "retry_attempted": false,
+    "log": "C:/QM/repo/framework/build/compile/20260821_215335/QM5_41098_wti-wextreme-sequence-mom.compile.log"
+  },
+  "governed_compile": {
+    "work_item_id": "089fc9d1-dff7-4204-9a8c-70c915ec7943",
+    "status": "pending",
+    "claimed_by": null,
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "verdict": null,
+    "ex5_sha256": null
+  },
+  "capacity": {
+    "mt5_scanned_at": "2026-08-22T00:00:38+02:00",
+    "cpu_hard_ceiling_percent": 97.0,
+    "cpu_ceiling_breached": false,
+    "cpu_average_percent": 75.47,
+    "cpu_maximum_percent": 81.91,
+    "cpu_samples": [
+      {
+        "timestamp_utc": "2026-08-21T21:55:19.655Z",
+        "percent": 81.06
+      },
+      {
+        "timestamp_utc": "2026-08-21T21:55:23.657Z",
+        "percent": 76.26
+      },
+      {
+        "timestamp_utc": "2026-08-21T21:55:27.658Z",
+        "percent": 65.41
+      },
+      {
+        "timestamp_utc": "2026-08-21T21:55:31.658Z",
+        "percent": 72.71
+      },
+      {
+        "timestamp_utc": "2026-08-21T21:55:35.659Z",
+        "percent": 81.91
+      }
+    ],
+    "active_governed_terminals": [
+      "T2",
+      "T6",
+      "T8",
+      "T9"
+    ],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": []
+  },
+  "q01_status": "PENDING_GOVERNED_COMPILE",
+  "q02_enqueued": false,
+  "q02_status": "NOT_ENQUEUED_Q01_PENDING",
+  "q02_work_item_count": 0,
+  "q02_binding_blocker": "NO_EX5_OR_Q01_PASS",
+  "manual_backtest_run": false,
+  "dispatcher_tick_run": false,
+  "terminal_control_performed": false,
+  "live_or_portfolio_files_changed": false
+}
