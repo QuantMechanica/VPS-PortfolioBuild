@@ -27,7 +27,7 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 |---|---|---|---|
 | `strategy_momentum_lookback_d1` | 252 | (see source) | (see strategy logic) |
 | `strategy_min_abs_return_pct` | 0.0 | (see source) | (see strategy logic) |
-| `strategy_entry_grace_minutes` | 5 | (see source) | (see strategy logic) |
+| `strategy_entry_grace_minutes` | 67 | [67] | Nominal D1-bar allowance: measured 61.6-minute XTI session offset plus the card's five-minute executable grace. |
 | `strategy_atr_period` | 20 | (see source) | (see strategy logic) |
 | `strategy_atr_sl_mult` | 3.0 | (see source) | (see strategy logic) |
 | `strategy_max_hold_days` | 2 | (see source) | (see strategy logic) |
@@ -71,6 +71,12 @@ rejects foreign symbols).
 | Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
 | Regime preference | per card thesis |
 | Win rate target (qualitative) | medium |
+
+The registered `XTIUSD.DWX` D1 session begins 61.6 minutes after the nominal
+D1 bar timestamp. The 67-minute nominal-bar allowance implements the approved
+five-minute first-executable-tick window without widening the executable
+opportunity. Q02 also uses the mandatory 30-minute pre/post blackout with the
+DXZ compliance profile; legacy news mode remains off.
 
 ---
 

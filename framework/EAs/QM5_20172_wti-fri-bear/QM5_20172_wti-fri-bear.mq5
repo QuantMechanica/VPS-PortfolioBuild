@@ -26,8 +26,8 @@ input double RISK_FIXED                   = 1000.0;
 input double PORTFOLIO_WEIGHT             = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -42,7 +42,9 @@ input double qm_stress_reject_probability  = 0.0;
 input group "Strategy"
 input int    strategy_momentum_lookback_d1 = 252;
 input double strategy_min_abs_return_pct   = 0.0;
-input int    strategy_entry_grace_minutes  = 5;
+// XTIUSD.DWX's measured D1 session offset is 61.6 minutes.  A 67-minute
+// nominal-bar allowance preserves the card's five-minute executable window.
+input int    strategy_entry_grace_minutes  = 67;
 input int    strategy_atr_period           = 20;
 input double strategy_atr_sl_mult          = 3.0;
 input int    strategy_max_hold_days        = 2;
@@ -117,6 +119,13 @@ bool Strategy_EntryWithinGrace(const datetime current_bar)
       (long)(now - current_bar);
    return elapsed_seconds <=
           (long)strategy_entry_grace_minutes * 60;
+  }
+
+void Strategy_LogEntryReject(const string reason)
+  {
+   QM_LogEvent(QM_INFO,
+               "ENTRY_REJECTED",
+               StringFormat("{\"reason\":\"%s\"}", reason));
   }
 
 bool Strategy_IsManagedPosition()
@@ -262,7 +271,7 @@ bool Strategy_NoTradeFilter()
    if(strategy_momentum_lookback_d1 != 252 ||
       MathAbs(strategy_min_abs_return_pct) > 1.0e-12)
       return true;
-   if(strategy_entry_grace_minutes != 5 ||
+   if(strategy_entry_grace_minutes != 67 ||
       strategy_atr_period != 20 ||
       MathAbs(strategy_atr_sl_mult - 3.0) > 1.0e-12)
       return true;
@@ -272,8 +281,8 @@ bool Strategy_NoTradeFilter()
    if(!qm_friday_close_enabled ||
       qm_friday_close_hour_broker != 21)
       return true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
-      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE ||
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_PRE30_POST30 ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_DXZ ||
       qm_news_mode_legacy != QM_NEWS_OFF)
       return true;
    return false;
@@ -290,34 +299,63 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    const datetime current_bar = g_current_d1_bar;
-   if(!Strategy_IsGenuineFridayBoundary() ||
-      !Strategy_EntryWithinGrace(current_bar))
+   if(!Strategy_IsGenuineFridayBoundary())
       return false;
+
+   const long elapsed_seconds =
+      (long)(TimeCurrent() - current_bar);
+   QM_LogEvent(QM_INFO,
+               "ENTRY_ATTEMPT",
+               StringFormat("{\"bar_time\":%I64d,\"prior_bar_time\":%I64d,\"elapsed_seconds\":%I64d,\"grace_minutes\":%d}",
+                            (long)current_bar,
+                            (long)g_prior_d1_bar,
+                            elapsed_seconds,
+                            strategy_entry_grace_minutes));
+   if(!Strategy_EntryWithinGrace(current_bar))
+     {
+      Strategy_LogEntryReject("ENTRY_GRACE");
+      return false;
+     }
 
    const int week_key =
       QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
    if(week_key <= 0 ||
       week_key == g_last_attempt_week_key)
+     {
+      Strategy_LogEntryReject("WEEK_ALREADY_CONSUMED");
       return false;
+     }
 
    // Consume before history, trend, spread, quote, news, stop, or order gates.
    if(!Strategy_RecordWeekAttempt(week_key))
+     {
+      Strategy_LogEntryReject("WEEK_STATE_WRITE");
       return false;
+     }
 
    if(Strategy_HasOpenPosition())
+     {
+      Strategy_LogEntryReject("OPEN_POSITION");
       return false;
+     }
 
    double momentum = 0.0;
    int direction = 0;
    if(!Strategy_LoadMomentum(momentum, direction) ||
       direction != -1)
+     {
+      Strategy_LogEntryReject("MOMENTUM_NOT_NEGATIVE");
       return false;
+     }
 
    const long spread_points =
       SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    if(spread_points < 0 ||
       spread_points > strategy_max_spread_points)
+     {
+      Strategy_LogEntryReject("SPREAD");
       return false;
+     }
 
    const double atr_last =
       QM_ATR(_Symbol,
@@ -326,13 +364,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
              1);
    if(atr_last <= 0.0 ||
       !MathIsValidNumber(atr_last))
+     {
+      Strategy_LogEntryReject("ATR");
       return false;
+     }
 
    const double entry_price =
       QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0 ||
       !MathIsValidNumber(entry_price))
+     {
+      Strategy_LogEntryReject("ENTRY_PRICE");
       return false;
+     }
 
    req.sl = QM_StopATRFromValue(_Symbol,
                                 req.type,
@@ -342,9 +386,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl = QM_StopRulesNormalizePrice(_Symbol, req.sl);
    if(req.sl >= entry_price ||
       !MathIsValidNumber(req.sl))
+     {
+      Strategy_LogEntryReject("STOP_GEOMETRY");
       return false;
+     }
 
    req.reason = "WTI_FRI_NEG252_LONG";
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"week_key\":%d,\"momentum\":%.10f,\"spread_points\":%I64d,\"atr\":%.10f}",
+                            week_key,
+                            momentum,
+                            spread_points,
+                            atr_last));
    return true;
   }
 
@@ -450,7 +504,7 @@ void OnTick()
       return;
 
    // EntrySignal deliberately consumes the week before this entry-only news
-   // check. The baseline locks both axes OFF, but ordering stays restart-safe.
+   // check. The mandatory blackout remains restart-safe and fail-closed.
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
