@@ -117,9 +117,14 @@ Work item `83b89730-bb86-4c18-955a-efefe3039cc5` is the dedicated
 - unclaimed; and
 - without evidence path or verdict.
 
-Eight T1-T10 backtests were active under the hard CPU ceiling. The harness was
-not run ad hoc, no terminal was started, and no active backtest was interrupted.
-Task acceptance remains open until the governed result contains the real
-first-tradable marker and proves both evidence consumers can ingest it. Only
-then may the task move to REVIEW and the first `PATTERN_FILTER_COMBO` trial be
-scheduled.
+The final read-only recheck at `2026-08-21T10:37:09Z` still found the harness
+pending, attempt count zero, unclaimed, and without an evidence path or verdict.
+Farm health simultaneously reported 10 active work items and all 10 T1-T10
+worker daemons alive, with 2,231 pending rows. The harness was not run ad hoc,
+no terminal was started, and no active backtest was interrupted.
+
+This single-pass orchestration cycle hands the implementation to REVIEW with an
+explicit `GOVERNED_RUNTIME_EVIDENCE_PENDING` residual. Task acceptance remains
+open until the governed result contains the real first-tradable marker and proves
+both evidence consumers can ingest it. The first `PATTERN_FILTER_COMBO` trial
+remains prohibited until that proof is reviewed and accepted.
