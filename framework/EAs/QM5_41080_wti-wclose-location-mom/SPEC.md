@@ -56,7 +56,7 @@ All strategy parameters are locked for the Q02 baseline.
 ## 3. Symbol Universe
 
 - Host and traded symbol: exact `XTIUSD.DWX`, D1, slot 0.
-- Magic: governed slot-zero allocation follows directory creation.
+- Magic: `410800000`, governed slot-zero allocation.
 - No signal, hedge, conversion, or external companion symbol is used.
 
 ## 4. Timeframe
@@ -107,4 +107,3 @@ partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `123294145`; deterministic registry reservation in the commit containing this spec |
-
