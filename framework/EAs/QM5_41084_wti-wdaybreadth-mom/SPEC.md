@@ -100,3 +100,4 @@ partial exit.
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `8ca5ed7fa`; deterministic registry reservation `d34837b3e`; G0 approval `8e002c82e`; magic allocation `bd3b1d83a` |
 | v1-build | 2026-08-21 | deterministic implementation and Q01 validation | 10-test reference suite; strict compile/build PASS; static P1 PASS |
+| v1-q02-capacity | 2026-08-21 | paced Q02 preflight stopped at terminal-count ceiling | one fresh target-only row found; no enqueue mutation; evidence in `docs/ops/evidence/2026-08-21_qm5_41084_wti_weekly_daily_sign_breadth_q01_q02_cpu_ceiling_stop.md` |

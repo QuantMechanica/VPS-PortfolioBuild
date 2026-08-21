@@ -1,0 +1,99 @@
+{
+  "artifact_type": "qm5_41084_q02_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-21T05:09:32Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "09069cef4",
+  "ea_id": "QM5_41084",
+  "ea_label": "QM5_41084_wti-wdaybreadth-mom",
+  "mission_outcome": "Q01_PASS_Q02_NOT_ENQUEUED_CPU_CEILING_STOP",
+  "strategy_identity": {
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "mechanic": "exact five-session completed-week daily-return sign breadth plus same-sign weekly net continuation for one broker week",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "governance_commits": [
+    "8ca5ed7fa",
+    "d34837b3e",
+    "8e002c82e",
+    "bd3b1d83a",
+    "09069cef4"
+  ],
+  "q01_evidence": {
+    "reference_test_count": 10,
+    "reference_tests_passed": true,
+    "card_schema_lint_passed": true,
+    "g0_card_lint_passed": true,
+    "spec_lint_passed": true,
+    "canonical_dedup_before_allocation": "CLEAN",
+    "strict_compile_errors": 0,
+    "strict_compile_warnings": 0,
+    "compile_summary": "D:/QM/reports/compile/20260821_050727/summary.csv",
+    "targeted_build_check": "PASS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260821_050727.json",
+    "build_check_report_sha256": "8A2328F1D2905C2DAF2D55E9FF17AC03133992FEADE105BCA69FC06A101CBCCA",
+    "static_p1_validation": "PASS",
+    "p1_report": "D:/QM/reports/pipeline/QM5_41084/P1/P1_QM5_41084_result.json",
+    "p1_report_sha256": "48074DAF7828A7B53974D1D863ED78246783C86B69D7990CB87C37D4F4935A1B",
+    "mq5_sha256": "48EF17F2346CA841DC7248D4A9091253ADD8FD226C4937804EED76BDB47FAB3F",
+    "ex5_sha256": "26027CF2A264838D2FDC5E4C1E69614140A769BD5E96575A57C4CF6275111D20",
+    "setfile_bytes_sha256": "FC00B518510054E06F9112D779BC582286919C78DE80D0B3C7D5C88C3453FAB3",
+    "setfile_normalized_build_hash": "b63bde279f2077cad9baf76ec6836c3ec87280f13b7b23fdb70fe55b39cbabf4"
+  },
+  "q02_preflight": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "query_mode": "read_only_via_farmctl_work_items",
+    "reconciled_work_item_count": 0,
+    "target_only_preview_apply": false,
+    "preview_part1_never_tested_enqueued_candidate_count": 1,
+    "preview_part1_never_tested_skipped_count": 0,
+    "preview_priority_track_item_count": 1,
+    "collision_decision": "no_existing_row_but_terminal_gate_forbids_enqueue"
+  },
+  "capacity_sample": {
+    "slot_inventory_at_utc": "2026-08-21T05:09:32Z",
+    "running_factory_terminals": ["T1", "T2", "T3", "T4", "T5", "T7", "T8"],
+    "running_factory_terminal_count": 7,
+    "paced_terminal_ceiling": 7,
+    "terminal_ceiling_binding": true,
+    "whole_host_cpu_sample_taken": false,
+    "whole_host_cpu_sample_reason": "terminal-count ceiling bound admission first",
+    "research_terminal_reservation_count_observed": 8,
+    "concurrent_nonrunning_reservation": "T9",
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "active_assignments": [
+      {"terminal": "T1", "ea_id": "QM5_12935", "phase": "Q07", "symbol": "XAUUSD.DWX"},
+      {"terminal": "T2", "ea_id": "QM5_10796", "phase": "Q07", "symbol": "XAUUSD.DWX"},
+      {"terminal": "T3", "ea_id": "QM5_10135", "phase": "Q08", "symbol": "baseline", "work_item_id": null, "process_label": "pipeline_run"},
+      {"terminal": "T4", "ea_id": "QM5_20234", "phase": "Q03", "symbol": "QM5_20234_XAU_XAG_RSJ_D1"},
+      {"terminal": "T5", "ea_id": "QM5_12350", "phase": "Q07", "symbol": "USDJPY.DWX"},
+      {"terminal": "T7", "ea_id": "QM5_10248", "phase": "Q07", "symbol": "NDX.DWX"},
+      {"terminal": "T8", "ea_id": "QM5_11167", "phase": "Q07", "symbol": "XAUUSD.DWX"}
+    ],
+    "process_selection": "farmctl mt5-slots; governed D:/QM/mt5/T<n>/terminal64.exe only; T_Live and FTMO observed only for exclusion"
+  },
+  "actions_this_run": {
+    "farm_db_read_only": true,
+    "target_only_non_apply_preview_invoked": true,
+    "new_source_approval_created": true,
+    "new_card_or_ea_created": true,
+    "registry_mutation": true,
+    "resolver_regeneration": true,
+    "compile_or_build_check": true,
+    "reference_tests_run": true,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "smoke_tester_or_backtest_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  }
+}
