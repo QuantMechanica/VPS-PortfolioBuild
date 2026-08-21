@@ -17612,3 +17612,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12921,qp-january-barometer-card,3,GDAXI.DWX,129210003,2026-08-21,Codex,active
 12921,qp-january-barometer-card,4,UK100.DWX,129210004,2026-08-21,Codex,active
 41093,wti-wclose-breakout-mom,0,XTIUSD.DWX,410930000,2026-08-21,Codex governed allocator,active
+12946,mql5-macd-obv-div-card,0,EURUSD.DWX,129460000,2026-08-21,Codex governed allocator,active
+12946,mql5-macd-obv-div-card,1,GBPUSD.DWX,129460001,2026-08-21,Codex governed allocator,active
+12946,mql5-macd-obv-div-card,2,XAUUSD.DWX,129460002,2026-08-21,Codex governed allocator,active

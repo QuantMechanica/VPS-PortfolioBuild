@@ -1,0 +1,61 @@
+{
+  "schema": "qm.governed-magic-allocation-verification/v1",
+  "task_id": "09766d8d-27fd-409b-8a3c-e80a5c2edfd9",
+  "ea_id": "QM5_12946",
+  "slug": "mql5-macd-obv-div-card",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12946_mql5-macd-obv-div-card.md",
+  "target_symbols": ["EURUSD.DWX", "GBPUSD.DWX", "XAUUSD.DWX"],
+  "note": "This artifact was written twice by two independently-dispatched claude sessions working the same router task concurrently (a duplicate-lease situation, not a duplicate allocation). This version reconciles both: the allocation itself is real, single, and non-duplicated. Attribution: `python tools/strategy_farm/governed_magic_allocator.py --card ... --max-eas 1 --output ...` was run directly in THIS session (claude-orchestration-3) as the first action on this task. Its own stdout executed in `mode: apply` (not a dry-run) and returned the full decisions/result block below live, with `registry_rows_before: 17613` -> `registry_rows_after: 17616` and `resolver_rows_before: 17582` -> `resolver_rows_after: 17585` -- that is the run that produced the 3 rows. The `--output` file the command wrote was then separately clobbered by the allocator's own post-hoc dirty-guard: it re-checks git working-tree cleanliness AFTER applying its own edits to framework/registry/magic_numbers.csv and framework/include/QM/QM_MagicResolver.mqh, observes its own writes as 'dirty', and aborts only the artifact write (`{\"status\":\"aborted\",\"reason\":\"dirty_registry_abort\"}`) even though the allocation itself already completed. The `reserved_by: 'Codex governed allocator'` string recorded in magic_numbers.csv is the allocator tool's constant attribution label baked into the script regardless of which agent invokes it -- it does not indicate a separate Codex process ran this; no such concurrent Codex run existed for this EA.",
+  "command_stdout_result": {
+    "batch_cap": 1,
+    "decisions": [
+      {
+        "action": "allocate",
+        "copy_card": true,
+        "create_directory": false,
+        "ea_id": "QM5_12946",
+        "reason": "eligible",
+        "retired_rows_to_delete": 0,
+        "rows": 3,
+        "slug": "mql5-macd-obv-div-card",
+        "stage": "exact_card",
+        "symbol_policy": "CARD_DECLARED",
+        "symbols": ["EURUSD.DWX", "GBPUSD.DWX", "XAUUSD.DWX"]
+      }
+    ],
+    "mode": "apply",
+    "planned_eas": 1,
+    "planned_rows": 3,
+    "result": {
+      "allocated_eas": 1,
+      "allocated_ids": ["QM5_12946"],
+      "allocated_rows": 3,
+      "registry_rows_after": 17616,
+      "registry_rows_before": 17613,
+      "resolver_rows_after": 17585,
+      "resolver_rows_before": 17582,
+      "retired_rows_deleted": 0
+    }
+  },
+  "verification": {
+    "ea_directory_exists": true,
+    "ea_directory_path": "framework/EAs/QM5_12946_mql5-macd-obv-div-card",
+    "magic_numbers_csv_rows_active_for_ea": [
+      {"symbol_slot": 0, "symbol": "EURUSD.DWX", "magic": 129460000, "status": "active", "reserved_by": "Codex governed allocator", "reserved_at": "2026-08-21"},
+      {"symbol_slot": 1, "symbol": "GBPUSD.DWX", "magic": 129460001, "status": "active", "reserved_by": "Codex governed allocator", "reserved_at": "2026-08-21"},
+      {"symbol_slot": 2, "symbol": "XAUUSD.DWX", "magic": 129460002, "status": "active", "reserved_by": "Codex governed allocator", "reserved_at": "2026-08-21"}
+    ],
+    "magic_formula_check": "ea_id*10000+symbol_slot holds for all 3 rows (129460+0/1/2)",
+    "resolver_regenerated": true,
+    "resolver_row_count": 17585,
+    "resolver_registry_sha256": "003A679DCE6B29782AA8EA957D8E1A27CE8D0934E6308AFC09FC86F164C49267",
+    "resolver_contains_new_magics": true,
+    "no_retired_row_revived": true,
+    "no_magic_invented_outside_formula": true,
+    "duplicate_rows_found": 0
+  },
+  "action_taken": "One allocation performed (this session, first action on this task). A second concurrently-dispatched session (claude-orchestration-1) independently re-verified the same live state afterward and correctly did not re-allocate. Registry files (magic_numbers.csv, QM_MagicResolver.mqh) remain uncommitted in the shared canonical checkout for the pump/build lane to absorb, per standing convention.",
+  "next_step": "Original build precheck (source: farmctl build precheck) can proceed to build QM5_12946 once the pending registry diff is committed.",
+  "generated_by": "claude-orchestration-3 (allocation) + claude-orchestration-1 (independent re-verification)",
+  "generated_at": "2026-08-21T18:15:00Z"
+}
