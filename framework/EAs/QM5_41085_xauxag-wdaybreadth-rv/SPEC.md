@@ -1,16 +1,16 @@
 # QM5_41085_xauxag-wdaybreadth-rv - Strategy Spec
 
-EA ID: `QM5_41085`
+**EA ID:** QM5_41085
 
-Slug: `xauxag-wdaybreadth-rv`
+**Slug:** `xauxag-wdaybreadth-rv`
 
-Strategy ID: `SCHWEIKERT-CME-XAUXAG-WDAYBREADTH4-RV-2026_S01`
+**Strategy ID:** `SCHWEIKERT-CME-XAUXAG-WDAYBREADTH4-RV-2026_S01`
 
-Source: `SCHWEIKERT-CME-XAUXAG-WDAYBREADTH4-RV-2026`
+**Source:** `SCHWEIKERT-CME-XAUXAG-WDAYBREADTH4-RV-2026`
 
-Author: Codex
+**Author of this spec:** Codex
 
-Last revised: 2026-08-21
+**Last revised:** 2026-08-21
 
 ## 1. Strategy Logic
 
@@ -108,4 +108,5 @@ partial exit.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v0 | 2026-08-21 | approved build-directory identity | source approval `25a9c6356`; deterministic registry reservation pending card review |
+| v0 | 2026-08-21 | approved build-directory identity | source approval `25a9c6356`; registry reservation `648639751`; G0 approval `a28b27bad`; magic allocation `921bdc457` |
+| v1-build | 2026-08-21 | deterministic implementation and Q01 validation | 10-test reference suite; strict compile/build PASS; static P1 PASS |
