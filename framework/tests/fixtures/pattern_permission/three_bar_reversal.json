@@ -1,7 +1,7 @@
 {
   "group": "three_bar_reversal",
   "author": "three_bar_reversal",
-  "note": "bars[0] is the reference (most recently closed) bar; index increases going back in time. In MORNING_STAR/EVENING_STAR the OLDEST of the three bars is index 2. THREE_INSIDE_UP/DOWN are dead predicates (see suspected_defects): their canonical-pattern positives are written to the pattern definition and will MISMATCH the implementation on purpose.",
+  "note": "bars[0] is the reference (most recently closed) bar; index increases going back in time. In MORNING_STAR/EVENING_STAR the OLDEST of the three bars is index 2. THREE_INSIDE_UP/DOWN are genuine three-bar patterns: bar2 is the mother, bar1 the harami inside its body, bar0 the confirming candle that breaks beyond the harami's extreme (high for up, low for down).",
   "default_filler_series": [
     [100.0, 100.5, 99.5, 100.1, 2000]
   ],
@@ -268,7 +268,7 @@
       "case": "positive",
       "expected": true,
       "basis": "pattern_definition",
-      "rationale": "Textbook three-inside-up: bar2 large bearish (open110 close100), bar1 small bullish harami inside bar2's body (open102 close104), bar0 bullish confirmation closing 107 above bar1's high 104.5. This IS the pattern; the implementation returns false (dead predicate, see suspected_defects) so this fixture documents the disagreement.",
+      "rationale": "Textbook three-inside-up: bar2 large bearish (open110 close100), bar1 small bullish harami inside bar2's body (open102 close104), bar0 bullish confirmation closing 107 above bar1's high 104.5. The repaired predicate detects this as the pattern.",
       "bars": [[104.0, 107.5, 103.5, 107.0, 5000], [102.0, 104.5, 101.5, 104.0, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
     },
     {
@@ -295,7 +295,7 @@
       "case": "boundary",
       "expected": true,
       "basis": "implementation_threshold",
-      "rationale": "bar0 closes 105.0, above bar1's high 104.5, so it is inside the confirmed close[0]>high[1] region per the pattern definition. The implementation still returns false (dead predicate), so this documents the defect from the inside of the threshold.",
+      "rationale": "bar0 closes 105.0, above bar1's high 104.5, so it is inside the confirmed close[0]>high[1] breakout region. The repaired predicate returns true here.",
       "bars": [[104.0, 105.5, 103.5, 105.0, 5000], [102.0, 104.5, 101.5, 104.0, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
     },
     {
@@ -314,7 +314,7 @@
       "case": "positive",
       "expected": true,
       "basis": "pattern_definition",
-      "rationale": "Textbook three-inside-down: bar2 large bullish (open100 close110), bar1 small bearish harami inside bar2's body (open108 close106), bar0 bearish confirmation closing 103 below bar1's low 105.5. This IS the pattern; the implementation returns false (dead predicate, see suspected_defects) so this fixture documents the disagreement.",
+      "rationale": "Textbook three-inside-down: bar2 large bullish (open100 close110), bar1 small bearish harami inside bar2's body (open108 close106), bar0 bearish confirmation closing 103 below bar1's low 105.5. The repaired predicate detects this as the pattern.",
       "bars": [[106.0, 106.5, 102.5, 103.0, 5000], [108.0, 108.5, 105.5, 106.0, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
     },
     {
@@ -341,7 +341,7 @@
       "case": "boundary",
       "expected": true,
       "basis": "implementation_threshold",
-      "rationale": "bar0 closes 105.0, below bar1's low 105.5, so it is inside the confirmed close[0]<low[1] region per the pattern definition. The implementation still returns false (dead predicate), so this documents the defect from the inside of the threshold.",
+      "rationale": "bar0 closes 105.0, below bar1's low 105.5, so it is inside the confirmed close[0]<low[1] breakdown region. The repaired predicate returns true here.",
       "bars": [[106.0, 106.5, 104.5, 105.0, 5000], [108.0, 108.5, 105.5, 106.0, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
     },
     {

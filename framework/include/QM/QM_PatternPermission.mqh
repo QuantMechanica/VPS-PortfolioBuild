@@ -489,12 +489,43 @@ bool QM_PP_IsThirdFriday(const datetime bar_open)
    return (dt.day_of_week == 5 && dt.day >= 15 && dt.day <= 21);
   }
 
+//--- Calendar-days in a given month, leap-year correct. Only months 3/6/9/12
+//--- feed the quarter-end predicate (all 30/31 days), but the helper stays
+//--- general so the boundary logic reads the true month length rather than a
+//--- hard-coded number.
+int QM_PP_DaysInMonth(const int year, const int mon)
+  {
+   switch(mon)
+     {
+      case 1: case 3: case 5: case 7: case 8: case 10: case 12:
+         return 31;
+      case 4: case 6: case 9: case 11:
+         return 30;
+      case 2:
+        {
+         const bool leap = (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
+         return leap ? 29 : 28;
+        }
+      default:
+         return 31;
+     }
+  }
+
+//--- QUARTER_END fires only on the last TWO calendar days of a quarter month
+//--- (day >= last_day - 1). The reference used a flat day >= 24, which mislabels
+//--- ordinary late-month days (e.g. Mar 27) as the quarter close. The last-two-
+//--- days window is the simplest correct closed-bar variant: it needs no
+//--- bar-lookahead (which a closed-bar gate cannot do), is month-length and
+//--- leap-year correct, and always admits the genuine quarter-end trading day.
 bool QM_PP_IsQuarterEnd(const datetime bar_open)
   {
    MqlDateTime dt;
    TimeToStruct(bar_open, dt);
    const bool quarter_month = (dt.mon == 3 || dt.mon == 6 || dt.mon == 9 || dt.mon == 12);
-   return (quarter_month && dt.day >= 24);
+   if(!quarter_month)
+      return false;
+   const int last_day = QM_PP_DaysInMonth(dt.year, dt.mon);
+   return (dt.day >= last_day - 1);
   }
 
 //+------------------------------------------------------------------+
@@ -596,9 +627,25 @@ bool QM_PP_Evaluate(const QM_PatternId id, const QM_PPBars &b)
                  && b.close[0] < b.close[1] && b.close[1] < b.close[2]
                  && b.open[0] >= b.close[1] && b.open[1] >= b.close[2]);
       case QM_PP_THREE_INSIDE_UP:
-         return (QM_PP_Evaluate(QM_PP_HARAMI_BULL, b) && b.close[0] > b.high[1]);
+         // Canonical three-inside-up (a genuine three-bar pattern): bar 2 a
+         // bearish mother, bar 1 a smaller bullish harami whose body sits inside
+         // bar 2's body, bar 0 a bullish candle that CONFIRMS by closing above
+         // the harami's high. The reference reused the 2-bar HARAMI_BULL on bars
+         // 1/0 and then demanded close[0] > high[1] of that same containing bar,
+         // which is unsatisfiable: the harami child's close is pinned inside the
+         // mother's body, so it can never exceed the mother's high. The repaired
+         // form moves the harami onto bars 2/1 so bar 0 is free to break out.
+         return (QM_PP_IsBear(b, 2) && QM_PP_IsBull(b, 1)
+                 && b.open[1] >= b.close[2] && b.close[1] <= b.open[2]
+                 && QM_PP_Body(b, 2) > QM_PP_Body(b, 1)
+                 && QM_PP_IsBull(b, 0) && b.close[0] > b.high[1]);
       case QM_PP_THREE_INSIDE_DOWN:
-         return (QM_PP_Evaluate(QM_PP_HARAMI_BEAR, b) && b.close[0] < b.low[1]);
+         // Symmetric: bar 2 a bullish mother, bar 1 a bearish harami inside it,
+         // bar 0 a bearish candle confirming by closing below the harami's low.
+         return (QM_PP_IsBull(b, 2) && QM_PP_IsBear(b, 1)
+                 && b.open[1] <= b.close[2] && b.close[1] >= b.open[2]
+                 && QM_PP_Body(b, 2) > QM_PP_Body(b, 1)
+                 && QM_PP_IsBear(b, 0) && b.close[0] < b.low[1]);
       case QM_PP_THREE_OUTSIDE_UP:
          return (QM_PP_Evaluate(QM_PP_ENGULFING_BULL, b) && b.close[0] > b.high[1]);
       case QM_PP_THREE_OUTSIDE_DOWN:
@@ -776,8 +823,14 @@ bool QM_PP_Evaluate(const QM_PatternId id, const QM_PPBars &b)
          return (id == QM_PP_VOL_PERCENTILE_HIGH) ? (pct >= 0.90) : (pct <= 0.10);
         }
       case QM_PP_FRACTAL_BREAKOUT:
-         return (b.high[2] > b.high[3] && b.high[2] > b.high[4]
-                 && b.high[2] > b.high[1] && b.high[2] > b.high[0]
+         // Bar 2 is the most recent CONFIRMED up-fractal: a swing high whose
+         // immediate neighbours (bars 1, 3, 4) are lower. The reference bar then
+         // breaks it by closing above that fractal high. The reference also
+         // required high[2] > high[0], which is unsatisfiable: any bar that
+         // closes above high[2] must itself print a high >= its close > high[2],
+         // so the current bar's high can never stay below the fractal it clears.
+         // The reference-high is now formed only from the PRIOR bars (1, 3, 4).
+         return (b.high[2] > b.high[1] && b.high[2] > b.high[3] && b.high[2] > b.high[4]
                  && b.close[0] > b.high[2]);
       case QM_PP_EFFICIENCY_RATIO_HIGH:
       case QM_PP_EFFICIENCY_RATIO_LOW:

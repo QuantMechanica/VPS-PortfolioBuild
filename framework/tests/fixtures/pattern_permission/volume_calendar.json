@@ -216,7 +216,7 @@
       "case": "negative",
       "expected": false,
       "basis": "pattern_definition",
-      "rationale": "2026-04-30 is the last day of April, deep in day>=24 territory, but April is the first month of Q2, not its end. A month-end of a non-quarter-closing month is not a quarter-end. (Attacks the quarter-month clause from a late day-of-month.)",
+      "rationale": "2026-04-30 is the last day of April, a late day-of-month, but April is the first month of Q2, not its end. A month-end of a non-quarter-closing month is not a quarter-end. (Attacks the quarter-month clause from a late day-of-month.)",
       "anchor_date": "2026-04-30",
       "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
     },
@@ -226,7 +226,7 @@
       "case": "negative",
       "expected": false,
       "basis": "pattern_definition",
-      "rationale": "2026-03-27 is a Friday four days before the Q1 close on March 31. It is NOT the quarter-end, so the correct answer is false. The implementation (quarter_month && day>=24) returns TRUE here, mislabeling an ordinary late-March day as quarter-end. Fixture written to the pattern definition; the mismatch is a suspected defect. (Attacks the day>=24 clause.)",
+      "rationale": "2026-03-27 is a Friday four days before the Q1 close on March 31. It is NOT within the last two calendar days of the quarter, so the correct answer is false. The repaired predicate (quarter_month && day >= last_day-1, i.e. day >= 30 for March) returns false here, no longer mislabeling an ordinary late-March day as quarter-end. (Regression guard on the former day>=24 over-fire.)",
       "anchor_date": "2026-03-27",
       "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
     },
@@ -236,28 +236,28 @@
       "case": "negative",
       "expected": false,
       "basis": "pattern_definition",
-      "rationale": "2026-09-26 is four days before the Q3 close on September 30 and is not the quarter-end, so the correct answer is false. The implementation returns TRUE (September, day 26 >= 24), a second instance of the day>=24 over-firing across a different quarter. Written to the pattern definition; mismatch is the same suspected defect.",
+      "rationale": "2026-09-26 is four days before the Q3 close on September 30 and is not within the last two calendar days of the quarter, so the correct answer is false. The repaired predicate returns false (September has 30 days, so day 26 < 29 = last_day-1), no longer over-firing on ordinary late-quarter-month days. (Regression guard across a second quarter.)",
       "anchor_date": "2026-09-26",
       "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
     },
     {
-      "id": "QUARTER_END_boundary_day25_inside",
+      "id": "QUARTER_END_boundary_day30_inside",
       "predicate": "QM_PP_QUARTER_END",
       "case": "boundary",
       "expected": true,
       "basis": "implementation_threshold",
-      "rationale": "The implementation admits any quarter-month day >= 24. 2026-03-25 (March, day 25) is above the 24 cutoff, inside the admitted range, so the code returns true. This documents the implementation's actual behavior; whether day 25 SHOULD count as quarter-end is the subject of the defect fixtures above.",
-      "anchor_date": "2026-03-25",
+      "rationale": "The repaired predicate admits the last two calendar days of a quarter month: day >= last_day-1. March has 31 days, so the cutoff is day 30. 2026-03-30 (March, day 30) is on the lower edge, inside the admitted range, so it returns true. Integer day comparison makes the edge exact; paired with the day-29 case it brackets the threshold.",
+      "anchor_date": "2026-03-30",
       "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
     },
     {
-      "id": "QUARTER_END_boundary_day22_outside",
+      "id": "QUARTER_END_boundary_day29_outside",
       "predicate": "QM_PP_QUARTER_END",
       "case": "boundary",
       "expected": false,
       "basis": "implementation_threshold",
-      "rationale": "2026-03-22 (March, day 22) is below the day >= 24 cutoff, outside the admitted range, so the code returns false. Differs from the day-25 inside case only in day-of-month, bracketing the 24 threshold from below.",
-      "anchor_date": "2026-03-22",
+      "rationale": "2026-03-29 (March, day 29) is one below the day >= last_day-1 cutoff of 30, outside the admitted range, so it returns false. Differs from the day-30 inside case only in day-of-month, bracketing the last-two-days threshold from below.",
+      "anchor_date": "2026-03-29",
       "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
     }
   ]

@@ -8850,7 +8850,7 @@
       "predicate": "QM_PP_FRACTAL_BREAKOUT",
       "case": "positive",
       "basis": "pattern_definition",
-      "rationale": "A fractal breakout is a local swing high (bar 2 high 105 above its neighbours bars 1/3/4 at 103/102/101) that the current bar then closes ABOVE (close 105.5). This is the pattern by definition; see suspected defect (implementation also demands high[2]>high[0], impossible when the breakout bar prints a higher high).",
+      "rationale": "A fractal breakout is a local swing high (bar 2 high 105 above its neighbours bars 1/3/4 at 103/102/101) that the current bar then closes ABOVE (close 105.5). The repaired predicate detects this as a breakout; bar 0 printing a higher high (106) no longer voids it.",
       "bars": [
         [
           104.0,
@@ -9030,7 +9030,7 @@
       "predicate": "QM_PP_FRACTAL_BREAKOUT",
       "case": "boundary",
       "basis": "pattern_definition",
-      "rationale": "Just INSIDE the breakout line: fractal peak bar 2 high 105.0, current bar closes 105.3, ABOVE the peak -> by definition a breakout (true). Records the defect: implementation returns false because it also insists high[2]>high[0], which fails once bar 0 prints high 105.5.",
+      "rationale": "Just INSIDE the breakout line: fractal peak bar 2 high 105.0, current bar closes 105.3, ABOVE the peak -> a breakout (true). The repaired predicate returns true even though bar 0 prints a higher high (105.5).",
       "bars": [
         [
           104.5,
@@ -9075,7 +9075,7 @@
       "predicate": "QM_PP_FRACTAL_BREAKOUT",
       "case": "boundary",
       "basis": "pattern_definition",
-      "rationale": "Just OUTSIDE the breakout line: same fractal peak bar 2 high 105.0, but current bar closes 104.7, BELOW the peak -> no breakout (false). Code agrees here, so this side is unaffected by the defect.",
+      "rationale": "Just OUTSIDE the breakout line: same fractal peak bar 2 high 105.0, but current bar closes 104.7, BELOW the peak -> no breakout (false). The repaired predicate agrees on this side.",
       "bars": [
         [
           104.0,
