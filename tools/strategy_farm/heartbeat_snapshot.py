@@ -30,6 +30,7 @@ DB = "file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro"
 STATE = Path(r"D:/QM/reports/state/heartbeat_state.json")
 QUOTA = Path(r"D:/QM/reports/state/quota_governor_state.json")
 FLAG_DIR = Path(r"D:/QM/strategy_farm/state")
+SYMBOL_LIST_GENERATOR = REPO / "tools" / "vault" / "gen_symbol_list_page.py"
 
 # A task claimed but silent for longer than this is stuck, not working.
 STUCK_IN_PROGRESS_H = 3
@@ -209,8 +210,21 @@ def probe_scheduled_tasks(out):
     # Failures that are understood and tracked elsewhere; listed so they do not drown the signal.
     EXPECTED = {
         "QM_Public_Snapshot_Hourly": "publication guard fail-closed behind the QM5_20172 hold (CEO-MP-#7)",
-        "QM_StrategyFarm_CodexOrchestration_15min": "0x800710E0 interactive-session oscillation (MNT-003, task 9226799b)",
         "QM_StrategyFarm_MailboxSourceIntake_Daily": "non-zero RC while extraction succeeds; postconditions are authoritative",
+    }
+    # SYSTEM/service tasks whose MultipleInstancesPolicy=IgnoreNew and
+    # ExecutionTimeLimit >> cadence make an occasional 0x800710E0 (2147946720,
+    # "operator/administrator refused the request") an expected benign overlap-
+    # refusal: the prior still-running instance is doing the work. This is
+    # code-scoped (only 0x800710E0), NOT name-scoped -- any OTHER non-zero code on
+    # these tasks (e.g. 267014 killed@time-limit) is still a real failure and must
+    # surface (MNT-003, 2026-08-21; see docs/ops/evidence/2026-08-21_mnt003_*.md).
+    BENIGN_IGNORENEW_OVERLAP = {
+        "QM_StrategyFarm_Pump_5min",
+        "QM_StrategyFarm_CodexOrchestration_15min",
+        "QM_StrategyFarm_ClaudeOrchestration_15min",
+        "QM_StrategyFarm_GeminiOrchestration_15min",
+        "QM_StrategyFarm_Dashboard_Hourly",
     }
     ps = (
         "Get-ScheduledTask | Where-Object {$_.TaskName -like 'QM*' -and $_.State -ne 'Disabled'} | "
@@ -232,6 +246,9 @@ def probe_scheduled_tasks(out):
         if rc in (0, 267009, None):  # 267009 = still running
             continue
         name = r.get("n")
+        if rc == 2147946720 and name in BENIGN_IGNORENEW_OVERLAP:
+            expected_bad.append(f"{name}:rc={rc}")  # MNT-003 benign IgnoreNew overlap
+            continue
         (expected_bad if name in EXPECTED else bad).append(f"{name}:rc={rc}")
     out["tasks_failing"] = bad
     out["tasks_failing_expected"] = expected_bad
@@ -418,6 +435,29 @@ def render_markdown(out) -> str:
     return "\n".join(L)
 
 
+def sync_symbol_list_page(out) -> None:
+    """Refresh the generated Vault symbol page from the canonical matrix.
+
+    The heartbeat task runs as qm-admin, which owns the Google Drive mount.
+    Failure is recorded in the durable heartbeat state but does not prevent the
+    independent heartbeat page/state writes below.
+    """
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(SYMBOL_LIST_GENERATOR), "--write"],
+            capture_output=True,
+            text=True,
+            cwd=str(REPO),
+            timeout=60,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(f"generator exit {proc.returncode}")
+        out["symbol_list_mirror"] = "ok"
+    except Exception as exc:  # noqa: BLE001 - heartbeat remains fail-soft on G: outages
+        out["symbol_list_mirror"] = f"unavailable:{type(exc).__name__}"
+
+
 def main() -> int:
     out = {"ts": _iso(_now()), "flags": []}
     probe_quota(out)
@@ -442,6 +482,7 @@ def main() -> int:
     out["delta"] = deltas(out, prev)
     out["events"] = record_events(out, prev)
 
+    sync_symbol_list_page(out)
     md = render_markdown(out)
 
     # Best-effort Vault mirror FIRST, so its outcome is part of the state we persist.
