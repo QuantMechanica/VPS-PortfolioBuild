@@ -66,7 +66,7 @@ r3_data_available: PASS_WITH_EXACT_FIVE_SESSION_SYNCHRONIZATION_AND_CFD_BASIS_RI
 r4_ml_forbidden: PASS
 pipeline_phase: Q01_PASS
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a completed-week gold/silver daily relative-sign breadth fade outside the certified XAU/SP500/NDX/XNG book. Verify synchronized parent and exact five-session endpoints, chronological relative-return orientation, strict four-of-five breadth, same-sign weekly net, contrarian pair sides, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -375,6 +375,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-21 | initial XAU/XAG completed-week daily relative-sign breadth reversion card | Q00 | APPROVED |
 | v1-build | 2026-08-21 | deterministic implementation, 10-test reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v1-q02-capacity | 2026-08-21 | target-only dry-run selected one fresh row; enqueue withheld at eight running research terminals against the paced ceiling of seven | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -382,7 +383,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | Q00 Research Intake | 2026-08-21 | APPROVED | `decisions/2026-08-21_qm5_41085_xauxag_weekly_daily_relative_sign_breadth_reversion_g0.md` |
 | Q01 Build Validation | 2026-08-21 | PASS | `D:/QM/reports/framework/21/build_check_20260821_061103.json`; `D:/QM/reports/pipeline/QM5_41085/P1/P1_QM5_41085_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | paced enqueue only after Q01 PASS and capacity checks |
+| Q02 Baseline Screening | 2026-08-21 | NOT_ENQUEUED_CPU_CEILING | `artifacts/qm5_41085_q02_cpu_ceiling_stop_20260821T061312Z_board_advisor.json` |
 
 ## Safety Boundary
 

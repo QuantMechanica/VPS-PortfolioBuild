@@ -110,3 +110,4 @@ partial exit.
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `25a9c6356`; registry reservation `648639751`; G0 approval `a28b27bad`; magic allocation `921bdc457` |
 | v1-build | 2026-08-21 | deterministic implementation and Q01 validation | 10-test reference suite; strict compile/build PASS; static P1 PASS |
+| v2-q02-capacity | 2026-08-21 | paced Q02 handoff | target-only preview selected one fresh row; enqueue withheld at the binding research-terminal ceiling |
