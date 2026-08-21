@@ -1,0 +1,96 @@
+{
+  "artifact_type": "qm5_41081_q02_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-21T02:23:38Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "6971a0537",
+  "ea_id": "QM5_41081",
+  "ea_label": "QM5_41081_xng-wclose-location-mom",
+  "mission_outcome": "Q01_PASS_Q02_NOT_ENQUEUED_CPU_CEILING_STOP",
+  "strategy_identity": {
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "mechanic": "strict completed-week return sign confirmed by matching outer-fifth close location",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "governance_commits": [
+    "2f2604d49",
+    "fe2015ce2",
+    "b76ba3d42",
+    "63c08bcaf",
+    "6971a0537"
+  ],
+  "q01_evidence": {
+    "reference_test_count": 10,
+    "reference_tests_passed": true,
+    "card_schema_lint_passed": true,
+    "g0_card_lint_passed": true,
+    "strict_compile_errors": 0,
+    "strict_compile_warnings": 0,
+    "compile_summary": "D:/QM/reports/compile/20260821_021545/summary.csv",
+    "targeted_build_check": "PASS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260821_021952.json",
+    "build_check_report_sha256": "268B115E8AD3221BBABC00C5AB2FE0BDEFD33CC1AB9DB22617E1877D2AC3F092",
+    "static_p1_validation": "PASS",
+    "p1_report": "D:/QM/reports/pipeline/QM5_41081/P1/P1_QM5_41081_result.json",
+    "p1_report_sha256": "9A59580DAE526C1DA0A51FAA98C2D1CD73376CE569C3630A1E23D6BE78EF7CC9",
+    "mq5_sha256": "29EBCA369972F352D67C3642271A912B79721F38E1E9A99B4BC561A73C1EC1E5",
+    "ex5_sha256": "DA2EC2E642A3FA6FD5FAC58CA4EA8E314FFE4390AAE15BAEDF85B89D3F9E6E16",
+    "setfile_bytes_sha256": "566FD525C68D85BF598D2D835BED72B27F31ACB0EF335A3FD6FC8E817548AF6F",
+    "setfile_normalized_build_hash": "5aa25ac7330c67c05b7235afb03662c3ec5c92bba76bf6ab525c81475ab3292b",
+    "reference_test_sha256": "DBA5ABF142365453BE9CA22C63699EBD591E8ECB3654C03BF9B1F47AEA75F7EC"
+  },
+  "farm_db_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "query_mode": "read_only_via_farmctl_work_items",
+    "reconciled_work_item_count": 0,
+    "collision_decision": "no_existing_row_but_capacity_gate_forbids_enqueue"
+  },
+  "capacity_sample": {
+    "cpu_sample_times_utc": [
+      "2026-08-21T02:23:23.7414234Z",
+      "2026-08-21T02:23:28.4194052Z",
+      "2026-08-21T02:23:31.8470976Z",
+      "2026-08-21T02:23:35.1168244Z",
+      "2026-08-21T02:23:38.3336639Z"
+    ],
+    "whole_host_cpu_load_pct": [100, 100, 100, 100, 100],
+    "whole_host_cpu_max_pct": [100, 100, 100, 100, 100],
+    "whole_host_logical_processors": 16,
+    "whole_host_cpu_hard_ceiling_pct": 97,
+    "whole_host_cpu_ceiling_binding": true,
+    "slot_inventory_at_utc": "2026-08-21T02:23:27+00:00",
+    "running_factory_terminals": ["T3", "T4", "T5", "T7", "T8", "T9", "T10"],
+    "running_factory_terminal_count": 7,
+    "paced_terminal_ceiling": 7,
+    "terminal_ceiling_binding": true,
+    "research_terminal_reservation_count": 7,
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "all_terminal64_process_count_including_excluded": 9,
+    "process_selection": "farmctl mt5-slots; governed D:/QM/mt5/T<n>/terminal64.exe only; T_Live and FTMO excluded"
+  },
+  "actions_this_run": {
+    "farm_db_read_only": true,
+    "target_only_non_apply_preview_invoked": true,
+    "new_source_approval_created": true,
+    "new_card_or_ea_created": true,
+    "registry_mutation": true,
+    "resolver_regeneration": true,
+    "compile_or_build_check": true,
+    "reference_tests_run": true,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "smoke_tester_or_backtest_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  }
+}
+
