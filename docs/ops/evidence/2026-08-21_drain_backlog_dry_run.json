@@ -1,0 +1,33 @@
+{
+  "schema": "qm.drain_backlog.dry_run_receipt.v1",
+  "observed_at_utc": "2026-08-21T15:21:21+00:00",
+  "apply": false,
+  "database_writes": 0,
+  "total_classified": 4777,
+  "counts": {
+    "ACTIVE_EA_BUILT_NEVER_GATED": 54,
+    "ACTIVE_EA_MISSING_EX5": 1162,
+    "ACTIVE_EA_MISSING_SETFILES": 250,
+    "AGENT_APPROVED_LIMBO": 1,
+    "AGENT_BLOCKED_LIMBO": 140,
+    "AGENT_PIPELINE_LIMBO": 152,
+    "AGENT_ROUTER_ACTIVE": 42,
+    "INFRA_STRANDED_BLOCKED": 14,
+    "INFRA_STRANDED_RETIRED": 2,
+    "INFRA_STRANDED_RETRY": 292,
+    "RECYCLE_BUILD_ALREADY_GATED": 10,
+    "RECYCLE_BUILD_BUILT_NEVER_GATED": 2,
+    "RECYCLE_BUILD_GEMINI_REVIEW_REQUIRED": 50,
+    "RECYCLE_BUILD_INCOMPLETE": 5,
+    "RECYCLE_BUILD_NEEDS_REBUILD": 295,
+    "RECYCLE_OTHER": 9,
+    "RECYCLE_REVIEW": 58,
+    "WORK_ITEM_IN_FLIGHT": 2239
+  },
+  "infra_disposition_invariant": {
+    "status": "PASS",
+    "unresolved": 0,
+    "q08_invalid_report_retryable": 0
+  },
+  "note": "Counts are a live read-only observation and can change as the concurrent farm reconciles rows. No apply wave was executed in this orchestration cycle."
+}

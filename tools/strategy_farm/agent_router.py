@@ -1869,6 +1869,7 @@ def reconcile_task_exits(
     apply: bool = False,
     limit: int | None = None,
     states: tuple[str, ...] | list[str] | None = None,
+    task_ids: tuple[str, ...] | list[str] | None = None,
 ) -> dict[str, Any]:
     """Give the three no-exit limbo states their contractual exit (census ranks
     4/5/8). DRY-RUN by default: it reports what WOULD move and moves nothing.
@@ -1878,10 +1879,12 @@ def reconcile_task_exits(
     capacity decision — and even the terminal APPROVED->PASSED reclassification
     of ~200 rows must be a visible, opted-in action, not a silent side effect of
     a routing tick. Detection (health invariant) runs continuously; remediation
-    is an explicit operator call. Bound it with `limit` and `states` when
-    applying so a single run cannot flood a lane.
+    is an explicit operator call. Bound it with `limit`, `states`, and optionally
+    an exact `task_ids` selection when applying so a single run cannot flood a
+    lane or requeue a row the caller classified as already gated.
     """
     target_states = tuple(states) if states else LIMBO_STATES
+    selected_task_ids = tuple(dict.fromkeys(task_ids or ()))
     for s in target_states:
         if s not in LIMBO_STATES:
             raise ValueError(f"reconcile state must be one of {LIMBO_STATES}: {s}")
@@ -1893,9 +1896,15 @@ def reconcile_task_exits(
     with closing(connect(root)) as conn:
         if apply:
             conn.execute("BEGIN IMMEDIATE")
+        task_filter = ""
+        params: tuple[Any, ...] = tuple(target_states)
+        if selected_task_ids:
+            task_filter = " AND id IN (" + ",".join("?" for _ in selected_task_ids) + ")"
+            params += selected_task_ids
         rows = conn.execute(
-            f"SELECT * FROM agent_tasks WHERE state IN ({placeholders}) ORDER BY state, updated_at ASC",
-            tuple(target_states),
+            f"SELECT * FROM agent_tasks WHERE state IN ({placeholders}){task_filter} "
+            "ORDER BY state, updated_at ASC",
+            params,
         ).fetchall()
         n_applied = 0
         for row in rows:
@@ -1947,6 +1956,7 @@ def reconcile_task_exits(
         "apply": apply,
         "limit": limit,
         "states": list(target_states),
+        "task_ids": list(selected_task_ids),
         "would_move": would_move,
         "left_in_place": left_in_place,
         "moved_count": len(moved),
@@ -2121,6 +2131,11 @@ def main(argv: list[str] | None = None) -> int:
         choices=sorted(LIMBO_STATES),
         help="Restrict to these limbo states (repeatable); default all three",
     )
+    reconcile.add_argument(
+        "--task-id",
+        action="append",
+        help="Restrict to these exact task UUIDs (repeatable)",
+    )
     sync_q11 = sub.add_parser("sync-q11-candidates")
     sync_q11.add_argument("--no-admission", action="store_true",
                           help="legacy mirror-all (skip the DL-064 R-064-2 diversification gate)")
@@ -2176,6 +2191,7 @@ def main(argv: list[str] | None = None) -> int:
             apply=args.apply,
             limit=args.limit,
             states=args.state,
+            task_ids=args.task_id,
         )
     elif args.command == "sync-q11-candidates":
         result = sync_q11_candidates(args.root, apply_admission=not args.no_admission)
