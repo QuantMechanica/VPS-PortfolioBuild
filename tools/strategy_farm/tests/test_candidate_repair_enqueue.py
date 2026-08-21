@@ -23,6 +23,9 @@ def _artifacts(tmp_path: Path, monkeypatch, ea_id: str = "QM5_9901") -> dict[str
     ex5.write_bytes(b"current compiled binary")
     setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
     monkeypatch.setattr(farmctl, "REPO_ROOT", repo_root)
+    monkeypatch.setattr(
+        farmctl, "_q02_priority_track_required", lambda *_args, **_kwargs: False
+    )
     farmctl.init_db(root)
     return {
         "root": root,
@@ -181,6 +184,9 @@ def test_stale_pass_q02_is_append_only_and_double_enqueue_safe(
     tmp_path: Path, monkeypatch
 ) -> None:
     art = _artifacts(tmp_path, monkeypatch)
+    monkeypatch.setattr(
+        farmctl, "_q02_priority_track_required", lambda *_args, **_kwargs: True
+    )
     _insert_work_item(
         art,
         item_id="q02-stale",
@@ -223,6 +229,7 @@ def test_stale_pass_q02_is_append_only_and_double_enqueue_safe(
     assert new_payload["stale_pass_rerun"] is True
     assert new_payload["rerun_source_current_ex5_mismatch_verified"] is True
     assert new_payload["expected_ex5_sha256"] == art["current_ex5"]
+    assert new_payload["priority_track"] is True
     assert new_payload["risk_fixed"] == 1000.0
     assert new_payload["risk_percent"] == 0.0
 
@@ -1157,6 +1164,9 @@ def test_fresh_q02_seed_is_sealed_append_only_and_double_enqueue_safe(
     tmp_path: Path, monkeypatch
 ) -> None:
     art = _artifacts(tmp_path, monkeypatch)
+    monkeypatch.setattr(
+        farmctl, "_q02_priority_track_required", lambda *_args, **_kwargs: True
+    )
     evidence = _insert_work_item(
         art,
         item_id="q02-prebinding",
@@ -1210,6 +1220,7 @@ def test_fresh_q02_seed_is_sealed_append_only_and_double_enqueue_safe(
     assert payload["requalification_reason"] == kwargs["requal_reason"]
     assert payload["expected_current_ex5_sha256"] == art["current_ex5"]
     assert payload["expected_ex5_sha256"] == art["current_ex5"]
+    assert payload["priority_track"] is True
     assert payload["expected_setfile_sha256"] == farmctl._sha256_file(art["setfile"])
     assert payload["requalification_setfile_identity"] == {
         "path": str(art["setfile"]),

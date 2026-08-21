@@ -23,6 +23,342 @@
         "sha256": "5873608ec14fd9d559bf5ea53eea9ba4483b709b7c24f8bd876a3456b9d70879",
         "commit_sha": "31475d9f1c476c9ca43d94fef58cc13b933c1337"
       }
+    },
+    {
+      "ea_id": "QM5_1556",
+      "priority_track": true,
+      "asset_class": "metal",
+      "timeframe": "D1",
+      "target_symbols": ["XAUUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_1567",
+      "priority_track": true,
+      "asset_class": "fx_major",
+      "timeframe": "H4",
+      "target_symbols": ["EURUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_10403",
+      "priority_track": true,
+      "asset_class": "metal",
+      "timeframe": "D1",
+      "target_symbols": ["XAUUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_10440",
+      "priority_track": true,
+      "asset_class": "index",
+      "timeframe": "H1",
+      "target_symbols": ["NDX.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_10513",
+      "priority_track": true,
+      "asset_class": "metal",
+      "timeframe": "D1",
+      "target_symbols": ["XAUUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_10706",
+      "priority_track": true,
+      "asset_class": "fx_major",
+      "timeframe": "H1",
+      "target_symbols": ["GBPUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_10911",
+      "priority_track": true,
+      "asset_class": "index",
+      "timeframe": "H1",
+      "target_symbols": ["GDAXI.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_10919",
+      "priority_track": true,
+      "asset_class": "energy",
+      "timeframe": "H4",
+      "target_symbols": ["XTIUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_10939",
+      "priority_track": true,
+      "asset_class": "fx_major",
+      "timeframe": "H4",
+      "target_symbols": ["GBPUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_11132",
+      "priority_track": true,
+      "asset_class": "index",
+      "timeframe": "D1",
+      "target_symbols": ["SP500.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_11165",
+      "priority_track": true,
+      "asset_class": "fx_cross",
+      "timeframe": "H1",
+      "target_symbols": ["AUDCAD.DWX", "EURUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_11421",
+      "priority_track": true,
+      "asset_class": "fx_major",
+      "timeframe": "D1",
+      "target_symbols": ["AUDUSD.DWX", "EURUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_11708",
+      "priority_track": true,
+      "asset_class": "fx_major",
+      "timeframe": "D1",
+      "target_symbols": ["EURUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_12567",
+      "priority_track": true,
+      "asset_class": "commodity",
+      "timeframe": "D1",
+      "target_symbols": ["XAUUSD.DWX", "XNGUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_12778",
+      "priority_track": true,
+      "asset_class": "fx_pair_basket",
+      "timeframe": "D1",
+      "target_symbols": ["AUDUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_12969",
+      "priority_track": true,
+      "asset_class": "fx_major",
+      "timeframe": "M30",
+      "target_symbols": ["USDJPY.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_12989",
+      "priority_track": true,
+      "asset_class": "metal",
+      "timeframe": "H4",
+      "target_symbols": ["XAUUSD.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_13117",
+      "priority_track": true,
+      "asset_class": "fx_pair_basket",
+      "timeframe": "D1",
+      "target_symbols": ["EURGBP.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_13128",
+      "priority_track": true,
+      "asset_class": "index",
+      "timeframe": "H1",
+      "target_symbols": ["NDX.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_13213",
+      "priority_track": true,
+      "asset_class": "fx_major",
+      "timeframe": "H1",
+      "target_symbols": ["USDJPY.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
+    },
+    {
+      "ea_id": "QM5_13301",
+      "priority_track": true,
+      "asset_class": "index",
+      "timeframe": "M5",
+      "target_symbols": ["GDAXI.DWX"],
+      "excluded_symbols": [],
+      "owner_reference": "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION",
+      "decision_date": "2026-08-21",
+      "reason": "DL-089 Wave 1 live-book full-chain requalification cohort",
+      "decision_source": {
+        "path": "decisions/DL-089_live_book_full_chain_requalification.md",
+        "sha256": "2cdcd6976ccf0d05cf03449714b82af9f75ef5d205568ab3531970ce46c10cf1",
+        "commit_sha": "41bd33415d0b568cf55ae6d38682e631047e5976"
+      }
     }
   ]
 }

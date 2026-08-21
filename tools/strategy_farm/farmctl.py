@@ -18936,6 +18936,8 @@ def enqueue_fresh_q02_seed(
             "expected_period": bindings["expected_period"],
             "expected_symbol": bindings["expected_symbol"],
         })
+        if _q02_priority_track_required(conn, root, str(ea_id)):
+            payload["priority_track"] = True
         reconciliation = bindings.get("setfile_reconciliation")
         if isinstance(reconciliation, dict):
             payload.update({
@@ -19531,6 +19533,8 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "expected_period": bindings["expected_period"],
             "expected_symbol": bindings["expected_symbol"],
         })
+        if _q02_priority_track_required(conn, root, str(ea_id)):
+            payload["priority_track"] = True
         _stamp_custom_history_archive_admission(payload, archive_admission)
         if stale_economic or stale_invalid:
             payload.update({
