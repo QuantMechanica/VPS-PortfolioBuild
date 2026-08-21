@@ -65,7 +65,8 @@ r3_data_available: PASS_WITH_LABEL_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED_PENDING
+q02_work_item: e928a598-a8f3-4283-820b-4e6461fe0f52
 q01_build_report: D:/QM/reports/framework/21/build_check_20260821_085956.json
 q01_p1_evidence: D:/QM/reports/pipeline/QM5_41087/P1/P1_QM5_41087_result.json
 review_focus: "Falsify a direct-WTI completed-week range-expansion continuation sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact Monday anchors, four consecutive completed weekly packages, three-to-five sessions each, newest-week strict widest range without ties, earliest open/latest close, strict own-body and 0.75/0.25 close-location agreement, durable weekly attempt, fixed-risk frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
@@ -350,6 +351,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-21 | initial WTI weekly WR4 close-momentum card | Q00 | APPROVED |
 | v1-build | 2026-08-21 | deterministic implementation, 10-test reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v1-q02 | 2026-08-21 | paced target-only baseline enqueue after five sub-ceiling CPU samples | Q02 | ENQUEUED_PENDING |
 
 ## Pipeline Phase Status
 
@@ -357,7 +359,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | Q00 Research Intake | 2026-08-21 | APPROVED | `decisions/2026-08-21_qm5_41087_wti_weekly_wr4_close_momentum_g0.md` |
 | Q01 Build Validation | 2026-08-21 | PASS | `D:/QM/reports/framework/21/build_check_20260821_085956.json`; `D:/QM/reports/pipeline/QM5_41087/P1/P1_QM5_41087_result.json` |
-| Q02 Baseline Screening | 2026-08-21 | NOT_ENQUEUED | gated by paced CPU ceiling preflight |
+| Q02 Baseline Screening | 2026-08-21 | ENQUEUED_PENDING | work item `e928a598-a8f3-4283-820b-4e6461fe0f52`; `docs/ops/evidence/2026-08-21_qm5_41087_wti_weekly_wr4_q01_q02_enqueue.md` |
 
 ## Safety Boundary
 

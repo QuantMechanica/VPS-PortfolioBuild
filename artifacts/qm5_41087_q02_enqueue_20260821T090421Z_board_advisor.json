@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "as_of_utc": "2026-08-21T09:04:21Z",
+  "branch": "agents/board-advisor",
+  "ea": {
+    "ea_id": "QM5_41087",
+    "slug": "wti-wr4-close-mom",
+    "strategy_id": "CRABEL-MOP-WTI-WR4-CLOSE-MOM-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 410870000
+  },
+  "commits": {
+    "source_approval": "40d5669ac",
+    "ea_id_reservation": "3a6d5930f",
+    "g0_card": "506065180",
+    "magic_and_resolver": "87b2cbaeb",
+    "setfile_factory_autocommit": "b7c80f7d8",
+    "implementation_q01": "7616e193e"
+  },
+  "q01": {
+    "status": "PASS",
+    "reference_tests": {
+      "passed": 10,
+      "failed": 0
+    },
+    "compile": {
+      "status": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "summary": "D:/QM/reports/compile/20260821_085956/summary.csv"
+    },
+    "build_check": {
+      "status": "PASS",
+      "failures": 0,
+      "warnings": 2,
+      "report": "D:/QM/reports/framework/21/build_check_20260821_085956.json"
+    },
+    "p1": {
+      "status": "PASS",
+      "report": "D:/QM/reports/pipeline/QM5_41087/P1/P1_QM5_41087_result.json"
+    },
+    "sha256": {
+      "mq5": "90C5989F424FAB3E644F8C37B6494D048F00F3C38E94543C20F1AAF8BA8ECD0B",
+      "ex5": "CCCE6D9F05CF5D174840D5343F909E7040059E449C150F3C453B36E92C3B092D",
+      "setfile": "D1BAA3A92039CE9BE8C8FB223F31B3CF822774D41311E9447E15E79AA1D21B17",
+      "build_report": "9FA016C00B639D2ECD50EE65216CF200C94E7B8187C29FBF8257F01DFB5E3428",
+      "p1_report": "FD7F48968AF330FA33F307B676FE03052FF70AB1BD47B21BBAEDFF1B2A67BC0A"
+    }
+  },
+  "capacity_preflight": {
+    "governed_running_terminals": ["T2", "T3", "T4", "T6", "T8"],
+    "governed_running_count": 5,
+    "terminal_ceiling": 7,
+    "cpu_hard_ceiling_percent": 97,
+    "cpu_samples_percent": [88, 94, 96, 91, 88],
+    "cpu_sample_utc": [
+      "2026-08-21T09:03:31.1616710Z",
+      "2026-08-21T09:03:35.3172964Z",
+      "2026-08-21T09:03:39.3399263Z",
+      "2026-08-21T09:03:43.3757813Z",
+      "2026-08-21T09:03:47.4140350Z"
+    ],
+    "capacity_decision": "BELOW_CEILING_ENQUEUE_ALLOWED"
+  },
+  "q02": {
+    "preexisting_target_rows": 0,
+    "preview_selected": 1,
+    "apply": true,
+    "work_item_id": "e928a598-a8f3-4283-820b-4e6461fe0f52",
+    "phase": "Q02",
+    "kind": "backtest",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at_utc": "2026-08-21T09:04:21Z",
+    "dispatched_by_lane": false
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "q02_minimum_full_year_trades": 5
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "terminal_control": false,
+    "autotrading_changed": false,
+    "t_live_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
