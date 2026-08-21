@@ -1,6 +1,6 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
-**Stand:** 2026-08-20 06:05 UTC · Stehende Vollmacht §6 (wird jedem Bericht beigefügt)
+**Stand:** 2026-08-21 · Stehende Vollmacht §6 (wird jedem Bericht beigefügt)
 **Eine Zeile je Punkt. „Geliefert" heißt: Ergebnis steht in einem Dokument und wurde berichtet.**
 
 ---
@@ -37,6 +37,7 @@
 | R10 §5.1 | Strategy-Files-Inventar: die eine Zahl | **~70 distinkte non-ML/non-ICT Quelltext-Kandidaten + 428 kompilierte Repo-EAs, die die Fabrik nie sah** (`STRATEGY_FILES_INVENTORY.md` §0, jetzt berichtet) |
 | R9 §5.4 / R10 §5.3 | Rate je Gate + Queue-Termin | Q04 11,2/h (6h-Fenster); 9/h-Einbruch = 5 von 8 Slots auf Q07/Q08 — OWNERs Transient-These **bestätigt**; Queue-Ende ≈ 26.–27.08. |
 | Vollm. §8.1 | Unger-Filter: Parameterkosten | Eingrenzung auf 1 kategorialen Parameter (feste Muster-Bänke) vorgeschlagen — Bericht 19.08. 20:00 |
+| Dir. 21.08. (ULTRACODE) | Firmen-Vollaudit + CEO-Masterplan | 8-Agenten-Audit abgeschlossen (`COMPANY_AUDIT_ULTRACODE_2026-08-21.md`); Masterplan T1–T12 im Vault (`12 ToDo/00_CEO_Masterplan_2026-08-21.md`); T1 (T_Live-Authority-Falschdoku „OWNER + Claude" auf 5 Vault-Seiten) sofort korrigiert auf Kanon OWNER-only |
 
 ## 2 · Offen
 
@@ -59,6 +60,7 @@
 | **Dir. §3** | Timeout → Requeue: Diff + 3 retrospektive Zeilen | Prinzip freigegeben, Diff offen |
 | **aktuell** | `WALLCLOCK_CONSTANTS.md` | Belege vollständig, Dokument nicht geschrieben |
 | **aktuell** | REVIEW-Rückstau: 110 agent_tasks (≈60 build_ea/agy, ≈50 review_ea/codex, seit 17./18.08.) | Batch-Review eingeplant; Intake ist nicht der Engpass (Queue-Ende ≈ 26.–28.08.), aber der Stau verletzt die Review-SLA |
+| **Dir. 21.08.** | Masterplan T2–T12 (Vault-Rebuild, Gate-Redesign-Vorlage T7, Pattern-Fixes T8/T9, Fail-Soft T10, public-data T11) | seriell in Abarbeitung, ein ToDo zur Zeit; T7-Freigaben + Entscheidungsschlange #1–#5 beim OWNER (`12 ToDo/00_CEO_Masterplan_2026-08-21.md` §C) |
 
 ## 3 · Entfallen
 
