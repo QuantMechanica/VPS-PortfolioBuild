@@ -1,0 +1,97 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-21T07:15:41Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "b855323a8c820b469cac2e208d40497a5ec4387b",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "governed_frontier_reference": {
+    "evidence_commit": "1ac37f468",
+    "machine_evidence": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260821T061643Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_permitted": false,
+    "anchor_state_at_reference": {
+      "QM5_12532": "Q02 PASS; Q04 PASS; Q05 FAIL; no Q02 ONINIT/NO_HISTORY blocker",
+      "QM5_12533": "Q02 PASS; Q04 FAIL; no Q02 ONINIT/NO_HISTORY blocker"
+    },
+    "selected_existing_pair_at_reference": {
+      "ea_id": "QM5_20203",
+      "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+      "scan_rank": 21,
+      "q02_verdict": "PASS",
+      "next_phase": "Q04",
+      "next_phase_work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+      "next_phase_state": "pending_once_unclaimed_attempt_zero"
+    },
+    "fresh_selected_pair_query_performed_after_ceiling": false,
+    "reason": "The explicit stop condition bound before any queue or execution action; the last committed governed relationship reconciliation is cited without presenting it as a fresh selected-pair query."
+  },
+  "capacity_sample": {
+    "sampled_at_utc": "2026-08-21T07:15:41Z",
+    "sampling_method": "Windows Get-Counter Processor(_Total) percent Processor Time",
+    "whole_host_cpu_load_percent": [
+      97.95,
+      98.26,
+      93.95,
+      92.92,
+      98.6
+    ],
+    "inter_sample_seconds": 2,
+    "average_cpu_percent": 96.34,
+    "maximum_cpu_percent": 98.6,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_gte_hard_ceiling",
+    "ceiling_binding": true
+  },
+  "farm_capacity_observation": {
+    "access": "read_only",
+    "scanned_at_utc": "2026-08-21T07:15:31Z",
+    "governed_factory_process_count": 5,
+    "governed_factory_terminals": [
+      "T2",
+      "T4",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "active_phase_counts_from_process_bindings": {
+      "Q03": 1,
+      "Q07": 4
+    },
+    "orphaned_terminal_process_count": 0,
+    "terminal_control_performed": false
+  },
+  "non_duplicate_delta": {
+    "previous_cpu_sample_completed_at_utc": "2026-08-21T06:16:43.4486893Z",
+    "elapsed_minutes_since_previous_cpu_sample": 58.96,
+    "previous_observation_base_commit": "060bdc93146e63441dad2f2a98ed45d55f2d054f",
+    "current_observation_base_commit": "b855323a8c820b469cac2e208d40497a5ec4387b",
+    "previous_average_cpu_percent": 97.0,
+    "current_average_cpu_percent": 96.34,
+    "average_cpu_delta_percentage_points": -0.66,
+    "previous_maximum_cpu_percent": 100.0,
+    "current_maximum_cpu_percent": 98.6,
+    "maximum_cpu_delta_percentage_points": -1.4,
+    "current_governed_factory_process_count": 5,
+    "hard_ceiling_remains_binding": true
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "repository_evidence_created": true,
+    "reason": "The mission explicitly requires an immediate stop when the backtest CPU ceiling is hit."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
