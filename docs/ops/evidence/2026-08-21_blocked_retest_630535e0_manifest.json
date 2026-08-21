@@ -1,0 +1,1757 @@
+{
+  "campaign": "630535e0-a371-4613-9c68-c8a8d608093a",
+  "decision_count": 62,
+  "decisions": [
+    {
+      "blocking_condition_still_true": false,
+      "ea_id": "QM5_2013",
+      "evidence": {
+        "active_magic_rows": 6,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 37,
+        "spec_files": 0,
+        "work_items_later_done": 7,
+        "work_items_open": 2,
+        "work_items_total": 177
+      },
+      "expected_updated_at": "2026-06-12T18:16:20+00:00",
+      "expected_verdict_sha256": "362c5f1636f613110ff1eb780ea4d9d971a65f8f5254f109c088037c0a3a139c",
+      "owner": null,
+      "reason": "The legacy review row omitted a top-level ea_id, but the source path resolves QM5_2013. Live work-item state contains seven completed gate rows strictly after the 2026-06-12 block, including a Q02 PASS. This is a terminal bookkeeping disposition, not a new gate verdict; two current Q04 rows remain owned by the pipeline.",
+      "target_state": "PASSED",
+      "task_id": "5c0c7a64-ab58-4df8-8165-f06fc22734bc",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_1249",
+      "evidence": {
+        "active_magic_rows": 6,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 6,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 18
+      },
+      "expected_updated_at": "2026-07-10T04:21:36+00:00",
+      "expected_verdict_sha256": "bff42d9bbb76e324cab00d06ea347f024fcf93739784736984eeb70379e9da72",
+      "owner": "Strategy Governance",
+      "reason": "The current approved QM5_1249 card still requires an external monthly short-rate series, while the governed build/data contract remains price-native and the latest Q02 attempts remain infrastructure failures.",
+      "target_state": "BLOCKED",
+      "task_id": "e8f31c15-cf2e-4210-bd4c-4459aadee494",
+      "unblock_action": "Issue a dated card disposition: re-specify the edge using governed reproducible data and re-approve it, or reject/retire the card and close the EA identity. Development must not requeue the current card."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20058",
+      "evidence": {
+        "active_magic_rows": 1,
+        "card_pools": [],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 1,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-24T18:18:44+00:00",
+      "expected_verdict_sha256": "690c5dc82bcbbb1bc8a376e940d543f8999ae159cbe43f26c5d5f8ba1468fec0",
+      "owner": "Custom Symbol Governance",
+      "reason": "QM5_20058 is built, but XCUUSD.DWX remains absent from the governed DWX symbol matrix/history contract and the EA has zero work items. The R3 blocker is still live.",
+      "target_state": "BLOCKED",
+      "task_id": "91ebf76d-dc3c-4567-8c9d-491a6ac5438b",
+      "unblock_action": "Under OWNER authority, either run the governed custom-symbol validation/import path for XCUUSD.DWX or amend/reject the card to a governed symbol. Only a PASS validation or revised approved card permits a Q02 enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20078",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Registry Operator",
+      "reason": "Live state has an approved card and MQ5 source but no active magic rows, no EX5, no SPEC, no backtest setfiles, and no work items. The prior fabricated-build blocker therefore remains real, although source now exists.",
+      "target_state": "BLOCKED",
+      "task_id": "076262b3-9fc8-4d24-a25e-58cbc6e563d4",
+      "unblock_action": "Confirm the approved card is authoritative, allocate exact card symbols with the governed allocator, regenerate and verify the resolver, then assign Development a complete Q01 compile/setfile/SPEC/build-check pass followed by Codex review. Run the already-gated filter before any enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20081",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Registry Operator",
+      "reason": "Live state has an approved card and MQ5 source but no active magic rows, no EX5, no SPEC, no backtest setfiles, and no work items. The prior fabricated-build blocker therefore remains real, although source now exists.",
+      "target_state": "BLOCKED",
+      "task_id": "24431eba-2076-4abd-8027-b680e73bc47d",
+      "unblock_action": "Confirm the approved card is authoritative, allocate exact card symbols with the governed allocator, regenerate and verify the resolver, then assign Development a complete Q01 compile/setfile/SPEC/build-check pass followed by Codex review. Run the already-gated filter before any enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20080",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Registry Operator",
+      "reason": "Live state has an approved card and MQ5 source but no active magic rows, no EX5, no SPEC, no backtest setfiles, and no work items. The prior fabricated-build blocker therefore remains real, although source now exists.",
+      "target_state": "BLOCKED",
+      "task_id": "4b65d59b-edda-40dc-be41-380439fd5e72",
+      "unblock_action": "Confirm the approved card is authoritative, allocate exact card symbols with the governed allocator, regenerate and verify the resolver, then assign Development a complete Q01 compile/setfile/SPEC/build-check pass followed by Codex review. Run the already-gated filter before any enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_11214",
+      "evidence": {
+        "active_magic_rows": 4,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 0,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Strategy Governance",
+      "reason": "Each identity has both approved- and rejected-pool card material and an EA directory with no MQ5 source. Active magic rows now exist, so the old magic blocker dissolved, but card authority and the missing implementation remain live.",
+      "target_state": "BLOCKED",
+      "task_id": "534917fa-c0e2-4ad7-ac0e-0b52238b43fe",
+      "unblock_action": "Resolve the approved/rejected card conflict with a dated G0 disposition. If APPROVED remains authoritative, hand the exact card to Development for a complete Q01 build and Codex review; otherwise retire the build task. Do not fabricate source from the directory name."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_11212",
+      "evidence": {
+        "active_magic_rows": 4,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 0,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Strategy Governance",
+      "reason": "Each identity has both approved- and rejected-pool card material and an EA directory with no MQ5 source. Active magic rows now exist, so the old magic blocker dissolved, but card authority and the missing implementation remain live.",
+      "target_state": "BLOCKED",
+      "task_id": "7432e7ca-5caf-4f8f-94f3-0c728b72cc2d",
+      "unblock_action": "Resolve the approved/rejected card conflict with a dated G0 disposition. If APPROVED remains authoritative, hand the exact card to Development for a complete Q01 build and Codex review; otherwise retire the build task. Do not fabricate source from the directory name."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20088",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Registry Operator",
+      "reason": "Live state has an approved card and MQ5 source but no active magic rows, no EX5, no SPEC, no backtest setfiles, and no work items. The prior fabricated-build blocker therefore remains real, although source now exists.",
+      "target_state": "BLOCKED",
+      "task_id": "833549b3-8182-440d-86d4-f99beef02429",
+      "unblock_action": "Confirm the approved card is authoritative, allocate exact card symbols with the governed allocator, regenerate and verify the resolver, then assign Development a complete Q01 compile/setfile/SPEC/build-check pass followed by Codex review. Run the already-gated filter before any enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_13211",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Registry Operator",
+      "reason": "Live state has an approved card and MQ5 source but no active magic rows, no EX5, no SPEC, no backtest setfiles, and no work items. The prior fabricated-build blocker therefore remains real, although source now exists.",
+      "target_state": "BLOCKED",
+      "task_id": "87284092-4d40-4519-8b1f-3361a4f0c1d7",
+      "unblock_action": "Confirm the approved card is authoritative, allocate exact card symbols with the governed allocator, regenerate and verify the resolver, then assign Development a complete Q01 compile/setfile/SPEC/build-check pass followed by Codex review. Run the already-gated filter before any enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20077",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Registry Operator",
+      "reason": "Live state has an approved card and MQ5 source but no active magic rows, no EX5, no SPEC, no backtest setfiles, and no work items. The prior fabricated-build blocker therefore remains real, although source now exists.",
+      "target_state": "BLOCKED",
+      "task_id": "957ab7d7-3772-4c3a-bf77-213beedf7dab",
+      "unblock_action": "Confirm the approved card is authoritative, allocate exact card symbols with the governed allocator, regenerate and verify the resolver, then assign Development a complete Q01 compile/setfile/SPEC/build-check pass followed by Codex review. Run the already-gated filter before any enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_13208",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Registry Operator",
+      "reason": "Live state has an approved card and MQ5 source but no active magic rows, no EX5, no SPEC, no backtest setfiles, and no work items. The prior fabricated-build blocker therefore remains real, although source now exists.",
+      "target_state": "BLOCKED",
+      "task_id": "99b59c8d-4d24-4f4a-9b04-33478597a425",
+      "unblock_action": "Confirm the approved card is authoritative, allocate exact card symbols with the governed allocator, regenerate and verify the resolver, then assign Development a complete Q01 compile/setfile/SPEC/build-check pass followed by Codex review. Run the already-gated filter before any enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20089",
+      "evidence": {
+        "active_magic_rows": 8,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Development",
+      "reason": "Live files still reproduce the review blocker: registry is pending or required SPEC/set/build evidence is absent, and no post-block gate row exists.",
+      "target_state": "BLOCKED",
+      "task_id": "c7f0b860-b2e7-4d2e-bcfd-129471a8deea",
+      "unblock_action": "Repair the exact review findings, complete governed registry activation where pending, add SPEC and fixed-risk setfiles, run strict build_check with -EALabel and compile, then submit a new Codex review artifact. Do not advance on the existing binary."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20079",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Registry Operator",
+      "reason": "Live state has an approved card and MQ5 source but no active magic rows, no EX5, no SPEC, no backtest setfiles, and no work items. The prior fabricated-build blocker therefore remains real, although source now exists.",
+      "target_state": "BLOCKED",
+      "task_id": "d7d089c4-eb09-4f37-82cb-8cf18c3ad666",
+      "unblock_action": "Confirm the approved card is authoritative, allocate exact card symbols with the governed allocator, regenerate and verify the resolver, then assign Development a complete Q01 compile/setfile/SPEC/build-check pass followed by Codex review. Run the already-gated filter before any enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20087",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Registry Operator",
+      "reason": "Live state has an approved card and MQ5 source but no active magic rows, no EX5, no SPEC, no backtest setfiles, and no work items. The prior fabricated-build blocker therefore remains real, although source now exists.",
+      "target_state": "BLOCKED",
+      "task_id": "d8df7447-1565-47af-859d-b48e881cc557",
+      "unblock_action": "Confirm the approved card is authoritative, allocate exact card symbols with the governed allocator, regenerate and verify the resolver, then assign Development a complete Q01 compile/setfile/SPEC/build-check pass followed by Codex review. Run the already-gated filter before any enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_11213",
+      "evidence": {
+        "active_magic_rows": 4,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 0,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Strategy Governance",
+      "reason": "Each identity has both approved- and rejected-pool card material and an EA directory with no MQ5 source. Active magic rows now exist, so the old magic blocker dissolved, but card authority and the missing implementation remain live.",
+      "target_state": "BLOCKED",
+      "task_id": "e388ce49-0a11-4308-b982-b5073ba2750d",
+      "unblock_action": "Resolve the approved/rejected card conflict with a dated G0 disposition. If APPROVED remains authoritative, hand the exact card to Development for a complete Q01 build and Codex review; otherwise retire the build task. Do not fabricate source from the directory name."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_12351",
+      "evidence": {
+        "active_magic_rows": 7,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 0,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-07-27T11:10:28.461739+00:00",
+      "expected_verdict_sha256": "0ba63cb42232c3e3c949c672df3789c4e8e327104a719cd00f6587df132a462d",
+      "owner": "Strategy Governance",
+      "reason": "Each identity has both approved- and rejected-pool card material and an EA directory with no MQ5 source. Active magic rows now exist, so the old magic blocker dissolved, but card authority and the missing implementation remain live.",
+      "target_state": "BLOCKED",
+      "task_id": "e561d846-23ed-4265-9f18-4a5cf4acd450",
+      "unblock_action": "Resolve the approved/rejected card conflict with a dated G0 disposition. If APPROVED remains authoritative, hand the exact card to Development for a complete Q01 build and Codex review; otherwise retire the build task. Do not fabricate source from the directory name."
+    },
+    {
+      "blocking_condition_still_true": false,
+      "ea_id": "QM5_1355",
+      "evidence": {
+        "active_magic_rows": 8,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 8,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:23:18+00:00",
+      "expected_verdict_sha256": "ddf209336e804904c58aae80af81df6a00b32aa1fb0bea61f7556d6d562f6971",
+      "owner": null,
+      "reason": "The original unwired-input blocker was repaired and independently approved in the eight-EA repair battery (commit c99b67c8b). Current source uses every named QM5_1355 parameter and stamps QM5_1630 cooldown only after a successful open. This closes the superseded build/review rows only; it is not pipeline evidence.",
+      "target_state": "PASSED",
+      "task_id": "85abc20a-1798-4c0c-b705-f67bbab19cc8",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": false,
+      "ea_id": "QM5_1630",
+      "evidence": {
+        "active_magic_rows": 4,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {},
+        "setfiles": 4,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:23:24+00:00",
+      "expected_verdict_sha256": "1864d008adc59b593c6e0f0c0456b3f8b5bdf011a5151c6f1296c4024eef7fca",
+      "owner": null,
+      "reason": "The original unwired-input blocker was repaired and independently approved in the eight-EA repair battery (commit c99b67c8b). Current source uses every named QM5_1355 parameter and stamps QM5_1630 cooldown only after a successful open. This closes the superseded build/review rows only; it is not pipeline evidence.",
+      "target_state": "PASSED",
+      "task_id": "1af5d4c8-737b-4e19-84e4-2e34174cd5d5",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_1627",
+      "evidence": {
+        "active_magic_rows": 4,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {},
+        "setfiles": 4,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:29:27+00:00",
+      "expected_verdict_sha256": "d3e9d3adcbb3747a3f3dff26ad9927025d80dcde48fc196c7f4702f319fa8199",
+      "owner": "Development",
+      "reason": "The recovered approved card is live, but the reviewed implementation remains incomplete: current evidence lacks the required registry/spec/build closure or retains the exact mechanical defects recorded by review. No post-block gate result exists.",
+      "target_state": "BLOCKED",
+      "task_id": "932cb7ee-a445-41c4-9fbf-a9650d0155be",
+      "unblock_action": "Resolve card-pool authority with Strategy Governance, repair the reviewed mechanics, create the missing registry/SPEC/build evidence, compile through the guarded path, and return a fresh Codex review artifact before any pipeline enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_1628",
+      "evidence": {
+        "active_magic_rows": 4,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {},
+        "setfiles": 4,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:29:27+00:00",
+      "expected_verdict_sha256": "3608526a5a73547d75a9c9e771af05394b642684c6d00a217b3b7c394cf2bcb1",
+      "owner": "Development",
+      "reason": "The recovered approved card is live, but the reviewed implementation remains incomplete: current evidence lacks the required registry/spec/build closure or retains the exact mechanical defects recorded by review. No post-block gate result exists.",
+      "target_state": "BLOCKED",
+      "task_id": "c1c715e2-d00f-4bfe-b82b-ff12ddc65b3e",
+      "unblock_action": "Resolve card-pool authority with Strategy Governance, repair the reviewed mechanics, create the missing registry/SPEC/build evidence, compile through the guarded path, and return a fresh Codex review artifact before any pipeline enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_2245",
+      "evidence": {
+        "active_magic_rows": 8,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {},
+        "setfiles": 8,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:29:28+00:00",
+      "expected_verdict_sha256": "624f2cea21a5ff2c5de02cf2af4b1ad7b0f60a5ebbf701d05ff32675d088a0c3",
+      "owner": "Development",
+      "reason": "The recovered approved card is live, but the reviewed implementation remains incomplete: current evidence lacks the required registry/spec/build closure or retains the exact mechanical defects recorded by review. No post-block gate result exists.",
+      "target_state": "BLOCKED",
+      "task_id": "db396423-a845-48d4-b75e-c6f858ad953c",
+      "unblock_action": "Resolve card-pool authority with Strategy Governance, repair the reviewed mechanics, create the missing registry/SPEC/build evidence, compile through the guarded path, and return a fresh Codex review artifact before any pipeline enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_11532",
+      "evidence": {
+        "active_magic_rows": 2,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "pending": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:30:09+00:00",
+      "expected_verdict_sha256": "49ae8d7b999ad6b9415957c915c156e90e34ad85fb96e2ee0f57b355eaf8efd2",
+      "owner": "Development",
+      "reason": "Live files still reproduce the review blocker: registry is pending or required SPEC/set/build evidence is absent, and no post-block gate row exists.",
+      "target_state": "BLOCKED",
+      "task_id": "58a5a113-b015-41d3-9a60-841815b52a90",
+      "unblock_action": "Repair the exact review findings, complete governed registry activation where pending, add SPEC and fixed-risk setfiles, run strict build_check with -EALabel and compile, then submit a new Codex review artifact. Do not advance on the existing binary."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_11531",
+      "evidence": {
+        "active_magic_rows": 1,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "pending": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:30:09+00:00",
+      "expected_verdict_sha256": "f6eafad5eac355eea147d790aa159f9e750c0518c763b43ea6a7203308e8a74d",
+      "owner": "Development",
+      "reason": "Live files still reproduce the review blocker: registry is pending or required SPEC/set/build evidence is absent, and no post-block gate row exists.",
+      "target_state": "BLOCKED",
+      "task_id": "96a5d231-a73f-4461-adbd-788d56066bec",
+      "unblock_action": "Repair the exact review findings, complete governed registry activation where pending, add SPEC and fixed-risk setfiles, run strict build_check with -EALabel and compile, then submit a new Codex review artifact. Do not advance on the existing binary."
+    },
+    {
+      "blocking_condition_still_true": false,
+      "ea_id": "QM5_1355",
+      "evidence": {
+        "active_magic_rows": 8,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 8,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:30:10+00:00",
+      "expected_verdict_sha256": "e9ea89d4478732e9669573c7e605cbc98df37284333fd13490698ca5809ce341",
+      "owner": null,
+      "reason": "The original unwired-input blocker was repaired and independently approved in the eight-EA repair battery (commit c99b67c8b). Current source uses every named QM5_1355 parameter and stamps QM5_1630 cooldown only after a successful open. This closes the superseded build/review rows only; it is not pipeline evidence.",
+      "target_state": "PASSED",
+      "task_id": "860da8d2-37db-4218-91f1-5c95b10897e4",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_1628",
+      "evidence": {
+        "active_magic_rows": 4,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {},
+        "setfiles": 4,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:30:11+00:00",
+      "expected_verdict_sha256": "1dd1a44f9c726f0ab205b0e4327c73ffada81630ee693e5f0b8e722f7860304d",
+      "owner": "Development",
+      "reason": "The recovered approved card is live, but the reviewed implementation remains incomplete: current evidence lacks the required registry/spec/build closure or retains the exact mechanical defects recorded by review. No post-block gate result exists.",
+      "target_state": "BLOCKED",
+      "task_id": "3c46e814-d8b2-429c-9a15-d7660a3376d1",
+      "unblock_action": "Resolve card-pool authority with Strategy Governance, repair the reviewed mechanics, create the missing registry/SPEC/build evidence, compile through the guarded path, and return a fresh Codex review artifact before any pipeline enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_1627",
+      "evidence": {
+        "active_magic_rows": 4,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {},
+        "setfiles": 4,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:30:11+00:00",
+      "expected_verdict_sha256": "162f74b45335b87f91a11dcf830d3c56e5bf65fafd51f135b67700d5adf68b5d",
+      "owner": "Development",
+      "reason": "The recovered approved card is live, but the reviewed implementation remains incomplete: current evidence lacks the required registry/spec/build closure or retains the exact mechanical defects recorded by review. No post-block gate result exists.",
+      "target_state": "BLOCKED",
+      "task_id": "6ec40513-d44b-4b71-babc-91c725bce7fb",
+      "unblock_action": "Resolve card-pool authority with Strategy Governance, repair the reviewed mechanics, create the missing registry/SPEC/build evidence, compile through the guarded path, and return a fresh Codex review artifact before any pipeline enqueue."
+    },
+    {
+      "blocking_condition_still_true": false,
+      "ea_id": "QM5_1630",
+      "evidence": {
+        "active_magic_rows": 4,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {},
+        "setfiles": 4,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:30:11+00:00",
+      "expected_verdict_sha256": "b0aadfade89057cfc75787e4719d5ad89b4c82c8c851490f0a71a5b49bad80dc",
+      "owner": null,
+      "reason": "The original unwired-input blocker was repaired and independently approved in the eight-EA repair battery (commit c99b67c8b). Current source uses every named QM5_1355 parameter and stamps QM5_1630 cooldown only after a successful open. This closes the superseded build/review rows only; it is not pipeline evidence.",
+      "target_state": "PASSED",
+      "task_id": "cbd1ece7-9433-43c4-aa54-43c9661e1b34",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20088",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:30:12+00:00",
+      "expected_verdict_sha256": "687f946a3f04c35f4f45a1b41997f56886b8414801bc994f5fa60b1b04254bfa",
+      "owner": "Registry Operator",
+      "reason": "Live state has an approved card and MQ5 source but no active magic rows, no EX5, no SPEC, no backtest setfiles, and no work items. The prior fabricated-build blocker therefore remains real, although source now exists.",
+      "target_state": "BLOCKED",
+      "task_id": "17a30608-21c2-4df5-a77e-50c55b3b8216",
+      "unblock_action": "Confirm the approved card is authoritative, allocate exact card symbols with the governed allocator, regenerate and verify the resolver, then assign Development a complete Q01 compile/setfile/SPEC/build-check pass followed by Codex review. Run the already-gated filter before any enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20087",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:30:12+00:00",
+      "expected_verdict_sha256": "687f946a3f04c35f4f45a1b41997f56886b8414801bc994f5fa60b1b04254bfa",
+      "owner": "Registry Operator",
+      "reason": "Live state has an approved card and MQ5 source but no active magic rows, no EX5, no SPEC, no backtest setfiles, and no work items. The prior fabricated-build blocker therefore remains real, although source now exists.",
+      "target_state": "BLOCKED",
+      "task_id": "264d7351-b93f-4505-b3d7-7fd71f2ecf52",
+      "unblock_action": "Confirm the approved card is authoritative, allocate exact card symbols with the governed allocator, regenerate and verify the resolver, then assign Development a complete Q01 compile/setfile/SPEC/build-check pass followed by Codex review. Run the already-gated filter before any enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20090",
+      "evidence": {
+        "active_magic_rows": 1,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:30:12+00:00",
+      "expected_verdict_sha256": "df35f5de2cebe199675df08bd007556219dc00582bf63de543980548889aef93",
+      "owner": "Development",
+      "reason": "Live files still reproduce the review blocker: registry is pending or required SPEC/set/build evidence is absent, and no post-block gate row exists.",
+      "target_state": "BLOCKED",
+      "task_id": "ce9ed220-8180-4178-b12e-9a3b00fe42d3",
+      "unblock_action": "Repair the exact review findings, complete governed registry activation where pending, add SPEC and fixed-risk setfiles, run strict build_check with -EALabel and compile, then submit a new Codex review artifact. Do not advance on the existing binary."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_20089",
+      "evidence": {
+        "active_magic_rows": 8,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:30:12+00:00",
+      "expected_verdict_sha256": "fdaa9df85d35529da0c8823795a1d3867f3f2e15d44f39190c5bbc40e6e90079",
+      "owner": "Development",
+      "reason": "Live files still reproduce the review blocker: registry is pending or required SPEC/set/build evidence is absent, and no post-block gate row exists.",
+      "target_state": "BLOCKED",
+      "task_id": "d11e0983-bd3a-41be-9bbc-daeda4f4752a",
+      "unblock_action": "Repair the exact review findings, complete governed registry activation where pending, add SPEC and fixed-risk setfiles, run strict build_check with -EALabel and compile, then submit a new Codex review artifact. Do not advance on the existing binary."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_2245",
+      "evidence": {
+        "active_magic_rows": 8,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {},
+        "setfiles": 8,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-16T21:30:13+00:00",
+      "expected_verdict_sha256": "7414e97073b4f6103cc7ac343f8d05698c609549f3bc581714cf09953c733176",
+      "owner": "Development",
+      "reason": "The recovered approved card is live, but the reviewed implementation remains incomplete: current evidence lacks the required registry/spec/build closure or retains the exact mechanical defects recorded by review. No post-block gate result exists.",
+      "target_state": "BLOCKED",
+      "task_id": "703ad829-d436-4815-ae26-da1bde4f04de",
+      "unblock_action": "Resolve card-pool authority with Strategy Governance, repair the reviewed mechanics, create the missing registry/SPEC/build evidence, compile through the guarded path, and return a fresh Codex review artifact before any pipeline enqueue."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_11363",
+      "evidence": {
+        "active_magic_rows": 3,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 3,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 6
+      },
+      "expected_updated_at": "2026-08-16T21:30:47+00:00",
+      "expected_verdict_sha256": "6c722ef4f6e50832ff1bab44a1353ffa792e1193ff8b26f1bdf7674f24072015",
+      "owner": "Development",
+      "reason": "The EA still has MQ5, EX5 and fixed-risk setfiles but no SPEC.md. Completed Q04 failures predate the block and do not cure the missing card-to-module review artifact.",
+      "target_state": "BLOCKED",
+      "task_id": "c1cd9635-bbc2-4bc4-ad6f-55214584afda",
+      "unblock_action": "Author a card-faithful SPEC.md, bind the review artifact to that file, rerun strict build and guardrail checks with -EALabel, and submit a fresh Codex review. Preserve the existing pipeline verdicts."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_11362",
+      "evidence": {
+        "active_magic_rows": 6,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 6,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 12
+      },
+      "expected_updated_at": "2026-08-16T21:30:47+00:00",
+      "expected_verdict_sha256": "6838185d801085acfc498c5de0778a452e319a6ec64c78e998165963552f019c",
+      "owner": "Development",
+      "reason": "The EA still has MQ5, EX5 and fixed-risk setfiles but no SPEC.md. Completed Q04 failures predate the block and do not cure the missing card-to-module review artifact.",
+      "target_state": "BLOCKED",
+      "task_id": "d55f1d63-c35e-4462-b42f-96a05668e1a7",
+      "unblock_action": "Author a card-faithful SPEC.md, bind the review artifact to that file, rerun strict build and guardrail checks with -EALabel, and submit a fresh Codex review. Preserve the existing pipeline verdicts."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_21508",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-17T17:57:50+00:00",
+      "expected_verdict_sha256": "307bb9eac4c6104f13017b858c434982bac41cbe8d82872bfff7e692bb3faf1b",
+      "owner": "Registry Operator",
+      "reason": "Current registry/card/source identity is present but active magic count is still zero, with no EX5, setfiles, or work items. The preflight refusal remains correct.",
+      "target_state": "BLOCKED",
+      "task_id": "6be9b5cf-1bfc-431e-b572-f5950c95eb77",
+      "unblock_action": "Allocate the card's exact symbols with governed_magic_allocator --card, regenerate and verify QM_MagicResolver, then return the existing build task to Development for a full Q01 build and Codex review. Never invent or reactivate a retired magic row."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_21509",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-17T17:57:50+00:00",
+      "expected_verdict_sha256": "54dcd8f2064b48e27986e28b65b88728614042e6b83f84551791c14babdf2b59",
+      "owner": "Registry Operator",
+      "reason": "Current registry/card/source identity is present but active magic count is still zero, with no EX5, setfiles, or work items. The preflight refusal remains correct.",
+      "target_state": "BLOCKED",
+      "task_id": "78f0cdff-f4af-4f31-af04-4d3b00e17584",
+      "unblock_action": "Allocate the card's exact symbols with governed_magic_allocator --card, regenerate and verify QM_MagicResolver, then return the existing build task to Development for a full Q01 build and Codex review. Never invent or reactivate a retired magic row."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_30005",
+      "evidence": {
+        "active_magic_rows": 4,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-17T18:23:30+00:00",
+      "expected_verdict_sha256": "a22558ce2a87837f5a1d99741a5f53d8868f0939e9778e37013a86b379a3fe31",
+      "owner": null,
+      "reason": "Live approved cards still define multi-layer grid/basket mechanics (QM5_30005 static 15-pip grid; QM5_30006 linear grid). That directly violates the active Edge Lab no-grid/no-martingale charter, so registry repair or compilation cannot unblock these tasks.",
+      "target_state": "FAILED",
+      "task_id": "550ba990-7307-450b-b178-e471b349cc2e",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_30006",
+      "evidence": {
+        "active_magic_rows": 4,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-17T18:23:30+00:00",
+      "expected_verdict_sha256": "a22558ce2a87837f5a1d99741a5f53d8868f0939e9778e37013a86b379a3fe31",
+      "owner": null,
+      "reason": "Live approved cards still define multi-layer grid/basket mechanics (QM5_30005 static 15-pip grid; QM5_30006 linear grid). That directly violates the active Edge Lab no-grid/no-martingale charter, so registry repair or compilation cannot unblock these tasks.",
+      "target_state": "FAILED",
+      "task_id": "a7780ec7-5c40-4e85-a47d-718d84d7f9e8",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_34007",
+      "evidence": {
+        "active_magic_rows": 2,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 2,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 2,
+        "work_items_total": 2
+      },
+      "expected_updated_at": "2026-08-17T20:22:23+00:00",
+      "expected_verdict_sha256": "08857c06cb8c25a58348fbb3d6358ab2aad91d92e132be91f5c1aa6188e648b8",
+      "owner": null,
+      "reason": "The card still requires 10-second/5-second FX mechanics that the governed tester cannot represent and lacks the required commission evidence. Current pending Q02 rows are not interrupted and do not supply a contrary verdict; the build/review task disposition is terminal on R3/charter feasibility.",
+      "target_state": "FAILED",
+      "task_id": "4309d167-c420-4a7a-b440-480080ccf03e",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_38007",
+      "evidence": {
+        "active_magic_rows": 3,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "retired": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-18T06:27:59+00:00",
+      "expected_verdict_sha256": "4a1d0f74cff0ab0f9b0f529c9bf9d99b4452493a677baf807ec384eedb0674af",
+      "owner": null,
+      "reason": "Live registry status is retired and the card carries a terminal G0 rejection. QM5_38007 conflicts with the one-position/no-grid charter; QM5_41010 leaves the core d-POC construction undefined. No rebuild or pipeline enqueue is authorized.",
+      "target_state": "FAILED",
+      "task_id": "2dd67414-972c-4fc4-858f-6894201b5663",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_35002",
+      "evidence": {
+        "active_magic_rows": 3,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 3,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 3,
+        "work_items_total": 3
+      },
+      "expected_updated_at": "2026-08-21T07:49:05+00:00",
+      "expected_verdict_sha256": "e1e6aed5611338c34fd40a70e9198998778da3403a8029b8a6dfea91784a689c",
+      "owner": "Strategy Governance",
+      "reason": "The current approved card still contains the mechanical contradiction or undefined core rule identified by review. Existing pending/running work is not interrupted, and pre-block PASS/FAIL rows do not repair card authority.",
+      "target_state": "BLOCKED",
+      "task_id": "bc910727-5ee3-47a3-ae81-420aa819f589",
+      "unblock_action": "Issue a corrected, closed-form card or a terminal rejection; if corrected, require Development to rebuild and Codex to re-review before any downstream evidence can be relied upon. Do not promote the current build, and do not interrupt active backtests."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_35002",
+      "evidence": {
+        "active_magic_rows": 3,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 3,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 3,
+        "work_items_total": 3
+      },
+      "expected_updated_at": "2026-08-21T07:49:05+00:00",
+      "expected_verdict_sha256": "bd56ebc1946693be0c4ed890f8d0a3756c4e67937f4e1bacc1304c990f8f690b",
+      "owner": "Strategy Governance",
+      "reason": "The current approved card still contains the mechanical contradiction or undefined core rule identified by review. Existing pending/running work is not interrupted, and pre-block PASS/FAIL rows do not repair card authority.",
+      "target_state": "BLOCKED",
+      "task_id": "da27d5d7-b9e2-44c7-892e-7253154a7ba7",
+      "unblock_action": "Issue a corrected, closed-form card or a terminal rejection; if corrected, require Development to rebuild and Codex to re-review before any downstream evidence can be relied upon. Do not promote the current build, and do not interrupt active backtests."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_34006",
+      "evidence": {
+        "active_magic_rows": 3,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 3,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 3,
+        "work_items_total": 3
+      },
+      "expected_updated_at": "2026-08-21T07:49:06+00:00",
+      "expected_verdict_sha256": "d129a1209582e0363d22fc3d817b0b0fe6e5461a7fe4b7818e40d9b973bbdaea",
+      "owner": "Strategy Governance",
+      "reason": "The current approved card still contains the mechanical contradiction or undefined core rule identified by review. Existing pending/running work is not interrupted, and pre-block PASS/FAIL rows do not repair card authority.",
+      "target_state": "BLOCKED",
+      "task_id": "70238994-3b68-455c-b170-034bffb81530",
+      "unblock_action": "Issue a corrected, closed-form card or a terminal rejection; if corrected, require Development to rebuild and Codex to re-review before any downstream evidence can be relied upon. Do not promote the current build, and do not interrupt active backtests."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_34006",
+      "evidence": {
+        "active_magic_rows": 3,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 3,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 3,
+        "work_items_total": 3
+      },
+      "expected_updated_at": "2026-08-21T07:49:06+00:00",
+      "expected_verdict_sha256": "ad98769293bc1d19724b265fef4d61aa57e96f761ce25af4cab4573e04cb1af7",
+      "owner": "Strategy Governance",
+      "reason": "The current approved card still contains the mechanical contradiction or undefined core rule identified by review. Existing pending/running work is not interrupted, and pre-block PASS/FAIL rows do not repair card authority.",
+      "target_state": "BLOCKED",
+      "task_id": "cf62861c-2bb3-40ec-8239-c12627e0a0a0",
+      "unblock_action": "Issue a corrected, closed-form card or a terminal rejection; if corrected, require Development to rebuild and Codex to re-review before any downstream evidence can be relied upon. Do not promote the current build, and do not interrupt active backtests."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_35006",
+      "evidence": {
+        "active_magic_rows": 2,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 2,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 1,
+        "work_items_total": 6
+      },
+      "expected_updated_at": "2026-08-21T07:49:07+00:00",
+      "expected_verdict_sha256": "404e0f4b25d668c2a0ea61ae5a1d4f8cfc81dc8ef597326b4ac186eaeed954f1",
+      "owner": "Strategy Governance",
+      "reason": "The current approved card still contains the mechanical contradiction or undefined core rule identified by review. Existing pending/running work is not interrupted, and pre-block PASS/FAIL rows do not repair card authority.",
+      "target_state": "BLOCKED",
+      "task_id": "b8886e40-547b-4d41-989a-aad8324f5a69",
+      "unblock_action": "Issue a corrected, closed-form card or a terminal rejection; if corrected, require Development to rebuild and Codex to re-review before any downstream evidence can be relied upon. Do not promote the current build, and do not interrupt active backtests."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_35006",
+      "evidence": {
+        "active_magic_rows": 2,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 2,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 1,
+        "work_items_total": 6
+      },
+      "expected_updated_at": "2026-08-21T07:49:08+00:00",
+      "expected_verdict_sha256": "dc1763d201f2856733d6dc081fb7be8e8253bbc9cf9051ebab2598f522ff3524",
+      "owner": "Strategy Governance",
+      "reason": "The current approved card still contains the mechanical contradiction or undefined core rule identified by review. Existing pending/running work is not interrupted, and pre-block PASS/FAIL rows do not repair card authority.",
+      "target_state": "BLOCKED",
+      "task_id": "348092fa-14ad-4bd0-974f-c1a360144519",
+      "unblock_action": "Issue a corrected, closed-form card or a terminal rejection; if corrected, require Development to rebuild and Codex to re-review before any downstream evidence can be relied upon. Do not promote the current build, and do not interrupt active backtests."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_35007",
+      "evidence": {
+        "active_magic_rows": 3,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 3,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 6
+      },
+      "expected_updated_at": "2026-08-21T07:49:08+00:00",
+      "expected_verdict_sha256": "895a06da0042ec59129c995f69e2d148e3d5c2a4aadecd605a0464fb4497033d",
+      "owner": "Strategy Governance",
+      "reason": "The current approved card still contains the mechanical contradiction or undefined core rule identified by review. Existing pending/running work is not interrupted, and pre-block PASS/FAIL rows do not repair card authority.",
+      "target_state": "BLOCKED",
+      "task_id": "7a9aa79c-3538-419c-a02a-7670d5ed603a",
+      "unblock_action": "Issue a corrected, closed-form card or a terminal rejection; if corrected, require Development to rebuild and Codex to re-review before any downstream evidence can be relied upon. Do not promote the current build, and do not interrupt active backtests."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_35007",
+      "evidence": {
+        "active_magic_rows": 3,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 3,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 6
+      },
+      "expected_updated_at": "2026-08-21T07:49:08+00:00",
+      "expected_verdict_sha256": "c75fd14d2a076b1b2dfdc3e0dc8ebe8758b75e8ecc5f34e40a1f9749f9630b6e",
+      "owner": "Strategy Governance",
+      "reason": "The current approved card still contains the mechanical contradiction or undefined core rule identified by review. Existing pending/running work is not interrupted, and pre-block PASS/FAIL rows do not repair card authority.",
+      "target_state": "BLOCKED",
+      "task_id": "c0f9d1e3-582f-4842-86d4-9b37950b32c0",
+      "unblock_action": "Issue a corrected, closed-form card or a terminal rejection; if corrected, require Development to rebuild and Codex to re-review before any downstream evidence can be relied upon. Do not promote the current build, and do not interrupt active backtests."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_38007",
+      "evidence": {
+        "active_magic_rows": 3,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "retired": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-21T07:49:18+00:00",
+      "expected_verdict_sha256": "07a4c1369499cedc5b2e03b6ce6aabb3a3ee639ace209156eea0df6a0f2ffa14",
+      "owner": null,
+      "reason": "Live registry status is retired and the card carries a terminal G0 rejection. QM5_38007 conflicts with the one-position/no-grid charter; QM5_41010 leaves the core d-POC construction undefined. No rebuild or pipeline enqueue is authorized.",
+      "target_state": "FAILED",
+      "task_id": "b004519e-60ec-4d92-a20a-1925b7b82361",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_41010",
+      "evidence": {
+        "active_magic_rows": 2,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "retired": 1
+        },
+        "setfiles": 2,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-21T07:49:25+00:00",
+      "expected_verdict_sha256": "062b105e0fe365461899d6df7a5d21459d6020f5f2074a82354ac805de4e97ee",
+      "owner": null,
+      "reason": "Live registry status is retired and the card carries a terminal G0 rejection. QM5_38007 conflicts with the one-position/no-grid charter; QM5_41010 leaves the core d-POC construction undefined. No rebuild or pipeline enqueue is authorized.",
+      "target_state": "FAILED",
+      "task_id": "5111533d-3668-4f98-a036-c379de89ce7c",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_41010",
+      "evidence": {
+        "active_magic_rows": 2,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "retired": 1
+        },
+        "setfiles": 2,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-21T07:49:25+00:00",
+      "expected_verdict_sha256": "1de6bcb907f9d9dca7071acdcf0ec89138f693ce93231239ad402fce1d4a26e6",
+      "owner": null,
+      "reason": "Live registry status is retired and the card carries a terminal G0 rejection. QM5_38007 conflicts with the one-position/no-grid charter; QM5_41010 leaves the core d-POC construction undefined. No rebuild or pipeline enqueue is authorized.",
+      "target_state": "FAILED",
+      "task_id": "ba6be389-4570-4ae6-b636-40e62ae7ad2f",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_34007",
+      "evidence": {
+        "active_magic_rows": 2,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 2,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 2,
+        "work_items_total": 2
+      },
+      "expected_updated_at": "2026-08-21T08:09:41+00:00",
+      "expected_verdict_sha256": "3425fddcf7bedfbb1a4c9e73fbc3c9acd1518442fc8887f819e5f2e6c90b0f10",
+      "owner": null,
+      "reason": "The card still requires 10-second/5-second FX mechanics that the governed tester cannot represent and lacks the required commission evidence. Current pending Q02 rows are not interrupted and do not supply a contrary verdict; the build/review task disposition is terminal on R3/charter feasibility.",
+      "target_state": "FAILED",
+      "task_id": "82a3b44b-666a-45cd-9f36-d546f67dac0f",
+      "unblock_action": null
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_11539",
+      "evidence": {
+        "active_magic_rows": 2,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 2,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-21T09:56:21+00:00",
+      "expected_verdict_sha256": "31e104855e0fe58da00a1f3b16fce7841ad123636bd1c34a34f2a3500badda69",
+      "owner": "Pipeline Operator",
+      "reason": "The build/review artifact is approved and current MQ5, EX5, SPEC and fixed-risk setfiles exist, but live database state still has zero work items. The build is complete; the pipeline binding blocker remains.",
+      "target_state": "BLOCKED",
+      "task_id": "5ea0928f-8919-4fa1-adbd-c954d40b6495",
+      "unblock_action": "Run the already-gated/duplicate filter, then enqueue the exact registered symbols into governed Q02 and attach the resulting work-item identities. The enqueue produces no gate verdict by itself."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_11537",
+      "evidence": {
+        "active_magic_rows": 2,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 2,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-21T09:56:21+00:00",
+      "expected_verdict_sha256": "88bce0314215006679d45a45980d86336a92f429803d31cb5248ab50da0b335a",
+      "owner": "Pipeline Operator",
+      "reason": "The build/review artifact is approved and current MQ5, EX5, SPEC and fixed-risk setfiles exist, but live database state still has zero work items. The build is complete; the pipeline binding blocker remains.",
+      "target_state": "BLOCKED",
+      "task_id": "985081a7-3fe8-4012-a6d6-a0dea7d47db2",
+      "unblock_action": "Run the already-gated/duplicate filter, then enqueue the exact registered symbols into governed Q02 and attach the resulting work-item identities. The enqueue produces no gate verdict by itself."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_11533",
+      "evidence": {
+        "active_magic_rows": 1,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 1,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-21T09:56:21+00:00",
+      "expected_verdict_sha256": "3ced7c9a43b616455d0ce97892d04997a6f00a686ff63a9f19a3c68497cd9b4f",
+      "owner": "Pipeline Operator",
+      "reason": "The build/review artifact is approved and current MQ5, EX5, SPEC and fixed-risk setfiles exist, but live database state still has zero work items. The build is complete; the pipeline binding blocker remains.",
+      "target_state": "BLOCKED",
+      "task_id": "abfb4871-b012-4a57-b800-47e73a63e647",
+      "unblock_action": "Run the already-gated/duplicate filter, then enqueue the exact registered symbols into governed Q02 and attach the resulting work-item identities. The enqueue produces no gate verdict by itself."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_11563",
+      "evidence": {
+        "active_magic_rows": 3,
+        "card_pools": [
+          "cards_approved",
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 1,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 3,
+        "spec_files": 1,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-21T09:56:21+00:00",
+      "expected_verdict_sha256": "7ee27640b8c8afe643eca343643887d1702784b92975f8bde821c03d297a9a84",
+      "owner": "Pipeline Operator",
+      "reason": "The build/review artifact is approved and current MQ5, EX5, SPEC and fixed-risk setfiles exist, but live database state still has zero work items. The build is complete; the pipeline binding blocker remains.",
+      "target_state": "BLOCKED",
+      "task_id": "e26b6273-3c6a-478b-8f2a-b5004e32d85f",
+      "unblock_action": "Run the already-gated/duplicate filter, then enqueue the exact registered symbols into governed Q02 and attach the resulting work-item identities. The enqueue produces no gate verdict by itself."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_12937",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_rejected"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-21T16:10:59+00:00",
+      "expected_verdict_sha256": "2f1f561cb313926f0c5df8adbc93aac371bbba600c64ba5389b6ab53600afe49",
+      "owner": "Strategy Governance",
+      "reason": "Live card state is contradictory: the task points to a rejected-pool card while frontmatter and/or a second draft copy disagree, and active registry rows remain. Zero magic/build/work-item rows mean no later execution resolved that authority conflict.",
+      "target_state": "BLOCKED",
+      "task_id": "0a7dec9e-8ff0-488b-a587-6dc3ad49af61",
+      "unblock_action": "Choose one authoritative G0 disposition, normalize the card pool and frontmatter through the governed card command, then either retire the EA identity or allocate magic and authorize a fresh build. Do not infer rejection from path alone."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_12941",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_rejected",
+          "cards_draft"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-21T16:28:01+00:00",
+      "expected_verdict_sha256": "0abe146efe5f53f187fbb95c4021576a1b1da9aded77ebc1dc85a66ee8985254",
+      "owner": "Strategy Governance",
+      "reason": "Live card state is contradictory: the task points to a rejected-pool card while frontmatter and/or a second draft copy disagree, and active registry rows remain. Zero magic/build/work-item rows mean no later execution resolved that authority conflict.",
+      "target_state": "BLOCKED",
+      "task_id": "18520109-5583-4027-95f3-9865f04c7664",
+      "unblock_action": "Choose one authoritative G0 disposition, normalize the card pool and frontmatter through the governed card command, then either retire the EA identity or allocate magic and authorize a fresh build. Do not infer rejection from path alone."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_12942",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_rejected",
+          "cards_draft"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-21T16:28:04+00:00",
+      "expected_verdict_sha256": "0abe146efe5f53f187fbb95c4021576a1b1da9aded77ebc1dc85a66ee8985254",
+      "owner": "Strategy Governance",
+      "reason": "Live card state is contradictory: the task points to a rejected-pool card while frontmatter and/or a second draft copy disagree, and active registry rows remain. Zero magic/build/work-item rows mean no later execution resolved that authority conflict.",
+      "target_state": "BLOCKED",
+      "task_id": "0d36cc20-3a16-4da4-b0de-bb8b500cf2f1",
+      "unblock_action": "Choose one authoritative G0 disposition, normalize the card pool and frontmatter through the governed card command, then either retire the EA identity or allocate magic and authorize a fresh build. Do not infer rejection from path alone."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_11899",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-21T17:20:36+00:00",
+      "expected_verdict_sha256": "855e29bda7d00dbaa277198673d4b1acfa4f2df6ecfb60081b0e72f3ff5397a2",
+      "owner": "Registry Operator",
+      "reason": "Live active magic count remains zero and no EX5/setfile/work-item evidence exists. The allocator precondition is now tracked by exact deduplicated follow-up tasks created during the missing-magic repair.",
+      "target_state": "BLOCKED",
+      "task_id": "1f400c88-a2b7-4c48-acd4-37a139b772fe",
+      "unblock_action": "Complete allocator task 81b4cf48-ff12-430f-b824-8d5d1f45bc0e for QM5_11899 or 09766d8d-27fd-409b-8a3c-e80a5c2edfd9 for QM5_12946, then hand the existing build task back to Development for Q01 and Codex review."
+    },
+    {
+      "blocking_condition_still_true": true,
+      "ea_id": "QM5_12946",
+      "evidence": {
+        "active_magic_rows": 0,
+        "card_pools": [
+          "cards_approved"
+        ],
+        "ea_directories": 1,
+        "ex5_files": 0,
+        "mq5_files": 1,
+        "registry_statuses": {
+          "active": 1
+        },
+        "setfiles": 0,
+        "spec_files": 0,
+        "work_items_later_done": 0,
+        "work_items_open": 0,
+        "work_items_total": 0
+      },
+      "expected_updated_at": "2026-08-21T17:20:36+00:00",
+      "expected_verdict_sha256": "c6742a62893b0d822bfed7b3c35d4c5364e2d6ec9699c750a8526dc03bf50e73",
+      "owner": "Registry Operator",
+      "reason": "Live active magic count remains zero and no EX5/setfile/work-item evidence exists. The allocator precondition is now tracked by exact deduplicated follow-up tasks created during the missing-magic repair.",
+      "target_state": "BLOCKED",
+      "task_id": "f3254781-8a6f-4d7b-bf99-8183ca5c892a",
+      "unblock_action": "Complete allocator task 81b4cf48-ff12-430f-b824-8d5d1f45bc0e for QM5_11899 or 09766d8d-27fd-409b-8a3c-e80a5c2edfd9 for QM5_12946, then hand the existing build task back to Development for Q01 and Codex review."
+    }
+  ],
+  "generated_at": "2026-08-21T18:08:19+00:00",
+  "schema": "qm.blocked-agent-task-retest-manifest.v1",
+  "source_inventory": "docs\\ops\\evidence\\2026-08-21_blocked_retest_630535e0_inventory.json",
+  "source_policy": "docs\\ops\\evidence\\2026-08-21_blocked_retest_630535e0_policy.json",
+  "states": {
+    "BLOCKED": 49,
+    "FAILED": 8,
+    "PASSED": 5
+  }
+}
