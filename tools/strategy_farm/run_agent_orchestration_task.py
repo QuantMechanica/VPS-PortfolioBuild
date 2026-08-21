@@ -581,6 +581,42 @@ def ensure_worktree(agent: str, slot: int) -> dict[str, Any]:
     }
 
 
+# A single orchestration invocation is allowed to run up to `timeout_minutes`
+# (225 by default, near the Task Scheduler's 4h ExecutionTimeLimit ceiling) —
+# far longer than LANE_HEARTBEAT_STALE_HOURS (2h, agent_router.py). Before this
+# constant existed, the heartbeat was written once at spawn and never again
+# until the process exited, so any run past 2h made the router treat a
+# genuinely busy lane as dead: chk_agent_lane_heartbeat WARNs, and
+# release_stale_in_progress can release/recycle that lane's own IN_PROGRESS
+# task out from under it while it is still legitimately working (MNT-003).
+# Refreshing well inside the 2h window keeps the heartbeat meaning what its
+# own docstring says it should: infrastructure alive, not "just started".
+HEARTBEAT_REFRESH_INTERVAL_SECONDS = 600
+
+
+def _wait_with_heartbeat_refresh(
+    proc: Any,
+    timeout_seconds: float,
+    refresh_interval_seconds: float,
+    refresh_fn: Any,
+) -> int:
+    """poll proc.wait() in bounded slices, calling refresh_fn() between polls so a
+    single long-running process keeps proving liveness instead of going silent
+    for its entire runtime. Re-raises subprocess.TimeoutExpired once the total
+    elapsed time exceeds timeout_seconds, exactly like a plain proc.wait(timeout=...)."""
+    deadline = time.monotonic() + timeout_seconds
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise subprocess.TimeoutExpired(cmd=getattr(proc, "args", None), timeout=timeout_seconds)
+        slice_timeout = min(refresh_interval_seconds, remaining)
+        try:
+            return proc.wait(timeout=slice_timeout)
+        except subprocess.TimeoutExpired:
+            refresh_fn()
+            continue
+
+
 def run_agent_slot(
     agent: str,
     slot: int,
@@ -698,7 +734,12 @@ def run_agent_slot(
                 proc = subprocess.Popen(cmd, cwd=str(cwd), **popen_kwargs)
             payload["pid"] = proc.pid
             try:
-                payload["returncode"] = proc.wait(timeout=timeout_minutes * 60)
+                payload["returncode"] = _wait_with_heartbeat_refresh(
+                    proc,
+                    timeout_minutes * 60,
+                    HEARTBEAT_REFRESH_INTERVAL_SECONDS,
+                    lambda: _write_lane_heartbeat(agent, slot=slot),
+                )
                 payload["ok"] = payload["returncode"] == 0
                 managed_process_finished = managed_pid is not None
             except subprocess.TimeoutExpired:
