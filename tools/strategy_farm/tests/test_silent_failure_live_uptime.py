@@ -242,7 +242,37 @@ def test_logon_only_live_tasks_alarm_on_interactive_launch_queued() -> None:
     assert "0x800710E0" in findings[0]["detail"]
 
 
-def test_recurring_task_interactive_launch_queued_is_hard_failure(monkeypatch) -> None:
+def test_interactive_recurring_task_launch_queued_is_hard_failure(monkeypatch) -> None:
+    # An INTERACTIVE-logon recurring task (needs a live user session) showing
+    # 0x800710E0 IS a real failure: the scheduler queued the launch instead of
+    # starting it (MNT-003). LogonType is the discriminator.
+    monkeypatch.setattr(monitor, "_now", lambda: NOW)
+    probe = {
+        "tasks": [{
+            "Name": "QM_SomeInteractive_15min",
+            "State": "Ready",
+            "LastResult": 2147946720,
+            "LastRun": "2026-07-22T07:58:00Z",
+            "NextRun": "2026-07-22T08:13:00Z",
+            "LogonType": "Interactive",
+            "UserId": "qm-admin",
+        }],
+        "worker_count": 0,
+    }
+
+    findings = monitor.check_scheduled_tasks(probe)
+
+    fails = [f for f in findings if f["status"] == monitor.FAIL]
+    assert len(fails) == 1
+    assert fails[0]["value"] == 2147946720
+    assert "0x800710E0" in fails[0]["detail"]
+
+
+def test_service_task_ignorenew_overlap_0x800710E0_is_benign(monkeypatch) -> None:
+    # A SYSTEM/ServiceAccount recurring task with MultipleInstancesPolicy=IgnoreNew
+    # (ExecutionTimeLimit >> cadence) showing 0x800710E0 is the benign overlap-
+    # refusal, NOT a failure -- the prior still-running instance is doing the work
+    # (MNT-003). CodexFleetPacer / Pump_5min / *Orchestration_15min are this class.
     monkeypatch.setattr(monitor, "_now", lambda: NOW)
     probe = {
         "tasks": [{
@@ -251,12 +281,36 @@ def test_recurring_task_interactive_launch_queued_is_hard_failure(monkeypatch) -
             "LastResult": 2147946720,
             "LastRun": "2026-07-22T07:58:00Z",
             "NextRun": "2026-07-22T08:13:00Z",
+            "LogonType": "ServiceAccount",
+            "UserId": "SYSTEM",
         }],
         "worker_count": 0,
     }
 
     findings = monitor.check_scheduled_tasks(probe)
 
-    assert len(findings) == 1
-    assert findings[0]["status"] == monitor.FAIL
-    assert findings[0]["value"] == 2147946720
+    assert not any(f["status"] == monitor.FAIL for f in findings), findings
+
+
+def test_service_task_killed_at_time_limit_still_fails(monkeypatch) -> None:
+    # The benign 0x800710E0 handling must NOT blind the monitor to a genuine
+    # failure on the same SYSTEM task: 267014 (killed@ExecutionTimeLimit) is a
+    # real outage and must still FAIL (MNT-003 regression guard).
+    monkeypatch.setattr(monitor, "_now", lambda: NOW)
+    probe = {
+        "tasks": [{
+            "Name": "QM_StrategyFarm_Pump_5min",
+            "State": "Ready",
+            "LastResult": 267014,
+            "LastRun": "2026-07-22T07:58:00Z",
+            "NextRun": "2026-07-22T08:03:00Z",
+            "LogonType": "ServiceAccount",
+            "UserId": "SYSTEM",
+        }],
+        "worker_count": 0,
+    }
+
+    findings = monitor.check_scheduled_tasks(probe)
+
+    fails = [f for f in findings if f["status"] == monitor.FAIL]
+    assert any(f["value"] == 267014 for f in fails), findings

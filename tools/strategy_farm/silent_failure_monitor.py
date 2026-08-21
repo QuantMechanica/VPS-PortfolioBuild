@@ -80,8 +80,13 @@ CONFIG = {
     "schtask_benign_results": {0, 267009, 267011},
     # Codes that are ALWAYS a hard failure on a live/recurring task:
     #   267014     = 0x4130A killed at the ExecutionTimeLimit  (the motivating bug)
-    #   2147946720 = 0x800710E0 Task Scheduler queued an InteractiveToken launch
-    #                instead of starting it (observed permanently after session handover)
+    #   2147946720 = 0x800710E0 "operator/administrator refused the request".
+    #                CONDITIONAL, adjudicated by LogonType below (MNT-003, 2026-08-21):
+    #                a real failure only on an INTERACTIVE-logon task (scheduler
+    #                queued the launch instead of starting it after a session
+    #                handover); on a non-interactive SYSTEM/service task with
+    #                MultipleInstancesPolicy=IgnoreNew it is the benign overlap-
+    #                refusal (prior still-running instance is doing the work).
     "schtask_hardfail_results": {267014, 2147946720},
     # Transient/ad-hoc tasks the run_smoke + compile harness register and tear down
     # (QM_DEV<n>_SMOKE_<hex>, QM_*_SMOKE_*). They are not persistent farm infra and
@@ -296,6 +301,8 @@ foreach ($t in Get-ScheduledTask -TaskName 'QM_*') {
         LastResult = [int64]$i.LastTaskResult
         LastRun    = if ($i.LastRunTime) { $i.LastRunTime.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') } else { $null }
         NextRun    = if ($i.NextRunTime) { $i.NextRunTime.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') } else { $null }
+        LogonType  = if ($t.Principal.LogonType) { $t.Principal.LogonType.ToString() } else { '' }
+        UserId     = if ($t.Principal.UserId) { $t.Principal.UserId } else { '' }
     }
 }
 $workers = @(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
@@ -391,6 +398,24 @@ def check_scheduled_tasks(probe: dict) -> list[dict]:
         if state == "Disabled":
             continue  # intentionally off — never overdue, never result-alarmed
         result = int(t.get("LastResult") or 0)
+        # 0x800710E0 (2147946720) = "operator/administrator refused the request"
+        # has two mutually-exclusive causes that this monitor must not conflate
+        # (MNT-003, 2026-08-21). It is a REAL, permanent failure only on an
+        # INTERACTIVE-logon task (needs a live user session, e.g. the qm-admin
+        # *_AtLogon GUI tasks): after a session handover the scheduler queues the
+        # launch instead of starting it. On a NON-interactive SYSTEM/service task
+        # with MultipleInstancesPolicy=IgnoreNew (Pump_5min, *Orchestration_15min,
+        # Dashboard_Hourly -- all ExecutionTimeLimit >> cadence) it is the benign
+        # overlap-refusal: the prior still-running instance is doing the work.
+        # Real outages on those tasks surface through the activity / pump-blockade
+        # / orphaned-lock checks, not this exit code. The name-set fallback keeps
+        # the three known interactive tasks alarming even if the probe cannot read
+        # LogonType. See docs/ops/evidence/2026-08-21_mnt003_0x800710e0_*.md.
+        logon_type = str(t.get("LogonType") or "").strip().lower()
+        interactive_logon = (
+            logon_type in ("interactive", "interactivetoken", "interactivetokenorpassword", "group")
+            or name in CONFIG["schtask_live_logon_owned_elsewhere"]
+        )
         if name in CONFIG["schtask_live_logon_owned_elsewhere"] and result != 2147946720:
             continue  # exact live state + resident heartbeat are checked below
         next_run = _parse_iso(t.get("NextRun"))
@@ -404,16 +429,20 @@ def check_scheduled_tasks(probe: dict) -> list[dict]:
 
         # ── result-code adjudication ─────────────────────────────────────────
         if result == 2147946720:
-            # Unlike ordinary historical non-zero results this code is itself
-            # current evidence that an enabled InteractiveToken task was queued
-            # rather than executed. It must not age out or depend on NextRun.
-            findings.append(finding(
-                f"schtask:{name}", FAIL,
-                f"{name} LastTaskResult 0x{result:08X} interactive-launch-queued",
-                value=result, threshold=0,
-                hint="Task Scheduler is queueing this InteractiveToken task after a session handover; "
-                     "repair its execution path or principal.",
-                evidence=ev))
+            # On an interactive-logon task this code is current evidence that an
+            # enabled InteractiveToken task was queued rather than executed -- it
+            # must not age out or depend on NextRun. On a non-interactive
+            # SYSTEM/service IgnoreNew task it is the benign overlap-refusal and
+            # is NOT a failure (MNT-003).
+            if interactive_logon:
+                findings.append(finding(
+                    f"schtask:{name}", FAIL,
+                    f"{name} LastTaskResult 0x{result:08X} interactive-launch-queued",
+                    value=result, threshold=0,
+                    hint="Task Scheduler is queueing this InteractiveToken task after a session handover; "
+                         "repair its execution path or principal.",
+                    evidence=ev))
+            # else: benign IgnoreNew overlap-refusal on a SYSTEM/service task.
         elif result in benign:
             pass
         elif result in hardfail:
