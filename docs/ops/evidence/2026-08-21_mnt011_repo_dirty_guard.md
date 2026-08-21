@@ -203,3 +203,25 @@ not interpret the process-count health recovery as completion of the final
 acceptance clause. The continuation remains: wait for human-class dirt to clear,
 observe a scheduler-owned pump spawning a real build amid generated churn, and
 record the resulting task transition.
+
+## Independent router-cycle recheck at 2026-08-21T12:31:35Z
+
+The scheduled Codex orchestration cycle independently repeated the regression
+proof before moving this task to review:
+
+- The generated-only test fixture was executed in memory against the exact
+  pre-fix parent of `bfce1fa3a`. It failed as required: the old guard returned
+  `blocked=true`, `count=3`, treating the untracked `SPEC.md`, card mirror, and
+  canonical `.mq5` scaffold as blocking inputs.
+- The same focused suite against current `agents/board-advisor` passed again:
+  **41 tests and 12 subtests passed in 8.55 seconds**.
+- The live v2 census contained 20 individual dirty files. Eighteen generated
+  setfiles were correctly classified as guard-irrelevant. Only two foreign
+  human-class paths remained blocking: modified `CLAUDE.md` and untracked
+  `docs/ops/evidence/2026-08-21_q07_zero_variance_investigation.md`.
+
+This mixed live census confirms that generated churn no longer inflates the
+blocking count while ordinary documentation still fails closed. It does not
+replace the outstanding scheduler-owned generated-only build-spawn proof. The
+cycle neither consumed those foreign paths nor started the pump, factory, or a
+terminal to manufacture that condition.
