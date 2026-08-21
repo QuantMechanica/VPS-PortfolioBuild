@@ -114,3 +114,4 @@ martingale, pyramid, target, trail, break-even move, or partial exit.
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `2b66172a6`; EA-ID reservation `14ed68e12`; G0 card `b51b2de24`; magic allocation `433b05f0c` |
 | v1-build | 2026-08-21 | deterministic implementation and Q01 validation | 10-test reference suite; strict compile/build PASS; static P1 PASS |
+| v2-q02 | 2026-08-21 | paced Q02 enqueue | one canonical pending row `bf1dfee8-add9-481a-93c1-568314f1c5b3`; no dispatcher or manual tester action |

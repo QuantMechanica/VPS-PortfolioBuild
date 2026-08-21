@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "as_of_utc": "2026-08-21T09:57:32Z",
+  "branch": "agents/board-advisor",
+  "ea": {
+    "ea_id": "QM5_41088",
+    "slug": "xauxag-wclv-div-rv",
+    "strategy_id": "SCHWEIKERT-CME-XAUXAG-WCLVDIV-RV-2026_S01",
+    "logical_symbol": "QM5_41088_XAU_XAG_WCLVDIV_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "magics": [410880000, 410880001]
+  },
+  "commits": {
+    "source_approval": "2b66172a6",
+    "ea_id_reservation": "14ed68e12",
+    "g0_card": "b51b2de24",
+    "magic_and_resolver": "433b05f0c",
+    "implementation_q01": "386cd462f79aeb03f792a8336999345e7ef105e9"
+  },
+  "q01": {
+    "status": "PASS",
+    "reference_tests": {
+      "passed": 10,
+      "failed": 0
+    },
+    "compile": {
+      "status": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "summary": "D:/QM/reports/compile/20260821_095406/summary.csv"
+    },
+    "build_check": {
+      "status": "PASS",
+      "failures": 0,
+      "warnings": 2,
+      "report": "D:/QM/reports/framework/21/build_check_20260821_095406.json"
+    },
+    "p1": {
+      "status": "PASS",
+      "report": "D:/QM/reports/pipeline/QM5_41088/P1/P1_QM5_41088_result.json"
+    },
+    "sha256": {
+      "mq5": "8F4BC1A495522D51D989A515BA139554B04371FA1CCF48B65B9FD70A1CC34D16",
+      "ex5": "9F5A3D1517A120ED32A0C512D07FF6B274CD22640535ED6944F19A8EB27D3412",
+      "setfile_bytes": "85F043A9EE9CBA1BBFCE38FE77670A4151E7EFE36370189640B80F5912EE2C29",
+      "normalized_set_build_hash": "4007647C320486F5AE9DE30F56AC655A00FAAA0627CCFDDC22F0242C6A3A8CE5",
+      "build_report": "E55E96C0E84D75F2630F6FB6FB6C92D20ED9B28929E404060FEC36CC9B9AA481",
+      "p1_report": "CD9BAB7333C6D711183B7A6F2ABDB846A6FFC03D9CD23A87630A1CB412015E1F"
+    }
+  },
+  "capacity_preflight": {
+    "slot_scan_utc": "2026-08-21T09:56:02Z",
+    "governed_running_terminals": ["T1", "T2", "T4", "T5", "T7", "T8"],
+    "governed_running_count": 6,
+    "terminal_ceiling": 7,
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "cpu_hard_ceiling_percent": 97,
+    "cpu_samples_percent": [46, 71, 94, 91, 88],
+    "cpu_sample_utc": [
+      "2026-08-21T09:56:19.3370476Z",
+      "2026-08-21T09:56:23.3832812Z",
+      "2026-08-21T09:56:27.4092799Z",
+      "2026-08-21T09:56:31.4377932Z",
+      "2026-08-21T09:56:35.4807767Z"
+    ],
+    "capacity_decision": "BELOW_CEILING_QUEUE_HANDOFF_ALLOWED"
+  },
+  "q02": {
+    "preexisting_target_rows_at_lane_reconciliation": 1,
+    "target_preview_selected": 0,
+    "apply_by_this_lane": false,
+    "created_by_shared_reconciler": true,
+    "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+    "work_item_id": "bf1dfee8-add9-481a-93c1-568314f1c5b3",
+    "phase": "Q02",
+    "kind": "backtest",
+    "symbol": "QM5_41088_XAU_XAG_WCLVDIV_RV_D1",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at_utc": "2026-08-21T09:52:58Z",
+    "dispatched_by_lane": false
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "q02_minimum_full_year_packages": 5
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "terminal_control": false,
+    "autotrading_changed": false,
+    "t_live_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}

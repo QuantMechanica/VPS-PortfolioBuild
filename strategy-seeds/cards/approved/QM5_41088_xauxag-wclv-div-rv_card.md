@@ -64,7 +64,7 @@ r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED_PENDING
 q01_build_report: D:/QM/reports/framework/21/build_check_20260821_095406.json
 q01_p1_evidence: D:/QM/reports/pipeline/QM5_41088/P1/P1_QM5_41088_result.json
 review_focus: "Falsify a completed-week gold/silver per-leg auction-location divergence fade outside the certified XAU/SP500/NDX/XNG book. Verify exact prior-week membership, synchronized three-to-five-session OHLC aggregation, independent CLV orientation, strict opposite outer terciles, contrarian high-location sides, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
@@ -387,6 +387,7 @@ realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-21 | initial XAU/XAG completed-week close-location divergence reversion card | G0 | APPROVED |
 | v1-build | 2026-08-21 | deterministic implementation, 10-test reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v2-q02 | 2026-08-21 | canonical paced-fleet Q02 row reconciled below terminal and CPU ceilings | Q02 | ENQUEUED_PENDING |
 
 ## Pipeline Phase Status
 
@@ -394,7 +395,7 @@ realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-21 | APPROVED | `decisions/2026-08-21_qm5_41088_xauxag_weekly_close_location_divergence_reversion_g0.md` |
 | Q01 Build Validation | 2026-08-21 | PASS | `D:/QM/reports/framework/21/build_check_20260821_095406.json`; `D:/QM/reports/pipeline/QM5_41088/P1/P1_QM5_41088_result.json` |
-| Q02 Baseline Screening | 2026-08-21 | NOT_ENQUEUED | gated by paced terminal/CPU preflight |
+| Q02 Baseline Screening | 2026-08-21 | ENQUEUED_PENDING | work item `bf1dfee8-add9-481a-93c1-568314f1c5b3`; `docs/ops/evidence/2026-08-21_qm5_41088_xauxag_weekly_close_location_divergence_q01_q02_enqueue.md` |
 
 ## Safety Boundary
 
