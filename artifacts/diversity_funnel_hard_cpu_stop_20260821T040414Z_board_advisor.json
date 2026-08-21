@@ -1,0 +1,189 @@
+{
+  "artifact_type": "diversity_funnel_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-21T04:04:14.039054Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "3dc125b72e8feb43e08e3b7d109157d1d406853b",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "build_backlog": {
+    "pending_build_ea_tasks": 37,
+    "candidate_claimed": false,
+    "selection_performed": false,
+    "reason": "The mandatory capacity preflight fired before candidate selection or farm mutation."
+  },
+  "capacity_sample": {
+    "observed_at_utc": "2026-08-21T04:04:03.1468696Z",
+    "cpu_samples": [
+      {
+        "timestamp_utc": "2026-08-21T04:03:58.6960000Z",
+        "cpu_percent": 100.0
+      },
+      {
+        "timestamp_utc": "2026-08-21T04:03:59.7040000Z",
+        "cpu_percent": 99.81
+      },
+      {
+        "timestamp_utc": "2026-08-21T04:04:00.7060000Z",
+        "cpu_percent": 98.64
+      },
+      {
+        "timestamp_utc": "2026-08-21T04:04:01.7090000Z",
+        "cpu_percent": 99.61
+      },
+      {
+        "timestamp_utc": "2026-08-21T04:04:02.7910000Z",
+        "cpu_percent": 100.0
+      }
+    ],
+    "average_cpu_percent": 99.61,
+    "maximum_cpu_percent": 100.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_gte_hard_ceiling",
+    "ceiling_binding": true,
+    "path_filtered_factory_terminal_count": 6,
+    "path_filtered_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "process_snapshot_note": "The nearby process census and database claim snapshot were not treated as an atomic slot reconciliation because the CPU ceiling independently bound the stop.",
+    "t_live_excluded_by_path_filter": true,
+    "terminal_reconciliation_or_control": false
+  },
+  "farm_snapshot": {
+    "observed_at_utc": "2026-08-21T04:04:14.039054Z",
+    "database_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "read_only_uri",
+    "quick_check": "ok",
+    "active_work_item_count": 8,
+    "active_phase_counts": {
+      "Q02": 1,
+      "Q03": 1,
+      "Q05": 1,
+      "Q07": 3,
+      "Q08": 2
+    },
+    "active_work_items": [
+      {
+        "id": "de9702d0-2586-49c0-9e77-10dc6134fb02",
+        "claimed_by": "T1",
+        "ea_id": "QM5_12935",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "id": "67993e55-4fe1-41b2-92ee-cb826970807d",
+        "claimed_by": "T2",
+        "ea_id": "QM5_10796",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "id": "83733abb-89a4-4f1a-85af-5844cb18378d",
+        "claimed_by": "T3",
+        "ea_id": "QM5_10135",
+        "phase": "Q08",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "id": "8583021d-b8e3-4ed1-b99f-52a0ac9e318e",
+        "claimed_by": "T4",
+        "ea_id": "QM5_20234",
+        "phase": "Q03",
+        "symbol": "QM5_20234_XAU_XAG_RSJ_D1"
+      },
+      {
+        "id": "72479f8f-9e31-48b4-84c5-becc0f149b5d",
+        "claimed_by": "T6",
+        "ea_id": "QM5_20176",
+        "phase": "Q05",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "id": "580f4783-cd4b-47bc-9329-badbd3ae47ed",
+        "claimed_by": "T7",
+        "ea_id": "QM5_10848",
+        "phase": "Q08",
+        "symbol": "GDAXI.DWX"
+      },
+      {
+        "id": "4bad1622-638c-47e8-a5ee-d31d3f4184d5",
+        "claimed_by": "T8",
+        "ea_id": "QM5_11167",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "id": "b5864e8a-30fd-47c8-9873-6a82a4369aec",
+        "claimed_by": "T9",
+        "ea_id": "QM5_41082",
+        "phase": "Q02",
+        "symbol": "XTIUSD.DWX"
+      }
+    ],
+    "pending_work_item_count": 2223,
+    "pending_phase_counts": {
+      "Q02": 698,
+      "Q03": 41,
+      "Q04": 1435,
+      "Q05": 5,
+      "Q06": 1,
+      "Q07": 13,
+      "Q08": 6,
+      "Q09_NEWS": 24
+    },
+    "build_ea_task_counts": {
+      "blocked": 100,
+      "done": 1812,
+      "failed": 1274,
+      "pending": 37
+    }
+  },
+  "non_duplicate_delta": {
+    "previous_evidence_commit": "83ce859f1",
+    "previous_observation_utc": "2026-08-21T03:31:31.999870Z",
+    "elapsed_minutes": 32.7,
+    "previous_active_work_item_count": 6,
+    "current_active_work_item_count": 8,
+    "active_work_item_delta": 2,
+    "departed_active_work_item_ids": [
+      "3c522d1a-dac9-4438-b0f5-afdaf0e80e35",
+      "2f48af5f-14de-4592-b25d-78679f348a39",
+      "07208954-1e90-4614-a47d-8441dc9ef3cf",
+      "a51b97c4-d1bb-4e6e-85b8-af586f12953b"
+    ],
+    "arrived_active_work_item_ids": [
+      "de9702d0-2586-49c0-9e77-10dc6134fb02",
+      "67993e55-4fe1-41b2-92ee-cb826970807d",
+      "83733abb-89a4-4f1a-85af-5844cb18378d",
+      "580f4783-cd4b-47bc-9329-badbd3ae47ed",
+      "4bad1622-638c-47e8-a5ee-d31d3f4184d5",
+      "b5864e8a-30fd-47c8-9873-6a82a4369aec"
+    ],
+    "previous_pending_work_item_count": 2225,
+    "current_pending_work_item_count": 2223,
+    "pending_work_item_delta": -2,
+    "hard_ceiling_remains_binding": true
+  },
+  "actions_this_run": {
+    "farm_claim": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "build_check_or_compile": false,
+    "smoke_or_backtest_run": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_reconciliation_or_control": false,
+    "reason": "The explicit CPU ceiling fired during mandatory preflight."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
