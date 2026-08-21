@@ -524,6 +524,89 @@ def enqueue_task(
     return {"enqueued": True, "task_id": task_id, "task_type": task_type, "state": state}
 
 
+def ensure_magic_precondition_task(
+    root: Path,
+    card_path: Path,
+    precheck: dict[str, Any],
+) -> dict[str, Any]:
+    """Create one actionable, deduplicated task for a build magic blocker."""
+    ea_id = str(precheck.get("ea_id") or "").strip()
+    classification = str(precheck.get("classification") or "").strip()
+    action = str(precheck.get("action") or "").strip()
+    if not ea_id or not classification or bool(precheck.get("ready")):
+        return {"enqueued": False, "reason": "magic_precondition_task_not_required"}
+
+    with closing(connect(root)) as conn:
+        for row in conn.execute(
+            "SELECT id, state, payload_json FROM agent_tasks "
+            "WHERE task_type='ops_issue' "
+            "AND state IN ('BACKLOG','TODO','IN_PROGRESS','REVIEW')"
+        ).fetchall():
+            try:
+                payload = json.loads(row["payload_json"] or "{}")
+            except json.JSONDecodeError:
+                continue
+            if (
+                payload.get("operation") == "governed_magic_precondition"
+                and str(payload.get("ea_id") or "") == ea_id
+            ):
+                return {
+                    "enqueued": False,
+                    "idempotent": True,
+                    "task_id": row["id"],
+                    "state": row["state"],
+                    "reason": "existing_open_magic_precondition_task",
+                }
+
+    safe_label = ea_id.lower()
+    evidence_date = farmctl.utc_now()[:10]
+    evidence_path = (
+        ROUTER_CHECKOUT_ROOT
+        / "docs" / "ops" / "evidence"
+        / f"{evidence_date}_{safe_label}_governed_magic_precondition.json"
+    )
+    command = None
+    if action == "GOVERNED_ALLOCATE":
+        command = (
+            "python tools/strategy_farm/governed_magic_allocator.py "
+            f"--card \"{card_path}\" --max-eas 1 "
+            f"--output \"{evidence_path}\""
+        )
+    payload = {
+        "title": f"{ea_id} governed magic precondition: {classification}",
+        "operation": "governed_magic_precondition",
+        "ea_id": ea_id,
+        "slug": precheck.get("slug"),
+        "card_path": str(card_path),
+        "classification": classification,
+        "required_action": action,
+        "target_symbols": list(precheck.get("target_symbols") or []),
+        "diagnosis": {
+            "active_magic_rows": precheck.get("active_magic_rows"),
+            "retired_magic_rows": precheck.get("retired_magic_rows"),
+            "total_magic_rows": precheck.get("total_magic_rows"),
+            "ea_directory_exists": precheck.get("ea_directory_exists"),
+        },
+        "command": command,
+        "expected_artifact": str(evidence_path),
+        "acceptance": [
+            "Use the governed allocator sequence: EA directory/card, CSV rows, resolver regeneration, verification.",
+            "Never invent a magic outside ea_id*10000+slot and never revive a retired row.",
+            "Leave the original build blocked until a fresh precheck proves active rows and resolver presence.",
+        ],
+        "required_capabilities": ["code", "ops"],
+        "source": "farmctl build precheck",
+    }
+    return enqueue_task(
+        root,
+        "ops_issue",
+        state="TODO",
+        priority=75,
+        required_capabilities=["code", "ops"],
+        payload=payload,
+    )
+
+
 def _running_count(conn: sqlite3.Connection, agent_id: str) -> int:
     row = conn.execute(
         "SELECT COUNT(*) AS n FROM agent_tasks WHERE assigned_agent=? AND state='IN_PROGRESS'",

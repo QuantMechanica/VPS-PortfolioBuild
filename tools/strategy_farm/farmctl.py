@@ -2044,6 +2044,10 @@ _MAGIC_DUP_CACHE: dict[str, tuple[tuple[int, int], list[str]]] = {}
 _EA_SLUG_INDEX_CACHE: dict[str, tuple[tuple[int, int], dict[str, list[str]]]] = {}
 _EA_REGISTRY_STATUS_CACHE: dict[str, tuple[tuple[int, int], dict[str, str]]] = {}
 _CARDS_NAME_CACHE: dict[str, tuple[tuple[int, int], list[str]]] = {}
+_CSV_ROWS_BY_EA_CACHE: dict[
+    str, tuple[tuple[int, int], dict[str, list[dict[str, str]]]]
+] = {}
+_MAGIC_RESOLVER_IDS_CACHE: dict[str, tuple[tuple[int, int], set[str] | None]] = {}
 
 
 def _stat_token(path: Path) -> tuple[int, int] | None:
@@ -2066,6 +2070,25 @@ def _read_csv_dicts_if_exists(path: Path) -> list[dict[str, str]]:
         rows = [dict(row) for row in csv.DictReader(handle)]
     _CSV_DICT_CACHE[key] = (token, rows)
     return rows
+
+
+def _csv_rows_by_ea_id(path: Path) -> dict[str, list[dict[str, str]]]:
+    """Cached numeric EA-ID index for repeated card-inventory checks."""
+    token = _stat_token(path)
+    if token is None:
+        return {}
+    key = str(path)
+    cached = _CSV_ROWS_BY_EA_CACHE.get(key)
+    if cached and cached[0] == token:
+        return cached[1]
+    index: dict[str, list[dict[str, str]]] = {}
+    for row in _read_csv_dicts_if_exists(path):
+        ea_id = str(row.get("ea_id") or row.get("id") or "").strip().upper()
+        ea_id = ea_id.removeprefix("QM5_")
+        if ea_id.isdigit():
+            index.setdefault(ea_id, []).append(row)
+    _CSV_ROWS_BY_EA_CACHE[key] = (token, index)
+    return index
 
 
 def _magic_registry_duplicate_errors(path: Path) -> list[str]:
@@ -2477,6 +2500,227 @@ def _target_symbols_contract_present(value: Any) -> bool:
     if text.startswith("[") and text.endswith("]"):
         return bool(text[1:-1].strip().strip(","))
     return True
+
+
+def _parse_card_target_symbols(value: Any) -> list[str]:
+    """Return the card-declared symbol list without inferring a universe."""
+    if isinstance(value, (list, tuple)):
+        raw_values = list(value)
+    else:
+        text = str(value or "").strip()
+        if text.startswith("[") and text.endswith("]"):
+            text = text[1:-1]
+        raw_values = text.split(",") if text else []
+    result: list[str] = []
+    for raw in raw_values:
+        symbol = str(raw).strip().strip('"').strip("'").upper()
+        if symbol and symbol not in result:
+            result.append(symbol)
+    return result
+
+
+def _magic_resolver_ea_ids(path: Path) -> set[str] | None:
+    """Read the generated EA-ID array; ``None`` means the resolver is unreadable."""
+    token = _stat_token(path)
+    if token is None:
+        return None
+    key = str(path)
+    cached = _MAGIC_RESOLVER_IDS_CACHE.get(key)
+    if cached and cached[0] == token:
+        return cached[1]
+    try:
+        text = path.read_text(encoding="utf-8", errors="strict")
+    except (OSError, UnicodeError):
+        _MAGIC_RESOLVER_IDS_CACHE[key] = (token, None)
+        return None
+    match = re.search(r"QM_MAGIC_REG_EA_ID\[[^\]]+\]\s*=\s*\{([^}]*)\};", text)
+    if not match:
+        _MAGIC_RESOLVER_IDS_CACHE[key] = (token, None)
+        return None
+    values: set[str] = set()
+    for raw in match.group(1).split(","):
+        value = raw.strip()
+        if value.isdigit():
+            values.add(value)
+    _MAGIC_RESOLVER_IDS_CACHE[key] = (token, values)
+    return values
+
+
+def magic_allocation_precheck(
+    fm: dict[str, Any],
+    *,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    """Classify the build-time magic precondition without mutating registries.
+
+    ``never_allocated`` is the only class eligible for the governed allocator.
+    Retired history is never revived. Active CSV rows missing from the generated
+    resolver are a regeneration defect, not an allocation request.
+    """
+    code_root = repo_root or REPO_ROOT
+    raw_id = str(fm.get("ea_id") or "").strip()
+    match = re.fullmatch(r"(?:QM5_)?(\d+)", raw_id, flags=re.IGNORECASE)
+    slug = str(fm.get("slug") or "").strip()
+    symbols = _parse_card_target_symbols(fm.get("target_symbols"))
+    invalid_symbols = [symbol for symbol in symbols if not re.fullmatch(r"[A-Z0-9]+\.DWX", symbol)]
+    if not match:
+        return {
+            "ready": False,
+            "classification": "invalid_ea_id",
+            "action": "REFUSE",
+            "ea_id": raw_id,
+            "slug": slug,
+            "target_symbols": symbols,
+        }
+    ea_id = match.group(1)
+    identity_rows = _csv_rows_by_ea_id(
+        code_root / "framework" / "registry" / "ea_id_registry.csv"
+    ).get(ea_id, [])
+    matching_active_identity = [
+        row
+        for row in identity_rows
+        if str(row.get("status") or "").strip().lower() == "active"
+        and str(row.get("slug") or "").strip() == slug
+    ]
+    if len(matching_active_identity) != 1:
+        return {
+            "ready": False,
+            "classification": "active_registry_identity_missing_or_ambiguous",
+            "action": "REFUSE",
+            "ea_id": f"QM5_{ea_id}",
+            "slug": slug,
+            "target_symbols": symbols,
+            "matching_active_registry_rows": len(matching_active_identity),
+        }
+
+    magic_rows = _csv_rows_by_ea_id(
+        code_root / "framework" / "registry" / "magic_numbers.csv"
+    ).get(ea_id, [])
+    active_rows = [
+        row for row in magic_rows
+        if str(row.get("status") or "").strip().lower() == "active"
+    ]
+    retired_rows = [
+        row for row in magic_rows
+        if str(row.get("status") or "").strip().lower() == "retired"
+    ]
+    base = {
+        "ea_id": f"QM5_{ea_id}",
+        "ea_id_numeric": int(ea_id),
+        "slug": slug,
+        "target_symbols": symbols,
+        "target_symbols_valid": bool(symbols) and not invalid_symbols,
+        "invalid_target_symbols": invalid_symbols,
+        "active_magic_rows": len(active_rows),
+        "retired_magic_rows": len(retired_rows),
+        "total_magic_rows": len(magic_rows),
+        "ea_directory_exists": (
+            code_root / "framework" / "EAs" / f"QM5_{ea_id}_{slug}"
+        ).is_dir(),
+    }
+    if not active_rows:
+        if retired_rows:
+            return {
+                **base,
+                "ready": False,
+                "classification": "allocated_then_retired",
+                "action": "REVIEW_REQUIRED_DO_NOT_UNRETIRE",
+            }
+        return {
+            **base,
+            "ready": False,
+            "classification": "never_allocated",
+            "action": (
+                "GOVERNED_ALLOCATE"
+                if base["target_symbols_valid"]
+                else "CARD_AMENDMENT_REQUIRED"
+            ),
+        }
+
+    resolver_ids = _magic_resolver_ea_ids(
+        code_root / "framework" / "include" / "QM" / "QM_MagicResolver.mqh"
+    )
+    if resolver_ids is None:
+        return {
+            **base,
+            "ready": False,
+            "classification": "resolver_unreadable",
+            "action": "REGENERATE_AND_VERIFY_RESOLVER",
+        }
+    if ea_id not in resolver_ids:
+        return {
+            **base,
+            "ready": False,
+            "classification": "resolver_regeneration_missed",
+            "action": "REGENERATE_AND_VERIFY_RESOLVER",
+        }
+    return {
+        **base,
+        "ready": True,
+        "classification": "ready",
+        "action": "NONE",
+    }
+
+
+def missing_magic_allocation_inventory(
+    root: Path,
+    *,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    """List every approved/active card with missing magic or resolver state."""
+    cards_dir = root / "artifacts" / "cards_approved"
+    findings: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    if cards_dir.is_dir():
+        for card in sorted(cards_dir.glob("*.md"), key=lambda path: path.name.casefold()):
+            try:
+                fm = parse_card_frontmatter(card)
+            except (OSError, UnicodeError, ValueError):
+                continue
+            if str(fm.get("g0_status") or "").strip().upper() != "APPROVED":
+                continue
+            precheck = magic_allocation_precheck(fm, repo_root=repo_root)
+            ea_id = str(precheck.get("ea_id") or "")
+            if precheck.get("ready") or ea_id in seen:
+                continue
+            if precheck.get("classification") in {
+                "invalid_ea_id", "active_registry_identity_missing_or_ambiguous"
+            }:
+                continue
+            seen.add(ea_id)
+            findings.append({**precheck, "card_path": str(card)})
+    findings.sort(key=lambda row: int(row.get("ea_id_numeric") or 0))
+    by_class: dict[str, int] = {}
+    for row in findings:
+        key = str(row["classification"])
+        by_class[key] = by_class.get(key, 0) + 1
+    return {
+        "schema_version": "qm.magic-allocation-precheck-inventory/v1",
+        "generated_at": utc_now(),
+        "finding_count": len(findings),
+        "classification_counts": dict(sorted(by_class.items())),
+        "findings": findings,
+    }
+
+
+def _ensure_magic_precondition_task(
+    root: Path,
+    card_path: Path,
+    precheck: dict[str, Any],
+) -> dict[str, Any]:
+    """Ask the deterministic router to create one deduplicated actionable task."""
+    try:
+        try:
+            import agent_router as _agent_router
+        except ModuleNotFoundError:
+            from tools.strategy_farm import agent_router as _agent_router
+        return _agent_router.ensure_magic_precondition_task(root, card_path, precheck)
+    except Exception as exc:
+        return {
+            "enqueued": False,
+            "reason": "magic_precondition_task_enqueue_failed",
+            "detail": repr(exc),
+        }
 
 
 def strategy_card_schema_issues(card_path: Path, fm: dict[str, Any] | None = None) -> list[str]:
@@ -21415,6 +21659,19 @@ def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | No
     if not ea_id or not slug:
         return {"written": False, "reason": "Card missing ea_id or slug in frontmatter", "frontmatter": fm}
     preflight = prebuild_validate_card(root, card_path, fm)
+    base_preflight_ok = bool(preflight["ok"])
+    magic_preflight = magic_allocation_precheck(fm)
+    actionable_task = None
+    if not magic_preflight["ready"]:
+        preflight["errors"].append(
+            "magic_precondition_failed:"
+            f"{magic_preflight['classification']}:action={magic_preflight['action']}"
+        )
+        preflight["ok"] = False
+        if base_preflight_ok:
+            actionable_task = _ensure_magic_precondition_task(
+                root, card_path, magic_preflight
+            )
     if not preflight["ok"]:
         return {
             "written": False,
@@ -21422,6 +21679,8 @@ def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | No
             "frontmatter": fm,
             "prebuild_errors": preflight["errors"],
             "prebuild_warnings": preflight["warnings"],
+            "magic_preflight": magic_preflight,
+            "actionable_task": actionable_task,
         }
 
     ea_dir = FRAMEWORK_EAS_DIR / f"{ea_id}_{slug}"
@@ -24020,6 +24279,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("backfill-work-items", help="One-shot: populate work_items table from existing backtest tasks + report.csv")
     sub.add_parser("next", help="Show the deterministic next action")
     sub.add_parser("claim-source", help="Activate the next pending source if no source is active")
+    sub.add_parser(
+        "magic-allocation-inventory",
+        help="Read-only inventory of approved active cards missing magic/resolver state",
+    )
 
     reserve_ids = sub.add_parser("reserve-ea-ids", help="Atomically reserve one or more EA IDs in ea_id_registry.csv")
     reserve_ids.add_argument("--slug", action="append", required=True, help="Strategy slug to reserve. Repeat for batches.")
@@ -24426,6 +24689,8 @@ def main(argv: list[str] | None = None) -> int:
         print_json(next_action(root))
     elif args.command == "claim-source":
         print_json(claim_source(root))
+    elif args.command == "magic-allocation-inventory":
+        print_json(missing_magic_allocation_inventory(root))
     elif args.command == "reserve-ea-ids":
         print_json(reserve_ea_ids(
             root,

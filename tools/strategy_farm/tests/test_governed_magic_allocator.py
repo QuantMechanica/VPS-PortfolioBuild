@@ -146,6 +146,38 @@ def test_existing_active_rows_are_idempotently_skipped_and_retired_are_reported(
     assert plan["retired_rows_found"] == [rows[1]]
 
 
+def test_exact_card_candidate_uses_only_declared_symbols_and_refuses_retired_history(
+    tmp_path: Path,
+) -> None:
+    repo = _fixture_repo(tmp_path)
+    card = repo / "cards" / "QM5_2_century.md"
+    card.parent.mkdir(parents=True, exist_ok=True)
+    card.write_text(
+        "---\nea_id: QM5_2\nslug: century\ng0_status: APPROVED\n"
+        "target_symbols: [EURUSD.DWX, GBPUSD.DWX]\n---\n",
+        encoding="utf-8",
+    )
+    item = allocator.candidate_from_card(repo, card)
+    retired = [{
+        "ea_id": "2", "ea_slug": "century", "symbol_slot": "0",
+        "symbol": "EURUSD.DWX", "magic": "20000", "reserved_at": "x",
+        "reserved_by": "x", "status": "retired",
+    }]
+
+    plan = allocator.build_plan(
+        repo,
+        [item],
+        allocator._active_ea_registry(repo / allocator.EA_ID_REGISTRY),
+        retired,
+        max_eas=1,
+        refuse_retired_reallocation=True,
+    )
+
+    assert item.symbols == ("EURUSD.DWX", "GBPUSD.DWX")
+    assert plan["planned"] == []
+    assert plan["decisions"][0]["reason"] == "retired_magic_history_requires_review_do_not_unretire"
+
+
 def test_full_dry_run_zero_cap_is_allowed_but_real_zero_cap_is_rejected() -> None:
     with pytest.raises(SystemExit):
         allocator.main(["--max-eas", "0"])

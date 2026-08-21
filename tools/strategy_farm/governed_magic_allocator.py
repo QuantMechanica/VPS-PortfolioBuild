@@ -135,6 +135,46 @@ def _candidate(raw: dict, stage: str, repo: Path, *, dl087: bool = False) -> Can
     return Candidate(ea_id, slug, stage, directory, card, symbols, symbol_policy)
 
 
+def candidate_from_card(repo: Path, card_path: Path) -> Candidate:
+    """Build one exact allocator candidate from explicit card frontmatter."""
+    try:
+        try:
+            import farmctl
+        except ModuleNotFoundError:
+            from tools.strategy_farm import farmctl
+        card = card_path.resolve()
+        fm = farmctl.parse_card_frontmatter(card)
+    except (OSError, UnicodeError, ValueError) as exc:
+        raise AllocationError(f"cannot_read_exact_card:{card_path}:{exc}") from exc
+    if str(fm.get("g0_status") or "").strip().upper() != "APPROVED":
+        raise AllocationError(f"exact_card_not_approved:{card}")
+    ea_id = _numeric_ea_id(fm.get("ea_id"))
+    slug = str(fm.get("slug") or "").strip()
+    if ea_id is None or not slug:
+        raise AllocationError(f"exact_card_identity_missing:{card}")
+    raw_symbols = fm.get("target_symbols")
+    if isinstance(raw_symbols, (list, tuple)):
+        values = list(raw_symbols)
+    else:
+        text = str(raw_symbols or "").strip()
+        if text.startswith("[") and text.endswith("]"):
+            text = text[1:-1]
+        values = text.split(",") if text else []
+    symbols = tuple(
+        str(value).strip().strip('"').strip("'").upper()
+        for value in values
+        if str(value).strip()
+    )
+    return Candidate(
+        ea_id=ea_id,
+        slug=slug,
+        stage="exact_card",
+        directory=repo / "framework" / "EAs" / f"QM5_{ea_id}_{slug}",
+        card=card,
+        symbols=symbols,
+    )
+
+
 def load_candidates(repo: Path, fleet_worklist: Path, century_worklist: Path) -> list[Candidate]:
     """Return deduplicated candidates in the OWNER-required payoff order."""
     fleet = _read_json(fleet_worklist)
@@ -264,6 +304,7 @@ def build_plan(
     magic_rows: Sequence[dict[str, str]],
     *,
     max_eas: int,
+    refuse_retired_reallocation: bool = False,
 ) -> dict:
     by_ea: dict[int, list[dict[str, str]]] = {}
     retired_rows: list[dict[str, str]] = []
@@ -295,6 +336,12 @@ def build_plan(
         elif active:
             eligible += 1
             decision.update(action="skip", reason="already_allocated", existing_rows=len(active))
+        elif retired and refuse_retired_reallocation:
+            decision.update(
+                action="skip",
+                reason="retired_magic_history_requires_review_do_not_unretire",
+                retired_rows=len(retired),
+            )
         else:
             eligible += 1
             if max_eas and len(planned) >= max_eas:
@@ -570,6 +617,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="Restrict selection to the 105 DL-087 legacy-card EAs",
     )
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--card",
+        type=Path,
+        action="append",
+        help="Exact APPROVED card to allocate; repeat for a bounded explicit batch",
+    )
     parser.add_argument("--lock-path", type=Path, default=DEFAULT_LOCK)
     parser.add_argument("--output", type=Path, help="Optional JSON report path")
     args = parser.parse_args(argv)
@@ -581,7 +634,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             dirty = dirty_registry_paths(repo)
             if dirty:
                 raise AllocationError("dirty_registry_abort:" + "|".join(dirty))
-            candidates = load_candidates(repo, args.fleet_worklist, args.century_worklist)
+            exact_card_mode = bool(args.card)
+            if exact_card_mode and args.scope != "all":
+                raise AllocationError("exact_card_mode_does_not_accept_scope")
+            candidates = (
+                [candidate_from_card(repo, card) for card in args.card]
+                if exact_card_mode
+                else load_candidates(repo, args.fleet_worklist, args.century_worklist)
+            )
             dl087_verified = None
             if args.scope == "dl087":
                 candidates = [item for item in candidates if item.symbol_policy == DL087_POLICY]
@@ -594,7 +654,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             magic_fields, magic_rows = _read_csv(repo / MAGIC_REGISTRY)
             if magic_fields != MAGIC_FIELDS:
                 raise AllocationError(f"unexpected_magic_registry_columns:{magic_fields}")
-            plan = build_plan(repo, candidates, ea_registry, magic_rows, max_eas=args.max_eas)
+            plan = build_plan(
+                repo,
+                candidates,
+                ea_registry,
+                magic_rows,
+                max_eas=args.max_eas,
+                refuse_retired_reallocation=exact_card_mode,
+            )
+            if exact_card_mode:
+                plan["stage_order"] = ["exact_card"]
             result = None if args.dry_run else apply_plan(repo, plan, magic_fields, magic_rows)
             report = _public_report(plan, dry_run=args.dry_run, result=result)
             report["scope"] = args.scope
