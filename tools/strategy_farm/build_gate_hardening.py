@@ -165,6 +165,420 @@ def iter_early_return_conditions(body: str, stop: int) -> Iterable[tuple[int, st
         cursor = close_paren + 1
 
 
+def normalize_expression(expression: str) -> str:
+    """Return a whitespace-insensitive expression used only for exact proofs."""
+    return re.sub(r"\s+", "", expression).strip("()")
+
+
+def brace_depth(text: str, stop: int) -> int:
+    """Return lexical brace depth immediately before ``stop``."""
+    depth = 0
+    for char in text[:stop]:
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth = max(0, depth - 1)
+    return depth
+
+
+def check_mae_hook(source: SourceFile) -> list[str]:
+    """Require the framework MAE lifecycle hook in framework-managed OnTick."""
+    code = strip_literals_preserve_lines(source.code)
+    functions = function_bodies(code)
+    on_tick = functions.get("OnTick")
+    framework_managed = bool(
+        re.search(
+            r"\b(?:QM_FrameworkInit|QM_KillSwitchCheck|QM_FrameworkOnTradeTransaction)\s*\(",
+            code,
+        )
+    )
+    if not on_tick or not framework_managed:
+        return []
+    body_start, _, body = on_tick
+    if re.search(r"\bQM_FrameworkTrackOpenPositionMae\s*\(\s*\)\s*;", body):
+        return []
+    return [
+        "EA_Q08_MAE_HOOK_MISSING: "
+        f"{source.path.name}:{line_number(code, body_start)} is framework-managed but "
+        "OnTick does not call QM_FrameworkTrackOpenPositionMae(); the compatibility "
+        "kill-switch fallback does not satisfy the explicit current-build MAE hook contract."
+    ]
+
+
+def _if_condition_ranges(body: str) -> list[tuple[int, int]]:
+    ranges: list[tuple[int, int]] = []
+    for match in re.finditer(r"\bif\s*\(", body):
+        opening = body.find("(", match.start(), match.end())
+        closing = matching_delimiter(body, opening, "(", ")")
+        if closing is not None:
+            ranges.append((opening + 1, closing))
+    return ranges
+
+
+def check_duplicate_new_bar_entry_gate(source: SourceFile) -> list[str]:
+    """Reject two same-key, top-level new-bar consumers before an entry call."""
+    code = strip_literals_preserve_lines(source.code)
+    on_tick = function_bodies(code).get("OnTick")
+    if not on_tick:
+        return []
+    body_start, _, body = on_tick
+    entry = re.search(
+        r"\b(?:Strategy_[A-Za-z0-9_]*EntrySignal|QM_TM_OpenPosition|OrderSend|OrderSendAsync)\s*\(",
+        body,
+    )
+    if not entry:
+        return []
+    conditions = _if_condition_ranges(body)
+    grouped: dict[str, list[int]] = {}
+    for _, offset, arguments in iter_calls(body[: entry.start()], ("QM_IsNewBar",)):
+        in_condition = any(start <= offset < end for start, end in conditions)
+        if not in_condition or brace_depth(body, offset) != 0:
+            continue
+        key = ",".join(normalize_expression(argument) for argument in arguments)
+        if not key:
+            key = "_Symbol,_Period"
+        grouped.setdefault(key, []).append(offset)
+    for key, offsets in grouped.items():
+        if len(offsets) < 2:
+            continue
+        second = offsets[1]
+        return [
+            "EA_ENTRY_DOUBLE_NEW_BAR_GATE: "
+            f"{source.path.name}:{line_number(code, body_start + second)} consumes "
+            f"QM_IsNewBar({key}) a second time before entry; the first same-key call "
+            "can consume the event and starve every entry. Cache one result and reuse it."
+        ]
+    return []
+
+
+def check_trade_request_initialization(source: SourceFile) -> list[str]:
+    """Reject bare trade-request locals that reach a canonical consumer."""
+    code = strip_literals_preserve_lines(source.code)
+    failures: list[str] = []
+    functions = function_bodies(code)
+    for _, (body_start, _, body) in functions.items():
+        declaration = re.compile(
+            r"\b(?P<type>MqlTradeRequest|QM_EntryRequest)\s+"
+            r"(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*;"
+        )
+        for match in declaration.finditer(body):
+            request_type = match.group("type")
+            name = match.group("name")
+            tail = body[match.end() :]
+            if request_type == "MqlTradeRequest":
+                consumer_pattern = rf"\b(?:OrderSend|OrderSendAsync)\s*\(\s*{re.escape(name)}\b"
+            else:
+                consumer_pattern = (
+                    rf"\b(?P<callee>Strategy_[A-Za-z0-9_]*EntrySignal|QM_TM_OpenPosition)\s*"
+                    rf"\(\s*{re.escape(name)}\b"
+                )
+            consumer = re.search(consumer_pattern, tail)
+            if not consumer:
+                continue
+            before_use = tail[: consumer.start()]
+            zeroed = re.search(
+                rf"\bZeroMemory\s*\(\s*{re.escape(name)}\s*\)\s*;", before_use
+            )
+            aggregate_reset = re.search(
+                rf"\b{re.escape(name)}\s*=\s*\{{\s*(?:0\s*)?\}}\s*;", before_use
+            )
+            if zeroed or aggregate_reset:
+                continue
+            missing_fields: list[str] = []
+            if request_type == "QM_EntryRequest":
+                required_fields = {
+                    "type",
+                    "price",
+                    "sl",
+                    "tp",
+                    "reason",
+                    "symbol_slot",
+                    "expiration_seconds",
+                }
+                callee = consumer.groupdict().get("callee")
+                initializer = functions.get(callee or "")
+                if initializer is not None and callee != "QM_TM_OpenPosition":
+                    initializer_body = initializer[2]
+                    assigned_fields = set(
+                        re.findall(
+                            r"\b[A-Za-z_][A-Za-z0-9_]*\s*\.\s*"
+                            r"([A-Za-z_][A-Za-z0-9_]*)\s*=",
+                            initializer_body,
+                        )
+                    )
+                    missing_fields = sorted(required_fields - assigned_fields)
+                    if not missing_fields:
+                        continue
+            failures.append(
+                "EA_TRADE_REQUEST_UNINITIALIZED: "
+                f"{source.path.name}:{line_number(code, body_start + match.start())} "
+                f"declares bare {request_type} {name} and sends it to a canonical consumer "
+                "without ZeroMemory or aggregate zero-initialization"
+                + (
+                    f"; initializer omits {','.join(missing_fields)}."
+                    if missing_fields
+                    else "."
+                )
+            )
+    return failures
+
+
+@dataclass(frozen=True)
+class LoopRange:
+    variable: str
+    operator: str
+    bound: str
+    body_start: int
+    body_end: int
+
+
+def loop_ranges(body: str) -> list[LoopRange]:
+    loops: list[LoopRange] = []
+    header = re.compile(
+        r"\bfor\s*\(\s*(?:int\s+)?(?P<variable>[A-Za-z_][A-Za-z0-9_]*)\s*="
+        r"[^;]+;\s*(?P=variable)\s*(?P<operator><=|<)\s*(?P<bound>[^;]+);"
+        r"[^)]*\)\s*(?P<brace>\{)?"
+    )
+    for match in header.finditer(body):
+        if match.group("brace"):
+            opening = body.find("{", match.start(), match.end())
+            closing = matching_delimiter(body, opening, "{", "}")
+            if closing is None:
+                continue
+            loop_body_start = opening + 1
+            loop_body_end = closing
+        else:
+            loop_body_start = match.end()
+            loop_body_end = body.find(";", loop_body_start)
+            if loop_body_end < 0:
+                continue
+        loops.append(
+            LoopRange(
+                variable=match.group("variable"),
+                operator=match.group("operator"),
+                bound=match.group("bound"),
+                body_start=loop_body_start,
+                body_end=loop_body_end,
+            )
+        )
+    return loops
+
+
+def _prior_bound_guard(
+    body: str,
+    access_offset: int,
+    array_name: str,
+    index: str,
+    size_expression: str | None,
+) -> bool:
+    """Recognize explicit fail-fast bounds, without attempting symbolic algebra."""
+    before = body[:access_offset]
+    array_size = rf"ArraySize\s*\(\s*{re.escape(array_name)}\s*\)"
+    index_pattern = re.escape(index)
+    if re.search(
+        rf"\bif\s*\([^)]*(?:{index_pattern}\s*(?:>=|>)\s*{array_size}|"
+        rf"{array_size}\s*(?:<=|<)\s*{index_pattern})[^)]*\)\s*"
+        r"(?:\{\s*)?(?:return|break|continue)\b",
+        before,
+        re.DOTALL,
+    ):
+        return True
+    if size_expression:
+        size = re.escape(normalize_expression(size_expression))
+        compact = normalize_expression(before)
+        if re.search(
+            rf"if\([^)]*(?:{index_pattern}(?:>=|>){size}|{size}(?:<=|<){index_pattern})"
+            r"[^)]*\)(?:\{)?(?:return|break|continue)",
+            compact,
+        ):
+            return True
+    return False
+
+
+def _loop_proves_bound(
+    body: str,
+    access_offset: int,
+    array_name: str,
+    index: str,
+    size_expression: str | None,
+    loops: list[LoopRange],
+) -> bool:
+    normalized_index = normalize_expression(index)
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", normalized_index):
+        return False
+    candidates = [
+        loop
+        for loop in loops
+        if loop.body_start <= access_offset < loop.body_end
+        and loop.variable == normalized_index
+    ]
+    if not candidates:
+        return False
+    loop = max(candidates, key=lambda item: item.body_start)
+    bound = normalize_expression(loop.bound)
+    array_size = normalize_expression(f"ArraySize({array_name})")
+    if loop.operator == "<" and bound == array_size:
+        return True
+    if size_expression:
+        size = normalize_expression(size_expression)
+        if loop.operator == "<" and bound == size:
+            return True
+        if loop.operator == "<" and (
+            re.fullmatch(rf"{re.escape(bound)}\+[1-9][0-9]*", size)
+            or re.fullmatch(rf"[1-9][0-9]*\+{re.escape(bound)}", size)
+        ):
+            return True
+        if loop.operator == "<=" and bound in {f"{size}-1", f"({size})-1"}:
+            return True
+    return _prior_bound_guard(body, access_offset, array_name, normalized_index, size_expression)
+
+
+def _literal_access_is_bounded(index: str, size_expression: str | None) -> bool:
+    if size_expression is None:
+        return False
+    normalized_index = normalize_expression(index)
+    normalized_size = normalize_expression(size_expression)
+    if not normalized_index.isdigit():
+        return False
+    # Literal local-array accesses are outside this narrow loop-bound check.
+    # CopyBuffer targets are handled separately below using the copied count.
+    if not normalized_size.isdigit():
+        return True
+    return int(normalized_index) < int(normalized_size)
+
+
+def check_indicator_buffer_bounds(source: SourceFile) -> list[str]:
+    """Require a local mechanical bound proof for dynamic numeric buffers."""
+    code = strip_literals_preserve_lines(source.code)
+    failures: list[str] = []
+    for _, (body_start, _, body) in function_bodies(code).items():
+        loops = loop_ranges(body)
+        const_ints = {
+            name: expression
+            for name, expression in re.findall(
+                r"\bconst\s+int\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^;]+);",
+                body,
+            )
+        }
+        declarations = re.findall(
+            r"\b(?:double|float|int|long)\s+([A-Za-z_][A-Za-z0-9_]*)\s*\[\s*\]\s*;",
+            body,
+        )
+        resize_sizes: dict[str, str] = {}
+        for name in declarations:
+            resize = re.search(
+                rf"\bArrayResize\s*\(\s*{re.escape(name)}\s*,\s*([^,;)]+)\s*\)",
+                body,
+            )
+            if resize:
+                resize_sizes[name] = resize.group(1)
+
+        for name, size_expression in resize_sizes.items():
+            access_pattern = re.compile(
+                rf"\b{re.escape(name)}\s*\[\s*(?P<index>[^\]]+)\s*\]"
+            )
+            resize_call = re.search(
+                rf"\bArrayResize\s*\(\s*{re.escape(name)}\s*,", body
+            )
+            resize_offset = resize_call.start() if resize_call else -1
+            for access in access_pattern.finditer(body):
+                if access.start() <= resize_offset:
+                    continue
+                index = access.group("index")
+                if _literal_access_is_bounded(index, size_expression):
+                    continue
+                if not re.fullmatch(
+                    r"[A-Za-z_][A-Za-z0-9_]*", normalize_expression(index)
+                ):
+                    continue
+                normalized_size = normalize_expression(size_expression)
+                resolved_size = const_ints.get(normalized_size)
+                size_proofs = [size_expression]
+                if resolved_size and normalize_expression(resolved_size) != normalized_size:
+                    size_proofs.append(resolved_size)
+                if any(
+                    _loop_proves_bound(
+                        body,
+                        access.start(),
+                        name,
+                        index,
+                        size_proof,
+                        loops,
+                    )
+                    for size_proof in size_proofs
+                ):
+                    continue
+                if any(
+                    _prior_bound_guard(
+                        body,
+                        access.start(),
+                        name,
+                        normalize_expression(index),
+                        size_proof,
+                    )
+                    for size_proof in size_proofs
+                ):
+                    continue
+                failures.append(
+                    "EA_INDICATOR_BUFFER_UNBOUNDED: "
+                    f"{source.path.name}:{line_number(code, body_start + access.start())} "
+                    f"accesses dynamic numeric buffer {name}[{normalize_expression(index)}] "
+                    f"without a loop bound tied to {normalize_expression(size_expression)} "
+                    "or an explicit ArraySize guard."
+                )
+                break
+
+        for _, call_offset, arguments in iter_calls(body, ("CopyBuffer",)):
+            if not arguments:
+                continue
+            target = normalize_expression(arguments[-1])
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", target):
+                continue
+            statement_start = max(body.rfind(";", 0, call_offset), body.rfind("{", 0, call_offset)) + 1
+            prefix = body[statement_start:call_offset]
+            assigned = re.search(
+                r"(?:const\s+)?int\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*$", prefix
+            )
+            copied_name = assigned.group(1) if assigned else None
+            access_pattern = re.compile(
+                rf"\b{re.escape(target)}\s*\[\s*(?P<index>[^\]]+)\s*\]"
+            )
+            access = next(
+                (match for match in access_pattern.finditer(body) if match.start() > call_offset),
+                None,
+            )
+            if access is None:
+                continue
+            index = normalize_expression(access.group("index"))
+            if _loop_proves_bound(
+                body,
+                access.start(),
+                target,
+                index,
+                copied_name,
+                loops,
+            ):
+                continue
+            if _prior_bound_guard(body, access.start(), target, index, copied_name):
+                continue
+            if copied_name and index.isdigit():
+                needed = int(index) + 1
+                before_access = body[call_offset:access.start()]
+                if re.search(
+                    rf"if\s*\(\s*{re.escape(copied_name)}\s*<\s*{needed}\s*\)"
+                    r"\s*(?:\{\s*)?return\b",
+                    before_access,
+                ):
+                    continue
+            failures.append(
+                "EA_INDICATOR_BUFFER_UNBOUNDED: "
+                f"{source.path.name}:{line_number(code, body_start + access.start())} "
+                f"accesses CopyBuffer target {target}[{index}] without checking the "
+                "CopyBuffer result or ArraySize first."
+            )
+    return failures
+
+
 def check_pip_double_conversion(source: SourceFile) -> list[str]:
     failures: list[str] = []
     times_ten = re.compile(r"(?:\*\s*10(?:\.0+)?\b|\b10(?:\.0+)?\s*\*)")
@@ -441,6 +855,28 @@ def analyze_file(source_path: Path, card_path: Path | None) -> dict:
         "failures": len(warmup_failures)
     }
 
+    mae_failures = check_mae_hook(source)
+    failures.extend(mae_failures)
+    check_details["D7_mae_hook"] = {"failures": len(mae_failures)}
+
+    new_bar_failures = check_duplicate_new_bar_entry_gate(source)
+    failures.extend(new_bar_failures)
+    check_details["D8_duplicate_new_bar_entry_gate"] = {
+        "failures": len(new_bar_failures)
+    }
+
+    request_failures = check_trade_request_initialization(source)
+    failures.extend(request_failures)
+    check_details["D9_trade_request_initialization"] = {
+        "failures": len(request_failures)
+    }
+
+    buffer_failures = check_indicator_buffer_bounds(source)
+    failures.extend(buffer_failures)
+    check_details["D10_indicator_buffer_bounds"] = {
+        "failures": len(buffer_failures)
+    }
+
     loss_failures, loss_warnings, loss_detail = check_loss_limit_contract(source, card_path)
     failures.extend(loss_failures)
     warnings.extend(loss_warnings)
@@ -495,6 +931,10 @@ def analyze(repo_root: Path, ea_label: str | None = None) -> dict:
             "D4": "FAIL only when an early-return condition is mechanically tied to open-position state",
             "D5": "FAIL only when the card declares a GMT/UTC clock window and source uses raw broker-hour logic without a recognized/documented conversion",
             "D6": "FAIL on parsed EA call sites for raw BarsCalculated; comments and quoted literals are excluded and framework warm-up helpers are required",
+            "D7": "FAIL only for a framework-managed OnTick with no direct QM_FrameworkTrackOpenPositionMae call",
+            "D8": "FAIL only for two same-key, top-level QM_IsNewBar conditions before a canonical entry call; different keys and cached results pass",
+            "D9": "FAIL only when a bare MqlTradeRequest reaches OrderSend without zero-init, or a bare QM_EntryRequest reaches entry with neither zero-init nor a mechanically complete seven-field initializer",
+            "D10": "FAIL only when a dynamic numeric/CopyBuffer target is indexed without a syntactically tied loop, CopyBuffer-result, resize-count, or ArraySize proof",
         },
     }
 

@@ -40,6 +40,8 @@ bool Strategy_ExitSignal() { return false; }
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+   if(!QM_KillSwitchCheck()) return;
    Strategy_ManageOpenPosition();
    if(Strategy_ExitSignal()) return;
    if(Strategy_NoTradeFilter()) return;
@@ -190,6 +192,134 @@ def test_d6_framework_helper_primes_before_readiness_and_bounds_retries() -> Non
     assert "QM_INDICATOR_WARMUP_ERROR_AFTER_BARS" in probe
     assert "SETUP_DATA_MISSING" in probe
     assert "qm.indicator-first-tradable-bar/v1" in helper
+
+
+def test_d7_framework_mae_hook_pass_and_fail_fixtures(tmp_path: Path) -> None:
+    source, card = write_fixture(tmp_path, PASSING_SOURCE)
+    passing = gate.analyze_file(source, card)
+    assert "EA_Q08_MAE_HOOK_MISSING" not in failure_codes(passing)
+
+    source.write_text(
+        PASSING_SOURCE.replace("   QM_FrameworkTrackOpenPositionMae();\n", ""),
+        encoding="utf-8",
+    )
+    failing = gate.analyze_file(source, card)
+    assert "EA_Q08_MAE_HOOK_MISSING" in failure_codes(failing)
+
+
+def test_d8_cached_new_bar_passes_and_second_same_key_gate_fails(tmp_path: Path) -> None:
+    passing_source = r"""
+void Strategy_Refresh() { }
+bool Strategy_EntrySignal(QM_EntryRequest &req) { return false; }
+void OnTick()
+  {
+   QM_FrameworkTrackOpenPositionMae();
+   if(!QM_KillSwitchCheck()) return;
+   const bool new_bar = QM_IsNewBar(_Symbol, _Period);
+   if(new_bar) Strategy_Refresh();
+   if(!new_bar) return;
+   QM_EntryRequest req = {};
+   Strategy_EntrySignal(req);
+  }
+"""
+    source, card = write_fixture(tmp_path, passing_source)
+    passing = gate.analyze_file(source, card)
+    assert "EA_ENTRY_DOUBLE_NEW_BAR_GATE" not in failure_codes(passing)
+
+    source.write_text(
+        passing_source.replace(
+            "const bool new_bar = QM_IsNewBar(_Symbol, _Period);\n"
+            "   if(new_bar) Strategy_Refresh();\n"
+            "   if(!new_bar) return;",
+            "if(QM_IsNewBar(_Symbol, _Period)) Strategy_Refresh();\n"
+            "   if(!QM_IsNewBar(_Symbol, _Period)) return;",
+        ),
+        encoding="utf-8",
+    )
+    failing = gate.analyze_file(source, card)
+    assert "EA_ENTRY_DOUBLE_NEW_BAR_GATE" in failure_codes(failing)
+
+
+def test_d9_trade_request_zero_init_pass_and_bare_request_fails(tmp_path: Path) -> None:
+    passing_source = PASSING_SOURCE + r"""
+bool SendRequest()
+  {
+   MqlTradeRequest request;
+   ZeroMemory(request);
+   MqlTradeResult result = {};
+   return OrderSend(request, result);
+  }
+"""
+    source, card = write_fixture(tmp_path, passing_source)
+    passing = gate.analyze_file(source, card)
+    assert "EA_TRADE_REQUEST_UNINITIALIZED" not in failure_codes(passing)
+
+    source.write_text(
+        passing_source.replace("   ZeroMemory(request);\n", ""),
+        encoding="utf-8",
+    )
+    failing = gate.analyze_file(source, card)
+    assert "EA_TRADE_REQUEST_UNINITIALIZED" in failure_codes(failing)
+    assert "MqlTradeRequest request" in failure_codes(failing)
+
+    source.write_text(
+        PASSING_SOURCE.replace(
+            "   Strategy_ManageOpenPosition();",
+            "   QM_EntryRequest req;\n"
+            "   if(Strategy_EntrySignal(req)) QM_TM_OpenPosition(req);\n"
+            "   Strategy_ManageOpenPosition();",
+        ),
+        encoding="utf-8",
+    )
+    qm_entry_failing = gate.analyze_file(source, card)
+    assert "QM_EntryRequest req" in failure_codes(qm_entry_failing)
+
+
+def test_d10_indicator_buffer_bound_pass_and_fail_fixtures(tmp_path: Path) -> None:
+    failing_source = r"""
+double ComputeIndicator(const int period)
+  {
+   const int buffer_count = period + 4;
+   double buffer[];
+   ArrayResize(buffer, buffer_count);
+   double total = 0.0;
+   for(int i = 0; i < period + 6; ++i)
+     {
+      total += buffer[i];
+     }
+   return total;
+  }
+"""
+    source, card = write_fixture(tmp_path, failing_source)
+    failing = gate.analyze_file(source, card)
+    assert "EA_INDICATOR_BUFFER_UNBOUNDED" in failure_codes(failing)
+
+    source.write_text(
+        failing_source.replace("i < period + 6", "i < ArraySize(buffer)"),
+        encoding="utf-8",
+    )
+    passing = gate.analyze_file(source, card)
+    assert "EA_INDICATOR_BUFFER_UNBOUNDED" not in failure_codes(passing)
+
+    copybuffer_pass = r"""
+bool ReadIndicator(const int handle)
+  {
+   double values[];
+   const int copied = CopyBuffer(handle, 0, 0, 3, values);
+   if(copied < 3) return false;
+   return values[2] > 0.0;
+  }
+"""
+    source.write_text(copybuffer_pass, encoding="utf-8")
+    passing = gate.analyze_file(source, card)
+    assert "EA_INDICATOR_BUFFER_UNBOUNDED" not in failure_codes(passing)
+
+    source.write_text(
+        copybuffer_pass.replace("   if(copied < 3) return false;\n", ""),
+        encoding="utf-8",
+    )
+    failing = gate.analyze_file(source, card)
+    assert "EA_INDICATOR_BUFFER_UNBOUNDED" in failure_codes(failing)
 
 
 def run_build_check(tmp_path: Path) -> subprocess.CompletedProcess[str]:
