@@ -73,3 +73,42 @@ Against 10 already-running worker daemons, the decision was `THROTTLED`,
 `max_workers=10`. The last value is intentional: current workers are observed
 and retained, never interrupted. A future missing-worker start is blocked until
 real headroom recovers.
+
+## Threshold rationale (`DISK_STOP_GB`, `RAM_RESERVE_GB`, `COMMIT_RESERVE_GB`, per-worker 8GB)
+
+The four `resource_headroom.py` constants are not new empirical tuning — each one
+mirrors a pre-existing per-worker circuit breaker already live in
+`terminal_worker.py`, so the *admission* gate for a new worker closes at exactly
+the same floor where an already-running worker would itself pause-purge or defer
+a claim. Reusing those numbers means one operator-verified threshold set governs
+both "should a running worker keep claiming" and "should we admit another
+worker," instead of drifting apart over time.
+
+- `DISK_STOP_GB = 40.0` == `DISK_MIN_FREE_GB` (`terminal_worker.py:83`), the
+  disk_low_pause floor. That 40GB figure was itself set post the 2026-06-19
+  disk-full meltdown specifically because MT5 tick generation fails ("no disk
+  space", exit 100018) well before D: reaches 0GB — see the identical FAIL
+  threshold and comment in `health.py:1976` (`chk_disk_free_space`). Three
+  independent layers (worker pause, health alert, new-worker admission) now
+  agree on the same number.
+- `RAM_RESERVE_GB = 6.0` == `RAM_MIN_FREE_GB` (`terminal_worker.py:101`), the
+  existing free-RAM claim-pause floor.
+- `COMMIT_RESERVE_GB = 24.0` == `COMMIT_MIN_FREE_GB` (`terminal_worker.py:128`),
+  the existing commit-headroom claim-pause floor.
+- The uniform `*_PER_WORKER_GB = 8.0` sizing basis borrows
+  `ORDINARY_COMMIT_RESERVATION_GB` (`terminal_worker.py:138`) — the only
+  existing per-instance resource budget in the worker layer — and applies it
+  identically to disk and RAM rather than inventing three separate
+  per-worker numbers with no operating precedent. It is deliberately an
+  average, not the observed heavy-phase peak: Q05-Q07 real-tick runs have been
+  measured at 12-21GB RAM each (4 testers observed at 49GB of the VPS's 63GB
+  total, see `project_qm_fleet_scaling_t11_t14_2026-06-04` memory). Because
+  under-sizing the per-worker budget only makes the admission gate *more*
+  conservative (it throttles sooner, never later), reusing the smaller,
+  already-precedented 8GB figure is safe in the direction that matters — it
+  cannot cause an over-admission.
+
+Net effect: no new threshold values were invented for this ticket. The
+admission gate was made to agree with floors the factory already enforces
+elsewhere, so a worker is never admitted into headroom that the system would
+already consider too tight for an existing worker to keep running in.
