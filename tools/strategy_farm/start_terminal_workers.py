@@ -11,6 +11,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:
+    import resource_headroom
+except ModuleNotFoundError:
+    from tools.strategy_farm import resource_headroom
+
 
 TERMINALS = tuple(f"T{i}" for i in range(1, 11))
 FACTORY_TERMINAL_RE = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
@@ -122,6 +127,18 @@ def _installed_terminals(mt5_root: Path) -> tuple[str, ...]:
     )
 
 
+def _governed_terminals(
+    installed: tuple[str, ...],
+    discovered: dict[str, list[int]],
+    decision: dict[str, object],
+) -> tuple[str, ...]:
+    """Keep every live worker, then admit missing workers only up to the cap."""
+    running = [terminal for terminal in installed if discovered.get(terminal)]
+    target = max(len(running), int(decision.get("max_workers") or 0))
+    missing = [terminal for terminal in installed if terminal not in running]
+    return tuple(running + missing[: max(0, target - len(running))])
+
+
 def _stop_pid(pid: int) -> bool:
     # A bare PID is not a safe termination authority because it may be reused
     # between discovery and this call. Fail closed until an identity-bound stop exists.
@@ -182,7 +199,15 @@ def main() -> int:
         if pythonw.exists():
             python_exe = pythonw
 
-    terminals = _installed_terminals(mt5_root)
+    installed_terminals = _installed_terminals(mt5_root)
+    snapshot = resource_headroom.probe(farm_root)
+    running_installed = sum(bool(discovered.get(terminal)) for terminal in installed_terminals)
+    headroom_decision = resource_headroom.concurrency_decision(
+        snapshot,
+        installed_workers=len(installed_terminals),
+        running_workers=running_installed,
+    )
+    terminals = _governed_terminals(installed_terminals, discovered, headroom_decision)
     for terminal in terminals:
         candidates = [pid for pid in discovered.get(terminal, []) if _pid_alive(pid)]
         existing_pid = existing.get(terminal, 0)
@@ -228,7 +253,13 @@ def main() -> int:
         updated[terminal] = int(proc.pid)
 
     pid_file.write_text(json.dumps(updated, indent=2, sort_keys=True), encoding="utf-8")
-    print(json.dumps({"workers": updated, "stopped_duplicates": stopped_duplicates, "installed_terminals": list(terminals)}, sort_keys=True))
+    print(json.dumps({
+        "workers": updated,
+        "stopped_duplicates": stopped_duplicates,
+        "installed_terminals": list(installed_terminals),
+        "governed_terminals": list(terminals),
+        "resource_headroom": headroom_decision,
+    }, sort_keys=True))
     return 0
 
 

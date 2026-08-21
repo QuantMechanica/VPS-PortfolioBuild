@@ -42,9 +42,28 @@ param(
 $ErrorActionPreference = 'Continue'
 $py = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
 $log = "D:\QM\reports\state\tester_cache_purge.log"
+$resourcePolicy = Join-Path $RepoRoot 'tools\strategy_farm\resource_headroom.py'
 function Now { (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') }
 function FreeGB { [math]::Round((Get-PSDrive D).Free/1GB,2) }
 function Log($m) { $line = "$(Now) $m"; Write-Output $line; try { Add-Content -Path $log -Value $line -Encoding UTF8 } catch {} }
+function Get-ReclaimTelemetry {
+    param([long]$ExpectedDeletedBytes, [double]$BeforeGb, [double]$AfterGb)
+    if (-not (Test-Path -LiteralPath $resourcePolicy -PathType Leaf)) {
+        return [pscustomobject]@{ status = 'TELEMETRY_ERROR'; reason = 'resource_policy_missing' }
+    }
+    $beforeText = $BeforeGb.ToString('R', [Globalization.CultureInfo]::InvariantCulture)
+    $afterText = $AfterGb.ToString('R', [Globalization.CultureInfo]::InvariantCulture)
+    try {
+        $raw = @(& $py $resourcePolicy validate-reclaim `
+            --expected-deleted-bytes $ExpectedDeletedBytes `
+            --free-before-gb $beforeText --free-after-gb $afterText 2>$null)
+        $result = (($raw -join '') | ConvertFrom-Json -ErrorAction Stop)
+        if (-not $result.status) { throw 'telemetry result missing status' }
+        return $result
+    } catch {
+        return [pscustomobject]@{ status = 'TELEMETRY_ERROR'; reason = "validator_failed:$($_.Exception.Message)" }
+    }
+}
 function Invoke-BusyScratchReclaim {
     param(
         [string]$Root,
@@ -122,10 +141,20 @@ function Invoke-BusyScratchReclaim {
 
     if ($Apply) { Start-Sleep -Seconds 2 }
     $after = FreeGB
-    Log ("BUSY_SCRATCH_SUMMARY mode={0} min_age_minutes={1} candidates={2} candidate_gb={3:N2} {4}_gb={5:N2} locked_skips={6} delete_error_skips={7} d_free_before_gb={8:N2} d_free_after_gb={9:N2}" -f `
+    $telemetry = if ($Apply) {
+        Get-ReclaimTelemetry -ExpectedDeletedBytes $totalReclaimedBytes -BeforeGb $before -AfterGb $after
+    } else {
+        [pscustomobject]@{ status = 'DRYRUN'; reason = 'no_free_space_claim' }
+    }
+    Log ("BUSY_SCRATCH_SUMMARY mode={0} min_age_minutes={1} candidates={2} candidate_gb={3:N2} {4}_gb={5:N2} locked_skips={6} delete_error_skips={7} d_free_before_gb={8:N2} d_free_after_gb={9:N2} telemetry_status={10} telemetry_reason={11}" -f `
         $(if ($Apply) { 'APPLY' } else { 'DRYRUN' }), $MinimumAgeMinutes, $totalCandidates,
         ($totalCandidateBytes / 1GB), $(if ($Apply) { 'reclaimed' } else { 'reclaimable' }),
-        ($totalReclaimedBytes / 1GB), $totalLocked, $totalDeleteErrors, $before, $after)
+        ($totalReclaimedBytes / 1GB), $totalLocked, $totalDeleteErrors, $before, $after,
+        $telemetry.status, $telemetry.reason)
+    if ($telemetry.status -eq 'TELEMETRY_ERROR') {
+        Log "TELEMETRY_ERROR scope=busy_scratch reason=$($telemetry.reason) expected_deleted_bytes=$totalReclaimedBytes d_free_before_gb=$before d_free_after_gb=$after"
+    }
+    $script:BusyScratchTelemetry = $telemetry
 }
 function Invoke-InteractiveWorkerDedupe {
     $launcher = Join-Path $RepoRoot 'tools\strategy_farm\run_in_console_session.ps1'
@@ -204,10 +233,17 @@ print(json.dumps(sorted(set(out))))
 }
 
 $runBusyScratch = $Mode -in @('All', 'BusyScratch')
+$telemetryErrors = @()
 if ($runBusyScratch) {
+    $script:BusyScratchTelemetry = $null
     Invoke-BusyScratchReclaim -Root $Mt5Root -MinimumAgeMinutes $MinAgeMinutes `
         -OnlyTerminal $Terminal -Apply:(-not $DryRun)
-    if ($Mode -eq 'BusyScratch') { return }
+    $busyTelemetry = $script:BusyScratchTelemetry
+    if ($busyTelemetry.status -eq 'TELEMETRY_ERROR') { $telemetryErrors += $busyTelemetry }
+    if ($Mode -eq 'BusyScratch') {
+        if ($telemetryErrors.Count -gt 0) { exit 2 }
+        return
+    }
 }
 
 $free = FreeGB
@@ -275,6 +311,7 @@ Log "idle factory slots stopped ($killPass extra kill pass(es); protected active
 
 # 2. clear regenerable tester caches
 $purgedTerminals = @()
+[long]$idleDeletedBytes = 0
 foreach ($n in 1..10) {
     $terminalName = "T$n"
     if ($protectedLookup.ContainsKey($terminalName)) {
@@ -283,13 +320,46 @@ foreach ($n in 1..10) {
     }
     $t = Join-Path $Mt5Root "T$n"
     if (-not (Test-Path $t)) { continue }
-    Get-ChildItem "$t\Tester\bases" -ErrorAction SilentlyContinue | ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
-    Get-ChildItem "$t\Tester" -Directory -Filter "Agent-*" -ErrorAction SilentlyContinue | ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
+    $testerRoot = [IO.Path]::GetFullPath((Join-Path $t 'Tester'))
+    $targets = @(
+        @(Get-ChildItem -LiteralPath (Join-Path $testerRoot 'bases') -ErrorAction SilentlyContinue)
+        @(Get-ChildItem -LiteralPath $testerRoot -Directory -Filter 'Agent-*' -ErrorAction SilentlyContinue)
+    )
+    foreach ($target in $targets) {
+        $targetPath = [IO.Path]::GetFullPath($target.FullName)
+        $contained = $targetPath.StartsWith(
+            $testerRoot.TrimEnd('\') + '\',
+            [StringComparison]::OrdinalIgnoreCase
+        )
+        if (-not $contained) {
+            Log "TELEMETRY_ERROR scope=idle_cache reason=target_outside_tester_root target=$targetPath root=$testerRoot"
+            $telemetryErrors += [pscustomobject]@{ status = 'TELEMETRY_ERROR'; reason = 'target_outside_tester_root' }
+            continue
+        }
+        [long]$beforeBytes = if ($target.PSIsContainer) {
+            [long](Get-ChildItem -LiteralPath $targetPath -File -Recurse -ErrorAction SilentlyContinue |
+                Measure-Object -Property Length -Sum).Sum
+        } else { [long]$target.Length }
+        Remove-Item -LiteralPath $targetPath -Recurse -Force -ErrorAction SilentlyContinue
+        [long]$afterBytes = 0
+        if (Test-Path -LiteralPath $targetPath) {
+            $afterBytes = [long](Get-ChildItem -LiteralPath $targetPath -File -Recurse -ErrorAction SilentlyContinue |
+                Measure-Object -Property Length -Sum).Sum
+        }
+        [long]$deletedBytes = [math]::Max(0, $beforeBytes - $afterBytes)
+        $idleDeletedBytes += $deletedBytes
+        Log "PURGE_TARGET terminal=$terminalName target=$targetPath before_bytes=$beforeBytes after_bytes=$afterBytes deleted_bytes=$deletedBytes"
+    }
     $purgedTerminals += $terminalName
 }
 Start-Sleep -Seconds 2
 $after = FreeGB
-Log "idle caches cleared terminals=[$($purgedTerminals -join ',')]: D: ${free}GB -> ${after}GB (reclaimed $([math]::Round($after-$free,1))GB)"
+$idleTelemetry = Get-ReclaimTelemetry -ExpectedDeletedBytes $idleDeletedBytes -BeforeGb $free -AfterGb $after
+if ($idleTelemetry.status -eq 'TELEMETRY_ERROR') {
+    $telemetryErrors += $idleTelemetry
+    Log "TELEMETRY_ERROR scope=idle_cache reason=$($idleTelemetry.reason) expected_deleted_bytes=$idleDeletedBytes d_free_before_gb=$free d_free_after_gb=$after"
+}
+Log "idle caches cleared terminals=[$($purgedTerminals -join ',')]: D: ${free}GB -> ${after}GB deleted_bytes=$idleDeletedBytes observed_free_delta_gb=$([math]::Round($after-$free,1)) telemetry_status=$($idleTelemetry.status) telemetry_reason=$($idleTelemetry.reason)"
 
 # 3. Restart only when the captured OWNER state actually authorized the factory.
 #    A cache-maintenance task must never turn Factory OFF into Factory ON. When
@@ -297,6 +367,7 @@ Log "idle caches cleared terminals=[$($purgedTerminals -join ',')]: D: ${free}GB
 #    disabled and do not queue an InteractiveToken start.
 if (-not $factoryRestartAuthorized) {
     Log 'factory restart SKIPPED: captured OWNER state was OFF; caches purged without changing factory state'
+    if ($telemetryErrors.Count -gt 0) { exit 2 }
     return
 }
 
@@ -315,3 +386,4 @@ try {
 } catch {
     Log "factory missing-worker recovery FAILED (interactive-session token launcher): $($_.Exception.Message) - existing protected slots were not killed"
 }
+if ($telemetryErrors.Count -gt 0) { exit 2 }
