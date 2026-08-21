@@ -1,16 +1,16 @@
 # QM5_41084_wti-wdaybreadth-mom - Strategy Spec
 
-EA ID: `QM5_41084`
+**EA ID:** QM5_41084
 
-Slug: `wti-wdaybreadth-mom`
+**Slug:** `wti-wdaybreadth-mom`
 
-Strategy ID: `MOP-WTI-WDAYBREADTH4-MOM-2026_S01`
+**Strategy ID:** `MOP-WTI-WDAYBREADTH4-MOM-2026_S01`
 
-Source: `MOP-WTI-WDAYBREADTH4-MOM-2026`
+**Source:** `MOP-WTI-WDAYBREADTH4-MOM-2026`
 
-Author: Codex
+**Author of this spec:** Codex
 
-Last revised: 2026-08-21
+**Last revised:** 2026-08-21
 
 ## 1. Strategy Logic
 
@@ -98,4 +98,5 @@ partial exit.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v0 | 2026-08-21 | approved build-directory identity | source approval `8ca5ed7fa`; deterministic registry reservation pending card review |
+| v0 | 2026-08-21 | approved build-directory identity | source approval `8ca5ed7fa`; deterministic registry reservation `d34837b3e`; G0 approval `8e002c82e`; magic allocation `bd3b1d83a` |
+| v1-build | 2026-08-21 | deterministic implementation and Q01 validation | 10-test reference suite; strict compile/build PASS; static P1 PASS |
