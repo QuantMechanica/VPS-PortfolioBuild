@@ -1,0 +1,55 @@
+{
+  "schema": "qm.card-adjudication-wave.v1",
+  "task_id": "88273f13-3a4d-49da-8ab7-7b0d2d96c27c",
+  "decision_list": "C:/QM/repo/docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv",
+  "selection_basis": "first 25 action=ADJUDICATE rows in decision-list order",
+  "decided_at": "2026-08-21T17:17:13Z",
+  "result": {
+    "cards": 25,
+    "approved": 0,
+    "rejected": 25,
+    "undecided": 0
+  },
+  "rubric_failure_counts": {
+    "r1": 17,
+    "r2": 20,
+    "r3": 7,
+    "r4": 0,
+    "duplicate": 3
+  },
+  "decisions": [
+    {"ea_id":"QM5_10764","slug":"idx-totm","decision":"REJECTED","failures":["R1"],"reason":"EXTERNAL_SOURCE is only a label; the card names no traceable source or track record for the turn-of-month rule."},
+    {"ea_id":"QM5_10765","slug":"gold-monthly-seasonal","decision":"REJECTED","failures":["R1","R2"],"reason":"No traceable source is named, and the card leaves seasonal windows as an optional simplified formulation instead of one exact rule set."},
+    {"ea_id":"QM5_10766","slug":"pre-nfp-drift","decision":"REJECTED","failures":["R1","R2"],"reason":"No traceable source is named, and first-Friday plus fixed-GMT timing is not an authoritative DST/holiday-aware NFP schedule."},
+    {"ea_id":"QM5_10767","slug":"idx-earnings-drift","decision":"REJECTED","failures":["R1","R3"],"reason":"No traceable source is named and the required constituent earnings calendar is outside the governed DWX/native data contract."},
+    {"ea_id":"QM5_10768","slug":"fomc-post-mom","decision":"REJECTED","failures":["R1"],"reason":"The card provides no named durable source or track record for the claimed post-FOMC drift."},
+    {"ea_id":"QM5_10864","slug":"edge-lab-d1-momentum-v1","decision":"REJECTED","failures":["R1","R2"],"reason":"academic_backtest is uncited, while EMA smoothing and the ranked-pair-to-trade mapping are not fully specified."},
+    {"ea_id":"QM5_10865","slug":"edge-lab-d1-carry-v1","decision":"REJECTED","failures":["R1","R3"],"reason":"The academic claim is uncited; historical swap rankings and VIX history are unavailable in governed DWX/native backtests."},
+    {"ea_id":"QM5_10889","slug":"el-d1-t8-macro-cycle","decision":"REJECTED","failures":["R2","R3"],"reason":"The named paper does not close the implementation; the yield-curve/proxy formula is unspecified and government-yield data is unavailable in DWX."},
+    {"ea_id":"QM5_10890","slug":"el-d1-t9-cbi-rs","decision":"REJECTED","failures":["R1","R2"],"reason":"No durable source is named, and intervention, suppression, strong RS, and post-spike stabilization are not closed-form rules."},
+    {"ea_id":"QM5_10891","slug":"el-d2-t10-fomc-drift","decision":"REJECTED","failures":["R1"],"reason":"The claimed FOMC pre-announcement anomaly has no named durable source or track record in the card."},
+    {"ea_id":"QM5_10893","slug":"el-d4-t12-ls-ob-micro","decision":"REJECTED","failures":["R1","R2"],"reason":"No durable source is named; MSS swing selection and the order block that caused it lack deterministic definitions."},
+    {"ea_id":"QM5_10894","slug":"el-d1-t13-ctot-momentum","decision":"REJECTED","failures":["R1","R2","R3"],"reason":"No durable source; export weights and VIX gate are undefined; the required commodity basket is unavailable in DWX."},
+    {"ea_id":"QM5_11917","slug":"el-d1-t14-simons-leadlag","decision":"REJECTED","failures":["R1","R2"],"reason":"A Simons/Medallion analogy is not evidence, and velocity, correlation adjustment, pair construction, and crisis filter are underspecified."},
+    {"ea_id":"QM5_11918","slug":"el-d1-t5-bond-convergence","decision":"REJECTED","failures":["R1","R2","R3"],"reason":"No durable source; the FX valuation mapping is unspecified; government-yield history is unavailable in DWX."},
+    {"ea_id":"QM5_11919","slug":"el-d2-t6-cb-exp-gap","decision":"REJECTED","failures":["R1","R2","R3"],"reason":"No source; consensus result and trade-pair selection are unavailable/undefined, and the hold is discretionary at 5-10 days."},
+    {"ea_id":"QM5_11920","slug":"el-d1-t7-vol-premium","decision":"REJECTED","failures":["R1","R2"],"reason":"No durable source; the card calls realized-vol compression VRP while leaving currency/pair construction and the VIX-equivalent gate unspecified."},
+    {"ea_id":"QM5_11921","slug":"rb-range-breakout","decision":"REJECTED","failures":["R2","DUPLICATE"],"reason":"Symbol-specific alternatives and optional filters do not form one buildable rule; the validated Balke range-breakout primitive is already represented by QM5_12832."},
+    {"ea_id":"QM5_11922","slug":"rb-go-long","decision":"REJECTED","failures":["R2","DUPLICATE"],"reason":"The 2% per-day stop does not define per-trade sizing, and the source-verified Balke Go Long rules are already approved as QM5_13036."},
+    {"ea_id":"QM5_11923","slug":"rb-turnaround-tue","decision":"REJECTED","failures":["R2","DUPLICATE"],"reason":"No position-sizing rule is defined, and the source-verified Turnaround Tuesday primitive is already approved as QM5_12788 and QM5_12836."},
+    {"ea_id":"QM5_11924","slug":"rb-mean-reversion","decision":"REJECTED","failures":["R2"],"reason":"RSI period is left as 14 or 20, so the card does not select one immutable signal definition for a build."},
+    {"ea_id":"QM5_11925","slug":"rb-open-scalp","decision":"REJECTED","failures":["R1","R2"],"reason":"No source citation, target instrument, pending-order expiry/cancellation, or deterministic time exit is specified."},
+    {"ea_id":"QM5_11926","slug":"rb-rsi-ma-filter","decision":"REJECTED","failures":["R2"],"reason":"Mutually alternative standard and trailing exits are not resolved, and no position-risk/sizing rule is defined."},
+    {"ea_id":"QM5_11927","slug":"rb-atr-candle-break","decision":"REJECTED","failures":["R2"],"reason":"Candle direction, entry trigger/timing, and whether current means a closed bar are absent, so the rule cannot be implemented literally."},
+    {"ea_id":"QM5_11928","slug":"rb-crypto-prev-day","decision":"REJECTED","failures":["R2","R3"],"reason":"Execution timeframe, SL/TP percentages, and X-minute exit are undefined; crypto is outside the FTMO+DXZ DWX target matrix."},
+    {"ea_id":"QM5_11929","slug":"sts-3wicks-reversal","decision":"REJECTED","failures":["R1","R2"],"reason":"research_sts has no durable citation; shared-extreme tolerance, swing definition, and discretionary target alternative are undefined."}
+  ],
+  "verification": {
+    "governed_cli": "farmctl reject-card",
+    "cards_with_rejected_status": 25,
+    "cards_with_explicit_reason": 25,
+    "cards_with_last_updated_2026_08_21": 25,
+    "bom_compatibility_commit": "1b0f13648",
+    "bom_regression_tests": "2 passed"
+  }
+}
