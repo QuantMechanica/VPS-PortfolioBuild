@@ -22,7 +22,9 @@ manifest, or `T_Live` mutation was performed.
 
 The approved card and EA-local `docs/strategy_card.md` copy are byte identical
 at SHA-256
-`20d1aac3f1062a07c015811f8ae358cb800629f18c29a1af6d78da0274d9a0fe`.
+`5d74fe7eddf14683efa68d3830a0a99f4eefc045805e616744289ac310f88594`
+after the Q02 CPU-ceiling status handoff; the Q01 build commit carried the
+same card contract with its pre-handoff pipeline-status fields.
 
 ## Implemented mechanic
 

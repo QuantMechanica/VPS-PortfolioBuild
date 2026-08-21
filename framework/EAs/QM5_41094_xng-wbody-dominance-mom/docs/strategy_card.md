@@ -59,7 +59,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_QUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 q01_build_report: D:/QM/reports/framework/21/build_check_20260821_183207.json
 q01_p1_evidence: D:/QM/reports/pipeline/QM5_41094/P1/P1_QM5_41094_result.json
 review_focus: "Falsify a structurally distinct direct-XNG completed-week body-dominance momentum sleeve alongside certified QM5_12567. Verify uniform energy labels, exact Monday anchors, one immediately completed 3-5-session weekly OHLC package, strict 3*abs(close-open)>2*(high-low), own-body side, threshold equality flat, one attempt, and next-week exit. Q09 alone may establish realized decorrelation."
@@ -370,6 +370,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-21 | initial XNG completed-week body-dominance card | G0 | APPROVED |
 | v2 | 2026-08-21 | exact card implementation, deterministic reference contract, strict compile, and static build validation | Q01 | PASS |
+| v3 | 2026-08-21 | target-only Q02 preview eligible; admission stopped at the binding host CPU ceiling | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -377,7 +378,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-21 | APPROVED | `decisions/2026-08-21_qm5_41094_xng_weekly_body_dominance_momentum_g0.md` |
 | Q01 Build Validation | 2026-08-21 | PASS | 11 deterministic reference checks; strict compile 0 errors/0 warnings; build check 0 failures |
-| Q02 Baseline Screening | 2026-08-21 | NOT_QUEUED | Q01 PASS; paced admission pending |
+| Q02 Baseline Screening | 2026-08-21 | NOT_ENQUEUED_CPU_CEILING | zero existing work items; target preview eligible; five-sample CPU max 100% exceeded 97% ceiling; `docs/ops/evidence/2026-08-21_qm5_41094_xng_weekly_body_dominance_q01_q02_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 
