@@ -22224,7 +22224,20 @@ def record_build_result(
 
 
 Q02_DEFERRED_SYMBOLS_FILE = DEFAULT_ROOT / "state" / "q02_deferred_symbols.json"
-Q02_STAGE1_MAX_SYMBOLS = 3
+Q02_CANARY_FANOUT_POLICY = "qm-q02-canary-fanout/v1"
+Q02_STAGE1_MAX_SYMBOLS = 1
+
+Q02_CANARY_SYMBOL_PRIORITY = (
+    "EURUSD.DWX",
+    "USDJPY.DWX",
+    "GBPUSD.DWX",
+    "XAUUSD.DWX",
+    "SP500.DWX",
+    "NDX.DWX",
+    "GDAXI.DWX",
+    "XTIUSD.DWX",
+    "XNGUSD.DWX",
+)
 
 
 def _q02_symbol_bucket(symbol: str) -> str:
@@ -22238,31 +22251,174 @@ def _q02_symbol_bucket(symbol: str) -> str:
     return "index"
 
 
-def _stage_q02_setfiles(parsed: list[tuple[Any, str, str]]) -> tuple[list, list]:
-    """Split (setfile, symbol, tf) tuples into a diverse stage-1 wave and a
-    deferred remainder.
+def _q02_canary_symbol_rank(symbol: str) -> tuple[int, str]:
+    """Prefer a liquid host while remaining deterministic for every universe."""
+    normalized = str(symbol or "").upper()
+    try:
+        return Q02_CANARY_SYMBOL_PRIORITY.index(normalized), normalized
+    except ValueError:
+        return len(Q02_CANARY_SYMBOL_PRIORITY), normalized
 
-    2026-06-10 OWNER gate-acceleration #2 (with OWNER's correction): never
-    gate on a single symbol — symbols behave very differently and a one-host
-    probe would miss chances. Stage-1 = up to Q02_STAGE1_MAX_SYMBOLS symbols
-    chosen round-robin across distinct asset buckets (index/metal/fx) so the
-    probe is diverse. Deferred symbols are NEVER dropped: the hourly sweep
-    task promotes them as soon as ANY stage-1 symbol passes Q02, or whenever
-    the queue has spare capacity (pending < 50% of the sweep ceiling).
+
+def _stage_q02_setfiles(parsed: list[tuple[Any, str, str]]) -> tuple[list, list]:
+    """Select one liquid Q02 canary and defer the remaining symbol cohort.
+
+    MNT-038 supersedes the former three-symbol/spare-capacity wave. Fanout is
+    now evidence-driven by ``_q02_canary_fanout_decision``; a deterministic
+    defect consumes one canary slot instead of every symbol slot.
     """
     if len(parsed) <= Q02_STAGE1_MAX_SYMBOLS:
         return parsed, []
-    by_bucket: dict[str, list] = {}
-    for item in parsed:
-        by_bucket.setdefault(_q02_symbol_bucket(item[1]), []).append(item)
-    stage1: list = []
-    # round-robin across buckets for diversity
-    while len(stage1) < Q02_STAGE1_MAX_SYMBOLS and any(by_bucket.values()):
-        for bucket in sorted(by_bucket):
-            if by_bucket[bucket] and len(stage1) < Q02_STAGE1_MAX_SYMBOLS:
-                stage1.append(by_bucket[bucket].pop(0))
-    deferred = [i for i in parsed if i not in stage1]
-    return stage1, deferred
+    canary_index = min(
+        range(len(parsed)),
+        key=lambda index: (_q02_canary_symbol_rank(parsed[index][1]), index),
+    )
+    return [parsed[canary_index]], [
+        item for index, item in enumerate(parsed) if index != canary_index
+    ]
+
+
+def _q02_canary_outcome(row: sqlite3.Row | dict[str, Any]) -> dict[str, Any]:
+    """Normalize one Q02 canary row without inventing an economic verdict."""
+    status = str(_work_item_value(row, "status", "") or "").upper()
+    verdict = str(_work_item_value(row, "verdict", "") or "").upper()
+    symbol = str(_work_item_value(row, "symbol", "") or "")
+    try:
+        payload = json.loads(_work_item_value(row, "payload_json", "{}") or "{}")
+    except (TypeError, json.JSONDecodeError):
+        payload = {}
+    reasons: list[str] = []
+    for key in (
+        "verdict_reason",
+        "reason_class",
+        "invalid_reason",
+        "final_failure",
+        "prior_failure",
+    ):
+        value = payload.get(key)
+        if value:
+            reasons.append(str(value).upper())
+    reason_classes = payload.get("reason_classes") or []
+    if isinstance(reason_classes, (list, tuple, set)):
+        reasons.extend(str(value).upper() for value in reason_classes if value)
+    signature = "|".join([verdict] + sorted(set(reasons)))
+
+    if status not in {"DONE", "FAILED"}:
+        kind = "open"
+    elif verdict in {"INFRA_FAIL", "INVALID", "INVALID_EVIDENCE", "DRAFT_DEFECT"}:
+        kind = "deterministic_stop"
+    elif status == "FAILED" and verdict not in {
+        "FAIL",
+        "FAIL_SOFT",
+        "FAIL_HARD",
+        "MIN_TRADES_NOT_MET",
+        "ZERO_TRADES",
+    }:
+        kind = "deterministic_stop"
+    elif verdict == "ZERO_TRADES":
+        kind = "null_signal"
+    elif verdict in {
+        "PASS",
+        "PASS_SOFT",
+        "PASS_LOWFREQ",
+        "FAIL",
+        "FAIL_SOFT",
+        "FAIL_HARD",
+        "MIN_TRADES_NOT_MET",
+        "RETIRE",
+    }:
+        kind = "economic"
+    else:
+        kind = "unclassified"
+    return {
+        "symbol": symbol,
+        "status": status,
+        "verdict": verdict,
+        "kind": kind,
+        "signature": signature,
+    }
+
+
+def _q02_canary_fanout_decision(
+    rows: list[sqlite3.Row | dict[str, Any]],
+    expected_symbols: list[str] | tuple[str, ...],
+) -> dict[str, Any]:
+    """Decide whether a deferred Q02 cohort may advance.
+
+    A first valid economic outcome releases the cohort. A first null signal
+    earns exactly one sequential confirmation so a heterogeneous strategy is
+    not killed by a poor host. Two identical null signals stop. Any
+    infrastructure/invalid/draft-defect canary stops without fanout. Unknown or
+    incomplete evidence waits rather than guessing.
+    """
+    latest_by_symbol: dict[str, sqlite3.Row | dict[str, Any]] = {}
+    for row in rows:
+        symbol = str(_work_item_value(row, "symbol", "") or "")
+        if not symbol:
+            continue
+        previous = latest_by_symbol.get(symbol)
+        if previous is None or str(_work_item_value(row, "updated_at", "") or "") >= str(
+            _work_item_value(previous, "updated_at", "") or ""
+        ):
+            latest_by_symbol[symbol] = row
+
+    expected = [str(symbol) for symbol in expected_symbols if str(symbol)]
+    missing = [symbol for symbol in expected if symbol not in latest_by_symbol]
+    outcomes = [
+        _q02_canary_outcome(latest_by_symbol[symbol])
+        for symbol in expected
+        if symbol in latest_by_symbol
+    ]
+    base = {
+        "policy": Q02_CANARY_FANOUT_POLICY,
+        "canary_symbols": expected,
+        "outcomes": outcomes,
+    }
+    if not expected or missing:
+        return {
+            **base,
+            "action": "WAIT",
+            "reason": "canary_evidence_missing",
+            "missing_symbols": missing,
+        }
+    if any(outcome["kind"] == "open" for outcome in outcomes):
+        return {**base, "action": "WAIT", "reason": "canary_still_open"}
+    if any(outcome["kind"] == "unclassified" for outcome in outcomes):
+        return {**base, "action": "WAIT", "reason": "canary_terminal_unclassified"}
+    if any(outcome["kind"] == "economic" for outcome in outcomes):
+        return {
+            **base,
+            "action": "RELEASE",
+            "reason": "economic_or_heterogeneous_canary",
+        }
+    if any(outcome["kind"] == "deterministic_stop" for outcome in outcomes):
+        return {
+            **base,
+            "action": "STOP",
+            "reason": "deterministic_canary_failure",
+        }
+    if len(outcomes) == 1 and outcomes[0]["kind"] == "null_signal":
+        return {
+            **base,
+            "action": "CONFIRM",
+            "reason": "first_null_signal_requires_second_host",
+        }
+    null_signatures = {
+        outcome["signature"]
+        for outcome in outcomes
+        if outcome["kind"] == "null_signal"
+    }
+    if len(outcomes) >= 2 and len(null_signatures) == 1:
+        return {
+            **base,
+            "action": "STOP",
+            "reason": "identical_null_signal_confirmed",
+        }
+    return {
+        **base,
+        "action": "RELEASE",
+        "reason": "heterogeneous_canary_outcomes",
+    }
 
 
 def _record_q02_deferral(
@@ -22273,6 +22429,7 @@ def _record_q02_deferral(
     priority_track: bool = False,
     build_task_id: str | None = None,
     cohort_size: int | None = None,
+    canary_symbols: list[str] | tuple[str, ...] | None = None,
 ) -> None:
     """Append deferred (setfile, symbol, tf) tuples to the sidecar state file."""
     try:
@@ -22288,6 +22445,13 @@ def _record_q02_deferral(
         entry["build_task_id"] = str(build_task_id)
     if cohort_size is not None and cohort_size > 0:
         entry["q02_cohort_size"] = int(cohort_size)
+    entry["fanout_policy"] = Q02_CANARY_FANOUT_POLICY
+    entry["fanout_state"] = "AWAITING_CANARY"
+    if canary_symbols:
+        existing_canaries = [str(value) for value in entry.get("canary_symbols") or []]
+        entry["canary_symbols"] = list(dict.fromkeys(
+            existing_canaries + [str(value) for value in canary_symbols if str(value)]
+        ))
     known = {e["setfile"] for e in entry["setfiles"]}
     for item in deferred:
         setfile, symbol, tf = item[0], item[1], item[2]
@@ -22489,6 +22653,7 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
             priority_track=True,
             build_task_id=build_task_id,
             cohort_size=cohort_size,
+            canary_symbols=[symbol for _path, symbol, _tf, _extra in stage1],
         )
         for setfile_path, symbol, tf, _payload_extra in deferred:
             skipped.append({"setfile": setfile_path.name, "symbol": symbol,
@@ -22519,6 +22684,9 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
                 "enqueued_at_utc": now_iso,
                 "build_task_id": build_task_id,
                 "q02_cohort_size": cohort_size,
+                "q02_fanout_policy": Q02_CANARY_FANOUT_POLICY,
+                "q02_fanout_canary": bool(deferred),
+                "q02_fanout_canary_index": 1 if deferred else None,
             }
             payload.update(payload_extra)
             _stamp_custom_history_archive_admission(payload, archive_admission)

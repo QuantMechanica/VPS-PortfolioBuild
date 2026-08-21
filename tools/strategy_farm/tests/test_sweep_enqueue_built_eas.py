@@ -9,12 +9,18 @@ import subprocess
 import sys
 from pathlib import Path
 
-from tools.strategy_farm import farmctl
+from tools.strategy_farm import agent_router, farmctl
 
 
 REPO = Path(__file__).resolve().parents[3]
 SWEEP = REPO / "tools" / "strategy_farm" / "sweep_enqueue_built_eas.py"
 SWEEP_SUBPROCESS_TIMEOUT_SEC = 180
+
+
+def _init_test_db(farm_root: Path) -> None:
+    farmctl.init_db(farm_root)
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        agent_router.init_schema(conn)
 
 
 def test_never_tested_sweep_enqueues_one_logical_basket_item(
@@ -60,7 +66,7 @@ def test_never_tested_sweep_enqueues_one_logical_basket_item(
         writer.writeheader()
         writer.writerow({"ea_id": "9001", "slug": "fxpair", "status": "active"})
 
-    farmctl.init_db(farm_root)
+    _init_test_db(farm_root)
     env = os.environ.copy()
     env.update({
         "QM_STRATEGY_FARM_ROOT": str(farm_root),
@@ -119,7 +125,7 @@ def test_never_tested_sweep_enqueues_one_logical_basket_item(
     )
 
 
-def test_never_tested_sweep_prioritizes_every_first_q02_row(
+def test_never_tested_sweep_enqueues_only_liquid_canary_with_priority(
     tmp_path: Path,
 ) -> None:
     farm_root = tmp_path / "farm"
@@ -145,7 +151,7 @@ def test_never_tested_sweep_prioritizes_every_first_q02_row(
         writer.writeheader()
         writer.writerow({"ea_id": "9002", "slug": "multisym", "status": "active"})
 
-    farmctl.init_db(farm_root)
+    _init_test_db(farm_root)
     env = os.environ.copy()
     env.update({
         "QM_STRATEGY_FARM_ROOT": str(farm_root),
@@ -172,8 +178,21 @@ def test_never_tested_sweep_prioritizes_every_first_q02_row(
             ).fetchall()
         ]
 
-    assert len(payloads) == 2
-    assert all(payload["priority_track"] is True for payload in payloads)
+    assert len(payloads) == 1
+    assert payloads[0]["host_symbol"] == "EURUSD.DWX"
+    assert payloads[0]["priority_track"] is True
+    assert payloads[0]["q02_fanout_canary"] is True
+    assert payloads[0]["q02_fanout_canary_index"] == 1
+
+    deferred_state = json.loads(
+        (farm_root / "state" / "q02_deferred_symbols.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert deferred_state[ea_id]["canary_symbols"] == ["EURUSD.DWX"]
+    assert [
+        row["symbol"] for row in deferred_state[ea_id]["setfiles"]
+    ] == ["GBPUSD.DWX"]
 
 
 def test_apply_preserves_new_deferral_when_sidecar_was_already_nonempty(
@@ -209,7 +228,7 @@ def test_apply_preserves_new_deferral_when_sidecar_was_already_nonempty(
         writer.writeheader()
         writer.writerow({"ea_id": "9004", "slug": "multisym", "status": "active"})
 
-    farmctl.init_db(farm_root)
+    _init_test_db(farm_root)
     deferred_file = farm_root / "state" / "q02_deferred_symbols.json"
     deferred_file.write_text(
         json.dumps({
@@ -248,7 +267,7 @@ def test_apply_preserves_new_deferral_when_sidecar_was_already_nonempty(
             "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase='Q02'",
             (ea_id,),
         ).fetchone()[0]
-    assert q02_count == 3
+    assert q02_count == 1
 
     deferred_state = json.loads(deferred_file.read_text(encoding="utf-8"))
     assert ea_id in deferred_state
@@ -256,7 +275,120 @@ def test_apply_preserves_new_deferral_when_sidecar_was_already_nonempty(
     assert deferred_state[ea_id]["q02_cohort_size"] == 5
     assert {
         row["symbol"] for row in deferred_state[ea_id]["setfiles"]
-    } == {"GBPUSD.DWX", "USDJPY.DWX"}
+    } == {"AUDUSD.DWX", "GBPJPY.DWX", "GBPUSD.DWX", "USDJPY.DWX"}
+    assert deferred_state[ea_id]["canary_symbols"] == ["EURUSD.DWX"]
+
+
+def test_heterogeneous_canaries_release_deferred_symbol_in_apply_mode(
+    tmp_path: Path,
+) -> None:
+    farm_root = tmp_path / "farm"
+    repo_root = tmp_path / "repo"
+    report_root = tmp_path / "reports"
+    ea_id = "QM5_9005"
+    eas_dir = repo_root / "framework" / "EAs"
+    registry = repo_root / "framework" / "registry" / "ea_id_registry.csv"
+    deferred_setfile = (
+        tmp_path / "QM5_9005_multisym_USDJPY.DWX_D1_backtest.set"
+    )
+    eas_dir.mkdir(parents=True)
+    registry.parent.mkdir(parents=True)
+    report_root.joinpath("state").mkdir(parents=True)
+    registry.write_text("ea_id,slug,status\n", encoding="utf-8")
+    deferred_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+
+    _init_test_db(farm_root)
+    build_task_id = "build-9005"
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        for work_item_id, symbol, verdict in (
+            ("canary-zero", "EURUSD.DWX", "ZERO_TRADES"),
+            ("canary-pass", "GBPUSD.DWX", "PASS"),
+        ):
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                    attempt_count,payload_json,created_at,updated_at
+                ) VALUES(?, 'backtest', 'Q02', ?, ?, ?, 'done', ?, 0, ?, ?, ?)
+                """,
+                (
+                    work_item_id,
+                    ea_id,
+                    symbol,
+                    str(tmp_path / f"{symbol}.set"),
+                    verdict,
+                    json.dumps({
+                        "build_task_id": build_task_id,
+                        "verdict_reason": (
+                            "Q02_ZERO_TRADES" if verdict == "ZERO_TRADES" else "OK"
+                        ),
+                    }),
+                    "2026-08-21T08:00:00+00:00",
+                    "2026-08-21T09:00:00+00:00",
+                ),
+            )
+        conn.commit()
+
+    deferred_file = farm_root / "state" / "q02_deferred_symbols.json"
+    deferred_file.write_text(
+        json.dumps({
+            ea_id: {
+                "setfiles": [{
+                    "setfile": str(deferred_setfile),
+                    "symbol": "USDJPY.DWX",
+                    "tf": "D1",
+                }],
+                "source": "fixture",
+                "deferred_at": "2026-08-21T07:59:00+00:00",
+                "build_task_id": build_task_id,
+                "canary_symbols": ["EURUSD.DWX", "GBPUSD.DWX"],
+                "fanout_policy": farmctl.Q02_CANARY_FANOUT_POLICY,
+                "fanout_state": "AWAITING_CONFIRMATION",
+            }
+        }),
+        encoding="utf-8",
+    )
+
+    env = os.environ.copy()
+    env.update({
+        "QM_STRATEGY_FARM_ROOT": str(farm_root),
+        "QM_CANONICAL_REPO_ROOT": str(repo_root),
+        "QM_REPORT_ROOT": str(report_root),
+    })
+    result = subprocess.run(
+        [sys.executable, str(SWEEP), "--apply", "--ea", ea_id],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=SWEEP_SUBPROCESS_TIMEOUT_SEC,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        promoted = conn.execute(
+            "SELECT symbol,payload_json FROM work_items "
+            "WHERE ea_id=? AND status='pending'",
+            (ea_id,),
+        ).fetchone()
+    assert promoted is not None
+    assert promoted[0] == "USDJPY.DWX"
+    promoted_payload = json.loads(promoted[1])
+    assert promoted_payload["promotion_reason"] == "economic_or_heterogeneous_canary"
+    assert promoted_payload["q02_fanout_canary"] is False
+
+    assert ea_id not in json.loads(deferred_file.read_text(encoding="utf-8"))
+    report = json.loads(
+        (report_root / "state" / "claude_sweep_enqueue_2026-06-10.json")
+        .read_text(encoding="utf-8")
+    )
+    assert report["part3_deferred_promotion"]["stopped"] == []
+    assert report["part3_deferred_promotion"]["promoted"] == [{
+        "ea_id": ea_id,
+        "symbol": "USDJPY.DWX",
+        "reason": "economic_or_heterogeneous_canary",
+    }]
 
 
 def test_part2_requeues_terminal_failed_logical_basket_with_auditable_source(
@@ -291,7 +423,7 @@ def test_part2_requeues_terminal_failed_logical_basket_with_auditable_source(
         writer.writeheader()
         writer.writerow({"ea_id": "9003", "slug": "basket", "status": "active"})
 
-    farmctl.init_db(farm_root)
+    _init_test_db(farm_root)
     source_id = "terminal-failed-basket"
     with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
         conn.execute(
@@ -406,7 +538,7 @@ def test_part2_refuses_terminal_disposition_and_historical_phase(
         writer.writerow({"ea_id": "9005", "slug": "terminal-disposition", "status": "active"})
         writer.writerow({"ea_id": "9006", "slug": "historical-phase", "status": "active"})
 
-    farmctl.init_db(farm_root)
+    _init_test_db(farm_root)
     with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
         rows = [
             (
@@ -507,7 +639,7 @@ def test_part2_requeues_q04_and_q07_but_preserves_infra_cap(
         writer.writerow({"ea_id": "9008", "slug": "q07-recovery", "status": "active"})
         writer.writerow({"ea_id": "9009", "slug": "q07-capped", "status": "active"})
 
-    farmctl.init_db(farm_root)
+    _init_test_db(farm_root)
     with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
         rows = [
             ("q04-infra", "Q04", "QM5_9007", "2026-08-01T00:00:00+00:00"),
@@ -627,7 +759,7 @@ def test_q08_stranded_retry_carries_hash_pinned_requal_lineage(
         '{"status":"INVALID"}\n', encoding="utf-8"
     )
 
-    farmctl.init_db(farm_root)
+    _init_test_db(farm_root)
     with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
         old_payload = {
             "q08_single_target_requalification": {

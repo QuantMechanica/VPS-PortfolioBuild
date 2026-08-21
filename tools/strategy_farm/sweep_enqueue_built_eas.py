@@ -1,18 +1,15 @@
 """One-shot sweep (Claude, 2026-06-10, OWNER-approved acceleration):
 
 1. Enqueue Q02 work_items for built EAs (.ex5 on disk) that have ZERO
-   work_items in the DB (never entered the pipeline). Symbol-staged per
-   OWNER gate-acceleration #2: diverse stage-1 wave (<=3 symbols across
-   asset buckets), remainder deferred to the sidecar.
+   work_items in the DB (never entered the pipeline). One liquid-symbol
+   canary is staged first; the remainder stays in the deferred sidecar.
 2. Re-enqueue (ea, symbol, setfile) rows stranded on INFRA_FAIL at
    Q02/Q03/Q04/Q07/Q08 with nothing pending/active, no terminal non-INFRA
    disposition, and no work for the same EA/symbol at a deeper phase.
-3. Promote deferred symbols (state/q02_deferred_symbols.json): an EA's
-   deferred setfiles are enqueued as soon as ANY of its Q02 rows is a done
-   PASS (a chance was found -> confirm breadth), or whenever the queue has
-   spare capacity (pending < 50% of the ceiling). Deferral never kills a
-   symbol; it only deprioritizes it (OWNER: symbols differ, do not miss a
-   chance by gating on a subset).
+3. Promote deferred symbols (state/q02_deferred_symbols.json) only after the
+   MNT-038 canary state machine permits fanout. Deterministic infra/invalid
+   failures stop; a first zero-trade host gets one sequential confirmation;
+   an economic or heterogeneous result releases the remaining cohort.
 
 Filters: registry status=active, no _obsolete_ dirs, setfiles must exist.
 Idempotent: skips (ea,symbol,phase) pairs with pending/active rows.
@@ -488,9 +485,14 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
         # Defer the sidecar write until the same final interlock check as the DB
         # commit.  Otherwise OFF racing this sweep could roll back SQLite while
         # leaving a promoted/deferred file mutation behind.
-        deferred_records.append(
-            (ea_id, deferred, "sweep_enqueue", priority_track, len(parsed))
-        )
+        deferred_records.append((
+            ea_id,
+            deferred,
+            "sweep_enqueue",
+            priority_track,
+            len(parsed),
+            [item[1] for item in stage1],
+        ))
     for deferred_item in deferred:
         _sf, _sym, _tf = deferred_item[:3]
         report["part1_never_tested"]["skipped"].append(
@@ -507,7 +509,10 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
             continue
         payload = {"host_symbol": symbol, "host_timeframe": tf,
                    "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
-                   "enqueued_at_utc": NOW}
+                   "enqueued_at_utc": NOW,
+                   "q02_fanout_policy": farmctl.Q02_CANARY_FANOUT_POLICY,
+                   "q02_fanout_canary": bool(deferred),
+                   "q02_fanout_canary_index": 1 if deferred else None}
         payload.update(payload_extra)
         # Keep this legacy sweep aligned with every other Q02 creator. Basket
         # rows are especially easy to strand because their logical symbol does
@@ -865,8 +870,14 @@ for phase in STRANDED_INFRA_PHASES:
             report["part2_stranded"]["rate_limited"] = True
             break
 
-# ---------- Part 3: promote deferred symbols (gate-acceleration #2) ----------
-report["part3_deferred_promotion"] = {"promoted": [], "kept_deferred": 0}
+# ---------- Part 3: promote deferred symbols after the MNT-038 canary ----------
+report["part3_deferred_promotion"] = {
+    "policy": farmctl.Q02_CANARY_FANOUT_POLICY,
+    "promoted": [],
+    "stopped": [],
+    "waiting": [],
+    "kept_deferred": 0,
+}
 deferred_file = farmctl.Q02_DEFERRED_SYMBOLS_FILE
 try:
     deferred_state = (json.loads(deferred_file.read_text(encoding="utf-8"))
@@ -877,42 +888,132 @@ deferred_state_present = bool(deferred_state)
 if deferred_state:
     pending_q = cur.execute(
         "SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
-    spare_capacity = pending_q < QUEUE_CEILING * 0.5
     for ea_id in sorted(deferred_state):
         if TARGET_EAS and ea_id not in TARGET_EAS:
             continue
         entry = deferred_state[ea_id]
-        has_pass = cur.execute(
-            "SELECT 1 FROM work_items WHERE ea_id=? AND phase='Q02' "
-            "AND status='done' AND verdict='PASS' LIMIT 1", (ea_id,)).fetchone()
-        if not (has_pass or spare_capacity):
-            report["part3_deferred_promotion"]["kept_deferred"] += len(entry["setfiles"])
+        deferred_setfiles = list(entry.get("setfiles") or [])
+        if entry.get("fanout_state") == "STOPPED":
+            report["part3_deferred_promotion"]["stopped"].append({
+                "ea_id": ea_id,
+                "reason": (entry.get("fanout_stop") or {}).get("reason")
+                or "previous_canary_stop",
+                "deferred_setfiles": len(deferred_setfiles),
+            })
+            report["part3_deferred_promotion"]["kept_deferred"] += len(
+                deferred_setfiles
+            )
             continue
         if farmctl.is_q02_requeue_excluded(ea_id, REQUEUE_EXCLUDED_EAS):
             report["part3_deferred_promotion"].setdefault("skipped", []).append(
                 {"ea_id": ea_id, "reason": "requeue_excluded_q02",
-                 "deferred_setfiles": len(entry["setfiles"])})
+                 "deferred_setfiles": len(deferred_setfiles)})
+            report["part3_deferred_promotion"]["kept_deferred"] += len(
+                deferred_setfiles
+            )
             continue
-        for sf in entry["setfiles"]:
+
+        all_rows = cur.execute(
+            "SELECT * FROM work_items WHERE ea_id=? AND phase IN ('Q02','P2') "
+            "ORDER BY updated_at,id",
+            (ea_id,),
+        ).fetchall()
+        build_task_id = str(entry.get("build_task_id") or "").strip()
+        if build_task_id:
+            build_rows = []
+            for row in all_rows:
+                try:
+                    row_payload = json.loads(row["payload_json"] or "{}")
+                except (TypeError, json.JSONDecodeError):
+                    continue
+                if str(row_payload.get("build_task_id") or "").strip() == build_task_id:
+                    build_rows.append(row)
+            all_rows = build_rows
+
+        canary_symbols = [
+            str(symbol) for symbol in entry.get("canary_symbols") or [] if str(symbol)
+        ]
+        if not canary_symbols:
+            deferred_symbols = {
+                str(item.get("symbol") or "") for item in deferred_setfiles
+            }
+            canary_symbols = list(dict.fromkeys(
+                str(row["symbol"])
+                for row in all_rows
+                if str(row["symbol"] or "") not in deferred_symbols
+            ))
+        decision = farmctl._q02_canary_fanout_decision(all_rows, canary_symbols)
+        entry["fanout_policy"] = farmctl.Q02_CANARY_FANOUT_POLICY
+        entry["canary_symbols"] = canary_symbols
+        entry["fanout_last_decision"] = decision
+
+        if decision["action"] == "WAIT":
+            entry["fanout_state"] = "AWAITING_CANARY"
+            report["part3_deferred_promotion"]["waiting"].append({
+                "ea_id": ea_id,
+                "reason": decision["reason"],
+                "canary_symbols": canary_symbols,
+                "deferred_setfiles": len(deferred_setfiles),
+            })
+            report["part3_deferred_promotion"]["kept_deferred"] += len(
+                deferred_setfiles
+            )
+            continue
+        if decision["action"] == "STOP":
+            entry["fanout_state"] = "STOPPED"
+            entry["fanout_stopped_at"] = NOW
+            entry["fanout_stop"] = decision
+            report["part3_deferred_promotion"]["stopped"].append({
+                "ea_id": ea_id,
+                "reason": decision["reason"],
+                "canary_symbols": canary_symbols,
+                "deferred_setfiles": len(deferred_setfiles),
+            })
+            report["part3_deferred_promotion"]["kept_deferred"] += len(
+                deferred_setfiles
+            )
+            continue
+        if pending_q >= QUEUE_CEILING:
+            entry["fanout_state"] = "AWAITING_CAPACITY"
+            report["part3_deferred_promotion"]["waiting"].append({
+                "ea_id": ea_id,
+                "reason": "queue_ceiling_reached",
+                "deferred_setfiles": len(deferred_setfiles),
+            })
+            report["part3_deferred_promotion"]["kept_deferred"] += len(
+                deferred_setfiles
+            )
+            continue
+
+        def promote(sf, promotion_reason, *, canary_index=None):
             reason = farmctl._q02_symbol_skip_reason(sf["symbol"], allow_logical_basket=True)
             if reason:
                 report["part3_deferred_promotion"].setdefault("skipped", []).append(
                     {"ea_id": ea_id, "symbol": sf["symbol"],
                      "reason": reason, "setfile": Path(sf["setfile"]).name})
-                continue
+                return False
             if TARGET_SYMBOLS and sf["symbol"] not in TARGET_SYMBOLS:
                 report["part3_deferred_promotion"].setdefault("skipped", []).append(
                     {"ea_id": ea_id, "symbol": sf["symbol"],
                      "reason": "target_symbol_filter"})
-                continue
+                return False
             if not Path(sf["setfile"]).is_file():
-                continue
+                report["part3_deferred_promotion"].setdefault("skipped", []).append(
+                    {"ea_id": ea_id, "symbol": sf["symbol"],
+                     "reason": "setfile_missing", "setfile": sf["setfile"]})
+                return False
             if pending_active_exists(ea_id, sf["symbol"], "Q02"):
-                continue
+                report["part3_deferred_promotion"].setdefault("skipped", []).append(
+                    {"ea_id": ea_id, "symbol": sf["symbol"],
+                     "reason": "existing_pending_active"})
+                return False
             payload = {"host_symbol": sf["symbol"], "host_timeframe": sf.get("tf"),
                        "enqueued_by": "sweep_enqueue.deferred_promotion",
-                       "promotion_reason": "stage1_pass" if has_pass else "spare_capacity",
-                       "enqueued_at_utc": NOW}
+                       "promotion_reason": promotion_reason,
+                       "enqueued_at_utc": NOW,
+                       "q02_fanout_policy": farmctl.Q02_CANARY_FANOUT_POLICY,
+                       "q02_fanout_canary": canary_index is not None,
+                       "q02_fanout_canary_index": canary_index}
             if entry.get("priority_track") is True:
                 payload["priority_track"] = True
             if entry.get("build_task_id"):
@@ -920,12 +1021,62 @@ if deferred_state:
             if entry.get("q02_cohort_size"):
                 payload["q02_cohort_size"] = entry["q02_cohort_size"]
             if not insert_wi("Q02", ea_id, sf["symbol"], sf["setfile"], payload):
-                continue
+                return False
             report["part3_deferred_promotion"]["promoted"].append(
                 {"ea_id": ea_id, "symbol": sf["symbol"],
                  "reason": payload["promotion_reason"]})
+            return True
+
+        if decision["action"] == "CONFIRM":
+            if not deferred_setfiles:
+                entry["fanout_state"] = "STOPPED"
+                entry["fanout_stopped_at"] = NOW
+                entry["fanout_stop"] = {
+                    **decision,
+                    "reason": "null_signal_no_confirmation_host",
+                }
+                continue
+            confirmation = min(
+                deferred_setfiles,
+                key=lambda item: farmctl._q02_canary_symbol_rank(item["symbol"]),
+            )
+            confirmation_index = len(canary_symbols) + 1
+            if promote(
+                confirmation,
+                "null_signal_confirmation",
+                canary_index=confirmation_index,
+            ):
+                pending_q += 1
+                if APPLY:
+                    entry["setfiles"] = [
+                        item for item in deferred_setfiles if item is not confirmation
+                    ]
+                    entry["canary_symbols"] = list(dict.fromkeys(
+                        canary_symbols + [str(confirmation["symbol"])]
+                    ))
+                    entry["fanout_state"] = "AWAITING_CONFIRMATION"
+                report["part3_deferred_promotion"]["kept_deferred"] += max(
+                    0, len(deferred_setfiles) - 1
+                )
+            else:
+                report["part3_deferred_promotion"]["kept_deferred"] += len(
+                    deferred_setfiles
+                )
+            continue
+
+        remaining = []
+        for sf in deferred_setfiles:
+            if promote(sf, decision["reason"]):
+                pending_q += 1
+            else:
+                remaining.append(sf)
+        report["part3_deferred_promotion"]["kept_deferred"] += len(remaining)
         if APPLY:
-            deferred_state.pop(ea_id, None)
+            if remaining:
+                entry["setfiles"] = remaining
+                entry["fanout_state"] = "RELEASE_PARTIAL"
+            else:
+                deferred_state.pop(ea_id, None)
 if APPLY:
     # Factory_OFF writes the flag before stopping this task and waits for the
     # global mutation lock.  If the flag arrived during the read/plan phase,
@@ -944,13 +1095,21 @@ if APPLY:
     if deferred_state_present:
         deferred_file.write_text(json.dumps(deferred_state, indent=1),
                                  encoding="utf-8")
-    for ea_id, deferred, source, priority_track, cohort_size in deferred_records:
+    for (
+        ea_id,
+        deferred,
+        source,
+        priority_track,
+        cohort_size,
+        canary_symbols,
+    ) in deferred_records:
         farmctl._record_q02_deferral(
             ea_id,
             deferred,
             source,
             priority_track=priority_track,
             cohort_size=cohort_size,
+            canary_symbols=canary_symbols,
         )
 EVIDENCE.write_text(json.dumps(report, indent=1), encoding="utf-8")
 
