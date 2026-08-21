@@ -18,7 +18,7 @@ from tools.strategy_farm.portfolio.build_book_ftmo import (
     _bootstrap,
     _cost_coverage,
     load_fund_scores,
-    select_one_per_symbol,
+    select_under_aggregate_control,
 )
 
 
@@ -100,18 +100,81 @@ def test_fund_score_formula_is_recomputed(tmp_path: Path) -> None:
         load_fund_scores(scores)
 
 
-def test_ftmo_selection_enforces_score_and_one_ea_per_symbol() -> None:
+def test_ftmo_aggregate_control_admits_two_low_corr_eas_on_same_symbol() -> None:
+    # Ratified FTMO policy (OWNER 2026-08-21): multiple EAs on the same symbol are
+    # allowed; concentration is controlled at the aggregate (correlation) level. Two
+    # LOW-correlation EURUSD sleeves must BOTH be admitted — the old per-symbol cap
+    # would have dropped the lower-scoring one as ONE_EA_PER_SYMBOL_LOWER_SCORE.
     roster = [(1, "EURUSD.DWX"), (2, "EURUSD.DWX"), (3, "USDJPY.DWX")]
     scores = {
         roster[0]: {"status": "SCORED", "fund_score": 1.2},
         roster[1]: {"status": "SCORED", "fund_score": 1.4},
         roster[2]: {"status": "SCORED", "fund_score": 0.9},
     }
-    selected, rows = select_one_per_symbol(roster, scores)
-    assert selected == [(2, "EURUSD.DWX")]
+    correlation = {frozenset({(1, "EURUSD.DWX"), (2, "EURUSD.DWX")}): 0.05}
+    selected, rows, control = select_under_aggregate_control(
+        roster, scores, correlation, max_pairwise_correlation=0.50,
+    )
+    assert selected == [(1, "EURUSD.DWX"), (2, "EURUSD.DWX")]
     reasons = {(row["ea_id"], row["symbol"]): row["reason"] for row in rows}
-    assert reasons[(1, "EURUSD.DWX")] == "ONE_EA_PER_SYMBOL_LOWER_SCORE"
+    assert reasons[(1, "EURUSD.DWX")] == "ADMITTED_AGGREGATE_CONTROL"
+    assert reasons[(2, "EURUSD.DWX")] == "ADMITTED_AGGREGATE_CONTROL"
     assert reasons[(3, "USDJPY.DWX")] == "FUND_SCORE_BELOW_1"
+    assert control["max_admitted_pairwise_correlation"] == 0.05
+
+
+def test_ftmo_aggregate_control_excludes_high_corr_ea_with_explicit_reason() -> None:
+    # Two EURUSD sleeves that are highly correlated: the lower-scoring one is rejected
+    # with an explicit CLUSTER_CORRELATION_EXCLUDED reason, never dropped silently.
+    roster = [(1, "EURUSD.DWX"), (2, "EURUSD.DWX")]
+    scores = {
+        roster[0]: {"status": "SCORED", "fund_score": 1.2},
+        roster[1]: {"status": "SCORED", "fund_score": 1.4},
+    }
+    correlation = {frozenset({(1, "EURUSD.DWX"), (2, "EURUSD.DWX")}): 0.92}
+    selected, rows, control = select_under_aggregate_control(
+        roster, scores, correlation, max_pairwise_correlation=0.50,
+    )
+    assert selected == [(2, "EURUSD.DWX")]  # highest score admitted first
+    excluded = {(row["ea_id"], row["symbol"]): row for row in rows if not row["eligible"]}
+    assert excluded[(1, "EURUSD.DWX")]["reason"] == "CLUSTER_CORRELATION_EXCLUDED"
+    assert excluded[(1, "EURUSD.DWX")]["aggregate_control"]["correlation"] == 0.92
+    assert control["excluded"][0]["reason"] == "CLUSTER_CORRELATION_EXCLUDED"
+
+
+def test_ftmo_aggregate_control_fails_closed_on_missing_correlation() -> None:
+    # Without a correlation datum for the pair, the second sleeve cannot be certified
+    # decorrelated and is rejected fail-closed with an explicit reason.
+    roster = [(1, "EURUSD.DWX"), (2, "EURUSD.DWX")]
+    scores = {
+        roster[0]: {"status": "SCORED", "fund_score": 1.4},
+        roster[1]: {"status": "SCORED", "fund_score": 1.2},
+    }
+    selected, rows, _control = select_under_aggregate_control(roster, scores, {})
+    assert selected == [(1, "EURUSD.DWX")]
+    reasons = {(row["ea_id"], row["symbol"]): row["reason"] for row in rows}
+    assert reasons[(2, "EURUSD.DWX")] == "CLUSTER_CORRELATION_UNVERIFIED"
+
+
+def test_ftmo_aggregate_control_enforces_account_weight_budget() -> None:
+    roster = [(1, "EURUSD.DWX"), (2, "USDJPY.DWX"), (3, "GBPUSD.DWX")]
+    scores = {
+        roster[0]: {"status": "SCORED", "fund_score": 1.4},
+        roster[1]: {"status": "SCORED", "fund_score": 1.3},
+        roster[2]: {"status": "SCORED", "fund_score": 1.2},
+    }
+    # Distinct symbols, all decorrelated, but the account budget only funds two sleeves.
+    correlation = {
+        frozenset({(1, "EURUSD.DWX"), (2, "USDJPY.DWX")}): 0.0,
+        frozenset({(1, "EURUSD.DWX"), (3, "GBPUSD.DWX")}): 0.0,
+        frozenset({(2, "USDJPY.DWX"), (3, "GBPUSD.DWX")}): 0.0,
+    }
+    selected, rows, _control = select_under_aggregate_control(
+        roster, scores, correlation, account_weight_budget=2.0,
+    )
+    assert selected == [(1, "EURUSD.DWX"), (2, "USDJPY.DWX")]
+    reasons = {(row["ea_id"], row["symbol"]): row["reason"] for row in rows}
+    assert reasons[(3, "GBPUSD.DWX")] == "RISK_BUDGET_EXHAUSTED"
 
 
 def test_ftmo_cost_snapshot_is_hash_bound_and_reports_coverage(tmp_path: Path) -> None:

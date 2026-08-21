@@ -44,6 +44,24 @@ M1_BOOTSTRAP_LINEAGE_COMMIT = "ae5331f67"
 FUND_SCORE_FLOOR = 1.0
 P1_LOWER_BOUND_FLOOR = 0.80
 
+# --- Aggregate concentration control (FTMO lane) -------------------------------
+# Ratified design (Vault '03 Pipeline/Q11 Portfolio Construction', FTMO lane, OWNER
+# 2026-08-21): the FTMO book MAY run multiple EAs/strategies on the same symbol. Risk
+# is controlled at the AGGREGATE level — pairwise correlation/cluster control plus an
+# account-wide risk budget — NOT via a per-symbol cap.
+#
+# WORKING DEFAULTS — OPEN OWNER ITEMS (not yet ratified as FTMO-lane numbers):
+#   * WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION mirrors book_reoptimizer's greedy
+#     pairwise-correlation selection constraint (<=0.50, OWNER 2026-07-15). DL-083
+#     sets the Q09 marginal-eval reject at 0.40. Neither is pinned to the FTMO book.
+#   * WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET caps the sum of admitted unit weights
+#     (each admitted sleeve carries weight 1.0). No ratified FTMO account-wide unit
+#     count exists; 10.0 is a non-binding working ceiling pending OWNER ratification.
+# Both are overridable via CLI and must be ratified before any book is constructed.
+WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION = 0.50
+WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET = 10.0
+SLEEVE_UNIT_WEIGHT = 1.0
+
 
 def _score_key(value: Any) -> tuple[int, str] | None:
     text = str(value or "").strip().upper()
@@ -92,40 +110,189 @@ def load_fund_scores(path: Path) -> tuple[dict[tuple[int, str], dict[str, Any]],
     return result, {"input": file_binding(path), "formula": "med60/max(2,2*abs(wDay),wDD_p90)"}
 
 
-def select_one_per_symbol(
-    roster: list[tuple[int, str]], scores: Mapping[tuple[int, str], Mapping[str, Any]]
-) -> tuple[list[tuple[int, str]], list[dict[str, Any]]]:
+def load_correlation(
+    path: Path | None,
+) -> tuple[dict[frozenset[tuple[int, str]], float], dict[str, Any]]:
+    """Load the Q11 pairwise daily-PnL correlation artifact (or none).
+
+    Reuses the artifact emitted by ``portfolio_correlation.py`` — keys are
+    ``"ea_id:symbol"`` labels and ``correlation`` is a symmetric matrix aligned to
+    ``keys``. Returns a symmetric ``{frozenset({key_a, key_b}): value}`` lookup and a
+    provenance record. Missing/insufficient-overlap pairs are simply absent from the
+    lookup (treated fail-closed as UNVERIFIED by the selector).
+    """
+    if path is None:
+        return {}, {"status": "MISSING", "note": "no correlation artifact supplied"}
+    payload = load_json(path)
+    if not isinstance(payload, Mapping):
+        raise BookBuildError("correlation artifact must be an object")
+    labels = payload.get("keys")
+    matrix = payload.get("correlation")
+    if not isinstance(labels, list) or not isinstance(matrix, list):
+        raise BookBuildError("correlation artifact lacks keys/correlation")
+    parsed: list[tuple[int, str] | None] = []
+    for label in labels:
+        key = _score_key(label)
+        parsed.append(key)
+    lookup: dict[frozenset[tuple[int, str]], float] = {}
+    for i, key_i in enumerate(parsed):
+        if key_i is None:
+            continue
+        row = matrix[i] if i < len(matrix) else None
+        if not isinstance(row, list):
+            continue
+        for j, key_j in enumerate(parsed):
+            if j <= i or key_j is None or key_i == key_j:
+                continue
+            if j >= len(row):
+                continue
+            value = row[j]
+            if value is None:
+                continue
+            try:
+                lookup[frozenset({key_i, key_j})] = float(value)
+            except (TypeError, ValueError):
+                continue
+    return lookup, {
+        "status": "LOADED",
+        "input": file_binding(path),
+        "n_series": len(labels),
+        "n_pairs_with_correlation": len(lookup),
+    }
+
+
+def _pair_correlation(
+    correlation: Mapping[frozenset[tuple[int, str]], float],
+    a: tuple[int, str],
+    b: tuple[int, str],
+) -> float | None:
+    return correlation.get(frozenset({a, b}))
+
+
+def select_under_aggregate_control(
+    roster: list[tuple[int, str]],
+    scores: Mapping[tuple[int, str], Mapping[str, Any]],
+    correlation: Mapping[frozenset[tuple[int, str]], float],
+    *,
+    max_pairwise_correlation: float = WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION,
+    account_weight_budget: float = WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET,
+    unit_weight: float = SLEEVE_UNIT_WEIGHT,
+) -> tuple[list[tuple[int, str]], list[dict[str, Any]], dict[str, Any]]:
+    """Admit sleeves under the ratified aggregate control (FTMO lane).
+
+    Multiple EAs on the same symbol are permitted. Fund-score-eligible candidates are
+    considered in deterministic order (fund_score desc, then ea_id asc) and admitted
+    greedily subject to two aggregate controls:
+      (a) pairwise correlation/cluster: reject any candidate whose return-stream
+          correlation with an already-admitted sleeve exceeds ``max_pairwise_correlation``
+          (``CLUSTER_CORRELATION_EXCLUDED``); a candidate whose correlation to an admitted
+          sleeve is unknown is rejected fail-closed (``CLUSTER_CORRELATION_UNVERIFIED``);
+      (b) account-wide risk budget: reject once the sum of admitted unit weights would
+          exceed ``account_weight_budget`` (``RISK_BUDGET_EXHAUSTED``).
+    Every candidate carries an explicit accept/reject reason — nothing is dropped silently.
+    """
     assessments: list[dict[str, Any]] = []
     eligible: list[tuple[tuple[int, str], float]] = []
     for key in sorted(roster):
         row = scores.get(key)
         score = None
         reason = "FUND_SCORE_MISSING"
+        fund_eligible = False
         if row is not None and row.get("status") == "SCORED":
             score = float(row["fund_score"])
-            reason = "FUND_SCORE_PASS" if score >= FUND_SCORE_FLOOR else "FUND_SCORE_BELOW_1"
             if score >= FUND_SCORE_FLOOR:
+                reason = "FUND_SCORE_PASS"
+                fund_eligible = True
                 eligible.append((key, score))
+            else:
+                reason = "FUND_SCORE_BELOW_1"
         elif row is not None:
             reason = f"FUND_SCORE_{str(row.get('status', 'UNSCORABLE')).upper()}"
         assessments.append({
             "ea_id": key[0], "symbol": key[1], "fund_score": score,
-            "eligible": score is not None and score >= FUND_SCORE_FLOOR,
-            "reason": reason,
+            "eligible": fund_eligible, "reason": reason,
         })
-    best: dict[str, tuple[tuple[int, str], float]] = {}
-    for key, score in eligible:
-        previous = best.get(key[1])
-        if previous is None or (-score, key[0]) < (-previous[1], previous[0][0]):
-            best[key[1]] = (key, score)
-    selected = sorted(item[0] for item in best.values())
-    selected_set = set(selected)
+
+    # Deterministic greedy admission: highest fund_score first, ea_id as tie-break.
+    ordered = sorted(eligible, key=lambda item: (-item[1], item[0][0]))
+    admitted: list[tuple[int, str]] = []
+    admitted_weight = 0.0
+    decisions: dict[tuple[int, str], tuple[bool, str, dict[str, Any]]] = {}
+    for key, _score in ordered:
+        if admitted_weight + unit_weight > account_weight_budget + 1e-9:
+            decisions[key] = (False, "RISK_BUDGET_EXHAUSTED", {
+                "admitted_weight": admitted_weight,
+                "unit_weight": unit_weight,
+                "account_weight_budget": account_weight_budget,
+            })
+            continue
+        worst: tuple[float, tuple[int, str]] | None = None
+        unverified_peer: tuple[int, str] | None = None
+        for peer in admitted:
+            corr = _pair_correlation(correlation, key, peer)
+            if corr is None:
+                unverified_peer = peer
+                break
+            if worst is None or corr > worst[0]:
+                worst = (corr, peer)
+        if unverified_peer is not None:
+            decisions[key] = (False, "CLUSTER_CORRELATION_UNVERIFIED", {
+                "peer": f"{unverified_peer[0]}:{unverified_peer[1]}",
+            })
+            continue
+        if worst is not None and worst[0] > max_pairwise_correlation:
+            decisions[key] = (False, "CLUSTER_CORRELATION_EXCLUDED", {
+                "peer": f"{worst[1][0]}:{worst[1][1]}",
+                "correlation": worst[0],
+                "threshold": max_pairwise_correlation,
+            })
+            continue
+        admitted.append(key)
+        admitted_weight += unit_weight
+        decisions[key] = (True, "ADMITTED_AGGREGATE_CONTROL", {
+            "max_peer_correlation": (worst[0] if worst is not None else None),
+        })
+
     for row in assessments:
         key = (int(row["ea_id"]), str(row["symbol"]))
-        if row["eligible"] and key not in selected_set:
-            row["eligible"] = False
-            row["reason"] = "ONE_EA_PER_SYMBOL_LOWER_SCORE"
-    return selected, assessments
+        decision = decisions.get(key)
+        if decision is None:
+            continue
+        admitted_flag, reason, detail = decision
+        row["eligible"] = admitted_flag
+        row["reason"] = reason
+        row["aggregate_control"] = detail
+
+    selected = sorted(admitted)
+    admitted_pairs: list[dict[str, Any]] = []
+    max_admitted = None
+    for i in range(len(selected)):
+        for j in range(i + 1, len(selected)):
+            corr = _pair_correlation(correlation, selected[i], selected[j])
+            admitted_pairs.append({
+                "a": f"{selected[i][0]}:{selected[i][1]}",
+                "b": f"{selected[j][0]}:{selected[j][1]}",
+                "correlation": corr,
+            })
+            if corr is not None and (max_admitted is None or corr > max_admitted):
+                max_admitted = corr
+    control_summary = {
+        "policy": "AGGREGATE_CORRELATION_CLUSTER_AND_ACCOUNT_RISK_BUDGET",
+        "max_pairwise_correlation": max_pairwise_correlation,
+        "max_pairwise_correlation_status": "WORKING_DEFAULT_OPEN_OWNER_ITEM",
+        "account_weight_budget": account_weight_budget,
+        "account_weight_budget_status": "WORKING_DEFAULT_OPEN_OWNER_ITEM",
+        "unit_weight": unit_weight,
+        "admitted_weight": admitted_weight,
+        "admitted_pairs": admitted_pairs,
+        "max_admitted_pairwise_correlation": max_admitted,
+        "excluded": [
+            {"ea_id": key[0], "symbol": key[1], "reason": reason, **detail}
+            for key, (admitted_flag, reason, detail) in sorted(decisions.items())
+            if not admitted_flag
+        ],
+    }
+    return selected, assessments, control_summary
 
 
 def _cost_coverage(
@@ -252,13 +419,22 @@ def build_ftmo_manifest(
     cost_snapshot_path: Path,
     bootstrap_result_path: Path | None,
     as_of: str,
+    correlation_path: Path | None = None,
     min_sleeves: int = 3,
     min_active_days_per_60d: float = 4.0,
+    max_pairwise_correlation: float = WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION,
+    account_weight_budget: float = WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET,
     required_cost_sha256: str = EXPECTED_COST_SNAPSHOT_SHA256,
 ) -> dict[str, Any]:
     roster, roster_provenance = resolve_roster(roster_path)
     scores, score_provenance = load_fund_scores(fund_scores_path)
-    selected, assessments = select_one_per_symbol(roster, scores)
+    correlation, correlation_provenance = load_correlation(correlation_path)
+    selected, assessments, aggregate_control = select_under_aggregate_control(
+        roster, scores, correlation,
+        max_pairwise_correlation=max_pairwise_correlation,
+        account_weight_budget=account_weight_budget,
+    )
+    aggregate_control["correlation_provenance"] = correlation_provenance
     cost, cost_pass, _ = _cost_coverage(
         cost_snapshot_path, selected, required_sha256=required_cost_sha256
     )
@@ -284,9 +460,14 @@ def build_ftmo_manifest(
         cost_snapshot_sha256=cost["input"]["sha256"],
     )
     fund_pass = bool(selected) and all(row["fund_score"] >= FUND_SCORE_FLOOR for row in bindings)
+    admitted_pair_corrs = [p["correlation"] for p in aggregate_control["admitted_pairs"]]
+    aggregate_control_pass = bool(selected) and all(
+        c is not None and c <= max_pairwise_correlation for c in admitted_pair_corrs
+    ) and aggregate_control["admitted_weight"] <= account_weight_budget + 1e-9
+    aggregate_control["passed"] = aggregate_control_pass
     checks = {
         "fund_score_each_at_least_1": fund_pass,
-        "one_ea_per_symbol": len({row["symbol"] for row in bindings}) == len(bindings),
+        "aggregate_correlation_and_risk_budget_control": aggregate_control_pass,
         "density": density["passed"],
         "cost_and_swap_snapshot_coverage": cost_pass,
         "bootstrap_lower_bound_at_least_0p80": bootstrap["passed"],
@@ -314,7 +495,11 @@ def build_ftmo_manifest(
             "provenance": score_provenance,
             "assessments": assessments,
         },
-        "symbol_policy": "ONE_EA_PER_SYMBOL_HIGHEST_FUND_SCORE_DETERMINISTIC_TIE_EA_ID",
+        "symbol_policy": (
+            "MULTIPLE_EAS_PER_SYMBOL_ALLOWED__AGGREGATE_CONTROL_"
+            "PAIRWISE_CORRELATION_CLUSTER_AND_ACCOUNT_RISK_BUDGET"
+        ),
+        "aggregate_control": aggregate_control,
         "density": density,
         "ftmo_cost_swap": cost,
         "phase1_bootstrap": bootstrap,
@@ -353,6 +538,11 @@ def parser() -> argparse.ArgumentParser:
     ap.add_argument("--fund-scores", type=Path, default=DEFAULT_FUND_SCORES)
     ap.add_argument("--cost-snapshot", type=Path, default=DEFAULT_COST_SNAPSHOT)
     ap.add_argument("--bootstrap-result", type=Path)
+    ap.add_argument("--correlation", type=Path, help="Q11 pairwise daily-PnL correlation artifact (portfolio_correlation.py output).")
+    ap.add_argument("--max-pairwise-correlation", type=float, default=WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION,
+                    help="WORKING DEFAULT (OPEN OWNER ITEM) — aggregate cluster-correlation reject threshold.")
+    ap.add_argument("--account-weight-budget", type=float, default=WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET,
+                    help="WORKING DEFAULT (OPEN OWNER ITEM) — account-wide sum-of-unit-weights budget.")
     ap.add_argument("--min-sleeves", type=int, default=3)
     ap.add_argument("--min-active-days-per-60d", type=float, default=4.0)
     ap.add_argument("--as-of", default="2026-08-12")
@@ -371,8 +561,11 @@ def main(argv: list[str] | None = None) -> int:
             cost_snapshot_path=args.cost_snapshot,
             bootstrap_result_path=args.bootstrap_result,
             as_of=args.as_of,
+            correlation_path=args.correlation,
             min_sleeves=args.min_sleeves,
             min_active_days_per_60d=args.min_active_days_per_60d,
+            max_pairwise_correlation=args.max_pairwise_correlation,
+            account_weight_budget=args.account_weight_budget,
         )
         validate_dual_book_manifest(manifest)
         write_json(manifest_path, manifest)
