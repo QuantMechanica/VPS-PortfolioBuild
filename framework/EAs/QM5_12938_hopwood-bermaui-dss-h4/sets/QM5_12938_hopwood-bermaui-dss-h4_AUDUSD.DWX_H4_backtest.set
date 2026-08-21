@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12938
+; ea_slug:      hopwood-bermaui-dss-h4
+; ea_version:   v5.0
+; set_version:  s20260821-001
+; symbol:       AUDUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   10
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   d18909979d6858173b0f9edad26986eddcdd6593501096ccbb2e3f29b98e2bc5
+; author:       Development
+; date:         2026-08-21
+;==========================================================
+qm_ea_id=12938
+qm_magic_slot_offset=10
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12938_hopwood-bermaui-dss-h4.md
+strategy_dss_stoch_period=8
+strategy_dss_inner_ema=5
+strategy_dss_outer_ema=3
+strategy_bermaui_lookback=20
+strategy_bermaui_k=1.8
+strategy_min_overshoot_mult=2.0
+strategy_d1_ema_period=200
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_atr_tp_mult=1.5
+strategy_max_hold_bars=10
+strategy_cooldown_bars=6
+strategy_be_atr_mult=0.75
+strategy_spread_max_atr_mult=0.3
