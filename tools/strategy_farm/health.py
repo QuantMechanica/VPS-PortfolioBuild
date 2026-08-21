@@ -43,6 +43,10 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm import agent_router
 try:
+    import health_contract
+except ModuleNotFoundError:
+    from tools.strategy_farm import health_contract
+try:
     from factory_mutation_lock import (
         DEFAULT_PATH as FACTORY_MUTATION_LOCK_PATH,
         DEFAULT_STALE_REAP_SECONDS as FACTORY_MUTATION_LOCK_DEAD_FAIL_SECONDS,
@@ -90,6 +94,17 @@ DISK_SCRATCH_RATE_WARN_GB_PER_HOUR = 20.0
 DISK_SCRATCH_RATE_FAIL_GB_PER_HOUR = 80.0
 DISK_RUNWAY_WARN_HOURS = 4.0
 DISK_RUNWAY_FAIL_HOURS = 2.0
+
+# MNT-035: these observer sidecars are folded into the one farm-health
+# contract. Missing/stale observer output is itself a check; it must never be
+# silently interpreted as a clean surface. The task monitor starts at WARN on
+# first deploy because its hourly schedule may not have produced v1 yet.
+EXTERNAL_HEALTH_SURFACES = (
+    ("silent_failure_monitor", Path(r"D:\QM\reports\state\silent_failure_alarms.json"), 25, 45, "FAIL"),
+    ("live_book_pulse", Path(r"D:\QM\reports\state\live_book_pulse.json"), 90, 180, "WARN"),
+    ("ftmo_trial_pulse", Path(r"D:\QM\reports\state\ftmo_trial_pulse.json"), 90, 180, "WARN"),
+    ("task_monitor", Path(r"D:\QM\reports\state\task_monitor_health.json"), 90, 180, "WARN"),
+)
 
 # --- WS-F standing vacuousness audit (ULTRACODE 2026-07-26) ------------------
 # Detectors that authenticate provenance before flagging a gate as vacuous. Every
@@ -3567,6 +3582,84 @@ ALL_CHECKS = [
 ]
 
 
+def _external_health_checks(now: dt.datetime | None = None) -> list[dict]:
+    """Read registered observer sidecars and normalize them to one contract."""
+    observed_at = now or _utc_now()
+    results: list[dict] = []
+    for source, path, warn_minutes, fail_minutes, missing_status in EXTERNAL_HEALTH_SURFACES:
+        if not path.exists():
+            results.append(health_contract.check(
+                f"{source}_surface",
+                missing_status,
+                None,
+                fail_minutes,
+                f"{source} health sidecar missing: {path}",
+                f"Verify the {source} scheduled producer; absence is not a clean result.",
+                source=source,
+                layer="transport",
+                evidence=path,
+            ))
+            continue
+        try:
+            age_minutes = max(0.0, (observed_at.timestamp() - path.stat().st_mtime) / 60.0)
+            payload = json.loads(path.read_text(encoding="utf-8-sig"))
+            if not isinstance(payload, dict):
+                raise TypeError("sidecar root must be an object")
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError) as exc:
+            results.append(health_contract.check(
+                f"{source}_surface",
+                "FAIL",
+                "unreadable",
+                "valid_json_object",
+                f"{source} health sidecar unreadable: {exc!r}",
+                f"Repair the {source} producer/output; do not infer health.",
+                source=source,
+                layer="transport",
+                evidence=path,
+            ))
+            continue
+        stale_status = "FAIL" if age_minutes > fail_minutes else "WARN" if age_minutes > warn_minutes else "OK"
+        results.append(health_contract.check(
+            f"{source}_surface",
+            stale_status,
+            round(age_minutes, 1),
+            warn_minutes,
+            f"{source} sidecar age={age_minutes:.1f}m",
+            "" if stale_status == "OK" else f"Check the {source} scheduled producer.",
+            source=source,
+            layer="transport",
+            evidence=path,
+        ))
+        nested = payload.get("health_contract")
+        surface = nested if isinstance(nested, dict) else payload
+        rows = surface.get("checks")
+        if isinstance(rows, list):
+            for row in rows:
+                if not isinstance(row, dict):
+                    continue
+                normalized = dict(row)
+                normalized.setdefault("source", source)
+                results.append(normalized)
+            continue
+        alarms = surface.get("alarms")
+        if isinstance(alarms, list):
+            for index, alarm in enumerate(alarms):
+                if isinstance(alarm, dict):
+                    results.append(health_contract.check(
+                        str(alarm.get("metric") or f"{source}_alarm_{index + 1}"),
+                        alarm.get("severity") or "FAIL",
+                        alarm.get("value"),
+                        None,
+                        str(alarm.get("detail") or ""),
+                        source=source,
+                    ))
+                elif alarm:
+                    results.append(health_contract.check(
+                        f"{source}_alarm_{index + 1}", "FAIL", detail=str(alarm), source=source
+                    ))
+    return results
+
+
 def run_all() -> dict:
     """Run all health checks. Returns the result dict and writes health.json.
 
@@ -3595,19 +3688,12 @@ def run_all() -> dict:
         if con is not None:
             con.close()
 
-    summary = {"ok": 0, "warn": 0, "fail": 0}
-    for r in results:
-        key = r["status"].lower()
-        if key in summary:
-            summary[key] += 1
-    overall = "FAIL" if summary["fail"] > 0 else ("WARN" if summary["warn"] > 0 else "OK")
-
-    payload = {
-        "checked_at": _utc_now().strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "overall": overall,
-        "summary": summary,
-        "checks": results,
-    }
+    results.extend(_external_health_checks())
+    payload = health_contract.build(
+        "farm_health",
+        results,
+        checked_at=_utc_now().strftime("%Y-%m-%dT%H:%M:%SZ"),
+    )
     HEALTH_FILE.parent.mkdir(parents=True, exist_ok=True)
     HEALTH_FILE.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 

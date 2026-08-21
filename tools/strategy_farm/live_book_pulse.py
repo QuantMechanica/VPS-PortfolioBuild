@@ -21,6 +21,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+try:
+    import health_contract
+except ModuleNotFoundError:
+    from tools.strategy_farm import health_contract
+
 
 DEFAULT_LIVE_ROOT = Path(r"C:\QM\mt5\T_Live")
 DEFAULT_COMMON_BASELINE_DIR = Path(
@@ -29,6 +34,8 @@ DEFAULT_COMMON_BASELINE_DIR = Path(
 DEFAULT_OUTPUT_JSON = Path(r"D:\QM\reports\state\live_book_pulse.json")
 DEFAULT_APPEND_LOG = Path(r"D:\QM\reports\state\live_book_pulse.log")
 DEFAULT_ALARM_LOG = Path(r"D:\QM\strategy_farm\state\health_alarms.log")
+DEFAULT_LIVE_UPTIME_STATE = Path(r"D:\QM\reports\state\live_uptime_watchdog.json")
+DEFAULT_LIVE_MAINTENANCE_FLAG = Path(r"D:\QM\reports\state\LIVE_UPTIME_MAINTENANCE.flag")
 DEFAULT_BOOK_MANIFEST = Path(
     os.environ.get(
         "QM_DXZ_BOOK_MANIFEST",
@@ -1605,7 +1612,74 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
     }
     snapshot["alarms"] = build_alarms(snapshot)
     snapshot["verdict"] = "ALARM" if snapshot["alarms"] else "OK"
+    _attach_health_contract(snapshot)
     return snapshot
+
+
+def _attach_health_contract(snapshot: dict[str, Any]) -> None:
+    """Bind the DXZ pulse to the same explicit intent/severity contract as health."""
+    expected_state = "UNKNOWN"
+    review_expires_utc = None
+    review_expired = False
+    maintenance = DEFAULT_LIVE_MAINTENANCE_FLAG.exists()
+    intent_source = str(DEFAULT_LIVE_UPTIME_STATE)
+    try:
+        runtime_state = json.loads(DEFAULT_LIVE_UPTIME_STATE.read_text(encoding="utf-8-sig"))
+        if not isinstance(runtime_state, dict):
+            raise TypeError("live uptime state root must be an object")
+        expected_state = str(runtime_state.get("expected_dxz_state") or "UNKNOWN")
+        review_expires_utc = runtime_state.get("expected_state_review_expires_utc")
+        review_expired = runtime_state.get("expected_state_review_expired") is True
+        maintenance = maintenance or runtime_state.get("maintenance") is True
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError):
+        pass
+    terminal_roots = (snapshot.get("read_only_contract") or {}).get("terminal_roots") or []
+    op_intent, intent_check = health_contract.assess_runtime_intent(
+        "dxz_live_book",
+        expected_state=expected_state,
+        running=bool(terminal_roots),
+        maintenance=maintenance,
+        probe_ok=True,
+        review_expired=review_expired,
+        review_expires_utc=review_expires_utc,
+        source="live_book_pulse",
+    )
+    checks: list[dict[str, Any]] = [intent_check]
+    alarms = snapshot.get("alarms") or []
+    for index, alarm in enumerate(alarms):
+        if not isinstance(alarm, dict):
+            checks.append(health_contract.check(
+                f"live_book_alarm_{index + 1}", "FAIL", detail=str(alarm), source="live_book_pulse"
+            ))
+            continue
+        checks.append(health_contract.check(
+            str(alarm.get("metric") or f"live_book_alarm_{index + 1}"),
+            alarm.get("severity") or "FAIL",
+            alarm.get("value"),
+            None,
+            str(alarm.get("detail") or ""),
+            source="live_book_pulse",
+            operating_intent=op_intent,
+        ))
+    if not alarms:
+        checks.append(health_contract.check(
+            "live_book_observations",
+            "OK",
+            0,
+            0,
+            "no live-book observation alarms",
+            source="live_book_pulse",
+            operating_intent=op_intent,
+        ))
+    snapshot["expected_state"] = op_intent["expected_state"]
+    snapshot["effective_state"] = op_intent["effective_state"]
+    snapshot["expected_state_condition"] = op_intent["condition"]
+    snapshot["health_contract"] = health_contract.build(
+        "live_book_pulse",
+        checks,
+        checked_at=snapshot.get("generated_at_utc"),
+        operating_intent={**op_intent, "source": intent_source},
+    )
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:

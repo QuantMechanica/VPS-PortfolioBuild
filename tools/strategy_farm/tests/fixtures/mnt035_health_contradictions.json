@@ -1,0 +1,62 @@
+[
+  {
+    "name": "parked_absent_is_healthy",
+    "expected_state": "PARKED",
+    "running": false,
+    "maintenance": false,
+    "probe_ok": true,
+    "review_expired": false,
+    "expected_status": "OK",
+    "expected_condition": "parked"
+  },
+  {
+    "name": "parked_running_is_not_green",
+    "expected_state": "PARKED",
+    "running": true,
+    "maintenance": false,
+    "probe_ok": true,
+    "review_expired": false,
+    "expected_status": "FAIL",
+    "expected_condition": "unexpected_running"
+  },
+  {
+    "name": "maintenance_absence_is_visible_not_failure",
+    "expected_state": "RUNNING",
+    "running": false,
+    "maintenance": true,
+    "probe_ok": true,
+    "review_expired": false,
+    "expected_status": "WARN",
+    "expected_condition": "maintenance"
+  },
+  {
+    "name": "unknown_probe_never_becomes_clean",
+    "expected_state": "RUNNING",
+    "running": null,
+    "maintenance": false,
+    "probe_ok": false,
+    "review_expired": false,
+    "expected_status": "FAIL",
+    "expected_condition": "probe_unknown"
+  },
+  {
+    "name": "expired_intent_outranks_running_process",
+    "expected_state": "RUNNING",
+    "running": true,
+    "maintenance": false,
+    "probe_ok": true,
+    "review_expired": true,
+    "expected_status": "FAIL",
+    "expected_condition": "intent_review_expired"
+  },
+  {
+    "name": "invalid_intent_never_defaults_to_maintenance_green",
+    "expected_state": "UNKNOWN",
+    "running": false,
+    "maintenance": false,
+    "probe_ok": true,
+    "review_expired": false,
+    "expected_status": "FAIL",
+    "expected_condition": "intent_invalid"
+  }
+]

@@ -25,6 +25,11 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    import health_contract
+except ModuleNotFoundError:
+    from tools.strategy_farm import health_contract
+
 DATA_DIR = Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\81A933A9AFC5DE3C23B15CAB19C63850")
 QM_DIR = DATA_DIR / "MQL5" / "Files" / "QM"
 STATE_JSON = Path(r"D:\QM\reports\state\ftmo_trial_pulse.json")
@@ -414,6 +419,39 @@ def assess_loss_limits(equity: float, day_pnl: float) -> tuple[float, float, lis
 
 def publish_pulse(out: dict) -> int:
     """Write only this observer's state/log artifacts; never touch MT5."""
+    op_intent = health_contract.intent(
+        out.get("expected_state"),
+        effective_state=out.get("effective_state"),
+        reason="LIVE_UPTIME_MAINTENANCE.flag" if out.get("effective_state") == "MAINTENANCE" else "baked_owner_contract",
+        review_expires_utc=out.get("expected_state_review_expires_utc"),
+        review_expired=out.get("expected_state_review_expired") is True,
+        source="ftmo_trial_pulse",
+    )
+    op_intent["condition"] = out.get("expected_state_condition")
+    status = health_contract.normalize_status(out.get("verdict"))
+    if out.get("effective_state") == "MAINTENANCE" and status == health_contract.OK:
+        status = health_contract.WARN
+    detail_parts = [
+        f"condition={out.get('expected_state_condition')}",
+        *[str(value) for value in (out.get("alarms") or [])],
+        *[str(value) for value in (out.get("warns") or [])],
+    ]
+    out["health_contract"] = health_contract.build(
+        "ftmo_trial_pulse",
+        [health_contract.check(
+            "ftmo_trial_pulse",
+            status,
+            value=out.get("terminal_up"),
+            threshold=out.get("expected_state"),
+            detail="; ".join(detail_parts),
+            action_hint="Inspect the FTMO pulse evidence; never toggle AutoTrading from a monitor.",
+            source="ftmo_trial_pulse",
+            operating_intent=op_intent,
+            evidence=STATE_JSON,
+        )],
+        checked_at=out.get("checked_at_utc"),
+        operating_intent=op_intent,
+    )
     STATE_JSON.parent.mkdir(parents=True, exist_ok=True)
     STATE_JSON.write_text(json.dumps(out, indent=1), encoding="utf-8")
     with STATE_LOG.open("a", encoding="utf-8") as fh:

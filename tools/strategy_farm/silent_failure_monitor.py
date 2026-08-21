@@ -62,6 +62,11 @@ import time
 import traceback
 from pathlib import Path
 
+try:
+    import health_contract
+except ModuleNotFoundError:
+    from tools.strategy_farm import health_contract
+
 # ─────────────────────────────────────────────────────────────────────────────
 #  CONFIG — every threshold, in one place
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1066,27 +1071,17 @@ def apply_incidents(prev_state: dict, findings: list[dict], now_iso: str) -> tup
 #  Sidecar (health-shaped) + state + log writers
 # ─────────────────────────────────────────────────────────────────────────────
 def _summarize(findings: list[dict]) -> tuple[str, dict]:
-    n_fail = sum(1 for f in findings if f["status"] == FAIL)
-    n_warn = sum(1 for f in findings if f["status"] == WARN)
-    n_ok = sum(1 for f in findings if f["status"] == OK)
-    overall = FAIL if n_fail else WARN if n_warn else OK
-    return overall, {"fail": n_fail, "warn": n_warn, "ok": n_ok}
+    payload = health_contract.build("silent_failure_monitor", findings)
+    return payload["overall"], payload["summary"]
 
 
 def _write_sidecar(findings: list[dict], now_iso: str, runtime_sec: float) -> None:
-    # Only non-OK checks go into the durable health sidecar.
-    non_ok = [f for f in findings if f["status"] in (WARN, FAIL)]
-    overall, _summary_all = _summarize(findings)
-    n_fail = sum(1 for f in non_ok if f["status"] == FAIL)
-    n_warn = sum(1 for f in non_ok if f["status"] == WARN)
-    payload = {
-        "source": "silent_failure_monitor",
-        "checked_at": now_iso,
-        "overall": overall,
-        "summary": {"fail": n_fail, "warn": n_warn, "ok": sum(1 for f in findings if f["status"] == OK)},
-        "runtime_sec": round(runtime_sec, 2),
-        "checks": non_ok,
-    }
+    payload = health_contract.build(
+        "silent_failure_monitor",
+        findings,
+        checked_at=now_iso,
+    )
+    payload["runtime_sec"] = round(runtime_sec, 2)
     ALARM_SIDECAR.parent.mkdir(parents=True, exist_ok=True)
     ALARM_SIDECAR.write_text(json.dumps(payload, indent=2, sort_keys=False), encoding="utf-8")
 
@@ -1169,14 +1164,10 @@ def merge_into_health(health: dict) -> dict:
                 "value": None, "threshold": None, "evidence": str(ALARM_SIDECAR),
             })
 
-    checks.extend(injected)
-
-    # Recompute summary + overall so every health consumer sees the new FAILs.
-    n_fail = sum(1 for c in checks if c.get("status") == FAIL)
-    n_warn = sum(1 for c in checks if c.get("status") == WARN)
-    n_ok = sum(1 for c in checks if c.get("status") == OK)
-    health["summary"] = {"fail": n_fail, "warn": n_warn, "ok": n_ok}
-    health["overall"] = FAIL if n_fail else WARN if n_warn else health.get("overall", OK)
+    surface = health_contract.build("silent_failure_monitor", injected)
+    merged = health_contract.merge(health, surface)
+    health.clear()
+    health.update(merged)
     return health
 
 

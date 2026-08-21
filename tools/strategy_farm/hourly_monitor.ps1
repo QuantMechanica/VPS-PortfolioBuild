@@ -114,6 +114,53 @@ try {
     }
 } catch { $escalations += "watchdog_stale_check_error:$_" }
 
+# MNT-035: publish the task monitor through the same machine-readable contract
+# as farm health and live pulses.  This is observation evidence only; it does
+# not broaden the reversible repair scope above.
+$taskChecks = @()
+foreach ($action in $actions) {
+    $taskChecks += [ordered]@{
+        name = 'task_state_drift_repaired'; status = 'WARN'; value = $action; threshold = 'no_drift'
+        detail = "reversible scheduled-task drift repaired: $action"; action_hint = 'Verify the manifest intent.'
+        source = 'task_monitor'; layer = 'observation'
+    }
+}
+foreach ($escalation in $escalations) {
+    $taskChecks += [ordered]@{
+        name = 'task_monitor_escalation'; status = 'FAIL'; value = $escalation; threshold = 0
+        detail = $escalation; action_hint = 'Investigate; the task monitor never changes live or factory intent.'
+        source = 'task_monitor'; layer = 'observation'
+    }
+}
+if ($taskChecks.Count -eq 0) {
+    $taskChecks += [ordered]@{
+        name = 'task_monitor'; status = 'OK'; value = 0; threshold = 0
+        detail = 'scheduled-task intent satisfied; no repair or escalation'; action_hint = ''
+        source = 'task_monitor'; layer = 'observation'
+    }
+}
+$taskSummary = [ordered]@{
+    ok = @($taskChecks | Where-Object status -eq 'OK').Count
+    warn = @($taskChecks | Where-Object status -eq 'WARN').Count
+    fail = @($taskChecks | Where-Object status -eq 'FAIL').Count
+}
+$taskOverall = if ($taskSummary.fail -gt 0) { 'FAIL' } elseif ($taskSummary.warn -gt 0) { 'WARN' } else { 'OK' }
+$taskContract = [ordered]@{
+    schema = 'qm.health.contract.v1'; source = 'task_monitor'; checked_at = $now
+    overall = $taskOverall; summary = $taskSummary; checks = $taskChecks
+    intent = [ordered]@{
+        expected_state = 'RUNNING'; effective_state = 'RUNNING'; valid = $true
+        reason = 'hourly_monitor_manifest'; review_expires_utc = $null
+        review_expired = $false; source = 'qm_tasks.manifest.ps1'
+    }
+}
+$taskHealthPath = 'D:\QM\reports\state\task_monitor_health.json'
+try {
+    $taskHealthTmp = "$taskHealthPath.tmp"
+    $taskContract | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $taskHealthTmp -Encoding UTF8
+    Move-Item -LiteralPath $taskHealthTmp -Destination $taskHealthPath -Force
+} catch { }
+
 # 4. record (rolling JSONL); keep only last 500 lines
 $record = [ordered]@{
     ts          = $now
@@ -121,6 +168,7 @@ $record = [ordered]@{
     n_warn      = $warns.Count
     auto_fixed  = $actions
     escalations = $escalations
+    health_contract = $taskContract
 } | ConvertTo-Json -Compress -Depth 5
 
 try {
