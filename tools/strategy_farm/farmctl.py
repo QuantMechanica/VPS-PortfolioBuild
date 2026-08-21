@@ -6394,7 +6394,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     # Full-path for FIRST P2 (canonical _backtest.set, no exploration suffix):
     #   - Keep 2 runs + 6 years for rigor
     is_exploration = ("_ablation_" in setfile_path or "_grid_" in setfile_path
-                      or "_synth_" in setfile_path)
+                      or "_synth_" in setfile_path or "_opt_census_" in setfile_path)
     n_runs = "1" if is_exploration else "2"
     if phase in ("P2", "Q02"):
         # PT8 2026-05-23 — Q02 window now scales with detected period so D1/W1
@@ -6478,6 +6478,25 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             # P2/Q02 full ONLY — Q03/Q04 keep their default run count.
             n_runs = "1"
             timeout_seconds = _p2_full_timeout_seconds(item_payload, from_date, to_date)
+    elif phase == "OPT_CENSUS":
+        # DL-089 annual pattern census: the exact calendar-year window is part
+        # of each immutable cell payload.  It is neither a Q02 prescreen nor a
+        # basket alias, and every cell is a single measurement run.
+        from_date = _valid_ymd_date(item_payload.get("from_date"))
+        to_date = _valid_ymd_date(item_payload.get("to_date"))
+        if not from_date or not to_date or from_date > to_date:
+            return {
+                "spawned": False,
+                "reason": "opt_census_window_invalid",
+                "from_date": item_payload.get("from_date"),
+                "to_date": item_payload.get("to_date"),
+            }
+        n_runs = "1"
+        p2_run_stage = None
+        timeout_seconds = max(
+            P2_FULL_TIMEOUT_MIN_SECONDS,
+            _payload_timeout_floor_seconds(item_payload),
+        )
     else:
         from_date, to_date = _basket_payload_date_window(item_payload)
         p2_run_stage = None
