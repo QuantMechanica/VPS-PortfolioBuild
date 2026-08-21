@@ -14,7 +14,10 @@ param(
     [switch]$SkipInputGroupCheck,
     [switch]$SkipPerfStaticCheck,
     [switch]$SkipMaeHookCheck,
-    [switch]$NormalizeExponentFloats
+    [switch]$NormalizeExponentFloats,
+    [string]$CompileWorkItemId,
+    [ValidatePattern('^T(?:10|[1-9])$')]
+    [string]$ClaimedTerminal
 )
 
 Set-StrictMode -Version Latest
@@ -52,6 +55,46 @@ function Resolve-RepoRoot {
 
     $resolved = Resolve-Path (Join-Path $PSScriptRoot "..\..")
     return $resolved.Path
+}
+
+function Assert-CompilePipelineGuard {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    $helper = Join-Path $ResolvedRepoRoot "tools\strategy_farm\include_mirror.py"
+    if (-not (Test-Path -LiteralPath $helper)) {
+        throw "BUILD_CHECK_COMPILE_GUARD_MISSING: $helper"
+    }
+    $arguments = @($helper, "guard")
+    if ($CompileWorkItemId) {
+        if (-not $EALabel -or -not $ClaimedTerminal) {
+            throw "BUILD_CHECK_COMPILE_EA_BINDING_INCOMPLETE: -EALabel, -CompileWorkItemId, and -ClaimedTerminal are required together."
+        }
+        $arguments += @(
+            "--pipeline-work-item-id", $CompileWorkItemId,
+            "--claimed-terminal", $ClaimedTerminal
+        )
+    }
+    $savedErrorActionPreference = $ErrorActionPreference
+    try {
+        # Windows PowerShell promotes native stderr to NativeCommandError when
+        # ErrorActionPreference=Stop. Capture the helper's structured refusal
+        # and its real exit code instead of losing it to that adapter behavior.
+        $ErrorActionPreference = "Continue"
+        $guardOutput = @(& python @arguments 2>&1)
+        $guardExit = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $savedErrorActionPreference
+    }
+    foreach ($line in $guardOutput) {
+        Write-Output "build_check.compile_guard=$line"
+    }
+    if ($guardExit -ne 0) {
+        throw "BUILD_CHECK_LIVE_FACTORY_COMPILE_REFUSED: $($guardOutput -join ' ')"
+    }
 }
 
 function Get-CompileCandidates {
@@ -185,7 +228,15 @@ function Invoke-CompileGate {
 
     foreach ($target in $targets) {
         Write-Output "build_check.compile.target=$target"
-        $outputLines = & $ResolvedCompileScriptPath -EAPath $target 2>&1
+        $compileArguments = @("-EAPath", $target)
+        if ($CompileWorkItemId) {
+            $compileArguments += @(
+                "-EALabel", $EALabel,
+                "-CompileWorkItemId", $CompileWorkItemId,
+                "-ClaimedTerminal", $ClaimedTerminal
+            )
+        }
+        $outputLines = & $ResolvedCompileScriptPath @compileArguments 2>&1
         $compileExit = $LASTEXITCODE
         foreach ($line in $outputLines) {
             Write-Output $line
@@ -1209,6 +1260,7 @@ function Invoke-ExponentFloatNormalization {
 }
 
 $resolvedRepoRoot = Resolve-RepoRoot
+Assert-CompilePipelineGuard -ResolvedRepoRoot $resolvedRepoRoot
 if (-not $CompileScriptPath) {
     $CompileScriptPath = Join-Path $resolvedRepoRoot "framework\scripts\compile_one.ps1"
 }

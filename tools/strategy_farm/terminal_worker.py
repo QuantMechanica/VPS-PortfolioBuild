@@ -3873,6 +3873,23 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
     if not row:
         return {"action": "missing_item", "item_id": item["id"]}
+    if (
+        row["kind"] == farmctl.COMPILE_WORK_ITEM_KIND
+        or row["phase"] == farmctl.COMPILE_EA_PHASE
+    ):
+        # COMPILE_EA deliberately consumes this claimed/quiescent slot without
+        # launching terminal64. Its worker owns setfile generation, MetaEditor,
+        # strict scoped build_check, and the utility evidence transition.
+        try:
+            from tools.strategy_farm import compile_work_items as _compile_work_items
+        except ModuleNotFoundError:
+            import compile_work_items as _compile_work_items
+        return _compile_work_items.run_compile_work_item(
+            root,
+            farmctl.REPO_ROOT,
+            row,
+            terminal,
+        )
     preflight_failure = _work_item_preflight_failure(row)
     if preflight_failure:
         return {

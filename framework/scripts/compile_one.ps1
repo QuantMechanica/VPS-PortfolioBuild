@@ -5,7 +5,10 @@ param(
     [switch]$Strict,
     [string]$MetaEditorPath,
     [string]$ReportRoot = "D:\QM\reports\compile",
-    [string]$BuildRoot
+    [string]$BuildRoot,
+    [string]$CompileWorkItemId,
+    [ValidatePattern('^T(?:10|[1-9])$')]
+    [string]$ClaimedTerminal
 )
 
 Set-StrictMode -Version Latest
@@ -133,6 +136,41 @@ function Resolve-TerminalIncludeTargets {
     return @($unique)
 }
 
+function Test-IncludeTargetOwnedByTerminalRoot {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$IncludeTarget,
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot
+    )
+
+    $target = [System.IO.Path]::GetFullPath($IncludeTarget).TrimEnd("\")
+    $root = [System.IO.Path]::GetFullPath($TerminalRoot).TrimEnd("\")
+    if ($target.StartsWith($root + "\", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $true
+    }
+
+    $mql5Root = Split-Path -Parent $target
+    $dataRoot = Split-Path -Parent $mql5Root
+    $originPath = Join-Path $dataRoot "origin.txt"
+    if (-not (Test-Path -LiteralPath $originPath)) {
+        return $false
+    }
+    try {
+        $origin = [System.IO.Path]::GetFullPath(
+            (Get-Content -LiteralPath $originPath -Raw -ErrorAction Stop).Trim()
+        ).TrimEnd("\")
+        return [string]::Equals(
+            $origin,
+            $root,
+            [System.StringComparison]::OrdinalIgnoreCase
+        )
+    }
+    catch {
+        return $false
+    }
+}
+
 function Resolve-Mq5Path {
     param(
         [Parameter(Mandatory = $true)]
@@ -221,22 +259,6 @@ function Resolve-IncludeRootFromLog {
     return (Split-Path -Parent (Split-Path -Parent $qmCommonPath))
 }
 
-function Sync-FrameworkIncludes {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$SourceIncludeRoot,
-        [Parameter(Mandatory = $true)]
-        [string]$TargetIncludeRoot
-    )
-
-    if (-not (Test-Path -LiteralPath $SourceIncludeRoot -PathType Container)) {
-        throw "Source include root not found: $SourceIncludeRoot"
-    }
-
-    New-Item -ItemType Directory -Path $TargetIncludeRoot -Force | Out-Null
-    Copy-Item -Path (Join-Path $SourceIncludeRoot "*") -Destination $TargetIncludeRoot -Recurse -Force
-}
-
 function Write-SummaryRow {
     param(
         [Parameter(Mandatory = $true)]
@@ -269,10 +291,45 @@ $mq5Path = Resolve-Mq5Path -InputPath $EAPath
 $eaName = [System.IO.Path]::GetFileNameWithoutExtension($mq5Path)
 $runTag = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss")
 
+$claimedTerminalRoot = $null
+if ($CompileWorkItemId) {
+    if (-not $EALabel -or -not $ClaimedTerminal) {
+        throw "COMPILE_EA requires -EALabel, -CompileWorkItemId, and -ClaimedTerminal."
+    }
+    if ($env:QM_COMPILE_WORK_ITEM_ID -ne $CompileWorkItemId -or
+        $env:QM_COMPILE_CLAIMED_TERMINAL -ne $ClaimedTerminal) {
+        throw "COMPILE_EA environment binding does not match the claimed work item/terminal. Use the governed pipeline path: python tools/strategy_farm/farmctl.py enqueue-compile <EA label>."
+    }
+    $claimedTerminalRoot = (Resolve-Path -LiteralPath ("D:\QM\mt5\" + $ClaimedTerminal)).Path
+    if (-not $MetaEditorPath) {
+        foreach ($candidateName in @("metaeditor64.exe", "metaeditor.exe")) {
+            $candidatePath = Join-Path $claimedTerminalRoot $candidateName
+            if (Test-Path -LiteralPath $candidatePath) {
+                $MetaEditorPath = (Resolve-Path -LiteralPath $candidatePath).Path
+                break
+            }
+        }
+        if (-not $MetaEditorPath) {
+            throw "COMPILE_EA claimed terminal has no MetaEditor executable: $claimedTerminalRoot"
+        }
+    }
+}
+
 if (-not $MetaEditorPath) {
     $MetaEditorPath = Resolve-DefaultMetaEditorPath
 } else {
     $MetaEditorPath = (Resolve-Path -LiteralPath $MetaEditorPath).Path
+}
+
+if ($claimedTerminalRoot) {
+    $metaEditorRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $MetaEditorPath)).Path.TrimEnd("\")
+    if (-not [string]::Equals(
+        $metaEditorRoot,
+        $claimedTerminalRoot.TrimEnd("\"),
+        [System.StringComparison]::OrdinalIgnoreCase
+    )) {
+        throw "COMPILE_EA MetaEditor must belong to claimed terminal $ClaimedTerminal. expected=$claimedTerminalRoot actual=$metaEditorRoot"
+    }
 }
 
 $compileOutputDir = Join-Path $BuildRoot "compile\$runTag"
@@ -294,13 +351,68 @@ $warningCount = -1
 $metaEditorExitCode = 0
 $includeSyncRoot = ""
 $includeSyncTargets = @()
+$includeDeferredTargets = @()
+$includeMirrorEvidence = $null
 
 try {
-    $didRetryAfterIncludeSync = $false
     $sourceIncludeRoot = Join-Path $repoRoot "framework\include"
-    $includeTargets = Resolve-TerminalIncludeTargets -MetaEditorPath $MetaEditorPath
+    $allIncludeTargets = @(Resolve-TerminalIncludeTargets -MetaEditorPath $MetaEditorPath)
+    if ($claimedTerminalRoot) {
+        $includeTargets = @(
+            $allIncludeTargets | Where-Object {
+                Test-IncludeTargetOwnedByTerminalRoot `
+                    -IncludeTarget $_ `
+                    -TerminalRoot $claimedTerminalRoot
+            }
+        )
+        $includeDeferredTargets = @(
+            $allIncludeTargets | Where-Object { $includeTargets -notcontains $_ }
+        )
+    }
+    else {
+        $includeTargets = $allIncludeTargets
+    }
+    if ($includeTargets.Count -eq 0) {
+        $reasonClass = "INCLUDE_TARGETS_EMPTY"
+        throw "No include target belongs to the claimed/quiescent terminal."
+    }
+
+    $mirrorHelper = Join-Path $repoRoot "tools\strategy_farm\include_mirror.py"
+    $mirrorArgs = @(
+        $mirrorHelper,
+        "mirror",
+        "--source", $sourceIncludeRoot
+    )
     foreach ($includeTarget in $includeTargets) {
-        Sync-FrameworkIncludes -SourceIncludeRoot $sourceIncludeRoot -TargetIncludeRoot $includeTarget
+        $mirrorArgs += @("--target", $includeTarget)
+    }
+    if ($CompileWorkItemId) {
+        $mirrorArgs += @(
+            "--pipeline-work-item-id", $CompileWorkItemId,
+            "--claimed-terminal", $ClaimedTerminal
+        )
+    }
+    $savedErrorActionPreference = $ErrorActionPreference
+    try {
+        # Preserve the helper's structured failure class on Windows PowerShell;
+        # otherwise native stderr becomes a terminating NativeCommandError.
+        $ErrorActionPreference = "Continue"
+        $mirrorOutput = @(& python @mirrorArgs 2>&1)
+        $mirrorExit = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $savedErrorActionPreference
+    }
+    if ($mirrorExit -ne 0) {
+        $reasonClass = "INCLUDE_MIRROR_REFUSED"
+        throw "Include mirror refused without retry: $($mirrorOutput -join ' ')"
+    }
+    try {
+        $includeMirrorEvidence = $mirrorOutput[-1] | ConvertFrom-Json -ErrorAction Stop
+    }
+    catch {
+        $reasonClass = "INCLUDE_MIRROR_EVIDENCE_INVALID"
+        throw "Include mirror returned invalid evidence: $($mirrorOutput -join ' ')"
     }
     $includeSyncTargets = $includeTargets
 
@@ -331,11 +443,12 @@ try {
         $warningCount = $counts.warnings
 
         $includeRootFromLog = Resolve-IncludeRootFromLog -LogContent $logContent
-        if ($errorCount -gt 0 -and -not $didRetryAfterIncludeSync -and $includeRootFromLog) {
-            Sync-FrameworkIncludes -SourceIncludeRoot $sourceIncludeRoot -TargetIncludeRoot $includeRootFromLog
+        if ($errorCount -gt 0 -and $includeRootFromLog) {
             $includeSyncRoot = $includeRootFromLog
-            $didRetryAfterIncludeSync = $true
-            continue
+            if ($includeTargets -notcontains $includeRootFromLog) {
+                $reasonClass = "INCLUDE_TARGET_NOT_CLAIMED"
+                throw "MetaEditor requested an include target outside claimed terminal $ClaimedTerminal; target is deferred, not mirrored or retried: $includeRootFromLog"
+            }
         }
 
         if ($errorCount -gt 0) {
@@ -386,6 +499,11 @@ try {
         metaeditor_exit_code = $metaEditorExitCode
         include_sync_root = $includeSyncRoot
         include_sync_targets = ($includeSyncTargets -join ";")
+        include_sync_deferred_targets = ($includeDeferredTargets -join ";")
+        include_mirror_mutex = "D:\QM\strategy_farm\state\locks\include_mirror.lock"
+        include_mirror_atomic_replace = if ($includeMirrorEvidence) { [bool]$includeMirrorEvidence.atomic_replace } else { $false }
+        compile_work_item_id = $CompileWorkItemId
+        claimed_terminal = $ClaimedTerminal
         result = $result
         reason_class = $reasonClass
     }
@@ -398,6 +516,10 @@ try {
     Write-Output "compile_one.metaeditor_exit_code=$metaEditorExitCode"
     Write-Output "compile_one.include_sync_root=$includeSyncRoot"
     Write-Output ("compile_one.include_sync_targets=" + ($includeSyncTargets -join ";"))
+    Write-Output ("compile_one.include_sync_deferred_targets=" + ($includeDeferredTargets -join ";"))
+    Write-Output "compile_one.include_mirror_mutex=D:\QM\strategy_farm\state\locks\include_mirror.lock"
+    Write-Output "compile_one.compile_work_item_id=$CompileWorkItemId"
+    Write-Output "compile_one.claimed_terminal=$ClaimedTerminal"
     Write-Output "compile_one.log=$compileLogPath"
     Write-Output "compile_one.summary=$summaryCsvPath"
     Write-Output "compile_one.ex5=$ex5Path"
