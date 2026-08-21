@@ -1,0 +1,133 @@
+{
+  "schema": "qm.paced_fleet.diversity_cpu_ceiling_stop/v1",
+  "recorded_at_utc": "2026-08-21T07:07:28Z",
+  "branch": "agents/board-advisor",
+  "outcome": "NO_CLAIM_NO_BUILD_NO_ENQUEUE_CPU_CEILING",
+  "mission": "advance V5 toward more certified portfolio sleeves with diversity and funnel throughput first",
+  "farm_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "read_only",
+    "quick_check": "ok",
+    "pending_build_tasks": 37,
+    "build_claim_guard_codes": {
+      "Q02_EXCLUDED": 3,
+      "active_blocked_at_utc": 4,
+      "terminal_final_failure": 18,
+      "card_missing": 2,
+      "active_blocked_reason": 3,
+      "eligible": 2,
+      "r_gate_not_ready": 5
+    },
+    "eligible_build_rows": [
+      {
+        "ea_id": "QM5_11483",
+        "task_id": "557db8df-51ab-4636-b361-58b314813f0b",
+        "disposition": "duplicate_completed_work",
+        "reason": "MQ5 and EX5 already exist and the farm has 16 completed work items through Q07, including five Q02 PASS rows"
+      },
+      {
+        "ea_id": "QM5_11657",
+        "task_id": "593a9825-a8dc-462f-bdda-c00ddb710d58",
+        "disposition": "built_but_cpu_deferred_before_smoke_and_q02",
+        "reason": "MQ5, EX5, SPEC, and five RISK_FIXED H4 setfiles already exist; the task payload preserves the prior CPU deferral and has no work item"
+      }
+    ],
+    "work_item_counts": {
+      "active": 6,
+      "pending": 2227,
+      "done": 59267,
+      "failed": 48540
+    },
+    "active_by_phase": {
+      "Q03": 1,
+      "Q07": 5
+    },
+    "active_work_items": [
+      {
+        "terminal": "T1",
+        "ea_id": "QM5_11179",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "163ff5fa-f943-4f65-a716-e6837f234159"
+      },
+      {
+        "terminal": "T10",
+        "ea_id": "QM5_20188",
+        "phase": "Q07",
+        "symbol": "USDJPY.DWX",
+        "work_item_id": "cac5d34a-89ed-4ac6-8498-0078a2c82ce3"
+      },
+      {
+        "terminal": "T2",
+        "ea_id": "QM5_10571",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "2356cfd9-dd59-4347-a080-13d2e48a2624"
+      },
+      {
+        "terminal": "T5",
+        "ea_id": "QM5_41084",
+        "phase": "Q03",
+        "symbol": "XTIUSD.DWX",
+        "work_item_id": "e34c3058-bdbb-47fc-bbd3-57c55368ec8c"
+      },
+      {
+        "terminal": "T8",
+        "ea_id": "QM5_12350",
+        "phase": "Q07",
+        "symbol": "USDJPY.DWX",
+        "work_item_id": "5174b34b-9c30-4ab0-b6e8-73f081d283a1"
+      },
+      {
+        "terminal": "T9",
+        "ea_id": "QM5_10248",
+        "phase": "Q07",
+        "symbol": "NDX.DWX",
+        "work_item_id": "f12a1242-79c0-46ba-add7-b83804f8e2f0"
+      }
+    ],
+    "open_agent_task_claims": 0
+  },
+  "capacity": {
+    "hard_cpu_ceiling_percent": 97.0,
+    "sampling_method": "Windows Get-Counter Processor(_Total) percent Processor Time",
+    "sample_interval_seconds": 2,
+    "samples_percent": [
+      99.95,
+      100.0,
+      99.9,
+      99.76,
+      100.0
+    ],
+    "average_percent": 99.92,
+    "maximum_percent": 100.0,
+    "mt5_slot_scan_at_utc": "2026-08-21T07:05:41Z",
+    "governed_factory_process_count": 5,
+    "governed_factory_terminals": [
+      "T1",
+      "T2",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "database_active_claim_count": 6,
+    "observation_note": "The T5 Q03 row was active in SQLite after the process census but did not appear in that earlier process snapshot; the CPU measurement independently binds the stop."
+  },
+  "non_duplicate_basis": "The live state differs from the prior same-branch handoff: the farm now exposes two mechanically eligible legacy build rows, six active work items, and a five-process governed roster. Both eligible rows are already built, so neither was claimed as a fresh build.",
+  "actions_not_taken": [
+    "farm claim",
+    "agent task claim",
+    "Strategy Card mutation",
+    "EA source or binary mutation",
+    "registry or magic resolver mutation",
+    "build check or compile",
+    "smoke test",
+    "Q02 enqueue or re-enqueue",
+    "dispatcher tick",
+    "terminal reservation or process control",
+    "portfolio gate mutation",
+    "deploy manifest mutation",
+    "T_Live access or AutoTrading action"
+  ],
+  "next_safe_action": "After sustained total CPU is below 97 percent and governed tester capacity is available, recheck ownership of QM5_11657, run its one standard smoke, and record-build/enqueue its existing five-symbol H4 RISK_FIXED basket exactly once."
+}
