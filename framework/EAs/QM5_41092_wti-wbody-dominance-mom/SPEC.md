@@ -106,3 +106,4 @@ partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `06f2ed136`; source packet `069b4af00`; EA-ID reservation `1a02d01dd`; Q00 card `6d185e5bc`; planned governed magic `410920000` |
+| v1 | 2026-08-21 | Q01 implementation PASS | exact one-week body-dominance implementation; 11 reference checks; strict compile 0/0; static build check 0 failures; backtest-only fixed-risk preset |
