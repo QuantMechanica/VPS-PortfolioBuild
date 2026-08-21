@@ -4398,7 +4398,7 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 21524,wti-xcu-relmom,FMR-EIA-USGS-WTI-XCU-RELMOM-2026_S01,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-14),2026-08-14
 21525,wti-xcu-cadf,CHAN-EIA-USGS-WTI-XCU-CADF-2026_S01,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-15),2026-08-15
 21526,xau-xag-cadf,CHAN-SCHWEIKERT-XAUXAG-CADF-2026_S01,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-15),2026-08-15
-30001,bollinger-bands-grid-waka-waka,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
+30001,bollinger-bands-grid-waka-waka,MASTER-CENTURY-SUITE-2026-08-15,retired,Claude,2026-08-15
 30002,zigzag-gold-breakout-happy-gold,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
 30003,multisystem-gold-scalper-forex-gold-investor,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
 30004,ann-filtered-multipair-grid-perceptrader-ai,MASTER-CENTURY-SUITE-2026-08-15,retired,Claude,2026-08-15
@@ -4468,7 +4468,7 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 38004,codetrading-triple-ema-momentum-scalper,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
 38005,codetrading-ascending-triangle-breakout,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
 38006,codetrading-doji-hammer-pivot-rejection,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
-38007,codetrading-python-atr-grid-engine,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
+38007,codetrading-python-atr-grid-engine,MASTER-CENTURY-SUITE-2026-08-15,retired,Claude,2026-08-15
 38008,codetrading-optimized-bollinger-trend-breakout,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
 39001,forexfactory-trading-made-simple-tms,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
 39002,forexfactory-sonic-r-system,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
@@ -4495,7 +4495,7 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 41007,vix-volatility-spike-equity-reversion,MASTER-CENTURY-SUITE-2026-08-15,retired,Claude,2026-08-15
 41008,commodity-carry-roll-yield-arbitrage,MASTER-CENTURY-SUITE-2026-08-15,retired,Claude,2026-08-15
 41009,volume-profile-value-area-rejection,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
-41010,developing-poc-migration-scalper,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
+41010,developing-poc-migration-scalper,MASTER-CENTURY-SUITE-2026-08-15,retired,Claude,2026-08-15
 41011,tokyo-london-bank-flow-handover,MASTER-CENTURY-SUITE-2026-08-15,active,Claude,2026-08-15
 41012,john-carter-ttm-squeeze-momentum,MASTER-CENTURY-SUITE-2026-08-15,retired,Claude,2026-08-15
 21527,wti-fallcorr-tr,MOP-SILV-WTI-FALLCORR-2026_S01,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-15),2026-08-15

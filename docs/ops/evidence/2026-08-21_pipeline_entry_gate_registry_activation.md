@@ -84,3 +84,25 @@ sweep_enqueue_built_eas.py (dry-run, APPLY=False, after activation)
 ```
 
 Backup of the pre-change registry: session scratchpad `ea_id_registry.backup.csv`.
+
+---
+
+## 6 · Addendum (same day): three registry rows retired to match their rejected cards
+
+After the `471cffc3` re-specification pass retired two cards, three `ea_id_registry.csv` rows
+still said `status=active` while their cards were `g0_status: REJECTED` — an inconsistency that
+would keep offering them for build:
+
+| EA | card status | registry before → after | why |
+|---|---|---|---|
+| QM5_38007 | REJECTED (471cffc3) | active → **retired** | source never determines the Level-0 trigger; 1-position cap vs 5-tier grid irreconcilable; grid/averaging-down charter-prohibited |
+| QM5_41010 | REJECTED (471cffc3) | active → **retired** | source never defines the d-POC profile window, bucket resolution or intra-bar volume assignment |
+| QM5_30001 | was still **APPROVED** → now REJECTED | active → **retired** | build was already correctly refused on charter grounds (Bollinger grid / martingale), but the card stayed approved, so the sweeper would have kept offering it |
+
+`QM5_30001` was rejected via the sanctioned path (`farmctl.py reject-card`), same as the other two.
+
+**Checked before retiring:** all three have **zero `work_items`** and no `T_Live` preset
+references. Their magic rows stay allocated (3 / 3 / 2) — retiring the registry row does not free
+the magic block, which is correct: the numbers must never be reused.
+
+`farmctl health` after the change: no new registry, duplicate-slug or allocation finding.
