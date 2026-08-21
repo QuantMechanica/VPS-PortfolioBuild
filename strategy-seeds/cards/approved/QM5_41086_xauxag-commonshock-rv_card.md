@@ -62,9 +62,9 @@ r1_track_record: PASS_WITH_COMMON_SHOCK_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_PASS
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED_PENDING_CPU_CEILING
 review_focus: "Falsify a completed-week gold/silver same-direction dispersion fade outside the certified XAU/SP500/NDX/XNG book. Verify exact prior-two-week membership, synchronized three-to-five-session close pairs, week-end endpoint selection, strict same-sign individual returns, symmetric relative-outperformer fade, durable weekly attempt, aggregate fixed risk, atomic basket repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -374,6 +374,7 @@ may establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-21 | initial XAU/XAG weekly common-shock dispersion reversion card | Q00 | APPROVED |
 | v1-build | 2026-08-21 | deterministic implementation, 10-test reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v1-q02-hold | 2026-08-21 | target-only preview selected one item; this lane withheld apply after three of five host-CPU samples met or exceeded the 97% ceiling; concurrent fleet state contained one pending Q02 row | Q02 | ENQUEUED_PENDING_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -381,7 +382,7 @@ may establish realized correlation with the certified book.
 |---|---|---|---|
 | Q00 Research Intake | 2026-08-21 | APPROVED | `decisions/2026-08-21_qm5_41086_xauxag_weekly_common_shock_dispersion_reversion_g0.md` |
 | Q01 Build Validation | 2026-08-21 | PASS | `D:/QM/reports/framework/21/build_check_20260821_064937.json`; `D:/QM/reports/pipeline/QM5_41086/P1/P1_QM5_41086_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | paced target-only enqueue only after capacity check |
+| Q02 Baseline Screening | 2026-08-21 | ENQUEUED_PENDING_CPU_CEILING | pending work item `4859f62b-3a57-449c-b0c0-3cef50fd7806`; `docs/ops/evidence/2026-08-21_qm5_41086_xauxag_weekly_common_shock_q01_q02_cpu_ceiling_handoff.md` |
 
 ## Safety Boundary
 

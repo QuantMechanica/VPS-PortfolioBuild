@@ -105,3 +105,4 @@ grid, martingale, pyramid, target, trail, break-even move, or partial exit.
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `ff0d62e6d`; atomic EA-ID reservation `c2f395741`; G0 card `f9b95b762`; magic allocation `7c5ddaf5c` |
 | v1-build | 2026-08-21 | deterministic implementation and Q01 validation | 10-test reference suite; strict compile/build PASS; static P1 PASS |
+| v2-q02 | 2026-08-21 | paced Q02 handoff | this lane withheld apply at the 97% host-CPU ceiling; concurrent fleet state contained pending row `4859f62b-3a57-449c-b0c0-3cef50fd7806` |
