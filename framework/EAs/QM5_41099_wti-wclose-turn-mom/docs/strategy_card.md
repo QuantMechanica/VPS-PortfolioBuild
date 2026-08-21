@@ -63,9 +63,9 @@ r1_track_record: PASS_WITH_WEEKLY_CLOSE_PATH_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_ENERGY_LABEL_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: PENDING
-q02_status: NOT_QUEUED
+pipeline_phase: Q01
+q01_status: PENDING_GOVERNED_COMPILE
+q02_status: NOT_ENQUEUED_Q01_PENDING
 review_focus: "Falsify a direct-WTI completed-week close-turn recovery sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact Monday anchors, one immediately completed 3-5-session week, every chronological close, exactly one strict interior turn, strict monotone legs, final close beyond the first close in the recovery direction, one attempt, fixed risk, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -410,14 +410,15 @@ establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-22 | initial WTI completed-week close-turn recovery card | G0 | APPROVED |
+| v2 | 2026-08-22 | source build, reference suite, and fixed-risk preset committed; governed compile queued under rollout hold | Q01 | PENDING_GOVERNED_COMPILE |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-22 | APPROVED | `decisions/2026-08-22_qm5_41099_wti_weekly_close_turn_momentum_g0.md` |
-| Q01 Build Validation | - | NOT_STARTED | - |
-| Q02 Baseline Screening | - | NOT_QUEUED | - |
+| Q01 Build Validation | 2026-08-22 | PENDING_GOVERNED_COMPILE | source commit `701bdc873`; 11 reference checks and source guardrails PASS; compile item `b23ec578-eba6-41cf-854d-91737c4c4373` is held for reviewed worker rollout |
+| Q02 Baseline Screening | 2026-08-22 | NOT_ENQUEUED_Q01_PENDING | CPU max 76.93% was below the 97% ceiling, but no EX5/Q01 PASS exists; see `docs/ops/evidence/2026-08-22_qm5_41099_wti_weekly_close_turn_compile_handoff.md` |
 
 ## Safety Boundary
 

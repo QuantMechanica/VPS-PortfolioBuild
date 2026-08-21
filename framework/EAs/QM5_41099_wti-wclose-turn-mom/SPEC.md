@@ -79,8 +79,8 @@ All strategy parameters are frozen for the Q02 baseline.
 
 ## 6. Source Citation
 
-Bianchi, R. J., Drew, M. E., and Fan, J. H. (2015), "Commodity momentum: A
-behavioral perspective," *Journal of Banking & Finance* 58, 275-291, DOI
+Bianchi, R. J., Drew, M. E., and Fan, J. H. (2015), "Combining Momentum with
+Reversal in Commodity Futures," *Journal of Banking & Finance* 59, 423-444, DOI
 `10.1016/j.jbankfin.2015.07.006`.
 
 Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012), "Time Series
@@ -110,4 +110,3 @@ break-even move, or partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-08-22 | approved build-directory identity | source approval `854ef19f5`; source packet `89a28ed62`; EA-ID reservation `ca6b87716`; Q00 card `2f86bffc4`; governed magic `0c14c4dc9` |
-
