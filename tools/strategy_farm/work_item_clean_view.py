@@ -21,6 +21,38 @@ from typing import Any, Mapping
 CLEAN_VIEW_NAME = "work_items_clean"
 CLEAN_VIEW_SCHEMA = "qm.work_items.clean_view.v1"
 
+# Task 5343f90a: the 2026-08-16 defect-block cohort. Fifteen EAs were BLOCKED
+# for known correctness defects (host-slot magic conflation, unwired strategy
+# inputs, withdrawn mechanical approvals). The blocks held — none produced a
+# gate row after the block — but the gate rows they produced *before* the block
+# are still in ``work_items`` and are indistinguishable from clean evidence in
+# every count. This is a closed, hard-coded allow-list of a settled historical
+# fact (like ``INFRA_REASON_TOKENS`` above); it is not a live-changing set. Each
+# value is that EA's latest 2026-08-16 BLOCKED-transition timestamp in
+# ``agent_tasks`` (build_ea and/or review_ea). Derivation is read-only: no stored
+# ``work_items`` row is rewritten. A row is tagged when it belongs to a cohort EA
+# AND its ``updated_at`` is at or before that EA's block moment — the pre-block
+# evidence. A row after the block moment is deliberately NOT tagged: that would be
+# a block leak (a separate incident), not pre-block tainted evidence.
+DEFECT_BLOCK_SCHEMA = "qm.work_items.defect_block_cohort.2026-08-16.v1"
+DEFECT_BLOCK_COHORT: dict[str, dict[str, str]] = {
+    "QM5_10648": {"blocked_at": "2026-08-16T21:23:09+00:00", "reason": "host_slot_magic_conflation"},
+    "QM5_10649": {"blocked_at": "2026-08-16T21:23:09+00:00", "reason": "host_slot_magic_conflation"},
+    "QM5_10973": {"blocked_at": "2026-08-16T21:23:10+00:00", "reason": "host_slot_magic_conflation"},
+    "QM5_11897": {"blocked_at": "2026-08-16T21:30:09+00:00", "reason": "unwired_strategy_inputs"},
+    "QM5_2076": {"blocked_at": "2026-08-16T21:30:13+00:00", "reason": "unwired_strategy_inputs"},
+    "QM5_11301": {"blocked_at": "2026-08-16T21:30:08+00:00", "reason": "withdrawn_mechanical_approval"},
+    "QM5_11302": {"blocked_at": "2026-08-16T21:30:08+00:00", "reason": "withdrawn_mechanical_approval"},
+    "QM5_11689": {"blocked_at": "2026-08-16T21:30:10+00:00", "reason": "withdrawn_mechanical_approval"},
+    "QM5_11898": {"blocked_at": "2026-08-16T21:30:10+00:00", "reason": "withdrawn_mechanical_approval"},
+    "QM5_12352": {"blocked_at": "2026-08-16T21:30:10+00:00", "reason": "withdrawn_mechanical_approval"},
+    "QM5_20070": {"blocked_at": "2026-08-16T21:30:11+00:00", "reason": "withdrawn_mechanical_approval"},
+    "QM5_20071": {"blocked_at": "2026-08-16T21:30:12+00:00", "reason": "withdrawn_mechanical_approval"},
+    "QM5_20179": {"blocked_at": "2026-08-16T21:30:13+00:00", "reason": "withdrawn_mechanical_approval"},
+    "QM5_9354": {"blocked_at": "2026-08-16T21:30:13+00:00", "reason": "withdrawn_mechanical_approval"},
+    "QM5_9501": {"blocked_at": "2026-08-16T21:26:18+00:00", "reason": "withdrawn_mechanical_approval"},
+}
+
 OPEN_STATUSES = frozenset({"pending", "active", "claimed"})
 TERMINAL_STATUS_BY_TAXONOMY = {
     "infra": "failed",
@@ -158,6 +190,46 @@ def allowed_combination(status: Any, verdict: Any, taxonomy: Any) -> bool:
     return verdict_taxonomy(state, token) == family
 
 
+def _normalize_ea_id(ea_id: Any) -> str:
+    """Map a raw ``ea_id`` to the ``QM5_<num>`` cohort key used above.
+
+    Production ``work_items.ea_id`` is already ``QM5_<num>``; small fixtures and
+    payloads sometimes carry the bare integer. Both resolve to the same key.
+    """
+
+    raw = str(ea_id or "").strip()
+    if not raw:
+        return ""
+    if raw in DEFECT_BLOCK_COHORT:
+        return raw
+    digits = "".join(ch for ch in raw if ch.isdigit())
+    candidate = f"QM5_{digits}" if digits else ""
+    return candidate if candidate in DEFECT_BLOCK_COHORT else raw
+
+
+def defect_block_record(ea_id: Any) -> dict[str, str] | None:
+    """Return the defect-block cohort record for ``ea_id`` (or None)."""
+
+    return DEFECT_BLOCK_COHORT.get(_normalize_ea_id(ea_id))
+
+
+def defect_blocked_at_production_time(ea_id: Any, updated_at: Any) -> bool:
+    """True when this row is pre-block evidence from a 2026-08-16 defect EA.
+
+    The EA is in the frozen cohort AND the row's ``updated_at`` is at or before
+    that EA's block moment. A missing ``updated_at`` fails safe to tagged (the
+    row predates the block by construction — the cohort produced nothing after).
+    """
+
+    record = defect_block_record(ea_id)
+    if record is None:
+        return False
+    stamp = str(updated_at or "").strip()
+    if not stamp:
+        return True
+    return stamp <= record["blocked_at"]
+
+
 def derive_work_item(row: Mapping[str, Any]) -> dict[str, Any]:
     """Return one immutable-source row projected through the clean contract."""
 
@@ -185,6 +257,11 @@ def derive_work_item(row: Mapping[str, Any]) -> dict[str, Any]:
     if taxonomy == "unknown":
         flags.append("unknown_combination")
 
+    defect_record = defect_block_record(row.get("ea_id"))
+    defect_blocked = defect_blocked_at_production_time(
+        row.get("ea_id"), row.get("updated_at")
+    )
+
     result.update(
         {
             "status": status,
@@ -198,6 +275,9 @@ def derive_work_item(row: Mapping[str, Any]) -> dict[str, Any]:
             "clean_view_schema": CLEAN_VIEW_SCHEMA,
             "clean_view_flags": flags,
             "clean_view_valid": allowed_combination(status, verdict, taxonomy),
+            "defect_blocked_at_production_time": defect_blocked,
+            "defect_block_reason": defect_record["reason"] if defect_record else None,
+            "defect_block_schema": DEFECT_BLOCK_SCHEMA if defect_record else None,
         }
     )
     return result
@@ -315,6 +395,37 @@ def install_clean_view(connection: sqlite3.Connection) -> None:
           ELSE COALESCE(NULLIF({state}, ''), 'unknown')
         END
     """.strip()
+
+    # Task 5343f90a defect-block cohort (frozen historical fact, see
+    # DEFECT_BLOCK_COHORT). Derived purely from work_items columns — no join to
+    # agent_tasks, no stored row rewritten. Keys are literal ``QM5_<num>`` and
+    # ISO timestamps, both SQL-safe by construction.
+    ea_col = source("ea_id")
+    upd_col = source("updated_at")
+    block_ts_cases = "\n".join(
+        f"          WHEN {ea_col} = '{ea}' THEN '{rec['blocked_at']}'"
+        for ea, rec in DEFECT_BLOCK_COHORT.items()
+    )
+    block_reason_cases = "\n".join(
+        f"          WHEN {ea_col} = '{ea}' THEN '{rec['reason']}'"
+        for ea, rec in DEFECT_BLOCK_COHORT.items()
+    )
+    defect_block_ts_sql = f"CASE\n{block_ts_cases}\n          ELSE NULL\n        END"
+    defect_block_reason_sql = (
+        f"CASE\n{block_reason_cases}\n          ELSE NULL\n        END"
+    )
+    defect_blocked_marker_sql = f"""
+        CASE
+          WHEN ({defect_block_ts_sql}) IS NOT NULL
+            AND ({upd_col} IS NULL OR {upd_col} <= ({defect_block_ts_sql})) THEN 1
+          ELSE 0
+        END
+    """.strip()
+    defect_block_schema_sql = f"""
+        CASE WHEN ({defect_block_ts_sql}) IS NOT NULL
+          THEN '{DEFECT_BLOCK_SCHEMA}' ELSE NULL END
+    """.strip()
+
     connection.execute(
         f"""
         CREATE TEMP VIEW {CLEAN_VIEW_NAME} AS
@@ -342,7 +453,10 @@ def install_clean_view(connection: sqlite3.Connection) -> None:
             qm_clean_raw_verdict_reason({raw_status}, {raw_verdict}, {raw_payload}) AS raw_verdict_reason,
             '{CLEAN_VIEW_SCHEMA}' AS clean_view_schema,
             qm_clean_clean_view_flags({raw_status}, {raw_verdict}, {raw_payload}) AS clean_view_flags,
-            qm_clean_clean_view_valid({raw_status}, {raw_verdict}, {raw_payload}) AS clean_view_valid
+            qm_clean_clean_view_valid({raw_status}, {raw_verdict}, {raw_payload}) AS clean_view_valid,
+            ({defect_blocked_marker_sql}) AS defect_blocked_at_production_time,
+            ({defect_block_reason_sql}) AS defect_block_reason,
+            ({defect_block_schema_sql}) AS defect_block_schema
         FROM main.work_items
         """
     )
@@ -363,6 +477,55 @@ def open_clean_view_connection(database: Path | str) -> sqlite3.Connection:
         connection.close()
         raise
     return connection
+
+
+def audit_defect_block_cohort(connection: sqlite3.Connection) -> dict[str, Any]:
+    """Prove the 2026-08-16 defect-block cohort marker over the whole DB.
+
+    Read-only. Reports how many rows are tagged
+    ``defect_blocked_at_production_time`` and their PASS / per-phase shape, plus a
+    leak check: any cohort row *after* its block moment (should be zero — the
+    blocks held).
+    """
+
+    connection.row_factory = sqlite3.Row
+    tagged = 0
+    pass_rows = 0
+    pass_by_phase: Counter[str] = Counter()
+    all_by_phase: Counter[str] = Counter()
+    eas: set[str] = set()
+    by_reason: Counter[str] = Counter()
+    rows = connection.execute(
+        f"SELECT ea_id, phase, verdict, defect_blocked_at_production_time AS tag, "
+        f"defect_block_reason AS reason FROM {CLEAN_VIEW_NAME} "
+        f"WHERE defect_block_schema IS NOT NULL"
+    )
+    cohort_row_total = 0
+    for row in rows:
+        cohort_row_total += 1
+        if not int(row["tag"] or 0):
+            continue
+        tagged += 1
+        eas.add(str(row["ea_id"]))
+        by_reason[str(row["reason"] or "")] += 1
+        phase = str(row["phase"] or "<null>")
+        all_by_phase[phase] += 1
+        if str(row["verdict"] or "").upper().startswith("PASS"):
+            pass_rows += 1
+            pass_by_phase[phase] += 1
+    leaked = cohort_row_total - tagged
+    return {
+        "schema": DEFECT_BLOCK_SCHEMA,
+        "cohort_ea_count": len(DEFECT_BLOCK_COHORT),
+        "eas_with_rows": len(eas),
+        "tagged_rows": tagged,
+        "pass_rows": pass_rows,
+        "pass_by_phase": dict(sorted(pass_by_phase.items())),
+        "all_tagged_by_phase": dict(sorted(all_by_phase.items())),
+        "by_reason": dict(sorted(by_reason.items())),
+        "post_block_leak_rows": leaked,
+        "block_held": leaked == 0,
+    }
 
 
 def audit_clean_view(connection: sqlite3.Connection) -> dict[str, Any]:
@@ -413,6 +576,7 @@ def audit_clean_view(connection: sqlite3.Connection) -> dict[str, Any]:
             {"status": key[0], "verdict": key[1], "taxonomy": key[2], "count": count}
             for key, count in sorted(raw_combinations.items())
         ],
+        "defect_block_cohort": audit_defect_block_cohort(connection),
     }
 
 
