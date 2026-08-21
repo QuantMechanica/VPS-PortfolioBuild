@@ -1,0 +1,20 @@
+{
+  "task_id": "27fb255a-232e-4a06-9e12-f80e263f98e3",
+  "ea_id": "QM5_12612",
+  "slug": "tsmom-12m-vol-scaled-ndx",
+  "card_path": "framework/EAs/QM5_12612_tsmom-12m-vol-scaled-ndx/docs/strategy_card.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12612_tsmom-12m-vol-scaled-ndx",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12612_tsmom-12m-vol-scaled-ndx\\QM5_12612_tsmom-12m-vol-scaled-ndx.mq5",
+  "mq5_sha256": "a21444cf6daf3ff27bcfe96ce46ec5d9984a5900d01db63176fd40df352252d8",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12612_tsmom-12m-vol-scaled-ndx\\QM5_12612_tsmom-12m-vol-scaled-ndx.ex5",
+  "ex5_sha256": "d1395e74301d98cd86ad1afa4b05ee64e3bae954806530e41619944e70749960",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12612_tsmom-12m-vol-scaled-ndx\\sets\\QM5_12612_tsmom-12m-vol-scaled-ndx_NDX.DWX_D1_backtest.set"
+  ],
+  "built_by": "Gemini",
+  "built_at": "2026-08-21T14:53:00Z"
+}
