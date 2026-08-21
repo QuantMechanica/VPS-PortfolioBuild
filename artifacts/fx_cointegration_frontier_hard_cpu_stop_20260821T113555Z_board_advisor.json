@@ -1,0 +1,221 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-21T11:35:55.4772428Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "a6faf02a0b50af299234cfdce0b3da5d9fcba156",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_state": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a804932912a449aed19bbc8fe61f1f5846556743",
+    "new_card_or_ea_permitted": false,
+    "reason": "The durable sign-aware reconciliation covers every frozen-scan relationship; another pair Card or EA would duplicate governed work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "scan_rank": 21,
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "ea_id": "QM5_20203",
+    "slug": "eurusd-audjpy",
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "card_status": "APPROVED",
+    "g0_status": "APPROVED",
+    "source_id": "claude_cross_asset_discovery_2026-06-09",
+    "source_criteria": {
+      "primary_source": "Chan, Ernest P. (2009), Quantitative Trading, OWNER-ratified Tier-A SRC02 extraction",
+      "research_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+      "r1_track_record": "PASS",
+      "r2_mechanical": "PASS",
+      "r3_data_available": "PASS",
+      "r4_ml_forbidden": "PASS"
+    },
+    "q02_work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399",
+    "q02_status": "done",
+    "q02_verdict": "PASS",
+    "q04_work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+    "q04_status": "pending",
+    "q04_claimed_by": null,
+    "q04_attempt_count": 0,
+    "q04_exact_row_count": 1,
+    "q04_open_row_count": 1,
+    "q04_created_at": "2026-08-05T14:53:04+00:00",
+    "q04_updated_at": "2026-08-15T23:46:58+00:00",
+    "q04_payload": {
+      "portfolio_scope": "basket",
+      "host_symbol": "EURUSD.DWX",
+      "host_timeframe": "D1",
+      "basket_symbols": [
+        "EURUSD.DWX",
+        "AUDJPY.DWX",
+        "AUDUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "traded_symbols": [
+        "EURUSD.DWX",
+        "AUDJPY.DWX"
+      ],
+      "conversion_only_symbols": [
+        "AUDUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "from_date": "2018.07.02",
+      "to_date": "2022.12.31",
+      "timeout_min": 450,
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "tester_currency": "USD",
+      "tester_deposit": 100000
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "artifact_sha256": {
+      "mq5": "d75788d24eadcff9c699a2f8964ab2cfd5ad924296b34df0b1d4a0a6853365cb",
+      "ex5": "4d57f2bc03a14ce0be3f7f18245adfff280955287cda5af1119d502d33d96270",
+      "basket_manifest": "2f5823242ae1b2a0592d9239969e22f31ac90234d909b3eee5e1d9c635b519a9",
+      "backtest_setfile": "dcac19dcd0882c24ba0c772b36e47c816c582d3f612b35445ce909bfc8e846d8",
+      "approved_card": "d2d842c492a5180c5736b91304cc971b56ebea8dc59a732c8aac026c61090900",
+      "strategy_card_snapshot": "f5f4b1d13ace14d69ca3249b77976503f025c229598f16693ace755ba8c0043d"
+    }
+  },
+  "capacity_sample": {
+    "initial_preflight_cpu_load_percent": [
+      89.41,
+      95.52,
+      88.77,
+      96.75,
+      84.96
+    ],
+    "initial_preflight_average_percent": 91.08,
+    "initial_preflight_maximum_percent": 96.75,
+    "initial_preflight_ceiling_binding": false,
+    "binding_cpu_sample_completed_at_utc": "2026-08-21T11:34:39.923143+00:00",
+    "binding_cpu_load_percent": [
+      94.68,
+      99.41,
+      95.23,
+      97.18,
+      96.44
+    ],
+    "binding_average_percent": 96.59,
+    "binding_maximum_percent": 99.41,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_gte_hard_ceiling",
+    "ceiling_binding": true,
+    "resource_snapshot": {
+      "probe_ok": true,
+      "disk_free_gb": 155.24,
+      "ram_free_gb": 24.32,
+      "commit_free_gb": 54.78
+    },
+    "active_work_item_count": 6,
+    "active_phase_counts": {
+      "Q02": 1,
+      "Q03": 1,
+      "Q07": 4
+    },
+    "pending_work_item_count": 2238,
+    "pending_phase_counts": {
+      "HARNESS_PP_FIXTURE": 1,
+      "Q02": 705,
+      "Q03": 41,
+      "Q04": 1436,
+      "Q05": 5,
+      "Q06": 1,
+      "Q07": 19,
+      "Q08": 6,
+      "Q09_NEWS": 24
+    },
+    "active_multisymbol_work_item": {
+      "id": "8583021d-b8e3-4ed1-b99f-52a0ac9e318e",
+      "ea_id": "QM5_20234",
+      "phase": "Q03",
+      "symbol": "QM5_20234_XAU_XAG_RSJ_D1",
+      "claimed_by": "T2",
+      "portfolio_scope": "basket",
+      "basket_symbol_count": 2
+    },
+    "multisymbol_serialization_binding": true,
+    "multisymbol_serialization_note": "The canonical worker permits at most one active multi-symbol backtest farm-wide, so the active QM5_20234 basket independently blocks the pending QM5_20203 basket.",
+    "path_aware_process_observation_utc": "2026-08-21T11:35:57Z",
+    "path_filtered_factory_process_snapshot": [
+      "T2",
+      "T4",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "database_claims_without_matching_process_in_nearby_snapshot": [
+      "T7"
+    ],
+    "process_snapshot_note": "The supported slot view found five numeric T1-T10 factory terminal processes while the nearby read-only database snapshot found six active claims. T7 had an active claim without a matching terminal process in that snapshot. The discrepancy was recorded without reconciliation or control after the CPU ceiling bound.",
+    "t_live_excluded_from_factory_count": true,
+    "t_live_manifest_or_autotrading_queried_or_controlled": false
+  },
+  "database_check": {
+    "path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "read_only_uri",
+    "quick_check": "ok"
+  },
+  "non_duplicate_delta": {
+    "previous_same_mission_evidence_commit": "9bcaba1c247d0e22ffb7720802b6ce49c74a2c47",
+    "previous_same_mission_observation_utc": "2026-08-21T10:38:05.3878064Z",
+    "current_observation_utc": "2026-08-21T11:35:55.4772428Z",
+    "elapsed_minutes_since_previous_same_mission_observation": 57.84,
+    "previous_active_work_item_count": 10,
+    "current_active_work_item_count": 6,
+    "active_work_item_delta": -4,
+    "previous_pending_work_item_count": 2231,
+    "current_pending_work_item_count": 2238,
+    "pending_work_item_delta": 7,
+    "previous_path_filtered_factory_terminal_count": 9,
+    "current_path_filtered_factory_terminal_count": 5,
+    "path_filtered_factory_terminal_delta": -4,
+    "active_phase_mix_changed": true,
+    "active_multisymbol_blocker_newly_recorded": true,
+    "selected_q04_row_state_changed": false,
+    "new_queue_row_created": false,
+    "existing_queue_row_mutated": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_reconciliation_or_control": false,
+    "tester_or_backtest_run": false,
+    "repository_evidence_created": true,
+    "reason": "The frozen scan is exhausted, the selected successor already exists exactly once, an unrelated basket holds the serialized multi-symbol lane, and the explicit CPU ceiling became binding during preflight."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
