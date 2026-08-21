@@ -107,3 +107,5 @@ partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `123294145`; deterministic registry reservation in the commit containing this spec |
+| v1-card | 2026-08-21 | G0-approved execution contract | `strategy-seeds/cards/approved/QM5_41080_wti-wclose-location-mom_card.md` |
+| v1-build | 2026-08-21 | deterministic implementation and Q01 validation | 10-test reference suite; strict compile/build PASS; static P1 PASS |
