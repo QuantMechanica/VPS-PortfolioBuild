@@ -93,7 +93,11 @@ bool ReadZigZagPivots(StrategyPivot &pivots[], int limit_bars)
    ArrayResize(pivots, 0);
    if(g_zigzag_handle == INVALID_HANDLE)
       return false;
-   if(BarsCalculated(g_zigzag_handle) < limit_bars + 2)
+   if(!QM_IndicatorWarmupReady(g_zigzag_handle,
+                               0,
+                               1,
+                               limit_bars + 2,
+                               "QM5_20179_zigzag"))
       return false;
       
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);

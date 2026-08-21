@@ -233,7 +233,11 @@ bool Strategy036_ReplayState()
    if(!Strategy036_EnsureHandle())
       return false;
    const int calculated =
-      BarsCalculated(g_str036_h_ema);
+      QM_IndicatorWarmupCalculated(g_str036_h_ema,
+                                    0,
+                                    1,
+                                    20,
+                                    "STR-036_ema_replay");
    if(calculated < 20)
       return false;
    int requested = calculated -
@@ -372,7 +376,11 @@ bool Strategy_NoTradeFilter()
    if(bars_available < warmup ||
       !Strategy036_EnsureHandle())
       return true;
-   return (BarsCalculated(g_str036_h_ema) < warmup);
+   return (!QM_IndicatorWarmupReady(g_str036_h_ema,
+                                    0,
+                                    1,
+                                    warmup,
+                                    "STR-036_ema"));
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)

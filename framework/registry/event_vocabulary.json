@@ -145,6 +145,7 @@
         "ICT_VIRTUAL_LIMIT_PERSIST_FAILED",
         "ICT_VIRTUAL_LIMIT_RESTART_VOID",
         "ICT_VIRTUAL_LIMIT_VOID",
+        "INDICATOR_FIRST_TRADABLE_BAR",
         "INIT",
         "INIT_FAIL",
         "INIT_FAILED",
@@ -206,6 +207,7 @@
         "MONTHLY_MACD_STATE",
         "MONTHLY_MACD_STATE_INVALID",
         "MONTHLY_REBALANCE",
+        "MONTHLY_SLEEVE_STATE",
         "MONTHLY_STATE",
         "MONTHLY_STATE_INVALID",
         "MTD_ENTRY",
@@ -234,6 +236,7 @@
         "PAIR_OPEN_RESULT",
         "PAIR_OPEN_ROLLBACK",
         "PAIR_PARTIAL_ROLLBACK",
+        "PATTERN_FIRST_TRADABLE_BAR",
         "PDC_EXPANSION_STOP_PAIR_PLACED",
         "PENDING_CANCEL",
         "PENDING_CANCEL_FAIL",
@@ -292,6 +295,9 @@
         "SETUP_DATA_MISSING",
         "SETUP_DATA_STALE",
         "SETUP_SYMBOL_SLOT_MISMATCH",
+        "SLEEVE_CALENDAR_INIT",
+        "SLEEVE_CALENDAR_INIT_FAILED",
+        "SLEEVE_REJECTION_SUMMARY",
         "SMOKE_DEINIT",
         "SMOKE_INIT_OK",
         "SMOKE_TICK",
@@ -353,7 +359,7 @@
         "event",
         "payload"
       ],
-      "resolved_call_count": 7010,
+      "resolved_call_count": 7445,
       "schema_version": 1,
       "stream": "qm_events"
     }
@@ -362,8 +368,20 @@
     {
       "callee": "QM_LogEvent",
       "event_expression": "event_name",
+      "line": 86,
+      "path": "framework/EAs/QM5_12599_wti-feb-prem/QM5_12599_wti-feb-prem.mq5"
+    },
+    {
+      "callee": "QM_LogEvent",
+      "event_expression": "event_name",
       "line": 1177,
       "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/QM5_20009_ict-liquidity-portfolio.mq5"
+    },
+    {
+      "callee": "QM_LogEvent",
+      "event_expression": "event_name",
+      "line": 194,
+      "path": "framework/EAs/QM5_20016_xti-xng-mon-rv/QM5_20016_xti-xng-mon-rv.mq5"
     },
     {
       "callee": "QM_LogEvent",

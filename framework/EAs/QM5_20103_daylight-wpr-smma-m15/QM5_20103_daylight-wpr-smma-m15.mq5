@@ -376,11 +376,21 @@ bool Strategy_NoTradeFilter()
       return true;
    if(!Strategy004_EnsureHandles())
       return true;
-   if(BarsCalculated(g_str004_h_ma) <
-         strategy_ma_period + strategy_ma_displacement + 5 ||
-      BarsCalculated(g_str004_h_wpr) < warmup_needed ||
-      BarsCalculated(g_str004_h_atr) <
-         strategy_atr_period + 5)
+   if(!QM_IndicatorWarmupReady(g_str004_h_ma,
+                               0,
+                               1,
+                               strategy_ma_period + strategy_ma_displacement + 5,
+                               "STR-004_ma") ||
+      !QM_IndicatorWarmupReady(g_str004_h_wpr,
+                               0,
+                               1,
+                               warmup_needed,
+                               "STR-004_wpr") ||
+      !QM_IndicatorWarmupReady(g_str004_h_atr,
+                               0,
+                               1,
+                               strategy_atr_period + 5,
+                               "STR-004_atr"))
       return true;
    return false;
   }

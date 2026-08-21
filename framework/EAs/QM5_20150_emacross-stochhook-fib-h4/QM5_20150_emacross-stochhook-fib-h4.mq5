@@ -268,9 +268,12 @@ bool Strategy137_EnsureHandles()
 bool Strategy137_HandlesReady()
   {
    return (Strategy137_EnsureHandles() &&
-           BarsCalculated(g_str137_stoch_handle) >= 510 &&
-           BarsCalculated(g_str137_ema_fast_handle) >= 510 &&
-           BarsCalculated(g_str137_ema_slow_handle) >= 510);
+           QM_IndicatorWarmupReady(g_str137_stoch_handle,
+                                   0, 1, 510, "STR-137_stoch") &&
+           QM_IndicatorWarmupReady(g_str137_ema_fast_handle,
+                                   0, 1, 510, "STR-137_ema_fast") &&
+           QM_IndicatorWarmupReady(g_str137_ema_slow_handle,
+                                   0, 1, 510, "STR-137_ema_slow"));
   }
 
 bool Strategy137_FindOwnPosition(

@@ -150,14 +150,14 @@ bool Strategy073_HandlesReady()
       (strategy_ma_slow + 5 > 205)
       ? strategy_ma_slow + 5
       : 205;
-   return (BarsCalculated(g_str073_slow_handle) >=
-              required &&
-           BarsCalculated(g_str073_fast_handle) >=
-              required &&
-           BarsCalculated(g_str073_rsi_handle) >=
-              required &&
-           BarsCalculated(g_str073_atr_handle) >=
-              required);
+   return (QM_IndicatorWarmupReady(g_str073_slow_handle,
+                                   0, 1, required, "STR-073_slow_ma") &&
+           QM_IndicatorWarmupReady(g_str073_fast_handle,
+                                   0, 1, required, "STR-073_fast_ma") &&
+           QM_IndicatorWarmupReady(g_str073_rsi_handle,
+                                   0, 1, required, "STR-073_rsi") &&
+           QM_IndicatorWarmupReady(g_str073_atr_handle,
+                                   0, 1, required, "STR-073_atr"));
   }
 
 bool Strategy073_CurrentBar(datetime &bar_time)

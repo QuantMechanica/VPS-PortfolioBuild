@@ -158,8 +158,10 @@ bool Strategy085_HandlesReady()
       required = strategy_stoch_k +
                  strategy_stoch_d +
                  strategy_stoch_slowing + 5;
-   return (BarsCalculated(g_str085_stoch_handle) >= required &&
-           BarsCalculated(g_str085_ema_handle) >= required);
+   return (QM_IndicatorWarmupReady(g_str085_stoch_handle,
+                                   0, 1, required, "STR-085_stoch") &&
+           QM_IndicatorWarmupReady(g_str085_ema_handle,
+                                   0, 1, required, "STR-085_ema"));
   }
 
 bool Strategy085_CurrentBar(datetime &bar_time)

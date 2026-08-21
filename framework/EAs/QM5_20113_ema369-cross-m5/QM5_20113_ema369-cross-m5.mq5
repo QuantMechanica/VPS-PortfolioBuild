@@ -305,9 +305,12 @@ bool Strategy_NoTradeFilter()
    if(bars_available < warmup ||
       !Strategy038_EnsureHandles())
       return true;
-   return (BarsCalculated(g_str038_h_fast) < warmup ||
-           BarsCalculated(g_str038_h_mid) < warmup ||
-           BarsCalculated(g_str038_h_slow) < warmup);
+   return (!QM_IndicatorWarmupReady(g_str038_h_fast,
+                                    0, 1, warmup, "STR-038_fast_ema") ||
+           !QM_IndicatorWarmupReady(g_str038_h_mid,
+                                    0, 1, warmup, "STR-038_mid_ema") ||
+           !QM_IndicatorWarmupReady(g_str038_h_slow,
+                                    0, 1, warmup, "STR-038_slow_ema"));
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)

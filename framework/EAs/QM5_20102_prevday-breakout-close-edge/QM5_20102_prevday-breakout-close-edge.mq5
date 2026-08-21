@@ -289,7 +289,11 @@ bool Strategy_NoTradeFilter()
    if(!Strategy003_EnsureSmaHandle())
       return true;
    if(strategy_sma_filter &&
-      BarsCalculated(g_str003_h_sma) < strategy_sma_period + 5)
+      !QM_IndicatorWarmupReady(g_str003_h_sma,
+                               0,
+                               1,
+                               strategy_sma_period + 5,
+                               "STR-003_sma"))
       return true;
    return false;
   }

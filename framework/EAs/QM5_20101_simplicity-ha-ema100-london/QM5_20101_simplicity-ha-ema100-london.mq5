@@ -378,7 +378,11 @@ bool Strategy_NoTradeFilter()
       return true;
    if(!Strategy002_EnsureHandle())
       return true;
-   return (BarsCalculated(g_str002_h_ema) < indicator_needed);
+   return (!QM_IndicatorWarmupReady(g_str002_h_ema,
+                                    0,
+                                    1,
+                                    indicator_needed,
+                                    "STR-002_ema"));
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)

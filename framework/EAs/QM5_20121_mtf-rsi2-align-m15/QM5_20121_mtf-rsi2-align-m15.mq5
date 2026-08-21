@@ -135,7 +135,11 @@ bool Strategy066_HandlesReady()
       return false;
    const int required = strategy_rsi_period + 5;
    for(int i = 0; i < 6; ++i)
-      if(BarsCalculated(g_str066_rsi_handles[i]) < required)
+      if(!QM_IndicatorWarmupReady(g_str066_rsi_handles[i],
+                                  0,
+                                  1,
+                                  required,
+                                  "STR-066_rsi_" + IntegerToString(i)))
          return false;
    return true;
   }

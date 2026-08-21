@@ -138,8 +138,11 @@ bool Strategy086_HandleReady()
   {
    if(!Strategy086_EnsureHandle())
       return false;
-   return (BarsCalculated(g_str086_ma_handle) >=
-           Strategy086_WarmupBars());
+   return QM_IndicatorWarmupReady(g_str086_ma_handle,
+                                  0,
+                                  1,
+                                  Strategy086_WarmupBars(),
+                                  "STR-086_ma");
   }
 
 bool Strategy086_CurrentBar(datetime &bar_time)

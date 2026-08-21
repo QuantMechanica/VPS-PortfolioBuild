@@ -297,9 +297,12 @@ bool Strategy141_EnsureHandles()
 bool Strategy141_HandlesReady()
   {
    return (Strategy141_EnsureHandles() &&
-           BarsCalculated(g_str141_ema_handle) >= 220 &&
-           BarsCalculated(g_str141_rsi_handle) >= 220 &&
-           BarsCalculated(g_str141_adx_handle) >= 220);
+           QM_IndicatorWarmupReady(g_str141_ema_handle,
+                                   0, 1, 220, "STR-141_ema") &&
+           QM_IndicatorWarmupReady(g_str141_rsi_handle,
+                                   0, 1, 220, "STR-141_rsi") &&
+           QM_IndicatorWarmupReady(g_str141_adx_handle,
+                                   0, 1, 220, "STR-141_adx"));
   }
 
 double Strategy141_TrueRange(const MqlRates &current,

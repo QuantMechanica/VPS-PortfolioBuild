@@ -108,7 +108,11 @@ bool Strategy_MacdReady()
                                  strategy_macd_signal,
                                  PRICE_CLOSE);
    return (handle != INVALID_HANDLE &&
-           BarsCalculated(handle) >= strategy_macd_slow + strategy_macd_signal + 2);
+           QM_IndicatorWarmupReady(handle,
+                                   0,
+                                   1,
+                                   strategy_macd_slow + strategy_macd_signal + 2,
+                                   "QM5_11144_macd"));
   }
 
 bool Strategy_LongCondition(const int shift)

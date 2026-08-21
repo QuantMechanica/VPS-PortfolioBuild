@@ -238,29 +238,8 @@ bool Strategy097_StopLegal(const ENUM_POSITION_TYPE position_type,
    return (ask > 0.0 && candidate - ask >= minimum);
   }
 
-// TEMP DIAG (smoke diagnosis 2026-07-24) — remove before commit
-long g_diag_ntf_calls = 0, g_diag_ntf_param = 0, g_diag_ntf_mode = 0,
-     g_diag_ntf_warm = 0, g_diag_ntf_handle = 0, g_diag_ntf_calc = 0,
-     g_diag_ntf_pass = 0, g_diag_news_block = 0, g_diag_edges = 0;
-
-void Strategy097_DiagDump(const string where)
-  {
-   QM_LogEvent(QM_INFO,
-               "STRATEGY_DIAG",
-               StringFormat("{\"where\":\"%s\",\"ntf_calls\":%I64d,\"ntf_calc\":%I64d,\"ntf_pass\":%I64d,\"edges\":%I64d,\"h_sma\":%d,\"h_sto\":%d,\"bc_sma\":%d,\"bc_sto\":%d,\"bars\":%d}",
-                            where, g_diag_ntf_calls, g_diag_ntf_calc,
-                            g_diag_ntf_pass, g_diag_edges,
-                            g_str097_h_sma, g_str097_h_stoch,
-                            BarsCalculated(g_str097_h_sma),
-                            BarsCalculated(g_str097_h_stoch),
-                            (int)Bars(_Symbol, PERIOD_H4)));
-  }
-
 bool Strategy_NoTradeFilter()
   {
-   g_diag_ntf_calls++;
-   if(g_diag_ntf_calls % 1000000 == 0)
-      Strategy097_DiagDump("ntf");
    if(_Period != PERIOD_H4 ||
       strategy_sma_period <= 1 ||
       strategy_stoch_k <= 0 ||
@@ -270,39 +249,48 @@ bool Strategy_NoTradeFilter()
       strategy_stoch_zone >= 100.0 ||
       strategy_pullback_min_bars < 1 ||
       strategy_sl_pips <= 0.0)
-     { g_diag_ntf_param++; return true; }
+      return true;
 
    const ENUM_SYMBOL_TRADE_MODE trade_mode =
       (ENUM_SYMBOL_TRADE_MODE)SymbolInfoInteger(_Symbol,
                                                 SYMBOL_TRADE_MODE);
    if(trade_mode == SYMBOL_TRADE_MODE_DISABLED)
-     { g_diag_ntf_mode++; return true; }
+      return true;
 
    int bars_needed = 150;
    const int indicator_needed = strategy_sma_period + 5;
    if(indicator_needed > bars_needed)
       bars_needed = indicator_needed;
    if(Bars(_Symbol, PERIOD_H4) < bars_needed) // perf-allowed: O(1) warmup count, reviewer-approved (cross-review 2026-07-24)
-     { g_diag_ntf_warm++; return true; }
+      return true;
    if(!Strategy097_EnsureHandles())
-     { g_diag_ntf_handle++; return true; }
-   if(BarsCalculated(g_str097_h_sma) < indicator_needed ||
-      BarsCalculated(g_str097_h_stoch) <
-         strategy_stoch_k + strategy_stoch_d +
-         strategy_stoch_slowing + 5)
-     { g_diag_ntf_calc++; return true; }
-   g_diag_ntf_pass++;
+      return true;
+   const int stoch_needed =
+      strategy_stoch_k + strategy_stoch_d + strategy_stoch_slowing + 5;
+   const bool sma_ready =
+      QM_IndicatorWarmupReady(g_str097_h_sma,
+                              0,
+                              1,
+                              indicator_needed,
+                              "STR-097_sma");
+   const bool stoch_ready =
+      QM_IndicatorWarmupReady(g_str097_h_stoch,
+                              0,
+                              1,
+                              stoch_needed,
+                              "STR-097_stoch");
+   if(!sma_ready || !stoch_ready)
+      return true;
+   const int first_tradable_required =
+      (bars_needed > stoch_needed) ? bars_needed : stoch_needed;
+   QM_IndicatorRecordFirstTradableBar("STR-097_indicator_gate",
+                                      first_tradable_required,
+                                      PERIOD_H4);
    return false;
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TEMP DIAG (smoke diagnosis 2026-07-24) — remove before commit
-   static long dn_calls = 0, dn_flat = 0, dn_data = 0,
-               dn_trend_l = 0, dn_flip_l = 0, dn_cross_l = 0,
-               dn_k1d1_l = 0, dn_sig_l = 0, dn_sig_s = 0;
-   dn_calls++;
-
    ZeroMemory(req);
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
@@ -311,7 +299,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    ENUM_POSITION_TYPE existing_type = POSITION_TYPE_BUY;
    if(Strategy097_HasOwnPosition(existing_ticket, existing_type))
       return false;
-   dn_flat++;
    if(!Strategy097_EnsureHandles())
      {
       Strategy097_LogDataMissing("indicator_handles");
@@ -346,8 +333,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       Strategy097_LogDataMissing("indicator_buffers");
       return false;
      }
-   dn_data++; // TEMP DIAG
-
    // Variant HASTOCH_097_XWIN3 (reconciliation amendment 2026-07-24): the HA
    // flip lags the stochastic cross by design (HA is smoothed), so requiring
    // the cross on the flip bar itself produced an EMPTY strategy (0 trades,
@@ -398,21 +383,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       short_pullback &&
       short_cross_bar > 0 &&
       k1 < d1;
-   // TEMP DIAG — per-conjunct counters + periodic dump
-   if(signal_bar.close > sma1) dn_trend_l++;
-   if(long_pullback) dn_flip_l++;
-   if(long_cross_bar > 0) dn_cross_l++;
-   if(k1 > d1) dn_k1d1_l++;
-   if(long_signal) dn_sig_l++;
-   if(short_signal) dn_sig_s++;
-   if(dn_calls % 400 == 0)
-      QM_LogEvent(QM_INFO,
-                  "STRATEGY_DIAG",
-                  StringFormat("{\"calls\":%I64d,\"flat\":%I64d,\"data\":%I64d,\"trend_l\":%I64d,\"flip_l\":%I64d,\"cross_l\":%I64d,\"k1d1_l\":%I64d,\"sig_l\":%I64d,\"sig_s\":%I64d}",
-                               dn_calls, dn_flat, dn_data, dn_trend_l,
-                               dn_flip_l, dn_cross_l, dn_k1d1_l,
-                               dn_sig_l, dn_sig_s));
-
    if(!long_signal && !short_signal)
       return false;
 
@@ -636,13 +606,10 @@ void OnTick()
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
-     { g_diag_news_block++; return; } // TEMP DIAG
+      return;
 
    if(!QM_IsNewBar())
       return;
-   g_diag_edges++; // TEMP DIAG
-   if(g_diag_edges % 500 == 1)
-      Strategy097_DiagDump("edge");
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
    // since last tick. Cheap: most calls early-return on same-day check.

@@ -130,6 +130,68 @@ def test_d5_raw_broker_hour_fails_and_utc_conversion_passes(tmp_path: Path) -> N
     assert "EA_BROKER_TIME_USED_FOR_GMT_WINDOW" in failure_codes(failing)
 
 
+def test_d6_bars_calculated_first_fixture_fails_but_helper_and_decoys_pass(
+    tmp_path: Path,
+) -> None:
+    source, card = write_fixture(tmp_path, PASSING_SOURCE)
+    source.write_text(
+        PASSING_SOURCE
+        + r'''
+// BarsCalculated(comment_only_handle) must not enter the cohort.
+string documentary_example = "BarsCalculated(string_only_handle)";
+bool IndicatorReady(const int handle)
+  {
+   return BarsCalculated(handle) >= 50;
+  }
+''',
+        encoding="utf-8",
+    )
+    failing = gate.analyze_file(source, card)
+    assert "EA_BARSCALCULATED_FIRST" in failure_codes(failing)
+    assert failure_codes(failing).count("EA_BARSCALCULATED_FIRST") == 1
+
+    source.write_text(
+        PASSING_SOURCE
+        + r'''
+// BarsCalculated(comment_only_handle) must not enter the cohort.
+string documentary_example = "BarsCalculated(string_only_handle)";
+bool IndicatorReady(const int handle)
+  {
+   return QM_IndicatorWarmupReady(handle, 0, 1, 50, "fixture");
+  }
+''',
+        encoding="utf-8",
+    )
+    passing = gate.analyze_file(source, card)
+    assert "EA_BARSCALCULATED_FIRST" not in failure_codes(passing)
+
+
+def test_d6_canonical_eas_have_no_raw_bars_calculated_call_sites() -> None:
+    rows = gate.analyze(REPO_ROOT)["rows"]
+    failures = [
+        failure
+        for row in rows
+        for failure in row["failures"]
+        if failure.startswith("EA_BARSCALCULATED_FIRST:")
+    ]
+    assert failures == []
+
+
+def test_d6_framework_helper_primes_before_readiness_and_bounds_retries() -> None:
+    helper_path = REPO_ROOT / "framework" / "include" / "QM" / "QM_Indicators.mqh"
+    helper = helper_path.read_text(encoding="utf-8")
+    start = helper.index("bool QM_IndicatorWarmupProbe(")
+    end = helper.index("bool QM_IndicatorWarmupReady(", start)
+    probe = helper[start:end]
+    assert probe.index("CopyBuffer(") < probe.index("BarsCalculated(")
+    assert "last_probe_bar == probe_bar" in probe
+    assert "persistent_error_candidate" in probe
+    assert "calculated_out < 0" in probe
+    assert "QM_INDICATOR_WARMUP_ERROR_AFTER_BARS" in probe
+    assert "SETUP_DATA_MISSING" in probe
+    assert "qm.indicator-first-tradable-bar/v1" in helper
+
+
 def run_build_check(tmp_path: Path) -> subprocess.CompletedProcess[str]:
     report = tmp_path / "reports"
     command = [

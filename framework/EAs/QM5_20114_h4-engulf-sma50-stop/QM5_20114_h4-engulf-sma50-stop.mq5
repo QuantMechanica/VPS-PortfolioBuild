@@ -323,7 +323,11 @@ bool Strategy_NoTradeFilter()
    if(bars_available < warmup ||
       !Strategy040_EnsureHandle())
       return true;
-   return (BarsCalculated(g_str040_h_sma) < warmup);
+   return (!QM_IndicatorWarmupReady(g_str040_h_sma,
+                                    0,
+                                    1,
+                                    warmup,
+                                    "STR-040_sma"));
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)

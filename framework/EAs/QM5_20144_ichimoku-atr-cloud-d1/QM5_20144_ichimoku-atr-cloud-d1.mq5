@@ -172,10 +172,10 @@ bool Strategy118_HandlesReady()
    if(!Strategy118_EnsureHandles())
       return false;
    const int required = Strategy118_WarmupBars();
-   return (BarsCalculated(g_str118_ichimoku_handle) >=
-              required &&
-           BarsCalculated(g_str118_atr_handle) >=
-              required);
+   return (QM_IndicatorWarmupReady(g_str118_ichimoku_handle,
+                                   0, 1, required, "STR-118_ichimoku") &&
+           QM_IndicatorWarmupReady(g_str118_atr_handle,
+                                   0, 1, required, "STR-118_atr"));
   }
 
 bool Strategy118_CurrentD1Bar(datetime &bar_time)

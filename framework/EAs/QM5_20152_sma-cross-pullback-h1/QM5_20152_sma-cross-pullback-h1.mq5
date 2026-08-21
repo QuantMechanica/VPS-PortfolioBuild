@@ -301,9 +301,9 @@ bool Strategy143_HandlesReady()
    return (fast != INVALID_HANDLE &&
            slow != INVALID_HANDLE &&
            stoch != INVALID_HANDLE &&
-           BarsCalculated(fast) >= 202 &&
-           BarsCalculated(slow) >= 202 &&
-           BarsCalculated(stoch) >= 202);
+           QM_IndicatorWarmupReady(fast, 0, 1, 202, "STR-143_fast_sma") &&
+           QM_IndicatorWarmupReady(slow, 0, 1, 202, "STR-143_slow_sma") &&
+           QM_IndicatorWarmupReady(stoch, 0, 1, 202, "STR-143_stoch"));
   }
 
 bool Strategy143_ReadEpisodeBar(

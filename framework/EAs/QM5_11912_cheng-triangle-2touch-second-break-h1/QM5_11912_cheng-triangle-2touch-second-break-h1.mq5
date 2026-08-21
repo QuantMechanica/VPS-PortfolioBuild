@@ -194,7 +194,11 @@ bool Strategy_ReadPivots(StrategyPivot &highs[], StrategyPivot &lows[])
    ArrayResize(lows, 0);
    if(g_zigzag_handle == INVALID_HANDLE || strategy_triangle_max_bars < 4)
       return false;
-   if(BarsCalculated(g_zigzag_handle) < strategy_triangle_max_bars + 2)
+   if(!QM_IndicatorWarmupReady(g_zigzag_handle,
+                               0,
+                               1,
+                               strategy_triangle_max_bars + 2,
+                               "QM5_11912_zigzag"))
       return false;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);

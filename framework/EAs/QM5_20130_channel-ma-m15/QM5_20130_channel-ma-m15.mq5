@@ -169,12 +169,12 @@ bool Strategy079_HandlesReady()
    if(!Strategy079_EnsureHandles())
       return false;
    const int required = Strategy079_WarmupBars();
-   return (BarsCalculated(g_str079_upper_handle) >=
-              required &&
-           BarsCalculated(g_str079_lower_handle) >=
-              required &&
-           BarsCalculated(g_str079_signal_handle) >=
-              required);
+   return (QM_IndicatorWarmupReady(g_str079_upper_handle,
+                                   0, 1, required, "STR-079_upper") &&
+           QM_IndicatorWarmupReady(g_str079_lower_handle,
+                                   0, 1, required, "STR-079_lower") &&
+           QM_IndicatorWarmupReady(g_str079_signal_handle,
+                                   0, 1, required, "STR-079_signal"));
   }
 
 bool Strategy079_CurrentBar(datetime &bar_time)

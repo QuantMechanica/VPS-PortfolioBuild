@@ -123,13 +123,15 @@ bool Strategy071_HandleReady()
   {
    if(!Strategy071_EnsureHandle())
       return false;
-   const int calculated =
-      BarsCalculated(g_str071_rsi_handle);
    const int required =
       (strategy_rsi_period + 2 > 10)
       ? strategy_rsi_period + 2
       : 10;
-   return (calculated >= required);
+   return QM_IndicatorWarmupReady(g_str071_rsi_handle,
+                                  0,
+                                  1,
+                                  required,
+                                  "STR-071_rsi");
   }
 
 bool Strategy071_CurrentBar(datetime &bar_time)

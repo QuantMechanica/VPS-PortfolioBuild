@@ -154,11 +154,17 @@ bool Strategy088_HandlesReady()
       return false;
    const int required = Strategy088_WarmupBars();
    for(int i = 0; i < STR088_TF_COUNT; ++i)
-      if(BarsCalculated(g_str088_ema_handles[i]) <
-         required)
+      if(!QM_IndicatorWarmupReady(g_str088_ema_handles[i],
+                                  0,
+                                  1,
+                                  required,
+                                  "STR-088_ema_" + IntegerToString(i)))
          return false;
-   return (BarsCalculated(g_str088_atr_handle) >=
-           required);
+   return QM_IndicatorWarmupReady(g_str088_atr_handle,
+                                  0,
+                                  1,
+                                  required,
+                                  "STR-088_atr");
   }
 
 bool Strategy088_CurrentH4Bar(datetime &bar_time)

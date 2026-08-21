@@ -177,9 +177,12 @@ bool Strategy104_HandlesReady()
    if(!Strategy104_EnsureHandles())
       return false;
    const int required = Strategy104_WarmupBars();
-   return (BarsCalculated(g_str104_fast_handle) >= required &&
-           BarsCalculated(g_str104_slow_handle) >= required &&
-           BarsCalculated(g_str104_bands_handle) >= required);
+   return (QM_IndicatorWarmupReady(g_str104_fast_handle,
+                                   0, 1, required, "STR-104_fast_ema") &&
+           QM_IndicatorWarmupReady(g_str104_slow_handle,
+                                   0, 1, required, "STR-104_slow_ema") &&
+           QM_IndicatorWarmupReady(g_str104_bands_handle,
+                                   0, 1, required, "STR-104_bands"));
   }
 
 bool Strategy104_CurrentM5Bar(datetime &bar_time)

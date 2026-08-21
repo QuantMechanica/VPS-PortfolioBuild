@@ -326,11 +326,26 @@ bool Strategy_NoTradeFilter()
       return true;
    if(!Strategy103_EnsureHandles())
       return true;
-   if(BarsCalculated(g_str103_h_sma_w1) < 60 ||
-      BarsCalculated(g_str103_h_sma_d1) < 30 ||
-      BarsCalculated(g_str103_h_sma_h4) <
-         strategy_sma_h4 + 5 ||
-      BarsCalculated(g_str103_h_atr) < atr_needed)
+   if(!QM_IndicatorWarmupReady(g_str103_h_sma_w1,
+                               0,
+                               1,
+                               60,
+                               "STR-103_sma_w1") ||
+      !QM_IndicatorWarmupReady(g_str103_h_sma_d1,
+                               0,
+                               1,
+                               30,
+                               "STR-103_sma_d1") ||
+      !QM_IndicatorWarmupReady(g_str103_h_sma_h4,
+                               0,
+                               1,
+                               strategy_sma_h4 + 5,
+                               "STR-103_sma_h4") ||
+      !QM_IndicatorWarmupReady(g_str103_h_atr,
+                               0,
+                               1,
+                               atr_needed,
+                               "STR-103_atr"))
       return true;
 
    double offset_price = 0.0;

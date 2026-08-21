@@ -30,6 +30,9 @@
 //   double QM_MFI(sym, tf, period, shift=1)   // Money Flow Index on tick volume
 //   double QM_Envelope_Upper(sym, tf, period, deviation, method, shift=1, price=PRICE_CLOSE)
 //   double QM_Envelope_Lower(sym, tf, period, deviation, method, shift=1, price=PRICE_CLOSE)
+//   bool   QM_IndicatorWarmupReady(handle, buffer, shift, required, component)
+//   int    QM_IndicatorWarmupCalculated(handle, buffer, shift, required, component)
+//   void   QM_IndicatorRecordFirstTradableBar(scope, required, tf)
 //
 //   void   QM_IndicatorsShutdown()       // called from QM_FrameworkShutdown
 //
@@ -41,6 +44,8 @@
 
 #define QM_INDICATORS_MAX 64
 #define QM_BARTRACKER_MAX 16
+#define QM_INDICATOR_WARMUP_MAX_SCOPES 64
+#define QM_INDICATOR_WARMUP_ERROR_AFTER_BARS 32
 
 struct QM_IndicatorSlot
   {
@@ -50,6 +55,27 @@ struct QM_IndicatorSlot
 
 QM_IndicatorSlot g_qm_ind_slots[QM_INDICATORS_MAX];
 int              g_qm_ind_count = 0;
+
+// Indicator handles can report BarsCalculated=-1 until CopyBuffer has asked
+// MT5 to materialise the indicator series.  A caller that checks
+// BarsCalculated first can therefore create an unreachable first read and a
+// silent zero-trade run.  Keep the retry evidence here so every EA uses the
+// same bounded, fail-closed warm-up contract.
+struct QM_IndicatorWarmupSlot
+  {
+   string         key;
+   datetime       last_probe_bar;
+   bool           last_probe_ready;
+   int            last_calculated;
+   datetime       last_retry_bar;
+   int            retry_bars;
+   bool           permanent_error_emitted;
+  };
+
+QM_IndicatorWarmupSlot g_qm_ind_warmup_slots[QM_INDICATOR_WARMUP_MAX_SCOPES];
+int                    g_qm_ind_warmup_count = 0;
+string                 g_qm_ind_first_tradable_scopes[QM_INDICATOR_WARMUP_MAX_SCOPES];
+int                    g_qm_ind_first_tradable_count = 0;
 
 struct QM_BarTrackerSlot
   {
@@ -95,6 +121,20 @@ void QM_IndicatorsShutdown()
      }
    g_qm_ind_count = 0;
    g_qm_bartracker_count = 0;
+   for(int j = 0; j < g_qm_ind_warmup_count; ++j)
+     {
+      g_qm_ind_warmup_slots[j].key = "";
+      g_qm_ind_warmup_slots[j].last_probe_bar = 0;
+      g_qm_ind_warmup_slots[j].last_probe_ready = false;
+      g_qm_ind_warmup_slots[j].last_calculated = -1;
+      g_qm_ind_warmup_slots[j].last_retry_bar = 0;
+      g_qm_ind_warmup_slots[j].retry_bars = 0;
+      g_qm_ind_warmup_slots[j].permanent_error_emitted = false;
+     }
+   for(int k = 0; k < g_qm_ind_first_tradable_count; ++k)
+      g_qm_ind_first_tradable_scopes[k] = "";
+   g_qm_ind_warmup_count = 0;
+   g_qm_ind_first_tradable_count = 0;
   }
 
 // ----- New-bar tracker -----------------------------------------------------
@@ -246,6 +286,219 @@ double QM_IndicatorReadBuffer(const int handle, const int buffer_idx, const int 
    if(CopyBuffer(handle, buffer_idx, shift, 1, buf) != 1)
       return 0.0;
    return buf[0];
+  }
+
+int QM_IndicatorWarmupSlotIndex(const string key)
+  {
+   for(int i = 0; i < g_qm_ind_warmup_count; ++i)
+      if(g_qm_ind_warmup_slots[i].key == key)
+         return i;
+   if(g_qm_ind_warmup_count >= QM_INDICATOR_WARMUP_MAX_SCOPES)
+      return -1;
+   const int slot = g_qm_ind_warmup_count++;
+   g_qm_ind_warmup_slots[slot].key = key;
+   g_qm_ind_warmup_slots[slot].last_probe_bar = 0;
+   g_qm_ind_warmup_slots[slot].last_probe_ready = false;
+   g_qm_ind_warmup_slots[slot].last_calculated = -1;
+   g_qm_ind_warmup_slots[slot].last_retry_bar = 0;
+   g_qm_ind_warmup_slots[slot].retry_bars = 0;
+   g_qm_ind_warmup_slots[slot].permanent_error_emitted = false;
+   return slot;
+  }
+
+bool QM_IndicatorWarmupRetryLogDue(const int retry_bars)
+  {
+   return (retry_bars == 1 || retry_bars == 2 || retry_bars == 4 ||
+           retry_bars == 8 || retry_bars == 16 ||
+           retry_bars == QM_INDICATOR_WARMUP_ERROR_AFTER_BARS);
+  }
+
+bool QM_IndicatorWarmupProbe(const int handle,
+                             const int buffer_idx,
+                             const int probe_shift,
+                             const int required_bars,
+                             const string component,
+                             int &calculated_out)
+  {
+   calculated_out = -1;
+   if(handle == INVALID_HANDLE || buffer_idx < 0 || probe_shift < 0 ||
+      required_bars <= 0)
+     {
+      PrintFormat("QM_INDICATOR_WARMUP_INVALID component=%s handle=%d buffer=%d shift=%d required_bars=%d",
+                  component, handle, buffer_idx, probe_shift, required_bars);
+      return false;
+     }
+
+   const string key = StringFormat("%d|%d|%d|%d|%s",
+                                   handle,
+                                   buffer_idx,
+                                   probe_shift,
+                                   required_bars,
+                                   component);
+   const int slot = QM_IndicatorWarmupSlotIndex(key);
+   datetime probe_bar = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 0);
+   if(probe_bar <= 0)
+      probe_bar = 1; // never turn tick cadence into retry-bar cadence
+   if(slot >= 0 && g_qm_ind_warmup_slots[slot].last_probe_bar == probe_bar)
+     {
+      calculated_out = g_qm_ind_warmup_slots[slot].last_calculated;
+      return g_qm_ind_warmup_slots[slot].last_probe_ready;
+     }
+
+   // The read MUST precede BarsCalculated.  This is the causal guard against
+   // the BarsCalculated-first dead path diagnosed in QM5_20096.
+   double probe[1];
+   ResetLastError();
+   const int copied = CopyBuffer(handle, buffer_idx, probe_shift, 1, probe);
+   const int copy_error = (copied == 1) ? 0 : GetLastError();
+   calculated_out = BarsCalculated(handle);
+   const bool ready = (copied == 1 && calculated_out >= required_bars);
+   if(slot < 0)
+      return ready;
+
+   g_qm_ind_warmup_slots[slot].last_probe_bar = probe_bar;
+   g_qm_ind_warmup_slots[slot].last_probe_ready = ready;
+   g_qm_ind_warmup_slots[slot].last_calculated = calculated_out;
+   if(ready)
+     {
+      g_qm_ind_warmup_slots[slot].last_retry_bar = 0;
+      g_qm_ind_warmup_slots[slot].retry_bars = 0;
+      g_qm_ind_warmup_slots[slot].permanent_error_emitted = false;
+      return true;
+     }
+
+   // A non-negative count below the threshold is ordinary warm-up, not an
+   // infrastructure defect.  Escalate only the diagnosed permanent -1 class,
+   // or a buffer that still cannot be read after BarsCalculated says the full
+   // requirement exists.  This prevents long-lookback EAs from turning their
+   // legitimate first N bars into SETUP_DATA_MISSING.
+   const bool persistent_error_candidate =
+      (calculated_out < 0 ||
+       (calculated_out >= required_bars && copied != 1));
+   if(!persistent_error_candidate)
+     {
+      g_qm_ind_warmup_slots[slot].last_retry_bar = 0;
+      g_qm_ind_warmup_slots[slot].retry_bars = 0;
+      g_qm_ind_warmup_slots[slot].permanent_error_emitted = false;
+      return false;
+     }
+
+   const datetime retry_bar = probe_bar;
+   if(g_qm_ind_warmup_slots[slot].last_retry_bar != retry_bar)
+     {
+      g_qm_ind_warmup_slots[slot].last_retry_bar = retry_bar;
+      g_qm_ind_warmup_slots[slot].retry_bars++;
+      const int retry_bars = g_qm_ind_warmup_slots[slot].retry_bars;
+      if(QM_IndicatorWarmupRetryLogDue(retry_bars))
+         PrintFormat("QM_INDICATOR_WARMUP_RETRY component=%s handle=%d buffer=%d shift=%d required_bars=%d calculated=%d copied=%d copy_error=%d retry_bars=%d",
+                     component, handle, buffer_idx, probe_shift, required_bars,
+                     calculated_out, copied, copy_error, retry_bars);
+     }
+
+   if(g_qm_ind_warmup_slots[slot].retry_bars >=
+         QM_INDICATOR_WARMUP_ERROR_AFTER_BARS &&
+      !g_qm_ind_warmup_slots[slot].permanent_error_emitted)
+     {
+      g_qm_ind_warmup_slots[slot].permanent_error_emitted = true;
+#ifdef QM_LOGGER_MQH
+      QM_LogEvent(QM_ERROR,
+                  SETUP_DATA_MISSING,
+                  StringFormat("{\"component\":\"indicator_warmup\",\"indicator_component\":\"%s\",\"handle\":%d,\"buffer\":%d,\"probe_shift\":%d,\"required_bars\":%d,\"calculated\":%d,\"copied\":%d,\"copy_error\":%d,\"retry_bars\":%d}",
+                               QM_LoggerEscapeJson(component),
+                               handle,
+                               buffer_idx,
+                               probe_shift,
+                               required_bars,
+                               calculated_out,
+                               copied,
+                               copy_error,
+                               g_qm_ind_warmup_slots[slot].retry_bars));
+#endif
+      PrintFormat("QM_INDICATOR_WARMUP_ERROR component=%s handle=%d buffer=%d shift=%d required_bars=%d calculated=%d copied=%d copy_error=%d retry_bars=%d",
+                  component, handle, buffer_idx, probe_shift, required_bars,
+                  calculated_out, copied, copy_error,
+                  g_qm_ind_warmup_slots[slot].retry_bars);
+     }
+   return false;
+  }
+
+bool QM_IndicatorWarmupReady(const int handle,
+                             const int buffer_idx,
+                             const int probe_shift,
+                             const int required_bars,
+                             const string component = "indicator")
+  {
+   int calculated = -1;
+   return QM_IndicatorWarmupProbe(handle,
+                                  buffer_idx,
+                                  probe_shift,
+                                  required_bars,
+                                  component,
+                                  calculated);
+  }
+
+int QM_IndicatorWarmupCalculated(const int handle,
+                                 const int buffer_idx,
+                                 const int probe_shift,
+                                 const int required_bars,
+                                 const string component = "indicator")
+  {
+   int calculated = -1;
+   if(!QM_IndicatorWarmupProbe(handle,
+                               buffer_idx,
+                               probe_shift,
+                               required_bars,
+                               component,
+                               calculated))
+      return -1;
+   return calculated;
+  }
+
+void QM_IndicatorRecordFirstTradableBar(const string scope,
+                                        const int required_bars,
+                                        const ENUM_TIMEFRAMES reference_tf = PERIOD_CURRENT)
+  {
+   const ENUM_TIMEFRAMES effective_tf =
+      (reference_tf == PERIOD_CURRENT)
+      ? (ENUM_TIMEFRAMES)_Period
+      : reference_tf;
+   const string scope_key = _Symbol + "|" + IntegerToString((int)effective_tf) +
+                            "|" + scope;
+   for(int i = 0; i < g_qm_ind_first_tradable_count; ++i)
+      if(g_qm_ind_first_tradable_scopes[i] == scope_key)
+         return;
+   if(g_qm_ind_first_tradable_count >= QM_INDICATOR_WARMUP_MAX_SCOPES)
+      return; // bounded evidence must never alter the strategy decision
+   g_qm_ind_first_tradable_scopes[g_qm_ind_first_tradable_count++] = scope_key;
+
+   datetime tradable_bar = iTime(_Symbol, effective_tf, 0);
+   if(tradable_bar <= 0)
+      tradable_bar = TimeCurrent();
+   const datetime reference_bar = iTime(_Symbol, effective_tf, 1);
+   const string tradable_date = TimeToString(tradable_bar, TIME_DATE);
+#ifdef QM_LOGGER_MQH
+   QM_LogEvent(QM_INFO,
+               "INDICATOR_FIRST_TRADABLE_BAR",
+               StringFormat("{\"marker_schema\":\"qm.indicator-first-tradable-bar/v1\",\"symbol\":\"%s\",\"reference_timeframe\":%d,\"tradable_bar_date\":\"%s\",\"tradable_bar_time\":%I64d,\"reference_bar_time\":%I64d,\"required_bars\":%d,\"scope\":\"%s\"}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            (int)effective_tf,
+                            tradable_date,
+                            (long)tradable_bar,
+                            (long)reference_bar,
+                            required_bars,
+                            QM_LoggerEscapeJson(scope)));
+#endif
+   string printable_scope = scope;
+   StringReplace(printable_scope, " ", "_");
+   StringReplace(printable_scope, "\t", "_");
+   PrintFormat("QM_INDICATOR_FIRST_TRADABLE_BAR schema=qm.indicator-first-tradable-bar/v1 symbol=%s reference_timeframe=%d tradable_bar_date=%s tradable_bar_time=%I64d reference_bar_time=%I64d required_bars=%d scope=%s",
+               _Symbol,
+               (int)effective_tf,
+               tradable_date,
+               (long)tradable_bar,
+               (long)reference_bar,
+               required_bars,
+               printable_scope);
   }
 
 int QM_IndATR(const string sym, const ENUM_TIMEFRAMES tf, const int period)

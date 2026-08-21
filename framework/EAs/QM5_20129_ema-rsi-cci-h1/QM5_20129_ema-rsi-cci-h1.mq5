@@ -157,10 +157,14 @@ bool Strategy075_HandlesReady()
    if(!Strategy075_EnsureHandles())
       return false;
    const int required = Strategy075_WarmupBars();
-   return (BarsCalculated(g_str075_fast_handle) >= required &&
-           BarsCalculated(g_str075_slow_handle) >= required &&
-           BarsCalculated(g_str075_rsi_handle) >= required &&
-           BarsCalculated(g_str075_cci_handle) >= required);
+   return (QM_IndicatorWarmupReady(g_str075_fast_handle,
+                                   0, 1, required, "STR-075_fast_ema") &&
+           QM_IndicatorWarmupReady(g_str075_slow_handle,
+                                   0, 1, required, "STR-075_slow_ema") &&
+           QM_IndicatorWarmupReady(g_str075_rsi_handle,
+                                   0, 1, required, "STR-075_rsi") &&
+           QM_IndicatorWarmupReady(g_str075_cci_handle,
+                                   0, 1, required, "STR-075_cci"));
   }
 
 bool Strategy075_CurrentBar(datetime &bar_time)

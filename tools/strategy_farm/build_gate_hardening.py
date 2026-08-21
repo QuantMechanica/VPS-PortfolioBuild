@@ -49,6 +49,15 @@ def strip_comments_preserve_lines(text: str) -> str:
     return re.sub(r"//[^\r\n]*", blank, text)
 
 
+def strip_literals_preserve_lines(text: str) -> str:
+    """Remove quoted lexical decoys while retaining offsets and line numbers."""
+
+    def blank(match: re.Match[str]) -> str:
+        return "".join("\n" if char == "\n" else " " for char in match.group(0))
+
+    return re.sub(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', blank, text)
+
+
 def line_number(text: str, offset: int) -> int:
     return text.count("\n", 0, max(0, offset)) + 1
 
@@ -225,6 +234,28 @@ def check_management_reachability(source: SourceFile) -> list[str]:
                 f"position management/exit ({reason}); manage existing exposure before entry admission."
             )
     return failures[:1]
+
+
+def check_bars_calculated_first(source: SourceFile) -> list[str]:
+    """Reject raw EA-side BarsCalculated call sites.
+
+    A raw call cannot prove that CopyBuffer was reached first across helper and
+    callback boundaries.  The framework warm-up helpers make that order
+    mechanical and attach bounded retry/permanent-error evidence.  Comments and
+    string literals are blanked before calls are parsed, so documentary examples
+    never enter the cohort.
+    """
+
+    code = strip_literals_preserve_lines(source.code)
+    failures: list[str] = []
+    for _, offset, _ in iter_calls(code, ("BarsCalculated",)):
+        failures.append(
+            "EA_BARSCALCULATED_FIRST: "
+            f"{source.path.name}:{line_number(code, offset)} calls BarsCalculated directly; "
+            "use QM_IndicatorWarmupReady/QM_IndicatorWarmupCalculated so CopyBuffer "
+            "priming and bounded persistent-error evidence precede the readiness gate."
+        )
+    return failures
 
 
 def _card_limit(line: str, label: str) -> float | None:
@@ -404,6 +435,12 @@ def analyze_file(source_path: Path, card_path: Path | None) -> dict:
     failures.extend(management_failures)
     check_details["D4_management_reachability"] = {"failures": len(management_failures)}
 
+    warmup_failures = check_bars_calculated_first(source)
+    failures.extend(warmup_failures)
+    check_details["D6_indicator_warmup_reachability"] = {
+        "failures": len(warmup_failures)
+    }
+
     loss_failures, loss_warnings, loss_detail = check_loss_limit_contract(source, card_path)
     failures.extend(loss_failures)
     warnings.extend(loss_warnings)
@@ -457,6 +494,7 @@ def analyze(repo_root: Path, ea_label: str | None = None) -> dict:
             "D3": "FAIL only for literal x10 inside known pip-native helper arguments",
             "D4": "FAIL only when an early-return condition is mechanically tied to open-position state",
             "D5": "FAIL only when the card declares a GMT/UTC clock window and source uses raw broker-hour logic without a recognized/documented conversion",
+            "D6": "FAIL on parsed EA call sites for raw BarsCalculated; comments and quoted literals are excluded and framework warm-up helpers are required",
         },
     }
 

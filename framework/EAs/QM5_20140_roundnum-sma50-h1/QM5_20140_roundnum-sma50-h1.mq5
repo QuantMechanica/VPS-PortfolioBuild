@@ -130,7 +130,11 @@ bool Strategy087_HandleReady()
    int required = 60;
    if(strategy_sma_period + 5 > required)
       required = strategy_sma_period + 5;
-   return (BarsCalculated(g_str087_sma_handle) >= required);
+   return QM_IndicatorWarmupReady(g_str087_sma_handle,
+                                  0,
+                                  1,
+                                  required,
+                                  "STR-087_sma");
   }
 
 bool Strategy087_CurrentBar(datetime &bar_time)

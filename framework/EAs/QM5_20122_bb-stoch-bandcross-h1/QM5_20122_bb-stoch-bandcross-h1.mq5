@@ -128,8 +128,16 @@ bool Strategy067_HandlesReady()
   {
    if(!Strategy067_EnsureHandles())
       return false;
-   return (BarsCalculated(g_str067_h_bands) >= 30 &&
-           BarsCalculated(g_str067_h_stoch) >= 30);
+   return (QM_IndicatorWarmupReady(g_str067_h_bands,
+                                   0,
+                                   1,
+                                   30,
+                                   "STR-067_bands") &&
+           QM_IndicatorWarmupReady(g_str067_h_stoch,
+                                   0,
+                                   1,
+                                   30,
+                                   "STR-067_stoch"));
   }
 
 void Strategy067_LogDataMissing(const string component,

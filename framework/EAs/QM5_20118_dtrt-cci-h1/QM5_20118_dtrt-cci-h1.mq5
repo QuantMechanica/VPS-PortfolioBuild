@@ -236,7 +236,12 @@ bool Strategy049_ReplayBeforeLatest()
   {
    if(!Strategy049_EnsureHandle())
       return false;
-   const int calculated = BarsCalculated(g_str049_h_cci);
+   const int calculated =
+      QM_IndicatorWarmupCalculated(g_str049_h_cci,
+                                    0,
+                                    1,
+                                    2,
+                                    "STR-049_cci_replay");
    const int oldest_shift =
       (calculated - 1 < 400) ? calculated - 1 : 400;
    if(oldest_shift < 2)
@@ -580,7 +585,11 @@ bool Strategy_NoTradeFilter()
    if(bars_available < warmup ||
       !Strategy049_EnsureHandle())
       return true;
-   return (BarsCalculated(g_str049_h_cci) < warmup);
+   return (!QM_IndicatorWarmupReady(g_str049_h_cci,
+                                    0,
+                                    1,
+                                    warmup,
+                                    "STR-049_cci"));
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)

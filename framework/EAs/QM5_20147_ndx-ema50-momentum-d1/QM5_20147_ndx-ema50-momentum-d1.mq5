@@ -104,7 +104,8 @@ bool Strategy127_EnsureHandle()
 bool Strategy127_HandleReady()
   {
    return (Strategy127_EnsureHandle() &&
-           BarsCalculated(g_str127_ema_handle) >= 60);
+           QM_IndicatorWarmupReady(g_str127_ema_handle,
+                                   0, 1, 60, "STR-127_ema"));
   }
 
 bool Strategy127_CurrentD1Bar(datetime &bar_time)

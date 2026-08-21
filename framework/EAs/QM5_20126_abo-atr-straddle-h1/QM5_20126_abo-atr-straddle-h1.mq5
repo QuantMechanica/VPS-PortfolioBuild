@@ -128,8 +128,11 @@ bool Strategy072_HandleReady()
       (strategy_atr_period + 2 > 60)
       ? strategy_atr_period + 2
       : 60;
-   return (BarsCalculated(g_str072_atr_handle) >=
-           required);
+   return QM_IndicatorWarmupReady(g_str072_atr_handle,
+                                  0,
+                                  1,
+                                  required,
+                                  "STR-072_atr");
   }
 
 bool Strategy072_CurrentBarTime(datetime &bar_time)
