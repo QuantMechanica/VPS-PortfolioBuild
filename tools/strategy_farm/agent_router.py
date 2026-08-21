@@ -42,6 +42,7 @@ DEFAULT_ROOT = farmctl.DEFAULT_ROOT
 CLAUDE_DISABLED_FLAG = Path(r"D:\QM\strategy_farm\CLAUDE_DISABLED.flag")
 CARDS_REVIEW_REL = Path("artifacts") / "cards_review"
 CARDS_APPROVED_REL = Path("artifacts") / "cards_approved"
+ROUTER_CHECKOUT_ROOT = Path(__file__).resolve().parents[2]
 
 TASK_STATES = {
     "BACKLOG",
@@ -70,6 +71,18 @@ TASK_TYPE_CAPABILITIES: dict[str, list[str]] = {
     "triage_failure": ["ops", "review"],
     "ops_issue": ["ops", "code"],
     "agent_learn": ["research"],
+}
+
+# Minimum eligibility contract per lane.  Task-type requirements are kept as
+# the source of truth; lane-specific capabilities cover governed specialist
+# work that is expressed as a required skill on an otherwise generic task.
+AGENT_TASK_TYPE_LANES: dict[str, tuple[str, ...]] = {
+    "codex": ("ops_issue", "triage_failure"),
+    "claude": ("ops_issue", "triage_failure"),
+    "gemini": ("research_strategy",),
+}
+AGENT_EXTRA_REQUIRED_CAPABILITIES: dict[str, set[str]] = {
+    "gemini": {"video_analysis"},
 }
 
 # Task types deliberately removed from the agent lane. `pipeline_run` required
@@ -128,6 +141,13 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     },
     "gemini": {
         "enabled": True,
+        # Research/video lane. video_analysis is the governed specialist
+        # capability that only agy can perform (VPS IP is YouTube-blocked).
+        # Whether code/tests/repo_edit belong on this lane is a SEPARATE OWNER
+        # decision after the 2026-08-21 agy build-wave review (49/50 negative);
+        # the flapping fix (ticket cd982cfc) deliberately does NOT change this
+        # set — it only stops stale worktree checkouts from overwriting it.
+        # Leave exactly as-is until that decision lands.
         "capabilities": ["code", "tests", "repo_edit", "research", "strategy", "source_discovery", "video_analysis"],
         "max_parallel": 2,
         "cost_rank": 10,
@@ -317,8 +337,57 @@ def init_schema(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE agent_tasks ADD COLUMN required_skills_json TEXT NOT NULL DEFAULT '[]'")
 
 
+def _registry_writer_authorized() -> bool:
+    """Only the primary checkout may overwrite the shared agent registry.
+
+    A normal checkout has a real ``.git/`` directory.  Git linked worktrees
+    have a ``.git`` *file*, so scheduled orchestration worktrees remain readers
+    even when they execute an older/default-divergent source revision.
+    """
+    return (ROUTER_CHECKOUT_ROOT / ".git").is_dir()
+
+
+def _minimum_lane_capabilities(agent_id: str) -> set[str]:
+    required = set(AGENT_EXTRA_REQUIRED_CAPABILITIES.get(agent_id, set()))
+    for task_type in AGENT_TASK_TYPE_LANES.get(agent_id, ()):
+        required.update(TASK_TYPE_CAPABILITIES[task_type])
+    return required
+
+
+def _registry_contract_from_conn(conn: sqlite3.Connection) -> dict[str, Any]:
+    rows = {
+        str(row["agent_id"]): set(json.loads(row["capabilities_json"] or "[]"))
+        for row in conn.execute("SELECT agent_id, capabilities_json FROM agent_registry").fetchall()
+    }
+    gaps = []
+    for agent_id in sorted(AGENT_TASK_TYPE_LANES):
+        required = _minimum_lane_capabilities(agent_id)
+        actual = rows.get(agent_id, set())
+        missing = sorted(required - actual)
+        if missing:
+            gaps.append({"agent_id": agent_id, "missing": missing, "required": sorted(required)})
+    return {"ok": not gaps, "gaps": gaps}
+
+
+def registry_contract(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
+    """Read-only report of live lane capabilities against the routing contract."""
+    with closing(connect(root)) as conn:
+        return _registry_contract_from_conn(conn)
+
+
 def sync_default_registry(root: Path = DEFAULT_ROOT, claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG) -> dict[str, Any]:
     claude_disabled_flag = _effective_claude_disabled_flag(root, claude_disabled_flag)
+    if not _registry_writer_authorized():
+        with closing(connect(root)) as conn:
+            contract = _registry_contract_from_conn(conn)
+        return {
+            "synced": [],
+            "claude_disabled": claude_disabled_flag.exists(),
+            "read_only": True,
+            "reason": "linked_worktree_registry_reader",
+            "checkout_root": str(ROUTER_CHECKOUT_ROOT),
+            "contract": contract,
+        }
     now = farmctl.utc_now()
     changed: list[str] = []
     with closing(connect(root)) as conn:
@@ -354,7 +423,14 @@ def sync_default_registry(root: Path = DEFAULT_ROOT, claude_disabled_flag: Path 
             )
             changed.append(agent_id)
         conn.commit()
-    return {"synced": changed, "claude_disabled": claude_disabled_flag.exists()}
+        contract = _registry_contract_from_conn(conn)
+    return {
+        "synced": changed,
+        "claude_disabled": claude_disabled_flag.exists(),
+        "read_only": False,
+        "checkout_root": str(ROUTER_CHECKOUT_ROOT),
+        "contract": contract,
+    }
 
 
 def enqueue_task(
@@ -574,6 +650,52 @@ def _declared_registry_capabilities(conn: sqlite3.Connection) -> set[str]:
     return caps
 
 
+def _governed_routing_capabilities() -> set[str]:
+    """Capabilities that remain routing requirements even if the live row drifts."""
+    return {
+        str(capability)
+        for cfg in DEFAULT_AGENT_REGISTRY.values()
+        for capability in cfg.get("capabilities", [])
+    }
+
+
+def _capability_profile_gap(conn: sqlite3.Connection, required: set[str]) -> dict[str, Any] | None:
+    """Describe a structural gap when no declared lane can satisfy one task."""
+    profiles: dict[str, list[str]] = {}
+    for row in conn.execute(
+        "SELECT agent_id, capabilities_json FROM agent_registry ORDER BY agent_id"
+    ).fetchall():
+        capabilities = set(json.loads(row["capabilities_json"] or "[]"))
+        if required.issubset(capabilities):
+            return None
+        profiles[str(row["agent_id"])] = sorted(required - capabilities)
+    return {
+        "code": "ROUTER_CAPABILITY_UNROUTABLE",
+        "required": sorted(required),
+        "missing_by_agent": profiles,
+    }
+
+
+def _record_capability_warning(
+    conn: sqlite3.Connection,
+    task: sqlite3.Row,
+    warning: dict[str, Any],
+) -> None:
+    """Persist one visible warning without changing queue age or priority."""
+    try:
+        payload = json.loads(task["payload_json"] or "{}")
+    except (TypeError, json.JSONDecodeError):
+        payload = {}
+    if payload.get("router_capability_warning") == warning:
+        return
+    payload["router_capability_warning"] = warning
+    conn.execute(
+        "UPDATE agent_tasks SET payload_json=? WHERE id=? AND state IN ('BACKLOG', 'TODO')",
+        (_json(payload), task["id"]),
+    )
+    _record_lease_event(conn, task["id"], "routing_capability_unroutable", warning)
+
+
 def _eligible_agents(conn: sqlite3.Connection, required: set[str], root: Path = DEFAULT_ROOT) -> list[sqlite3.Row]:
     rows = conn.execute(
         """
@@ -656,13 +778,16 @@ def route_once(
             conn.commit()
             return RouteDecision("", "", None, "no_routable_task")
         declared_caps = _declared_registry_capabilities(conn)
+        governed_caps = _governed_routing_capabilities()
         skipped: list[str] = []
+        capability_gaps: list[tuple[sqlite3.Row, dict[str, Any]]] = []
         selected: tuple[sqlite3.Row, sqlite3.Row, set[str], dict[str, Any]] | None = None
         quota_blocked: list[dict[str, Any]] = []
         for task in tasks:
             required = set(json.loads(task["required_capabilities_json"] or "[]"))
-            # required_skills gate routing too — but only skills some agent
-            # actually DECLARES (e.g. gemini: video_analysis). Routing was
+            # required_skills gate routing too — for capabilities governed by
+            # defaults even if the live registry has drifted (e.g. Gemini's
+            # video_analysis). Routing was
             # skills-blind and put two OWNER video tickets on codex while
             # gemini was full (2026-07-07). Skills nobody declares
             # ("code-review", "gemini-output-review" on auto-created review
@@ -670,7 +795,13 @@ def route_once(
             # unroutable. Declared-but-disabled lane => ticket waits rather
             # than falling to an incapable agent.
             skills = set(json.loads(task["required_skills_json"] or "[]"))
-            required |= skills & declared_caps
+            required |= skills & (declared_caps | governed_caps)
+            capability_gap = _capability_profile_gap(conn, required)
+            if capability_gap is not None:
+                _record_capability_warning(conn, task, capability_gap)
+                capability_gaps.append((task, capability_gap))
+                skipped.append(task["id"])
+                continue
             agents = _eligible_agents(conn, required, root)
             if not agents:
                 skipped.append(task["id"])
@@ -708,11 +839,21 @@ def route_once(
             break
         if selected is None:
             conn.commit()
+            if capability_gaps:
+                gap_task, gap = capability_gaps[0]
+                missing = ",".join(gap["required"])
+                return RouteDecision(
+                    gap_task["id"],
+                    gap_task["task_type"],
+                    None,
+                    f"capability_unavailable:{missing}",
+                )
             first = tasks[0]
             reason = "quota_gate_blocked" if quota_blocked else "no_available_agent"
             return RouteDecision(first["id"], first["task_type"], None, reason)
         task, agent, required, gate = selected
         payload = json.loads(task["payload_json"] or "{}")
+        payload.pop("router_capability_warning", None)
         payload["routed_at"] = now
         payload["required_capabilities"] = sorted(required)
         if gate.get("enforced"):
@@ -989,7 +1130,7 @@ def run_once(
 
 
 def status(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG) -> dict[str, Any]:
-    sync_default_registry(root, claude_disabled_flag=claude_disabled_flag)
+    registry_sync = sync_default_registry(root, claude_disabled_flag=claude_disabled_flag)
     with closing(connect(root)) as conn:
         agents = [
             {
@@ -1012,9 +1153,12 @@ def status(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE_DIS
                 """
             ).fetchall()
         ]
+        contract = _registry_contract_from_conn(conn)
     return {
         "agents": agents,
         "tasks": tasks,
+        "registry_sync": registry_sync,
+        "registry_contract": contract,
         "quota_headroom": quota_spawn_gate.read_headroom_summary(),
     }
 

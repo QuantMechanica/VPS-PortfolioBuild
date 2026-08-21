@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from tools.strategy_farm import agent_router
 from tools.strategy_farm import farmctl
@@ -133,6 +134,90 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             self.assertTrue(claude["enabled"])
             self.assertEqual(claude["max_parallel"], 3)
             self.assertIn("code", claude["capabilities"])
+
+    def test_default_and_live_registry_cover_each_lane_contract(self) -> None:
+        for agent_id, task_types in agent_router.AGENT_TASK_TYPE_LANES.items():
+            required = set(agent_router.AGENT_EXTRA_REQUIRED_CAPABILITIES.get(agent_id, set()))
+            for task_type in task_types:
+                required.update(agent_router.TASK_TYPE_CAPABILITIES[task_type])
+            declared = set(agent_router.DEFAULT_AGENT_REGISTRY[agent_id]["capabilities"])
+            self.assertTrue(required.issubset(declared), (agent_id, sorted(required - declared)))
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            synced = agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+            self.assertFalse(synced["read_only"])
+            self.assertTrue(synced["contract"]["ok"])
+            self.assertTrue(agent_router.registry_contract(root)["ok"])
+
+    def test_linked_worktree_is_registry_reader_and_cannot_overwrite_rows(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "state"
+            linked_checkout = Path(tmp) / "linked"
+            linked_checkout.mkdir()
+            (linked_checkout / ".git").write_text("gitdir: elsewhere\n", encoding="utf-8")
+            farmctl.init_db(root)
+            agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+            narrow = ["code", "research", "review", "strategy", "summary"]
+            with agent_router.connect(root) as conn:
+                conn.execute(
+                    "UPDATE agent_registry SET capabilities_json=? WHERE agent_id='claude'",
+                    (json.dumps(narrow),),
+                )
+                conn.commit()
+
+            with patch.object(agent_router, "ROUTER_CHECKOUT_ROOT", linked_checkout):
+                result = agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+
+            self.assertTrue(result["read_only"])
+            self.assertEqual(result["synced"], [])
+            self.assertFalse(result["contract"]["ok"])
+            with agent_router.connect(root) as conn:
+                stored = conn.execute(
+                    "SELECT capabilities_json FROM agent_registry WHERE agent_id='claude'"
+                ).fetchone()
+            self.assertEqual(json.loads(stored["capabilities_json"]), narrow)
+
+    def test_missing_governed_capability_fails_loud_and_persists_warning(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "state"
+            linked_checkout = Path(tmp) / "linked"
+            linked_checkout.mkdir()
+            (linked_checkout / ".git").write_text("gitdir: elsewhere\n", encoding="utf-8")
+            farmctl.init_db(root)
+            agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+            with agent_router.connect(root) as conn:
+                conn.execute(
+                    "UPDATE agent_registry SET capabilities_json=? WHERE agent_id='gemini'",
+                    (json.dumps(["research", "strategy", "source_discovery"]),),
+                )
+                conn.commit()
+            task = agent_router.enqueue_task(
+                root,
+                "research_strategy",
+                priority=99,
+                required_skills=["video_analysis"],
+            )
+
+            with patch.object(agent_router, "ROUTER_CHECKOUT_ROOT", linked_checkout):
+                decision = agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
+
+            self.assertEqual(decision.task_id, task["task_id"])
+            self.assertTrue(decision.reason.startswith("capability_unavailable:"))
+            with agent_router.connect(root) as conn:
+                row = conn.execute(
+                    "SELECT state, assigned_agent, payload_json FROM agent_tasks WHERE id=?",
+                    (task["task_id"],),
+                ).fetchone()
+                event = conn.execute(
+                    "SELECT event FROM events WHERE entity_type='agent_task' AND entity_id=? ORDER BY ts DESC LIMIT 1",
+                    (task["task_id"],),
+                ).fetchone()
+            warning = json.loads(row["payload_json"])["router_capability_warning"]
+            self.assertEqual(row["state"], "TODO")
+            self.assertIsNone(row["assigned_agent"])
+            self.assertEqual(warning["code"], "ROUTER_CAPABILITY_UNROUTABLE")
+            self.assertEqual(event["event"], "routing_capability_unroutable")
 
     def test_codex_enabled_cap_is_five(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
