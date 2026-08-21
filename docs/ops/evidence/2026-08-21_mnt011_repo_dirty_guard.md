@@ -120,6 +120,13 @@ remaining refusal is the intended human-source side of the contract. No untracke
 EA content was deleted, no factory or terminal was started, and no active backtest
 was interrupted.
 
+The next real build-lane write supplied an additional status-aware observation:
+an untracked canonical `QM5_41088_xauxag-wclv-div-rv.mq5` appeared while
+`CLAUDE.md` remained modified. The guard reported `total_count=2`,
+`generated_count=1`, but still `count=1` with only `CLAUDE.md` in `entries`.
+Thus fresh generated scaffolding no longer increases the blocking count even
+before the next absorption cycle.
+
 ## M011-4 — applied disposition
 
 - The 89 untracked card mirrors remain in their EA directories and are ignored by
