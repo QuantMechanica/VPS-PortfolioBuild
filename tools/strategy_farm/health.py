@@ -754,10 +754,25 @@ def chk_work_items_timestamp_sanity(con) -> dict:
 
 
 def chk_pump_task_health() -> dict:
-    """Scheduled task QM_StrategyFarm_Pump_5min LastResult must be 0, and the
-    pump lock must not be orphaned by a dead PID (audit 2026-07-24 FB-06: a
-    killed pump run left logs/pump_task.lock behind; 3 cycles silently no-opped
-    on the not-yet-stale lock while LastResult=0 masked the outage)."""
+    """Scheduled task QM_StrategyFarm_Pump_5min LastResult must be 0 (or a
+    known-benign busy code), and the pump lock must not be orphaned by a dead
+    PID (audit 2026-07-24 FB-06: a killed pump run left logs/pump_task.lock
+    behind; 3 cycles silently no-opped on the not-yet-stale lock while
+    LastResult=0 masked the outage).
+
+    MNT-003 (2026-08-21): 2147946720 / 0x800710E0 ("the operator or
+    administrator has refused the request") is Task Scheduler's own code for
+    a trigger that MultipleInstances=IgnoreNew skipped because the prior
+    cycle was still running -- expected on this task's PT30M execution limit
+    against a 5-min cadence, not a pump fault. This is a DIFFERENT cause from
+    the same code's use in lsm_health_probe.ps1/chk_lsm_session_health, which
+    monitors three tasks with tight MaxLagMinutes-vs-cadence margins where the
+    identical code legitimately signals LSM/session-manager degradation
+    instead; do not fold this benign-busy handling into that probe. Treated
+    the same as 267009 (0x41301, "currently running"): not an immediate FAIL,
+    but still routed through the orphaned-lock evidence check below rather
+    than trusted blindly, so a genuinely stuck pump hiding behind this code
+    is still caught."""
     try:
         out = subprocess.run(
             ["powershell.exe", "-NoProfile", "-Command",
@@ -770,10 +785,11 @@ def chk_pump_task_health() -> dict:
         return _check("pump_task_lastresult", "WARN", "?", 0,
                       f"could not query task: {exc}",
                       "Run Get-ScheduledTask QM_StrategyFarm_Pump_5min manually")
-    if result == 267009:  # 0x41301, Task Scheduler: task is currently running.
-        return _check("pump_task_lastresult", "OK", result, 0,
-                      "pump task currently running", "")
-    if result != 0:
+    # 0x41301 (267009) = task currently running; 0x800710E0 (2147946720) =
+    # IgnoreNew-skipped trigger while the prior cycle was still active. Both
+    # are benign scheduling artefacts on this task, never pump failures.
+    benign_busy = result in (267009, 2147946720)
+    if result != 0 and not benign_busy:
         return _check("pump_task_lastresult", "FAIL", result, 0,
                       f"pump last exit code {result} (non-zero)",
                       "Run canonical pump manually: python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py pump; "
@@ -795,6 +811,10 @@ def chk_pump_task_health() -> dict:
                           "pump cycles no-op until the 1200s stale threshold clears it",
                           "If FAIL: verify no pump is running, then delete "
                           "D:\\QM\\strategy_farm\\logs\\pump_task.lock")
+    if benign_busy:
+        return _check("pump_task_lastresult", "OK", result, 0,
+                      "pump task was busy on last trigger (currently-running or "
+                      "IgnoreNew-refused overlap); no orphaned lock found", "")
     return _check("pump_task_lastresult", "OK", 0, 0, "last run exit 0", "")
 
 
