@@ -1,0 +1,53 @@
+{
+  "candidate": {
+    "author": "Liu, Lu, Wang",
+    "mechanic": "30d momentum 5d upper lower partial moments MTSM-S2",
+    "slug": "xti-mtsm-s2",
+    "strategy_id": "LIU-MTSM-2021_XTI_S01"
+  },
+  "error": "ROOT_ACCESS_ERROR:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies:[WinError 5] Access is denied: 'G:\\\\My Drive\\\\09 Strategy Wiki\\\\strategies'",
+  "exit_code": 2,
+  "generated_at_utc": "2026-08-21T11:57:31+00:00",
+  "matches": [
+    {
+      "ea_id": "13108",
+      "match_type": "slug",
+      "slug": "xti-mtsm-s2",
+      "source": "ea_id_registry",
+      "strategy_id": "LIU-MTSM-2021_XTI_S01"
+    },
+    {
+      "ea_id": "13108",
+      "match_type": "strategy_id",
+      "slug": "xti-mtsm-s2",
+      "source": "ea_id_registry",
+      "strategy_id": "LIU-MTSM-2021_XTI_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4580,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1253,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": "[WinError 5] Access is denied: 'G:\\\\My Drive\\\\09 Strategy Wiki\\\\strategies'",
+      "label": "strategy_wiki",
+      "status": "ROOT_ACCESS_ERROR"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "DUPLICATE"
+}

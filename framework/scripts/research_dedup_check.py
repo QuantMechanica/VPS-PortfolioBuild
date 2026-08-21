@@ -6,7 +6,7 @@ must check for duplication against:
 
 1. `framework/registry/ea_id_registry.csv` — same `slug` or `strategy_id`
 2. `framework/registry/magic_numbers.csv` — same `(ea_id, symbol_slot)`
-3. Existing strategy cards in `strategy-seeds/cards/*.md` — same author +
+3. Existing strategy cards below `strategy-seeds/cards/**/*.md` — same author +
    strategy mechanic + parameter family (fuzzy)
 
 Duplicates do NOT get a new ea_id. They get linked back to the existing EA
@@ -36,22 +36,64 @@ Exit codes:
 
 Author: Board Advisor 2026-05-01.
 Authority: DL-057 R-057-3 + DL-029 + DL-033.
+
+Version 2 is fail-closed: a missing/empty/unreadable source can never produce
+``CLEAN``. ``check --output`` records every checked root, row/file count, and
+this tool version in JSON evidence.
 """
 from __future__ import annotations
 
 import argparse
 import csv
+import datetime as dt
+import json
 import re
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Any
 
 REPO = Path(r"C:\QM\repo")
 EA_REG = REPO / "framework" / "registry" / "ea_id_registry.csv"
 MAGIC = REPO / "framework" / "registry" / "magic_numbers.csv"
 CARDS_DIR = REPO / "strategy-seeds" / "cards"
 DEFAULT_WIKI_VAULT = Path(r"G:\My Drive\09 Strategy Wiki")
+TOOL_VERSION = "2.0.0"
+EVIDENCE_SCHEMA = "qm.research-dedup-check.evidence.v2"
+
+
+class DedupInputError(RuntimeError):
+    """A source-integrity failure that must never degrade to CLEAN."""
+
+    def __init__(
+        self,
+        code: str,
+        label: str,
+        checked_root: Path,
+        *,
+        count: int | None = None,
+        detail: str = "",
+    ) -> None:
+        self.code = code
+        self.label = label
+        try:
+            self.checked_root = checked_root.resolve()
+        except OSError:
+            self.checked_root = checked_root.absolute()
+        self.count = count
+        self.detail = detail
+        super().__init__(
+            f"{code}:{label}:{self.checked_root}" + (f":{detail}" if detail else "")
+        )
+
+    def binding(self) -> dict[str, Any]:
+        return {
+            "label": self.label,
+            "checked_root": str(self.checked_root),
+            "count": self.count,
+            "status": self.code,
+            "detail": self.detail or None,
+        }
 
 
 @dataclass
@@ -69,26 +111,55 @@ class CardSummary:
         return self.slug == slug.lower() or self.strategy_id == strategy_id.upper()
 
 
-def read_ea_registry() -> list[dict]:
-    if not EA_REG.exists():
-        return []
-    with EA_REG.open(encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+def _read_csv_strict(path: Path, label: str) -> list[dict[str, str]]:
+    try:
+        is_file = path.is_file()
+    except OSError as exc:
+        raise DedupInputError("ROOT_ACCESS_ERROR", label, path, detail=str(exc)) from exc
+    if not is_file:
+        raise DedupInputError("MISSING_ROOT", label, path)
+    try:
+        with path.open(encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            if not reader.fieldnames:
+                raise DedupInputError("EMPTY_SOURCE", label, path, count=0)
+            rows = [dict(row) for row in reader]
+    except UnicodeError as exc:
+        raise DedupInputError("ENCODING_ERROR", label, path, detail=str(exc)) from exc
+    except (OSError, csv.Error) as exc:
+        raise DedupInputError("READ_ERROR", label, path, detail=str(exc)) from exc
+    if not rows:
+        raise DedupInputError("EMPTY_SOURCE", label, path, count=0)
+    return rows
 
 
-def read_magic_registry() -> list[dict]:
-    if not MAGIC.exists():
-        return []
-    with MAGIC.open(encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+def read_ea_registry() -> list[dict[str, str]]:
+    return _read_csv_strict(EA_REG, "ea_id_registry")
 
 
-def parse_card_frontmatter(card_path: Path) -> CardSummary:
+def read_magic_registry() -> list[dict[str, str]]:
+    return _read_csv_strict(MAGIC, "magic_registry")
+
+
+def parse_card_frontmatter(card_path: Path, *, source: str = "card") -> CardSummary:
     """Extract slug / strategy_id / author / mechanic / status / ea_id from card."""
-    cs = CardSummary(path=card_path, source="card")
-    if not card_path.exists():
-        return cs
-    text = card_path.read_text(encoding="utf-8", errors="replace")
+    cs = CardSummary(path=card_path, source=source)
+    try:
+        is_file = card_path.is_file()
+    except OSError as exc:
+        raise DedupInputError(
+            "ROOT_ACCESS_ERROR", f"{source}_card", card_path, detail=str(exc)
+        ) from exc
+    if not is_file:
+        raise DedupInputError("MISSING_FILE", f"{source}_card", card_path)
+    try:
+        text = card_path.read_text(encoding="utf-8")
+    except UnicodeError as exc:
+        raise DedupInputError(
+            "ENCODING_ERROR", f"{source}_card", card_path, detail=str(exc)
+        ) from exc
+    except OSError as exc:
+        raise DedupInputError("READ_ERROR", f"{source}_card", card_path, detail=str(exc)) from exc
     # YAML frontmatter
     m = re.match(r"^---\s*\n(.+?)\n---", text, re.DOTALL)
     fm_block = m.group(1) if m else text[:1000]
@@ -118,46 +189,113 @@ def parse_card_frontmatter(card_path: Path) -> CardSummary:
 
 
 def scan_cards() -> list[CardSummary]:
-    if not CARDS_DIR.is_dir():
-        return []
+    try:
+        is_dir = CARDS_DIR.is_dir()
+    except OSError as exc:
+        raise DedupInputError(
+            "ROOT_ACCESS_ERROR", "strategy_cards", CARDS_DIR, detail=str(exc)
+        ) from exc
+    if not is_dir:
+        raise DedupInputError("MISSING_ROOT", "strategy_cards", CARDS_DIR)
+    try:
+        paths = sorted(CARDS_DIR.rglob("*.md"))
+    except OSError as exc:
+        raise DedupInputError(
+            "ROOT_ACCESS_ERROR", "strategy_cards", CARDS_DIR, detail=str(exc)
+        ) from exc
+    if not paths:
+        raise DedupInputError("EMPTY_ROOT", "strategy_cards", CARDS_DIR, count=0)
     cards = []
-    for p in sorted(CARDS_DIR.glob("*.md")):
-        cards.append(parse_card_frontmatter(p))
+    try:
+        for path in paths:
+            cards.append(parse_card_frontmatter(path))
+    except DedupInputError as exc:
+        raise DedupInputError(
+            exc.code,
+            "strategy_cards",
+            CARDS_DIR,
+            count=len(paths),
+            detail=f"{exc.checked_root}:{exc.detail}",
+        ) from exc
     return cards
 
 
 def scan_wiki_strategies(vault: Path) -> list[CardSummary]:
     strategies_dir = vault / "strategies"
-    if not strategies_dir.is_dir():
-        return []
+    try:
+        is_dir = strategies_dir.is_dir()
+    except OSError as exc:
+        raise DedupInputError(
+            "ROOT_ACCESS_ERROR", "strategy_wiki", strategies_dir, detail=str(exc)
+        ) from exc
+    if not is_dir:
+        raise DedupInputError("MISSING_ROOT", "strategy_wiki", strategies_dir)
+    try:
+        paths = sorted(strategies_dir.glob("*.md"))
+    except OSError as exc:
+        raise DedupInputError(
+            "ROOT_ACCESS_ERROR", "strategy_wiki", strategies_dir, detail=str(exc)
+        ) from exc
+    if not paths:
+        raise DedupInputError("EMPTY_ROOT", "strategy_wiki", strategies_dir, count=0)
     strategies: list[CardSummary] = []
-    for path in sorted(strategies_dir.glob("*.md")):
-        cs = CardSummary(path=path, source="wiki")
-        text = path.read_text(encoding="utf-8", errors="replace")
-        m = re.match(r"^---\s*\n(.+?)\n---", text, re.DOTALL)
-        fm_block = m.group(1) if m else text[:1000]
-        for line in fm_block.splitlines():
-            if ":" not in line:
-                continue
-            k, _, v = line.partition(":")
-            k = k.strip().lower()
-            v = v.strip().strip('"').strip("'")
-            if k in ("slug", "name", "strategy_slug"):
-                cs.slug = v.lower()
-            elif k in ("strategy_id", "src_id", "id"):
-                cs.strategy_id = v.upper()
-            elif k in ("author", "source_author", "researcher"):
-                cs.author = v
-            elif k in ("mechanic", "strategy_mechanic", "type", "strategy_type"):
-                cs.mechanic = v.lower()
-            elif k == "status":
-                cs.status = v.upper()
-            elif k == "ea_id":
-                cs.ea_id = v
-        if not cs.slug:
-            cs.slug = path.stem.lower()
-        strategies.append(cs)
+    try:
+        for path in paths:
+            strategies.append(parse_card_frontmatter(path, source="wiki"))
+    except DedupInputError as exc:
+        raise DedupInputError(
+            exc.code,
+            "strategy_wiki",
+            strategies_dir,
+            count=len(paths),
+            detail=f"{exc.checked_root}:{exc.detail}",
+        ) from exc
     return strategies
+
+
+def _binding(label: str, path: Path, count: int) -> dict[str, Any]:
+    return {
+        "label": label,
+        "checked_root": str(path.resolve()),
+        "count": count,
+        "status": "OK",
+        "detail": None,
+    }
+
+
+def _write_check_evidence(args: argparse.Namespace, report: dict[str, Any]) -> None:
+    output = getattr(args, "output", None)
+    if output is None:
+        return
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _check_report(
+    args: argparse.Namespace,
+    *,
+    verdict: str,
+    exit_code: int,
+    sources: list[dict[str, Any]],
+    matches: list[dict[str, Any]] | None = None,
+    error: str | None = None,
+) -> dict[str, Any]:
+    return {
+        "schema": EVIDENCE_SCHEMA,
+        "tool_version": TOOL_VERSION,
+        "generated_at_utc": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
+        "candidate": {
+            "slug": args.slug,
+            "strategy_id": args.strategy_id,
+            "author": args.author or "",
+            "mechanic": args.mechanic or "",
+        },
+        "verdict": verdict,
+        "exit_code": exit_code,
+        "sources": sources,
+        "matches": matches or [],
+        "error": error,
+    }
 
 
 def normalize_slug(slug: str) -> str:
@@ -195,10 +333,49 @@ def cmd_check(args: argparse.Namespace) -> int:
     mechanic = args.mechanic or ""
 
     print(f"## Dedup check — slug={slug!r}, strategy_id={strategy_id!r}")
+    print(f"Tool version: {TOOL_VERSION}")
+    print()
+
+    # Load and authenticate every declared source before considering a CLEAN or
+    # early duplicate verdict. A missing/empty/unreadable later source may hold
+    # the decisive duplicate and therefore cannot be silently treated as zero.
+    sources: list[dict[str, Any]] = []
+    source_errors: list[DedupInputError] = []
+    ea_rows: list[dict[str, str]] = []
+    cards: list[CardSummary] = []
+    wiki_cards: list[CardSummary] = []
+    try:
+        ea_rows = read_ea_registry()
+        sources.append(_binding("ea_id_registry", EA_REG, len(ea_rows)))
+    except DedupInputError as exc:
+        sources.append(exc.binding())
+        source_errors.append(exc)
+    try:
+        cards = scan_cards()
+        sources.append(_binding("strategy_cards", CARDS_DIR, len(cards)))
+    except DedupInputError as exc:
+        sources.append(exc.binding())
+        source_errors.append(exc)
+    try:
+        wiki_cards = scan_wiki_strategies(args.vault)
+        sources.append(
+            _binding("strategy_wiki", args.vault / "strategies", len(wiki_cards))
+        )
+    except DedupInputError as exc:
+        sources.append(exc.binding())
+        source_errors.append(exc)
+
+    for binding in sources:
+        print(
+            "CHECKED SOURCE: "
+            f"{binding['label']} root={binding['checked_root']} count={binding['count']} "
+            f"status={binding['status']}"
+        )
+    for exc in source_errors:
+        print(f"SOURCE ERROR: {exc}")
     print()
 
     # 1. ea_id_registry exact match
-    ea_rows = read_ea_registry()
     print(f"### ea_id_registry.csv — {len(ea_rows)} rows")
     exact_ea_dup = []
     for row in ea_rows:
@@ -212,12 +389,30 @@ def cmd_check(args: argparse.Namespace) -> int:
             print(f"    {field_name}: ea_id={row['ea_id']}, slug={row['slug']}, strategy_id={row['strategy_id']}, owner={row.get('owner','-')}")
         print()
         print("VERDICT: DUPLICATE — link as _v<n> enhancement per DL-029/033, NOT new ea_id")
+        _write_check_evidence(
+            args,
+            _check_report(
+                args,
+                verdict="DUPLICATE",
+                exit_code=2,
+                sources=sources,
+                matches=[
+                    {
+                        "match_type": field_name,
+                        "source": "ea_id_registry",
+                        "ea_id": row.get("ea_id"),
+                        "slug": row.get("slug"),
+                        "strategy_id": row.get("strategy_id"),
+                    }
+                    for field_name, row in exact_ea_dup
+                ],
+                error=" | ".join(str(exc) for exc in source_errors) or None,
+            ),
+        )
         return 2
     print("  (no exact duplicates)")
 
     # 2. existing cards
-    cards = scan_cards()
-    wiki_cards = scan_wiki_strategies(args.vault)
     all_candidates = cards + wiki_cards
     print()
     print(f"### strategy-seeds/cards/ — {len(cards)} cards scanned")
@@ -228,6 +423,26 @@ def cmd_check(args: argparse.Namespace) -> int:
             print(f"  EXACT DUPLICATE: [{card.source}] {card.path} ({card.slug} / {card.strategy_id})")
             print()
             print("VERDICT: DUPLICATE — link as _v<n> enhancement per DL-029/033, NOT new ea_id")
+            _write_check_evidence(
+                args,
+                _check_report(
+                    args,
+                    verdict="DUPLICATE",
+                    exit_code=2,
+                    sources=sources,
+                    matches=[
+                        {
+                            "match_type": "exact_card",
+                            "source": card.source,
+                            "path": str(card.path.resolve()),
+                            "slug": card.slug,
+                            "strategy_id": card.strategy_id,
+                            "ea_id": card.ea_id or None,
+                        }
+                    ],
+                    error=" | ".join(str(exc) for exc in source_errors) or None,
+                ),
+            )
             return 2
         slug_score = fuzzy_match(slug, card.slug)
         sid_score = fuzzy_match(strategy_id, card.strategy_id)
@@ -246,11 +461,54 @@ def cmd_check(args: argparse.Namespace) -> int:
             print(f"      existing slug='{card.slug}', sid='{card.strategy_id}', author='{card.author}', mech='{card.mechanic}'")
         print()
         print("VERDICT: FUZZY MATCH — Research + QB inspect; if same mechanic/parameters, link as _v<n>")
+        _write_check_evidence(
+            args,
+            _check_report(
+                args,
+                verdict="FUZZY_MATCH",
+                exit_code=3,
+                sources=sources,
+                matches=[
+                    {
+                        "match_type": "fuzzy",
+                        "score": score,
+                        "source": card.source,
+                        "path": str(card.path.resolve()),
+                        "slug": card.slug,
+                        "strategy_id": card.strategy_id,
+                    }
+                    for score, card, _ss, _sis, _ms, _am in fuzzy_hits[:5]
+                ],
+                error=" | ".join(str(exc) for exc in source_errors) or None,
+            ),
+        )
         return 3
     print("  (no fuzzy matches above threshold)")
 
+    if source_errors:
+        report = _check_report(
+            args,
+            verdict="INPUT_ERROR_FAIL_CLOSED",
+            exit_code=1,
+            sources=sources,
+            error=" | ".join(str(exc) for exc in source_errors),
+        )
+        _write_check_evidence(args, report)
+        print()
+        print("VERDICT: INPUT_ERROR_FAIL_CLOSED — allocation is NOT authorized")
+        return 1
+
     print()
     print("VERDICT: CLEAN — no duplicate detected; ea_id allocation OK.")
+    _write_check_evidence(
+        args,
+        _check_report(
+            args,
+            verdict="CLEAN",
+            exit_code=0,
+            sources=sources,
+        ),
+    )
     return 0
 
 
@@ -329,6 +587,7 @@ def main(argv: list[str] | None = None) -> int:
     check.add_argument("--author", help="card author (for fuzzy matching)")
     check.add_argument("--mechanic", help="strategy mechanic short tag (for fuzzy matching)")
     check.add_argument("--vault", type=Path, default=DEFAULT_WIKI_VAULT, help=f"Wiki vault root (default: {DEFAULT_WIKI_VAULT})")
+    check.add_argument("--output", type=Path, help="write versioned JSON evidence")
     check.set_defaults(func=cmd_check)
 
     listp = sub.add_parser("list", help="List all known slugs/strategy_ids from registries + cards")
@@ -340,7 +599,12 @@ def main(argv: list[str] | None = None) -> int:
     audit.set_defaults(func=cmd_audit)
 
     args = p.parse_args(argv)
-    return args.func(args)
+    try:
+        return args.func(args)
+    except DedupInputError as exc:
+        print(f"SOURCE ERROR: {exc}")
+        print("VERDICT: INPUT_ERROR_FAIL_CLOSED — operation is NOT authorized")
+        return 1
 
 
 if __name__ == "__main__":
