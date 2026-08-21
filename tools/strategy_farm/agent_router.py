@@ -37,6 +37,11 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     import quota_spawn_gate  # type: ignore
 
+try:
+    from tools.strategy_farm import work_identity
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import work_identity  # type: ignore
+
 
 DEFAULT_ROOT = farmctl.DEFAULT_ROOT
 CLAUDE_DISABLED_FLAG = Path(r"D:\QM\strategy_farm\CLAUDE_DISABLED.flag")
@@ -1907,10 +1912,18 @@ def reconcile_task_exits(
             except (TypeError, json.JSONDecodeError):
                 payload = {}
             payload.update(payload_updates)
+            identity = work_identity.agent_task_identity(conn, row)
             history = list(payload.get("exit_reconciliations") or [])
             history.append(
-                {"reconciled_at": now, "from_state": row["state"], "to_state": target, "reason": reason}
+                {
+                    "reconciled_at": now,
+                    "from_state": row["state"],
+                    "to_state": target,
+                    "reason": reason,
+                    "work_identity_key": identity["stable_key"],
+                }
             )
+            payload.setdefault("work_identity", identity)
             payload["exit_reconciliations"] = history[-5:]
             conn.execute(
                 "UPDATE agent_tasks SET state=?, payload_json=?, updated_at=? WHERE id=? AND state=?",
@@ -1925,6 +1938,7 @@ def reconcile_task_exits(
                     "from_state": row["state"],
                     "to_state": target,
                     "reason": reason,
+                    "work_identity_key": identity["stable_key"],
                 }
             )
         if apply:
