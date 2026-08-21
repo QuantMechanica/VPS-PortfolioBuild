@@ -1,0 +1,238 @@
+{
+  "artifact_type": "fx_cointegration_existing_pair_q04_priority_advance_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-21T19:10:48Z",
+  "branch": "agents/board-advisor",
+  "repo_head_at_mutation": "5cdf78f12db59bce7430bdca5a702706a4f0a88f",
+  "mission_outcome": "EXISTING_NON_DUPLICATE_FX_BASKET_ADVANCED_IN_PLACE_THEN_STOPPED_AT_CPU_CEILING",
+  "frontier_state": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a804932912a449aed19bbc8fe61f1f5846556743",
+    "new_card_or_ea_created": false,
+    "reason": "The governed sign-aware reconciliation already maps every frozen-scan relationship to a built sleeve; another Card, registry allocation, EA, or basket manifest would duplicate governed work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selection_context": [
+    {
+      "scan_rank": 29,
+      "ea_id": "QM5_20210",
+      "pair": [
+        "GBPUSD.DWX",
+        "AUDJPY.DWX"
+      ],
+      "state": "Q02_PASS_Q04_PRIORITY_PENDING",
+      "q04_work_item_id": "a2c1175e-ed1f-4521-980a-2daadb48588c",
+      "decision": "Preserve the existing priority row; do not duplicate or restamp it."
+    },
+    {
+      "scan_rank": 30,
+      "ea_id": "QM5_12739",
+      "pair": [
+        "GBPUSD.DWX",
+        "AUDUSD.DWX"
+      ],
+      "state": "Q02_PASS_Q04_FAIL",
+      "q04_work_item_id": "1c8ae5ef-3da9-4d39-9ea8-e577899fee93",
+      "decision": "Terminal economic failure; do not requeue."
+    }
+  ],
+  "selected_existing_pair": {
+    "selection_reason": "Rank 29 was already advanced once and rank 30 has a terminal Q04 failure. Rank 31 is the highest-ranked unboosted frozen-scan D1 successor that can be advanced without duplicating a queue row or verdict.",
+    "scan_rank": 31,
+    "pair": [
+      "GBPJPY.DWX",
+      "EURAUD.DWX"
+    ],
+    "ea_id": "QM5_20211",
+    "slug": "gbpjpy-euraud",
+    "logical_symbol": "QM5_20211_GBPJPY_EURAUD_COINTEGRATION_D1",
+    "scan_evidence": {
+      "dev_net_sharpe": 0.430254,
+      "oos_net_sharpe": 0.27319,
+      "oos_return_percent": 4.833998,
+      "oos_state_changes": 19,
+      "dev_beta": -1.386054145,
+      "half_life_d1_bars": 33.694,
+      "disposition": "one_shot_pipeline_test_no_refit_or_rescue"
+    },
+    "card_status": "APPROVED",
+    "g0_status": "APPROVED",
+    "source_id": "claude_cross_asset_discovery_2026-06-09",
+    "source_criteria": {
+      "primary_source": "Chan, Ernest P. (2009), Quantitative Trading, OWNER-ratified Tier-A SRC02 extraction",
+      "research_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+      "r1_track_record": "PASS",
+      "r2_mechanical": "PASS",
+      "r3_data_available": "PASS",
+      "r4_ml_forbidden": "PASS"
+    },
+    "registry": {
+      "ea_id_status": "active",
+      "magic_rows": [
+        {
+          "slot": 0,
+          "symbol": "GBPJPY.DWX",
+          "magic": 202110000,
+          "status": "active"
+        },
+        {
+          "slot": 1,
+          "symbol": "EURAUD.DWX",
+          "magic": 202110001,
+          "status": "active"
+        }
+      ]
+    },
+    "q02": {
+      "work_item_id": "21db772c-c974-4a05-8e21-5ec78659e988",
+      "status": "done",
+      "verdict": "PASS",
+      "reason_classes": [
+        "OK"
+      ],
+      "from_date": "2018.07.02",
+      "to_date": "2022.12.31",
+      "oninit_failure_detected": false
+    },
+    "q04": {
+      "work_item_id": "8135f97c-fd0d-4435-b713-87fa74fe0053",
+      "status_after_action": "pending",
+      "verdict_after_action": null,
+      "attempt_count_after_action": 0,
+      "claimed_by_after_action": null,
+      "updated_at_preserved": "2026-08-04T04:51:39+00:00",
+      "exact_open_row_count": 1,
+      "final_observed_at_utc": "2026-08-21T19:10:48Z"
+    },
+    "risk_contract": {
+      "environment": "backtest",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "basket_contract": {
+      "host_symbol": "GBPJPY.DWX",
+      "host_timeframe": "D1",
+      "traded_symbols": [
+        "GBPJPY.DWX",
+        "EURAUD.DWX"
+      ],
+      "conversion_history_only_symbols": [
+        "USDJPY.DWX",
+        "GBPUSD.DWX",
+        "EURUSD.DWX",
+        "AUDUSD.DWX"
+      ]
+    },
+    "artifact_sha256": {
+      "mq5": "b93fee38cc15e3a72eecb1ae189f6fabfe9a793221bf1f683d1414a5fafd43df",
+      "ex5": "54ddb7987359f0f5a8ad8806c0f6ea5582b23979c8b6814ea6610e3547bcdc56",
+      "basket_manifest": "2c3932c98d1efae4706466db012cfb3e050a6a3cf3a21afafed6a7952a896386",
+      "logical_backtest_setfile": "93709b95ca6495ad903feb7e94b26462c2ecac9f27297a9a64d49f1f89ffd549",
+      "approved_card": "d67cf0d7f7f89e8d9cc50f6f9157ba34f253b8dc36b6eb521dd3cd5c9aa74782",
+      "ea_card_snapshot": "d67cf0d7f7f89e8d9cc50f6f9157ba34f253b8dc36b6eb521dd3cd5c9aa74782"
+    }
+  },
+  "priority_action": {
+    "authority": "OWNER 2026-08-21 forex portfolio mission (current prompt); rank-31 existing-pair fallback",
+    "applied_at_utc": "2026-08-21T19:10:05+00:00",
+    "work_item_id": "8135f97c-fd0d-4435-b713-87fa74fe0053",
+    "database_event_id": 368586,
+    "database_event": "priority_boost_applied",
+    "before_payload_sha256": "2c60d80d73a65b0f859014c2ca49c4d8ca2d1d54901a2c1546819e6335d8ed94",
+    "after_payload_sha256": "77952afb830d013afe56c244640628f7028e16972da1730b95f727732f8abc25",
+    "fields_added": {
+      "priority_track": true,
+      "priority_boost_applied_at_utc": "2026-08-21T19:10:05+00:00",
+      "priority_boost_authority": "OWNER 2026-08-21 forex portfolio mission (current prompt); rank-31 existing-pair fallback",
+      "priority_reason": "Frozen sign-aware 66-pair frontier is fully mechanized; anchors are past Q02; rank 29 is already priority-queued and rank 30 has terminal Q04 FAIL; advance the existing non-duplicate rank-31 GBPJPY/EURAUD D1 Q04 successor in place; paced worker only."
+    },
+    "cas_row_count": 1,
+    "new_work_item_created": false,
+    "pipeline_verdict_changed": false,
+    "work_item_updated_at_preserved": "2026-08-04T04:51:39+00:00",
+    "canonical_scheduler_rank_before": 100,
+    "canonical_scheduler_rank_after": 3,
+    "claimable_rows_before": 2187,
+    "claimable_rows_after": 2187,
+    "sqlite_quick_check": "ok",
+    "factory_mutation_lock_release_status": "released",
+    "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_pre_qm5_20211_q04_priority_20260821T191005Z.sqlite",
+    "backup_bytes": 413896704,
+    "backup_sha256": "f7f170f0285ee6166b07fe656b618f2c50464007332dbb7fedac543736693d6a",
+    "backup_quick_check": "ok"
+  },
+  "validation": {
+    "strategy_card_schema_lint": "PASS",
+    "strategy_card_schema_ml_hits": [],
+    "g0_card_lint": "PASS",
+    "existing_q01_build_evidence": "PASS",
+    "package_changed": false
+  },
+  "capacity_evidence": {
+    "explicit_hard_ceiling_percent": 97.0,
+    "pre_apply_cpu_load_percent": [
+      58.52,
+      63.32,
+      63.3,
+      63.29,
+      85.27
+    ],
+    "pre_apply_maximum_percent": 85.27,
+    "post_apply_cpu_load_percent": [
+      89.66,
+      95.12,
+      97.66,
+      90.36,
+      81.65
+    ],
+    "post_apply_maximum_percent": 97.66,
+    "ceiling_binding_after_action": true,
+    "disk_free_gb_pre_apply": 145.17,
+    "ram_available_gb_pre_apply": 30.04,
+    "commit_free_gb_pre_apply": 68.37,
+    "active_work_items_post_apply": 6,
+    "active_multisymbol_work_item_post_apply": {
+      "id": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+      "ea_id": "QM5_20208",
+      "phase": "Q04",
+      "terminal": "T5",
+      "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1"
+    },
+    "stop_action": "No dispatch tick, tester launch, terminal reservation, reconciliation, or control followed the 97.66% sample."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "new_queue_row_created": false,
+    "existing_queue_row_priority_mutated": true,
+    "dispatch_tick": false,
+    "manual_tester_or_backtest_run": false,
+    "terminal_reservation_reconciliation_or_control": false,
+    "repository_evidence_created": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
