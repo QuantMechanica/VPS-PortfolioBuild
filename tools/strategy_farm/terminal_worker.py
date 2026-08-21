@@ -3372,6 +3372,19 @@ def _aggregate_finished_parent(root: Path, parent_task_id: str | None) -> dict[s
 def _work_item_preflight_failure(item: sqlite3.Row) -> dict[str, Any] | None:
     """Return a deterministic failure before consuming an MT5 slot."""
     ea_id = str(item["ea_id"])
+    # Harness rows (kind='harness', e.g. the pattern-permission fixture runner)
+    # are pseudo-EAs living outside framework/EAs (framework/tests/) with no
+    # setfile and no registry row — the generic EA-dir/setfile preflight can
+    # only ever kill them (2026-08-21: row 83b89730 died ea_dir_missing on its
+    # first claim). Their own spawn path validates the harness .ex5 and the
+    # fixture bundle fail-closed, so the generic preflight must step aside.
+    if "kind" in item.keys() and str(item["kind"]) == farmctl.HARNESS_WORK_ITEM_KIND:
+        ex5 = farmctl.HARNESS_PP_FIXTURE_SOURCE_DIR / (
+            f"{farmctl.HARNESS_PP_FIXTURE_EA_LABEL}.ex5"
+        )
+        if not ex5.is_file():
+            return {"reason": "harness_ex5_missing", "detail": str(ex5)}
+        return None
     setfile_path = Path(str(item["setfile_path"]))
     if not setfile_path.exists():
         return {"reason": "setfile_missing", "detail": str(setfile_path)}
