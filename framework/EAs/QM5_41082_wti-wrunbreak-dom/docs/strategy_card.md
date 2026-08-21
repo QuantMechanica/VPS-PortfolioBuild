@@ -57,9 +57,12 @@ r1_track_record: PASS_WITH_WEEKLY_PATH_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS_WITH_ENERGY_LABEL_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
+q01_build_report: D:/QM/reports/framework/21/build_check_20260821_032255.json
+q01_p1_evidence: D:/QM/reports/pipeline/QM5_41082/P1/P1_QM5_41082_result.json
+q02_capacity_evidence: docs/ops/evidence/2026-08-21_qm5_41082_wti_weekly_run_break_q01_q02_cpu_ceiling_stop.md
 review_focus: "Falsify a direct-WTI weekly run-break sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact Monday anchors, four completed week-end closes, three adjacent weekly returns, same-sign older pair, opposed newest return, strict newest-over-summed-older dominance, newest/net-sign direction, one attempt, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -344,14 +347,16 @@ establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-21 | initial WTI completed-week run-break-dominance card | G0 | APPROVED |
+| v1-build | 2026-08-21 | deterministic implementation, reference suite, strict compile/build checks, and static artifact validation | Q01 | PASS |
+| v1-q02-capacity | 2026-08-21 | target-only preview found one fresh row; apply withheld at the seven-terminal paced ceiling | Q02 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-21 | APPROVED | `decisions/2026-08-21_qm5_41082_wti_weekly_run_break_dominance_g0.md` |
-| Q01 Build Validation | - | NOT_RUN | - |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q01 Build Validation | 2026-08-21 | PASS | `D:/QM/reports/framework/21/build_check_20260821_032255.json`; `D:/QM/reports/pipeline/QM5_41082/P1/P1_QM5_41082_result.json` |
+| Q02 Baseline Screening | 2026-08-21 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-21_qm5_41082_wti_weekly_run_break_q01_q02_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 

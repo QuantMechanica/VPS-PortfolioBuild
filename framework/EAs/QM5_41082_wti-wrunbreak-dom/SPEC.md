@@ -100,3 +100,6 @@ partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-08-21 | approved build-directory identity | source approval `f02d2a56e`; deterministic registry reservation and G0 card |
+| v1-card | 2026-08-21 | G0-approved execution contract | `strategy-seeds/cards/approved/QM5_41082_wti-wrunbreak-dom_card.md` |
+| v1-build | 2026-08-21 | deterministic implementation and Q01 validation | 9-test reference suite; strict compile/build PASS; static P1 PASS; build commit `4eedfeb69` |
+| v1-q02-capacity | 2026-08-21 | paced Q02 preflight stopped at the tester ceiling | one fresh target-only row found; no enqueue mutation; evidence in `docs/ops/evidence/2026-08-21_qm5_41082_wti_weekly_run_break_q01_q02_cpu_ceiling_stop.md` |
