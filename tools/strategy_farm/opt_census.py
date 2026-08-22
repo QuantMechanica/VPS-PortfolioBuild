@@ -298,7 +298,11 @@ def _harness_pass(conn: sqlite3.Connection, harness_id: str) -> dict[str, Any]:
     if row is None:
         raise CensusError(f"fixture harness row missing: {harness_id}")
     result = dict(zip(("status", "verdict", "evidence_path", "updated_at"), row))
-    if result["status"] != "done" or result["verdict"] != "PASS":
+    # The harness completion path lands verdict='HARNESS_OK' (its canonical
+    # measurement token, e.g. row 93338948 on 2026-08-22), not the gate token
+    # 'PASS' this check originally demanded — that mismatch would have held the
+    # census closed forever after a successful harness run.
+    if result["status"] != "done" or result["verdict"] not in ("HARNESS_OK", "PASS"):
         raise CensusError(
             f"fixture harness is not green: status={result['status']} verdict={result['verdict']}"
         )

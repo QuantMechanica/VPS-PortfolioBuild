@@ -95,8 +95,13 @@ int OnInit()
       return INIT_FAILED;
      }
 
+   // FILE_CSV with an explicit comma: in FILE_TXT mode FileWrite concatenates
+   // its arguments WITHOUT separators — the 2026-08-22 harness run produced a
+   // 527-row verdict file whose fields were fused into one token per line,
+   // unparseable for test_pattern_fixture_coverage.py.
    const int out_handle = FileOpen(qm_fixture_output,
-                                   FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
+                                   FILE_WRITE | FILE_CSV | FILE_ANSI | FILE_COMMON,
+                                   ',');
    if(out_handle == INVALID_HANDLE)
      {
       PrintFormat("QM_FIXTURE_RUNNER cannot write results: %s (err=%d)",
