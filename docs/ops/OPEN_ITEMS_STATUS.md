@@ -1,6 +1,6 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
-**Stand:** 2026-08-21 · Stehende Vollmacht §6 (wird jedem Bericht beigefügt)
+**Stand:** 2026-08-22 · Stehende Vollmacht §6 (wird jedem Bericht beigefügt)
 **Eine Zeile je Punkt. „Geliefert" heißt: Ergebnis steht in einem Dokument und wurde berichtet.**
 
 ---
@@ -83,6 +83,7 @@ eports\state\commit_sampler.log`, `commit_wave_snapshot_20260820_0553utc.txt`) |
 | **NEU 21.08.** | Test `test_real_a02_compile_manifest_loads_when_present` schlägt fehl | `ContractError: compile manifest FACTORY_OFF binding drifted` — der Test bindet ein reales Compile-Manifest an die SHA von `FACTORY_OFF.flag`; die Datei existiert bei laufender Fabrik nicht. **Umgebungsabhängiger Test, nicht durch die Q05-Umbenennung verursacht** (660 andere Tests grün). Er schlägt fehl, sobald die Fabrik läuft — d. h. im Normalbetrieb. Braucht eine Entscheidung: Fixture statt Live-Bindung, oder Skip mit Begründung |
 | **NEU 21.08.** | `HARNESS_PP_FIXTURE` = 1 pending | Der ausstehende MT5-Fixture-Harness-Lauf für die Pattern-Prädikate steht als Work-Item in der Queue (Masterplan T8, Folge-Messung zu `014c214ad`) — er ist eingereiht, nicht vergessen |
 | **NEU 21.08. (QM5_41095)** | WTI Excursion-Imbalance: Q01-Compile + Q02 offen | Nicht-duplizierter source-only Build `b74533ddb`, 12/12 Referenztests und Guardrails PASS; governed compile `c88b39a4-1220-4894-a2c3-9818651c763e` wartet unter `COMPILE_EA_WORKER_ROLLOUT_PENDING`. Q02 blieb ohne Enqueue, weil Q01 noch kein PASS hat und die frische CPU-Serie bis 100% die 97%-Decke überschritt (`2026-08-21_qm5_41095_wti_weekly_excursion_imbalance_source_build_cpu_stop.md`). |
+| **NEU 22.08. (QM5_41101)** | XNG Range-Migration: Q01-Compile + Q02 offen | Nicht-duplizierter source-only Build `b2a34ae5f`, 11/11 Referenztests und Guardrails PASS; governed compile `97095c29-b534-4e4c-baf8-aa8d382225eb` wartet unter `COMPILE_EA_WORKER_ROLLOUT_PENDING`. CPU blieb mit max. 93,53% unter der 97%-Decke; Q02 blieb ausschließlich mangels EX5/Q01-PASS ohne Enqueue (`evidence/2026-08-22_qm5_41101_xng_weekly_range_migration_compile_handoff.md`). |
 | Masterplan T11 | public-data-Export | **Diagnose statt Fix (korrekt):** Export gesund, Publikation fail-closed hinter 2 Q02-Bypass-Holds vom 29.07.; QM5_20182-Hold = stale Orphan (Remediation belegt), QM5_20172 echt offen (DRAFT_DEFECT) → Entscheidungsschlange #7 (`evidence/2026-08-21_public_snapshot_export_repair.md`, Commit 511d85fea) |
 
 ## 3 · Entfallen

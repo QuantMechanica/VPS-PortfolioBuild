@@ -1,0 +1,117 @@
+{
+  "schema": "qm.build-compile-handoff/v1",
+  "recorded_at_utc": "2026-08-22T00:48:56Z",
+  "local_record_date": "2026-08-22",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41101",
+  "ea_label": "QM5_41101_xng-wrange-migrate-mom",
+  "strategy_id": "MOP-XNG-WRANGE-MIGRATE-MOM-2026_S01",
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "magic": 411010000,
+  "commits": {
+    "source_approval": "9169ec306",
+    "source_packet": "45d597e8a",
+    "ea_id_reservation": "3a094005d",
+    "g0_card": "2ba24719b",
+    "magic_allocation": "9ec7d4d0d",
+    "source_build": "b2a34ae5f"
+  },
+  "source_evidence": {
+    "parent_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+    "bounded_source_sha256": "F4A44CD3F62C2F211C9A88E298BC690AD64E65583C0D3436EF4B14E3BD04754A"
+  },
+  "duplicate_boundary": {
+    "preallocation_registry_rows_checked": 4590,
+    "preallocation_cards_checked": 1269,
+    "preallocation_wiki_nodes_checked": 45,
+    "preallocation_exact_identity_found": false,
+    "preallocation_expected_fuzzy_sibling": "QM5_41089_wti-wrange-migrate-mom",
+    "postallocation_registry_rows_checked": 4591,
+    "postallocation_cards_checked": 1269,
+    "postallocation_wiki_nodes_checked": 45,
+    "postallocation_self_hit_only": "QM5_41101",
+    "manual_carrier_and_family_review_completed": true
+  },
+  "build": {
+    "mq5_sha256": "E6E83E3084DB7FC99DF6C3B7A6FC2AC236BBFB92550B7FD7B7B29EA8B11DBD08",
+    "spec_sha256": "D4C25D48A17D5E47CC24AE96845BFF1E32054A6F272954346170A5670E816D22",
+    "setfile_sha256_precompile": "31FE8C9D2233FD8E7C71DA6406E476E02E85520CF8BA830FFCC6982EF28401A4",
+    "card_sha256": "F5B1EDCBB5A6A4FBFAAC8C75DD023A22AB0EB48EE2A3F01FCB23614731774746",
+    "card_copy_sha256": "F5B1EDCBB5A6A4FBFAAC8C75DD023A22AB0EB48EE2A3F01FCB23614731774746",
+    "exact_wti_sibling_transform": true,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1,
+      "build_hash": "pending"
+    }
+  },
+  "source_validation": {
+    "reference_tests_passed": 11,
+    "reference_tests_failed": 0,
+    "build_prerequisite_guard": "PASS",
+    "build_guardrails": "PASS",
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "symbol_scope_violations": 0,
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS"
+  },
+  "direct_compile": {
+    "result": "FAIL_SAFE",
+    "reason_class": "INCLUDE_MIRROR_REFUSED",
+    "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "errors": -1,
+    "warnings": -1,
+    "retry_attempted": false,
+    "summary": "D:/QM/reports/compile/20260822_004317/summary.csv",
+    "summary_sha256": "48B641C3B79B3C2B360712F23F3BB3A82396E54AAA5C67DCF9D54089BFF39E07"
+  },
+  "governed_compile": {
+    "work_item_id": "97095c29-b534-4e4c-baf8-aa8d382225eb",
+    "status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "verdict": null,
+    "ex5_sha256": null
+  },
+  "q02": {
+    "dry_run_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_41101 --symbols XNGUSD.DWX --max-part2-per-run 0",
+    "dry_run_generated_at_utc": "2026-08-22T00:46:21Z",
+    "pending_at_start": 2303,
+    "queue_ceiling": 7000,
+    "wave_budget": 4697,
+    "dry_run_selected": 0,
+    "dry_run_skipped": 0,
+    "apply_attempted": false,
+    "enqueued": false,
+    "work_item_count": 0,
+    "binding_blockers": [
+      "NO_EX5_OR_Q01_PASS"
+    ]
+  },
+  "capacity": {
+    "mt5_scanned_at_utc": "2026-08-22T00:43:30Z",
+    "cpu_hard_ceiling_percent": 97.0,
+    "cpu_ceiling_breached": false,
+    "cpu_average_percent": 83.2,
+    "cpu_maximum_percent": 93.53,
+    "cpu_samples": [
+      {"timestamp_utc": "2026-08-22T00:48:40.937Z", "percent": 93.53},
+      {"timestamp_utc": "2026-08-22T00:48:44.940Z", "percent": 80.63},
+      {"timestamp_utc": "2026-08-22T00:48:48.942Z", "percent": 85.5},
+      {"timestamp_utc": "2026-08-22T00:48:52.944Z", "percent": 80.5},
+      {"timestamp_utc": "2026-08-22T00:48:56.944Z", "percent": 75.83}
+    ],
+    "active_governed_terminals": ["T1", "T2", "T3", "T4", "T6"],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": []
+  },
+  "q01_status": "PENDING_GOVERNED_COMPILE",
+  "q02_status": "NOT_ENQUEUED_Q01_STOP",
+  "manual_backtest_run": false,
+  "dispatcher_tick_run": false,
+  "terminal_control_performed": false,
+  "live_or_portfolio_files_changed": false
+}
