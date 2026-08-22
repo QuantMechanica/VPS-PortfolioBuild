@@ -1,0 +1,118 @@
+{
+  "artifact_type": "diversity_funnel_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-22T22:07:34.2755007Z",
+  "generated_at_local": "2026-08-23T00:07:34.2755007+02:00",
+  "branch": "agents/board-advisor",
+  "base_commit": "30bb596cb7d361bd95da035879756231eeb17eb8",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "capacity_sample": {
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "cpu_percent": [
+      100.0,
+      97.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 99.4,
+    "maximum_cpu_percent": 100.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "factory_processes_at_sample": [
+      {"terminal": "T1", "pid": 16924},
+      {"terminal": "T2", "pid": 6680},
+      {"terminal": "T3", "pid": 20836},
+      {"terminal": "T4", "pid": 15272},
+      {"terminal": "T5", "pid": 17752},
+      {"terminal": "T6", "pid": 14548},
+      {"terminal": "T7", "pid": 2924},
+      {"terminal": "T8", "pid": 18736},
+      {"terminal": "T10", "pid": 23676}
+    ],
+    "factory_process_count_at_sample": 9,
+    "process_selection": "exact executable path D:/QM/mt5/T<n>/terminal64.exe; T_Live excluded",
+    "excluded_nonfactory_processes": [
+      "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe",
+      "C:/Program Files/FTMO Global Markets MT5 Terminal/terminal64.exe"
+    ]
+  },
+  "controller_followup": {
+    "scanned_at_utc": "2026-08-22T22:07:36+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "running_factory_terminal_count": 8,
+    "note": "T4 exited between the direct process sample and the controller scan; the fleet was changing while the CPU ceiling remained binding.",
+    "mapped_active_phase": "Q09_NEWS",
+    "mapped_active_work_items": [
+      "db92d69a-c86f-4a48-a31b-e68f1034e006",
+      "c665c1aa-9b3f-410e-bcde-048ef187652d",
+      "cfa98980-c534-415f-946f-d9a2f5e00b15",
+      "aff7d366-2ee6-4dda-ab1a-21f59921effc",
+      "5ae08016-5566-4e01-a249-161463e6d957",
+      "ba24e7a3-4edf-4dc1-b74d-5854a6b5ecf2",
+      "12bf0454-f00f-4512-b38c-92abeda13f5d",
+      "317b916e-f93f-43ce-9b40-1c43d1639a49"
+    ],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": []
+  },
+  "read_only_diversity_shortlist": [
+    {
+      "ea_id": "QM5_34008",
+      "slug": "multicurrency-basket-dispersion-hedger",
+      "task_id": "fa7ca587-77f8-4cea-b71b-7bb1b746b33d",
+      "task_state_observed": "TODO",
+      "task_assignee_observed": "gemini",
+      "diversity_fit": "seven-FX market-neutral dispersion basket",
+      "claim_written": false
+    },
+    {
+      "ea_id": "QM5_37001",
+      "slug": "ernest-chan-ornstein-uhlenbeck-statarb",
+      "task_id": "92c3eb98-4998-40dc-b31a-8b2da987365e",
+      "task_state_observed": "TODO",
+      "task_assignee_observed": "gemini",
+      "diversity_fit": "reputable-source FX two-leg OU/stat-arb package",
+      "claim_written": false
+    }
+  ],
+  "non_duplicate_basis": {
+    "nearest_prior_receipt": "artifacts/diversity_funnel_hard_cpu_stop_20260822T201752Z_board_advisor.json",
+    "elapsed_minutes": 109.7,
+    "prior_active_mix": "one Q07 plus eight Q09_NEWS",
+    "current_controller_mapped_mix": "eight Q09_NEWS after transient T4 exit",
+    "material_change": "the prior Q07 process is no longer in the controller-mapped terminal set and the Q09_NEWS cohort has rotated to new work-item identities"
+  },
+  "workspace": {
+    "preexisting_porcelain_entry_count": 124,
+    "unrelated_entries_touched": false,
+    "receipt_paths_only": true
+  },
+  "actions_this_run": {
+    "farm_claim": false,
+    "agent_task_transition": false,
+    "strategy_card_mutation": false,
+    "ea_or_registry_mutation": false,
+    "resolver_regeneration": false,
+    "compile_or_build_check": false,
+    "smoke_or_backtest_run": false,
+    "q02_enqueue_or_requeue": false,
+    "terminal_reservation_or_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  },
+  "next_safe_action": "After sustained whole-host CPU is below 97%, revalidate task ownership and claim exactly one eligible diversity build; start with QM5_34008 versus QM5_37001 and prefer the card-faithful market-neutral package with the cleanest current preflight."
+}
