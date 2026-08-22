@@ -1,0 +1,113 @@
+{
+  "schema": "qm.qm5-41118.source-build-q02-cpu-ceiling-handoff/v1",
+  "generated_at_utc": "2026-08-22T19:30:21.3430071Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41118",
+  "ea_label": "QM5_41118_xauxag-mlatehalf-dom-rv",
+  "strategy_id": "SCHWEIKERT-CME-XAUXAG-MLATEHALF-DOM-RV-2026_S01",
+  "logical_symbol": "QM5_41118_XAU_XAG_MLATEHALF_DOM_RV_D1",
+  "outcome": "SOURCE_BUILD_COMMITTED_CPU_CEILING_Q01_PENDING_Q02_NOT_ENQUEUED",
+  "commits": {
+    "source_approval": "3da399186dba776d9bbe3717fc6f54e91b56d1c6",
+    "bounded_source_extraction": "af92247dbae0a62c28351508425886fc86d754ed",
+    "ea_id_reservation": "ad481dc8416084af7d030f9f6c8e1c4d346d35de",
+    "g0_card_approval": "ed1b660cb42f02ea6da9713e277967de6609a36e",
+    "magic_allocation": "68b2bee7b03788856630d53f1d933161a70d2400",
+    "source_build": "40c8f0341c572e648fe9db7c7cba8f68bcb45bf9"
+  },
+  "identity": {
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "logical_symbol": "QM5_41118_XAU_XAG_MLATEHALF_DOM_RV_D1",
+    "symbol_slots": [0, 1],
+    "magics": [411180000, 411180001]
+  },
+  "mechanic": {
+    "formation": "two immediately preceding consecutive completed calendar months with 17-23 synchronized XAU/XAG D1 close pairs each",
+    "anchor": "parent chronological final log ratio P",
+    "split": "h=floor(n/2)",
+    "blocks": ["Q[h-1]-P", "Q[n-1]-Q[h-1]"],
+    "entry": "abs(late)>abs(early) and late>0 => SELL XAU/BUY XAG; abs(late)>abs(early) and late<0 => BUY XAU/SELL XAG; otherwise flat",
+    "attempt_cadence": "one durable attempt per broker month before fallible gates",
+    "exit": "first later broker month with forty-calendar-day stale repair",
+    "q02_frequency_floor": "at least five completed packages per full post-warm-up year"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "equal_absolute_notional_target": true,
+    "maximum_notional_mismatch_pct": 20.0,
+    "atr_period_d1": 20,
+    "atr_stop_multiple": 3.5,
+    "profit_target": false,
+    "friday_close": false,
+    "news_temporal": "OFF",
+    "news_compliance": "NONE"
+  },
+  "validations": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "approved_card": "PASS",
+    "registry_identity": "PASS",
+    "magic_rows_and_resolver": "PASS",
+    "reference_tests": {"verdict": "PASS", "tests_passed": 12},
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "card_copy_sha256_equal": true,
+    "strict_compile": "NOT_ATTEMPTED_CPU_CEILING",
+    "q01": "PENDING"
+  },
+  "compile": {
+    "attempted": false,
+    "governed_compile_enqueued": false,
+    "ex5_exists": false,
+    "setfile_build_hash": "pending",
+    "build_check_result": null
+  },
+  "capacity": {
+    "observed_at_utc": "2026-08-22T19:30:21.3430071Z",
+    "counter": "Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 2,
+    "whole_host_cpu_pct": [100.0, 100.0, 100.0, 99.9, 99.95],
+    "average_cpu_pct": 99.97,
+    "maximum_cpu_pct": 100.0,
+    "factory_terminal_process_count": 7,
+    "metatester_process_count": 7,
+    "ceiling_pct": 97,
+    "ceiling_hit": true,
+    "binding_stop": true
+  },
+  "q02": {
+    "requested": true,
+    "enqueued": false,
+    "work_item_id": null,
+    "preview_run": false,
+    "blocking_gates": [
+      "BACKTEST_CPU_CEILING_HIT",
+      "STRICT_COMPILE_EX5_FINAL_SET_BINDING_AND_Q01_PASS_ABSENT"
+    ]
+  },
+  "hashes_sha256": {
+    "mq5": "D377CDDC47227EA78888778097DF1C69B80E9DBA0645FBC445D1BDAC4605A9C6",
+    "spec": "FDDB7809422984A78B36B4EE27ED0278CAC95341C84695F7ECCEBE70315B364D",
+    "basket_manifest": "91635994EB03571BEFD64FC3F76FA3A8F0C8FED821A12E72ADF568237EFFD8AC",
+    "approved_and_build_card": "B1CF9556121FD3F3F6DE3FB96468818EAE3E3425678A2EF0A6AAAB6ACE3A447B",
+    "reference_suite": "ED4F512CEFE489524B1D3BDB8FA3B1D4D6E3AFF81AA5372B9E667DB7FDB8B997",
+    "unbound_backtest_set": "B5CA615BEA5DBC6AE1153CD3C2391059B485E2EC107B24C70696EBA0F0831F99"
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_or_worker_control": false,
+    "autotrading_toggled": false,
+    "t_live_observed_read_only": true,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
