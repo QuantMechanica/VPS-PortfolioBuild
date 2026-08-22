@@ -8,6 +8,18 @@
 > drei Engpässe nach Hebelwirkung (**Q09_NEWS 0 PASS bei 52 Paaren = der einzige echte
 > Damm**, Compile teilt Slots mit Backtests, Review-Lane als belegte Decke), die
 > Vorfallskette 21.–22.08. und der Buchweg (**Q16 = 0 Zeilen, jemals**).
+>
+> **Ergänzung §10–17 (OWNER-Rückfrage „ist das alles?"):** Geldseite, Kapazität, Fabrik und
+> Angebotsseite fehlten. Wichtigster Fund — **`10440|NDX` handelt mit schlafender
+> Sleeve-Notbremse:** Live-Puls `verdict=ALARM`, `kill_switch_baselines loaded_ok=23/24`,
+> fehlend `10440|NDX`; `QM_KillSwitchKS.mqh:223-232` protokolliert `ks_killswitch_dormant`
+> und `OnTradeClosed` kehrt sofort zurück; keine Baseline erzeugbar, weil das kanonische Q10
+> dieses Paares **FAIL ist (DD 31,01 % > 25 %)** — gemessen von `f421b62a`. Kontoebene greift
+> weiter, die Einzelsleeve-Ebene nicht. Entscheidung: `OWNER-DEC-KS-10440`.
+> Weiter: **Codex 46 % genutzt bei 29 % verstrichen, Projektion 157 %, aktiv gedrosselt**
+> (Claude 155 %) — paralleles Beauftragen beschleunigt nichts mehr; **3 276 freigegebene
+> Karten** gegen 3 753 aktive EA-IDs; Durchsatz ~178 Work-Items/Tag ⇒ **≈ 12–13 Tage allein
+> für die bestehende Warteschlange**.
 
 **Stand:** 2026-08-22 · Stehende Vollmacht §6 (wird jedem Bericht beigefügt)
 **Eine Zeile je Punkt. „Geliefert" heißt: Ergebnis steht in einem Dokument und wurde berichtet.**
