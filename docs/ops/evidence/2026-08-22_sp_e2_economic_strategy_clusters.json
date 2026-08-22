@@ -1,0 +1,1924 @@
+{
+  "autotrading_action": "NONE",
+  "cluster_links": [
+    {
+      "downside_correlation": 0.25764664,
+      "economic_similarity": 0.32037203,
+      "exposure_overlap": 0.24637681,
+      "left": "10123:XAUUSD.DWX",
+      "pnl_correlation": 0.58891862,
+      "right": "10128:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.23937362,
+      "economic_similarity": 0.33012792,
+      "exposure_overlap": 0.27944573,
+      "left": "10123:XAUUSD.DWX",
+      "pnl_correlation": 0.6182828,
+      "right": "10145:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.20453111,
+      "economic_similarity": 0.25806553,
+      "exposure_overlap": 0.19151312,
+      "left": "10123:XAUUSD.DWX",
+      "pnl_correlation": 0.47994066,
+      "right": "11294:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.30977459,
+      "economic_similarity": 0.39946742,
+      "exposure_overlap": 0.65502183,
+      "left": "10123:XAUUSD.DWX",
+      "pnl_correlation": 0.59509075,
+      "right": "12354:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.36163101,
+      "economic_similarity": 0.44651565,
+      "exposure_overlap": 0.55872292,
+      "left": "10128:XAUUSD.DWX",
+      "pnl_correlation": 0.63611132,
+      "right": "10145:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.15789474
+    },
+    {
+      "downside_correlation": 0.19002709,
+      "economic_similarity": 0.32582912,
+      "exposure_overlap": 0.70274469,
+      "left": "10128:XAUUSD.DWX",
+      "pnl_correlation": 0.40974084,
+      "right": "10183:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.1
+    },
+    {
+      "downside_correlation": 0.17512551,
+      "economic_similarity": 0.36036195,
+      "exposure_overlap": 0.61267606,
+      "left": "10128:XAUUSD.DWX",
+      "pnl_correlation": 0.59575853,
+      "right": "11294:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.03703704
+    },
+    {
+      "downside_correlation": 0.25323513,
+      "economic_similarity": 0.29084625,
+      "exposure_overlap": 0.26119917,
+      "left": "10128:XAUUSD.DWX",
+      "pnl_correlation": 0.46389286,
+      "right": "12354:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.06666667
+    },
+    {
+      "downside_correlation": 0.16380843,
+      "economic_similarity": 0.26240678,
+      "exposure_overlap": 0.41071429,
+      "left": "10142:SP500.DWX",
+      "pnl_correlation": 0.43330603,
+      "right": "11129:SP500.DWX",
+      "same_family": false,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.35764053,
+      "economic_similarity": 0.41057771,
+      "exposure_overlap": 0.63239875,
+      "left": "10145:XAUUSD.DWX",
+      "pnl_correlation": 0.55740686,
+      "right": "10183:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.06666667
+    },
+    {
+      "downside_correlation": 0.01371389,
+      "economic_similarity": 0.111317,
+      "exposure_overlap": 0.5263438,
+      "left": "10145:XAUUSD.DWX",
+      "pnl_correlation": 0.08071789,
+      "right": "11294:GDAXI.DWX",
+      "same_family": true,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.17194871,
+      "economic_similarity": 0.29792747,
+      "exposure_overlap": 0.51884921,
+      "left": "10145:XAUUSD.DWX",
+      "pnl_correlation": 0.48147278,
+      "right": "11294:XAUUSD.DWX",
+      "same_family": true,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.25368943,
+      "economic_similarity": 0.30256586,
+      "exposure_overlap": 0.30092593,
+      "left": "10145:XAUUSD.DWX",
+      "pnl_correlation": 0.51805754,
+      "right": "12354:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.01201472,
+      "economic_similarity": 0.0775171,
+      "exposure_overlap": 0.4349642,
+      "left": "10145:XAUUSD.DWX",
+      "pnl_correlation": 0.02476587,
+      "right": "12357:GDAXI.DWX",
+      "same_family": true,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.116263,
+      "economic_similarity": 0.25058416,
+      "exposure_overlap": 0.69924812,
+      "left": "10183:XAUUSD.DWX",
+      "pnl_correlation": 0.31662298,
+      "right": "11294:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.48802035,
+      "economic_similarity": 0.39019799,
+      "exposure_overlap": 0.19786096,
+      "left": "10183:XAUUSD.DWX",
+      "pnl_correlation": 0.54825863,
+      "right": "12354:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.11111111
+    },
+    {
+      "downside_correlation": 0.0138767,
+      "economic_similarity": 0.05437427,
+      "exposure_overlap": 0.06511628,
+      "left": "10911:GDAXI.DWX",
+      "pnl_correlation": 0.0584109,
+      "right": "10938:GDAXI.DWX",
+      "same_family": true,
+      "tail_overlap": 0.1
+    },
+    {
+      "downside_correlation": -0.00567872,
+      "economic_similarity": 0.00686993,
+      "exposure_overlap": 0.01520913,
+      "left": "11129:SP500.DWX",
+      "pnl_correlation": 0.01311017,
+      "right": "12567:XAUUSD.DWX",
+      "same_family": true,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.03415248,
+      "economic_similarity": 0.15384931,
+      "exposure_overlap": 0.63405088,
+      "left": "11294:GDAXI.DWX",
+      "pnl_correlation": 0.1385598,
+      "right": "11294:XAUUSD.DWX",
+      "same_family": true,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.29541906,
+      "economic_similarity": 0.39791794,
+      "exposure_overlap": 0.58945498,
+      "left": "11294:GDAXI.DWX",
+      "pnl_correlation": 0.60622377,
+      "right": "12357:GDAXI.DWX",
+      "same_family": true,
+      "tail_overlap": 0.04347826
+    },
+    {
+      "downside_correlation": -0.00224089,
+      "economic_similarity": 0.09478603,
+      "exposure_overlap": 0.45670886,
+      "left": "11294:XAUUSD.DWX",
+      "pnl_correlation": 0.07508485,
+      "right": "12357:GDAXI.DWX",
+      "same_family": true,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.35219832,
+      "economic_similarity": 0.3887715,
+      "exposure_overlap": 0.62613982,
+      "left": "12623:XAUUSD.DWX",
+      "pnl_correlation": 0.5405458,
+      "right": "12708:XAUUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.0
+    },
+    {
+      "downside_correlation": 0.21063988,
+      "economic_similarity": 0.25760949,
+      "exposure_overlap": 0.35152838,
+      "left": "12849:XTIUSD.DWX",
+      "pnl_correlation": 0.21434744,
+      "right": "13054:XTIUSD.DWX",
+      "same_family": false,
+      "tail_overlap": 0.33333333
+    }
+  ],
+  "coverage": {
+    "family_errors": [
+      {
+        "ea_id": 1328,
+        "reason": "QM5_1328 requires exactly one content-bound approved card; found 2"
+      },
+      {
+        "ea_id": 11881,
+        "reason": "card has no classifiable mechanics or indicator semantics"
+      },
+      {
+        "ea_id": 12849,
+        "reason": "QM5_12849 requires exactly one content-bound approved card; found 0"
+      },
+      {
+        "ea_id": 12855,
+        "reason": "QM5_12855 requires exactly one content-bound approved card; found 0"
+      },
+      {
+        "ea_id": 12989,
+        "reason": "QM5_12989 requires exactly one content-bound approved card; found 0"
+      },
+      {
+        "ea_id": 13054,
+        "reason": "QM5_13054 requires exactly one content-bound approved card; found 0"
+      },
+      {
+        "ea_id": 13128,
+        "reason": "QM5_13128 requires exactly one content-bound approved card; found 0"
+      },
+      {
+        "ea_id": 13301,
+        "reason": "QM5_13301 requires exactly one content-bound approved card; found 0"
+      },
+      {
+        "ea_id": 20048,
+        "reason": "card has no classifiable mechanics or indicator semantics"
+      },
+      {
+        "ea_id": 20266,
+        "reason": "QM5_20266 requires exactly one content-bound approved card; found 0"
+      }
+    ],
+    "family_unknown_count": 10,
+    "missing_or_empty_streams": [],
+    "oos_date_first": "2017-10-09",
+    "oos_date_last": "2025-12-30",
+    "oos_observed_dates": 2063,
+    "q08_pass_keys": 40,
+    "usable_nonempty_streams": 40
+  },
+  "decision_authority": "EVIDENCE_ONLY",
+  "deployment_action": "NONE",
+  "economic_clusters": [
+    {
+      "cluster_id": 1,
+      "family_fingerprints": [
+        "d3bc9a071f7ebf64936dddad30395eeeeca664beae1bcaf4183a9947d0614ea9"
+      ],
+      "member_count": 1,
+      "members": [
+        "1328:EURJPY.DWX"
+      ]
+    },
+    {
+      "cluster_id": 2,
+      "family_fingerprints": [
+        "cf11241133ef56fae32ffff0b8800bdf63d57032e9558877647dbe2957b3ec55"
+      ],
+      "member_count": 1,
+      "members": [
+        "1537:XAGUSD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 3,
+      "family_fingerprints": [
+        "165d5a6485591c8e2eff381eb88b19c285a8fcda6299b59b51bbb236587a9595"
+      ],
+      "member_count": 1,
+      "members": [
+        "9641:WS30.DWX"
+      ]
+    },
+    {
+      "cluster_id": 4,
+      "family_fingerprints": [
+        "fce6170e18b9093d58acdd1449af65ed944705cfe5775a77c8f12fc5af525ad6"
+      ],
+      "member_count": 1,
+      "members": [
+        "10114:GDAXI.DWX"
+      ]
+    },
+    {
+      "cluster_id": 5,
+      "family_fingerprints": [
+        "364ae450c7690f4322fb3c0d43235d09bc15336fd38e315f673d3e9d254e9e75",
+        "652c04d1d952bdb83414eebf1cd7da875cab1dd18b64fd8aa3f5ab98dd21b6dc",
+        "a836a5ead699f3808399e78b12b95765c9e7c551e4eb812cc58b8a722314fb17",
+        "d3f99c9ba4740f7a162e403aace77d001fc468c2bff0c84b4e4011f4e6c7e612",
+        "ed81fed74687875535b33511edd54ec8cb7bbfe45f4ca8ce9c2f11a2b663fe7d"
+      ],
+      "member_count": 8,
+      "members": [
+        "10123:XAUUSD.DWX",
+        "10128:XAUUSD.DWX",
+        "10145:XAUUSD.DWX",
+        "10183:XAUUSD.DWX",
+        "11294:GDAXI.DWX",
+        "11294:XAUUSD.DWX",
+        "12354:XAUUSD.DWX",
+        "12357:GDAXI.DWX"
+      ]
+    },
+    {
+      "cluster_id": 6,
+      "family_fingerprints": [
+        "8fce243a4a0660c200a20e8fe1b72aa3107d2e770abc04d06df92302e8ffc37a",
+        "f370b4631f3709282416bc4ec70509e08d670c422d6d386417e5911b663eb1bd"
+      ],
+      "member_count": 3,
+      "members": [
+        "10142:SP500.DWX",
+        "11129:SP500.DWX",
+        "12567:XAUUSD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 7,
+      "family_fingerprints": [
+        "2fc119baede10123ec4ed601c6a83fb1138dbf7ad74518b0cb94019b5d429e51"
+      ],
+      "member_count": 1,
+      "members": [
+        "10146:AUDUSD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 8,
+      "family_fingerprints": [
+        "fc401e8038cc6a44f0b31013cc181bc86ce4c7b95ff62f324bfa7a560d5feac8"
+      ],
+      "member_count": 1,
+      "members": [
+        "10692:NDX.DWX"
+      ]
+    },
+    {
+      "cluster_id": 9,
+      "family_fingerprints": [
+        "ab97c87da80ef2ea603fb0f5ca34dfc7521d3b55b057efe48eef3be010382ed1"
+      ],
+      "member_count": 1,
+      "members": [
+        "10706:GBPUSD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 10,
+      "family_fingerprints": [
+        "56d1db6b23a2aa9c3ff955c9d8362697c2026d330f9417fdbb90c1cff575d7a5"
+      ],
+      "member_count": 1,
+      "members": [
+        "10847:GDAXI.DWX"
+      ]
+    },
+    {
+      "cluster_id": 11,
+      "family_fingerprints": [
+        "67921ccf565a661cc774dc5307228eb1e236c07a79ce8d1c2aa08cb85c37954b"
+      ],
+      "member_count": 2,
+      "members": [
+        "10911:GDAXI.DWX",
+        "10938:GDAXI.DWX"
+      ]
+    },
+    {
+      "cluster_id": 12,
+      "family_fingerprints": [
+        "cb08e3b774e90e4899ca22ded9501c47ee6712d22d38b98b7fccc15190f946d2"
+      ],
+      "member_count": 1,
+      "members": [
+        "11288:USDJPY.DWX"
+      ]
+    },
+    {
+      "cluster_id": 13,
+      "family_fingerprints": [
+        "f51cc20c000923ef5f8f5448c38cd8d0464b5bc61a9f79b1002ac7e1b6cb5a77"
+      ],
+      "member_count": 1,
+      "members": [
+        "11421:EURUSD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 14,
+      "family_fingerprints": [
+        "2925d4e5ea1cc4a3d3d6d7748c418d94332de0104066dc03c1c6f984ac916118"
+      ],
+      "member_count": 1,
+      "members": [
+        "11422:USDCAD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 15,
+      "family_fingerprints": [
+        "7dea5a55aa158d45f33ed0f332c48ac5d6f7615d896ca9e6b2487d316d784e3a"
+      ],
+      "member_count": 1,
+      "members": [
+        "11881:GBPUSD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 16,
+      "family_fingerprints": [
+        "0eae555f0d4ea8aa2c6ee5e91bd0f6923c459bce88d639d1a615865a4639f485",
+        "6bdeea35804ebff4a11863a33af009f40b8285d889c137013882de08a8dd6379"
+      ],
+      "member_count": 2,
+      "members": [
+        "12623:XAUUSD.DWX",
+        "12708:XAUUSD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 17,
+      "family_fingerprints": [
+        "908be21e5432d0f48cf0b5a0d51cbcb715a3a2d04f05b66b92e5b00359e7590a"
+      ],
+      "member_count": 1,
+      "members": [
+        "12823:USDJPY.DWX"
+      ]
+    },
+    {
+      "cluster_id": 18,
+      "family_fingerprints": [
+        "1f038222856c2c303d9b579ce407ecb407284d6b4c0e822e6951d0502cc132c5"
+      ],
+      "member_count": 1,
+      "members": [
+        "12847:NDX.DWX"
+      ]
+    },
+    {
+      "cluster_id": 19,
+      "family_fingerprints": [
+        "3e1b9c3b153d75ddeb4e38fde7b0ec195b7b8f10396e2e1c691318ed07a02b58",
+        "f3f773c4466fc1d3916830448cb52850745187c147e3d87af3579be5ff7cb7be"
+      ],
+      "member_count": 2,
+      "members": [
+        "12849:XTIUSD.DWX",
+        "13054:XTIUSD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 20,
+      "family_fingerprints": [
+        "dc809ad4ec067e8a73f753c5e8cc29dac9bf793fe3aec2ba2e6d1fcc0745a0e3"
+      ],
+      "member_count": 1,
+      "members": [
+        "12855:XTIUSD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 21,
+      "family_fingerprints": [
+        "b9ff20f9630054c33e0f05d54c66e21cee00144967d7f483c42d28e6956554a4"
+      ],
+      "member_count": 1,
+      "members": [
+        "12989:XAUUSD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 22,
+      "family_fingerprints": [
+        "67c215387371ab38e95280e583272cbb8c7ce85ce81492359aad8c3e77ff54ac"
+      ],
+      "member_count": 1,
+      "members": [
+        "13013:NDX.DWX"
+      ]
+    },
+    {
+      "cluster_id": 23,
+      "family_fingerprints": [
+        "61533d8000bfff9414f49e33ad50b934997c3d928ba5aba59626d3abc5dda690"
+      ],
+      "member_count": 1,
+      "members": [
+        "13036:GDAXI.DWX"
+      ]
+    },
+    {
+      "cluster_id": 24,
+      "family_fingerprints": [
+        "7b9982486feb6e18f22794261c953daf8c67a7e0624574082f584a9e8f1eb5f1"
+      ],
+      "member_count": 1,
+      "members": [
+        "13128:NDX.DWX"
+      ]
+    },
+    {
+      "cluster_id": 25,
+      "family_fingerprints": [
+        "2fe6944637888fd2e1ec4ec6ec3e12dc441a4708f97bb3438bf0d211774bdec3"
+      ],
+      "member_count": 1,
+      "members": [
+        "13301:GDAXI.DWX"
+      ]
+    },
+    {
+      "cluster_id": 26,
+      "family_fingerprints": [
+        "85d071e212376c122ba7f993b5e89422d4e8cf9355ae8203f1ef98799dab402a"
+      ],
+      "member_count": 1,
+      "members": [
+        "20048:XTIUSD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 27,
+      "family_fingerprints": [
+        "6771b4364bba371d22f01175d46970883addf05e97ea21b7b3d7e745dd94cd23"
+      ],
+      "member_count": 1,
+      "members": [
+        "20266:XTIUSD.DWX"
+      ]
+    },
+    {
+      "cluster_id": 28,
+      "family_fingerprints": [
+        "bda53bc1f9804625d3b7568f1410716e3c7ae40af286ed4e3a0f5357cbfddeee"
+      ],
+      "member_count": 1,
+      "members": [
+        "21505:XAGUSD.DWX"
+      ]
+    }
+  ],
+  "family_groups": [
+    {
+      "family_fingerprint": "0eae555f0d4ea8aa2c6ee5e91bd0f6923c459bce88d639d1a615865a4639f485",
+      "member_count": 1,
+      "members": [
+        "12623:XAUUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "165d5a6485591c8e2eff381eb88b19c285a8fcda6299b59b51bbb236587a9595",
+      "member_count": 1,
+      "members": [
+        "9641:WS30.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "1f038222856c2c303d9b579ce407ecb407284d6b4c0e822e6951d0502cc132c5",
+      "member_count": 1,
+      "members": [
+        "12847:NDX.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "2925d4e5ea1cc4a3d3d6d7748c418d94332de0104066dc03c1c6f984ac916118",
+      "member_count": 1,
+      "members": [
+        "11422:USDCAD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "2fc119baede10123ec4ed601c6a83fb1138dbf7ad74518b0cb94019b5d429e51",
+      "member_count": 1,
+      "members": [
+        "10146:AUDUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "2fe6944637888fd2e1ec4ec6ec3e12dc441a4708f97bb3438bf0d211774bdec3",
+      "member_count": 1,
+      "members": [
+        "13301:GDAXI.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "364ae450c7690f4322fb3c0d43235d09bc15336fd38e315f673d3e9d254e9e75",
+      "member_count": 1,
+      "members": [
+        "12354:XAUUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "3e1b9c3b153d75ddeb4e38fde7b0ec195b7b8f10396e2e1c691318ed07a02b58",
+      "member_count": 1,
+      "members": [
+        "13054:XTIUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "56d1db6b23a2aa9c3ff955c9d8362697c2026d330f9417fdbb90c1cff575d7a5",
+      "member_count": 1,
+      "members": [
+        "10847:GDAXI.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "61533d8000bfff9414f49e33ad50b934997c3d928ba5aba59626d3abc5dda690",
+      "member_count": 1,
+      "members": [
+        "13036:GDAXI.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "652c04d1d952bdb83414eebf1cd7da875cab1dd18b64fd8aa3f5ab98dd21b6dc",
+      "member_count": 4,
+      "members": [
+        "10145:XAUUSD.DWX",
+        "11294:GDAXI.DWX",
+        "11294:XAUUSD.DWX",
+        "12357:GDAXI.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "6771b4364bba371d22f01175d46970883addf05e97ea21b7b3d7e745dd94cd23",
+      "member_count": 1,
+      "members": [
+        "20266:XTIUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "67921ccf565a661cc774dc5307228eb1e236c07a79ce8d1c2aa08cb85c37954b",
+      "member_count": 2,
+      "members": [
+        "10911:GDAXI.DWX",
+        "10938:GDAXI.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "67c215387371ab38e95280e583272cbb8c7ce85ce81492359aad8c3e77ff54ac",
+      "member_count": 1,
+      "members": [
+        "13013:NDX.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "6bdeea35804ebff4a11863a33af009f40b8285d889c137013882de08a8dd6379",
+      "member_count": 1,
+      "members": [
+        "12708:XAUUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "7b9982486feb6e18f22794261c953daf8c67a7e0624574082f584a9e8f1eb5f1",
+      "member_count": 1,
+      "members": [
+        "13128:NDX.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "7dea5a55aa158d45f33ed0f332c48ac5d6f7615d896ca9e6b2487d316d784e3a",
+      "member_count": 1,
+      "members": [
+        "11881:GBPUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "85d071e212376c122ba7f993b5e89422d4e8cf9355ae8203f1ef98799dab402a",
+      "member_count": 1,
+      "members": [
+        "20048:XTIUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "8fce243a4a0660c200a20e8fe1b72aa3107d2e770abc04d06df92302e8ffc37a",
+      "member_count": 1,
+      "members": [
+        "10142:SP500.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "908be21e5432d0f48cf0b5a0d51cbcb715a3a2d04f05b66b92e5b00359e7590a",
+      "member_count": 1,
+      "members": [
+        "12823:USDJPY.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "a836a5ead699f3808399e78b12b95765c9e7c551e4eb812cc58b8a722314fb17",
+      "member_count": 1,
+      "members": [
+        "10123:XAUUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "ab97c87da80ef2ea603fb0f5ca34dfc7521d3b55b057efe48eef3be010382ed1",
+      "member_count": 1,
+      "members": [
+        "10706:GBPUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "b9ff20f9630054c33e0f05d54c66e21cee00144967d7f483c42d28e6956554a4",
+      "member_count": 1,
+      "members": [
+        "12989:XAUUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "bda53bc1f9804625d3b7568f1410716e3c7ae40af286ed4e3a0f5357cbfddeee",
+      "member_count": 1,
+      "members": [
+        "21505:XAGUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "cb08e3b774e90e4899ca22ded9501c47ee6712d22d38b98b7fccc15190f946d2",
+      "member_count": 1,
+      "members": [
+        "11288:USDJPY.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "cf11241133ef56fae32ffff0b8800bdf63d57032e9558877647dbe2957b3ec55",
+      "member_count": 1,
+      "members": [
+        "1537:XAGUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "d3bc9a071f7ebf64936dddad30395eeeeca664beae1bcaf4183a9947d0614ea9",
+      "member_count": 1,
+      "members": [
+        "1328:EURJPY.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "d3f99c9ba4740f7a162e403aace77d001fc468c2bff0c84b4e4011f4e6c7e612",
+      "member_count": 1,
+      "members": [
+        "10128:XAUUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "dc809ad4ec067e8a73f753c5e8cc29dac9bf793fe3aec2ba2e6d1fcc0745a0e3",
+      "member_count": 1,
+      "members": [
+        "12855:XTIUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "ed81fed74687875535b33511edd54ec8cb7bbfe45f4ca8ce9c2f11a2b663fe7d",
+      "member_count": 1,
+      "members": [
+        "10183:XAUUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "f370b4631f3709282416bc4ec70509e08d670c422d6d386417e5911b663eb1bd",
+      "member_count": 2,
+      "members": [
+        "11129:SP500.DWX",
+        "12567:XAUUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "f3f773c4466fc1d3916830448cb52850745187c147e3d87af3579be5ff7cb7be",
+      "member_count": 1,
+      "members": [
+        "12849:XTIUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "f51cc20c000923ef5f8f5448c38cd8d0464b5bc61a9f79b1002ac7e1b6cb5a77",
+      "member_count": 1,
+      "members": [
+        "11421:EURUSD.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "fc401e8038cc6a44f0b31013cc181bc86ce4c7b95ff62f324bfa7a560d5feac8",
+      "member_count": 1,
+      "members": [
+        "10692:NDX.DWX"
+      ]
+    },
+    {
+      "family_fingerprint": "fce6170e18b9093d58acdd1449af65ed944705cfe5775a77c8f12fc5af525ad6",
+      "member_count": 1,
+      "members": [
+        "10114:GDAXI.DWX"
+      ]
+    }
+  ],
+  "generated_at_utc": "2026-08-22T14:33:45.568105+00:00",
+  "independence_summary": {
+    "economic_independence_cluster_count": 28,
+    "family_count": 35,
+    "raw_sleeve_count": 40,
+    "same_family_variants_never_count_as_independent": true
+  },
+  "inputs": {
+    "card_root": "D:\\QM\\strategy_farm\\artifacts\\cards_approved",
+    "db_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "db_sha256": "57010b7f57b0ad946259d65762fb76645cecd27fc77fd72b907f47320f8284ba",
+    "similarity_threshold": 0.25,
+    "starting_capital": 100000.0,
+    "stream_root": "D:\\QM\\reports\\portfolio\\sleeve_streams"
+  },
+  "members": [
+    {
+      "downside_deviation_pct": 0.10830405,
+      "ea_id": 1328,
+      "exposure_day_ratio": 0.04217159,
+      "family_descriptor": null,
+      "family_fingerprint": "d3bc9a071f7ebf64936dddad30395eeeeca664beae1bcaf4183a9947d0614ea9",
+      "family_status": "UNKNOWN",
+      "oos_total_pnl_pct": 1.79054557,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1328_EURJPY_DWX.jsonl",
+        "sha256": "3c7ce8229a3e7c91fdde53f892a06ec90ae945f91082f5f6f08b960f0c29e7a9"
+      },
+      "symbol": "EURJPY.DWX",
+      "tail_expected_shortfall_pct": -1.11315,
+      "tail_p05_pct": 0.0,
+      "trade_count": 58,
+      "worst_day_pct": -1.16364
+    },
+    {
+      "downside_deviation_pct": 0.05179947,
+      "ea_id": 1537,
+      "exposure_day_ratio": 0.13378575,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend",
+          "volatility"
+        ],
+        "entry_archetypes": [
+          "cross"
+        ],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "moving_average",
+          "volatility"
+        ]
+      },
+      "family_fingerprint": "cf11241133ef56fae32ffff0b8800bdf63d57032e9558877647dbe2957b3ec55",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 3.56356311,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+        "sha256": "1885c21e4c895827c79ff3d55849308ab4ee5c0db96a7d576cd652dc3eff8658"
+      },
+      "symbol": "XAGUSD.DWX",
+      "tail_expected_shortfall_pct": -0.73471904,
+      "tail_p05_pct": 0.0,
+      "trade_count": 96,
+      "worst_day_pct": -0.91065389
+    },
+    {
+      "downside_deviation_pct": 0.07744395,
+      "ea_id": 9641,
+      "exposure_day_ratio": 0.09743093,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "mean_reversion"
+        ],
+        "entry_archetypes": [
+          "scheduled"
+        ],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "moving_average",
+          "oscillator"
+        ]
+      },
+      "family_fingerprint": "165d5a6485591c8e2eff381eb88b19c285a8fcda6299b59b51bbb236587a9595",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 2.64795,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\9641_WS30_DWX.jsonl",
+        "sha256": "4b95efd711b6c0fefa51cb344a68bffec5e3938ce489fb1572e79a8de74ccd98"
+      },
+      "symbol": "WS30.DWX",
+      "tail_expected_shortfall_pct": -1.013235,
+      "tail_p05_pct": 0.0,
+      "trade_count": 64,
+      "worst_day_pct": -1.021035
+    },
+    {
+      "downside_deviation_pct": 0.06028775,
+      "ea_id": 10114,
+      "exposure_day_ratio": 0.0470189,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [
+          "cross"
+        ],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "moving_average"
+        ]
+      },
+      "family_fingerprint": "fce6170e18b9093d58acdd1449af65ed944705cfe5775a77c8f12fc5af525ad6",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 9.07997394,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10114_GDAXI_DWX.jsonl",
+        "sha256": "fe30970dc204ed01cd2bc5ac79b4d65bbdde30522e323027dea2a7e736c7f3d1"
+      },
+      "symbol": "GDAXI.DWX",
+      "tail_expected_shortfall_pct": -1.0323402,
+      "tail_p05_pct": 0.0,
+      "trade_count": 37,
+      "worst_day_pct": -1.0323402
+    },
+    {
+      "downside_deviation_pct": 0.08269514,
+      "ea_id": 10123,
+      "exposure_day_ratio": 0.17789627,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "breakout",
+          "momentum_trend"
+        ],
+        "entry_archetypes": [
+          "breakout"
+        ],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "channel_band"
+        ]
+      },
+      "family_fingerprint": "a836a5ead699f3808399e78b12b95765c9e7c551e4eb812cc58b8a722314fb17",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 12.26047562,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10123_XAUUSD_DWX.jsonl",
+        "sha256": "f525c0b0447d70d89a2dfc81845769d668a0e310f78afdacf8452666a932f6e4"
+      },
+      "symbol": "XAUUSD.DWX",
+      "tail_expected_shortfall_pct": -1.00719517,
+      "tail_p05_pct": 0.0,
+      "trade_count": 95,
+      "worst_day_pct": -1.01687993
+    },
+    {
+      "downside_deviation_pct": 0.09193229,
+      "ea_id": 10128,
+      "exposure_day_ratio": 0.69752787,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "breakout",
+          "momentum_trend",
+          "volatility"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "channel_band"
+        ]
+      },
+      "family_fingerprint": "d3f99c9ba4740f7a162e403aace77d001fc468c2bff0c84b4e4011f4e6c7e612",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 0.43446831,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10128_XAUUSD_DWX.jsonl",
+        "sha256": "42ec3a53637a8a2fc204b7a080f2affb0034c5c71348d18f70a7d0af7ff78c3f"
+      },
+      "symbol": "XAUUSD.DWX",
+      "tail_expected_shortfall_pct": -0.67088881,
+      "tail_p05_pct": -0.19493968,
+      "trade_count": 425,
+      "worst_day_pct": -0.9979803
+    },
+    {
+      "downside_deviation_pct": 0.05016686,
+      "ea_id": 10142,
+      "exposure_day_ratio": 0.01745032,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "mean_reversion"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "moving_average",
+          "oscillator"
+        ]
+      },
+      "family_fingerprint": "8fce243a4a0660c200a20e8fe1b72aa3107d2e770abc04d06df92302e8ffc37a",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 2.562875,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10142_SP500_DWX.jsonl",
+        "sha256": "19952d9833963de16a1ba558bc82436e53f26c82ac45e46028abfca7c7864470"
+      },
+      "symbol": "SP500.DWX",
+      "tail_expected_shortfall_pct": -1.025435,
+      "tail_p05_pct": 0.0,
+      "trade_count": 36,
+      "worst_day_pct": -1.025435
+    },
+    {
+      "downside_deviation_pct": 0.11847599,
+      "ea_id": 10145,
+      "exposure_day_ratio": 0.62772661,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": []
+      },
+      "family_fingerprint": "652c04d1d952bdb83414eebf1cd7da875cab1dd18b64fd8aa3f5ab98dd21b6dc",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 17.31567935,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10145_XAUUSD_DWX.jsonl",
+        "sha256": "c253fe5abb0b2c92dff866797b27bcfdfd272635659b1d784c1512ddcfd9bbf4"
+      },
+      "symbol": "XAUUSD.DWX",
+      "tail_expected_shortfall_pct": -0.98439962,
+      "tail_p05_pct": -0.13100077,
+      "trade_count": 306,
+      "worst_day_pct": -0.99964645
+    },
+    {
+      "downside_deviation_pct": 0.1524575,
+      "ea_id": 10146,
+      "exposure_day_ratio": 0.62966554,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "mean_reversion"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [
+          "signal_reversal"
+        ],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "moving_average"
+        ]
+      },
+      "family_fingerprint": "2fc119baede10123ec4ed601c6a83fb1138dbf7ad74518b0cb94019b5d429e51",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 1.15139,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10146_AUDUSD_DWX.jsonl",
+        "sha256": "0a1b9aba94999b896c6f1b4a16a33fb583c2af203515caf28e293f5ceb26834f"
+      },
+      "symbol": "AUDUSD.DWX",
+      "tail_expected_shortfall_pct": -1.01635143,
+      "tail_p05_pct": -0.172268,
+      "trade_count": 280,
+      "worst_day_pct": -1.03341
+    },
+    {
+      "downside_deviation_pct": 0.07581298,
+      "ea_id": 10183,
+      "exposure_day_ratio": 0.89626757,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [
+          "breakout",
+          "cross"
+        ],
+        "exit_archetypes": [
+          "signal_reversal"
+        ],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "channel_band",
+          "moving_average"
+        ]
+      },
+      "family_fingerprint": "ed81fed74687875535b33511edd54ec8cb7bbfe45f4ca8ce9c2f11a2b663fe7d",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 8.47549691,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10183_XAUUSD_DWX.jsonl",
+        "sha256": "023e8d73fe7b27a7d935ae7a74660ab0f3dbab84923b5f832250cfddf67f685d"
+      },
+      "symbol": "XAUUSD.DWX",
+      "tail_expected_shortfall_pct": -0.78594694,
+      "tail_p05_pct": -0.09736609,
+      "trade_count": 338,
+      "worst_day_pct": -0.99747842
+    },
+    {
+      "downside_deviation_pct": 0.33371905,
+      "ea_id": 10692,
+      "exposure_day_ratio": 0.47794474,
+      "family_descriptor": {
+        "concept_archetypes": [],
+        "entry_archetypes": [
+          "breakout",
+          "pattern"
+        ],
+        "exit_archetypes": [
+          "fixed_target_stop"
+        ],
+        "horizon": "intraday",
+        "indicator_archetypes": [
+          "pivots",
+          "volatility"
+        ]
+      },
+      "family_fingerprint": "fc401e8038cc6a44f0b31013cc181bc86ce4c7b95ff62f324bfa7a560d5feac8",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 17.17106869,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10692_NDX_DWX.jsonl",
+        "sha256": "b5e0d8289e3b4f3a7a4fa46d95084027d62a9c2ee169849086c25e9826b72d06"
+      },
+      "symbol": "NDX.DWX",
+      "tail_expected_shortfall_pct": -1.29535498,
+      "tail_p05_pct": -1.00619714,
+      "trade_count": 687,
+      "worst_day_pct": -2.04594748
+    },
+    {
+      "downside_deviation_pct": 0.33643191,
+      "ea_id": 10706,
+      "exposure_day_ratio": 0.27144935,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "mean_reversion"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [
+          "fixed_target_stop"
+        ],
+        "horizon": "intraday",
+        "indicator_archetypes": []
+      },
+      "family_fingerprint": "ab97c87da80ef2ea603fb0f5ca34dfc7521d3b55b057efe48eef3be010382ed1",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 58.5627062,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7"
+      },
+      "symbol": "GBPUSD.DWX",
+      "tail_expected_shortfall_pct": -1.40864079,
+      "tail_p05_pct": -1.0560111,
+      "trade_count": 360,
+      "worst_day_pct": -2.5065068
+    },
+    {
+      "downside_deviation_pct": 0.48186593,
+      "ea_id": 10847,
+      "exposure_day_ratio": 0.57682986,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "breakout"
+        ],
+        "entry_archetypes": [
+          "breakout"
+        ],
+        "exit_archetypes": [
+          "fixed_target_stop"
+        ],
+        "horizon": "intraday",
+        "indicator_archetypes": [
+          "oscillator",
+          "volatility"
+        ]
+      },
+      "family_fingerprint": "56d1db6b23a2aa9c3ff955c9d8362697c2026d330f9417fdbb90c1cff575d7a5",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 68.33846286,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10847_GDAXI_DWX.jsonl",
+        "sha256": "36c13fa66b0f557810f6a7f6bd9facd9efffbc31d7c984409646972d0a87f414"
+      },
+      "symbol": "GDAXI.DWX",
+      "tail_expected_shortfall_pct": -2.12743095,
+      "tail_p05_pct": -1.05289424,
+      "trade_count": 762,
+      "worst_day_pct": -2.52474235
+    },
+    {
+      "downside_deviation_pct": 0.20886404,
+      "ea_id": 10911,
+      "exposure_day_ratio": 0.18565196,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [
+          "breakout"
+        ],
+        "exit_archetypes": [],
+        "horizon": "intraday",
+        "indicator_archetypes": [
+          "moving_average",
+          "volatility"
+        ]
+      },
+      "family_fingerprint": "67921ccf565a661cc774dc5307228eb1e236c07a79ce8d1c2aa08cb85c37954b",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 14.86050854,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10911_GDAXI_DWX.jsonl",
+        "sha256": "a787310216360b54704f558d6e10777458f79f9924bcf709c0b4ed077557c407"
+      },
+      "symbol": "GDAXI.DWX",
+      "tail_expected_shortfall_pct": -1.13365357,
+      "tail_p05_pct": -0.52171321,
+      "trade_count": 312,
+      "worst_day_pct": -1.34947959
+    },
+    {
+      "downside_deviation_pct": 0.11335157,
+      "ea_id": 10938,
+      "exposure_day_ratio": 0.03635482,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [
+          "breakout"
+        ],
+        "exit_archetypes": [],
+        "horizon": "intraday",
+        "indicator_archetypes": [
+          "moving_average",
+          "volatility"
+        ]
+      },
+      "family_fingerprint": "67921ccf565a661cc774dc5307228eb1e236c07a79ce8d1c2aa08cb85c37954b",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 6.47848394,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10938_GDAXI_DWX.jsonl",
+        "sha256": "a41726360fa97eee18f39f3286c2ad2de5b9b7e7ec5da62f474d02d3df9ad7fb"
+      },
+      "symbol": "GDAXI.DWX",
+      "tail_expected_shortfall_pct": -1.32260161,
+      "tail_p05_pct": 0.0,
+      "trade_count": 61,
+      "worst_day_pct": -1.57664792
+    },
+    {
+      "downside_deviation_pct": 0.06041693,
+      "ea_id": 11129,
+      "exposure_day_ratio": 0.02084343,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "mean_reversion"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": []
+      },
+      "family_fingerprint": "f370b4631f3709282416bc4ec70509e08d670c422d6d386417e5911b663eb1bd",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 7.93129,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11129_SP500_DWX.jsonl",
+        "sha256": "bbd5c5b36cd5d547bae2b07c65148e3f265634574184fb0793aac4a1e6fd7687"
+      },
+      "symbol": "SP500.DWX",
+      "tail_expected_shortfall_pct": -1.029505,
+      "tail_p05_pct": 0.0,
+      "trade_count": 43,
+      "worst_day_pct": -1.029505
+    },
+    {
+      "downside_deviation_pct": 0.0414649,
+      "ea_id": 11288,
+      "exposure_day_ratio": 0.19631604,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [
+          "fixed_target_stop"
+        ],
+        "horizon": "intraday",
+        "indicator_archetypes": [
+          "moving_average",
+          "oscillator"
+        ]
+      },
+      "family_fingerprint": "cb08e3b774e90e4899ca22ded9501c47ee6712d22d38b98b7fccc15190f946d2",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 2.05502686,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11288_USDJPY_DWX.jsonl",
+        "sha256": "e30f6b0c3f1777907744250c55d78506f62be84143881ff0de21985b1d39a999"
+      },
+      "symbol": "USDJPY.DWX",
+      "tail_expected_shortfall_pct": -0.24689022,
+      "tail_p05_pct": -0.10498929,
+      "trade_count": 436,
+      "worst_day_pct": -0.3901103
+    },
+    {
+      "downside_deviation_pct": 0.2820841,
+      "ea_id": 11294,
+      "exposure_day_ratio": 0.76248182,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": []
+      },
+      "family_fingerprint": "652c04d1d952bdb83414eebf1cd7da875cab1dd18b64fd8aa3f5ab98dd21b6dc",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 21.71340739,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11294_GDAXI_DWX.jsonl",
+        "sha256": "79a38e0977dfcae52fc621c5173649469ee1acfafb60d65a5df709f8b7bd2882"
+      },
+      "symbol": "GDAXI.DWX",
+      "tail_expected_shortfall_pct": -1.26427247,
+      "tail_p05_pct": -0.98574575,
+      "trade_count": 457,
+      "worst_day_pct": -2.02446158
+    },
+    {
+      "downside_deviation_pct": 0.2862881,
+      "ea_id": 11294,
+      "exposure_day_ratio": 0.85651963,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": []
+      },
+      "family_fingerprint": "652c04d1d952bdb83414eebf1cd7da875cab1dd18b64fd8aa3f5ab98dd21b6dc",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 10.05668762,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11294_XAUUSD_DWX.jsonl",
+        "sha256": "73f912d97d0ad85dc3984f51a2932104ff1b24b7008a684f3371c52315027f8b"
+      },
+      "symbol": "XAUUSD.DWX",
+      "tail_expected_shortfall_pct": -1.2474906,
+      "tail_p05_pct": -0.98569725,
+      "trade_count": 493,
+      "worst_day_pct": -1.90480197
+    },
+    {
+      "downside_deviation_pct": 0.10537653,
+      "ea_id": 11421,
+      "exposure_day_ratio": 0.10130877,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "breakout",
+          "mean_reversion",
+          "pattern"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": []
+      },
+      "family_fingerprint": "f51cc20c000923ef5f8f5448c38cd8d0464b5bc61a9f79b1002ac7e1b6cb5a77",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 3.52821994,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1"
+      },
+      "symbol": "EURUSD.DWX",
+      "tail_expected_shortfall_pct": -1.10292647,
+      "tail_p05_pct": 0.0,
+      "trade_count": 91,
+      "worst_day_pct": -1.13454694
+    },
+    {
+      "downside_deviation_pct": 0.1840689,
+      "ea_id": 11422,
+      "exposure_day_ratio": 0.26272419,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [
+          "trailing"
+        ],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "moving_average"
+        ]
+      },
+      "family_fingerprint": "2925d4e5ea1cc4a3d3d6d7748c418d94332de0104066dc03c1c6f984ac916118",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 16.53305348,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198"
+      },
+      "symbol": "USDCAD.DWX",
+      "tail_expected_shortfall_pct": -1.09512352,
+      "tail_p05_pct": 0.0,
+      "trade_count": 195,
+      "worst_day_pct": -1.23433
+    },
+    {
+      "downside_deviation_pct": 0.0898607,
+      "ea_id": 11881,
+      "exposure_day_ratio": 0.28696074,
+      "family_descriptor": null,
+      "family_fingerprint": "7dea5a55aa158d45f33ed0f332c48ac5d6f7615d896ca9e6b2487d316d784e3a",
+      "family_status": "UNKNOWN",
+      "oos_total_pnl_pct": 4.61617182,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11881_GBPUSD_DWX.jsonl",
+        "sha256": "ab9de2495ec44fcc496ad6b08fe8251c292bfbb2df2fbe1ba6351ad015eb8a3f"
+      },
+      "symbol": "GBPUSD.DWX",
+      "tail_expected_shortfall_pct": -1.00497822,
+      "tail_p05_pct": 0.0,
+      "trade_count": 99,
+      "worst_day_pct": -1.0053367
+    },
+    {
+      "downside_deviation_pct": 0.04388455,
+      "ea_id": 12354,
+      "exposure_day_ratio": 0.18952981,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "breakout"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "channel_band",
+          "moving_average",
+          "volatility"
+        ]
+      },
+      "family_fingerprint": "364ae450c7690f4322fb3c0d43235d09bc15336fd38e315f673d3e9d254e9e75",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 1.39149784,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12354_XAUUSD_DWX.jsonl",
+        "sha256": "bf9a50ca870e3a696207c3779d92f25336868c582ac3bd41cbb81800fee51391"
+      },
+      "symbol": "XAUUSD.DWX",
+      "tail_expected_shortfall_pct": -0.96369861,
+      "tail_p05_pct": 0.0,
+      "trade_count": 97,
+      "worst_day_pct": -0.97688127
+    },
+    {
+      "downside_deviation_pct": 0.13909828,
+      "ea_id": 12357,
+      "exposure_day_ratio": 0.53805138,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": []
+      },
+      "family_fingerprint": "652c04d1d952bdb83414eebf1cd7da875cab1dd18b64fd8aa3f5ab98dd21b6dc",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 1.71126691,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12357_GDAXI_DWX.jsonl",
+        "sha256": "93cfd55e55ea3776dd57e8b10d1747cadd2a3e15c32975b83ec2f56164758b49"
+      },
+      "symbol": "GDAXI.DWX",
+      "tail_expected_shortfall_pct": -1.00559823,
+      "tail_p05_pct": -0.27932302,
+      "trade_count": 345,
+      "worst_day_pct": -1.15537611
+    },
+    {
+      "downside_deviation_pct": 0.04063518,
+      "ea_id": 12567,
+      "exposure_day_ratio": 0.10857974,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "mean_reversion"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": []
+      },
+      "family_fingerprint": "f370b4631f3709282416bc4ec70509e08d670c422d6d386417e5911b663eb1bd",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 5.03768975,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12567_XAUUSD_DWX.jsonl",
+        "sha256": "756b7bbcf0bf6622561e35f07dcdbeb830027d300dbdfa3160b46bcd5011b6a0"
+      },
+      "symbol": "XAUUSD.DWX",
+      "tail_expected_shortfall_pct": -0.77163742,
+      "tail_p05_pct": 0.0,
+      "trade_count": 72,
+      "worst_day_pct": -0.96000568
+    },
+    {
+      "downside_deviation_pct": 0.06310416,
+      "ea_id": 12623,
+      "exposure_day_ratio": 0.10130877,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [
+          "momentum",
+          "scheduled"
+        ],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "volatility"
+        ]
+      },
+      "family_fingerprint": "0eae555f0d4ea8aa2c6ee5e91bd0f6923c459bce88d639d1a615865a4639f485",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 1.67077544,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12623_XAUUSD_DWX.jsonl",
+        "sha256": "813f619019fcaea8569ad2c666d077f9b988f4990104454d1177af03db63d00b"
+      },
+      "symbol": "XAUUSD.DWX",
+      "tail_expected_shortfall_pct": -0.99280221,
+      "tail_p05_pct": 0.0,
+      "trade_count": 55,
+      "worst_day_pct": -0.99333302
+    },
+    {
+      "downside_deviation_pct": 0.08338703,
+      "ea_id": 12708,
+      "exposure_day_ratio": 0.1580223,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [
+          "scheduled"
+        ],
+        "exit_archetypes": [
+          "fixed_target_stop"
+        ],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "volatility"
+        ]
+      },
+      "family_fingerprint": "6bdeea35804ebff4a11863a33af009f40b8285d889c137013882de08a8dd6379",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 8.45048403,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12708_XAUUSD_DWX.jsonl",
+        "sha256": "7f3331063c630a844ca7793acf12879a1ad0e30b93e300452740b9025cfc60d1"
+      },
+      "symbol": "XAUUSD.DWX",
+      "tail_expected_shortfall_pct": -1.04711065,
+      "tail_p05_pct": 0.0,
+      "trade_count": 87,
+      "worst_day_pct": -1.07396231
+    },
+    {
+      "downside_deviation_pct": 0.3717767,
+      "ea_id": 12823,
+      "exposure_day_ratio": 0.50945225,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "intraday",
+        "indicator_archetypes": [
+          "channel_band"
+        ]
+      },
+      "family_fingerprint": "908be21e5432d0f48cf0b5a0d51cbcb715a3a2d04f05b66b92e5b00359e7590a",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 48.57797928,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12823_USDJPY_DWX.jsonl",
+        "sha256": "b89f4e839bdbda45cb0efb28c31338d7bd6bebc381bfc92a6436020baf618941"
+      },
+      "symbol": "USDJPY.DWX",
+      "tail_expected_shortfall_pct": -1.66931161,
+      "tail_p05_pct": -0.970343,
+      "trade_count": 1514,
+      "worst_day_pct": -2.54668
+    },
+    {
+      "downside_deviation_pct": 0.1092301,
+      "ea_id": 12847,
+      "exposure_day_ratio": 0.87687833,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "seasonality"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "moving_average"
+        ]
+      },
+      "family_fingerprint": "1f038222856c2c303d9b579ce407ecb407284d6b4c0e822e6951d0502cc132c5",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 7.17972151,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12847_NDX_DWX.jsonl",
+        "sha256": "4d0bb6d2c8eef5be788da7c8bbc3b493c25a592d7c960bc3fb992764f75fe94a"
+      },
+      "symbol": "NDX.DWX",
+      "tail_expected_shortfall_pct": -1.2665175,
+      "tail_p05_pct": 0.0,
+      "trade_count": 71,
+      "worst_day_pct": -1.309885
+    },
+    {
+      "downside_deviation_pct": 0.04944565,
+      "ea_id": 12849,
+      "exposure_day_ratio": 0.16771692,
+      "family_descriptor": null,
+      "family_fingerprint": "f3f773c4466fc1d3916830448cb52850745187c147e3d87af3579be5ff7cb7be",
+      "family_status": "UNKNOWN",
+      "oos_total_pnl_pct": 6.99933352,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12849_XTIUSD_DWX.jsonl",
+        "sha256": "9513177e28f7d8bb4644b2a85ca0628952292737afdc686ef32a89c2d5621e84"
+      },
+      "symbol": "XTIUSD.DWX",
+      "tail_expected_shortfall_pct": -0.79370774,
+      "tail_p05_pct": 0.0,
+      "trade_count": 85,
+      "worst_day_pct": -0.83085054
+    },
+    {
+      "downside_deviation_pct": 0.05215741,
+      "ea_id": 12855,
+      "exposure_day_ratio": 0.09258362,
+      "family_descriptor": null,
+      "family_fingerprint": "dc809ad4ec067e8a73f753c5e8cc29dac9bf793fe3aec2ba2e6d1fcc0745a0e3",
+      "family_status": "UNKNOWN",
+      "oos_total_pnl_pct": 3.32714028,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12855_XTIUSD_DWX.jsonl",
+        "sha256": "9198da01eab7b835225127422313bb89b540fabcfa5e38c88ab38623057f355b"
+      },
+      "symbol": "XTIUSD.DWX",
+      "tail_expected_shortfall_pct": -0.65612891,
+      "tail_p05_pct": 0.0,
+      "trade_count": 169,
+      "worst_day_pct": -0.98067809
+    },
+    {
+      "downside_deviation_pct": 0.08036547,
+      "ea_id": 12989,
+      "exposure_day_ratio": 0.04023267,
+      "family_descriptor": null,
+      "family_fingerprint": "b9ff20f9630054c33e0f05d54c66e21cee00144967d7f483c42d28e6956554a4",
+      "family_status": "UNKNOWN",
+      "oos_total_pnl_pct": 10.60028435,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12989_XAUUSD_DWX.jsonl",
+        "sha256": "0ddbdf8d467403eb4b09f1fa4b595ed825a0d8a43c1ccad8a0e3c67dd2a76e07"
+      },
+      "symbol": "XAUUSD.DWX",
+      "tail_expected_shortfall_pct": -1.0104883,
+      "tail_p05_pct": 0.0,
+      "trade_count": 43,
+      "worst_day_pct": -1.01151891
+    },
+    {
+      "downside_deviation_pct": 0.06316737,
+      "ea_id": 13013,
+      "exposure_day_ratio": 0.04217159,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend",
+          "volatility"
+        ],
+        "entry_archetypes": [
+          "scheduled"
+        ],
+        "exit_archetypes": [],
+        "horizon": "intraday",
+        "indicator_archetypes": [
+          "volatility"
+        ]
+      },
+      "family_fingerprint": "67c215387371ab38e95280e583272cbb8c7ce85ce81492359aad8c3e77ff54ac",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 4.48456523,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13013_NDX_DWX.jsonl",
+        "sha256": "679ce2cd7db33a5d00bb985a8c3cedfb5a4e832bb8352b4a1d5b67a8dee0ebf5"
+      },
+      "symbol": "NDX.DWX",
+      "tail_expected_shortfall_pct": -1.07973811,
+      "tail_p05_pct": 0.0,
+      "trade_count": 70,
+      "worst_day_pct": -1.12194934
+    },
+    {
+      "downside_deviation_pct": 0.13634305,
+      "ea_id": 13036,
+      "exposure_day_ratio": 0.57052836,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "intraday",
+        "indicator_archetypes": [
+          "moving_average",
+          "volatility"
+        ]
+      },
+      "family_fingerprint": "61533d8000bfff9414f49e33ad50b934997c3d928ba5aba59626d3abc5dda690",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 2.35707717,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13036_GDAXI_DWX.jsonl",
+        "sha256": "6336dde9f08bbbe2e81678b60d8e8b2728db3ee4787b9d13f7972b56b1f2b145"
+      },
+      "symbol": "GDAXI.DWX",
+      "tail_expected_shortfall_pct": -0.74224004,
+      "tail_p05_pct": -0.30040851,
+      "trade_count": 1172,
+      "worst_day_pct": -0.99622323
+    },
+    {
+      "downside_deviation_pct": 0.05494909,
+      "ea_id": 13054,
+      "exposure_day_ratio": 0.13233156,
+      "family_descriptor": null,
+      "family_fingerprint": "3e1b9c3b153d75ddeb4e38fde7b0ec195b7b8f10396e2e1c691318ed07a02b58",
+      "family_status": "UNKNOWN",
+      "oos_total_pnl_pct": 4.77963579,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+        "sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b"
+      },
+      "symbol": "XTIUSD.DWX",
+      "tail_expected_shortfall_pct": -0.93691547,
+      "tail_p05_pct": 0.0,
+      "trade_count": 82,
+      "worst_day_pct": -0.968805
+    },
+    {
+      "downside_deviation_pct": 0.0216508,
+      "ea_id": 13128,
+      "exposure_day_ratio": 0.05525933,
+      "family_descriptor": null,
+      "family_fingerprint": "7b9982486feb6e18f22794261c953daf8c67a7e0624574082f584a9e8f1eb5f1",
+      "family_status": "UNKNOWN",
+      "oos_total_pnl_pct": 4.38402231,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13128_NDX_DWX.jsonl",
+        "sha256": "f013c7c144bd716c88e38d95007dc543711fc73c2993af94cca05990ec0ac17f"
+      },
+      "symbol": "NDX.DWX",
+      "tail_expected_shortfall_pct": -0.43690614,
+      "tail_p05_pct": 0.0,
+      "trade_count": 57,
+      "worst_day_pct": -0.44233951
+    },
+    {
+      "downside_deviation_pct": 0.31158949,
+      "ea_id": 13301,
+      "exposure_day_ratio": 0.2675715,
+      "family_descriptor": null,
+      "family_fingerprint": "2fe6944637888fd2e1ec4ec6ec3e12dc441a4708f97bb3438bf0d211774bdec3",
+      "family_status": "UNKNOWN",
+      "oos_total_pnl_pct": 66.7883778,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13301_GDAXI_DWX.jsonl",
+        "sha256": "207bc3cd4e3c65032e0aabbf29880364d712007e94313d18cf461bc2f027b274"
+      },
+      "symbol": "GDAXI.DWX",
+      "tail_expected_shortfall_pct": -1.15215287,
+      "tail_p05_pct": -1.02397163,
+      "trade_count": 551,
+      "worst_day_pct": -1.88917948
+    },
+    {
+      "downside_deviation_pct": 0.02624642,
+      "ea_id": 20048,
+      "exposure_day_ratio": 0.10615608,
+      "family_descriptor": null,
+      "family_fingerprint": "85d071e212376c122ba7f993b5e89422d4e8cf9355ae8203f1ef98799dab402a",
+      "family_status": "UNKNOWN",
+      "oos_total_pnl_pct": 1.13159733,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+        "sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55"
+      },
+      "symbol": "XTIUSD.DWX",
+      "tail_expected_shortfall_pct": -0.66402197,
+      "tail_p05_pct": 0.0,
+      "trade_count": 60,
+      "worst_day_pct": -0.79042844
+    },
+    {
+      "downside_deviation_pct": 0.11013778,
+      "ea_id": 20266,
+      "exposure_day_ratio": 0.73776054,
+      "family_descriptor": null,
+      "family_fingerprint": "6771b4364bba371d22f01175d46970883addf05e97ea21b7b3d7e745dd94cd23",
+      "family_status": "UNKNOWN",
+      "oos_total_pnl_pct": 8.50462247,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20266_XTIUSD_DWX.jsonl",
+        "sha256": "c70651f78c4a5cd9aec42dda4207e14d206575134ccebb058b2e3e1e42f180d3"
+      },
+      "symbol": "XTIUSD.DWX",
+      "tail_expected_shortfall_pct": -0.97435582,
+      "tail_p05_pct": -0.19004956,
+      "trade_count": 432,
+      "worst_day_pct": -0.99824423
+    },
+    {
+      "downside_deviation_pct": 0.08517973,
+      "ea_id": 21505,
+      "exposure_day_ratio": 0.28550654,
+      "family_descriptor": {
+        "concept_archetypes": [
+          "momentum_trend"
+        ],
+        "entry_archetypes": [],
+        "exit_archetypes": [],
+        "horizon": "swing",
+        "indicator_archetypes": [
+          "volatility",
+          "volume_flow"
+        ]
+      },
+      "family_fingerprint": "bda53bc1f9804625d3b7568f1410716e3c7ae40af286ed4e3a0f5357cbfddeee",
+      "family_status": "CLASSIFIED",
+      "oos_total_pnl_pct": 7.12671613,
+      "stream_binding": {
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+        "sha256": "243804faaf0050f5482b9a4aac8f9eb0dcd552de1c2c139a486f0bcfa46b94c1"
+      },
+      "symbol": "XAGUSD.DWX",
+      "tail_expected_shortfall_pct": -0.99022244,
+      "tail_p05_pct": 0.0,
+      "trade_count": 116,
+      "worst_day_pct": -0.99632998
+    }
+  ],
+  "schema": "qm.economic-strategy-clusters/v1"
+}

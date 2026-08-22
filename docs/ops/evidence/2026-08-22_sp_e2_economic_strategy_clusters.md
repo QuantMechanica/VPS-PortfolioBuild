@@ -1,0 +1,111 @@
+# Economic strategy clustering
+
+## Result
+
+- Q08 PASS identities: 40
+- Usable OOS streams: 40
+- Raw sleeves / mechanics families / economic clusters: 40 / 35 / 28
+- OOS observation range: 2017-10-09 through 2025-12-30
+- Unclassified family identities: 10
+
+Same-family variants are collapsed before independence is counted, regardless of filenames or apparent return decorrelation.
+
+The mechanics fingerprint hashes normalized card concepts, indicator archetypes, entry/exit mechanics, and horizon; EA IDs, slugs, and filenames are excluded. Cross-family linkage uses 35% positive daily-P/L correlation, 30% positive downside correlation, 20% worst-loss-day overlap, and 15% exposure-day overlap. The 0.25 linkage threshold is diagnostic evidence, not a portfolio gate.
+
+## Sleeve economics
+
+| Sleeve | P/L % | Downside % | Worst day % | ES(5%) % | Exposure | Family |
+|---|---:|---:|---:|---:|---:|---|
+| 1328:EURJPY.DWX | 1.7905 | 0.1083 | -1.1636 | -1.1132 | 0.0422 | d3bc9a071f7e |
+| 1537:XAGUSD.DWX | 3.5636 | 0.0518 | -0.9107 | -0.7347 | 0.1338 | cf11241133ef |
+| 9641:WS30.DWX | 2.6479 | 0.0774 | -1.0210 | -1.0132 | 0.0974 | 165d5a648559 |
+| 10114:GDAXI.DWX | 9.0800 | 0.0603 | -1.0323 | -1.0323 | 0.0470 | fce6170e18b9 |
+| 10123:XAUUSD.DWX | 12.2605 | 0.0827 | -1.0169 | -1.0072 | 0.1779 | a836a5ead699 |
+| 10128:XAUUSD.DWX | 0.4345 | 0.0919 | -0.9980 | -0.6709 | 0.6975 | d3f99c9ba474 |
+| 10142:SP500.DWX | 2.5629 | 0.0502 | -1.0254 | -1.0254 | 0.0175 | 8fce243a4a06 |
+| 10145:XAUUSD.DWX | 17.3157 | 0.1185 | -0.9996 | -0.9844 | 0.6277 | 652c04d1d952 |
+| 10146:AUDUSD.DWX | 1.1514 | 0.1525 | -1.0334 | -1.0164 | 0.6297 | 2fc119baede1 |
+| 10183:XAUUSD.DWX | 8.4755 | 0.0758 | -0.9975 | -0.7859 | 0.8963 | ed81fed74687 |
+| 10692:NDX.DWX | 17.1711 | 0.3337 | -2.0459 | -1.2954 | 0.4779 | fc401e8038cc |
+| 10706:GBPUSD.DWX | 58.5627 | 0.3364 | -2.5065 | -1.4086 | 0.2714 | ab97c87da80e |
+| 10847:GDAXI.DWX | 68.3385 | 0.4819 | -2.5247 | -2.1274 | 0.5768 | 56d1db6b23a2 |
+| 10911:GDAXI.DWX | 14.8605 | 0.2089 | -1.3495 | -1.1337 | 0.1857 | 67921ccf565a |
+| 10938:GDAXI.DWX | 6.4785 | 0.1134 | -1.5766 | -1.3226 | 0.0364 | 67921ccf565a |
+| 11129:SP500.DWX | 7.9313 | 0.0604 | -1.0295 | -1.0295 | 0.0208 | f370b4631f37 |
+| 11288:USDJPY.DWX | 2.0550 | 0.0415 | -0.3901 | -0.2469 | 0.1963 | cb08e3b774e9 |
+| 11294:GDAXI.DWX | 21.7134 | 0.2821 | -2.0245 | -1.2643 | 0.7625 | 652c04d1d952 |
+| 11294:XAUUSD.DWX | 10.0567 | 0.2863 | -1.9048 | -1.2475 | 0.8565 | 652c04d1d952 |
+| 11421:EURUSD.DWX | 3.5282 | 0.1054 | -1.1345 | -1.1029 | 0.1013 | f51cc20c0009 |
+| 11422:USDCAD.DWX | 16.5331 | 0.1841 | -1.2343 | -1.0951 | 0.2627 | 2925d4e5ea1c |
+| 11881:GBPUSD.DWX | 4.6162 | 0.0899 | -1.0053 | -1.0050 | 0.2870 | 7dea5a55aa15 |
+| 12354:XAUUSD.DWX | 1.3915 | 0.0439 | -0.9769 | -0.9637 | 0.1895 | 364ae450c769 |
+| 12357:GDAXI.DWX | 1.7113 | 0.1391 | -1.1554 | -1.0056 | 0.5381 | 652c04d1d952 |
+| 12567:XAUUSD.DWX | 5.0377 | 0.0406 | -0.9600 | -0.7716 | 0.1086 | f370b4631f37 |
+| 12623:XAUUSD.DWX | 1.6708 | 0.0631 | -0.9933 | -0.9928 | 0.1013 | 0eae555f0d4e |
+| 12708:XAUUSD.DWX | 8.4505 | 0.0834 | -1.0740 | -1.0471 | 0.1580 | 6bdeea35804e |
+| 12823:USDJPY.DWX | 48.5780 | 0.3718 | -2.5467 | -1.6693 | 0.5095 | 908be21e5432 |
+| 12847:NDX.DWX | 7.1797 | 0.1092 | -1.3099 | -1.2665 | 0.8769 | 1f038222856c |
+| 12849:XTIUSD.DWX | 6.9993 | 0.0494 | -0.8309 | -0.7937 | 0.1677 | f3f773c4466f |
+| 12855:XTIUSD.DWX | 3.3271 | 0.0522 | -0.9807 | -0.6561 | 0.0926 | dc809ad4ec06 |
+| 12989:XAUUSD.DWX | 10.6003 | 0.0804 | -1.0115 | -1.0105 | 0.0402 | b9ff20f96300 |
+| 13013:NDX.DWX | 4.4846 | 0.0632 | -1.1219 | -1.0797 | 0.0422 | 67c215387371 |
+| 13036:GDAXI.DWX | 2.3571 | 0.1363 | -0.9962 | -0.7422 | 0.5705 | 61533d8000bf |
+| 13054:XTIUSD.DWX | 4.7796 | 0.0549 | -0.9688 | -0.9369 | 0.1323 | 3e1b9c3b153d |
+| 13128:NDX.DWX | 4.3840 | 0.0217 | -0.4423 | -0.4369 | 0.0553 | 7b9982486feb |
+| 13301:GDAXI.DWX | 66.7884 | 0.3116 | -1.8892 | -1.1522 | 0.2676 | 2fe694463788 |
+| 20048:XTIUSD.DWX | 1.1316 | 0.0262 | -0.7904 | -0.6640 | 0.1062 | 85d071e21237 |
+| 20266:XTIUSD.DWX | 8.5046 | 0.1101 | -0.9982 | -0.9744 | 0.7378 | 6771b4364bba |
+| 21505:XAGUSD.DWX | 7.1267 | 0.0852 | -0.9963 | -0.9902 | 0.2855 | bda53bc1f980 |
+
+## Clusters
+
+- C001 (1): 1328:EURJPY.DWX
+- C002 (1): 1537:XAGUSD.DWX
+- C003 (1): 9641:WS30.DWX
+- C004 (1): 10114:GDAXI.DWX
+- C005 (8): 10123:XAUUSD.DWX, 10128:XAUUSD.DWX, 10145:XAUUSD.DWX, 10183:XAUUSD.DWX, 11294:GDAXI.DWX, 11294:XAUUSD.DWX, 12354:XAUUSD.DWX, 12357:GDAXI.DWX
+- C006 (3): 10142:SP500.DWX, 11129:SP500.DWX, 12567:XAUUSD.DWX
+- C007 (1): 10146:AUDUSD.DWX
+- C008 (1): 10692:NDX.DWX
+- C009 (1): 10706:GBPUSD.DWX
+- C010 (1): 10847:GDAXI.DWX
+- C011 (2): 10911:GDAXI.DWX, 10938:GDAXI.DWX
+- C012 (1): 11288:USDJPY.DWX
+- C013 (1): 11421:EURUSD.DWX
+- C014 (1): 11422:USDCAD.DWX
+- C015 (1): 11881:GBPUSD.DWX
+- C016 (2): 12623:XAUUSD.DWX, 12708:XAUUSD.DWX
+- C017 (1): 12823:USDJPY.DWX
+- C018 (1): 12847:NDX.DWX
+- C019 (2): 12849:XTIUSD.DWX, 13054:XTIUSD.DWX
+- C020 (1): 12855:XTIUSD.DWX
+- C021 (1): 12989:XAUUSD.DWX
+- C022 (1): 13013:NDX.DWX
+- C023 (1): 13036:GDAXI.DWX
+- C024 (1): 13128:NDX.DWX
+- C025 (1): 13301:GDAXI.DWX
+- C026 (1): 20048:XTIUSD.DWX
+- C027 (1): 20266:XTIUSD.DWX
+- C028 (1): 21505:XAGUSD.DWX
+
+## Strongest cross-family economic links
+
+| Pair | Similarity | P/L corr | Downside corr | Tail overlap | Exposure overlap |
+|---|---:|---:|---:|---:|---:|
+| 10128:XAUUSD.DWX / 10145:XAUUSD.DWX | 0.4465 | 0.6361 | 0.3616 | 0.1579 | 0.5587 |
+| 10145:XAUUSD.DWX / 10183:XAUUSD.DWX | 0.4106 | 0.5574 | 0.3576 | 0.0667 | 0.6324 |
+| 10123:XAUUSD.DWX / 12354:XAUUSD.DWX | 0.3995 | 0.5951 | 0.3098 | 0.0000 | 0.6550 |
+| 10183:XAUUSD.DWX / 12354:XAUUSD.DWX | 0.3902 | 0.5483 | 0.4880 | 0.1111 | 0.1979 |
+| 12623:XAUUSD.DWX / 12708:XAUUSD.DWX | 0.3888 | 0.5405 | 0.3522 | 0.0000 | 0.6261 |
+| 10128:XAUUSD.DWX / 11294:XAUUSD.DWX | 0.3604 | 0.5958 | 0.1751 | 0.0370 | 0.6127 |
+| 10123:XAUUSD.DWX / 10145:XAUUSD.DWX | 0.3301 | 0.6183 | 0.2394 | 0.0000 | 0.2794 |
+| 10128:XAUUSD.DWX / 10183:XAUUSD.DWX | 0.3258 | 0.4097 | 0.1900 | 0.1000 | 0.7027 |
+| 10123:XAUUSD.DWX / 10128:XAUUSD.DWX | 0.3204 | 0.5889 | 0.2576 | 0.0000 | 0.2464 |
+| 10145:XAUUSD.DWX / 12354:XAUUSD.DWX | 0.3026 | 0.5181 | 0.2537 | 0.0000 | 0.3009 |
+| 10128:XAUUSD.DWX / 12354:XAUUSD.DWX | 0.2908 | 0.4639 | 0.2532 | 0.0667 | 0.2612 |
+| 10142:SP500.DWX / 11129:SP500.DWX | 0.2624 | 0.4333 | 0.1638 | 0.0000 | 0.4107 |
+| 10123:XAUUSD.DWX / 11294:XAUUSD.DWX | 0.2581 | 0.4799 | 0.2045 | 0.0000 | 0.1915 |
+| 12849:XTIUSD.DWX / 13054:XTIUSD.DWX | 0.2576 | 0.2143 | 0.2106 | 0.3333 | 0.3515 |
+| 10183:XAUUSD.DWX / 11294:XAUUSD.DWX | 0.2506 | 0.3166 | 0.1163 | 0.0000 | 0.6992 |
+
+Evidence only; no book, deployment, live-trading, or AutoTrading action is authorized.
