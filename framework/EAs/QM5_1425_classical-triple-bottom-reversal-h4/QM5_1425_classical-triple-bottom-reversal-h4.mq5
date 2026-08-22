@@ -179,7 +179,9 @@ bool Strategy_MacroBias()
    if(g_h_sma_d1 == INVALID_HANDLE) return true;
 
    double sma_vals[2];
-   if(CopyBuffer(g_h_sma_d1, 0, 1, 2, sma_vals) < 2) return false;
+   const int sma_copied = CopyBuffer(g_h_sma_d1, 0, 1, 2, sma_vals);
+   if(sma_copied < 1) return false;
+   if(sma_copied < 2) return false;
 
    // D1 SMA(50) flat or rising at entry bar: SMA[1] >= SMA[2]
    return (sma_vals[0] >= sma_vals[1]);
@@ -275,7 +277,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    double atr_buf[1];
-   if(CopyBuffer(g_h_atr_h4, 0, 1, 1, atr_buf) < 1)
+   const int atr_copied = CopyBuffer(g_h_atr_h4, 0, 1, 1, atr_buf);
+   if(atr_copied < 1)
       return false;
    const double atr = atr_buf[0];
    if(atr <= 0.0)
@@ -441,11 +444,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             if(sl >= entry_price || tp <= entry_price)
                continue;
 
-            req.action = QM_ENTRY_BUY;
+            req.type = QM_BUY;
             req.price = entry_price;
             req.sl = sl;
             req.tp = tp;
-            req.comment = "QM5_1425_TripleBottom";
+            req.reason = "QM5_1425_TripleBottom";
 
             g_active_setup_valid = true;
             g_active_neckline = neckline;
@@ -474,7 +477,6 @@ void Strategy_ManageOpenPosition()
    const double current_price = PositionGetDouble(POSITION_PRICE_CURRENT);
    const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
    const double current_sl = PositionGetDouble(POSITION_SL);
-   const double current_tp = PositionGetDouble(POSITION_TP);
 
    // Partial close at TP1 (50% measured move) + Move SL to BE
    if(!g_tp1_done && g_active_tp1_price > 0.0 && current_price >= g_active_tp1_price)
@@ -485,7 +487,7 @@ void Strategy_ManageOpenPosition()
       double close_vol = MathFloor((volume * strategy_tp1_close_fraction) / step_lot) * step_lot;
       if(close_vol >= min_lot && (volume - close_vol) >= min_lot)
       {
-         QM_TM_ClosePositionPartial(ticket, close_vol, QM_EXIT_STRATEGY);
+         QM_TM_PartialClose(ticket, close_vol, QM_EXIT_STRATEGY);
       }
       g_tp1_done = true;
 
@@ -493,7 +495,7 @@ void Strategy_ManageOpenPosition()
       const double be_sl = Strategy_NormalizePrice(open_price);
       if(be_sl > current_sl)
       {
-         QM_TM_ModifyPosition(ticket, be_sl, current_tp);
+         QM_TM_MoveSL(ticket, be_sl, "QM5_1425_BE");
       }
    }
 }
@@ -515,7 +517,9 @@ bool Strategy_ExitSignal()
    if(bars_open <= strategy_failure_exit_bars && g_active_setup_valid)
    {
       double atr_buf[1];
-      if(CopyBuffer(g_h_atr_h4, 0, 1, 1, atr_buf) >= 1 && atr_buf[0] > 0.0)
+      const int atr_copied = CopyBuffer(g_h_atr_h4, 0, 1, 1, atr_buf);
+      if(atr_copied < 1) return false;
+      if(atr_buf[0] > 0.0)
       {
          const double atr = atr_buf[0];
          MqlRates r[1];
@@ -558,6 +562,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
@@ -589,7 +594,8 @@ void OnTick()
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req;
+   QM_EntryRequest req = {};
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;

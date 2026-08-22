@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1425
 ; ea_slug:      classical-triple-bottom-reversal-h4
@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   263e03e45c3b6fe16398919bfb51421f23462ef2e1737c1eca8c6571a434af14
 ; author:       Development
 ; date:         2026-08-22
 ;==========================================================
