@@ -125,6 +125,12 @@ bool ComputeSmoothedHA(const int shift,
          for(int j = 0; j < post; ++j)
          {
             const int idx = (win_count - 1 - j) % keep;
+            if(idx < 0)
+               return false;
+            if(idx >= ArraySize(ha_open_win))
+               return false;
+            if(idx >= ArraySize(ha_close_win))
+               return false;
             sum_o += ha_open_win[idx];
             sum_c += ha_close_win[idx];
          }
@@ -369,6 +375,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 

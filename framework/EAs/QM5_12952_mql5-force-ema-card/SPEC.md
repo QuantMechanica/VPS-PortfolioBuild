@@ -50,7 +50,7 @@ The EA trades closed H1-bar Force Index momentum filtered by EMA(100) and an ATR
 **Designed for:**
 - `EURUSD.DWX` - liquid major FX pair with DWX tick volume and H1 history.
 - `USDJPY.DWX` - liquid major FX pair with DWX tick volume and H1 history.
-- `GER40.DWX` - liquid equity index CFD with DWX tick volume and H1 history.
+- `GDAXI.DWX` - canonical Darwinex German equity-index CFD with H1 history.
 
 **Explicitly NOT for:**
 - Non-DWX symbols - build and pipeline runs require canonical `.DWX` symbols.

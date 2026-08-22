@@ -230,6 +230,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 
