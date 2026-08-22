@@ -1,0 +1,22 @@
+{
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\QM5_1623_hopwood-bermaui-dss-h4.mq5",
+  "mq5_sha256": "7fbe2049a5cb85fdf94efe68969721f9bac17a34372f9ba2fa593a900a3a3070",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\QM5_1623_hopwood-bermaui-dss-h4.ex5",
+  "ex5_sha256": "913e0fe6818410fcaa9aed753380509a1b76883f15e4aa451793fbfdb48d6144",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_AUDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_EURUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_GDAXI.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_NDX.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_NZDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_SP500.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_UK100.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_USDCAD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_USDCHF.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_USDJPY.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_WS30.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_XAUUSD.DWX_H4_backtest.set"
+  ]
+}
