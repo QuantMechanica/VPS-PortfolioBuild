@@ -1,0 +1,368 @@
+{
+  "batch_cap": 1,
+  "decisions": [
+    {
+      "action": "allocate",
+      "copy_card": false,
+      "create_directory": false,
+      "ea_id": "QM5_41107",
+      "reason": "eligible",
+      "retired_rows_to_delete": 0,
+      "rows": 1,
+      "slug": "wti-minside-body-mom",
+      "stage": "exact_card",
+      "symbol_policy": "CARD_DECLARED",
+      "symbols": [
+        "XTIUSD.DWX"
+      ]
+    }
+  ],
+  "dl087": {
+    "allocated_rows": 0,
+    "discovery_payload_contract": {
+      "allocation_authority": "DL-087",
+      "exploratory_symbol_assignment": true,
+      "requires_card_amendment_for_downstream": true,
+      "result_authorization": "DISCOVERY_NOT_CARD_VALIDATED"
+    },
+    "enqueued_rows": 0,
+    "planned_eas": 0
+  },
+  "mode": "apply",
+  "planned_eas": 1,
+  "planned_rows": 1,
+  "progress": {
+    "allocated": 1,
+    "display": "1/1",
+    "eligible": 1
+  },
+  "result": {
+    "allocated_eas": 1,
+    "allocated_ids": [
+      "QM5_41107"
+    ],
+    "allocated_rows": 1,
+    "registry_rows_after": 17642,
+    "registry_rows_before": 17641,
+    "resolver_rows_after": 17611,
+    "resolver_rows_before": 17610,
+    "retired_rows_deleted": 0
+  },
+  "retired_rows_found": [
+    {
+      "ea_id": "1231",
+      "ea_slug": "carver-pca-alpha",
+      "magic": "12310004",
+      "reserved_at": "2026-05-26",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "FRA40.DWX",
+      "symbol_slot": "4"
+    },
+    {
+      "ea_id": "1112",
+      "ea_slug": "qp-country-momentum",
+      "magic": "11120005",
+      "reserved_at": "2026-05-26",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "AUS200.DWX",
+      "symbol_slot": "5"
+    },
+    {
+      "ea_id": "1113",
+      "ea_slug": "qp-country-cape-value",
+      "magic": "11130005",
+      "reserved_at": "2026-05-26",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "AUS200.DWX",
+      "symbol_slot": "5"
+    },
+    {
+      "ea_id": "1179",
+      "ea_slug": "qp-comm-term-carry",
+      "magic": "11790004",
+      "reserved_at": "2026-05-26",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "XCUUSD.DWX",
+      "symbol_slot": "4"
+    },
+    {
+      "ea_id": "1186",
+      "ea_slug": "qp-comm-sma12-filter",
+      "magic": "11860004",
+      "reserved_at": "2026-05-26",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "XCUUSD.DWX",
+      "symbol_slot": "4"
+    },
+    {
+      "ea_id": "1187",
+      "ea_slug": "qp-comm-voltarget-mom",
+      "magic": "11870004",
+      "reserved_at": "2026-05-26",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "XCUUSD.DWX",
+      "symbol_slot": "4"
+    },
+    {
+      "ea_id": "1218",
+      "ea_slug": "carver-relmomentum",
+      "magic": "12180004",
+      "reserved_at": "2026-05-26",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "FRA40.DWX",
+      "symbol_slot": "4"
+    },
+    {
+      "ea_id": "1221",
+      "ea_slug": "carver-kurtsrv",
+      "magic": "12210004",
+      "reserved_at": "2026-05-26",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "FRA40.DWX",
+      "symbol_slot": "4"
+    },
+    {
+      "ea_id": "1253",
+      "ea_slug": "carver-lowbeta-rv",
+      "magic": "12530004",
+      "reserved_at": "2026-05-26",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "FRA40.DWX",
+      "symbol_slot": "4"
+    },
+    {
+      "ea_id": "10940",
+      "ea_slug": "grimes-nested-pb",
+      "magic": "109400000",
+      "reserved_at": "2026-06-06",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "EURUSD.DWX",
+      "symbol_slot": "0"
+    },
+    {
+      "ea_id": "10940",
+      "ea_slug": "grimes-nested-pb",
+      "magic": "109400001",
+      "reserved_at": "2026-06-06",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "GBPUSD.DWX",
+      "symbol_slot": "1"
+    },
+    {
+      "ea_id": "10940",
+      "ea_slug": "grimes-nested-pb",
+      "magic": "109400002",
+      "reserved_at": "2026-06-06",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "USDJPY.DWX",
+      "symbol_slot": "2"
+    },
+    {
+      "ea_id": "10940",
+      "ea_slug": "grimes-nested-pb",
+      "magic": "109400003",
+      "reserved_at": "2026-06-06",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "XAUUSD.DWX",
+      "symbol_slot": "3"
+    },
+    {
+      "ea_id": "10940",
+      "ea_slug": "grimes-nested-pb",
+      "magic": "109400004",
+      "reserved_at": "2026-06-06",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "GDAXI.DWX",
+      "symbol_slot": "4"
+    },
+    {
+      "ea_id": "12784",
+      "ea_slug": "intraday-config-engine",
+      "magic": "127840001",
+      "reserved_at": "2026-06-30",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "GDAXI.DWX",
+      "symbol_slot": "1"
+    },
+    {
+      "ea_id": "12784",
+      "ea_slug": "intraday-config-engine",
+      "magic": "127840002",
+      "reserved_at": "2026-06-30",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "NDX.DWX",
+      "symbol_slot": "2"
+    },
+    {
+      "ea_id": "12784",
+      "ea_slug": "intraday-config-engine",
+      "magic": "127840003",
+      "reserved_at": "2026-06-30",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "SP500.DWX",
+      "symbol_slot": "3"
+    },
+    {
+      "ea_id": "12784",
+      "ea_slug": "intraday-config-engine",
+      "magic": "127840004",
+      "reserved_at": "2026-06-30",
+      "reserved_by": "Development",
+      "status": "retired",
+      "symbol": "XAUUSD.DWX",
+      "symbol_slot": "4"
+    },
+    {
+      "ea_id": "13124",
+      "ea_slug": "fx-early-asia-drift",
+      "magic": "131240000",
+      "reserved_at": "2026-07-10",
+      "reserved_by": "OWNER-delegated Codex",
+      "status": "retired",
+      "symbol": "EURGBP.DWX",
+      "symbol_slot": "0"
+    },
+    {
+      "ea_id": "13124",
+      "ea_slug": "fx-early-asia-drift",
+      "magic": "131240001",
+      "reserved_at": "2026-07-10",
+      "reserved_by": "OWNER-delegated Codex",
+      "status": "retired",
+      "symbol": "GBPUSD.DWX",
+      "symbol_slot": "1"
+    },
+    {
+      "ea_id": "13124",
+      "ea_slug": "fx-early-asia-drift",
+      "magic": "131240002",
+      "reserved_at": "2026-07-10",
+      "reserved_by": "OWNER-delegated Codex",
+      "status": "retired",
+      "symbol": "EURAUD.DWX",
+      "symbol_slot": "2"
+    },
+    {
+      "ea_id": "13124",
+      "ea_slug": "fx-early-asia-drift",
+      "magic": "131240003",
+      "reserved_at": "2026-07-10",
+      "reserved_by": "OWNER-delegated Codex",
+      "status": "retired",
+      "symbol": "AUDJPY.DWX",
+      "symbol_slot": "3"
+    },
+    {
+      "ea_id": "13124",
+      "ea_slug": "fx-early-asia-drift",
+      "magic": "131240004",
+      "reserved_at": "2026-07-10",
+      "reserved_by": "OWNER-delegated Codex",
+      "status": "retired",
+      "symbol": "NZDUSD.DWX",
+      "symbol_slot": "4"
+    },
+    {
+      "ea_id": "13125",
+      "ea_slug": "xau-usclose-ovnt",
+      "magic": "131250000",
+      "reserved_at": "2026-07-10",
+      "reserved_by": "OWNER-delegated Codex",
+      "status": "retired",
+      "symbol": "XAUUSD.DWX",
+      "symbol_slot": "0"
+    },
+    {
+      "ea_id": "13127",
+      "ea_slug": "et-open-atr-long",
+      "magic": "131270000",
+      "reserved_at": "2026-07-10",
+      "reserved_by": "OWNER-delegated Codex",
+      "status": "retired",
+      "symbol": "NDX.DWX",
+      "symbol_slot": "0"
+    },
+    {
+      "ea_id": "13135",
+      "ea_slug": "xau-sma50-hold",
+      "magic": "131350000",
+      "reserved_at": "2026-07-11",
+      "reserved_by": "Codex",
+      "status": "retired",
+      "symbol": "XAUUSD.DWX",
+      "symbol_slot": "0"
+    },
+    {
+      "ea_id": "13136",
+      "ea_slug": "jpy-sma20-riskon",
+      "magic": "131360000",
+      "reserved_at": "2026-07-11",
+      "reserved_by": "Codex",
+      "status": "retired",
+      "symbol": "AUDJPY.DWX",
+      "symbol_slot": "0"
+    },
+    {
+      "ea_id": "13136",
+      "ea_slug": "jpy-sma20-riskon",
+      "magic": "131360001",
+      "reserved_at": "2026-07-11",
+      "reserved_by": "Codex",
+      "status": "retired",
+      "symbol": "GBPJPY.DWX",
+      "symbol_slot": "1"
+    },
+    {
+      "ea_id": "13200",
+      "ea_slug": "ndx-convex-orb",
+      "magic": "132000000",
+      "reserved_at": "2026-07-11",
+      "reserved_by": "Codex",
+      "status": "retired",
+      "symbol": "NDX.DWX",
+      "symbol_slot": "0"
+    },
+    {
+      "ea_id": "13201",
+      "ea_slug": "dax-convex-orb",
+      "magic": "132010000",
+      "reserved_at": "2026-07-11",
+      "reserved_by": "Codex",
+      "status": "retired",
+      "symbol": "GDAXI.DWX",
+      "symbol_slot": "0"
+    },
+    {
+      "ea_id": "13213",
+      "ea_slug": "balke-gmt3-range-breakout",
+      "magic": "132130001",
+      "reserved_at": "2026-07-14",
+      "reserved_by": "Claude",
+      "status": "retired",
+      "symbol": "XAUUSD.DWX",
+      "symbol_slot": "1"
+    }
+  ],
+  "schema": "qm.governed-magic-allocation/v1",
+  "scope": "all",
+  "stage_order": [
+    "exact_card"
+  ]
+}
