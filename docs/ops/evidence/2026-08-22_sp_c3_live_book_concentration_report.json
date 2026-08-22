@@ -1,0 +1,2049 @@
+{
+  "application_authority": "OWNER_ONLY",
+  "autotrading_action": "NONE",
+  "builder_eligible": false,
+  "classification_basis": {
+    "asset_class": "dwx_symbol_matrix.csv; commodities split by canonical metal/energy symbols",
+    "family": "ea_directory_slug_first_hyphen_token",
+    "session": "dominant entry_time histogram on MT5 broker-wall hour"
+  },
+  "concentration_reject": [
+    {
+      "cap": 1.0,
+      "dim": "symbol",
+      "key": "EURUSD.DWX",
+      "unit": "planned_stop_risk_pct",
+      "value": 1.4362
+    },
+    {
+      "cap": 1.0,
+      "dim": "symbol",
+      "key": "NDX.DWX",
+      "unit": "planned_stop_risk_pct",
+      "value": 1.0577
+    },
+    {
+      "cap": 1.0,
+      "dim": "symbol",
+      "key": "XAUUSD.DWX",
+      "unit": "planned_stop_risk_pct",
+      "value": 2.1156
+    },
+    {
+      "cap": 1.5,
+      "dim": "asset_class",
+      "key": "energy",
+      "unit": "planned_stop_risk_pct",
+      "value": 1.8978
+    },
+    {
+      "cap": 1.5,
+      "dim": "asset_class",
+      "key": "fx",
+      "unit": "planned_stop_risk_pct",
+      "value": 4.0258
+    },
+    {
+      "cap": 1.5,
+      "dim": "asset_class",
+      "key": "indices",
+      "unit": "planned_stop_risk_pct",
+      "value": 1.7107
+    },
+    {
+      "cap": 1.5,
+      "dim": "asset_class",
+      "key": "metals",
+      "unit": "planned_stop_risk_pct",
+      "value": 2.1156
+    },
+    {
+      "cap": 1.25,
+      "dim": "family",
+      "key": "cum",
+      "unit": "planned_stop_risk_pct",
+      "value": 1.7262
+    },
+    {
+      "cap": 1.25,
+      "dim": "family",
+      "key": "grimes",
+      "unit": "planned_stop_risk_pct",
+      "value": 1.4764
+    },
+    {
+      "cap": 1.75,
+      "dim": "session",
+      "key": "ASIA",
+      "unit": "planned_stop_risk_pct",
+      "value": 4.5075
+    },
+    {
+      "cap": 1.75,
+      "dim": "session",
+      "key": "US",
+      "unit": "planned_stop_risk_pct",
+      "value": 4.5718
+    }
+  ],
+  "deployment_action": "NONE",
+  "dimensions": {
+    "asset_class": {
+      "dimension": "asset_class",
+      "rows": [
+        {
+          "cap_percent_of_budget": 60.0,
+          "cap_stop_risk_pct": 1.5,
+          "key": "energy",
+          "percent_of_stop_risk_budget": 75.912,
+          "status": "BREACH",
+          "stop_risk_pct": 1.8978,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 60.0,
+          "cap_stop_risk_pct": 1.5,
+          "key": "fx",
+          "percent_of_stop_risk_budget": 161.032,
+          "status": "BREACH",
+          "stop_risk_pct": 4.0258,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 60.0,
+          "cap_stop_risk_pct": 1.5,
+          "key": "indices",
+          "percent_of_stop_risk_budget": 68.428,
+          "status": "BREACH",
+          "stop_risk_pct": 1.7107,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 60.0,
+          "cap_stop_risk_pct": 1.5,
+          "key": "metals",
+          "percent_of_stop_risk_budget": 84.624,
+          "status": "BREACH",
+          "stop_risk_pct": 2.1156,
+          "warn_percent_of_budget": null
+        }
+      ],
+      "status": "BREACH"
+    },
+    "family": {
+      "dimension": "family",
+      "rows": [
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "aa",
+          "percent_of_stop_risk_budget": 24.068,
+          "status": "PASS",
+          "stop_risk_pct": 0.6017,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "anon",
+          "percent_of_stop_risk_budget": 20.32,
+          "status": "PASS",
+          "stop_risk_pct": 0.508,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "balke",
+          "percent_of_stop_risk_budget": 4.492,
+          "status": "PASS",
+          "stop_risk_pct": 0.1123,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "cum",
+          "percent_of_stop_risk_budget": 69.048,
+          "status": "BREACH",
+          "stop_risk_pct": 1.7262,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "demark",
+          "percent_of_stop_risk_budget": 7.164,
+          "status": "PASS",
+          "stop_risk_pct": 0.1791,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "edgelab",
+          "percent_of_stop_risk_budget": 19.62,
+          "status": "PASS",
+          "stop_risk_pct": 0.4905,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "et",
+          "percent_of_stop_risk_budget": 8.816,
+          "status": "PASS",
+          "stop_risk_pct": 0.2204,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "eurgbp",
+          "percent_of_stop_risk_budget": 16.796,
+          "status": "PASS",
+          "stop_risk_pct": 0.4199,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "grimes",
+          "percent_of_stop_risk_budget": 59.056,
+          "status": "BREACH",
+          "stop_risk_pct": 1.4764,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "mql5",
+          "percent_of_stop_risk_budget": 14.508,
+          "status": "PASS",
+          "stop_risk_pct": 0.3627,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "ohlc",
+          "percent_of_stop_risk_budget": 27.912,
+          "status": "PASS",
+          "stop_risk_pct": 0.6978,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "pre",
+          "percent_of_stop_risk_budget": 40.0,
+          "status": "PASS",
+          "stop_risk_pct": 1.0,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "tm",
+          "percent_of_stop_risk_budget": 18.248,
+          "status": "PASS",
+          "stop_risk_pct": 0.4562,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "tv",
+          "percent_of_stop_risk_budget": 2.12,
+          "status": "PASS",
+          "stop_risk_pct": 0.053,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "usdjpy",
+          "percent_of_stop_risk_budget": 20.4,
+          "status": "PASS",
+          "stop_risk_pct": 0.51,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 50.0,
+          "cap_stop_risk_pct": 1.25,
+          "key": "weiss",
+          "percent_of_stop_risk_budget": 37.428,
+          "status": "PASS",
+          "stop_risk_pct": 0.9357,
+          "warn_percent_of_budget": null
+        }
+      ],
+      "status": "BREACH"
+    },
+    "session": {
+      "dimension": "session",
+      "rows": [
+        {
+          "cap_percent_of_budget": 70.0,
+          "cap_stop_risk_pct": 1.75,
+          "key": "ASIA",
+          "percent_of_stop_risk_budget": 180.3,
+          "status": "BREACH",
+          "stop_risk_pct": 4.5075,
+          "warn_percent_of_budget": 60.0
+        },
+        {
+          "cap_percent_of_budget": 70.0,
+          "cap_stop_risk_pct": 1.75,
+          "key": "EU",
+          "percent_of_stop_risk_budget": 26.824,
+          "status": "PASS",
+          "stop_risk_pct": 0.6706,
+          "warn_percent_of_budget": 60.0
+        },
+        {
+          "cap_percent_of_budget": 70.0,
+          "cap_stop_risk_pct": 1.75,
+          "key": "US",
+          "percent_of_stop_risk_budget": 182.872,
+          "status": "BREACH",
+          "stop_risk_pct": 4.5718,
+          "warn_percent_of_budget": 60.0
+        }
+      ],
+      "status": "BREACH"
+    },
+    "symbol": {
+      "dimension": "symbol",
+      "rows": [
+        {
+          "cap_percent_of_budget": 40.0,
+          "cap_stop_risk_pct": 1.0,
+          "key": "AUDCAD.DWX",
+          "percent_of_stop_risk_budget": 20.92,
+          "status": "PASS",
+          "stop_risk_pct": 0.523,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 40.0,
+          "cap_stop_risk_pct": 1.0,
+          "key": "AUDUSD.DWX",
+          "percent_of_stop_risk_budget": 34.076,
+          "status": "PASS",
+          "stop_risk_pct": 0.8519,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 40.0,
+          "cap_stop_risk_pct": 1.0,
+          "key": "EURGBP.DWX",
+          "percent_of_stop_risk_budget": 16.796,
+          "status": "PASS",
+          "stop_risk_pct": 0.4199,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 40.0,
+          "cap_stop_risk_pct": 1.0,
+          "key": "EURUSD.DWX",
+          "percent_of_stop_risk_budget": 57.448,
+          "status": "BREACH",
+          "stop_risk_pct": 1.4362,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 40.0,
+          "cap_stop_risk_pct": 1.0,
+          "key": "GBPUSD.DWX",
+          "percent_of_stop_risk_budget": 9.668,
+          "status": "PASS",
+          "stop_risk_pct": 0.2417,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 40.0,
+          "cap_stop_risk_pct": 1.0,
+          "key": "GDAXI.DWX",
+          "percent_of_stop_risk_budget": 7.872,
+          "status": "PASS",
+          "stop_risk_pct": 0.1968,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 40.0,
+          "cap_stop_risk_pct": 1.0,
+          "key": "NDX.DWX",
+          "percent_of_stop_risk_budget": 42.308,
+          "status": "BREACH",
+          "stop_risk_pct": 1.0577,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 40.0,
+          "cap_stop_risk_pct": 1.0,
+          "key": "SP500.DWX",
+          "percent_of_stop_risk_budget": 18.248,
+          "status": "PASS",
+          "stop_risk_pct": 0.4562,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 40.0,
+          "cap_stop_risk_pct": 1.0,
+          "key": "USDJPY.DWX",
+          "percent_of_stop_risk_budget": 22.124,
+          "status": "PASS",
+          "stop_risk_pct": 0.5531,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 40.0,
+          "cap_stop_risk_pct": 1.0,
+          "key": "XAUUSD.DWX",
+          "percent_of_stop_risk_budget": 84.624,
+          "status": "BREACH",
+          "stop_risk_pct": 2.1156,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 40.0,
+          "cap_stop_risk_pct": 1.0,
+          "key": "XNGUSD.DWX",
+          "percent_of_stop_risk_budget": 39.188,
+          "status": "PASS",
+          "stop_risk_pct": 0.9797,
+          "warn_percent_of_budget": null
+        },
+        {
+          "cap_percent_of_budget": 40.0,
+          "cap_stop_risk_pct": 1.0,
+          "key": "XTIUSD.DWX",
+          "percent_of_stop_risk_budget": 36.724,
+          "status": "PASS",
+          "stop_risk_pct": 0.9181,
+          "warn_percent_of_budget": null
+        }
+      ],
+      "status": "BREACH"
+    }
+  },
+  "evaluation_input": {
+    "calendar_days": 2028,
+    "date_end": "2025-12-30",
+    "date_start": "2017-10-09",
+    "manifest": {
+      "path": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+      "sha256": "8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6",
+      "size_bytes": 16508
+    },
+    "manifest_book": "DXZ_4000090541",
+    "starting_capital": 100000.0,
+    "stream_root": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+    "streams_loaded": 24
+  },
+  "family_registry_binding": {
+    "path": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+    "sha256": "f75980ba58408bb927b109a0249b4fea4757f865b99aef8cfc314a66a6fba9e6",
+    "size_bytes": 534240
+  },
+  "highlights": {
+    "metals_energy_pct_of_total_book_risk": 41.16349911,
+    "metals_energy_stop_risk_pct": 4.0134,
+    "xauusd_pct_of_total_book_risk": 21.69868409,
+    "xauusd_stop_risk_pct": 2.1156
+  },
+  "passed": false,
+  "policy_binding": {
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\concentration_tail_limits.v1.json",
+    "sha256": "339946b8edbcb7c6da36d95dd51ce9ac76852f05e3a4f3040b4a367b2ad38086",
+    "size_bytes": 1064
+  },
+  "policy_status": "PROPOSED_OWNER_RATIFICATION_REQUIRED",
+  "risk_proxies": {
+    "classification": "D_LEVERAGE_LIKE_PROXY_NOT_PROVIDER_METRIC",
+    "d_leverage_like_formula": "sum_planned_stop_risk_pct / historical_daily_var95_loss_pct",
+    "d_leverage_like_stop_risk_to_var95_ratio": 31.26305046,
+    "daily_var_basis": "weighted_synchronized_OOS_close_PnL_5th_percentile",
+    "historical_daily_var_95_loss_pct": 0.31186656,
+    "stop_risk_budget_pct": 2.5,
+    "stop_risk_sum_retained_pct": 9.7499
+  },
+  "schema": "qm.concentration-tail-report/v1",
+  "status": "BREACH",
+  "symbol_matrix_binding": {
+    "path": "C:\\QM\\repo\\framework\\registry\\dwx_symbol_matrix.csv",
+    "sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d",
+    "size_bytes": 15996
+  },
+  "tail": {
+    "cap_loss_pct": 4.0,
+    "joint_k": 8,
+    "joint_tail_day_count": 70,
+    "joint_tail_days": [
+      {
+        "date": "2017-10-09",
+        "portfolio_loss_pct": 0.0001349,
+        "portfolio_pnl": -0.134903,
+        "tail_sleeve_count": 17,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11165:EURUSD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-10",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 19.30551004,
+        "tail_sleeve_count": 18,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10706:GBPUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11165:EURUSD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-12",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 7.415355,
+        "tail_sleeve_count": 17,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11165:EURUSD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-13",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 169.2112211,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-16",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 22.301233,
+        "tail_sleeve_count": 17,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11165:EURUSD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-17",
+        "portfolio_loss_pct": 0.04433956,
+        "portfolio_pnl": -44.339556,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-18",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 275.335299,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-19",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 29.082529,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-20",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 35.3532,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-23",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 2.016649,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-24",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 145.902599,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-25",
+        "portfolio_loss_pct": 0.03655302,
+        "portfolio_pnl": -36.553024,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-26",
+        "portfolio_loss_pct": 0.04447877,
+        "portfolio_pnl": -44.478769,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-27",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 72.75141158,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-30",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 17.09777,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-10-31",
+        "portfolio_loss_pct": 0.10128473,
+        "portfolio_pnl": -101.28472797,
+        "tail_sleeve_count": 17,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10706:GBPUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-02",
+        "portfolio_loss_pct": 0.04387063,
+        "portfolio_pnl": -43.870628,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-03",
+        "portfolio_loss_pct": 0.08337609,
+        "portfolio_pnl": -83.376088,
+        "tail_sleeve_count": 17,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX",
+          "13213:USDJPY.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-07",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 38.348225,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-08",
+        "portfolio_loss_pct": 0.04484641,
+        "portfolio_pnl": -44.846412,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-09",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 94.824741,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-10",
+        "portfolio_loss_pct": 0.04393426,
+        "portfolio_pnl": -43.934257,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-13",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 20.516893,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-14",
+        "portfolio_loss_pct": 0.03178022,
+        "portfolio_pnl": -31.780216,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-15",
+        "portfolio_loss_pct": 0.03978,
+        "portfolio_pnl": -39.78,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12969:USDJPY.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-16",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 13.202392,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-20",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 241.64964652,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-21",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 64.040135,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-22",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 15.517724,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-23",
+        "portfolio_loss_pct": 0.01019358,
+        "portfolio_pnl": -10.193581,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-24",
+        "portfolio_loss_pct": 0.01998547,
+        "portfolio_pnl": -19.98547,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-28",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 4.187596,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-29",
+        "portfolio_loss_pct": 0.03141621,
+        "portfolio_pnl": -31.41620723,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-11-30",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 176.172692,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-01",
+        "portfolio_loss_pct": 0.04435206,
+        "portfolio_pnl": -44.352055,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-04",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 8.106248,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-05",
+        "portfolio_loss_pct": 0.08658842,
+        "portfolio_pnl": -86.588415,
+        "tail_sleeve_count": 16,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12969:USDJPY.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-06",
+        "portfolio_loss_pct": 0.07196188,
+        "portfolio_pnl": -71.96188194,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "11708:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-07",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 44.570141,
+        "tail_sleeve_count": 14,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-08",
+        "portfolio_loss_pct": 0.01474925,
+        "portfolio_pnl": -14.749251,
+        "tail_sleeve_count": 14,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-11",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 56.97767281,
+        "tail_sleeve_count": 14,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-12",
+        "portfolio_loss_pct": 0.10144893,
+        "portfolio_pnl": -101.44892975,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10706:GBPUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-13",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 19.807467,
+        "tail_sleeve_count": 14,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-14",
+        "portfolio_loss_pct": 0.04499511,
+        "portfolio_pnl": -44.995107,
+        "tail_sleeve_count": 14,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-15",
+        "portfolio_loss_pct": 0.14869195,
+        "portfolio_pnl": -148.69195,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12969:USDJPY.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-18",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 18.510157,
+        "tail_sleeve_count": 14,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-19",
+        "portfolio_loss_pct": 0.04693547,
+        "portfolio_pnl": -46.935469,
+        "tail_sleeve_count": 15,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX",
+          "13213:USDJPY.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-20",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 18.549635,
+        "tail_sleeve_count": 14,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-21",
+        "portfolio_loss_pct": 0.01325756,
+        "portfolio_pnl": -13.25756,
+        "tail_sleeve_count": 14,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-22",
+        "portfolio_loss_pct": 0.00688005,
+        "portfolio_pnl": -6.880053,
+        "tail_sleeve_count": 14,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-25",
+        "portfolio_loss_pct": 0.03520451,
+        "portfolio_pnl": -35.204511,
+        "tail_sleeve_count": 14,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-26",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 6.261568,
+        "tail_sleeve_count": 14,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-27",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 288.27864608,
+        "tail_sleeve_count": 14,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12778:AUDUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13117:EURGBP.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-28",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 112.563408,
+        "tail_sleeve_count": 11,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2017-12-29",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 281.80606394,
+        "tail_sleeve_count": 11,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-02",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 133.544057,
+        "tail_sleeve_count": 11,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-03",
+        "portfolio_loss_pct": 0.00941702,
+        "portfolio_pnl": -9.41702276,
+        "tail_sleeve_count": 12,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-04",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 75.50445124,
+        "tail_sleeve_count": 13,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10706:GBPUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX",
+          "13213:USDJPY.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-05",
+        "portfolio_loss_pct": 0.0155907,
+        "portfolio_pnl": -15.5907,
+        "tail_sleeve_count": 12,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12969:USDJPY.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-08",
+        "portfolio_loss_pct": 0.00402468,
+        "portfolio_pnl": -4.024678,
+        "tail_sleeve_count": 11,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-09",
+        "portfolio_loss_pct": 0.05608491,
+        "portfolio_pnl": -56.08490984,
+        "tail_sleeve_count": 12,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10706:GBPUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-10",
+        "portfolio_loss_pct": 0.05260573,
+        "portfolio_pnl": -52.60572911,
+        "tail_sleeve_count": 12,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:EURUSD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-11",
+        "portfolio_loss_pct": 0.56095653,
+        "portfolio_pnl": -560.95653,
+        "tail_sleeve_count": 12,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:AUDCAD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-12",
+        "portfolio_loss_pct": 0.41361683,
+        "portfolio_pnl": -413.6168308,
+        "tail_sleeve_count": 12,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11165:EURUSD.DWX",
+          "11421:AUDUSD.DWX",
+          "11421:EURUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-15",
+        "portfolio_loss_pct": 0.00378289,
+        "portfolio_pnl": -3.782887,
+        "tail_sleeve_count": 10,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-16",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 86.976677,
+        "tail_sleeve_count": 10,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-17",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 2.64626952,
+        "tail_sleeve_count": 10,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10513:XAUUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-18",
+        "portfolio_loss_pct": 0.04912726,
+        "portfolio_pnl": -49.12725929,
+        "tail_sleeve_count": 10,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "10939:GBPUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-19",
+        "portfolio_loss_pct": 0.0,
+        "portfolio_pnl": 21.069004,
+        "tail_sleeve_count": 9,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      },
+      {
+        "date": "2018-01-22",
+        "portfolio_loss_pct": 0.00206018,
+        "portfolio_pnl": -2.06018,
+        "tail_sleeve_count": 9,
+        "tail_sleeves": [
+          "1556:XAUUSD.DWX",
+          "1567:EURUSD.DWX",
+          "10919:XTIUSD.DWX",
+          "11132:SP500.DWX",
+          "11421:AUDUSD.DWX",
+          "12567:XAUUSD.DWX",
+          "12567:XNGUSD.DWX",
+          "12989:XAUUSD.DWX",
+          "13128:NDX.DWX"
+        ]
+      }
+    ],
+    "per_sleeve_tail_observations": 102,
+    "per_sleeve_worst_fraction": 0.05,
+    "status": "PASS",
+    "worst_joint_day_loss_pct": 0.56095653
+  }
+}

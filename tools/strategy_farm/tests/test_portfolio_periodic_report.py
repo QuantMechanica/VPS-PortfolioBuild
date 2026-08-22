@@ -32,6 +32,8 @@ class PortfolioPeriodicReportTests(unittest.TestCase):
         )
         self.assertFalse(report["deployment_eligible"])
         self.assertIn("Q12 deployment manifests", report["deployment_note"])
+        self.assertEqual(report["concentration_tail"]["status"], "UNKNOWN")
+        self.assertFalse(report["concentration_tail"]["builder_eligible"])
 
     def test_report_defaults_to_canonical_tester_capital(self) -> None:
         self.assertEqual(portfolio_periodic_report.DEFAULT_STARTING_CAPITAL, 100_000.0)

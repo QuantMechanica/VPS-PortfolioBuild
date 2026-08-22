@@ -20,8 +20,11 @@ if __package__ in (None, ""):
 
 from tools.strategy_farm.portfolio.book_builder_common import (
     BookBuildError,
+    aligned_matrix,
     canonical_json,
+    common_window,
     file_binding,
+    load_daily,
     load_json,
     resolve_roster,
     roster_sha256,
@@ -31,6 +34,8 @@ from tools.strategy_farm.portfolio.book_builder_common import (
     write_json,
     write_text,
 )
+from tools.strategy_farm.portfolio import concentration_tail
+from tools.strategy_farm.portfolio.portfolio_common import load_streams
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -38,7 +43,10 @@ DEFAULT_ROSTER = Path(r"D:\QM\reports\portfolio\portfolio_manifest_live_24sleeve
 DEFAULT_FUND_SCORES = Path(r"D:\QM\strategy_farm\artifacts\portfolio\fund_scores.json")
 DEFAULT_COST_SNAPSHOT = REPO_ROOT / "docs" / "ops" / "evidence" / "2026-07-30_ftmo_book3_symbol_cost_snapshot.json"
 DEFAULT_REPORT_ROOT = Path(r"D:\QM\reports\portfolio")
+DEFAULT_STREAM_ROOT = Path(r"D:\QM\reports\portfolio\dxz_final_20260719")
 SCHEMA_PATH = REPO_ROOT / "tools" / "strategy_farm" / "config" / "dual_book_manifest.v1.schema.json"
+DEFAULT_CONCENTRATION_POLICY = concentration_tail.DEFAULT_POLICY_PATH
+DEFAULT_SYMBOL_MATRIX = concentration_tail.DEFAULT_SYMBOL_MATRIX
 EXPECTED_COST_SNAPSHOT_SHA256 = "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280"
 M1_BOOTSTRAP_LINEAGE_COMMIT = "ae5331f67"
 FUND_SCORE_FLOOR = 1.0
@@ -425,6 +433,10 @@ def build_ftmo_manifest(
     max_pairwise_correlation: float = WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION,
     account_weight_budget: float = WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET,
     required_cost_sha256: str = EXPECTED_COST_SNAPSHOT_SHA256,
+    stream_root: Path = DEFAULT_STREAM_ROOT,
+    starting_capital: float = 100_000.0,
+    concentration_policy_path: Path = DEFAULT_CONCENTRATION_POLICY,
+    symbol_matrix_path: Path = DEFAULT_SYMBOL_MATRIX,
 ) -> dict[str, Any]:
     roster, roster_provenance = resolve_roster(roster_path)
     scores, score_provenance = load_fund_scores(fund_scores_path)
@@ -453,6 +465,39 @@ def build_ftmo_manifest(
         row["risk_fixed"] = 1000.0
         row["risk_percent"] = 0.0
         row["fund_score"] = float(scores[(row["ea_id"], row["symbol"])]["fund_score"])
+    if selected:
+        try:
+            concentration_daily, concentration_stream_basis = load_daily(stream_root, selected)
+            concentration_start, concentration_end = common_window(concentration_daily, selected)
+            concentration_keys, concentration_dates, concentration_matrix = aligned_matrix(
+                concentration_daily,
+                selected,
+                concentration_start,
+                concentration_end,
+            )
+            concentration_streams = load_streams(stream_root, candidates=concentration_keys)
+            concentration = concentration_tail.evaluate(
+                keys=concentration_keys,
+                weights={key: SLEEVE_UNIT_WEIGHT for key in concentration_keys},
+                dates=concentration_dates,
+                matrix=concentration_matrix,
+                streams=concentration_streams,
+                starting_capital=starting_capital,
+                policy_path=concentration_policy_path,
+                symbol_matrix_path=symbol_matrix_path,
+                repo_root=REPO_ROOT,
+            )
+            concentration["stream_basis"] = concentration_stream_basis
+        except (BookBuildError, concentration_tail.ConcentrationTailError) as exc:
+            concentration = concentration_tail.unknown_report(
+                f"sealed OOS concentration evidence unavailable: {exc}",
+                policy_path=concentration_policy_path,
+            )
+    else:
+        concentration = concentration_tail.unknown_report(
+            "no FTMO sleeves survived the upstream aggregate selector",
+            policy_path=concentration_policy_path,
+        )
     selected_hash = roster_sha256(bindings)
     bootstrap = _bootstrap(
         bootstrap_result_path,
@@ -471,6 +516,7 @@ def build_ftmo_manifest(
         "density": density["passed"],
         "cost_and_swap_snapshot_coverage": cost_pass,
         "bootstrap_lower_bound_at_least_0p80": bootstrap["passed"],
+        "concentration_tail_caps": concentration["builder_eligible"],
     }
     bar_met = all(checks.values())
     status = "BAR_MET_OWNER_REVIEW" if bar_met else "BAR_NOT_MET"
@@ -500,6 +546,7 @@ def build_ftmo_manifest(
             "PAIRWISE_CORRELATION_CLUSTER_AND_ACCOUNT_RISK_BUDGET"
         ),
         "aggregate_control": aggregate_control,
+        "concentration_tail": concentration,
         "density": density,
         "ftmo_cost_swap": cost,
         "phase1_bootstrap": bootstrap,
@@ -528,6 +575,8 @@ def evidence_markdown(manifest: Mapping[str, Any], manifest_path: Path) -> str:
 
 {checks}
 
+{concentration_tail.markdown_panel(manifest['concentration_tail'])}
+
 The manifest remains parked. A paid challenge or any live action is outside this tool and requires the OWNER ceremony after every bar is evidenced.
 """
 
@@ -543,6 +592,11 @@ def parser() -> argparse.ArgumentParser:
                     help="WORKING DEFAULT (OPEN OWNER ITEM) — aggregate cluster-correlation reject threshold.")
     ap.add_argument("--account-weight-budget", type=float, default=WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET,
                     help="WORKING DEFAULT (OPEN OWNER ITEM) — account-wide sum-of-unit-weights budget.")
+    ap.add_argument("--stream-root", type=Path, default=DEFAULT_STREAM_ROOT,
+                    help="sealed OOS q08 stream bundle used by SP-C3 concentration/tail checks")
+    ap.add_argument("--starting-capital", type=float, default=100_000.0)
+    ap.add_argument("--concentration-policy", type=Path, default=DEFAULT_CONCENTRATION_POLICY)
+    ap.add_argument("--symbol-matrix", type=Path, default=DEFAULT_SYMBOL_MATRIX)
     ap.add_argument("--min-sleeves", type=int, default=3)
     ap.add_argument("--min-active-days-per-60d", type=float, default=4.0)
     ap.add_argument("--as-of", default="2026-08-12")
@@ -566,6 +620,10 @@ def main(argv: list[str] | None = None) -> int:
             min_active_days_per_60d=args.min_active_days_per_60d,
             max_pairwise_correlation=args.max_pairwise_correlation,
             account_weight_budget=args.account_weight_budget,
+            stream_root=args.stream_root,
+            starting_capital=args.starting_capital,
+            concentration_policy_path=args.concentration_policy,
+            symbol_matrix_path=args.symbol_matrix,
         )
         validate_dual_book_manifest(manifest)
         write_json(manifest_path, manifest)

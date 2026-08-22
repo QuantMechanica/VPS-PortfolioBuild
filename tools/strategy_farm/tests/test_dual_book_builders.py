@@ -12,7 +12,7 @@ from tools.strategy_farm.portfolio.book_builder_common import (
     resolve_roster,
     validate_dual_book_manifest,
 )
-from tools.strategy_farm.portfolio.build_book_dxz import _gate
+from tools.strategy_farm.portfolio.build_book_dxz import _final_status, _gate
 from tools.strategy_farm.portfolio.build_book_ftmo import (
     M1_BOOTSTRAP_LINEAGE_COMMIT,
     _bootstrap,
@@ -86,6 +86,21 @@ def test_dxz_not_worse_gate_requires_every_metric() -> None:
     result = _gate({"return_to_maxdd": 2.1, "worst_day_pct": -1.1, "max_drawdown_pct": 3.9}, incumbent)
     assert not result["passed"]
     assert result["checks"]["worst_day_not_worse"] is False
+
+
+def test_dxz_spc3_gate_precedes_incumbent_recommendation() -> None:
+    assert _final_status(
+        {"passed": True},
+        {"builder_eligible": False, "concentration_reject": [{"dim": "symbol"}]},
+    ) == "CONCENTRATION_CAP_BREACH"
+    assert _final_status(
+        {"passed": True},
+        {"builder_eligible": False, "concentration_reject": []},
+    ) == "CONCENTRATION_POLICY_UNRATIFIED"
+    assert _final_status(
+        {"passed": True},
+        {"builder_eligible": True, "concentration_reject": []},
+    ) == "APPLY_RECOMMENDED"
 
 
 def test_fund_score_formula_is_recomputed(tmp_path: Path) -> None:

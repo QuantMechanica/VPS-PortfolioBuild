@@ -14,7 +14,8 @@
     "autotrading_action",
     "roster_sha256",
     "sleeve_list_sha256",
-    "sleeves"
+    "sleeves",
+    "concentration_tail"
   ],
   "properties": {
     "schema": {"const": "qm.dual-book-manifest/v1"},
@@ -26,7 +27,9 @@
         "APPLY_RECOMMENDED",
         "NOT_WORSE_BAR_NOT_MET",
         "BAR_MET_OWNER_REVIEW",
-        "BAR_NOT_MET"
+        "BAR_NOT_MET",
+        "CONCENTRATION_CAP_BREACH",
+        "CONCENTRATION_POLICY_UNRATIFIED"
       ]
     },
     "application_authority": {"const": "OWNER_ONLY"},
@@ -39,6 +42,37 @@
     "sleeves": {
       "type": "array",
       "items": {"$ref": "#/$defs/sleeve"}
+    },
+    "concentration_tail": {
+      "type": "object",
+      "required": [
+        "schema",
+        "status",
+        "passed",
+        "builder_eligible",
+        "policy_status",
+        "dimensions",
+        "tail",
+        "risk_proxies",
+        "concentration_reject",
+        "application_authority",
+        "deployment_action",
+        "autotrading_action"
+      ],
+      "properties": {
+        "schema": {"const": "qm.concentration-tail-report/v1"},
+        "status": {"enum": ["PASS", "BREACH", "UNKNOWN", "POLICY_UNRATIFIED"]},
+        "passed": {"type": "boolean"},
+        "builder_eligible": {"type": "boolean"},
+        "policy_status": {"enum": ["OWNER_RATIFIED", "PROPOSED_OWNER_RATIFICATION_REQUIRED", "UNKNOWN"]},
+        "dimensions": {"type": "object"},
+        "tail": {"type": "object"},
+        "risk_proxies": {"type": "object"},
+        "concentration_reject": {"type": "array"},
+        "application_authority": {"const": "OWNER_ONLY"},
+        "deployment_action": {"const": "NONE"},
+        "autotrading_action": {"const": "NONE"}
+      }
     }
   },
   "allOf": [

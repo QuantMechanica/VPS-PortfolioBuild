@@ -1,0 +1,33 @@
+{
+  "schema": "qm.concentration-tail-policy/v1",
+  "status": "PROPOSED_OWNER_RATIFICATION_REQUIRED",
+  "design_ref": "docs/ops/SP-C3_CONCENTRATION_TAIL_LIMITS_DESIGN_2026-08-22.md",
+  "stop_risk_budget_pct": 2.5,
+  "caps_percent_of_budget": {
+    "symbol": 40.0,
+    "asset_class": 60.0,
+    "family": 50.0,
+    "session_warn": 60.0,
+    "session": 70.0
+  },
+  "tail": {
+    "per_sleeve_worst_fraction": 0.05,
+    "joint_sleeve_divisor": 3,
+    "venue_daily_loss_limit_pct": 5.0,
+    "maximum_fraction_of_daily_limit": 0.8
+  },
+  "sessions_broker_wall": {
+    "ASIA": [0, 7],
+    "EU": [7, 13],
+    "US": [13, 24]
+  },
+  "family_fallback": "ea_directory_slug_first_hyphen_token",
+  "application_authority": "OWNER_ONLY",
+  "deployment_action": "NONE",
+  "autotrading_action": "NONE",
+  "notes": [
+    "Thresholds reproduce the Claude SP-C3 design and remain unratified.",
+    "The implementation may show/reject breaches, but no clean proposal is eligible until status is OWNER_RATIFIED.",
+    "Any application to live weights is a separate OWNER ceremony."
+  ]
+}

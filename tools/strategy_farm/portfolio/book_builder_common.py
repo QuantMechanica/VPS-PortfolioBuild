@@ -401,6 +401,19 @@ def validate_dual_book_manifest(value: Mapping[str, Any]) -> None:
         raise BookBuildError("dual-book application authority must remain OWNER_ONLY")
     if value["deployment_action"] != "NONE" or value["autotrading_action"] != "NONE":
         raise BookBuildError("dual-book builders cannot emit deployment or AutoTrading actions")
+    concentration = value.get("concentration_tail")
+    if not isinstance(concentration, Mapping):
+        raise BookBuildError("dual-book manifest lacks SP-C3 concentration_tail evidence")
+    if concentration.get("schema") != "qm.concentration-tail-report/v1":
+        raise BookBuildError("dual-book concentration_tail schema is invalid")
+    if concentration.get("application_authority") != "OWNER_ONLY":
+        raise BookBuildError("concentration policy application authority must remain OWNER_ONLY")
+    if concentration.get("deployment_action") != "NONE" or concentration.get("autotrading_action") != "NONE":
+        raise BookBuildError("concentration evidence cannot emit deployment or AutoTrading actions")
+    if concentration.get("builder_eligible") is True and concentration.get("policy_status") != "OWNER_RATIFIED":
+        raise BookBuildError("unratified concentration policy cannot mint builder eligibility")
+    if value["status"] in {"APPLY_RECOMMENDED", "BAR_MET_OWNER_REVIEW"} and concentration.get("builder_eligible") is not True:
+        raise BookBuildError("positive book status requires SP-C3 builder eligibility")
     rows = value["sleeves"]
     if not isinstance(rows, list):
         raise BookBuildError("dual-book sleeves must be a list")

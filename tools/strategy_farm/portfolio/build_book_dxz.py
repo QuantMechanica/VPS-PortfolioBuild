@@ -38,6 +38,8 @@ from tools.strategy_farm.portfolio.book_builder_common import (
     write_json,
     write_text,
 )
+from tools.strategy_farm.portfolio import concentration_tail
+from tools.strategy_farm.portfolio.portfolio_common import load_streams
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -46,6 +48,8 @@ DEFAULT_INCUMBENT = DEFAULT_ROSTER
 DEFAULT_STREAM_ROOT = Path(r"D:\QM\reports\portfolio\dxz_final_20260719")
 DEFAULT_REPORT_ROOT = Path(r"D:\QM\reports\portfolio")
 SCHEMA_PATH = REPO_ROOT / "tools" / "strategy_farm" / "config" / "dual_book_manifest.v1.schema.json"
+DEFAULT_CONCENTRATION_POLICY = concentration_tail.DEFAULT_POLICY_PATH
+DEFAULT_SYMBOL_MATRIX = concentration_tail.DEFAULT_SYMBOL_MATRIX
 
 
 def _incumbent(path: Path) -> tuple[list[tuple[int, str]], dict[tuple[int, str], float], dict[str, Any]]:
@@ -90,6 +94,14 @@ def _gate(proposal: Mapping[str, Any], incumbent: Mapping[str, Any]) -> dict[str
     }
 
 
+def _final_status(gate: Mapping[str, Any], concentration: Mapping[str, Any]) -> str:
+    if concentration.get("concentration_reject"):
+        return "CONCENTRATION_CAP_BREACH"
+    if concentration.get("builder_eligible") is not True:
+        return "CONCENTRATION_POLICY_UNRATIFIED"
+    return "APPLY_RECOMMENDED" if gate.get("passed") is True else "NOT_WORSE_BAR_NOT_MET"
+
+
 def build_dxz_manifest(
     *,
     roster_path: Path,
@@ -99,6 +111,8 @@ def build_dxz_manifest(
     total_risk_pct: float = 9.75,
     sleeve_cap_pct: float = 1.0,
     starting_capital: float = 100_000.0,
+    concentration_policy_path: Path = DEFAULT_CONCENTRATION_POLICY,
+    symbol_matrix_path: Path = DEFAULT_SYMBOL_MATRIX,
     as_of: str,
 ) -> dict[str, Any]:
     if total_risk_pct <= 0 or sleeve_cap_pct <= 0 or starting_capital <= 0:
@@ -133,6 +147,21 @@ def build_dxz_manifest(
         starting_capital,
     )
     gate = _gate(proposal_metrics, incumbent_metrics)
+    proposal_streams = load_streams(stream_root, candidates=proposal_keys)
+    try:
+        concentration = concentration_tail.evaluate(
+            keys=proposal_keys,
+            weights=proposal_weights,
+            dates=proposal_dates,
+            matrix=proposal_matrix,
+            streams=proposal_streams,
+            starting_capital=starting_capital,
+            policy_path=concentration_policy_path,
+            symbol_matrix_path=symbol_matrix_path,
+            repo_root=REPO_ROOT,
+        )
+    except concentration_tail.ConcentrationTailError as exc:
+        raise BookBuildError(f"SP-C3 concentration evidence invalid: {exc}") from exc
 
     bindings = sleeve_bindings(REPO_ROOT, roster)
     by_key = {(row["ea_id"], row["symbol"]): row for row in bindings}
@@ -146,7 +175,7 @@ def build_dxz_manifest(
             "risk_percent_source": binding["backtest_risk_percent"],
         })
     sleeve_hash = sha256_bytes(canonical_json(sleeves).encode("ascii"))
-    status = "APPLY_RECOMMENDED" if gate["passed"] else "NOT_WORSE_BAR_NOT_MET"
+    status = _final_status(gate, concentration)
     return {
         "schema": "qm.dual-book-manifest/v1",
         "lane": "Q11_DXZ",
@@ -176,6 +205,7 @@ def build_dxz_manifest(
             "not_worse_gate": gate,
         },
         "stream_basis": stream_provenance,
+        "concentration_tail": concentration,
         "schema_binding": file_binding(SCHEMA_PATH),
     }
 
@@ -200,7 +230,11 @@ def evidence_markdown(manifest: Mapping[str, Any], manifest_path: Path) -> str:
 
 {checks}
 
-`APPLY_RECOMMENDED` is emitted only when every check above passes. Application remains an OWNER ceremony outside this tool.
+{concentration_tail.markdown_panel(manifest['concentration_tail'])}
+
+`APPLY_RECOMMENDED` is emitted only when every incumbent and SP-C3 check passes
+under an OWNER-ratified cap policy. Application remains an OWNER ceremony outside
+this tool.
 """
 
 
@@ -213,6 +247,8 @@ def parser() -> argparse.ArgumentParser:
     ap.add_argument("--total-risk-pct", type=float, default=9.75)
     ap.add_argument("--sleeve-cap-pct", type=float, default=1.0)
     ap.add_argument("--starting-capital", type=float, default=100_000.0)
+    ap.add_argument("--concentration-policy", type=Path, default=DEFAULT_CONCENTRATION_POLICY)
+    ap.add_argument("--symbol-matrix", type=Path, default=DEFAULT_SYMBOL_MATRIX)
     ap.add_argument("--as-of", default="2026-08-12")
     ap.add_argument("--out-dir", type=Path)
     return ap
@@ -231,6 +267,8 @@ def main(argv: list[str] | None = None) -> int:
             total_risk_pct=args.total_risk_pct,
             sleeve_cap_pct=args.sleeve_cap_pct,
             starting_capital=args.starting_capital,
+            concentration_policy_path=args.concentration_policy,
+            symbol_matrix_path=args.symbol_matrix,
             as_of=args.as_of,
         )
         validate_dual_book_manifest(manifest)

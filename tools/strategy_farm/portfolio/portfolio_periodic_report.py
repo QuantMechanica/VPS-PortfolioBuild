@@ -30,6 +30,7 @@ if __package__ in (None, ""):
         greedy_select, select_and_validate,
     )
     from tools.strategy_farm.portfolio.portfolio_manifest import DEFAULT_STARTING_CAPITAL
+    from tools.strategy_farm.portfolio import concentration_tail
 else:
     from .portfolio_common import (
         DEFAULT_CANDIDATES_DB, DEFAULT_COMMON_DIR, _coerce_ea_int, align, key_label,
@@ -38,6 +39,7 @@ else:
     from .commission import load_model
     from .portfolio_assemble import greedy_select, select_and_validate
     from .portfolio_manifest import DEFAULT_STARTING_CAPITAL
+    from . import concentration_tail
 
 BOMBERS = ("10809", "11072", "11092")
 DEFAULT_OUT_DIR = Path(r"D:\QM\reports\portfolio")
@@ -75,6 +77,8 @@ def build_report(
     weighting: str = "inverse_vol",
     starting_capital: float = DEFAULT_STARTING_CAPITAL,
     generated_at: str | None = None,
+    concentration_policy_path: Path = concentration_tail.DEFAULT_POLICY_PATH,
+    symbol_matrix_path: Path = concentration_tail.DEFAULT_SYMBOL_MATRIX,
 ) -> dict:
     pairs = robust_pairs(candidates_db)
     model = load_model()
@@ -97,6 +101,10 @@ def build_report(
         "commission_degraded": model.degraded,
         "n_candidate_pairs": len(pairs),
         "n_sleeves_with_streams": len(streams),
+        "concentration_tail": concentration_tail.unknown_report(
+            "fewer than two report sleeves; concentration not evaluable",
+            policy_path=concentration_policy_path,
+        ),
     }
     if len(streams) < 2:
         report["status"] = "insufficient_sleeves"
@@ -127,6 +135,34 @@ def build_report(
         keys, matrix, max_dd_pct=max_dd_pct, weighting=weighting,
         starting_capital=starting_capital,
     )
+    selected_columns = [keys.index(key) for key in selected]
+    selected_matrix = [
+        [float(row[column]) for column in selected_columns]
+        for row in matrix
+    ]
+    selected_weight_sum = sum(float(weights[key]) for key in selected)
+    try:
+        policy, _ = concentration_tail.load_policy(concentration_policy_path)
+        stop_risk_budget = float(policy["stop_risk_budget_pct"])
+        risk_weights = {
+            key: float(weights[key]) / selected_weight_sum * stop_risk_budget
+            for key in selected
+        }
+        concentration = concentration_tail.evaluate(
+            keys=selected,
+            weights=risk_weights,
+            dates=dates,
+            matrix=selected_matrix,
+            streams={key: streams[key] for key in selected},
+            starting_capital=starting_capital,
+            policy_path=concentration_policy_path,
+            symbol_matrix_path=symbol_matrix_path,
+        )
+    except (KeyError, ZeroDivisionError, concentration_tail.ConcentrationTailError) as exc:
+        concentration = concentration_tail.unknown_report(
+            f"periodic report concentration evidence unavailable: {exc}",
+            policy_path=concentration_policy_path,
+        )
     report.update(
         status="ok",
         n_days=len(dates),
@@ -138,6 +174,7 @@ def build_report(
         weights={key_label(k): round(weights[k], 6) for k in selected},
         kpis=kpis,
         oos_validation=oos,
+        concentration_tail=concentration,
     )
     return report
 
@@ -149,6 +186,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--max-dd-pct", type=float, default=20.0)
     p.add_argument("--weighting", choices=("equal", "inverse_vol"), default="inverse_vol")
     p.add_argument("--starting-capital", type=float, default=DEFAULT_STARTING_CAPITAL)
+    p.add_argument("--concentration-policy", type=Path, default=concentration_tail.DEFAULT_POLICY_PATH)
+    p.add_argument("--symbol-matrix", type=Path, default=concentration_tail.DEFAULT_SYMBOL_MATRIX)
     p.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     p.add_argument("--stamp", default=None, help="UTC timestamp (the scheduler passes this; "
                                                  "Date.now is unavailable in some contexts)")
@@ -165,6 +204,8 @@ def main(argv: list[str] | None = None) -> int:
         weighting=args.weighting,
         starting_capital=args.starting_capital,
         generated_at=stamp,
+        concentration_policy_path=args.concentration_policy,
+        symbol_matrix_path=args.symbol_matrix,
     )
     args.out_dir.mkdir(parents=True, exist_ok=True)
     (args.out_dir / "portfolio_latest.json").write_text(
@@ -173,6 +214,13 @@ def main(argv: list[str] | None = None) -> int:
     datestr = stamp[:10].replace("-", "")
     (args.out_dir / f"portfolio_report_{datestr}.json").write_text(
         json.dumps(report, indent=2), encoding="utf-8"
+    )
+    concentration_panel = concentration_tail.markdown_panel(report["concentration_tail"])
+    (args.out_dir / "portfolio_concentration_latest.md").write_text(
+        concentration_panel + "\n", encoding="utf-8"
+    )
+    (args.out_dir / f"portfolio_concentration_{datestr}.md").write_text(
+        concentration_panel + "\n", encoding="utf-8"
     )
     status = report.get("status")
     if status == "ok":
