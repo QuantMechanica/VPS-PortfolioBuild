@@ -63,6 +63,13 @@ FORCE_REBUILD_WAIVABLE_REASONS = frozenset({
     "EX5_ALREADY_PRESENT", "WORK_ITEMS_EXIST", "BOUND_SETFILE_HASH_EXISTS",
     "BUILD_TASK_EXISTS",
 })
+MAE_HOOK_FORCE_REBUILD_OWNER_REFERENCE = (
+    "OWNER_TASK_8fe2a461_2026-08-22_MAE_HOOK_EMERGENCY_REBUILD"
+)
+MAE_HOOK_FORCE_REBUILD_AUTHORITY_TASK_ID = "8fe2a461-f70e-489f-ab54-a9ea7d15914c"
+MAE_HOOK_FORCE_REBUILD_EA_IDS = frozenset({
+    "12947", "12948", "12949", "12950", "12951", "12952",
+})
 
 
 def dl089_force_rebuild_allowlist(repo_root: Path) -> frozenset[str]:
@@ -92,6 +99,44 @@ def dl089_force_rebuild_allowlist(repo_root: Path) -> frozenset[str]:
         if ea_id and ea_id in DL089_FORCE_REBUILD_EA_IDS:
             authorized.add(ea_id)
     return frozenset(authorized)
+
+
+def mae_hook_force_rebuild_allowlist(root: Path) -> frozenset[str]:
+    """Honor only the exact routed OWNER emergency rebuild ticket.
+
+    Existing binaries/set bindings remain a default refusal everywhere else.
+    The ticket identity and its explicit six-EA goal are both required, so a
+    copied/stale checkout cannot manufacture a general overwrite capability.
+    """
+    try:
+        with _connect(root) as conn:
+            row = conn.execute(
+                "SELECT payload_json FROM agent_tasks WHERE id=?",
+                (MAE_HOOK_FORCE_REBUILD_AUTHORITY_TASK_ID,),
+            ).fetchone()
+    except (OSError, sqlite3.Error):
+        return frozenset()
+    if row is None:
+        return frozenset()
+    try:
+        payload = json.loads(row["payload_json"] or "{}")
+    except json.JSONDecodeError:
+        return frozenset()
+    goal = str(payload.get("goal") or "")
+    title = str(payload.get("title") or "")
+    if "12947-12952" not in goal or "MAE-Hook" not in title:
+        return frozenset()
+    return MAE_HOOK_FORCE_REBUILD_EA_IDS
+
+
+def force_rebuild_allowlist(root: Path, repo_root: Path) -> frozenset[str]:
+    return dl089_force_rebuild_allowlist(repo_root) | mae_hook_force_rebuild_allowlist(root)
+
+
+def force_rebuild_owner_reference(ea_id: str) -> str:
+    if ea_id in MAE_HOOK_FORCE_REBUILD_EA_IDS:
+        return MAE_HOOK_FORCE_REBUILD_OWNER_REFERENCE
+    return DL089_FORCE_REBUILD_OWNER_REFERENCE
 
 
 def utc_now() -> str:
@@ -617,7 +662,7 @@ def enqueue_compile_eas(
     # is the batch form and remains dry-run until --apply is present.
     apply_effective = bool(apply or not from_file)
     inventory = _inventory(root, repo_root)
-    force_rebuild_ea_ids = dl089_force_rebuild_allowlist(repo_root)
+    force_rebuild_ea_ids = force_rebuild_allowlist(root, repo_root)
     classified = [
         classify_candidate(
             root, repo_root, label, inventory,
@@ -680,7 +725,9 @@ def enqueue_compile_eas(
                 if candidate.get("force_rebuild_authorized"):
                     payload.update({
                         "force_rebuild": True,
-                        "force_rebuild_owner_reference": DL089_FORCE_REBUILD_OWNER_REFERENCE,
+                        "force_rebuild_owner_reference": force_rebuild_owner_reference(
+                            str(candidate["numeric_ea_id"])
+                        ),
                         "force_rebuild_waived_reasons": candidate.get(
                             "force_rebuild_waived_reasons", []
                         ),
@@ -991,7 +1038,7 @@ def run_compile_work_item(
             inventory,
             current_work_item_id=work_item_id,
             sanctioned_predecessor_ids=sanctioned_predecessors,
-            force_rebuild_ea_ids=dl089_force_rebuild_allowlist(repo_root),
+            force_rebuild_ea_ids=force_rebuild_allowlist(root, repo_root),
         )
         evidence["ea_label"] = label
         evidence["candidate_recheck"] = candidate

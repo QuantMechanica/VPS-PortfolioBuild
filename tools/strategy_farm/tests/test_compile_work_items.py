@@ -536,6 +536,43 @@ def test_dl089_force_rebuild_never_waives_structural_guards(tmp_path: Path) -> N
     assert "EX5_ALREADY_PRESENT" not in candidate["reasons"]
 
 
+def test_mae_hook_force_rebuild_requires_exact_routed_owner_task(tmp_path: Path) -> None:
+    repo, root = _fixture(tmp_path, ["QM5_1001_compile-fixture-h1"])
+    del repo
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "CREATE TABLE agent_tasks(id TEXT PRIMARY KEY, payload_json TEXT NOT NULL)"
+        )
+        conn.execute(
+            """
+            INSERT INTO agent_tasks(id,payload_json) VALUES (?,?)
+            """,
+            (
+                compile_work_items.MAE_HOOK_FORCE_REBUILD_AUTHORITY_TASK_ID,
+                json.dumps({
+                    "title": "NOTFALL Template-Defekt: MAE-Hook reparieren",
+                    "goal": "QM5_12947-12952 batch-reparieren",
+                }),
+            ),
+        )
+        conn.commit()
+
+    assert compile_work_items.mae_hook_force_rebuild_allowlist(root) == (
+        compile_work_items.MAE_HOOK_FORCE_REBUILD_EA_IDS
+    )
+
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE agent_tasks SET payload_json=? WHERE id=?",
+            (
+                json.dumps({"title": "unrelated", "goal": "QM5_12947-12952"}),
+                compile_work_items.MAE_HOOK_FORCE_REBUILD_AUTHORITY_TASK_ID,
+            ),
+        )
+        conn.commit()
+    assert compile_work_items.mae_hook_force_rebuild_allowlist(root) == frozenset()
+
+
 def test_candidate_refuses_unresolved_timeframe_before_enqueue(tmp_path: Path) -> None:
     label = "QM5_1001_compile-fixture"
     repo, root = _fixture(tmp_path, [label])
