@@ -149,6 +149,12 @@ CONFIG = {
     # ── check 7: heartbeats ─────────────────────────────────────────────────
     "hb_backup_warn_h": 26,
     "hb_backup_fail_h": 50,
+    # Calendar continuity is stronger than mtime freshness: a successful run on
+    # day N+1 must not hide a missing day N. Activated for the audited 2026-08-18
+    # gap and every later calendar day. By 06:00 UTC the 04:45 run plus its
+    # bounded 15-minute DriveFS wait and normal copy runtime must have completed.
+    "backup_continuity_start_date": "2026-08-18",
+    "backup_expected_complete_utc_hour": 6,
     "hb_health_warn_min": 30,
     "hb_health_fail_min": 60,
     "hb_cockpit_warn_min": 15,
@@ -845,11 +851,104 @@ def check_heartbeats() -> list[dict]:
     else:
         findings.append(_heartbeat("heartbeat:backup_nightly", BACKUP_LOG,
                                    CONFIG["hb_backup_warn_h"] * 60, CONFIG["hb_backup_fail_h"] * 60))
+    findings.append(check_backup_calendar_continuity())
     findings.append(_heartbeat("heartbeat:health_json", HEALTH_JSON,
                                CONFIG["hb_health_warn_min"], CONFIG["hb_health_fail_min"]))
     findings.append(_heartbeat("heartbeat:cockpit_html", COCKPIT_HTML,
                                CONFIG["hb_cockpit_warn_min"], CONFIG["hb_cockpit_fail_min"]))
     return findings
+
+
+def check_backup_calendar_continuity(
+    log_path: Path | None = None,
+    *,
+    now: dt.datetime | None = None,
+    start_date: dt.date | None = None,
+) -> dict:
+    """Alarm when any expected nightly calendar date lacks a successful end.
+
+    A fresh log mtime alone cannot detect a one-day hole followed by a healthy
+    run. This parser treats only an explicit ``failures=0`` end marker as
+    success and carries matching FATAL lines into the evidence detail.
+    """
+
+    path = log_path or BACKUP_LOG
+    if not path.is_file():
+        return finding(
+            "backup_calendar_continuity",
+            WARN,
+            "backup transcript missing; calendar continuity cannot be checked",
+            hint="Restore the nightly backup transcript producer.",
+            evidence=str(path),
+        )
+    observed_at = (now or _now()).astimezone(dt.timezone.utc)
+    activation = start_date or dt.date.fromisoformat(
+        str(CONFIG["backup_continuity_start_date"])
+    )
+    expected_end = observed_at.date()
+    if observed_at.hour < int(CONFIG["backup_expected_complete_utc_hour"]):
+        expected_end -= dt.timedelta(days=1)
+    if expected_end < activation:
+        return finding(
+            "backup_calendar_continuity",
+            OK,
+            f"continuity contract not armed until {activation.isoformat()}",
+            evidence=str(path),
+        )
+    try:
+        text = path.read_text(encoding="utf-8-sig", errors="replace")
+    except OSError as exc:
+        return finding(
+            "backup_calendar_continuity",
+            WARN,
+            f"backup transcript unreadable: {exc}",
+            hint="Repair transcript permissions/disk before the next run.",
+            evidence=str(path),
+        )
+    successes = {
+        dt.date.fromisoformat(value)
+        for value in re.findall(
+            r"=== QM nightly backup end (\d{4}-\d{2}-\d{2}) [^\r\n]* failures=0 ===",
+            text,
+        )
+    }
+    fatal_by_date: dict[dt.date, list[str]] = {}
+    for date_text, detail in re.findall(
+        r"(?m)^(\d{4}-\d{2}-\d{2}) [^\r\n]* FATAL ([^\r\n]+)$",
+        text,
+    ):
+        fatal_by_date.setdefault(dt.date.fromisoformat(date_text), []).append(detail)
+    expected_dates: list[dt.date] = []
+    cursor = activation
+    while cursor <= expected_end:
+        expected_dates.append(cursor)
+        cursor += dt.timedelta(days=1)
+    missing = [day for day in expected_dates if day not in successes]
+    if missing:
+        missing_text = ",".join(day.isoformat() for day in missing)
+        fatal_details = [
+            f"{day.isoformat()}:{' | '.join(fatal_by_date.get(day, []))}"
+            for day in missing
+            if fatal_by_date.get(day)
+        ]
+        suffix = f"; logged causes={'; '.join(fatal_details)}" if fatal_details else ""
+        return finding(
+            "backup_calendar_continuity",
+            FAIL,
+            f"missing successful nightly backup date(s): {missing_text}{suffix}",
+            value=len(missing),
+            threshold=0,
+            hint="Investigate the named calendar dates; a later healthy run does not close the gap.",
+            evidence=str(path),
+        )
+    return finding(
+        "backup_calendar_continuity",
+        OK,
+        f"every nightly date {activation.isoformat()}..{expected_end.isoformat()} has failures=0",
+        value=0,
+        threshold=0,
+        evidence=str(path),
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
