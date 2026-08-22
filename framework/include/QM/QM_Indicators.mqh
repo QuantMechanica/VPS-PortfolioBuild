@@ -936,4 +936,42 @@ double QM_Ichimoku_ChikouSpan(const string sym, const ENUM_TIMEFRAMES tf,
    return QM_IndicatorReadBuffer(QM_IndIchimoku(sym, tf, tenkan, kijun, senkou), 4, shift);
   }
 
+// --- Accumulation/Distribution (AD) ---
+int QM_IndAD(const string sym, const ENUM_TIMEFRAMES tf, const ENUM_APPLIED_VOLUME applied_volume = VOLUME_TICK)
+  {
+   const string key = StringFormat("AD|%s|%d|%d", sym, (int)tf, (int)applied_volume);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iAD(sym, tf, applied_volume);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_AD(const string sym, const ENUM_TIMEFRAMES tf, const int shift = 1,
+             const ENUM_APPLIED_VOLUME applied_volume = VOLUME_TICK)
+  {
+   return QM_IndicatorReadBuffer(QM_IndAD(sym, tf, applied_volume), 0, shift);
+  }
+
+// --- Relative Vigor Index (RVI) ---
+int QM_IndRVI(const string sym, const ENUM_TIMEFRAMES tf, const int period)
+  {
+   const string key = StringFormat("RVI|%s|%d|%d", sym, (int)tf, period);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iRVI(sym, tf, period);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_RVI_Main(const string sym, const ENUM_TIMEFRAMES tf, const int period = 10, const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndRVI(sym, tf, period), 0, shift);
+  }
+
+double QM_RVI_Signal(const string sym, const ENUM_TIMEFRAMES tf, const int period = 10, const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndRVI(sym, tf, period), 1, shift);
+  }
+
 #endif // QM_INDICATORS_MQH
