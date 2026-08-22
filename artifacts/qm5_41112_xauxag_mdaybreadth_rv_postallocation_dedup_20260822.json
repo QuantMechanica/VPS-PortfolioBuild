@@ -1,0 +1,53 @@
+{
+  "candidate": {
+    "author": "Karsten Schweikert; CME Group",
+    "mechanic": "synchronized two completed gold silver calendar months parent final plus every newest month adjacent relative close return strict sign majority agreeing with endpoint displacement contrarian next month equal notional basket",
+    "slug": "xauxag-mdaybreadth-rv",
+    "strategy_id": "SCHWEIKERT-CME-XAUXAG-MDAYBREADTH-RV-2026_S01"
+  },
+  "error": null,
+  "exit_code": 2,
+  "generated_at_utc": "2026-08-22T12:43:10+00:00",
+  "matches": [
+    {
+      "ea_id": "41112",
+      "match_type": "slug",
+      "slug": "xauxag-mdaybreadth-rv",
+      "source": "ea_id_registry",
+      "strategy_id": "SCHWEIKERT-CME-XAUXAG-MDAYBREADTH-RV-2026_S01"
+    },
+    {
+      "ea_id": "41112",
+      "match_type": "strategy_id",
+      "slug": "xauxag-mdaybreadth-rv",
+      "source": "ea_id_registry",
+      "strategy_id": "SCHWEIKERT-CME-XAUXAG-MDAYBREADTH-RV-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4609,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1280,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "DUPLICATE"
+}
