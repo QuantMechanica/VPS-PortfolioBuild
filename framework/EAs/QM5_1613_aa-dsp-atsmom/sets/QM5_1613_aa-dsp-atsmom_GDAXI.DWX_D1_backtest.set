@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1613
+; ea_slug:      aa-dsp-atsmom
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       GDAXI.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e3b7352887f1644cbf6c51b4dea7aa17f739bfb7a75bd080651748f8b2737740
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=1613
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1613_aa-dsp-atsmom.md
+; card_defaults_status=none_found

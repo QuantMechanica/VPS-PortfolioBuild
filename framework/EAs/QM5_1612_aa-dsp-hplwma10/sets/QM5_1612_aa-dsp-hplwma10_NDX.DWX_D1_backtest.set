@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1612
+; ea_slug:      aa-dsp-hplwma10
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       NDX.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   070374cfe8ced38b6712f111b7c734f89197a1f69c0e477ce053633a342d4bcf
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=1612
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1612_aa-dsp-hplwma10.md
+; card_defaults_status=none_found
