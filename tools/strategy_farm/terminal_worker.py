@@ -2504,6 +2504,10 @@ def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any]:
         canonical_source = farmctl.HARNESS_PP_FIXTURE_SOURCE_DIR / (
             f"{farmctl.HARNESS_PP_FIXTURE_EA_LABEL}.ex5"
         )
+        # The staging destination below derives its filename from ea_dir.name;
+        # for the harness that identity is the source dir itself (the .ex5 is
+        # framework/tests/<label>.ex5, staged as <label>.ex5 on the terminal).
+        ea_dir = canonical_source.parent / farmctl.HARNESS_PP_FIXTURE_EA_LABEL
     else:
         ea_dir = farmctl._ea_dir_from_setfile_path(Path(str(item["setfile_path"])), str(item["ea_id"]))
         if ea_dir is None:
