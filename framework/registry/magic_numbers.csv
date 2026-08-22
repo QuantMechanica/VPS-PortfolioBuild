@@ -17704,4 +17704,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1407,classical-symmetric-triangle-breakout-h4,10,AUDUSD.DWX,14070010,2026-08-22,Gemini,active
 1407,classical-symmetric-triangle-breakout-h4,11,USDCAD.DWX,14070011,2026-08-22,Gemini,active
 1407,classical-symmetric-triangle-breakout-h4,12,NZDUSD.DWX,14070012,2026-08-22,Gemini,active
-
+41110,xauxag-moutside-res-rv,0,XAUUSD.DWX,411100000,2026-08-22,Codex governed allocator,active
+41110,xauxag-moutside-res-rv,1,XAGUSD.DWX,411100001,2026-08-22,Codex governed allocator,active
