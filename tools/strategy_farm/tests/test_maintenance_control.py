@@ -647,46 +647,30 @@ def test_restart_release_apply_rejects_noncanonical_paths(tmp_path: Path) -> Non
         )
 
 
-@pytest.mark.parametrize("drift", ["missing", "extra"])
-def test_restart_release_rejects_missing_or_extra_ids_before_writes(
-    tmp_path: Path, drift: str
+def test_restart_release_rejects_missing_authorized_id_before_writes(
+    tmp_path: Path,
 ) -> None:
+    """An AUTHORIZED id that is not actually held is still a hard error."""
     _, db, _ = _prepare_restart_holds(tmp_path)
     with sqlite3.connect(db) as conn:
-        if drift == "missing":
-            conn.execute(
-                "DELETE FROM work_item_holds WHERE work_item_id=?",
-                (RESTART_HOLD_IDS[0],),
-            )
-        else:
-            now = mc.utc_now()
-            conn.execute(
-                """
-                INSERT INTO work_item_holds(
-                    work_item_id, hold_code, reason, active, release_on_restart,
-                    created_at, updated_at
-                ) VALUES ('unexpected-owner-id', 'FACTORY_OFF', 'not approved', 1, 1, ?, ?)
-                """,
-                (now, now),
-            )
+        conn.execute(
+            "DELETE FROM work_item_holds WHERE work_item_id=?",
+            (RESTART_HOLD_IDS[0],),
+        )
         conn.commit()
 
-    with pytest.raises(RuntimeError, match="exact-set mismatch") as exc_info:
+    with pytest.raises(RuntimeError, match="authorized holds not present") as exc_info:
         mc._apply_restart_hold_release_transaction(
             db,
             release_note="must not apply",
             runtime_authorization=_runtime_authorization(),
         )
 
-    if drift == "missing":
-        assert RESTART_HOLD_IDS[0] in str(exc_info.value)
-    else:
-        assert "unexpected-owner-id" in str(exc_info.value)
+    assert RESTART_HOLD_IDS[0] in str(exc_info.value)
     with sqlite3.connect(db) as conn:
-        expected_active = 6 if drift == "missing" else 8
         assert conn.execute(
             "SELECT COUNT(*) FROM work_item_holds WHERE active=1 AND release_on_restart=1"
-        ).fetchone()[0] == expected_active
+        ).fetchone()[0] == 6
         assert conn.execute(
             "SELECT COUNT(*) FROM work_item_transition_ledger "
             "WHERE action='release_hold'"
@@ -698,6 +682,41 @@ def test_restart_release_rejects_missing_or_extra_ids_before_writes(
             "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
             "AND name='factory_runtime_activation_consumptions_v2'"
         ).fetchone()[0] == 0
+
+
+def test_restart_release_leaves_unauthorized_extra_hold_held(tmp_path: Path) -> None:
+    """SUBSET contract (2026-08-22): an active hold that is NOT authorized is
+    left HELD and the authorized releases still proceed.  The old all-or-
+    nothing comparison made any post-preparation hold class (e.g. the 92-row
+    compile rollout) a factory-restart denial of service."""
+    _, db, _ = _prepare_restart_holds(tmp_path)
+    with sqlite3.connect(db) as conn:
+        now = mc.utc_now()
+        conn.execute(
+            """
+            INSERT INTO work_item_holds(
+                work_item_id, hold_code, reason, active, release_on_restart,
+                created_at, updated_at
+            ) VALUES ('unexpected-owner-id', 'FACTORY_OFF', 'not approved', 1, 1, ?, ?)
+            """,
+            (now, now),
+        )
+        conn.commit()
+
+    result = mc._apply_restart_hold_release_transaction(
+        db,
+        release_note="release only the authorized plan",
+        runtime_authorization=_runtime_authorization(),
+    )
+
+    assert "unexpected-owner-id" not in result["released"]
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT active FROM work_item_holds WHERE work_item_id='unexpected-owner-id'"
+        ).fetchone() == (1,)
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_holds WHERE active=1 AND release_on_restart=1"
+        ).fetchone()[0] == 1
 
 
 def test_empty_plan_verifies_zero_holds_and_consumes_nonce(
@@ -730,26 +749,25 @@ def test_empty_plan_verifies_zero_holds_and_consumes_nonce(
         ).fetchall() == [(runtime["activation_nonce"], 0)]
 
 
-def test_empty_plan_fails_closed_on_any_active_release_hold(tmp_path: Path) -> None:
+def test_empty_plan_releases_nothing_and_leaves_holds_held(tmp_path: Path) -> None:
+    """SUBSET contract (2026-08-22): a zero-release authorization is a valid
+    ceremony — nothing is released, every active hold stays held, and the
+    factory restart is NOT blocked by holds the preparation never authorized."""
     active_id = (RESTART_HOLD_IDS[0],)
     _, db, _ = _prepare_restart_holds(tmp_path, active_id)
 
-    with pytest.raises(RuntimeError, match="exact-set mismatch"):
-        mc._apply_restart_hold_release_transaction(
-            db,
-            release_note="must not release an undeclared hold",
-            runtime_authorization=_runtime_authorization(()),
-        )
+    result = mc._apply_restart_hold_release_transaction(
+        db,
+        release_note="zero-release ceremony",
+        runtime_authorization=_runtime_authorization(()),
+    )
 
+    assert result["released"] == []
     with sqlite3.connect(db) as conn:
         assert conn.execute(
             "SELECT active FROM work_item_holds WHERE work_item_id=?",
             active_id,
         ).fetchone() == (1,)
-        assert conn.execute(
-            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
-            "AND name='factory_runtime_activation_consumptions_v2'"
-        ).fetchone()[0] == 0
 
 
 def test_restart_release_derives_plan_from_runtime_authorization(tmp_path: Path) -> None:

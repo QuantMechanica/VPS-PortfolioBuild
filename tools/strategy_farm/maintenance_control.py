@@ -1230,22 +1230,31 @@ def _require_no_factory_off_intent(
 
 def _require_exact_restart_hold_set(
     rows: Sequence[sqlite3.Row], expected_work_item_ids: Sequence[str]
-) -> None:
-    actual_work_item_ids = tuple(str(row["work_item_id"]) for row in rows)
-    actual_set = set(actual_work_item_ids)
+) -> list[sqlite3.Row]:
+    """Authorize a SUBSET release: every authorized id must exist; extras stay HELD.
+
+    The original all-or-nothing comparison turned any hold enqueued after the
+    OWNER preparation decision into a factory-restart denial of service: on
+    2026-08-22 the compile-rollout backlog held 92 rows while the standing
+    preparation authorized zero releases, so Factory_ON failed closed even
+    though NOTHING needed releasing.  The safety intent is preserved in both
+    directions — an authorized id that is not actually held is still a hard
+    error (never release a ghost), and an active hold that is NOT authorized is
+    simply left held (never released silently); it is returned to the caller
+    only for reporting.
+    """
+    actual_by_id = {str(row["work_item_id"]): row for row in rows}
+    if len(actual_by_id) != len(rows):
+        raise RuntimeError("release-on-restart: duplicate active hold rows")
     expected_set = set(expected_work_item_ids)
-    missing = sorted(expected_set - actual_set)
-    extra = sorted(actual_set - expected_set)
-    if (
-        missing
-        or extra
-        or len(actual_work_item_ids) != len(actual_set)
-        or len(actual_work_item_ids) != len(expected_work_item_ids)
-    ):
+    if len(expected_set) != len(expected_work_item_ids):
+        raise RuntimeError("release-on-restart: duplicate authorized ids")
+    missing = sorted(expected_set - actual_by_id.keys())
+    if missing:
         raise RuntimeError(
-            "release-on-restart exact-set mismatch: "
-            f"missing=[{','.join(missing)}] extra=[{','.join(extra)}]"
+            f"release-on-restart: authorized holds not present: [{','.join(missing)}]"
         )
+    return [actual_by_id[work_item_id] for work_item_id in sorted(expected_set)]
 
 
 def _apply_restart_hold_release_transaction(
@@ -1323,7 +1332,7 @@ def _apply_restart_hold_release_transaction_once(
                     factory_off_flag, factory_off_request
                 )
             rows = _active_restart_hold_rows(conn)
-            _require_exact_restart_hold_set(rows, expected_ids)
+            rows = _require_exact_restart_hold_set(rows, expected_ids)
             now = utc_now()
             conn.execute(
                 """CREATE TABLE IF NOT EXISTS factory_runtime_activation_consumptions_v2 (
@@ -1475,7 +1484,7 @@ def release_restart_holds(
             raise RuntimeError("DB SHA-256 mismatch")
         with connect_ro(db) as conn:
             rows = _active_restart_hold_rows(conn)
-            _require_exact_restart_hold_set(rows, expected_ids)
+            rows = _require_exact_restart_hold_set(rows, expected_ids)
         return {
             "mode": "dry_run",
             "release_count": len(rows),
