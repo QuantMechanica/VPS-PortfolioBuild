@@ -586,7 +586,13 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(result, indent=2, sort_keys=True))
             return 0
         if args.command in ("advance", "report"):
-            from tools.strategy_farm import opt_census_select as driver
+            try:
+                from tools.strategy_farm import opt_census_select as driver
+            except ModuleNotFoundError:
+                # Invoked as a script (python tools/strategy_farm/opt_census.py):
+                # the repo root is not on sys.path, so the package import fails.
+                sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+                from tools.strategy_farm import opt_census_select as driver
             if args.command == "advance":
                 result = driver.advance(
                     ledger_path=args.ledger, db_path=args.db,
