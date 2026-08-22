@@ -315,6 +315,30 @@ COMMON_FILES_ROOT = Path(
 )
 Q09_PORTFOLIO_MIN_TRADES = 20
 Q09_NEWS_SUCCESS_VERDICTS = frozenset({"CONFIG_LOCKED"})
+Q09_AUTOPILOT_CALENDAR_BUNDLE_ID = "q09cal-20150101-20260809-0bb19b5bb9790b76"
+Q09_AUTOPILOT_CALENDAR_MANIFEST = (
+    Path(r"D:\QM\data\news_calendar\q09_bundles")
+    / Q09_AUTOPILOT_CALENDAR_BUNDLE_ID
+    / "manifest.json"
+)
+Q09_AUTOPILOT_CALENDAR_COMMON_RELATIVE_PATH = (
+    f"QM/q09_news/{Q09_AUTOPILOT_CALENDAR_BUNDLE_ID}/events.csv"
+)
+Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT = Path(
+    r"D:\QM\reports\pipeline\_q09_include_closures"
+)
+Q09_AUTOPILOT_REPORT_ROOT = Path(r"D:\QM\reports\work_items")
+Q09_AUTOPILOT_CELL_TIMEOUT_SEC = 10800
+Q09_AUTOPILOT_WINDOWS = {
+    "full_from_utc": "2019-01-01T00:00:00Z",
+    "full_to_utc": "2025-12-31T23:59:59Z",
+    "selection_from_utc": "2019-01-01T00:00:00Z",
+    "selection_to_utc": "2023-12-31T23:59:59Z",
+    "holdout_from_utc": "2024-01-01T00:00:00Z",
+    "holdout_to_utc": "2025-12-31T23:59:59Z",
+    "complete_months": 60,
+    "holdout_complete_months": 24,
+}
 
 # OPT_CENSUS (DL-089 §3 / OPT-S1) — the optimization-track measurement pool. One
 # OPT_CENSUS work_item = ONE windowed single-year backtest of an `_opt` EA, with
@@ -14994,6 +15018,208 @@ def _mark_q09_awaiting_sealed_plan(
     hold_q09_until_plan_bound(conn, str(work_item_id), now=now)
 
 
+def _record_q09_autoseal_failure(
+    root: Path,
+    *,
+    work_item_id: str,
+    stage: str,
+    error: BaseException,
+) -> dict[str, Any]:
+    """Keep an unsealable Q09 row held and publish a machine-readable cause."""
+
+    now = utc_now()
+    reason_code = f"Q09_AUTOSEAL_{re.sub(r'[^A-Z0-9]+', '_', stage.upper()).strip('_')}_FAILED"
+    detail = f"{type(error).__name__}: {error}"[:1000]
+    with connect(root) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute(
+            "SELECT status,claimed_by,payload_json FROM work_items WHERE id=? AND phase='Q09_NEWS'",
+            (str(work_item_id),),
+        ).fetchone()
+        if row is None:
+            conn.rollback()
+            return {"work_item_id": work_item_id, "sealed": False, "reason": "ROW_MISSING"}
+        try:
+            payload = json.loads(str(row["payload_json"] or "{}"))
+        except json.JSONDecodeError:
+            payload = {}
+        payload.update({
+            "q09_activation_state": Q09_ACTIVATION_AWAITING_PLAN,
+            "q09_activation_hold_code": Q09_ACTIVATION_HOLD_CODE,
+            "q09_autoseal_failure": {
+                "reason_code": reason_code,
+                "stage": stage,
+                "detail": detail,
+                "observed_at": now,
+            },
+            "q09_activation_next_action": "resolve q09_autoseal_failure; derivation is fail-closed",
+        })
+        conn.execute(
+            "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), now, str(work_item_id)),
+        )
+        hold_q09_until_plan_bound(conn, str(work_item_id), now=now)
+        conn.commit()
+    return {
+        "work_item_id": str(work_item_id),
+        "sealed": False,
+        "reason_code": reason_code,
+        "stage": stage,
+        "detail": detail,
+    }
+
+
+def _q09_candidate_lineage_key(ea_id: str, symbol: str, q08_work_item_id: str) -> str:
+    material = f"{ea_id}\x1f{symbol}\x1f{q08_work_item_id}".encode("utf-8")
+    return hashlib.sha256(material).hexdigest()
+
+
+def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any]:
+    """Create and bind standard-v2 plans for held Q09 rows.
+
+    Every identity comes from the exact work-item/dependency lineage.  Missing
+    or contradictory inputs leave the row held with a structured payload
+    reason; the caller never guesses a replacement source or calendar.
+    """
+
+    init_db(root)
+    with connect(root) as conn:
+        candidates = conn.execute(
+            """
+            SELECT w.* FROM work_items w
+            JOIN work_item_holds h ON h.work_item_id=w.id
+            WHERE w.phase='Q09_NEWS' AND w.status='pending'
+              AND COALESCE(w.claimed_by,'')=''
+              AND h.hold_code=? AND h.active=1
+            ORDER BY w.created_at ASC,w.id ASC LIMIT ?
+            """,
+            (Q09_ACTIVATION_HOLD_CODE, max(0, int(limit))),
+        ).fetchall()
+
+    results: list[dict[str, Any]] = []
+    for candidate in candidates:
+        work_item_id = str(candidate["id"])
+        stage = "derive_lineage"
+        try:
+            with connect(root) as conn:
+                dependency = conn.execute(
+                    """
+                    SELECT d.parent_work_item_id,d.parent_evidence_sha256,p.*
+                    FROM work_item_dependencies d
+                    JOIN work_items p ON p.id=d.parent_work_item_id
+                    WHERE d.child_work_item_id=? AND d.dependency_role='Q08_INPUT'
+                    """,
+                    (work_item_id,),
+                ).fetchone()
+            if dependency is None:
+                raise ValueError("Q08_INPUT dependency missing")
+            if (
+                dependency["phase"] != "Q08"
+                or dependency["status"] != "done"
+                or dependency["verdict"] != "PASS"
+            ):
+                raise ValueError("Q08_INPUT dependency is not a done PASS")
+            q08_id = str(dependency["parent_work_item_id"])
+            q08_path = Path(str(dependency["evidence_path"] or ""))
+            q08_hash = _sha256_file(q08_path).lower()
+            if q08_hash != str(dependency["parent_evidence_sha256"] or "").lower():
+                raise ValueError("Q08_INPUT evidence hash mismatch")
+            if (
+                str(dependency["ea_id"]) != str(candidate["ea_id"])
+                or str(dependency["symbol"]) != str(candidate["symbol"])
+                or Path(str(dependency["setfile_path"])).resolve()
+                != Path(str(candidate["setfile_path"])).resolve()
+            ):
+                raise ValueError("Q08_INPUT work-item identity mismatch")
+
+            ea_id = str(candidate["ea_id"])
+            symbol = str(candidate["symbol"])
+            setfile = Path(str(candidate["setfile_path"])).resolve()
+            if not setfile.is_file():
+                raise FileNotFoundError(f"baseline setfile missing: {setfile}")
+            ea_dir = _preferred_ea_dir(ea_id)
+            if ea_dir is None:
+                raise FileNotFoundError(f"exact canonical EA directory missing/ambiguous: {ea_id}")
+            ex5 = ea_dir / f"{ea_dir.name}.ex5"
+            if not ex5.is_file():
+                raise FileNotFoundError(f"compiled EX5 missing: {ex5}")
+
+            stage = "include_closure"
+            try:
+                import build_q09_include_closure as closure_builder
+            except ModuleNotFoundError:
+                from tools.strategy_farm import build_q09_include_closure as closure_builder
+            closure = Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT / f"{ea_id}_include_closure.json"
+            if not closure.exists():
+                closure = closure_builder.build_include_closure(
+                    ea_id, Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT
+                )
+            closure_builder.validate_include_closure(ea_id, closure)
+
+            stage = "build_plan"
+            try:
+                import q09_news_runner as q09_runner
+            except ModuleNotFoundError:
+                from tools.strategy_farm import q09_news_runner as q09_runner
+            output_root = Q09_AUTOPILOT_REPORT_ROOT / work_item_id
+            plan = q09_runner.build_run_plan(
+                work_item_id=work_item_id,
+                candidate_lineage_key=_q09_candidate_lineage_key(ea_id, symbol, q08_id),
+                deployment_target="DXZ",
+                q08_work_item_id=q08_id,
+                q08_evidence_path=q08_path,
+                baseline_setfile_path=setfile,
+                ex5_path=ex5,
+                include_closure_path=closure,
+                calendar_manifest_path=Q09_AUTOPILOT_CALENDAR_MANIFEST,
+                calendar_common_relative_path=Q09_AUTOPILOT_CALENDAR_COMMON_RELATIVE_PATH,
+                tester_model="REAL_TICKS",
+                cost_profile="DXZ_CANONICAL_REAL_TICKS_V1",
+                output_root=output_root,
+                news_or_event_strategy=False,
+                force_expanded_matrix=False,
+                **Q09_AUTOPILOT_WINDOWS,
+            )
+            plan_path = Path(str(plan["plan_path"])).resolve()
+            plan_file_sha256 = _sha256_file(plan_path)
+
+            stage = "bind_plan"
+            bound = q09_runner.bind_plan_to_work_item(
+                root,
+                work_item_id=work_item_id,
+                plan_path=plan_path,
+                expected_plan_file_sha256=plan_file_sha256,
+                cell_timeout_sec=Q09_AUTOPILOT_CELL_TIMEOUT_SEC,
+            )
+            results.append({
+                "work_item_id": work_item_id,
+                "ea_id": ea_id,
+                "symbol": symbol,
+                "sealed": True,
+                "candidate_lineage_key": plan["candidate_lineage_key"],
+                "plan_path": str(plan_path),
+                "plan_file_sha256": plan_file_sha256,
+                "plan_sha256": plan["plan_sha256"],
+                "cell_count": plan["cell_count"],
+                "activation_hold_released": bound["activation_hold_released"],
+            })
+        except Exception as exc:  # fail closed per row; continue the cohort
+            results.append(
+                _record_q09_autoseal_failure(
+                    root,
+                    work_item_id=work_item_id,
+                    stage=stage,
+                    error=exc,
+                )
+            )
+    return {
+        "candidate_count": len(candidates),
+        "sealed_count": sum(1 for row in results if row.get("sealed") is True),
+        "failed_count": sum(1 for row in results if row.get("sealed") is False),
+        "rows": results,
+    }
+
+
 def _q10_dependency_context(
     conn: sqlite3.Connection,
     q09_news_work_item: sqlite3.Row,
@@ -15096,6 +15322,42 @@ def _bind_q10_dependencies(
     )
     # This additionally proves the paired arms and all five canonical seeds.
     assert_q10_dependency_gate(conn, q10_work_item_id)
+
+
+def auto_enqueue_q10_after_q09_result(
+    root: Path,
+    *,
+    q09_news_work_item_id: str,
+) -> dict[str, Any]:
+    """Cascade one receipt-authenticated Q09 CONFIG_LOCKED result to Q10."""
+
+    with connect(root) as conn:
+        row = conn.execute(
+            "SELECT ea_id,phase,status,verdict,payload_json FROM work_items WHERE id=?",
+            (str(q09_news_work_item_id),),
+        ).fetchone()
+    if row is None:
+        return {"enqueued": False, "reason": "q09_news_work_item_missing"}
+    try:
+        payload = json.loads(str(row["payload_json"] or "{}"))
+    except json.JSONDecodeError:
+        payload = {}
+    if payload.get("diagnostic_non_admission") is True:
+        return {"enqueued": False, "reason": "diagnostic_non_admission"}
+    if not (
+        row["phase"] == "Q09_NEWS"
+        and row["status"] == "done"
+        and row["verdict"] == "CONFIG_LOCKED"
+    ):
+        return {"enqueued": False, "reason": "q09_news_not_config_locked_done"}
+    # The enqueue path re-authenticates q09_news_tests, aggregate hashes, the
+    # exact Q08 sibling, and PASS_PORTFOLIO evidence before inserting Q10.
+    return enqueue_cascade_backtest_for_ea(
+        root,
+        str(row["ea_id"]),
+        "Q10",
+        predecessor_work_item_id=str(q09_news_work_item_id),
+    )
 
 
 def _q08_verdict_from_classification(classification: dict[str, Any]) -> str | None:
@@ -15362,6 +15624,164 @@ def _promote_q08_soft_fails_to_q09_portfolio(
             "symbol": wi["symbol"],
             "from_work_item_id": wi["id"],
             "trade_count": trade_count,
+        })
+        promoted += 1
+    return promoted
+
+
+def _promote_paired_q09_portfolio_passes_to_news(
+    conn: sqlite3.Connection,
+    result: dict[str, Any],
+    *,
+    include_defect_blocked_evidence: bool = False,
+) -> int:
+    """Create the missing news arm for an authenticated portfolio-rescue pair.
+
+    Legacy portfolio rows predate dependency sidecars.  For a canonical plain
+    DWX set only, bind the latest exact Q08 PASS/FAIL_SOFT evidence to the
+    PASS_PORTFOLIO row, then create the paired held Q09_NEWS row.  Q10 still
+    requires both authenticated arms; no gate threshold is changed.
+    """
+
+    result.setdefault("q09_paired_news_promotions", [])
+    result.setdefault("q09_paired_news_promotions_skipped", [])
+    defect_exclusion = _defect_block_exclusion_clause(
+        include_defect_blocked_evidence, ea_col="q.ea_id"
+    )
+    rows = conn.execute(
+        f"""
+        SELECT
+          p.id AS portfolio_id,p.ea_id,p.symbol,p.setfile_path,
+          p.evidence_path AS portfolio_evidence_path,p.updated_at AS portfolio_updated_at,
+          q.id AS q08_id,q.evidence_path AS q08_evidence_path,
+          q.verdict AS q08_verdict,q.updated_at AS q08_updated_at,
+          ROW_NUMBER() OVER (
+            PARTITION BY p.ea_id,p.symbol,p.setfile_path
+            ORDER BY q.updated_at DESC,p.updated_at DESC,p.id DESC
+          ) AS lineage_rank
+        FROM work_items p
+        JOIN work_items q
+          ON q.ea_id=p.ea_id AND q.symbol=p.symbol
+         AND q.setfile_path=p.setfile_path
+        WHERE p.phase='Q09_PORTFOLIO' AND p.status='done'
+          AND p.verdict='PASS_PORTFOLIO'
+          AND q.phase='Q08' AND q.status='done'
+          AND q.verdict IN ('PASS','FAIL_SOFT')
+          {defect_exclusion}
+          AND p.symbol LIKE '%.DWX'
+          AND lower(p.setfile_path) NOT LIKE '%_ablation_%'
+          AND lower(p.setfile_path) NOT LIKE '%_grid_%'
+          AND lower(p.setfile_path) NOT LIKE '%_synth_%'
+          AND NOT EXISTS (
+            SELECT 1 FROM work_items n
+            WHERE n.phase='Q09_NEWS' AND n.ea_id=p.ea_id
+              AND n.symbol=p.symbol AND n.setfile_path=p.setfile_path
+          )
+        ORDER BY q.updated_at ASC,p.updated_at ASC
+        """
+    ).fetchall()
+    promoted = 0
+    for row in rows:
+        if int(row["lineage_rank"]) != 1:
+            continue
+        q08 = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (str(row["q08_id"]),)
+        ).fetchone()
+        portfolio = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (str(row["portfolio_id"]),)
+        ).fetchone()
+        if q08 is None or portfolio is None:
+            continue
+        q08_sha256 = _work_item_evidence_sha256(q08)
+        portfolio_sha256 = _work_item_evidence_sha256(portfolio)
+        setfile = Path(str(row["setfile_path"] or ""))
+        skip_reason = None
+        if q08_sha256 is None:
+            skip_reason = "q08_evidence_missing_or_unreadable"
+        elif portfolio_sha256 is None:
+            skip_reason = "q09_portfolio_evidence_missing_or_unreadable"
+        elif not setfile.is_file():
+            skip_reason = "missing_setfile"
+        if skip_reason:
+            result["q09_paired_news_promotions_skipped"].append({
+                "ea_id": row["ea_id"],
+                "symbol": row["symbol"],
+                "q08_work_item_id": row["q08_id"],
+                "q09_portfolio_work_item_id": row["portfolio_id"],
+                "reason": skip_reason,
+            })
+            continue
+
+        existing_portfolio_dependency = conn.execute(
+            """
+            SELECT parent_work_item_id,parent_evidence_sha256
+            FROM work_item_dependencies
+            WHERE child_work_item_id=? AND dependency_role='Q08_INPUT'
+            """,
+            (str(row["portfolio_id"]),),
+        ).fetchone()
+        if existing_portfolio_dependency is not None and (
+            str(existing_portfolio_dependency["parent_work_item_id"])
+            != str(row["q08_id"])
+            or str(existing_portfolio_dependency["parent_evidence_sha256"]).lower()
+            != str(q08_sha256).lower()
+        ):
+            result["q09_paired_news_promotions_skipped"].append({
+                "ea_id": row["ea_id"],
+                "symbol": row["symbol"],
+                "q08_work_item_id": row["q08_id"],
+                "q09_portfolio_work_item_id": row["portfolio_id"],
+                "reason": "portfolio_q08_dependency_conflict",
+            })
+            continue
+        if existing_portfolio_dependency is None:
+            _add_q08_input_dependency(
+                conn,
+                child_work_item_id=str(row["portfolio_id"]),
+                q08_work_item=q08,
+                evidence_sha256=str(q08_sha256),
+            )
+
+        new_id = str(uuid.uuid4())
+        now = utc_now()
+        payload = _promotion_payload_with_basket_context(
+            q08,
+            {
+                "promoted_from_phase": "Q08",
+                "promoted_from_work_item": row["q08_id"],
+                "promotion_source": "pump_q09_paired_portfolio_news",
+                "q09_portfolio_work_item_id": row["portfolio_id"],
+                "q09_portfolio_evidence_sha256": portfolio_sha256,
+            },
+        )
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
+              parent_task_id,payload_json,created_at,updated_at
+            ) VALUES(?, 'backtest','Q09_NEWS',?,?,?,'pending',0,NULL,?,?,?)
+            """,
+            (
+                new_id,row["ea_id"],row["symbol"],row["setfile_path"],
+                json.dumps(payload, sort_keys=True),now,now,
+            ),
+        )
+        _add_q08_input_dependency(
+            conn,
+            child_work_item_id=new_id,
+            q08_work_item=q08,
+            evidence_sha256=str(q08_sha256),
+        )
+        _mark_q09_awaiting_sealed_plan(
+            conn, work_item_id=new_id, payload=payload, now=now
+        )
+        result["q09_paired_news_promotions"].append({
+            "work_item_id": new_id,
+            "ea_id": row["ea_id"],
+            "symbol": row["symbol"],
+            "q08_work_item_id": row["q08_id"],
+            "q08_verdict": row["q08_verdict"],
+            "q09_portfolio_work_item_id": row["portfolio_id"],
         })
         promoted += 1
     return promoted
@@ -17255,7 +17675,11 @@ def _pump_unlocked(
                       AND w2.phase = ?
                       AND w2.setfile_path = w.setfile_path
                   )
-                ORDER BY w.updated_at ASC LIMIT 10
+                -- Inspect the full bounded cohort.  LIMIT 10 here used to let
+                -- ten permanently unpromotable old rows starve every later
+                -- Q08 PASS, including 16 pairs that already had a portfolio
+                -- sibling but never received Q09_NEWS.
+                ORDER BY w.updated_at ASC LIMIT 500
                 """,
                 (
                     prev_phase,
@@ -17457,9 +17881,24 @@ def _pump_unlocked(
         q09_promoted = _promote_q08_soft_fails_to_q09_portfolio(
             conn, result, include_defect_blocked_evidence=include_defect_blocked_evidence
         )
+        q09_paired_news = _promote_paired_q09_portfolio_passes_to_news(
+            conn,
+            result,
+            include_defect_blocked_evidence=include_defect_blocked_evidence,
+        )
         q09_admitted = 0
-        if result["cascade_promotions"] or q09_promoted or q09_admitted:
+        if (
+            result["cascade_promotions"]
+            or q09_promoted
+            or q09_paired_news
+            or q09_admitted
+        ):
             conn.commit()
+
+    # Newly created and previously parked Q09 rows become runnable in the same
+    # pump cycle.  Each row is independently fail-closed, so one bad lineage
+    # cannot starve the remaining cohort.
+    result["q09_autoseal"] = auto_seal_pending_q09_news(root)
 
     # §10d Synthetic variants for proven winners — EAs with ≥3 P2-PASSes
     # get a one-shot 30-variant burst exploring symbol family + bool flips +
@@ -21862,6 +22301,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
     All current spawning is owned by ``dispatch_work_items``.
     """
     init_db(root)
+    q09_autoseal = auto_seal_pending_q09_news(root)
     actions: list[dict[str, Any]] = []
     started_iso = utc_now()
     running_mt5_terminals = _running_mt5_terminals()
@@ -22114,6 +22554,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
 
     return {
         "scanned_at": started_iso,
+        "q09_autoseal": q09_autoseal,
         "actions": actions,
         "busy_terminals": sorted(busy_terminals),
         "free_terminals": sorted([t for t in factory_terminals if t not in busy_terminals]),

@@ -207,11 +207,25 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         *,
         activate: bool,
         attempt_count: int = 0,
+        q08_verdict: str = "PASS",
+        portfolio_rescue: bool = False,
     ) -> tuple[Path, str]:
         farm_root = self.root / "farm"
         farmctl.init_db(farm_root)
         q07_evidence = self.root / "q07.json"
         q07_evidence.write_text('{"verdict":"MULTI_SEED_PASS"}\n', encoding="utf-8")
+        q09_payload: dict[str, str] = {}
+        portfolio_evidence = self.root / "q09_portfolio.json"
+        if portfolio_rescue:
+            portfolio_evidence.write_text(
+                '{"verdict":"PASS_PORTFOLIO"}\n', encoding="utf-8"
+            )
+            q09_payload = {
+                "q09_portfolio_work_item_id": "q09-portfolio-1",
+                "q09_portfolio_evidence_sha256": contract.sha256_file(
+                    portfolio_evidence
+                ),
+            }
         now = "2026-08-02T00:00:00+00:00"
         with closing(farmctl.connect(farm_root)) as connection:
             for values in (
@@ -220,11 +234,12 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
                     str(q07_evidence), "{}",
                 ),
                 (
-                    "q08-1", "Q08", "done", "PASS", str(self.q08),
+                    "q08-1", "Q08", "done", q08_verdict, str(self.q08),
                     json.dumps({"promoted_from_work_item": "q07-1"}),
                 ),
                 (
-                    "q09-news-1", "Q09_NEWS", "pending", None, None, "{}",
+                    "q09-news-1", "Q09_NEWS", "pending", None, None,
+                    json.dumps(q09_payload, sort_keys=True),
                 ),
             ):
                 connection.execute(
@@ -241,13 +256,34 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
                         values[3], values[4], values[5], now, now,
                     ),
                 )
+            if portfolio_rescue:
+                connection.execute(
+                    """
+                    INSERT INTO work_items(
+                        id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                        attempt_count,parent_task_id,evidence_path,claimed_by,
+                        payload_json,created_at,updated_at
+                    ) VALUES('q09-portfolio-1','backtest','Q09_PORTFOLIO',
+                             'QM5_9999','EURUSD.DWX',?,'done','PASS_PORTFOLIO',
+                             0,NULL,?,NULL,'{}',?,?)
+                    """,
+                    (str(self.setfile), str(portfolio_evidence), now, now),
+                )
+                schema.add_dependency(
+                    connection,
+                    child_work_item_id="q09-portfolio-1",
+                    dependency_role="Q08_INPUT",
+                    parent_work_item_id="q08-1",
+                    parent_evidence_sha256=contract.sha256_file(self.q08),
+                    required_verdicts=[q08_verdict],
+                )
             schema.add_dependency(
                 connection,
                 child_work_item_id="q09-news-1",
                 dependency_role="Q08_INPUT",
                 parent_work_item_id="q08-1",
                 parent_evidence_sha256=contract.sha256_file(self.q08),
-                required_verdicts=["PASS"],
+                required_verdicts=[q08_verdict],
             )
             schema.hold_until_plan_bound(connection, "q09-news-1", now=now)
             connection.commit()
@@ -286,6 +322,32 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
                 )
                 connection.commit()
         return farm_root, plan_hash
+
+    def test_plan_binding_accepts_exact_fail_soft_portfolio_rescue(self) -> None:
+        plan = self.build(output="binding-fail-soft-portfolio")
+        farm_root, _ = self.setup_bound_farm(
+            plan,
+            activate=False,
+            q08_verdict="FAIL_SOFT",
+            portfolio_rescue=True,
+        )
+        with closing(farmctl.connect(farm_root)) as connection:
+            hold = connection.execute(
+                "SELECT active FROM work_item_holds WHERE work_item_id='q09-news-1'"
+            ).fetchone()
+        self.assertEqual(hold[0], 0)
+
+    def test_plan_binding_rejects_unpaired_fail_soft(self) -> None:
+        plan = self.build(output="binding-unpaired-fail-soft")
+        with self.assertRaisesRegex(
+            runner.RunnerError, "lacks an authenticated portfolio sibling"
+        ):
+            self.setup_bound_farm(
+                plan,
+                activate=False,
+                q08_verdict="FAIL_SOFT",
+                portfolio_rescue=False,
+            )
 
     def test_plan_materializes_40_paired_cells_without_touching_source(self) -> None:
         source_before = self.setfile.read_bytes()

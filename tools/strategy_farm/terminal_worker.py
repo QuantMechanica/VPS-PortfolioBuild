@@ -3410,7 +3410,16 @@ def _finish_work_item(
             return {"finished": True, "status": status, "verdict": verdict, "attempt": attempt, "aggregate": aggregate}
 
     try:
-        return _with_sqlite_retry(_finish)
+        result = _with_sqlite_retry(_finish)
+        if (
+            result.get("finished") is True
+            and result.get("status") == "done"
+            and result.get("verdict") == "CONFIG_LOCKED"
+        ):
+            result["q10_cascade"] = farmctl.auto_enqueue_q10_after_q09_result(
+                root, q09_news_work_item_id=item_id
+            )
+        return result
     except sqlite3.OperationalError as exc:
         if not _is_sqlite_locked(exc):
             raise

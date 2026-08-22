@@ -763,9 +763,9 @@ def bind_plan_to_work_item(
         if (
             dependency["phase"] != "Q08"
             or dependency["status"] != "done"
-            or dependency["verdict"] != "PASS"
+            or dependency["verdict"] not in {"PASS", "FAIL_SOFT"}
         ):
-            raise RunnerError("Q09 Q08_INPUT dependency is not a done PASS")
+            raise RunnerError("Q09 Q08_INPUT dependency is not a done PASS/FAIL_SOFT")
         q08_path = Path(str(dependency["evidence_path"] or ""))
         _verify_hash(q08_path, q08_hash, "Q08 dependency evidence")
         identities = manifest.get("identities") or {}
@@ -773,6 +773,58 @@ def bind_plan_to_work_item(
             raise RunnerError("Q09 input manifest names a different Q08 work item")
         if identities.get("q08_evidence_sha256") != q08_hash:
             raise RunnerError("Q09 input manifest Q08 evidence hash mismatch")
+
+        # A Q08 FAIL_SOFT is admissible only through the independent portfolio
+        # rescue arm.  Authenticate that exact sibling and its Q08 dependency
+        # before binding the news plan; this does not relax either gate.
+        if dependency["verdict"] == "FAIL_SOFT":
+            try:
+                item_payload = json.loads(str(item["payload_json"] or "{}"))
+            except json.JSONDecodeError as exc:
+                raise RunnerError("Q09 work-item payload is invalid JSON") from exc
+            portfolio_id = str(
+                item_payload.get("q09_portfolio_work_item_id") or ""
+            ).strip()
+            portfolio_hash = str(
+                item_payload.get("q09_portfolio_evidence_sha256") or ""
+            ).strip().lower()
+            if not portfolio_id or len(portfolio_hash) != 64:
+                raise RunnerError(
+                    "Q08 FAIL_SOFT news binding lacks an authenticated portfolio sibling"
+                )
+            portfolio = connection.execute(
+                """
+                SELECT p.phase,p.status,p.verdict,p.ea_id,p.symbol,p.setfile_path,
+                       p.evidence_path,d.parent_work_item_id,
+                       d.parent_evidence_sha256
+                FROM work_items p
+                LEFT JOIN work_item_dependencies d
+                  ON d.child_work_item_id=p.id
+                 AND d.dependency_role='Q08_INPUT'
+                WHERE p.id=?
+                """,
+                (portfolio_id,),
+            ).fetchone()
+            if (
+                portfolio is None
+                or portfolio["phase"] != "Q09_PORTFOLIO"
+                or portfolio["status"] != "done"
+                or portfolio["verdict"] != "PASS_PORTFOLIO"
+                or portfolio["ea_id"] != item["ea_id"]
+                or portfolio["symbol"] != item["symbol"]
+                or portfolio["setfile_path"] != item["setfile_path"]
+                or str(portfolio["parent_work_item_id"] or "") != q08_id
+                or str(portfolio["parent_evidence_sha256"] or "").lower()
+                != q08_hash.lower()
+            ):
+                raise RunnerError(
+                    "Q08 FAIL_SOFT portfolio sibling does not match exact Q09 lineage"
+                )
+            _verify_hash(
+                Path(str(portfolio["evidence_path"] or "")),
+                portfolio_hash,
+                "Q09 portfolio sibling evidence",
+            )
 
         setfile_path = Path(str(item["setfile_path"] or ""))
         _verify_hash(
