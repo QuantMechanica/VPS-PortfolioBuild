@@ -1260,6 +1260,15 @@ def pending_claim_order_sql() -> str:
             -- and every priority_track row still drains first, while measurement
             -- interleaves with ordinary Q04 admissions and out-ages Q02.
             WHEN 'OPT_CENSUS' THEN 6
+            -- COMPILE_EA (ordering decision 2026-08-22, Systemanalyse §4.2/§9.3):
+            -- a compile takes seconds and unblocks a whole EA's funnel entry,
+            -- while every backtest holds a terminal for hours. In the ELSE-9
+            -- bucket a compile row can never out-rank the aged backlog, so the
+            -- queue only drains when the factory happens to idle — observed as
+            -- the 2026-08-22 canary capacity-defer. Rank 1 (harness rationale:
+            -- rare, terminal, seconds-cheap) lets any freed slot clear compile
+            -- work first without measurably starving backtest throughput.
+            WHEN 'COMPILE_EA' THEN 1
             WHEN 'Q03'  THEN 7
             WHEN 'Q02'  THEN 8
             WHEN 'P8'   THEN 0
