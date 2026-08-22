@@ -1,0 +1,152 @@
+{
+  "schema": "qm/fx-cointegration-existing-pair-active-cpu-stop/v1",
+  "artifact_type": "fx_cointegration_existing_pair_q05_active_hard_cpu_stop",
+  "generated_at_utc": "2026-08-22T05:02:24.9106353Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "da9aae9f717480ecfa92ff57e2e8eae80f4171c1",
+  "mission_outcome": "EXISTING_FX_PAIR_ADVANCED_TO_ACTIVE_Q05_STOPPED_AT_HARD_CPU_CEILING",
+  "frontier_state": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a804932912a449aed19bbc8fe61f1f5846556743",
+    "new_card_or_ea_created": false,
+    "reason": "Every relationship in the frozen sign-aware scan already maps to governed work; another Card, registry allocation, basket manifest, EA, or Q02 row would duplicate the portfolio funnel."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "canonical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "canonical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "scan_rank": 31,
+    "pair": [
+      "GBPJPY.DWX",
+      "EURAUD.DWX"
+    ],
+    "ea_id": "QM5_20211",
+    "slug": "gbpjpy-euraud",
+    "logical_symbol": "QM5_20211_GBPJPY_EURAUD_COINTEGRATION_D1",
+    "card_status": "APPROVED",
+    "g0_status": "APPROVED",
+    "source_criteria": {
+      "primary_source": "Chan, Ernest P. (2009), Quantitative Trading, OWNER-ratified Tier-A SRC02 extraction",
+      "research_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+      "r1_track_record": "PASS",
+      "r2_mechanical": "PASS",
+      "r3_data_available": "PASS",
+      "r4_ml_forbidden": "PASS"
+    },
+    "q02": {
+      "work_item_id": "21db772c-c974-4a05-8e21-5ec78659e988",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "8135f97c-fd0d-4435-b713-87fa74fe0053",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q05": {
+      "exact_row_count": 1,
+      "work_item_id": "b240acaa-15b2-4850-a615-3a80d770cb60",
+      "status": "active",
+      "verdict": null,
+      "claimed_by": "T1",
+      "attempt_count": 0,
+      "created_at_utc": "2026-08-22T00:17:29+00:00",
+      "updated_at_utc": "2026-08-22T05:00:58+00:00",
+      "decision": "Preserve the sole active successor without duplicate enqueue, requeue, priority mutation, dispatch, or terminal control."
+    },
+    "risk_contract": {
+      "environment": "backtest",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "artifact_sha256": {
+      "mq5": "b93fee38cc15e3a72eecb1ae189f6fabfe9a793221bf1f683d1414a5fafd43df",
+      "ex5": "54ddb7987359f0f5a8ad8806c0f6ea5582b23979c8b6814ea6610e3547bcdc56",
+      "basket_manifest": "2c3932c98d1efae4706466db012cfb3e050a6a3cf3a21afafed6a7952a896386",
+      "logical_backtest_setfile": "93709b95ca6495ad903feb7e94b26462c2ecac9f27297a9a64d49f1f89ffd549",
+      "approved_card": "d67cf0d7f7f89e8d9cc50f6f9157ba34f253b8dc36b6eb521dd3cd5c9aa74782"
+    }
+  },
+  "non_duplicate_delta": {
+    "previous_enqueue_commit": "9ea2bfd683153fb0b4584b81a315a338660971f5",
+    "previous_post_enqueue_stop_commit": "c68e5ea91",
+    "previous_q05_status": "pending",
+    "current_q05_status": "active",
+    "current_claimed_by": "T1",
+    "exact_q05_row_count_unchanged": 1,
+    "new_queue_row_created": false,
+    "existing_queue_row_mutated_by_this_run": false
+  },
+  "capacity_evidence": {
+    "cpu_sample_window_started_at_utc": "2026-08-22T05:01:00.0501624Z",
+    "cpu_load_percent": [
+      97,
+      94,
+      96,
+      29,
+      54
+    ],
+    "cpu_average_percent": 74.0,
+    "cpu_maximum_percent": 97.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_gte_hard_ceiling",
+    "ceiling_binding": true,
+    "canonical_active_work_item_count": 3,
+    "active_phase_mix": {
+      "Q05": 1,
+      "Q07": 1,
+      "Q09_NEWS": 1
+    },
+    "path_aware_slot_scan_at_utc": "2026-08-22T05:01:43+00:00",
+    "running_factory_terminals": [
+      "T3",
+      "T10"
+    ],
+    "selected_item_claimed_terminal": "T1",
+    "selected_item_terminal_process_visible_in_slot_snapshot": false,
+    "t1_reservation_observed_at_utc": "2026-08-22T05:01:44.133512+00:00",
+    "excluded_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ],
+    "stop_action": "No queue mutation, dispatch tick, tester launch, terminal reservation, reconciliation, interruption, or control followed the binding CPU sample."
+  },
+  "concurrent_workspace_observation": {
+    "worker_created_untracked_path": "framework/EAs/QM5_20211_gbpjpy-euraud/sets/QM5_20211_gbpjpy-euraud_QM5_20211_GBPJPY_EURAUD_COINTEGRATION_D1_D1_q05_stress_medium.set",
+    "staged_or_modified_by_this_run": false,
+    "decision": "Leave the active worker artifact and all pre-existing dirty paths untouched and unstaged."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutation": false,
+    "queue_mutation": false,
+    "dispatch_tick": false,
+    "manual_tester_or_backtest_run": false,
+    "terminal_reservation_reconciliation_or_control": false,
+    "repository_evidence_created": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
