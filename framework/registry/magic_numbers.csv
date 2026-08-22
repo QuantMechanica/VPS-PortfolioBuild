@@ -17800,3 +17800,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41116,xauxag-mthirdvote-rv,0,XAUUSD.DWX,411160000,2026-08-22,Codex governed allocator,active
 41116,xauxag-mthirdvote-rv,1,XAGUSD.DWX,411160001,2026-08-22,Codex governed allocator,active
 41117,wti-mlatehalf-dom-mom,0,XTIUSD.DWX,411170000,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,0,GDAXI.DWX,16230000,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,1,NDX.DWX,16230001,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,2,SP500.DWX,16230002,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,3,UK100.DWX,16230003,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,4,WS30.DWX,16230004,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,5,XAUUSD.DWX,16230005,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,6,EURUSD.DWX,16230006,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,7,GBPUSD.DWX,16230007,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,8,USDJPY.DWX,16230008,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,9,USDCHF.DWX,16230009,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,10,AUDUSD.DWX,16230010,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,11,USDCAD.DWX,16230011,2026-08-22,Codex governed allocator,active
+1623,hopwood-bermaui-dss-h4,12,NZDUSD.DWX,16230012,2026-08-22,Codex governed allocator,active
