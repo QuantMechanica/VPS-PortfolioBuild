@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0",
+  "artifact_kind": "fx_cointegration_q05_enqueue_handoff",
+  "generated_at_utc": "2026-08-22T09:32:12Z",
+  "branch": "agents/board-advisor",
+  "base_head": "fa49c5710ed93d38b4c52d967c8a530d90d2f724",
+  "mission_result": "ENQUEUED_EXISTING_FOREX_SUCCESSOR",
+  "frontier": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "decision": "do_not_create_duplicate_card"
+  },
+  "reference_anchors": {
+    "QM5_12532": {
+      "q02": "PASS",
+      "q04": "PASS",
+      "terminal_phase": "Q05",
+      "terminal_verdict": "FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "q02": "PASS",
+      "terminal_phase": "Q04",
+      "terminal_verdict": "FAIL",
+      "q02_blocked": false
+    }
+  },
+  "selected_fallback": {
+    "ea_id": "QM5_20208",
+    "slug": "nzdusd-euraud",
+    "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "host_symbol": "NZDUSD.DWX",
+    "traded_symbols": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "conversion_history_symbols": [
+      "AUDUSD.DWX",
+      "EURUSD.DWX"
+    ],
+    "scan_rank": 27,
+    "timeframe": "D1",
+    "strategy_beta": -0.286008035,
+    "structural_only": true,
+    "ml_required": false,
+    "selection_reason": "existing scan-derived FX basket has Q02 PASS and Q04 PASS_LOWFREQ with no prior Q05 row"
+  },
+  "source": {
+    "citation": "Chan, Ernest P. (2009), Quantitative Trading, Wiley",
+    "quality_tier": "A",
+    "approved_card_path": "strategy-seeds/cards/approved/QM5_20208_nzdusd-euraud_card.md",
+    "approved_card_sha256": "bf233695c7321fcf38372b27a9c8ec5224887f2c7bd23c4becf237aae373b32c",
+    "extraction_path": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "extraction_sha256": "183a1624ae3eb4432dde9ba8883e3f5b16e0107a191e468864ca9600d8d45d64"
+  },
+  "build_bindings": {
+    "ex5": {
+      "path": "framework/EAs/QM5_20208_nzdusd-euraud/QM5_20208_nzdusd-euraud.ex5",
+      "sha256": "31d4460df6cd3e9ef579d8ed4e3849e62b3423ef0e942f6703122e2245988bc4"
+    },
+    "setfile": {
+      "path": "framework/EAs/QM5_20208_nzdusd-euraud/sets/QM5_20208_nzdusd-euraud_QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1_D1_backtest.set",
+      "sha256": "f6ae2633e6ec4e54a7e14835c16c50c231c4135495abf7f3cdb00eaf5346ae04",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "basket_manifest": {
+      "path": "framework/EAs/QM5_20208_nzdusd-euraud/basket_manifest.json",
+      "sha256": "ed2fac5d413a6a4665388f73d22606408e51a7e317136e4ac8ed0a8369aa8796"
+    },
+    "active_magics": [
+      202080000,
+      202080001
+    ]
+  },
+  "predecessor": {
+    "phase": "Q04",
+    "work_item_id": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+    "status": "done",
+    "verdict": "PASS_LOWFREQ",
+    "evidence_path": "D:/QM/reports/pipeline/QM5_20208/Q04/QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1__3703d3fd-6e3a-4fc2-bc4a-20b2984479b2/aggregate.json",
+    "evidence_sha256": "83a568cd4f9da060ceeeab5aa7d95398a97b7792f9c151dd8175d4a60a7eec4a"
+  },
+  "cpu_gate": {
+    "sampled_at_utc": "2026-08-22T09:31:55.3249175Z",
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "samples_pct": [
+      89.16,
+      88.92,
+      74.85,
+      93.07,
+      86.33
+    ],
+    "max_pct": 93.07,
+    "average_pct": 86.47,
+    "ceiling_pct": 97.0,
+    "passed": true,
+    "decision": "ALLOW_SINGLE_ENQUEUE"
+  },
+  "queue": {
+    "command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_20208 --phase Q05 --from-work-item-id 3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+    "preflight_existing_rows": 2,
+    "preflight_existing_q05_rows": 0,
+    "mutation_performed": true,
+    "enqueued_work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+    "created_at_utc": "2026-08-22T09:32:12Z",
+    "postflight_status": "pending",
+    "postflight_verdict": null,
+    "attempt_count": 0,
+    "promoted_from_phase": "Q04",
+    "promoted_from_work_item": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+    "priority_track": true,
+    "timeout_min": 450,
+    "from_year": 2017,
+    "to_year": 2022,
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_20208_nzdusd-euraud/basket_manifest.json",
+    "basket_symbol_count": 4,
+    "manual_dispatch_performed": false
+  },
+  "capacity": {
+    "observed_at_utc": "2026-08-22T09:31:25Z",
+    "active_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T6",
+      "T8"
+    ]
+  },
+  "safety": {
+    "manual_tester_launch": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "card_or_build_mutated": false
+  }
+}
