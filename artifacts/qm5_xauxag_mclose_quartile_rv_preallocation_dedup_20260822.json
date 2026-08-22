@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Karsten Schweikert; OlaOluwa S. Yaya; Xuan Vinh Vo; Hammed A. Olayinka; CME Group",
+    "mechanic": "exact synchronized XAUUSD XAGUSD D1 first broker month boundary immediately completed calendar month all 17 to 23 chronological log ratio closes rank newest completed month close require strict lower or upper quartile fade newest ratio rank next calendar month equal notional aggregate fixed risk basket",
+    "slug": "xauxag-mclose-quartile-rv",
+    "strategy_id": "SCHWEIKERT-CME-XAUXAG-MCLOSE-QUARTILE-RV-2026_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-08-22T20:04:39+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4618,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1287,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
