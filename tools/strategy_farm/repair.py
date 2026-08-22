@@ -105,6 +105,10 @@ COMMON_Q08_STREAM_DIR = Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes
 HEALTH_ALARMS_LOG = ROOT / "state" / "health_alarms.log"
 _R11_CIRCUIT_BREAKER_LIMIT = 200
 _R18_DUPLICATE_GROUP_CIRCUIT_BREAKER_LIMIT = 500
+# Non-gate phases whose preconditions are NOT a setfile + EA dir + compiled .ex5.
+# They are exempt from the R11 backtest preflight; see
+# _pending_work_item_artifact_failure for what happened when they were not.
+_UTILITY_PHASES = frozenset({"COMPILE_EA", "HARNESS_PP_FIXTURE"})
 
 
 def _utc_now() -> str:
@@ -551,7 +555,35 @@ def repair_stranded_ea_review_pending(con) -> list[dict]:
     return out
 
 
+def _row_get(row: sqlite3.Row, column: str):
+    try:
+        return row[column]
+    except (IndexError, KeyError):
+        return None
+
+
 def _pending_work_item_artifact_failure(row: sqlite3.Row) -> dict | None:
+    # R11 asserts the preconditions of a BACKTEST row: a setfile, a resolvable EA
+    # directory and a compiled .ex5. A utility phase has different preconditions by
+    # construction - a COMPILE_EA row exists precisely BECAUSE the .ex5 is missing,
+    # and failing it for `ex5_missing` destroys the work item whose entire job is to
+    # produce that binary.
+    #
+    # 2026-08-22: this shredded 91 of 92 COMPILE_EA rows thirteen minutes after the
+    # phase's first rollout released their holds - the largest class of the drain
+    # programme, wiped by a handler asserting a precondition that cannot hold here.
+    # The mass-invalidation circuit breaker did not help: 91 is below its limit, so
+    # it fired silently. Utility phases therefore opt out of the backtest preflight.
+    payload_raw = _row_get(row, "payload_json")
+    try:
+        payload = json.loads(payload_raw or "{}")
+    except Exception:
+        payload = {}
+    if payload.get("utility_phase") is True:
+        return None
+    if str(_row_get(row, "phase") or "") in _UTILITY_PHASES:
+        return None
+
     setfile_path = Path(str(row["setfile_path"] or ""))
     if not setfile_path.exists():
         return {"reason": "setfile_missing", "detail": str(setfile_path)}
