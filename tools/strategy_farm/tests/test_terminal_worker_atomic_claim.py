@@ -206,6 +206,54 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 ).fetchone()
             self.assertEqual(row, ("pending", None))
 
+    def test_q09_main_claim_leases_and_releases_only_free_helper_slots(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "q09-sharded",
+                "EURUSD.DWX",
+                phase="Q09_NEWS",
+                status="active",
+                claimed_by="T1",
+                payload={"q09_cell_count": 40, "q09_cell_timeout_sec": 60},
+            )
+            with farmctl.connect(root) as conn:
+                row = conn.execute(
+                    "SELECT * FROM work_items WHERE id='q09-sharded'"
+                ).fetchone()
+            with (
+                patch.dict(
+                    os.environ,
+                    {
+                        terminal_worker.Q09_CELL_SHARDING_FLAG: "1",
+                        terminal_worker.Q09_CELL_SHARDING_MAX_TERMINALS_FLAG: "3",
+                    },
+                ),
+                patch.object(
+                    farmctl,
+                    "active_mt5_terminals",
+                    return_value=("T1", "T2", "T3"),
+                ),
+                patch.object(
+                    terminal_worker, "_commit_headroom_gb", return_value=1000.0
+                ),
+                patch.object(
+                    terminal_worker, "_free_ram_gb", return_value=1000.0
+                ),
+            ):
+                lease = terminal_worker._reserve_q09_helper_terminals(
+                    root, row, "T1"
+                )
+
+            self.assertIsNotNone(lease)
+            self.assertEqual(lease["helper_terminals"], ["T2", "T3"])
+            self.assertEqual(
+                set(farmctl.terminal_reservations(root)), {"T2", "T3"}
+            )
+            terminal_worker._release_q09_helper_terminals(root, lease)
+            self.assertEqual(farmctl.terminal_reservations(root), {})
+
     def test_expired_terminal_reservation_fails_open(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

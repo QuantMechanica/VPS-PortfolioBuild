@@ -10,6 +10,7 @@ selection to :mod:`q09_news_contract`.
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import html
 import json
@@ -145,6 +146,81 @@ class CapacityError(RunnerError):
 
 class TransientCellError(RunnerError):
     """Raised for a child exit-1 that produced no fresh tester receipt."""
+
+
+class HelperAbortError(RunnerError):
+    """Raised when a helper-terminal cell must be caught up by the main slot."""
+
+
+CELL_SHARD_RE = re.compile(r"^([1-9][0-9]*)/([1-9][0-9]*)$")
+FACTORY_TERMINAL_RE = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
+
+
+def parse_cell_shard(value: str) -> tuple[int, int]:
+    """Parse a one-based ``i/n`` shard selector and fail closed on ambiguity."""
+
+    match = CELL_SHARD_RE.fullmatch(str(value or "").strip())
+    if match is None:
+        raise RunnerError("Q09 cell shard must use one-based i/n syntax")
+    index, count = (int(match.group(1)), int(match.group(2)))
+    if index > count:
+        raise RunnerError("Q09 cell shard index exceeds shard count")
+    return index, count
+
+
+def cell_key(spec: Mapping[str, Any]) -> str:
+    key = str(spec.get("run_identity_sha256") or "").strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", key):
+        raise RunnerError("Q09 cell lacks a canonical run identity")
+    return key
+
+
+def build_cell_shard_assignments(
+    plan: Mapping[str, Any], shard_count: int
+) -> list[list[str]]:
+    """Return deterministic, exhaustive, pairwise-disjoint cell-key shards."""
+
+    count = int(shard_count)
+    if count <= 0:
+        raise RunnerError("Q09 shard count must be positive")
+    cells = list(plan.get("cells") or [])
+    if not cells:
+        raise RunnerError("Q09 run plan has no cells")
+    assignments: list[list[str]] = [[] for _ in range(count)]
+    for offset, spec in enumerate(cells):
+        assignments[offset % count].append(cell_key(spec))
+    flattened = [key for shard in assignments for key in shard]
+    if len(flattened) != len(cells) or len(set(flattened)) != len(cells):
+        raise RunnerError("Q09 shard construction is not exhaustive and disjoint")
+    return assignments
+
+
+def select_plan_cells(
+    plan: Mapping[str, Any],
+    *,
+    cell_shard: str | None = None,
+    cell_keys: Sequence[str] | None = None,
+) -> list[Mapping[str, Any]]:
+    """Select an authenticated subset without changing plan order or identity."""
+
+    if cell_shard and cell_keys:
+        raise RunnerError("Q09 cell_shard and cell_keys are mutually exclusive")
+    cells = list(plan.get("cells") or [])
+    if cell_shard:
+        index, count = parse_cell_shard(cell_shard)
+        allowed = set(build_cell_shard_assignments(plan, count)[index - 1])
+        return [spec for spec in cells if cell_key(spec) in allowed]
+    if cell_keys:
+        requested = [str(value).strip().lower() for value in cell_keys]
+        if len(requested) != len(set(requested)):
+            raise RunnerError("Q09 cell_keys contains duplicates")
+        by_key = {cell_key(spec): spec for spec in cells}
+        unknown = sorted(set(requested) - set(by_key))
+        if unknown:
+            raise RunnerError(f"Q09 cell_keys contains unknown identities: {unknown}")
+        requested_set = set(requested)
+        return [spec for spec in cells if cell_key(spec) in requested_set]
+    return cells
 
 
 def _safe_common_path(value: str) -> str:
@@ -2103,8 +2179,10 @@ def assert_factory_capacity(
     terminal: str,
     plan_path: Path,
     expected_plan_file_sha256: str,
+    primary_terminal: str | None = None,
+    helper_reserved_by: str | None = None,
 ) -> dict[str, Any]:
-    """Prove that this process owns the active ordinary factory slot."""
+    """Prove the main claim or an exact helper reservation is still owned."""
 
     database = _farm_db_path(farm_root)
     if not database.is_file():
@@ -2121,10 +2199,45 @@ def assert_factory_capacity(
         raise CapacityError("Q09 factory capacity refused: work item missing")
     if row["phase"] != "Q09_NEWS":
         raise CapacityError("Q09 factory capacity refused: non-canonical phase")
-    if row["status"] != "active" or str(row["claimed_by"] or "") != str(terminal):
+    execution_terminal = str(terminal).strip().upper()
+    claim_terminal = str(primary_terminal or terminal).strip().upper()
+    if row["status"] != "active" or str(row["claimed_by"] or "").upper() != claim_terminal:
         raise CapacityError(
             "Q09 factory capacity refused: exact active terminal claim is not owned"
         )
+    if execution_terminal != claim_terminal:
+        if not FACTORY_TERMINAL_RE.fullmatch(execution_terminal):
+            raise CapacityError("Q09 helper capacity refused: invalid factory terminal")
+        reserved_by = str(helper_reserved_by or "").strip()
+        if not reserved_by:
+            raise CapacityError("Q09 helper capacity refused: reservation identity missing")
+        reservation_path = farm_root / "state" / "terminal_reservations.json"
+        try:
+            reservation_document = json.loads(
+                reservation_path.read_text(encoding="utf-8-sig")
+            )
+            reservations = reservation_document.get(
+                "reservations", reservation_document
+            )
+            reservation = reservations[execution_terminal]
+            until = datetime.fromisoformat(
+                str(reservation["until_utc"]).replace("Z", "+00:00")
+            )
+            if until.tzinfo is None:
+                until = until.replace(tzinfo=timezone.utc)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+            raise CapacityError(
+                "Q09 helper capacity refused: reservation state is missing or unreadable"
+            ) from exc
+        if (
+            str(reservation.get("reserved_by") or "") != reserved_by
+            or str(reservation.get("reason") or "")
+            != f"Q09_NEWS helper for {work_item_id}"
+            or until.astimezone(timezone.utc) <= datetime.now(timezone.utc)
+        ):
+            raise CapacityError(
+                "Q09 helper capacity refused: exact live helper reservation is not owned"
+            )
     try:
         payload = json.loads(str(row["payload_json"] or "{}"))
     except json.JSONDecodeError as exc:
@@ -3080,8 +3193,12 @@ def execute_run_plan(
     common_root: Path,
     dispatch_cell: Callable[[Mapping[str, Any], Mapping[str, Any]], None] | None = None,
     cell_retry_budget: int = DEFAULT_CELL_RETRY_BUDGET,
+    cell_shard: str | None = None,
+    cell_keys: Sequence[str] | None = None,
+    helper_terminals: Sequence[str] | None = None,
+    helper_reserved_by: str | None = None,
 ) -> dict[str, Any]:
-    """Execute missing plan cells serially inside one claimed factory slot.
+    """Execute selected cells, optionally sharded across leased factory slots.
 
     A single failing cell never aborts the experiment: each cell is retried up
     to ``cell_retry_budget`` extra times on a transient class, then recorded as
@@ -3098,10 +3215,11 @@ def execute_run_plan(
     execution_period = resolve_execution_period(input_manifest, period)
     if str(plan["work_item_id"]) != str(work_item_id):
         raise RunnerError("executor work_item_id differs from sealed run plan")
+    primary_terminal = str(terminal).strip().upper()
     capacity = assert_factory_capacity(
         farm_root,
         work_item_id=work_item_id,
-        terminal=terminal,
+        terminal=primary_terminal,
         plan_path=plan_path,
         expected_plan_file_sha256=expected_plan_file_sha256,
     )
@@ -3111,6 +3229,29 @@ def execute_run_plan(
     if payload.get("diagnostic_non_admission") is True:
         diagnostic_expert_stage = _stage_diagnostic_expert_binary(
             payload, terminal=terminal, expert=expert
+        )
+    helpers = [str(value).strip().upper() for value in (helper_terminals or [])]
+    if len(helpers) != len(set(helpers)):
+        raise CapacityError("Q09 helper terminal list contains duplicates")
+    if primary_terminal in helpers:
+        raise CapacityError("Q09 helper terminal list contains the main terminal")
+    if any(not FACTORY_TERMINAL_RE.fullmatch(value) for value in helpers):
+        raise CapacityError("Q09 helper terminal list contains a non-factory terminal")
+    if helpers and (cell_shard or cell_keys):
+        raise RunnerError("Q09 helper terminals cannot be combined with a subset selector")
+    if helpers and payload.get("diagnostic_non_admission") is True:
+        raise CapacityError("Q09 diagnostic runs cannot use helper terminals")
+    if helpers and not str(helper_reserved_by or "").strip():
+        raise CapacityError("Q09 helper reservation identity is missing")
+    for helper_terminal in helpers:
+        assert_factory_capacity(
+            farm_root,
+            work_item_id=work_item_id,
+            terminal=helper_terminal,
+            primary_terminal=primary_terminal,
+            helper_reserved_by=helper_reserved_by,
+            plan_path=plan_path,
+            expected_plan_file_sha256=expected_plan_file_sha256,
         )
     if (
         payload.get("q09_run_plan_sha256") != plan.get("plan_sha256")
@@ -3144,8 +3285,8 @@ def execute_run_plan(
         "input_manifest": input_manifest,
         "farm_root": str(farm_root.resolve()),
         "work_item_id": str(work_item_id),
-        "terminal": str(terminal),
-        "terminal_root": str(_claimed_factory_terminal_root(terminal)),
+        "terminal": primary_terminal,
+        "terminal_root": str(_claimed_factory_terminal_root(primary_terminal)),
         "ea_id": int(ea_id),
         "expert": str(expert),
         "symbol": str(symbol),
@@ -3170,16 +3311,23 @@ def execute_run_plan(
     if budget < 0:
         raise RunnerError("Q09 cell retry budget must be non-negative")
 
-    def _reverify_before_attempt() -> None:
+    def _reverify_before_attempt(cell_context: Mapping[str, Any]) -> None:
         # A child can exit before its terminal process fully releases the
         # claimed profile.  Each retry waits for that exact terminal root to
         # clear and re-verifies the claim is still ours (and, for the diagnostic
         # lane, that the staged expert binary is unchanged) before re-dispatch.
-        _wait_for_claimed_terminal_exit(Path(str(context["terminal_root"])))
+        execution_terminal = str(cell_context["terminal"])
+        _wait_for_claimed_terminal_exit(Path(str(cell_context["terminal_root"])))
         assert_factory_capacity(
             farm_root,
             work_item_id=work_item_id,
-            terminal=terminal,
+            terminal=execution_terminal,
+            primary_terminal=primary_terminal,
+            helper_reserved_by=(
+                helper_reserved_by
+                if execution_terminal != primary_terminal
+                else None
+            ),
             plan_path=plan_path,
             expected_plan_file_sha256=expected_plan_file_sha256,
         )
@@ -3190,7 +3338,12 @@ def execute_run_plan(
                 "effective Q09 diagnostic expert EX5",
             )
 
-    def _run_one_cell(spec: Mapping[str, Any]) -> None:
+    def _run_one_cell(
+        spec: Mapping[str, Any],
+        cell_context: Mapping[str, Any],
+        *,
+        helper: bool,
+    ) -> None:
         """Dispatch a single cell with a bounded transient retry budget.
 
         A ``CapacityError`` is re-raised so the ordinary worker can requeue the
@@ -3205,48 +3358,124 @@ def execute_run_plan(
         transient_retries_used = 0
         while True:
             try:
-                dispatcher(spec, context)
+                dispatcher(spec, cell_context)
                 _receipt_to_cell(spec)
                 return
             except CapacityError:
                 raise
             except TransientCellError as exc:
+                if helper:
+                    raise HelperAbortError(str(exc)) from exc
                 _write_cell_failure(
                     spec, work_item_id=str(work_item_id), exc=exc
                 )
                 if transient_retries_used >= budget:
                     return
                 transient_retries_used += 1
-                _reverify_before_attempt()
+                _reverify_before_attempt(cell_context)
             except Exception as exc:  # noqa: BLE001 - cell-scoped, non-transient
+                if helper:
+                    raise HelperAbortError(str(exc)) from exc
                 _write_cell_failure(
                     spec, work_item_id=str(work_item_id), exc=exc
                 )
                 return
 
-    for spec in plan["cells"]:
-        receipt_path = Path(str(spec["receipt_path"]))
-        if receipt_path.is_file():
-            # An already-present receipt is immutable and must not be
-            # re-dispatched.  Its authentication is deferred to the terminal
-            # collection: a good receipt is counted, a contradictory one is
-            # classified as invalid evidence.  Either way a single pre-existing
-            # receipt never aborts the remaining planned cells.
-            continue
-        assert_factory_capacity(
-            farm_root,
-            work_item_id=work_item_id,
-            terminal=terminal,
-            plan_path=plan_path,
-            expected_plan_file_sha256=expected_plan_file_sha256,
+    selected_cells = select_plan_cells(
+        plan, cell_shard=cell_shard, cell_keys=cell_keys
+    )
+
+    def _context_for(execution_terminal: str) -> dict[str, Any]:
+        cell_context = dict(context)
+        cell_context["terminal"] = execution_terminal
+        cell_context["terminal_root"] = str(
+            _claimed_factory_terminal_root(execution_terminal)
         )
-        if diagnostic_expert_stage is not None:
-            _verify_hash(
-                Path(diagnostic_expert_stage["destination_path"]),
-                diagnostic_expert_stage["sha256"],
-                "effective Q09 diagnostic expert EX5",
+        return cell_context
+
+    def _run_cells(
+        specs: Sequence[Mapping[str, Any]], execution_terminal: str, *, helper: bool
+    ) -> None:
+        cell_context = _context_for(execution_terminal)
+        for spec in specs:
+            receipt_path = Path(str(spec["receipt_path"]))
+            if receipt_path.is_file():
+                # Receipts are immutable and idempotent. Authentication remains
+                # the collector's job, so a contradictory pre-existing receipt
+                # is never silently replaced by a helper.
+                continue
+            assert_factory_capacity(
+                farm_root,
+                work_item_id=work_item_id,
+                terminal=execution_terminal,
+                primary_terminal=primary_terminal,
+                helper_reserved_by=(helper_reserved_by if helper else None),
+                plan_path=plan_path,
+                expected_plan_file_sha256=expected_plan_file_sha256,
             )
-        _run_one_cell(spec)
+            if diagnostic_expert_stage is not None:
+                _verify_hash(
+                    Path(diagnostic_expert_stage["destination_path"]),
+                    diagnostic_expert_stage["sha256"],
+                    "effective Q09 diagnostic expert EX5",
+                )
+            _run_one_cell(spec, cell_context, helper=helper)
+
+    helper_abortions: list[dict[str, str]] = []
+    if helpers:
+        terminals = [primary_terminal, *helpers]
+        assignments = build_cell_shard_assignments(plan, len(terminals))
+        by_key = {cell_key(spec): spec for spec in plan["cells"]}
+        with ThreadPoolExecutor(max_workers=len(terminals)) as executor:
+            futures = {
+                executor.submit(
+                    _run_cells,
+                    [by_key[key] for key in assignments[index]],
+                    execution_terminal,
+                    helper=index > 0,
+                ): (execution_terminal, index > 0)
+                for index, execution_terminal in enumerate(terminals)
+            }
+            for future in as_completed(futures):
+                execution_terminal, is_helper = futures[future]
+                try:
+                    future.result()
+                except Exception as exc:  # helper loss is caught up below
+                    if not is_helper:
+                        raise
+                    helper_abortions.append(
+                        {"terminal": execution_terminal, "error": repr(exc)}
+                    )
+        # A helper exit without an immutable receipt leaves its cell eligible
+        # for the main terminal. Main-shard failures are terminal outcomes.
+        catchup = [
+            spec
+            for spec in plan["cells"]
+            if not Path(str(spec["receipt_path"])).is_file()
+            and not _cell_failure_path(spec).is_file()
+        ]
+        _run_cells(catchup, primary_terminal, helper=False)
+    else:
+        _run_cells(selected_cells, primary_terminal, helper=False)
+
+    complete_count = sum(
+        1
+        for spec in plan["cells"]
+        if Path(str(spec["receipt_path"])).is_file()
+        or _cell_failure_path(spec).is_file()
+    )
+    if complete_count != int(plan["cell_count"]):
+        # A shard worker never publishes a partial aggregate. A later
+        # idempotent shard/main pass can fill the remaining cells and collect.
+        return {
+            "status": "SHARD_COMPLETE",
+            "verdict": "SHARD_COMPLETE",
+            "aggregate_published": False,
+            "planned_cell_count": int(plan["cell_count"]),
+            "selected_cell_count": len(selected_cells),
+            "completed_cell_count": complete_count,
+            "helper_abortions": helper_abortions,
+        }
 
     result = collect_run_plan_status(
         plan_path,
@@ -3261,6 +3490,8 @@ def execute_run_plan(
         expected_plan_file_sha256=expected_plan_file_sha256,
         result=result,
     )
+    result["aggregate_published"] = True
+    result["helper_abortions"] = helper_abortions
     return result
 
 
@@ -3296,6 +3527,10 @@ def build_parser() -> argparse.ArgumentParser:
     collect.add_argument("--output-root", type=Path)
     collect.add_argument("--expected-plan-file-sha256")
     collect.add_argument("--out-prefix", type=Path, help=argparse.SUPPRESS)
+    shard_plan = sub.add_parser("shard-plan")
+    shard_plan.add_argument("--plan", required=True, type=Path)
+    shard_plan.add_argument("--expected-plan-file-sha256", required=True)
+    shard_plan.add_argument("--shards", required=True, type=int)
     execute = sub.add_parser("execute")
     execute.add_argument("--plan", required=True, type=Path)
     execute.add_argument("--expected-plan-file-sha256", required=True)
@@ -3313,6 +3548,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     execute.add_argument("--repo-root", required=True, type=Path)
     execute.add_argument("--common-root", required=True, type=Path)
+    execute.add_argument("--cell-shard")
+    execute.add_argument("--cell-key", action="append", dest="cell_keys")
+    execute.add_argument("--helper-terminal", action="append", dest="helper_terminals")
+    execute.add_argument("--helper-reserved-by")
     execute.add_argument("--out-prefix", type=Path, help=argparse.SUPPRESS)
     return parser
 
@@ -3362,9 +3601,33 @@ def main(argv: Sequence[str] | None = None) -> int:
             period=args.period,
             repo_root=args.repo_root,
             common_root=args.common_root,
+            cell_shard=args.cell_shard,
+            cell_keys=args.cell_keys,
+            helper_terminals=args.helper_terminals,
+            helper_reserved_by=args.helper_reserved_by,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
-        return 0 if result["verdict"] == "CONFIG_LOCKED" else 2
+        return 0 if result["verdict"] in {"CONFIG_LOCKED", "SHARD_COMPLETE"} else 2
+    if args.command == "shard-plan":
+        plan, _manifest = load_authenticated_plan(
+            args.plan.resolve(),
+            expected_file_sha256=args.expected_plan_file_sha256,
+        )
+        assignments = build_cell_shard_assignments(plan, args.shards)
+        result = {
+            "schema_version": "q09-news-cell-shard-plan/v1",
+            "plan_path": str(args.plan.resolve()),
+            "plan_sha256": plan["plan_sha256"],
+            "cell_count": int(plan["cell_count"]),
+            "shard_count": int(args.shards),
+            "shards": [
+                {"index": index + 1, "cell_count": len(keys), "cell_keys": keys}
+                for index, keys in enumerate(assignments)
+            ],
+            "mt5_started": False,
+        }
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
     result = collect_run_plan_status(
         args.plan,
         output_root=args.output_root,

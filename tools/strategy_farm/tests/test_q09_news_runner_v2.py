@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -1768,6 +1769,141 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             "--period M15 contradicts sealed Q09 period H1",
         ):
             runner.resolve_execution_period(manifest, "M15")
+
+    def test_cell_shards_are_exhaustive_disjoint_and_default_flag_is_off(self) -> None:
+        plan = self.build(output="cell-shard-disjoint")
+        shards = runner.build_cell_shard_assignments(plan, 4)
+        flattened = [key for shard in shards for key in shard]
+
+        self.assertEqual([len(shard) for shard in shards], [10, 10, 10, 10])
+        self.assertEqual(len(flattened), 40)
+        self.assertEqual(len(set(flattened)), 40)
+        self.assertEqual(
+            set(flattened),
+            {runner.cell_key(spec) for spec in plan["cells"]},
+        )
+        self.assertFalse(terminal_worker.q09_cell_sharding_enabled({}))
+
+    def test_subset_execution_is_receipt_idempotent_and_publishes_no_aggregate(self) -> None:
+        plan = self.build(output="cell-shard-idempotent")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        selected = runner.select_plan_cells(plan, cell_shard="1/4")
+        self.write_receipt(selected[0])
+        dispatched: list[str] = []
+
+        def dispatch(spec: dict, _context: dict) -> None:
+            dispatched.append(runner.cell_key(spec))
+            self.write_receipt(spec)
+
+        kwargs = {
+            "output_root": self.root / "cell-shard-idempotent-output",
+            "farm_root": farm_root,
+            "work_item_id": "q09-news-1",
+            "terminal": "T1",
+            "expected_plan_file_sha256": plan_hash,
+            "ea_id": 9999,
+            "expert": "QM5_9999_demo",
+            "symbol": "EURUSD.DWX",
+            "work_item_symbol": "EURUSD.DWX",
+            "period": None,
+            "repo_root": REPO,
+            "common_root": self.root / "common-cell-shard-idempotent",
+            "dispatch_cell": dispatch,
+            "cell_shard": "1/4",
+        }
+        first = runner.execute_run_plan(Path(plan["plan_path"]), **kwargs)
+        self.assertEqual(first["verdict"], "SHARD_COMPLETE")
+        self.assertFalse(first["aggregate_published"])
+        self.assertEqual(first["completed_cell_count"], 10)
+        self.assertEqual(len(dispatched), 9)
+
+        second = runner.execute_run_plan(Path(plan["plan_path"]), **kwargs)
+        self.assertEqual(second["verdict"], "SHARD_COMPLETE")
+        self.assertFalse(second["aggregate_published"])
+        self.assertEqual(len(dispatched), 9)
+
+    def test_aggregate_is_published_only_after_all_four_shards_complete(self) -> None:
+        plan = self.build(output="cell-shard-aggregate-40")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+
+        def dispatch(spec: dict, _context: dict) -> None:
+            self.write_receipt(spec)
+
+        results = []
+        for index in range(1, 5):
+            results.append(
+                runner.execute_run_plan(
+                    Path(plan["plan_path"]),
+                    output_root=self.root / "cell-shard-aggregate-output",
+                    farm_root=farm_root,
+                    work_item_id="q09-news-1",
+                    terminal="T1",
+                    expected_plan_file_sha256=plan_hash,
+                    ea_id=9999,
+                    expert="QM5_9999_demo",
+                    symbol="EURUSD.DWX",
+                    work_item_symbol="EURUSD.DWX",
+                    period=None,
+                    repo_root=REPO,
+                    common_root=self.root / "common-cell-shard-aggregate",
+                    dispatch_cell=dispatch,
+                    cell_shard=f"{index}/4",
+                )
+            )
+
+        self.assertTrue(all(not row["aggregate_published"] for row in results[:3]))
+        self.assertEqual(results[3]["verdict"], "CONFIG_LOCKED")
+        self.assertTrue(results[3]["aggregate_published"])
+        self.assertEqual(results[3]["authenticated_cell_count"], 40)
+        self.assertTrue(Path(results[3]["aggregate_path"]).is_file())
+
+    def test_helper_abort_is_caught_up_by_main_terminal(self) -> None:
+        plan = self.build(output="cell-shard-helper-catchup")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        reserved_by = f"q09_cell_shard:{os.getpid()}:fixture"
+        farmctl.set_terminal_reservation(
+            farm_root,
+            "T2",
+            reserved_by,
+            minutes=30,
+            reason="Q09_NEWS helper for q09-news-1",
+        )
+        helper_failed_key: list[str] = []
+        successful_terminals: dict[str, str] = {}
+
+        def dispatch(spec: dict, context: dict) -> None:
+            key = runner.cell_key(spec)
+            if context["terminal"] == "T2" and not helper_failed_key:
+                helper_failed_key.append(key)
+                raise RuntimeError("fixture helper abort")
+            successful_terminals[key] = str(context["terminal"])
+            self.write_receipt(spec)
+
+        result = runner.execute_run_plan(
+            Path(plan["plan_path"]),
+            output_root=self.root / "cell-shard-helper-catchup-output",
+            farm_root=farm_root,
+            work_item_id="q09-news-1",
+            terminal="T1",
+            expected_plan_file_sha256=plan_hash,
+            ea_id=9999,
+            expert="QM5_9999_demo",
+            symbol="EURUSD.DWX",
+            work_item_symbol="EURUSD.DWX",
+            period=None,
+            repo_root=REPO,
+            common_root=self.root / "common-cell-shard-helper-catchup",
+            dispatch_cell=dispatch,
+            helper_terminals=["T2"],
+            helper_reserved_by=reserved_by,
+        )
+
+        self.assertEqual(len(helper_failed_key), 1)
+        self.assertEqual(successful_terminals[helper_failed_key[0]], "T1")
+        self.assertEqual(result["verdict"], "CONFIG_LOCKED")
+        self.assertTrue(result["aggregate_published"])
+        self.assertEqual(result["authenticated_cell_count"], 40)
+        self.assertEqual(result["helper_abortions"][0]["terminal"], "T2")
 
 
 if __name__ == "__main__":

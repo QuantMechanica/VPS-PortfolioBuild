@@ -7800,6 +7800,21 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--repo-root", str(runner_repo_root.resolve()),
             "--common-root", str(news_calendar_gate.resolve_common_dir()),
         ]
+        sharding = payload.get("q09_cell_sharding") or {}
+        helper_terminals = (
+            sharding.get("helper_terminals")
+            if isinstance(sharding, dict)
+            else None
+        )
+        reserved_by = (
+            str(sharding.get("reserved_by") or "")
+            if isinstance(sharding, dict)
+            else ""
+        )
+        if helper_terminals and reserved_by:
+            for helper_terminal in helper_terminals:
+                cmd.extend(["--helper-terminal", str(helper_terminal)])
+            cmd.extend(["--helper-reserved-by", reserved_by])
     elif phase == "Q09_PORTFOLIO":
         payload = json.loads(item_row["payload_json"] or "{}")
         cmd = [

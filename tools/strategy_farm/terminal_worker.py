@@ -24,6 +24,7 @@ import subprocess
 import sys
 import threading
 import time
+import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -75,6 +76,9 @@ CUSTOM_HISTORY_GATE_DEFER_ACTIONS = frozenset(
 )
 FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS = 5.0
 FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.01
+Q09_CELL_SHARDING_FLAG = "Q09_CELL_SHARDING_ENABLED"
+Q09_CELL_SHARDING_MAX_TERMINALS_FLAG = "Q09_CELL_SHARDING_MAX_TERMINALS"
+Q09_CELL_SHARDING_DEFAULT_MAX_TERMINALS = 4
 NEWS_CALENDAR_GUARD_SLEEP_SECONDS = 30.0
 MAX_WORK_ITEM_RETRIES = 3
 # Disk circuit-breaker (2026-06-19 incident): if free space on the runtime drive
@@ -2938,6 +2942,229 @@ def _terminal_slot_running(root: Path, terminal: str | None) -> bool:
         return False
 
 
+def q09_cell_sharding_enabled(environ: dict[str, str] | None = None) -> bool:
+    """Return the explicit rollout flag; absence is deliberately serial."""
+
+    source = os.environ if environ is None else environ
+    return str(source.get(Q09_CELL_SHARDING_FLAG, "")).strip().lower() in {
+        "1", "true", "yes", "on",
+    }
+
+
+def _q09_max_terminals(environ: dict[str, str] | None = None) -> int:
+    source = os.environ if environ is None else environ
+    try:
+        requested = int(
+            source.get(
+                Q09_CELL_SHARDING_MAX_TERMINALS_FLAG,
+                str(Q09_CELL_SHARDING_DEFAULT_MAX_TERMINALS),
+            )
+        )
+    except (TypeError, ValueError):
+        requested = Q09_CELL_SHARDING_DEFAULT_MAX_TERMINALS
+    return max(1, min(10, requested))
+
+
+def _q09_helper_reservation_minutes(
+    payload: dict[str, Any], total_terminals: int
+) -> int:
+    """Cover one deterministic shard plus an hour of catch-up headroom."""
+
+    try:
+        cells = max(1, int(payload.get("q09_cell_count") or 40))
+        timeout_sec = max(60, int(payload.get("q09_cell_timeout_sec") or 3600))
+    except (TypeError, ValueError):
+        cells, timeout_sec = 40, 3600
+    shard_cells = math.ceil(cells / max(1, total_terminals))
+    return max(60, math.ceil(shard_cells * 3 * (timeout_sec + 600) / 60) + 60)
+
+
+def _reserve_q09_helper_terminals(
+    root: Path, row: sqlite3.Row | dict[str, Any], primary_terminal: str
+) -> dict[str, Any] | None:
+    """Atomically reserve idle helper slots for one active Q09 main claim."""
+
+    payload = _json_loads(row["payload_json"])
+    if (
+        not q09_cell_sharding_enabled()
+        or str(row["phase"] or "").upper() != "Q09_NEWS"
+        or payload.get("diagnostic_non_admission") is True
+        or _q09_max_terminals() <= 1
+    ):
+        return None
+    primary = str(primary_terminal).upper()
+    lock_path = path_for_factory_flag(root / "state" / "FACTORY_OFF.flag")
+    try:
+        mutation_lock = FactoryMutationLock(
+            lock_path,
+            owner=f"terminal_worker.q09_helpers:{primary}",
+        )
+        mutation_lock.__enter__()
+    except (OSError, RuntimeError):
+        return {
+            "enabled": True,
+            "helper_terminals": [],
+            "reason": "factory_mutation_lock_busy",
+        }
+    try:
+        if (root / "state" / "FACTORY_OFF.flag").exists():
+            return {
+                "enabled": True,
+                "helper_terminals": [],
+                "reason": "factory_off",
+            }
+        with farmctl.connect(root) as conn:
+            active_rows = conn.execute(
+                "SELECT claimed_by,payload_json FROM work_items "
+                "WHERE status='active'"
+            ).fetchall()
+        active = {
+            str(value["claimed_by"] or "").upper()
+            for value in active_rows
+            if value["claimed_by"]
+        }
+        try:
+            running = (
+                set(farmctl._running_mt5_terminals())
+                if root.resolve() == farmctl.DEFAULT_ROOT.resolve()
+                else set()
+            )
+        except Exception:
+            return {
+                "enabled": True,
+                "helper_terminals": [],
+                "reason": "terminal_process_scan_failed",
+            }
+        reservations = farmctl.terminal_reservations(root)
+        try:
+            expected_peak_gb = max(
+                1.0,
+                float(
+                    payload.get("commit_reservation_gb")
+                    or ORDINARY_COMMIT_RESERVATION_GB
+                ),
+            )
+            already_reserved_gb = sum(
+                max(
+                    0.0,
+                    float(
+                        _json_loads(value["payload_json"]).get(
+                            "commit_reservation_gb"
+                        )
+                        or 0.0
+                    ),
+                )
+                for value in active_rows
+            )
+            commit_headroom_gb = _commit_headroom_gb() - already_reserved_gb
+            ram_headroom_gb = _free_ram_gb()
+            if not math.isfinite(commit_headroom_gb):
+                commit_cap = 9 if commit_headroom_gb > 0 else 0
+            else:
+                commit_cap = math.floor(
+                    max(0.0, commit_headroom_gb - COMMIT_MIN_FREE_GB)
+                    / expected_peak_gb
+                )
+            if not math.isfinite(ram_headroom_gb):
+                ram_cap = 9 if ram_headroom_gb > 0 else 0
+            else:
+                ram_cap = math.floor(
+                    max(0.0, ram_headroom_gb - RAM_MIN_FREE_GB)
+                    / expected_peak_gb
+                )
+            resource_cap = max(0, min(commit_cap, ram_cap))
+        except (OSError, TypeError, ValueError):
+            return {
+                "enabled": True,
+                "helper_terminals": [],
+                "reason": "helper_resource_probe_failed",
+            }
+        candidates = [
+            terminal
+            for terminal in farmctl.active_mt5_terminals()
+            if terminal != primary
+            and terminal not in active
+            and terminal not in running
+            and terminal not in reservations
+        ]
+        helpers = candidates[: min(_q09_max_terminals() - 1, resource_cap)]
+        if not helpers:
+            return {
+                "enabled": True,
+                "helper_terminals": [],
+                "reason": (
+                    "helper_resource_headroom_low"
+                    if resource_cap <= 0
+                    else "no_free_helper_terminal"
+                ),
+            }
+        reserved_by = f"q09_cell_shard:{os.getpid()}:{uuid.uuid4().hex}"
+        minutes = _q09_helper_reservation_minutes(payload, len(helpers) + 1)
+        reason = f"Q09_NEWS helper for {row['id']}"
+        rows = [
+            farmctl.set_terminal_reservation(
+                root,
+                helper,
+                reserved_by,
+                minutes=minutes,
+                reason=reason,
+            )
+            for helper in helpers
+        ]
+        return {
+            "schema_version": "qm.q09-cell-helper-lease/v1",
+            "enabled": True,
+            "main_terminal": primary,
+            "helper_terminals": helpers,
+            "reserved_by": reserved_by,
+            "reservation_minutes": minutes,
+            "reservations": rows,
+        }
+    finally:
+        mutation_lock.__exit__(None, None, None)
+
+
+def _release_q09_helper_terminals(root: Path, lease: dict[str, Any] | None) -> None:
+    """Release only reservations still owned by this exact Q09 lease token."""
+
+    if not lease or not lease.get("helper_terminals"):
+        return
+    expected = str(lease.get("reserved_by") or "")
+    lock_path = path_for_factory_flag(root / "state" / "FACTORY_OFF.flag")
+    deadline = time.monotonic() + FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS
+    mutation_lock = None
+    while mutation_lock is None:
+        candidate = FactoryMutationLock(
+            lock_path,
+            owner=f"terminal_worker.q09_helper_release:{os.getpid()}",
+        )
+        try:
+            candidate.__enter__()
+            mutation_lock = candidate
+        except RuntimeError:
+            if time.monotonic() >= deadline:
+                print(
+                    json.dumps(
+                        {
+                            "event": "q09_helper_release_deferred",
+                            "reason": "factory_mutation_lock_busy",
+                            "terminals": lease.get("helper_terminals"),
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+                return
+            time.sleep(FACTORY_ADMISSION_LOCK_POLL_SECONDS)
+    try:
+        for terminal in lease["helper_terminals"]:
+            current = farmctl.terminal_reservation(root, terminal)
+            if current and current.get("reserved_by") == expected:
+                farmctl.release_terminal_reservation(root, terminal)
+    finally:
+        mutation_lock.__exit__(None, None, None)
+
+
 def _work_item_ownership(root: Path, item_id: str, terminal: str) -> dict[str, Any]:
     """Return whether a worker still owns the active work_item claim."""
     with farmctl.connect(root) as conn:
@@ -4137,10 +4364,31 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             )
             conn.commit()
         row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
-    _acquire_launch_slot(terminal)
-    spawn = farmctl._spawn_work_item_runner(root, row, terminal)
+    q09_helper_lease = _reserve_q09_helper_terminals(root, row, terminal)
+    if q09_helper_lease is not None:
+        existing_payload["q09_cell_sharding"] = q09_helper_lease
+        with farmctl.connect(root) as conn:
+            conn.execute(
+                "UPDATE work_items SET payload_json=?, updated_at=? "
+                "WHERE id=? AND status='active' AND claimed_by=?",
+                (
+                    json.dumps(existing_payload, sort_keys=True),
+                    farmctl.utc_now(),
+                    item["id"],
+                    terminal,
+                ),
+            )
+            conn.commit()
+        row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
+    try:
+        _acquire_launch_slot(terminal)
+        spawn = farmctl._spawn_work_item_runner(root, row, terminal)
+    except BaseException:
+        _release_q09_helper_terminals(root, q09_helper_lease)
+        raise
     now = farmctl.utc_now()
     if not spawn.get("spawned"):
+        _release_q09_helper_terminals(root, q09_helper_lease)
         if spawn.get("calendar_preflight_blocked"):
             calendar_preflight = spawn.get("news_calendar_preflight") or {}
             return {
@@ -4289,9 +4537,12 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
     # and handed to run_smoke.ps1 as -TimeoutSeconds — the CLI --timeout-minutes
     # default is a floor, not the effective ceiling. See docs/ops/evidence/
     # q02_summary_missing_90min_outer_watchdog_mismatch_2026-08-16.md.
-    return _monitor_spawned_work_item(
-        root, item, terminal, spawn, payload, max(timeout_seconds, spawn_timeout_seconds)
-    )
+    try:
+        return _monitor_spawned_work_item(
+            root, item, terminal, spawn, payload, max(timeout_seconds, spawn_timeout_seconds)
+        )
+    finally:
+        _release_q09_helper_terminals(root, q09_helper_lease)
 
 
 def _disk_free_gb(root: Path) -> float:

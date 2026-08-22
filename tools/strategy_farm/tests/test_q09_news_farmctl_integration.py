@@ -423,6 +423,10 @@ def test_q09_phase_builder_executes_bound_plan_in_reserved_slot(tmp_path: Path) 
         "q09_run_plan_path": str(plan),
         "q09_run_plan_file_sha256": _sha(plan),
         "q09_dispatch_binding_sha256": "a" * 64,
+        "q09_cell_sharding": {
+            "helper_terminals": ["T4", "T5"],
+            "reserved_by": "q09_cell_shard:123:fixture",
+        },
     }
     connection = farmctl.connect(tmp_path)
     try:
@@ -459,6 +463,8 @@ def test_q09_phase_builder_executes_bound_plan_in_reserved_slot(tmp_path: Path) 
     parsed = q09_news_runner.build_parser().parse_args(command[2:])
     assert parsed.command == "execute"
     assert parsed.period == "H1"
+    assert parsed.helper_terminals == ["T4", "T5"]
+    assert parsed.helper_reserved_by == "q09_cell_shard:123:fixture"
     assert Path(command[command.index("--output-root") + 1]) == (
         report_root / "QM5_9999" / "Q09_NEWS" / "EURUSD_DWX"
     )
