@@ -1,0 +1,112 @@
+{
+  "schema": "qm.build-compile-handoff/v1",
+  "recorded_at_utc": "2026-08-22T01:55:40Z",
+  "local_record_date": "2026-08-22",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41102",
+  "ea_label": "QM5_41102_wti-mrange-migrate-mom",
+  "strategy_id": "MOP-WTI-MRANGE-MIGRATE-MOM-2026_S01",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "magic": 411020000,
+  "commits": {
+    "source_approval": "e74e9ab06",
+    "source_packet": "6cb14504c",
+    "ea_id_reservation": "80c632b08",
+    "g0_card": "bd1d41390",
+    "magic_allocation": "977e16ec9",
+    "source_build": "50b77acb0"
+  },
+  "source_evidence": {
+    "parent_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+    "bounded_source_sha256": "54E20DF414EA2BA6FE7B79F130D3639560D53E561525EE941FD1FEFB8D645DFA"
+  },
+  "duplicate_boundary": {
+    "preallocation_registry_rows_checked": 4591,
+    "preallocation_cards_checked": 1270,
+    "preallocation_wiki_nodes_checked": 45,
+    "preallocation_exact_identity_found": false,
+    "preallocation_expected_fuzzy_siblings": [
+      "QM5_41089_wti-wrange-migrate-mom",
+      "QM5_41101_xng-wrange-migrate-mom"
+    ],
+    "postallocation_registry_rows_checked": 4592,
+    "postallocation_cards_checked": 1271,
+    "postallocation_wiki_nodes_checked": 45,
+    "postallocation_self_hit_only": "QM5_41102",
+    "manual_horizon_carrier_and_family_review_completed": true
+  },
+  "build": {
+    "mq5_sha256": "5098639D34F9FA01557A4D270710BD91023E0CBA05F545EAC1D0537B1BD9C6BD",
+    "spec_sha256": "6AA02FE4DF879A753A3F11B8535B8169B7871E8A0A6F1E1DD50155F1233AD3DD",
+    "setfile_sha256_precompile": "B81E60FDB8C2277B7FA1DF4BD41F10B182EC48E9BE8ED25D971C88646BFF3E2A",
+    "card_sha256": "4547BC1313556E51A4AB2CAED64143F79A83979750C1350A1CE4BA91E1729202",
+    "card_copy_sha256": "4547BC1313556E51A4AB2CAED64143F79A83979750C1350A1CE4BA91E1729202",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1,
+      "build_hash": "pending"
+    }
+  },
+  "source_validation": {
+    "reference_tests_passed": 11,
+    "reference_tests_failed": 0,
+    "build_prerequisite_guard": "PASS",
+    "build_guardrails": "PASS",
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "symbol_scope_violations": 0,
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS"
+  },
+  "direct_build_check": {
+    "result": "FAIL_SAFE",
+    "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "retry_attempted": false,
+    "terminal_control_performed": false
+  },
+  "governed_compile": {
+    "work_item_id": "200baa1f-8f4b-4438-807a-835734be24e9",
+    "status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "verdict": null,
+    "ex5_sha256": null
+  },
+  "q02": {
+    "dry_run_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_41102 --symbols XTIUSD.DWX --max-part2-per-run 0",
+    "dry_run_generated_at_utc": "2026-08-22T01:54:33Z",
+    "dry_run_selected": 0,
+    "dry_run_skipped": 0,
+    "apply_attempted": false,
+    "enqueued": false,
+    "work_item_count": 0,
+    "binding_blockers": [
+      "NO_EX5_OR_Q01_PASS"
+    ]
+  },
+  "capacity": {
+    "mt5_scanned_at_utc": "2026-08-22T01:54:33Z",
+    "cpu_hard_ceiling_percent": 97.0,
+    "cpu_ceiling_breached": false,
+    "cpu_average_percent": 78.43,
+    "cpu_maximum_percent": 85.14,
+    "cpu_samples": [
+      {"timestamp_utc": "2026-08-22T01:54:38.643Z", "percent": 85.14},
+      {"timestamp_utc": "2026-08-22T01:54:42.646Z", "percent": 78.63},
+      {"timestamp_utc": "2026-08-22T01:54:46.647Z", "percent": 74.78},
+      {"timestamp_utc": "2026-08-22T01:54:50.647Z", "percent": 74.61},
+      {"timestamp_utc": "2026-08-22T01:54:54.647Z", "percent": 79.0}
+    ],
+    "active_governed_terminals": ["T1", "T2", "T4", "T6", "T7", "T8"],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": []
+  },
+  "q01_status": "PENDING_GOVERNED_COMPILE",
+  "q02_status": "NOT_ENQUEUED_Q01_STOP",
+  "manual_backtest_run": false,
+  "dispatcher_tick_run": false,
+  "terminal_control_performed": false,
+  "live_or_portfolio_files_changed": false
+}
