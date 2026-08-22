@@ -82,6 +82,21 @@ setfiles via `gen_setfile.ps1` (see workflow step 9) inherit this pattern.
 - Before registering ANY symbol in `magic_numbers.csv`, verify it appears in
   `C:/QM/repo/framework/registry/dwx_symbol_matrix.csv`. The matrix is the
   full set; the broker does NOT provide tick data for anything outside it.
+- The exact canonical build universe at this template revision is:
+  - FX: `AUDCAD.DWX`, `AUDCHF.DWX`, `AUDJPY.DWX`, `AUDNZD.DWX`,
+    `AUDUSD.DWX`, `CADCHF.DWX`, `CADJPY.DWX`, `CHFJPY.DWX`,
+    `EURAUD.DWX`, `EURCAD.DWX`, `EURCHF.DWX`, `EURGBP.DWX`,
+    `EURJPY.DWX`, `EURNZD.DWX`, `EURUSD.DWX`, `GBPAUD.DWX`,
+    `GBPCAD.DWX`, `GBPCHF.DWX`, `GBPJPY.DWX`, `GBPNZD.DWX`,
+    `GBPUSD.DWX`, `NZDCAD.DWX`, `NZDCHF.DWX`, `NZDJPY.DWX`,
+    `NZDUSD.DWX`, `USDCAD.DWX`, `USDCHF.DWX`, `USDJPY.DWX`.
+  - Indices: `GDAXI.DWX`, `NDX.DWX`, `SP500.DWX`, `UK100.DWX`,
+    `WS30.DWX`.
+  - Metals/energy: `XAGUSD.DWX`, `XAUUSD.DWX`, `XNGUSD.DWX`,
+    `XTIUSD.DWX`.
+  The CSV remains the source of truth if this snapshot ever differs from it.
+  Exact spelling is binding: DAX is `GDAXI.DWX`; `GER40.DWX` and `DE30.DWX`
+  are phantom symbols and MUST NOT appear in a setfile or magic row.
 - **SP500.DWX is available as a Custom Symbol on T1-T5 since 2026-05-16T19:15Z**
   (OWNER-provided ticks 2018-07→2026-05, 9.4GB; evidence=`docs/ops/evidence/2026-05-16T191500Z_sp500_dwx_custom_symbol_t2_t5_rollout.md`).
   It is the **backtest alias**; live orders use the bare broker symbol `SP500`,
@@ -102,8 +117,8 @@ setfiles via `gen_setfile.ps1` (see workflow step 9) inherit this pattern.
   DWX equivalent and document the choice in `open_questions`:
   - Russell 2000 / IWM → fall back to **WS30.DWX** (no Russell CFD).
   - Sector ETFs (XLK, XLF, etc.) → fall back to **NDX.DWX** or **WS30.DWX**.
-  - DAX / FTSE / Nikkei → use **DE30.DWX**, **UK100.DWX**, **JP225.DWX** if
-    present in the matrix (verify first).
+  - DAX → **GDAXI.DWX**; FTSE → **UK100.DWX**. There is no canonical Nikkei
+    row in the current matrix, so block instead of inventing `JP225.DWX`.
   - Forex pairs: use exact match if present, else closest correlated pair.
   - **NEVER** register a symbol that isn't in `dwx_symbol_matrix.csv`. If no
     acceptable port exists, set `blocked_reason` and stop. No phantom symbols.
@@ -499,6 +514,10 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
    card targets (or all symbols in `framework\registry\dwx_symbol_matrix.csv` if the
    card is symbol-agnostic), reserve a slot in `magic_numbers.csv`. One row per
    `(ea_id, symbol, magic)`. HARD ABORT on collision.
+   HARD ABORT if any symbol in a generated setfile name/content or any
+   active/reserved magic row for this build is absent from the exact `symbol`
+   namespace in `dwx_symbol_matrix.csv`. `build_check.ps1` enforces this as
+   fail-closed D11; it is never a warning.
 
 3a. **Regenerate `framework\include\QM\QM_MagicResolver.mqh`** by running the
     idempotent regenerator:

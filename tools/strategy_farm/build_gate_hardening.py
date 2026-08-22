@@ -10,6 +10,7 @@ BUILD_CHECK failures.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import re
 from dataclasses import dataclass
@@ -22,6 +23,10 @@ PIP_HELPER_ARGUMENTS = {
     "QM_StopRulesPipsToPriceDistance": (1,),
     "QM_TM_MoveToBreakEven": (1, 2),
 }
+SYMBOL_TOKEN = re.compile(
+    r"(?i)(?<![A-Z0-9])([A-Z0-9]+\.DWX)(?![A-Z0-9.])"
+)
+CURRENT_MAGIC_STATUSES = {"active", "reserved"}
 
 
 @dataclass(frozen=True)
@@ -834,6 +839,223 @@ def find_card(repo_root: Path, ea_label: str) -> Path | None:
     return unique[0] if len(unique) == 1 else None
 
 
+def load_dwx_symbol_matrix(path: Path) -> tuple[set[str], list[str], dict]:
+    """Load the exact buildable-symbol namespace, failing closed on ambiguity."""
+    failures: list[str] = []
+    symbols: set[str] = set()
+    casefold_symbols: dict[str, str] = {}
+    detail: dict = {"path": str(path.resolve()), "symbols": []}
+    if not path.is_file():
+        failures.append(
+            f"EA_DWX_SYMBOL_MATRIX_MISSING: canonical symbol matrix is missing: {path}."
+        )
+        detail.update({"valid": False, "symbol_count": 0})
+        return symbols, failures, detail
+
+    try:
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            fieldnames = set(reader.fieldnames or [])
+            if "symbol" not in fieldnames:
+                failures.append(
+                    "EA_DWX_SYMBOL_MATRIX_SCHEMA_INVALID: "
+                    f"{path} is missing required column 'symbol'."
+                )
+            else:
+                for row in reader:
+                    symbol = str(row.get("symbol") or "").strip()
+                    if not symbol:
+                        failures.append(
+                            "EA_DWX_SYMBOL_MATRIX_ROW_INVALID: "
+                            f"{path}:{reader.line_num} has an empty symbol."
+                        )
+                        continue
+                    folded = symbol.casefold()
+                    prior = casefold_symbols.get(folded)
+                    if prior is not None:
+                        failures.append(
+                            "EA_DWX_SYMBOL_MATRIX_DUPLICATE: "
+                            f"{path}:{reader.line_num} duplicates canonical symbol "
+                            f"{prior!r} as {symbol!r}."
+                        )
+                        continue
+                    casefold_symbols[folded] = symbol
+                    symbols.add(symbol)
+    except (OSError, UnicodeError, csv.Error) as exc:
+        failures.append(f"EA_DWX_SYMBOL_MATRIX_UNREADABLE: cannot parse {path}: {exc}")
+
+    detail.update(
+        {
+            "valid": not failures,
+            "symbol_count": len(symbols),
+            "symbols": sorted(symbols),
+        }
+    )
+    return symbols, failures, detail
+
+
+def load_magic_build_symbols(
+    path: Path,
+) -> tuple[dict[tuple[str, str], list[dict[str, str]]], list[str], dict]:
+    """Index active/reserved magic rows by exact EA identity."""
+    failures: list[str] = []
+    by_build: dict[tuple[str, str], list[dict[str, str]]] = {}
+    detail: dict = {"path": str(path.resolve())}
+    if not path.is_file():
+        failures.append(
+            f"EA_MAGIC_REGISTRY_MISSING_FOR_SYMBOL_CHECK: magic registry is missing: {path}."
+        )
+        detail.update({"valid": False, "current_rows": 0, "builds": 0})
+        return by_build, failures, detail
+
+    required = {"ea_id", "ea_slug", "symbol_slot", "symbol", "status"}
+    current_rows = 0
+    try:
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            fieldnames = set(reader.fieldnames or [])
+            missing = sorted(required - fieldnames)
+            if missing:
+                failures.append(
+                    "EA_MAGIC_REGISTRY_SCHEMA_INVALID_FOR_SYMBOL_CHECK: "
+                    f"{path} is missing required columns {','.join(missing)}."
+                )
+            else:
+                for row in reader:
+                    status = str(row.get("status") or "").strip().casefold()
+                    if status not in CURRENT_MAGIC_STATUSES:
+                        continue
+                    ea_id = str(row.get("ea_id") or "").strip()
+                    slug = str(row.get("ea_slug") or "").strip()
+                    symbol = str(row.get("symbol") or "").strip()
+                    slot = str(row.get("symbol_slot") or "").strip()
+                    if not ea_id or not slug or not symbol or not slot:
+                        failures.append(
+                            "EA_MAGIC_REGISTRY_ROW_INVALID_FOR_SYMBOL_CHECK: "
+                            f"{path}:{reader.line_num} has an incomplete current row."
+                        )
+                        continue
+                    by_build.setdefault((ea_id, slug), []).append(
+                        {
+                            "symbol": symbol,
+                            "symbol_slot": slot,
+                            "status": status,
+                            "line": str(reader.line_num),
+                        }
+                    )
+                    current_rows += 1
+    except (OSError, UnicodeError, csv.Error) as exc:
+        failures.append(
+            f"EA_MAGIC_REGISTRY_UNREADABLE_FOR_SYMBOL_CHECK: cannot parse {path}: {exc}"
+        )
+
+    detail.update(
+        {
+            "valid": not failures,
+            "current_rows": current_rows,
+            "builds": len(by_build),
+        }
+    )
+    return by_build, failures, detail
+
+
+def extract_dwx_symbols(text: str) -> list[str]:
+    return [match.group(1) for match in SYMBOL_TOKEN.finditer(text)]
+
+
+def _symbol_failure_hint(symbol: str) -> str:
+    if symbol.upper() in {"GER40.DWX", "DE30.DWX", "DAX40.DWX"}:
+        return " The canonical DAX house symbol is GDAXI.DWX."
+    return ""
+
+
+def check_build_symbols(
+    repo_root: Path,
+    ea_dir: Path,
+    matrix_symbols: set[str],
+    matrix_valid: bool,
+    magic_by_build: dict[tuple[str, str], list[dict[str, str]]],
+) -> dict:
+    """D11: prove every setfile/magic symbol is an exact matrix member."""
+    failures: list[str] = []
+    observations: dict[str, set[str]] = {}
+
+    def observe(symbol: str, origin: str) -> None:
+        observations.setdefault(symbol, set()).add(origin)
+
+    for setfile in sorted(ea_dir.rglob("*.set")) if ea_dir.is_dir() else []:
+        try:
+            relative = setfile.resolve().relative_to(repo_root.resolve()).as_posix()
+        except ValueError:
+            relative = str(setfile.resolve())
+        for symbol in extract_dwx_symbols(setfile.name):
+            observe(symbol, f"setfile_name:{relative}")
+        try:
+            content = read_text_compatible(setfile)
+        except (OSError, UnicodeError) as exc:
+            failures.append(
+                "EA_SYMBOL_SETFILE_UNREADABLE: "
+                f"{relative} cannot be checked for symbols: {exc}"
+            )
+            continue
+        for line_number_value, line in enumerate(content.splitlines(), start=1):
+            for symbol in extract_dwx_symbols(line):
+                observe(symbol, f"setfile_content:{relative}:{line_number_value}")
+
+    identity = re.fullmatch(r"QM5_(\d+)_(.+)", ea_dir.name, re.IGNORECASE)
+    if identity is None:
+        failures.append(
+            "EA_SYMBOL_BUILD_LABEL_INVALID: "
+            f"{ea_dir.name!r} does not match QM5_<numeric-ea-id>_<slug>."
+        )
+        ea_id = None
+        slug = None
+    else:
+        ea_id, slug = identity.group(1), identity.group(2)
+        for row in magic_by_build.get((ea_id, slug), []):
+            observe(
+                row["symbol"],
+                "magic_registry:"
+                f"line={row['line']}:slot={row['symbol_slot']}:status={row['status']}",
+            )
+
+    rows: list[dict] = []
+    matrix_casefold = {symbol.casefold(): symbol for symbol in matrix_symbols}
+    for symbol in sorted(observations):
+        exact_match = symbol in matrix_symbols if matrix_valid else None
+        canonical_case = matrix_casefold.get(symbol.casefold()) if matrix_valid else None
+        origins = sorted(observations[symbol])
+        rows.append(
+            {
+                "symbol": symbol,
+                "matrix_exact_match": exact_match,
+                "canonical_case": canonical_case,
+                "origins": origins,
+            }
+        )
+        if matrix_valid and not exact_match:
+            case_hint = (
+                f" Exact canonical spelling is {canonical_case}."
+                if canonical_case is not None
+                else _symbol_failure_hint(symbol)
+            )
+            failures.append(
+                "EA_SYMBOL_NOT_IN_DWX_MATRIX: "
+                f"{ea_dir.name} uses {symbol} from {', '.join(origins)}, but it is not "
+                f"an exact row in framework/registry/dwx_symbol_matrix.csv.{case_hint}"
+            )
+
+    return {
+        "ea_label": ea_dir.name,
+        "ea_id": ea_id,
+        "slug": slug,
+        "matrix_valid": matrix_valid,
+        "symbols_observed": len(rows),
+        "symbols": rows,
+        "failures": failures,
+    }
+
+
 def analyze_file(source_path: Path, card_path: Path | None) -> dict:
     raw = read_text_compatible(source_path)
     source = SourceFile(source_path.resolve(), raw, strip_comments_preserve_lines(raw))
@@ -909,6 +1131,15 @@ def analyze(repo_root: Path, ea_label: str | None = None) -> dict:
     rows: list[dict] = []
     failures: list[str] = []
     warnings: list[str] = []
+    matrix_symbols, matrix_failures, matrix_detail = load_dwx_symbol_matrix(
+        repo_root / "framework" / "registry" / "dwx_symbol_matrix.csv"
+    )
+    magic_by_build, magic_failures, magic_detail = load_magic_build_symbols(
+        repo_root / "framework" / "registry" / "magic_numbers.csv"
+    )
+    failures.extend(matrix_failures)
+    failures.extend(magic_failures)
+    build_symbol_checks: list[dict] = []
     for directory in directories:
         label = directory.name
         card = find_card(repo_root, label)
@@ -917,6 +1148,15 @@ def analyze(repo_root: Path, ea_label: str | None = None) -> dict:
             rows.append(row)
             failures.extend(row["failures"])
             warnings.extend(row["warnings"])
+        symbol_check = check_build_symbols(
+            repo_root,
+            directory,
+            matrix_symbols,
+            not matrix_failures,
+            magic_by_build,
+        )
+        build_symbol_checks.append(symbol_check)
+        failures.extend(symbol_check["failures"])
     return {
         "schema": SCHEMA,
         "repo_root": str(repo_root.resolve()),
@@ -925,6 +1165,11 @@ def analyze(repo_root: Path, ea_label: str | None = None) -> dict:
         "failures": failures,
         "warnings": warnings,
         "rows": rows,
+        "registry_checks": {
+            "dwx_symbol_matrix": matrix_detail,
+            "magic_numbers": magic_detail,
+        },
+        "build_symbol_checks": build_symbol_checks,
         "false_positive_policy": {
             "D2": "FAIL only for explicit labeled card percentages; missing/ambiguous card is WARN",
             "D3": "FAIL only for literal x10 inside known pip-native helper arguments",
@@ -935,6 +1180,7 @@ def analyze(repo_root: Path, ea_label: str | None = None) -> dict:
             "D8": "FAIL only for two same-key, top-level QM_IsNewBar conditions before a canonical entry call; different keys and cached results pass",
             "D9": "FAIL only when a bare MqlTradeRequest reaches OrderSend without zero-init, or a bare QM_EntryRequest reaches entry with neither zero-init nor a mechanically complete seven-field initializer",
             "D10": "FAIL only when a dynamic numeric/CopyBuffer target is indexed without a syntactically tied loop, CopyBuffer-result, resize-count, or ArraySize proof",
+            "D11": "FAIL closed when either symbol registry is missing/malformed, a setfile cannot be read, the EA label is invalid, or any exact .DWX token observed in setfile names/content or current magic rows is absent from the exact dwx_symbol_matrix.csv namespace",
         },
     }
 

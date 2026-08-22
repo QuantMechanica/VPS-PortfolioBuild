@@ -54,15 +54,43 @@ void OnTick()
 """
 
 
-def write_fixture(tmp_path: Path, source: str, card: str = CARD) -> tuple[Path, Path]:
+def write_fixture(
+    tmp_path: Path,
+    source: str,
+    card: str = CARD,
+    symbol: str = "EURUSD.DWX",
+) -> tuple[Path, Path]:
     ea_dir = tmp_path / "framework" / "EAs" / LABEL
     card_dir = tmp_path / "strategy-seeds" / "cards"
+    registry_dir = tmp_path / "framework" / "registry"
+    sets_dir = ea_dir / "sets"
+    tools_dir = tmp_path / "tools" / "strategy_farm"
     ea_dir.mkdir(parents=True)
     card_dir.mkdir(parents=True)
+    registry_dir.mkdir(parents=True)
+    sets_dir.mkdir(parents=True)
+    tools_dir.mkdir(parents=True)
     source_path = ea_dir / f"{LABEL}.mq5"
     card_path = card_dir / f"{LABEL}.md"
     source_path.write_text(source, encoding="utf-8")
     card_path.write_text(card, encoding="utf-8")
+    (registry_dir / "dwx_symbol_matrix.csv").write_text(
+        "symbol,canonical_name_verified\nEURUSD.DWX,true\n",
+        encoding="utf-8",
+    )
+    (registry_dir / "magic_numbers.csv").write_text(
+        "ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status\n"
+        f"99001,gate-fixture,0,{symbol},990010000,2026-08-22,pytest,active\n",
+        encoding="utf-8",
+    )
+    (sets_dir / f"{LABEL}_{symbol}_H1_backtest.set").write_text(
+        f"; symbol: {symbol}\nRISK_FIXED=1000\nRISK_PERCENT=0\n",
+        encoding="utf-8",
+    )
+    (tools_dir / "include_mirror.py").write_text(
+        "#!/usr/bin/env python3\nraise SystemExit(0)\n",
+        encoding="utf-8",
+    )
     return source_path, card_path
 
 
@@ -348,6 +376,50 @@ bool ReadIndicator(const int handle)
     assert "EA_INDICATOR_BUFFER_UNBOUNDED" in failure_codes(failing)
 
 
+def test_d11_canonical_setfile_and_magic_symbol_pass(tmp_path: Path) -> None:
+    write_fixture(tmp_path, PASSING_SOURCE)
+
+    result = gate.analyze(tmp_path, LABEL)
+
+    assert "EA_SYMBOL_NOT_IN_DWX_MATRIX" not in failure_codes(result)
+    symbol_rows = result["build_symbol_checks"][0]["symbols"]
+    assert symbol_rows == [
+        {
+            "symbol": "EURUSD.DWX",
+            "matrix_exact_match": True,
+            "canonical_case": "EURUSD.DWX",
+            "origins": [
+                "magic_registry:line=2:slot=0:status=active",
+                f"setfile_content:framework/EAs/{LABEL}/sets/{LABEL}_EURUSD.DWX_H1_backtest.set:1",
+                f"setfile_name:framework/EAs/{LABEL}/sets/{LABEL}_EURUSD.DWX_H1_backtest.set",
+            ],
+        }
+    ]
+
+
+def test_d11_phantom_setfile_and_magic_symbol_fail_closed(tmp_path: Path) -> None:
+    write_fixture(tmp_path, PASSING_SOURCE, symbol="GER40.DWX")
+
+    result = gate.analyze(tmp_path, LABEL)
+
+    failures = failure_codes(result)
+    assert "EA_SYMBOL_NOT_IN_DWX_MATRIX" in failures
+    assert "GER40.DWX" in failures
+    assert "GDAXI.DWX" in failures
+    assert "setfile_name:" in failures
+    assert "setfile_content:" in failures
+    assert "magic_registry:" in failures
+
+
+def test_d11_missing_matrix_fails_closed(tmp_path: Path) -> None:
+    write_fixture(tmp_path, PASSING_SOURCE)
+    (tmp_path / "framework" / "registry" / "dwx_symbol_matrix.csv").unlink()
+
+    result = gate.analyze(tmp_path, LABEL)
+
+    assert "EA_DWX_SYMBOL_MATRIX_MISSING" in failure_codes(result)
+
+
 def run_build_check(tmp_path: Path) -> subprocess.CompletedProcess[str]:
     report = tmp_path / "reports"
     command = [
@@ -389,4 +461,14 @@ def test_build_check_applies_hardening_pass_and_fail_fixtures(tmp_path: Path) ->
     failing = run_build_check(tmp_path)
     assert failing.returncode == 1
     assert "EA_PIP_DOUBLE_CONVERSION" in failing.stdout + failing.stderr
+    assert "build_check.result=FAIL" in failing.stdout
+
+
+def test_build_check_rejects_d11_phantom_symbol(tmp_path: Path) -> None:
+    write_fixture(tmp_path, PASSING_SOURCE, symbol="GER40.DWX")
+
+    failing = run_build_check(tmp_path)
+
+    assert failing.returncode == 1
+    assert "EA_SYMBOL_NOT_IN_DWX_MATRIX" in failing.stdout + failing.stderr
     assert "build_check.result=FAIL" in failing.stdout

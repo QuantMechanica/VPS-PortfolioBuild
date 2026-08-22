@@ -94,15 +94,22 @@ per-tick `QM_ATR(...,1)` read.)
 
 PASS = no forbidden patterns in OnTick path. FAIL = caught one.
 
-### §C Magic-number registry
-Reference: `framework/registry/magic_numbers.csv`.
+### §C Magic-number and canonical-symbol registries
+References: `framework/registry/magic_numbers.csv` and
+`framework/registry/dwx_symbol_matrix.csv`.
 
 - The build added 1+ rows for this `ea_id`, magic_slot 0,1,2,... per symbol.
 - No collision with existing rows (same magic_int for different EA × slot).
+- Extract every `.DWX` symbol from every generated setfile name and content,
+  plus every active/reserved magic row for this exact `ea_id` + slug. Each must
+  be an exact, case-sensitive `symbol` row in `dwx_symbol_matrix.csv`.
+  Missing/unreadable registries or setfiles are FAIL, not UNKNOWN/WARN.
+  For DAX, only `GDAXI.DWX` is canonical; `GER40.DWX` and `DE30.DWX` are FAIL.
 - `framework/include/QM/QM_MagicResolver.mqh` regenerated via
   `python framework/scripts/update_magic_resolver.py` after CSV append.
 
-PASS = registry consistent + regenerator was run.
+PASS = both registries and all setfile symbol references are consistent, and
+the resolver regenerator was run.
 
 ### §D Smoke-test sanity
 Read `{{smoke_report_path}}` (JSON). Expected fields: `trades`,
