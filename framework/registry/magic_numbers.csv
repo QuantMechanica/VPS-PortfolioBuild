@@ -17762,3 +17762,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1416,classical-bear-flag-continuation-h1,11,SP500.DWX,14160011,2026-08-22,Gemini,active
 1416,classical-bear-flag-continuation-h1,12,XAUUSD.DWX,14160012,2026-08-22,Gemini,active
 1416,classical-bear-flag-continuation-h1,13,XTIUSD.DWX,14160013,2026-08-22,Gemini,active
+41111,wti-mdaybreadth-mom,0,XTIUSD.DWX,411110000,2026-08-22,Codex governed allocator,active
