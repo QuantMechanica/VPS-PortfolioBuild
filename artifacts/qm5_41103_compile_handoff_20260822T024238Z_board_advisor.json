@@ -1,0 +1,140 @@
+{
+  "schema_version": "qm.commodity-source-build-handoff/v1",
+  "recorded_at_utc": "2026-08-22T02:42:38.2355809Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41103",
+  "ea_label": "QM5_41103_xauxag-mrange-migrate-rv",
+  "strategy_id": "SCHWEIKERT-CME-XAUXAG-MRANGE-MIGRATE-RV-2026_S01",
+  "logical_symbol": "QM5_41103_XAU_XAG_MRANGE_MIGRATE_RV_D1",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "edge": {
+    "carrier": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ],
+    "timeframe": "D1",
+    "cadence": "one durable attempt on the first exact synchronized bar of each broker month",
+    "formation": "daily-close log-ratio ranges of the two immediately completed consecutive calendar months",
+    "signal": "fade only strict same-direction migration of both range endpoints",
+    "upward_migration": "SELL_XAU_BUY_XAG",
+    "downward_migration": "BUY_XAU_SELL_XAG",
+    "ordinary_exit": "first observed next-month boundary",
+    "risk_fixed_usd": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "commits": {
+    "source_approval": "d947ea184",
+    "bounded_source_extraction": "0aeb42b12",
+    "ea_id_reservation": "47b8e7401",
+    "g0_approved_card": "37d5a8943",
+    "basket_magic_allocation": "4dd3eb620",
+    "source_build": "1508804df",
+    "spec_format_normalization": "06943044e"
+  },
+  "registered_identity": {
+    "slot_0": {
+      "symbol": "XAUUSD.DWX",
+      "magic": 411030000
+    },
+    "slot_1": {
+      "symbol": "XAGUSD.DWX",
+      "magic": 411030001
+    }
+  },
+  "artifact_sha256": {
+    "mq5": "283426F456A4BD50CF161AE1AF2EBC8D5909BD5A55A1E27382885FF1B316BCB9",
+    "unbound_backtest_setfile": "2F702F08432966D8F660E81A052A3D76C5EBBF922486CD7F67B9B1095A10E6AB",
+    "approved_and_local_card": "D879C7159045CFE9E42F043E7192A9BAE56536EE9CAC14541C05531B76AC052B",
+    "basket_manifest": "1D29EBDAA71557C16447EC1B6DC52C08A672460EFFF646D65CC3FC6EB42159EA",
+    "spec": "E63BE3CB48126C04EEF6B4A71DC62470C527CB724AF8BA72D4C2F0414D703563",
+    "reference_suite": "5144EB1E20034EEAF9A36247DDE1177568531AE0A587C8D49092AC5EE029EDBF",
+    "direct_compile_refusal_summary": "E68F3EED3CCFE7759C1E1654C62F30E1F95B64095E2C702E41CE29CEF7AE41B2"
+  },
+  "source_validation": {
+    "reference_tests": {
+      "passed": 12,
+      "failed": 0
+    },
+    "build_prerequisite_guard": "PASS",
+    "build_guardrails": "PASS",
+    "spec_validator": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "card_schema_and_ml_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "approved_local_card_byte_identical": true
+  },
+  "compile": {
+    "direct_attempt_result": "REFUSED_WITHOUT_COMPILE",
+    "direct_attempt_reason_class": "INCLUDE_MIRROR_REFUSED",
+    "direct_attempt_detail": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "direct_attempt_summary": "D:/QM/reports/compile/20260822_023838/summary.csv",
+    "governed_work_item_id": "e1e75830-9671-4541-b7b8-bcc5aaa7b54d",
+    "governed_status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "ex5_present": false,
+    "build_check_result": null,
+    "q01_status": "PENDING_BUILD",
+    "setfile_build_hash": "pending"
+  },
+  "capacity": {
+    "ceiling_cpu_pct": 97,
+    "governed_terminals_running_at_2026_08_22T02_40_40Z": [
+      "T1",
+      "T2",
+      "T3",
+      "T5"
+    ],
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "cpu_samples": [
+      {
+        "utc": "2026-08-22T02:42:21.1461525Z",
+        "cpu_pct": 99
+      },
+      {
+        "utc": "2026-08-22T02:42:25.4359385Z",
+        "cpu_pct": 77
+      },
+      {
+        "utc": "2026-08-22T02:42:29.7036107Z",
+        "cpu_pct": 87
+      },
+      {
+        "utc": "2026-08-22T02:42:33.9696708Z",
+        "cpu_pct": 76
+      },
+      {
+        "utc": "2026-08-22T02:42:38.2355809Z",
+        "cpu_pct": 71
+      }
+    ],
+    "average_cpu_pct": 82,
+    "maximum_cpu_pct": 99,
+    "ceiling_hit": true
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED_CPU_CEILING_AND_Q01_PENDING",
+    "preview_run": false,
+    "apply_run": false,
+    "q02_work_item_count": 0,
+    "binding_reasons": [
+      "maximum host CPU sample exceeded the 97 percent hard ceiling",
+      "governed compile is activation-held, so no EX5 or Q01 PASS exists"
+    ]
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_started_or_stopped": false,
+    "compile_hold_bypassed": false,
+    "autotrading_toggled": false,
+    "t_live_modified": false,
+    "t_live_manifest_modified": false,
+    "deploy_manifest_modified": false,
+    "portfolio_gate_modified": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
