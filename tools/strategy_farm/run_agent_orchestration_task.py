@@ -188,6 +188,8 @@ def agent_env(agent: str) -> dict[str, str]:
 def build_prompt(agent: str, cwd: Path) -> str:
     edge_charter = cwd / "docs" / "ops" / "EDGE_LAB_CHARTER_2026-05-22.md"
     profitability = cwd / "docs" / "ops" / "PROFITABILITY_TRACK_2026-05-21.md"
+    canonical_farmctl = (REPO_ROOT / "tools" / "strategy_farm" / "farmctl.py").as_posix()
+    canonical_router = (REPO_ROOT / "tools" / "strategy_farm" / "agent_router.py").as_posix()
     # G: drive (Google Drive for Desktop) is mounted per-user. Antigravity/agy runs as SYSTEM
     # in a scheduled task with no G: mount -> any G: access raises PermissionError and
     # strands the task IN_PROGRESS (Rule 13, OPERATING_RULES_2026-07-03). Skip G: paths
@@ -213,15 +215,16 @@ Read first if needed:
 
 Cycle:
 1. Run:
-   python tools/strategy_farm/farmctl.py health
-   python tools/strategy_farm/agent_router.py status
-   python tools/strategy_farm/agent_router.py list-tasks --agent {agent} --state IN_PROGRESS
+   python {canonical_farmctl} health
+   python {canonical_router} status
+   python {canonical_router} list-tasks --agent {agent} --state IN_PROGRESS
 
-   DO NOT run `agent_router.py run` or `route-many`. You consume work the router
-   assigned to you; you never route. The router is its own scheduled task
+   DO NOT run `agent_router.py run`, `route-many`, `route-once`, or `replenish`.
+   You consume work the router assigned to you; you never route. The router is its own scheduled task
    (QM_StrategyFarm_AgentRouter_5min) which always executes the canonical
-   checkout C:/QM/repo. Your session works inside a worktree that can be months
-   behind: on 2026-08-22 an agent ran `run`/`route-many` from a checkout 12,210
+   checkout C:/QM/repo. Your task workspace may be a worktree that is months
+   behind, but every control-plane command above uses the absolute canonical
+   script path. On 2026-08-22 an agent ran `run`/`route-many` from a checkout 12,210
    commits stale, whose router had neither the human-lane hold nor the registry
    writer gate, and it assigned an OWNER-only video ticket to a lane that cannot
    watch videos. A guard only exists in the code that runs it - so routing runs
@@ -233,10 +236,10 @@ Cycle:
    lease is live, skip/defer instead of duplicating the task.
    read payload and skills, produce a durable artifact, run focused verification,
    then update the router with:
-   python tools/strategy_farm/agent_router.py update-task <task_id> --state REVIEW --artifact-path "<artifact>" --verdict "<short_verdict>"
-3. Repeat task handling until `list-tasks --agent {agent} --state IN_PROGRESS`
+   python {canonical_router} update-task <task_id> --state REVIEW --artifact-path "<artifact>" --verdict "<short_verdict>"
+3. Repeat task handling until `python {canonical_router} list-tasks --agent {agent} --state IN_PROGRESS`
    returns an empty list. Ignore REVIEW/BLOCKED/PASSED tasks; they are not yours.
-4. If no task remains, run farmctl health and check QM5_10260 queue state. Do not invent untracked work.
+4. If no task remains, run `python {canonical_farmctl} health` and check QM5_10260 queue state. Do not invent untracked work.
 5. Exit.
 
 Hard rules:

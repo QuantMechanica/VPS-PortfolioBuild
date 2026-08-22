@@ -178,7 +178,7 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
                 ).fetchone()
             self.assertEqual(json.loads(stored["capabilities_json"]), narrow)
 
-    def test_missing_governed_capability_fails_loud_and_persists_warning(self) -> None:
+    def test_linked_worktree_route_refuses_before_capability_mutation(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "state"
             linked_checkout = Path(tmp) / "linked"
@@ -207,10 +207,12 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             )
 
             with patch.object(agent_router, "ROUTER_CHECKOUT_ROOT", linked_checkout):
-                decision = agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
+                with self.assertRaises(agent_router.RouterCheckoutError) as raised:
+                    agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
 
-            self.assertEqual(decision.task_id, task["task_id"])
-            self.assertTrue(decision.reason.startswith("capability_unavailable:"))
+            self.assertEqual(raised.exception.command, "route-once")
+            self.assertEqual(raised.exception.detail["checkout_root"], str(linked_checkout))
+            self.assertEqual(raised.exception.detail["git_marker_type"], "file")
             with agent_router.connect(root) as conn:
                 row = conn.execute(
                     "SELECT state, assigned_agent, payload_json FROM agent_tasks WHERE id=?",
@@ -220,11 +222,10 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
                     "SELECT event FROM events WHERE entity_type='agent_task' AND entity_id=? ORDER BY ts DESC LIMIT 1",
                     (task["task_id"],),
                 ).fetchone()
-            warning = json.loads(row["payload_json"])["router_capability_warning"]
             self.assertEqual(row["state"], "TODO")
             self.assertIsNone(row["assigned_agent"])
-            self.assertEqual(warning["code"], "ROUTER_CAPABILITY_UNROUTABLE")
-            self.assertEqual(event["event"], "routing_capability_unroutable")
+            self.assertNotIn("router_capability_warning", json.loads(row["payload_json"]))
+            self.assertIsNone(event)
 
     def test_video_task_is_held_for_the_owner_human_lane(self) -> None:
         """OWNER 2026-08-21: OWNER is the assignee of the video_analysis lane.

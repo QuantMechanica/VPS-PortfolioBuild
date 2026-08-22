@@ -22,6 +22,24 @@ def test_headless_prompt_reserves_main_integration_for_claude_owner() -> None:
     assert "merged to the main branch" not in prompt
 
 
+def test_headless_prompt_uses_canonical_control_plane_from_task_worktree() -> None:
+    task_worktree = Path(r"C:\QM\worktrees\codex-orchestration-1")
+    prompt = orchestration.build_prompt("codex", task_worktree)
+    canonical_router = (
+        orchestration.REPO_ROOT / "tools" / "strategy_farm" / "agent_router.py"
+    ).as_posix()
+    canonical_farmctl = (
+        orchestration.REPO_ROOT / "tools" / "strategy_farm" / "farmctl.py"
+    ).as_posix()
+
+    assert f"python {canonical_router} status" in prompt
+    assert f"python {canonical_router} list-tasks --agent codex --state IN_PROGRESS" in prompt
+    assert f"python {canonical_router} update-task <task_id>" in prompt
+    assert f"python {canonical_farmctl} health" in prompt
+    assert "python tools/strategy_farm/agent_router.py status" not in prompt
+    assert "`agent_router.py run`, `route-many`, `route-once`, or `replenish`" in prompt
+
+
 def test_live_lock_owner_is_never_displaced_by_age(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(orchestration, "LOCK_DIR", tmp_path)
     acquired, first = orchestration.acquire_lock("codex", stale_minutes=1)

@@ -48,6 +48,9 @@ CLAUDE_DISABLED_FLAG = Path(r"D:\QM\strategy_farm\CLAUDE_DISABLED.flag")
 CARDS_REVIEW_REL = Path("artifacts") / "cards_review"
 CARDS_APPROVED_REL = Path("artifacts") / "cards_approved"
 ROUTER_CHECKOUT_ROOT = Path(__file__).resolve().parents[2]
+CANONICAL_ROUTER_ROOT = Path(farmctl.CANONICAL_REPO_ROOT)
+ROUTER_WRITER_GENERATION = "qm.router-writer/2026-08-22.v1"
+ROUTER_MUTATING_COMMANDS = frozenset({"run", "route-many", "route-once", "replenish"})
 
 TASK_STATES = {
     "BACKLOG",
@@ -245,6 +248,18 @@ class RouteDecision:
     reason: str
 
 
+class RouterCheckoutError(RuntimeError):
+    """A routing writer was invoked outside the canonical checkout."""
+
+    def __init__(self, command: str, detail: dict[str, Any]) -> None:
+        self.command = command
+        self.detail = detail
+        super().__init__(
+            f"REFUSED router command {command!r}: checkout={detail['checkout_root']} "
+            f"git_marker={detail['git_marker_type']}; canonical={detail['canonical_root']}"
+        )
+
+
 def _json(data: Any) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"))
 
@@ -297,6 +312,20 @@ def _effective_claude_disabled_flag(root: Path, claude_disabled_flag: Path) -> P
 def connect(root: Path = DEFAULT_ROOT) -> sqlite3.Connection:
     farmctl.init_dirs(root)
     conn = farmctl.connect(root)
+    # DB triggers call this connection-local function. Current canonical code
+    # registers the generation; old router code does not know the function at
+    # all, so writes fail at the shared database boundary even if old code's
+    # local .git test is missing.
+    conn.create_function(
+        "qm_router_writer_generation",
+        0,
+        lambda: (
+            ROUTER_WRITER_GENERATION
+            if _registry_writer_authorized()
+            else None
+        ),
+        deterministic=True,
+    )
     init_schema(conn)
     return conn
 
@@ -371,6 +400,7 @@ def init_schema(conn: sqlite3.Connection) -> None:
     }
     if "required_skills_json" not in columns:
         conn.execute("ALTER TABLE agent_tasks ADD COLUMN required_skills_json TEXT NOT NULL DEFAULT '[]'")
+    _install_router_writer_contract(conn)
 
 
 def _registry_writer_authorized() -> bool:
@@ -381,6 +411,177 @@ def _registry_writer_authorized() -> bool:
     even when they execute an older/default-divergent source revision.
     """
     return (ROUTER_CHECKOUT_ROOT / ".git").is_dir()
+
+
+def _git_marker_type(root: Path) -> str:
+    marker = root / ".git"
+    if marker.is_dir():
+        return "directory"
+    if marker.is_file():
+        return "file"
+    if marker.exists():
+        return "other"
+    return "missing"
+
+
+def _router_checkout_detail() -> dict[str, Any]:
+    return {
+        "checkout_root": str(ROUTER_CHECKOUT_ROOT),
+        "canonical_root": str(CANONICAL_ROUTER_ROOT),
+        "git_marker": str(ROUTER_CHECKOUT_ROOT / ".git"),
+        "git_marker_type": _git_marker_type(ROUTER_CHECKOUT_ROOT),
+        "canonical_git_directory_required": True,
+        "writer_generation": ROUTER_WRITER_GENERATION,
+    }
+
+
+def _require_canonical_router_command(command: str) -> None:
+    if _registry_writer_authorized():
+        return
+    raise RouterCheckoutError(command, _router_checkout_detail())
+
+
+def _checkout_head() -> str | None:
+    result = subprocess.run(
+        ["git", "-C", str(ROUTER_CHECKOUT_ROOT), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    return result.stdout.strip() if result.returncode == 0 else None
+
+
+def _install_router_writer_contract(conn: sqlite3.Connection) -> None:
+    """Install a DB-side writer gate that old checkouts cannot satisfy."""
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS router_writer_contract (
+            singleton INTEGER PRIMARY KEY CHECK(singleton=1),
+            generation TEXT NOT NULL,
+            canonical_checkout_root TEXT NOT NULL,
+            installed_at TEXT NOT NULL,
+            installed_by_head TEXT
+        )
+        """
+    )
+    if _registry_writer_authorized():
+        now = farmctl.utc_now()
+        conn.execute(
+            """
+            INSERT INTO router_writer_contract(
+                singleton,generation,canonical_checkout_root,installed_at,installed_by_head
+            ) VALUES (1,?,?,?,?)
+            ON CONFLICT(singleton) DO UPDATE SET
+                generation=excluded.generation,
+                canonical_checkout_root=excluded.canonical_checkout_root,
+                installed_at=excluded.installed_at,
+                installed_by_head=excluded.installed_by_head
+            WHERE router_writer_contract.generation<>excluded.generation
+               OR router_writer_contract.canonical_checkout_root<>excluded.canonical_checkout_root
+            """,
+            (
+                ROUTER_WRITER_GENERATION,
+                str(CANONICAL_ROUTER_ROOT.resolve()),
+                now,
+                _checkout_head(),
+            ),
+        )
+    # These triggers are durable shared-DB policy. An old router connection has
+    # no qm_router_writer_generation() function, and therefore cannot write the
+    # registry, enqueue replenishment tasks, or change task ownership.
+    conn.executescript(
+        """
+        CREATE TRIGGER IF NOT EXISTS trg_router_writer_contract_insert
+        BEFORE INSERT ON router_writer_contract
+        WHEN qm_router_writer_generation() IS NULL
+          OR NEW.generation<>qm_router_writer_generation()
+        BEGIN
+            SELECT RAISE(ABORT, 'router writer generation mismatch');
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS trg_router_writer_contract_update
+        BEFORE UPDATE ON router_writer_contract
+        WHEN qm_router_writer_generation() IS NULL
+          OR NEW.generation<>qm_router_writer_generation()
+        BEGIN
+            SELECT RAISE(ABORT, 'router writer generation mismatch');
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS trg_agent_registry_canonical_insert
+        BEFORE INSERT ON agent_registry
+        WHEN qm_router_writer_generation() IS NULL
+          OR qm_router_writer_generation()<>COALESCE((
+            SELECT generation FROM router_writer_contract WHERE singleton=1
+          ), '')
+        BEGIN
+            SELECT RAISE(ABORT, 'agent_registry requires canonical router generation');
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS trg_agent_registry_canonical_update
+        BEFORE UPDATE ON agent_registry
+        WHEN qm_router_writer_generation() IS NULL
+          OR qm_router_writer_generation()<>COALESCE((
+            SELECT generation FROM router_writer_contract WHERE singleton=1
+          ), '')
+        BEGIN
+            SELECT RAISE(ABORT, 'agent_registry requires canonical router generation');
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS trg_agent_registry_canonical_delete
+        BEFORE DELETE ON agent_registry
+        WHEN qm_router_writer_generation() IS NULL
+          OR qm_router_writer_generation()<>COALESCE((
+            SELECT generation FROM router_writer_contract WHERE singleton=1
+          ), '')
+        BEGIN
+            SELECT RAISE(ABORT, 'agent_registry requires canonical router generation');
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS trg_agent_tasks_canonical_insert
+        BEFORE INSERT ON agent_tasks
+        WHEN qm_router_writer_generation() IS NULL
+          OR qm_router_writer_generation()<>COALESCE((
+            SELECT generation FROM router_writer_contract WHERE singleton=1
+          ), '')
+        BEGIN
+            SELECT RAISE(ABORT, 'agent task enqueue requires canonical router generation');
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS trg_agent_tasks_canonical_assignment
+        BEFORE UPDATE OF assigned_agent ON agent_tasks
+        WHEN NEW.assigned_agent IS NOT OLD.assigned_agent
+         AND (
+            qm_router_writer_generation() IS NULL
+            OR qm_router_writer_generation()<>COALESCE((
+                SELECT generation FROM router_writer_contract WHERE singleton=1
+            ), '')
+         )
+        BEGIN
+            SELECT RAISE(ABORT, 'agent task assignment requires canonical router generation');
+        END;
+        """
+    )
+
+
+def _router_writer_contract_from_conn(conn: sqlite3.Connection) -> dict[str, Any]:
+    row = conn.execute(
+        "SELECT * FROM router_writer_contract WHERE singleton=1"
+    ).fetchone()
+    stored = dict(row) if row is not None else None
+    authorized = bool(
+        _registry_writer_authorized()
+        and stored is not None
+        and stored["generation"] == ROUTER_WRITER_GENERATION
+        and Path(stored["canonical_checkout_root"]).resolve()
+        == CANONICAL_ROUTER_ROOT.resolve()
+    )
+    return {
+        "authorized": authorized,
+        "current_generation": ROUTER_WRITER_GENERATION,
+        "checkout": _router_checkout_detail(),
+        "stored": stored,
+    }
 
 
 def _minimum_lane_capabilities(agent_id: str) -> set[str]:
@@ -416,6 +617,7 @@ def sync_default_registry(root: Path = DEFAULT_ROOT, claude_disabled_flag: Path 
     if not _registry_writer_authorized():
         with closing(connect(root)) as conn:
             contract = _registry_contract_from_conn(conn)
+            writer_contract = _router_writer_contract_from_conn(conn)
         return {
             "synced": [],
             "claude_disabled": claude_disabled_flag.exists(),
@@ -423,10 +625,17 @@ def sync_default_registry(root: Path = DEFAULT_ROOT, claude_disabled_flag: Path 
             "reason": "linked_worktree_registry_reader",
             "checkout_root": str(ROUTER_CHECKOUT_ROOT),
             "contract": contract,
+            "writer_contract": writer_contract,
         }
     now = farmctl.utc_now()
     changed: list[str] = []
     with closing(connect(root)) as conn:
+        writer_contract = _router_writer_contract_from_conn(conn)
+        if not writer_contract["authorized"]:
+            raise RuntimeError(
+                "canonical registry writer generation contract is not authorized: "
+                + _json(writer_contract)
+            )
         for agent_id, cfg in DEFAULT_AGENT_REGISTRY.items():
             effective = dict(cfg)
             if agent_id == "claude" and claude_disabled_flag.exists():
@@ -460,12 +669,14 @@ def sync_default_registry(root: Path = DEFAULT_ROOT, claude_disabled_flag: Path 
             changed.append(agent_id)
         conn.commit()
         contract = _registry_contract_from_conn(conn)
+        writer_contract = _router_writer_contract_from_conn(conn)
     return {
         "synced": changed,
         "claude_disabled": claude_disabled_flag.exists(),
         "read_only": False,
         "checkout_root": str(ROUTER_CHECKOUT_ROOT),
         "contract": contract,
+        "writer_contract": writer_contract,
     }
 
 
@@ -931,6 +1142,7 @@ def route_once(
     quota_state_path: Path | None = None,
     quota_summary_path: Path | None = None,
 ) -> RouteDecision:
+    _require_canonical_router_command("route-once")
     sync_default_registry(root, claude_disabled_flag=claude_disabled_flag)
     release_stale_in_progress(root)
     now_dt = dt.datetime.now(dt.UTC).replace(microsecond=0)
@@ -1081,6 +1293,7 @@ def route_many(
     IN_PROGRESS for an eligible agent and respects each agent's max_parallel
     limit. Agent execution remains artifact-driven and separate.
     """
+    _require_canonical_router_command("route-many")
     decisions: list[dict[str, Any]] = []
     for _ in range(max(0, max_routes)):
         decision = route_once(
@@ -1110,6 +1323,7 @@ def replenish(
     valid, but the old ready-card threshold should not manufacture open-ended
     research_strategy tasks against the parked generic backlog.
     """
+    _require_canonical_router_command("replenish")
     sync_default_registry(root, claude_disabled_flag=claude_disabled_flag)
     inventory = farmctl.research_backlog_inventory(root)
     ready_count = int(inventory.get("total", 0))
@@ -1301,6 +1515,7 @@ def run_once(
     claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG,
 ) -> dict[str, Any]:
     """Autonomous router tick for Scheduled Task use."""
+    _require_canonical_router_command("run")
     registry = sync_default_registry(root, claude_disabled_flag=claude_disabled_flag)
     replenished = replenish(
         root,
@@ -2331,6 +2546,18 @@ def main(argv: list[str] | None = None) -> int:
     update.add_argument("--artifact-path")
     update.add_argument("--verdict")
     args = parser.parse_args(argv)
+
+    if args.command in ROUTER_MUTATING_COMMANDS:
+        try:
+            _require_canonical_router_command(args.command)
+        except RouterCheckoutError as exc:
+            print(json.dumps({
+                "refused": True,
+                "reason": "noncanonical_router_checkout",
+                "command": exc.command,
+                **exc.detail,
+            }, indent=2, sort_keys=True))
+            return 2
 
     if args.command == "init":
         result = sync_default_registry(args.root)
