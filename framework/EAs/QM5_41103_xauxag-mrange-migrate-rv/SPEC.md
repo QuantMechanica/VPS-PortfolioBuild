@@ -1,10 +1,10 @@
 # QM5_41103_xauxag-mrange-migrate-rv - Strategy Spec
 
-**EA ID:** QM5_41103  
-**Slug:** `xauxag-mrange-migrate-rv`  
-**Strategy ID:** `SCHWEIKERT-CME-XAUXAG-MRANGE-MIGRATE-RV-2026_S01`  
-**Source:** `SCHWEIKERT-CME-XAUXAG-MRANGE-MIGRATE-RV-2026`  
-**Author:** Development  
+**EA ID:** QM5_41103
+**Slug:** `xauxag-mrange-migrate-rv`
+**Strategy ID:** `SCHWEIKERT-CME-XAUXAG-MRANGE-MIGRATE-RV-2026_S01`
+**Source:** `SCHWEIKERT-CME-XAUXAG-MRANGE-MIGRATE-RV-2026`
+**Author:** Development
 **Last revised:** 2026-08-22
 
 ## 1. Strategy Logic
