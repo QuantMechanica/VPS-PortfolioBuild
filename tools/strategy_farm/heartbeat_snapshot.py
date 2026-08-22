@@ -200,6 +200,35 @@ def probe_health(out):
 
 
 @guarded
+def probe_risk_freeze(out):
+    """OWNER-DEC-RISK-FREEZE: prove every cycle that the live book has not moved.
+
+    A freeze nobody re-measures decays into a note. This re-measures the deployed
+    T_Live presets against the armed baseline; any drift in a risk value, the
+    roster, or a preset's bytes becomes a flag. Read-only.
+    """
+    sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
+    import risk_freeze
+
+    result = risk_freeze.diff_against_baseline()
+    status = result.get("status")
+    if status == "NO_FREEZE_STATE":
+        return
+    out["risk_freeze"] = {
+        "status": status,
+        "held": result.get("held"),
+        "baseline_total_risk_percent": result.get("baseline_total_risk_percent"),
+        "current_total_risk_percent": result.get("current_total_risk_percent"),
+        "drift": result.get("drift", []),
+    }
+    if status == "ACTIVE" and result.get("held") is False:
+        for d in result.get("drift", [])[:6]:
+            out["flags"].append(f"RISK_FREEZE_BREACH:{d}")
+    elif status not in ("ACTIVE",):
+        out["flags"].append(f"RISK_FREEZE_STATE:{status}")
+
+
+@guarded
 def probe_scheduled_tasks(out):
     """The recurring jobs ARE the operation. A job that fails silently is invisible work lost.
 
@@ -462,6 +491,7 @@ def main() -> int:
     out = {"ts": _iso(_now()), "flags": []}
     probe_quota(out)
     probe_health(out)
+    probe_risk_freeze(out)
     probe_scheduled_tasks(out)
     probe_source_lane(out)
     try:

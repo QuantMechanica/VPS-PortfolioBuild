@@ -34,9 +34,12 @@
 |---|---|
 | REVIEW-Stapel | **80 → 0.** 13 `ops_issue` (9 APPROVED, 4 BLOCKED an OWNER-Entscheiden), 9 `review_ea` (alle negativ → RECYCLE), 66 `build_ea` (54 BLOCKED, 10 APPROVED, 2 RECYCLE). Danach 1 Neuzugang (`ee8153cf`) sofort mitgeschlossen. |
 | 8 OWNER-Entscheide | ausgeführt und aktenkundig: `decisions/2026-08-22_owner_decisions_evening_batch.md`, `decisions/2026-08-22_news_impact_taxonomy.md`; Vault-Archiv ergänzt; **4 ratifizierte Regeln** in `01 Identity/Hard Rules`. |
-| SP-D1 Corpus-Manifest | **130/130, `sha256_missing=0`**, `D:\QMeports\state\g_corpus_manifest_2026-08-22.json` (sha `e7f256db…`). Selbst ausgeführt, weil headless kein `G:` sieht. Befund: die 127 PDFs haben **keine Einzeldokument-Provenienz** im operativen System. |
+| SP-D1 Corpus-Manifest | **130/130, `sha256_missing=0`**, `D:\QM
+eports\state\g_corpus_manifest_2026-08-22.json` (sha `e7f256db…`). Selbst ausgeführt, weil headless kein `G:` sieht. Befund: die 127 PDFs haben **keine Einzeldokument-Provenienz** im operativen System. |
 | Deploy-Pointer-Reconciliation | Manifestfrage **endgültig geklärt**: 07-24-Manifest = das laufende Buch, **0/24 Risikoabweichungen**, Summe 9,7499 %. `docs/ops/evidence/2026-08-22_deploy_pointer_manifest_reconciliation.md`. |
-| Build-Queue-Sortierung | 152 strukturell nicht baubare `build_ea`-Zeilen 50 → 10; Ledger `D:\QMeports\state\orchestrator_build_queue_reorder_2026-08-22.json`. Reversibel, nichts gelöscht. |
+| **Risk-Freeze** | **`OWNER-DEC-RISK-FREEZE` auf ausdrückliche Anweisung sofort ausgeführt** — ACTIVE seit 2026-08-22T19:55Z, Baseline 24 Sleeves / **9,7499 %** / `roster_sha a98bfdeb…`. Verifier gegen Fixture bewiesen (6 Fälle, inkl. fail-closed bei korruptem Zustand), `probe_risk_freeze` prüft alle 15 min nach. Eingefroren ist das **Buch**, nicht die Pipeline. `decisions/2026-08-22_owner_dec_risk_freeze_executed.md`. |
+| Build-Queue-Sortierung | 152 strukturell nicht baubare `build_ea`-Zeilen 50 → 10; Ledger `D:\QM
+eports\state\orchestrator_build_queue_reorder_2026-08-22.json`. Reversibel, nichts gelöscht. |
 
 **Beauftragt (Ergebnis steht aus)**
 
@@ -48,6 +51,7 @@
 | `689b3af1` | 86 | Kalender-Repin mit signierter Receipt-Kette (`OWNER-DEC-CALENDAR-REPIN`, Option a). |
 | `6a131ec6` | 84 | Hardening-Gate lane-unabhängig (`agent_router.py:1871`). |
 | `c65592c7` | 72 | Dependency-Dry-Run, durch das Manifest entblockt. |
+| `6e512650` | 89 | Risk-Freeze fail-closed verdrahten — aus Erkennung Verhinderung machen. Guards an allen Kontrollpunkten, je Negativ- **und** Positivtest, Mission-Control-Sichtbarkeit. |
 
 **Angehalten und zurück an OWNER**
 
