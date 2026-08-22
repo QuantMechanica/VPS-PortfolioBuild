@@ -17639,3 +17639,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41104,xauxag-mmedian-shift-rv,0,XAUUSD.DWX,411040000,2026-08-22,Codex governed allocator,active
 41104,xauxag-mmedian-shift-rv,1,XAGUSD.DWX,411040001,2026-08-22,Codex governed allocator,active
 41105,wti-mclose-location-mom,0,XTIUSD.DWX,411050000,2026-08-22,Codex governed allocator,active
+41106,wti-mbody-dominance-mom,0,XTIUSD.DWX,411060000,2026-08-22,Codex governed allocator,active
