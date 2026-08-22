@@ -20,7 +20,7 @@ import uuid
 from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 try:
     from tools.strategy_farm import farmctl
@@ -1661,14 +1661,46 @@ def _refuse_review(code: str, reason: str, **detail: Any) -> dict[str, Any]:
     return {"allowed": False, "gate_code": code, "reason": reason, **detail}
 
 
-def _build_review_dispatch_gate(artifact_path: str | None) -> dict[str, Any]:
-    """Fail closed before a Gemini build can mint a Codex review task.
+def _hash_bound_build_path(
+    payload: Mapping[str, Any], path_key: str, hash_key: str
+) -> tuple[Path | None, dict[str, Any] | None]:
+    raw_path = str(payload.get(path_key) or "").strip()
+    expected_hash = str(payload.get(hash_key) or "").strip().lower()
+    if not raw_path or not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
+        return None, _refuse_review(
+            "D6_BUILD_IDENTITY_MISSING",
+            "build_identity_path_or_hash_missing_review_dispatch_refused",
+            missing_path_key=path_key if not raw_path else None,
+            missing_hash_key=(
+                hash_key if not re.fullmatch(r"[0-9a-f]{64}", expected_hash) else None
+            ),
+        )
+    bound_path = Path(raw_path)
+    if not bound_path.is_file():
+        return None, _refuse_review(
+            "D6_BUILD_IDENTITY_MISSING",
+            "build_identity_bound_file_missing_review_dispatch_refused",
+            bound_path=str(bound_path),
+        )
+    actual_hash = _sha256_file(bound_path)
+    if actual_hash != expected_hash:
+        return None, _refuse_review(
+            "D6_BUILD_IDENTITY_HASH_MISMATCH",
+            "build_identity_hash_mismatch_review_dispatch_refused",
+            bound_path=str(bound_path.resolve()),
+            expected_sha256=expected_hash,
+            actual_sha256=actual_hash,
+        )
+    return bound_path.resolve(), None
 
-    D1 rejects an explicit strict-build failure. D6 then requires the producer
-    packet to bind committed MQ5/EX5/setfile bytes at the current Git HEAD.
-    This is intentionally a review-dispatch gate: compile/build_check may
-    regenerate EX5 bytes, after which the builder must commit the exact result
-    before asking a reviewer to inspect it.
+
+def _build_review_dispatch_gate(artifact_path: str | None) -> dict[str, Any]:
+    """Fail closed before any build task can transition to review.
+
+    D1 rejects an explicit strict-build failure. The canonical hardening pass
+    then runs against the exact hash-bound MQ5 before lane-specific packet
+    shape differences can stop at D6. D6 still requires committed
+    MQ5/EX5/setfile bytes at the current Git HEAD before REVIEW is accepted.
     """
     artifact = Path(str(artifact_path or ""))
     if not artifact.is_file() or artifact.suffix.lower() != ".json":
@@ -1731,57 +1763,31 @@ def _build_review_dispatch_gate(artifact_path: str | None) -> dict[str, Any]:
             raw_mq5_quarantine=raw_source_gate,
         )
 
-    bound_specs = (
-        ("mq5_path", "mq5_sha256"),
-        ("ex5_path", "ex5_sha256"),
+    mq5_path, identity_error = _hash_bound_build_path(
+        payload, "mq5_path", "mq5_sha256"
     )
-    bound_paths: list[Path] = []
-    for path_key, hash_key in bound_specs:
-        raw_path = str(payload.get(path_key) or "").strip()
-        expected_hash = str(payload.get(hash_key) or "").strip().lower()
-        if not raw_path or not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
-            return _refuse_review(
-                "D6_BUILD_IDENTITY_MISSING",
-                "build_identity_path_or_hash_missing_review_dispatch_refused",
-                missing_path_key=path_key if not raw_path else None,
-                missing_hash_key=hash_key if not re.fullmatch(r"[0-9a-f]{64}", expected_hash) else None,
-            )
-        bound_path = Path(raw_path)
-        if not bound_path.is_file():
-            return _refuse_review(
-                "D6_BUILD_IDENTITY_MISSING",
-                "build_identity_bound_file_missing_review_dispatch_refused",
-                bound_path=str(bound_path),
-            )
-        actual_hash = _sha256_file(bound_path)
-        if actual_hash != expected_hash:
-            return _refuse_review(
-                "D6_BUILD_IDENTITY_HASH_MISMATCH",
-                "build_identity_hash_mismatch_review_dispatch_refused",
-                bound_path=str(bound_path.resolve()),
-                expected_sha256=expected_hash,
-                actual_sha256=actual_hash,
-            )
-        bound_paths.append(bound_path.resolve())
-
-    git_root = _git_root_for(bound_paths[0])
+    if identity_error is not None:
+        return identity_error
+    assert mq5_path is not None
+    git_root = _git_root_for(mq5_path)
     if git_root is None:
         return _refuse_review(
             "D6_BUILD_IDENTITY_UNTRACKED",
             "build_identity_git_root_missing_review_dispatch_refused",
-            bound_path=str(bound_paths[0]),
+            bound_path=str(mq5_path),
         )
 
     # Never trust a producer-supplied boolean for the recurring D3-D10 defect
     # classes. Re-run the canonical analyzer on the exact hash-bound MQ5 bytes
-    # before a Gemini task is allowed to mint an independent Codex review.
+    # for every producer lane before packet-shape checks can obscure the
+    # substantive result with a formal D6 refusal.
     try:
-        hardening = build_gate_hardening.analyze_file(bound_paths[0], None)
+        hardening = build_gate_hardening.analyze_file(mq5_path, None)
     except Exception as exc:  # fail closed on analyzer/read/encoding defects
         return _refuse_review(
             "D3_D10_BUILD_GATE_HARDENING_ERROR",
             "build_gate_hardening_error_review_dispatch_refused",
-            bound_path=str(bound_paths[0]),
+            bound_path=str(mq5_path),
             detail=str(exc),
         )
     hardening_failures = list(hardening.get("failures") or [])
@@ -1789,10 +1795,17 @@ def _build_review_dispatch_gate(artifact_path: str | None) -> dict[str, Any]:
         return _refuse_review(
             "D3_D10_BUILD_GATE_HARDENING_FAIL",
             "build_gate_hardening_failed_review_dispatch_refused",
-            bound_path=str(bound_paths[0]),
+            bound_path=str(mq5_path),
             failures=hardening_failures,
             checks=hardening.get("checks"),
         )
+    ex5_path, identity_error = _hash_bound_build_path(
+        payload, "ex5_path", "ex5_sha256"
+    )
+    if identity_error is not None:
+        return identity_error
+    assert ex5_path is not None
+    bound_paths = [mq5_path, ex5_path]
     for bound_path in bound_paths:
         ok, track_detail = _tracked_clean_at_head(git_root, bound_path)
         if not ok:
@@ -1868,7 +1881,7 @@ def update_task(
         dir_err = _directory_artifact_error(artifact_path)
         if dir_err is not None:
             return {"updated": False, "task_id": task_id, **dir_err}
-        if row["task_type"] == "build_ea" and row["assigned_agent"] == "gemini" and state == "REVIEW":
+        if row["task_type"] == "build_ea" and state == "REVIEW":
             review_gate = _build_review_dispatch_gate(artifact_path or row["artifact_path"])
             if not review_gate["allowed"]:
                 _record_lease_event(

@@ -56,6 +56,14 @@ class AgentRouterTests(unittest.TestCase):
         )
         return artifact
 
+    def _assign_build_lane(self, root: Path, task_id: str, agent_id: str) -> None:
+        with agent_router.connect(root) as conn:
+            conn.execute(
+                "UPDATE agent_tasks SET state='IN_PROGRESS', assigned_agent=? WHERE id=?",
+                (agent_id, task_id),
+            )
+            conn.commit()
+
     def _write_ready_card(self, path: Path, ea_id: str, slug: str) -> None:
         path.write_text(
             f"""---
@@ -403,6 +411,73 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             self.assertFalse(refused["updated"])
             self.assertEqual(refused["gate_code"], "D3_D10_BUILD_GATE_HARDENING_FAIL")
             self.assertTrue(any("MAE_HOOK_MISSING" in item for item in refused["failures"]))
+
+    def test_codex_claimed_pass_reaches_and_fails_canonical_hardening(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            farmctl.init_db(root)
+            agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+            build = agent_router.enqueue_task(root, "build_ea", priority=10)
+            self._assign_build_lane(root, build["task_id"], "codex")
+            artifact = self._write_build_identity_fixture(root, commit=True)
+            payload = json.loads(artifact.read_text(encoding="utf-8"))
+            mq5 = Path(payload["mq5_path"])
+            mq5.write_text(
+                "bool QM_KillSwitchCheck() { return true; }\n"
+                "void OnTick() { if(!QM_KillSwitchCheck()) return; }\n",
+                encoding="utf-8",
+            )
+            subprocess.run(
+                ["git", "-C", str(root), "add", "--", str(mq5.relative_to(root))],
+                check=True,
+            )
+            subprocess.run(
+                ["git", "-C", str(root), "commit", "-q", "-m", "codex fixture missing MAE"],
+                check=True,
+            )
+            payload["mq5_sha256"] = hashlib.sha256(mq5.read_bytes()).hexdigest()
+            # Codex hold packets can lack final binary identity. The semantic
+            # source check must still run first and refuse for the real defect.
+            payload.pop("ex5_path")
+            payload.pop("ex5_sha256")
+            artifact.write_text(json.dumps(payload), encoding="utf-8")
+
+            refused = agent_router.update_task(
+                root,
+                build["task_id"],
+                state="REVIEW",
+                artifact_path=str(artifact),
+                verdict="FALSE_CODEX_PRODUCER_PASS",
+            )
+
+            self.assertFalse(refused["updated"])
+            self.assertEqual(refused["gate_code"], "D3_D10_BUILD_GATE_HARDENING_FAIL")
+            self.assertTrue(any("MAE_HOOK_MISSING" in item for item in refused["failures"]))
+
+    def test_codex_clean_build_identity_can_transition_to_review(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            farmctl.init_db(root)
+            agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+            build = agent_router.enqueue_task(root, "build_ea", priority=10)
+            self._assign_build_lane(root, build["task_id"], "codex")
+            artifact = self._write_build_identity_fixture(root, commit=True)
+
+            accepted = agent_router.update_task(
+                root,
+                build["task_id"],
+                state="REVIEW",
+                artifact_path=str(artifact),
+                verdict="CODEX_BUILD_READY",
+            )
+
+            self.assertTrue(accepted["updated"])
+            self.assertIsNone(accepted["codex_review_task_id"])
+            with agent_router.connect(root) as conn:
+                row = conn.execute(
+                    "SELECT state FROM agent_tasks WHERE id=?", (build["task_id"],)
+                ).fetchone()
+            self.assertEqual(row["state"], "REVIEW")
 
     def test_strict_build_fail_refuses_review_dispatch_and_logs_event(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
