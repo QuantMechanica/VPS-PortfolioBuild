@@ -15191,6 +15191,27 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                 expected_plan_file_sha256=plan_file_sha256,
                 cell_timeout_sec=Q09_AUTOPILOT_CELL_TIMEOUT_SEC,
             )
+            # A prior failed attempt may have left a structured diagnostic in
+            # payload_json.  Once the immutable binding succeeds, remove that
+            # stale failure marker so operators and automation see one current
+            # activation state rather than contradictory success/failure data.
+            with connect(root) as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                current = conn.execute(
+                    "SELECT payload_json FROM work_items WHERE id=?",
+                    (work_item_id,),
+                ).fetchone()
+                current_payload = json.loads(str(current[0] or "{}"))
+                current_payload.pop("q09_autoseal_failure", None)
+                if str(current_payload.get("q09_activation_next_action") or "").startswith(
+                    "resolve q09_autoseal_failure"
+                ):
+                    current_payload.pop("q09_activation_next_action", None)
+                conn.execute(
+                    "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
+                    (json.dumps(current_payload, sort_keys=True), utc_now(), work_item_id),
+                )
+                conn.commit()
             results.append({
                 "work_item_id": work_item_id,
                 "ea_id": ea_id,

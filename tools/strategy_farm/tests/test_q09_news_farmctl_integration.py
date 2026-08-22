@@ -565,9 +565,22 @@ def test_q09_autopilot_uses_oracle_standard_v2_semantics(tmp_path: Path) -> None
             INSERT INTO work_items(
               id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
               payload_json,created_at,updated_at
-            ) VALUES(?, 'backtest','Q09_NEWS',?,?,?,'pending',0,'{}',?,?)
+            ) VALUES(?, 'backtest','Q09_NEWS',?,?,?,'pending',0,?, ?,?)
             """,
-            (q09_id, ea_id, symbol, str(setfile), now, now),
+            (
+                q09_id,
+                ea_id,
+                symbol,
+                str(setfile),
+                json.dumps({
+                    "q09_autoseal_failure": {"reason_code": "STALE_TEST_FAILURE"},
+                    "q09_activation_next_action": (
+                        "resolve q09_autoseal_failure; derivation is fail-closed"
+                    ),
+                }),
+                now,
+                now,
+            ),
         )
         schema.add_dependency(
             conn, child_work_item_id=q09_id, dependency_role="Q08_INPUT",
@@ -606,6 +619,12 @@ def test_q09_autopilot_uses_oracle_standard_v2_semantics(tmp_path: Path) -> None
         farmctl.Q09_AUTOPILOT_WINDOWS
     )
     assert bind_plan.call_args.kwargs["cell_timeout_sec"] == 10800
+    with farmctl.connect(tmp_path) as conn:
+        payload = json.loads(conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (q09_id,)
+        ).fetchone()[0])
+    assert "q09_autoseal_failure" not in payload
+    assert "q09_activation_next_action" not in payload
 
 
 def test_q09_autopilot_derivation_gap_stays_held_with_machine_reason(tmp_path: Path) -> None:
