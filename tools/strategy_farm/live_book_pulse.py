@@ -36,14 +36,44 @@ DEFAULT_APPEND_LOG = Path(r"D:\QM\reports\state\live_book_pulse.log")
 DEFAULT_ALARM_LOG = Path(r"D:\QM\strategy_farm\state\health_alarms.log")
 DEFAULT_LIVE_UPTIME_STATE = Path(r"D:\QM\reports\state\live_uptime_watchdog.json")
 DEFAULT_LIVE_MAINTENANCE_FLAG = Path(r"D:\QM\reports\state\LIVE_UPTIME_MAINTENANCE.flag")
-DEFAULT_BOOK_MANIFEST = Path(
-    os.environ.get(
-        "QM_DXZ_BOOK_MANIFEST",
-        # 24-sleeve as-deployed manifest, audit 2026-07-24 (ESC-02); replaced the
-        # stale 23-sleeve DRAFT 20260711 (3 ghosts, 4 unlisted live sleeves).
-        r"D:\QM\reports\portfolio\portfolio_manifest_live_24sleeve_20260724.json",
-    )
-)
+DEFAULT_RUNTIME_POINTER = Path(r"D:\QM\reports\state\live_deployment_pointer.json")
+# Repo-hardcoded last resort: 24-sleeve as-deployed manifest, audit 2026-07-24
+# (ESC-02); replaced the stale 23-sleeve DRAFT 20260711 (3 ghosts, 4 unlisted
+# live sleeves). Only reached if BOTH the env override and the runtime deploy
+# pointer are absent/unreadable -- see _default_book_manifest_source().
+_REPO_DEFAULT_BOOK_MANIFEST = r"D:\QM\reports\portfolio\portfolio_manifest_live_24sleeve_20260724.json"
+
+
+def _pointer_manifest_path(pointer_path: Path = DEFAULT_RUNTIME_POINTER) -> str | None:
+    """Best-effort read of ``manifest_path`` from the authenticated runtime
+    deploy pointer (SP-A1). Never raises -- an absent/malformed pointer just
+    means the caller falls through to the next resolution tier."""
+    try:
+        payload = json.loads(pointer_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    value = payload.get("manifest_path")
+    return str(value) if value else None
+
+
+def _default_book_manifest_source() -> tuple[str, str]:
+    """Resolve the default --book-manifest path. Order: env override (explicit
+    operator pin) -> runtime deploy pointer (SP-A1, authenticated-or-GELB
+    manifest_path) -> hardcoded repo default. Returns (path, source_tag) so
+    callers/output can show which tier fired -- never a silent choice."""
+    override = os.environ.get("QM_DXZ_BOOK_MANIFEST")
+    if override:
+        return override, "env_override"
+    from_pointer = _pointer_manifest_path()
+    if from_pointer:
+        return from_pointer, "runtime_pointer"
+    return _REPO_DEFAULT_BOOK_MANIFEST, "repo_default"
+
+
+DEFAULT_BOOK_MANIFEST_PATH, DEFAULT_BOOK_MANIFEST_SOURCE = _default_book_manifest_source()
+DEFAULT_BOOK_MANIFEST = Path(DEFAULT_BOOK_MANIFEST_PATH)
 DEFAULT_TAIL_BYTES = 4 * 1024 * 1024
 OPEN_POSITION_JOURNAL_STALE_MINUTES = 120
 FLAT_JOURNAL_STALE_MINUTES = 450
@@ -426,6 +456,50 @@ def load_book_manifest(path_value: str | Path | None) -> dict[str, Any]:
             "sleeves": sleeves,
         }
     )
+    return result
+
+
+def reconcile_against_deploy_pointer(
+    book_manifest: dict[str, Any],
+    pointer_path: Path = DEFAULT_RUNTIME_POINTER,
+) -> dict[str, Any]:
+    """Cross-check the manifest Pulse actually loaded against the SP-A1
+    authenticated runtime deploy pointer's declared manifest_sha256 -- the F-01
+    acceptance bar ("all five live-book consumers report the same manifest
+    hash"). Never silently agrees: absent pointer, unreadable pointer, or a
+    hash MISMATCH are all reported explicitly rather than defaulting to a
+    match. Read-only; does not affect book_manifest loading itself."""
+    result: dict[str, Any] = {
+        "pointer_path": str(pointer_path),
+        "pointer_exists": pointer_path.is_file(),
+        "pointer_signed": None,
+        "pointer_manifest_path": None,
+        "pointer_manifest_sha256": None,
+        "pulse_manifest_sha256": book_manifest.get("sha256"),
+        "match": None,
+        "detail": None,
+    }
+    if not result["pointer_exists"]:
+        result["detail"] = "no_runtime_pointer"
+        return result
+    try:
+        payload = json.loads(pointer_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        result["detail"] = f"pointer_unreadable:{exc}"
+        return result
+    if not isinstance(payload, dict):
+        result["detail"] = "pointer_malformed"
+        return result
+    result["pointer_signed"] = payload.get("signed")
+    result["pointer_manifest_path"] = payload.get("manifest_path")
+    result["pointer_manifest_sha256"] = payload.get("manifest_sha256")
+    pulse_sha = (book_manifest.get("sha256") or "").lower()
+    pointer_sha = str(payload.get("manifest_sha256") or "").lower()
+    if not pulse_sha or not pointer_sha:
+        result["detail"] = "sha_unavailable_for_comparison"
+        return result
+    result["match"] = pulse_sha == pointer_sha
+    result["detail"] = "sha_match" if result["match"] else "SHA_MISMATCH_pulse_vs_pointer"
     return result
 
 
@@ -1398,6 +1472,20 @@ def build_alarms(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
                 "detail": hb.get("alarm_reason"),
             }
         )
+    pointer_reconcile = snapshot.get("deploy_pointer_reconciliation", {})
+    if pointer_reconcile.get("match") is False:
+        alarms.append(
+            {
+                "class": "live_book",
+                "severity": "FAIL",
+                "metric": "deploy_pointer_manifest_sha_mismatch",
+                "value": pointer_reconcile.get("pulse_manifest_sha256"),
+                "detail": (
+                    "Pulse manifest_sha256 != SP-A1 runtime pointer manifest_sha256 "
+                    f"(pointer={pointer_reconcile.get('pointer_manifest_sha256')})"
+                ),
+            }
+        )
     terminal = snapshot.get("terminal_journals", {})
     manifest = snapshot.get("book_manifest", {})
     manifest_reconcile = snapshot.get("manifest_reconcile", {})
@@ -1561,6 +1649,12 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
     terminal = parse_terminal_journals(terminal_roots, args.lookback_files, args.max_tail_bytes)
     ea_logs = parse_ea_logs(terminal_roots, magic_registry, args.max_tail_bytes)
     book_manifest = load_book_manifest(getattr(args, "book_manifest", None))
+    book_manifest["source"] = (
+        DEFAULT_BOOK_MANIFEST_SOURCE
+        if getattr(args, "book_manifest", None) == str(DEFAULT_BOOK_MANIFEST)
+        else "cli_override"
+    )
+    deploy_pointer_reconciliation = reconcile_against_deploy_pointer(book_manifest)
     discovered_presets = load_live_presets(terminal_roots)
     preset_selection = select_manifest_presets(book_manifest, discovered_presets)
     live_presets = preset_selection["selected"]
@@ -1601,6 +1695,7 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
             "presets": live_presets,
         },
         "book_manifest": book_manifest,
+        "deploy_pointer_reconciliation": deploy_pointer_reconciliation,
         "manifest_reconcile": manifest_reconcile,
         "preset_consistency": preset_consistency,
         "ea_logs": ea_logs,
@@ -1727,6 +1822,8 @@ def main(argv: list[str] | None = None) -> int:
             "chart_missing_loaded_count": snapshot["preset_consistency"].get("missing_loaded_count"),
             "manifest_path": snapshot["book_manifest"].get("path"),
             "manifest_sha256": snapshot["book_manifest"].get("sha256"),
+            "manifest_source": snapshot["book_manifest"].get("source"),
+            "deploy_pointer_match": snapshot.get("deploy_pointer_reconciliation", {}).get("match"),
             "manifest_expected_sleeve_count": snapshot["manifest_reconcile"].get("expected_count"),
             "manifest_reconcile_mismatch_count": snapshot["manifest_reconcile"].get("mismatch_count"),
             "heartbeat_minutes_since_last_journal_write": snapshot["heartbeat"].get(

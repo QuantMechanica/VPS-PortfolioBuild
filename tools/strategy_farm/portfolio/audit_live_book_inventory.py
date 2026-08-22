@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Round 8 section 5.4: what is actually deployed and trading on T_Live.
 
-There is no current authoritative manifest for the live book.  The DRAFT manifest on D:
-is from 2026-06-26 and lists six sleeves; the Experts directory holds 64 .ex5 and the
-profiles hold over a hundred chart files.  None of those three answers the question that
-matters after an incident: WHICH strategies were running, under which magic, and which
-of them actually traded.
+Never trust a manifest alone for "what's running" -- the Experts directory holds 64
+.ex5 and the profiles hold over a hundred chart files, and neither answers the question
+that matters after an incident: WHICH strategies were running, under which magic, and
+which of them actually traded. (Historically there was no authenticated manifest at all
+to compare against; SP-A1 [2026-08-22] closed that gap with the runtime deploy pointer
+at D:\\QM\\reports\\state\\live_deployment_pointer.json -- see `manifest_reconciliation`
+below, which is comparison evidence ADDED ON TOP of the log-based read, never a
+replacement for it.)
 
-The reliable source is the terminal-local per-EA log,
+The reliable primary source is the terminal-local per-EA log,
 C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_<id>_*.log -- it is append-written by
 the EA itself, is not shared with the factory (unlike the FILE_COMMON q08 streams), and
 carries the identity (ea_id, slug, symbol, timeframe, magic) on every line plus a daily
@@ -31,6 +34,50 @@ from pathlib import Path
 LOGDIR = Path(r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM")
 EXPERTS = Path(r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts")
 OUT = Path(r"C:\QM\repo\artifacts\audit_live_book_inventory_20260819.json")
+DEPLOY_POINTER = Path(r"D:\QM\reports\state\live_deployment_pointer.json")
+
+
+def load_manifest_reconciliation(observed_magics: set[int]) -> dict:
+    """Compare the log-observed magic roster against the SP-A1 authenticated
+    runtime deploy pointer's manifest -- read-only, evidence only, never a
+    substitute for the log-based ATTACHED/EMITTING/TRADING read above. Absent
+    or unreadable pointer/manifest is reported explicitly (UNKNOWN), never
+    silently treated as "no expectation"."""
+    result = {
+        "pointer_path": str(DEPLOY_POINTER),
+        "pointer_exists": DEPLOY_POINTER.is_file(),
+        "pointer_signed": None,
+        "manifest_path": None,
+        "manifest_sha256": None,
+        "expected_magics": [],
+        "magics_in_manifest_not_in_logs": [],
+        "magics_in_logs_not_in_manifest": [],
+        "status": "UNKNOWN",
+        "detail": None,
+    }
+    if not result["pointer_exists"]:
+        result["detail"] = "no_runtime_pointer"
+        return result
+    try:
+        pointer = json.loads(DEPLOY_POINTER.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        result["detail"] = f"pointer_unreadable:{exc}"
+        return result
+    result["pointer_signed"] = pointer.get("signed")
+    result["manifest_path"] = pointer.get("manifest_path")
+    result["manifest_sha256"] = pointer.get("manifest_sha256")
+    roster = ((pointer.get("expected_sleeves") or {}).get("roster")) or []
+    expected_magics = sorted({int(r["magic_number"]) for r in roster if r.get("magic_number") is not None})
+    result["expected_magics"] = expected_magics
+    if not expected_magics:
+        result["detail"] = "pointer_has_no_expected_sleeves_roster"
+        return result
+    expected_set = set(expected_magics)
+    result["magics_in_manifest_not_in_logs"] = sorted(expected_set - observed_magics)
+    result["magics_in_logs_not_in_manifest"] = sorted(observed_magics - expected_set)
+    result["status"] = "OK" if not result["magics_in_manifest_not_in_logs"] and not result["magics_in_logs_not_in_manifest"] else "DRIFT"
+    result["detail"] = "expected_and_observed_magics_match" if result["status"] == "OK" else "roster_vs_log_drift"
+    return result
 
 TRADE_EVENTS = {"ENTRY_ACCEPTED", "TM_OPEN", "TRADE_CLOSED", "POSITION_CLOSED"}
 FRESH_HOURS = 36          # a live EA on a weekday writes at least a daily snapshot
@@ -128,6 +175,8 @@ def main() -> int:
     traded_recent = [r for r in emitting if r["traded_ever"]]
     stale = [r for r in rows if not r["emitting"]]
     unconfigured = [r for r in rows if r.get("ea_id") == 0]
+    observed_magics = {m for r in rows for m in r.get("magics", [])}
+    manifest_reconciliation = load_manifest_reconciliation(observed_magics)
 
     payload = {
         "schema": "qm.live-book-inventory/v1",
@@ -140,6 +189,7 @@ def main() -> int:
         "unconfigured_instances": len(unconfigured),
         "ex5_in_experts_dir": len(ex5),
         "ex5_qm5_named": len(qm_ex5),
+        "manifest_reconciliation": manifest_reconciliation,
         "rows": rows,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -149,6 +199,8 @@ def main() -> int:
     print(f"emitting (<= {FRESH_HOURS} h)      {len(emitting)}")
     print(f"stale                     {len(stale)}")
     print(f".ex5 in Experts dir       {len(ex5)}  (QM5-named: {len(qm_ex5)})")
+    print(f"manifest reconciliation   {manifest_reconciliation['status']} "
+          f"({manifest_reconciliation['detail']}, signed={manifest_reconciliation['pointer_signed']})")
     print()
     print(f"{'ea_id':>7} {'symbols':22} {'magic(s)':22} {'age_h':>7} {'snaps':>6} {'entries':>8} {'last trade':20}")
     for r in sorted(rows, key=lambda x: (x["age_hours"] is None, x["age_hours"] or 0)):

@@ -21,22 +21,23 @@
   The default DXZ live book composition is identical across the signed live manifest and the
   07-19 draft (same 24 ea/symbol/magic tuples), so the epoch stays the 2026-07-19 go-live.
 
-  Re-point -Manifest / -DeploymentEpoch (and, once a bound SUM-of-sleeves MC exists for the
-  new book, -McArtifact) after any new-book T_Live deploy. Defaults below track the CURRENTLY
-  deployed book (DXZ Sunday FINAL-24, go-live 2026-07-19,
-  decisions/2026-07-19_t_live_dxz_sunday_final_book.md). After tonight's TOTAL_RISK12 deploy,
-  OWNER/Claude repoints to the SIGNED FINAL24b manifest (once approved) with
-  -DeploymentEpoch 2026-07-26 -- do NOT point at the DRAFT.
+  SP-A2 (2026-08-22): -Manifest / -DeploymentEpoch default from the authenticated runtime
+  deploy pointer (D:\QM\reports\state\live_deployment_pointer.json) instead of a hardcoded
+  path+date here -- the prior hardcoded 07-19 epoch drifted from the actual deployed book
+  (the 24-sleeve manifest was generated 07-24) and required manual re-pointing on every
+  new-book deploy, which is exactly the "own 24-sleeve default that can silently drift"
+  problem the pointer exists to close. -RequireSigned now defaults to $true (was an opt-in
+  switch, unenforced on the scheduled-task path); pass -RequireSigned:$false to explicitly
+  bypass for ad-hoc/manual runs. Explicit -Manifest/-DeploymentEpoch args still override the
+  pointer (e.g. to inspect a candidate not-yet-signed manifest by hand).
 #>
 [CmdletBinding()]
 param(
-    # SIGNED, OWNER-approved live manifest (status LIVE + approved_by); same 24-sleeve
-    # composition as the 07-19 draft. A DRAFT bound only by SHA is NOT signed.
-    [string]$Manifest        = 'D:\QM\reports\portfolio\portfolio_manifest_live_24sleeve_20260724.json',
-    [string]$DeploymentEpoch = '2026-07-19',
+    [string]$Manifest        = $null,   # default: read from the runtime pointer below
+    [string]$DeploymentEpoch = $null,   # default: read from the runtime pointer below
     [long]  $ExpectedAccount = 4000090541,   # DXZ live account (decisions/2026-07-19_t_live_dxz_sunday_final_book.md)
     [string]$McArtifact      = '',            # bound SUM-of-sleeves MC; empty -> DD check UNKNOWN (never placeholder)
-    [switch]$RequireSigned,                   # refuse (exit 2) unless the manifest is SIGNED
+    [bool]  $RequireSigned   = $true,         # refuse (exit 2) unless the manifest is SIGNED; explicit $false to bypass
     [string]$LogDir          = 'C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM',
     [string]$OutDir          = 'D:\QM\reports\portfolio\live_burnin'
 )
@@ -48,6 +49,27 @@ $stamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 $date  = (Get-Date).ToString('yyyyMMdd')
 $out   = Join-Path $OutDir "livevsbook_sunday_$date.json"
 $log   = 'D:\QM\reports\state\sunday_livevsbook_compare.log'
+
+if ([string]::IsNullOrWhiteSpace($Manifest) -or [string]::IsNullOrWhiteSpace($DeploymentEpoch)) {
+    # Regex extraction (not ConvertFrom-Json property access): PowerShell auto-coerces
+    # ISO-8601-looking JSON string values into [datetime] and re-renders them in the
+    # current culture's date format on interpolation, which the Python comparator's
+    # datetime.fromisoformat() cannot parse. Regex keeps the literal bytes.
+    $Pointer = 'D:\QM\reports\state\live_deployment_pointer.json'
+    if (-not (Test-Path $Pointer)) {
+        throw "sunday_livevsbook_compare: no -Manifest/-DeploymentEpoch given and runtime deploy pointer missing ($Pointer) -- refusing to guess."
+    }
+    $pointerRaw = Get-Content -Raw -Path $Pointer
+    if ([string]::IsNullOrWhiteSpace($Manifest) -and $pointerRaw -match '"manifest_path"\s*:\s*"([^"]*)"') {
+        $Manifest = $Matches[1] -replace '\\\\', '\'
+    }
+    if ([string]::IsNullOrWhiteSpace($DeploymentEpoch) -and $pointerRaw -match '"deployment_epoch_utc"\s*:\s*"([^"]*)"') {
+        $DeploymentEpoch = $Matches[1]
+    }
+    if ([string]::IsNullOrWhiteSpace($Manifest) -or [string]::IsNullOrWhiteSpace($DeploymentEpoch)) {
+        throw "sunday_livevsbook_compare: pointer at $Pointer is missing manifest_path or deployment_epoch_utc -- refusing to guess."
+    }
+}
 
 if (-not (Test-Path $Manifest)) { throw "manifest not found: $Manifest" }
 $manifestSha = (Get-FileHash -Algorithm SHA256 -Path $Manifest).Hash.ToLower()
@@ -68,7 +90,7 @@ try {
 "$stamp  START sunday live-vs-book compare -> $out" | Out-File -Append -Encoding utf8 $log
 "$stamp  manifest=$Manifest sha256=$manifestSha epoch=$DeploymentEpoch account=$ExpectedAccount" |
     Out-File -Append -Encoding utf8 $log
-"$stamp  manifest_signature=$mfLabel status=$mfStatus signed=$mfSignedOk require_signed=$($RequireSigned.IsPresent)" |
+"$stamp  manifest_signature=$mfLabel status=$mfStatus signed=$mfSignedOk require_signed=$RequireSigned" |
     Out-File -Append -Encoding utf8 $log
 
 if ($RequireSigned -and (-not $mfSignedOk)) {
