@@ -26,6 +26,49 @@
 
 ---
 
+## 0 · Sitzung 2026-08-22 abends (Orchestrator) — Nachtrag
+
+**Geliefert**
+
+| Punkt | Ergebnis |
+|---|---|
+| REVIEW-Stapel | **80 → 0.** 13 `ops_issue` (9 APPROVED, 4 BLOCKED an OWNER-Entscheiden), 9 `review_ea` (alle negativ → RECYCLE), 66 `build_ea` (54 BLOCKED, 10 APPROVED, 2 RECYCLE). Danach 1 Neuzugang (`ee8153cf`) sofort mitgeschlossen. |
+| 8 OWNER-Entscheide | ausgeführt und aktenkundig: `decisions/2026-08-22_owner_decisions_evening_batch.md`, `decisions/2026-08-22_news_impact_taxonomy.md`; Vault-Archiv ergänzt; **4 ratifizierte Regeln** in `01 Identity/Hard Rules`. |
+| SP-D1 Corpus-Manifest | **130/130, `sha256_missing=0`**, `D:\QMeports\state\g_corpus_manifest_2026-08-22.json` (sha `e7f256db…`). Selbst ausgeführt, weil headless kein `G:` sieht. Befund: die 127 PDFs haben **keine Einzeldokument-Provenienz** im operativen System. |
+| Deploy-Pointer-Reconciliation | Manifestfrage **endgültig geklärt**: 07-24-Manifest = das laufende Buch, **0/24 Risikoabweichungen**, Summe 9,7499 %. `docs/ops/evidence/2026-08-22_deploy_pointer_manifest_reconciliation.md`. |
+| Build-Queue-Sortierung | 152 strukturell nicht baubare `build_ea`-Zeilen 50 → 10; Ledger `D:\QMeports\state\orchestrator_build_queue_reorder_2026-08-22.json`. Reversibel, nichts gelöscht. |
+
+**Beauftragt (Ergebnis steht aus)**
+
+| Task | Prio | Inhalt |
+|---|---|---|
+| `8d1d903f` | 94 | Drain-Blocker Nr. 1: EA-IDs werden ohne Registry-Reservierung zum Build dispatcht. **50/64 REVIEW-Zeilen und 148/207 Queue-Builds** hängen daran. |
+| `5254b29a` | 91 | Gate-Generation 2 — Card-Contract-Treue, 7 Klassen, 8+1 fertige fallende Fixtures. |
+| `740049db` | 88 | T_Live-Set-File-Provenienz: 10/24 Presets ohne gültigen `build_hash`, eines mit eigenem `DO_NOT_COPY_TO_T_LIVE`-Marker. Diagnose only. |
+| `689b3af1` | 86 | Kalender-Repin mit signierter Receipt-Kette (`OWNER-DEC-CALENDAR-REPIN`, Option a). |
+| `6a131ec6` | 84 | Hardening-Gate lane-unabhängig (`agent_router.py:1871`). |
+| `c65592c7` | 72 | Dependency-Dry-Run, durch das Manifest entblockt. |
+
+**Angehalten und zurück an OWNER**
+
+| Punkt | Grund |
+|---|---|
+| Pointer-Signatur | Genehmigt, Vorbedingung erfüllt — **aber** 10/24 Live-Presets ohne gültige Provenienz. Kein Handelsdefekt (funktionale Keys korrekt, Risikovektor exakt), aber eine Signatur behauptet genau die fehlende Provenienz. ROT ⇒ keine Auffangregel. Vorlage `OWNER-DEC-POINTER-PRESETS`. |
+
+**Explizit geparkt, mit Grund**
+
+| Punkt | Grund |
+|---|---|
+| SP-C5 FTMO-Ablehnungskriterium (`QM-TODO-20260822-403`) | Die Spezifikation ist heute nicht sinnvoll schreibbar — unbekannt, welche Felder SP-C4 liefert. Auslöser: SP-C4 abgeschlossen **und** authentifizierte Swap-Eingaben. |
+| SP-D3 / SP-D4 Backup-Verschlüsselung + Restore-Drill | `OWNER-DEC-BACKUP-KEY` vertagt. Backups bleiben unverschlüsselt — dokumentierte, bewusst akzeptierte Risikoposition. |
+
+**Nachgemessen, Korrektur an früheren Berichten:** Der Q09-Pilot `b2468d2e` ist am 22.08.
+mit `INFRA_FAIL` gestorben; Nachfolger **`ba24e7a3` läuft auf T4** und arbeitet die 40 Zellen
+ab. `failure_attempts/attempt_0001` + `cell_failure.json` belegen, dass der reparierte Runner
+real feuert. Der Damm bewegt sich.
+
+---
+
 ## 1 · Geliefert
 
 | aus | Punkt | Ergebnis in einem Satz |
