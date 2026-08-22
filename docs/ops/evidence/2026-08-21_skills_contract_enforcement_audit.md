@@ -86,6 +86,47 @@ Worth keeping from the July cohort: the captions-via-proxy route **has** produce
 before (`3b1fe1ab`). It is not a substitute for watching — on-screen content stays a documented
 GAP — but it is not a dead end either.
 
+## Orchestrator verification — live, 2026-08-22
+
+The fix was verified against the **live** database rather than the verdict text, because the
+whole episode exists precisely because a guard proven in one path was assumed proven in the
+system.
+
+The OWNER video work was re-issued as `c993c011` (`required_skills=["video_analysis"]`) and every
+selection path was queried directly:
+
+```text
+_quota_lane_candidates(gemini)        status=ok  candidates=0  offered=False
+_quota_lane_candidates(codex)         status=ok  candidates=0  offered=False
+_quota_lane_candidates(claude)        status=ok  candidates=0  offered=False
+_agent_tasks_work_available(gemini)   any_work=False
+_agent_tasks_work_available(codex)    any_work=False
+claude_work_available()               any_work=False
+route_once                            agent=None  reason=awaiting_human_lane:owner
+live row                              state=TODO  assigned_agent=None
+                                      hold={code:ROUTER_AWAITING_HUMAN_LANE, lane:owner,
+                                            required:[research,strategy,video_analysis]}
+```
+
+Shut on all five paths, and the wake gates no longer wake a lane for work it would have to
+decline. 43 focused tests pass locally (69 across the implementing lane's fuller selection).
+
+Three things checked rather than taken on trust:
+
+1. **The new test is the system invariant, not another router unit test.**
+   `test_agent_selection_skill_contract.py` parameterises over 7 `(path, lane)` combinations and
+   adds a stale-assignment bypass case across all three lanes — so a future fourth door fails a
+   test on the day it is written.
+2. **The fix reuses `agent_router._human_lane_holder`** instead of reimplementing the human-lane
+   concept. Two implementations of one contract is how this defect existed at all.
+3. **The open contract question was resolved fail-closed and in the right direction:**
+   `budget_class=owner` alone no longer wakes Claude, while compatible premium/claude/summary
+   work and explicit Claude assignments still do.
+
+One quieter fix on the way past: the pre-filter SQL `LIMIT` was removed, so 100 incompatible
+high-priority rows can no longer hide eligible lower-priority work — a starvation bug that had
+nothing to do with skills.
+
 ## Why the audit came first
 
 `4b52f1b2` passed 29 router tests and a live routing proof and still reached a lane that could
