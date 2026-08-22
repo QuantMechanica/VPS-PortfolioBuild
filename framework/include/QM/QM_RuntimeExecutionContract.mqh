@@ -33,6 +33,12 @@ struct QM_RuntimeExecutionContract
    string          governor_policy_id;
    string          challenge_instance_id;
    int             governor_heartbeat_max_age_seconds;
+   bool            account_stop_risk_reservation_required;
+   string          account_stop_risk_policy_id;
+   string          account_stop_risk_policy_sha256;
+   double          account_stop_risk_anchor_balance;
+   double          account_stop_risk_cap_percent;
+   bool            account_stop_risk_owner_ratified;
 
    QM_RuntimeExecutionContract()
      {
@@ -54,6 +60,12 @@ struct QM_RuntimeExecutionContract
       governor_policy_id = "";
       challenge_instance_id = "";
       governor_heartbeat_max_age_seconds = 0;
+      account_stop_risk_reservation_required = false;
+      account_stop_risk_policy_id = "";
+      account_stop_risk_policy_sha256 = "";
+      account_stop_risk_anchor_balance = 0.0;
+      account_stop_risk_cap_percent = 0.0;
+      account_stop_risk_owner_ratified = false;
      }
   };
 
@@ -169,6 +181,31 @@ bool QM_RuntimeExecutionContractMatchesRuntime(const QM_RuntimeExecutionContract
          return false;
      }
    else if(contract.governor_required)
+      return false;
+
+   // SP-C2 is additive and dormant for existing contracts. Activation is
+   // legal only on an exact FTMO 100k contract with a separately hash-bound,
+   // OWNER-ratified policy. The 2.5% figure is a hard maximum, never a knob an
+   // EA may raise to escape a blocked order.
+   if(contract.account_stop_risk_reservation_required)
+     {
+      if(contract.target != "FTMO" || !contract.governor_required ||
+         contract.account_stop_risk_policy_id !=
+            "FTMO_2S_100K_OPEN_STOP_RISK_V1" ||
+         !QM_RuntimeExecutionHashValid(
+            contract.account_stop_risk_policy_sha256) ||
+         contract.account_stop_risk_anchor_balance != 100000.0 ||
+         !MathIsValidNumber(contract.account_stop_risk_cap_percent) ||
+         contract.account_stop_risk_cap_percent <= 0.0 ||
+         contract.account_stop_risk_cap_percent > 2.5 ||
+         !contract.account_stop_risk_owner_ratified)
+         return false;
+     }
+   else if(contract.account_stop_risk_policy_id != "" ||
+           contract.account_stop_risk_policy_sha256 != "" ||
+           contract.account_stop_risk_anchor_balance != 0.0 ||
+           contract.account_stop_risk_cap_percent != 0.0 ||
+           contract.account_stop_risk_owner_ratified)
       return false;
 
    return true;

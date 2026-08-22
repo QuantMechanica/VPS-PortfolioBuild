@@ -3,6 +3,7 @@
 
 #include "QM_Errors.mqh"
 #include "QM_Logger.mqh"
+#include "QM_AccountRiskReservation.mqh"
 
 bool g_qm_trade_block_not_enough_money = false;
 int  g_qm_trade_block_day_key = -1;
@@ -126,6 +127,41 @@ bool QM_TradeContextSend(const MqlTradeRequest &request,
       return false;
    }
 
+   // SP-C2: reserve the whole account's planned stop-risk budget before the
+   // first broker submission and retain the account-scoped lease through any
+   // governed transient retry. Risk-reducing exits/removals remain unblocked.
+   QM_AccountRiskReservationDecision account_risk;
+   if(!QM_AccountRiskReservationBegin(request, account_risk))
+   {
+      out_error_class = account_risk.reason;
+      QM_LogEvent(QM_WARN, "ACCOUNT_RISK_ORDER_BLOCKED",
+                  StringFormat("{\"reason\":\"%s\",\"symbol\":\"%s\",\"magic\":%I64d,\"existing_risk_money\":%.2f,\"request_risk_money\":%.2f,\"projected_risk_money\":%.2f,\"cap_money\":%.2f,\"positions\":%d,\"pending_orders\":%d}",
+                               QM_LoggerEscapeJson(account_risk.reason),
+                               QM_LoggerEscapeJson(request.symbol),
+                               request.magic,
+                               account_risk.existing_risk_money,
+                               account_risk.request_risk_money,
+                               account_risk.projected_risk_money,
+                               account_risk.cap_money,
+                               account_risk.positions_count,
+                               account_risk.pending_orders_count));
+      return false;
+   }
+   const bool account_risk_reserved = account_risk.lease_acquired;
+   if(account_risk_reserved)
+   {
+      QM_LogEvent(QM_INFO, "ACCOUNT_RISK_ORDER_RESERVED",
+                  StringFormat("{\"symbol\":\"%s\",\"magic\":%I64d,\"existing_risk_money\":%.2f,\"request_risk_money\":%.2f,\"projected_risk_money\":%.2f,\"cap_money\":%.2f,\"positions\":%d,\"pending_orders\":%d}",
+                               QM_LoggerEscapeJson(request.symbol),
+                               request.magic,
+                               account_risk.existing_risk_money,
+                               account_risk.request_risk_money,
+                               account_risk.projected_risk_money,
+                               account_risk.cap_money,
+                               account_risk.positions_count,
+                               account_risk.pending_orders_count));
+   }
+
    MqlTradeResult local_result;
    ZeroMemory(local_result);
    bool sent = OrderSend(request, local_result);
@@ -147,6 +183,19 @@ bool QM_TradeContextSend(const MqlTradeRequest &request,
          sent = OrderSend(request, local_result);
          retcode = local_result.retcode;
       }
+   }
+
+   const bool account_risk_released =
+      QM_AccountRiskReleaseLease(account_risk);
+   if(account_risk_reserved && !account_risk_released)
+   {
+      // The send result remains authoritative: an accepted order must not be
+      // reported as failed and retried merely because cleanup failed. The
+      // unreleased/stolen lease still fails closed and expires conservatively.
+      QM_LogEvent(QM_ERROR, "ACCOUNT_RISK_RESERVATION_RELEASE_FAILED",
+                  StringFormat("{\"symbol\":\"%s\",\"magic\":%I64d,\"retcode\":%u}",
+                               QM_LoggerEscapeJson(request.symbol),
+                               request.magic, retcode));
    }
 
    result = local_result;

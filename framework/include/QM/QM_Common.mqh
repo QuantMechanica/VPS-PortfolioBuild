@@ -428,6 +428,34 @@ bool QM_FrameworkInitV3(const QM_RuntimeExecutionContract &execution_contract,
       return false;
      }
 
+   // The target rulepack's runtime_integration marker is not an execution
+   // slot. SP-C2 is bound here, after immutable V3 identity succeeds, and is
+   // enforced at QM_TradeContextSend for every framework entry path. Existing
+   // contracts remain explicitly dormant until an OWNER-ratified policy hash
+   // and cap are carried by the execution contract.
+   if(!QM_AccountRiskReservationConfigure(
+         execution_contract.account_stop_risk_reservation_required,
+         execution_contract.account_stop_risk_policy_id,
+         execution_contract.account_stop_risk_policy_sha256,
+         execution_contract.challenge_instance_id,
+         execution_contract.account_login,
+         execution_contract.account_stop_risk_anchor_balance,
+         execution_contract.account_stop_risk_cap_percent,
+         execution_contract.account_stop_risk_owner_ratified,
+         g_qm_risk_mode == QM_RISK_MODE_PERCENT))
+     {
+      QM_RuntimeExecutionBlock("ACCOUNT_RISK_RESERVATION_CONFIG_INVALID");
+      QM_LogEvent(QM_ERROR,
+                  "ACCOUNT_RISK_RESERVATION_CONFIG_BLOCKED",
+                  StringFormat("{\"contract_id\":\"%s\",\"required\":%s,\"risk_mode\":%d,\"tester\":%I64d}",
+                               QM_LoggerEscapeJson(execution_contract.contract_id),
+                               execution_contract.account_stop_risk_reservation_required
+                                  ? "true" : "false",
+                               (int)g_qm_risk_mode,
+                               MQLInfoInteger(MQL_TESTER)));
+      return false;
+     }
+
    QM_LogEvent(QM_INFO,
                "RUNTIME_EXECUTION_CONTRACT_READY",
                StringFormat("{\"contract_id\":\"%s\",\"generation\":%I64d,\"bundle_sha256\":\"%s\",\"rulepack_sha256\":\"%s\",\"target\":\"%s\"}",

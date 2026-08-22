@@ -49,7 +49,8 @@ enum QM_EntryResult
    QM_ENTRY_REJECTED_DUPLICATE,
    QM_ENTRY_REJECTED_STRESS,      // FW2: Q06 HARSH simulated trade rejection
    QM_ENTRY_REJECTED_CONTRACT,
-   QM_ENTRY_REJECTED_GOVERNOR
+   QM_ENTRY_REJECTED_GOVERNOR,
+   QM_ENTRY_REJECTED_ACCOUNT_RISK
 };
 
 int                       g_qm_entry_ea_id              = 0;
@@ -127,6 +128,7 @@ string QM_EntryResultToString(const QM_EntryResult result)
       case QM_ENTRY_REJECTED_STRESS:     return "QM_ENTRY_REJECTED_STRESS";
       case QM_ENTRY_REJECTED_CONTRACT:   return "QM_ENTRY_REJECTED_CONTRACT";
       case QM_ENTRY_REJECTED_GOVERNOR:   return "QM_ENTRY_REJECTED_GOVERNOR";
+      case QM_ENTRY_REJECTED_ACCOUNT_RISK: return "QM_ENTRY_REJECTED_ACCOUNT_RISK";
    }
    return "QM_ENTRY_REJECTED_BROKER";
 }
@@ -471,6 +473,12 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
    string broker_error_class = "";
    if(!QM_TradeContextSend(trade_req, trade_res, broker_error_class, send_policy))
    {
+      if(StringFind(broker_error_class, "ACCOUNT_RISK_") == 0)
+      {
+         QM_EntryLogReject(req, QM_ENTRY_REJECTED_ACCOUNT_RISK,
+                           broker_error_class);
+         return QM_ENTRY_REJECTED_ACCOUNT_RISK;
+      }
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_BROKER, broker_error_class);
       return QM_ENTRY_REJECTED_BROKER;
    }

@@ -410,7 +410,11 @@ bool QM_BasketOpenPosition(const int ea_id,
    string broker_error_class = "";
    if(!QM_TradeContextSend(trade_req, trade_res, broker_error_class))
    {
-      QM_BasketLogReject(req, "QM_BASKET_REJECTED_BROKER", broker_error_class);
+      const string reject_class =
+         (StringFind(broker_error_class, "ACCOUNT_RISK_") == 0)
+         ? "QM_BASKET_REJECTED_ACCOUNT_RISK"
+         : "QM_BASKET_REJECTED_BROKER";
+      QM_BasketLogReject(req, reject_class, broker_error_class);
       return false;
    }
 
