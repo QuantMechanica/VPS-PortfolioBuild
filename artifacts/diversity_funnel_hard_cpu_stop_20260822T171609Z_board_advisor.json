@@ -1,0 +1,187 @@
+{
+  "schema": "qm.paced_fleet.diversity_cpu_ceiling_stop/v1",
+  "recorded_at_utc": "2026-08-22T17:18:52.5041613Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "366a9e9cd05ba8bfa069b1c0166482d8a9c955a0",
+  "outcome": "NO_CLAIM_NO_BUILD_NO_ENQUEUE_CPU_CEILING",
+  "mission": "advance V5 toward more certified portfolio sleeves with diversity and funnel throughput first",
+  "capacity": {
+    "sampled_through_utc": "2026-08-22T17:16:09.3232622Z",
+    "sampling_method": "Windows Get-Counter Processor(_Total) percent Processor Time",
+    "sample_interval_seconds": 2,
+    "samples_percent": [
+      96.7,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 99.34,
+    "maximum_percent": 100.0,
+    "hard_cpu_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_gte_hard_ceiling",
+    "ceiling_binding": true,
+    "mt5_slot_scan_at_utc": "2026-08-22T17:15:31+00:00",
+    "governed_factory_process_count": 5,
+    "governed_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T9"
+    ],
+    "terminal_reservation_count": 6,
+    "terminal_reservations": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T9"
+    ],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": [],
+    "resource_probe_ok": true,
+    "ram_free_gib": 20.8,
+    "commit_free_gib": 67.9,
+    "d_drive_free_gib": 121.52
+  },
+  "farm_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "canonical farmctl read plus SQLite URI mode=ro/query_only",
+    "quick_check": "ok",
+    "observed_by_utc": "2026-08-22T17:18:52.5041613Z",
+    "work_item_status_counts": {
+      "active": 9,
+      "done": 59580,
+      "failed": 48737,
+      "pending": 3261
+    },
+    "active_work_item_count": 9,
+    "active_phase_counts": {
+      "Q05": 1,
+      "Q09_NEWS": 8
+    },
+    "active_work_items": [
+      {
+        "terminal": "T1",
+        "ea_id": "QM5_20208",
+        "phase": "Q05",
+        "symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+        "work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d"
+      },
+      {
+        "terminal": "T2",
+        "ea_id": "QM5_1354",
+        "phase": "Q09_NEWS",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "317b916e-f93f-43ce-9b40-1c43d1639a49"
+      },
+      {
+        "terminal": "T3",
+        "ea_id": "QM5_1537",
+        "phase": "Q09_NEWS",
+        "symbol": "XAGUSD.DWX",
+        "work_item_id": "c665c1aa-9b3f-410e-bcde-048ef187652d"
+      },
+      {
+        "terminal": "T4",
+        "ea_id": "QM5_11294",
+        "phase": "Q09_NEWS",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "ba24e7a3-4edf-4dc1-b74d-5854a6b5ecf2"
+      },
+      {
+        "terminal": "T5",
+        "ea_id": "QM5_11881",
+        "phase": "Q09_NEWS",
+        "symbol": "GBPUSD.DWX",
+        "work_item_id": "29fe5106-c812-443a-bad4-96cb8467845a"
+      },
+      {
+        "terminal": "T6",
+        "ea_id": "QM5_20266",
+        "phase": "Q09_NEWS",
+        "symbol": "XTIUSD.DWX",
+        "work_item_id": "4263d6b3-1418-47c4-afe1-de7cb6bf61d4"
+      },
+      {
+        "terminal": "T7",
+        "ea_id": "QM5_20086",
+        "phase": "Q09_NEWS",
+        "symbol": "EURUSD.DWX",
+        "work_item_id": "a0533901-56f8-48bd-a5a1-c7c83ff8b4ab"
+      },
+      {
+        "terminal": "T8",
+        "ea_id": "QM5_21505",
+        "phase": "Q09_NEWS",
+        "symbol": "XAGUSD.DWX",
+        "work_item_id": "12bf0454-f00f-4512-b38c-92abeda13f5d"
+      },
+      {
+        "terminal": "T9",
+        "ea_id": "QM5_9641",
+        "phase": "Q09_NEWS",
+        "symbol": "WS30.DWX",
+        "work_item_id": "494651b2-75cd-485c-b889-23545f26e2f1"
+      }
+    ],
+    "active_claims_without_visible_terminal_process_at_nearby_scan": [
+      "T1",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "pending_build_tasks": 37,
+    "new_claim_taken": false,
+    "candidate_selection_performed": false,
+    "selection_reason": "The mandatory CPU-capacity gate bound before selection or mutation."
+  },
+  "non_duplicate_delta": {
+    "previous_evidence": "artifacts/diversity_funnel_hard_cpu_stop_20260822T074648Z_board_advisor.json",
+    "previous_observation_utc": "2026-08-22T07:46:48.6167160Z",
+    "elapsed_minutes": 569.3,
+    "previous_active_work_item_count": 6,
+    "current_active_work_item_count": 9,
+    "active_work_item_delta": 3,
+    "previous_factory_process_count": 4,
+    "current_factory_process_count": 5,
+    "arrived_factory_terminals": [
+      "T2",
+      "T5",
+      "T9"
+    ],
+    "departed_factory_terminals": [
+      "T1",
+      "T6"
+    ],
+    "previous_active_phase_counts": {
+      "Q02": 1,
+      "Q04": 2,
+      "Q07": 2,
+      "Q09_NEWS": 1
+    },
+    "current_active_phase_counts": {
+      "Q05": 1,
+      "Q09_NEWS": 8
+    },
+    "phase_mix_changed": "Q02/Q04/Q07 drained; Q05 arrived and Q09_NEWS expanded from one to eight active rows",
+    "hard_ceiling_remains_binding": true
+  },
+  "actions_not_taken": [
+    "farm claim or build-task ownership mutation",
+    "Strategy Card selection or mutation",
+    "EA source, binary, SPEC, or setfile mutation",
+    "ea_id or magic registry mutation",
+    "magic resolver regeneration",
+    "build check or compile",
+    "smoke test or backtest",
+    "Q02 enqueue, re-enqueue, priority mutation, or dispatch",
+    "terminal reservation, reconciliation, or process control",
+    "portfolio gate or portfolio KPI mutation",
+    "deploy manifest mutation",
+    "T_Live file, terminal-state, or AutoTrading mutation"
+  ],
+  "next_safe_action": "After sustained whole-host CPU remains below 97 percent with maximum headroom, rerun farm ownership preflight and claim exactly one highest-diversity eligible forex, crypto, rates, or market-neutral build; otherwise take one diverse Q02-Q03 infrastructure repair."
+}
