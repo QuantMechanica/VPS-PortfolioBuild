@@ -1,0 +1,135 @@
+{
+  "schema": "qm.qm5-41121.source-build-q02-cpu-ceiling-handoff/v1",
+  "generated_at_utc": "2026-08-22T23:54:30.6881547Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41121",
+  "ea_label": "QM5_41121_xauxag-mseqdom-rv",
+  "strategy_id": "SCHWEIKERT-COWLES-CME-XAUXAG-MSEQDOM-RV-2026_S01",
+  "logical_symbol": "QM5_41121_XAU_XAG_MSEQDOM_RV_D1",
+  "outcome": "SOURCE_BUILD_COMMITTED_CPU_CEILING_Q01_PENDING_Q02_NOT_ENQUEUED",
+  "commits": {
+    "source_approval": "91e13867732d8ba35855ef46eec1f79203c67278",
+    "bounded_source_extraction": "b7cd4264144a566eae1e9a7364cbd9b8f8611146",
+    "ea_id_reservation": "9b19a502414e41dcee2f50540679a418b77a2b14",
+    "g0_card_approval": "4e1c0d698c8a2db4f91631aea07b453f6c449f57",
+    "first_magic_preflight_block": "5d0aa9e0c12158f881f751c9f230b2f4d5f333ed",
+    "source_build_magic_and_resolver": "6939101997d8d176ddbd96638e9872392a849677"
+  },
+  "identity": {
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "logical_symbol": "QM5_41121_XAU_XAG_MSEQDOM_RV_D1",
+    "symbol_slots": [0, 1],
+    "magics": [411210000, 411210001]
+  },
+  "mechanic": {
+    "formation": "immediately completed calendar month with exactly 17-23 synchronized XAU/XAG D1 close pairs",
+    "returns": "chronological adjacent changes in log(XAU close)-log(XAG close); every return must be finite and nonzero",
+    "state": "count every adjacent same-sign return transition as a sequence and every opposite-sign transition as a reversal; require sequences >= reversals",
+    "entry": "positive net monthly ratio displacement => SELL XAU/BUY XAG; negative => BUY XAU/SELL XAG",
+    "attempt_cadence": "one durable attempt per broker month, persisted before all fallible gates",
+    "exit": "first synchronized D1 boundary in a later broker month, with forty-calendar-day stale repair",
+    "q02_frequency_floor": "at least five completed packages per full post-warm-up year"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "equal_absolute_notional_target": true,
+    "maximum_notional_mismatch_pct": 20.0,
+    "atr_period_d1": 20,
+    "atr_stop_multiple": 3.5,
+    "profit_target": false,
+    "friday_close": false,
+    "news_temporal": "OFF",
+    "news_compliance": "NONE"
+  },
+  "magic_recovery": {
+    "directory_first": true,
+    "strict_first_attempt_receipt_preserved": true,
+    "resolver_mode": "--keep-obsolete",
+    "allow_dropped_used": false,
+    "resolver_rows_kept": 17817,
+    "resolver_rows_dropped": 0,
+    "registry_sha256_binding": "DC6D80A2A0D0427EFFDA527A9418138B30F4B5472DE2CCCCC7094BDD08D66B47"
+  },
+  "validations": {
+    "card_schema_lint": "PASS",
+    "g0_card_status": "APPROVED",
+    "build_prerequisite_guard": "PASS",
+    "registry_identity": "PASS",
+    "magic_rows_and_resolver": "PASS",
+    "reference_tests": {
+      "verdict": "PASS",
+      "tests_passed": 8
+    },
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "card_copy_sha256_equal": true,
+    "strict_compile": "NOT_ATTEMPTED_CPU_CEILING",
+    "q01": "PENDING"
+  },
+  "compile": {
+    "governed_compile_enqueued": false,
+    "compile_status_at_handoff": "NOT_ENQUEUED",
+    "work_item_id": null,
+    "ex5_exists": false,
+    "setfile_build_hash": "pending",
+    "build_check_result": null
+  },
+  "capacity": {
+    "observed_from_utc": "2026-08-22T23:48:27.9466289Z",
+    "observed_to_utc": "2026-08-22T23:48:37.3386868Z",
+    "counter": "Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 2,
+    "whole_host_cpu_pct": [100.0, 100.0, 100.0, 100.0, 100.0],
+    "average_cpu_pct": 100.0,
+    "maximum_cpu_pct": 100.0,
+    "running_governed_terminals": ["T1", "T2", "T4", "T6", "T7", "T9", "T10"],
+    "running_governed_terminal_count": 7,
+    "metatester_process_count_at_sample_end": 6,
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "ceiling_pct": 97,
+    "ceiling_hit": true,
+    "binding_stop": true
+  },
+  "q02": {
+    "requested": true,
+    "preview_run": false,
+    "enqueued": false,
+    "work_item_id": null,
+    "blocking_gates": [
+      "BACKTEST_CPU_CEILING_HIT",
+      "STRICT_COMPILE_EX5_FINAL_SET_BINDING_AND_Q01_PASS_ABSENT"
+    ]
+  },
+  "hashes_sha256": {
+    "bounded_source": "01CD4B7EDBE50D42478D6A4FA4580E6F8AA6782FA5B83AED9B116E815468AA3E",
+    "approved_and_build_card": "7DDE178C642E0CA0E488B3036E3D979E3AEB1C6BDEB20E133FC913FBCB5747A5",
+    "mq5": "DC7866AE0040789DD8937C798E49733AF1ADCDC6C3256E30509C55FC2E8D5336",
+    "spec": "B0170F4699D604BC3B784C5B80CE47858C920BE10E3B40D2B1F501A80FEBD78C",
+    "basket_manifest": "B774A8A0D42E9D3C740C91B7417D8A8BD6C7D0D5C8E0433A4D5D7B7C50EC74B8",
+    "reference_suite": "6D05596C6ED8CF3B84BDB6764FE64A97EB8C3CFF5CE06D07EAD609703F50BE04",
+    "unbound_backtest_set": "9BB35883B17FD8C6BB0605F176AA51C15A8C68C64716C99A8F9F29907EA4B837",
+    "magic_registry": "DC6D80A2A0D0427EFFDA527A9418138B30F4B5472DE2CCCCC7094BDD08D66B47",
+    "magic_resolver": "8B5ED4ACA923FCA699246110E9BCF6A4CCDA3DBDE7CED1BB8266D618B5219D6C"
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_reservation_or_control": false,
+    "compile_queue_mutated": false,
+    "backtest_queue_mutated": false,
+    "autotrading_toggled": false,
+    "t_live_observed_read_only": true,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
