@@ -81,6 +81,21 @@ def test_compile_worker_binding_uses_named_splatting() -> None:
     assert "$compileArguments = @(" not in source
 
 
+def test_compile_worker_preserves_structured_failure_receipt() -> None:
+    build_check = BUILD_CHECK.read_text(encoding="utf-8")
+    compile_one = (
+        REPO_ROOT / "framework" / "scripts" / "compile_one.ps1"
+    ).read_text(encoding="utf-8")
+
+    assert '$savedErrorActionPreference = $ErrorActionPreference' in build_check
+    assert '$ErrorActionPreference = "Continue"' in build_check
+    assert '$outputLines = @(& $ResolvedCompileScriptPath @compileParameters 2>&1)' in build_check
+    assert '$ErrorActionPreference = $savedErrorActionPreference' in build_check
+    assert "Write-Error $_ -ErrorAction Continue" in compile_one
+    assert 'Write-Output "compile_one.reason_class=$reasonClass"' in compile_one
+    assert 'Write-Output "compile_one.summary=$summaryCsvPath"' in compile_one
+
+
 def test_d2_loss_limit_matching_and_mismatching_fixtures(tmp_path: Path) -> None:
     source, card = write_fixture(tmp_path, PASSING_SOURCE)
     passing = gate.analyze_file(source, card)

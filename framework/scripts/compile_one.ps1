@@ -482,7 +482,10 @@ try {
         $reasonClass = "RUNTIME_EXCEPTION"
     }
 
-    Write-Error $_
+    # The structured receipt is emitted from finally and is the authoritative
+    # worker contract. Do not let this diagnostic terminate the output stream
+    # before those fields are written for the parent build check.
+    Write-Error $_ -ErrorAction Continue
 } finally {
     $summaryRow = @{
         run_tag = $runTag

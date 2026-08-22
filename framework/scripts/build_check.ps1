@@ -239,8 +239,18 @@ function Invoke-CompileGate {
             $compileParameters["CompileWorkItemId"] = $CompileWorkItemId
             $compileParameters["ClaimedTerminal"] = $ClaimedTerminal
         }
-        $outputLines = & $ResolvedCompileScriptPath @compileParameters 2>&1
-        $compileExit = $LASTEXITCODE
+        $savedErrorActionPreference = $ErrorActionPreference
+        try {
+            # compile_one reports its durable failure detail on the error stream
+            # before emitting the structured receipt in finally. Keep that
+            # non-terminating here so the receipt and real exit code survive.
+            $ErrorActionPreference = "Continue"
+            $outputLines = @(& $ResolvedCompileScriptPath @compileParameters 2>&1)
+            $compileExit = $LASTEXITCODE
+        }
+        finally {
+            $ErrorActionPreference = $savedErrorActionPreference
+        }
         foreach ($line in $outputLines) {
             Write-Output $line
         }
