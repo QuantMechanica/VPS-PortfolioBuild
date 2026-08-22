@@ -12,7 +12,10 @@
 //   Sizing — framework RISK_FIXED (lot sizing delegated to QM_TM_OpenPosition via req.sl).
 //   One position at a time; no TP, no scale, no trail, no grid.
 //
-// NEWS GATE DELIBERATELY DISABLED (QM_NEWS_TEMPORAL_OFF / QM_NEWS_COMPLIANCE_NONE):
+// OWNER-RATIFIED EVENT-ANCHORED NEWS EXEMPTION (decisions/2026-07-24_news_blackout_exemptions.md):
+//   QM_NEWS_TEMPORAL_OFF / QM_NEWS_COMPLIANCE_NONE is the approved contract for
+//   this sleeve. It is not a general blackout waiver; the strategy-specific
+//   compensating control is the mandatory flat-before-statement exit below.
 //   The framework OnTick news gate sits BEFORE Strategy_ExitSignal. The scheduled exit
 //   at broker hour 20 on event day coincides with the FOMC high-impact blackout window.
 //   If news filtering were active, QM_NewsAllowsTrade2 would return false and OnTick
@@ -165,7 +168,7 @@ bool Strategy_NoTradeFilter()
    if(_Period != strategy_timeframe)
       return true;
    // Need at least ATR period + 2 bars of D1 history (shift=1 means we need bar[1])
-   if(Bars(_Symbol, PERIOD_D1) < strategy_atr_period + 2)
+   if(Bars(_Symbol, PERIOD_D1) < strategy_atr_period + 2) // perf-allowed: one bounded D1 readiness count; no history scan or per-bar loop.
       return true;
    return false;
   }
@@ -198,18 +201,37 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    // Check if TOMORROW is an FOMC event date (now + 24 hours)
    const int tomorrow_key = Strategy_DateKey(broker_now + 24 * 60 * 60);
-   if(!Strategy_IsEventDateKey(tomorrow_key))
+   const bool calendar_member = Strategy_IsEventDateKey(tomorrow_key);
+   QM_LogEvent(QM_INFO,
+               "ENTRY_GATE_DIAGNOSTIC",
+               StringFormat("{\"broker_time\":%I64d,\"broker_hour\":%d,\"tomorrow_key\":%d,\"calendar_member\":%s,\"has_position\":%s}",
+                            (long)broker_now,
+                            hour,
+                            tomorrow_key,
+                            calendar_member ? "true" : "false",
+                            Strategy_HasOurOpenPosition() ? "true" : "false"));
+   if(!calendar_member)
       return false;
 
    // Fetch prior closed D1 ATR(14): QM_ATR(sym, tf, period, shift=1) — shift=1 is the default
    const double daily_atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(daily_atr <= 0.0)
+     {
+      QM_LogEvent(QM_ERROR,
+                  "ENTRY_GATE_ATR_INVALID",
+                  StringFormat("{\"tomorrow_key\":%d,\"atr\":%.8f}", tomorrow_key, daily_atr));
       return false;
+     }
 
    // Market BUY — price=0 means market order in QM_TM_OpenPosition
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    if(ask <= 0.0)
+     {
+      QM_LogEvent(QM_ERROR,
+                  "ENTRY_GATE_ASK_INVALID",
+                  StringFormat("{\"tomorrow_key\":%d,\"ask\":%.8f}", tomorrow_key, ask));
       return false;
+     }
 
    const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
    const double stop_price = NormalizeDouble(ask - strategy_stop_atr_mult * daily_atr, digits);
@@ -218,13 +240,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double min_stop_dist = SymbolInfoDouble(_Symbol, SYMBOL_POINT) *
                                 (double)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    if(stop_price <= 0.0 || ask - stop_price < min_stop_dist)
+     {
+      QM_LogEvent(QM_ERROR,
+                  "ENTRY_GATE_STOP_INVALID",
+                  StringFormat("{\"tomorrow_key\":%d,\"ask\":%.8f,\"stop\":%.8f,\"min_stop_dist\":%.8f}",
+                               tomorrow_key, ask, stop_price, min_stop_dist));
       return false;
+     }
 
    req.type   = QM_BUY;      // market buy (QM_BUY = 0, maps to ORDER_TYPE_BUY)
    req.price  = 0.0;         // market — QM_TM_OpenPosition reads SYMBOL_ASK
    req.sl     = stop_price;  // hard stop; framework sizes lots from RISK_FIXED / stop_dist
    req.tp     = 0.0;         // no take-profit
    req.reason = "PRE_FOMC_LONG";
+
+   QM_LogEvent(QM_INFO,
+               "ENTRY_GATE_READY",
+               StringFormat("{\"tomorrow_key\":%d,\"atr\":%.8f,\"ask\":%.8f,\"stop\":%.8f,\"news_contract\":\"OWNER_RATIFIED_EVENT_ANCHORED_EXEMPTION\"}",
+                            tomorrow_key, daily_atr, ask, stop_price));
 
    return true;
   }
@@ -252,7 +285,6 @@ bool Strategy_ExitSignal()
 void Strategy_ManageOpenPosition()
   {
    // No-op: hard stop is set at entry; no management needed.
-   QM_FrameworkTrackOpenPositionMae();
   }
 
 // ── Strategy_NewsFilterHook ───────────────────────────────────────────────────
@@ -295,7 +327,7 @@ int OnInit()
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK",
-               StringFormat("{\"ea_id\":%d,\"symbol\":\"%s\",\"events\":%d,\"calendar_valid_through\":%d,\"atr_period\":%d,\"stop_atr_mult\":%.1f}",
+               StringFormat("{\"ea_id\":%d,\"symbol\":\"%s\",\"events\":%d,\"calendar_valid_through\":%d,\"atr_period\":%d,\"stop_atr_mult\":%.1f,\"news_contract\":\"OWNER_RATIFIED_EVENT_ANCHORED_EXEMPTION\",\"flat_before_statement\":true}",
                             qm_ea_id, _Symbol, ArraySize(g_event_dates),
                             g_event_calendar_valid_through_key,
                             strategy_atr_period, strategy_stop_atr_mult));
@@ -313,6 +345,9 @@ void OnDeinit(const int reason)
 // corset check (new-bar gating order) passes.
 void OnTick()
   {
+   // Current-build contract: the MAE hook is direct and first on every tick.
+   QM_FrameworkTrackOpenPositionMae();
+
    // 1. Kill-switch: halt if flagged
    if(!QM_KillSwitchCheck())
       return;
@@ -356,7 +391,14 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+          const bool close_ok = QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+          QM_LogEvent(close_ok ? QM_INFO : QM_ERROR,
+                      "FOMC_FLAT_EXIT_RESULT",
+                      StringFormat("{\"ticket\":%I64u,\"broker_time\":%I64d,\"event_key\":%d,\"close_ok\":%s}",
+                                   ticket,
+                                   (long)broker_now,
+                                   Strategy_DateKey(broker_now),
+                                   close_ok ? "true" : "false"));
         }
      }
 
@@ -373,10 +415,17 @@ void OnTick()
 
    // 9. Entry signal — market long the evening before each FOMC date
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      const bool open_ok = QM_TM_OpenPosition(req, out_ticket);
+      QM_LogEvent(open_ok ? QM_INFO : QM_ERROR,
+                  "FOMC_ENTRY_ORDER_RESULT",
+                  StringFormat("{\"broker_time\":%I64d,\"ticket\":%I64u,\"open_ok\":%s}",
+                               (long)broker_now,
+                               out_ticket,
+                               open_ok ? "true" : "false"));
      }
   }
 
