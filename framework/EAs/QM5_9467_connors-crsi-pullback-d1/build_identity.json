@@ -1,0 +1,22 @@
+{
+  "build_check_passed": true,
+  "mq5_path": "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\QM5_9467_connors-crsi-pullback-d1.mq5",
+  "mq5_sha256": "008b3a0179ed4848bd798c51bc8b8b08489d8ec51aba0b08130a03f2ab373904",
+  "ex5_path": "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\QM5_9467_connors-crsi-pullback-d1.ex5",
+  "ex5_sha256": "a90ef1612388ea95d376b2060fda8dd076af2d0f7254f6fed268312ce2a08af6",
+  "setfiles_generated": [
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_AUDUSD.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_EURUSD.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_GBPUSD.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_GDAXI.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_NDX.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_NZDUSD.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_SP500.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_UK100.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_USDCAD.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_USDCHF.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_USDJPY.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_WS30.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9467_connors-crsi-pullback-d1\\\\sets\\QM5_9467_connors-crsi-pullback-d1_XAUUSD.DWX_D1_backtest.set"
+  ]
+}
