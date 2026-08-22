@@ -1,0 +1,149 @@
+{
+  "schema": "qm.paced_fleet.diversity_cpu_ceiling_stop/v1",
+  "recorded_at_utc": "2026-08-22T06:48:06.5930920Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "3abcbecf50733039cf1f92ed2c8a6bde7b74f973",
+  "outcome": "NO_CLAIM_NO_BUILD_NO_ENQUEUE_CPU_CEILING",
+  "mission": "advance V5 toward more certified portfolio sleeves with diversity and funnel throughput first",
+  "capacity": {
+    "sampled_from_utc": "2026-08-22T06:47:28.0042222Z",
+    "sampled_through_utc": "2026-08-22T06:47:33.4242610Z",
+    "sampling_method": "Windows Get-Counter Processor(_Total) percent Processor Time",
+    "sample_interval_seconds": 1,
+    "samples_percent": [
+      91.9,
+      83.92,
+      85.11,
+      99.71,
+      97.66
+    ],
+    "average_percent": 91.66,
+    "maximum_percent": 99.71,
+    "hard_cpu_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_gte_hard_ceiling",
+    "ceiling_binding": true,
+    "mt5_slot_scan_at_utc": "2026-08-22T06:46:22+00:00",
+    "governed_factory_process_count": 4,
+    "governed_factory_terminals": [
+      "T1",
+      "T3",
+      "T4",
+      "T5"
+    ],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": [],
+    "d_drive_free_gib": 132.8
+  },
+  "farm_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "canonical farmctl read",
+    "observed_at_utc": "2026-08-22T06:46:22+00:00",
+    "active_work_item_count": 6,
+    "active_phase_counts": {
+      "OPT_CENSUS": 1,
+      "Q02": 1,
+      "Q04": 1,
+      "Q07": 2,
+      "Q09_NEWS": 1
+    },
+    "active_work_items": [
+      {
+        "terminal": "T1",
+        "ea_id": "QM5_20294",
+        "phase": "Q02",
+        "symbol": "QM5_20294_XAU_XAG_LOWMAX_D1",
+        "work_item_id": "37bc6871-9078-410e-b949-7d504cf74dd5"
+      },
+      {
+        "terminal": "T2",
+        "ea_id": "QM5_41097",
+        "phase": "OPT_CENSUS",
+        "symbol": "USDJPY.DWX",
+        "work_item_id": "ccc0055d-046a-5b80-9f3f-7d1ed7392e38"
+      },
+      {
+        "terminal": "T3",
+        "ea_id": "QM5_11294",
+        "phase": "Q09_NEWS",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "b2468d2e-92a5-4fd8-a6ae-29967da0ca08"
+      },
+      {
+        "terminal": "T4",
+        "ea_id": "QM5_11182",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "3ca42c6d-ba52-4771-8f0c-628b7cce615b"
+      },
+      {
+        "terminal": "T5",
+        "ea_id": "QM5_12350",
+        "phase": "Q07",
+        "symbol": "USDJPY.DWX",
+        "work_item_id": "9060102a-75cb-4faa-8896-72dcc92c1327"
+      },
+      {
+        "terminal": "T8",
+        "ea_id": "QM5_1118",
+        "phase": "Q04",
+        "symbol": "SP500.DWX",
+        "work_item_id": "54978249-5245-41cc-94ec-aa25bf802847"
+      }
+    ],
+    "active_claims_without_visible_terminal_process_at_nearby_scan": [
+      "T2",
+      "T8"
+    ],
+    "pending_build_tasks": 37,
+    "new_claim_taken": false,
+    "candidate_selection_performed": false,
+    "selection_reason": "The mandatory CPU-capacity gate bound before selection or mutation."
+  },
+  "non_duplicate_delta": {
+    "previous_evidence": "artifacts/diversity_funnel_hard_cpu_stop_20260822T033215Z_board_advisor.json",
+    "previous_observation_utc": "2026-08-22T03:33:03.756063+00:00",
+    "elapsed_minutes": 194.5,
+    "previous_active_work_item_count": 7,
+    "current_active_work_item_count": 6,
+    "active_work_item_delta": -1,
+    "previous_factory_process_count": 4,
+    "current_factory_process_count": 4,
+    "arrived_factory_terminals": [
+      "T4",
+      "T5"
+    ],
+    "departed_factory_terminals": [
+      "T2",
+      "T6"
+    ],
+    "previous_active_phase_counts": {
+      "Q02": 1,
+      "Q04": 2,
+      "Q07": 3,
+      "Q09_NEWS": 1
+    },
+    "current_active_phase_counts": {
+      "OPT_CENSUS": 1,
+      "Q02": 1,
+      "Q04": 1,
+      "Q07": 2,
+      "Q09_NEWS": 1
+    },
+    "hard_ceiling_remains_binding": true
+  },
+  "actions_not_taken": [
+    "farm claim or build-task ownership mutation",
+    "Strategy Card selection or mutation",
+    "EA source, binary, SPEC, or setfile mutation",
+    "ea_id or magic registry mutation",
+    "magic resolver regeneration",
+    "build check or compile",
+    "smoke test or backtest",
+    "Q02 enqueue, re-enqueue, priority mutation, or dispatch",
+    "terminal reservation, reconciliation, or process control",
+    "portfolio gate or portfolio KPI mutation",
+    "deploy manifest mutation",
+    "T_Live file, terminal-state, or AutoTrading mutation"
+  ],
+  "next_safe_action": "After sustained whole-host CPU remains below 97 percent with maximum headroom, rerun farm ownership preflight and claim exactly one highest-diversity eligible forex, crypto, rates, or market-neutral build; otherwise take one diverse Q02-Q03 infrastructure repair."
+}
