@@ -453,6 +453,75 @@ def cell_report(summary_path: Path) -> dict[str, Any]:
     }
 
 
+def boost(*, ledger_path: Path, db_path: Path, window: int) -> dict[str, Any]:
+    """Maintain a rolling priority window over this program's pending cells.
+
+    Measured 2026-08-22: at the deliberate tier-6 rank a census cell ties with
+    fresh Q04 rows and loses every tie on ``updated_at`` — ~1 580 runnable rows
+    stood ahead of the first cell, i.e. the census would not START for ~9 days.
+    That is tail-sequencing, not the interleave the rank comment promises.  A
+    bounded window keeps the interleave honest in both directions: at most
+    ``window`` cells carry ``priority_track`` at any moment (census can never
+    take more than that many slots), while the funnel keeps every remaining
+    slot.  Priority-tracked downstream rows (Q05–Q10, effective 0–5) still
+    outrank a boosted cell (effective 6).  Queue-priority-only change: pending
+    rows, payload flag; verdicts, active rows and cell windows untouched.
+    """
+    if window < 1 or window > 16:
+        raise CensusError(f"boost window out of range 1..16: {window}")
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    ids = [cell["work_item_id"] for cell in ledger.get("cells", [])]
+    if not ids:
+        raise CensusError("ledger has no cells")
+    conn = sqlite3.connect(db_path, timeout=60)
+    try:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+        marks = ",".join("?" for _ in ids)
+        rows = conn.execute(
+            f"SELECT id, status, payload_json FROM work_items WHERE id IN ({marks})",
+            ids).fetchall()
+        by_id = {row["id"]: row for row in rows}
+        active = flagged = done = 0
+        candidates: list[str] = []
+        for cell in ledger["cells"]:  # ledger order: year ASC within arm plan
+            row = by_id.get(cell["work_item_id"])
+            if row is None:
+                continue
+            if row["status"] == "active":
+                active += 1
+            elif row["status"] == "pending":
+                payload = json.loads(row["payload_json"] or "{}")
+                if payload.get("priority_track") is True:
+                    flagged += 1
+                else:
+                    candidates.append(row["id"])
+            elif row["status"] == "done":
+                done += 1
+        deficit = max(0, window - active - flagged)
+        boosted: list[str] = []
+        now = dt.datetime.now(dt.timezone.utc).isoformat()
+        for work_item_id in candidates[:deficit]:
+            payload = json.loads(by_id[work_item_id]["payload_json"] or "{}")
+            payload["priority_track"] = True
+            payload["boost_authority"] = "opt_census.boost rolling window (queue-priority-only)"
+            payload["boosted_at_utc"] = now
+            conn.execute(
+                "UPDATE work_items SET payload_json=?, updated_at=? "
+                "WHERE id=? AND status='pending'",
+                (json.dumps(payload, sort_keys=True), now, work_item_id))
+            boosted.append(work_item_id)
+        conn.commit()
+        return {
+            "schema": "qm.opt-census-boost.v1",
+            "window": window, "active": active, "flagged_before": flagged,
+            "boosted_now": len(boosted), "boosted_ids": boosted,
+            "done": done, "pending_unflagged": len(candidates) - len(boosted),
+        }
+    finally:
+        conn.close()
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -494,6 +563,12 @@ def _build_parser() -> argparse.ArgumentParser:
     status.add_argument("--ledger", type=Path, required=True)
     status.add_argument("--db", type=Path, default=DEFAULT_DB)
     status.add_argument("--out", type=Path)
+
+    boost_p = sub.add_parser(
+        "boost", help="top up the rolling priority window over pending census cells")
+    boost_p.add_argument("--ledger", type=Path, required=True)
+    boost_p.add_argument("--db", type=Path, default=DEFAULT_DB)
+    boost_p.add_argument("--window", type=int, default=8)
     return parser
 
 
@@ -504,6 +579,10 @@ def main(argv: list[str] | None = None) -> int:
             result = cell_report(args.summary)
             if args.out:
                 _atomic_write(args.out, json.dumps(result, indent=2, sort_keys=True) + "\n")
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 0
+        if args.command == "boost":
+            result = boost(ledger_path=args.ledger, db_path=args.db, window=args.window)
             print(json.dumps(result, indent=2, sort_keys=True))
             return 0
         if args.command in ("advance", "report"):

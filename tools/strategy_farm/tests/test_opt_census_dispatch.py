@@ -25,6 +25,7 @@ import pytest
 
 from tools.strategy_farm import farmctl
 from tools.strategy_farm import health
+from tools.strategy_farm import opt_census as census
 from tools.strategy_farm import work_item_clean_view as clean
 from tools.strategy_farm import mission_control_v2_data as mc
 
@@ -235,3 +236,70 @@ def test_phase_age_slo_ignores_fresh_census_batch() -> None:
     assert "OPT_CENSUS" not in snap["phases"]
     result = health.chk_work_item_phase_age_slo(conn)
     assert result["status"] == "OK"
+
+
+# ---------------------------------------------------------------------------
+# 7 · BOOST — rolling priority window (queue-priority-only)
+# ---------------------------------------------------------------------------
+
+def _boost_fixture(tmp_path: Path, statuses: list[tuple[str, bool]]) -> tuple[Path, Path]:
+    """statuses: list of (status, already_flagged) per cell, ledger order."""
+    db = tmp_path / "farm.sqlite"
+    conn = sqlite3.connect(db)
+    conn.execute(WORK_ITEMS_DDL)
+    cells = []
+    for i, (status, flagged) in enumerate(statuses):
+        wid = f"cell-{i:03d}"
+        payload = {"schema": census.SCHEMA, "cell_key": f"k{i}", "year": 2019 + i % 7}
+        if flagged:
+            payload["priority_track"] = True
+        _insert(conn, id=wid, kind="backtest", phase="OPT_CENSUS", ea_id="QM5_41097",
+                status=status, payload_json=json.dumps(payload),
+                created_at="2026-08-22T07:00:00+00:00", updated_at="2026-08-22T07:00:00+00:00")
+        cells.append({"work_item_id": wid, "cell_key": f"k{i}", "year": 2019 + i % 7,
+                      "arm": "baseline", "direction": "NONE", "predicate_id": 0,
+                      "setfile_path": "x.set", "from_date": "2019.01.01", "to_date": "2019.12.31"})
+    conn.commit(); conn.close()
+    ledger = tmp_path / "ledger.json"
+    ledger.write_text(json.dumps({"cells": cells}), encoding="utf-8")
+    return ledger, db
+
+
+def test_boost_tops_up_to_window_counting_active_and_flagged(tmp_path: Path) -> None:
+    ledger, db = _boost_fixture(tmp_path, [("active", False), ("pending", True)] + [("pending", False)] * 10)
+    result = census.boost(ledger_path=ledger, db_path=db, window=4)
+    assert result["active"] == 1 and result["flagged_before"] == 1
+    assert result["boosted_now"] == 2  # 4 - 1 active - 1 flagged
+    conn = sqlite3.connect(db)
+    flagged = [r[0] for r in conn.execute(
+        "SELECT id FROM work_items WHERE status='pending' "
+        "AND json_extract(payload_json,'$.priority_track')=1 ORDER BY id")]
+    assert flagged == ["cell-001", "cell-002", "cell-003"]
+    payload = json.loads(conn.execute(
+        "SELECT payload_json FROM work_items WHERE id='cell-002'").fetchone()[0])
+    assert payload["boost_authority"].startswith("opt_census.boost")
+    conn.close()
+
+
+def test_boost_never_touches_done_or_active_and_is_idempotent_at_window(tmp_path: Path) -> None:
+    ledger, db = _boost_fixture(tmp_path, [("done", False), ("active", False)] + [("pending", False)] * 6)
+    first = census.boost(ledger_path=ledger, db_path=db, window=3)
+    assert first["boosted_now"] == 2 and first["done"] == 1
+    second = census.boost(ledger_path=ledger, db_path=db, window=3)
+    assert second["boosted_now"] == 0 and second["flagged_before"] == 2
+    conn = sqlite3.connect(db)
+    for wid in ("cell-000", "cell-001"):
+        payload = json.loads(conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (wid,)).fetchone()[0])
+        assert "priority_track" not in payload
+    conn.close()
+
+
+def test_boost_window_bounds_rejected(tmp_path: Path) -> None:
+    ledger, db = _boost_fixture(tmp_path, [("pending", False)])
+    for bad in (0, 17):
+        try:
+            census.boost(ledger_path=ledger, db_path=db, window=bad)
+        except census.CensusError:
+            continue
+        raise AssertionError(f"window {bad} accepted")
