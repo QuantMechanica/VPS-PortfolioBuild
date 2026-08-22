@@ -1,0 +1,71 @@
+{
+  "candidate": {
+    "author": "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "normalized two completed WTI calendar-month OHLC newest strict inside parent range own-body-sign continuation next-month hold",
+    "slug": "wti-minside-body-mom",
+    "strategy_id": "MOP-WTI-MINSIDE-BODY-MOM-2026_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-08-22T06:34:06+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41091_wti-winside-body-mom_card.md",
+      "score": 0.5789473684210527,
+      "slug": "wti-winside-body-mom",
+      "source": "card",
+      "strategy_id": "MOP-WTI-WINSIDE-BODY-MOM-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41106_wti-mbody-dominance-mom_card.md",
+      "score": 0.5555555555555556,
+      "slug": "wti-mbody-dominance-mom",
+      "source": "card",
+      "strategy_id": "MOP-WTI-MBODY-DOMINANCE-MOM-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41092_wti-wbody-dominance-mom_card.md",
+      "score": 0.5,
+      "slug": "wti-wbody-dominance-mom",
+      "source": "card",
+      "strategy_id": "MOP-WTI-WBODY-DOMINANCE-MOM-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41094_xng-wbody-dominance-mom_card.md",
+      "score": 0.5,
+      "slug": "xng-wbody-dominance-mom",
+      "source": "card",
+      "strategy_id": "MOP-XNG-WBODY-DOMINANCE-MOM-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4596,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1275,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
