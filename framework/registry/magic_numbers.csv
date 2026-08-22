@@ -17813,3 +17813,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1623,hopwood-bermaui-dss-h4,10,AUDUSD.DWX,16230010,2026-08-22,Codex governed allocator,active
 1623,hopwood-bermaui-dss-h4,11,USDCAD.DWX,16230011,2026-08-22,Codex governed allocator,active
 1623,hopwood-bermaui-dss-h4,12,NZDUSD.DWX,16230012,2026-08-22,Codex governed allocator,active
+41118,xauxag-mlatehalf-dom-rv,0,XAUUSD.DWX,411180000,2026-08-22,Codex governed allocator,active
+41118,xauxag-mlatehalf-dom-rv,1,XAGUSD.DWX,411180001,2026-08-22,Codex governed allocator,active
