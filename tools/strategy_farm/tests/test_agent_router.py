@@ -21,7 +21,12 @@ class AgentRouterTests(unittest.TestCase):
         mq5 = ea_dir / f"{label}.mq5"
         ex5 = ea_dir / f"{label}.ex5"
         setfile = set_dir / f"{label}_EURUSD.DWX_H1_backtest.set"
-        mq5.write_text("void OnTick() {}\n", encoding="utf-8")
+        mq5.write_text(
+            "void QM_FrameworkTrackOpenPositionMae() {}\n"
+            "bool QM_KillSwitchCheck() { return true; }\n"
+            "void OnTick() { QM_FrameworkTrackOpenPositionMae(); if(!QM_KillSwitchCheck()) return; }\n",
+            encoding="utf-8",
+        )
         ex5.write_bytes(b"fixture-ex5")
         setfile.write_text("; build_hash:   " + ("a" * 64) + "\nRISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
 
@@ -367,6 +372,37 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             review_route = agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
             self.assertEqual(review_route.task_id, updated["codex_review_task_id"])
             self.assertEqual(review_route.assigned_agent, "codex")
+
+    def test_gemini_claimed_pass_is_refused_when_canonical_hardening_fails(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+            build = agent_router.enqueue_task(root, "build_ea", priority=10)
+            agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
+            artifact = self._write_build_identity_fixture(root, commit=True)
+            payload = json.loads(artifact.read_text(encoding="utf-8"))
+            mq5 = Path(payload["mq5_path"])
+            mq5.write_text(
+                "bool QM_KillSwitchCheck() { return true; }\n"
+                "void OnTick() { if(!QM_KillSwitchCheck()) return; }\n",
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "-C", str(root), "add", "--", str(mq5.relative_to(root))], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-q", "-m", "fixture missing MAE"], check=True)
+            payload["mq5_sha256"] = hashlib.sha256(mq5.read_bytes()).hexdigest()
+            artifact.write_text(json.dumps(payload), encoding="utf-8")
+
+            refused = agent_router.update_task(
+                root,
+                build["task_id"],
+                state="REVIEW",
+                artifact_path=str(artifact),
+                verdict="FALSE_PRODUCER_PASS",
+            )
+
+            self.assertFalse(refused["updated"])
+            self.assertEqual(refused["gate_code"], "D3_D10_BUILD_GATE_HARDENING_FAIL")
+            self.assertTrue(any("MAE_HOOK_MISSING" in item for item in refused["failures"]))
 
     def test_strict_build_fail_refuses_review_dispatch_and_logs_event(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

@@ -47,6 +47,11 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     import raw_mq5_quarantine  # type: ignore
 
+try:
+    from tools.strategy_farm import build_gate_hardening
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import build_gate_hardening  # type: ignore
+
 
 DEFAULT_ROOT = farmctl.DEFAULT_ROOT
 CLAUDE_DISABLED_FLAG = Path(r"D:\QM\strategy_farm\CLAUDE_DISABLED.flag")
@@ -1765,6 +1770,28 @@ def _build_review_dispatch_gate(artifact_path: str | None) -> dict[str, Any]:
             "D6_BUILD_IDENTITY_UNTRACKED",
             "build_identity_git_root_missing_review_dispatch_refused",
             bound_path=str(bound_paths[0]),
+        )
+
+    # Never trust a producer-supplied boolean for the recurring D3-D10 defect
+    # classes. Re-run the canonical analyzer on the exact hash-bound MQ5 bytes
+    # before a Gemini task is allowed to mint an independent Codex review.
+    try:
+        hardening = build_gate_hardening.analyze_file(bound_paths[0], None)
+    except Exception as exc:  # fail closed on analyzer/read/encoding defects
+        return _refuse_review(
+            "D3_D10_BUILD_GATE_HARDENING_ERROR",
+            "build_gate_hardening_error_review_dispatch_refused",
+            bound_path=str(bound_paths[0]),
+            detail=str(exc),
+        )
+    hardening_failures = list(hardening.get("failures") or [])
+    if hardening_failures:
+        return _refuse_review(
+            "D3_D10_BUILD_GATE_HARDENING_FAIL",
+            "build_gate_hardening_failed_review_dispatch_refused",
+            bound_path=str(bound_paths[0]),
+            failures=hardening_failures,
+            checks=hardening.get("checks"),
         )
     for bound_path in bound_paths:
         ok, track_detail = _tracked_clean_at_head(git_root, bound_path)

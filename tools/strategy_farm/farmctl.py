@@ -12976,8 +12976,12 @@ def _spawn_gemini_for_build_claimed(root: Path, task_row: sqlite3.Row) -> dict[s
         Path(prompt_path).write_text(
             "You are Gemini drafting a QuantMechanica EA build. Follow the "
             "same build contract below exactly. Codex will review your output "
-            "before it can enter backtest. Write the required JSON result and "
-            "exit cleanly.\n\n" + template,
+            "before it can enter backtest. The first executable statement in "
+            "every framework-managed OnTick MUST be "
+            "QM_FrameworkTrackOpenPositionMae(); before any guard or early return. "
+            "Run the strict build_gate_hardening checks and do not report success "
+            "or request REVIEW when any D3-D10 failure remains. Write the required "
+            "JSON result and exit cleanly.\n\n" + template,
             encoding="utf-8",
             newline="\n",
         )
