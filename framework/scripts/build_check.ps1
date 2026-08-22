@@ -228,15 +228,18 @@ function Invoke-CompileGate {
 
     foreach ($target in $targets) {
         Write-Output "build_check.compile.target=$target"
-        $compileArguments = @("-EAPath", $target)
-        if ($CompileWorkItemId) {
-            $compileArguments += @(
-                "-EALabel", $EALabel,
-                "-CompileWorkItemId", $CompileWorkItemId,
-                "-ClaimedTerminal", $ClaimedTerminal
-            )
+        # Hashtable splatting preserves named parameter binding. Array
+        # splatting is positional for script invocations and previously bound
+        # the literal "-ClaimedTerminal" token as the terminal value.
+        $compileParameters = @{
+            EAPath = $target
         }
-        $outputLines = & $ResolvedCompileScriptPath @compileArguments 2>&1
+        if ($CompileWorkItemId) {
+            $compileParameters["EALabel"] = $EALabel
+            $compileParameters["CompileWorkItemId"] = $CompileWorkItemId
+            $compileParameters["ClaimedTerminal"] = $ClaimedTerminal
+        }
+        $outputLines = & $ResolvedCompileScriptPath @compileParameters 2>&1
         $compileExit = $LASTEXITCODE
         foreach ($line in $outputLines) {
             Write-Output $line

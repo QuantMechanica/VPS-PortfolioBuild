@@ -277,6 +277,114 @@ def test_candidate_recheck_allows_only_exact_r11_revival_predecessor(
     assert "WORK_ITEMS_EXIST" in refused["reasons"]
 
 
+def test_candidate_recheck_allows_exact_build_binding_retry_chain(
+    tmp_path: Path,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    source_sha = compile_work_items.sha256_file(
+        repo / "framework" / "EAs" / label / f"{label}.mq5"
+    )
+    now = farmctl.utc_now()
+    r11_payload = {
+        "ea_label": label,
+        "mq5_sha256": source_sha,
+        "repair_handler": compile_work_items.R11_INCIDENT_HANDLER,
+        "verdict_reason": compile_work_items.R11_INCIDENT_REASON,
+    }
+    candidate_failure_payload = {
+        "ea_label": label,
+        "mq5_sha256": source_sha,
+        "revival_contract_version": compile_work_items.R11_REVIVAL_CONTRACT_VERSION,
+        "revival_authority_task_id": compile_work_items.R11_REVIVAL_AUTHORITY_TASK_ID,
+        "revival_reason": compile_work_items.R11_REVIVAL_REASON,
+        "revival_source_mq5_sha256": source_sha,
+        "revived_from_work_item_id": "r11-old",
+        "append_only_revival": True,
+        "verdict_reason": compile_work_items.COMPILE_RECHECK_FAILURE_CLASS,
+        "compile_result": {
+            "failure_classes": [compile_work_items.COMPILE_RECHECK_FAILURE_CLASS]
+        },
+    }
+    binding_failure_payload = {
+        **candidate_failure_payload,
+        "compile_retry_contract_version": (
+            compile_work_items.COMPILE_RECHECK_RETRY_CONTRACT_VERSION
+        ),
+        "compile_retry_authority_task_id": (
+            compile_work_items.COMPILE_RECHECK_RETRY_AUTHORITY_TASK_ID
+        ),
+        "retry_of_work_item_id": "candidate-failed",
+        "append_only_retry": True,
+        "verdict_reason": compile_work_items.COMPILE_BINDING_FAILURE_CLASS,
+        "compile_result": {
+            "failure_classes": [compile_work_items.COMPILE_BINDING_FAILURE_CLASS]
+        },
+    }
+    binding_retry_payload = {
+        **candidate_failure_payload,
+        "compile_retry_contract_version": (
+            compile_work_items.COMPILE_BINDING_RETRY_CONTRACT_VERSION
+        ),
+        "compile_retry_authority_task_id": (
+            compile_work_items.COMPILE_RECHECK_RETRY_AUTHORITY_TASK_ID
+        ),
+        "retry_of_work_item_id": "binding-failed",
+        "append_only_retry": True,
+    }
+    with farmctl.connect(root) as conn:
+        for item_id, verdict, status, payload in (
+            ("r11-old", "INVALID", "failed", r11_payload),
+            ("candidate-failed", "COMPILE_FAIL", "failed", candidate_failure_payload),
+            ("binding-failed", "COMPILE_FAIL", "failed", binding_failure_payload),
+            ("binding-retry", None, "active", binding_retry_payload),
+        ):
+            conn.execute(
+                "INSERT INTO work_items "
+                "(id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,"
+                "claimed_by,payload_json,created_at,updated_at) "
+                "VALUES (?,'compile','COMPILE_EA','QM5_1001','','',?,?,0,?,?,?,?)",
+                (
+                    item_id,
+                    status,
+                    verdict,
+                    "T5" if status == "active" else None,
+                    json.dumps(payload),
+                    now,
+                    now,
+                ),
+            )
+        conn.commit()
+
+    inventory = compile_work_items._inventory(root, repo)
+    sanctioned = compile_work_items._sanctioned_compile_predecessor_ids(
+        binding_retry_payload, inventory, "1001"
+    )
+    candidate = compile_work_items.classify_candidate(
+        root,
+        repo,
+        label,
+        inventory,
+        current_work_item_id="binding-retry",
+        sanctioned_predecessor_ids=sanctioned,
+    )
+
+    assert sanctioned == {"r11-old", "candidate-failed", "binding-failed"}
+    assert candidate["eligible"] is True
+
+    binding_failure_payload["verdict_reason"] = "DIFFERENT_FAILURE"
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE work_items SET payload_json=? WHERE id='binding-failed'",
+            (json.dumps(binding_failure_payload),),
+        )
+        conn.commit()
+    refused_inventory = compile_work_items._inventory(root, repo)
+    assert compile_work_items._sanctioned_compile_predecessor_ids(
+        binding_retry_payload, refused_inventory, "1001"
+    ) == set()
+
+
 def test_candidate_refuses_unresolved_timeframe_before_enqueue(tmp_path: Path) -> None:
     label = "QM5_1001_compile-fixture"
     repo, root = _fixture(tmp_path, [label])

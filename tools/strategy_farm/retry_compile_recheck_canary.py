@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Append one held retry for the rollout canary's false candidate refusal.
+"""Append one held retry for an exact evidence-bound rollout canary incident.
 
 The first post-R11 COMPILE_EA canary was claimed by the resident fleet and
-failed before setfile generation because its immutable R11 predecessor counted
-as unrelated work.  This incident utility never rewrites that failed row.  It
-selects the one evidence-bound canary, revalidates its source and lineage, and
-appends one activation-held successor.  Dry-run is the default.
+failed first on candidate lineage and then on named PowerShell binding before
+the include mirror. This incident utility never rewrites either failed row. It
+selects one of those two exact evidence-bound incidents, revalidates source and
+lineage, and appends one activation-held successor. Dry-run is the default.
 """
 
 from __future__ import annotations
@@ -33,6 +33,8 @@ DEFAULT_MUTATION_LOCK = Path(r"D:\QM\strategy_farm\state\FACTORY_MUTATION.lock")
 AUTHORITY_TASK_ID = "1fb9943f-1b87-4515-b2b4-f5ca3ffb56f8"
 INCIDENT_WORK_ITEM_ID = "949b6983-0584-4318-962c-86dfb781fc65"
 RETRY_CONTRACT_VERSION = "qm.compile-ea-candidate-recheck-retry/v1"
+BINDING_INCIDENT_WORK_ITEM_ID = "525cabcd-2617-450a-a15d-97f5271fc005"
+BINDING_RETRY_CONTRACT_VERSION = "qm.compile-ea-build-binding-retry/v1"
 COMPILE_CONTRACT_VERSION = "qm.compile-ea-work-item/v1"
 R11_REVIVAL_CONTRACT_VERSION = "qm.r11-compile-ea-revival/v1"
 R11_REVIVAL_AUTHORITY_TASK_ID = "83be33f3-a45d-453b-bb70-79d10a7841e9"
@@ -43,6 +45,29 @@ ACTIVATION_HOLD_REASON = (
 )
 FAILURE_CLASS = "CANDIDATE_RECHECK_REFUSED"
 RETRY_REASON = "ROLLOUT_CANDIDATE_RECHECK_FALSE_POSITIVE"
+BINDING_FAILURE_CLASS = "BUILD_CHECK_FAILED"
+BINDING_RETRY_REASON = "ROLLOUT_BUILD_CHECK_CLAIMED_TERMINAL_BINDING"
+
+INCIDENT_PROFILES: dict[str, dict[str, str]] = {
+    INCIDENT_WORK_ITEM_ID: {
+        "work_item_id": INCIDENT_WORK_ITEM_ID,
+        "kind": "candidate_recheck",
+        "retry_contract_version": RETRY_CONTRACT_VERSION,
+        "failure_class": FAILURE_CLASS,
+        "retry_reason": RETRY_REASON,
+        "avoid_terminal": "T8",
+        "avoid_terminal_reason": "PRE_FIX_COMPILE_MODULE_LOADED_BY_FAILED_CANARY",
+    },
+    BINDING_INCIDENT_WORK_ITEM_ID: {
+        "work_item_id": BINDING_INCIDENT_WORK_ITEM_ID,
+        "kind": "build_binding",
+        "retry_contract_version": BINDING_RETRY_CONTRACT_VERSION,
+        "failure_class": BINDING_FAILURE_CLASS,
+        "retry_reason": BINDING_RETRY_REASON,
+        "avoid_terminal": "T5",
+        "avoid_terminal_reason": "PRE_BINDING_FIX_COMPILE_MODULE_LOADED_BY_FAILED_CANARY",
+    },
+}
 
 
 class RetryError(RuntimeError):
@@ -97,10 +122,20 @@ def _row_preimage_sha256(row: sqlite3.Row) -> str:
     )
 
 
-def _incident_row(conn: sqlite3.Connection) -> sqlite3.Row:
+def _incident_profile(work_item_id: str) -> dict[str, str]:
+    profile = INCIDENT_PROFILES.get(str(work_item_id))
+    if profile is None:
+        raise RetryError(f"unsupported compile rollout incident: {work_item_id}")
+    return profile
+
+
+def _incident_row(
+    conn: sqlite3.Connection,
+    work_item_id: str = INCIDENT_WORK_ITEM_ID,
+) -> sqlite3.Row:
     row = conn.execute(
         "SELECT * FROM work_items WHERE id=?",
-        (INCIDENT_WORK_ITEM_ID,),
+        (work_item_id,),
     ).fetchone()
     if row is None:
         raise RetryError("incident canary work item is missing")
@@ -135,11 +170,20 @@ def _read_evidence(row: sqlite3.Row) -> dict[str, Any]:
     return value
 
 
-def _classify(conn: sqlite3.Connection, repo: Path, row: sqlite3.Row) -> dict[str, Any]:
+def _classify(
+    conn: sqlite3.Connection,
+    repo: Path,
+    row: sqlite3.Row,
+    profile: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    profile = profile or _incident_profile(INCIDENT_WORK_ITEM_ID)
+    incident_id = profile["work_item_id"]
+    failure_class = profile["failure_class"]
+    retry_contract_version = profile["retry_contract_version"]
     payload = _payload(row["payload_json"])
     reasons: list[str] = []
     if not (
-        row["id"] == INCIDENT_WORK_ITEM_ID
+        row["id"] == incident_id
         and row["phase"] == "COMPILE_EA"
         and row["status"] == "failed"
         and row["verdict"] == "COMPILE_FAIL"
@@ -151,16 +195,35 @@ def _classify(conn: sqlite3.Connection, repo: Path, row: sqlite3.Row) -> dict[st
         if isinstance(compile_result, dict)
         else []
     )
-    if not (
+    common_payload_ok = (
         payload.get("compile_contract_version") == COMPILE_CONTRACT_VERSION
-        and payload.get("revival_contract_version") == R11_REVIVAL_CONTRACT_VERSION
-        and payload.get("revival_authority_task_id") == R11_REVIVAL_AUTHORITY_TASK_ID
-        and payload.get("append_only_revival") is True
-        and payload.get("verdict_reason") == FAILURE_CLASS
-        and failure_classes == [FAILURE_CLASS]
+        and payload.get("verdict_reason") == failure_class
+        and failure_classes == [failure_class]
         and payload.get("utility_phase") is True
         and payload.get("no_gate_verdict") is True
-    ):
+    )
+    if profile["kind"] == "candidate_recheck":
+        lineage_ok = (
+            payload.get("revival_contract_version") == R11_REVIVAL_CONTRACT_VERSION
+            and payload.get("revival_authority_task_id")
+            == R11_REVIVAL_AUTHORITY_TASK_ID
+            and payload.get("append_only_revival") is True
+        )
+    else:
+        predecessor_link = conn.execute(
+            "SELECT superseded_by_work_item_id FROM work_item_supersedes "
+            "WHERE work_item_id=?",
+            (INCIDENT_WORK_ITEM_ID,),
+        ).fetchone()
+        lineage_ok = (
+            payload.get("compile_retry_contract_version") == RETRY_CONTRACT_VERSION
+            and payload.get("compile_retry_authority_task_id") == AUTHORITY_TASK_ID
+            and payload.get("retry_of_work_item_id") == INCIDENT_WORK_ITEM_ID
+            and payload.get("append_only_retry") is True
+            and predecessor_link is not None
+            and predecessor_link[0] == incident_id
+        )
+    if not (common_payload_ok and lineage_ok):
         reasons.append("INCIDENT_PAYLOAD_CONTRACT_MISMATCH")
 
     evidence: dict[str, Any] = {}
@@ -169,13 +232,47 @@ def _classify(conn: sqlite3.Connection, repo: Path, row: sqlite3.Row) -> dict[st
     except RetryError as exc:
         reasons.append(str(exc))
     candidate = evidence.get("candidate_recheck", {})
-    if evidence and not (
-        evidence.get("work_item_id") == INCIDENT_WORK_ITEM_ID
-        and evidence.get("success") is False
-        and evidence.get("failure_classes") == [FAILURE_CLASS]
-        and isinstance(candidate, dict)
-        and candidate.get("reasons") == ["WORK_ITEMS_EXIST"]
-    ):
+    if profile["kind"] == "candidate_recheck":
+        evidence_ok = (
+            evidence.get("work_item_id") == incident_id
+            and evidence.get("success") is False
+            and evidence.get("failure_classes") == [failure_class]
+            and isinstance(candidate, dict)
+            and candidate.get("reasons") == ["WORK_ITEMS_EXIST"]
+        )
+    else:
+        generations = evidence.get("setfile_generation")
+        output_tail = str(evidence.get("build_check_output_tail") or "")
+        terminal_claim = str(evidence.get("terminal_claim") or "").upper()
+        running = {
+            str(value).upper()
+            for value in (evidence.get("running_terminals_at_worker_start") or [])
+        }
+        evidence_ok = (
+            evidence.get("work_item_id") == incident_id
+            and evidence.get("success") is False
+            and evidence.get("failure_classes") == [failure_class]
+            and isinstance(candidate, dict)
+            and candidate.get("eligible") is True
+            and evidence.get("build_check_exit_code") == 1
+            and evidence.get("build_check_result") is None
+            and evidence.get("compile_result") is None
+            and evidence.get("include_mirror_atomic_replace") is None
+            and isinstance(generations, list)
+            and len(generations) == evidence.get("setfile_count")
+            and len(generations) > 0
+            and all(
+                isinstance(item, dict)
+                and item.get("exit_code") == 0
+                and item.get("setfile_exists") is True
+                for item in generations
+            )
+            and terminal_claim
+            and terminal_claim not in running
+            and "parameter 'ClaimedTerminal'" in output_tail
+            and 'argument "-ClaimedTerminal"' in output_tail
+        )
+    if evidence and not evidence_ok:
         reasons.append("INCIDENT_EVIDENCE_CONTRACT_MISMATCH")
 
     source: Path | None = None
@@ -205,7 +302,7 @@ def _classify(conn: sqlite3.Connection, repo: Path, row: sqlite3.Row) -> dict[st
         "AND json_extract(payload_json, '$.compile_retry_contract_version')=? "
         "AND json_extract(payload_json, '$.retry_of_work_item_id')=? "
         "ORDER BY created_at,id",
-        (RETRY_CONTRACT_VERSION, INCIDENT_WORK_ITEM_ID),
+        (retry_contract_version, incident_id),
     ))
     if successors:
         return {
@@ -239,19 +336,31 @@ def _classify(conn: sqlite3.Connection, repo: Path, row: sqlite3.Row) -> dict[st
         "mq5_path": str(source) if source is not None else payload.get("mq5_path"),
         "expected_mq5_sha256": expected_sha,
         "actual_mq5_sha256": actual_sha,
+        "retry_contract_version": retry_contract_version,
+        "retry_reason": profile["retry_reason"],
         "hold_reasons": sorted(set(reasons)),
         "open_work_item_ids": [open_row["id"] for open_row in open_rows],
     }
 
 
-def inspect(db: Path, repo: Path) -> dict[str, Any]:
+def inspect(
+    db: Path,
+    repo: Path,
+    incident_work_item_id: str = INCIDENT_WORK_ITEM_ID,
+) -> dict[str, Any]:
+    profile = _incident_profile(incident_work_item_id)
     with _connect(db, read_only=True) as conn:
-        row = _incident_row(conn)
-        item = _classify(conn, repo, row)
+        row = _incident_row(conn, incident_work_item_id)
+        item = _classify(conn, repo, row, profile)
+    selected_description = (
+        "candidate-recheck false positive"
+        if profile["kind"] == "candidate_recheck"
+        else "claimed-terminal named-binding failure before include mirroring"
+    )
     return {
-        "schema": RETRY_CONTRACT_VERSION,
+        "schema": profile["retry_contract_version"],
         "authority_task_id": AUTHORITY_TASK_ID,
-        "incident_work_item_id": INCIDENT_WORK_ITEM_ID,
+        "incident_work_item_id": incident_work_item_id,
         "mode": "dry_run",
         "inspected_at_utc": utc_now(),
         "database": str(db.resolve()),
@@ -262,7 +371,7 @@ def inspect(db: Path, repo: Path) -> dict[str, Any]:
         "item": item,
         "invariants": [
             "the failed canary row and evidence are immutable",
-            "only the exact task-bound candidate-recheck false positive is selectable",
+            f"only the exact task-bound {selected_description} is selectable",
             "the canonical MQ5 SHA-256 is revalidated before append",
             "the successor is activation-held and fixed-risk only",
             "the successor carries no gate verdict",
@@ -274,7 +383,7 @@ def _backup_database(db: Path, backup_dir: Path) -> tuple[Path, str]:
     backup_dir.mkdir(parents=True, exist_ok=True)
     stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
     destination = backup_dir / (
-        f"farm_state_before_compile_recheck_retry_{stamp}_{uuid.uuid4().hex[:8]}.sqlite"
+        f"farm_state_before_compile_rollout_retry_{stamp}_{uuid.uuid4().hex[:8]}.sqlite"
     )
     with sqlite3.connect(db) as source, sqlite3.connect(destination) as target:
         source.backup(target)
@@ -285,7 +394,11 @@ def _backup_database(db: Path, backup_dir: Path) -> tuple[Path, str]:
     return destination, sha256_file(destination)
 
 
-def _successor_payload(old_payload: dict[str, Any], now: str) -> dict[str, Any]:
+def _successor_payload(
+    old_payload: dict[str, Any],
+    now: str,
+    profile: dict[str, str],
+) -> dict[str, Any]:
     allowed = (
         "compile_contract_version", "compile_activation_state",
         "compile_activation_hold_code", "ea_label", "ea_dir", "mq5_path",
@@ -297,18 +410,17 @@ def _successor_payload(old_payload: dict[str, Any], now: str) -> dict[str, Any]:
     payload = {key: old_payload.get(key) for key in allowed}
     payload.update({
         "enqueued_at": now,
-        "compile_retry_contract_version": RETRY_CONTRACT_VERSION,
+        "compile_retry_contract_version": profile["retry_contract_version"],
         "compile_retry_authority_task_id": AUTHORITY_TASK_ID,
-        "retry_of_work_item_id": INCIDENT_WORK_ITEM_ID,
+        "retry_of_work_item_id": profile["work_item_id"],
         "retried_at_utc": now,
-        "retry_reason": RETRY_REASON,
+        "retry_reason": profile["retry_reason"],
         "append_only_retry": True,
-        # T8 claimed the failed canary and therefore has the pre-fix module in
-        # memory until its resident worker is naturally recycled.  The existing
-        # normal selector honors avoid_terminals; no targeted dispatcher is
-        # introduced and no active terminal or worker is interrupted.
-        "avoid_terminals": ["T8"],
-        "avoid_terminal_reason": "PRE_FIX_COMPILE_MODULE_LOADED_BY_FAILED_CANARY",
+        # The terminal that handled the incident can retain the pre-fix Python
+        # module until its resident worker recycles naturally. The canonical
+        # selector honors this steering without a targeted dispatcher.
+        "avoid_terminals": [profile["avoid_terminal"]],
+        "avoid_terminal_reason": profile["avoid_terminal_reason"],
     })
     return payload
 
@@ -318,8 +430,10 @@ def apply_retry(
     repo: Path,
     backup_dir: Path,
     mutation_lock: Path,
+    incident_work_item_id: str = INCIDENT_WORK_ITEM_ID,
 ) -> dict[str, Any]:
-    preflight = inspect(db, repo)
+    profile = _incident_profile(incident_work_item_id)
+    preflight = inspect(db, repo, incident_work_item_id)
     if preflight["eligible_count"] == 0:
         return {
             **preflight,
@@ -333,7 +447,7 @@ def apply_retry(
 
     expected_preimage = preflight["item"]["old_preimage_sha256"]
     expected_source_sha = preflight["item"]["actual_mq5_sha256"]
-    lock = FactoryMutationLock(mutation_lock, owner="retry_compile_recheck_canary.apply")
+    lock = FactoryMutationLock(mutation_lock, owner="retry_compile_rollout_canary.apply")
     backup_path: Path | None = None
     backup_sha: str | None = None
     new_id = str(uuid.uuid4())
@@ -342,8 +456,8 @@ def apply_retry(
         conn = _connect(db, read_only=False)
         try:
             conn.execute("BEGIN IMMEDIATE")
-            row = _incident_row(conn)
-            current = _classify(conn, repo, row)
+            row = _incident_row(conn, incident_work_item_id)
+            current = _classify(conn, repo, row, profile)
             if current["classification"] != "eligible":
                 raise RetryError("incident eligibility drifted between dry-run and apply")
             if current["old_preimage_sha256"] != expected_preimage:
@@ -352,7 +466,7 @@ def apply_retry(
                 raise RetryError("source MQ5 SHA drifted")
             old_payload = _payload(row["payload_json"])
             now = utc_now()
-            new_payload = _successor_payload(old_payload, now)
+            new_payload = _successor_payload(old_payload, now, profile)
             conn.execute(
                 "INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,status,"
                 "verdict,attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,"
@@ -367,9 +481,9 @@ def apply_retry(
                 (new_id, ACTIVATION_HOLD_CODE, ACTIVATION_HOLD_REASON, now, now),
             )
             detail = {
-                "schema": RETRY_CONTRACT_VERSION,
+                "schema": profile["retry_contract_version"],
                 "authority_task_id": AUTHORITY_TASK_ID,
-                "old_work_item_id": INCIDENT_WORK_ITEM_ID,
+                "old_work_item_id": incident_work_item_id,
                 "old_preimage_sha256": expected_preimage,
                 "old_evidence_path": row["evidence_path"],
                 "mq5_sha256": expected_source_sha,
@@ -383,8 +497,8 @@ def apply_retry(
                 "to_claimed_by,reason,run_id,detail_json) VALUES (?,?,?,"
                 "'append_only_retry',NULL,'pending',NULL,NULL,NULL,NULL,?,?,?)",
                 (
-                    f"compile-recheck-retry:{INCIDENT_WORK_ITEM_ID}", now, new_id,
-                    RETRY_REASON, AUTHORITY_TASK_ID, detail_json,
+                    f"compile-rollout-retry:{incident_work_item_id}", now, new_id,
+                    profile["retry_reason"], AUTHORITY_TASK_ID, detail_json,
                 ),
             )
             conn.execute(
@@ -395,15 +509,15 @@ def apply_retry(
             conn.execute(
                 "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
                 "VALUES (?,'work_item',?,'compile_ea_successor_appended',?)",
-                (now, INCIDENT_WORK_ITEM_ID, json.dumps({**detail, "new_work_item_id": new_id}, sort_keys=True)),
+                (now, incident_work_item_id, json.dumps({**detail, "new_work_item_id": new_id}, sort_keys=True)),
             )
             conn.execute(
                 "INSERT INTO work_item_supersedes(work_item_id,superseded_by_work_item_id,"
                 "reason,source_encoding,evidence_path,recorded_by,recorded_at) "
                 "VALUES (?,?,?,?,?,?,?)",
                 (
-                    INCIDENT_WORK_ITEM_ID, new_id, RETRY_REASON,
-                    "operator:compile_recheck_retry", row["evidence_path"],
+                    incident_work_item_id, new_id, profile["retry_reason"],
+                    "operator:compile_rollout_retry", row["evidence_path"],
                     "codex", now,
                 ),
             )
@@ -414,7 +528,7 @@ def apply_retry(
         finally:
             conn.close()
 
-    after = inspect(db, repo)
+    after = inspect(db, repo, incident_work_item_id)
     verification_errors: list[str] = []
     if after["item"].get("old_preimage_sha256") != expected_preimage:
         verification_errors.append("failed canary row changed")
@@ -432,7 +546,7 @@ def apply_retry(
         ).fetchone()
         link = conn.execute(
             "SELECT superseded_by_work_item_id FROM work_item_supersedes WHERE work_item_id=?",
-            (INCIDENT_WORK_ITEM_ID,),
+            (incident_work_item_id,),
         ).fetchone()
     if successor is None or (successor["status"], successor["verdict"]) != ("pending", None):
         verification_errors.append("successor is not pending without verdict")
@@ -446,7 +560,7 @@ def apply_retry(
         "committed_at_utc": utc_now(),
         "applied_count": 1,
         "applied": [{
-            "old_work_item_id": INCIDENT_WORK_ITEM_ID,
+            "old_work_item_id": incident_work_item_id,
             "new_work_item_id": new_id,
             "ea_id": preflight["item"]["ea_id"],
             "mq5_sha256": expected_source_sha,
@@ -478,13 +592,25 @@ def main() -> int:
     parser.add_argument("--repo", type=Path, default=DEFAULT_REPO)
     parser.add_argument("--backup-dir", type=Path, default=DEFAULT_BACKUP_DIR)
     parser.add_argument("--mutation-lock", type=Path, default=DEFAULT_MUTATION_LOCK)
+    parser.add_argument(
+        "--incident-work-item-id",
+        choices=sorted(INCIDENT_PROFILES),
+        default=INCIDENT_WORK_ITEM_ID,
+        help="exact immutable failed canary to supersede",
+    )
     parser.add_argument("--apply", action="store_true", help="append the successor; default is dry-run")
     parser.add_argument("--output", type=Path, help="atomically write the JSON receipt")
     args = parser.parse_args()
     result = (
-        apply_retry(args.db, args.repo, args.backup_dir, args.mutation_lock)
+        apply_retry(
+            args.db,
+            args.repo,
+            args.backup_dir,
+            args.mutation_lock,
+            args.incident_work_item_id,
+        )
         if args.apply
-        else inspect(args.db, args.repo)
+        else inspect(args.db, args.repo, args.incident_work_item_id)
     )
     if args.output:
         _write_json_atomic(args.output, result)

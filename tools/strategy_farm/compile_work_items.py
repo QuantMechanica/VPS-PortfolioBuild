@@ -37,6 +37,8 @@ R11_INCIDENT_REASON = "ex5_missing"
 COMPILE_RECHECK_RETRY_CONTRACT_VERSION = "qm.compile-ea-candidate-recheck-retry/v1"
 COMPILE_RECHECK_RETRY_AUTHORITY_TASK_ID = "1fb9943f-1b87-4515-b2b4-f5ca3ffb56f8"
 COMPILE_RECHECK_FAILURE_CLASS = "CANDIDATE_RECHECK_REFUSED"
+COMPILE_BINDING_RETRY_CONTRACT_VERSION = "qm.compile-ea-build-binding-retry/v1"
+COMPILE_BINDING_FAILURE_CLASS = "BUILD_CHECK_FAILED"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
     # must be generatable, not merely a valid MetaTrader period literal.
@@ -388,6 +390,52 @@ def _sanctioned_compile_predecessor_ids(
     source_sha = str(payload.get("mq5_sha256") or "").lower()
     if not _BOUND_HASH_RE.fullmatch(source_sha):
         return set()
+
+    if (
+        payload.get("compile_retry_contract_version")
+        == COMPILE_BINDING_RETRY_CONTRACT_VERSION
+        and payload.get("compile_retry_authority_task_id")
+        == COMPILE_RECHECK_RETRY_AUTHORITY_TASK_ID
+        and payload.get("append_only_retry") is True
+    ):
+        predecessor_id = str(payload.get("retry_of_work_item_id") or "")
+        if not predecessor_id or predecessor_id in seen:
+            return set()
+        predecessor = _work_row_by_id(inventory, ea_id, predecessor_id)
+        if not predecessor:
+            return set()
+        predecessor_payload = _json_object(predecessor.get("payload_json"))
+        compile_result = predecessor_payload.get("compile_result")
+        failure_classes = (
+            compile_result.get("failure_classes", [])
+            if isinstance(compile_result, dict)
+            else []
+        )
+        if not (
+            predecessor.get("phase") == COMPILE_EA_PHASE
+            and predecessor.get("status") == "failed"
+            and predecessor.get("verdict") == "COMPILE_FAIL"
+            and predecessor_payload.get("verdict_reason")
+            == COMPILE_BINDING_FAILURE_CLASS
+            and failure_classes == [COMPILE_BINDING_FAILURE_CLASS]
+            and predecessor_payload.get("compile_retry_contract_version")
+            == COMPILE_RECHECK_RETRY_CONTRACT_VERSION
+            and predecessor_payload.get("compile_retry_authority_task_id")
+            == COMPILE_RECHECK_RETRY_AUTHORITY_TASK_ID
+            and predecessor_payload.get("append_only_retry") is True
+            and str(predecessor_payload.get("mq5_sha256") or "").lower()
+            == source_sha
+        ):
+            return set()
+        earlier = _sanctioned_compile_predecessor_ids(
+            predecessor_payload,
+            inventory,
+            ea_id,
+            seen=seen | {predecessor_id},
+        )
+        if not earlier:
+            return set()
+        return {predecessor_id, *earlier}
 
     if (
         payload.get("compile_retry_contract_version")
