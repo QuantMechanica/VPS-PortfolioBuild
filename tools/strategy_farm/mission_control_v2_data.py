@@ -49,10 +49,12 @@ try:  # package import (tests, module consumers)
         PHASE_NAME,
     )
     from tools.strategy_farm import live_observability_contract as live_obs
+    from tools.strategy_farm import q09_autoseal_hold_census
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/mission_control_v2_data.py``
     from work_item_clean_view import install_clean_view
     from phase_ids import phase_label, normalize_phase_id, PHASE_NAME
     import live_observability_contract as live_obs
+    import q09_autoseal_hold_census
 
 
 SCHEMA_VERSION = "qm.mission_control.v2"
@@ -736,6 +738,52 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
     }
 
 
+def build_q09_autoseal_holds(
+    con: sqlite3.Connection, *, now: dt.datetime | None = None
+) -> dict[str, Any]:
+    """Mission Control panel for fail-closed Q09 automatic-sealing holds."""
+
+    now = now or _now_utc()
+    try:
+        panel = q09_autoseal_hold_census.collect(con, now=now)
+    except sqlite3.Error as exc:
+        panel = {
+            "schema_version": q09_autoseal_hold_census.SCHEMA_VERSION,
+            "generated_at": _iso(now),
+            "hold_code": q09_autoseal_hold_census.HOLD_CODE,
+            "status": "UNKNOWN",
+            "status_reasons": [f"census_unavailable={exc}"],
+            "total": 0,
+            "oldest_observed_at": None,
+            "oldest_age_hours": None,
+            "aged_over_warn_count": 0,
+            "aged_over_fail_count": 0,
+            "malformed_count": 0,
+            "thresholds": {
+                "warn_age_hours_exclusive": q09_autoseal_hold_census.WARN_AGE_HOURS,
+                "fail_age_hours_exclusive": q09_autoseal_hold_census.FAIL_AGE_HOURS,
+                "fail_aged_count": q09_autoseal_hold_census.FAIL_AGED_COUNT,
+                "fail_reason_count": q09_autoseal_hold_census.FAIL_REASON_COUNT,
+            },
+            "groups": [],
+            "reason_groups": [],
+        }
+    panel["meta"] = _section_meta(
+        source=(
+            "farm_state.sqlite:pending Q09_NEWS + active "
+            "Q09_AWAITING_SEALED_PLAN holds + payload_json"
+        ),
+        source_as_of=panel["generated_at"],
+        sla_sec=None,
+        degraded_reason=(
+            "; ".join(panel["status_reasons"])
+            if panel["status"] == "UNKNOWN" else None
+        ),
+        now=now,
+    )
+    return panel
+
+
 def build_control_strip(con: sqlite3.Connection, queue: dict, terminals: dict,
                         owner: dict, *, now: dt.datetime | None = None) -> dict[str, Any]:
     """Global control strip: factory state, freshness, queue total, ETA, owner."""
@@ -873,6 +921,7 @@ def build_contract(
         terminals = build_terminals(con, ea_slugs, now=now)
         progress = build_progress(con, now=now)
         queue = build_queue(con, now=now)
+        q09_autoseal_holds = build_q09_autoseal_holds(con, now=now)
         owner = build_owner_decisions(con, now=now)
         control_strip = build_control_strip(con, queue, terminals, owner, now=now)
     finally:
@@ -890,6 +939,7 @@ def build_contract(
         "live_observability": live_observability,
         "control_strip": control_strip,
         "queue": queue,
+        "q09_autoseal_holds": q09_autoseal_holds,
         "progress": progress,
         "terminals": terminals,
         "owner_decisions": owner,
@@ -919,7 +969,7 @@ CONTRACT_SCHEMA: dict[str, Any] = {
     "type": "object",
     "required": [
         "schema_version", "generated_at", "control_strip", "queue",
-        "progress", "terminals", "owner_decisions",
+        "q09_autoseal_holds", "progress", "terminals", "owner_decisions",
     ],
     "properties": {
         "schema_version": {"const": SCHEMA_VERSION},
@@ -986,6 +1036,31 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                         "eta_hours_p90": {"type": ["number", "null"]},
                     },
                 },
+            },
+        },
+        "q09_autoseal_holds": {
+            "type": "object",
+            "required": [
+                "meta", "schema_version", "generated_at", "hold_code", "status",
+                "status_reasons", "total", "oldest_observed_at", "groups",
+                "reason_groups", "thresholds",
+            ],
+            "properties": {
+                "meta": _section_meta_schema(),
+                "schema_version": {"const": q09_autoseal_hold_census.SCHEMA_VERSION},
+                "generated_at": {"type": "string"},
+                "hold_code": {"const": q09_autoseal_hold_census.HOLD_CODE},
+                "status": {"enum": ["OK", "WARN", "FAIL", "UNKNOWN"]},
+                "status_reasons": {"type": "array", "items": {"type": "string"}},
+                "total": {"type": "integer"},
+                "oldest_observed_at": {"type": ["string", "null"]},
+                "oldest_age_hours": {"type": ["number", "null"]},
+                "aged_over_warn_count": {"type": "integer"},
+                "aged_over_fail_count": {"type": "integer"},
+                "malformed_count": {"type": "integer"},
+                "groups": {"type": "array"},
+                "reason_groups": {"type": "array"},
+                "thresholds": {"type": "object"},
             },
         },
         "progress": {

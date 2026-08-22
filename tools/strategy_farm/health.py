@@ -47,6 +47,10 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm import health_contract
 try:
+    import q09_autoseal_hold_census
+except ModuleNotFoundError:
+    from tools.strategy_farm import q09_autoseal_hold_census
+try:
     from factory_mutation_lock import (
         DEFAULT_PATH as FACTORY_MUTATION_LOCK_PATH,
         DEFAULT_STALE_REAP_SECONDS as FACTORY_MUTATION_LOCK_DEAD_FAIL_SECONDS,
@@ -3857,6 +3861,38 @@ def chk_q09_sealed_plan_hold_age(con) -> dict:
     )
 
 
+def chk_q09_autoseal_hold_census(con) -> dict:
+    """Surface held Q09 autoseal failures by state/reason, not as empty queue."""
+
+    census = q09_autoseal_hold_census.collect(con, now=_utc_now())
+    rendered_groups = []
+    for group in census["groups"][:8]:
+        examples = ",".join(item[:8] for item in group["example_ids"])
+        rendered_groups.append(
+            f"{group['q09_activation_state']}/{group['reason_code']}="
+            f"{group['count']} oldest={group['oldest_observed_at']} ids={examples}"
+        )
+    detail = (
+        f"active_holds={census['total']}; aged>1h={census['aged_over_warn_count']}; "
+        f"aged>6h={census['aged_over_fail_count']}; "
+        f"trigger={','.join(census['status_reasons'])}; "
+        + ("; ".join(rendered_groups) if rendered_groups else "groups=none")
+    )
+    hint = (
+        "Resolve the grouped q09_autoseal_failure cause and let the governed binder "
+        "release Q09_AWAITING_SEALED_PLAN; never release the hold by hand."
+        if census["status"] != "OK" else ""
+    )
+    return _check(
+        "q09_autoseal_hold_census",
+        census["status"],
+        census["total"],
+        census["thresholds"],
+        detail,
+        hint,
+    )
+
+
 def _line_ending_hashes(data: bytes) -> set[str]:
     """Hashes reachable by newline conversion without changing text content."""
     import hashlib
@@ -4007,6 +4043,7 @@ ALL_CHECKS = [
     ("pending_tail_age", chk_pending_tail_age, True),
     ("q02_summary_missing_unclassified", chk_q02_summary_missing_unclassified, True),
     ("q09_sealed_plan_hold_age", chk_q09_sealed_plan_hold_age, True),
+    ("q09_autoseal_hold_census", chk_q09_autoseal_hold_census, True),
     ("pending_artifact_binding_drift", chk_pending_artifact_binding_drift, True),
 ]
 
