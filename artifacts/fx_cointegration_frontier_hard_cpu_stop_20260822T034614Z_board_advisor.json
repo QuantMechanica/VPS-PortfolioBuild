@@ -1,0 +1,112 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-22T03:46:14Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "bd386f1f5c02b4fe76cf13d1543b915317bd6cfa",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "frontier_audit": {
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_mode": "--include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "durable_reconciliation_commit": "a80493291",
+    "new_card_or_build_would_duplicate": true
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "existing_pair_fallback": {
+    "pair": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "scan_rank": 21,
+    "ea_id": "QM5_20203",
+    "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+    "q02": {
+      "status": "done",
+      "verdict": "PASS",
+      "work_item_id": "85be20b6-d19d-46a2-9084-8786d9837399"
+    },
+    "q04": {
+      "status": "done",
+      "verdict": "FAIL",
+      "work_item_id": "113ae6d1-33c0-42bc-b9b0-bf3a48ef3445",
+      "updated_at_utc": "2026-08-21T14:57:05Z"
+    },
+    "duplicate_enqueue_performed": false
+  },
+  "earlier_fallback": {
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "scan_rank": 58,
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "state": "Q02_PASS_Q04_FAIL"
+  },
+  "capacity_sample": {
+    "cpu_samples_percent": [
+      98.26,
+      95.9,
+      98.25,
+      94.34,
+      79.5
+    ],
+    "cpu_average_percent": 93.25,
+    "cpu_maximum_percent": 98.26,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "sampled_at_utc": "2026-08-22T03:46:14Z",
+    "slot_scan_at_utc": "2026-08-22T03:45:45Z",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T6"
+    ],
+    "active_multisymbol_item": {
+      "terminal": "T2",
+      "work_item_id": "a7c3f1dc-9203-4423-830e-7b23e60af18a",
+      "ea_id": "QM5_20291",
+      "phase": "Q02",
+      "symbol": "QM5_20291_XAU_XAG_HKURT_D1"
+    },
+    "excluded_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "q02_or_q04_enqueue_or_requeue": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The frozen frontier has no uncovered relationship, the prior fallback now has a terminal Q04 FAIL, and CPU exceeded the explicit hard ceiling."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
