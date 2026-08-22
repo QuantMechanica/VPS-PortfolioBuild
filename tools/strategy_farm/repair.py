@@ -105,6 +105,11 @@ COMMON_Q08_STREAM_DIR = Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes
 HEALTH_ALARMS_LOG = ROOT / "state" / "health_alarms.log"
 _R11_CIRCUIT_BREAKER_LIMIT = 200
 _R18_DUPLICATE_GROUP_CIRCUIT_BREAKER_LIMIT = 500
+# Visibility is deliberately much tighter than the catastrophic circuit breakers.
+# A repair changing more than ten work-item statuses is unusual enough that an
+# operator should see the handler and phase mix even when the repair is valid.
+_REPAIR_MASS_CHANGE_ALARM_THRESHOLD = 10
+_ACTIVE_REPAIR_RUN_ID: str | None = None
 # Non-gate phases whose preconditions are NOT a setfile + EA dir + compiled .ex5.
 # They are exempt from the R11 backtest preflight; see
 # _pending_work_item_artifact_failure for what happened when they were not.
@@ -121,6 +126,150 @@ def _connect() -> sqlite3.Connection:
     con = sqlite3.connect(str(DB))
     con.row_factory = sqlite3.Row
     return con
+
+
+def _row_get(row: sqlite3.Row, column: str):
+    try:
+        return row[column]
+    except (IndexError, KeyError):
+        return None
+
+
+def _table_exists(con: sqlite3.Connection, table: str) -> bool:
+    return con.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+        (table,),
+    ).fetchone() is not None
+
+
+def _require_work_item_transition_ledger(con: sqlite3.Connection) -> None:
+    """Fail closed before a repair changes work-item status without a journal."""
+    if not _table_exists(con, "work_item_transition_ledger"):
+        raise RuntimeError(
+            "work_item_transition_ledger is required for repair status transitions; "
+            "run farmctl init from the canonical checkout"
+        )
+
+
+def _record_work_item_status_transition(
+    con: sqlite3.Connection,
+    *,
+    row: sqlite3.Row,
+    handler: str,
+    reason: str,
+    to_status: str,
+    to_verdict: str | None,
+    to_claimed_by: str | None,
+    now: str,
+    detail: dict | None = None,
+) -> int:
+    """Append the journal half of an atomic repair status transition."""
+    _require_work_item_transition_ledger(con)
+    transition_detail = {
+        "handler": handler,
+        "reason": reason,
+        "ea_id": _row_get(row, "ea_id"),
+        "symbol": _row_get(row, "symbol"),
+        "phase": _row_get(row, "phase"),
+    }
+    if detail:
+        transition_detail.update(detail)
+    cursor = con.execute(
+        """
+        INSERT INTO work_item_transition_ledger(
+            idempotency_key, ts, work_item_id, action,
+            from_status, to_status, from_verdict, to_verdict,
+            from_claimed_by, to_claimed_by, reason, run_id, detail_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            f"repair:{handler}:{row['id']}:{uuid.uuid4()}",
+            now,
+            row["id"],
+            handler,
+            _row_get(row, "status"),
+            to_status,
+            _row_get(row, "verdict"),
+            to_verdict,
+            _row_get(row, "claimed_by"),
+            to_claimed_by,
+            reason,
+            _ACTIVE_REPAIR_RUN_ID,
+            json.dumps(transition_detail, sort_keys=True),
+        ),
+    )
+    return int(cursor.lastrowid)
+
+
+def _transition_ledger_max_seq(con: sqlite3.Connection) -> int:
+    if not _table_exists(con, "work_item_transition_ledger"):
+        return 0
+    return int(
+        con.execute("SELECT COALESCE(MAX(seq), 0) FROM work_item_transition_ledger").fetchone()[0]
+    )
+
+
+def _raise_mass_change_alarm(
+    con: sqlite3.Connection,
+    *,
+    run_id: str,
+    since_seq: int,
+    repair_function: str,
+) -> list[dict]:
+    """Report any repair invocation that crossed the low visibility threshold."""
+    if not _table_exists(con, "work_item_transition_ledger"):
+        return []
+    rows = con.execute(
+        """
+        SELECT action, detail_json
+        FROM work_item_transition_ledger
+        WHERE seq>? AND run_id=?
+        ORDER BY seq
+        """,
+        (since_seq, run_id),
+    ).fetchall()
+    if len(rows) <= _REPAIR_MASS_CHANGE_ALARM_THRESHOLD:
+        return []
+
+    handlers: dict[str, int] = {}
+    phases: dict[str, int] = {}
+    for row in rows:
+        handler = str(row["action"] or "unknown")
+        handlers[handler] = handlers.get(handler, 0) + 1
+        try:
+            detail = json.loads(row["detail_json"] or "{}")
+        except Exception:
+            detail = {}
+        phase = str(detail.get("phase") or "UNKNOWN")
+        phases[phase] = phases.get(phase, 0) + 1
+
+    alarm = {
+        "run_id": run_id,
+        "repair_function": repair_function,
+        "transition_count": len(rows),
+        "threshold": _REPAIR_MASS_CHANGE_ALARM_THRESHOLD,
+        "handlers": dict(sorted(handlers.items())),
+        "phase_distribution": dict(sorted(phases.items())),
+    }
+    alarm_json = json.dumps(alarm, sort_keys=True)
+    HEALTH_ALARMS_LOG.parent.mkdir(parents=True, exist_ok=True)
+    with HEALTH_ALARMS_LOG.open("a", encoding="utf-8") as stream:
+        stream.write(f"{_utc_now()}\trepair_mass_change\t{len(rows)}\t{alarm_json}\n")
+    if _table_exists(con, "events"):
+        con.execute(
+            """
+            INSERT INTO events(ts, entity_type, entity_id, event, detail_json)
+            VALUES (?, 'repair_run', ?, 'repair_mass_change_alarm', ?)
+            """,
+            (_utc_now(), run_id, alarm_json),
+        )
+        con.commit()
+    return [{
+        "handler": "repair_mass_change_alarm",
+        "target": repair_function,
+        "action": "ALARM",
+        "detail": alarm_json,
+    }]
 
 
 def _live_log_fresh(pattern: str, max_age_sec: int = 600) -> int:
@@ -282,8 +431,11 @@ def repair_stale_active_work_items(con) -> list[dict]:
     live_terminals = _running_mt5_terminals()
 
     rows = con.execute(
-        "SELECT id, ea_id, symbol, updated_at, claimed_by, payload_json FROM work_items WHERE status='active'"
+        "SELECT id, ea_id, symbol, phase, status, verdict, updated_at, claimed_by, "
+        "payload_json FROM work_items WHERE status='active'"
     ).fetchall()
+    if rows:
+        _require_work_item_transition_ledger(con)
     for r in rows:
         try:
             t = dt.datetime.fromisoformat(r["updated_at"].replace("Z", "+00:00"))
@@ -294,10 +446,25 @@ def repair_stale_active_work_items(con) -> list[dict]:
         # Fast path: terminal claimed but no process for that path
         claimed = (r["claimed_by"] or "").upper()
         if claimed and claimed not in live_terminals and age_sec > 60:
-            con.execute(
+            now = _utc_now()
+            cursor = con.execute(
                 "UPDATE work_items SET status='pending', claimed_by=NULL, "
-                "attempt_count=COALESCE(attempt_count,0)+1, updated_at=? WHERE id=?",
-                (_utc_now(), r["id"]),
+                "attempt_count=COALESCE(attempt_count,0)+1, updated_at=? "
+                "WHERE id=? AND status='active'",
+                (now, r["id"]),
+            )
+            if cursor.rowcount != 1:
+                continue
+            _record_work_item_status_transition(
+                con,
+                row=r,
+                handler="R5_dead_terminal_work_item",
+                reason="claimed_terminal_process_not_running",
+                to_status="pending",
+                to_verdict=r["verdict"],
+                to_claimed_by=None,
+                now=now,
+                detail={"claimed_terminal": claimed},
             )
             out.append({
                 "handler": "R5_dead_terminal_work_item",
@@ -317,10 +484,25 @@ def repair_stale_active_work_items(con) -> list[dict]:
                     continue
             except OSError:
                 pass
-        con.execute(
+        now = _utc_now()
+        cursor = con.execute(
             "UPDATE work_items SET status='pending', claimed_by=NULL, "
-            "attempt_count=COALESCE(attempt_count,0)+1, updated_at=? WHERE id=?",
-            (_utc_now(), r["id"]),
+            "attempt_count=COALESCE(attempt_count,0)+1, updated_at=? "
+            "WHERE id=? AND status='active'",
+            (now, r["id"]),
+        )
+        if cursor.rowcount != 1:
+            continue
+        _record_work_item_status_transition(
+            con,
+            row=r,
+            handler="R5_stale_active_work_item",
+            reason="active_row_stale_without_fresh_work_item_log",
+            to_status="pending",
+            to_verdict=r["verdict"],
+            to_claimed_by=None,
+            now=now,
+            detail={"age_seconds": age_sec},
         )
         out.append({
             "handler": "R5_stale_active_work_item",
@@ -555,13 +737,6 @@ def repair_stranded_ea_review_pending(con) -> list[dict]:
     return out
 
 
-def _row_get(row: sqlite3.Row, column: str):
-    try:
-        return row[column]
-    except (IndexError, KeyError):
-        return None
-
-
 def _pending_work_item_artifact_failure(row: sqlite3.Row) -> dict | None:
     # R11 asserts the preconditions of a BACKTEST row: a setfile, a resolvable EA
     # directory and a compiled .ex5. A utility phase has different preconditions by
@@ -620,7 +795,8 @@ def repair_pending_unclaimable_work_items(con) -> list[dict]:
     out = []
     rows = con.execute(
         """
-        SELECT id, ea_id, symbol, phase, setfile_path, payload_json
+        SELECT id, ea_id, symbol, phase, status, verdict, claimed_by,
+               setfile_path, payload_json
         FROM work_items
         WHERE status='pending'
         """
@@ -648,6 +824,8 @@ def repair_pending_unclaimable_work_items(con) -> list[dict]:
             "detail": alarm_msg,
         }]
 
+    if failing:
+        _require_work_item_transition_ledger(con)
     now = _utc_now()
     for r, failure in failing:
 
@@ -677,14 +855,27 @@ def repair_pending_unclaimable_work_items(con) -> list[dict]:
             "verdict": "INVALID",
         }
         evidence_path.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        con.execute(
+        cursor = con.execute(
             """
             UPDATE work_items
             SET status='failed', verdict='INVALID', evidence_path=?,
                 claimed_by=NULL, payload_json=?, updated_at=?
-            WHERE id=?
+            WHERE id=? AND status='pending'
             """,
             (str(evidence_path), json.dumps(payload, sort_keys=True), now, r["id"]),
+        )
+        if cursor.rowcount != 1:
+            continue
+        _record_work_item_status_transition(
+            con,
+            row=r,
+            handler="R11_pending_unclaimable_work_item",
+            reason=str(failure.get("reason") or "preflight_failed"),
+            to_status="failed",
+            to_verdict="INVALID",
+            to_claimed_by=None,
+            now=now,
+            detail={"failure_detail": failure.get("detail")},
         )
         out.append({
             "handler": "R11_pending_unclaimable_work_item",
@@ -854,6 +1045,8 @@ def repair_duplicate_pending_q02_work_items(con, ea_id_filter: str | None = None
             "detail": detail,
         }]
 
+    if groups:
+        _require_work_item_transition_ledger(con)
     out: list[dict] = []
     now = _utc_now()
     for group in groups:
@@ -897,7 +1090,7 @@ def repair_duplicate_pending_q02_work_items(con, ea_id_filter: str | None = None
             payload["duplicate_repair_at"] = now
             payload["duplicate_of_work_item_id"] = survivor["id"]
             payload["superseded_by_work_item_id"] = survivor["id"]
-            con.execute(
+            cursor = con.execute(
                 """
                 UPDATE work_items
                 SET status='failed', verdict='INVALID', claimed_by=NULL,
@@ -905,6 +1098,19 @@ def repair_duplicate_pending_q02_work_items(con, ea_id_filter: str | None = None
                 WHERE id=? AND status='pending'
                 """,
                 (json.dumps(payload, sort_keys=True), now, row["id"]),
+            )
+            if cursor.rowcount != 1:
+                continue
+            _record_work_item_status_transition(
+                con,
+                row=row,
+                handler="R18_duplicate_pending_q02_work_item",
+                reason="duplicate_pending_q02_superseded",
+                to_status="failed",
+                to_verdict="INVALID",
+                to_claimed_by=None,
+                now=now,
+                detail={"survivor_work_item_id": survivor["id"]},
             )
             suppressed += 1
         if suppressed:
@@ -1337,7 +1543,10 @@ def repair_strategy_farm_gc(con) -> list[dict]:
 
 def run_all() -> dict:
     """Run all repair handlers. Returns summary + per-handler counts."""
+    global _ACTIVE_REPAIR_RUN_ID
     started_at = _utc_now()
+    run_id = f"repair-{uuid.uuid4()}"
+    _ACTIVE_REPAIR_RUN_ID = run_id
     con = _connect()
     all_repairs: list[dict] = []
     errors: list[dict] = []
@@ -1361,17 +1570,28 @@ def run_all() -> dict:
     ]
     try:
         for fn in handlers:
+            ledger_seq_before = _transition_ledger_max_seq(con)
             try:
                 fixes = fn(con)
                 all_repairs.extend(fixes)
+                alarms = _raise_mass_change_alarm(
+                    con,
+                    run_id=run_id,
+                    since_seq=ledger_seq_before,
+                    repair_function=fn.__name__,
+                )
+                all_repairs.extend(alarms)
             except Exception as exc:
+                con.rollback()
                 errors.append({"handler": fn.__name__, "error": repr(exc)})
     finally:
         con.close()
+        _ACTIVE_REPAIR_RUN_ID = None
 
     summary = {
         "started_at": started_at,
         "finished_at": _utc_now(),
+        "run_id": run_id,
         "repairs_applied": len(all_repairs),
         "by_handler": {},
         "errors": errors,

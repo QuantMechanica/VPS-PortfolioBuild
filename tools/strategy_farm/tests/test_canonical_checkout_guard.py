@@ -117,6 +117,24 @@ class Layer3CircuitBreakerTests(unittest.TestCase):
                 updated_at TEXT
             )"""
         )
+        con.execute(
+            """CREATE TABLE work_item_transition_ledger (
+                seq INTEGER PRIMARY KEY AUTOINCREMENT,
+                idempotency_key TEXT NOT NULL UNIQUE,
+                ts TEXT NOT NULL,
+                work_item_id TEXT NOT NULL,
+                action TEXT NOT NULL,
+                from_status TEXT,
+                to_status TEXT,
+                from_verdict TEXT,
+                to_verdict TEXT,
+                from_claimed_by TEXT,
+                to_claimed_by TEXT,
+                reason TEXT NOT NULL,
+                run_id TEXT,
+                detail_json TEXT NOT NULL
+            )"""
+        )
         for i in range(n_pending):
             con.execute(
                 "INSERT INTO work_items (id, ea_id, symbol, phase, setfile_path, "
