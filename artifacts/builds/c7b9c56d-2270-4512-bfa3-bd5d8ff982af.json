@@ -1,0 +1,31 @@
+{
+  "task_id": "c7b9c56d-2270-4512-bfa3-bd5d8ff982af",
+  "ea_id": "QM5_1345",
+  "slug": "chan-cot-spec-momo",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\QM5_1345_chan-cot-spec-momo.mq5",
+  "mq5_sha256": "99cf42d0a60d3857be1189c14429b9f71649b7f512851add410016de37b94dbf",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\QM5_1345_chan-cot-spec-momo.ex5",
+  "ex5_sha256": "06a253b7f2cfd6af61100c3cd12383b3d10d1ae78c0aaef1ba1a35b8edb708c8",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_AUDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_GDAXI.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_NZDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_UK100.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_USDCAD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_USDCHF.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_USDJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_WS30.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1345_chan-cot-spec-momo\\sets\\QM5_1345_chan-cot-spec-momo_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "built_by": "Gemini",
+  "built_at": "2026-08-22T09:24:00Z"
+}
