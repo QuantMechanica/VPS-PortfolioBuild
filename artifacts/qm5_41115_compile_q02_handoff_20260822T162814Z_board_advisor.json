@@ -1,0 +1,148 @@
+{
+  "schema": "qm.qm5-41115.compile-q02-handoff/v1",
+  "generated_at_utc": "2026-08-22T16:28:14Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41115",
+  "ea_label": "QM5_41115_wti-mthirdvote-mom",
+  "strategy_id": "MOP-WTI-MTHIRDVOTE-MOM-2026_S01",
+  "logical_symbol": "XTIUSD.DWX",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_CPU_CEILING_Q01_PENDING_Q02_NOT_ENQUEUED",
+  "commits": {
+    "source_approval": "e3b7b5d156d1cc46d637119a18f9686fa9e3d2d2",
+    "bounded_source_extraction": "ff371aadaa83596396116413f6b7d6a29a7544f6",
+    "ea_id_reservation": "9f2517a777b04b064114c58f17ab7fef496b1b08",
+    "g0_card_approval": "7f476ea0b16d1f8ae75f8fd80718df41ac26bce4",
+    "magic_allocation": "a2dfeab7dbb3036858ad19e71fe6076790261934",
+    "source_build": "8f8f7f830a4204a91085266349cb1bd88364ffcd"
+  },
+  "identity": {
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "symbol_slot": 0,
+    "magic": 411150000
+  },
+  "mechanic": {
+    "formation": "immediately completed broker-calendar month plus its consecutive parent; each requires 17-23 unique normalized D1 sessions",
+    "anchor": "parent chronological final close P",
+    "split": "a=floor(n/3), b=floor(2n/3) over all chronological closes C[0..n-1] in the newest completed month",
+    "blocks": [
+      "log(C[a-1]/P)",
+      "log(C[b-1]/C[a-1])",
+      "log(C[n-1]/C[b-1])"
+    ],
+    "entry": "BUY when at least two block signs are strictly positive; SELL when at least two are strictly negative; zero casts no vote and magnitude is ignored",
+    "endpoint_constraint": "none; a strict block-sign majority may oppose the full-month endpoint sign",
+    "attempt_cadence": "one durable attempt per normalized broker month before fallible gates",
+    "exit": "first later normalized broker month, with forty-calendar-day stale repair",
+    "q02_frequency_floor": "at least five completed positions per full post-warm-up year"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "atr_period_d1": 20,
+    "atr_stop_multiple": 3.5,
+    "profit_target": false,
+    "friday_close": false,
+    "news_temporal": "OFF",
+    "news_compliance": "NONE",
+    "maximum_spread_points": 1500
+  },
+  "source_governance": {
+    "citation": "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250",
+    "doi": "10.1016/j.jfineco.2011.11.003",
+    "quality_tier": "A",
+    "source_packet": "strategy-seeds/sources/MOP-WTI-MTHIRDVOTE-MOM-2026/source.md",
+    "source_claim_boundary": "the peer-reviewed paper supplies monthly own-price continuation and explicit WTI lineage; the three-block vote, CFD mapping, fixed risk, performance, and correlation are disclosed QM hypotheses"
+  },
+  "deduplication": {
+    "preallocation": {
+      "verdict": "CLEAN",
+      "registry_identities": 4611,
+      "repository_cards": 1283,
+      "strategy_wiki_nodes": 45,
+      "receipt": "artifacts/qm5_wti_mthirdvote_mom_preallocation_dedup_20260822.json"
+    },
+    "postallocation": {
+      "verdict": "EXPECTED_REGISTRY_SELF_HITS_ONLY_AFTER_MANUAL_CLASSIFICATION",
+      "registry_identities": 4612,
+      "repository_cards": 1283,
+      "strategy_wiki_nodes": 45,
+      "receipt": "artifacts/qm5_41115_wti_mthirdvote_mom_postallocation_dedup_20260822.json"
+    },
+    "closest_family_boundary": "not a full-month endpoint signal, two-half unanimity, daily-sign breadth vote, adjacent-month sign flip, monthly OHLC geometry rule, or certified XNG RSI2 pullback"
+  },
+  "validations": {
+    "card_schema_ml_lint": "PASS",
+    "build_prerequisite_guard": "PASS",
+    "reference_tests": {
+      "verdict": "PASS",
+      "passed": 13,
+      "failed": 0
+    },
+    "spec_validator": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "card_copy_sha256_equal": true,
+    "strict_compile": "NOT_ATTEMPTED_CAPACITY_UNSAFE",
+    "q01": "PENDING"
+  },
+  "compile": {
+    "governed_work_item_id": "87cd0c24-273d-4e11-b7ef-408c8dbccc3f",
+    "created_at_utc": "2026-08-22T16:27:36Z",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "verdict": null,
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "evidence_path": null,
+    "ex5_exists": false,
+    "ex5_sha256": null,
+    "build_check_result": null,
+    "source_setfile_count": 1,
+    "final_bound_setfile_count": 0,
+    "setfile_build_hash": "pending",
+    "manual_compile_attempted": false,
+    "terminal_processes_stopped_or_restarted": false
+  },
+  "capacity": {
+    "sampled_at_utc": "2026-08-22T16:28:14.8334922Z",
+    "sample_interval_seconds": 4,
+    "cpu_samples_pct": [100.0, 100.0, 100.0, 100.0, 100.0],
+    "average_cpu_pct": 100.0,
+    "maximum_cpu_pct": 100.0,
+    "ceiling_pct": 97.0,
+    "ceiling_hit": true,
+    "binding_stop": true
+  },
+  "q02": {
+    "requested": true,
+    "enqueued": false,
+    "work_item_id": null,
+    "preview_run": false,
+    "blocking_gates": [
+      "BACKTEST_CPU_CEILING_HIT",
+      "STRICT_COMPILE_EX5_FINAL_SET_BINDING_AND_Q01_PASS_ABSENT",
+      "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+    ]
+  },
+  "hashes_sha256": {
+    "bounded_source": "DC510F82EA24CBE927F877BC272F3A6770C2EBE494C4C6AE880F7170CE4AA44C",
+    "approved_and_build_card": "55F51A934BD5F386BD511D0B45615E107AC466C488461C9BBC4DA2F259CCE3A9",
+    "mq5": "8041496CE654F47E70E4C7A69386CCCCB601A1E5B549F75D6984F5922DD96152",
+    "spec": "D10A03674E38E90A1CABF118CDCA5F4162563170F31BD39ECCA76B9B29C2510C",
+    "reference_suite": "2674D1A2B3C300FD0FD8EF682121768D1A5C1788F4A8388FA98C31E46F0B3052",
+    "unbound_backtest_set": "CA0F4DD179821A85D5E21136C509F3A54F5C892742B4B17B333CEEDFF5DE8EF1"
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_or_worker_control": false,
+    "compile_activation_hold_released": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
