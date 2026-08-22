@@ -1,5 +1,12 @@
 # SP-E4 diagnosis of five formerly never-signaling DXZ EAs
 
+> Correction, 2026-08-22: the follow-up read-only binary-lineage probe in
+> `2026-08-22_qm5_13128_missed_fomc_root_cause.md` supersedes the preliminary
+> exact-hour hypothesis for QM5_13128. T_Live runs the 57-date pre-remediation
+> binary whose fixed calendar ends in 2025; `20260729` was absent from the
+> executing binary. The set correction probe remains non-deployable and is not
+> the recommended repair.
+
 Date: 2026-08-22 15:12 Europe/Berlin
 
 Router task: `961deb63-f5ea-4f1f-a877-a5f9685846e3`
@@ -77,4 +84,3 @@ Each live log was parsed line-by-line as JSON (zero parse failures), grouped by 
 - Keep 10919, 12567, and 12989 classified as sparse/monitoring candidates; do not loosen filters from this evidence.
 - Remove 10939 from the never-signaling list.
 - Treat 13128 as a separate development/requalification item. Do not apply the probe template to T_Live; live correction requires validated schedule evidence and a separate OWNER/RED action.
-
