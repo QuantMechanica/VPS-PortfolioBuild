@@ -17843,3 +17843,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1624,ehlers-adaptive-cg-h4,11,WS30.DWX,16240011,2026-08-22,Development,active
 1624,ehlers-adaptive-cg-h4,12,XAUUSD.DWX,16240012,2026-08-22,Development,active
 1624,ehlers-adaptive-cg-h4,13,XTIUSD.DWX,16240013,2026-08-22,Development,active
+41119,xauxag-mclose-quartile-rv,0,XAUUSD.DWX,411190000,2026-08-22,Codex governed allocator,active
+41119,xauxag-mclose-quartile-rv,1,XAGUSD.DWX,411190001,2026-08-22,Codex governed allocator,active
