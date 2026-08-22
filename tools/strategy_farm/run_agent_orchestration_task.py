@@ -215,9 +215,17 @@ Cycle:
 1. Run:
    python tools/strategy_farm/farmctl.py health
    python tools/strategy_farm/agent_router.py status
-   python tools/strategy_farm/agent_router.py run --min-ready-strategy-cards 5 --max-routes 5
-   python tools/strategy_farm/agent_router.py route-many --max-routes 5
    python tools/strategy_farm/agent_router.py list-tasks --agent {agent} --state IN_PROGRESS
+
+   DO NOT run `agent_router.py run` or `route-many`. You consume work the router
+   assigned to you; you never route. The router is its own scheduled task
+   (QM_StrategyFarm_AgentRouter_5min) which always executes the canonical
+   checkout C:/QM/repo. Your session works inside a worktree that can be months
+   behind: on 2026-08-22 an agent ran `run`/`route-many` from a checkout 12,210
+   commits stale, whose router had neither the human-lane hold nor the registry
+   writer gate, and it assigned an OWNER-only video ticket to a lane that cannot
+   watch videos. A guard only exists in the code that runs it - so routing runs
+   in exactly one place.
 2. For every IN_PROGRESS task assigned to {agent}, in ascending numeric priority:
    The router claims a 30-minute spawn lease (`agent_task:<task_id>`) when it
    moves work to IN_PROGRESS. If you were launched directly for a specific task
