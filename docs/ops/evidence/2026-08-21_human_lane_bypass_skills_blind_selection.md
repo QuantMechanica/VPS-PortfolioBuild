@@ -89,3 +89,63 @@ That hides this instance and leaves the next skills-gated capability to fall thr
 A guard proven in one code path is not proven in the system. The router test suite passed, the
 live routing proof passed, and the ticket still reached a lane that could not do the work —
 because the proof covered the door I was looking at.
+
+---
+
+# Correction, 2026-08-22 — the capture vector was not the second door
+
+The re-issued ticket `c993c011` was captured **again**, at 04:02:26Z, seven minutes after a live
+proof across five selection paths showed it held. The skills fix (`64db3d21e`) was in the
+canonical checkout and correct. So the diagnosis above was incomplete.
+
+**Proof, from the codex orchestration live log of `2026-08-22T04:00:02Z`:**
+
+```text
+'python tools/strategy_farm/agent_router.py run --min-ready-strategy-cards 5 --max-routes 5'
+   in C:\QM\worktrees\codex-orchestration-1
+'python tools/strategy_farm/agent_router.py route-many --max-routes 5'
+   in C:\QM\worktrees\codex-orchestration-1
+-> "task_id": "c993c011-1ba1-4be7-a636-57ad72d7185a"
+```
+
+**The agent session ran the router itself, from its own worktree.** The scheduled tasks all
+launch from `C:/QM/repo` — that part of my earlier reasoning was right — but the agent *session*
+works inside a git worktree, and the prompt told it to run `agent_router.py run` and `route-many`
+as step 1 of every cycle. Whatever code that worktree carries is the router that executes.
+
+Measured staleness of the checkouts that route:
+
+| Worktree | Behind canonical | Local commits | Dirty files |
+|---|---:|---:|---:|
+| `codex-orchestration-1` | **12 210** | 12 | 161 |
+| `claude-orchestration-1` | 346 | 3 | 23 |
+| `gemini-orchestration-1` | router file dated **2026-07-19**; SYSTEM-owned, git refuses to inspect it as `qm-admin` | — | — |
+
+That router has neither the human-lane hold nor the registry writer gate — both landed
+2026-08-21 — and its CLI no longer accepts `list-tasks --state`. The canonical tick logged
+`awaiting_human_lane:owner` for the same task at 03:56:01Z. The hold works exactly where it was
+proven, and is simply absent in the code that ran.
+
+**One cause, two symptoms.** The stale `sync_default_registry` has no writer gate either, so it
+rewrites the live registry with July defaults — gemini *with* `video_analysis` — and then routes
+against its own rewrite. That is the capability flapping `cd982cfc` only half-closed: the gate was
+added to the code, so it protects against checkouts that already have it.
+
+**Done immediately** (`f5abf63e2`): the agent prompt no longer instructs sessions to route. They
+consume the work the router assigned; routing happens in exactly one place.
+
+**Commissioned as `cbd73e04` (P0):** make it structurally impossible — `run` / `route-many` /
+`route-once` / `replenish` refuse unless executing from the canonical checkout, and the registry
+writer protection has to be enforceable from the canonical side, since old code cannot be taught
+a new gate. Plus the open question of what an agent worktree is actually for, and what currency
+contract it owes.
+
+`c993c011` is parked BLOCKED rather than re-issued: re-enqueueing would hand it to the next stale
+session. The screening work is unaffected — OWNER can watch the three videos whenever he likes;
+the row is tracking, not a gate.
+
+**The sharper lesson.** The first version of this document said a guard proven in one path is not
+proven in the system. The correction is worse and more useful: **a guard is only in force in the
+code that runs it.** Every routing guarantee made this week — human-lane holds, the skills gate,
+the writer gate, quota gates — held for the 5-minute scheduled tick and was absent for any agent
+session that chose to route from its own checkout.
