@@ -192,6 +192,91 @@ def test_candidate_refuses_work_history_and_bound_hash(tmp_path: Path) -> None:
     assert "BOUND_SETFILE_HASH_EXISTS" in two["reasons"]
 
 
+def test_candidate_recheck_allows_only_exact_r11_revival_predecessor(
+    tmp_path: Path,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    source_sha = compile_work_items.sha256_file(
+        repo / "framework" / "EAs" / label / f"{label}.mq5"
+    )
+    now = farmctl.utc_now()
+    old_payload = {
+        "ea_label": label,
+        "mq5_sha256": source_sha,
+        "repair_handler": compile_work_items.R11_INCIDENT_HANDLER,
+        "verdict_reason": compile_work_items.R11_INCIDENT_REASON,
+    }
+    revival_payload = {
+        "ea_label": label,
+        "mq5_sha256": source_sha,
+        "revival_contract_version": compile_work_items.R11_REVIVAL_CONTRACT_VERSION,
+        "revival_authority_task_id": compile_work_items.R11_REVIVAL_AUTHORITY_TASK_ID,
+        "revival_reason": compile_work_items.R11_REVIVAL_REASON,
+        "revival_source_mq5_sha256": source_sha,
+        "revived_from_work_item_id": "r11-old",
+        "append_only_revival": True,
+    }
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,"
+            "payload_json,created_at,updated_at) "
+            "VALUES ('r11-old','compile','COMPILE_EA','QM5_1001','','','failed',"
+            "'INVALID',0,?,?,?)",
+            (json.dumps(old_payload), now, now),
+        )
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,claimed_by,"
+            "payload_json,created_at,updated_at) "
+            "VALUES ('revived','compile','COMPILE_EA','QM5_1001','','','active',0,"
+            "'T8',?,?,?)",
+            (json.dumps(revival_payload), now, now),
+        )
+        conn.commit()
+
+    inventory = compile_work_items._inventory(root, repo)
+    sanctioned = compile_work_items._sanctioned_compile_predecessor_ids(
+        revival_payload, inventory, "1001"
+    )
+    candidate = compile_work_items.classify_candidate(
+        root,
+        repo,
+        label,
+        inventory,
+        current_work_item_id="revived",
+        sanctioned_predecessor_ids=sanctioned,
+    )
+
+    assert sanctioned == {"r11-old"}
+    assert candidate["eligible"] is True
+    assert candidate["sanctioned_predecessor_ids"] == ["r11-old"]
+
+    old_payload["repair_handler"] = "not-the-r11-incident"
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE work_items SET payload_json=? WHERE id='r11-old'",
+            (json.dumps(old_payload),),
+        )
+        conn.commit()
+    inventory = compile_work_items._inventory(root, repo)
+    refused_ids = compile_work_items._sanctioned_compile_predecessor_ids(
+        revival_payload, inventory, "1001"
+    )
+    refused = compile_work_items.classify_candidate(
+        root,
+        repo,
+        label,
+        inventory,
+        current_work_item_id="revived",
+        sanctioned_predecessor_ids=refused_ids,
+    )
+    assert refused_ids == set()
+    assert refused["eligible"] is False
+    assert "WORK_ITEMS_EXIST" in refused["reasons"]
+
+
 def test_candidate_refuses_unresolved_timeframe_before_enqueue(tmp_path: Path) -> None:
     label = "QM5_1001_compile-fixture"
     repo, root = _fixture(tmp_path, [label])

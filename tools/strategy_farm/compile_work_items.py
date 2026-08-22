@@ -29,6 +29,14 @@ COMPILE_ACTIVATION_HOLD_REASON = (
     "COMPILE_EA rows require the reviewed worker version on the full terminal fleet; "
     "release only through the governed release-on-restart ceremony"
 )
+R11_REVIVAL_CONTRACT_VERSION = "qm.r11-compile-ea-revival/v1"
+R11_REVIVAL_AUTHORITY_TASK_ID = "83be33f3-a45d-453b-bb70-79d10a7841e9"
+R11_REVIVAL_REASON = "R11_FALSE_INVALID_EX5_MISSING"
+R11_INCIDENT_HANDLER = "R11_pending_unclaimable_work_item"
+R11_INCIDENT_REASON = "ex5_missing"
+COMPILE_RECHECK_RETRY_CONTRACT_VERSION = "qm.compile-ea-candidate-recheck-retry/v1"
+COMPILE_RECHECK_RETRY_AUTHORITY_TASK_ID = "1fb9943f-1b87-4515-b2b4-f5ca3ffb56f8"
+COMPILE_RECHECK_FAILURE_CLASS = "CANDIDATE_RECHECK_REFUSED"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
     # must be generatable, not merely a valid MetaTrader period literal.
@@ -215,7 +223,8 @@ def _inventory(root: Path, repo_root: Path) -> dict[str, Any]:
         work_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)
         open_compile: dict[str, list[dict[str, Any]]] = defaultdict(list)
         for row in conn.execute(
-            "SELECT id,ea_id,phase,status,payload_json FROM work_items"
+            "SELECT id,ea_id,phase,status,verdict,evidence_path,payload_json "
+            "FROM work_items"
         ):
             ea_id = _numeric_ea_reference(row["ea_id"])
             if not ea_id:
@@ -248,6 +257,7 @@ def classify_candidate(
     inventory: dict[str, Any],
     *,
     current_work_item_id: str | None = None,
+    sanctioned_predecessor_ids: Iterable[str] = (),
 ) -> dict[str, Any]:
     parts = _label_parts(label)
     if not parts:
@@ -297,9 +307,13 @@ def classify_candidate(
     ]
     if invalid_symbols:
         reasons.append("SETFILE_SYMBOL_UNSUPPORTED")
+    sanctioned_ids = {
+        str(value) for value in sanctioned_predecessor_ids if str(value or "")
+    }
+    ignored_ids = sanctioned_ids | {str(current_work_item_id or "")}
     other_work = [
         row for row in inventory["work_rows"].get(ea_id, [])
-        if str(row.get("id")) != str(current_work_item_id or "")
+        if str(row.get("id")) not in ignored_ids
     ]
     if other_work:
         reasons.append("WORK_ITEMS_EXIST")
@@ -330,7 +344,122 @@ def classify_candidate(
         "active_magic_row_count": len(magic_rows),
         "bound_setfile_hashes": bound_hashes,
         "timeframe": timeframe,
+        "sanctioned_predecessor_ids": sorted(sanctioned_ids),
     }
+
+
+def _json_object(raw: Any) -> dict[str, Any]:
+    try:
+        value = json.loads(str(raw or "{}"))
+    except (TypeError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def _work_row_by_id(
+    inventory: dict[str, Any], ea_id: str, work_item_id: str
+) -> dict[str, Any] | None:
+    return next(
+        (
+            row
+            for row in inventory["work_rows"].get(ea_id, [])
+            if str(row.get("id")) == str(work_item_id)
+        ),
+        None,
+    )
+
+
+def _sanctioned_compile_predecessor_ids(
+    payload: dict[str, Any],
+    inventory: dict[str, Any],
+    ea_id: str,
+    *,
+    seen: frozenset[str] = frozenset(),
+) -> set[str]:
+    """Return only incident-authorized immutable COMPILE_EA lineage.
+
+    COMPILE_EA normally refuses an EA with *any* prior work. The R11 repair
+    incident necessarily leaves one immutable failed COMPILE_EA predecessor,
+    and the first post-revival canary left a second immutable failure before
+    this check was corrected. Those two exact lineages are the only exception;
+    malformed provenance fails closed and ordinary Q work is never ignored.
+    """
+
+    source_sha = str(payload.get("mq5_sha256") or "").lower()
+    if not _BOUND_HASH_RE.fullmatch(source_sha):
+        return set()
+
+    if (
+        payload.get("compile_retry_contract_version")
+        == COMPILE_RECHECK_RETRY_CONTRACT_VERSION
+        and payload.get("compile_retry_authority_task_id")
+        == COMPILE_RECHECK_RETRY_AUTHORITY_TASK_ID
+        and payload.get("append_only_retry") is True
+    ):
+        predecessor_id = str(payload.get("retry_of_work_item_id") or "")
+        if not predecessor_id or predecessor_id in seen:
+            return set()
+        predecessor = _work_row_by_id(inventory, ea_id, predecessor_id)
+        if not predecessor:
+            return set()
+        predecessor_payload = _json_object(predecessor.get("payload_json"))
+        compile_result = predecessor_payload.get("compile_result")
+        failure_classes = (
+            compile_result.get("failure_classes", [])
+            if isinstance(compile_result, dict)
+            else []
+        )
+        if not (
+            predecessor.get("phase") == COMPILE_EA_PHASE
+            and predecessor.get("status") == "failed"
+            and predecessor.get("verdict") == "COMPILE_FAIL"
+            and predecessor_payload.get("verdict_reason")
+            == COMPILE_RECHECK_FAILURE_CLASS
+            and failure_classes == [COMPILE_RECHECK_FAILURE_CLASS]
+            and str(predecessor_payload.get("mq5_sha256") or "").lower()
+            == source_sha
+        ):
+            return set()
+        earlier = _sanctioned_compile_predecessor_ids(
+            predecessor_payload,
+            inventory,
+            ea_id,
+            seen=seen | {predecessor_id},
+        )
+        # A retry is valid only when its failed predecessor itself has the exact
+        # R11 revival lineage. This prevents a forged retry marker from hiding
+        # arbitrary historical work.
+        if not earlier:
+            return set()
+        return {predecessor_id, *earlier}
+
+    if not (
+        payload.get("revival_contract_version") == R11_REVIVAL_CONTRACT_VERSION
+        and payload.get("revival_authority_task_id") == R11_REVIVAL_AUTHORITY_TASK_ID
+        and payload.get("revival_reason") == R11_REVIVAL_REASON
+        and payload.get("append_only_revival") is True
+        and str(payload.get("revival_source_mq5_sha256") or "").lower()
+        == source_sha
+    ):
+        return set()
+    predecessor_id = str(payload.get("revived_from_work_item_id") or "")
+    if not predecessor_id or predecessor_id in seen:
+        return set()
+    predecessor = _work_row_by_id(inventory, ea_id, predecessor_id)
+    if not predecessor:
+        return set()
+    predecessor_payload = _json_object(predecessor.get("payload_json"))
+    if not (
+        predecessor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("status") == "failed"
+        and predecessor.get("verdict") == "INVALID"
+        and predecessor_payload.get("repair_handler") == R11_INCIDENT_HANDLER
+        and predecessor_payload.get("verdict_reason") == R11_INCIDENT_REASON
+        and str(predecessor_payload.get("mq5_sha256") or "").lower()
+        == source_sha
+    ):
+        return set()
+    return {predecessor_id}
 
 
 def load_labels(explicit: Iterable[str], from_file: str | None, repo_root: Path) -> tuple[list[str], dict[str, Any]]:
@@ -701,12 +830,23 @@ def run_compile_work_item(
         inventory = _inventory(root, repo_root)
         payload = json.loads(item["payload_json"] or "{}")
         label = str(payload.get("ea_label") or "")
+        parts = _label_parts(label)
+        sanctioned_predecessors = (
+            _sanctioned_compile_predecessor_ids(
+                payload,
+                inventory,
+                parts[1],
+            )
+            if parts
+            else set()
+        )
         candidate = classify_candidate(
             root,
             repo_root,
             label,
             inventory,
             current_work_item_id=work_item_id,
+            sanctioned_predecessor_ids=sanctioned_predecessors,
         )
         evidence["ea_label"] = label
         evidence["candidate_recheck"] = candidate
