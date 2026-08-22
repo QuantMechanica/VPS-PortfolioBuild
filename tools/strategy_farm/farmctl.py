@@ -61,6 +61,13 @@ except ModuleNotFoundError:
     from tools.strategy_farm.process_identity import get_process_identity
 
 try:
+    from raw_mq5_quarantine import check_source_path as check_raw_mq5_source_path
+except ModuleNotFoundError:
+    from tools.strategy_farm.raw_mq5_quarantine import (
+        check_source_path as check_raw_mq5_source_path,
+    )
+
+try:
     from defect_block_taint_view import taint_record as defect_block_taint_record
 except ModuleNotFoundError:
     from tools.strategy_farm.defect_block_taint_view import (
@@ -139,6 +146,7 @@ SHARED_BUILD_PATHS = [
     "framework/include/QM/QM_MagicResolver.mqh",
     "framework/registry/ea_id_registry.csv",
     "framework/registry/magic_numbers.csv",
+    "framework/registry/raw_mq5_source_ledger.csv",
     "public-data/process-roadmap.json",
     "public-data/public-snapshot.json",
     "public-data/strategy-archive.json",
@@ -22968,6 +22976,27 @@ def _validate_ea_strategy_entry(build_result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _validate_raw_mq5_promotion(build_result: dict[str, Any]) -> dict[str, Any]:
+    """Refuse direct/raw MQ5 provenance before a build can auto-enqueue Q02."""
+    raw_path = str(build_result.get("mq5_path") or "").strip()
+    if not raw_path:
+        ea_dir_raw = str(build_result.get("ea_dir") or "").strip()
+        if ea_dir_raw:
+            ea_dir = Path(ea_dir_raw)
+            candidates = sorted(ea_dir.glob("*.mq5")) if ea_dir.is_dir() else []
+            if len(candidates) == 1:
+                raw_path = str(candidates[0])
+    return check_raw_mq5_source_path(
+        raw_path,
+        purpose="promotion",
+        repo_root=CANONICAL_REPO_ROOT,
+        # Existing build identity/spec checks bind the canonical EA directory.
+        # This guard remains narrowly responsible for G:, quarantined names,
+        # and (once captured) byte hashes so test/runtime roots stay injectable.
+        enforce_canonical=False,
+    )
+
+
 def record_build_result(
     root: Path,
     task_id: str,
@@ -23129,6 +23158,18 @@ def record_build_result(
         new_status = "done"
     else:
         new_status = "failed"
+
+    if new_status == "done":
+        raw_source_result = _validate_raw_mq5_promotion(result)
+        payload_merge["raw_mq5_quarantine_validation"] = raw_source_result
+        if not raw_source_result.get("allowed"):
+            new_status = "blocked"
+            blocked = "raw_mq5_quarantine_refused"
+            fail_code = "raw_mq5_quarantine_refused"
+            result["blocked_reason"] = blocked
+            result["fail_code"] = fail_code
+            payload_merge["fail_code"] = fail_code
+            payload_merge["raw_mq5_quarantine_code"] = raw_source_result.get("code")
 
     # PT2 2026-05-23 — Q01 SPEC.md gate enforcement.
     # Per Vault Q01 Build & Spec spec, every new EA must ship with a complete

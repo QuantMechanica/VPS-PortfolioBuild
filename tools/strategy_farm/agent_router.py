@@ -42,6 +42,11 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     import work_identity  # type: ignore
 
+try:
+    from tools.strategy_farm import raw_mq5_quarantine
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import raw_mq5_quarantine  # type: ignore
+
 
 DEFAULT_ROOT = farmctl.DEFAULT_ROOT
 CLAUDE_DISABLED_FLAG = Path(r"D:\QM\strategy_farm\CLAUDE_DISABLED.flag")
@@ -1702,6 +1707,23 @@ def _build_review_dispatch_gate(artifact_path: str | None) -> dict[str, Any]:
             "D6_BUILD_IDENTITY_MISSING",
             "strict_build_pass_evidence_missing_review_dispatch_refused",
             artifact_path=str(artifact.resolve()),
+        )
+
+    raw_source_gate = raw_mq5_quarantine.check_source_path(
+        str(payload.get("mq5_path") or ""),
+        purpose="promotion",
+        repo_root=CANONICAL_ROUTER_ROOT,
+        # Git identity checks below bind committed canonical bytes. Keep this
+        # layer narrowly focused on direct G:/quarantined-source provenance so
+        # hermetic router tests can use an injectable Git root.
+        enforce_canonical=False,
+    )
+    if not raw_source_gate.get("allowed"):
+        return _refuse_review(
+            str(raw_source_gate.get("code") or "RAW_MQ5_QUARANTINE_REFUSED"),
+            "raw_mq5_quarantine_refused_review_dispatch",
+            artifact_path=str(artifact.resolve()),
+            raw_mq5_quarantine=raw_source_gate,
         )
 
     bound_specs = (

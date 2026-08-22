@@ -19,6 +19,42 @@ function Resolve-RepoRoot {
     return $repoRoot.Path
 }
 
+function Assert-RawMq5SourceAllowed {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$InputPath,
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    $checker = Join-Path $ResolvedRepoRoot "tools\strategy_farm\raw_mq5_quarantine.py"
+    if (-not (Test-Path -LiteralPath $checker -PathType Leaf)) {
+        throw "RAW_MQ5_QUARANTINE_CONFIG_INVALID: checker missing: $checker"
+    }
+    $python = Get-Command python -ErrorAction SilentlyContinue
+    if ($null -eq $python) {
+        throw "RAW_MQ5_QUARANTINE_CONFIG_INVALID: python is required for source preflight"
+    }
+    $raw = @(& $python.Source $checker check `
+        --source-path $InputPath `
+        --purpose compile `
+        --repo-root $ResolvedRepoRoot 2>&1)
+    $guardExit = $LASTEXITCODE
+    if ($guardExit -eq 0) {
+        return
+    }
+    try {
+        $result = ($raw | Out-String) | ConvertFrom-Json -ErrorAction Stop
+        throw "RAW_MQ5_QUARANTINE_REFUSED: code=$($result.code) reason=$($result.reason) source=$InputPath"
+    }
+    catch {
+        if ($_.Exception.Message -like "RAW_MQ5_QUARANTINE_REFUSED:*") {
+            throw
+        }
+        throw "RAW_MQ5_QUARANTINE_REFUSED: checker_exit=$guardExit source=$InputPath output=$($raw | Out-String)"
+    }
+}
+
 function Resolve-DefaultMetaEditorPath {
     $candidates = @(
         "D:\QM\mt5\T1\metaeditor64.exe",
@@ -287,7 +323,9 @@ if (-not $EAPath) {
     $EAPath = Resolve-EAPathFromLabel -Label $EALabel -ResolvedRepoRoot $repoRoot
 }
 
+Assert-RawMq5SourceAllowed -InputPath $EAPath -ResolvedRepoRoot $repoRoot
 $mq5Path = Resolve-Mq5Path -InputPath $EAPath
+Assert-RawMq5SourceAllowed -InputPath $mq5Path -ResolvedRepoRoot $repoRoot
 $eaName = [System.IO.Path]::GetFileNameWithoutExtension($mq5Path)
 $runTag = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss")
 

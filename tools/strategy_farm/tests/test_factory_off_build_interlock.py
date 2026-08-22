@@ -73,6 +73,11 @@ def test_hash_bound_record_during_off_never_enqueues_q02(tmp_path: Path, monkeyp
     flag.write_text("intentional maintenance\n", encoding="utf-8")
     monkeypatch.setattr(farmctl, "_validate_ea_spec_md", lambda *_: {"ok": True, "failures": []})
     monkeypatch.setattr(farmctl, "_validate_ea_strategy_entry", lambda *_: {"ok": True, "failures": []})
+    monkeypatch.setattr(
+        farmctl,
+        "_validate_raw_mq5_promotion",
+        lambda *_: {"allowed": True, "code": "TEST_ISOLATION_PASS"},
+    )
 
     wrong = farmctl.record_build_result(
         root,
