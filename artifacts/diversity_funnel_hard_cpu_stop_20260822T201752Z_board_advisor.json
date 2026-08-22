@@ -1,0 +1,75 @@
+{
+  "artifact_type": "diversity_funnel_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-22T20:17:52.3436422Z",
+  "generated_at_local": "2026-08-22T22:17:52.3450867+02:00",
+  "branch": "agents/board-advisor",
+  "base_commit": "dd6d495bdc67b7d48fb1bbe8b0dd4c707f7a62c4",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "capacity_sample": {
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "cpu_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      99.9
+    ],
+    "average_cpu_percent": 99.98,
+    "maximum_cpu_percent": 100.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "running_factory_terminal_count": 9,
+    "process_selection": "path-anchored D:/QM/mt5/T<n>/terminal64.exe; T_Live excluded"
+  },
+  "farm_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "query_mode": "read_only; PRAGMA query_only=ON",
+    "queried_at_utc": "2026-08-22T20:17:49.502485Z",
+    "quick_check": "ok",
+    "active_work_items": 9,
+    "pending_work_items": 3249,
+    "active_phase_mix": {
+      "Q07": 1,
+      "Q09_NEWS": 8
+    },
+    "pending_build_ea_tasks": 37,
+    "active_build_ea_tasks": 0,
+    "candidate_rows_inspected_after_capacity_stop": 0,
+    "farm_claim_written": false
+  },
+  "workspace_observation": {
+    "preexisting_porcelain_entries": 540,
+    "handling": "left untouched; receipt paths only"
+  },
+  "actions_this_run": {
+    "binding_process_docs_read": true,
+    "capacity_preflight_read_only": true,
+    "farm_db_read_only": true,
+    "strategy_card_selected": false,
+    "farm_claim_or_task_transition": false,
+    "ea_or_registry_mutation": false,
+    "resolver_regeneration": false,
+    "build_check_or_compile": false,
+    "smoke_or_backtest_run": false,
+    "q02_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_or_terminal_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  }
+}
