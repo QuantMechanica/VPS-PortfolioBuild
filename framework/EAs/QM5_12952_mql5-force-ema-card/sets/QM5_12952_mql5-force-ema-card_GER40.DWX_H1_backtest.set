@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12952
+; ea_slug:      mql5-force-ema-card
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       GER40.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=12952
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12952_mql5-force-ema-card.md
+strategy_force_period=13
+strategy_ema_period=100
+strategy_atr_period=14
+strategy_atr_filter_period=100
+strategy_atr_filter_ratio=0.50
+strategy_atr_sl_mult=1.6
+strategy_rr_target=2.0
+strategy_max_hold_bars=36
