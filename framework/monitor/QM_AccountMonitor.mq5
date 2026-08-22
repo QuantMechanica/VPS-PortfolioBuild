@@ -30,7 +30,7 @@
 //|   early-returns in the tester.                                   |
 //+------------------------------------------------------------------+
 #property copyright "QuantMechanica V5"
-#property version   "1.00"
+#property version   "1.10"
 #property strict
 #property description "QM Account Monitor - read-only deal-history exporter + light panel. NOT a trading EA (zero OrderSend/trade calls)."
 
@@ -258,6 +258,212 @@ string CsvEsc(const string in)
    if(need_quote)
       return "\"" + out + "\"";
    return out;
+  }
+
+//--- deterministic JSON escaping for broker-provided symbol/currency strings
+string JsonEsc(const string in)
+  {
+   string out = "";
+   for(int i = 0; i < StringLen(in); ++i)
+     {
+      ushort c = StringGetCharacter(in, i);
+      if(c == 34)       { out += "\\\""; continue; } // quote
+      if(c == 92)       { out += "\\\\"; continue; } // backslash
+      if(c < 32 || c > 126)
+         c = 32;
+      out += ShortToString(c);
+     }
+   return out;
+  }
+
+string PositionTypeToStr(const long value)
+  {
+   if(value == POSITION_TYPE_BUY)  return "BUY";
+   if(value == POSITION_TYPE_SELL) return "SELL";
+   return "UNKNOWN";
+  }
+
+string OrderTypeToStr(const long value)
+  {
+   switch((int)value)
+     {
+      case ORDER_TYPE_BUY:             return "BUY";
+      case ORDER_TYPE_SELL:            return "SELL";
+      case ORDER_TYPE_BUY_LIMIT:       return "BUY_LIMIT";
+      case ORDER_TYPE_SELL_LIMIT:      return "SELL_LIMIT";
+      case ORDER_TYPE_BUY_STOP:        return "BUY_STOP";
+      case ORDER_TYPE_SELL_STOP:       return "SELL_STOP";
+      case ORDER_TYPE_BUY_STOP_LIMIT:  return "BUY_STOP_LIMIT";
+      case ORDER_TYPE_SELL_STOP_LIMIT: return "SELL_STOP_LIMIT";
+      case ORDER_TYPE_CLOSE_BY:        return "CLOSE_BY";
+     }
+   return "UNKNOWN";
+  }
+
+// Delta-equivalent account-currency notional, measured through the broker's
+// own OrderCalcProfit conversion instead of a min-lot multiplier. A 0.1%
+// positive price probe yields signed notional: positive BUY, negative SELL.
+bool PositionNotionalAccount(const ENUM_POSITION_TYPE position_type,
+                             const string symbol,
+                             const double volume,
+                             const double current_price,
+                             double &signed_notional)
+  {
+   signed_notional = 0.0;
+   if(volume <= 0.0 || current_price <= 0.0)
+      return false;
+   const ENUM_ORDER_TYPE order_type =
+      (position_type == POSITION_TYPE_BUY ? ORDER_TYPE_BUY : ORDER_TYPE_SELL);
+   const double fraction = 0.001;
+   const double probe_price = current_price * (1.0 + fraction);
+   double probe_profit = 0.0;
+   ResetLastError();
+   if(!OrderCalcProfit(order_type, symbol, volume, current_price,
+                       probe_price, probe_profit) ||
+      !MathIsValidNumber(probe_profit))
+      return false;
+   signed_notional = probe_profit / fraction;
+   return MathIsValidNumber(signed_notional);
+  }
+
+// Remaining account-currency loss from the current mark to the actual broker
+// stop. Missing/invalid SL is reported as uncovered; it is never replaced by a
+// lot-size heuristic.
+bool PositionRemainingStopLossAccount(const ENUM_POSITION_TYPE position_type,
+                                      const string symbol,
+                                      const double volume,
+                                      const double current_price,
+                                      const double stop_price,
+                                      double &remaining_loss)
+  {
+   remaining_loss = 0.0;
+   if(volume <= 0.0 || current_price <= 0.0 || stop_price <= 0.0)
+      return false;
+   const ENUM_ORDER_TYPE order_type =
+      (position_type == POSITION_TYPE_BUY ? ORDER_TYPE_BUY : ORDER_TYPE_SELL);
+   double at_stop = 0.0;
+   ResetLastError();
+   if(!OrderCalcProfit(order_type, symbol, volume, current_price,
+                       stop_price, at_stop) || !MathIsValidNumber(at_stop))
+      return false;
+   remaining_loss = MathMax(0.0, -at_stop);
+   return MathIsValidNumber(remaining_loss);
+  }
+
+// Enumerate EVERY broker position. Magic is attribution metadata only and is
+// deliberately never used as an inclusion filter.
+string BuildPositionInventory(int &selected_count,
+                              bool &count_reconciled,
+                              double &gross_notional,
+                              double &net_directional_notional,
+                              double &planned_stop_loss,
+                              int &unpriced_positions,
+                              int &positions_without_stop)
+  {
+   const int expected_count = PositionsTotal();
+   selected_count = 0;
+   gross_notional = 0.0;
+   net_directional_notional = 0.0;
+   planned_stop_loss = 0.0;
+   unpriced_positions = 0;
+   positions_without_stop = 0;
+   string payload = "[";
+
+   for(int index = 0; index < expected_count; ++index)
+     {
+      const ulong ticket = PositionGetTicket(index);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      const ulong identifier = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
+      const long magic = PositionGetInteger(POSITION_MAGIC);
+      const string symbol = PositionGetString(POSITION_SYMBOL);
+      const ENUM_POSITION_TYPE position_type =
+         (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double volume = PositionGetDouble(POSITION_VOLUME);
+      const double price_open = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double price_current = PositionGetDouble(POSITION_PRICE_CURRENT);
+      const double stop_price = PositionGetDouble(POSITION_SL);
+      const double take_profit = PositionGetDouble(POSITION_TP);
+      const double profit = PositionGetDouble(POSITION_PROFIT);
+      const double swap = PositionGetDouble(POSITION_SWAP);
+      const string base_currency = SymbolInfoString(symbol, SYMBOL_CURRENCY_BASE);
+      const string profit_currency = SymbolInfoString(symbol, SYMBOL_CURRENCY_PROFIT);
+
+      double signed_notional = 0.0;
+      const bool notional_ok = PositionNotionalAccount(
+         position_type, symbol, volume, price_current, signed_notional);
+      if(notional_ok)
+        {
+         gross_notional += MathAbs(signed_notional);
+         net_directional_notional += signed_notional;
+        }
+      else
+         ++unpriced_positions;
+
+      double remaining_stop_loss = 0.0;
+      const bool stop_ok = PositionRemainingStopLossAccount(
+         position_type, symbol, volume, price_current, stop_price,
+         remaining_stop_loss);
+      if(stop_ok)
+         planned_stop_loss += remaining_stop_loss;
+      else
+         ++positions_without_stop;
+
+      if(selected_count > 0)
+         payload += ",";
+      payload += StringFormat(
+         "{\"ticket\":%I64u,\"identifier\":%I64u,\"magic\":%I64d,"
+         "\"symbol\":\"%s\",\"type\":\"%s\",\"volume\":%.8f,"
+         "\"price_open\":%.10f,\"price_current\":%.10f,\"sl\":%.10f,"
+         "\"tp\":%.10f,\"profit\":%.2f,\"swap\":%.2f,"
+         "\"base_currency\":\"%s\",\"profit_currency\":\"%s\","
+         "\"notional_account_ok\":%s,\"signed_notional_account\":%.2f,"
+         "\"stop_loss_account_ok\":%s,\"remaining_loss_to_sl_account\":%.2f}",
+         ticket, identifier, magic, JsonEsc(symbol),
+         PositionTypeToStr((long)position_type), volume, price_open,
+         price_current, stop_price, take_profit, profit, swap,
+         JsonEsc(base_currency), JsonEsc(profit_currency),
+         (notional_ok ? "true" : "false"), signed_notional,
+         (stop_ok ? "true" : "false"), remaining_stop_loss);
+      ++selected_count;
+     }
+   payload += "]";
+   count_reconciled =
+      (selected_count == expected_count && PositionsTotal() == expected_count);
+   return payload;
+  }
+
+// Enumerate EVERY pending order, again independent of magic.
+string BuildOrderInventory(int &selected_count, bool &count_reconciled)
+  {
+   const int expected_count = OrdersTotal();
+   selected_count = 0;
+   string payload = "[";
+   for(int index = 0; index < expected_count; ++index)
+     {
+      const ulong ticket = OrderGetTicket(index);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(selected_count > 0)
+         payload += ",";
+      payload += StringFormat(
+         "{\"ticket\":%I64u,\"magic\":%I64d,\"symbol\":\"%s\","
+         "\"type\":\"%s\",\"volume_initial\":%.8f,"
+         "\"volume_current\":%.8f,\"price_open\":%.10f,"
+         "\"sl\":%.10f,\"tp\":%.10f}",
+         ticket, OrderGetInteger(ORDER_MAGIC),
+         JsonEsc(OrderGetString(ORDER_SYMBOL)),
+         OrderTypeToStr(OrderGetInteger(ORDER_TYPE)),
+         OrderGetDouble(ORDER_VOLUME_INITIAL),
+         OrderGetDouble(ORDER_VOLUME_CURRENT),
+         OrderGetDouble(ORDER_PRICE_OPEN), OrderGetDouble(ORDER_SL),
+         OrderGetDouble(ORDER_TP));
+      ++selected_count;
+     }
+   payload += "]";
+   count_reconciled =
+      (selected_count == expected_count && OrdersTotal() == expected_count);
+   return payload;
   }
 
 //+------------------------------------------------------------------+
@@ -524,11 +730,34 @@ void RefreshSnapshotAndPanel()
    int    daily_trades = 0;
    const double daily  = DailyRealizedPnl(daily_trades);
 
+   int reconciled_positions = 0;
+   int reconciled_orders = 0;
+   int unpriced_positions = 0;
+   int positions_without_stop = 0;
+   bool position_count_reconciled = false;
+   bool order_count_reconciled = false;
+   double gross_notional_account = 0.0;
+   double net_directional_notional_account = 0.0;
+   double planned_stop_loss_account = 0.0;
+   const string positions_json = BuildPositionInventory(
+      reconciled_positions, position_count_reconciled,
+      gross_notional_account, net_directional_notional_account,
+      planned_stop_loss_account, unpriced_positions,
+      positions_without_stop);
+   const string orders_json = BuildOrderInventory(
+      reconciled_orders, order_count_reconciled);
+   const int pending_orders = OrdersTotal();
+   const bool reconciliation_complete =
+      (position_count_reconciled && order_count_reconciled &&
+       reconciled_positions == openpos && reconciled_orders == pending_orders);
+
    const datetime srv = TimeTradeServer();
    const datetime utc = TimeGMT();
 
    const string js = StringFormat(
       "{\n"
+      "  \"schema\": \"qm.account-monitor.snapshot/v2\",\n"
+      "  \"monitor_version\": \"1.10\",\n"
       "  \"account_login\": %I64d,\n"
       "  \"currency\": \"%s\",\n"
       "  \"time_utc\": \"%s\",\n"
@@ -540,17 +769,33 @@ void RefreshSnapshotAndPanel()
       "  \"margin_level\": %.2f,\n"
       "  \"floating_pnl\": %.2f,\n"
       "  \"open_positions\": %d,\n"
+      "  \"pending_orders\": %d,\n"
+      "  \"reconciled_positions\": %d,\n"
+      "  \"reconciled_orders\": %d,\n"
+      "  \"reconciliation_complete\": %s,\n"
+      "  \"gross_notional_account\": %.2f,\n"
+      "  \"net_directional_notional_account\": %.2f,\n"
+      "  \"planned_stop_loss_account\": %.2f,\n"
+      "  \"unpriced_positions\": %d,\n"
+      "  \"positions_without_stop\": %d,\n"
       "  \"daily_pnl\": %.2f,\n"
       "  \"daily_trades\": %d,\n"
       "  \"last_export_utc\": \"%s\",\n"
       "  \"last_deal_ticket\": %I64u,\n"
-      "  \"write_ok\": %s\n"
+      "  \"write_ok\": %s,\n"
+      "  \"positions\": %s,\n"
+      "  \"orders\": %s\n"
       "}\n",
       login, ccy, FormatIsoUtc(utc), FormatBroker(srv),
       equity, balance, margin, freem, mlevel, floating, openpos,
-      daily, daily_trades,
+      pending_orders, reconciled_positions, reconciled_orders,
+      (reconciliation_complete ? "true" : "false"),
+      gross_notional_account, net_directional_notional_account,
+      planned_stop_loss_account, unpriced_positions,
+      positions_without_stop, daily, daily_trades,
       (g_last_export_utc > 0 ? FormatIsoUtc(g_last_export_utc) : ""),
-      g_last_deal_ticket, (g_last_write_ok ? "true" : "false"));
+      g_last_deal_ticket, (g_last_write_ok ? "true" : "false"),
+      positions_json, orders_json);
 
    const bool snap_ok = WriteAllAtomic(InpJournalDir + "\\account_snapshot.json.tmp",
                                        InpJournalDir + "\\account_snapshot.json", js);
