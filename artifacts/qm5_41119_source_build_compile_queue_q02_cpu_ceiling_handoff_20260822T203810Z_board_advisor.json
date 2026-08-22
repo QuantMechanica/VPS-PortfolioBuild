@@ -1,0 +1,123 @@
+{
+  "schema": "qm.qm5-41119.source-build-compile-queue-q02-cpu-ceiling-handoff/v1",
+  "generated_at_utc": "2026-08-22T20:38:10.2639415Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41119",
+  "ea_label": "QM5_41119_xauxag-mclose-quartile-rv",
+  "strategy_id": "SCHWEIKERT-CME-XAUXAG-MCLOSE-QUARTILE-RV-2026_S01",
+  "logical_symbol": "QM5_41119_XAU_XAG_MCLOSE_QUARTILE_RV_D1",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_PENDING_CPU_CEILING_Q01_PENDING_Q02_NOT_ENQUEUED",
+  "commits": {
+    "source_approval": "7649b3e9573e0481ae5fb0361b25044dbfa75fdf",
+    "bounded_source_extraction": "123c8cf712192b4085bedebff96044b47653cf77",
+    "ea_id_reservation": "ad4f24de1d4528d2337e12645184404a40e8311c",
+    "g0_card_approval": "a95e2c73daf41d82e9720799ffbce68f84d3073d",
+    "magic_allocation": "86b320f0e391b0c66921fe32c9802e721357e5d3",
+    "source_build_and_compile_release": "980aa37f78a45062da0ba59702ff75b5144df93e"
+  },
+  "identity": {
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "logical_symbol": "QM5_41119_XAU_XAG_MCLOSE_QUARTILE_RV_D1",
+    "symbol_slots": [0, 1],
+    "magics": [411190000, 411190001]
+  },
+  "mechanic": {
+    "formation": "the immediately preceding completed calendar month with 17-23 synchronized XAU/XAG D1 close pairs",
+    "state": "s_i=ln(XAU_close_i)-ln(XAG_close_i); z is the final completed-month close; rank is the count of s_i strictly below z",
+    "tails": "tail=ceil(n/4); exact ties between z and an earlier monthly observation consume the month flat",
+    "entry": "rank<tail => BUY XAU/SELL XAG; rank>=n-tail => SELL XAU/BUY XAG; interior ranks consume flat",
+    "attempt_cadence": "one durable attempt per broker month, persisted before fallible gates",
+    "exit": "first synchronized D1 boundary in the next broker month, with forty-calendar-day stale repair",
+    "q02_frequency_floor": "at least five completed packages per full post-warm-up year"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "equal_absolute_notional_target": true,
+    "maximum_notional_mismatch_pct": 20.0,
+    "atr_period_d1": 20,
+    "atr_stop_multiple": 3.5,
+    "profit_target": false,
+    "friday_close": false,
+    "news_temporal": "OFF",
+    "news_compliance": "NONE"
+  },
+  "validations": {
+    "card_schema_lint": "PASS",
+    "g0_card_status": "APPROVED",
+    "registry_identity": "PASS",
+    "magic_rows_and_resolver": "PASS",
+    "reference_tests": {
+      "verdict": "PASS",
+      "tests_passed": 9
+    },
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "card_copy_sha256_equal": true,
+    "strict_compile": "GOVERNED_WORK_ITEM_PENDING",
+    "q01": "PENDING"
+  },
+  "compile": {
+    "direct_compile_result": "REFUSED_BY_LIVE_FACTORY_AD_HOC_COMPILE_GUARD",
+    "governed_compile_enqueued": true,
+    "governed_compile_released": true,
+    "work_item_id": "df4cc97d-a372-4036-935e-cc5a2ff72d88",
+    "work_item_status_at_handoff": "pending",
+    "active_hold_at_handoff": false,
+    "mq5_sha256_binding": "d99a4c331ccecfc9623796bcdc65022ad577c3e7e645abac910453f41229e7a1",
+    "release_receipt": "artifacts/qm5_41119_compile_wave_release_20260822.json",
+    "ex5_exists": false,
+    "setfile_build_hash": "pending",
+    "build_check_result": null
+  },
+  "capacity": {
+    "observed_at_utc": "2026-08-22T20:38:10.2639415Z",
+    "counter": "Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 2,
+    "whole_host_cpu_pct": [99.95, 98.54, 99.95, 100.0, 99.47],
+    "average_cpu_pct": 99.58,
+    "maximum_cpu_pct": 100.0,
+    "factory_terminal_process_count": 4,
+    "metatester_process_count": 4,
+    "other_terminal_process_count": 2,
+    "ceiling_pct": 97,
+    "ceiling_hit": true,
+    "binding_stop": true
+  },
+  "q02": {
+    "requested": true,
+    "enqueued": false,
+    "work_item_id": null,
+    "preview_run": false,
+    "blocking_gates": [
+      "BACKTEST_CPU_CEILING_HIT",
+      "STRICT_COMPILE_EX5_FINAL_SET_BINDING_AND_Q01_PASS_ABSENT"
+    ]
+  },
+  "hashes_sha256": {
+    "mq5": "D99A4C331CCECFC9623796BCDC65022AD577C3E7E645ABAC910453F41229E7A1",
+    "spec": "6EF1EC07E35CAE79443020D3A19F2B027204E4A66FA8295540DD43D86A8131FC",
+    "basket_manifest": "97FCA43557E5D5028AA225548358F770E77A20F45682D060A82C482D3C514BB5",
+    "approved_and_build_card": "07B407F2B407F37705E7276A99BF24D5132ADCF00B0BBADB136F809045CAB8D7",
+    "reference_suite": "522201A9B61E0BFC091F85D74C9FEEABEABB6EC402BF065FE853583B88CF4F6F",
+    "unbound_backtest_set": "5D3CD7A26E6DF8A237B23A164BBE458FE1BF4B423E618AAF2B9B1DAEAA633225",
+    "compile_release_receipt": "F510A40714CC16519BBDD04B89DB95BD30BDAC5923A6A289724ABC205907F6A3"
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_or_worker_control": false,
+    "autotrading_toggled": false,
+    "t_live_observed_read_only": true,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
