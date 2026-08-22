@@ -1,11 +1,13 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_9579 Unknown Strategy"
+#property description "QM5_9579 Bandy ATR-Channel Breakout Trend"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA: QM5_9579
+// Strategy Card: D:/QM/strategy_farm/artifacts/cards_approved/QM5_9579_bandy-atr-channel-breakout-trend.md
+// Source: Howard Bandy, Quantitative Technical Analysis 2015 (9ef19e06-5ca6-5b35-aa06-b8187aa0e016)
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -14,7 +16,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -33,28 +35,150 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-
+input int    strategy_atr_period        = 14;
+input int    strategy_sma_period        = 20;
+input double strategy_channel_mult      = 1.5;
+input double strategy_trail_atr_mult    = 2.0;
+input double strategy_sl_atr_mult       = 5.0;
+input int    strategy_time_stop_days    = 30;
+input double strategy_spread_max_atr    = 0.25;
+input int    strategy_warmup_bars       = 50;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-bool Strategy_NoTradeFilter() { return false; }
-
-bool Strategy_EntrySignal(QM_EntryRequest &req)
+bool Strategy_NoTradeFilter()
 {
-   // TODO: Auto-generated skeleton. Specific entry logic requires manual implementation.
+   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+      return true;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return true;
+
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(atr > 0.0 && ask > bid && (ask - bid) > (strategy_spread_max_atr * atr))
+      return true;
+
    return false;
 }
 
-void Strategy_ManageOpenPosition() {}
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+{
+   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic > 0 && QM_TM_OpenPositionCount(magic) > 0)
+      return false;
+
+   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double sma20  = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1, PRICE_CLOSE);
+   const double atr14  = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+
+   if(close1 <= 0.0 || sma20 <= 0.0 || atr14 <= 0.0)
+      return false;
+
+   const double upper_channel = sma20 + (strategy_channel_mult * atr14);
+   const double lower_channel = sma20 - (strategy_channel_mult * atr14);
+
+   if(close1 > upper_channel)
+   {
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(ask <= 0.0)
+         return false;
+
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_trail_atr_mult);
+      req.tp = 0.0;
+      req.reason = "BANDY_ATR_CHANNEL_BUY";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
+      return true;
+   }
+   else if(close1 < lower_channel)
+   {
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(bid <= 0.0)
+         return false;
+
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = QM_StopATR(_Symbol, QM_SELL, bid, strategy_atr_period, strategy_trail_atr_mult);
+      req.tp = 0.0;
+      req.reason = "BANDY_ATR_CHANNEL_SELL";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
+      return true;
+   }
+
+   return false;
+}
+
+void Strategy_ManageOpenPosition()
+{
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double atr14  = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      const int bars_held = iBarShift(_Symbol, PERIOD_D1, open_time, false);
+      if(bars_held >= strategy_time_stop_days)
+      {
+         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
+         continue;
+      }
+
+      if(atr14 > 0.0 && close1 > 0.0)
+      {
+         const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+         const double current_sl = PositionGetDouble(POSITION_SL);
+
+         if(pos_type == POSITION_TYPE_BUY)
+         {
+            const double desired_sl = close1 - (strategy_trail_atr_mult * atr14);
+            if(current_sl <= 0.0 || desired_sl > current_sl)
+            {
+               QM_TM_MoveSL(ticket, desired_sl, "BANDY_CHANDELIER_TRAIL");
+            }
+         }
+         else if(pos_type == POSITION_TYPE_SELL)
+         {
+            const double desired_sl = close1 + (strategy_trail_atr_mult * atr14);
+            if(current_sl <= 0.0 || desired_sl < current_sl)
+            {
+               QM_TM_MoveSL(ticket, desired_sl, "BANDY_CHANDELIER_TRAIL");
+            }
+         }
+      }
+   }
+}
 
 bool Strategy_ExitSignal()
 {
    return false;
 }
 
-bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
+bool Strategy_NewsFilterHook(const datetime broker_time)
+{
+   return false;
+}
 
 // -----------------------------------------------------------------------------
 // Framework wiring
@@ -74,19 +198,20 @@ void OnDeinit(const int reason) { QM_FrameworkShutdown(); }
 
 void OnTick()
 {
-   if(!QM_KillSwitchCheck()) return;
+   QM_FrameworkTrackOpenPositionMae();
+
+   if(!QM_KillSwitchCheck())
+      return;
+
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
-   if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
+   if(QM_FrameworkHandleFridayClose())
+      return;
+
+   if(Strategy_NoTradeFilter())
+      return;
 
    Strategy_ManageOpenPosition();
 
@@ -95,17 +220,32 @@ void OnTick()
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
       {
-         ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket)) continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
       }
    }
 
-   if(!QM_IsNewBar()) return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
+      return;
+
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
