@@ -178,6 +178,40 @@ def _agent_metrics(snap: dict, agent: str) -> dict | None:
     }
 
 
+BURN_FLAGS = {
+    "codex": ROOT / "CODEX_BURN_AUTHORIZED.flag",
+    "claude": ROOT / "CLAUDE_BURN_AUTHORIZED.flag",
+}
+
+
+def _burn_authorized(agent: str, now: "dt.datetime") -> tuple[bool, str]:
+    """OWNER-authorized burn window: pacing suspended until an explicit expiry.
+
+    The flag exists only when OWNER explicitly authorizes spending a seat to
+    its cap (e.g. a planned usage reset makes weekly pacing moot — OWNER
+    2026-08-22 for codex). Contract, fail-closed in every direction: the flag
+    must carry an ``expires_at=<ISO8601>`` line, the timestamp must parse, and
+    it must be in the future — otherwise normal pacing applies. The governor
+    never writes or deletes this flag; it is OWNER/orchestrator provenance.
+    """
+    flag = BURN_FLAGS.get(agent)
+    if flag is None or not flag.exists():
+        return False, ""
+    try:
+        lines = flag.read_text(encoding="utf-8").splitlines()
+        expires_raw = next(
+            line.split("=", 1)[1].strip() for line in lines
+            if line.startswith("expires_at="))
+        expires = dt.datetime.fromisoformat(expires_raw)
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=dt.timezone.utc)
+    except Exception:
+        return False, f"burn flag unreadable/malformed ({flag.name}) -> normal pacing"
+    if now >= expires:
+        return False, f"burn flag expired {expires_raw} ({flag.name}) -> normal pacing"
+    return True, f"OWNER burn authorization active until {expires_raw} ({flag.name})"
+
+
 def _decide(used: float, diff: float, currently_throttled: bool) -> tuple[bool, str]:
     if used < FLOOR_USED_PCT:
         return False, f"buffer (used {used:.0f}% < floor {FLOOR_USED_PCT:.0f}%)"
@@ -246,7 +280,13 @@ def main() -> int:
                 owned = flag.read_text(encoding="utf-8").splitlines()[0].strip() == "MANAGED_BY=quota_governor"
             except Exception:
                 pass
-        want, why = _decide(m["used_pct"], m["diff"], flag_exists)
+        burn, burn_why = _burn_authorized(agent, _now())
+        if burn:
+            want, why = False, burn_why
+        else:
+            want, why = _decide(m["used_pct"], m["diff"], flag_exists)
+            if burn_why:
+                why = f"{why} [{burn_why}]"
 
         action = "noop"
         if want and not flag_exists:
