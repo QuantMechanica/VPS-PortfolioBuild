@@ -17647,4 +17647,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12947,mql5-ha-ema-trend-card,0,EURUSD.DWX,129470000,2026-08-22,Codex,active
 12947,mql5-ha-ema-trend-card,1,GBPUSD.DWX,129470001,2026-08-22,Codex,active
 12947,mql5-ha-ema-trend-card,2,GDAXI.DWX,129470002,2026-08-22,Codex,active
-
+41108,wti-mrange-expansion-mom,0,XTIUSD.DWX,411080000,2026-08-22,Codex governed allocator,active
