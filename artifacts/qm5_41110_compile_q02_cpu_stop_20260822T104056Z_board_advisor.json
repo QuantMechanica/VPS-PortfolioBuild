@@ -1,0 +1,95 @@
+{
+  "schema_version": "qm.commodity-sleeve-build-cpu-stop/v1",
+  "captured_at_utc": "2026-08-22T10:40:56.6684382Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41110",
+  "ea_label": "QM5_41110_xauxag-moutside-res-rv",
+  "logical_symbol": "QM5_41110_XAU_XAG_MOUTSIDE_RES_RV_D1",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_PENDING_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "mechanic": {
+    "carrier": "synchronized log(XAUUSD.DWX close)-log(XAGUSD.DWX close)",
+    "frequency": "first synchronized D1 boundary of each broker month",
+    "signal": "fade at least five one-sided newest-month closes outside the parent-month range, with no opposite breach and the chronological final close still outside",
+    "package": "equal-notional two-leg basket with maximum 20 percent mismatch",
+    "risk": "combined RISK_FIXED=1000; RISK_PERCENT=0; frozen 3.5 ATR(20,D1) stop on each leg; no target",
+    "lifecycle": "one attempt per month; next-month exit; 40-day stale repair"
+  },
+  "sources": [
+    {
+      "source_id": "SCHWEIKERT-XAUXAG-RATIO-2026",
+      "role": "peer-reviewed state-dependent gold-silver long-run relationship",
+      "citation": "Schweikert (2018), Journal of Banking & Finance 88, 44-51, DOI 10.1016/j.jbankfin.2017.11.010",
+      "packet_sha256": "4c7dc1741f96502ed1d53fdfd5252e61e2632003c43af30028aca3f4125e976b"
+    },
+    {
+      "source_id": "CME-GSR-SPREAD-2025",
+      "role": "official exchange carrier definition",
+      "citation": "CME Group, Gold & Silver Ratio Spread",
+      "packet_sha256": "2b5903457bd861771821a81f554be95ca369ad56c1aa45494e0b81555493af93"
+    }
+  ],
+  "commits": {
+    "source_approval": "58523766b",
+    "source_extraction": "7df05e3f7",
+    "ea_id_reservation": "5c35ee622",
+    "g0_card_approval": "bccc8224f",
+    "magic_allocation": "02d461b58",
+    "source_build": "04db53787"
+  },
+  "validation": {
+    "card_schema_lint": "PASS",
+    "g0_lint": "PASS",
+    "build_prerequisites": "PASS_ACTIVE_EA_ROW_TWO_ACTIVE_MAGIC_ROWS_EXACT_SLUG_AND_DIRECTORY",
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "reference_suite": "PASS_11_OF_11",
+    "approved_local_card_byte_parity": true,
+    "stale_scaffold_token_scan": "PASS_NO_HITS"
+  },
+  "file_sha256": {
+    "mq5": "402ebb6d33219222bc29b7484354dd7e144f1ca3312f2d415e9cd8157427579e",
+    "spec": "56d19a4381e462ebb7a74c95195a5a95d813384ac4430788f4e1a84536d2c7df",
+    "basket_manifest": "0b1838dce5888004a1fbdddd573db13d7de151715c32850bce081d5eaa7e0cfa",
+    "reference_suite": "8a194a6e5dcd195e1f9c2b75e9304b42191cf5d2db19e1a362367e2911062928",
+    "approved_and_local_card": "4cafe267c3192c5d583cd7c6a3d1f9dda2a7d54c22b27d088c5a5e507aaa22d7",
+    "fixed_risk_setfile": "371c50341658850f146da6f78a1a4426d37e2975a6d51a040779ebaf0cd0b397"
+  },
+  "compile": {
+    "work_item_id": "58d5cd89-d9db-4a82-82e1-66e93171b8cd",
+    "status": "pending",
+    "activation_hold": null,
+    "source_hash_matched_at_release": true,
+    "released_at_utc": "2026-08-22T10:32:23+00:00",
+    "database_backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260822T103011Z_e050f7d5.sqlite",
+    "database_backup_sha256": "01923681f9f2617e3b74f5cb29cb21b2db165de324126d94569043318dd27b41",
+    "ex5_exists": false,
+    "build_check_result": null,
+    "q01_verdict": null
+  },
+  "capacity_stop": {
+    "binding_ceiling_pct": 97.0,
+    "sampled_at_utc": "2026-08-22T10:40:56.6684382Z",
+    "whole_host_cpu_pct": 100.0,
+    "ceiling_hit": true,
+    "mt5_slot_snapshot_at_utc": "2026-08-22T10:37:53+00:00",
+    "active_governed_terminals": ["T1", "T2", "T3", "T5"],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": []
+  },
+  "q02": {
+    "enqueued": false,
+    "reason": "CPU_CEILING_HIT_AND_COMPILE_Q01_PREREQUISITE_PENDING",
+    "ea_work_item_count": 1,
+    "ea_work_items": ["58d5cd89-d9db-4a82-82e1-66e93171b8cd"],
+    "ea_work_item_phases": ["COMPILE_EA"]
+  },
+  "safety": {
+    "manual_backtest_started": false,
+    "terminal_process_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
