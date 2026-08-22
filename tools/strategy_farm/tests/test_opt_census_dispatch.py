@@ -297,7 +297,7 @@ def test_boost_never_touches_done_or_active_and_is_idempotent_at_window(tmp_path
 
 def test_boost_window_bounds_rejected(tmp_path: Path) -> None:
     ledger, db = _boost_fixture(tmp_path, [("pending", False)])
-    for bad in (0, 17):
+    for bad in (0, 65):
         try:
             census.boost(ledger_path=ledger, db_path=db, window=bad)
         except census.CensusError:

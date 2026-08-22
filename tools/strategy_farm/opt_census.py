@@ -467,8 +467,11 @@ def boost(*, ledger_path: Path, db_path: Path, window: int) -> dict[str, Any]:
     outrank a boosted cell (effective 6).  Queue-priority-only change: pending
     rows, payload flag; verdicts, active rows and cell windows untouched.
     """
-    if window < 1 or window > 16:
-        raise CensusError(f"boost window out of range 1..16: {window}")
+    if window < 1 or window > 64:
+        # 64 covers a full 10-terminal fleet for one ~25-minute orchestrator
+        # tick at ~7min/cell (OWNER 2026-08-22: census gets the fleet; the
+        # window stays bounded so reverting to interleave is one call).
+        raise CensusError(f"boost window out of range 1..64: {window}")
     ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
     ids = [cell["work_item_id"] for cell in ledger.get("cells", [])]
     if not ids:
