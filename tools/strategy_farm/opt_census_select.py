@@ -2,12 +2,17 @@
 
 This module is the *evaluation* half of the pattern-filter optimisation census.
 ``opt_census.py`` plans/enqueues/measures the 1,085-cell matrix; this module reads
-the measured matrix and drives the sealed pilot chain:
+the measured matrix and drives the sealed pilot chain (DL-089 Nachtrag 2, sealed
+2026-08-22: the numeric stage runs BEFORE the single full-window confirmation, and
+there is no longer a separate filter-only full-window test):
 
     census -> 4 walk-forward combo test-year runs -> stability check
-           -> 2 full-window runs (combo + baseline)
-           -> S5 numeric optimisation (per sealed grid, plateau median)
-           -> final confirmation run -> READY_FOR_Q15 (STOP; Q15 is never automatic)
+           -> numeric optimisation on the FROZEN filter combo (per sealed grid,
+              per-year cells, plateau median; ledger trial increment BEFORE enqueue)
+           -> ONE final full-window run of the FINAL config (frozen filters + chosen
+              numerics) plus a parameter-parent no-filter baseline, over 2019..max —
+              this single run IS the confirmation
+           -> READY_FOR_Q15 (STOP; Q15 is never automatic)
 
 The selection rule is ROT and implemented EXACTLY as sealed in the ledger header
 (``sealed_rule_text``, DL-089 §2):
@@ -49,7 +54,7 @@ GRID_SCHEMA = "qm.opt-param-grid.v1"
 MAX_INFRA_ATTEMPTS = 2
 FULL_WINDOW_FROM = "2019.01.01"
 FULL_WINDOW_TO = "2026.12.31"
-# The S5 levers are the parent EA's already-wired numeric inputs, named by the
+# The numeric levers are the parent EA's already-wired numeric inputs, named by the
 # sha-sealed opt_param_grid.json — there is deliberately NO hardcoded name
 # whitelist here.  The three invented opt_* placeholder inputs this constant
 # originally listed were removed from the EA by review R1 (unwired, no
@@ -58,12 +63,13 @@ FULL_WINDOW_TO = "2026.12.31"
 # the seal: the grid's sha256 is pinned in the ledger at plan time, and the
 # grid itself is reviewed against the EA source before sealing.
 
-# Ordered pilot states.  Terminal states stop the machine.
+# Ordered pilot states (DL-089 Nachtrag 2 sealed order).  Terminal states stop the
+# machine.  The numeric stage precedes the single full-window confirmation; the old
+# separate filter-only FULLWINDOW and CONFIRM states were merged into FINAL_FULLWINDOW.
 STATE_ENQUEUED = "ENQUEUED"
 STATE_WF_COMBO = "WF_COMBO_MEASURING"
-STATE_FULLWINDOW = "FULLWINDOW_MEASURING"
-STATE_S5 = "S5_MEASURING"
-STATE_CONFIRM = "CONFIRM_MEASURING"
+STATE_NUMERIC = "NUMERIC_MEASURING"
+STATE_FINAL_FULLWINDOW = "FINAL_FULLWINDOW_MEASURING"
 STATE_READY = "READY_FOR_Q15"
 STATE_UNSTABLE = "WF_UNSTABLE"
 TERMINAL_STATES = frozenset({STATE_READY, STATE_UNSTABLE})
@@ -279,7 +285,7 @@ def select_numeric_parameter(parent_value: float, candidate_values: list[float],
 
 
 # ===========================================================================
-# Sealed numeric grid (S5) — read via the recorded sha.
+# Sealed numeric grid — read via the recorded sha.
 # ===========================================================================
 def load_param_grid(path: Path, *, expected_sha256: Optional[str]) -> dict[str, Any]:
     """Load and validate opt_param_grid.json, verifying it matches the sealed sha."""
@@ -337,25 +343,25 @@ def numeric_trial_increment(grid: dict[str, Any]) -> int:
 
 
 def register_numeric_stage(ledger: dict[str, Any], grid: dict[str, Any]) -> dict[str, Any]:
-    """Increment ``declared_trial_count_effective`` and register S5 cells — idempotent.
+    """Increment ``declared_trial_count_effective`` and register numeric cells — idempotent.
 
     This MUST run (and the ledger MUST be persisted) BEFORE any numeric cell is
-    enqueued so the DSR deflation can never under-count the search (plan §S5).
+    enqueued so the DSR deflation can never under-count the search (plan §S4/numeric).
     """
     driver = ledger.setdefault("driver", init_driver())
-    s5 = driver.setdefault("s5", {})
-    if s5.get("registered"):
+    numeric = driver.setdefault("numeric", {})
+    if numeric.get("registered"):
         return ledger
     increment = numeric_trial_increment(grid)
     base = ledger.get("declared_trial_count_effective", ledger["declared_trial_count"])
     ledger["declared_trial_count_effective"] = base + increment
-    s5["registered"] = True
-    s5["registered_at_utc"] = _now()
-    s5["param_grid_sha256"] = grid["_sha256"]
-    s5["numeric_trial_increment"] = increment
-    s5["declared_trial_count_before"] = base
-    s5["declared_trial_count_after"] = ledger["declared_trial_count_effective"]
-    s5["parameters"] = [
+    numeric["registered"] = True
+    numeric["registered_at_utc"] = _now()
+    numeric["param_grid_sha256"] = grid["_sha256"]
+    numeric["numeric_trial_increment"] = increment
+    numeric["declared_trial_count_before"] = base
+    numeric["declared_trial_count_after"] = ledger["declared_trial_count_effective"]
+    numeric["parameters"] = [
         {"name": p["name"], "parent_value": p["parent_value"],
          "candidate_values": p["candidate_values"]}
         for p in grid["parameters"]
@@ -631,7 +637,7 @@ def _handle_enqueued(conn, ledger, driver, reader) -> dict[str, Any]:
             "measured": ok, "combo_runs": len(combo_runs)}
 
 
-def _handle_wf_combo(conn, ledger, driver, reader) -> dict[str, Any]:
+def _handle_wf_combo(conn, ledger, driver, reader, param_grid: Optional[Path]) -> dict[str, Any]:
     combo_runs = driver["wf"]["combo_runs"]
     reenq = _maybe_reenqueue_infra(conn, ledger, driver, combo_runs, reader)
     status = _all_measured(reader, driver, combo_runs)
@@ -657,91 +663,69 @@ def _handle_wf_combo(conn, ledger, driver, reader) -> dict[str, Any]:
 
     final = step_selections[4]
     driver["wf"]["final_selection"] = {"BUY": final.get("BUY", []), "SELL": final.get("SELL", [])}
-    full_runs: list[dict[str, Any]] = []
-    for role, inputs in (("combo", _combo_inputs(final)), ("baseline", dict(_BASELINE_INPUTS))):
-        cell_key = f"{ledger['program_id']}:fullwindow:{role}"
-        setfile = _render_setfile(
-            ledger, cell_key, inputs, FULL_WINDOW_FROM, FULL_WINDOW_TO,
-            f"{ledger['ea_label']}_{ledger['symbol']}_{ledger['timeframe']}_fullwindow_{role}.set",
-        )
-        wid = _run_uuid(cell_key)
-        _insert_run(conn, ledger, work_item_id=wid, cell_key=cell_key, setfile_path=str(setfile),
-                    from_date=FULL_WINDOW_FROM, to_date=FULL_WINDOW_TO, stage="FULLWINDOW",
-                    extra={"role": role})
-        full_runs.append({"cell_key": cell_key, "work_item_id": wid, "setfile_path": str(setfile),
-                          "from_date": FULL_WINDOW_FROM, "to_date": FULL_WINDOW_TO,
-                          "stage": "FULLWINDOW", "role": role})
-    driver["fullwindow"] = {"runs": full_runs}
-    _transition(driver, STATE_FULLWINDOW, "WF stability confirmed; 2 full-window runs enqueued", verdict)
-    return {"changed": True, "state": driver["state"], "waiting": False, "stability": verdict}
 
-
-def _handle_fullwindow(conn, ledger, driver, reader, param_grid: Optional[Path]) -> dict[str, Any]:
-    runs = driver["fullwindow"]["runs"]
-    reenq = _maybe_reenqueue_infra(conn, ledger, driver, runs, reader)
-    status = _all_measured(reader, driver, runs)
-    if status["pending"] or status["infra"]:
-        return {"changed": reenq > 0, "state": driver["state"], "waiting": True, **_counts(status),
-                "reenqueued": reenq}
-    driver["fullwindow"]["results"] = {
-        run["role"]: (status["metrics"][run["cell_key"]] or {}) for run in runs
-    }
+    # Stable → the numeric stage runs NEXT (DL-089 Nachtrag 2: numeric BEFORE the single
+    # full-window confirmation).  The numeric cells need the sealed grid; without it, hold
+    # in WF_COMBO — the stability verdict is deterministic to recompute — until re-run with
+    # --param-grid.  (When we reach here nothing is pending/infra, so reenq is 0.)
     if param_grid is None:
         return {"changed": reenq > 0, "state": driver["state"], "waiting": True,
-                "blocked": "s5_requires_param_grid",
-                "hint": "re-run advance with --param-grid matching the sealed param_grid_sha256"}
+                "blocked": "numeric_requires_param_grid",
+                "hint": "re-run advance with --param-grid matching the sealed param_grid_sha256",
+                "stability": verdict}
 
     grid = load_param_grid(param_grid, expected_sha256=ledger.get("param_grid_sha256"))
     register_numeric_stage(ledger, grid)  # increments declared_trial_count_effective BEFORE enqueue
 
-    final = driver["wf"]["final_selection"]
     numeric_runs: list[dict[str, Any]] = []
-    # Per-year combo baseline (frozen filter, parent numerics) — the S5 same-year baseline.
+    # Per-year baseline: FROZEN filter combo, PARENT numerics — the numeric same-year
+    # baseline the candidate values are scored against.
     for year in census.YEARS:
-        cell_key = f"{ledger['program_id']}:s5:baseline:{year}"
+        cell_key = f"{ledger['program_id']}:numeric:baseline:{year}"
         setfile = _render_setfile(
             ledger, cell_key, _combo_inputs(final), f"{year}.01.01", f"{year}.12.31",
-            f"{ledger['ea_label']}_{ledger['symbol']}_{ledger['timeframe']}_s5_baseline_{year}.set",
+            f"{ledger['ea_label']}_{ledger['symbol']}_{ledger['timeframe']}_numeric_baseline_{year}.set",
         )
         wid = _run_uuid(cell_key)
         _insert_run(conn, ledger, work_item_id=wid, cell_key=cell_key, setfile_path=str(setfile),
-                    from_date=f"{year}.01.01", to_date=f"{year}.12.31", stage="S5_BASELINE",
+                    from_date=f"{year}.01.01", to_date=f"{year}.12.31", stage="NUMERIC_BASELINE",
                     extra={"year": year})
         numeric_runs.append({"cell_key": cell_key, "work_item_id": wid, "setfile_path": str(setfile),
                              "from_date": f"{year}.01.01", "to_date": f"{year}.12.31",
-                             "stage": "S5_BASELINE", "year": year, "role": "baseline"})
-    # One trial per (parameter, candidate value), each measured in every year.
+                             "stage": "NUMERIC_BASELINE", "year": year, "role": "baseline"})
+    # One trial per (parameter, candidate value), each measured in every year, all WITH the
+    # frozen filter inputs applied on top of the parent EA setfile.
     for param in grid["parameters"]:
         name = param["name"]
         for value in param["candidate_values"]:
             for year in census.YEARS:
                 inputs = _combo_inputs(final)
                 inputs[name] = _fmt_value(value)
-                cell_key = f"{ledger['program_id']}:s5:{name}:{value}:{year}"
+                cell_key = f"{ledger['program_id']}:numeric:{name}:{value}:{year}"
                 setfile = _render_setfile(
                     ledger, cell_key, inputs, f"{year}.01.01", f"{year}.12.31",
-                    f"{ledger['ea_label']}_{ledger['symbol']}_{ledger['timeframe']}_s5_{name}_{value}_{year}.set",
+                    f"{ledger['ea_label']}_{ledger['symbol']}_{ledger['timeframe']}_numeric_{name}_{value}_{year}.set",
                 )
                 wid = _run_uuid(cell_key)
                 _insert_run(conn, ledger, work_item_id=wid, cell_key=cell_key, setfile_path=str(setfile),
-                            from_date=f"{year}.01.01", to_date=f"{year}.12.31", stage="S5_NUMERIC",
+                            from_date=f"{year}.01.01", to_date=f"{year}.12.31", stage="NUMERIC",
                             extra={"param": name, "value": value, "year": year})
                 numeric_runs.append({"cell_key": cell_key, "work_item_id": wid,
                                      "setfile_path": str(setfile), "from_date": f"{year}.01.01",
-                                     "to_date": f"{year}.12.31", "stage": "S5_NUMERIC",
+                                     "to_date": f"{year}.12.31", "stage": "NUMERIC",
                                      "param": name, "value": value, "year": year, "role": "numeric"})
-    driver["s5"]["runs"] = numeric_runs
-    _transition(driver, STATE_S5,
-                "full-window complete; S5 numeric trials registered and enqueued",
-                {"increment": driver["s5"]["numeric_trial_increment"],
+    driver["numeric"]["runs"] = numeric_runs
+    _transition(driver, STATE_NUMERIC,
+                "WF stability confirmed; numeric trials registered and enqueued",
+                {"increment": driver["numeric"]["numeric_trial_increment"],
                  "effective": ledger["declared_trial_count_effective"]})
-    return {"changed": True, "state": driver["state"], "waiting": False,
+    return {"changed": True, "state": driver["state"], "waiting": False, "stability": verdict,
             "numeric_runs": len(numeric_runs),
             "declared_trial_count_effective": ledger["declared_trial_count_effective"]}
 
 
-def _handle_s5(conn, ledger, driver, reader) -> dict[str, Any]:
-    runs = driver["s5"]["runs"]
+def _handle_numeric(conn, ledger, driver, reader) -> dict[str, Any]:
+    runs = driver["numeric"]["runs"]
     reenq = _maybe_reenqueue_infra(conn, ledger, driver, runs, reader)
     status = _all_measured(reader, driver, runs)
     if status["pending"] or status["infra"]:
@@ -762,7 +746,7 @@ def _handle_s5(conn, ledger, driver, reader) -> dict[str, Any]:
 
     selections: dict[str, Any] = {}
     chosen_numeric: dict[str, Any] = {}
-    for param in driver["s5"]["parameters"]:
+    for param in driver["numeric"]["parameters"]:
         name = param["name"]
         result = select_numeric_parameter(
             param["parent_value"], param["candidate_values"],
@@ -771,44 +755,56 @@ def _handle_s5(conn, ledger, driver, reader) -> dict[str, Any]:
         )
         selections[name] = result
         chosen_numeric[name] = result["chosen_value"]
-    driver["s5"]["selection"] = selections
-    driver["s5"]["chosen_numeric"] = chosen_numeric
+    driver["numeric"]["selection"] = selections
+    driver["numeric"]["chosen_numeric"] = chosen_numeric
 
+    # Final full-window (DL-089 Nachtrag 2): ONE run of the FINAL configuration — frozen
+    # filters + plateau-median numerics — plus a parameter-parent, NO-filter baseline for
+    # the honest comparison, both over 2019..max.  This single run IS the confirmation;
+    # there is no separate filter-only full-window test any more.
     final = driver["wf"]["final_selection"]
-    inputs = _combo_inputs(final)
+    final_inputs = _combo_inputs(final)
     for name, value in chosen_numeric.items():
-        inputs[name] = _fmt_value(value)
-    cell_key = f"{ledger['program_id']}:confirm"
-    setfile = _render_setfile(
-        ledger, cell_key, inputs, FULL_WINDOW_FROM, FULL_WINDOW_TO,
-        f"{ledger['ea_label']}_{ledger['symbol']}_{ledger['timeframe']}_confirm.set",
-    )
-    wid = _run_uuid(cell_key)
-    _insert_run(conn, ledger, work_item_id=wid, cell_key=cell_key, setfile_path=str(setfile),
-                from_date=FULL_WINDOW_FROM, to_date=FULL_WINDOW_TO, stage="CONFIRM", extra={})
-    driver["confirm"] = {"run": {"cell_key": cell_key, "work_item_id": wid,
-                                 "setfile_path": str(setfile), "from_date": FULL_WINDOW_FROM,
-                                 "to_date": FULL_WINDOW_TO, "stage": "CONFIRM"},
-                         "chosen_numeric": chosen_numeric}
-    _transition(driver, STATE_CONFIRM, "S5 numeric selection frozen; confirmation run enqueued",
+        final_inputs[name] = _fmt_value(value)
+    full_runs: list[dict[str, Any]] = []
+    for role, inputs in (("final", final_inputs), ("baseline", dict(_BASELINE_INPUTS))):
+        cell_key = f"{ledger['program_id']}:final_fullwindow:{role}"
+        setfile = _render_setfile(
+            ledger, cell_key, inputs, FULL_WINDOW_FROM, FULL_WINDOW_TO,
+            f"{ledger['ea_label']}_{ledger['symbol']}_{ledger['timeframe']}_final_fullwindow_{role}.set",
+        )
+        wid = _run_uuid(cell_key)
+        _insert_run(conn, ledger, work_item_id=wid, cell_key=cell_key, setfile_path=str(setfile),
+                    from_date=FULL_WINDOW_FROM, to_date=FULL_WINDOW_TO, stage="FINAL_FULLWINDOW",
+                    extra={"role": role})
+        full_runs.append({"cell_key": cell_key, "work_item_id": wid, "setfile_path": str(setfile),
+                          "from_date": FULL_WINDOW_FROM, "to_date": FULL_WINDOW_TO,
+                          "stage": "FINAL_FULLWINDOW", "role": role})
+    driver["final_fullwindow"] = {"runs": full_runs, "chosen_numeric": chosen_numeric}
+    _transition(driver, STATE_FINAL_FULLWINDOW,
+                "numeric selection frozen; final full-window confirmation enqueued",
                 chosen_numeric)
     return {"changed": True, "state": driver["state"], "waiting": False,
-            "chosen_numeric": chosen_numeric}
+            "chosen_numeric": chosen_numeric, "final_runs": len(full_runs)}
 
 
-def _handle_confirm(conn, ledger, driver, reader) -> dict[str, Any]:
-    run = driver["confirm"]["run"]
-    reenq = _maybe_reenqueue_infra(conn, ledger, driver, [run], reader)
-    status, metric = _resolve(reader, driver, run["cell_key"], run["work_item_id"])
-    if status != "OK":
-        return {"changed": reenq > 0, "state": driver["state"], "waiting": True,
-                "confirm_status": status, "reenqueued": reenq}
-    driver["confirm"]["result"] = metric
+def _handle_final_fullwindow(conn, ledger, driver, reader) -> dict[str, Any]:
+    runs = driver["final_fullwindow"]["runs"]
+    reenq = _maybe_reenqueue_infra(conn, ledger, driver, runs, reader)
+    status = _all_measured(reader, driver, runs)
+    if status["pending"] or status["infra"]:
+        return {"changed": reenq > 0, "state": driver["state"], "waiting": True, **_counts(status),
+                "reenqueued": reenq}
+    driver["final_fullwindow"]["results"] = {
+        run["role"]: (status["metrics"][run["cell_key"]] or {}) for run in runs
+    }
     _transition(driver, STATE_READY,
-                "confirmation run measured; frozen for Q15 (Q15 is never automatic)", metric)
+                "final full-window confirmation measured; frozen for Q15 (Q15 is never automatic)",
+                driver["final_fullwindow"]["results"])
     return {"changed": True, "state": driver["state"], "waiting": False,
             "final_selection": driver["wf"]["final_selection"],
-            "chosen_numeric": driver["confirm"]["chosen_numeric"], "confirm_result": metric}
+            "chosen_numeric": driver["final_fullwindow"]["chosen_numeric"],
+            "final_fullwindow_results": driver["final_fullwindow"]["results"]}
 
 
 def _counts(status: dict[str, Any]) -> dict[str, Any]:
@@ -852,13 +848,11 @@ def advance(*, ledger_path: Path, db_path: Path, param_grid: Optional[Path] = No
         if state == STATE_ENQUEUED:
             result = _handle_enqueued(conn, ledger, driver, reader)
         elif state == STATE_WF_COMBO:
-            result = _handle_wf_combo(conn, ledger, driver, reader)
-        elif state == STATE_FULLWINDOW:
-            result = _handle_fullwindow(conn, ledger, driver, reader, param_grid)
-        elif state == STATE_S5:
-            result = _handle_s5(conn, ledger, driver, reader)
-        elif state == STATE_CONFIRM:
-            result = _handle_confirm(conn, ledger, driver, reader)
+            result = _handle_wf_combo(conn, ledger, driver, reader, param_grid)
+        elif state == STATE_NUMERIC:
+            result = _handle_numeric(conn, ledger, driver, reader)
+        elif state == STATE_FINAL_FULLWINDOW:
+            result = _handle_final_fullwindow(conn, ledger, driver, reader)
         else:
             raise CensusError(f"unknown driver state: {state}")
 
@@ -906,18 +900,15 @@ def report(*, ledger_path: Path, db_path: Path,
             out["census"] = _counts(built)
         elif state == STATE_WF_COMBO:
             out["wf_combo"] = _counts(_all_measured(reader, driver, driver["wf"]["combo_runs"]))
-        elif state == STATE_FULLWINDOW:
-            out["fullwindow"] = _counts(_all_measured(reader, driver, driver["fullwindow"]["runs"]))
-        elif state == STATE_S5:
-            out["s5"] = _counts(_all_measured(reader, driver, driver["s5"]["runs"]))
-            out["numeric_trial_increment"] = driver["s5"].get("numeric_trial_increment")
-        elif state == STATE_CONFIRM:
-            st, _ = _resolve(reader, driver, driver["confirm"]["run"]["cell_key"],
-                             driver["confirm"]["run"]["work_item_id"])
-            out["confirm_status"] = st
+        elif state == STATE_NUMERIC:
+            out["numeric"] = _counts(_all_measured(reader, driver, driver["numeric"]["runs"]))
+            out["numeric_trial_increment"] = driver["numeric"].get("numeric_trial_increment")
+        elif state == STATE_FINAL_FULLWINDOW:
+            out["final_fullwindow"] = _counts(
+                _all_measured(reader, driver, driver["final_fullwindow"]["runs"]))
         elif state == STATE_READY:
             out["final_selection"] = driver["wf"]["final_selection"]
-            out["chosen_numeric"] = driver.get("confirm", {}).get("chosen_numeric")
+            out["chosen_numeric"] = driver.get("numeric", {}).get("chosen_numeric")
             out["next"] = "freeze as Q15 challenger (manual; Q15 is never automatic)"
         elif state == STATE_UNSTABLE:
             out["stability"] = driver["wf"].get("stability")

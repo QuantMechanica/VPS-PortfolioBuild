@@ -464,7 +464,7 @@ def _build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--base-setfile", type=Path, required=True)
     plan.add_argument("--output-dir", type=Path, required=True)
     plan.add_argument("--param-grid", type=Path,
-                      help="EA opt_param_grid.json; its sha256 is sealed into the ledger for S5")
+                      help="EA opt_param_grid.json; its sha256 is sealed into the ledger for the numeric stage")
     plan.add_argument("--plan-out", type=Path)
 
     apply = sub.add_parser("enqueue")
@@ -486,7 +486,7 @@ def _build_parser() -> argparse.ArgumentParser:
     drive.add_argument("--ledger", type=Path, required=True)
     drive.add_argument("--db", type=Path, default=DEFAULT_DB)
     drive.add_argument("--param-grid", type=Path,
-                       help="opt_param_grid.json for S5 (must match the sealed sha256)")
+                       help="opt_param_grid.json for the numeric stage (must match the sealed sha256)")
     drive.add_argument("--dry-run", action="store_true",
                        help="evaluate and print the next transition without writing")
 

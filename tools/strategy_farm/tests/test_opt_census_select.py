@@ -240,7 +240,7 @@ def test_trial_count_increments_before_any_numeric_cell(tmp_path: Path) -> None:
     # Idempotent: a second registration does not double-count.
     sel.register_numeric_stage(ledger, grid)
     assert ledger["declared_trial_count_effective"] == 165
-    assert ledger["driver"]["s5"]["numeric_trial_increment"] == 11
+    assert ledger["driver"]["numeric"]["numeric_trial_increment"] == 11
 
 
 # ===========================================================================
@@ -355,7 +355,7 @@ def test_advance_dry_run_writes_nothing(tmp_path: Path) -> None:
 
 
 def test_advance_full_chain_to_ready_for_q15(tmp_path: Path) -> None:
-    """Drive census -> combo -> full-window -> S5 -> confirm -> READY_FOR_Q15.
+    """Drive census -> combo -> numeric -> final full-window -> READY_FOR_Q15.
 
     A run is 'measured' as soon as its row exists (uniform r2dd 1.0): the point of
     this test is the *sequencing* and the terminal stop, not the numeric verdict.
@@ -385,17 +385,17 @@ def test_advance_full_chain_to_ready_for_q15(tmp_path: Path) -> None:
             break
 
     assert states[-1] == sel.STATE_READY
-    assert sel.STATE_WF_COMBO in states and sel.STATE_S5 in states
+    assert sel.STATE_WF_COMBO in states and sel.STATE_NUMERIC in states
     led = json.loads(ledger_path.read_text())
-    # 5 transitions: ->WF_COMBO ->FULLWINDOW ->S5 ->CONFIRM ->READY_FOR_Q15.
-    assert len(led["driver"]["transitions"]) == 5
-    # Trial count grew by the grid increment (11 non-parent candidates) strictly during the S5 registration.
+    # 4 transitions: ->WF_COMBO ->NUMERIC ->FINAL_FULLWINDOW ->READY_FOR_Q15.
+    assert len(led["driver"]["transitions"]) == 4
+    # Trial count grew by the grid increment (11 non-parent candidates) strictly during the numeric registration.
     assert led["declared_trial_count_effective"] == 154 + 11
-    # Numeric pool = 7 per-year baselines + 12 candidates * 7 years = 91 S5 rows.
-    s5_rows = conn.execute(
-        "SELECT COUNT(*) FROM work_items WHERE payload_json LIKE '%\"opt_census_stage\": \"S5%'"
+    # Numeric pool = 7 per-year baselines + 14 candidate values * 7 years = 105 numeric rows.
+    numeric_rows = conn.execute(
+        "SELECT COUNT(*) FROM work_items WHERE payload_json LIKE '%\"opt_census_stage\": \"NUMERIC%'"
     ).fetchone()[0]
-    assert s5_rows == 7 + 14 * 7
+    assert numeric_rows == 7 + 14 * 7
 
     # A final advance in the terminal state is a no-op (idempotent stop).
     frozen = ledger_path.read_text()

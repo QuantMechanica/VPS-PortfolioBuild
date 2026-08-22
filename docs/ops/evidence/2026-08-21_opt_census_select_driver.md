@@ -3,11 +3,12 @@
 **Date:** 2026-08-22 (authored; filename pinned by the F2 brief to 2026-08-21)
 **Author:** Claude (board-advisor lane)
 **Scope:** Complete the DL-089 census tooling per review R2 — ledger sealing, the
-Q02 precondition, S5 numeric machinery, and the walk-forward selection + advance
+Q02 precondition, numeric machinery, and the walk-forward selection + advance
 state-machine driver. Optimization branch only (measurement pool `OPT_CENSUS`); the
 core funnel Q00–Q13 and all gate verdict logic are untouched (ROT).
 **Authorities:** `docs/research/PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md` §2
-(sealed rule), `decisions/DL-089_pattern_filter_wf_census_v3.md` (incl. Nachtrag S5),
+(sealed rule), `decisions/DL-089_pattern_filter_wf_census_v3.md` (incl. Nachtrag numeric
+stage + Nachtrag 2 order),
 `decisions/DL-088_optimization_track_v2_levers_and_overfit_contract.md`.
 
 ## Files
@@ -15,7 +16,7 @@ core funnel Q00–Q13 and all gate verdict logic are untouched (ROT).
 | File | Change |
 |---|---|
 | `tools/strategy_farm/opt_census.py` | **additive** — sealed header (rule text+sha, floors, quorum, WF windows, param-grid sha), Q02 precondition, `advance`/`report` subcommands wired to the driver. Matrix/enqueue mechanics unchanged. |
-| `tools/strategy_farm/opt_census_select.py` | **new** — pure WF-selection library + the idempotent pilot state-machine driver + S5 numeric machinery. |
+| `tools/strategy_farm/opt_census_select.py` | **new** — pure WF-selection library + the idempotent pilot state-machine driver + numeric machinery. |
 | `tools/strategy_farm/tests/test_opt_census.py` | extended — sealed header, Q02 precondition (fixture `_db` now seeds a done/PASS Q02). |
 | `tools/strategy_farm/tests/test_opt_census_select.py` | **new** — 15 hand-computable fixtures (each expected value derived by arithmetic in a comment). |
 
@@ -32,7 +33,7 @@ core funnel Q00–Q13 and all gate verdict logic are untouched (ROT).
 - `activity_floor = 10`, `relative_improve_min = 0.05`, `selection_year_quorum = "2/3"`.
 - `wf_windows` — the 4 anchored steps (2019–21→22, …, 2019–24→25).
 - `param_grid_sha256` — sha256 of the EA's `opt_param_grid.json` (path from `--param-grid`),
-  so S5 can prove the numeric grid never changed between planning and optimisation.
+  so the numeric stage can prove the grid never changed between planning and optimisation.
 
 ## Preconditions (fail-closed, both required at `enqueue`)
 
@@ -41,12 +42,13 @@ core funnel Q00–Q13 and all gate verdict logic are untouched (ROT).
    justified once the `_opt` baseline is economically alive. Accepts phase `Q02` or the
    legacy `P2` key. Override with `--q02-ea-id` if the gate should point at a sibling.
 
-## S5 numeric machinery (R2 #3)
+## Numeric machinery (R2 #3)
 
 `load_param_grid()` reads `opt_param_grid.json` via its **recorded sha**, validating the
-`qm.opt-param-grid.v1` schema: each parameter carries ≤5 distinct `candidate_values` and a
-separate `parent_value` control cell (DL-088 AI_PARAM). `register_numeric_stage()`
-increments `declared_trial_count_effective = 154 + Σ candidate_values` and persists it to
+`qm.opt-param-grid.v1` schema: each parameter carries ≤5 distinct `candidate_values`
+**including** the `parent_value` as the mandatory control cell (DL-088 AI_PARAM).
+`register_numeric_stage()` increments
+`declared_trial_count_effective = 154 + Σ (candidate_values − parent)` and persists it to
 the ledger **before any numeric cell is enqueued** (years are repeated measurement, not
 trials — OWNER entscheid #7). The Q16 deflation later runs over the effective total.
 
@@ -56,36 +58,53 @@ trials — OWNER entscheid #7). The Q16 deflation later runs over the effective 
 ```json
 { "schema": "qm.opt-param-grid.v1", "ea_id": "QM5_41097",
   "parameters": [
-    {"name": "opt_stop_distance_range_mult", "parent_value": 1.0, "candidate_values": [0.5, 0.75, 1.25, 1.5]},
-    {"name": "opt_take_profit_r_multiple",   "parent_value": 0.0, "candidate_values": [1.0, 1.5, 2.0]},
-    {"name": "opt_range_window_hours",        "parent_value": 3,   "candidate_values": [2, 4]} ] }
+    {"name": "strategy_max_range_atr_mult", "parent_value": 2.5, "candidate_values": [1.5, 2.0, 2.5, 3.0, 3.5]},
+    {"name": "strategy_trail_trigger_r",    "parent_value": 1.0, "candidate_values": [0.5, 0.75, 1.0, 1.25, 1.5]},
+    {"name": "strategy_range_end_hour",     "parent_value": 6,   "candidate_values": [5, 6, 7, 8]} ] }
 ```
 
-`parent_value` MUST NOT appear inside `candidate_values` (it is the control, not a trial).
+Names are the parent EA's already-wired levers (the invented `opt_*` placeholders were
+removed by review R1 as unwired). `parent_value` MUST appear **among** `candidate_values`
+as DL-088's mandatory control cell; the trial increment counts only the non-parent
+candidates (here (5−1)+(5−1)+(4−1) = 11).
 
-## The advance state machine (R2 #4)
+## The advance state machine (R2 #4; reordered per DL-089 Nachtrag 2, 2026-08-22)
 
 `opt_census.py advance` runs one deterministic, idempotent step. Every derived run lives
 in the `OPT_CENSUS` pool with a deterministic uuid5 cell key (`INSERT OR IGNORE`), so
 re-running never duplicates. A transition is appended to the ledger **only** when the
 state actually changes, each with an `inputs_digest`.
 
+**Sealed order (DL-089 Nachtrag 2, "S5 muss vor S4 passieren"):** the numeric stage now
+runs BEFORE the full-window test, and there is no separate filter-only full-window test
+any more. The single final full-window run of the FINAL configuration (frozen filters +
+chosen numerics) IS the confirmation. The old `FULLWINDOW_MEASURING` and
+`CONFIRM_MEASURING` states were merged into `FINAL_FULLWINDOW_MEASURING`.
+
 ```
-ENQUEUED            all 1,085 census cells MEASURED → compute 4 WF-step selections,
-                    enqueue 4 combo test-year runs                 → WF_COMBO_MEASURING
-WF_COMBO_MEASURING  4 combo runs MEASURED → stability_check
-                       stable   → freeze step-4 selection, enqueue 2 full-window runs
-                                                                   → FULLWINDOW_MEASURING
-                       unstable → WF_UNSTABLE (STOP; OWNER review)
-FULLWINDOW_MEASURING 2 runs MEASURED → register S5 (increment trials), enqueue numeric
-                    cells (7 per-year combo baselines + Σvals×7)   → S5_MEASURING
-S5_MEASURING        numeric cells MEASURED → per-parameter plateau-median selection,
-                    enqueue confirmation run                        → CONFIRM_MEASURING
-CONFIRM_MEASURING   confirmation MEASURED                          → READY_FOR_Q15  (STOP)
+ENQUEUED                  all 1,085 census cells MEASURED → compute 4 WF-step selections,
+                          enqueue 4 combo test-year runs             → WF_COMBO_MEASURING
+WF_COMBO_MEASURING        4 combo runs MEASURED → stability_check
+                             stable   → freeze step-4 selection, register numeric stage
+                                        (increment trials BEFORE enqueue), enqueue numeric
+                                        cells (7 per-year frozen-combo baselines + Σvals×7,
+                                        all WITH the frozen filter inputs)
+                                                                     → NUMERIC_MEASURING
+                             unstable → WF_UNSTABLE (STOP; OWNER review)
+                             (no --param-grid → hold in WF_COMBO; verdict recomputes)
+NUMERIC_MEASURING         numeric cells MEASURED → per-parameter plateau-median selection,
+                          enqueue ONE final full-window pair: role=final (frozen filters +
+                          chosen numerics) + role=baseline (parameter-parent, no filter),
+                          both 2019..max                             → FINAL_FULLWINDOW_MEASURING
+FINAL_FULLWINDOW_MEASURING both runs MEASURED (this IS the confirmation)
+                                                                     → READY_FOR_Q15  (STOP)
 ```
 
 `READY_FOR_Q15` **stops the machine** — Q15 is never automatic (DL-088 §3). Infra-failed
 cells are re-enqueued append-only, bounded to **2 attempts**, the old row kept as evidence.
+The numeric per-year cells carry the frozen filter combo (the same-year `role=baseline`
+uses the frozen filters at parent numerics); the final full-window `role=baseline` is
+parameter-parent + no filter for the honest baseline comparison.
 
 ### Sealed selection rule as implemented (exact)
 
@@ -97,7 +116,7 @@ cells are re-enqueued append-only, bounded to **2 attempts**, the old row kept a
 - **≤ 3 per direction**; the six-zero baseline is always the control;
 - stability = combo not worse on return_to_maxdd in **≥ 3/4** test years AND the final
   (step-4) selection is identical-or-**subset** of **≥ 2/3** earlier steps;
-- S5 picks the **plateau median** value of the qualifying set, never the best.
+- the numeric stage picks the **plateau median** value of the qualifying set, never the best.
 
 ### ⚠ Flagged discrepancy — subset vs superset (needs an OWNER word)
 
