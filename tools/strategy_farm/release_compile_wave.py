@@ -43,7 +43,12 @@ def _connect(path: Path) -> sqlite3.Connection:
     return conn
 
 
-def inspect(db: Path, repo: Path, max_items: int) -> dict[str, Any]:
+def inspect(
+    db: Path,
+    repo: Path,
+    max_items: int,
+    work_item_id: str | None = None,
+) -> dict[str, Any]:
     if max_items < 1 or max_items > 10:
         raise ValueError("--max-items must be between 1 and 10")
     with _connect(db) as conn:
@@ -54,9 +59,10 @@ def inspect(db: Path, repo: Path, max_items: int) -> dict[str, Any]:
             FROM work_items w JOIN work_item_holds h ON h.work_item_id=w.id
             WHERE w.phase='COMPILE_EA' AND w.status='pending'
               AND w.claimed_by IS NULL AND h.active=1 AND h.hold_code=?
+              AND (? IS NULL OR w.id=?)
             ORDER BY w.created_at,w.id
             """,
-            (HOLD_CODE,),
+            (HOLD_CODE, work_item_id, work_item_id),
         ).fetchall()
 
     eligible: list[dict[str, Any]] = []
@@ -87,6 +93,7 @@ def inspect(db: Path, repo: Path, max_items: int) -> dict[str, Any]:
         "schema_version": "qm.compile-ea-rollout-wave/v1",
         "mode": "dry_run",
         "max_items": max_items,
+        "work_item_id_selector": work_item_id,
         "held_pending_count": len(rows),
         "release_count": len(eligible),
         "release": eligible,
@@ -108,8 +115,15 @@ def _backup(db: Path, backup_dir: Path) -> tuple[Path, str]:
     return target, sha256_file(target)
 
 
-def apply_wave(db: Path, repo: Path, backup_dir: Path, max_items: int, note: str) -> dict[str, Any]:
-    plan = inspect(db, repo, max_items)
+def apply_wave(
+    db: Path,
+    repo: Path,
+    backup_dir: Path,
+    max_items: int,
+    note: str,
+    work_item_id: str | None = None,
+) -> dict[str, Any]:
+    plan = inspect(db, repo, max_items, work_item_id)
     if not plan["release"]:
         return {**plan, "mode": "apply", "applied": 0, "backup": None}
     backup_path, backup_sha = _backup(db, backup_dir)
@@ -146,12 +160,28 @@ def apply_wave(db: Path, repo: Path, backup_dir: Path, max_items: int, note: str
                     """INSERT INTO work_item_transition_ledger
                        (idempotency_key,ts,work_item_id,action,reason,run_id,detail_json)
                        VALUES(?,?,?,'release_hold',?,'compile_ea_rollout',?)""",
-                    (key, now, item["work_item_id"], note, json.dumps({"max_items": max_items}, sort_keys=True)),
+                    (
+                        key,
+                        now,
+                        item["work_item_id"],
+                        note,
+                        json.dumps(
+                            {"max_items": max_items, "work_item_id_selector": work_item_id},
+                            sort_keys=True,
+                        ),
+                    ),
                 )
                 conn.execute(
                     """INSERT INTO events(ts,entity_type,entity_id,event,detail_json)
                        VALUES(?,'work_item',?,'compile_rollout_hold_released',?)""",
-                    (now, item["work_item_id"], json.dumps({"release_note": note}, sort_keys=True)),
+                    (
+                        now,
+                        item["work_item_id"],
+                        json.dumps(
+                            {"release_note": note, "work_item_id_selector": work_item_id},
+                            sort_keys=True,
+                        ),
+                    ),
                 )
                 applied.append(item["work_item_id"])
             conn.commit()
@@ -174,14 +204,25 @@ def main() -> int:
     parser.add_argument("--repo", type=Path, default=DEFAULT_REPO)
     parser.add_argument("--backup-dir", type=Path, default=DEFAULT_BACKUP_DIR)
     parser.add_argument("--max-items", type=int, default=1)
+    parser.add_argument(
+        "--work-item-id",
+        help="release only this exact held pending work item (still via the normal worker path)",
+    )
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--release-note", default="bounded COMPILE_EA worker rollout wave")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     result = (
-        apply_wave(args.db, args.repo, args.backup_dir, args.max_items, args.release_note)
+        apply_wave(
+            args.db,
+            args.repo,
+            args.backup_dir,
+            args.max_items,
+            args.release_note,
+            args.work_item_id,
+        )
         if args.apply
-        else inspect(args.db, args.repo, args.max_items)
+        else inspect(args.db, args.repo, args.max_items, args.work_item_id)
     )
     encoded = json.dumps(result, indent=2, sort_keys=True)
     if args.output:

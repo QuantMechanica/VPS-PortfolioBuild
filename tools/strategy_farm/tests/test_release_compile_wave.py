@@ -53,3 +53,42 @@ def test_stale_source_is_deferred(tmp_path):
     plan = rollout.inspect(db, repo, 1)
     assert plan["release_count"] == 0
     assert plan["deferred"][0]["reason"] == "SOURCE_SHA_STALE_OR_MISSING"
+
+
+def test_exact_selector_releases_only_requested_item(tmp_path):
+    db, repo, _ = _fixture(tmp_path)
+    with sqlite3.connect(db) as conn:
+        payload = conn.execute(
+            "SELECT payload_json FROM work_items WHERE id='one'"
+        ).fetchone()[0]
+        conn.execute(
+            "INSERT INTO work_items VALUES(?,?,?,?,?,?,?,?)",
+            ("two", "QM5_1001", "COMPILE_EA", "pending", None, None, payload, "2026-01-02"),
+        )
+        conn.execute(
+            "INSERT INTO work_item_holds VALUES(?,?,?,?,?,?,?,?)",
+            (
+                "two",
+                rollout.HOLD_CODE,
+                1,
+                1,
+                "2026-01-02",
+                "2026-01-02",
+                None,
+                None,
+            ),
+        )
+
+    plan = rollout.inspect(db, repo, 1, "two")
+    assert plan["work_item_id_selector"] == "two"
+    assert [item["work_item_id"] for item in plan["release"]] == ["two"]
+
+    result = rollout.apply_wave(db, repo, tmp_path / "backups", 1, "retry canary", "two")
+    assert result["applied_work_item_ids"] == ["two"]
+    with sqlite3.connect(db) as conn:
+        holds = dict(conn.execute("SELECT work_item_id,active FROM work_item_holds"))
+        detail = json.loads(
+            conn.execute("SELECT detail_json FROM work_item_transition_ledger").fetchone()[0]
+        )
+    assert holds == {"one": 1, "two": 0}
+    assert detail["work_item_id_selector"] == "two"
