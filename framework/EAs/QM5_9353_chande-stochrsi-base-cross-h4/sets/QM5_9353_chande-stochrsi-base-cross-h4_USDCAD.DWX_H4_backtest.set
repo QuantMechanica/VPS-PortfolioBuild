@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9353
+; ea_slug:      chande-stochrsi-base-cross-h4
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       USDCAD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   11
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   40d262d6e87d1e1c8355a86540811b1fb8c20bd6cd922b50459eefa29de0c2cf
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=9353
+qm_magic_slot_offset=11
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9353_chande-stochrsi-base-cross-h4.md
+strategy_rsi_period=14
+strategy_stoch_period=14
+strategy_k_period=3
+strategy_d_period=3
+strategy_trend_sma_period=200
+strategy_atr_period=14
+strategy_sl_atr_mult=1.8
+strategy_oversold_threshold=0.20
+strategy_overbought_threshold=0.80
+strategy_profit_exit_atr_mult=1.0
+strategy_time_stop_bars=25
+strategy_spread_max_atr=0.15
+strategy_warmup_bars=220

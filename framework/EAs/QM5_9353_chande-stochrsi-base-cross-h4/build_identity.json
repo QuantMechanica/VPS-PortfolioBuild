@@ -1,0 +1,22 @@
+{
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\QM5_9353_chande-stochrsi-base-cross-h4.mq5",
+  "mq5_sha256": "d41133892dcfeb01aff347777b549118f2ee275ab7eee1faf6b2be08caec991f",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\QM5_9353_chande-stochrsi-base-cross-h4.ex5",
+  "ex5_sha256": "6a2ac128e2be3d728206f969a94d28430d8e77c0b390ccf3327aa0314bdc74fe",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_AUDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_EURUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_GDAXI.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_NDX.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_NZDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_SP500.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_UK100.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_USDCAD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_USDCHF.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_USDJPY.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_WS30.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9353_chande-stochrsi-base-cross-h4\\sets\\QM5_9353_chande-stochrsi-base-cross-h4_XAUUSD.DWX_H4_backtest.set"
+  ]
+}

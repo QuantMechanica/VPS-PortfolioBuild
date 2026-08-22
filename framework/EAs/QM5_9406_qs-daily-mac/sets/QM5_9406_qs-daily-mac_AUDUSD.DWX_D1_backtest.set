@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9406
+; ea_slug:      qs-daily-mac
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       AUDUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   10
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   817eb280388fc321c717a95f0aa7702570c7de8a0af12e2bdd125568dddceff8
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=9406
+qm_magic_slot_offset=10
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9406_qs-daily-mac.md
+strategy_fast_sma=100
+strategy_slow_sma=400
+strategy_atr_period=14
+strategy_sl_atr_mult=2.5
+strategy_spread_max_atr=0.30
+strategy_warmup_bars=400

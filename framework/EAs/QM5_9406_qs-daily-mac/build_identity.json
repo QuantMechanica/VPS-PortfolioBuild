@@ -1,0 +1,22 @@
+{
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\QM5_9406_qs-daily-mac.mq5",
+  "mq5_sha256": "23bc76a30cadb074ca66c66ffcd9a5602222cd1649232a433ed29510d0c4c5cf",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\QM5_9406_qs-daily-mac.ex5",
+  "ex5_sha256": "d88740fed1952b737134010f86f8fcba65e2ce5252f9b4ed6b1502c58f3e97bf",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_AUDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_GDAXI.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_NZDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_UK100.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_USDCAD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_USDCHF.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_USDJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_WS30.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\sets\\QM5_9406_qs-daily-mac_XAUUSD.DWX_D1_backtest.set"
+  ]
+}

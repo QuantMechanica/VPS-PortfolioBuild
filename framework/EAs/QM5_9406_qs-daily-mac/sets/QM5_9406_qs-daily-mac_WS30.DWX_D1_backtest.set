@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9406
+; ea_slug:      qs-daily-mac
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       WS30.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   ab8cda2c5f70d007d60e77fce503e7d5cc9140163391203ebf2525180fed4f32
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=9406
+qm_magic_slot_offset=4
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9406_qs-daily-mac.md
+strategy_fast_sma=100
+strategy_slow_sma=400
+strategy_atr_period=14
+strategy_sl_atr_mult=2.5
+strategy_spread_max_atr=0.30
+strategy_warmup_bars=400
