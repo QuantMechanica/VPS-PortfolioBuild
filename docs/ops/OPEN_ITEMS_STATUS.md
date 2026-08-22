@@ -26,6 +26,25 @@
 
 ---
 
+## 0a · Ultracode-Sitzung 2026-08-22 spätabends — Q09-Push 12969 + Balke 13213 + OFF/ON
+
+**Geliefert** (Evidenz `docs/ops/evidence/2026-08-22_ultracode_q09_push_12969_13213.md`)
+
+| Punkt | Ergebnis |
+|---|---|
+| EA-Auswahl | **QM5_12969/USDJPY** (PF 1,55 / 300 Trades / DD 2,3 % / PASS_PORTFOLIO, Live-Sleeve 17) — Q09_NEWS `856a8faf` RUNNABLE_BOUND + priority_track |
+| Q09-Damm Ursache 1 | Include-Closure-Drift durch generierten `QM_MagicResolver.mqh` → Fix `c3fa7ea0e`, 27 Tests, Zweilinsen-Review |
+| Q09-Damm Ursache 2 | `book_q08_regeneration`-Zeilen ohne Q07-Lineage → identitätsgebundener Fallback `87ee64ad0`, 53 Tests; 11 Zeilen gebunden, 7 korrekt gehalten |
+| Pump seit 18:38Z blockiert | `include_mirror._pid_exists` = `os.kill(pid,0)` (Windows-Kill) → OpenProcess-Probe, gleicher Commit |
+| Cockpit_2min rc=1 | stderr-Guard unter pythonw, gleicher Commit |
+| Factory OFF/ON | OFF 20:58Z (Codex-Exec beendet), Mint R5 `a6f076f44`, ON 21:03Z 10/10 |
+| Balke 13213 | Portfolio-Re-Eval `b8887bd1` **FAIL_PORTFOLIO** (no_diversification) → OWNER-DEC-13213-POOL; Challenger 21501 Q06 `01bdbe82` enqueued + priority_track |
+| Kommissioniert | agy `b8c8cfeb` (Gotobi-Brief), Codex `f8878393` (Autoseal-Census), Codex `6b5176df` (Q09-Sharding) |
+| Review geschlossen | `689b3af1` Kalender-Repin APPROVED |
+| Fehler korrigiert | Requeue-Falle `enqueue-backtest --from-work-item-id` ohne append-only → Zeile `d3c5183e` restauriert, Memory-Regel |
+
+**Offen / OWNER:** OWNER-DEC-13213-POOL, OWNER-DEC-12969-Q14, OWNER-DEC-MQ5-DRIFT-LIVE, OWNER-DEC-STRANDED-182, OWNER-DEC-Q02-BYPASS-88ba4560 (Details im Evidenzdoc §7).
+
 ## 0 · Sitzung 2026-08-22 abends (Orchestrator) — Nachtrag
 
 **Geliefert**
