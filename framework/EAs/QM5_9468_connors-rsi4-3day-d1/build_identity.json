@@ -1,0 +1,26 @@
+{
+  "task_id": "e7fdd25e-d16c-44d3-bcbe-c22756021747",
+  "ea_id": "QM5_9468",
+  "ea_label": "QM5_9468_connors-rsi4-3day-d1",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/QM5_9468_connors-rsi4-3day-d1.mq5",
+  "mq5_sha256": "f34b09783e49b2b84319c15b56ff1d42620bb6ab76a16af21ef9954d5e76b4c7",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/QM5_9468_connors-rsi4-3day-d1.ex5",
+  "ex5_sha256": "b466bc58004efef8f721cbc0e19fe40add71bf71605fac7e00a47a23ccba0729",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_AUDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_EURUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_GBPUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_GDAXI.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_NDX.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_NZDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_SP500.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_UK100.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_USDCAD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_USDCHF.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_USDJPY.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_WS30.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/sets\\QM5_9468_connors-rsi4-3day-d1_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_9468_connors-rsi4-3day-d1/SPEC.md"
+}
