@@ -29,15 +29,16 @@
 ## 2. Registry & Verification Status
 
 - **Registries**:
-  - ramework/registry/ea_id_registry.csv: registered row 1425,classical-triple-bottom-reversal-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-05-19,,,.
-  - ramework/registry/magic_numbers.csv: registered 14 symbol slots (0..13: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX, USDCHF.DWX, NZDUSD.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, UK100.DWX, SP500.DWX, XAUUSD.DWX, XTIUSD.DWX).
-  - ramework/include/QM/QM_MagicResolver.mqh: regenerated cleanly (17,761 rows kept, 0 dropped).
+  - framework/registry/ea_id_registry.csv: registered row 1425,classical-triple-bottom-reversal-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-05-19,,,.
+  - framework/registry/magic_numbers.csv: registered 14 symbol slots (0..13: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX, USDCHF.DWX, NZDUSD.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, UK100.DWX, SP500.DWX, XAUUSD.DWX, XTIUSD.DWX).
+  - framework/include/QM/QM_MagicResolver.mqh: regenerated cleanly (17,761 rows kept, 0 dropped).
 - **SPEC Document**:
-  - ramework/EAs/QM5_1425_classical-triple-bottom-reversal-h4/SPEC.md generated and validated.
-- **Build Guardrails**:
-  - alidate_build_guardrails.py framework/EAs/QM5_1425_classical-triple-bottom-reversal-h4: PASS (0 findings across 15 files).
+  - framework/EAs/QM5_1425_classical-triple-bottom-reversal-h4/SPEC.md generated and validated.
+- **Build Guardrails & Hardening**:
+  - validate_build_guardrails.py framework/EAs/QM5_1425_classical-triple-bottom-reversal-h4: PASS (0 findings across 15 files).
+  - build_gate_hardening.py: PASS (0 failures across D3-D10 gates).
 - **P2 Setfiles**:
-  - Generated all 14 backtest setfiles under ramework/EAs/QM5_1425_classical-triple-bottom-reversal-h4/sets/.
+  - Generated all 14 backtest setfiles under framework/EAs/QM5_1425_classical-triple-bottom-reversal-h4/sets/.
 
 ---
 
