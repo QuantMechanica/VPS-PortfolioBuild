@@ -1,0 +1,8 @@
+; DIAGNOSTIC TEMPLATE ONLY - NOT FOR T_LIVE OR DEPLOYMENT
+; SP-E4 task 961deb63-f5ea-4f1f-a877-a5f9685846e3
+; Observed defect: exact broker-hour 21 entry missed the scheduled 2026-07-29 event.
+; First measure live NDX H1 bar availability in a governed DEV/T1-T5 replay.
+; Replace <LAST_VALIDATED_PRE_EVENT_HOUR> only with evidence from that replay.
+strategy_entry_hour=<LAST_VALIDATED_PRE_EVENT_HOUR>
+; Keep strategy_exit_hour unchanged unless the replay separately proves the intended
+; flat-before-statement exit is unavailable. No risk fields are included deliberately.
