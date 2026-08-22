@@ -1,0 +1,44 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1407
+; ea_slug:      classical-symmetric-triangle-breakout-h4
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   7
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3511e99858e36be123a908b6b43d3fad5dd98bb30f2c53e205b81da0237a9760
+; author:       Gemini
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=1407
+qm_magic_slot_offset=7
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1407_classical-symmetric-triangle-breakout-h4.md
+strategy_atr_period=14
+strategy_fractal_wing_bars=2
+strategy_pivot_scan_bars=200
+strategy_pattern_min_bars=25
+strategy_pattern_max_bars=80
+strategy_min_high_pivots=3
+strategy_min_low_pivots=3
+strategy_slope_min_atr_factor=0.30
+strategy_slope_max_atr_factor=2.00
+strategy_slope_symmetry_ratio=0.40
+strategy_min_amplitude_atr=3.00
+strategy_apex_max_extension_pct=0.30
+strategy_breakout_buffer_atr=0.50
+strategy_sl_buffer_atr=0.30
+strategy_sl_cap_atr=3.00
+strategy_tp1_ratio=0.50
+strategy_time_stop_bars=36
+strategy_reuse_guard_bars=20
+strategy_spread_lookback_bars=20
+strategy_spread_average_multiplier=1.50
+

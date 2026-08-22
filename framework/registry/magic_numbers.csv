@@ -17665,3 +17665,43 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12955,mql5-aroon-cross-card,0,EURUSD.DWX,129550000,2026-08-22,Codex governed allocator,active
 12955,mql5-aroon-cross-card,1,GBPUSD.DWX,129550001,2026-08-22,Codex governed allocator,active
 12955,mql5-aroon-cross-card,2,GER40.DWX,129550002,2026-08-22,Codex governed allocator,active
+1401,harmonic-shark-xabcd-h4,0,EURUSD.DWX,14010000,2026-08-22,Gemini,active
+1401,harmonic-shark-xabcd-h4,1,GBPUSD.DWX,14010001,2026-08-22,Gemini,active
+1401,harmonic-shark-xabcd-h4,2,USDJPY.DWX,14010002,2026-08-22,Gemini,active
+1401,harmonic-shark-xabcd-h4,3,AUDUSD.DWX,14010003,2026-08-22,Gemini,active
+1401,harmonic-shark-xabcd-h4,4,USDCAD.DWX,14010004,2026-08-22,Gemini,active
+1401,harmonic-shark-xabcd-h4,5,USDCHF.DWX,14010005,2026-08-22,Gemini,active
+1401,harmonic-shark-xabcd-h4,6,NZDUSD.DWX,14010006,2026-08-22,Gemini,active
+1401,harmonic-shark-xabcd-h4,7,NDX.DWX,14010007,2026-08-22,Gemini,active
+1401,harmonic-shark-xabcd-h4,8,WS30.DWX,14010008,2026-08-22,Gemini,active
+1401,harmonic-shark-xabcd-h4,9,GDAXI.DWX,14010009,2026-08-22,Gemini,active
+1401,harmonic-shark-xabcd-h4,10,UK100.DWX,14010010,2026-08-22,Gemini,active
+1401,harmonic-shark-xabcd-h4,11,SP500.DWX,14010011,2026-08-22,Gemini,active
+1401,harmonic-shark-xabcd-h4,12,XAUUSD.DWX,14010012,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,0,EURUSD.DWX,14020000,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,1,GBPUSD.DWX,14020001,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,2,USDJPY.DWX,14020002,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,3,AUDUSD.DWX,14020003,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,4,USDCAD.DWX,14020004,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,5,USDCHF.DWX,14020005,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,6,NZDUSD.DWX,14020006,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,7,NDX.DWX,14020007,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,8,WS30.DWX,14020008,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,9,GDAXI.DWX,14020009,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,10,UK100.DWX,14020010,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,11,SP500.DWX,14020011,2026-08-22,Gemini,active
+1402,harmonic-cypher-xabcd-h4,12,XAUUSD.DWX,14020012,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,0,GDAXI.DWX,14070000,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,1,NDX.DWX,14070001,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,2,SP500.DWX,14070002,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,3,UK100.DWX,14070003,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,4,WS30.DWX,14070004,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,5,XAUUSD.DWX,14070005,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,6,EURUSD.DWX,14070006,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,7,GBPUSD.DWX,14070007,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,8,USDJPY.DWX,14070008,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,9,USDCHF.DWX,14070009,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,10,AUDUSD.DWX,14070010,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,11,USDCAD.DWX,14070011,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,12,NZDUSD.DWX,14070012,2026-08-22,Gemini,active
+
