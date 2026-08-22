@@ -1,0 +1,53 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1408
+; ea_slug:      classical-bull-flag-continuation-h1
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       EURUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   38b9ddf1d6345c5a87fc2e3c359f94297b2de0d01230621d7e36cd967d336c74
+; author:       Gemini
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=1408
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1408_classical-bull-flag-continuation-h1.md
+strategy_atr_period=14
+strategy_fractal_wing_bars=1
+strategy_pole_min_bars=12
+strategy_pole_max_bars=36
+strategy_pole_min_atr=4.00
+strategy_pole_slope_min_atr=0.20
+strategy_pole_max_pullback_pct=0.35
+strategy_volume_filter_enabled=true
+strategy_pole_volume_mult=1.20
+strategy_pole_volume_prior_bars=60
+strategy_flag_min_bars=5
+strategy_flag_max_bars=18
+strategy_flag_slope_min_atr=-0.10
+strategy_flag_slope_max_atr=-0.005
+strategy_flag_containment_pct=0.80
+strategy_flag_channel_tol_atr=0.30
+strategy_flag_max_retrace_pct=0.50
+strategy_flag_volume_mult=0.80
+strategy_breakout_buffer_atr=0.40
+strategy_tp1_close_fraction=0.50
+strategy_tp1_ratio=0.50
+strategy_failure_exit_bars=6
+strategy_time_stop_bars=24
+strategy_sl_buffer_atr=0.30
+strategy_sl_cap_atr=2.50
+strategy_macro_bias_enabled=true
+strategy_macro_sma_period=200
+strategy_reuse_guard_bars=12
+strategy_spread_filter_enabled=true
+strategy_spread_max_atr=0.30

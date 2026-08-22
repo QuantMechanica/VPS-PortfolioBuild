@@ -1,0 +1,27 @@
+{
+  "task_id": "0d490609-922c-47df-a3eb-2a27412e3796",
+  "ea_id": "QM5_1409",
+  "ea_label": "QM5_1409_wyckoff-sign-of-strength-phase-d-h4",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/QM5_1409_wyckoff-sign-of-strength-phase-d-h4.mq5",
+  "mq5_sha256": "deffd643e4c78e12f58960cca2568e737bd90542a235eca83777c531e8dfaeb3",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/QM5_1409_wyckoff-sign-of-strength-phase-d-h4.ex5",
+  "ex5_sha256": "71640fddfa134ae235543e034e67a72737a4fa83830b088219b28a23f4648979",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_AUDUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_EURUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_GDAXI.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_NDX.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_NZDUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_SP500.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_UK100.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_USDCAD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_USDCHF.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_USDJPY.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_WS30.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_XAUUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/sets/QM5_1409_wyckoff-sign-of-strength-phase-d-h4_XTIUSD.DWX_H4_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_1409_wyckoff-sign-of-strength-phase-d-h4/SPEC.md"
+}

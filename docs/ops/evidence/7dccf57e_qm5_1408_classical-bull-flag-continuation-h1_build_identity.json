@@ -1,0 +1,27 @@
+{
+  "task_id": "7dccf57e-a995-465f-a9b7-98e7b945a651",
+  "ea_id": "QM5_1408",
+  "ea_label": "QM5_1408_classical-bull-flag-continuation-h1",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/QM5_1408_classical-bull-flag-continuation-h1.mq5",
+  "mq5_sha256": "38b9ddf1d6345c5a87fc2e3c359f94297b2de0d01230621d7e36cd967d336c74",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/QM5_1408_classical-bull-flag-continuation-h1.ex5",
+  "ex5_sha256": "d4a41c274c53c48ffae719c4103d8fa3c614798bfab76e381250b06b0fa292bb",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_AUDUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_EURUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_GBPUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_GDAXI.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_NDX.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_NZDUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_SP500.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_UK100.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_USDCAD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_USDCHF.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_USDJPY.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_WS30.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_XAUUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/sets/QM5_1408_classical-bull-flag-continuation-h1_XTIUSD.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/SPEC.md"
+}

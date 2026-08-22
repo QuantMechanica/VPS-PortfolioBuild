@@ -288,6 +288,8 @@ ea_id,slug,strategy_id,status,owner,created_at,retired_at,retired_reason,retired
 1404,as-raa-unemp-canary,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19,,,
 1405,as-rpv-bestvalue,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Development,2026-05-19,,,
 1407,classical-symmetric-triangle-breakout-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-05-19,,,
+1408,classical-bull-flag-continuation-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-05-19,,,
+1409,wyckoff-sign-of-strength-phase-d-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-05-19,,,
 1411,as-tactical-yield,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,retired,Research,2026-05-19,2026-08-21T18:52:27+00:00,OWNER-approved D1 disposition; action=RETIRE only,docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv
 1412,as-yield-rotation,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,retired,Research,2026-05-19,2026-08-21T18:52:27+00:00,OWNER-approved D1 disposition; action=RETIRE only,docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv
 1413,as-percentile-channels,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,retired,Research,2026-05-19,2026-08-21T18:52:27+00:00,OWNER-approved D1 disposition; action=RETIRE only,docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv

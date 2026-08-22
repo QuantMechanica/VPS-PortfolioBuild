@@ -17704,5 +17704,33 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1407,classical-symmetric-triangle-breakout-h4,10,AUDUSD.DWX,14070010,2026-08-22,Gemini,active
 1407,classical-symmetric-triangle-breakout-h4,11,USDCAD.DWX,14070011,2026-08-22,Gemini,active
 1407,classical-symmetric-triangle-breakout-h4,12,NZDUSD.DWX,14070012,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,0,EURUSD.DWX,14080000,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,1,GBPUSD.DWX,14080001,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,2,USDJPY.DWX,14080002,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,3,AUDUSD.DWX,14080003,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,4,USDCAD.DWX,14080004,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,5,USDCHF.DWX,14080005,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,6,NZDUSD.DWX,14080006,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,7,NDX.DWX,14080007,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,8,WS30.DWX,14080008,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,9,GDAXI.DWX,14080009,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,10,UK100.DWX,14080010,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,11,SP500.DWX,14080011,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,12,XAUUSD.DWX,14080012,2026-08-22,Gemini,active
+1408,classical-bull-flag-continuation-h1,13,XTIUSD.DWX,14080013,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,0,EURUSD.DWX,14090000,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,1,GBPUSD.DWX,14090001,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,2,USDJPY.DWX,14090002,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,3,AUDUSD.DWX,14090003,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,4,USDCAD.DWX,14090004,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,5,USDCHF.DWX,14090005,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,6,NZDUSD.DWX,14090006,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,7,NDX.DWX,14090007,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,8,WS30.DWX,14090008,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,9,GDAXI.DWX,14090009,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,10,UK100.DWX,14090010,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,11,SP500.DWX,14090011,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,12,XAUUSD.DWX,14090012,2026-08-22,Gemini,active
+1409,wyckoff-sign-of-strength-phase-d-h4,13,XTIUSD.DWX,14090013,2026-08-22,Gemini,active
 41110,xauxag-moutside-res-rv,0,XAUUSD.DWX,411100000,2026-08-22,Codex governed allocator,active
 41110,xauxag-moutside-res-rv,1,XAGUSD.DWX,411100001,2026-08-22,Codex governed allocator,active
