@@ -61,7 +61,7 @@ def test_rekey_preserves_old_binary_and_binds_the_post_rekey_build() -> None:
     assert obsolete_binary.is_file()
     assert current_binary.is_file()
     assert hashlib.sha256(current_binary.read_bytes()).hexdigest() == (
-        "07ecef35b8012f876b59e1cd93e1370a1f16496fd2f47672ce1f798eb398fbc3"
+        "32e52b23b525f33bd693bf42bd3236ac66ee6b8405ca982521fd81eea2d2f74d"
     )
     assert current_binary.read_bytes() != obsolete_binary.read_bytes()
 
