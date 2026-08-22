@@ -1,0 +1,26 @@
+{
+  "task_id": "c3f03e05-3064-4a1e-93ff-097150115ffe",
+  "ea_id": "QM5_9580",
+  "ea_label": "QM5_9580_bandy-regslope-pullback-mr-index",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/QM5_9580_bandy-regslope-pullback-mr-index.mq5",
+  "mq5_sha256": "5ec3aa4d8249340e85702365a53d291c120730419971dfe711df6a31e797ccbf",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/QM5_9580_bandy-regslope-pullback-mr-index.ex5",
+  "ex5_sha256": "b2d3f34e7fec21f31fa29fec2ee447beb296449c51c4e5694fa04ddef2ae4336",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_AUDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_EURUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_GBPUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_GDAXI.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_NDX.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_NZDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_SP500.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_UK100.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_USDCAD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_USDCHF.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_USDJPY.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_WS30.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/sets\\QM5_9580_bandy-regslope-pullback-mr-index_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_9580_bandy-regslope-pullback-mr-index/SPEC.md"
+}
