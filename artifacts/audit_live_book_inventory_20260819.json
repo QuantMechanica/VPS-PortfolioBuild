@@ -1,14 +1,57 @@
 {
-  "emitting": 17,
+  "emitting": 19,
   "emitting_within_hours": 36,
   "ex5_in_experts_dir": 1,
   "ex5_qm5_named": 0,
-  "generated_at_utc": "2026-08-19T15:01:07+00:00",
+  "generated_at_utc": "2026-08-22T10:24:21+00:00",
   "log_dir": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM",
+  "manifest_reconciliation": {
+    "detail": "roster_vs_log_drift",
+    "expected_magics": [
+      15560004,
+      15670007,
+      104030002,
+      104400003,
+      105130003,
+      107060001,
+      109110003,
+      109190001,
+      109390001,
+      111320000,
+      111650000,
+      111650002,
+      114210000,
+      114210003,
+      117080000,
+      125670002,
+      125670003,
+      127780000,
+      129690000,
+      129890003,
+      131170000,
+      131280000,
+      132130000,
+      133010010
+    ],
+    "magics_in_logs_not_in_manifest": [
+      0,
+      104760004,
+      106920005,
+      107150004,
+      109400003
+    ],
+    "magics_in_manifest_not_in_logs": [],
+    "manifest_path": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+    "manifest_sha256": "8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6",
+    "pointer_exists": true,
+    "pointer_path": "D:\\QM\\reports\\state\\live_deployment_pointer.json",
+    "pointer_signed": false,
+    "status": "DRIFT"
+  },
   "per_ea_logs": 26,
   "rows": [
     {
-      "age_hours": 118.1,
+      "age_hours": 185.4,
       "ea_id": 0,
       "emitting": false,
       "entries_accepted": 0,
@@ -50,16 +93,16 @@
       "unparsable_lines": 5
     },
     {
-      "age_hours": 17.0,
+      "age_hours": 16.4,
       "ea_id": 10403,
       "emitting": true,
       "entries_accepted": 36,
-      "equity_snapshots": 26,
-      "events_total": 398,
+      "equity_snapshots": 28,
+      "events_total": 402,
       "file": "QM5_10403_ea-10403.log",
       "first_event_utc": "2026-07-13T06:34:05.562Z",
       "init_events": 30,
-      "last_event_utc": "2026-08-18T22:01:00.843Z",
+      "last_event_utc": "2026-08-21T17:59:57.296Z",
       "last_trade_utc": "2026-08-18T22:01:00.359Z",
       "magics": [
         104030002
@@ -75,16 +118,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 1.0,
+      "age_hours": 16.4,
       "ea_id": 10440,
       "emitting": true,
       "entries_accepted": 5,
-      "equity_snapshots": 36,
-      "events_total": 407,
+      "equity_snapshots": 38,
+      "events_total": 410,
       "file": "QM5_10440_ea-10440.log",
       "first_event_utc": "2026-06-28T09:12:45.265Z",
       "init_events": 41,
-      "last_event_utc": "2026-08-19T13:59:59.125Z",
+      "last_event_utc": "2026-08-21T17:59:57.781Z",
       "last_trade_utc": "2026-08-19T13:59:59.125Z",
       "magics": [
         104400003
@@ -100,7 +143,7 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 745.5,
+      "age_hours": 812.9,
       "ea_id": 10476,
       "emitting": false,
       "entries_accepted": 0,
@@ -125,16 +168,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 17.0,
+      "age_hours": 16.4,
       "ea_id": 10513,
       "emitting": true,
       "entries_accepted": 2,
-      "equity_snapshots": 36,
-      "events_total": 409,
+      "equity_snapshots": 38,
+      "events_total": 412,
       "file": "QM5_10513_ea-10513.log",
       "first_event_utc": "2026-06-28T09:12:45.265Z",
       "init_events": 41,
-      "last_event_utc": "2026-08-18T22:01:43.578Z",
+      "last_event_utc": "2026-08-21T17:59:57.140Z",
       "last_trade_utc": "2026-08-02T22:01:00.687Z",
       "magics": [
         105130003
@@ -150,7 +193,7 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 745.5,
+      "age_hours": 812.9,
       "ea_id": 10692,
       "emitting": false,
       "entries_accepted": 2,
@@ -175,16 +218,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 8.6,
+      "age_hours": 16.4,
       "ea_id": 10706,
       "emitting": true,
       "entries_accepted": 5,
-      "equity_snapshots": 27,
-      "events_total": 72528,
+      "equity_snapshots": 29,
+      "events_total": 72531,
       "file": "QM5_10706_ea-10706.log",
       "first_event_utc": "2026-07-13T06:28:50.046Z",
       "init_events": 30,
-      "last_event_utc": "2026-08-19T06:23:19.640Z",
+      "last_event_utc": "2026-08-21T17:59:59.937Z",
       "last_trade_utc": "2026-08-18T09:00:00.468Z",
       "magics": [
         107060001
@@ -200,7 +243,7 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 745.5,
+      "age_hours": 812.9,
       "ea_id": 10715,
       "emitting": false,
       "entries_accepted": 0,
@@ -225,17 +268,17 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 1.0,
+      "age_hours": 16.4,
       "ea_id": 10911,
       "emitting": true,
-      "entries_accepted": 10,
-      "equity_snapshots": 36,
-      "events_total": 439,
+      "entries_accepted": 11,
+      "equity_snapshots": 38,
+      "events_total": 446,
       "file": "QM5_10911_ea-10911.log",
       "first_event_utc": "2026-06-28T09:13:31.546Z",
       "init_events": 41,
-      "last_event_utc": "2026-08-19T13:59:59.015Z",
-      "last_trade_utc": "2026-08-19T13:59:59.015Z",
+      "last_event_utc": "2026-08-21T17:59:59.937Z",
+      "last_trade_utc": "2026-08-20T07:59:58.531Z",
       "magics": [
         109110003
       ],
@@ -250,16 +293,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 17.0,
+      "age_hours": 16.4,
       "ea_id": 10919,
       "emitting": true,
       "entries_accepted": 0,
-      "equity_snapshots": 25,
-      "events_total": 283,
+      "equity_snapshots": 27,
+      "events_total": 286,
       "file": "QM5_10919_ea-10919.log",
       "first_event_utc": "2026-07-05T14:17:16.578Z",
       "init_events": 28,
-      "last_event_utc": "2026-08-18T22:00:10.531Z",
+      "last_event_utc": "2026-08-21T17:59:57.875Z",
       "last_trade_utc": null,
       "magics": [
         109190001
@@ -275,17 +318,17 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 18.0,
+      "age_hours": 16.4,
       "ea_id": 10939,
       "emitting": true,
-      "entries_accepted": 0,
-      "equity_snapshots": 37,
-      "events_total": 417,
+      "entries_accepted": 1,
+      "equity_snapshots": 39,
+      "events_total": 423,
       "file": "QM5_10939_ea-10939.log",
       "first_event_utc": "2026-06-28T09:12:45.281Z",
       "init_events": 41,
-      "last_event_utc": "2026-08-18T21:04:01.843Z",
-      "last_trade_utc": null,
+      "last_event_utc": "2026-08-21T17:59:59.093Z",
+      "last_trade_utc": "2026-08-21T08:59:57.000Z",
       "magics": [
         109390001
       ],
@@ -296,11 +339,11 @@
       "timeframes": [
         "H4"
       ],
-      "traded_ever": false,
+      "traded_ever": true,
       "unparsable_lines": 0
     },
     {
-      "age_hours": 1080.8,
+      "age_hours": 1148.2,
       "ea_id": 10940,
       "emitting": false,
       "entries_accepted": 1,
@@ -325,16 +368,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 17.0,
+      "age_hours": 16.4,
       "ea_id": 11132,
       "emitting": true,
       "entries_accepted": 4,
-      "equity_snapshots": 36,
-      "events_total": 431,
+      "equity_snapshots": 38,
+      "events_total": 435,
       "file": "QM5_11132_ea-11132.log",
       "first_event_utc": "2026-06-28T09:12:45.281Z",
       "init_events": 41,
-      "last_event_utc": "2026-08-18T22:00:00.421Z",
+      "last_event_utc": "2026-08-21T17:59:57.359Z",
       "last_trade_utc": "2026-08-18T22:00:00.421Z",
       "magics": [
         111320000
@@ -350,16 +393,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 18.0,
+      "age_hours": 16.4,
       "ea_id": 11165,
       "emitting": true,
       "entries_accepted": 6,
-      "equity_snapshots": 64,
-      "events_total": 738,
+      "equity_snapshots": 68,
+      "events_total": 744,
       "file": "QM5_11165_ea-11165.log",
       "first_event_utc": "2026-06-28T09:12:45.296Z",
       "init_events": 61,
-      "last_event_utc": "2026-08-18T21:04:01.890Z",
+      "last_event_utc": "2026-08-21T17:59:58.968Z",
       "last_trade_utc": "2026-08-06T15:59:58.390Z",
       "magics": [
         111650000,
@@ -377,17 +420,17 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 18.0,
+      "age_hours": 16.4,
       "ea_id": 11421,
       "emitting": true,
-      "entries_accepted": 32,
-      "equity_snapshots": 71,
-      "events_total": 908,
+      "entries_accepted": 33,
+      "equity_snapshots": 74,
+      "events_total": 915,
       "file": "QM5_11421_ea-11421.log",
       "first_event_utc": "2026-06-28T09:12:45.281Z",
       "init_events": 69,
-      "last_event_utc": "2026-08-18T21:04:01.968Z",
-      "last_trade_utc": "2026-08-17T21:04:01.796Z",
+      "last_event_utc": "2026-08-21T17:59:59.031Z",
+      "last_trade_utc": "2026-08-20T21:04:01.156Z",
       "magics": [
         114210000,
         114210003
@@ -404,17 +447,17 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 18.0,
+      "age_hours": 16.4,
       "ea_id": 11708,
       "emitting": true,
-      "entries_accepted": 6,
-      "equity_snapshots": 27,
-      "events_total": 372,
+      "entries_accepted": 7,
+      "equity_snapshots": 29,
+      "events_total": 377,
       "file": "QM5_11708_ea-11708.log",
       "first_event_utc": "2026-07-13T06:28:14.203Z",
       "init_events": 33,
-      "last_event_utc": "2026-08-18T21:04:01.890Z",
-      "last_trade_utc": "2026-08-18T21:04:01.093Z",
+      "last_event_utc": "2026-08-21T17:59:57.078Z",
+      "last_trade_utc": "2026-08-20T21:04:01.156Z",
       "magics": [
         117080000
       ],
@@ -430,16 +473,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 17.0,
+      "age_hours": 16.4,
       "ea_id": 12567,
       "emitting": true,
       "entries_accepted": 0,
-      "equity_snapshots": 69,
-      "events_total": 833,
+      "equity_snapshots": 73,
+      "events_total": 839,
       "file": "QM5_12567_ea-12567.log",
       "first_event_utc": "2026-06-28T09:12:45.281Z",
       "init_events": 74,
-      "last_event_utc": "2026-08-18T22:01:43.578Z",
+      "last_event_utc": "2026-08-21T18:00:01.031Z",
       "last_trade_utc": null,
       "magics": [
         125670002,
@@ -458,7 +501,7 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 118.1,
+      "age_hours": 185.4,
       "ea_id": 12778,
       "emitting": false,
       "entries_accepted": 0,
@@ -483,16 +526,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 117.0,
+      "age_hours": 16.4,
       "ea_id": 12969,
-      "emitting": false,
+      "emitting": true,
       "entries_accepted": 0,
       "equity_snapshots": 0,
-      "events_total": 271,
+      "events_total": 272,
       "file": "QM5_12969_ea-12969.log",
       "first_event_utc": "2026-07-13T06:33:06.890Z",
       "init_events": 30,
-      "last_event_utc": "2026-08-14T17:59:58.078Z",
+      "last_event_utc": "2026-08-21T17:59:57.828Z",
       "last_trade_utc": null,
       "magics": [
         129690000
@@ -508,16 +551,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 17.0,
+      "age_hours": 16.4,
       "ea_id": 12989,
       "emitting": true,
       "entries_accepted": 0,
-      "equity_snapshots": 31,
-      "events_total": 361,
+      "equity_snapshots": 33,
+      "events_total": 364,
       "file": "QM5_12989_ea-12989.log",
       "first_event_utc": "2026-07-05T14:18:25.812Z",
       "init_events": 35,
-      "last_event_utc": "2026-08-18T22:01:00.843Z",
+      "last_event_utc": "2026-08-21T17:59:57.171Z",
       "last_trade_utc": null,
       "magics": [
         129890003
@@ -533,7 +576,7 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 118.1,
+      "age_hours": 185.4,
       "ea_id": 13117,
       "emitting": false,
       "entries_accepted": 0,
@@ -558,16 +601,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 17.0,
+      "age_hours": 16.4,
       "ea_id": 13128,
       "emitting": true,
       "entries_accepted": 0,
-      "equity_snapshots": 26,
-      "events_total": 302,
+      "equity_snapshots": 28,
+      "events_total": 305,
       "file": "QM5_13128_ea-13128.log",
       "first_event_utc": "2026-07-13T06:29:55.421Z",
       "init_events": 29,
-      "last_event_utc": "2026-08-18T22:00:00.171Z",
+      "last_event_utc": "2026-08-21T17:59:56.625Z",
       "last_trade_utc": null,
       "magics": [
         131280000
@@ -583,17 +626,17 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 18.0,
+      "age_hours": 16.4,
       "ea_id": 13213,
       "emitting": true,
-      "entries_accepted": 34,
-      "equity_snapshots": 23,
-      "events_total": 417,
+      "entries_accepted": 38,
+      "equity_snapshots": 25,
+      "events_total": 435,
       "file": "QM5_13213_ea-13213.log",
       "first_event_utc": "2026-07-19T13:30:50.593Z",
       "init_events": 27,
-      "last_event_utc": "2026-08-18T21:04:01.828Z",
-      "last_trade_utc": "2026-08-18T02:59:59.593Z",
+      "last_event_utc": "2026-08-21T17:59:57.828Z",
+      "last_trade_utc": "2026-08-21T02:59:58.968Z",
       "magics": [
         132130000
       ],
@@ -608,16 +651,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 5.5,
+      "age_hours": 16.4,
       "ea_id": 13301,
       "emitting": true,
       "entries_accepted": 18,
-      "equity_snapshots": 22,
-      "events_total": 339,
+      "equity_snapshots": 24,
+      "events_total": 343,
       "file": "QM5_13301_ea-13301.log",
       "first_event_utc": "2026-07-19T13:30:19.046Z",
       "init_events": 27,
-      "last_event_utc": "2026-08-19T09:31:01.890Z",
+      "last_event_utc": "2026-08-21T17:59:59.937Z",
       "last_trade_utc": "2026-08-19T08:29:59.781Z",
       "magics": [
         133010010
@@ -633,16 +676,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 17.0,
+      "age_hours": 16.4,
       "ea_id": 1556,
       "emitting": true,
       "entries_accepted": 5,
-      "equity_snapshots": 26,
-      "events_total": 395,
+      "equity_snapshots": 28,
+      "events_total": 398,
       "file": "QM5_1556_ea-1556.log",
       "first_event_utc": "2026-07-13T06:36:06.843Z",
       "init_events": 58,
-      "last_event_utc": "2026-08-18T22:01:00.828Z",
+      "last_event_utc": "2026-08-21T17:59:57.140Z",
       "last_trade_utc": "2026-08-13T04:47:02.109Z",
       "magics": [
         15560004
@@ -658,16 +701,16 @@
       "unparsable_lines": 0
     },
     {
-      "age_hours": 117.0,
+      "age_hours": 16.4,
       "ea_id": 1567,
-      "emitting": false,
+      "emitting": true,
       "entries_accepted": 0,
       "equity_snapshots": 0,
-      "events_total": 261,
+      "events_total": 262,
       "file": "QM5_1567_ea-1567.log",
       "first_event_utc": "2026-07-19T13:31:13.921Z",
       "init_events": 27,
-      "last_event_utc": "2026-08-14T17:59:58.609Z",
+      "last_event_utc": "2026-08-21T17:59:57.093Z",
       "last_trade_utc": null,
       "magics": [
         15670007
@@ -684,6 +727,6 @@
     }
   ],
   "schema": "qm.live-book-inventory/v1",
-  "stale": 9,
+  "stale": 7,
   "unconfigured_instances": 1
 }
