@@ -90,9 +90,13 @@ class DwxHistoryRangeFilterTests(unittest.TestCase):
                     INSERT INTO tasks
                       (id, kind, status, source_id, card_id, payload_json, created_at, updated_at)
                     VALUES
+                      ('build-task', 'build_ea', 'done', NULL, 'QM5_5999', ?, ?, ?),
                       ('review-task', 'ea_review', 'done', NULL, 'QM5_5999', ?, ?, ?)
                     """,
-                    (json.dumps(review_payload), now, now),
+                    (
+                        json.dumps({"codex_result": {"smoke_result": "passed"}}), now, now,
+                        json.dumps(review_payload), now, now,
+                    ),
                 )
                 conn.commit()
 

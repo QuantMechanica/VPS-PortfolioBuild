@@ -11,6 +11,48 @@ from tools.strategy_farm import farmctl
 
 
 class ZeroTradePreventionTests(unittest.TestCase):
+    def test_q01_smoke_saturation_waiver_requires_durable_capacity_evidence(self) -> None:
+        missing = farmctl._q01_smoke_admission(None)
+        self.assertFalse(missing["admitted"])
+        self.assertEqual(missing["reason"], "q01_smoke_missing_without_saturation_waiver")
+
+        unsupported = farmctl._q01_smoke_admission({
+            "build_task_id": "build-1",
+            "smoke_result": "deferred_p2_smoke",
+            "smoke_skipped_reason": "headless scheduled execution",
+        })
+        self.assertFalse(unsupported["admitted"])
+        self.assertEqual(unsupported["reason"], "q01_smoke_waiver_missing_capacity_evidence")
+
+        vague_process_text = farmctl._q01_smoke_admission({
+            "build_task_id": "build-vague",
+            "smoke_result": "deferred_p2_smoke",
+            "blocked_reason": "metatester64 state was not checked",
+        })
+        self.assertFalse(vague_process_text["admitted"])
+
+        saturated = farmctl._q01_smoke_admission({
+            "build_task_id": "build-2",
+            "smoke_result": "deferred_p2_smoke",
+            "blocked_reason": "resolve_backtest_target.py status=no_capacity; 10/10 slots occupied",
+        })
+        self.assertTrue(saturated["admitted"])
+        self.assertTrue(saturated["waiver"])
+        self.assertEqual(saturated["reason"], "q01_smoke_saturation_waiver")
+
+        measured_processes = farmctl._q01_smoke_admission({
+            "build_task_id": "build-quantified",
+            "smoke_result": "deferred_p2_smoke",
+            "blocked_reason": "10 metatester64 processes running",
+        })
+        self.assertTrue(measured_processes["admitted"])
+
+        passed = farmctl._q01_smoke_admission({
+            "build_task_id": "build-3", "smoke_result": "passed",
+        })
+        self.assertTrue(passed["admitted"])
+        self.assertFalse(passed["waiver"])
+
     def test_q03_fanout_uses_logical_basket_setfile(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"

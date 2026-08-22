@@ -1,9 +1,8 @@
-"""Tests for the ULTRACODE WS-C recency axis (SHADOW) + Q10 verdict invariance.
+"""Tests for Q10 recency metrics and dated-cohort enforcement.
 
 Three guarantees are proven here:
-  1. The Q10 verdict logic is BYTE-IDENTICAL and cannot be influenced by the
-     recency shadow (fixture battery on `_decide_verdict`; signature has no
-     recency parameter; RECENCY_AXIS_ENFORCED is False). The DD ceiling is the
+  1. The Q10 full-history base verdict remains independently locked (fixture
+     battery on `_decide_verdict`; signature has no recency parameter). The DD ceiling is the
      ratified 25% (decisions/2026-07-15_dd_ceiling_25pct_portfolio_rationale.md):
      16% PASSES, 25% is the pass/fail boundary, 25.01%/26% FAIL. (Round-1 tests
      asserted an obsolete 15% ceiling; corrected here to current policy.)
@@ -25,7 +24,8 @@ import pytest
 
 from framework.scripts import q10_recency as R
 from framework.scripts.q10_confirmation import (
-    _decide_verdict, _resolve_ex5_source, RECENCY_AXIS_ENFORCED, DD_PCT_MAX, PF_FLOOR,
+    _apply_recency_gate, _decide_verdict, _resolve_ex5_source,
+    Q10_RECENCY_ENFORCEMENT_CREATED_AT, RECENCY_AXIS_ENFORCED, DD_PCT_MAX, PF_FLOOR,
 )
 
 
@@ -81,9 +81,70 @@ def test_decide_verdict_has_no_recency_parameter():
         assert bad not in params
 
 
-def test_recency_axis_enforced_is_false():
-    assert RECENCY_AXIS_ENFORCED is False
-    assert R.RECENCY_AXIS_ENFORCED is False
+def test_recency_axis_policy_switch_is_enabled():
+    assert RECENCY_AXIS_ENFORCED is True
+    assert R.RECENCY_AXIS_ENFORCED is True
+    assert Q10_RECENCY_ENFORCEMENT_CREATED_AT == "2026-09-01T00:00:00+00:00"
+
+
+def _recency_record(*, trailing_pf=1.2, trailing_trades=20,
+                    half_status="PASS", half_decline=10.0,
+                    endpoint=202608):
+    return {
+        "status": "OK",
+        "endpoint_yyyymm": endpoint,
+        "trailing_24m": {"pf": trailing_pf, "trades": trailing_trades},
+        "q08_half_vs_half": {"status": half_status, "decline_pct": half_decline},
+    }
+
+
+def test_recency_gate_is_shadow_only_before_cutoff_even_for_a_breach():
+    verdict, reason, gate = _apply_recency_gate(
+        base_verdict="PASS", base_reason="base-pass",
+        recency=_recency_record(trailing_pf=0.8),
+        work_item_created_at="2026-08-31T23:59:59+00:00",
+    )
+    assert (verdict, reason) == ("PASS", "base-pass")
+    assert gate["applied"] is False and gate["status"] == "SHADOW_PRE_COHORT"
+
+
+def test_recency_gate_enforces_trailing_pf_at_cutoff_boundary():
+    verdict, reason, gate = _apply_recency_gate(
+        base_verdict="PASS", base_reason="base-pass",
+        recency=_recency_record(trailing_pf=0.9999),
+        work_item_created_at=Q10_RECENCY_ENFORCEMENT_CREATED_AT,
+    )
+    assert verdict == "FAIL" and reason.startswith("recency_trailing24m_pf_below_floor")
+    assert gate["applied"] is True and gate["status"] == "FAIL"
+
+
+def test_recency_gate_enforces_half_vs_half_40pct_boundary():
+    verdict, _, gate = _apply_recency_gate(
+        base_verdict="PASS", base_reason="base-pass",
+        recency=_recency_record(half_status="FAIL", half_decline=40.0),
+        work_item_created_at="2026-09-02T00:00:00Z",
+    )
+    assert verdict == "FAIL" and gate["status"] == "FAIL"
+
+
+def test_recency_gate_keeps_unknown_verdict_but_blocks_deployment():
+    verdict, reason, gate = _apply_recency_gate(
+        base_verdict="PASS", base_reason="base-pass",
+        recency=_recency_record(trailing_trades=9),
+        work_item_created_at="2026-09-02T00:00:00+00:00",
+    )
+    assert (verdict, reason) == ("PASS", "base-pass")
+    assert gate["status"] == "UNKNOWN" and gate["deployment_blocker"] is True
+
+
+def test_recency_gate_marks_windows_older_than_nine_months_stale():
+    verdict, reason, gate = _apply_recency_gate(
+        base_verdict="PASS", base_reason="base-pass",
+        recency=_recency_record(endpoint=202511),
+        work_item_created_at="2026-09-02T00:00:00+00:00",
+    )
+    assert (verdict, reason) == ("PASS", "base-pass")
+    assert gate["status"] == "STALE_WINDOW" and gate["deployment_blocker"] is True
 
 
 # ---------------------------------------------------------------------------
@@ -229,7 +290,7 @@ def test_q08_half_vs_half_invalid_below_floor():
 def test_shadow_none_and_missing_return_unknown():
     r1 = R.compute_recency_shadow(None)
     assert r1["status"] == "UNKNOWN" and r1["reason"] == "no_report_htm"
-    assert r1["recency_axis_enforced"] is False
+    assert r1["recency_axis_enforced"] is True
     assert "identity" in r1  # identity block present even on the UNKNOWN degrade
     r2 = R.compute_recency_shadow(r"D:\does\not\exist\report.htm")
     assert r2["status"] == "UNKNOWN" and r2["reason"] == "report_htm_missing"

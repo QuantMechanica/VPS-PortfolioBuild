@@ -606,6 +606,11 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
    Q02's job over full history, not the build's on a single year.
    Must yield ≥1 trade for `smoke_result: passed`. If it yields zero trades,
    report `smoke_result: "zero_trades"` with `blocked_reason: "q01_trade_generation_zero_trades"`.
+   If terminal dispatch refuses before launch because the tester fleet is
+   saturated (`status=no_capacity` or an equivalent measured capacity ceiling),
+   report `smoke_result: "deferred_p2_smoke"` and put the exact resolver/process
+   evidence in `blocked_reason`. This is the only smoke waiver. Do not use it for
+   generic headless execution, a framework error, or a missing report.
    NOTE for regime-gated / episodic EAs (crisis-alpha, risk-off, seasonal): a
    calm smoke year (2024) can legitimately produce zero trades BY DESIGN. If the
    card frontmatter carries `smoke_year:` (or the card body names a required
@@ -633,7 +638,7 @@ No prose around it. Schema:
   "spec_md_path": "<absolute path to SPEC.md or null if not written>",
   "build_check_passed": true,
   "compile_succeeded": true,
-  "smoke_result": "passed" | "zero_trades" | "compile_failed" | "build_check_failed" | "framework_error",
+  "smoke_result": "passed" | "zero_trades" | "compile_failed" | "build_check_failed" | "framework_error" | "deferred_p2_smoke",
   "smoke_report_path": "<absolute path or null>",
   "blocked_reason": null,
   "open_questions": []
@@ -653,7 +658,7 @@ farmctl) routes work based on per-stage truth.
 | `ex5_path`             | absolute path of `.ex5` if `compile_one` emitted it, else `null`                  |
 | `build_check_passed`   | `true` iff `build_check.result=PASS`, regardless of compile/smoke outcome         |
 | `compile_succeeded`    | `true` iff `compile_one.result=PASS` AND `ex5_path` exists, regardless of smoke   |
-| `smoke_result`         | one of `passed` / `zero_trades` / `compile_failed` / `build_check_failed` / `framework_error` |
+| `smoke_result`         | one of `passed` / `zero_trades` / `compile_failed` / `build_check_failed` / `framework_error` / `deferred_p2_smoke` |
 | `smoke_report_path`    | path to `summary.json` from `run_smoke` if smoke ran at all, else `null`          |
 | `setfiles_generated`   | absolute paths actually written by `gen_setfile.ps1` (could be partial)           |
 | `symbols_registered`   | symbols you actually appended to `magic_numbers.csv` (could be partial)           |

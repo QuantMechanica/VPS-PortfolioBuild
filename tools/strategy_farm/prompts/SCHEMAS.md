@@ -46,16 +46,16 @@ any`, or the caller's own pre-dispatch process scan judged the fleet
 saturated) so no smoke tester run was attempted this wake. `blocked_reason`
 must state the capacity evidence (process counts / resolver status).
 codex_review / claude_review treat this as an **info-level finding, not a
-REJECT** — approve the build and let a later wake with free capacity run
-smoke, or route straight to Q02 dispatch per the card's own guidance if the
-card explicitly authorizes deferred dispatch (see card § Implementation And
-Safety Boundary).
+REJECT** only when the same record contains that explicit capacity evidence.
+A missing smoke row, blank outcome, or generic `headless` / `framework_error`
+deferral is not covered by the waiver and fails closed before Q02 fanout.
 
 Pass criteria for §E mechanical review:
 - `build_check_passed == true`
 - `compile_succeeded == true`
 - `blocked_reason` absent OR empty string, OR `smoke_result ==
-  "deferred_p2_smoke"` (info-level, does not fail §E)
+  "deferred_p2_smoke"` **and** the reason contains durable tester-saturation
+  evidence (info-level, does not fail §E)
 - Both `mq5_path` and `ex5_path` reference files that exist on disk
 
 There is **no top-level `status` field** in this schema. Codex review §E

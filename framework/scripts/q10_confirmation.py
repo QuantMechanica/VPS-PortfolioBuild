@@ -13,11 +13,16 @@ baseline dir (D:/QM/reports/state/q10_baselines_staging), never the live MT5
 Common dir. The live EA reads its baseline only from Common at OnInit, so a
 Q10 PASS does not move any live kill-switch distribution; promoting a staged
 baseline into Common is OWNER-gated (gen_q10_baseline.py --deploy-live).
+
+For work items created at or after 2026-09-01, the OWNER-ratified recency
+contract is applied after this unchanged base verdict. Earlier rows remain
+shadow-only; immutable work-item creation time selects the cohort.
 """
 
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import re
 import subprocess
@@ -60,17 +65,16 @@ PF_FLOOR = 1.0
 DD_PCT_MAX = 25.0
 DEFAULT_NEWS_TEMPORAL = "QM_NEWS_TEMPORAL_PRE30_POST30"   # Mode 3
 DEFAULT_NEWS_COMPLIANCE = "QM_NEWS_COMPLIANCE_DXZ"
+Q10_RECENCY_ENFORCEMENT_CREATED_AT = "2026-09-01T00:00:00+00:00"
+Q10_RECENCY_MAX_WINDOW_AGE_MONTHS = 9
 
 
 def _decide_verdict(*, timed_out: bool, invalid_reason, pf, dd_money,
                     dd_pct, timeout_sec: int) -> tuple[str, str]:
-    """Q10 verdict decision — extracted VERBATIM from run_confirmation so the
-    ULTRACODE WS-C recency shadow cannot influence it and so a fixture battery
-    can prove the verdict logic is byte-identical. PF_FLOOR/DD_PCT_MAX unchanged
-    (still the module constants 1.0 / 25.0 — the ratified 2026-07-15 ceiling).
+    """Return the unchanged full-history base verdict.
 
-    RECENCY_AXIS_ENFORCED is intentionally NOT an input here: the recency axis is
-    shadow-only. Changing that is an OWNER-ratified DL decision, not a code edit.
+    Recency is applied separately and only for the dated cohort, keeping the
+    long-standing PF/DD thresholds independently testable and unchanged.
     """
     if timed_out:
         return "INVALID", f"timeout_expired:timeout_sec={timeout_sec}"
@@ -83,6 +87,123 @@ def _decide_verdict(*, timed_out: bool, invalid_reason, pf, dd_money,
     if dd_pct > DD_PCT_MAX:
         return "FAIL", f"dd_above_ceiling:dd_pct={dd_pct:.2f}:max={DD_PCT_MAX}"
     return "PASS", f"pf={pf:.3f}:dd_pct={dd_pct:.2f}"
+
+
+def _parse_work_item_created_at(value: str | None) -> dt.datetime | None:
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    try:
+        parsed = dt.datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=dt.UTC)
+    return parsed.astimezone(dt.UTC)
+
+
+def _recency_window_age_months(endpoint_yyyymm: object,
+                               as_of: dt.datetime) -> int | None:
+    try:
+        endpoint = int(str(endpoint_yyyymm))
+        year, month = divmod(endpoint, 100)
+    except (TypeError, ValueError):
+        return None
+    if year < 1900 or not 1 <= month <= 12:
+        return None
+    return (as_of.year - year) * 12 + as_of.month - month
+
+
+def _apply_recency_gate(*, base_verdict: str, base_reason: str,
+                        recency: dict, work_item_created_at: str | None
+                        ) -> tuple[str, str, dict]:
+    """Apply the 2026-09-01 cohort contract without retroactive re-grading.
+
+    For an assessable post-cutoff PASS, trailing-24m PF below 1.0 or a
+    half-vs-half decline of at least 40% is a Q10 FAIL.  Insufficient evidence
+    and stale windows keep the base verdict but carry an explicit deployment
+    blocker, matching the ratified low-frequency/staleness semantics.
+    """
+    created_at = _parse_work_item_created_at(work_item_created_at)
+    cutoff = _parse_work_item_created_at(Q10_RECENCY_ENFORCEMENT_CREATED_AT)
+    applies = bool(
+        RECENCY_AXIS_ENFORCED
+        and created_at is not None
+        and cutoff is not None
+        and created_at >= cutoff
+    )
+    gate = {
+        "schema": "q10_recency_enforcement_v1",
+        "policy_enabled": RECENCY_AXIS_ENFORCED,
+        "cohort_cutoff_created_at": Q10_RECENCY_ENFORCEMENT_CREATED_AT,
+        "work_item_created_at": work_item_created_at,
+        "applied": applies,
+        "status": "SHADOW_PRE_COHORT" if not applies else "PENDING",
+        "deployment_blocker": False,
+    }
+    if not applies:
+        if RECENCY_AXIS_ENFORCED and created_at is None:
+            gate["status"] = "SHADOW_MISSING_COHORT_TIMESTAMP"
+        return base_verdict, base_reason, gate
+    if base_verdict != "PASS":
+        gate["status"] = "BASE_VERDICT_NON_PASS"
+        return base_verdict, base_reason, gate
+    if recency.get("status") != "OK":
+        gate.update(status="UNKNOWN", deployment_blocker=True,
+                    detail=str(recency.get("reason") or "recency_metrics_unavailable"))
+        return base_verdict, base_reason, gate
+
+    endpoint = recency.get("endpoint_yyyymm")
+    age_months = _recency_window_age_months(endpoint, created_at)
+    gate["endpoint_yyyymm"] = endpoint
+    gate["window_age_months"] = age_months
+    if age_months is None:
+        gate.update(status="UNKNOWN", deployment_blocker=True,
+                    detail="recency_endpoint_missing_or_invalid")
+        return base_verdict, base_reason, gate
+    if age_months > Q10_RECENCY_MAX_WINDOW_AGE_MONTHS:
+        gate.update(status="STALE_WINDOW", deployment_blocker=True,
+                    detail=f"window_age_months={age_months}:max={Q10_RECENCY_MAX_WINDOW_AGE_MONTHS}")
+        return base_verdict, base_reason, gate
+
+    trailing = recency.get("trailing_24m") or {}
+    half = recency.get("q08_half_vs_half") or {}
+    try:
+        trailing_trades = int(trailing.get("trades") or 0)
+    except (TypeError, ValueError):
+        trailing_trades = 0
+    trailing_pf = trailing.get("pf")
+    gate["trailing24m_trades"] = trailing_trades
+    gate["trailing24m_pf"] = trailing_pf
+    gate["half_vs_half_status"] = half.get("status")
+    gate["half_vs_half_decline_pct"] = half.get("decline_pct")
+    if trailing_trades < 10:
+        gate.update(status="UNKNOWN", deployment_blocker=True,
+                    detail=f"insufficient_trailing24m_trades:got={trailing_trades}:need>=10")
+        return base_verdict, base_reason, gate
+    if trailing_pf is None:
+        gate.update(status="UNKNOWN", deployment_blocker=True,
+                    detail="trailing24m_pf_missing")
+        return base_verdict, base_reason, gate
+    if float(trailing_pf) < 1.0:
+        gate.update(status="FAIL", deployment_blocker=True,
+                    detail=f"trailing24m_pf_below_floor:pf={float(trailing_pf):.4f}:floor=1.0")
+        return "FAIL", f"recency_{gate['detail']}", gate
+
+    half_status = str(half.get("status") or "").upper()
+    half_decline = half.get("decline_pct")
+    if half_status == "FAIL" and half_decline is not None and float(half_decline) >= 40.0:
+        gate.update(status="FAIL", deployment_blocker=True,
+                    detail=f"half_vs_half_decline_breach:pct={float(half_decline):.2f}:max<40")
+        return "FAIL", f"recency_{gate['detail']}", gate
+    if half_status != "PASS":
+        gate.update(status="UNKNOWN", deployment_blocker=True,
+                    detail="half_vs_half_not_assessable")
+        return base_verdict, base_reason, gate
+
+    gate.update(status="PASS", deployment_blocker=False,
+                detail="trailing24m_pf>=1.0_and_half_vs_half_decline<40")
+    return base_verdict, base_reason, gate
 
 
 def _resolve_ex5_source(repo_root: Path, ea_expert: str | None) -> Path | None:
@@ -132,7 +253,8 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
                       setfile: Path, terminal: str, period: str = "H1",
                       report_root: Path, timeout_sec: int = 3600,
                       latest_full_year: int | None = None,
-                      full_history_from: str | None = None) -> dict:
+                      full_history_from: str | None = None,
+                      work_item_created_at: str | None = None) -> dict:
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
     history_year, history_from, history_to = full_history_window(latest_full_year, full_history_from)
@@ -215,6 +337,12 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         window_endpoint=history_to,
         manifest_ref=None,
     )
+    verdict, reason, recency_gate = _apply_recency_gate(
+        base_verdict=verdict,
+        base_reason=reason,
+        recency=recency_shadow,
+        work_item_created_at=work_item_created_at,
+    )
 
     return {
         "phase": GATE_NAME,
@@ -234,8 +362,11 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         "history_to": history_to,
         "latest_full_year": latest_full_year,
         "full_history_from_override": full_history_from,
+        "work_item_created_at": work_item_created_at,
         "generated_at_utc": utc_now_iso(),
         "recency_axis_enforced": RECENCY_AXIS_ENFORCED,
+        "recency_axis_applied": recency_gate["applied"],
+        "recency_gate": recency_gate,
         "evidence_identity": recency_shadow.get("identity"),
         RECENCY_SCHEMA_VERSION: recency_shadow,
     }
@@ -316,6 +447,8 @@ def main() -> int:
                     help="Cap full-history window when validated custom-symbol history ends before default")
     ap.add_argument("--full-history-from",
                     help="Override full-history start date as YYYY.MM.DD for custom-symbol cohorts")
+    ap.add_argument("--work-item-created-at", required=True,
+                    help="Canonical work_items.created_at; controls the dated recency cohort")
     ap.add_argument("--no-baseline-capture", action="store_true",
                     help="Skip the gen_q10_baseline.py trigger after PASS")
     args = ap.parse_args()
@@ -345,6 +478,7 @@ def main() -> int:
         report_root=args.report_root, timeout_sec=args.timeout_sec,
         latest_full_year=args.latest_full_year,
         full_history_from=args.full_history_from,
+        work_item_created_at=args.work_item_created_at,
     )
     res["news_temporal"] = args.news_temporal
     res["news_compliance"] = args.news_compliance

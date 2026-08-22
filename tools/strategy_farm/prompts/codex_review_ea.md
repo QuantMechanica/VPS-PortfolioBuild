@@ -123,16 +123,22 @@ written by `codex_build_ea`:
 
 - `build_check_passed: true` (framework gate ran clean)
 - `compile_succeeded: true` (.ex5 compile worked)
-- No top-level `blocked_reason` field (or `blocked_reason: ""` empty).
-  Presence of a non-empty `blocked_reason` (e.g. `"framework_error
-  REPORT_MISSING"`, `"smoke runtime infeasible"`) → FAIL §E.
+- No top-level `blocked_reason` field (or `blocked_reason: ""` empty), except
+  the narrow saturation waiver below. Presence of any other non-empty
+  `blocked_reason` (e.g. `"framework_error REPORT_MISSING"`) → FAIL §E.
 - `mq5_path` and `ex5_path` both reference existing files on disk.
 - `smoke_result` may be `"ok"` / `"PASS"` / a verdict string. Treat
   `"framework_error"` / `"METATESTER_HUNG"` / `"INCOMPLETE_RUNS"` as
   build-infra issues → §D will already catch them via smoke report; §E
   only fails if blocked_reason is present.
 
-PASS = both booleans true AND no blocked_reason AND mq5/ex5 files exist.
+`smoke_result: "deferred_p2_smoke"` passes §E only when `blocked_reason`
+contains durable tester-fleet saturation evidence such as
+`status=no_capacity` or measured terminal/process occupancy. Generic headless,
+framework-error, and missing-smoke explanations fail §E.
+
+PASS = both booleans true AND mq5/ex5 files exist AND either no blocked_reason
+or the exact saturation-only deferred-smoke exception applies.
 
 ### §F Forbidden in code (catch-all)
 Grep the mq5 for:

@@ -19,9 +19,21 @@ class P2UniverseFanoutTests(unittest.TestCase):
         farmctl.load_requeue_excluded_eas = lambda path=farmctl.REQUEUE_EXCLUDED_EAS_FILE: set()
         self._old_agent_id = os.environ.get("QM_AGENT_ID")
         os.environ["QM_AGENT_ID"] = "controller"
+        self._old_latest_build_smoke_result = farmctl._latest_build_smoke_result
+
+        def latest_or_fixture_pass(con, ea_id):
+            result = self._old_latest_build_smoke_result(con, ea_id)
+            return result or {
+                "build_task_id": "fixture-build",
+                "smoke_result": "passed",
+                "updated_at": farmctl.utc_now(),
+            }
+
+        farmctl._latest_build_smoke_result = latest_or_fixture_pass
 
     def tearDown(self) -> None:
         farmctl.load_requeue_excluded_eas = self._old_load_requeue_excluded_eas
+        farmctl._latest_build_smoke_result = self._old_latest_build_smoke_result
         if self._old_agent_id is None:
             os.environ.pop("QM_AGENT_ID", None)
         else:

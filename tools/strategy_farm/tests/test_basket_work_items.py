@@ -298,9 +298,13 @@ class BasketWorkItemsTests(unittest.TestCase):
                     INSERT INTO tasks
                       (id, kind, status, source_id, card_id, payload_json, created_at, updated_at)
                     VALUES
+                      ('build-task', 'build_ea', 'done', NULL, 'QM5_10717', ?, ?, ?),
                       ('review-task', 'ea_review', 'done', NULL, 'QM5_10717', ?, ?, ?)
                     """,
-                    (json.dumps({"ea_id": "QM5_10717", "verdict": {"verdict": "APPROVE_FOR_BACKTEST"}}), now, now),
+                    (
+                        json.dumps({"codex_result": {"smoke_result": "passed"}}), now, now,
+                        json.dumps({"ea_id": "QM5_10717", "verdict": {"verdict": "APPROVE_FOR_BACKTEST"}}), now, now,
+                    ),
                 )
                 conn.commit()
 

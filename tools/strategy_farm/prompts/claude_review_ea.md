@@ -102,6 +102,12 @@ somewhere.
 If `smoke_result` is `compile_failed` or `build_check_failed`: that is an automatic
 `REJECT_REWORK` with the specific compile log line as rework directive.
 
+If `smoke_result` is `deferred_p2_smoke`, treat it as informational only when
+the same build record proves tester-fleet saturation (`status=no_capacity`, a
+capacity-ceiling measurement, or tester/active-work counts). Missing or generic
+headless/framework deferrals are not waivers and must be `REJECT_REWORK` before
+Q02 fanout.
+
 If `smoke_result` is `framework_error` (tester crashed, REPORT_MISSING,
 OnInit-failure, HR8 setup-data-mismatch): per the 2026-05-16 one-pass build
 discipline, Codex did NOT iterate (correctly). The build_result blocked_reason

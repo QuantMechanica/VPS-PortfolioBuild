@@ -1,4 +1,4 @@
-"""Q10 recency-axis metrics (ULTRACODE WS-C) — SHADOW MODE.
+"""Q10 recency-axis metrics (ULTRACODE WS-C) — cohort-bound enforcement.
 
 Purpose
 -------
@@ -8,11 +8,11 @@ PASS on the lifetime average (e.g. 12567/XNGUSD — Q10 PASS full-history while 
 sealed Q08 edge-decay is 41.52%, PF 1.7642 -> 1.0318, FAIL_HARD twice).
 
 This module computes recency metrics from the Q10 native-report trade list and
-classifies CURRENT / WATCH / DECAYED / UNKNOWN. It is SHADOW ONLY: it never
-changes a Q10 verdict. `q10_confirmation.py` persists the output under a versioned
-key with ``RECENCY_AXIS_ENFORCED = False``; the one-shot ``q10_recency_audit.py``
-reuses these same pure functions so the live shadow and the audit share one code
-path.
+classifies CURRENT / WATCH / DECAYED / UNKNOWN. These pure functions never
+change a Q10 verdict themselves. `q10_confirmation.py` persists the output under
+a versioned key and applies the OWNER-ratified enforcement contract only to work
+items created on or after the dated cohort cutoff; the one-shot
+``q10_recency_audit.py`` reuses these same pure functions.
 
 Evidence identity (WS-C round 2)
 --------------------------------
@@ -74,12 +74,10 @@ from typing import Any, Sequence
 RECENCY_SCHEMA_VERSION = "recency_shadow_v1"
 RECENCY_IDENTITY_VERSION = "recency_identity_v1"
 
-# SHADOW MODE master switch. While False the recency axis is computed and
-# persisted but NEVER influences a Q10 verdict. Enforcement (flipping this to
-# True) is an OWNER-ratified DL decision (decisions/2026-07-26_q10_recency_axis
-# _enforcement.md: "the constant flip lands only with the merged, Codex-reviewed
-# WS-C patch; until then shadow-only") — not a code default.
-RECENCY_AXIS_ENFORCED = False
+# Policy switch ratified by OWNER on 2026-08-22.  The caller still applies the
+# dated cohort boundary; setting this True does not retroactively re-grade old
+# rows.  See decisions/2026-08-22_q10_recency_cohort_activation.md.
+RECENCY_AXIS_ENFORCED = True
 
 # Q08-aligned edge-decay (framework/scripts/q08_davey/sub_8_8_edge_decay.py)
 Q08_MAX_DECLINE_PCT = 40.0

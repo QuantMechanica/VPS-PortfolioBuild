@@ -1,38 +1,51 @@
-# Draft: contested gate decision/doc/code/test matrix
+# Ratified gate decision/doc/code/test matrix
 
 Date: 2026-08-21
 
 Task: `6fe2ab8c-7a49-47fc-8f15-471bb1eb4331`
 
-Status: **DRAFT — orchestrator/OWNER sign-off required; no criterion is changed by this artifact.**
+Status: **RATIFIED 2026-08-22 — OWNER-DEC-GATECONTRACT; thresholds unchanged.**
 
 The canonical Company Reference Vault on `G:/My Drive/QuantMechanica - Company Reference/` was unavailable to this headless process (`Test-Path=False`). The documentation column therefore cites the durable repository copy where one exists and says `MISSING` where the canonical page could not be inspected. It does not infer Vault contents from code.
 
 | Contested point | Ratifying decision + effective date | Documentation | Executable code | Contract test |
 |---|---|---|---|---|
-| Q01 smoke waiver | **MISSING.** No dated decision record ratifying a general Q01 smoke waiver was found. The only OWNER wording located is embedded in strategy evidence, not `decisions/`. Claimed local effective date: 2026-07-24. | `C:/QM/repo/docs/ops/source_harvest/strategies/STR-103-three-little-pigs-mtf-sma/06_smoke.md:32-38`: OWNER directive is recorded as waiving build smoke **for the saturated-factory situation**; the same wording appears at `STR-097-ha-stoch-h4-swing/06_smoke.md:81-87`. In conflict, `C:/QM/repo/docs/ops/PIPELINE_PHASE_SPEC.md:78-80` says Q01 smoke is not baseline-equivalent and zero-trade smoke must not create Q02 work. Canonical Vault page: **MISSING — G: unavailable.** | `C:/QM/repo/tools/strategy_farm/farmctl.py:18067-18075`: Q02 enqueue blocks only when a smoke row exists **and** `smoke_result == "zero_trades"` (`if smoke and ...`). A missing smoke row therefore passes this check globally; there is no scoped saturated-factory waiver predicate. | **MISSING.** No test referencing `_latest_build_smoke_result` or `q01_trade_generation_zero_trades` was found under `tools/strategy_farm/tests/` or `framework/scripts/tests/`; neither the strict path nor a scoped-waiver path is locked. |
+| Q01 smoke waiver | `decisions/2026-08-22_q01_smoke_saturation_waiver.md`: accepted; waiver is limited to a compiled/build-clean result carrying `deferred_p2_smoke` plus durable tester-saturation evidence. | `docs/ops/GATE_CONTRACTS_2026-08-22.md`; producer/reviewer wording in `tools/strategy_farm/prompts/SCHEMAS.md`, `codex_build_ea.md`, `codex_review_ea.md`, and `claude_review_ea.md`. | `tools/strategy_farm/farmctl.py::_q01_smoke_admission` fails missing/blank/generic deferrals closed, retains zero-trade blocking, and records the admission basis on Q02 payloads. | `tools/strategy_farm/tests/test_zero_trade_prevention.py` locks missing, unsupported deferred, saturation-waived, passed, and zero-trade cases. **MATCHES.** |
 | Q02 PF floor | `C:/QM/repo/decisions/2026-07-25_q02_pf_floor_120_to_110.md:69-72`: accepted OWNER amendment disables the evidence curve and makes the floor flat 1.10. Effective 2026-07-25. | Repository fallback is stale: `C:/QM/repo/docs/ops/PIPELINE_REWRITE_PROPOSAL_2026-05-23.md:43` says `PF > 1.30`. Canonical Vault page: **MISSING — G: unavailable.** | `C:/QM/repo/framework/scripts/p2_baseline.py:234` sets `Q02_PF_MIN = 1.10`; `:261-272` records the disabled curve and `hard_bottom_pf=1.10`; `:400-403` applies that floor. | `C:/QM/repo/framework/scripts/tests/test_p2_baseline.py:291-307`: proves 1.30 passes and 1.09 fails while the curve flag is false. **MATCHES decision/code.** |
 | Q07 second axis | `C:/QM/repo/decisions/2026-07-25_q07_second_axis_worst_seed_pf.md:29-31`: PASS if every seed is non-losing and either variance is below 20%, or worst-seed PF is at least 1.10 with variance below 40%. Effective 2026-07-25. | Repository fallback omits the second axis: `C:/QM/repo/docs/ops/PIPELINE_REWRITE_PROPOSAL_2026-05-23.md:48` documents only variance below 20% and no seed PF below 1.0. Canonical Vault page: **MISSING — G: unavailable.** | `C:/QM/repo/framework/scripts/q07_multiseed.py:47-59` defines 20%, 1.0, 1.10, and 40%; `:739-775` enforces losing-seed precedence and the bounded second axis. | `C:/QM/repo/framework/scripts/tests/test_q05_q07_verdicts.py:1928-1954`: positive second-axis, weak-worst-seed, extreme-dispersion, and losing-seed cases. **MATCHES decision/code.** |
-| Q08 N/A handling | **MISSING.** No OWNER-ratified decision specifically authorizing the 2026-07-27 fixed-parameter `NOT_APPLICABLE` semantics was found. `decisions/2026-07-25_q08_tooling_invalid_is_infra.md` governs tooling `INVALID`, not this later N/A exception. | `C:/QM/repo/docs/ops/evidence/2026-07-27_q08_evidence_defects_fix.md:103-118` documents non-punitive `NOT_APPLICABLE` for structurally fixed 8.5/8.7 sub-gates and explicitly says it is not a top-level verdict. This is implementation evidence, not OWNER ratification. Canonical Vault page: **MISSING — G: unavailable.** | `C:/QM/repo/framework/scripts/q08_davey/sub_8_5_neighborhood.py:75-95` requires explicit structural proof before N/A; `sub_8_7_pbo.py:72-89` maps authoritative `INVALID_NA` to N/A; `q08_davey/aggregate.py:1488-1499` carries it as a non-punitive sub-gate classification. | `C:/QM/repo/framework/scripts/tests/test_q08_davey_subgates.py:877-1020`: proves both N/A mechanisms, clean-pass non-blocking behavior, and that N/A cannot rescue a real hard failure. **MATCHES code; ratification remains missing.** |
+| Q08 N/A handling | `decisions/2026-08-22_q08_fixed_parameter_not_applicable.md`: accepted; current fixed-parameter behavior is ratified without widening structural proof. | `docs/ops/GATE_CONTRACTS_2026-08-22.md` plus retained implementation evidence `docs/ops/evidence/2026-07-27_q08_evidence_defects_fix.md`. | `sub_8_5_neighborhood.py` requires explicit structural proof; `sub_8_7_pbo.py` maps authoritative `INVALID_NA`; `aggregate.py` keeps N/A sub-gate-only and non-punitive. | `framework/scripts/tests/test_q08_davey_subgates.py` proves both N/A mechanisms, non-blocking clean behavior, and computed-failure precedence. **MATCHES.** |
 | Q09 hard portfolio gate | `C:/QM/repo/decisions/2026-07-26_q09_hard_gate_dl083_port.md:8-21`: accepted OWNER rule; stricter-of-two correlation, reject at `>=0.40`, strong admit below `0.15` with positive marginal contribution, otherwise delta-Sharpe `>=0.020`. Effective after the reviewed 2026-07-26 gate merge (`:29-34`). | Repository fallback is materially stale/renumbered: `C:/QM/repo/docs/ops/PIPELINE_REWRITE_PROPOSAL_2026-05-23.md:50` calls Q09 News Impact Mode rather than hard portfolio admission. Canonical Vault page: **MISSING — G: unavailable.** | `C:/QM/repo/tools/strategy_farm/portfolio/portfolio_admission.py:48-88` binds the decision and constants; `:107-121` computes the stricter-of-two value; `:433-462` invokes the hard classifier and fails insufficient overlap closed. | `C:/QM/repo/tools/strategy_farm/tests/test_portfolio_admission_dl083_gate.py:42-141` locks constants, both binding bases, UNKNOWN handling, and all threshold boundaries. **MATCHES decision/code.** |
-| Q10 recency enforcement | `C:/QM/repo/decisions/2026-07-26_q10_recency_axis_enforcement.md:18-27`: accepted OWNER rule says shadow first, then enforcement **from the next Q10 cohort** with trailing-24m PF/trades, 40% decay, and 9-month staleness. `:37-38` conditions the flip on a merged Codex-reviewed patch. Effective date/cohort identifier: **MISSING.** | Repository fallback lacks the recency axis: `C:/QM/repo/docs/ops/PIPELINE_REWRITE_PROPOSAL_2026-05-23.md:51` describes only the full-history PF/DD closing verdict. Canonical Vault page: **MISSING — G: unavailable.** | `C:/QM/repo/framework/scripts/q10_recency.py:77-85` explicitly remains shadow-only with `RECENCY_AXIS_ENFORCED = False`; classification is computed but cannot influence the Q10 verdict. **CONFLICTS with an already-started “next cohort” interpretation; activation evidence is missing.** | `C:/QM/repo/framework/scripts/tests/test_q10_recency.py:1-14,77-86` deliberately proves verdict invariance, absence of any recency parameter, and `RECENCY_AXIS_ENFORCED is False`. **MATCHES current code but not enforced-policy wording.** |
+| Q10 recency enforcement | `decisions/2026-08-22_q10_recency_cohort_activation.md`: accepted; exact cohort is every Q10 row with `created_at >= 2026-09-01T00:00:00Z`; older rows remain shadow-only. | `docs/ops/GATE_CONTRACTS_2026-08-22.md` mirrors the cutoff, two enforcing thresholds, UNKNOWN behavior, and stale-window blocker. | `q10_recency.py` enables the policy switch; `q10_confirmation.py::_apply_recency_gate` applies it by immutable row timestamp; `farmctl.py::_phase_runner_cmd_for_work_item` passes that timestamp and fails closed if absent. | `framework/scripts/tests/test_q10_recency.py` locks pre-cutoff shadow, cutoff boundary, PF/decline failure, UNKNOWN, and staleness; `test_phase_runner_process_lineage.py` locks timestamp transport. **MATCHES.** |
 
 ## Sign-off findings
 
 1. **Decision/code/test aligned:** Q02, Q07, and Q09. Their repository documentation fallbacks are stale; the canonical Vault pages could not be checked in this session.
-2. **Ratification missing:** Q01 waiver and Q08 N/A. Q01 also has a scope mismatch: strategy evidence describes a saturated-factory exception, while the executable check admits missing-smoke cases without that scope.
-3. **Known policy/code conflict:** Q10 has an accepted enforcement decision but remains intentionally shadow-only in both code and tests. The record does not identify the concrete “next cohort” or a reviewed activation commit, so this draft does not flip the switch.
-4. **Required closeout:** OWNER/orchestrator must identify the authoritative current Vault pages, ratify or reject Q01/Q08 semantics, and resolve Q10’s activation cohort/effective date. Documentation and code changes should remain separate reviewed changes; old evidence retains its historical rule version.
+2. **Ratification closed:** Q01 is saturation-only and Q08 fixed-parameter N/A is explicitly ratified.
+3. **Policy/code conflict closed:** Q10 has a deterministic 2026-09-01 cohort switch and no retroactive regrading.
+4. **Vault mirror still unavailable:** the repository decisions and gate-contract mirror are durable; canonical Vault synchronization remains an OWNER/documentation operation, not a reason to weaken executable gates.
 
 ## Focused verification
 
 The current executable contracts were checked without writes to factory or terminal state:
 
 ```text
-python -m pytest -q <Q02 flat-floor test> <four Q07 second-axis tests>
-  <four Q08 N/A tests> tools/strategy_farm/tests/test_portfolio_admission_dl083_gate.py
-  <Q10 shadow-switch test>
-30 passed in 1.15s
+python -m pytest -q tools/strategy_farm/tests/test_zero_trade_prevention.py
+  tools/strategy_farm/tests/test_p2_full_dwx_fanout.py
+  tools/strategy_farm/tests/test_basket_work_items.py
+  tools/strategy_farm/tests/test_dwx_history_range_filter.py
+  framework/scripts/tests/test_q08_davey_subgates.py
+  framework/scripts/tests/test_q10_recency.py
+  framework/scripts/tests/test_q10_confirmation.py
+  tools/strategy_farm/tests/test_phase_runner_process_lineage.py
+191 passed in 14.02s
 ```
 
-No test can close the two `MISSING` ratification cells, and passing the Q10 test confirms the present mismatch rather than resolving it.
+## 2026-08-22 ratification closeout
+
+OWNER-DEC-GATECONTRACT supplied the authority and the missing Q10 cohort date.
+The three dated decision records, gate-contract mirror, executable changes, and
+focused tests now close the formerly contested cells. Historical evidence keeps
+its original semantics; no pre-cutoff Q10 row is regraded and no gate threshold
+was changed.
+
+Implementation evidence: `docs/ops/evidence/2026-08-22_gate_contract_ratification.md`.

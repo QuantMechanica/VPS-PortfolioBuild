@@ -7650,6 +7650,14 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         full_history_from = _q_phase_full_history_from(payload, phase)
         if full_history_from:
             cmd.extend(["--full-history-from", full_history_from])
+        if phase == "Q10":
+            try:
+                work_item_created_at = str(item_row["created_at"] or "").strip()
+            except (IndexError, KeyError):
+                work_item_created_at = ""
+            if not work_item_created_at:
+                return None
+            cmd.extend(["--work-item-created-at", work_item_created_at])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "Q07":
         cmd.extend([
@@ -18357,7 +18365,102 @@ def _latest_build_smoke_result(con: sqlite3.Connection, ea_id: str) -> dict[str,
     return {
         "build_task_id": row["id"],
         "smoke_result": str(smoke_result or "").strip().lower(),
+        "blocked_reason": str(codex_result.get("blocked_reason") or "").strip(),
+        "smoke_skipped_reason": str(
+            codex_result.get("smoke_skipped_reason")
+            or payload.get("smoke_skipped_reason")
+            or ""
+        ).strip(),
+        "capacity_evidence": str(
+            codex_result.get("capacity_evidence")
+            or payload.get("capacity_evidence")
+            or ""
+        ).strip(),
         "updated_at": row["updated_at"],
+    }
+
+
+Q01_SMOKE_CAPACITY_EVIDENCE_MARKERS = (
+    "status=no_capacity",
+    "no_capacity",
+    "terminal-capacity ceiling",
+    "terminal capacity ceiling",
+    "capacity ceiling",
+    "fleet saturated",
+    "factory saturated",
+    "saturated factory",
+)
+
+
+def _q01_capacity_evidence_is_saturated(evidence: str) -> bool:
+    text = str(evidence or "").strip().lower()
+    if any(marker in text for marker in Q01_SMOKE_CAPACITY_EVIDENCE_MARKERS):
+        return True
+    if re.search(r"\b\d+\s*/\s*\d+\s+(?:slots?|terminals?|workers?)\b", text):
+        return True
+    return bool(
+        "metatester64" in text
+        and re.search(r"\b\d+\b", text)
+        and re.search(r"\b(?:active|alive|occupied|running)\b", text)
+    )
+
+
+def _q01_smoke_admission(smoke: dict[str, Any] | None) -> dict[str, Any]:
+    """Apply the OWNER-ratified, saturation-only Q01 smoke waiver.
+
+    A real passing smoke is always admissible.  A deferred smoke is admissible
+    only when the same durable build record carries explicit tester-capacity
+    evidence.  Missing rows, blank outcomes, and generic framework/headless
+    deferrals do not inherit the waiver.
+    """
+    if smoke is None:
+        return {
+            "admitted": False,
+            "reason": "q01_smoke_missing_without_saturation_waiver",
+            "detail": "latest build has no Q01 smoke record and no durable saturation evidence",
+        }
+
+    smoke_result = str(smoke.get("smoke_result") or "").strip().lower()
+    base = {
+        "build_task_id": smoke.get("build_task_id"),
+        "smoke_result": smoke_result,
+    }
+    if smoke_result == "passed":
+        return {**base, "admitted": True, "reason": "q01_smoke_passed", "waiver": False}
+    if smoke_result == "zero_trades":
+        return {
+            **base,
+            "admitted": False,
+            "reason": "q01_trade_generation_zero_trades",
+            "detail": "latest build smoke produced zero trades; route to Codex fix or card rework before Q02 fanout",
+        }
+    if smoke_result != "deferred_p2_smoke":
+        return {
+            **base,
+            "admitted": False,
+            "reason": "q01_smoke_not_passed",
+            "detail": f"latest build smoke outcome {smoke_result or 'MISSING'} is neither PASS nor an eligible saturation waiver",
+        }
+
+    evidence = " | ".join(
+        str(smoke.get(key) or "").strip()
+        for key in ("blocked_reason", "smoke_skipped_reason", "capacity_evidence")
+        if str(smoke.get(key) or "").strip()
+    )
+    evidence_lower = evidence.lower()
+    if not _q01_capacity_evidence_is_saturated(evidence_lower):
+        return {
+            **base,
+            "admitted": False,
+            "reason": "q01_smoke_waiver_missing_capacity_evidence",
+            "detail": "deferred_p2_smoke is valid only with durable tester-fleet saturation evidence",
+        }
+    return {
+        **base,
+        "admitted": True,
+        "reason": "q01_smoke_saturation_waiver",
+        "waiver": True,
+        "capacity_evidence": evidence,
     }
 
 
@@ -18688,15 +18791,17 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
 
         if not ea_id:
             return {"enqueued": False, "reason": "Predecessor payload missing ea_id"}
+        q01_smoke_admission: dict[str, Any] | None = None
         if phase == "Q02":
             smoke = _latest_build_smoke_result(conn, str(ea_id))
-            if smoke and smoke.get("smoke_result") == "zero_trades":
+            q01_smoke_admission = _q01_smoke_admission(smoke)
+            if not q01_smoke_admission.get("admitted"):
                 return {
                     "enqueued": False,
-                    "reason": "q01_trade_generation_zero_trades",
-                    "detail": "latest build smoke produced zero trades; route to Codex fix or card rework before Q02 fanout",
+                    "reason": q01_smoke_admission["reason"],
+                    "detail": q01_smoke_admission["detail"],
                     "ea_id": ea_id,
-                    "build_task_id": smoke.get("build_task_id"),
+                    "build_task_id": q01_smoke_admission.get("build_task_id"),
                 }
             if is_q02_requeue_excluded(ea_id):
                 return {
@@ -18726,6 +18831,8 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
             "predecessor_task_id": review_task_id,
             "expected_report_glob": expected_glob,
         }
+        if q01_smoke_admission is not None:
+            payload["q01_smoke_admission"] = q01_smoke_admission
         if surviving_symbols is not None:
             payload["surviving_symbols"] = surviving_symbols
         if surviving_params is not None:

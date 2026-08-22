@@ -26,11 +26,13 @@ WORK_ITEM_ROOT = Path(r"D:\QM\reports\work_items") / WORK_ITEM_ID
 def _row(phase: str) -> dict[str, str]:
     return {
         "id": WORK_ITEM_ID,
+        "kind": "backtest",
         "phase": phase,
         "ea_id": "QM5_9999",
         "symbol": "EURUSD.DWX",
         "setfile_path": "dummy.set",
         "payload_json": "{}",
+        "created_at": "2026-09-01T00:00:00+00:00",
     }
 
 
@@ -157,6 +159,10 @@ def test_all_allowlisted_factory_commands_parse_and_carry_uuid_lineage(
         else:
             assert cmd.count("--terminal") <= 1, phase
         commands[phase] = cmd
+
+    assert commands["Q10"][commands["Q10"].index("--work-item-created-at") + 1] == (
+        "2026-09-01T00:00:00+00:00"
+    )
 
     # Invoke each runner's real ArgumentParser and stop immediately after a
     # successful parse.  No runner body, MT5 process, or filesystem output is
