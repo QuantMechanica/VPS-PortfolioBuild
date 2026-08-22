@@ -1,0 +1,53 @@
+{
+  "candidate": {
+    "author": "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "exact XTIUSD D1 first broker month bar immediately completed calendar month parent final close anchor deterministic floor half split first and second exhaustive cumulative log return blocks require second half absolute return strictly exceeds first half follow second half sign next calendar month fixed risk ATR stop",
+    "slug": "wti-mlatehalf-dom-mom",
+    "strategy_id": "MOP-WTI-MLATEHALF-DOM-MOM-2026_S01"
+  },
+  "error": null,
+  "exit_code": 2,
+  "generated_at_utc": "2026-08-22T17:54:30+00:00",
+  "matches": [
+    {
+      "ea_id": "41117",
+      "match_type": "slug",
+      "slug": "wti-mlatehalf-dom-mom",
+      "source": "ea_id_registry",
+      "strategy_id": "MOP-WTI-MLATEHALF-DOM-MOM-2026_S01"
+    },
+    {
+      "ea_id": "41117",
+      "match_type": "strategy_id",
+      "slug": "wti-mlatehalf-dom-mom",
+      "source": "ea_id_registry",
+      "strategy_id": "MOP-WTI-MLATEHALF-DOM-MOM-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4614,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1285,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "DUPLICATE"
+}
