@@ -1,0 +1,137 @@
+{
+  "artifact_type": "fx_cointegration_frontier_q05_pass_q06_hard_cpu_stop",
+  "generated_at_utc": "2026-08-22T18:35:30Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "34692da7b715460f8eaef5dbe03849a966b1cf85",
+  "mission_outcome": "EXISTING_PAIR_ADVANCED_BY_RESULT_THEN_STOPPED_AT_BACKTEST_CPU_CEILING",
+  "frontier": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "reconciliation_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "new_card_or_ea_created": false,
+    "reason": "Every sign-aware scan relationship already has a governed implementation identity."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_20208",
+    "ea_slug": "nzdusd-euraud",
+    "scan_rank": 27,
+    "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "traded_legs": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "q02": {
+      "work_item_id": "1935fc01-6eaa-4db1-8397-660d22ebdfbb",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "3703d3fd-6eaa-4fc2-bc4a-20b2984479b2",
+      "status": "done",
+      "verdict": "PASS_LOWFREQ"
+    },
+    "q05": {
+      "work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at_utc": "2026-08-22T17:50:57Z",
+      "aggregate_path": "D:\\QM\\reports\\work_items\\1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d\\QM5_20208\\Q05\\QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1\\aggregate.json",
+      "pf": 1.17,
+      "trades": 108,
+      "dd_pct": 2.57823,
+      "history_from": "2018.07.02",
+      "history_to": "2025.12.31",
+      "timed_out": false
+    },
+    "build_contract": {
+      "ea_source_sha256": "ac7d3deba42aed2db1bf4fca01a6aac34f28ccfa6e496a6b64d93b3def0db8d3",
+      "ex5_sha256": "31d4460df6cd3e9ef579d8ed4e3849e62b3423ef0e942f6703122e2245988bc4",
+      "basket_manifest": "framework/EAs/QM5_20208_nzdusd-euraud/basket_manifest.json",
+      "basket_manifest_sha256": "ed2fac5d413a6a4665388f73d22606408e51a7e317136e4ac8ed0a8369aa8796",
+      "q05_setfile": "framework/EAs/QM5_20208_nzdusd-euraud/sets/QM5_20208_nzdusd-euraud_QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1_D1_q05_stress_medium.set",
+      "q05_setfile_sha256": "0f43cdd1f181e50da1bf2cbb33f5b58cfc36ded066b0e285710c5fcd4b98f2c4",
+      "risk_contract": {
+        "RISK_FIXED": 1000,
+        "RISK_PERCENT": 0,
+        "PORTFOLIO_WEIGHT": 1
+      }
+    },
+    "next_gate": {
+      "phase": "Q06",
+      "work_item_present_at_2026_08_22T18_35_30Z": false,
+      "eligible_predecessor_work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+      "enqueue_command_when_capacity_is_below_ceiling": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_20208 --phase Q06 --from-work-item-id 1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+      "enqueue_performed": false,
+      "blocked_by": "BACKTEST_CPU_HARD_CEILING"
+    }
+  },
+  "capacity_sample": {
+    "sampled_at_utc": "2026-08-22T18:33:32.9881675Z",
+    "cpu_samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "cpu_average_percent": 100.0,
+    "cpu_max_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "running_factory_terminal_count": 8,
+    "running_factory_terminals": [
+      "T1",
+      "T10",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T8",
+      "T9"
+    ],
+    "excluded_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "QM5_20208 produced a new terminal Q05 PASS, but the explicit CPU hard ceiling prohibited its otherwise-eligible Q06 enqueue."
+  },
+  "worktree_hygiene": {
+    "factory_generated_q05_setfile_already_untracked": true,
+    "factory_generated_q05_setfile_staged_or_committed": false,
+    "unrelated_worktree_changes_staged_or_committed": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
