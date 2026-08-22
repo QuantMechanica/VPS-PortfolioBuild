@@ -6376,6 +6376,14 @@ def _spawn_harness_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         **process_identity,
         "log_path": str(log_path),
         "report_root": str(report_root),
+        # Every non-harness spawn path supplies ea_dir_name and the caller
+        # hard-subscripts it (terminal_worker._run_claimed_item). Its absence
+        # here made the rank-0 harness row a poison pill: KeyError after the
+        # Popen, before pid adoption -> the worker DAEMON died, the watchdog
+        # respawned, the fresh worker claimed the same row -> fleet-wide
+        # 7<->9 attrition (2026-08-22 ~00:30-04:00, tracebacks in
+        # terminal_worker_T5/T9.log.err).
+        "ea_dir_name": harness_label,
         "harness_ea_label": harness_label,
         "expected_expert": f"QM\\{harness_label}",
         "expected_ex5_sha256": expected_ex5_sha256,

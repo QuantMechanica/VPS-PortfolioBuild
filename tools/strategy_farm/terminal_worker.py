@@ -13,6 +13,7 @@ import errno
 import faulthandler
 import hashlib
 import json
+import traceback
 import math
 import os
 import random
@@ -4566,7 +4567,35 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                 "custom_history_lease_token": lease_handle.token if lease_handle else None,
                 "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             }), flush=True)
-            result = _run_claimed_item(root, item, terminal, timeout_seconds)
+            try:
+                result = _run_claimed_item(root, item, terminal, timeout_seconds)
+            except Exception as exc:  # noqa: BLE001 — a bad ITEM must never kill the DAEMON
+                # 2026-08-22 fleet attrition: an unhandled exception here used to
+                # propagate through run_loop (which only had a finally) straight
+                # to SystemExit — the daemon died, the watchdog respawned, and
+                # the same poison-pill row was re-claimed by the fresh worker
+                # (rank-0 harness KeyError; secondly a T10 IntegrityError from
+                # the MNT-009 evidence trigger). Convert the crash into a
+                # terminal INFRA_FAIL on THIS item with the EVIDENCE_UNAVAILABLE
+                # sentinel (satisfying that very trigger) and keep the loop.
+                tb = traceback.format_exc()
+                print(json.dumps({
+                    "event": "run_item_crashed",
+                    "terminal": terminal,
+                    "item_id": item["id"],
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                }), flush=True)
+                try:
+                    _fail_item_after_worker_crash(root, item, terminal, tb)
+                except Exception as fail_exc:  # noqa: BLE001
+                    print(json.dumps({
+                        "event": "run_item_crash_record_failed",
+                        "terminal": terminal,
+                        "item_id": item["id"],
+                        "error": f"{type(fail_exc).__name__}: {fail_exc}",
+                    }), flush=True)
+                continue
             stop_condition = _custom_history_stop_condition(result)
             if stop_condition and history_gate.get("required"):
                 custom_history_lease.engage_emergency_mode(
@@ -4588,6 +4617,45 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                     "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 }, sort_keys=True), flush=True)
     return 0
+
+
+def _fail_item_after_worker_crash(root: Path, item: sqlite3.Row, terminal: str, tb: str) -> None:
+    """Land a crashed item as terminal INFRA_FAIL instead of killing the daemon.
+
+    Uses the EVIDENCE_UNAVAILABLE sentinel so the MNT-009 evidence trigger
+    accepts the row (the bare write without it is exactly what killed T10).
+    The traceback is preserved in the payload for forensics.
+    """
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    with farmctl.connect(root) as conn:
+        row = conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=? AND status='active'",
+            (item["id"],),
+        ).fetchone()
+        if row is None:
+            return
+        payload = _json_loads(row["payload_json"])
+        payload["worker_crash_traceback_tail"] = tb.strip().splitlines()[-6:]
+        payload["verdict_reason"] = "worker_crashed_handling_item"
+        payload["verdict_taxonomy"] = "infra"
+        cur = conn.execute(
+            """
+            UPDATE work_items
+            SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
+                evidence_path=?, payload_json=?, updated_at=?
+            WHERE id=? AND status='active'
+            """,
+            (
+                farmctl._evidence_unavailable_sentinel("worker_crashed_handling_item"),
+                json.dumps(payload, sort_keys=True),
+                now,
+                item["id"],
+            ),
+        )
+        if cur.rowcount == 1:
+            conn.commit()
+        else:
+            conn.rollback()
 
 
 def _acquire_instance_mutex(terminal: str):
