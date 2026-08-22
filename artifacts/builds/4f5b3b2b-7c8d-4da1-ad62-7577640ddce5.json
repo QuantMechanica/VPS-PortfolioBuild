@@ -1,0 +1,21 @@
+{
+  "task_id": "4f5b3b2b-7c8d-4da1-ad62-7577640ddce5",
+  "ea_id": "QM5_12955",
+  "slug": "mql5-aroon-cross-card",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12955_mql5-aroon-cross-card",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12955_mql5-aroon-cross-card\\QM5_12955_mql5-aroon-cross-card.mq5",
+  "mq5_sha256": "1ea60257401d33226ee078e3777d042d11bcb6c9a0207f673571ed0ef3aa177f",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12955_mql5-aroon-cross-card\\QM5_12955_mql5-aroon-cross-card.ex5",
+  "ex5_sha256": "87e6c2da26127b5fb8bdfadda67204f1cb03aa324ae63b2cb61bf82357d21a8e",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12955_mql5-aroon-cross-card\\sets\\QM5_12955_mql5-aroon-cross-card_EURUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12955_mql5-aroon-cross-card\\sets\\QM5_12955_mql5-aroon-cross-card_GBPUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12955_mql5-aroon-cross-card\\sets\\QM5_12955_mql5-aroon-cross-card_GER40.DWX_H1_backtest.set"
+  ],
+  "built_by": "Gemini",
+  "built_at": "2026-08-22T09:27:00Z"
+}
