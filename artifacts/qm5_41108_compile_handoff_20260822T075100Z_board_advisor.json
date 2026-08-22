@@ -1,0 +1,196 @@
+{
+  "schema_version": "qm.commodity-source-build-handoff/v1",
+  "recorded_at_utc": "2026-08-22T07:51:00Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41108",
+  "ea_label": "QM5_41108_wti-mrange-expansion-mom",
+  "strategy_id": "MOP-WTI-MRANGE-EXPANSION-MOM-2026_S01",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "edge": {
+    "carrier": "XTIUSD.DWX",
+    "cadence": "one durable attempt on the first tradable normalized D1 bar of each broker month",
+    "formation": "two consecutive completed 17-to-23-session calendar-month OHLC packages",
+    "signal": "require the newest completed monthly high-low range to be strictly wider than the preceding completed monthly range, then follow the newest month first-open-to-final-close sign",
+    "positive_body": "BUY",
+    "negative_body": "SELL",
+    "ordinary_exit": "first observed next-month boundary",
+    "stale_repair_days": 40,
+    "risk_fixed_usd": 1000,
+    "risk_percent": 0,
+    "stop": "3.5 times frozen ATR(20,D1)",
+    "take_profit": "none",
+    "portfolio_weight": 1
+  },
+  "source": {
+    "citation": "Moskowitz, Ooi, and Pedersen (2012), Journal of Financial Economics 104(2), 228-250",
+    "doi": "10.1016/j.jfineco.2011.11.003",
+    "parent_source_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+    "bounded_source_sha256": "065EB405AE5C450C81DDD9A9389D77207D83B7548A494A4EB9B12C381F759152",
+    "translation_boundary": "The paper supplies peer-reviewed monthly own-price continuation lineage, one-month holding evidence, and explicit WTI membership. Completed-month OHLC aggregation and strict range-expansion conditioning are disclosed QM translations; no paper performance or correlation is transferred."
+  },
+  "non_duplicate_boundary": {
+    "preallocation_verdict": "FUZZY_MATCH_EXPECTED_FAMILY_ONLY",
+    "postallocation_verdict": "SELF_HITS_ONLY",
+    "preallocation_counts": {
+      "registry_identities": 4597,
+      "repo_cards": 1276,
+      "strategy_wiki_nodes": 45
+    },
+    "postallocation_counts": {
+      "registry_identities": 4598,
+      "repo_cards": 1276,
+      "strategy_wiki_nodes": 45
+    },
+    "nearest_monthly_siblings": [
+      {
+        "ea": "QM5_41102_wti-mrange-migrate-mom",
+        "distinction": "Requires same-direction migration of both monthly range endpoints and ignores monthly opens/closes; it can qualify when the newest range narrows."
+      },
+      {
+        "ea": "QM5_41106_wti-mbody-dominance-mom",
+        "distinction": "Reads one month and compares its body share with its own range; it has no parent-month range-expansion condition."
+      },
+      {
+        "ea": "QM5_41107_wti-minside-body-mom",
+        "distinction": "Requires strict containment, which makes the newest range narrower; its entry geometry is disjoint from strict range expansion."
+      },
+      {
+        "ea": "QM5_20187_wti-tsmom1m",
+        "distinction": "Uses an unconditional two-close monthly return without a two-month range-width comparison."
+      }
+    ],
+    "certified_book_boundary": "Direct symmetric monthly WTI structural continuation differs in carrier and logic from certified QM5_12567 long-only two-day XNG cumulative-RSI2 pullback; Q09 alone may establish realized correlation."
+  },
+  "commits": {
+    "source_approval": "de681718f",
+    "bounded_source_extraction": "a9a279cff",
+    "ea_id_reservation": "2de3e2cc9",
+    "g0_approved_card": "9612dd539",
+    "magic_allocation": "0131fa6e2",
+    "source_build": "eead118b0"
+  },
+  "registered_identity": {
+    "symbol_slot": 0,
+    "symbol": "XTIUSD.DWX",
+    "magic": 411080000
+  },
+  "artifact_sha256": {
+    "mq5": "315FBE4290C58FEFAEBBC50A90D498FCA1E61A015BCC00A3EAC9414C314CF7DB",
+    "unbound_backtest_setfile": "0277245A1FA38802801AA62F4A61A5795B46E993F7336A3F3EBFBE8F216B2E7B",
+    "approved_and_local_card": "8B6EEA055F1143E52C0B01442637E62839F0062DAA4B29F0052197D887850D25",
+    "spec": "D0D7AB8444A6253F915A78C2CFEADBC4F93560936F4756C5E17DF6F6EC914A5F",
+    "reference_suite": "2AD396D5F382B5C839ECC6E08C67CCFBBCB92926722E61E64A01DF24528CCE90",
+    "magic_allocation_receipt": "EB4234367DFA38E2E891C014F91BBE72CB1C7212BA1D9EA102D0ED3FA9089171",
+    "postallocation_dedup_receipt": "2A74020B8CE6CA3042690713675073CBE963FF590ED20097653FA423F9FBE6FE"
+  },
+  "source_validation": {
+    "reference_tests": {
+      "passed": 11,
+      "failed": 0
+    },
+    "build_prerequisite_guard": "PASS",
+    "build_guardrails": "PASS",
+    "spec_validator": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "symbol_scope_violations": 0,
+    "card_schema_and_ml_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "approved_local_card_byte_identical": true,
+    "targeted_registry_allocation_guard": "PASS",
+    "whole_registry_validator_note": "The repository-wide validator still reports unrelated pre-existing legacy registry debt; no unrelated rows were repaired or committed.",
+    "build_check_result": null,
+    "build_check_note": "The live-factory include-mirror guard refused the strict compile before build_check; independent source-level gates are not a compile or Q01 claim."
+  },
+  "compile": {
+    "ad_hoc_guard_result": "REFUSED_WITHOUT_COMPILE",
+    "ad_hoc_guard_detail": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "failure_class": "INCLUDE_MIRROR_REFUSED",
+    "retry_attempted": false,
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260822_074946\\QM5_41108_wti-mrange-expansion-mom.compile.log",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260822_074946\\summary.csv",
+    "governed_work_item_id": "34ec16fa-4c6a-4eea-9b8e-0e42c504d038",
+    "governed_status": "pending",
+    "governed_attempt_count": 0,
+    "governed_verdict": null,
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "ex5_present": false,
+    "q01_status": "PENDING_BUILD",
+    "setfile_build_hash": "pending"
+  },
+  "capacity": {
+    "ceiling_cpu_pct": 97,
+    "mt5_scanned_at_utc": "2026-08-22T07:50:32Z",
+    "governed_terminals_running": [
+      "T1",
+      "T3",
+      "T4",
+      "T8"
+    ],
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "cpu_samples": [
+      {
+        "utc": "2026-08-22T07:50:39.6834848Z",
+        "cpu_pct": 97.76
+      },
+      {
+        "utc": "2026-08-22T07:50:44.7113523Z",
+        "cpu_pct": 90.46
+      },
+      {
+        "utc": "2026-08-22T07:50:49.7284623Z",
+        "cpu_pct": 99.42
+      },
+      {
+        "utc": "2026-08-22T07:50:54.7317860Z",
+        "cpu_pct": 85.26
+      },
+      {
+        "utc": "2026-08-22T07:50:59.7355777Z",
+        "cpu_pct": 92.38
+      }
+    ],
+    "average_cpu_pct": 93.06,
+    "maximum_cpu_pct": 99.42,
+    "ceiling_hit": true,
+    "ceiling_rule": "Stop when any fresh whole-host sample reaches or exceeds 97 percent."
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED_CPU_CEILING_AND_Q01_PENDING",
+    "preview_run": false,
+    "apply_run": false,
+    "q02_work_item_count": 0,
+    "all_ea_work_items": [
+      {
+        "id": "34ec16fa-4c6a-4eea-9b8e-0e42c504d038",
+        "kind": "compile",
+        "phase": "COMPILE_EA",
+        "status": "pending",
+        "attempt_count": 0,
+        "verdict": null
+      }
+    ],
+    "binding_reasons": [
+      "fresh whole-host CPU maximum exceeded the 97 percent hard ceiling",
+      "governed compile is activation-held, so no EX5 or Q01 PASS exists"
+    ]
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "q02_preview_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_started_or_stopped": false,
+    "compile_hold_bypassed": false,
+    "autotrading_toggled": false,
+    "t_live_modified": false,
+    "t_live_manifest_modified": false,
+    "deploy_manifest_modified": false,
+    "portfolio_gate_modified": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false,
+    "unrelated_dirty_worktree_files_modified_or_committed": false
+  }
+}
