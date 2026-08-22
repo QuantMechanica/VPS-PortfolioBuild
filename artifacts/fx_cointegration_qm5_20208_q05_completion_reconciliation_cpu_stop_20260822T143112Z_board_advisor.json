@@ -1,0 +1,137 @@
+{
+  "artifact_type": "fx_cointegration_q05_completion_reconciliation_cpu_stop",
+  "generated_at_utc": "2026-08-22T14:31:12.5116739Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "a6682bcc6ff738abc48161122bb7823c9da62b19",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING_WITH_COMPLETED_Q05_RESULT_UNRECORDED",
+  "frontier_state": {
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "coverage_evidence_commit": "a804932912a449aed19bbc8fe61f1f5846556743",
+    "new_card_or_ea_would_duplicate": true
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "scan_rank": 27,
+    "pair": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "ea_id": "QM5_20208",
+    "slug": "nzdusd-euraud",
+    "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "q02": {
+      "work_item_id": "1935fc01-6eaa-4db1-8397-660d22ebdfbb",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+      "status": "done",
+      "verdict": "PASS_LOWFREQ"
+    },
+    "q05_database_state": {
+      "work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+      "status": "active",
+      "verdict": null,
+      "claimed_by": "T1",
+      "attempt_count": 0,
+      "created_at": "2026-08-22T09:32:12+00:00",
+      "updated_at": "2026-08-22T10:20:45+00:00",
+      "evidence_path": null
+    },
+    "q05_completed_artifact": {
+      "aggregate_path": "D:/QM/reports/work_items/1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d/QM5_20208/Q05/QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1/aggregate.json",
+      "summary_path": "D:/QM/reports/work_items/1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d/QM5_20208/20260822_102128/summary.json",
+      "generated_at_utc": "2026-08-22T10:47:24+00:00",
+      "exit_code": 0,
+      "timed_out": false,
+      "verdict": "PASS",
+      "reason": "pf=1.170:dd_pct=2.58",
+      "trades": 108,
+      "profit_factor": 1.17,
+      "net_profit": 2066.71,
+      "drawdown_pct": 2.57823,
+      "history_from": "2018.07.02",
+      "history_to": "2025.12.31",
+      "oninit_failure_detected": false,
+      "report_sha256": "e4040c93ed29d90366d8609fc1357615ed6138a657b745797eafe4350135955a",
+      "ea_sha256": "ac7d3deba42aed2db1bf4fca01a6aac34f28ccfa6e496a6b64d93b3def0db8d3",
+      "ex5_sha256": "31d4460df6cd3e9ef579d8ed4e3849e62b3423ef0e942f6703122e2245988bc4",
+      "set_sha256": "0f43cdd1f181e50da1bf2cbb33f5b58cfc36ded066b0e285710c5fcd4b98f2c4"
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1,
+      "setfile": "framework/EAs/QM5_20208_nzdusd-euraud/sets/QM5_20208_nzdusd-euraud_QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1_D1_q05_stress_medium.set"
+    },
+    "reconciliation_finding": {
+      "classification": "COMPLETED_ARTIFACT_WITH_ACTIVE_DATABASE_ROW",
+      "artifact_to_observation_lag_seconds": 13428,
+      "path_aware_terminal_snapshot_utc": "2026-08-22T14:30:45+00:00",
+      "running_factory_terminals": [
+        "T3",
+        "T4",
+        "T6"
+      ],
+      "claimed_terminal_process_present": false,
+      "claimed_terminal_worker_present": true,
+      "claimed_terminal_worker_pid": 20728,
+      "interpretation": "The Q05 test produced a complete PASS artifact, but the canonical database row remained active and unadjudicated at observation time. This is not yet a canonical Q05 PASS until the normal completion handler records it."
+    }
+  },
+  "capacity_sample": {
+    "cpu_samples_percent": [
+      99.12,
+      90.07,
+      94.89,
+      99.9,
+      97.86
+    ],
+    "cpu_average_percent": 96.37,
+    "cpu_maximum_percent": 99.9,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_gte_hard_ceiling",
+    "ceiling_binding": true,
+    "sampled_at_utc": "2026-08-22T14:31:12.5116739Z"
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "completion_reconciliation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_reconciliation_or_control": false,
+    "tester_or_backtest_run": false,
+    "repository_evidence_created": true,
+    "reason": "The frozen frontier is exhausted and the explicit CPU ceiling bound before the completed Q05 artifact could be reconciled through the canonical handler."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
