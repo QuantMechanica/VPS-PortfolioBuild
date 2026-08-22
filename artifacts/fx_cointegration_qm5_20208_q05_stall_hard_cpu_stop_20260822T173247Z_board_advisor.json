@@ -1,0 +1,94 @@
+{
+  "artifact_type": "fx_cointegration_qm5_20208_q05_stall_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-22T17:32:47Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "e12f4a5a87d0be39a1907c9a1b1cc2f088ca7ace",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "frontier": {
+    "relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "reconciliation_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "new_card_or_ea_authorized": false,
+    "reason": "Every sign-aware scan relationship already has a governed implementation identity."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_20208",
+    "ea_slug": "nzdusd-euraud",
+    "scan_rank": 27,
+    "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "traded_legs": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "q02": {
+      "work_item_id": "1935fc01-6eaa-4db1-8397-660d22ebdfbb",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+      "status": "done",
+      "verdict": "PASS_LOWFREQ"
+    },
+    "q05": {
+      "work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+      "status": "active",
+      "verdict": null,
+      "claimed_by": "T1",
+      "updated_at_utc": "2026-08-22T10:20:45Z",
+      "evidence_path": null,
+      "completed_aggregate_path": "D:/QM/reports/work_items/1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d/QM5_20208/Q05/QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1/aggregate.json",
+      "completed_aggregate_updated_at_utc": "2026-08-22T10:47:24Z",
+      "completed_aggregate_sha256": "9ccde341daf4dac3efc32e623b58fcbefe31d08b47fafc30dffebbe5a178361b",
+      "completed_aggregate_verdict": "PASS",
+      "duplicate_enqueue_performed": false
+    },
+    "classification": "COMPLETION_RECONCILIATION_STALL_NOT_A_CANONICAL_Q05_VERDICT"
+  },
+  "capacity_sample": {
+    "cpu_samples_percent": [
+      98.97,
+      79.01,
+      97.98,
+      91.9,
+      79.74
+    ],
+    "cpu_average_percent": 89.52,
+    "cpu_max_percent": 98.97,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_mutation": false,
+    "completion_reconciliation": false,
+    "q06_enqueue": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The explicit CPU hard ceiling bound before the stalled Q05 row could be reconciled."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
