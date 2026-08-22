@@ -17641,3 +17641,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41105,wti-mclose-location-mom,0,XTIUSD.DWX,411050000,2026-08-22,Codex governed allocator,active
 41106,wti-mbody-dominance-mom,0,XTIUSD.DWX,411060000,2026-08-22,Codex governed allocator,active
 41107,wti-minside-body-mom,0,XTIUSD.DWX,411070000,2026-08-22,Codex governed allocator,active
+12948,mql5-mfi-trend-card,0,EURUSD.DWX,129480000,2026-08-22,Codex,active
+12948,mql5-mfi-trend-card,1,GBPUSD.DWX,129480001,2026-08-22,Codex,active
+12948,mql5-mfi-trend-card,2,XAUUSD.DWX,129480002,2026-08-22,Codex,active
+12947,mql5-ha-ema-trend-card,0,EURUSD.DWX,129470000,2026-08-22,Codex,active
+12947,mql5-ha-ema-trend-card,1,GBPUSD.DWX,129470001,2026-08-22,Codex,active
+12947,mql5-ha-ema-trend-card,2,GDAXI.DWX,129470002,2026-08-22,Codex,active
+
