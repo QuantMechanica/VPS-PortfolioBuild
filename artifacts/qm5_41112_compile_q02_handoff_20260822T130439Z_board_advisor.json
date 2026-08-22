@@ -1,0 +1,129 @@
+{
+  "schema": "qm.qm5-41112.compile-q02-handoff/v1",
+  "generated_at_utc": "2026-08-22T13:04:39Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41112",
+  "ea_label": "QM5_41112_xauxag-mdaybreadth-rv",
+  "strategy_id": "SCHWEIKERT-CME-XAUXAG-MDAYBREADTH-RV-2026_S01",
+  "logical_symbol": "QM5_41112_XAU_XAG_MDAYBREADTH_RV_D1",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_Q01_PENDING_Q02_NOT_ENQUEUED",
+  "build_commit": "28b41c2c38fffcc89d831809bcc434ea735f97ed",
+  "identity": {
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "magic_by_slot": {
+      "0": 411120000,
+      "1": 411120001
+    }
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "aggregate_package_budget": true,
+    "notional_target": "1:1",
+    "notional_mismatch_cap_pct": 20,
+    "atr_period_d1": 20,
+    "atr_stop_multiple": 3.5,
+    "profit_target": false,
+    "friday_close": false,
+    "news_temporal": "OFF",
+    "news_compliance": "NONE"
+  },
+  "validations": {
+    "card_schema_ml_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "build_prerequisite_guard": "PASS",
+    "reference_tests": {
+      "verdict": "PASS",
+      "passed": 12,
+      "failed": 0
+    },
+    "build_guardrails": "PASS",
+    "spec_validator": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "card_copy_sha256_equal": true,
+    "strict_compile": "NOT_RUN_AD_HOC_REFUSED",
+    "q01": "PENDING"
+  },
+  "compile": {
+    "ad_hoc_refusal": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "retry_attempted": false,
+    "work_item_id": "eb39f64b-4a53-4971-bb78-907fd067a0d9",
+    "created_at_utc": "2026-08-22T13:01:24Z",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "verdict": null,
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "evidence_path": null,
+    "ex5_sha256": null,
+    "build_check_result": null,
+    "setfile_build_hash": "pending"
+  },
+  "capacity": {
+    "slots_scanned_at_utc": "2026-08-22T13:02:11Z",
+    "running_factory_terminals": [
+      "T2"
+    ],
+    "duplicate_terminal_workers": 0,
+    "orphaned_tester_processes": 0,
+    "cpu_samples": [
+      {
+        "timestamp_utc": "2026-08-22T13:02:40.765Z",
+        "cpu_pct": 59.28
+      },
+      {
+        "timestamp_utc": "2026-08-22T13:02:44.767Z",
+        "cpu_pct": 65.04
+      },
+      {
+        "timestamp_utc": "2026-08-22T13:02:48.768Z",
+        "cpu_pct": 67.19
+      },
+      {
+        "timestamp_utc": "2026-08-22T13:02:52.768Z",
+        "cpu_pct": 71.95
+      },
+      {
+        "timestamp_utc": "2026-08-22T13:02:56.768Z",
+        "cpu_pct": 62.80
+      }
+    ],
+    "average_cpu_pct": 65.25,
+    "maximum_cpu_pct": 71.95,
+    "ceiling_pct": 97.0,
+    "ceiling_hit": false
+  },
+  "q02": {
+    "requested": true,
+    "dry_preview_apply": false,
+    "dry_preview_selected_rows": 0,
+    "dry_preview_receipt": "D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json",
+    "dry_preview_receipt_sha256": "B86B243BF7BF19A07C0009C852F7A60C59E07D6936D462252AC315FEAA22DD7F",
+    "enqueued": false,
+    "work_item_id": null,
+    "blocking_gate": "STRICT_COMPILE_EX5_FINAL_SET_BINDING_AND_Q01_PASS_ABSENT"
+  },
+  "hashes_sha256": {
+    "bounded_source": "5398CB1D466D62EEBAE913AC952F4AE536D3924B527E8EBF795CFDE7BC6B89DB",
+    "approved_and_build_card": "FEB9BAE7E1C79D0A6F867AA952D4D4FB8FF48F108ED4942D4083C77AF1A0D987",
+    "mq5": "5C37B603666E602013C00AA0E6014C352980874C02870663E38637B12E6B1C5B",
+    "spec": "304EE2437C3BBB484494AB6E4EFD956177867585DBD4318B03FBC3CF4A9C0563",
+    "basket_manifest": "C7F82CD1F2A63C77B2B4EFE2C9DBF9F3AC3AFF8FB3C47DA2BB20074F68553DCF",
+    "reference_suite": "FAA01251532D5B295D0EEBCCEA4BC23A6747314EC19F4F2BC9FD2455AFA8DC0E",
+    "unbound_backtest_set": "99E70E4A371098414C5D7DBCDB721139A3C0906D92B24D4CD3EC681E7A6E056B"
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_or_worker_control": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
