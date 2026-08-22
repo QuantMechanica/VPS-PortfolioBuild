@@ -729,6 +729,18 @@ def _output_value(output: str, key: str) -> str | None:
     return match.group(1).strip() if match else None
 
 
+def _output_bool(output: str, key: str) -> bool | None:
+    value = _output_value(output, key)
+    if value is None:
+        return None
+    normalized = value.strip().lower()
+    if normalized == "true":
+        return True
+    if normalized == "false":
+        return False
+    return None
+
+
 def _failure_classes(output: str, exit_code: int) -> list[str]:
     classes: list[str] = []
     reason = _output_value(output, "compile_one.reason_class")
@@ -935,6 +947,11 @@ def run_compile_work_item(
             "compile_summary": _output_value(build_output, "compile_one.summary"),
             "include_sync_targets": _output_value(build_output, "compile_one.include_sync_targets"),
             "include_sync_deferred_targets": _output_value(build_output, "compile_one.include_sync_deferred_targets"),
+            "include_mirror_mutex": _output_value(build_output, "compile_one.include_mirror_mutex"),
+            "include_mirror_atomic_replace": _output_bool(
+                build_output,
+                "compile_one.include_mirror_atomic_replace",
+            ),
             "build_check_output_tail": build_output[-20000:],
         })
         ex5 = ea_dir / f"{label}.ex5"

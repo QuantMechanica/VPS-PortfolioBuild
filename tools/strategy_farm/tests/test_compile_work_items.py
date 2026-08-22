@@ -288,6 +288,21 @@ def test_candidate_refuses_unresolved_timeframe_before_enqueue(tmp_path: Path) -
     assert "TIMEFRAME_UNRESOLVED" in candidate["reasons"]
 
 
+def test_compile_output_boolean_receipt_is_strict() -> None:
+    output = "\n".join(
+        [
+            "compile_one.include_mirror_atomic_replace=True",
+            "compile_one.unrelated=truthy",
+        ]
+    )
+
+    assert compile_work_items._output_bool(
+        output, "compile_one.include_mirror_atomic_replace"
+    ) is True
+    assert compile_work_items._output_bool(output, "compile_one.unrelated") is None
+    assert compile_work_items._output_bool(output, "compile_one.missing") is None
+
+
 def test_terminal_worker_routes_compile_before_generic_ex5_preflight(
     tmp_path: Path, monkeypatch
 ) -> None:

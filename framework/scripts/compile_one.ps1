@@ -518,6 +518,7 @@ try {
     Write-Output ("compile_one.include_sync_targets=" + ($includeSyncTargets -join ";"))
     Write-Output ("compile_one.include_sync_deferred_targets=" + ($includeDeferredTargets -join ";"))
     Write-Output "compile_one.include_mirror_mutex=D:\QM\strategy_farm\state\locks\include_mirror.lock"
+    Write-Output ("compile_one.include_mirror_atomic_replace=" + $(if ($includeMirrorEvidence) { [bool]$includeMirrorEvidence.atomic_replace } else { $false }))
     Write-Output "compile_one.compile_work_item_id=$CompileWorkItemId"
     Write-Output "compile_one.claimed_terminal=$ClaimedTerminal"
     Write-Output "compile_one.log=$compileLogPath"
