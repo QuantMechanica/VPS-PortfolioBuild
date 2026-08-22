@@ -17791,4 +17791,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1425,classical-triple-bottom-reversal-h4,11,SP500.DWX,14250011,2026-08-22,Gemini,active
 1425,classical-triple-bottom-reversal-h4,12,XAUUSD.DWX,14250012,2026-08-22,Gemini,active
 1425,classical-triple-bottom-reversal-h4,13,XTIUSD.DWX,14250013,2026-08-22,Gemini,active
-
+41112,xauxag-mdaybreadth-rv,0,XAUUSD.DWX,411120000,2026-08-22,Codex governed allocator,active
+41112,xauxag-mdaybreadth-rv,1,XAGUSD.DWX,411120001,2026-08-22,Codex governed allocator,active
