@@ -58,13 +58,30 @@ double QM_TM_NormalizePrice(const string symbol, const double price)
 // wasted round-trips). We remember the last failed/skipped target per ticket
 // and suppress verbatim retries for a short window; a changed target or an
 // elapsed window retries normally, so transient rejections still recover.
+//
+// 2026-08-22 hardening — the per-target exact-match suppression above was not
+// enough: QM5_10706's breakeven-lock sweep recomputed a target that drifted
+// by fractions of a point every tick while the broker kept rejecting it for
+// the same underlying reason (retcode 10016, stale-vs-live price), so the
+// exact-match check never matched and the suppression never engaged — 36k
+// WARN lines over 4.5h on one ticket (2026-07-29, see
+// docs/ops/evidence/2026-08-22_tlive_ea_warn_classification.md Finding 1).
+// The fix adds a per-ticket exponential backoff that applies regardless of
+// whether the target changed between attempts, plus a hard attempt cap that
+// fires one alert line and settles into the capped (low-frequency) retry
+// interval rather than stopping outright — a rejected modify never risks the
+// position, so retrying slowly forever is safe and still eventually recovers
+// a genuinely transient rejection.
 #define QM_TM_MODIFY_RETRY_SECONDS 30
+#define QM_TM_MODIFY_BACKOFF_MAX_SECONDS 900
+#define QM_TM_MODIFY_GIVEUP_ATTEMPTS 20
 struct QM_TM_FailedModify
   {
    ulong    ticket;
    double   sl;
    double   tp;
    datetime last_attempt;
+   int      attempt_count;
   };
 QM_TM_FailedModify g_qm_tm_failed_modifies[];
 
@@ -77,25 +94,34 @@ int QM_TM_FailedModifyIndex(const ulong ticket)
    return -1;
   }
 
-bool QM_TM_ModifySuppressed(const ulong ticket, const double sl, const double tp)
+double QM_TM_ModifyBackoffSeconds(const int attempt_count)
+  {
+   const int shift = MathMin(MathMax(attempt_count - 1, 0), 10);
+   double backoff = QM_TM_MODIFY_RETRY_SECONDS * MathPow(2.0, (double)shift);
+   if(backoff > QM_TM_MODIFY_BACKOFF_MAX_SECONDS)
+      backoff = QM_TM_MODIFY_BACKOFF_MAX_SECONDS;
+   return backoff;
+  }
+
+bool QM_TM_ModifySuppressed(const ulong ticket, const datetime now = 0)
   {
    const int idx = QM_TM_FailedModifyIndex(ticket);
    if(idx < 0)
       return false;
-   if(MathAbs(g_qm_tm_failed_modifies[idx].sl - sl) > 1e-10 ||
-      MathAbs(g_qm_tm_failed_modifies[idx].tp - tp) > 1e-10)
-      return false;
-   return (TimeCurrent() - g_qm_tm_failed_modifies[idx].last_attempt) < QM_TM_MODIFY_RETRY_SECONDS;
+   const datetime effective_now = (now != 0) ? now : TimeCurrent();
+   const double backoff = QM_TM_ModifyBackoffSeconds(g_qm_tm_failed_modifies[idx].attempt_count);
+   return (effective_now - g_qm_tm_failed_modifies[idx].last_attempt) < (long)backoff;
   }
 
-void QM_TM_RememberFailedModify(const ulong ticket, const double sl, const double tp)
+void QM_TM_RememberFailedModify(const ulong ticket, const double sl, const double tp, const datetime now = 0)
   {
-   // Adversarial review 2026-07-20: entries older than the retry window can
-   // never suppress again — sweep them here so the array stays bounded by
-   // "tickets that failed within the last window", not terminal lifetime.
-   const datetime now = TimeCurrent();
+   const datetime effective_now = (now != 0) ? now : TimeCurrent();
+   // Adversarial review 2026-07-20: entries whose backoff has fully decayed
+   // back to the base window can never suppress again — sweep them here so
+   // the array stays bounded by "tickets with a recent failure", not
+   // terminal lifetime.
    for(int i = ArraySize(g_qm_tm_failed_modifies) - 1; i >= 0; --i)
-      if((now - g_qm_tm_failed_modifies[i].last_attempt) >= QM_TM_MODIFY_RETRY_SECONDS)
+      if((effective_now - g_qm_tm_failed_modifies[i].last_attempt) >= QM_TM_MODIFY_BACKOFF_MAX_SECONDS)
          QM_TM_ClearFailedModify(g_qm_tm_failed_modifies[i].ticket);
 
    int idx = QM_TM_FailedModifyIndex(ticket);
@@ -104,11 +130,19 @@ void QM_TM_RememberFailedModify(const ulong ticket, const double sl, const doubl
       idx = ArraySize(g_qm_tm_failed_modifies);
       if(ArrayResize(g_qm_tm_failed_modifies, idx + 1) != idx + 1)
          return;
+      g_qm_tm_failed_modifies[idx].attempt_count = 0;
      }
    g_qm_tm_failed_modifies[idx].ticket = ticket;
    g_qm_tm_failed_modifies[idx].sl = sl;
    g_qm_tm_failed_modifies[idx].tp = tp;
-   g_qm_tm_failed_modifies[idx].last_attempt = TimeCurrent();
+   g_qm_tm_failed_modifies[idx].last_attempt = effective_now;
+   g_qm_tm_failed_modifies[idx].attempt_count++;
+
+   if(g_qm_tm_failed_modifies[idx].attempt_count == QM_TM_MODIFY_GIVEUP_ATTEMPTS)
+      QM_LogEvent(QM_WARN, "TM_MODIFY_BACKOFF_CAP",
+                  StringFormat("{\"ticket\":%I64u,\"attempt_count\":%d,\"backoff_seconds\":%d}",
+                               ticket, g_qm_tm_failed_modifies[idx].attempt_count,
+                               (int)QM_TM_MODIFY_BACKOFF_MAX_SECONDS));
   }
 
 void QM_TM_ClearFailedModify(const ulong ticket)
@@ -171,8 +205,8 @@ bool QM_TM_SendSLTPModify(const ulong ticket,
    // containment as the Q08 deinit guard and the PERCENT cap in this bundle).
    const bool live_hygiene = (MQLInfoInteger(MQL_TESTER) == 0);
 
-   if(live_hygiene && QM_TM_ModifySuppressed(ticket, request.sl, request.tp))
-      return false;   // identical target already failed/skipped inside the retry window
+   if(live_hygiene && QM_TM_ModifySuppressed(ticket))
+      return false;   // ticket is inside its post-rejection backoff window
 
    // audit: stops-level pre-check — a target inside the broker minimum
    // distance is a guaranteed [Invalid stops] rejection; skip the round-trip
