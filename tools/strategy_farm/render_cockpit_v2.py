@@ -36,6 +36,7 @@ import datetime as dt
 import html
 import json
 import re
+import os
 import sys
 import time
 from pathlib import Path
@@ -855,7 +856,10 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.write(doc)
 
     cs = contract.get("control_strip", {})
-    sys.stderr.write(
+    # Under pythonw.exe (scheduled task) sys.stderr is None; never let the
+    # success-path summary raise after the artifact has been written.
+    _err = sys.stderr if sys.stderr is not None else open(os.devnull, "w", encoding="utf-8")
+    _err.write(
         f"[render_cockpit_v2] factory={cs.get('factory_state')} "
         f"terminals_running={(contract.get('terminals') or {}).get('counts', {}).get('running')} "
         f"owner_open={cs.get('owner_decisions_open')} "

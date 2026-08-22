@@ -595,7 +595,11 @@ def test_q09_autopilot_uses_oracle_standard_v2_semantics(tmp_path: Path) -> None
         mock.patch.object(farmctl, "_preferred_ea_dir", return_value=ea_dir),
         mock.patch.object(farmctl, "Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT", closure.parent),
         mock.patch.object(farmctl, "Q09_AUTOPILOT_REPORT_ROOT", plan_path.parents[1]),
-        mock.patch.object(build_q09_include_closure, "validate_include_closure"),
+        mock.patch.object(
+            build_q09_include_closure,
+            "validate_include_closure",
+            return_value={"generated_source_drift": []},
+        ),
         mock.patch.object(q09_news_runner, "build_run_plan", return_value={
             "plan_path": str(plan_path), "plan_sha256": "p" * 64,
             "candidate_lineage_key": expected_lineage, "cell_count": 40,

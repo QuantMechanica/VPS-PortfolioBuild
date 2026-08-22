@@ -38,10 +38,38 @@ class IncludeMirrorRefusal(RuntimeError):
 
 
 def _pid_exists(pid: Any) -> bool:
+    """PID liveness probe that never signals the target.
+
+    ``os.kill(pid, 0)`` is NOT a probe on Windows: CPython maps unsupported
+    signals to ``TerminateProcess`` and would kill the probed process (the
+    codex kill-safety audit blocks the pump on exactly this pattern; see
+    ``health._pid_alive_no_signal`` for the canonical OpenProcess probe).
+    """
     try:
-        os.kill(int(pid), 0)
+        pid_int = int(pid)
+    except (TypeError, ValueError):
+        return False
+    if pid_int <= 0:
+        return False
+    if sys.platform == "win32":
+        import ctypes
+
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        STILL_ACTIVE = 259
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid_int)
+        if not handle:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            ok = kernel32.GetExitCodeProcess(handle, ctypes.byref(code))
+            return bool(ok) and code.value == STILL_ACTIVE
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid_int, 0)
         return True
-    except (OSError, TypeError, ValueError):
+    except OSError:
         return False
 
 
