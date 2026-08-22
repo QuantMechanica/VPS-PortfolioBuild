@@ -1,0 +1,22 @@
+{
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4.mq5",
+  "mq5_sha256": "b9808e004e82b6bce626cb7c6f881b3fa5e6d4b53f44e673bb42a04a44102a21",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4.ex5",
+  "ex5_sha256": "18a2492edf2f67d554f59e2b34add3be48d383a3afc1ca72d97f527cd35ee4b5",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_AUDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_EURUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_GDAXI.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_NDX.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_NZDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_SP500.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_UK100.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_USDCAD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_USDCHF.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_USDJPY.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_WS30.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4\\sets\\QM5_1671_ehlers-ebsw-cycle-extract-composite-h4_XAUUSD.DWX_H4_backtest.set"
+  ]
+}
