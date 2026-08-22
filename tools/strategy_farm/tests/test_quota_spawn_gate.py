@@ -13,6 +13,28 @@ import agent_router  # noqa: E402
 import quota_governor  # noqa: E402
 import quota_spawn_gate  # noqa: E402
 
+import pytest  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _no_live_burn_flags(tmp_path, monkeypatch):
+    """Unit tests of NORMAL gating must not see a live OWNER burn flag.
+
+    BURN_FLAGS points at D:/QM live paths; while an OWNER burn window is
+    active there, every codex spawn would short-circuit to burn-allow and
+    these tests would assert against the wrong branch. Patch every loaded
+    module instance (bare and package import both occur in this suite).
+    """
+    mods = {id(quota_governor): quota_governor}
+    try:
+        from tools.strategy_farm import quota_governor as pkg_gov  # noqa: PLC0415
+        mods[id(pkg_gov)] = pkg_gov
+    except ModuleNotFoundError:
+        pass
+    for mod in mods.values():
+        for agent in list(mod.BURN_FLAGS):
+            monkeypatch.setitem(mod.BURN_FLAGS, agent, tmp_path / f"absent_{agent}.flag")
+
 
 def _state(now: dt.datetime, *, used: float, elapsed: float, five_hour: float | None) -> dict:
     agents = {}

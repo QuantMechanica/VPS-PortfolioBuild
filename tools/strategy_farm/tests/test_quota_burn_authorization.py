@@ -49,3 +49,31 @@ def test_naive_expiry_treated_as_utc(tmp_path, monkeypatch):
 
 def test_unknown_agent_has_no_burn(tmp_path, monkeypatch):
     assert gov._burn_authorized("gemini", NOW) == (False, "")
+
+
+def test_spawn_gate_burn_bypasses_exhaustion(tmp_path, monkeypatch):
+    """A valid burn flag lets evaluate_spawn allow even without usable state."""
+    from tools.strategy_farm import quota_spawn_gate as gate
+    _with_flag(tmp_path, monkeypatch,
+               "AUTHORIZED_BY=OWNER\nexpires_at=2099-01-01T00:00:00+00:00\n")
+    real_policy, err = gate.load_policy()
+    assert err is None, f"live policy unreadable: {err}"
+    result = gate.evaluate_spawn(
+        "codex", "build_ea", 50,
+        state_path=tmp_path / "missing_state.json",
+        summary_path=tmp_path / "summary.json",
+        now=NOW, write_summary=False)
+    assert result["allowed"] is True
+    assert result["reason"].startswith("owner_burn_authorization_active")
+
+
+def test_spawn_gate_expired_burn_falls_back_to_normal_gating(tmp_path, monkeypatch):
+    from tools.strategy_farm import quota_spawn_gate as gate
+    _with_flag(tmp_path, monkeypatch,
+               "AUTHORIZED_BY=OWNER\nexpires_at=2026-08-22T08:00:00+00:00\n")
+    result = gate.evaluate_spawn(
+        "codex", "build_ea", 50,
+        state_path=tmp_path / "missing_state.json",
+        summary_path=tmp_path / "summary.json",
+        now=NOW, write_summary=False)
+    assert not result["reason"].startswith("owner_burn_authorization_active")

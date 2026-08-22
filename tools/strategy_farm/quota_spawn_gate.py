@@ -501,6 +501,35 @@ def evaluate_spawn(
         invocation,
         policy,
     )
+    # OWNER burn window (quota_governor._burn_authorized, fail-closed flag
+    # contract): while a valid CODEX/CLAUDE_BURN_AUTHORIZED.flag is present,
+    # weekly/5h exhaustion and class caps are suspended for that agent —
+    # OWNER 2026-08-22: "Codex derzeit ohne Ruecksicht auf Token oder 5h oder
+    # Wochenlimit einfach nutzen". Lazy import avoids a module cycle
+    # (quota_governor imports this module at top level).
+    try:
+        from tools.strategy_farm.quota_governor import _burn_authorized
+    except ModuleNotFoundError:  # pragma: no cover - direct script execution
+        from quota_governor import _burn_authorized  # type: ignore
+    burn, burn_why = _burn_authorized(
+        normalized_agent, now or dt.datetime.now(dt.timezone.utc))
+    if burn:
+        result = _decision(
+            allowed=True,
+            agent=normalized_agent,
+            task_type=task_type,
+            priority=priority,
+            reason=f"owner_burn_authorization_active:{burn_why}",
+            task_class=task_class,
+            state_status="burn_bypass",
+            policy_schema=schema,
+            invocation=invocation,
+            tier_escalation=tier_escalation,
+        )
+        if write_summary:
+            record_gate_decision(result, state_path=state_path, summary_path=summary_path)
+        return result
+
     max_age = float(policy["state_max_age_minutes"])
     state, state_status = load_governor_state(state_path, max_age_minutes=max_age, now=now)
     metrics = _metrics(state, normalized_agent)
