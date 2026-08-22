@@ -1,0 +1,121 @@
+{
+  "schema": "qm.qm5-41116.source-build-q02-cpu-ceiling-handoff/v1",
+  "generated_at_utc": "2026-08-22T17:13:40.8783997Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41116",
+  "ea_label": "QM5_41116_xauxag-mthirdvote-rv",
+  "strategy_id": "SCHWEIKERT-CME-XAUXAG-MTHIRDVOTE-RV-2026_S01",
+  "logical_symbol": "QM5_41116_XAU_XAG_MTHIRDVOTE_RV_D1",
+  "outcome": "SOURCE_BUILD_COMMITTED_CPU_CEILING_Q01_PENDING_Q02_NOT_ENQUEUED",
+  "commits": {
+    "source_approval": "d853ac6353e8d911f4b08bdbdcc275cd0f9729d2",
+    "bounded_source_extraction": "8da1fe0e4946732aeb07a7e6ea35eb71cec7f769",
+    "ea_id_reservation": "3bd9a13a96a69f14ab1c2fc3e2a55c22b1419355",
+    "g0_card_approval": "cdc36f894ed9b428e45c6435c34044d454e5235d",
+    "magic_allocation": "818027fabe0381064b8805f006edcb94f45649b0",
+    "source_build": "2fe44b80156b831847fa8ee8df157ed422a30ee9"
+  },
+  "identity": {
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "logical_symbol": "QM5_41116_XAU_XAG_MTHIRDVOTE_RV_D1",
+    "symbol_slots": [0, 1],
+    "magics": [411160000, 411160001]
+  },
+  "mechanic": {
+    "formation": "two immediately preceding consecutive completed calendar months with 17-23 synchronized XAU/XAG D1 close pairs each",
+    "anchor": "parent chronological final log ratio P",
+    "split": "a=floor(n/3), b=floor(2*n/3)",
+    "blocks": [
+      "Q[a-1]-P",
+      "Q[b-1]-Q[a-1]",
+      "Q[n-1]-Q[b-1]"
+    ],
+    "entry": "at least two positive blocks => SELL XAU/BUY XAG; at least two negative blocks => BUY XAU/SELL XAG; zero abstains",
+    "endpoint_constraint": "none; magnitude and full-month endpoint agreement are ignored",
+    "attempt_cadence": "one durable attempt per broker month before fallible gates",
+    "exit": "first later broker month with forty-calendar-day stale repair",
+    "q02_frequency_floor": "at least five completed packages per full post-warm-up year"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "equal_absolute_notional_target": true,
+    "maximum_notional_mismatch_pct": 20.0,
+    "atr_period_d1": 20,
+    "atr_stop_multiple": 3.5,
+    "profit_target": false,
+    "friday_close": false,
+    "news_temporal": "OFF",
+    "news_compliance": "NONE"
+  },
+  "validations": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "approved_card": "PASS",
+    "registry_identity": "PASS",
+    "magic_rows": "PASS",
+    "reference_tests": {
+      "verdict": "PASS",
+      "tests_passed": 12,
+      "subtests_passed": 6
+    },
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "card_copy_sha256_equal": true,
+    "strict_compile": "NOT_ATTEMPTED_CPU_CEILING",
+    "q01": "PENDING"
+  },
+  "compile": {
+    "attempted": false,
+    "governed_compile_enqueued": false,
+    "ex5_exists": false,
+    "setfile_build_hash": "pending",
+    "build_check_result": null
+  },
+  "capacity": {
+    "observations_utc": [
+      "2026-08-22T17:11:00Z",
+      "2026-08-22T17:13:40.8783997Z"
+    ],
+    "whole_host_cpu_pct": [100, 100],
+    "metatester_process_counts": [5, 7],
+    "factory_terminal_process_counts": [7, 7],
+    "ceiling_pct": 97,
+    "ceiling_hit": true,
+    "binding_stop": true
+  },
+  "q02": {
+    "requested": true,
+    "enqueued": false,
+    "work_item_id": null,
+    "preview_run": false,
+    "blocking_gates": [
+      "BACKTEST_CPU_CEILING_HIT",
+      "STRICT_COMPILE_EX5_FINAL_SET_BINDING_AND_Q01_PASS_ABSENT"
+    ]
+  },
+  "hashes_sha256": {
+    "mq5": "722E7FE66A68B493C7B382D4B836D6EB349FAA9069A134F2FD69EA2B37D34221",
+    "spec": "A7BF1DA1583A52C08782F0A6B59AC76AE1212BE5274720585160454DD79B1737",
+    "basket_manifest": "11545CBA9675E365D3C9B42BD87BDA1B184819A32380CAA1E4761CC1DCFB8EF7",
+    "approved_and_build_card": "E07395ABE7C50FA10EA73397E9D26A4CB76F9D1A4A07199DBEFF4DEB1D144641",
+    "reference_suite": "1DC0FABF9127E568A09C7D620A1ED0EEF8019715774C47340398760288092A3C",
+    "unbound_backtest_set": "110093450F6D53A6D2F0F374A2FD0D6445FDA730991E1B6A9C27B7EC016D1F1C"
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_or_worker_control": false,
+    "autotrading_toggled": false,
+    "t_live_observed_read_only": true,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
