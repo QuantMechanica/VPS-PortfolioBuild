@@ -1,0 +1,117 @@
+{
+  "schema_version": "qm5.source_build_cpu_stop.v1",
+  "recorded_at_utc": "2026-08-22T09:04:38.7840000Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41109",
+  "ea_label": "QM5_41109_xauxag-mmean-median-rv",
+  "strategy": "XAU/XAG completed-month log-ratio mean-versus-median reversion",
+  "logical_symbol": "QM5_41109_XAU_XAG_MMEAN_MEDIAN_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "timeframe": "D1",
+  "source_and_governance_commits": [
+    "4a1957e0c",
+    "f22c701a4",
+    "088014c50",
+    "edf907373",
+    "15b85fc29"
+  ],
+  "source_build_commit": "60e9b5192",
+  "registered_magics": {
+    "XAUUSD.DWX": 411090000,
+    "XAGUSD.DWX": 411090001
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed_usd": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "source_validation": {
+    "build_prerequisite_guard": "PASS",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "reference_tests_passed": 11,
+    "reference_tests_failed": 0,
+    "approved_card_ea_local_byte_identical": true,
+    "git_diff_check": "PASS"
+  },
+  "sha256": {
+    "mq5": "CB72A16D7100D2A9494D63399544C5E63A24CAFEF23AC3DD128DAA47069A5FB7",
+    "spec": "0BA8EA80B574DB6D28A3F2B03A7666BE5BA0B9A78356AD3D86F23E607A7A2008",
+    "basket_manifest": "21D5DA2E4F596028B7D75DCE45A389496FB57233024B5422B08B7203EE0D1859",
+    "reference_test": "F2A8F0AB9FDD363D81D64258D40D40703B922676A0F719FEA15B9068BDD12357",
+    "approved_and_local_card": "6FECFD8072ECFBF9F8E2BD9BD40466D69E1C7162314063D85EBCBE61057178E4",
+    "backtest_set": "25356C4ADFA86AC8D472761B2988B7A93A009A1353AE19E73DE2B93A893288C6"
+  },
+  "compile": {
+    "strict_local_attempt": "REFUSED_FAIL_CLOSED",
+    "strict_local_refusal": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "refusal_context": "A running terminal64 process made include-mirror mutation unsafe; no process was stopped and no bypass was attempted.",
+    "compile_log_written": false,
+    "governed_work_item_id": "55cdd439-9f1e-4d26-a917-66a23b783abe",
+    "status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "ex5_present": false,
+    "q01_verdict": null
+  },
+  "capacity": {
+    "ceiling_percent": 97.0,
+    "samples": [
+      {
+        "timestamp_utc": "2026-08-22T09:04:18.5300000Z",
+        "cpu_percent": 99.90
+      },
+      {
+        "timestamp_utc": "2026-08-22T09:04:23.6350000Z",
+        "cpu_percent": 96.61
+      },
+      {
+        "timestamp_utc": "2026-08-22T09:04:28.6360000Z",
+        "cpu_percent": 92.31
+      },
+      {
+        "timestamp_utc": "2026-08-22T09:04:33.7310000Z",
+        "cpu_percent": 91.55
+      },
+      {
+        "timestamp_utc": "2026-08-22T09:04:38.7840000Z",
+        "cpu_percent": 89.95
+      }
+    ],
+    "max_cpu_percent": 99.90,
+    "ceiling_hit": true,
+    "factory_terminals_active": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T7"
+    ],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": []
+  },
+  "q02": {
+    "enqueued": false,
+    "stop_reasons": [
+      "BACKTEST_CPU_CEILING_HIT",
+      "Q01_COMPILE_PASS_MISSING",
+      "EX5_MISSING"
+    ],
+    "next_governed_action": "After a separately authorized compile-worker rollout releases the held COMPILE_EA item, require compile PASS and a fresh below-ceiling capacity check before enqueuing the one logical-basket Q02."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "terminal_processes_stopped": false
+  }
+}
