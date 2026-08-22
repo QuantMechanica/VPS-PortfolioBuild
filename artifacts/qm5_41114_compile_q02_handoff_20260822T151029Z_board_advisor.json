@@ -1,0 +1,148 @@
+{
+  "schema": "qm.qm5-41114.compile-q02-handoff/v1",
+  "generated_at_utc": "2026-08-22T15:12:00Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41114",
+  "ea_label": "QM5_41114_wti-mhalfagree-mom",
+  "strategy_id": "MOP-WTI-MHALFAGREE-MOM-2026_S01",
+  "logical_symbol": "XTIUSD.DWX",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_CPU_CEILING_Q01_PENDING_Q02_NOT_ENQUEUED",
+  "commits": {
+    "source_approval": "3e3264609c1711c9ae80e5ee5261901bfc25fb24",
+    "bounded_source_extraction": "d0383641df801b30d89984a072d3a07bf0bf0a5a",
+    "ea_id_reservation": "97e2d2ddd89f77b0600c367d143c101d8c234d2a",
+    "g0_card_approval": "b9b4f0fb01dc0c8cca1927d3f71312078dc0d8b5",
+    "magic_allocation": "a1375e697ca0c3537c5c63ea720ebe501a032eb0",
+    "source_build": "160da264f83d61e904467a69b5d7fbc7c1a37d1c"
+  },
+  "identity": {
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "symbol_slot": 0,
+    "magic": 411140000
+  },
+  "mechanic": {
+    "formation": "two immediately preceding consecutive completed broker-calendar months with 17-23 unique sessions each",
+    "anchor": "parent chronological final close",
+    "split": "k=floor(n/2) over all chronological closes in the newest completed month",
+    "first_half": "log(C[k-1]/P)",
+    "second_half": "log(C[n-1]/C[k-1])",
+    "entry": "continue only strict same-sign cumulative halves; equality or disagreement is flat",
+    "exit": "first later normalized broker month with forty-calendar-day stale repair",
+    "frequency_floor": "at least five completed positions per full post-warm-up year at Q02"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "atr_period_d1": 20,
+    "atr_stop_multiple": 3.5,
+    "profit_target": false,
+    "friday_close": false,
+    "news_temporal": "OFF",
+    "news_compliance": "NONE",
+    "maximum_spread_points": 1500
+  },
+  "source_governance": {
+    "citation": "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250",
+    "doi": "10.1016/j.jfineco.2011.11.003",
+    "quality_tier": "A",
+    "source_packet": "strategy-seeds/sources/MOP-WTI-MHALFAGREE-MOM-2026/source.md",
+    "source_claim_boundary": "monthly own-price continuation and explicit WTI carrier lineage only; the two-half state, CFD mapping, risk, performance, and correlation are QM hypotheses",
+    "reputable_source_gates": {
+      "R1": "PASS_WITH_MONTHLY_TWO_HALF_TRANSLATION_RISK",
+      "R2": "PASS",
+      "R3": "PASS_WITH_ENERGY_LABEL_AND_CFD_BASIS_RISK",
+      "R4": "PASS"
+    }
+  },
+  "deduplication": {
+    "preallocation": {
+      "verdict": "CLEAN",
+      "registry_identities": 4610,
+      "repository_cards": 1282,
+      "strategy_wiki_nodes": 45,
+      "receipt": "artifacts/qm5_wti_mhalfagree_mom_preallocation_dedup_20260822.json"
+    },
+    "postallocation": {
+      "verdict": "EXPECTED_SELF_HITS_ONLY_AFTER_MANUAL_CLASSIFICATION",
+      "registry_identities": 4611,
+      "repository_cards": 1282,
+      "strategy_wiki_nodes": 45,
+      "receipt": "artifacts/qm5_41114_wti_mhalfagree_mom_postallocation_dedup_20260822.json"
+    },
+    "closest_family_boundary": "not full-month-plus-final-five, fixed month-end segments, daily-sign breadth, unconditional one-month TSMOM, adjacent-month sign flip, monthly OHLC geometry, or XNG RSI2 pullback"
+  },
+  "validations": {
+    "card_schema_ml_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "build_prerequisite_guard": "PASS",
+    "reference_tests": {
+      "verdict": "PASS",
+      "passed": 13,
+      "failed": 0
+    },
+    "spec_validator": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "card_copy_sha256_equal": true,
+    "strict_compile": "NOT_RUN_AD_HOC_REFUSED",
+    "q01": "PENDING"
+  },
+  "compile": {
+    "ad_hoc_refusal": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "retry_attempted": false,
+    "work_item_id": "3e958389-60d9-4709-afb2-efdd2efe3965",
+    "created_at_utc": "2026-08-22T15:09:36Z",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "verdict": null,
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "evidence_path": null,
+    "ex5_exists": false,
+    "ex5_sha256": null,
+    "build_check_result": null,
+    "setfile_count": 0,
+    "setfile_build_hash": "pending"
+  },
+  "capacity": {
+    "sampled_at_utc": "2026-08-22T15:10:29.1412057Z",
+    "cpu_samples_pct": [99.78, 77.12, 64.24, 84.01, 89.92],
+    "average_cpu_pct": 83.01,
+    "maximum_cpu_pct": 99.78,
+    "ceiling_pct": 97.0,
+    "ceiling_hit": true,
+    "binding_stop": true
+  },
+  "q02": {
+    "requested": true,
+    "enqueued": false,
+    "work_item_id": null,
+    "preview_run": false,
+    "blocking_gates": [
+      "BACKTEST_CPU_CEILING_HIT",
+      "STRICT_COMPILE_EX5_FINAL_SET_BINDING_AND_Q01_PASS_ABSENT",
+      "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+    ]
+  },
+  "hashes_sha256": {
+    "bounded_source": "7B4B9BEE128029DB437B3F2311AA5E49504F9EB9C945ACC567B1ADFF3134CA33",
+    "approved_and_build_card": "29D4E16B1B14DA0C34CB209D853D75E6DF225D39799A1FA7FDEBCB50358AE86A",
+    "mq5": "5F0F321D36E883569E535E6390953D2F588666FE942BFCB2EB592F2402C1F5A9",
+    "spec": "73726362670FAAC2829A6C0E3377CEE1FA5C6A515D5EF7BCA2461D0A7D5F1EFE",
+    "reference_suite": "41877523F8E74C3560D78CB2E90EB6D55CA65676028F40D344ABC07602772C97",
+    "unbound_backtest_set": "A154160A3BD4383CB18F48F795E5615A5880D79C1EF042959D03CDD05C7B5C14"
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_or_worker_control": false,
+    "compile_activation_hold_released": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
