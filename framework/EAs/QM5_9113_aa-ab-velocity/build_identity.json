@@ -1,0 +1,22 @@
+{
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\QM5_9113_aa-ab-velocity.mq5",
+  "mq5_sha256": "bda4cd05d61af5e028da784541e61e2025dc45c88698862268169c309f83fb63",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\QM5_9113_aa-ab-velocity.ex5",
+  "ex5_sha256": "e027ee251d422683cb8167d7047fc8902bcbe9d1f06194020acff9d46c1b1b8d",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_AUDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_GDAXI.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_NZDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_UK100.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_USDCAD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_USDCHF.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_USDJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_WS30.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_XAUUSD.DWX_D1_backtest.set"
+  ]
+}
