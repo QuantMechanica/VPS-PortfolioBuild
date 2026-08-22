@@ -37,12 +37,19 @@ param(
     [int]$MinAgeMinutes = 5,
     [ValidatePattern('^(T(?:[1-9]|10))?$')]
     [string]$Terminal = '',
+    [string]$FarmDbPath = '',
+    [string]$LivePulsePath = 'D:\QM\reports\state\live_book_pulse.json',
+    [string]$EvidenceGuardPath = '',
     [switch]$DryRun
 )
 $ErrorActionPreference = 'Continue'
 $py = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
 $log = "D:\QM\reports\state\tester_cache_purge.log"
 $resourcePolicy = Join-Path $RepoRoot 'tools\strategy_farm\resource_headroom.py'
+if (-not $FarmDbPath) { $FarmDbPath = Join-Path $FarmRoot 'state\farm_state.sqlite' }
+if (-not $EvidenceGuardPath) {
+    $EvidenceGuardPath = Join-Path $RepoRoot 'tools\strategy_farm\tester_cache_purge_guard.py'
+}
 function Now { (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') }
 function FreeGB { [math]::Round((Get-PSDrive D).Free/1GB,2) }
 function Log($m) { $line = "$(Now) $m"; Write-Output $line; try { Add-Content -Path $log -Value $line -Encoding UTF8 } catch {} }
@@ -232,6 +239,63 @@ print(json.dumps(sorted(set(out))))
     return @($terms)
 }
 
+function Get-EvidencePurgePlan {
+    if (-not (Test-Path -LiteralPath $EvidenceGuardPath -PathType Leaf)) {
+        return [pscustomobject]@{
+            status = 'ERROR'
+            reason = "evidence_guard_missing:$EvidenceGuardPath"
+        }
+    }
+    $guardArgs = @(
+        $EvidenceGuardPath,
+        '--db-path', $FarmDbPath,
+        '--live-pulse', $LivePulsePath,
+        '--mt5-root', $Mt5Root
+    )
+    try {
+        $raw = @(& $py @guardArgs 2>$null)
+        $guardExitCode = $LASTEXITCODE
+        $joined = $raw -join "`n"
+        $plan = $joined | ConvertFrom-Json -ErrorAction Stop
+        if ($guardExitCode -ne 0 -or $plan.status -ne 'PASS') {
+            $reason = if ($plan.reason) { [string]$plan.reason } else { "guard_exit_code:$guardExitCode" }
+            return [pscustomobject]@{ status = 'ERROR'; reason = $reason }
+        }
+        if ($null -eq $plan.counts -or $null -eq $plan.protected_pairs -or $null -eq $plan.protected_targets) {
+            return [pscustomobject]@{ status = 'ERROR'; reason = 'evidence_guard_output_incomplete' }
+        }
+        return $plan
+    } catch {
+        return [pscustomobject]@{
+            status = 'ERROR'
+            reason = "evidence_guard_failed:$($_.Exception.Message)"
+        }
+    }
+}
+
+# OWNER-DEC-EVIDENCE-RETENTION: construct the complete DB + signed-live
+# exclusion plan before ANY purge-mode deletion. A source, hash, schema, or scan
+# error is a fail-loud skip; proceeding with a partial list is forbidden.
+$evidencePlan = Get-EvidencePurgePlan
+if ($evidencePlan.status -ne 'PASS') {
+    Log "PURGE_SKIP_EVIDENCE_EXCLUSION_ERROR reason=$($evidencePlan.reason)"
+    exit 3
+}
+$protectedTargetLookup = @{}
+try {
+    foreach ($entry in @($evidencePlan.protected_targets)) {
+        $protectedPath = [IO.Path]::GetFullPath([string]$entry.path)
+        $protectedTargetLookup[$protectedPath] = @($entry.reasons | ForEach-Object { $_.reason }) -join ','
+    }
+} catch {
+    Log "PURGE_SKIP_EVIDENCE_EXCLUSION_ERROR reason=protected_target_normalization_failed:$($_.Exception.Message)"
+    exit 3
+}
+Log ("EVIDENCE_EXCLUSIONS status=PASS db_pairs={0} live_pairs={1} union_pairs={2} targets_scanned={3} protected_targets={4} manifest_sha256={5}" -f `
+    $evidencePlan.counts.portfolio_candidate_pairs, $evidencePlan.counts.live_manifest_pairs,
+    $evidencePlan.counts.protected_union_pairs, $evidencePlan.counts.purge_targets_scanned,
+    $evidencePlan.counts.protected_targets, $evidencePlan.live_manifest_sha256)
+
 $runBusyScratch = $Mode -in @('All', 'BusyScratch')
 $telemetryErrors = @()
 if ($runBusyScratch) {
@@ -309,9 +373,36 @@ while ($killPass -lt 4) {
 Start-Sleep -Seconds 5   # extra settle so the OS releases handles before respawn
 Log "idle factory slots stopped ($killPass extra kill pass(es); protected active/running terminals=[$($protectedTerminals -join ',')])"
 
+# Refresh after idle slots are stopped, closing the scan-to-delete race. If the
+# second plan cannot be proven complete, skip every idle-cache deletion, restore
+# the captured factory state below, and exit non-zero.
+$evidenceRefreshFailed = $false
+$refreshedEvidencePlan = Get-EvidencePurgePlan
+if ($refreshedEvidencePlan.status -ne 'PASS') {
+    $evidenceRefreshFailed = $true
+    Log "PURGE_SKIP_EVIDENCE_EXCLUSION_ERROR stage=post_stop_refresh reason=$($refreshedEvidencePlan.reason)"
+} else {
+    try {
+        $refreshedLookup = @{}
+        foreach ($entry in @($refreshedEvidencePlan.protected_targets)) {
+            $protectedPath = [IO.Path]::GetFullPath([string]$entry.path)
+            $refreshedLookup[$protectedPath] = @($entry.reasons | ForEach-Object { $_.reason }) -join ','
+        }
+        $protectedTargetLookup = $refreshedLookup
+        Log ("EVIDENCE_EXCLUSIONS_REFRESH status=PASS union_pairs={0} targets_scanned={1} protected_targets={2}" -f `
+            $refreshedEvidencePlan.counts.protected_union_pairs,
+            $refreshedEvidencePlan.counts.purge_targets_scanned,
+            $refreshedEvidencePlan.counts.protected_targets)
+    } catch {
+        $evidenceRefreshFailed = $true
+        Log "PURGE_SKIP_EVIDENCE_EXCLUSION_ERROR stage=post_stop_refresh reason=protected_target_normalization_failed:$($_.Exception.Message)"
+    }
+}
+
 # 2. clear regenerable tester caches
 $purgedTerminals = @()
 [long]$idleDeletedBytes = 0
+if (-not $evidenceRefreshFailed) {
 foreach ($n in 1..10) {
     $terminalName = "T$n"
     if ($protectedLookup.ContainsKey($terminalName)) {
@@ -336,6 +427,10 @@ foreach ($n in 1..10) {
             $telemetryErrors += [pscustomobject]@{ status = 'TELEMETRY_ERROR'; reason = 'target_outside_tester_root' }
             continue
         }
+        if ($protectedTargetLookup.ContainsKey($targetPath)) {
+            Log "SKIP_EVIDENCE_PROTECTED: terminal=$terminalName target=$targetPath reasons=$($protectedTargetLookup[$targetPath])"
+            continue
+        }
         [long]$beforeBytes = if ($target.PSIsContainer) {
             [long](Get-ChildItem -LiteralPath $targetPath -File -Recurse -ErrorAction SilentlyContinue |
                 Measure-Object -Property Length -Sum).Sum
@@ -352,6 +447,7 @@ foreach ($n in 1..10) {
     }
     $purgedTerminals += $terminalName
 }
+}
 Start-Sleep -Seconds 2
 $after = FreeGB
 $idleTelemetry = Get-ReclaimTelemetry -ExpectedDeletedBytes $idleDeletedBytes -BeforeGb $free -AfterGb $after
@@ -366,6 +462,10 @@ Log "idle caches cleared terminals=[$($purgedTerminals -join ',')]: D: ${free}GB
 #    both dispatch tasks were disabled (or FACTORY_OFF.flag existed), leave them
 #    disabled and do not queue an InteractiveToken start.
 if (-not $factoryRestartAuthorized) {
+    if ($evidenceRefreshFailed) {
+        Log 'factory restart SKIPPED: captured OWNER state was OFF; evidence-protected cache deletion was also skipped'
+        exit 3
+    }
     Log 'factory restart SKIPPED: captured OWNER state was OFF; caches purged without changing factory state'
     if ($telemetryErrors.Count -gt 0) { exit 2 }
     return
@@ -386,4 +486,5 @@ try {
 } catch {
     Log "factory missing-worker recovery FAILED (interactive-session token launcher): $($_.Exception.Message) - existing protected slots were not killed"
 }
+if ($evidenceRefreshFailed) { exit 3 }
 if ($telemetryErrors.Count -gt 0) { exit 2 }
