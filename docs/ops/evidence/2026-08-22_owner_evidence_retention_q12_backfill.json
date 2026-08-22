@@ -1,0 +1,138 @@
+{
+  "schema": "qm.owner_evidence_retention.portfolio_candidate_backfill.v1",
+  "router_task_id": "78b7c6ec-2fd6-43b8-90ca-1b270fc9ffa2",
+  "authorization": "OWNER-DEC-EVIDENCE-RETENTION",
+  "generated_at_utc": "2026-08-22T10:02:23+00:00",
+  "mutation_contract": {
+    "append_only": true,
+    "existing_rows_updated": 0,
+    "fund_score_synthesized": false,
+    "table_payload_note": "portfolio_candidates has no payload_json column; this immutable manifest is the row-linked provenance payload via evidence_path"
+  },
+  "live_binding": {
+    "pulse_path": "D:/QM/reports/state/live_book_pulse.json",
+    "pulse_sha256": "20a0f2c976c36e4418dbfba1d645325ebfa25ee92252ef4592b0f9623da5292e",
+    "pulse_generated_at_utc": "2026-08-22T10:00:01Z",
+    "signed_manifest_path": "D:/QM/reports/portfolio/portfolio_manifest_live_24sleeve_20260724.json",
+    "signed_manifest_sha256": "8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6",
+    "manifest_sleeve_count": 24,
+    "loaded_preset_count": 24,
+    "manifest_mismatch_count": 0
+  },
+  "database_before": {
+    "portfolio_candidates_rows": 38,
+    "states": {
+      "Q12_REVIEW_READY": 30,
+      "EVIDENCE_STALE": 6,
+      "DUPLICATE_SUPERSEDED": 2
+    }
+  },
+  "database_after": {
+    "transaction": "COMMITTED",
+    "portfolio_candidates_rows": 41,
+    "states": {
+      "Q12_REVIEW_READY": 30,
+      "EVIDENCE_STALE": 9,
+      "DUPLICATE_SUPERSEDED": 2
+    },
+    "inserted_rows": 3,
+    "existing_rows_unchanged": 38,
+    "before_rows_sha256": "2905438af3af06ad3a12a1afd8e9e05c5963112e0d9fbea1525043c07146e0f5",
+    "after_rows_sha256": "bd17108d727c02018e7aa81ddcacd52d007942fbd88bce6dbde764157c4b1864"
+  },
+  "rows": [
+    {
+      "ea_id": "QM5_13301",
+      "symbol": "GDAXI.DWX",
+      "q11_work_item_id": "90c6f8d4-a5e4-4126-a099-ea83d990b624",
+      "state": "EVIDENCE_STALE",
+      "fund_score": null,
+      "payload": {
+        "provenance": "OWNER-DEC-EVIDENCE-RETENTION",
+        "live_magic": 133010010,
+        "q10": {
+          "verdict": "PASS",
+          "evidence_path": "D:/QM/reports/work_items/90c6f8d4-a5e4-4126-a099-ea83d990b624/QM5_13301/Q10/GDAXI_DWX/aggregate.json",
+          "sha256": "b8281566c3e6387404172b5a126ef334c0288692820f3383fd7e1dd5605a9315"
+        },
+        "latest_q08": {
+          "work_item_id": "a3538dc4-e7bc-4285-ba2b-6d0858cb3f60",
+          "verdict": "PASS",
+          "sha256": "f84453bcb9fac3474f11324f57381e92894b9063aa736adda6ac2676b9fdc17c"
+        },
+        "q09_portfolio": {
+          "work_item_id": "db5027ee-9326-40bc-b87f-dcfdf346d3fa",
+          "verdict": "FAIL_PORTFOLIO",
+          "sha256": "e916b76eeb765914532fc972bbfa15e3a4e4ce759ee158144187f3f3f4a97d80"
+        },
+        "named_gaps": [
+          "no CONFIG_LOCKED Q09_NEWS evidence",
+          "available Q09_PORTFOLIO verdict is FAIL_PORTFOLIO",
+          "Q10 PASS predates the current paired-dependency contract"
+        ]
+      }
+    },
+    {
+      "ea_id": "QM5_13213",
+      "symbol": "USDJPY.DWX",
+      "q11_work_item_id": "54b9ad23-d10d-493b-80b2-90c77347cffa",
+      "state": "EVIDENCE_STALE",
+      "fund_score": null,
+      "payload": {
+        "provenance": "OWNER-DEC-EVIDENCE-RETENTION",
+        "live_magic": 132130000,
+        "q10": {
+          "verdict": "PASS",
+          "evidence_path": "D:/QM/reports/pipeline/QM5_13213/Q10/USDJPY_DWX/aggregate.json",
+          "sha256": "8e43424a14e17926a140dd2bc29d293c30526e7074cbc6ca019288fa084c5418"
+        },
+        "latest_q08": {
+          "work_item_id": "d2783b32-78fd-4068-b4e4-2b778c47b417",
+          "verdict": "FAIL_SOFT",
+          "sha256": "c80c2bc29607b535a9e605cbaba9de5ac3381275e1f112283d1be524c5a56306"
+        },
+        "q09_portfolio": {
+          "work_item_id": "d3c5183e-bc8c-4f16-9a61-f141e3550026",
+          "verdict": "FAIL_PORTFOLIO",
+          "sha256": "fc0eb81c65abec5bd7d2c2be2d7a32f946b0f40215f57b319898c547bd3e51fc"
+        },
+        "named_gaps": [
+          "no Q09_NEWS work item or CONFIG_LOCKED evidence",
+          "available Q09_PORTFOLIO verdict is FAIL_PORTFOLIO",
+          "Q10 PASS predates recency and current paired-dependency evidence"
+        ]
+      }
+    },
+    {
+      "ea_id": "QM5_12989",
+      "symbol": "XAUUSD.DWX",
+      "q11_work_item_id": "b0ed83c7-ff92-49e9-aafd-647a37fda30e",
+      "state": "EVIDENCE_STALE",
+      "fund_score": null,
+      "payload": {
+        "provenance": "OWNER-DEC-EVIDENCE-RETENTION",
+        "live_magic": 129890003,
+        "q10": {
+          "verdict": "PASS",
+          "evidence_path": "D:/QM/reports/pipeline/QM5_12989/Q10/XAUUSD_DWX/aggregate.json",
+          "sha256": "c1fd6ab88dbb1aeaba9e33b85f47bb0b5ee5cc6f43cfe2f3dc067e87e8089e7e"
+        },
+        "latest_q08": {
+          "work_item_id": "86abcee3-1e53-4b6d-a576-80fea6e02219",
+          "verdict": "PASS",
+          "sha256": "df779904cd9479ee020c663cb3a6109cc68916b2ed1f03ed31d26d22edac3337"
+        },
+        "q09_news": {
+          "work_item_id": "17e78f20-2bae-5473-b54b-5e405cf53239",
+          "verdict": "REVIEW_REQUIRED",
+          "sha256": "7a91f5bd14616365100265e5f81e3f89bfe800ef5f0b49721df466f78bb076e0"
+        },
+        "named_gaps": [
+          "Q09_NEWS is REVIEW_REQUIRED rather than CONFIG_LOCKED",
+          "Q09_PORTFOLIO work item aeb64c9f is FAIL_PORTFOLIO and its evidence path is missing",
+          "Q10 PASS predates the current paired-dependency contract"
+        ]
+      }
+    }
+  ]
+}
