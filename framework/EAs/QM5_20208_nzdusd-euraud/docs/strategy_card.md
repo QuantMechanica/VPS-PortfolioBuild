@@ -7,7 +7,7 @@ status: APPROVED
 g0_status: APPROVED
 created: 2026-08-03
 created_by: Research+Development
-last_updated: 2026-08-03
+last_updated: 2026-08-22
 source_id: claude_cross_asset_discovery_2026-06-09
 source_citations:
   - type: book
@@ -38,7 +38,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02_PENDING
+pipeline_phase: Q06_PENDING
 g0_approval_reasoning: "Mission-directed G0 approval: R1 OWNER-requested fixed scan plus OWNER-ratified Tier-A Chan SRC02; R2 fixed sign-aware D1 beta/z/ATR package; R3 native NZDUSD/EURAUD and conversion histories; R4 structural deterministic ML-free."
 ---
 
@@ -283,3 +283,22 @@ data_requirements: standard
 | v1 | 2026-08-03 | next-ranked non-duplicate fixed-scan FX basket | G0 | APPROVED |
 | v2 | 2026-08-03 | initial sign-aware two-leg V5 implementation | Q01 | PASS |
 | v3 | 2026-08-03 | guarded logical-basket priority-track enqueue | Q02 | PENDING |
+| v4 | 2026-08-03 | canonical logical-basket baseline; no strategy rebuild | Q02 | PASS |
+| v5 | 2026-08-21 | canonical early-OOS completion; no strategy rebuild | Q04 | PASS_LOWFREQ |
+| v6 | 2026-08-22 | canonical medium-stress completion; no strategy rebuild | Q05 | PASS |
+| v7 | 2026-08-22 | governed cascade from terminal Q05 PASS; no strategy rebuild | Q06 | PENDING |
+
+## 15. Pipeline Phase Status
+
+| Phase | Date | Verdict | Evidence |
+|---|---|---|---|
+| Q02 Baseline Screening | 2026-08-03 | PASS | work item `1935fc01-6eaa-4db1-8397-660d22ebdfbb` |
+| Q04 Early OOS Probe | 2026-08-21 | PASS_LOWFREQ | work item `3703d3fd-6e3a-4fc2-bc4a-20b2984479b2` |
+| Q05 Medium Stress | 2026-08-22 | PASS | work item `1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d`; PF `1.17`, 108 trades, drawdown `2.57823%`, full history `2018.07.02` through `2025.12.31` |
+| Q06 Harsh Stress | 2026-08-22 | PENDING | unique work item `776e6310-7ad6-41ba-8a08-4d63e045d4e5`, promoted by the governed cascade from the terminal Q05 PASS lineage |
+
+The Q06 row preserves the canonical logical basket, `NZDUSD.DWX` host,
+`EURAUD.DWX` traded companion, `AUDUSD.DWX` and `EURUSD.DWX` conversion
+histories, USD 100,000 tester account, and the fixed-risk backtest setfile.
+This metadata reconciliation changes no signal, sizing, execution, or exit
+rule and does not authorize a live artifact.

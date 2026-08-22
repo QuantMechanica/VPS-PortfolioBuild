@@ -1,0 +1,129 @@
+{
+  "schema_version": "1.0",
+  "artifact_kind": "fx_cointegration_q06_lineage_reconciliation",
+  "generated_at_utc": "2026-08-22T21:26:40Z",
+  "branch": "agents/board-advisor",
+  "observation_base_head": "68b8f833e5b380838dad368e158c37da1d0ca114",
+  "mission_result": "RECONCILED_EXISTING_FOREX_SUCCESSOR_ALREADY_ENQUEUED_BY_GOVERNED_CASCADE",
+  "frontier": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "decision": "DO_NOT_CREATE_DUPLICATE_CARD_OR_EA"
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_20208",
+    "slug": "nzdusd-euraud",
+    "scan_rank": 27,
+    "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "traded_legs": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "conversion_history_symbols": [
+      "AUDUSD.DWX",
+      "EURUSD.DWX"
+    ],
+    "lineage": [
+      {
+        "phase": "Q02",
+        "work_item_id": "1935fc01-6eaa-4db1-8397-660d22ebdfbb",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "phase": "Q04",
+        "work_item_id": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+        "status": "done",
+        "verdict": "PASS_LOWFREQ"
+      },
+      {
+        "phase": "Q05",
+        "work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+        "status": "done",
+        "verdict": "PASS",
+        "pf": 1.17,
+        "trades": 108,
+        "dd_pct": 2.57823,
+        "history_from": "2018.07.02",
+        "history_to": "2025.12.31"
+      },
+      {
+        "phase": "Q06",
+        "work_item_id": "776e6310-7ad6-41ba-8a08-4d63e045d4e5",
+        "status": "pending",
+        "verdict": null,
+        "attempt_count": 0,
+        "claimed_by": null,
+        "created_at_utc": "2026-08-22T20:54:52Z",
+        "promoted_from_phase": "Q05",
+        "promoted_from_work_item": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+        "promotion_source": "pump_cascade"
+      }
+    ],
+    "build_contract": {
+      "approved_card": "strategy-seeds/cards/approved/QM5_20208_nzdusd-euraud_card.md",
+      "build_local_card": "framework/EAs/QM5_20208_nzdusd-euraud/docs/strategy_card.md",
+      "ex5_sha256": "31d4460df6cd3e9ef579d8ed4e3849e62b3423ef0e942f6703122e2245988bc4",
+      "basket_manifest_sha256": "ed2fac5d413a6a4665388f73d22606408e51a7e317136e4ac8ed0a8369aa8796",
+      "backtest_setfile_sha256": "f6ae2633e6ec4e54a7e14835c16c50c231c4135495abf7f3cdb00eaf5346ae04",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    }
+  },
+  "capacity_preflight": {
+    "sampled_at_utc": "2026-08-22T21:25:21.7279805Z",
+    "cpu_samples_percent": [
+      47.67,
+      56.94,
+      57.35,
+      52.84,
+      51.70
+    ],
+    "cpu_average_percent": 53.30,
+    "cpu_max_percent": 57.35,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_binding": false,
+    "running_factory_terminals": [
+      "T2"
+    ],
+    "enabled_terminal_worker_count": 10,
+    "free_disk_gib_d": 130.70
+  },
+  "actions_this_run": {
+    "build_local_card_lineage_updated": true,
+    "canonical_approved_card_changed": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "queue_mutation": false,
+    "duplicate_enqueue_avoided": true,
+    "manual_dispatch": false,
+    "tester_or_backtest_run": false,
+    "terminal_reservation_or_control": false
+  },
+  "worktree_hygiene": {
+    "preexisting_untracked_q05_setfile_preserved": true,
+    "unrelated_changes_staged_or_committed": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
