@@ -17662,3 +17662,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12952,mql5-force-ema-card,2,GER40.DWX,129520002,2026-08-22,Codex,active
 41109,xauxag-mmean-median-rv,0,XAUUSD.DWX,411090000,2026-08-22,Codex governed allocator,active
 41109,xauxag-mmean-median-rv,1,XAGUSD.DWX,411090001,2026-08-22,Codex governed allocator,active
+12955,mql5-aroon-cross-card,0,EURUSD.DWX,129550000,2026-08-22,Codex governed allocator,active
+12955,mql5-aroon-cross-card,1,GBPUSD.DWX,129550001,2026-08-22,Codex governed allocator,active
+12955,mql5-aroon-cross-card,2,GER40.DWX,129550002,2026-08-22,Codex governed allocator,active
