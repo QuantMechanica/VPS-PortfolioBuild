@@ -1,0 +1,127 @@
+{
+  "artifact_type": "fx_cointegration_frontier_q06_hard_cpu_stop",
+  "generated_at_utc": "2026-08-22T20:32:30Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "07951e300d6ffebc8a93c3667104895ff9425059",
+  "mission_outcome": "EXISTING_PAIR_Q06_ELIGIBLE_BUT_STOPPED_AT_BACKTEST_CPU_CEILING",
+  "frontier": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "reconciliation_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "new_card_or_ea_created": false,
+    "reason": "Every sign-aware scan relationship already has a governed implementation identity; another scan-derived sleeve would duplicate existing work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_20208",
+    "ea_slug": "nzdusd-euraud",
+    "scan_rank": 27,
+    "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "traded_legs": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "q02": {
+      "work_item_id": "1935fc01-6eaa-4db1-8397-660d22ebdfbb",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+      "status": "done",
+      "verdict": "PASS_LOWFREQ"
+    },
+    "q05": {
+      "work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at_utc": "2026-08-22T17:50:57Z"
+    },
+    "next_gate": {
+      "phase": "Q06",
+      "work_item_present_at_2026_08_22T20_32_30Z": false,
+      "eligible_predecessor_work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+      "enqueue_command_when_below_ceiling": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_20208 --phase Q06 --from-work-item-id 1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+      "enqueue_performed": false,
+      "blocked_by": "BACKTEST_CPU_HARD_CEILING"
+    }
+  },
+  "build_preflight": {
+    "ex5_present": true,
+    "active_magic_rows": [
+      "20208:0:NZDUSD.DWX:202080000",
+      "20208:1:EURAUD.DWX:202080001"
+    ],
+    "free_disk_gb_d": 125.67,
+    "disk_minimum_gb": 2.0,
+    "risk_contract_source": "The existing Q05 setfile is recorded in the prior 2026-08-22T19:33:24Z Q06 stop as RISK_FIXED=1000, RISK_PERCENT=0, PORTFOLIO_WEIGHT=1."
+  },
+  "capacity_sample": {
+    "sample_started_at_utc": "2026-08-22T20:32:20.7881963Z",
+    "slot_scan_at_utc": "2026-08-22T20:32:30Z",
+    "cpu_samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "cpu_average_percent": 100.0,
+    "cpu_max_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "running_factory_terminal_count": 8,
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "enabled_terminal_worker_count": 10,
+    "excluded_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "The scan frontier is fully covered and the eligible QM5_20208 Q06 successor could not be enqueued after the five-sample CPU preflight remained at 100 percent."
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
