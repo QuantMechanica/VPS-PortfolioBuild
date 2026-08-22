@@ -49,6 +49,50 @@ _TF_ALTERNATION = "|".join(VALID_TIMEFRAMES)
 _EA_LABEL_RE = re.compile(r"^(QM5_([0-9]+)_([A-Za-z0-9][A-Za-z0-9_-]*))$")
 _BOUND_HASH_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
+# DL-089 Wave 1 live-book requalification: an explicit, named force-rebuild
+# allowlist for the 16 EAs still stuck behind the default "no existing .ex5"
+# classifier guard. Overwriting the old .ex5 is the entire point of a
+# requalification rebuild for these EAs specifically - this is NOT a general
+# .ex5-overwrite path; every other candidate keeps the default guards.
+DL089_FORCE_REBUILD_OWNER_REFERENCE = "OWNER_DECISION_2026-08-21_DL-089_LIVE_BOOK_REQUALIFICATION"
+DL089_FORCE_REBUILD_EA_IDS = frozenset({
+    "1556", "1567", "10919", "10939", "11132", "11165", "11421", "11708",
+    "12567", "12778", "12969", "12989", "13117", "13128", "13213", "13301",
+})
+FORCE_REBUILD_WAIVABLE_REASONS = frozenset({
+    "EX5_ALREADY_PRESENT", "WORK_ITEMS_EXIST", "BOUND_SETFILE_HASH_EXISTS",
+    "BUILD_TASK_EXISTS",
+})
+
+
+def dl089_force_rebuild_allowlist(repo_root: Path) -> frozenset[str]:
+    """Return the numeric EA ids authorized for a COMPILE_EA force-rebuild.
+
+    Fail-closed: an id only clears the bypass when the hardcoded
+    DL089_FORCE_REBUILD_EA_IDS name AND a live owner_priority_tracks.json row
+    bound to the exact DL-089 owner_reference both agree. Removing the
+    registry row (e.g. an OWNER revocation) silently turns the bypass back
+    off for that EA without a code change.
+    """
+    tracks_path = repo_root / "framework" / "registry" / "owner_priority_tracks.json"
+    try:
+        document = json.loads(tracks_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return frozenset()
+    entries = document.get("entries") if isinstance(document, dict) else None
+    if not isinstance(entries, list):
+        return frozenset()
+    authorized: set[str] = set()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        if entry.get("owner_reference") != DL089_FORCE_REBUILD_OWNER_REFERENCE:
+            continue
+        ea_id = _numeric_ea_reference(entry.get("ea_id"))
+        if ea_id and ea_id in DL089_FORCE_REBUILD_EA_IDS:
+            authorized.add(ea_id)
+    return frozenset(authorized)
+
 
 def utc_now() -> str:
     return dt.datetime.now(dt.UTC).isoformat(timespec="seconds")
@@ -260,6 +304,7 @@ def classify_candidate(
     *,
     current_work_item_id: str | None = None,
     sanctioned_predecessor_ids: Iterable[str] = (),
+    force_rebuild_ea_ids: frozenset[str] = frozenset(),
 ) -> dict[str, Any]:
     parts = _label_parts(label)
     if not parts:
@@ -331,6 +376,17 @@ def classify_candidate(
     }
     if source.is_file() and not timeframe.get("timeframe"):
         reasons.append("TIMEFRAME_UNRESOLVED")
+
+    force_rebuild_authorized = ea_id in force_rebuild_ea_ids
+    force_rebuild_waived_reasons: list[str] = []
+    if force_rebuild_authorized:
+        force_rebuild_waived_reasons = sorted(
+            reason for reason in reasons if reason in FORCE_REBUILD_WAIVABLE_REASONS
+        )
+        reasons = [
+            reason for reason in reasons if reason not in FORCE_REBUILD_WAIVABLE_REASONS
+        ]
+
     return {
         "ea_label": canonical_label,
         "ea_id": f"QM5_{ea_id}",
@@ -347,6 +403,8 @@ def classify_candidate(
         "bound_setfile_hashes": bound_hashes,
         "timeframe": timeframe,
         "sanctioned_predecessor_ids": sorted(sanctioned_ids),
+        "force_rebuild_authorized": force_rebuild_authorized,
+        "force_rebuild_waived_reasons": force_rebuild_waived_reasons,
     }
 
 
@@ -559,7 +617,14 @@ def enqueue_compile_eas(
     # is the batch form and remains dry-run until --apply is present.
     apply_effective = bool(apply or not from_file)
     inventory = _inventory(root, repo_root)
-    classified = [classify_candidate(root, repo_root, label, inventory) for label in labels]
+    force_rebuild_ea_ids = dl089_force_rebuild_allowlist(repo_root)
+    classified = [
+        classify_candidate(
+            root, repo_root, label, inventory,
+            force_rebuild_ea_ids=force_rebuild_ea_ids,
+        )
+        for label in labels
+    ]
     eligible = [row for row in classified if row.get("eligible")]
     idempotent = [row for row in classified if row.get("idempotent_open")]
     refused = [row for row in classified if not row.get("eligible") and not row.get("idempotent_open")]
@@ -583,18 +648,19 @@ def enqueue_compile_eas(
                         "work_item_ids": [existing["id"]],
                     })
                     continue
-                any_work = conn.execute(
-                    "SELECT id FROM work_items WHERE ea_id=? LIMIT 1",
-                    (candidate["ea_id"],),
-                ).fetchone()
-                if any_work:
-                    refused.append({
-                        **candidate,
-                        "eligible": False,
-                        "reason": "WORK_ITEMS_EXIST_AT_APPLY",
-                        "reasons": ["WORK_ITEMS_EXIST_AT_APPLY"],
-                    })
-                    continue
+                if not candidate.get("force_rebuild_authorized"):
+                    any_work = conn.execute(
+                        "SELECT id FROM work_items WHERE ea_id=? LIMIT 1",
+                        (candidate["ea_id"],),
+                    ).fetchone()
+                    if any_work:
+                        refused.append({
+                            **candidate,
+                            "eligible": False,
+                            "reason": "WORK_ITEMS_EXIST_AT_APPLY",
+                            "reasons": ["WORK_ITEMS_EXIST_AT_APPLY"],
+                        })
+                        continue
                 work_item_id = str(uuid.uuid4())
                 payload = {
                     "compile_contract_version": COMPILE_CONTRACT_VERSION,
@@ -611,6 +677,14 @@ def enqueue_compile_eas(
                     "no_gate_verdict": True,
                     "enqueued_at": now,
                 }
+                if candidate.get("force_rebuild_authorized"):
+                    payload.update({
+                        "force_rebuild": True,
+                        "force_rebuild_owner_reference": DL089_FORCE_REBUILD_OWNER_REFERENCE,
+                        "force_rebuild_waived_reasons": candidate.get(
+                            "force_rebuild_waived_reasons", []
+                        ),
+                    })
                 conn.execute(
                     "INSERT INTO work_items "
                     "(id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,"
@@ -917,6 +991,7 @@ def run_compile_work_item(
             inventory,
             current_work_item_id=work_item_id,
             sanctioned_predecessor_ids=sanctioned_predecessors,
+            force_rebuild_ea_ids=dl089_force_rebuild_allowlist(repo_root),
         )
         evidence["ea_label"] = label
         evidence["candidate_recheck"] = candidate

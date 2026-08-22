@@ -385,6 +385,157 @@ def test_candidate_recheck_allows_exact_build_binding_retry_chain(
     ) == set()
 
 
+def _dl089_fixture(tmp_path: Path, ea_id: str, label: str) -> tuple[Path, Path]:
+    """Build a fixture EA that already has an .ex5, historical work_items, and a
+    bound setfile hash - the exact "already live" shape the DL-089 force-rebuild
+    bypass exists for."""
+    repo = tmp_path / "repo"
+    root = tmp_path / "farm"
+    slug = label.split("_", 2)[2]
+    _write_csv(
+        repo / "framework" / "registry" / "ea_id_registry.csv",
+        ["ea_id", "slug", "strategy_id", "status", "owner", "created_at"],
+        [{
+            "ea_id": ea_id, "slug": slug, "strategy_id": f"SRC_{ea_id}",
+            "status": "active", "owner": "Research", "created_at": "2026-08-01",
+        }],
+    )
+    _write_csv(
+        repo / "framework" / "registry" / "magic_numbers.csv",
+        ["ea_id", "ea_slug", "symbol_slot", "symbol", "magic",
+         "reserved_at", "reserved_by", "status"],
+        [{
+            "ea_id": ea_id, "ea_slug": slug, "symbol_slot": "0",
+            "symbol": "EURUSD.DWX", "magic": str(int(ea_id) * 10000),
+            "reserved_at": "2026-08-01", "reserved_by": "test", "status": "active",
+        }],
+    )
+    ea_dir = repo / "framework" / "EAs" / label
+    ea_dir.mkdir(parents=True)
+    (ea_dir / f"{label}.mq5").write_text(
+        "#property strict\ninput double RISK_FIXED=1000.0;\n", encoding="utf-8",
+    )
+    (ea_dir / f"{label}.ex5").write_bytes(b"stale-binary")
+    setfile_dir = ea_dir / "sets"
+    setfile_dir.mkdir()
+    (setfile_dir / f"{label}_EURUSD.DWX_H1_backtest.set").write_text(
+        "; build_hash: " + "b" * 64 + "\n", encoding="utf-8",
+    )
+    farmctl.init_db(root)
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,"
+            "payload_json,created_at,updated_at) "
+            "VALUES ('old-q02-row','backtest','Q02',?,'EURUSD.DWX','x.set','done','PASS',0,'{}',?,?)",
+            (f"QM5_{ea_id}", now, now),
+        )
+        conn.commit()
+    return repo, root
+
+
+def _write_owner_priority_tracks(
+    repo: Path, ea_id: str, owner_reference: str
+) -> None:
+    document = {
+        "schema_version": "qm.owner-priority-tracks/v1",
+        "entries": [{"ea_id": f"QM5_{ea_id}", "owner_reference": owner_reference}],
+    }
+    path = repo / "framework" / "registry" / "owner_priority_tracks.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(document), encoding="utf-8")
+
+
+def test_dl089_force_rebuild_bypasses_existing_artifacts_and_history(
+    tmp_path: Path,
+) -> None:
+    ea_id = next(iter(compile_work_items.DL089_FORCE_REBUILD_EA_IDS))
+    label = f"QM5_{ea_id}_dl089-fixture-h1"
+    repo, root = _dl089_fixture(tmp_path, ea_id, label)
+    _write_owner_priority_tracks(
+        repo, ea_id, compile_work_items.DL089_FORCE_REBUILD_OWNER_REFERENCE
+    )
+
+    allowlist = compile_work_items.dl089_force_rebuild_allowlist(repo)
+    assert ea_id in allowlist
+
+    inventory = compile_work_items._inventory(root, repo)
+    candidate = compile_work_items.classify_candidate(
+        root, repo, label, inventory, force_rebuild_ea_ids=allowlist,
+    )
+    assert candidate["eligible"] is True
+    assert candidate["force_rebuild_authorized"] is True
+    assert set(candidate["force_rebuild_waived_reasons"]) == {
+        "EX5_ALREADY_PRESENT", "WORK_ITEMS_EXIST", "BOUND_SETFILE_HASH_EXISTS",
+    }
+
+    applied = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    assert applied["enqueued_count"] == 1
+    with farmctl.connect(root) as conn:
+        row = conn.execute(
+            "SELECT payload_json FROM work_items WHERE ea_id=? AND phase='COMPILE_EA'",
+            (f"QM5_{ea_id}",),
+        ).fetchone()
+    payload = json.loads(row[0])
+    assert payload["force_rebuild"] is True
+    assert payload["force_rebuild_owner_reference"] == (
+        compile_work_items.DL089_FORCE_REBUILD_OWNER_REFERENCE
+    )
+
+
+def test_dl089_force_rebuild_fails_closed_without_owner_priority_tracks_entry(
+    tmp_path: Path,
+) -> None:
+    ea_id = next(iter(compile_work_items.DL089_FORCE_REBUILD_EA_IDS))
+    label = f"QM5_{ea_id}_dl089-fixture-h1"
+    repo, root = _dl089_fixture(tmp_path, ea_id, label)
+    # No owner_priority_tracks.json entry written: the hardcoded id alone must
+    # not be enough to unlock the bypass.
+
+    allowlist = compile_work_items.dl089_force_rebuild_allowlist(repo)
+    assert ea_id not in allowlist
+
+    inventory = compile_work_items._inventory(root, repo)
+    candidate = compile_work_items.classify_candidate(
+        root, repo, label, inventory, force_rebuild_ea_ids=allowlist,
+    )
+    assert candidate["eligible"] is False
+    assert candidate["force_rebuild_authorized"] is False
+    assert "EX5_ALREADY_PRESENT" in candidate["reasons"]
+
+
+def test_dl089_force_rebuild_never_waives_structural_guards(tmp_path: Path) -> None:
+    ea_id = next(iter(compile_work_items.DL089_FORCE_REBUILD_EA_IDS))
+    label = f"QM5_{ea_id}_dl089-fixture-h1"
+    repo, root = _dl089_fixture(tmp_path, ea_id, label)
+    _write_owner_priority_tracks(
+        repo, ea_id, compile_work_items.DL089_FORCE_REBUILD_OWNER_REFERENCE
+    )
+    # Retire the active magic row: a structural guard the bypass must never waive.
+    magic_path = repo / "framework" / "registry" / "magic_numbers.csv"
+    _write_csv(
+        magic_path,
+        ["ea_id", "ea_slug", "symbol_slot", "symbol", "magic",
+         "reserved_at", "reserved_by", "status"],
+        [{
+            "ea_id": ea_id, "ea_slug": label.split("_", 2)[2], "symbol_slot": "0",
+            "symbol": "EURUSD.DWX", "magic": str(int(ea_id) * 10000),
+            "reserved_at": "2026-08-01", "reserved_by": "test", "status": "retired",
+        }],
+    )
+
+    allowlist = compile_work_items.dl089_force_rebuild_allowlist(repo)
+    inventory = compile_work_items._inventory(root, repo)
+    candidate = compile_work_items.classify_candidate(
+        root, repo, label, inventory, force_rebuild_ea_ids=allowlist,
+    )
+    assert candidate["eligible"] is False
+    assert candidate["force_rebuild_authorized"] is True
+    assert "ACTIVE_MAGIC_ROWS_MISSING" in candidate["reasons"]
+    assert "EX5_ALREADY_PRESENT" not in candidate["reasons"]
+
+
 def test_candidate_refuses_unresolved_timeframe_before_enqueue(tmp_path: Path) -> None:
     label = "QM5_1001_compile-fixture"
     repo, root = _fixture(tmp_path, [label])
