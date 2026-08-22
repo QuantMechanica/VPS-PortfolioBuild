@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "normalized completed WTI two consecutive calendar-month packages parent-close-to-new-close strict return sign confirmed by newest-month own high-low outer-quartile close location continuation next-month hold",
+    "slug": "wti-mclose-location-mom",
+    "strategy_id": "MOP-WTI-MCLOSE-LOCATION-MOM-2026_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-08-22T04:08:29+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41080_wti-wclose-location-mom_card.md",
+      "score": 0.8,
+      "slug": "wti-wclose-location-mom",
+      "source": "card",
+      "strategy_id": "MOP-WTI-WCLOSE-LOCATION-MOM-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41081_xng-wclose-location-mom_card.md",
+      "score": 0.8,
+      "slug": "xng-wclose-location-mom",
+      "source": "card",
+      "strategy_id": "MOP-XNG-WCLOSE-LOCATION-MOM-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41087_wti-wr4-close-mom_card.md",
+      "score": 0.6,
+      "slug": "wti-wr4-close-mom",
+      "source": "card",
+      "strategy_id": "CRABEL-MOP-WTI-WR4-CLOSE-MOM-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41073_wti-woutside-settle_card.md",
+      "score": 0.55,
+      "slug": "wti-woutside-settle",
+      "source": "card",
+      "strategy_id": "MOP-WTI-WOUTSIDE-SETTLE-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41091_wti-winside-body-mom_card.md",
+      "score": 0.5,
+      "slug": "wti-winside-body-mom",
+      "source": "card",
+      "strategy_id": "MOP-WTI-WINSIDE-BODY-MOM-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4594,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1273,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
