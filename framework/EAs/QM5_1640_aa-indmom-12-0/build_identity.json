@@ -1,0 +1,22 @@
+{
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\QM5_1640_aa-indmom-12-0.mq5",
+  "mq5_sha256": "bdbd01eb4fe94f7ee7bfc33376b154987b94a989bd9ec22daf72e5e6c5c9d724",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\QM5_1640_aa-indmom-12-0.ex5",
+  "ex5_sha256": "5939b001f358b22cebfe033da804b1bf1aae9d17c858b6aa9aaffd3e1e752cd5",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_AUDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_GDAXI.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_NZDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_UK100.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_USDCAD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_USDCHF.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_USDJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_WS30.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1640_aa-indmom-12-0\\sets\\QM5_1640_aa-indmom-12-0_XAUUSD.DWX_D1_backtest.set"
+  ]
+}
