@@ -694,6 +694,163 @@ def _farm_db_path(farm_root: Path) -> Path:
     return farm_root.resolve() / FACTORY_DB_RELATIVE_PATH
 
 
+
+
+_Q07_LINEAGE_AUTH_FAILURE = (
+    "Q08 dependency has no Q07 lineage and no identity-bound "
+    "Q07 predecessor could be authenticated"
+)
+
+
+def _hex64(value: Any) -> str:
+    """Return a lowercased 64-hex sha string, or an empty string otherwise."""
+    text = str(value or "").strip().lower()
+    if len(text) == 64 and all(c in "0123456789abcdef" for c in text):
+        return text
+    return ""
+
+
+def _load_json_document(path: Path) -> dict[str, Any]:
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return document if isinstance(document, dict) else {}
+
+
+def _mapping(value: Any) -> Mapping[str, Any]:
+    return value if isinstance(value, Mapping) else {}
+
+
+def _q08_ex5_identity(payload: Mapping[str, Any], evidence: Mapping[str, Any]) -> str:
+    """Best authenticated EX5 sha for a Q08 dependency.
+
+    A ``book_q08_regeneration`` row leaves ``expected_ex5_sha256`` empty, so the
+    authenticated Q08 evidence (its hash was verified upstream) and the dispatch
+    staging record are consulted as fallbacks.
+    """
+    staged = _mapping(payload.get("staged_ex5"))
+    baseline = _mapping(evidence.get("baseline_run"))
+    for candidate in (
+        payload.get("expected_ex5_sha256"),
+        staged.get("source_sha256"),
+        staged.get("required_sha256"),
+        baseline.get("baseline_ex5_sha256"),
+    ):
+        found = _hex64(candidate)
+        if found:
+            return found
+    return ""
+
+
+def _q08_mq5_identity(payload: Mapping[str, Any], evidence: Mapping[str, Any]) -> str:
+    baseline = _mapping(evidence.get("baseline_run"))
+    for candidate in (
+        payload.get("expected_mq5_sha256"),
+        baseline.get("baseline_mq5_sha256"),
+    ):
+        found = _hex64(candidate)
+        if found:
+            return found
+    return ""
+
+
+def _q07_ex5_identity(payload: Mapping[str, Any], evidence: Mapping[str, Any]) -> str:
+    staged = _mapping(payload.get("staged_ex5"))
+    baseline = _mapping(evidence.get("baseline_run"))
+    for candidate in (
+        payload.get("expected_ex5_sha256"),
+        staged.get("source_sha256"),
+        baseline.get("baseline_ex5_sha256"),
+    ):
+        found = _hex64(candidate)
+        if found:
+            return found
+    return ""
+
+
+def _normcase_path(value: Any) -> str:
+    return os.path.normcase(os.path.normpath(str(value or "")))
+
+
+def _resolve_identity_bound_q07(
+    connection: sqlite3.Connection,
+    *,
+    q08_id: str,
+    q08_evidence_path: Path,
+    q08_payload: Mapping[str, Any],
+) -> tuple[str, str]:
+    """Fail-closed fallback when a Q08 row carries no ``promoted_from_work_item``.
+
+    Resolves the newest completed Q07 seed-stability PASS for the same
+    ea_id/symbol/setfile created no later than the Q08 row, and authenticates the
+    EX5 build identity before accepting it.  Never relaxes any gate: any gap in
+    the identity chain raises ``_Q07_LINEAGE_AUTH_FAILURE``.
+    """
+    q08 = connection.execute(
+        "SELECT ea_id,symbol,setfile_path,created_at FROM work_items WHERE id=?",
+        (q08_id,),
+    ).fetchone()
+    if q08 is None:
+        raise RunnerError(_Q07_LINEAGE_AUTH_FAILURE)
+    q08_evidence = _load_json_document(q08_evidence_path)
+    q08_ex5 = _q08_ex5_identity(q08_payload, q08_evidence)
+    q08_mq5 = _q08_mq5_identity(q08_payload, q08_evidence)
+    if not q08_ex5:
+        raise RunnerError(_Q07_LINEAGE_AUTH_FAILURE)
+    want_setfile = _normcase_path(q08["setfile_path"])
+    rows = connection.execute(
+        """
+        SELECT id,setfile_path,evidence_path,payload_json,created_at
+        FROM work_items
+        WHERE phase='Q07' AND status='done'
+          AND verdict IN ('PASS','MULTI_SEED_PASS')
+          AND ea_id=? AND symbol=?
+          AND created_at<=?
+        ORDER BY created_at DESC, id DESC
+        """,
+        (q08["ea_id"], q08["symbol"], q08["created_at"]),
+    ).fetchall()
+    candidate = None
+    for row in rows:
+        if _normcase_path(row["setfile_path"]) == want_setfile:
+            candidate = row
+            break
+    if candidate is None:
+        raise RunnerError(_Q07_LINEAGE_AUTH_FAILURE)
+    try:
+        q07_payload = json.loads(str(candidate["payload_json"] or "{}"))
+    except json.JSONDecodeError:
+        q07_payload = {}
+    if not isinstance(q07_payload, dict):
+        q07_payload = {}
+    q07_evidence = _load_json_document(Path(str(candidate["evidence_path"] or "")))
+    q07_ex5 = _q07_ex5_identity(q07_payload, q07_evidence)
+    if q07_ex5:
+        # Both sides carry an EX5 identity: accept only on an exact match.
+        if q07_ex5 != q08_ex5:
+            raise RunnerError(_Q07_LINEAGE_AUTH_FAILURE)
+        return str(candidate["id"]), "identity_bound_fallback"
+    # The Q07 evidence records no EX5 identity anywhere (payload, aggregate, or
+    # per-seed summary).  Anchor the build to the current repo instead: the Q08
+    # must have run the EX5/MQ5 that is still checked in, so a re-run of that
+    # same build could not have diverged since the Q07 seed-stability PASS.
+    ex5_repo = Path(str(q08_payload.get("expected_ex5_path") or ""))
+    baseline = _mapping(q08_evidence.get("baseline_run"))
+    mq5_repo = Path(str(baseline.get("baseline_mq5_path") or ""))
+    if str(mq5_repo) in ("", ".") and ex5_repo.suffix:
+        mq5_repo = ex5_repo.with_suffix(".mq5")
+    if not ex5_repo.is_file() or _hex64(contract.sha256_file(ex5_repo)) != q08_ex5:
+        raise RunnerError(_Q07_LINEAGE_AUTH_FAILURE)
+    if (
+        not q08_mq5
+        or not mq5_repo.is_file()
+        or _hex64(contract.sha256_file(mq5_repo)) != q08_mq5
+    ):
+        raise RunnerError(_Q07_LINEAGE_AUTH_FAILURE)
+    return str(candidate["id"]), "identity_bound_fallback"
+
+
 def bind_plan_to_work_item(
     farm_root: Path,
     *,
@@ -841,8 +998,15 @@ def bind_plan_to_work_item(
         except json.JSONDecodeError as exc:
             raise RunnerError("Q08 dependency payload is invalid JSON") from exc
         q07_id = str(q08_payload.get("promoted_from_work_item") or "").strip()
-        if not q07_id:
-            raise RunnerError("Q08 dependency does not bind its Q07 predecessor")
+        if q07_id:
+            q07_lineage_resolution = "promoted_from_work_item"
+        else:
+            q07_id, q07_lineage_resolution = _resolve_identity_bound_q07(
+                connection,
+                q08_id=q08_id,
+                q08_evidence_path=q08_path,
+                q08_payload=q08_payload,
+            )
         q07 = connection.execute(
             "SELECT phase,status,verdict,evidence_path FROM work_items WHERE id=?",
             (q07_id,),
@@ -900,6 +1064,7 @@ def bind_plan_to_work_item(
             "q09_q07_work_item_id": q07_id,
             "q09_q07_evidence_path": str(q07_path.resolve()),
             "q09_q07_evidence_sha256": q07_hash,
+            "q09_q07_lineage_resolution": q07_lineage_resolution,
             "q09_cell_count": int(plan["cell_count"]),
             "q09_cell_timeout_sec": timeout_sec,
         }

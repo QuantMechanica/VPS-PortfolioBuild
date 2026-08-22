@@ -209,6 +209,9 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         attempt_count: int = 0,
         q08_verdict: str = "PASS",
         portfolio_rescue: bool = False,
+        q08_payload: dict | None = None,
+        q07_payload: dict | None = None,
+        insert_q07: bool = True,
     ) -> tuple[Path, str]:
         farm_root = self.root / "farm"
         farmctl.init_db(farm_root)
@@ -228,20 +231,33 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             }
         now = "2026-08-02T00:00:00+00:00"
         with closing(farmctl.connect(farm_root)) as connection:
-            for values in (
-                (
-                    "q07-1", "Q07", "done", "MULTI_SEED_PASS",
-                    str(q07_evidence), "{}",
-                ),
+            q08_payload_json = json.dumps(
+                q08_payload
+                if q08_payload is not None
+                else {"promoted_from_work_item": "q07-1"}
+            )
+            q07_payload_json = json.dumps(q07_payload or {})
+            rows = []
+            if insert_q07:
+                rows.append(
+                    (
+                        "q07-1", "Q07", "done", "MULTI_SEED_PASS",
+                        str(q07_evidence), q07_payload_json,
+                    )
+                )
+            rows.append(
                 (
                     "q08-1", "Q08", "done", q08_verdict, str(self.q08),
-                    json.dumps({"promoted_from_work_item": "q07-1"}),
-                ),
+                    q08_payload_json,
+                )
+            )
+            rows.append(
                 (
                     "q09-news-1", "Q09_NEWS", "pending", None, None,
                     json.dumps(q09_payload, sort_keys=True),
-                ),
-            ):
+                )
+            )
+            for values in rows:
                 connection.execute(
                     """
                     INSERT INTO work_items(
@@ -348,6 +364,59 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
                 q08_verdict="FAIL_SOFT",
                 portfolio_rescue=False,
             )
+
+    def test_identity_bound_fallback_binds_when_promoted_from_is_absent(self) -> None:
+        plan = self.build(output="lineage-fallback-ok")
+        farm_root, _ = self.setup_bound_farm(
+            plan,
+            activate=False,
+            q08_payload={},
+            q07_payload={"expected_ex5_sha256": contract.sha256_file(self.ex5)},
+        )
+        with closing(farmctl.connect(farm_root)) as connection:
+            payload = json.loads(
+                connection.execute(
+                    "SELECT payload_json FROM work_items WHERE id='q09-news-1'"
+                ).fetchone()[0]
+            )
+        self.assertEqual(
+            payload["q09_q07_lineage_resolution"], "identity_bound_fallback"
+        )
+        self.assertEqual(payload["q09_q07_work_item_id"], "q07-1")
+
+    def test_identity_bound_fallback_raises_without_matching_q07(self) -> None:
+        plan = self.build(output="lineage-fallback-missing")
+        with self.assertRaisesRegex(runner.RunnerError, "no identity-bound"):
+            self.setup_bound_farm(
+                plan,
+                activate=False,
+                q08_payload={},
+                insert_q07=False,
+            )
+
+    def test_identity_bound_fallback_raises_on_ex5_hash_mismatch(self) -> None:
+        plan = self.build(output="lineage-fallback-mismatch")
+        with self.assertRaisesRegex(runner.RunnerError, "no identity-bound"):
+            self.setup_bound_farm(
+                plan,
+                activate=False,
+                q08_payload={},
+                q07_payload={"expected_ex5_sha256": "a" * 64},
+            )
+
+    def test_promoted_from_lineage_resolution_is_recorded_and_unchanged(self) -> None:
+        plan = self.build(output="lineage-promoted")
+        farm_root, _ = self.setup_bound_farm(plan, activate=False)
+        with closing(farmctl.connect(farm_root)) as connection:
+            payload = json.loads(
+                connection.execute(
+                    "SELECT payload_json FROM work_items WHERE id='q09-news-1'"
+                ).fetchone()[0]
+            )
+        self.assertEqual(
+            payload["q09_q07_lineage_resolution"], "promoted_from_work_item"
+        )
+        self.assertEqual(payload["q09_q07_work_item_id"], "q07-1")
 
     def test_plan_materializes_40_paired_cells_without_touching_source(self) -> None:
         source_before = self.setfile.read_bytes()
