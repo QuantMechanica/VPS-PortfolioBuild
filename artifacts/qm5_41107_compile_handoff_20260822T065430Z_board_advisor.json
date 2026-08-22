@@ -1,0 +1,151 @@
+{
+  "schema_version": "qm.commodity-source-build-handoff/v1",
+  "recorded_at_utc": "2026-08-22T06:54:30Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41107",
+  "ea_label": "QM5_41107_wti-minside-body-mom",
+  "strategy_id": "MOP-WTI-MINSIDE-BODY-MOM-2026_S01",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "edge": {
+    "carrier": "XTIUSD.DWX",
+    "cadence": "one durable attempt on the first tradable normalized D1 bar of each broker month",
+    "formation": "two consecutive completed 17-to-23-session calendar-month OHLC packages",
+    "signal": "strict newest high below parent high and newest low above parent low, then follow newest first-open-to-final-close body sign",
+    "positive_body": "BUY",
+    "negative_body": "SELL",
+    "ordinary_exit": "first observed next-month boundary",
+    "risk_fixed_usd": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "non_duplicate_boundary": {
+    "preallocation_verdict": "FUZZY_MATCH_EXPECTED_FAMILY_ONLY",
+    "postallocation_verdict": "SELF_HITS_ONLY",
+    "nearest_family": "QM5_41091_wti-winside-body-mom",
+    "distinction": "QM5_41091 aggregates two three-to-five-session weeks and holds one week; QM5_41107 aggregates two 17-to-23-session calendar months and holds the next month",
+    "certified_book_boundary": "direct symmetric monthly WTI structural continuation differs from certified QM5_12567 long-only two-day XNG cumulative-RSI2 pullback; Q09 alone may establish realized correlation"
+  },
+  "commits": {
+    "source_approval": "dca99885d",
+    "bounded_source_extraction": "1bf582724",
+    "ea_id_reservation": "5746329a5",
+    "g0_approved_card": "8e62b338a",
+    "magic_allocation": "3abcbecf5",
+    "source_build": "eeabd9f39",
+    "approved_card_copy": "1fd04ed38"
+  },
+  "registered_identity": {
+    "symbol_slot": 0,
+    "symbol": "XTIUSD.DWX",
+    "magic": 411070000
+  },
+  "artifact_sha256": {
+    "bounded_source": "B4F0C35B30E11FF0508C11FEF07D94408770DA0EA9DBA5C68356C77A68B24B16",
+    "mq5": "1125FFC0A52E53B9AB0197FFF04CE80307BC6E19A9E184E7736710AA917C382E",
+    "unbound_backtest_setfile": "332092F233FC767F24C27879B08366D0E0AD96E76F08439DC3CEF0BC9658AF38",
+    "approved_and_local_card": "B2F0C1A6A2B23C482C7F643FA740857A470A44A2F3F13DCA126F02FE78BACF16",
+    "spec": "EACA41EBC0B5FB686966B6915E06A8B5A01F633B51B8B49CB44A2441F295DB6C",
+    "reference_suite": "1E6F5E54E2A6B9380D6623E55CBC0ECF15205CD1D43BC1459F5756586752C3B6"
+  },
+  "source_validation": {
+    "reference_tests": {
+      "passed": 11,
+      "failed": 0
+    },
+    "build_prerequisite_guard": "PASS",
+    "build_prerequisite_command_shape_note": "The display-form QM5_41107 invocation was corrected to the guard's documented raw CSV value 41107; the corrected deterministic result passed all checks.",
+    "build_guardrails": "PASS",
+    "spec_validator": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "symbol_scope_violations": 0,
+    "card_schema_and_ml_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "approved_local_card_byte_identical": true,
+    "build_check_result": null,
+    "build_check_note": "The live-factory include-mirror guard refused the strict compile before build_check; independent source-level gates are not a compile or Q01 claim."
+  },
+  "compile": {
+    "ad_hoc_guard_result": "REFUSED_WITHOUT_COMPILE",
+    "ad_hoc_guard_detail": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "retry_attempted": false,
+    "governed_work_item_id": "44e72083-6aa3-4618-a3d4-9ec4d04c02db",
+    "governed_status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "ex5_present": false,
+    "q01_status": "PENDING_BUILD",
+    "setfile_build_hash": "pending"
+  },
+  "capacity": {
+    "ceiling_cpu_pct": 97,
+    "mt5_scanned_at_utc": "2026-08-22T06:53:56Z",
+    "governed_terminals_running": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6"
+    ],
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "cpu_samples": [
+      {
+        "utc": "2026-08-22T06:54:14.5954908Z",
+        "cpu_pct": 98.06
+      },
+      {
+        "utc": "2026-08-22T06:54:18.6168146Z",
+        "cpu_pct": 99.9
+      },
+      {
+        "utc": "2026-08-22T06:54:22.6505090Z",
+        "cpu_pct": 99.43
+      },
+      {
+        "utc": "2026-08-22T06:54:26.6560244Z",
+        "cpu_pct": 96.39
+      },
+      {
+        "utc": "2026-08-22T06:54:30.6769534Z",
+        "cpu_pct": 99.14
+      }
+    ],
+    "average_cpu_pct": 98.58,
+    "maximum_cpu_pct": 99.9,
+    "ceiling_hit": true
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED_CPU_CEILING_AND_Q01_PENDING",
+    "preview_run": false,
+    "apply_run": false,
+    "q02_work_item_count": 0,
+    "all_ea_work_items": [
+      {
+        "id": "44e72083-6aa3-4618-a3d4-9ec4d04c02db",
+        "kind": "compile",
+        "phase": "COMPILE_EA",
+        "status": "pending"
+      }
+    ],
+    "binding_reasons": [
+      "fresh host CPU average and maximum exceeded the 97 percent hard ceiling",
+      "governed compile is activation-held, so no EX5 or Q01 PASS exists"
+    ]
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "q02_preview_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_started_or_stopped": false,
+    "compile_hold_bypassed": false,
+    "autotrading_toggled": false,
+    "t_live_modified": false,
+    "t_live_manifest_modified": false,
+    "deploy_manifest_modified": false,
+    "portfolio_gate_modified": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
