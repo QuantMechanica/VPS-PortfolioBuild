@@ -55,6 +55,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import render_cockpit as rc          # noqa: E402
 import gmail_alarm as ga             # noqa: E402
+import live_observability_contract as live_obs  # noqa: E402
 
 # ── Brand tokens (PAPER / INK Direction C — paper-light bg, steel-blue
 #    accent, green/red = status + P&L only, sharp edges, no glow) ─────────
@@ -99,6 +100,7 @@ LIVE_MAINTENANCE_FLAG = REPORTS_STATE / "LIVE_UPTIME_MAINTENANCE.flag"
 MORNING_SAFETY_STATE = REPORTS_STATE / "morning_safety_check.json"      # OWNER-ratified 04:45 start-only sweep
 FTMO_PULSE_STATE = REPORTS_STATE / "ftmo_trial_pulse.json"             # FTMO account-monitor state (shipped)
 DDGUARD_STATE = REPORTS_STATE / "live_book_dd_guard_state.json"         # DXZ live-book DD-guard state (shipped)
+LIVE_BOOK_PULSE_STATE = REPORTS_STATE / "live_book_pulse.json"          # SP-A3 shared source-TTL/fingerprint producer
 LIVE_DEPLOY_CONTRACT_STATE = REPORTS_STATE / "live_deployment_contract_state.json"  # WS-E3 verifier --json-out (deployment contract)
 NEWS_CALENDAR_FILE = Path(r"D:\QM\data\news_calendar\forex_factory_calendar_clean.csv")
 # Config-driven pointer to the CURRENTLY DEPLOYED signed book manifest, plus the
@@ -295,6 +297,7 @@ def _resolve_paths(paths):
         "maintenance": LIVE_MAINTENANCE_FLAG,
         "ftmo": FTMO_PULSE_STATE,
         "ddguard": DDGUARD_STATE,
+        "pulse": LIVE_BOOK_PULSE_STATE,
         "contract": LIVE_DEPLOY_CONTRACT_STATE,
         "news": NEWS_CALENDAR_FILE,
         "deploy_pointer": DEPLOY_POINTER,
@@ -483,6 +486,44 @@ def _lamp_ddguard(P_, now) -> dict:
         lvl = L_AMBER
     return _lamp("ddguard", "DXZ DD-Guard", "DD-Guard", lvl, dd_txt,
                  f"DD {dd_txt} / Halt {halt_txt}", age)
+
+
+def _lamp_observability(P_, now) -> tuple[dict, dict]:
+    """Shared SP-A3 contract from Pulse, re-aged against ``now``.
+
+    The brief's own render/write time is deliberately not a freshness anchor.
+    A fresh brief around any stale or unknown producer therefore remains
+    non-green while preserving the producer's four cross-surface fingerprints.
+    """
+    pulse_path = P_.get("pulse")
+    contract = (
+        live_obs.load_from_pulse(Path(pulse_path), observed_at=now)
+        if pulse_path
+        else live_obs.unknown_contract(now, "live_pulse_path_missing")
+    )
+    raw = str(contract.get("status") or "UNKNOWN").upper()
+    level = {"GREEN": L_GREEN, "STALE": L_AMBER, "UNKNOWN": L_UNKNOWN}.get(raw, L_UNKNOWN)
+    sources = contract.get("sources") or {}
+    nongreen = [
+        f"{name}={row.get('freshness')}"
+        for name, row in sources.items()
+        if isinstance(row, dict) and row.get("freshness") != "FRESH"
+    ]
+    latency = contract.get("latency") or {}
+    gap = latency.get("surface_to_dd_guard_sec")
+    gap_text = f"DD-Guard-Lag {gap}s" if isinstance(gap, int) else "DD-Guard-Lag unbekannt"
+    detail = "; ".join(nongreen[:3]) if nongreen else "alle Teilquellen innerhalb TTL"
+    detail = f"{detail}; {gap_text}"
+    lamp = _lamp(
+        "observability",
+        "Live-Observability-Contract",
+        "Observability",
+        level,
+        raw,
+        detail,
+        (sources.get("live_pulse") or {}).get("age_sec"),
+    )
+    return lamp, contract
 
 
 def _lamp_ftmo(P_, now) -> dict:
@@ -768,6 +809,7 @@ def live_status(paths=None, now=None) -> dict:
     P_ = _resolve_paths(paths)
     now = now or _utc_now()
     dep = _lamp_deployment(P_, now)
+    observability_lamp, observability_contract = _lamp_observability(P_, now)
     lamps = [
         _lamp_watchdog(P_, now),
         _lamp_ddguard(P_, now),
@@ -775,6 +817,7 @@ def live_status(paths=None, now=None) -> dict:
         _lamp_contract(P_, now),
         _lamp_news(P_, now),
         dep["lamp"],
+        observability_lamp,
     ]
     overall = _worst([l["level"] for l in lamps])
     nongreen = [l for l in lamps if l["level"] != L_GREEN]
@@ -801,6 +844,8 @@ def live_status(paths=None, now=None) -> dict:
         "manifest_status": dep["manifest_status"],
         "manifest_path": dep["manifest_path"],
         "deploy_authenticated": dep["authenticated"],
+        "observability_contract": observability_contract,
+        "live_fingerprints": observability_contract.get("fingerprints"),
         "ftmo_prose": ftmo_prose,
         "subject_reason": subject_reason,
         "summary": summary,

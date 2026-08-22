@@ -35,6 +35,7 @@ import argparse
 import csv
 import datetime as dt
 import json
+import os
 import sqlite3
 import sys
 from pathlib import Path
@@ -47,9 +48,11 @@ try:  # package import (tests, module consumers)
         normalize_phase_id,
         PHASE_NAME,
     )
+    from tools.strategy_farm import live_observability_contract as live_obs
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/mission_control_v2_data.py``
     from work_item_clean_view import install_clean_view
     from phase_ids import phase_label, normalize_phase_id, PHASE_NAME
+    import live_observability_contract as live_obs
 
 
 SCHEMA_VERSION = "qm.mission_control.v2"
@@ -60,6 +63,7 @@ REPO = Path(r"C:\QM\repo")
 DB = ROOT / "state" / "farm_state.sqlite"
 REPORTS_STATE = Path(r"D:\QM\reports\state")
 OUTPUT_PATH = REPORTS_STATE / "mission_control_v2_preview.json"
+LIVE_BOOK_PULSE_STATE = REPORTS_STATE / "live_book_pulse.json"
 
 HEALTH_FILE = ROOT / "state" / "health.json"
 FACTORY_OFF_FLAG = ROOT / "state" / "FACTORY_OFF.flag"
@@ -840,7 +844,25 @@ def _safe_exists(path: Path) -> bool:
 # ---------------------------------------------------------------------------
 # top-level assembly
 # ---------------------------------------------------------------------------
-def build_contract(db: Path | None = None, *, now: dt.datetime | None = None) -> dict[str, Any]:
+def _load_live_observability(
+    *,
+    now: dt.datetime,
+    pulse_path: Path | None = None,
+) -> dict[str, Any]:
+    """Consume Pulse's producer contract; never use this emitter's timestamp
+    to replace any source timestamp."""
+    return live_obs.load_from_pulse(
+        Path(pulse_path or LIVE_BOOK_PULSE_STATE),
+        observed_at=now,
+    )
+
+
+def build_contract(
+    db: Path | None = None,
+    *,
+    now: dt.datetime | None = None,
+    live_pulse_path: Path | None = None,
+) -> dict[str, Any]:
     """Assemble the full ``qm.mission_control.v2`` contract from live sources."""
     db = Path(db) if db is not None else DB
     now = now or _now_utc()
@@ -856,10 +878,16 @@ def build_contract(db: Path | None = None, *, now: dt.datetime | None = None) ->
     finally:
         con.close()
 
+    live_observability = _load_live_observability(
+        now=now,
+        pulse_path=live_pulse_path,
+    )
+
     return {
         "schema_version": SCHEMA_VERSION,
         "generated_at": _iso(now),
         "source_db": str(db),
+        "live_observability": live_observability,
         "control_strip": control_strip,
         "queue": queue,
         "progress": progress,
@@ -897,6 +925,21 @@ CONTRACT_SCHEMA: dict[str, Any] = {
         "schema_version": {"const": SCHEMA_VERSION},
         "generated_at": {"type": "string"},
         "source_db": {"type": "string"},
+        "live_observability": {
+            "type": "object",
+            "required": [
+                "schema_version", "observed_at_utc", "status", "sources",
+                "fingerprints", "latency",
+            ],
+            "properties": {
+                "schema_version": {"const": live_obs.SCHEMA_VERSION},
+                "observed_at_utc": {"type": "string"},
+                "status": {"enum": ["GREEN", "STALE", "UNKNOWN"]},
+                "sources": {"type": "object"},
+                "fingerprints": {"type": "object"},
+                "latency": {"type": "object"},
+            },
+        },
         "control_strip": {
             "type": "object",
             "required": ["meta", "factory_state", "queue_total", "data_freshness"],
@@ -1156,8 +1199,7 @@ def main(argv: list[str] | None = None) -> int:
 
     rendered = json.dumps(contract, indent=2, ensure_ascii=False) + "\n"
     if args.output:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(rendered, encoding="utf-8", newline="\n")
+        write_text_atomic(args.output, rendered)
     if args.stdout or not args.output:
         sys.stdout.write(rendered)
 
@@ -1170,6 +1212,15 @@ def main(argv: list[str] | None = None) -> int:
         f"-> {args.output}\n"
     )
     return 0
+
+
+def write_text_atomic(path: Path, rendered: str) -> None:
+    """Same-directory replace keeps readers off partial fresh envelopes."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    temp.write_text(rendered, encoding="utf-8", newline="\n")
+    os.replace(temp, path)
 
 
 if __name__ == "__main__":

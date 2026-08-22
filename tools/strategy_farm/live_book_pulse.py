@@ -23,8 +23,9 @@ from typing import Any
 
 try:
     import health_contract
+    import live_observability_contract
 except ModuleNotFoundError:
-    from tools.strategy_farm import health_contract
+    from tools.strategy_farm import health_contract, live_observability_contract
 
 
 DEFAULT_LIVE_ROOT = Path(r"C:\QM\mt5\T_Live")
@@ -1637,6 +1638,26 @@ def append_alarms(path: Path, now: datetime, alarms: list[dict[str, Any]]) -> No
             )
 
 
+def attach_observability_contract(
+    snapshot: dict[str, Any],
+    *,
+    observed_at: datetime | None = None,
+    pointer_path: Path = DEFAULT_RUNTIME_POINTER,
+    dd_guard_path: Path = live_observability_contract.DEFAULT_DD_GUARD_PATH,
+    manifest_path: Path | None = None,
+) -> dict[str, Any]:
+    """Attach SP-A3 source TTLs/fingerprints without changing ``verdict``."""
+    contract = live_observability_contract.build_contract(
+        snapshot,
+        observed_at=observed_at,
+        pointer_path=pointer_path,
+        dd_guard_path=dd_guard_path,
+        manifest_path=manifest_path,
+    )
+    snapshot["observability_contract"] = contract
+    return contract
+
+
 def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
     now = utc_now()
     live_root = Path(args.live_root)
@@ -1707,6 +1728,12 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
     }
     snapshot["alarms"] = build_alarms(snapshot)
     snapshot["verdict"] = "ALARM" if snapshot["alarms"] else "OK"
+    attach_observability_contract(
+        snapshot,
+        observed_at=now,
+        pointer_path=DEFAULT_RUNTIME_POINTER,
+        manifest_path=(Path(book_manifest["path"]) if book_manifest.get("path") else None),
+    )
     _attach_health_contract(snapshot)
     return snapshot
 

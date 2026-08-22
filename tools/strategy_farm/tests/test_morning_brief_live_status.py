@@ -47,7 +47,7 @@ _SCENARIOS = _DATA["scenarios"]
 
 # All source keys morning_brief._resolve_paths understands.
 _SRC_KEYS = ("alarm", "watchdog", "supervisor", "maintenance", "ftmo", "ddguard",
-             "contract", "news", "deploy_pointer", "deploy_default", "manifest")
+             "pulse", "contract", "news", "deploy_pointer", "deploy_default", "manifest")
 
 # GREEN, fresh, authenticated baseline — every scenario overrides only what it
 # tests. Timestamps are ~30s before fixed_now (2026-07-26T08:00:00Z) => fresh.
@@ -59,6 +59,46 @@ _BASELINE = {
                   "FTMO": {"session": "FTMO", "condition": "ok", "detail": "terminal_running", "alarm": False, "since_utc": "2026-07-26T07:00:00Z", "last_change": "2026-07-26T07:00:00Z", "transitions": 0, "previous_condition": None}}},
     "ddguard": {"blind_runs": 90, "breached": False, "halt_dd_pct": 10.0, "hwm_equity": 101871.44,
                 "last_dd_pct": 0.18, "last_equity": 101683.41, "last_run_utc": "2026-07-26T07:59:00+00:00"},
+    "pulse": {
+        "generated_at_utc": "2026-07-26T07:59:30Z",
+        "observability_contract": {
+            "schema_version": "qm.live_observability.v1",
+            "observed_at_utc": "2026-07-26T07:59:30Z",
+            "status": "GREEN",
+            "sources": {
+                name: {
+                    "source_generated_at_utc": "2026-07-26T07:59:30Z",
+                    "observed_at_utc": "2026-07-26T07:59:30Z",
+                    "max_age_sec": max_age,
+                    "age_sec": 0,
+                    "freshness": "FRESH",
+                    "source_fingerprint_sha256": (str(i + 1) * 64)[:64],
+                    "source_path": None,
+                    "timestamp_basis": "fixture",
+                    "error": None,
+                }
+                for i, (name, max_age) in enumerate({
+                    "deploy_pointer": 7776000,
+                    "manifest": 7776000,
+                    "live_pulse": 2700,
+                    "dd_guard": 600,
+                    "account_snapshot": 180,
+                }.items())
+            },
+            "fingerprints": {
+                "manifest_sha256": "a" * 64,
+                "sleeve_sha256": "b" * 64,
+                "account_sha256": "c" * 64,
+                "state_sha256": "d" * 64,
+            },
+            "latency": {
+                "dd_guard_to_account_snapshot_sec": 0,
+                "surface_to_dd_guard_sec": 0,
+                "dd_guard_gap_visible": True,
+            },
+            "semantics": "observation_only_no_trading_or_pipeline_verdict_change",
+        },
+    },
     "ftmo": {"checked_at_utc": "2026-07-26T07:59:00Z", "verdict": "OK", "terminal_up": True,
              "total_dd_pct": 3.0, "day_loss_pct": 0.4, "equity": 105000.0},
     "contract": {"tool": "verify_live_deployment_contract", "version": "1.0",
@@ -116,7 +156,7 @@ def _materialize(name: str, tmp: Path) -> dict:
     paths["manifest"] = None  # use the stamp path, not the direct override
 
     # ── producer state files ────────────────────────────────────────────
-    for key in ("alarm", "watchdog", "supervisor", "ftmo", "ddguard", "contract"):
+    for key in ("alarm", "watchdog", "supervisor", "ftmo", "ddguard", "pulse", "contract"):
         content = eff.get(key)
         if content in _ABSENT or key not in eff:
             paths[key] = tmp / f"absent_{key}.json"
