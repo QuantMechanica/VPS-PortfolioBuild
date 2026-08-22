@@ -35,6 +35,27 @@ $activePrimaryPath = Join-Path $Base 'news_calendar_2015_2025.csv'
 $activeSecondaryPath = Join-Path $Base 'forex_factory_calendar_clean.csv'
 $staleFlag = Join-Path $StateDir 'news_calendar_stale.flag'
 $gateScript = Join-Path $PSScriptRoot 'news_calendar_gate.py'
+$repinScript = Join-Path $PSScriptRoot 'news_calendar_repin.py'
+$contractRegistry = if (-not [string]::IsNullOrWhiteSpace($env:QM_CALENDAR_REPIN_REGISTRY)) {
+  $env:QM_CALENDAR_REPIN_REGISTRY
+} else {
+  'C:\QM\repo\framework\registry\dxz23_execution_contracts.json'
+}
+$repinReceiptDir = if (-not [string]::IsNullOrWhiteSpace($env:QM_CALENDAR_REPIN_RECEIPT_DIR)) {
+  $env:QM_CALENDAR_REPIN_RECEIPT_DIR
+} else {
+  'D:\QM\reports\news_calendar\repin_receipts'
+}
+$repinBundleRoot = if (-not [string]::IsNullOrWhiteSpace($env:QM_CALENDAR_REPIN_BUNDLE_ROOT)) {
+  $env:QM_CALENDAR_REPIN_BUNDLE_ROOT
+} else {
+  Join-Path $Base '.news_calendar_bundles'
+}
+$repinLock = if (-not [string]::IsNullOrWhiteSpace($env:QM_CALENDAR_REPIN_LOCK)) {
+  $env:QM_CALENDAR_REPIN_LOCK
+} else {
+  'D:\QM\strategy_farm\state\locks\news_calendar_repin.lock'
+}
 $commonTargets = @(
   'C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files',
   'C:\Windows\System32\config\systemprofile\AppData\Roaming\MetaQuotes\Terminal\Common\Files',
@@ -50,6 +71,12 @@ if (-not [IO.Path]::IsPathRooted($PythonExe) -or -not (Test-Path -LiteralPath $P
 if (-not (Test-Path -LiteralPath $gateScript -PathType Leaf)) {
   throw "news-calendar gate script is missing: $gateScript"
 }
+if (-not (Test-Path -LiteralPath $repinScript -PathType Leaf)) {
+  throw "news-calendar repin script is missing: $repinScript"
+}
+if (-not (Test-Path -LiteralPath $contractRegistry -PathType Leaf)) {
+  throw "news-calendar execution-contract registry is missing: $contractRegistry"
+}
 
 function Invoke-NewsCalendarGate([string[]]$Arguments) {
   $output = @(& $PythonExe $gateScript @Arguments 2>&1)
@@ -57,6 +84,16 @@ function Invoke-NewsCalendarGate([string[]]$Arguments) {
   $text = (@($output | ForEach-Object { [string]$_ }) -join [Environment]::NewLine)
   if ($exitCode -ne 0) {
     throw "news-calendar gate failed (exit=$exitCode): $text"
+  }
+  return $text
+}
+
+function Invoke-NewsCalendarRepin([string[]]$Arguments) {
+  $output = @(& $PythonExe $repinScript @Arguments 2>&1)
+  $exitCode = $LASTEXITCODE
+  $text = (@($output | ForEach-Object { [string]$_ }) -join [Environment]::NewLine)
+  if ($exitCode -ne 0) {
+    throw "news-calendar repin failed (exit=$exitCode): $text"
   }
   return $text
 }
@@ -381,6 +418,45 @@ if (-not $persistedJournal.committed -or [string]$persistedJournal.state -cne 'C
   throw 'persisted news-calendar journal does not record a receipted commit'
 }
 Write-Host "publication OK: plan=$planSha targets=$($commonTargets.Count) journal=$journalPath receipt=$receiptPath"
+
+$operationId = [string]$receiptObject.operation_id
+if ($operationId -notmatch '^[0-9a-f]{64}$') {
+  throw 'news-calendar publication receipt has no valid operation_id'
+}
+$savedParentProof = $env:QM_NEWS_CALENDAR_REFRESH_PARENT_PID
+$savedOperationProof = $env:QM_NEWS_CALENDAR_REFRESH_OPERATION_ID
+try {
+  $env:QM_NEWS_CALENDAR_REFRESH_PARENT_PID = [string]$PID
+  $env:QM_NEWS_CALENDAR_REFRESH_OPERATION_ID = $operationId
+  $repinArguments = @(
+    'record',
+    '--publication-receipt', $receiptPath,
+    '--publication-journal', $journalPath,
+    '--calendar', $activePrimaryPath,
+    '--registry', $contractRegistry,
+    '--receipt-dir', $repinReceiptDir,
+    '--bundle-root', $repinBundleRoot,
+    '--refresh-script', $PSCommandPath,
+    '--lock', $repinLock,
+    '--operation-id', $operationId,
+    '--reason', 'scheduled_news_calendar_refresh'
+  )
+  $repinJson = Invoke-NewsCalendarRepin $repinArguments
+}
+finally {
+  $env:QM_NEWS_CALENDAR_REFRESH_PARENT_PID = $savedParentProof
+  $env:QM_NEWS_CALENDAR_REFRESH_OPERATION_ID = $savedOperationProof
+}
+$repinObject = ConvertFrom-Json -InputObject $repinJson -ErrorAction Stop
+if (-not $repinObject.ok -or [string]$repinObject.status -notin @('REPINNED', 'NO_CHANGE')) {
+  throw 'news-calendar dependency repin did not return a terminal success status'
+}
+$repinHash = if ($null -ne $repinObject.new_sha256) {
+  [string]$repinObject.new_sha256
+} else {
+  [string]$repinObject.calendar_sha256
+}
+Write-Host "dependency repin OK: status=$($repinObject.status) hash=$repinHash"
 
 $primaryRowsForCoverage = @(Read-Rows $activePrimaryPath)
 $newest = [DateTime]::MinValue

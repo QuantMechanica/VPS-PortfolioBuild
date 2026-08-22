@@ -784,9 +784,9 @@ def test_20030_20032_bindings_follow_deployed_calendar_but_remain_blocked() -> N
             "calendar_policy": "DEPLOYED_FRAMEWORK_EVENT_ROWS_FAIL_CLOSED",
             "stale_behavior": "ENTRY_FAIL_CLOSED",
             "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
-            "sha256": "16d95a7ca00de57accbb2bf7ad63418873c7c1afbffd58b8ec35136abb057ece",
+            "sha256": "42b02ae062271b643a9039410617a4c246ebed62c9a77db2e8b610fee6ce82bc",
             "coverage_start": "2015-01-01",
-            "coverage_end": "2026-07-31",
+            "coverage_end": "2026-08-21",
         }
         assert contract["card_binding"]["status"] == "DRAFT"
         assert contract["card_binding"]["execution_contract_status"] == "DRAFT"
@@ -1241,16 +1241,22 @@ def test_20009_multimode_runtime_declarations_are_exactly_registered() -> None:
 def test_20009_ftmo_news_calendar_is_exact_and_evidence_bound() -> None:
     contracts = [item for item in _contracts() if item["ea_id"] == 20009]
     expected_hashes = {
-        "SHARED_PRIMARY": "16d95a7ca00de57accbb2bf7ad63418873c7c1afbffd58b8ec35136abb057ece",
-        "SHARED_SECONDARY": "e54a18bc317657260edb01a57eb29e97d7c1e3c451a2befc60dbc636d9286338",
-        "QMDEV1_COMMON_PRIMARY": "16d95a7ca00de57accbb2bf7ad63418873c7c1afbffd58b8ec35136abb057ece",
-        "QMDEV1_COMMON_SECONDARY": "e54a18bc317657260edb01a57eb29e97d7c1e3c451a2befc60dbc636d9286338",
+        "SHARED_PRIMARY": "42b02ae062271b643a9039410617a4c246ebed62c9a77db2e8b610fee6ce82bc",
+        "SHARED_SECONDARY": "a0418087ea4f0cf2bc0aa7e5858b2e9dda56337995bf96e7e64e5d20f8356017",
+        "QMDEV1_COMMON_PRIMARY": "42b02ae062271b643a9039410617a4c246ebed62c9a77db2e8b610fee6ce82bc",
+        "QMDEV1_COMMON_SECONDARY": "a0418087ea4f0cf2bc0aa7e5858b2e9dda56337995bf96e7e64e5d20f8356017",
     }
     expected_paths = {
         "SHARED_PRIMARY": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
         "SHARED_SECONDARY": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv",
         "QMDEV1_COMMON_PRIMARY": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv",
         "QMDEV1_COMMON_SECONDARY": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv",
+    }
+    expected_coverage = {
+        "SHARED_PRIMARY": ("2015-01-01", "2026-08-21"),
+        "SHARED_SECONDARY": ("2015-01-01", "2026-08-21"),
+        "QMDEV1_COMMON_PRIMARY": ("2015-01-01", "2026-08-21"),
+        "QMDEV1_COMMON_SECONDARY": ("2015-01-01", "2026-08-21"),
     }
     calendar_codes = {
         "calendar_news_contract_invalid",
@@ -1275,9 +1281,9 @@ def test_20009_ftmo_news_calendar_is_exact_and_evidence_bound() -> None:
         assert {item["role"]: item["sha256"] for item in calendar["sources"]} == expected_hashes
         assert {item["role"]: item["path"] for item in calendar["sources"]} == expected_paths
         assert {
-            (item["coverage_start"], item["coverage_end"])
+            item["role"]: (item["coverage_start"], item["coverage_end"])
             for item in calendar["sources"]
-        } == {("2015-01-01", "2026-07-31")}
+        } == expected_coverage
 
         codes = {
             issue.code
@@ -1316,7 +1322,7 @@ def test_20009_ftmo_news_calendar_expires_fail_closed() -> None:
 
     codes = {
         issue.code
-        for issue in lint.lint_contract(contract, repo_root=ROOT, as_of=date(2026, 8, 1))
+        for issue in lint.lint_contract(contract, repo_root=ROOT, as_of=date(2026, 9, 5))
     }
     assert "calendar_news_expired" in codes
 

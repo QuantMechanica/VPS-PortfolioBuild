@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -118,9 +119,78 @@ def _make_test_harness(
     ):
         script_text = script_text.replace(production_value, test_value)
     script.write_text(script_text, encoding="ascii", newline="")
+    shutil.copy2(REPO / "tools" / "strategy_farm" / "news_calendar_repin.py", harness)
     (harness / "news_calendar_gate.py").write_text(
         _TEST_GATE_WRAPPER, encoding="ascii", newline="\n"
     )
+    registry = harness / "dxz23_execution_contracts.json"
+    receipt_dir = harness / "repin-receipts"
+    bundle_root = harness / "repin-bundles"
+    lock_path = harness / "locks" / "news_calendar_repin.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    primary = base / PRIMARY_NAME
+    secondary = base / SECONDARY_NAME
+    if not registry.exists() and primary.is_file():
+        raw = primary.read_bytes()
+        secondary_raw = secondary.read_bytes() if secondary.is_file() else raw
+        dates = []
+        for line in raw.decode("ascii").splitlines()[1:]:
+            if line:
+                dates.append(line.split(",", 1)[0][:10])
+        start = min(dates) if dates else None
+        end = max(dates) if dates else None
+        pinned = hashlib.sha256(raw).hexdigest()
+        secondary_pinned = hashlib.sha256(secondary_raw).hexdigest()
+        registry.write_text(
+            json.dumps(
+                {
+                    "contracts": [
+                        {
+                            "calendar": {
+                                "sources": [
+                                    {
+                                        "role": "SHARED_PRIMARY",
+                                        "path": str(primary.resolve()),
+                                        "sha256": pinned,
+                                        "coverage_start": start,
+                                        "coverage_end": end,
+                                    },
+                                    {
+                                        "role": "TEST_COMMON_PRIMARY",
+                                        "path": str((common / PRIMARY_NAME).resolve()),
+                                        "sha256": pinned,
+                                        "coverage_start": start,
+                                        "coverage_end": end,
+                                    },
+                                    {
+                                        "role": "SHARED_SECONDARY",
+                                        "path": str(secondary.resolve()),
+                                        "sha256": secondary_pinned,
+                                        "coverage_start": start,
+                                        "coverage_end": end,
+                                    },
+                                    {
+                                        "role": "TEST_COMMON_SECONDARY",
+                                        "path": str((common / SECONDARY_NAME).resolve()),
+                                        "sha256": secondary_pinned,
+                                        "coverage_start": start,
+                                        "coverage_end": end,
+                                    },
+                                ]
+                            }
+                        }
+                    ]
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        old_bundle = bundle_root / "initial-pinned-calendar"
+        old_bundle.mkdir(parents=True, exist_ok=True)
+        (old_bundle / PRIMARY_NAME).write_bytes(raw)
+        (old_bundle / SECONDARY_NAME).write_bytes(secondary_raw)
     env = os.environ.copy()
     env.update(
         {
@@ -129,6 +199,11 @@ def _make_test_harness(
             "QM_CAL_TEST_COMMONS": json.dumps([str(common)]),
             "QM_CAL_TEST_FLAG": str(fake_flag),
             "QM_CAL_TEST_EVIDENCE": str(state),
+            "QM_CALENDAR_REPIN_REGISTRY": str(registry),
+            "QM_CALENDAR_REPIN_RECEIPT_DIR": str(receipt_dir),
+            "QM_CALENDAR_REPIN_BUNDLE_ROOT": str(bundle_root),
+            "QM_CALENDAR_REPIN_LOCK": str(lock_path),
+            "QM_CALENDAR_REPIN_TEST_MODE": "1",
             "PYTHONDONTWRITEBYTECODE": "1",
         }
     )
@@ -230,6 +305,39 @@ def test_refresh_is_idempotent_and_preserves_csv_contracts(tmp_path: Path) -> No
     assert ",2026.07.22 12:30,2026.07.22 15:30,USD,High," in secondary_row
     assert (common / PRIMARY_NAME).read_bytes() == primary
     assert (common / SECONDARY_NAME).read_bytes() == secondary
+    harness = state.parent / f".{state.name}-calendar-test-harness"
+    receipts = sorted((harness / "repin-receipts").glob("*.json"))
+    assert len(receipts) == 1
+    registry = json.loads((harness / "dxz23_execution_contracts.json").read_text())
+    pinned = {
+        source["role"]: source["sha256"]
+        for contract in registry["contracts"]
+        for source in contract["calendar"]["sources"]
+    }
+    assert pinned == {
+        "SHARED_PRIMARY": hashlib.sha256(primary).hexdigest(),
+        "TEST_COMMON_PRIMARY": hashlib.sha256(primary).hexdigest(),
+        "SHARED_SECONDARY": hashlib.sha256(secondary).hexdigest(),
+        "TEST_COMMON_SECONDARY": hashlib.sha256(secondary).hexdigest(),
+    }
+    verify = subprocess.run(
+        (
+            sys.executable,
+            str(harness / "news_calendar_repin.py"),
+            "verify",
+            "--calendar",
+            str(base / PRIMARY_NAME),
+            "--registry",
+            str(harness / "dxz23_execution_contracts.json"),
+            "--receipt-dir",
+            str(harness / "repin-receipts"),
+        ),
+        capture_output=True,
+        text=True,
+        timeout=20,
+        check=False,
+    )
+    assert verify.returncode == 0, verify.stdout + verify.stderr
 
     current_run = _run_refresh(
         base=base,
@@ -243,6 +351,7 @@ def test_refresh_is_idempotent_and_preserves_csv_contracts(tmp_path: Path) -> No
     assert not (state / "news_calendar_stale.flag").exists()
     assert len((base / PRIMARY_NAME).read_text(encoding="ascii").splitlines()) == 2
     assert len((base / SECONDARY_NAME).read_text(encoding="ascii").splitlines()) == 2
+    assert len(list((harness / "repin-receipts").glob("*.json"))) == 1
 
 
 def test_missing_seed_is_not_created_or_appended(tmp_path: Path) -> None:
@@ -400,6 +509,10 @@ def test_scheduled_defaults_cover_all_principals_without_legacy_copy() -> None:
     assert "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files" in text
     assert "C:\\Users\\QMDev1\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files" in text
     assert "multi-publish" in text
+    assert "news_calendar_repin.py" in text
+    assert "QM_NEWS_CALENDAR_REFRESH_PARENT_PID" in text
+    assert "--publication-receipt" in text
+    assert "--publication-journal" in text
     assert "--expected-plan-sha256" in text
     assert "--journal-output" in text
     assert "--receipt-output" in text
