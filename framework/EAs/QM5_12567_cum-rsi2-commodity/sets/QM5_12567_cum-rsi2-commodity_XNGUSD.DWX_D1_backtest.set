@@ -3,16 +3,16 @@
 ; ea_id:        12567
 ; ea_slug:      cum-rsi2-commodity
 ; ea_version:   v5.0
-; set_version:  s20260702-001
+; set_version:  s20260822-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b78e94cc8315ffeae8062ee6a4bcc416c58b4f3cde9f5e22939b456fd4e7de8e
+; build_hash:   72842232aaece4cae2d1c1a5d2026ff5a0cf1b5e83b386c9c716b5e9a87588cd
 ; author:       Development
-; date:         2026-07-02
+; date:         2026-08-22
 ;==========================================================
 qm_ea_id=12567
 qm_magic_slot_offset=2

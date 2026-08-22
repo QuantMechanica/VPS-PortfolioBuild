@@ -3,16 +3,16 @@
 ; ea_id:        13301
 ; ea_slug:      balke-minute-range-breakout
 ; ea_version:   v5.0
-; set_version:  s20260715-001
+; set_version:  s20260822-001
 ; symbol:       GBPJPY.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
-; author:       Claude
-; date:         2026-07-15
+; build_hash:   cc5db1b1945cd2a770ac3b6acfc9e9b5bf6338b508a02eee684251de7f52a05b
+; author:       Development
+; date:         2026-08-22
 ;==========================================================
 qm_ea_id=13301
 qm_magic_slot_offset=3
@@ -20,12 +20,11 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=default_template
-; Balke default template window (00:00-07:30 range, 18:00 exit)
-strategy_range_start_hour=0
+; card_defaults_source=ea_input_defaults
+strategy_range_start_hour=3
 strategy_range_start_minute=0
-strategy_range_end_hour=7
-strategy_range_end_minute=30
+strategy_range_end_hour=6
+strategy_range_end_minute=0
 strategy_exit_hour=18
 strategy_exit_minute=0
 strategy_atr_period=14

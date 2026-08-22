@@ -3,16 +3,16 @@
 ; ea_id:        12567
 ; ea_slug:      cum-rsi2-commodity
 ; ea_version:   v5.0
-; set_version:  s20260702-001
+; set_version:  s20260822-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   91a69799f7483e6423f96333baadcdf5715c091332e90460eb9ae7f6b8e31f87
+; build_hash:   580d5f1957ef2e511c779d8cf05cabf1aecd62e66834b67ba4b1811a30aff2ce
 ; author:       Development
-; date:         2026-07-02
+; date:         2026-08-22
 ;==========================================================
 qm_ea_id=12567
 qm_magic_slot_offset=1

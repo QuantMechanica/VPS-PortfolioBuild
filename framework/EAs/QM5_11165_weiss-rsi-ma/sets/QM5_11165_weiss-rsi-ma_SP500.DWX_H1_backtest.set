@@ -3,32 +3,30 @@
 ; ea_id:        11165
 ; ea_slug:      weiss-rsi-ma
 ; ea_version:   v5.0
-; set_version:  s20260607-001
+; set_version:  s20260822-001
 ; symbol:       SP500.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   11bf6f1640ee4c62a1968ac313ae03376e36f1f5f6c98945863ae295f6e5f004
+; build_hash:   73796c94cf81ab4367c5bb2273ac6c6e2a02c410820f74fca1526c2c2bcccd59
 ; author:       Development
-; date:         2026-06-07
+; date:         2026-08-22
 ;==========================================================
+qm_ea_id=11165
 qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11165_weiss-rsi-ma.md
+strategy_timeframe=16385
+strategy_rsi_period=9
+strategy_sma_period=200
+strategy_long_rsi=25.0
+strategy_short_rsi=75.0
+strategy_exit_rsi=50.0
+strategy_stop_pct=1.0
+strategy_max_hold_bars=60
+strategy_max_spread_pts=0

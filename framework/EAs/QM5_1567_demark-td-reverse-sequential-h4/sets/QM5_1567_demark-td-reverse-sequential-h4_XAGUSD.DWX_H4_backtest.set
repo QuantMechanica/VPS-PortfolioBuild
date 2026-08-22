@@ -3,24 +3,24 @@
 ; ea_id:        1567
 ; ea_slug:      demark-td-reverse-sequential-h4
 ; ea_version:   v5.0
-; set_version:  s20260717-002
+; set_version:  s20260822-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   10
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9a234c515ddc697bd157f32592fafa579819572ae70ccd89a621b8ee240f3e07
+; build_hash:   c9a6d5ba79d1d0eeafa790c94f8351d45a815eb3be499ae0384f5364cfb38e3c
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-08-22
 ;==========================================================
+qm_ea_id=1567
 qm_magic_slot_offset=10
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=ea_input_defaults (materialized 2026-07-17: setgen param-empty repair;
-; values are the EA's compiled input defaults — the exact config every prior Q02-Q09 run used)
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1567_demark-td-reverse-sequential-h4.md
 strategy_setup_bars=9
 strategy_countdown_bars=13
 strategy_countdown_timeout=24

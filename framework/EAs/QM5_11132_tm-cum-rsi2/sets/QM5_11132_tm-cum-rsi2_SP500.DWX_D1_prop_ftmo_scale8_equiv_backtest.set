@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.0
-; build_hash:   0b252bf10f22f13169e88e2058205398d7c5a13732e676bb7677e08362e8ebb9
+; build_hash:   1757063e8676640e0c2b343bb33c588ecc4242b6a430d9cea6c554b5c4234a3e
 ; author:       Development
 ; source:       FTMO 2-step sprint optimizer scale=8 equal-weight 3-sleeve
 ; date:         2026-06-29

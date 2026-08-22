@@ -10,7 +10,7 @@
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   baaac492cadd64b95fe15814ce1a112ec68ad84ca69ef44c33820dc1bb644a56
+; build_hash:   c07b9b4311e869e2b8ef0ffec1aa0087af47034a94d21ce67f876cc0119a535a
 ; author:       Development
 ; date:         2026-07-15
 ;==========================================================
@@ -33,7 +33,7 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-; --- ablation child 01 of QM5_11165_weiss-rsi-ma_SP500.DWX_H1_backtest (perturb=±25%) ---
+; --- ablation child 01 of QM5_11165_weiss-rsi-ma_SP500.DWX_H1_backtest (perturb=Â±25%) ---
 strategy_rsi_period=10
 strategy_sma_period=249
 strategy_long_rsi=21.964164

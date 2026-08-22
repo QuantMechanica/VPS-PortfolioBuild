@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9974d71b61cb59d6c37b8b2774707d04246f4c4fdf063f862aa8ec942e2ed064
+; build_hash:   403a07e2a3f5fc9abf7e76228cea6ebeff0395fd6daa7d7e15731333a941fd5a
 ; author:       Development
 ; date:         2026-06-07
 ;==========================================================
@@ -32,7 +32,7 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-; --- ablation child 02 of QM5_11165_weiss-rsi-ma_AUDCAD.DWX_H1_backtest (perturb=±25%) ---
+; --- ablation child 02 of QM5_11165_weiss-rsi-ma_AUDCAD.DWX_H1_backtest (perturb=Â±25%) ---
 strategy_rsi_period=8
 strategy_sma_period=202
 strategy_long_rsi=22.07294

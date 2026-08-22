@@ -10,28 +10,17 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   a0e7520ed3d305bf263a2a01c4ac71f03782b26c24978e551294d289e3659938
 ; author:       Development
 ; date:         2026-08-22
 ;==========================================================
 qm_ea_id=41099
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; Native-price structural signal; both news axes are intentionally OFF.
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-; Full broker-week hold; Friday flattening is intentionally disabled.
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-; Locked Q02 baseline from the approved card; no optimization surface.
-; card_defaults_source=strategy-seeds/cards/approved/QM5_41099_wti-wclose-turn-mom_card.md
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_label_offset_seconds=86400
 strategy_entry_grace_minutes=180
 strategy_history_bars=16
@@ -44,4 +33,3 @@ strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.5
 strategy_max_hold_days=10
 strategy_max_spread_points=1500
-

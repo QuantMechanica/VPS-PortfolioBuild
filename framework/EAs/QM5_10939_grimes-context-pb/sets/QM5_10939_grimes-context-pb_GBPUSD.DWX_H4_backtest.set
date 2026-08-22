@@ -3,35 +3,24 @@
 ; ea_id:        10939
 ; ea_slug:      grimes-context-pb
 ; ea_version:   v5.0
-; set_version:  s20260606-001
+; set_version:  s20260822-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   256b5f5332b62cd1df71315b908138a17dad6a0afeabe2bbfe3b1320947c09a8
+; build_hash:   731d101aab483fcc5730998f2d5758bc8ec99f79cdab33e71c00727cf28b1763
 ; author:       Development
-; date:         2026-06-06
+; date:         2026-08-22
 ;==========================================================
+qm_ea_id=10939
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=framework/EAs/QM5_10939_grimes-context-pb/SPEC.md
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10939_grimes-context-pb.md
 strategy_atr_period=20
 strategy_d1_fast_ema=20
 strategy_d1_slow_ema=50

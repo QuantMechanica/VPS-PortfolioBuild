@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   81d581cbc741cbd6d1629923083910396d4e51d26b7cfee607d960720d31f426
+; build_hash:   6afc7b455a44d198b6bb0e51748d6650c70697b8f66bc417a79f846fd924c3f7
 ; author:       Development
 ; date:         2026-06-07
 ;==========================================================
@@ -32,7 +32,7 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-; --- ablation child 02 of QM5_11165_weiss-rsi-ma_EURJPY.DWX_H1_backtest (perturb=±25%) ---
+; --- ablation child 02 of QM5_11165_weiss-rsi-ma_EURJPY.DWX_H1_backtest (perturb=Â±25%) ---
 strategy_rsi_period=11
 strategy_sma_period=217
 strategy_long_rsi=24.178618

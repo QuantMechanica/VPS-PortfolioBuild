@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9a234c515ddc697bd157f32592fafa579819572ae70ccd89a621b8ee240f3e07
+; build_hash:   d6a6ca7954a6eca36dd1048ba4bac9b2964ccda9b218faedfd5e9749b21ab59f
 ; author:       Development
 ; date:         2026-07-26
 ;==========================================================
@@ -21,7 +21,7 @@ PORTFOLIO_WEIGHT=1
 qm_stress_reject_probability=0.1000
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=ea_input_defaults (materialized 2026-07-17: setgen param-empty repair;
-; values are the EA's compiled input defaults — the exact config every prior Q02-Q09 run used)
+; values are the EA's compiled input defaults â€” the exact config every prior Q02-Q09 run used)
 strategy_setup_bars=9
 strategy_countdown_bars=13
 strategy_countdown_timeout=24

@@ -3,16 +3,16 @@
 ; ea_id:        12567
 ; ea_slug:      cum-rsi2-commodity
 ; ea_version:   v5.0
-; set_version:  s20260702-001
+; set_version:  s20260822-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   46e2ae36a1fd64dedfc3bb43e2d770be47a239db71a7ad7eb2c10b2ab2254e62
+; build_hash:   c9881842b1606b2652497a91f974c566c0e26e8fff9f91fd7ca1a65fd1cf2783
 ; author:       Development
-; date:         2026-07-02
+; date:         2026-08-22
 ;==========================================================
 qm_ea_id=12567
 qm_magic_slot_offset=3

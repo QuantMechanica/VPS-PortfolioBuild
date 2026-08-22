@@ -3,24 +3,24 @@
 ; ea_id:        1567
 ; ea_slug:      demark-td-reverse-sequential-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260822-001
 ; symbol:       WS30.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5d4fa7a4f06f52de931c0f684b8004c3d93f24390a3605c289cac5334434b13d
+; build_hash:   63ca56fd1ea0ccda8b7ce215416f4e0ba59d8e01fe35b830c3b44dee5fb7eb77
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-08-22
 ;==========================================================
+qm_ea_id=1567
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=ea_input_defaults (materialized 2026-07-25: guardrail time-sensitive-param repair;
-; values are the EA's compiled input defaults - the exact config every prior Q02-Q09 run used)
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1567_demark-td-reverse-sequential-h4.md
 strategy_setup_bars=9
 strategy_countdown_bars=13
 strategy_countdown_timeout=24
