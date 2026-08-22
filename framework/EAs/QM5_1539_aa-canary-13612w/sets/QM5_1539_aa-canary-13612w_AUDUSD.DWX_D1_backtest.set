@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1539
+; ea_slug:      aa-canary-13612w
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       AUDUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   10
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   7cbbb46b1b94a17bef08e0e0173239c66f68d7c5c6877755d7f5314836ec6d71
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=1539
+qm_magic_slot_offset=10
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1539_aa-canary-13612w.md
+strategy_tf=16408
+strategy_canary_risk_1_symbol=NDX.DWX
+strategy_canary_risk_2_symbol=GDAXI.DWX
+strategy_canary_stress_1_symbol=USDJPY.DWX
+strategy_canary_stress_2_symbol=XAUUSD.DWX
+strategy_risk_1_symbol=SP500.DWX
+strategy_risk_2_symbol=NDX.DWX
+strategy_risk_3_symbol=WS30.DWX
+strategy_risk_4_symbol=GDAXI.DWX
+strategy_defensive_1_symbol=XAUUSD.DWX
+strategy_defensive_2_symbol=EURUSD.DWX
+strategy_defensive_3_symbol=USDJPY.DWX
+strategy_bad_canary_threshold=1
+strategy_lookback_1_days=21
+strategy_lookback_3_days=63
+strategy_lookback_6_days=126
+strategy_lookback_12_days=252
+strategy_min_history_bars=260
+strategy_atr_period=20
+strategy_stop_atr=3.0
