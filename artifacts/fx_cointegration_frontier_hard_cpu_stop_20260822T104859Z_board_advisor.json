@@ -1,0 +1,99 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-22T10:48:59Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "5ed3a61cdce6a00c5ae59ef9136229fc2ebc4c89",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "frontier_audit": {
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_mode": "--include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "durable_reconciliation_commit": "a80493291",
+    "new_card_or_build_would_duplicate": true
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "selection_reason": "The frozen frontier is fully mechanized; the strongest currently advancing scan-derived survivor must not receive a duplicate successor.",
+    "pair": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "scan_rank": 27,
+    "ea_id": "QM5_20208",
+    "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "q02": {
+      "status": "done",
+      "verdict": "PASS",
+      "work_item_id": "1935fc01-6eaa-4db1-8397-660d22ebdfbb"
+    },
+    "q04": {
+      "status": "done",
+      "verdict": "PASS_LOWFREQ",
+      "work_item_id": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2"
+    },
+    "q05": {
+      "status": "active",
+      "verdict": null,
+      "work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d"
+    },
+    "duplicate_enqueue_performed": false
+  },
+  "capacity_sample": {
+    "cpu_samples_percent": [
+      99.62,
+      99.51,
+      99.73,
+      100.0,
+      100.0
+    ],
+    "cpu_average_percent": 99.77,
+    "cpu_maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "sampled_at_utc": "2026-08-22T10:48:59Z",
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T5",
+      "T8"
+    ],
+    "excluded_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "All 66 scan relationships are already covered, the selected existing basket already has an active Q05 successor, and CPU exceeded the explicit hard ceiling."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
