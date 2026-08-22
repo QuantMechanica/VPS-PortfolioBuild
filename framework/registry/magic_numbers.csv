@@ -17734,3 +17734,31 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1409,wyckoff-sign-of-strength-phase-d-h4,13,XTIUSD.DWX,14090013,2026-08-22,Gemini,active
 41110,xauxag-moutside-res-rv,0,XAUUSD.DWX,411100000,2026-08-22,Codex governed allocator,active
 41110,xauxag-moutside-res-rv,1,XAGUSD.DWX,411100001,2026-08-22,Codex governed allocator,active
+1410,bressert-dual-cycle-oscillator-h4,0,EURUSD.DWX,14100000,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,1,GBPUSD.DWX,14100001,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,2,USDJPY.DWX,14100002,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,3,AUDUSD.DWX,14100003,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,4,USDCAD.DWX,14100004,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,5,USDCHF.DWX,14100005,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,6,NZDUSD.DWX,14100006,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,7,NDX.DWX,14100007,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,8,WS30.DWX,14100008,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,9,GDAXI.DWX,14100009,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,10,UK100.DWX,14100010,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,11,SP500.DWX,14100011,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,12,XAUUSD.DWX,14100012,2026-08-22,Gemini,active
+1410,bressert-dual-cycle-oscillator-h4,13,XTIUSD.DWX,14100013,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,0,EURUSD.DWX,14160000,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,1,GBPUSD.DWX,14160001,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,2,USDJPY.DWX,14160002,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,3,AUDUSD.DWX,14160003,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,4,USDCAD.DWX,14160004,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,5,USDCHF.DWX,14160005,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,6,NZDUSD.DWX,14160006,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,7,NDX.DWX,14160007,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,8,WS30.DWX,14160008,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,9,GDAXI.DWX,14160009,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,10,UK100.DWX,14160010,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,11,SP500.DWX,14160011,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,12,XAUUSD.DWX,14160012,2026-08-22,Gemini,active
+1416,classical-bear-flag-continuation-h1,13,XTIUSD.DWX,14160013,2026-08-22,Gemini,active
