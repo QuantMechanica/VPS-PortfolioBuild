@@ -1,0 +1,150 @@
+{
+  "schema_version": "qm.commodity-source-build-handoff/v1",
+  "recorded_at_utc": "2026-08-22T05:37:53Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41106",
+  "ea_label": "QM5_41106_wti-mbody-dominance-mom",
+  "strategy_id": "MOP-WTI-MBODY-DOMINANCE-MOM-2026_S01",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "edge": {
+    "carrier": "XTIUSD.DWX",
+    "cadence": "one durable attempt on the first tradable normalized D1 bar of each broker month",
+    "formation": "first open, final close, aggregate high, and aggregate low of the immediately completed 17-to-23-session calendar month",
+    "signal": "strict 2*abs(close-open)>high-low with own-body direction",
+    "positive_body": "BUY",
+    "negative_body": "SELL",
+    "ordinary_exit": "first observed next-month boundary",
+    "risk_fixed_usd": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "non_duplicate_boundary": {
+    "preallocation_verdict": "FUZZY_MATCH_EXPECTED_FAMILY_ONLY",
+    "postallocation_verdict": "SELF_HITS_ONLY",
+    "nearest_family": "QM5_41092_wti-wbody-dominance-mom",
+    "distinction": "QM5_41092 aggregates a three-to-five-session week, requires strict two-thirds body share, and holds one week; QM5_41106 aggregates one 17-to-23-session calendar month, requires strict majority body share, and holds the next month",
+    "certified_book_boundary": "direct symmetric monthly WTI structural continuation differs from certified QM5_12567 long-only two-day XNG cumulative-RSI2 pullback; Q09 alone may establish realized correlation"
+  },
+  "commits": {
+    "source_approval": "e0eb12c16",
+    "bounded_source_extraction": "b1eedd804",
+    "ea_id_reservation": "9fb6f1548",
+    "g0_approved_card": "813b6dea4",
+    "magic_allocation": "fe8420a1e",
+    "source_build": "43ade5c04"
+  },
+  "registered_identity": {
+    "symbol_slot": 0,
+    "symbol": "XTIUSD.DWX",
+    "magic": 411060000
+  },
+  "artifact_sha256": {
+    "bounded_source": "19BA849CA27EFAF17546D4B0F51D770C0B0CBF287292DE33DABE321F452FA920",
+    "mq5": "5AA7D4F6D1E4829CE39EB2E84D94C6E79484F2ADE644CF86080B6BCFD5425695",
+    "unbound_backtest_setfile": "99A0216B125B3B55195CE6E738F358B840037787A88A0B6A68DA0E0843481938",
+    "approved_and_local_card": "FC512212DEB734B2E0E61A7FAFD9EFC1C159372B53E31C83DB4DD6F5EBCA0C33",
+    "spec": "B6E71981080004EFC210D5E458CF9C11C92D2BF8A8CCA05D3EE52B2773428EAD",
+    "reference_suite": "F6733A589C4D8999E8F6E973A054071CB665CF946768764D9D5B86EB658BC51F"
+  },
+  "source_validation": {
+    "reference_tests": {
+      "passed": 11,
+      "failed": 0
+    },
+    "build_prerequisite_guard": "PASS",
+    "build_guardrails": "PASS",
+    "spec_validator": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "symbol_scope_violations": 0,
+    "card_schema_and_ml_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "approved_local_card_byte_identical": true,
+    "build_check_result": null,
+    "build_check_note": "The live-factory include-mirror guard refused the strict compile before build_check; independent source-level gates are recorded separately and are not a compile or Q01 claim."
+  },
+  "compile": {
+    "ad_hoc_guard_result": "REFUSED_WITHOUT_COMPILE",
+    "ad_hoc_guard_detail": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "ad_hoc_compile_log": "C:/QM/repo/framework/build/compile/20260822_053414/QM5_41106_wti-mbody-dominance-mom.compile.log",
+    "retry_attempted": false,
+    "governed_work_item_id": "1c5bbf58-399e-4f37-bb35-4f56118fbd76",
+    "governed_status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "ex5_present": false,
+    "q01_status": "PENDING_BUILD",
+    "setfile_build_hash": "pending"
+  },
+  "capacity": {
+    "ceiling_cpu_pct": 97,
+    "mt5_scanned_at_utc": "2026-08-22T05:37:32Z",
+    "governed_terminals_running": [
+      "T1",
+      "T10",
+      "T2",
+      "T3",
+      "T5"
+    ],
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "cpu_samples": [
+      {
+        "utc": "2026-08-22T05:37:33.1957551Z",
+        "cpu_pct": 93
+      },
+      {
+        "utc": "2026-08-22T05:37:38.2768231Z",
+        "cpu_pct": 96
+      },
+      {
+        "utc": "2026-08-22T05:37:43.2977138Z",
+        "cpu_pct": 85
+      },
+      {
+        "utc": "2026-08-22T05:37:48.3895589Z",
+        "cpu_pct": 97
+      },
+      {
+        "utc": "2026-08-22T05:37:53.4070941Z",
+        "cpu_pct": 79
+      }
+    ],
+    "average_cpu_pct": 90.0,
+    "maximum_cpu_pct": 97,
+    "ceiling_hit": true
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED_CPU_CEILING_AND_Q01_PENDING",
+    "preview_run": false,
+    "apply_run": false,
+    "q02_work_item_count": 0,
+    "all_ea_work_items": [
+      {
+        "id": "1c5bbf58-399e-4f37-bb35-4f56118fbd76",
+        "kind": "compile",
+        "phase": "COMPILE_EA",
+        "status": "pending"
+      }
+    ],
+    "binding_reasons": [
+      "maximum host CPU sample reached the 97 percent hard ceiling",
+      "governed compile is activation-held, so no EX5 or Q01 PASS exists"
+    ]
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "q02_preview_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_started_or_stopped": false,
+    "compile_hold_bypassed": false,
+    "autotrading_toggled": false,
+    "t_live_modified": false,
+    "t_live_manifest_modified": false,
+    "deploy_manifest_modified": false,
+    "portfolio_gate_modified": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
