@@ -1,0 +1,1656 @@
+{
+  "after_counts": {
+    "distinct_incident_ea_count": 91,
+    "incident_id_sha256": "f81ee5334125e90d2d1d620068b6611a2955bf5d568a7b6d2aa0b34f720cf058",
+    "incident_selector_count": 91,
+    "incident_status_verdict_distribution": {
+      "failed/INVALID": 91
+    },
+    "pending_successor_count": 90,
+    "successor_count": 90,
+    "successor_status_distribution": {
+      "pending": 90
+    }
+  },
+  "already_revived": [
+    {
+      "bound_mq5_sha256": "61a44051923374687f5d99bd0c6bf938d4bb4c4d3f43fee12ac2fe953d3ccd82",
+      "classification": "already_revived",
+      "ea_id": "QM5_1009",
+      "ea_label": "QM5_1009_lien-fade-double-zeros",
+      "old_preimage_sha256": "8c8db52ab8eab1e5cfa7c6f55ca1e206cdd87a34b0aa1b96ed7d4daf2847ac01",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "5f9032d3-fa8b-4fe4-8b54-f3c2e49ea934",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "949b6983-0584-4318-962c-86dfb781fc65"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "28e96316281f49a376e2e1edf3a21f9dc5cafdd39906423a4743fee5a7b4475c",
+      "classification": "already_revived",
+      "ea_id": "QM5_1345",
+      "ea_label": "QM5_1345_chan-cot-spec-momo",
+      "old_preimage_sha256": "9e5086674be75cbffefd92c53f2e0531b6a2604c2d957337cb81c12dd1f43ca8",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "0c97cf91-ae80-41c0-95b9-1dc16df99e11",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "2f5ccf1a-3f2a-4334-8bd2-48abbd698ae4"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "db2e06ca7aa202559707ce751b8185832343ef140d885ad52be4ece726537433",
+      "classification": "already_revived",
+      "ea_id": "QM5_1404",
+      "ea_label": "QM5_1404_as-raa-unemp-canary",
+      "old_preimage_sha256": "ee7c3a45608a38b0d9906cca1f2d15563b919e30bea9f3873b103f433303bc97",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "75aa510f-e979-406d-874a-2095f35ada40",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "f5ba6093-62ac-4453-bd07-0f18c085365a"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "01dfb70410b3c62f2e210baaabb6eedd5fc7bb4208019a9de3678f61f5a97f83",
+      "classification": "already_revived",
+      "ea_id": "QM5_1405",
+      "ea_label": "QM5_1405_as-rpv-bestvalue",
+      "old_preimage_sha256": "f1d3c0834392cb2e08ac0297d4f9a18c6b5995d366071537e0113f8afa59205b",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "80c126c5-b8ea-44ac-848e-3b874848e9b6",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "f04926fa-3138-4556-9014-68a59f2292d2"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "34691127445bc890e7f1dbd7bdde38a2bd4c7b58af9ac3e9609c65ea59286a94",
+      "classification": "already_revived",
+      "ea_id": "QM5_1488",
+      "ea_label": "QM5_1488_as-ddm-pods",
+      "old_preimage_sha256": "e9c2fe77f3a1c5afff02f7bd6ca101479f78c6d147679c21c3b22346e3f74004",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "ff2f2e44-a5d8-43ca-b69c-d072c1c73a7b",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "7134bd81-bfdc-495a-9b8d-6140f8f63421"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "fd3705d27e5cb4eee92c4e5053dca71ead56b88c30f2e725dad63a178224e65b",
+      "classification": "already_revived",
+      "ea_id": "QM5_1489",
+      "ea_label": "QM5_1489_as-permanent-tactical",
+      "old_preimage_sha256": "b51b12ada829f0c198b8bcf427e873a178e633033ee463fdf2195fadc06aa6a2",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "bce3e6f4-62db-42a8-8778-53f1c3ea7558",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "8514fa7d-38f6-4d64-9ba5-71bcc870f876"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "c9ec0b29192876241d12005812d2aced593a16af1ff44336f2b362575ad5bfc0",
+      "classification": "already_revived",
+      "ea_id": "QM5_1538",
+      "ea_label": "QM5_1538_aa-tsmom-1-3-12",
+      "old_preimage_sha256": "cee59b2ba361543d4e17ffc04d493ac904439cb37913343f0837e11104e722f8",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "75228588-cdaa-49d1-bf8f-3d49ffa02926",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "54b51d27-0bd6-4821-8961-daa2881feaec"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "e1152b2cc6df079a778d0bb310329c823bd130a068f331ea2bcb5b9ffe5fb854",
+      "classification": "already_revived",
+      "ea_id": "QM5_1539",
+      "ea_label": "QM5_1539_aa-canary-13612w",
+      "old_preimage_sha256": "c10db759e60584de0ae5b39d9ac9a4d504c5e9c877c4c455d8f74b48e03e9f8b",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "be488592-55ac-4571-ab06-17851345e389",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "dc8c1ef2-6f9a-4eb5-936e-33ce7c6c89cf"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "0629ff6be2981d1a0b0ae2ba64211229830ad845824496c6a6b480448599a63f",
+      "classification": "already_revived",
+      "ea_id": "QM5_1572",
+      "ea_label": "QM5_1572_aa-ls-mom-bear24",
+      "old_preimage_sha256": "022df61c263d25d0a90a4f213ae603126ee3e1e521cb2fc6b766fdaa007d4613",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "a1c474d1-290e-46c6-8716-2173023830b9",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "28798520-09c3-4d51-aa5d-a8d00c2ea55f"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "873688d8bcc404d0f8b980aa75ade67e9ba3a3d7d500c1f9e4e98cd3e3c7e185",
+      "classification": "already_revived",
+      "ea_id": "QM5_1583",
+      "ea_label": "QM5_1583_aa-sma10-tr4-risk",
+      "old_preimage_sha256": "313389a0184dc35f271473be465c4fc96b5cf9162d196b1b5e8306178ba93800",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "3471137d-72ed-4f5e-ab16-fe16ff241578",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "51be25aa-4d49-4c8a-b6a8-0e047ed53d5b"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "ef729779e1d346ffbd9ef015184dc212c392048411806ba8edc5d1c2127060e3",
+      "classification": "already_revived",
+      "ea_id": "QM5_1606",
+      "ea_label": "QM5_1606_aa-gvmt-robust",
+      "old_preimage_sha256": "bea574a142f0892dcc0cb5676fb67239df8b6e2298b58af85dce05f19473da44",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "1eadbb57-0fd7-420a-8477-89c2939a797c",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "91a8d1a3-3ab3-4261-8109-234d9edb2e9a"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "3d8c8ac29b33b1e9f681e431d2f803e63a4d1bedfb08a4524874efbbe3374a80",
+      "classification": "already_revived",
+      "ea_id": "QM5_1607",
+      "ea_label": "QM5_1607_aa-mom-tol-band",
+      "old_preimage_sha256": "0510ed14efa5d2b7387ae81d842abaa6b2e59b55d8c1beef6b7266aa1337d74c",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "1da055cc-7762-42e1-b110-7d920e1c7d10",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "c74de048-28c6-4fc2-82d0-81d4bf8b4dc7"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "cdc1195e93e5aea56901e1a858e17d914fdfee06b69a5b2011edee1b88445eaa",
+      "classification": "already_revived",
+      "ea_id": "QM5_1611",
+      "ea_label": "QM5_1611_aa-dsp-hpes024",
+      "old_preimage_sha256": "7c3ca0ca21b901d3e6582abcbb6d66a91a4739686e03de6cc1fb8ea4900cd488",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "78609c47-5993-464a-829f-7c1aaa5ea5e7",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "993c18da-b608-42ba-ae4e-8185b9c1c498"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "be34c1f732107e83ff3151d085b8e62a2ae95eae0e0fce94c3e0f2699a73d0a3",
+      "classification": "already_revived",
+      "ea_id": "QM5_1612",
+      "ea_label": "QM5_1612_aa-dsp-hplwma10",
+      "old_preimage_sha256": "3281a72c6de9d641bc6d8ab918cc13c35fbd316474e4c1688900e1b308ef23ce",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "04d0ec0c-dc35-4f7f-b1f8-7c73a3cefbd8",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "7c03fd7f-229a-4c7e-b402-bee588ea387a"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "db5a1d8db8941d6acf45bed6949d0c5b02964875c1b9a466f6f4bb0eafcbb8c7",
+      "classification": "already_revived",
+      "ea_id": "QM5_1613",
+      "ea_label": "QM5_1613_aa-dsp-atsmom",
+      "old_preimage_sha256": "410002efd1f7b24c561578c68d50b00543fcdcb4e3f2679e612aa624197e140b",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "2ef85cd7-f24b-407a-ae92-2fe2080dd5b5",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "1e899c7d-87d8-4100-9f60-5e1a16a401cd"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "038e41d571cc8f0e7b8ce3ac1f34f0e7c3bc5d698b70cce9c5d7081e597cf6af",
+      "classification": "already_revived",
+      "ea_id": "QM5_1617",
+      "ea_label": "QM5_1617_mql5-sar-sma-rapid",
+      "old_preimage_sha256": "0f1f9c9fe579f111f8b4f333831a7ce1d563b24113b9bec8618bc1d78a901845",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "335aa087-735d-432b-9fd7-7f7f6ce7e5aa",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "ffb4ce00-951d-4308-86a1-5921d4fa40b0"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "8719a60286a06604ca67e5764773d673acddd3958a87b8008269a7257af2ba48",
+      "classification": "already_revived",
+      "ea_id": "QM5_1618",
+      "ea_label": "QM5_1618_mql5-ma-support",
+      "old_preimage_sha256": "81b5e29b4d41f7b6af4575b98c3fa470cc33f6cbe06eef94de0ce3275f199b78",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "fdfc721c-0670-4f7f-8902-568eb2b0a37f",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "e4fc6093-5748-40b2-b6b0-21570ee1b7df"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "bf204cf8422ed6a78cb46756adbeea71efcaa1bafb3e7c7567bb3147dd93636b",
+      "classification": "already_revived",
+      "ea_id": "QM5_1640",
+      "ea_label": "QM5_1640_aa-indmom-12-0",
+      "old_preimage_sha256": "efe470c630f82454fe41e6076776a04db1cfe24be144e9ada5558561a77ae6f3",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "6b08b0fc-0780-4ea4-8330-b90d2825cb13",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "231a929b-2a98-4d35-aea9-193607960885"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "54e870f09ec2406f1b5e8c94c1182c94ae58bdc1346d3401811cce5cd37e865d",
+      "classification": "already_revived",
+      "ea_id": "QM5_1671",
+      "ea_label": "QM5_1671_ehlers-ebsw-cycle-extract-composite-h4",
+      "old_preimage_sha256": "5438b8f111a5ce96e4f3e7b8ee24e4d841e238961ef37d55a1ff427633bb19d3",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "e7dced1c-76eb-42e2-b608-ea66813efa9a",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "040975ad-22cd-4cd6-aff9-99418505a5a8"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "960aeb9e14c01b04a505b103dd2e36af9bedaaa425fc68106decd4c4fe73f44b",
+      "classification": "already_revived",
+      "ea_id": "QM5_9111",
+      "ea_label": "QM5_9111_aa-dlwma-trend10",
+      "old_preimage_sha256": "3b0b3dfada7f0efef278e8dec9657b97c41595849ca6711ab70e5c1cafc8f9ed",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "9ed589c2-f8a6-49bd-bec3-2be2dffc2f76",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "f0832902-5ce6-42b5-81f2-d3462b841e3e"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "bbc300aae7f50961908c5241735f19c9dd3b265274321f8fea49ecab6c5c79b4",
+      "classification": "already_revived",
+      "ea_id": "QM5_9112",
+      "ea_label": "QM5_9112_aa-des-trend0177",
+      "old_preimage_sha256": "cb80043cca5a7ede44040dcf250dc9cb4af4d361f9727e8fa731f23faf91d339",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "bcd0f208-869a-44af-bb1c-810051be8ee1",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "8d753a0f-8c11-4cd6-a850-986ec5628710"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "107d656ed153c10f90b8e4e54dfdb7f1b664303fe6778025a337050382e994b8",
+      "classification": "already_revived",
+      "ea_id": "QM5_9113",
+      "ea_label": "QM5_9113_aa-ab-velocity",
+      "old_preimage_sha256": "dd69032d9f30dad90ec1f0a43c5b123b9b146449eae6b5802d71d317799a74f9",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "921cf22a-0040-4088-8eee-671f1eb43867",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "8685bf10-64ab-460b-817d-234ed2a9f92b"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "d5405cd9e3a72a4f5d25dacf1776fc3eaa6572f8810f0320684dae31e41a7569",
+      "classification": "already_revived",
+      "ea_id": "QM5_9166",
+      "ea_label": "QM5_9166_aa-vol-ma-timing",
+      "old_preimage_sha256": "66798a5bdf6ca4537d47750d6d9b4f0e0052f6e9e83c1c6ccbd2e0d6e05c9f27",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "dc5eb6fd-5774-4356-a150-d73f64d23c62",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "9777dbf0-c1a7-4f0f-8a40-28edcf3ddff5"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "67da622a1cf807078ff9dd85205f4c5008f313b628b092458e8cedd28f12691f",
+      "classification": "already_revived",
+      "ea_id": "QM5_9353",
+      "ea_label": "QM5_9353_chande-stochrsi-base-cross-h4",
+      "old_preimage_sha256": "17be85dc99516c5d1b5072cf202625ff304b5d3161aa40e3289c90499aa463fe",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "89950d1d-1546-495b-acc1-678396df5281",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "19788a0d-1aff-4380-b617-cf9f119ac557"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "152244997911119e18cc3624121cd0e20d394b180057d14aa85e236c4181209c",
+      "classification": "already_revived",
+      "ea_id": "QM5_9406",
+      "ea_label": "QM5_9406_qs-daily-mac",
+      "old_preimage_sha256": "9e5c76410626e80b10171a7733adcff11092a39148df816ec5519699053705e9",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "57281123-63a0-4781-af13-a43ec10e1328",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "92aa4297-9869-4f48-a888-b768d0c168c1"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "a3fc2d62081579fe2539994a71d4c212665e41f32fb0377f7516facee5a13393",
+      "classification": "already_revived",
+      "ea_id": "QM5_9417",
+      "ea_label": "QM5_9417_qs-sma10-30",
+      "old_preimage_sha256": "a679a5b155106946cda9608e5a6ff2951b0ce72a2af6d0b4432657c7184e174c",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "c24faebd-9720-4b20-b469-50591e56be22",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "0c10b904-0ed4-4a6e-9636-9cbb0ab781d1"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "58d5810a2ccc2a9dd0963d537799051a8d77d67537685cda56f4ed7a79209bf2",
+      "classification": "already_revived",
+      "ea_id": "QM5_9465",
+      "ea_label": "QM5_9465_connors-rsi25-d1",
+      "old_preimage_sha256": "9b71eefc0de721f88e0f18cc1f6f821869f57e621f283d988a6cf8b3a91a579c",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "a4c9d988-49bc-4326-af8e-6ced88cb1135",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "a0f01faa-320d-428b-8f12-70a22aaf3f12"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "a6c78f1a1127f1743825b0cb2597349097b0be6d967d82cae07a846ed16b826d",
+      "classification": "already_revived",
+      "ea_id": "QM5_9466",
+      "ea_label": "QM5_9466_connors-r2-d1",
+      "old_preimage_sha256": "7d1ab70e33b02b4382d8ebc80f155ebe1da4553d1f16e845e138bc5ddf119d93",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "608c1ac7-1293-4a05-ad33-9111427e71e6",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "d2f9c4c0-7d08-419a-9b4f-32abd46a3d74"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "5f2cfd1976d027352b01c1e1213a821900599677cb5dacfab03c75b2184f4db4",
+      "classification": "already_revived",
+      "ea_id": "QM5_9467",
+      "ea_label": "QM5_9467_connors-crsi-pullback-d1",
+      "old_preimage_sha256": "f91bb0b0c106796bffda0798d69da24da52c239fa0b9564ecd375125f1da58de",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "3a50e5da-dcb5-4f78-ba76-ffbcdb9bcf5d",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "ec0f56a3-11a2-412e-832f-0e0b4df0f29b"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "464f77b452a08a146b06c8f0ceb3d7f48cedc0d1e56c05b222270ddf1b2acb6c",
+      "classification": "already_revived",
+      "ea_id": "QM5_9468",
+      "ea_label": "QM5_9468_connors-rsi4-3day-d1",
+      "old_preimage_sha256": "907330f736131d0c5a9d31238d183ac32ef240c9df85519d54b2fd8646fa12c2",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "23250d90-8c2b-48b9-8890-7b6a8daf1bde",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "77d3d931-b738-4094-83de-c01604d498d3"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "e9b0dbd91996b0c436f761c2685af430aa73fac33207f48a689c49a578d44a30",
+      "classification": "already_revived",
+      "ea_id": "QM5_9580",
+      "ea_label": "QM5_9580_bandy-regslope-pullback-mr-index",
+      "old_preimage_sha256": "f84cf0d1724a874eeec05fa047489bc15a326b745cf96900a9bf673c9c06f480",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "f4d7627a-42a3-452a-badf-48f5adf35157",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "60c56645-8f53-4c52-89c7-8271af6cfbc0"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "6c13a0b613a19bebc1394508700d9da8e9c0d83b8397ca00efa7ebb51e4d6012",
+      "classification": "already_revived",
+      "ea_id": "QM5_9696",
+      "ea_label": "QM5_9696_ff-genesis-matrix-m5",
+      "old_preimage_sha256": "4ceafbf457b8bf75cded2be5249116affe22e2dc8d544fed1c9c15e93727bbf1",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "f9ef5626-2f8f-43c7-b24f-9817d1777223",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "d4083545-bda4-4569-8dee-864af395d60b"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "a705b3cfd6643ae2c25f58f3da494e291026a50059e2f2a34b2750724aea9213",
+      "classification": "already_revived",
+      "ea_id": "QM5_9716",
+      "ea_label": "QM5_9716_bandy-trend-stretch-ratio-mr-index",
+      "old_preimage_sha256": "5a9069e5cb7c57282101bbebf07b6bd5dccc6e09c693c6cb9be627af4b6127fd",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "ab1d7633-902b-4c17-9a4f-c24aaae93440",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "2f97ea2e-413d-40e5-a8b8-9d21a80fd3ab"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "67477b5c3ce7cd393ba100adf9dcbc5f9a7e0b93b619097b100c5caf3ad00c17",
+      "classification": "already_revived",
+      "ea_id": "QM5_9717",
+      "ea_label": "QM5_9717_bandy-pir-position-in-range-mr-index",
+      "old_preimage_sha256": "568bb884e07c4c8091c6327d452d2c1d60727d360bf5d06d1c8109093659ca9a",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "e7994d23-39bc-43fd-bd39-ce678d82324e",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "bd2c6018-182d-432b-ba08-83a56699d17c"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "7ed171acf4a12cde403f08a39f2e549377bafcba6b356502fbc3dca756ba033e",
+      "classification": "already_revived",
+      "ea_id": "QM5_9718",
+      "ea_label": "QM5_9718_bandy-cumulative-rsi2-mr-index",
+      "old_preimage_sha256": "7bbf5f7c9fc37fb4e0f6a11d4b5dcbe2ca8e1f9685a189f7392e136332de861f",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "1229455a-5042-4dc5-8016-e170bb532249",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "402bb364-7330-4c30-8adc-6f539b9a6d25"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "9cbe459ccbd440390795ad0979bd3957cd5f9f9dc16fd03bbebcea3485ca6a68",
+      "classification": "already_revived",
+      "ea_id": "QM5_9719",
+      "ea_label": "QM5_9719_bandy-percentrank-channel-mr-index",
+      "old_preimage_sha256": "dbfb3676b3ef788b35117bd184756fd3fade6777dd1f61ba21ade7f2edd9e4fa",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "9a28f945-1478-4a4e-8e6b-fc69ae26b531",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "604fe6e4-7381-4a51-9377-5c036dbc9446"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "5cebf59116cb04f2677236b79dc32acc9e6485f8e61fff84c2642e33af6429ad",
+      "classification": "already_revived",
+      "ea_id": "QM5_9720",
+      "ea_label": "QM5_9720_bandy-adx-regime-filter-trend",
+      "old_preimage_sha256": "f5cd54d164f0f6bf99f3857dead3ba18022e8c1ab72d7ebfaa376d723c94cc84",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "9f2447e1-995b-4e28-b04b-525a4a0f7fe1",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "5b8cf328-9c33-40b3-b707-77c595983cad"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "18fe42ac87ee79eccba14270bbddd89efa0d7ebc2090c1ba87926b723f970aa9",
+      "classification": "already_revived",
+      "ea_id": "QM5_9727",
+      "ea_label": "QM5_9727_bandy-atr-ratio-compression-breakout-trend",
+      "old_preimage_sha256": "a00b922bba4e22e1911dd8c0bb33c06753e74d12a1300e2ec3b2e0e425bffaea",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "98c4dfab-8def-4ef4-a064-f6ef558fd0db",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "33d5210d-e59c-4bff-ba3e-aef12271aecb"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "596c4e7347274426e18682b14df6cb62979e15bae817db613dbe74001c1d5ec2",
+      "classification": "already_revived",
+      "ea_id": "QM5_9730",
+      "ea_label": "QM5_9730_bandy-weekly-rsi-extreme-d1-trigger-mr-index",
+      "old_preimage_sha256": "1ecd60275186f61b586192b3675ed2b2a17c5b1bee19e291c6dd5f65ef34caaf",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "49fbdf8a-3a52-4d01-a4f6-10d3ff12f39e",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "f5b476e0-a7cb-4e53-ae17-78cdf43f20cd"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "4eba4c8d73ebd02166e6d4183ca5d038845654f65518ac533d55a700c17db44e",
+      "classification": "already_revived",
+      "ea_id": "QM5_9908",
+      "ea_label": "QM5_9908_bandy-psar-flip-trend",
+      "old_preimage_sha256": "5f1609edde1a0f0f565a4b89779a897170f14222ea55d1487da718f3cd7578d5",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "1ad02128-7a74-480f-b5fa-281fe85b5173",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "ee481b71-50f2-43ef-9dca-8f6560e9c1e1"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "6d8a570568322544352a2636de90b9ea7d31784ac111914b33ccbd6297c9e78d",
+      "classification": "already_revived",
+      "ea_id": "QM5_9909",
+      "ea_label": "QM5_9909_bandy-lrchannel-breakout-trend",
+      "old_preimage_sha256": "41114adb5f30d98380df559635860d4a778c56c61f62c13a84529aa29a6f6f25",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "d2e96bc0-c6c2-437d-add8-d053aee1ab39",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "e961c67d-e8a4-4897-b4c5-a9f60045535a"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "c413ab7a09ed790e000f802f8c17a958703b6a102f9bb6a6c4ed8a279c2f6160",
+      "classification": "already_revived",
+      "ea_id": "QM5_9910",
+      "ea_label": "QM5_9910_bandy-tema-adx-crossover-trend",
+      "old_preimage_sha256": "22827fcbfc9fc2c92def6e28631236c27eea576c066598cf221303d2a1ca3582",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "a17841d0-9ede-4efa-8454-d8b782d65868",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "0783f1cd-0dbb-492a-890b-651bdd568263"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "1aca365668c319609aa4884ac0693c33c29c0fdd147e97329853abe89b0e802c",
+      "classification": "already_revived",
+      "ea_id": "QM5_9911",
+      "ea_label": "QM5_9911_bandy-donchian-20-classic-breakout-trend",
+      "old_preimage_sha256": "470fc34639621450c55e87650b7183de99ca5d4c7a81fa057436b45a109a8ce8",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "7381be27-e196-4618-880a-45bd9ccd5389",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "6cfac6ef-7830-44b0-b946-91a8ed0fb1ea"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "505d2f7b5044d325628240454ec6fec7ae5949f8199c7d4707433be4ed6a048a",
+      "classification": "already_revived",
+      "ea_id": "QM5_9913",
+      "ea_label": "QM5_9913_bandy-rsi3-low-adx-mr-index",
+      "old_preimage_sha256": "7455c3afcea742b20b834cd53be97a9120756bf4353748a8d8201a58e9d0fa0b",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "dd0ad51b-bb77-40fb-bce1-38ca47d9ca9b",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "f90277a5-9a74-44d1-bafc-9c9a92397aff"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "96a92cd52775d281fe76c88a0a8838b542cbfde2c13b56d736498baacc386baf",
+      "classification": "already_revived",
+      "ea_id": "QM5_9914",
+      "ea_label": "QM5_9914_bandy-zlema-distance-trend",
+      "old_preimage_sha256": "f9b8ae0c6efdac124c67791e6c77323ca68b831fdc8573ed6319747f6ed1c263",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "953aefae-0519-472c-9a31-0c8e70982925",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "8c5b17ee-b7e2-4019-9220-bda27522b2cd"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "a0009cffb6761018e69682ff9606865a84274f8a5488913db75dad1e3326a95c",
+      "classification": "already_revived",
+      "ea_id": "QM5_9921",
+      "ea_label": "QM5_9921_bandy-cmo-extreme-fade-mr-index",
+      "old_preimage_sha256": "4e499f1b283d0315649bb5fa53543ea7f8e5f63e1a5cfd73fac53ae52a0e672c",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "90bb47ec-3ebf-46f8-90eb-dd84458298ed",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "3a3fdbea-1ab6-41b7-acc7-590bdffe2053"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "863bd49d5edfd8f8e7723689e990044b58cda0c319b83adb3500dba66b1d7339",
+      "classification": "already_revived",
+      "ea_id": "QM5_9922",
+      "ea_label": "QM5_9922_bandy-vortex-crossover-trend",
+      "old_preimage_sha256": "b2b704a39fa957e8bfbabb965038eaa46c3fb4e66d46c29ab8dc882a6d6e0d8f",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "8f6e1e6f-ebea-4da9-b910-420dec9cb301",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "695e84e0-89c6-42d3-8096-bae01d32be1f"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "ab97955cf76422d1ff2c01d294f46b27a48b0effecbe81aa0ce7fc82d9359b37",
+      "classification": "already_revived",
+      "ea_id": "QM5_9923",
+      "ea_label": "QM5_9923_bandy-hma-crossover-trend",
+      "old_preimage_sha256": "dcb79fa0b3f5bd5ce064d7a2637f39dca834884875138dd4ff1351d5c859dc42",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "bb618a27-fd8a-4462-8ca2-a6794e647488",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "476a3228-a412-4106-a7c9-09de16b25f7b"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "6ba95b7b76b3b09f259b074289563393725f3f5574754fb76e39d6d779bf6b36",
+      "classification": "already_revived",
+      "ea_id": "QM5_9924",
+      "ea_label": "QM5_9924_bandy-dema-crossover-trend",
+      "old_preimage_sha256": "88fdd68df140478f8a106dbfce9a9c8929db0593049f43aded3a8c9d7eb19eed",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "27639a02-2f41-4186-9eae-ea74b9aa398b",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "70495b08-7994-48d5-858b-e42f8ed69285"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "e0ec807c9d19d66a0f79b1ee424672acf49a674ed654f0ce6887b7134891dead",
+      "classification": "already_revived",
+      "ea_id": "QM5_9925",
+      "ea_label": "QM5_9925_bandy-cci-momentum-breakout-trend",
+      "old_preimage_sha256": "168aaba53b53cf24fd8869785ca542793b30780a0fcc4c96913cb98a24b766ec",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "c504bf1b-ba18-4c4c-9591-50bb0aed11d5",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "c3e91d1d-f47c-451c-a6f7-fe5c658cae4e"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "3c0672a591a0ebbbd5c4b00b1fbff7c692fbbe1d5ff2cd84b93a723cc356249e",
+      "classification": "already_revived",
+      "ea_id": "QM5_9932",
+      "ea_label": "QM5_9932_bandy-roc-zscore-normalised-mr-index",
+      "old_preimage_sha256": "1b0ac9f1b0f77491b96a8cfbbcb630e98ac506c5270f1960577fffec29549e24",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "e830c0bd-9bc5-4fe9-9d17-3bc4ad1ba7f5",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "314e33cc-173d-4e95-9cb8-a1003be28bc7"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "e0c77eeff12f155c925111d5114ba1e5be12993f3003ee8e7cfb487c07615f99",
+      "classification": "already_revived",
+      "ea_id": "QM5_9933",
+      "ea_label": "QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index",
+      "old_preimage_sha256": "b4befa317f14e7bfab9218508a6206fb13181baecaab53489a99d51c83426000",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "0cd87495-72f1-4fd8-bb04-bcd6d45f4c09",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "e2905d3e-9e99-4ede-8ae3-78b686d2077e"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "71f69555febbd3b50617f0da3bb4be231827c2667e9f44a6e3d75490aa77e31e",
+      "classification": "already_revived",
+      "ea_id": "QM5_9934",
+      "ea_label": "QM5_9934_bandy-ulcer-index-spike-rsi2-mr-index",
+      "old_preimage_sha256": "f592f959081ebf5717d227d1929d5fa7eec8e18ff7f125f8cc0e9d81059562eb",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "78375084-339f-4850-ba37-4c9e210a97d7",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "3e3c922d-78b3-4497-a4dc-82c627361477"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "204aeb60e2fcfef6eb8083e1bcf5f9e9ddcaa400b25d2556b3dff10808849b1e",
+      "classification": "already_revived",
+      "ea_id": "QM5_9946",
+      "ea_label": "QM5_9946_bandy-supertrend-flip-trend",
+      "old_preimage_sha256": "8eab995f1bd597b1f29eb284112fa9b27a8506ac57e77303636fb4d739619625",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "9622076c-4e8f-4d3d-abbe-a5975174b48e",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "d478a492-f7e4-41ac-bdca-e176c023cb57"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "b5c2307662544735536f9c30a2bb51977fc8686c6a8f53ad9714f0e735a40f62",
+      "classification": "already_revived",
+      "ea_id": "QM5_9947",
+      "ea_label": "QM5_9947_bandy-double-bottom-formalised-mr-index",
+      "old_preimage_sha256": "cb8aa2857a1ef421355a2e8b997ab9bf4862b316557e3c1af67550ed442796b6",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "4c4c06be-9ef7-4dbf-bcfd-2ac2b759e6e5",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "afeb78da-b6b2-43be-83ed-498cf6e6387a"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "fdb1f4b0c1e2921e85a4d70e906800c952a8c038326d6052c822757f3b1a7c86",
+      "classification": "already_revived",
+      "ea_id": "QM5_9949",
+      "ea_label": "QM5_9949_bandy-bbwidth-contraction-breakout-trend",
+      "old_preimage_sha256": "569c03081e88c305cf6be62db376e8df7adc8042839154e5739502388c2cf17d",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "45b31d6a-062e-46ad-b6f8-13aba2ef6978",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "90491493-085c-4bab-9ef8-7bb91155d6f3"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "efb041f13295fc4b7203209e1f2307fe070cddc314146c1a8e2d614f0e48704d",
+      "classification": "already_revived",
+      "ea_id": "QM5_9961",
+      "ea_label": "QM5_9961_bandy-hma-supertrend-confluence-trend",
+      "old_preimage_sha256": "e22579ab7aeba340b6f0d6955db831cb6f93be08c2d6501990ad11e53e0809a7",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "449ca810-a45c-405b-bb60-b625d2d8deff",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "503389f1-161b-47e9-9fe4-777ad007e767"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "b2fa66a8c39e8230afe957016bbfc9225e674ae01d452d5d2696631b69da6a1b",
+      "classification": "already_revived",
+      "ea_id": "QM5_9963",
+      "ea_label": "QM5_9963_bandy-lr-slope-sign-flip-trend",
+      "old_preimage_sha256": "9db46ddac9683a203376531ce2f120db42cf53bf633cf5053882f52186843f7f",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "c272a08f-34e5-4ecb-967e-e32619349b69",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "0a7ea064-ffbb-4597-b877-51b49fe61eae"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "faa6ace54ec9d0c1b5a1490a8c9029b8da6d9d5958b540951f9b24c640144279",
+      "classification": "already_revived",
+      "ea_id": "QM5_9964",
+      "ea_label": "QM5_9964_bandy-wide-range-bar-continuation-trend",
+      "old_preimage_sha256": "c43187b23218737d43833e54d5bb0d4d4ffcfdc12df49001d21de94a168c6958",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "f5518c02-f617-47a3-b2da-bf0ed75a6e44",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "0e41bbda-f91e-49fa-a60c-8fd847204aad"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "b75797a182d7fdcd9e7f5f01700d468cb427e914f6bf10ffc917f0fb8cf87948",
+      "classification": "already_revived",
+      "ea_id": "QM5_9965",
+      "ea_label": "QM5_9965_bandy-index-gap-and-go-continuation",
+      "old_preimage_sha256": "0906106f999d26ffe1f292c5fed76782634cbdc68a14d38f7b0fc6e83bb332dc",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "6719a390-2f86-4653-848d-eca79be0ffa9",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "8987f9d0-6ca0-4efa-9add-206437432944"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "2ebdb8a6bc3d68e976edcbec15a610c4fa9078964fe04766bafd37ce8bc29bb8",
+      "classification": "already_revived",
+      "ea_id": "QM5_9970",
+      "ea_label": "QM5_9970_ff-369ema-scalp-m5",
+      "old_preimage_sha256": "f8b55a87c3d314e058f39b129422ebb647459bef0b96723eb42ef6eb9a796d4c",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "d48d7f5a-c185-48f9-ac3e-9cf8a5cef9ef",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "2edb7fe4-360f-4fef-9142-4f362619d6cc"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "ececa5cb91e23bf452de4e189de82bd014cb2ffc9e5feb98b7a85f7e5a4b62b8",
+      "classification": "already_revived",
+      "ea_id": "QM5_9971",
+      "ea_label": "QM5_9971_bandy-dpo-zero-cross-mr-index",
+      "old_preimage_sha256": "a1a6a0d877676f42acc5afc01bfcb007289a1f21e11d3581f133fe057ec0dd7d",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "96a9d355-2167-45ad-95be-773edb089052",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "e20275f7-d21e-4de6-a50a-40997025d8ab"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "bcd85ff83ebeda3438dcec436e49c0396023a0135c93f9ff0e45c2e8353da272",
+      "classification": "already_revived",
+      "ea_id": "QM5_9972",
+      "ea_label": "QM5_9972_bandy-heikin-ashi-color-flip-trend",
+      "old_preimage_sha256": "72e0ecf9b483b6bafa41644c91456cd114839208caf18c0e6a586babfa90ca6c",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "7a651660-10dc-41e7-af3c-b70b7b322911",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "ef905ce2-ce8a-4bd8-a39e-4ff65805c447"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "14f791869af0bc50dc3ed8afe80b94ad41fca6c65f680cd1b6d6ced77f5117be",
+      "classification": "already_revived",
+      "ea_id": "QM5_9979",
+      "ea_label": "QM5_9979_bandy-index-gap-fade-mr-index",
+      "old_preimage_sha256": "58c1bd25ea2d01b454c9fad0985005c0adf9d7caf2e7726bc58791331d010222",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "e6718d11-7a7e-4d45-b38a-8c4f636aab4a",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "f0494424-1319-43ff-9333-b0e19f4d3706"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "d6136d1cbc52caac97976722613462d354dd8776c373ee2f1cb986a9e154eedd",
+      "classification": "already_revived",
+      "ea_id": "QM5_9983",
+      "ea_label": "QM5_9983_bandy-wide-range-bar-fade-mr-index",
+      "old_preimage_sha256": "ac8c623fa449b1c0a0d9511d6c9f6c7b54ab89373aa0df6698027d90267fa502",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "4301b4f2-645e-47c5-b03e-9d5753ebc92a",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "c45c45f6-a352-42cb-8671-a7646ac8b5a0"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "19b4150d3f7f64319d24f88a31c1c597436a7b7e180a9b6a827e11f83faa270e",
+      "classification": "already_revived",
+      "ea_id": "QM5_10367",
+      "ea_label": "QM5_10367_et-gbs-breakout",
+      "old_preimage_sha256": "6d424d827dbdf68693aef751cad98f18de4e1a4bf791517323d08393c03ed520",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "ae82e1ae-287b-4444-b401-4d0455e9c9da",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "8a8677d8-6c66-4944-8256-a2bfe4f3275e"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "430df6a52ca6bece9aeae08d6b81d8db43486f72f5af2c3e46f2c02c6c038fb6",
+      "classification": "already_revived",
+      "ea_id": "QM5_11291",
+      "ea_label": "QM5_11291_tc20-ema18-28-wma5-12-rsi21-h1",
+      "old_preimage_sha256": "46a2a4fcd79d63e1a6da2bb23ec3a06b75e6e5c304d68e602eaa23c8358b4143",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "13c40b41-4c0b-4a89-8bf6-413c65242709",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "afac9010-dbb3-4888-8077-a268a141215c"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "ab0a8fcfa9e37ed8af33c017cf631fe479a83a58ae9f1e5a18752180dd135e3e",
+      "classification": "already_revived",
+      "ea_id": "QM5_11292",
+      "ea_label": "QM5_11292_trix14-signal-cross",
+      "old_preimage_sha256": "a476edf3f884fafc80ba1cc44ab023df5c2772635eb1636bc74c9163fc948d27",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "7edf5c34-f711-4bff-ac13-48923689183c",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "48f32c17-df81-4214-aaca-456e592e24a9"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "7d297d03aa84bd4c2638bbb490487cab89166388cb42ce22525803b10f4dd7cf",
+      "classification": "already_revived",
+      "ea_id": "QM5_11299",
+      "ea_label": "QM5_11299_lwma144-smma5-fractal-m5-scalp",
+      "old_preimage_sha256": "6630e59770609096b0f2b9093a4b6bbe086e973db36c68ba903584dae55d5cd9",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "92b2f511-a9bf-42ec-b441-15e62ea3674b",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "6ea5da3e-afab-43f2-b476-7cc9b60bb943"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "96b1a39264f183b2e263099cdd28e9ea7e613cfa4ac77921766e2da941cc4de9",
+      "classification": "already_revived",
+      "ea_id": "QM5_11300",
+      "ea_label": "QM5_11300_macd-psar-atr-trender-h4",
+      "old_preimage_sha256": "3433bb2f55c8b36fb07241b4ea08fb96469f94866e73c1dca2b1227c8b1713e7",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "fe0d4096-6037-4758-a9c9-31f35c9bd096",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "64840c00-3db2-4744-9f00-d1272a87fd45"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "02e4d2b2c9f063ae7ff56e24088835c4f08fc63b916de54b8288e8a06f57b0b1",
+      "classification": "already_revived",
+      "ea_id": "QM5_11465",
+      "ea_label": "QM5_11465_suhr-bank-trading-stop-run-fade-h1",
+      "old_preimage_sha256": "3018563d2dd111dbf67496f6fc92d1a12974b8accc801e369f036f8e40dd362a",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "7e6429df-bb9c-408f-aa7d-2e552b734f9b",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "1cab0ed2-b87e-45ef-a461-1e29653eb182"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "a63f4131d0cd6e732702c37fe7964ec6b1a19b8980552897705070ed2ab35220",
+      "classification": "already_revived",
+      "ea_id": "QM5_11496",
+      "ea_label": "QM5_11496_carter-t-ema100-psar-macd64128-m5",
+      "old_preimage_sha256": "d29337079f295d17f79b0541b9e8ce8ef76ca22294a21079808b5fc0ce58826e",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "ea69be19-68da-4223-bdf7-4851623eac2c",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "6c468090-8518-46f3-95a2-27088dced9aa"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "2db0313d7d3f14498616bcd2c3fa00c53628fad2ac77bd343367e877b0962c52",
+      "classification": "already_revived",
+      "ea_id": "QM5_11516",
+      "ea_label": "QM5_11516_carter-t-sma7-21-cci5-m15",
+      "old_preimage_sha256": "6cffeb271df0c2a7a2d68f0931d0e68492f96453f746114717f17641dffcf436",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "1ae1b96c-9a40-4d54-8db5-c112780702e7",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "4487d576-266c-43fd-afd3-7020aabc5bcc"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "25af9603bb465b734edf2672b659a083b8bb2f5aa16295470a9ed6abb940452c",
+      "classification": "already_revived",
+      "ea_id": "QM5_11517",
+      "ea_label": "QM5_11517_carter-t-ema5-15-50-100-macd-h4",
+      "old_preimage_sha256": "2f01fe4893342f52df1c41abdb47b7693aceed31dc9b2fc3e97650e49b21cf38",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "19fc353a-a646-43c8-b49c-2d30e613ea0c",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "3a53b7ad-a77d-4f34-b6f2-417a36dd59a8"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "ffe2291f68eb5a9a4981729ce3607d9fa46e4ba9656849ccdacdba69d57c3203",
+      "classification": "already_revived",
+      "ea_id": "QM5_11518",
+      "ea_label": "QM5_11518_carter-t-ema5-100-mtf-m15-h1",
+      "old_preimage_sha256": "db11e4553a3da4a503cb191c36f58df44d286155980a93523aedc0322e82dcb4",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "24a0ece2-3637-4565-b739-23cb040911c4",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "5996bdb8-4a7f-4699-9e11-bff4f8ebc493"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "fe0bcfdf43492c4ec6e478354e596f7646bcae516fef0c3248e6d2bd723151d8",
+      "classification": "already_revived",
+      "ea_id": "QM5_11899",
+      "ea_label": "QM5_11899_psar-ao-ac-confluence-h1",
+      "old_preimage_sha256": "bd8829cfd2e0b044b352a96ff2632ee6a1eece37fa838f3f18fa198f46265796",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "86532b43-86dd-40de-88ae-a9ee05dfdf55",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "2157244b-2ef8-499a-9ff8-385c4328001d"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "b2f59213b918b11f942455c87699ebf010acbb6ab2ea31a5b6e1db8562c25f37",
+      "classification": "already_revived",
+      "ea_id": "QM5_12931",
+      "ea_label": "QM5_12931_classical-triple-top-reversal-h4",
+      "old_preimage_sha256": "885a91cb29d1518cec8b6ddb9aac25cce7ac434f98bfb4a9270f301783cd73d7",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "dd976a3e-095b-4928-9bb2-500104376cd5",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "bf2307be-1ae0-44ec-8bb6-647f9b11cc13"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "7001372389bb8bfcfbdf79eb6f61facf42e8faaeb1f5865307793efbea4a5d71",
+      "classification": "already_revived",
+      "ea_id": "QM5_12932",
+      "ea_label": "QM5_12932_wyckoff-phase-e-markdown-continuation-h4",
+      "old_preimage_sha256": "b4f6dd84dbb3e9d0de0f5d993dee824c5309658ae596632dc9fb83e8746da2af",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "03cdfa65-e9e6-4673-8599-d4f6c5710991",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "849e78d9-2f45-4f21-b0fb-c55b5a8415b8"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "7d6ee0394fc65a0ab21c5fbadb6fe28d9169501b920ea16bc37989217445f0aa",
+      "classification": "already_revived",
+      "ea_id": "QM5_12954",
+      "ea_label": "QM5_12954_pring-coppock-h4-variant",
+      "old_preimage_sha256": "08cc1aee1867e9939bce2f1e77ae3f7456c4ef820a0083811214743d400aec9e",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "e2026ad1-e0d9-49ce-8bb6-cb9d5c0343ea",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "a44c3c83-7840-4b28-98eb-6d5988a3a82d"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "e803a87afe1d8ebd15935970a74743fed3e6c725da9a3e24bb9035cad6217021",
+      "classification": "already_revived",
+      "ea_id": "QM5_30005",
+      "ea_label": "QM5_30005_bollinger-bands-grid-dark-venus",
+      "old_preimage_sha256": "5c81fa1c1370e9c76dbad4f858c37462843cfdde33ecb01a4724d5a4b3b5200d",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "42edbc15-5fb0-4afb-8cad-7c81f996bd8f",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "ade3388f-b7ab-42a4-9d46-667c5e86e7d1"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "3d9e4f55662c4a1140fb40d567c2df5c8fc009ca22010c5caf657e697924aeb3",
+      "classification": "already_revived",
+      "ea_id": "QM5_30006",
+      "ea_label": "QM5_30006_adx-ma-trend-grid-dark-kronos",
+      "old_preimage_sha256": "73b4dbe1d5fee9f48341f74f422a4d92a396cdffcaea1c06177dfe86ce2ca30d",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "15e9cd6e-b6b5-4638-ab7c-349e164adc5c",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "17dfb510-5c5a-49ab-a2ba-c7a94f032f6a"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "04bfef934775a963c3ce3a9b45717b36a9f2352488086f8bbf90e51404f80305",
+      "classification": "already_revived",
+      "ea_id": "QM5_41095",
+      "ea_label": "QM5_41095_wti-wexcursion-imbalance-mom",
+      "old_preimage_sha256": "de1e2d76e490d106c1549f08d35ee60124bd54fe9d4fb51c099e0016d8197ded",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "c88b39a4-1220-4894-a2c3-9818651c763e",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "fb42e3cb-b49b-4db3-83a8-6be766d27144"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "84ca1d4783b928cf548d488832403fe38a864b8e9d8919542159044e6f526240",
+      "classification": "already_revived",
+      "ea_id": "QM5_41096",
+      "ea_label": "QM5_41096_wti-wexcursion-reject-rv",
+      "old_preimage_sha256": "46c83bf2b0937d6039e8af8710ad600ee918cd1114f0ddf78782b18ff2c22faa",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "678881b9-d266-4cb4-9b92-1bf1b85b7030",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "ddbe7857-0339-481e-aa6e-d57aaec9e83a"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "8cff83546ad0f5ffa60d4f8b144e3b6e204a6c01a1b519e60f0d9f1df1058866",
+      "classification": "already_revived",
+      "ea_id": "QM5_41098",
+      "ea_label": "QM5_41098_wti-wextreme-sequence-mom",
+      "old_preimage_sha256": "4b3764be137e474710b63b3c353aacc08a0d16bdb327065b6b59365282981644",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "089fc9d1-dff7-4204-9a8c-70c915ec7943",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "9f1385ac-5e1f-4780-a604-52562e6e1256"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "ceba37a2444dd6e1a56115ff995c34412a211e3bcc7057d8911cd999ff26743b",
+      "classification": "already_revived",
+      "ea_id": "QM5_41099",
+      "ea_label": "QM5_41099_wti-wclose-turn-mom",
+      "old_preimage_sha256": "5ab34c77c69321053c41e43c50d4983f3c8ce65efc934aba295ddac59ab1e135",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "b23ec578-eba6-41cf-854d-91737c4c4373",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "094f4389-d759-4e41-8d5d-8ce558a2bef1"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "a21062be279588efb46f0a0b5f18cb83227e61f511996f4edda55ead4055298c",
+      "classification": "already_revived",
+      "ea_id": "QM5_41100",
+      "ea_label": "QM5_41100_xng-wclose-turn-mom",
+      "old_preimage_sha256": "b27a385abbd2734969f52488b9c0b6147affe3b288b0ee16f70bbad75d3c919e",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "e6a55d77-24e2-47a4-ba70-4bf55972f35c",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "5541a62d-1d66-4de3-9a7e-5c2839e057f9"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "e6e83e3084db7fc99df6c3b7a6fc2ac236bbfb92550b7fd7b7b29ea8b11dbd08",
+      "classification": "already_revived",
+      "ea_id": "QM5_41101",
+      "ea_label": "QM5_41101_xng-wrange-migrate-mom",
+      "old_preimage_sha256": "57859106de953f43f251705e8653becd8c905323f4bddadbf59608173c80e540",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "97095c29-b534-4e4c-baf8-aa8d382225eb",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "16027752-6ae2-42b5-8182-89d49b5de4c4"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "5098639d34f9fa01557a4d270710bd91023e0cba05f545eac1d0537b1bd9c6bd",
+      "classification": "already_revived",
+      "ea_id": "QM5_41102",
+      "ea_label": "QM5_41102_wti-mrange-migrate-mom",
+      "old_preimage_sha256": "8b965d45be2d8e532d8df2454a8c934841ee831897a5df90ba56b052c32d5b4d",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "200baa1f-8f4b-4438-807a-835734be24e9",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "ec323614-4d44-4d8e-b8c0-1553fb7801f7"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "283426f456a4bd50cf161ae1af2ebc8d5909bd5a55a1e27382885ff1b316bcb9",
+      "classification": "already_revived",
+      "ea_id": "QM5_41103",
+      "ea_label": "QM5_41103_xauxag-mrange-migrate-rv",
+      "old_preimage_sha256": "e9882ada38a93a7331e4181072c3f4e3d309d467b9aa679679faf7cb214b1cc0",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "e1e75830-9671-4541-b7b8-bcc5aaa7b54d",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "52149c45-9a75-472f-8be7-37772b26d97b"
+        }
+      ]
+    },
+    {
+      "bound_mq5_sha256": "24a1e033ded53492ca6dbf03e08f263988ffe58c329d0f11481a8aa30d434f94",
+      "classification": "already_revived",
+      "ea_id": "QM5_41104",
+      "ea_label": "QM5_41104_xauxag-mmedian-shift-rv",
+      "old_preimage_sha256": "61a6168aa50485a6bace0ce1403b09d005566b13af6c283755b8eafa2bf7064d",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "0960f13d-a245-410a-97c3-7b6e3411041f",
+      "successors": [
+        {
+          "status": "pending",
+          "verdict": null,
+          "work_item_id": "37b24b40-92d0-4a56-9e5d-7913f6fe0c45"
+        }
+      ]
+    }
+  ],
+  "already_revived_count": 90,
+  "applied": [],
+  "applied_count": 0,
+  "authority_task_id": "83be33f3-a45d-453b-bb70-79d10a7841e9",
+  "backup": null,
+  "before_counts": {
+    "distinct_incident_ea_count": 91,
+    "incident_id_sha256": "f81ee5334125e90d2d1d620068b6611a2955bf5d568a7b6d2aa0b34f720cf058",
+    "incident_selector_count": 91,
+    "incident_status_verdict_distribution": {
+      "failed/INVALID": 91
+    },
+    "pending_successor_count": 90,
+    "successor_count": 90,
+    "successor_status_distribution": {
+      "pending": 90
+    }
+  },
+  "canonical_repo": "C:\\QM\\repo",
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "eligible": [],
+  "eligible_count": 0,
+  "held": [
+    {
+      "actual_mq5_sha256": "e0adb638e3586a0c6d492e03f2ec2685cd49a63482a9ee2ba583166c3c3213b8",
+      "bound_mq5_sha256": "2c04e592e9e86ab86ecc180b0379369db93054f5b3c6fc521316d24515ac1ac5",
+      "classification": "held",
+      "ea_id": "QM5_12946",
+      "ea_label": "QM5_12946_mql5-macd-obv-div-card",
+      "hold_reasons": [
+        "MQ5_SHA_STALE"
+      ],
+      "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12946_mql5-macd-obv-div-card\\QM5_12946_mql5-macd-obv-div-card.mq5",
+      "old_preimage_sha256": "dbda1389edbf9206682d1c235298027fb22d9f475012b321596e96483108373b",
+      "old_status": "failed",
+      "old_verdict": "INVALID",
+      "old_work_item_id": "ae9e93a6-4a77-4ac9-bd11-e9ec1363bc60",
+      "risk_contract": {
+        "RISK_FIXED": 1000.0,
+        "RISK_PERCENT": 0.0
+      },
+      "symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "XAUUSD.DWX"
+      ],
+      "timeframe": {
+        "candidates": [
+          "H1"
+        ],
+        "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12946_mql5-macd-obv-div-card.md",
+        "source": "card_frontmatter:period",
+        "timeframe": "H1"
+      }
+    }
+  ],
+  "held_count": 1,
+  "idempotent_noop": true,
+  "inspected_at_utc": "2026-08-22T05:27:11.592427+00:00",
+  "invariants": [
+    "existing work-item status and verdict are never updated",
+    "only the exact five-clause incident selector supplies candidates",
+    "each source MQ5 hash is revalidated against its enqueue binding",
+    "new rows are pending, activation-held, fixed-risk utility work",
+    "new COMPILE_EA rows carry no gate verdict",
+    "one historical successor per invalidated work-item ID makes retries idempotent"
+  ],
+  "known_sha_stale_audit": [
+    {
+      "actual_mq5_sha256": "e0adb638e3586a0c6d492e03f2ec2685cd49a63482a9ee2ba583166c3c3213b8",
+      "bound_mq5_sha256": "2c04e592e9e86ab86ecc180b0379369db93054f5b3c6fc521316d24515ac1ac5",
+      "ea_id": "QM5_12946",
+      "hold": {
+        "active": 1,
+        "hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+      },
+      "in_incident_selector": true,
+      "revived": false,
+      "source_fresh": false,
+      "status": "failed",
+      "verdict": "INVALID",
+      "work_item_id": "ae9e93a6-4a77-4ac9-bd11-e9ec1363bc60"
+    },
+    {
+      "actual_mq5_sha256": "8e5cfdbf6f513bdbfd5fdcd25357907cad124497123b8a1abe133c9f2d1d6329",
+      "bound_mq5_sha256": "dc3840c1e99f4d96e2deca2495b1689277af37edcf06249189fb934b5d21ddd2",
+      "ea_id": "QM5_41097",
+      "hold": {
+        "active": 1,
+        "hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+      },
+      "in_incident_selector": false,
+      "revived": false,
+      "source_fresh": false,
+      "status": "pending",
+      "verdict": null,
+      "work_item_id": "d646713d-c8ba-41ef-98f4-9b544780e714"
+    }
+  ],
+  "mode": "apply",
+  "schema": "qm.r11-compile-ea-revival/v1",
+  "selector": {
+    "payload.repair_handler": "R11_pending_unclaimable_work_item",
+    "payload.verdict_reason": "ex5_missing",
+    "phase": "COMPILE_EA",
+    "status": "failed",
+    "verdict": "INVALID"
+  },
+  "verification_ok": true
+}
