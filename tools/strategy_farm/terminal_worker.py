@@ -1805,18 +1805,38 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "commit_reservation_count": len(admission["reservations"]),
                     }
                 effective_commit_headroom = admission["effective_headroom_gb"]
+                compile_only_due_to_commit_headroom = False
                 if effective_commit_headroom < COMMIT_MIN_FREE_GB:
-                    conn.commit()
-                    return {
-                        "claimed": False,
-                        "reason": "commit_headroom_low",
-                        "commit_headroom_gb": round(admission["live_headroom_gb"], 1),
-                        "commit_reserved_gb": round(admission["reserved_gb"], 1),
-                        "effective_commit_headroom_gb": round(effective_commit_headroom, 1),
-                        "commit_reservation_count": len(admission["reservations"]),
-                        "commit_reservation_detail": admission["reservations"],
-                        "threshold_gb": COMMIT_MIN_FREE_GB,
-                    }
+                    compile_available = conn.execute(
+                        """
+                        SELECT 1 FROM work_items w
+                        WHERE w.status='pending' AND w.phase=?
+                          AND NOT EXISTS (
+                            SELECT 1 FROM work_item_holds h
+                            WHERE h.work_item_id=w.id AND h.active=1
+                          )
+                        LIMIT 1
+                        """,
+                        (farmctl.COMPILE_EA_PHASE,),
+                    ).fetchone()
+                    if (
+                        compile_available
+                        and admission["live_headroom_gb"]
+                        >= COMMIT_MIN_FREE_GB
+                    ):
+                        compile_only_due_to_commit_headroom = True
+                    else:
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "commit_headroom_low",
+                            "commit_headroom_gb": round(admission["live_headroom_gb"], 1),
+                            "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                            "effective_commit_headroom_gb": round(effective_commit_headroom, 1),
+                            "commit_reservation_count": len(admission["reservations"]),
+                            "commit_reservation_detail": admission["reservations"],
+                            "threshold_gb": COMMIT_MIN_FREE_GB,
+                        }
 
                 active_symbol_counts, active_ea_symbol_pairs = farmctl._active_symbol_claim_state(conn)
                 active_q04_eas = {
@@ -1865,6 +1885,11 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 recovery_capped = False
                 for item in conn.execute(_priority_pending_query()).fetchall():
                     payload = _json_loads(item["payload_json"])
+                    if (
+                        compile_only_due_to_commit_headroom
+                        and str(item["phase"]).upper() != farmctl.COMPILE_EA_PHASE
+                    ):
+                        continue
                     item_is_recovery = farmctl.is_recovery_payload(payload)
                     if item_is_recovery:
                         if not recovery_gate_checked:
@@ -1942,6 +1967,19 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "claimed_by_worker_pid": os.getpid(),
                         "terminal": terminal,
                     })
+                    if compile_only_due_to_commit_headroom:
+                        payload.update({
+                            "claim_admission_mode": "compile_only_under_reservation_pressure",
+                            "claim_admission_commit_headroom_gb": round(
+                                admission["live_headroom_gb"], 1
+                            ),
+                            "claim_admission_commit_reserved_gb": round(
+                                admission["reserved_gb"], 1
+                            ),
+                            "claim_admission_effective_commit_headroom_gb": round(
+                                effective_commit_headroom, 1
+                            ),
+                        })
                     _set_commit_reservation(
                         payload,
                         claimed_at_iso=now,
@@ -1971,6 +2009,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "claimed": True,
                             "item": dict(row),
                             "claim_class": "recovery" if item_is_recovery else "priority",
+                            "claim_admission_mode": payload.get("claim_admission_mode"),
                         }
                 conn.commit()
                 return {
@@ -4565,6 +4604,7 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                 "item_id": item["id"],
                 "custom_history_gate_audit_sha256": history_gate.get("audit_sha256"),
                 "custom_history_lease_token": lease_handle.token if lease_handle else None,
+                "claim_admission_mode": claim.get("claim_admission_mode"),
                 "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             }), flush=True)
             try:

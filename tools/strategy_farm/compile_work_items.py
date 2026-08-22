@@ -841,6 +841,16 @@ def run_compile_work_item(
     try:
         inventory = _inventory(root, repo_root)
         payload = json.loads(item["payload_json"] or "{}")
+        evidence["claim_admission_mode"] = payload.get("claim_admission_mode")
+        evidence["claim_admission_commit_headroom_gb"] = payload.get(
+            "claim_admission_commit_headroom_gb"
+        )
+        evidence["claim_admission_commit_reserved_gb"] = payload.get(
+            "claim_admission_commit_reserved_gb"
+        )
+        evidence["claim_admission_effective_commit_headroom_gb"] = payload.get(
+            "claim_admission_effective_commit_headroom_gb"
+        )
         label = str(payload.get("ea_label") or "")
         parts = _label_parts(label)
         sanctioned_predecessors = (

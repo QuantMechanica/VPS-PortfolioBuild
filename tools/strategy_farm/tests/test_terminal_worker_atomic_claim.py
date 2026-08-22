@@ -638,6 +638,97 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 ).fetchone()[0]
             self.assertEqual(status, "pending")
 
+    def test_low_effective_commit_claims_only_compile_utility(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            now = datetime.now(timezone.utc)
+            self._insert_work_item(
+                root,
+                "active-index",
+                "GDAXI.DWX",
+                phase="Q04",
+                status="active",
+                claimed_by="T1",
+                ea_id="QM5_1000",
+                payload={
+                    "commit_reservation_until_utc": (
+                        now + timedelta(seconds=terminal_worker.COMMIT_RESERVATION_SECONDS)
+                    ).isoformat(),
+                    "commit_reservation_gb": (
+                        terminal_worker.SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB
+                    ),
+                },
+            )
+            self._insert_work_item(
+                root,
+                "priority-backtest",
+                "GBPUSD.DWX",
+                phase="Q10",
+                ea_id="QM5_1001",
+            )
+            self._insert_work_item(
+                root,
+                "compile-utility",
+                "",
+                phase=farmctl.COMPILE_EA_PHASE,
+                ea_id="QM5_1002",
+                setfile_path="",
+                payload={"ea_label": "QM5_1002_fixture"},
+            )
+            terminal_worker._commit_headroom_gb = lambda: 55.0
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "compile-utility")
+            self.assertEqual(
+                result["claim_admission_mode"],
+                "compile_only_under_reservation_pressure",
+            )
+            payload = json.loads(result["item"]["payload_json"])
+            self.assertEqual(
+                payload["commit_reservation_class"],
+                terminal_worker.MULTISYMBOL_COMMIT_CLASS_ORDINARY,
+            )
+            self.assertEqual(
+                payload["commit_reservation_gb"],
+                terminal_worker.ORDINARY_COMMIT_RESERVATION_GB,
+            )
+            self.assertEqual(payload["claim_admission_commit_reserved_gb"], 44.0)
+            self.assertEqual(
+                payload["claim_admission_effective_commit_headroom_gb"], 11.0
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='priority-backtest'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_compile_utility_still_fails_closed_on_low_live_commit(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "compile-utility",
+                "",
+                phase=farmctl.COMPILE_EA_PHASE,
+                ea_id="QM5_1002",
+                setfile_path="",
+            )
+            terminal_worker._commit_headroom_gb = lambda: (
+                terminal_worker.COMMIT_MIN_FREE_GB - 0.5
+            )
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "commit_headroom_low")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='compile-utility'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
     def test_claim_waits_when_commit_probe_fails(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"
