@@ -1,0 +1,22 @@
+{
+  "build_check_passed": true,
+  "mq5_path": "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\QM5_9466_connors-r2-d1.mq5",
+  "mq5_sha256": "3537d969bb5c629d93eb18b91640f5227b44cd2290d92a564803b21dc47cd6d4",
+  "ex5_path": "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\QM5_9466_connors-r2-d1.ex5",
+  "ex5_sha256": "f0f7faafebc99819cac1eff9c492a4b7b087d9fcecbda27f24de2d907bd8d681",
+  "setfiles_generated": [
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_AUDUSD.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_EURUSD.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_GBPUSD.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_GDAXI.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_NDX.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_NZDUSD.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_SP500.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_UK100.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_USDCAD.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_USDCHF.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_USDJPY.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_WS30.DWX_D1_backtest.set",
+    "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_9466_connors-r2-d1\\\\sets\\QM5_9466_connors-r2-d1_XAUUSD.DWX_D1_backtest.set"
+  ]
+}
