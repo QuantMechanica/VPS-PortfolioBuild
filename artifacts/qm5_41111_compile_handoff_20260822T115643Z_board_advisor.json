@@ -1,0 +1,156 @@
+{
+  "schema": "qm5.compile_handoff.v1",
+  "generated_at_utc": "2026-08-22T11:59:24.6886433Z",
+  "branch": "agents/board-advisor",
+  "ea": {
+    "ea_id": 41111,
+    "ea_label": "QM5_41111_wti-mdaybreadth-mom",
+    "slug": "wti-mdaybreadth-mom",
+    "strategy_id": "MOP-WTI-MDAYBREADTH-MOM-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "registry_status": "active",
+    "magic": 411110000,
+    "edge": "Immediately completed WTI broker-calendar month strict majority of adjacent D1 close-return signs, confirmed by the same-sign parent-final-to-newest-final net return; follow for the next month."
+  },
+  "source": {
+    "citation": "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250",
+    "doi": "10.1016/j.jfineco.2011.11.003",
+    "parent_source_sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+    "source_packet": "strategy-seeds/sources/MOP-WTI-MDAYBREADTH-MOM-2026/source.md",
+    "source_approval": "decisions/2026-08-22_wti_monthly_daily_sign_breadth_momentum_source_approval.md"
+  },
+  "dedup": {
+    "preallocation": {
+      "artifact": "artifacts/qm5_wti_mdaybreadth_mom_preallocation_dedup_20260822.json",
+      "verdict": "CLEAN",
+      "registry_count": 4605,
+      "card_count": 1279,
+      "wiki_count": 45,
+      "foreign_matches": 0
+    },
+    "postallocation": {
+      "artifact": "artifacts/qm5_41111_wti_mdaybreadth_mom_postallocation_dedup_20260822.json",
+      "expected_self_matches": 2,
+      "foreign_matches": 0
+    }
+  },
+  "commits": {
+    "source_approval": "12ce51468",
+    "source_extraction": "21d97081f",
+    "ea_id_reservation": "733571b9d",
+    "card_approval": "99432fd40",
+    "source_build": "9e4f9a01d"
+  },
+  "artifacts": {
+    "mq5": {
+      "path": "framework/EAs/QM5_41111_wti-mdaybreadth-mom/QM5_41111_wti-mdaybreadth-mom.mq5",
+      "sha256": "9FACD1EAD3ADE302180B06304BCAF7C51C4F3F083E23055ACC56EB309374D096",
+      "bytes": 31113
+    },
+    "setfile": {
+      "path": "framework/EAs/QM5_41111_wti-mdaybreadth-mom/sets/QM5_41111_wti-mdaybreadth-mom_XTIUSD.DWX_D1_backtest.set",
+      "sha256": "E401C808EF3EA28EE74CB3FB90DF32BEE07D3E474B26E972F0D07A3943AB3F2C",
+      "bytes": 1331,
+      "environment": "backtest",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "build_hash": "pending"
+    },
+    "approved_card": {
+      "path": "strategy-seeds/cards/approved/QM5_41111_wti-mdaybreadth-mom_card.md",
+      "sha256": "1F630027A6D3B85D159AB59FF1105109780C3CD9FD677D1005080DB4EC79DCDE"
+    },
+    "local_card": {
+      "path": "framework/EAs/QM5_41111_wti-mdaybreadth-mom/docs/strategy_card.md",
+      "sha256": "1F630027A6D3B85D159AB59FF1105109780C3CD9FD677D1005080DB4EC79DCDE",
+      "byte_identical": true,
+      "gitignored_by_policy": true
+    },
+    "magic_allocation": "artifacts/qm5_41111_magic_allocation_20260822.json",
+    "ex5_exists": false
+  },
+  "validation": {
+    "deterministic_reference": {
+      "verdict": "PASS",
+      "tests_run": 13
+    },
+    "strategy_card_schema_and_ml_ban": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_document": "PASS",
+    "build_prerequisites": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "magic_allocation": "PASS",
+    "strict_build_check": {
+      "verdict": "NOT_RUN",
+      "preflight": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+      "retry_attempted": false
+    }
+  },
+  "compile": {
+    "enqueued": true,
+    "work_item_id": "4f496575-3813-43d1-9df4-5c3a81d0e4ff",
+    "status": "pending",
+    "attempt_count": 0,
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "failed": false,
+    "verdict": null,
+    "evidence_path": null,
+    "ex5_sha256": null,
+    "release_attempted": false,
+    "release_reason": "The controlled rollout hold requires separate authorization."
+  },
+  "capacity": {
+    "ceiling_percent": 97,
+    "samples": [
+      {
+        "sample": 1,
+        "utc": "2026-08-22T11:56:27.3555936Z",
+        "cpu_percent": 76.41
+      },
+      {
+        "sample": 2,
+        "utc": "2026-08-22T11:56:31.3793572Z",
+        "cpu_percent": 61.75
+      },
+      {
+        "sample": 3,
+        "utc": "2026-08-22T11:56:35.3829653Z",
+        "cpu_percent": 74.42
+      },
+      {
+        "sample": 4,
+        "utc": "2026-08-22T11:56:39.3862084Z",
+        "cpu_percent": 71.6
+      },
+      {
+        "sample": 5,
+        "utc": "2026-08-22T11:56:43.3946296Z",
+        "cpu_percent": 82.53
+      }
+    ],
+    "average_percent": 73.34,
+    "maximum_percent": 82.53,
+    "ceiling_hit": false
+  },
+  "q02": {
+    "requested": true,
+    "preview_apply": false,
+    "preview_selected": 0,
+    "enqueued": false,
+    "blocker": "Q01_NOT_PASS_NO_EX5",
+    "work_item_count": 0,
+    "unsafe_apply_attempted": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "terminal_processes_started_or_stopped": false,
+    "backtest_started": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}
