@@ -15116,9 +15116,9 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
             if (
                 dependency["phase"] != "Q08"
                 or dependency["status"] != "done"
-                or dependency["verdict"] != "PASS"
+                or dependency["verdict"] not in {"PASS", "FAIL_SOFT"}
             ):
-                raise ValueError("Q08_INPUT dependency is not a done PASS")
+                raise ValueError("Q08_INPUT dependency is not a done PASS/FAIL_SOFT")
             q08_id = str(dependency["parent_work_item_id"])
             q08_path = Path(str(dependency["evidence_path"] or ""))
             q08_hash = _sha256_file(q08_path).lower()
