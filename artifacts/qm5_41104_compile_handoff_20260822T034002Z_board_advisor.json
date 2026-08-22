@@ -1,0 +1,145 @@
+{
+  "schema_version": "qm.commodity-source-build-handoff/v1",
+  "recorded_at_utc": "2026-08-22T03:40:02Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41104",
+  "ea_label": "QM5_41104_xauxag-mmedian-shift-rv",
+  "strategy_id": "SCHWEIKERT-CME-XAUXAG-MMEDIAN-SHIFT-RV-2026_S01",
+  "logical_symbol": "QM5_41104_XAU_XAG_MMEDIAN_SHIFT_RV_D1",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "edge": {
+    "carrier": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ],
+    "timeframe": "D1",
+    "cadence": "one durable attempt on the first exact synchronized bar of each broker month",
+    "formation": "ordinary sample medians of daily-close log ratios in the two immediately completed consecutive calendar months",
+    "signal": "fade every strict displacement between the independent completed-month medians; equality is flat",
+    "new_median_higher": "SELL_XAU_BUY_XAG",
+    "new_median_lower": "BUY_XAU_SELL_XAG",
+    "ordinary_exit": "first observed next-month boundary",
+    "risk_fixed_usd": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "non_duplicate_boundary": {
+    "preallocation_verdict": "CLEAN",
+    "postallocation_verdict": "CLEAN_SELF_HITS_ONLY",
+    "nearest_family": "QM5_41103_xauxag-mrange-migrate-rv",
+    "distinction": "QM5_41104 uses only the two monthly sample medians and can signal when range endpoints are mixed or overlapping; QM5_41103 ignores medians and requires strict same-direction migration of both observed range endpoints"
+  },
+  "commits": {
+    "source_approval": "65f571311",
+    "bounded_source_extraction": "ceebb96ea",
+    "ea_id_reservation": "54c2d3df6",
+    "g0_approved_card": "c30adda07",
+    "basket_magic_allocation": "409634d5b",
+    "source_build": "668e29837"
+  },
+  "registered_identity": {
+    "slot_0": {
+      "symbol": "XAUUSD.DWX",
+      "magic": 411040000
+    },
+    "slot_1": {
+      "symbol": "XAGUSD.DWX",
+      "magic": 411040001
+    }
+  },
+  "artifact_sha256": {
+    "mq5": "24A1E033DED53492CA6DBF03E08F263988FFE58C329D0F11481A8AA30D434F94",
+    "unbound_backtest_setfile": "E5D131E74D3DB67E896BC91408916E762D8506F34F0CB02163716F7840386C7A",
+    "approved_and_local_card": "7C6FC5CE605312F1CC235F82091A2DFACE748245665D266CB11A709352715EAF",
+    "basket_manifest": "479EFD499C7EAFE0D9A7D9231003EE1F842375D796F5649097E52652CE8C4E0D",
+    "spec": "DFFDAD70180C9ACDA7CE5AC91ED15DB38E310EE65E8CFE1D0EFB18A9E892DDB5",
+    "reference_suite": "0C143AD5AD3032EBD37A33D7688419D4520D64E1953BE4D353CB9A58BA7E0859"
+  },
+  "source_validation": {
+    "reference_tests": {
+      "passed": 14,
+      "failed": 0
+    },
+    "build_prerequisite_guard": "PASS",
+    "build_guardrails": "PASS",
+    "spec_validator": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "card_schema_and_ml_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "approved_local_card_byte_identical": true,
+    "build_check_result": null,
+    "build_check_note": "The live-factory include-mirror guard refused build_check before validation even with SkipCompile; no bypass or retry was attempted. Independent source-level gates are recorded separately and are not a compile claim."
+  },
+  "compile": {
+    "ad_hoc_guard_result": "REFUSED_WITHOUT_COMPILE",
+    "ad_hoc_guard_detail": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_work_item_id": "0960f13d-a245-410a-97c3-7b6e3411041f",
+    "governed_status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "ex5_present": false,
+    "q01_status": "PENDING_BUILD",
+    "setfile_build_hash": "pending"
+  },
+  "capacity": {
+    "ceiling_cpu_pct": 97,
+    "governed_terminals_running_at_2026_08_22T03_39_21Z": [
+      "T1",
+      "T10",
+      "T2",
+      "T3",
+      "T4",
+      "T6"
+    ],
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "cpu_samples": [
+      {
+        "utc": "2026-08-22T03:39:41.8754795Z",
+        "cpu_pct": 71
+      },
+      {
+        "utc": "2026-08-22T03:39:46.9322267Z",
+        "cpu_pct": 99
+      },
+      {
+        "utc": "2026-08-22T03:39:51.9545298Z",
+        "cpu_pct": 54
+      },
+      {
+        "utc": "2026-08-22T03:39:56.9754729Z",
+        "cpu_pct": 93
+      },
+      {
+        "utc": "2026-08-22T03:40:01.9988702Z",
+        "cpu_pct": 99
+      }
+    ],
+    "average_cpu_pct": 83.2,
+    "maximum_cpu_pct": 99,
+    "ceiling_hit": true
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED_CPU_CEILING_AND_Q01_PENDING",
+    "preview_run": false,
+    "apply_run": false,
+    "q02_work_item_count": 0,
+    "binding_reasons": [
+      "maximum host CPU sample exceeded the 97 percent hard ceiling",
+      "governed compile is activation-held, so no EX5 or Q01 PASS exists"
+    ]
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_started_or_stopped": false,
+    "compile_hold_bypassed": false,
+    "autotrading_toggled": false,
+    "t_live_modified": false,
+    "t_live_manifest_modified": false,
+    "deploy_manifest_modified": false,
+    "portfolio_gate_modified": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
