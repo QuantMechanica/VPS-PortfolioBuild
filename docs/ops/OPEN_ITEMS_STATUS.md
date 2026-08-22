@@ -1,5 +1,14 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Gesamtanalyse 2026-08-22 (OWNER-Auftrag):** Vault
+> `12 ToDo/11_Systemanalyse_2026-08-22.md`, verlinkt aus `_INDEX`, Programm 10, OWNER- und
+> Claude-Board. Gemessener Gesamtstand statt Fortschreibung: Trichter je Gate, die fünf
+> Drain-Bedingungen mit Richtung (**D1 1 470 → 619**, **D2 1 185 → 1 275 — durch einen
+> eigenen Defekt schlechter**, D3 567 → 451, D5 erstmals messbar mit 629 Verletzungen), die
+> drei Engpässe nach Hebelwirkung (**Q09_NEWS 0 PASS bei 52 Paaren = der einzige echte
+> Damm**, Compile teilt Slots mit Backtests, Review-Lane als belegte Decke), die
+> Vorfallskette 21.–22.08. und der Buchweg (**Q16 = 0 Zeilen, jemals**).
+
 **Stand:** 2026-08-22 · Stehende Vollmacht §6 (wird jedem Bericht beigefügt)
 **Eine Zeile je Punkt. „Geliefert" heißt: Ergebnis steht in einem Dokument und wurde berichtet.**
 
