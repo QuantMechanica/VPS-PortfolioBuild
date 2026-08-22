@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1410
+; ea_slug:      bressert-dual-cycle-oscillator-h4
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       WS30.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   8
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b03a04ce49e412bdecfaa06f383130cc6b93c02ae8b8d80bb2d835335c88ce96
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=1410
+qm_magic_slot_offset=8
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1410_bressert-dual-cycle-oscillator-h4.md
+strategy_tf=16388
+strategy_atr_period=14
+strategy_dss_short_n=8
+strategy_dss_short_m=3
+strategy_dss_long_n=21
+strategy_dss_long_m=7
+strategy_timing_band_oversold=30.0
+strategy_timing_band_overbought=70.0
+strategy_timing_band_mid=50.0
+strategy_sl_atr_mult=1.50
+strategy_tp1_atr_mult=1.50
+strategy_tp1_close_fraction=0.50
+strategy_tp_cap_atr_mult=4.00
+strategy_time_stop_bars=30
+strategy_macro_bias_enabled=true
+strategy_macro_sma_period=50
+strategy_reuse_guard_bars=6
+strategy_spread_filter_enabled=true
+strategy_spread_max_atr=0.25
