@@ -157,6 +157,17 @@ def running_terminal_names() -> set[str]:
         path = raw_path.strip()
         if not path:
             continue
+        # The guard protects FACTORY quiescence (T1-T10 share the include
+        # mirror). The live terminal and the FTMO demo terminal run 24/7 by
+        # design, own frozen deploys, and never consume the mirror — counting
+        # them (via the UNKNOWN bucket) made the ad-hoc path permanently dead
+        # on this host, even with the factory fully OFF (2026-08-22 ceremony:
+        # refusal at zero factory terminals). Anything else unrecognized still
+        # blocks fail-closed.
+        if re.search(r"(?i)[\\/]mt5[\\/]T_Live[\\/]", path):
+            continue
+        if re.search(r"(?i)FTMO[^\\/]*MT5", path):
+            continue
         match = re.search(r"(?i)[\\/]mt5[\\/](T\d+)[\\/]terminal64\.exe$", path)
         terminals.add(match.group(1).upper() if match else "UNKNOWN")
     return terminals
