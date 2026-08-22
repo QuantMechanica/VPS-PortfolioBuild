@@ -38,6 +38,11 @@ except ModuleNotFoundError:
 PLAN_SCHEMA = "q09-news-run-plan/v2"
 CELL_RECEIPT_SCHEMA = "q09-news-cell-receipt/v2"
 CELL_EVIDENCE_SCHEMA = "q09-news-cell-evidence/v2"
+NEWS_SELFREPORT_SCHEMA = "qm.news-calendar-run-selfreport/v1"
+# SP-B2/ROT-2 is deliberately blocked pending the OWNER's authoritative-source
+# and impact-taxonomy decision. New receipts must still state that fact rather
+# than leaving the mapping identity implicit as V1 did.
+PRE_V2_MAPPING_VERSION = "PRE_V2_UNVERSIONED_OWNER_MAPPING_PENDING"
 CELL_FAILURE_SCHEMA_V1 = "q09-news-cell-failure/v1"
 CELL_FAILURE_SCHEMA = "q09-news-cell-failure/v2"
 SUPPORTED_CELL_FAILURE_SCHEMAS = frozenset(
@@ -211,6 +216,70 @@ def _load_json(path: Path, role: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise RunnerError(f"{role} must be a JSON object")
     return value
+
+
+def build_news_selfreport(
+    calendar_manifest_path: Path,
+    *,
+    mapping_version: str = PRE_V2_MAPPING_VERSION,
+) -> dict[str, Any]:
+    """Return one authenticated, consolidated calendar provenance object.
+
+    This is intentionally additive to the existing Q09 v2 receipt. Until
+    ROT-2 resolves the impact mapping, the explicit PRE_V2 marker prevents the
+    receipt from being mistaken for post-V2 comparable evidence.
+    """
+
+    mapping = str(mapping_version or "").strip()
+    if not mapping:
+        raise RunnerError("news self-report mapping_version must be non-empty")
+    try:
+        verified = calendar_bundle.verify_bundle(calendar_manifest_path.parent)
+    except calendar_bundle.CalendarBundleError as exc:
+        raise RunnerError(f"news self-report calendar verification failed: {exc}") from exc
+    files = verified.get("files")
+    if not isinstance(files, list):
+        raise RunnerError("news self-report calendar files manifest is invalid")
+    events = next(
+        (
+            item
+            for item in files
+            if isinstance(item, Mapping) and item.get("role") == "EVENTS"
+        ),
+        None,
+    )
+    if not isinstance(events, Mapping):
+        raise RunnerError("news self-report calendar has no EVENTS artifact")
+    source_path = (
+        calendar_manifest_path.parent / str(events.get("relative_path") or "")
+    ).resolve()
+    report = {
+        "selfreport_schema_version": NEWS_SELFREPORT_SCHEMA,
+        "source_path": str(source_path),
+        "content_sha256": str(verified.get("content_sha256") or ""),
+        "row_count": verified.get("row_count"),
+        "max_event_date_utc": str(verified.get("event_to_utc") or ""),
+        "schema_version": str(verified.get("schema_version") or ""),
+        "mapping_version": mapping,
+        "evidence_authority": (
+            "NON_AUTHORITATIVE_PRE_V2"
+            if mapping == PRE_V2_MAPPING_VERSION
+            else "MAPPING_VERSION_DECLARED"
+        ),
+    }
+    required = (
+        "source_path",
+        "content_sha256",
+        "row_count",
+        "max_event_date_utc",
+        "schema_version",
+        "mapping_version",
+    )
+    if any(report.get(field) in (None, "", 0) for field in required):
+        raise RunnerError("news self-report has an empty required provenance field")
+    if str(events.get("sha256") or "") != report["content_sha256"]:
+        raise RunnerError("news self-report EVENTS/content SHA-256 mismatch")
+    return report
 
 
 def _plan_hash(plan: Mapping[str, Any]) -> str:
@@ -1109,6 +1178,28 @@ def _receipt_to_cell(spec: Mapping[str, Any]) -> dict[str, Any]:
         raise RunnerError(f"cell Q07 stability receipt contradicts hashed evidence: {receipt_path}")
     if evidence_document.get("flat_at_event_receipt_sha256") != flat_receipt_hash:
         raise RunnerError(f"cell flat-at-event receipt contradicts hashed evidence: {receipt_path}")
+    news_selfreport = receipt.get("news_selfreport")
+    evidence_news_selfreport = evidence_document.get("news_selfreport")
+    if news_selfreport is not None or evidence_news_selfreport is not None:
+        if (
+            not isinstance(news_selfreport, Mapping)
+            or news_selfreport != evidence_news_selfreport
+        ):
+            raise RunnerError(
+                f"cell news self-report contradicts hashed evidence: {receipt_path}"
+            )
+        for field in (
+            "source_path",
+            "content_sha256",
+            "row_count",
+            "max_event_date_utc",
+            "schema_version",
+            "mapping_version",
+        ):
+            if news_selfreport.get(field) in (None, "", 0):
+                raise RunnerError(
+                    f"cell news self-report {field} is empty: {receipt_path}"
+                )
     return {
         "arm": spec["arm"],
         "temporal_mode": spec["temporal_mode"],
@@ -1128,6 +1219,7 @@ def _receipt_to_cell(spec: Mapping[str, Any]) -> dict[str, Any]:
         "full": metrics["full"],
         "q07_seed_stability_pass": receipt.get("q07_seed_stability_pass"),
         "flat_at_event_receipt_sha256": flat_receipt_hash,
+        "news_selfreport": news_selfreport,
     }
 
 
@@ -2649,6 +2741,7 @@ def _production_dispatch_cell(
         "execution_contract": "FACTORY_RESERVED_RUN_SMOKE_MODEL4_THREE_WINDOWS_V1",
         "cost_profile": manifest["cost_profile"],
         "cost_execution_identity_sha256": context.get("cost_execution_identity_sha256"),
+        "news_selfreport": context["news_selfreport"],
     }
     _write_immutable(evidence_path, contract.canonical_json_bytes(evidence))
     receipt = {
@@ -2668,6 +2761,7 @@ def _production_dispatch_cell(
         "evidence_sha256": contract.sha256_file(evidence_path),
         "metrics": metrics,
         "q07_seed_stability_pass": True,
+        "news_selfreport": context["news_selfreport"],
     }
     _write_immutable(
         Path(str(spec["receipt_path"])), contract.canonical_json_bytes(receipt)
@@ -2845,6 +2939,7 @@ def execute_run_plan(
         "q07_work_item_id": payload["q09_q07_work_item_id"],
         "q07_evidence_sha256": payload["q09_q07_evidence_sha256"],
         "calendar_provision": provision,
+        "news_selfreport": build_news_selfreport(calendar_manifest),
         "skip_expert_deploy": payload.get("diagnostic_non_admission") is True,
         "diagnostic_expert_stage": diagnostic_expert_stage,
         "expected_expert_sha256": (

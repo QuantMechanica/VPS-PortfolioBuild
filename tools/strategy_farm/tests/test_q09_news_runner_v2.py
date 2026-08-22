@@ -90,6 +90,20 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
+    def test_news_selfreport_has_six_filled_provenance_fields(self) -> None:
+        report = runner.build_news_selfreport(self.calendar)
+        for field in (
+            "source_path",
+            "content_sha256",
+            "row_count",
+            "max_event_date_utc",
+            "schema_version",
+            "mapping_version",
+        ):
+            self.assertNotIn(report[field], (None, "", 0))
+        self.assertEqual(report["mapping_version"], runner.PRE_V2_MAPPING_VERSION)
+        self.assertEqual(report["evidence_authority"], "NON_AUTHORITATIVE_PRE_V2")
+
     def test_single_ok_run_accepts_invalid_startup_attempt_then_success(self) -> None:
         invalid = {"run": "run_01", "status": "INVALID", "failure": "BARS_ZERO"}
         successful = {"run": "run_02", "status": "OK", "total_trades": 34}
