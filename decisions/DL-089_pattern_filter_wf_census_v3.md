@@ -59,3 +59,15 @@ numerischen Zellen erhöhen `declared_trial_count` VOR ihrer Messung; die Q16-De
 läuft über die Gesamt-Trial-Zahl (154 + numerische Trials). Umsetzung + kompletter
 automatisierter Pilot-Durchlauf QM5_13213/USDJPY per Ultracode OWNER-beauftragt
 („Baue die Pipeline damit das automatisch funktioniert und überwache").
+
+## Nachtrag 2 (2026-08-22 früh — OWNER)
+
+„S5 muss vor S4 passieren!" — Die Stufenfolge ist damit: S2 Jahreszensus → S3
+WF-Filterauswahl → **S4 numerische Parameter-Optimierung** (auf der eingefrorenen
+Filter-Kombination, gleiche Jahres-/WF-Methodik, Plateau-Median, Ledger-Zuwachs VOR
+Messung) → **S5 Gesamttest der Endkonfiguration** (Filter + Parameter vs. Baseline über
+den maximalen Zeitraum, Deflation über die Gesamt-Trial-Zahl) → Q15/Q16 → Portfolio.
+Es gibt keinen separaten Filter-only-Gesamttest mehr; der eine Gesamttest bestätigt die
+fertige Endkonfiguration. Zusätzlich autorisiert: Factory-OFF/ON-Zeremonie nach Bedarf
+(„Fahr factory off und factory on wenn du es brauchst!") — genutzt für die beiden
+anstehenden Compiles (QM5_41097, Fixture-Harness-Runner) im Null-Terminal-Fenster.

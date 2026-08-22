@@ -15,6 +15,8 @@ eingefrorenen Filter-Konfiguration folgen die **numerischen
 Parameter-Optimierungstests** (S5, gleiche Jahres-/WF-Methodik, Plateau-Median); die
 bestätigte Endkonfiguration läuft durch **Q15/Q16** (Overfit-Vertrag, Deflation über die
 Gesamt-Trial-Zahl) und wird für **FTMO und DXZ getrennt** portfolio-bewertet.
+*(OWNER-Korrektur 2026-08-22 früh: die numerische Stufe kommt VOR dem Gesamttest —
+der Gesamttest bestätigt die fertige Endkonfiguration, nicht nur die Filter.)*
 
 ## 1 · OWNER-Entscheide (ratifiziert 2026-08-21, vollständig)
 
@@ -102,11 +104,9 @@ Idempotent: erneutes Enqueue erzeugt keine Duplikate.
 vollständig (jede Zelle, jede Ausschlussursache, jede Schrittauswahl), Empfehlungsbericht
 an OWNER mit der gewählten Kombination.
 
-**OPT-S4 (Fabrik) — Gesamttest.** Kombination + Baseline über 2019–2026-max; DSR
-(deflationiert mit 154) und PBO nach DL-088 auf der Ledger-Matrix.
-
-**OPT-S5 (Fabrik + Claude) — numerische Parameter-Optimierung** *(OWNER-Korrektur
-2026-08-21 spät: gehört ZWISCHEN Gesamttest und Q15/Q16, nicht hinter den Piloten).*
+**OPT-S4 (Fabrik + Claude) — numerische Parameter-Optimierung** *(OWNER-Korrekturen
+2026-08-21 spät + 2026-08-22 früh: die numerische Stufe läuft NACH der Filterauswahl
+und VOR dem Gesamttest — „S5 muss vor S4 passieren").*
 Auf dem EA mit der **eingefrorenen** Filter-Kombination aus S3/S4 werden die in S0
 eingebauten numerischen Parameter optimiert — nach denselben ratifizierten Regeln:
 AI_PARAM-Hebel je DL-088 (**ein Parameter je Trial, ≤ 5 Kandidatenwerte, Elternwert als
@@ -119,6 +119,11 @@ der finalen Konfiguration (Filter + Parameter) über den vollen Zeitraum.
 **Ledger-Pflicht:** die numerischen Zellen werden VOR ihrer Messung als
 `declared_trial_count`-Zuwachs registriert (Σ Parameter × gemessene Werte); die
 Q16-Deflation läuft über die GESAMTE Trial-Zahl (154 + numerische Trials).
+
+**OPT-S5 (Fabrik) — Gesamttest der Endkonfiguration.** Kombination (Filter + gewählte
+Parameter) + Baseline über 2019–2026-max; DSR (deflationiert über die GESAMT-Trial-Zahl
+154 + numerische Trials) und PBO nach DL-088 auf der Ledger-Matrix. Der Gesamttest
+bestätigt die fertige Endkonfiguration — es gibt keinen separaten Vor-Gesamttest mehr.
 
 **OPT-S6 — Q15/Q16-Anschluss.** Die bestätigte Endkonfiguration (Filter + Parameter)
 wird als Q15-Challenger eingefroren und läuft das bestehende, unveränderte
