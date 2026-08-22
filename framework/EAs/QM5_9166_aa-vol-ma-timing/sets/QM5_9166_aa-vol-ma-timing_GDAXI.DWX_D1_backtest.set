@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9166
+; ea_slug:      aa-vol-ma-timing
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       GDAXI.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   8f7d18173e43b70bfe7a8816f4c846e7d04bbbbb56f6fb3bdc601f7fd45de44c
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=9166
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9166_aa-vol-ma-timing.md
+; card_defaults_status=none_found

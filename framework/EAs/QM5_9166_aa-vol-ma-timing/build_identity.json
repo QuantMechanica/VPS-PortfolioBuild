@@ -1,0 +1,22 @@
+{
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\QM5_9166_aa-vol-ma-timing.mq5",
+  "mq5_sha256": "da6458795d657749428fdb2575afc3c0e6431cada360640ceeabe67a87dba4df",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\QM5_9166_aa-vol-ma-timing.ex5",
+  "ex5_sha256": "24052fdfd2c26d73922f5fd103ad49ebef008bc0049adbda6b1efe173eba3f3f",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_AUDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_GDAXI.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_NZDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_UK100.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_USDCAD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_USDCHF.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_USDJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_WS30.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9166_aa-vol-ma-timing\\sets\\QM5_9166_aa-vol-ma-timing_XAUUSD.DWX_D1_backtest.set"
+  ]
+}
