@@ -17815,3 +17815,31 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1623,hopwood-bermaui-dss-h4,12,NZDUSD.DWX,16230012,2026-08-22,Codex governed allocator,active
 41118,xauxag-mlatehalf-dom-rv,0,XAUUSD.DWX,411180000,2026-08-22,Codex governed allocator,active
 41118,xauxag-mlatehalf-dom-rv,1,XAGUSD.DWX,411180001,2026-08-22,Codex governed allocator,active
+1629,ehlers-cybernetic-cycle-h4,0,AUDUSD.DWX,16290000,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,1,EURUSD.DWX,16290001,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,2,GBPUSD.DWX,16290002,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,3,GDAXI.DWX,16290003,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,4,NDX.DWX,16290004,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,5,NZDUSD.DWX,16290005,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,6,SP500.DWX,16290006,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,7,UK100.DWX,16290007,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,8,USDCAD.DWX,16290008,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,9,USDCHF.DWX,16290009,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,10,USDJPY.DWX,16290010,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,11,WS30.DWX,16290011,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,12,XAUUSD.DWX,16290012,2026-08-22,Development,active
+1629,ehlers-cybernetic-cycle-h4,13,XTIUSD.DWX,16290013,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,0,AUDUSD.DWX,16240000,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,1,EURUSD.DWX,16240001,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,2,GBPUSD.DWX,16240002,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,3,GDAXI.DWX,16240003,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,4,NDX.DWX,16240004,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,5,NZDUSD.DWX,16240005,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,6,SP500.DWX,16240006,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,7,UK100.DWX,16240007,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,8,USDCAD.DWX,16240008,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,9,USDCHF.DWX,16240009,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,10,USDJPY.DWX,16240010,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,11,WS30.DWX,16240011,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,12,XAUUSD.DWX,16240012,2026-08-22,Development,active
+1624,ehlers-adaptive-cg-h4,13,XTIUSD.DWX,16240013,2026-08-22,Development,active

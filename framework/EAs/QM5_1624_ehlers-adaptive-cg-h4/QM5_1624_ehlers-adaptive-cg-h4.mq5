@@ -1,15 +1,15 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_1629 Ehlers Cybernetic Cycle H4"
+#property description "QM5_1624 Ehlers Adaptive Center of Gravity H4"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA: QM5_1629
+// QuantMechanica V5 EA: QM5_1624
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 1629;
+input int    qm_ea_id                   = 1624;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
@@ -33,25 +33,22 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input double strategy_alpha                = 0.07;
-input int    strategy_amplitude_window     = 20;
-input double strategy_amplitude_threshold  = 0.005; // 0.5% of price
-input int    strategy_d1_sma_period        = 200;
-input int    strategy_atr_period           = 14;
-input double strategy_sl_atr_mult          = 2.0;
-input double strategy_tp_atr_mult          = 2.0;
-input double strategy_be_trigger_atr_mult  = 1.0;
-input int    strategy_time_stop_bars       = 20;
-input double strategy_spread_atr_mult      = 0.3;
-input int    strategy_cooldown_bars        = 4;
+input int    strategy_period_min        = 6;
+input int    strategy_period_max        = 48;
+input int    strategy_autocorr_lookback = 48;
+input int    strategy_d1_ema_period     = 200;
+input int    strategy_atr_period        = 14;
+input double strategy_sl_atr_mult       = 2.0;
+input double strategy_spread_atr_mult   = 0.3;
+input double strategy_time_stop_mult    = 2.0; // time stop = 2.0 * P bars
 
 // -----------------------------------------------------------------------------
 // State variables
 // -----------------------------------------------------------------------------
-bool          g_be_done               = false;
 QM_ExitReason g_strategy_exit_reason  = QM_EXIT_STRATEGY;
 datetime      g_last_trade_time       = 0;
 int           g_last_trade_dir        = 0;
+int           g_last_dominant_period  = 20;
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -61,56 +58,81 @@ bool LoadRates(const ENUM_TIMEFRAMES tf, const int bars_needed, MqlRates &rates[
    if(bars_needed <= 0)
       return false;
    ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, tf, 0, bars_needed, rates); // perf-allowed: bounded bespoke cycle filter arithmetic
+   const int copied = CopyRates(_Symbol, tf, 0, bars_needed, rates); // perf-allowed: bounded bespoke autocorrelation periodogram
    ArraySetAsSeries(rates, true);
    return (copied >= bars_needed);
 }
 
-bool ComputeCyberneticCycle(MqlRates &rates[], const int count, double &cycle_curr, double &cycle_prev, double &amp_out)
+int ComputeDominantPeriod(MqlRates &rates[], const int start_shift)
 {
-   if(count < 20 || count > 200)
-      return false;
+   const int min_p = MathMax(4, strategy_period_min);
+   const int max_p = MathMin(64, strategy_period_max);
+   const int lookback = MathMax(20, strategy_autocorr_lookback);
 
-   double smooth[256];
-   double cycle[256];
-   ArrayInitialize(smooth, 0.0);
-   ArrayInitialize(cycle, 0.0);
+   double autocorr[65];
+   ArrayInitialize(autocorr, 0.0);
 
-   for(int i = count - 4; i >= 0; --i)
+   for(int lag = 1; lag <= max_p; ++lag)
    {
-      const double p0 = (rates[i].high + rates[i].low) * 0.5;
-      const double p1 = (rates[i + 1].high + rates[i + 1].low) * 0.5;
-      const double p2 = (rates[i + 2].high + rates[i + 2].low) * 0.5;
-      const double p3 = (rates[i + 3].high + rates[i + 3].low) * 0.5;
-      smooth[i] = (p0 + 2.0 * p1 + 2.0 * p2 + p3) / 6.0;
-   }
-
-   const double a = strategy_alpha;
-   const double c1 = (1.0 - 0.5 * a) * (1.0 - 0.5 * a);
-   const double c2 = 2.0 * (1.0 - a);
-   const double c3 = (1.0 - a) * (1.0 - a);
-
-   for(int i = count - 6; i >= 0; --i)
-   {
-      const double diff = smooth[i] - 2.0 * smooth[i + 1] + smooth[i + 2];
-      if(i >= count - 8)
-         cycle[i] = diff / 4.0;
+      double sum_xy = 0.0;
+      double sum_xx = 0.0;
+      double sum_yy = 0.0;
+      for(int k = 0; k < lookback; ++k)
+      {
+         const int idx_x = start_shift + k;
+         const int idx_y = start_shift + k + lag;
+         const double x = rates[idx_x].close;
+         const double y = rates[idx_y].close;
+         sum_xy += x * y;
+         sum_xx += x * x;
+         sum_yy += y * y;
+      }
+      const double denom = MathSqrt(sum_xx * sum_yy);
+      if(denom > DBL_EPSILON)
+         autocorr[lag] = sum_xy / denom;
       else
-         cycle[i] = c1 * diff + c2 * cycle[i + 1] - c3 * cycle[i + 2];
+         autocorr[lag] = 0.0;
    }
 
-   cycle_curr = cycle[1];
-   cycle_prev = cycle[2];
+   double max_power = -1.0;
+   int best_period = (min_p + max_p) / 2;
+   const double pi2 = 6.28318530717958647692;
 
-   double max_amp = 0.0;
-   for(int k = 1; k <= strategy_amplitude_window && k < count; ++k)
+   for(int p = min_p; p <= max_p; ++p)
    {
-      const double amp = MathAbs(cycle[k]);
-      if(amp > max_amp)
-         max_amp = amp;
+      double cos_part = 0.0;
+      double sin_part = 0.0;
+      for(int lag = 1; lag <= max_p; ++lag)
+      {
+         const double angle = pi2 * (double)lag / (double)p;
+         cos_part += autocorr[lag] * MathCos(angle);
+         sin_part += autocorr[lag] * MathSin(angle);
+      }
+      const double power = cos_part * cos_part + sin_part * sin_part;
+      if(power > max_power)
+      {
+         max_power = power;
+         best_period = p;
+      }
    }
-   amp_out = max_amp;
-   return true;
+   return best_period;
+}
+
+double ComputeCG(MqlRates &rates[], const int shift, const int length)
+{
+   if(length < 2)
+      return 0.0;
+   double num = 0.0;
+   double den = 0.0;
+   for(int i = 0; i < length; ++i)
+   {
+      const double price = rates[shift + i].close;
+      num += (double)(1 + i) * price;
+      den += price;
+   }
+   if(MathAbs(den) <= DBL_EPSILON)
+      return 0.0;
+   return num / den;
 }
 
 bool SpreadAllows(const double atr_value)
@@ -169,42 +191,39 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_alpha <= 0.0 || strategy_amplitude_window < 2 || strategy_atr_period < 2)
-      return false;
-
-   const int bars_needed = strategy_amplitude_window + 120;
+   const int bars_needed = strategy_autocorr_lookback + strategy_period_max + 30;
    MqlRates h4[];
    if(!LoadRates(PERIOD_H4, bars_needed, h4))
       return false;
 
-   double cycle_curr = 0.0;
-   double cycle_prev = 0.0;
-   double amp = 0.0;
-   if(!ComputeCyberneticCycle(h4, bars_needed, cycle_curr, cycle_prev, amp))
+   const int p = ComputeDominantPeriod(h4, 1);
+   const int n = MathMax(3, (int)MathRound((double)p / 2.0));
+
+   const double cg0 = ComputeCG(h4, 1, n);
+   const double cg1 = ComputeCG(h4, 2, n);
+   const double cg2 = ComputeCG(h4, 3, n);
+
+   const bool bullish = (cg1 <= cg2 && cg0 > cg1);
+   const bool bearish = (cg1 >= cg2 && cg0 < cg1);
+   if(!bullish && !bearish)
       return false;
 
-   const bool cross_up = (cycle_prev < 0.0 && cycle_curr >= 0.0);
-   const bool cross_dn = (cycle_prev > 0.0 && cycle_curr <= 0.0);
-   if(!cross_up && !cross_dn)
+   const double d1_ema_now = QM_EMA(_Symbol, PERIOD_D1, strategy_d1_ema_period, 1, PRICE_CLOSE);
+   const double d1_ema_prev = QM_EMA(_Symbol, PERIOD_D1, strategy_d1_ema_period, 2, PRICE_CLOSE);
+   if(d1_ema_now <= 0.0 || d1_ema_prev <= 0.0)
       return false;
 
-   if(amp <= strategy_amplitude_threshold * h4[1].close)
+   const double ema_slope = d1_ema_now - d1_ema_prev;
+   if(bullish && ema_slope <= 0.0)
+      return false;
+   if(bearish && ema_slope >= 0.0)
       return false;
 
-   const double d1_close = iClose(_Symbol, PERIOD_D1, 1);
-   const double d1_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_d1_sma_period, 1, PRICE_CLOSE);
-   if(d1_close <= 0.0 || d1_sma <= 0.0)
-      return false;
-
-   if(cross_up && d1_close <= d1_sma)
-      return false;
-   if(cross_dn && d1_close >= d1_sma)
-      return false;
-
-   const int dir = cross_up ? 1 : -1;
+   const int dir = bullish ? 1 : -1;
    const datetime current_h4_bar = (datetime)SeriesInfoInteger(_Symbol, PERIOD_H4, SERIES_LASTBAR_DATE);
+   const int cooldown_bars = n;
    if(g_last_trade_dir == dir && current_h4_bar > 0 && g_last_trade_time > 0 &&
-      current_h4_bar - g_last_trade_time < strategy_cooldown_bars * PeriodSeconds(PERIOD_H4))
+      current_h4_bar - g_last_trade_time < cooldown_bars * PeriodSeconds(PERIOD_H4))
       return false;
 
    const double atr_value = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
@@ -214,60 +233,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!SpreadAllows(atr_value))
       return false;
 
-   req.type = cross_up ? QM_BUY : QM_SELL;
-   const double entry = cross_up ? SymbolInfoDouble(_Symbol, SYMBOL_ASK) : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   req.type = bullish ? QM_BUY : QM_SELL;
+   const double entry = bullish ? SymbolInfoDouble(_Symbol, SYMBOL_ASK) : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry <= 0.0)
       return false;
 
    req.sl = QM_StopATRFromValue(_Symbol, req.type, entry, atr_value, strategy_sl_atr_mult);
-   req.tp = QM_TakeATRFromValue(_Symbol, req.type, entry, atr_value, strategy_tp_atr_mult);
-   req.reason = cross_up ? "CYBERNETIC_CYCLE_BULL_CROSS" : "CYBERNETIC_CYCLE_BEAR_CROSS";
+   req.tp = 0.0;
+   req.reason = bullish ? "ADAPTIVE_CG_BULL_CROSS" : "ADAPTIVE_CG_BEAR_CROSS";
 
    if(req.sl <= 0.0)
       return false;
 
    g_last_trade_time = current_h4_bar;
    g_last_trade_dir = dir;
-   g_be_done = false;
+   g_last_dominant_period = p;
    return true;
 }
 
 void Strategy_ManageOpenPosition()
 {
-   ulong ticket = 0;
-   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
-   if(!SelectOurPosition(ticket, position_type))
-   {
-      g_be_done = false;
-      return;
-   }
-
-   if(g_be_done)
-      return;
-
-   const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-   const double sl_price = PositionGetDouble(POSITION_SL);
-   if(open_price <= 0.0 || sl_price <= 0.0)
-      return;
-
-   const double atr_distance = MathAbs(open_price - sl_price) / strategy_sl_atr_mult;
-   if(atr_distance <= 0.0)
-      return;
-
-   const bool is_buy = (position_type == POSITION_TYPE_BUY);
-   const double trigger_price = is_buy ? (open_price + strategy_be_trigger_atr_mult * atr_distance)
-                                       : (open_price - strategy_be_trigger_atr_mult * atr_distance);
-   const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
-                                      : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(market_price <= 0.0)
-      return;
-
-   const bool hit_trigger = is_buy ? (market_price >= trigger_price) : (market_price <= trigger_price);
-   if(hit_trigger)
-   {
-      if(QM_TM_MoveSL(ticket, open_price, "MOVE_TO_BE"))
-         g_be_done = true;
-   }
 }
 
 bool Strategy_ExitSignal()
@@ -281,35 +266,49 @@ bool Strategy_ExitSignal()
 
    const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
    const int h4_seconds = PeriodSeconds(PERIOD_H4);
+   const int time_stop_bars = (int)MathRound(strategy_time_stop_mult * (double)g_last_dominant_period);
    if(opened > 0 && h4_seconds > 0 &&
-      TimeCurrent() - opened >= strategy_time_stop_bars * h4_seconds)
+      TimeCurrent() - opened >= time_stop_bars * h4_seconds)
    {
       g_strategy_exit_reason = QM_EXIT_TIME_STOP;
       return true;
    }
 
-   const int bars_needed = strategy_amplitude_window + 120;
+   const double d1_ema_now = QM_EMA(_Symbol, PERIOD_D1, strategy_d1_ema_period, 1, PRICE_CLOSE);
+   const double d1_ema_prev = QM_EMA(_Symbol, PERIOD_D1, strategy_d1_ema_period, 2, PRICE_CLOSE);
+   if(d1_ema_now > 0.0 && d1_ema_prev > 0.0)
+   {
+      const double ema_slope = d1_ema_now - d1_ema_prev;
+      const bool is_buy = (position_type == POSITION_TYPE_BUY);
+      if(is_buy && ema_slope < 0.0)
+      {
+         g_strategy_exit_reason = QM_EXIT_STRATEGY;
+         return true;
+      }
+      if(!is_buy && ema_slope > 0.0)
+      {
+         g_strategy_exit_reason = QM_EXIT_STRATEGY;
+         return true;
+      }
+   }
+
+   const int bars_needed = strategy_autocorr_lookback + strategy_period_max + 30;
    MqlRates h4[];
    if(!LoadRates(PERIOD_H4, bars_needed, h4))
       return false;
 
-   double cycle_curr = 0.0;
-   double cycle_prev = 0.0;
-   double amp = 0.0;
-   if(!ComputeCyberneticCycle(h4, bars_needed, cycle_curr, cycle_prev, amp))
-      return false;
-
-   const bool cross_up = (cycle_prev < 0.0 && cycle_curr >= 0.0);
-   const bool cross_dn = (cycle_prev > 0.0 && cycle_curr <= 0.0);
-   const bool strong = (amp > strategy_amplitude_threshold * h4[1].close);
+   const int p = ComputeDominantPeriod(h4, 1);
+   const int n = MathMax(3, (int)MathRound((double)p / 2.0));
+   const double cg0 = ComputeCG(h4, 1, n);
+   const double cg1 = ComputeCG(h4, 2, n);
 
    const bool is_buy = (position_type == POSITION_TYPE_BUY);
-   if(is_buy && cross_dn && strong)
+   if(is_buy && cg0 < cg1)
    {
       g_strategy_exit_reason = QM_EXIT_OPPOSITE_SIGNAL;
       return true;
    }
-   if(!is_buy && cross_up && strong)
+   if(!is_buy && cg0 > cg1)
    {
       g_strategy_exit_reason = QM_EXIT_OPPOSITE_SIGNAL;
       return true;
@@ -346,7 +345,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1629_ehlers-cybernetic-cycle-h4\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1624_ehlers-adaptive-cg-h4\"}");
    return INIT_SUCCEEDED;
 }
 
@@ -430,4 +429,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
 }
-

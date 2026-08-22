@@ -1,0 +1,23 @@
+{
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\QM5_1624_ehlers-adaptive-cg-h4.mq5",
+  "mq5_sha256": "c1c88789483807a6817f77b2069b8b6bcb5a5f56c51e737a7e5c1fcc6fe9de78",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\QM5_1624_ehlers-adaptive-cg-h4.ex5",
+  "ex5_sha256": "01c19aab514431c917cdf2899ae5b22ffc1bcd48d8932e2674a3c4385c82eaa7",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_AUDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_EURUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_GDAXI.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_NDX.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_NZDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_SP500.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_UK100.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_USDCAD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_USDCHF.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_USDJPY.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_WS30.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_XAUUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1624_ehlers-adaptive-cg-h4\\sets\\QM5_1624_ehlers-adaptive-cg-h4_XTIUSD.DWX_H4_backtest.set"
+  ]
+}

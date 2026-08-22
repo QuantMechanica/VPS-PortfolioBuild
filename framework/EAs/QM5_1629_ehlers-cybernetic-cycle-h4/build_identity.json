@@ -1,0 +1,23 @@
+{
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\QM5_1629_ehlers-cybernetic-cycle-h4.mq5",
+  "mq5_sha256": "6a2e3ff5044180af4e9363df665fb533ef3f8fe32c3052778cf4373ef7c105d1",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\QM5_1629_ehlers-cybernetic-cycle-h4.ex5",
+  "ex5_sha256": "b32130054b4c1226dbbb7ed7caed583649bec9e147e56c1f2867b061ab84e4f8",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_AUDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_EURUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_GDAXI.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_NDX.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_NZDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_SP500.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_UK100.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_USDCAD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_USDCHF.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_USDJPY.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_WS30.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_XAUUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1629_ehlers-cybernetic-cycle-h4\\sets\\QM5_1629_ehlers-cybernetic-cycle-h4_XTIUSD.DWX_H4_backtest.set"
+  ]
+}
