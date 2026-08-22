@@ -1,0 +1,62 @@
+{
+  "schema_version": "qm.owner_deploy_manifest_draft.v1",
+  "status": "DRAFT_BLOCKED",
+  "generated_date": "2026-08-22",
+  "ea_id": "QM5_13128",
+  "slug": "pre-fomc-drift-ndx",
+  "symbol": "NDX.DWX",
+  "timeframe": "H1",
+  "development_only": true,
+  "deploy_authorized": false,
+  "autotrading_authorized": false,
+  "source_contract": {
+    "card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_13128_pre-fomc-drift-ndx.md",
+    "card_calendar_amendment_required": "Extend the official fixed FOMC table through 2026-12-31 with annual OWNER renewal and fail-closed behavior beyond the horizon.",
+    "news_policy": "OWNER_RATIFIED_EVENT_ANCHORED_EXEMPTION",
+    "news_authority": "decisions/2026-07-24_news_blackout_exemptions.md",
+    "news_axes": {
+      "qm_news_temporal": "QM_NEWS_TEMPORAL_OFF",
+      "qm_news_compliance": "QM_NEWS_COMPLIANCE_NONE",
+      "qm_news_mode_legacy": "QM_NEWS_OFF"
+    },
+    "compensating_control": "Exit and verify flat on the event date before the statement; no directional statement exposure.",
+    "calendar_valid_through": "2026-12-31",
+    "calendar_beyond_horizon": "INIT_AND_ENTRY_FAIL_CLOSED"
+  },
+  "candidate": {
+    "commit": "4112f5b07",
+    "mq5_path": "C:/QM/repo/framework/EAs/QM5_13128_pre-fomc-drift-ndx/QM5_13128_pre-fomc-drift-ndx.mq5",
+    "mq5_sha256": "4e6e18c1967ae802aa31190b7ca75329eb451ddee88706f8f1dd546506172d25",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_13128_pre-fomc-drift-ndx/sets/QM5_13128_pre-fomc-drift-ndx_NDX.DWX_H1_dev_reconciliation_candidate.set",
+    "setfile_sha256": "d0a3fa0b0a9bebca8fe6c0631ee6d64fdc1fe930ea401fc47b6c49f5c880c614",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0
+    },
+    "ex5_path": "C:/QM/repo/framework/EAs/QM5_13128_pre-fomc-drift-ndx/QM5_13128_pre-fomc-drift-ndx.ex5",
+    "ex5_sha256": null,
+    "compile_utility_work_item_id": "3c893190-0297-4efb-b810-ad7f602ff63d",
+    "compile_status": "PENDING_ACTIVATION_HELD",
+    "compile_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+  },
+  "current_live_rollback_reference_read_only": {
+    "ex5_sha256": "364867a9fe8d58478ade5526aad19deb377a35b313cfdac29763bb2eb82d273b",
+    "setfile_sha256": "3aa27e4b869a4f1e0dac25457d3c5056664613e58e3b41556b78a5db18549ffb"
+  },
+  "required_proof": [
+    "Governed compile PASS binds the exact MQ5 hash to a non-null EX5 hash.",
+    "Q02 replay of a known 2026 meeting shows D-1 entry and event-date flat exit on the exact candidate pair.",
+    "Broker-hour 20/21 session-boundary probe proves the first executable exit occurs before the statement blackout.",
+    "Gate diagnostics prove calendar membership, new-bar availability, ATR/quote/stop validity, news exemption identity, and order results.",
+    "Q02 through Q10 are regenerated under OFF/NONE/OFF; the inconsistent legacy Q10 PRE30_POST30/DXZ result is not reused.",
+    "A post-2026-12-31 probe proves INIT/entry fail closed with SETUP_DATA_STALE.",
+    "Pipeline requalification verdict and separate OWNER-signed deploy verification exist."
+  ],
+  "unresolved_registry_blocks": [
+    "card calendar text ends in 2025 while candidate extends through 2026",
+    "friday-close override is not card-qualified",
+    "candidate binary is not compiled/requalified"
+  ],
+  "owner_signature": null,
+  "owner_decision": null
+}
