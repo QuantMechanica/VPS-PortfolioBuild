@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Karsten Schweikert; OlaOluwa S. Yaya; Xuan Vinh Vo; Hammed A. Olayinka; Alfred Cowles 3rd; Herbert E. Jones; CME Group",
+    "mechanic": "exact synchronized XAUUSD XAGUSD D1 first broker month boundary immediately completed calendar month 17 to 23 gold minus silver log ratio closes chronological adjacent nonzero relative return signs count sequences same sign transitions and reversals opposite sign transitions require sequences strictly exceed reversals fade completed month net ratio displacement next calendar month equal notional aggregate fixed risk basket",
+    "slug": "xauxag-mseqdom-rv",
+    "strategy_id": "SCHWEIKERT-COWLES-CME-XAUXAG-MSEQDOM-RV-2026_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-08-22T22:42:07+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4620,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1289,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
