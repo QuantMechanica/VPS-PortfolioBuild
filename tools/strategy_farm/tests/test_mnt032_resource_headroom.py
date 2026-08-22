@@ -106,12 +106,14 @@ def test_running_workers_are_not_charged_twice_against_free_ram() -> None:
     decision = headroom.concurrency_decision(
         snapshot(144.0, 39.8, 79.0), installed_workers=10, running_workers=4
     )
-    assert decision["additional_capacity"] == 4  # (39.8 - 6) / 8
-    assert decision["max_workers"] == 8          # 4 running + 4 additional
+    # ram (39.8-6)/2=16, commit (79-24)/2=27, disk (144-40)/8=13 -> min 13;
+    # the fleet cap is installed=10 regardless.
+    assert decision["additional_capacity"] == 13
+    assert decision["max_workers"] == 10
     assert decision["allow_new_workers"] is True
     # ...and the guard still refuses to grow when no per-worker headroom is free
     starved = headroom.concurrency_decision(
-        snapshot(144.0, 12.0, 79.0), installed_workers=10, running_workers=4
+        snapshot(144.0, 7.5, 79.0), installed_workers=10, running_workers=4
     )
     assert starved["additional_capacity"] == 0
     assert starved["max_workers"] == 4

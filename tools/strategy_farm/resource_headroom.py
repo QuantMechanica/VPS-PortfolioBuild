@@ -23,9 +23,16 @@ GIB = 1024 ** 3
 DISK_STOP_GB = 40.0
 DISK_PER_WORKER_GB = 8.0
 RAM_RESERVE_GB = 6.0
-RAM_PER_WORKER_GB = 8.0
+# Spawn-time per-worker charge covers the worker DAEMON plus an idle
+# terminal (~1-2GB measured), NOT a running backtest claim — concurrent
+# run RAM is protected by the claim-time admission gate (per-claim
+# reservation), not here.  The original 8.0 copied the claim-level figure
+# and made a 10-worker COLD START arithmetically impossible on this
+# 63GB host (needs 6+8*10=86GB free): Factory_ON failed closed twice on
+# 2026-08-22 with exactly workers T6-T10 missing (governor cap 5).
+RAM_PER_WORKER_GB = 2.0
 COMMIT_RESERVE_GB = 24.0
-COMMIT_PER_WORKER_GB = 8.0
+COMMIT_PER_WORKER_GB = 2.0  # same spawn-vs-claim rationale as RAM above
 RECLAIM_TOLERANCE_MIN_GB = 1.0
 RECLAIM_TOLERANCE_FRACTION = 0.25
 
