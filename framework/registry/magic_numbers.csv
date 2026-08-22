@@ -17634,3 +17634,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41100,xng-wclose-turn-mom,0,XNGUSD.DWX,411000000,2026-08-21,Codex governed allocator,active
 41101,xng-wrange-migrate-mom,0,XNGUSD.DWX,411010000,2026-08-22,Codex governed allocator,active
 41102,wti-mrange-migrate-mom,0,XTIUSD.DWX,411020000,2026-08-22,Codex governed allocator,active
+41103,xauxag-mrange-migrate-rv,0,XAUUSD.DWX,411030000,2026-08-22,Codex governed allocator,active
+41103,xauxag-mrange-migrate-rv,1,XAGUSD.DWX,411030001,2026-08-22,Codex governed allocator,active
