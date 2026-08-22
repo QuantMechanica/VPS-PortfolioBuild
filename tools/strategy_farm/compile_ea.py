@@ -59,6 +59,15 @@ VALIDATOR = REPO_ROOT / "tools" / "strategy_farm" / "validate_symbol_scope.py"
 MAGIC_REGISTRY = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
 RESOLVER_MQH = REPO_ROOT / "framework" / "include" / "QM" / "QM_MagicResolver.mqh"
 
+# 2026-08-22: raised from 120s after QM5_10919 (DL-089 batch 2) timeout-killed at
+# 120.41s with no verdict while the factory was CPU-saturated (D:/QM/reports/compile/
+# telemetry: legitimate COMPILED runs on a loaded host already reached 101.5s and
+# 113.7s that same day). 120s left ~6s margin over the worst observed genuine
+# compile, i.e. no headroom for contention. 300s keeps ~2.6x margin over the worst
+# observed genuine compile while still bounding a hung MetaEditor process. See
+# docs/ops/evidence/2026-08-22_dl089_wave1_batch2_compile_timeout.md.
+COMPILE_ONE_TIMEOUT_SECONDS = 300
+
 
 def ea_id_registered(ea_label: str) -> tuple[bool, int | None]:
     """Is the EA's ea_id present in magic_numbers.csv? Without a registered magic the
@@ -312,11 +321,11 @@ def compile_ea(ea_label: str, force: bool = False, skip_validator: bool = False,
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True,
-                               timeout=120, creationflags=creationflags)
+                               timeout=COMPILE_ONE_TIMEOUT_SECONDS, creationflags=creationflags)
     except subprocess.TimeoutExpired:
         r = CompileResult(
             ea_label=ea_label, verdict="COMPILE_FAILED",
-            reason="compile_one.ps1 timeout after 120s",
+            reason=f"compile_one.ps1 timeout after {COMPILE_ONE_TIMEOUT_SECONDS}s",
             mq5_mtime_utc=file_mtime_iso(mq5),
             compile_one_exit_code=-1,
             symbol_scope_verdict=scope_verdict,
