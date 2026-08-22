@@ -1,8 +1,8 @@
 # COMPILE_EA worker rollout continuation — live-contention proof and bounded wave
 
-Date: 2026-08-22  
-Router task: `1fb9943f-1b87-4515-b2b4-f5ca3ffb56f8`  
-Branch: `agents/board-advisor`  
+Date: 2026-08-22
+Router task: `1fb9943f-1b87-4515-b2b4-f5ca3ffb56f8`
+Branch: `agents/board-advisor`
 Verdict: `REVIEW_ROLLOUT_PROVEN_BOUNDED_WAVES` — the canonical worker consumed a canary and a three-EA wave under live factory contention; every build finding remained failed and unenqueued.
 
 ## Outcome
