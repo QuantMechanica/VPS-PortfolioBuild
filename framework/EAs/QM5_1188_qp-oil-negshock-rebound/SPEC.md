@@ -10,7 +10,7 @@ Quantpedia oil negative-shock mean-reversion strategy. The EA trades long oil af
 - Close: closes when the next D1 bar begins after entry, with a two-session safety hold variant available through setfiles.
 
 ## Data Contract
-The EA uses Darwinex MT5/DWX D1 bars only. There are no web calls, external APIs, ML models, or CSV dependencies.
+The EA uses Darwinex MT5/DWX D1 bars only. There are no web calls, external APIs, ML models, or CSV dependencies. The XTI and XBR routes are independent, so initialization selects only the chart symbol and never requires the alternate proxy to exist.
 
 ## Symbols and Slots
 - slot 0: `XTIUSD.DWX`, magic `11880000`
