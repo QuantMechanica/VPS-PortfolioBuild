@@ -195,6 +195,21 @@ HEADING_DE_EN = {
     "ausstieg": "Exit",
     "risiko": "Risk",
     "kosten": "Costs",
+    "zusaetzliche filter": "Additional filters",
+    "zusätzliche filter": "Additional filters",
+    "weitere filter": "Additional filters",
+    "filter": "Filters",
+    "positionsgroesse": "Position sizing",
+    "positionsgröße": "Position sizing",
+    "positionsgrösse": "Position sizing",
+    "stopp": "Stop loss",
+    "handelszeiten": "Trading hours",
+    "zeitfenster": "Time window",
+    "signal": "Signal",
+    "beschreibung": "Description",
+    "umsetzung": "Implementation",
+    "hinweise": "Notes",
+    "lehren": "Lessons learned",
 }
 
 
@@ -647,6 +662,32 @@ color:var(--text-3);list-style:none;user-select:none}
 .sc-body details h3{margin-top:0}
 .sc-none{padding:18px 22px;color:var(--text-4);font-size:12px}
 
+/* the edge thesis is the one paragraph that says WHY the strategy should work —
+   it gets the weight of a lead, not the weight of a bullet */
+.thesis{border-left:2px solid var(--signal);background:var(--surface-2);
+padding:14px 18px;margin:0 0 6px;font-size:13.5px;line-height:1.75;color:var(--text-2);
+max-width:86ch}
+.thesis p:last-child{margin-bottom:0}
+.thesis strong{color:var(--text)}
+
+/* mechanization rules read as a set of parallel clauses, not a scroll */
+.rules-intro{margin:0 0 12px;color:var(--text-3);font-size:12px}
+.rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(288px,1fr));
+gap:1px;background:var(--border);border:1px solid var(--border);margin:0 0 14px}
+.rule{background:var(--surface-2);padding:12px 15px 13px;min-width:0}
+.rule-h{font-family:var(--font-mono);font-size:9.5px;font-weight:700;letter-spacing:.13em;
+text-transform:uppercase;color:var(--signal-bright);margin-bottom:8px;
+padding-bottom:6px;border-bottom:1px solid var(--border)}
+.rule-note{display:block;margin-top:3px;font-weight:400;letter-spacing:.04em;
+text-transform:none;color:var(--text-4);font-size:9.5px;line-height:1.4}
+.rule ul,.rule ol{margin:0 0 0 16px;padding:0}
+.rule li{margin:0 0 6px;font-size:12.5px;line-height:1.6}
+.rule li:last-child{margin-bottom:0}
+.rule p{margin:0 0 7px;font-size:12.5px;line-height:1.6}
+.rule p:last-child{margin-bottom:0}
+.rule code{font-size:11px}
+@media(max-width:760px){.rules-grid{grid-template-columns:1fr}}
+
 /* ── all backtests table ───────────────────────────────────────────── */
 .bt-wrap{margin:26px 0}
 .bt-note{border-left:3px solid var(--warn);background:rgba(184,114,10,.06);padding:8px 12px;
@@ -714,6 +755,64 @@ _STATS = (("expected_trades_per_year_per_symbol", "Trades / year / symbol", Fals
           ("expected_pf", "Expected PF", False), ("expected_dd_pct", "Expected max DD %", False),
           ("risk_class", "Risk class", True), ("period", "Timeframe", True),
           ("pipeline_phase", "Card phase", True))
+
+
+# Card sections whose body is a set of bold-labelled clauses ("**Entry:**" and a list)
+# rather than prose. Those become a grid — read side by side, they are comparable;
+# stacked, they are a scroll.
+GRID_SECTIONS = ("rules", "mechanics", "mechanization", "execution", "trade management")
+THESIS_SECTIONS = ("edge thesis", "thesis", "edge", "rationale")
+
+_LABEL_P = re.compile(r"<p><strong>(.*?)</strong>\s*:?\s*</p>", re.S)
+_SUBHEAD = re.compile(r"<h[45]>(.*?)</h[45]>", re.S)
+
+
+def _gridify(chunk: str) -> str:
+    """Split a bold-labelled section into rule cards. Falls back to the original
+    markup when there is nothing to split — a prose section must not be forced into
+    a grid it cannot fill."""
+    parts = _LABEL_P.split(chunk)
+    if len(parts) < 3:
+        # most cards structure their mechanism with sub-headings rather than bold
+        # labels — same shape, different markup.
+        parts = _SUBHEAD.split(chunk)
+        if len(parts) < 3:
+            return chunk
+    intro = parts[0].strip()
+    cards = []
+    for i in range(1, len(parts) - 1, 2):
+        label = re.sub(r"<.*?>", "", parts[i]).strip().rstrip(":")
+        content = parts[i + 1].strip()
+        if not content:
+            continue
+        # a long parenthetical in the label wrecks a small-caps header — demote it
+        main, _, note = normalise_heading(html.unescape(label)).partition(" (")
+        note_html = (f'<span class="rule-note">{e(note.rstrip(")"))}</span>'
+                     if note else "")
+        cards.append(f'<div class="rule"><div class="rule-h">{e(main)}{note_html}</div>'
+                     f'{content}</div>')
+    if len(cards) < 2:
+        return chunk
+    out = f'<div class="rules-intro">{intro}</div>' if intro else ""
+    return out + f'<div class="rules-grid">{"".join(cards)}</div>'
+
+
+def _style_sections(doc: str) -> str:
+    """Give each card section the shape its content actually has."""
+    parts = re.split(r"(<h3>.*?</h3>)", doc)
+    out = [parts[0]] if parts else []
+    i = 1
+    while i < len(parts):
+        head, chunk = parts[i], parts[i + 1] if i + 1 < len(parts) else ""
+        title = html.unescape(re.sub(r"<.*?>", "", head)).strip().lower()
+        if any(t in title for t in THESIS_SECTIONS):
+            out.append(head + f'<div class="thesis">{chunk}</div>')
+        elif any(t in title for t in GRID_SECTIONS):
+            out.append(head + _gridify(chunk))
+        else:
+            out.append(head + chunk)
+        i += 2
+    return "".join(out)
 
 
 def _collapse_reference_sections(doc: str) -> str:
@@ -799,7 +898,8 @@ def render_card_section(ea_id: str) -> str:
 
     # base_level 2: the card title was lifted into the header, so its "##" sections
     # become h3 and carry the accent rule; sub-sections drop to h4/h5.
-    body_html = _collapse_reference_sections(md_to_html(body, base_level=2))
+    body_html = _collapse_reference_sections(
+        _style_sections(md_to_html(body, base_level=2)))
 
     return (f'<div class="sc"><div class="sc-head"><div class="sc-kicker">{kicker}</div>'
             f'<div class="sc-title">{e(title)}</div>'
