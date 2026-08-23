@@ -54,6 +54,14 @@ function Test-ObjectHasKey {
     return $Target.PSObject.Properties.Name.Contains($Key)
 }
 
+function Get-ObjectKeys {
+    param([object]$Target)
+    if ($Target -is [System.Collections.IDictionary]) {
+        return @($Target.Keys | ForEach-Object { [string]$_ })
+    }
+    return @($Target.PSObject.Properties.Name)
+}
+
 function Validate-JsonAgainstSchema {
     param(
         [object]$Object,
@@ -96,6 +104,10 @@ function Validate-JsonAgainstSchema {
                     $Object.pipeline.by_gate_v4.$k -lt 0) {
                     throw "Invalid pipeline.by_gate_v4.$k in $Name."
                 }
+            }
+            foreach ($k in (Get-ObjectKeys -Target $Object.pipeline.by_gate_v4)) {
+                if ($k -eq "gate_contract_version") { continue }
+                if ($k -notmatch '^Q(?:0[0-9]|1[0-7])$' -or $Object.pipeline.by_gate_v4.$k -lt 0) { throw "Invalid pipeline.by_gate_v4.$k in $Name." }
             }
             if ($Object.t6.status -notin @("offline", "demo", "live", "degraded")) { throw "Invalid t6.status in $Name." }
             if ($Object.t6.risk_state -notin @("green", "yellow", "red")) { throw "Invalid t6.risk_state in $Name." }
