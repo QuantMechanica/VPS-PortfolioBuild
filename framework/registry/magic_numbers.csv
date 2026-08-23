@@ -17863,3 +17863,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41130,wti-mopen-residence-mom,0,XTIUSD.DWX,411300000,2026-08-23,Codex governed allocator,active
 41131,wti-mdaily-tailtrim-mom,0,XTIUSD.DWX,411310000,2026-08-23,Codex governed allocator,active
 41132,wti-mweekday-med-mom,0,XTIUSD.DWX,411320000,2026-08-23,Codex governed allocator,active
+41133,wti-mdaily-median-mom,0,XTIUSD.DWX,411330000,2026-08-23,Codex governed allocator,active
