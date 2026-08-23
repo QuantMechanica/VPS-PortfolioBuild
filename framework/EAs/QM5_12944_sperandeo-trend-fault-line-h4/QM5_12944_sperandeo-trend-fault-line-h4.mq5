@@ -125,7 +125,7 @@ bool FindDownFaultLine(const MqlRates &rates[], const int count, double &out_slo
       {
          const double pct_diff1 = (highs[i + 2].price - highs[i + 1].price) / highs[i + 2].price * 100.0;
          const double pct_diff2 = (highs[i + 1].price - highs[i].price) / highs[i + 1].price * 100.0;
-         if(pct_diff1 >= strategy_zigzag_dev_pct * 0.5 && pct_diff2 >= strategy_zigzag_dev_pct * 0.5)
+         if(pct_diff1 >= strategy_zigzag_dev_pct && pct_diff2 >= strategy_zigzag_dev_pct)
          {
             return FitLinearRegression3(highs[i], highs[i + 1], highs[i + 2], out_slope, out_intercept);
          }
@@ -171,7 +171,7 @@ bool FindUpFaultLine(const MqlRates &rates[], const int count, double &out_slope
       {
          const double pct_diff1 = (lows[i + 1].price - lows[i + 2].price) / lows[i + 2].price * 100.0;
          const double pct_diff2 = (lows[i].price - lows[i + 1].price) / lows[i + 1].price * 100.0;
-         if(pct_diff1 >= strategy_zigzag_dev_pct * 0.5 && pct_diff2 >= strategy_zigzag_dev_pct * 0.5)
+         if(pct_diff1 >= strategy_zigzag_dev_pct && pct_diff2 >= strategy_zigzag_dev_pct)
          {
             return FitLinearRegression3(lows[i], lows[i + 1], lows[i + 2], out_slope, out_intercept);
          }
@@ -185,18 +185,33 @@ bool FindUpFaultLine(const MqlRates &rates[], const int count, double &out_slope
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
+double MeanSpreadPoints(string sym, int lookback)
+{
+   double sum = 0.0;
+   int n = 0;
+   for(int i = 1; i <= lookback; i++)
+   {
+      MqlRates cj;
+      if(!QM_ReadBar(sym, PERIOD_H4, i, cj))
+         continue;
+      sum += (double)cj.spread;
+      n++;
+   }
+   if(n <= 0)
+      return 0.0;
+   return sum / (double)n;
+}
+
 bool Strategy_NoTradeFilter()
 {
    if(_Period != PERIOD_H4)
       return true;
 
-   const double atr_val = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(atr_val > 0.0 && bid > 0.0 && ask > bid)
+   const double mean_spread = MeanSpreadPoints(_Symbol, 100);
+   if(mean_spread > 0.0)
    {
-      const double spread = ask - bid;
-      if(spread > atr_val * strategy_spread_filter_mult * 0.5)
+      const double cur_spread = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(cur_spread > strategy_spread_filter_mult * mean_spread)
          return true;
    }
 
@@ -214,23 +229,23 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
+   if(magic <= 0)
       return false;
 
+   const double atr1 = QM_ATR(_Symbol, PERIOD_H4, 1, 1);
    const double atr20 = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
-   if(atr20 <= 0.0)
+   if(atr20 <= 0.0 || atr1 <= 0.0)
+      return false;
+
+   // Volatility expansion on breaking bar (shift 1 ATR(1) > 1.5 * ATR(20))
+   const bool vol_expansion = (atr1 > strategy_vol_expansion_mult * atr20);
+   if(!vol_expansion)
       return false;
 
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
    const int copied = CopyRates(_Symbol, PERIOD_H4, 1, 160, rates); // perf-allowed: bespoke ZigZag/fault-line scan, called only after framework QM_IsNewBar().
    if(copied < 60)
-      return false;
-
-   // Volatility expansion on breaking bar (rates[0] corresponds to shift 1)
-   const double bar1_range = rates[0].high - rates[0].low;
-   const bool vol_expansion = (bar1_range > strategy_vol_expansion_mult * atr20);
-   if(!vol_expansion)
       return false;
 
    const double d1_close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: D1 regime close paired with QM_SMA.
@@ -243,10 +258,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(FindDownFaultLine(rates, copied, down_slope, down_intercept))
    {
       const double line_price_bar1 = FaultLinePriceAtShift(down_slope, down_intercept, 0); // rates[0] is shift 1
-      if(rates[0].close > line_price_bar1 + strategy_break_buffer_mult * atr20)
+      const double line_price_bar2 = FaultLinePriceAtShift(down_slope, down_intercept, 1); // rates[1] is shift 2
+      if(rates[0].close > line_price_bar1 + strategy_break_buffer_mult * atr20 &&
+         rates[1].close <= line_price_bar2 + strategy_break_buffer_mult * atr20)
       {
          if(d1_close1 > d1_sma200)
          {
+            // Close any existing SHORT position on reverse signal before entering BUY
+            for(int i = PositionsTotal() - 1; i >= 0; --i)
+            {
+               const ulong ticket = PositionGetTicket(i);
+               if(ticket == 0 || !PositionSelectByTicket(ticket)) continue;
+               if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+               if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
+               if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_SELL)
+                  QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+            }
+            if(QM_TM_OpenPositionCount(magic) > 0)
+               return false;
+
             const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
             const double entry_p = (ask > 0.0) ? ask : rates[0].close;
             const double sl = entry_p - strategy_sl_atr_mult * atr20;
@@ -267,10 +297,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(FindUpFaultLine(rates, copied, up_slope, up_intercept))
    {
       const double line_price_bar1 = FaultLinePriceAtShift(up_slope, up_intercept, 0); // rates[0] is shift 1
-      if(rates[0].close < line_price_bar1 - strategy_break_buffer_mult * atr20)
+      const double line_price_bar2 = FaultLinePriceAtShift(up_slope, up_intercept, 1); // rates[1] is shift 2
+      if(rates[0].close < line_price_bar1 - strategy_break_buffer_mult * atr20 &&
+         rates[1].close >= line_price_bar2 - strategy_break_buffer_mult * atr20)
       {
          if(d1_close1 < d1_sma200)
          {
+            // Close any existing LONG position on reverse signal before entering SELL
+            for(int i = PositionsTotal() - 1; i >= 0; --i)
+            {
+               const ulong ticket = PositionGetTicket(i);
+               if(ticket == 0 || !PositionSelectByTicket(ticket)) continue;
+               if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+               if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
+               if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
+                  QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+            }
+            if(QM_TM_OpenPositionCount(magic) > 0)
+               return false;
+
             const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
             const double entry_p = (bid > 0.0) ? bid : rates[0].close;
             const double sl = entry_p + strategy_sl_atr_mult * atr20;
@@ -381,6 +426,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
 
    const datetime broker_now = TimeCurrent();
@@ -414,7 +460,7 @@ void OnTick()
 
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req;
+   QM_EntryRequest req = {};
    ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
