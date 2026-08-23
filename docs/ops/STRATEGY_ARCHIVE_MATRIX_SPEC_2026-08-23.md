@@ -279,7 +279,7 @@ sich aus `extension_topology` des Manifests, egal welches Schema dort steht.
 | **F1** | **A — Zeile ist die Card**, aufklappbar zu (Card, Symbol) | 3.279 Zeilen; Gate-Zelle trägt Symbolstreifen; Spaltensortierung über abgeleitete Skalare |
 | **F2** | **Unterstufen `Q10.1–Q10.3`** statt Vollumnummerierung | eigener Auftrag (§3a/§14); Matrix liest die Reihenfolge ohnehin aus `extension_topology` |
 | **F3** | **Sieben Zustände, Loch-Chip auffällig** | VOID (2.165) bekommt eigene Darstellung; das erreichbare Loch (4.666) ist der kräftigste Chip der Seite |
-| **F4** | **(b) Stale Pass hohl markieren** | Build-Hash-Verknüpfung je Zelle; **Abdeckung vor dem Prototyp messen** — reicht sie nicht, wird es (a) mit sichtbarem Warnhinweis |
+| **F4** | **Gemessen 2026-08-23: 17,1 % Abdeckung → (a)**, jüngstes Verdikt, Warnbanner statt Zellchip | `docs/ops/evidence/archive_matrix_hash_coverage_measurement_2026-08-23.md`; 422 gemessen-stale Zellen als Fußnote/Filter, nicht als Zustand 2; Zustand 2 bleibt nur für `PASS_SOFT`/`PASS_LOWFREQ` (nie hash-abhängig) |
 | **F5** | **abgeleitet aus vier Signalen** (Zieluniversum · RETIRE/OBSOLETE/SUPERSEDED · Card-Bucket · `work_item_holds`) | kein neuer Datenvertrag; **jede leere Zelle nennt ihren Grund im Tooltip**, keine stillschweigende Leere |
 | **F6** | **Default: höchstes bestandenes Gate zuerst** | Seite öffnet als Bestenliste; „meiste Löcher zuerst" bleibt ein Klick im Sortiermenü, der Loch-Filter bleibt prominent |
 | **F7** | **DWX-Chips + `legacy` + `BASKET`** (Claude, Routineurteil) | Basket-EAs mit leerem Symbol verschwinden nicht |
