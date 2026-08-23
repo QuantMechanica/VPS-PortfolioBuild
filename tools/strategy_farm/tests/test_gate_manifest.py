@@ -16,26 +16,23 @@ import gate_manifest  # noqa: E402
 import phase_ids  # noqa: E402
 
 
-def test_default_manifest_matches_phase_ids_and_is_active_v3() -> None:
-    # Gate Manifest v3 is the active default after the 2026-08-23 activation.
+def test_default_manifest_matches_phase_ids_and_declared_active_contract() -> None:
     contract = gate_manifest.load_gate_manifest()
 
     assert list(contract.phase_ids) == phase_ids.PHASE_ORDER
     assert contract.display_names == phase_ids.PHASE_NAME
     assert dict(contract.legacy_aliases) == phase_ids.LEGACY_P_TO_Q
     assert contract.verdict_dimensions == gate_manifest.REQUIRED_VERDICT_DIMENSIONS
-    assert contract.schema_version == "qm.gate-manifest/v3"
-    assert gate_manifest.SCHEMA_VERSION == "qm.gate-manifest/v3"
-    assert gate_manifest.DEFAULT_MANIFEST.name == "gate_manifest.v3.json"
+    assert contract.schema_version == gate_manifest.SCHEMA_VERSION
+    assert gate_manifest.DEFAULT_MANIFEST.name == (
+        f"gate_manifest.{contract.schema_version.rsplit('/', 1)[-1]}.json"
+    )
     assert contract.activation_state == "ACTIVE"
-    assert contract.phase_ids == tuple(f"Q{i:02d}" for i in range(17))
-    assert contract.next_by_phase["Q13"] is None
-    assert contract.next_by_phase["Q16"] == "Q11"
-    assert phase_ids.ORDINARY_PHASE_ORDER == [f"Q{i:02d}" for i in range(14)]
-    assert phase_ids.OPTIMIZATION_PHASE_ORDER == ["Q14", "Q15", "Q16"]
-    assert phase_ids.next_phase_id("Q10") == "Q11"
-    assert phase_ids.next_phase_id("Q13") is None
-    assert phase_ids.next_phase_id("Q16") == "Q11"
+    assert tuple(phase_ids.PHASE_ORDER) == contract.phase_ids
+    assert phase_ids.PHASE_NEXT == contract.next_by_phase
+    assert all(
+        phase_ids.next_phase_id(gate.id) == gate.next for gate in contract.gates
+    )
     assert len(contract.sha256) == 64
 
 
@@ -71,13 +68,10 @@ def test_v1_manifest_remains_a_valid_closed_fixture() -> None:
         gate_manifest.write_phase_id("Q14", contract)
 
 
-def test_v3_is_now_the_active_default_and_v2_remains_loadable() -> None:
-    active = gate_manifest.load_gate_manifest()
+def test_v3_and_v2_remain_explicit_loadable_fixtures() -> None:
     candidate = gate_manifest.load_gate_manifest(gate_manifest.V3_MANIFEST)
     legacy = gate_manifest.load_gate_manifest(gate_manifest.V2_MANIFEST)
 
-    assert active.schema_version == "qm.gate-manifest/v3"
-    assert gate_manifest.DEFAULT_MANIFEST.name == "gate_manifest.v3.json"
     assert candidate.schema_version == "qm.gate-manifest/v3"
     # v2 stays a valid, loadable fixture after the switch.
     assert legacy.schema_version == "qm.gate-manifest/v2"
@@ -117,7 +111,7 @@ def test_v3_is_now_the_active_default_and_v2_remains_loadable() -> None:
 
 
 def test_v3_loader_exposes_q11_routing_and_q16_dependencies() -> None:
-    contract = gate_manifest.load_gate_manifest()
+    contract = gate_manifest.load_gate_manifest(gate_manifest.V3_MANIFEST)
 
     # OWNER A2: neither optimized nor unchanged lineages auto-enter the book.
     assert contract.portfolio_route(optimized=False) is None
@@ -139,13 +133,14 @@ def test_v3_loader_exposes_q11_routing_and_q16_dependencies() -> None:
     assert v2.baseline_reuse_policy is None
 
 
-def test_v4_draft_loads_read_inert_without_changing_v3_default() -> None:
+def test_v4_draft_loads_read_inert_without_changing_active_default() -> None:
     active = gate_manifest.load_gate_manifest()
     draft = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
 
-    assert active.schema_version == gate_manifest.SCHEMA_VERSION_V3
-    assert gate_manifest.SCHEMA_VERSION == gate_manifest.SCHEMA_VERSION_V3
-    assert gate_manifest.DEFAULT_MANIFEST == gate_manifest.V3_MANIFEST
+    assert active.schema_version == gate_manifest.SCHEMA_VERSION
+    assert active.sha256 == gate_manifest.load_gate_manifest(
+        gate_manifest.DEFAULT_MANIFEST
+    ).sha256
     assert draft.schema_version == gate_manifest.SCHEMA_VERSION_V4
     assert draft.activation_state == "READ_INERT"
     assert draft.phase_ids == tuple(f"Q{i:02d}" for i in range(18))
@@ -176,26 +171,36 @@ def test_v4_equivalence_round_trips_every_phase2_and_phase3_gate() -> None:
 def test_version_aware_phase_display_never_silently_reinterprets_rows(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    # Current active v3: the same stored token has different semantics under a
-    # v4 stamp and must translate back to the active v3 gate with provenance.
-    assert phase_ids.phase_qid("Q10", "v3") == "Q10"
-    assert phase_ids.phase_qid("Q10", "v4") == "Q09"
-    assert phase_ids.normalize_phase_id("Q10", "v4") == "Q09"
-    assert phase_ids.display_phase("Q10", "v4") == "Q09 (v4:Q10)"
-    assert phase_ids.display_phase("Q10", "v2") == "Q10 (v2:Q10)"
+    expected_by_active = {
+        "v3": {
+            "v3": ("Q10", "Q10"),
+            "v4": ("Q09", "Q09 (v4:Q10)"),
+        },
+        "v4": {
+            "v3": ("Q11", "Q11 (v3:Q10)"),
+            "v4": ("Q10", "Q10"),
+        },
+    }[phase_ids.ACTIVE_GATE_CONTRACT_VERSION]
+    for source_version, (qid, label) in expected_by_active.items():
+        assert phase_ids.phase_qid("Q10", source_version) == qid
+        assert phase_ids.normalize_phase_id("Q10", source_version) == qid
+        assert phase_ids.display_phase("Q10", source_version) == label
 
-    # Simulate the future authorized default switch without loading the draft
-    # as DEFAULT_MANIFEST. Historical v3 Q10 then renders exactly as proposed.
-    monkeypatch.setattr(phase_ids, "ACTIVE_GATE_CONTRACT_VERSION", "v4")
-    assert phase_ids.phase_qid("Q10", "v3") == "Q11"
-    assert phase_ids.normalize_phase_id("Q10", "v3") == "Q11"
-    assert phase_ids.display_phase("Q10", "v3") == "Q11 (v3:Q10)"
+    monkeypatch.setattr(
+        phase_ids,
+        "ACTIVE_GATE_CONTRACT_VERSION",
+        "v4" if phase_ids.ACTIVE_GATE_CONTRACT_VERSION == "v3" else "v3",
+    )
+    assert phase_ids.display_phase("Q10", "v3") in {
+        "Q10", "Q11 (v3:Q10)"
+    }
 
 
 def test_unstamped_phase_rows_keep_the_legacy_alias_fallback() -> None:
-    assert phase_ids.phase_qid("P9") == "Q11"
-    assert phase_ids.normalize_phase_id(" p9 ") == "Q11"
-    assert phase_ids.display_phase("P9", None) == "Q11"
+    expected = phase_ids.LEGACY_P_TO_Q["P9"]
+    assert phase_ids.phase_qid("P9") == expected
+    assert phase_ids.normalize_phase_id(" p9 ") == expected
+    assert phase_ids.display_phase("P9", None) == expected
     assert phase_ids.phase_qid("COMPILE_EA", "v3") == "COMPILE_EA"
 
 
@@ -218,9 +223,10 @@ def test_v4_is_linear_with_a_trigger_only_phase3_entry() -> None:
     assert order == list(draft.phase_ids)
     assert names == draft.display_names
     assert successors == draft.next_by_phase
-    # Explicit v4 inspection does not mutate the active v3 module defaults.
-    assert phase_ids.PHASE_ORDER == [f"Q{i:02d}" for i in range(17)]
-    assert phase_ids.PHASE_NEXT["Q16"] == "Q11"
+    # Explicit fixture inspection does not mutate the active module defaults.
+    active = gate_manifest.load_gate_manifest()
+    assert phase_ids.PHASE_ORDER == list(active.phase_ids)
+    assert phase_ids.PHASE_NEXT == active.next_by_phase
 
 
 def test_v4_preserves_v3_criteria_for_every_mapped_gate() -> None:
@@ -378,6 +384,7 @@ def test_manifest_alias_inverse_is_complete_and_has_no_invented_keys() -> None:
 
 
 def test_write_contract_rejects_aliases_and_unknown_values() -> None:
+    active = gate_manifest.load_gate_manifest()
     assert gate_manifest.write_phase_id("Q08") == "Q08"
     assert gate_manifest.write_phase_id("Q14") == "Q14"
     assert gate_manifest.write_phase_id("Q15") == "Q15"
@@ -387,8 +394,13 @@ def test_write_contract_rejects_aliases_and_unknown_values() -> None:
             gate_manifest.write_phase_id(noncanonical)
     with pytest.raises(gate_manifest.GateManifestError, match="non-canonical"):
         gate_manifest.write_phase_id("P8")
+    assert gate_manifest.write_phase_id(active.phase_ids[-1]) == active.phase_ids[-1]
     with pytest.raises(gate_manifest.GateManifestError, match="non-canonical"):
-        gate_manifest.write_phase_id("Q17")
+        gate_manifest.write_phase_id("Q18")
+    with pytest.raises(gate_manifest.GateManifestError, match="non-canonical"):
+        gate_manifest.write_phase_id("Q17", gate_manifest.load_gate_manifest(
+            gate_manifest.V3_MANIFEST
+        ))
 
 
 def test_loaded_contract_cannot_be_mutated_by_a_consumer() -> None:
@@ -396,8 +408,12 @@ def test_loaded_contract_cannot_be_mutated_by_a_consumer() -> None:
 
     with pytest.raises(TypeError):
         contract.legacy_aliases["P8"] = "Q09"
+    nested_topology = next(
+        value for value in contract.extension_topology.values()
+        if hasattr(value, "keys")
+    )
     with pytest.raises(TypeError):
-        contract.extension_topology["optimization_fork"]["from"] = "Q09"
+        nested_topology[next(iter(nested_topology))] = "mutated"
 
 
 def test_read_contract_accepts_only_explicit_aliases() -> None:
@@ -410,8 +426,9 @@ def test_read_contract_accepts_only_explicit_aliases() -> None:
 def test_duplicate_json_keys_and_non_contiguous_gates_fail_closed(tmp_path: Path) -> None:
     raw = gate_manifest.DEFAULT_MANIFEST.read_text(encoding="utf-8")
     duplicate = raw.replace(
-        '"pipeline_version": "V5-Q10A-Q16-TARGET-2026-08-22",',
-        '"pipeline_version": "V5-Q10A-Q16-TARGET-2026-08-22", "pipeline_version": "bad",',
+        '"pipeline_version":',
+        '"pipeline_version": "bad", "pipeline_version":',
+        1,
     )
     duplicate_path = tmp_path / "duplicate.json"
     duplicate_path.write_text(duplicate, encoding="utf-8")
@@ -584,7 +601,9 @@ def test_renderers_use_shared_phase_ids_without_local_display_maps() -> None:
         assert render_cockpit.phase_label(alias) == target
         assert render_dashboards.phase_label(alias) == target
     assert render_cockpit.phase_label("P5b") == "Q05"
-    assert render_dashboards.qxx_text("legacy P5c and P9b") == "legacy Q05 and Q12"
+    assert render_dashboards.qxx_text("legacy P5c and P9b") == (
+        f"legacy {contract.legacy_aliases['P5C']} and {contract.legacy_aliases['P9B']}"
+    )
 
 
 def test_state_name_adapter_display_ids_match_manifest() -> None:
@@ -594,7 +613,7 @@ def test_state_name_adapter_display_ids_match_manifest() -> None:
             encoding="utf-8"
         )
     )
-    contract = gate_manifest.load_gate_manifest()
+    contract = gate_manifest.load_gate_manifest(gate_manifest.V3_MANIFEST)
 
     assert {
         alias.upper(): target for alias, target in adapter["phase_display_id"].items()

@@ -11,6 +11,14 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 import q09_news_schema as schema  # noqa: E402
 
+NEWS_PHASE = schema.ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+PORTFOLIO_PHASE = schema.ACTIVE_GATE_MANIFEST.storage_phase_for_role(
+    "NEWS", "PORTFOLIO"
+)
+INCUMBENT_PHASE = schema.ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
+NEWS_ROLE = schema.ACTIVE_GATE_MANIFEST.dependency_role("Q09_NEWS")
+PORTFOLIO_ROLE = schema.ACTIVE_GATE_MANIFEST.dependency_role("Q09_PORTFOLIO")
+
 
 def _hash(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
@@ -329,9 +337,9 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
 
     def test_q10_gate_and_eligibility_require_news_only_and_two_arms(self) -> None:
         add_work_item(self.conn, "q08", "Q08", "PASS", evidence="q08.json")
-        add_work_item(self.conn, "q09n", "Q09_NEWS", "CONFIG_LOCKED", evidence="q09.json")
-        add_work_item(self.conn, "q09p", "Q09_PORTFOLIO", "PASS_PORTFOLIO", evidence="q09p.json")
-        add_work_item(self.conn, "q10", "Q10", "PASS", evidence="q10.json")
+        add_work_item(self.conn, "q09n", NEWS_PHASE, "CONFIG_LOCKED", evidence="q09.json")
+        add_work_item(self.conn, "q09p", PORTFOLIO_PHASE, "PASS_PORTFOLIO", evidence="q09p.json")
+        add_work_item(self.conn, "q10", INCUMBENT_PHASE, "PASS", evidence="q10.json")
         self.conn.execute(
             "INSERT INTO portfolio_candidates VALUES(?,?,?,?,?,?,?)",
             ("QM5_12345", "EURUSD.DWX", "q10", "Q12_REVIEW_READY", "q10.json", "x", "x"),
@@ -349,7 +357,7 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
         )
         add_q09_final(self.conn)
         schema.add_dependency(
-            self.conn, child_work_item_id="q10", dependency_role="Q09_NEWS", parent_work_item_id="q09n",
+            self.conn, child_work_item_id="q10", dependency_role=NEWS_ROLE, parent_work_item_id="q09n",
             parent_evidence_sha256=_hash("q09-evidence"), required_verdicts=["CONFIG_LOCKED"],
         )
         gate = schema.assert_q10_dependency_gate(self.conn, "q10")
@@ -410,15 +418,15 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
 
     def test_q10_optional_fail_portfolio_dependency_is_informational(self) -> None:
         add_work_item(self.conn, "q08", "Q08", "PASS", evidence="q08.json")
-        add_work_item(self.conn, "q09n", "Q09_NEWS", "CONFIG_LOCKED", evidence="q09.json")
+        add_work_item(self.conn, "q09n", NEWS_PHASE, "CONFIG_LOCKED", evidence="q09.json")
         add_work_item(
             self.conn,
             "q09p",
-            "Q09_PORTFOLIO",
+            PORTFOLIO_PHASE,
             "FAIL_PORTFOLIO",
             evidence="q09p.json",
         )
-        add_work_item(self.conn, "q10", "Q10", None, evidence="q10.json")
+        add_work_item(self.conn, "q10", INCUMBENT_PHASE, None, evidence="q10.json")
         self.conn.commit()
         schema.ensure_schema(self.conn)
         add_bundle(self.conn)
@@ -435,7 +443,7 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
         schema.add_dependency(
             self.conn,
             child_work_item_id="q10",
-            dependency_role="Q09_NEWS",
+            dependency_role=NEWS_ROLE,
             parent_work_item_id="q09n",
             parent_evidence_sha256=_hash("q09-evidence"),
             required_verdicts=["CONFIG_LOCKED"],
@@ -443,7 +451,7 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
         schema.add_dependency(
             self.conn,
             child_work_item_id="q10",
-            dependency_role="Q09_PORTFOLIO",
+            dependency_role=PORTFOLIO_ROLE,
             parent_work_item_id="q09p",
             parent_evidence_sha256=_hash("q09p-evidence"),
             required_verdicts=["PASS_PORTFOLIO", "FAIL_PORTFOLIO", "FAIL_SYSTEM"],
@@ -456,9 +464,9 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
 
     def test_q10_gate_rejects_news_hash_mismatch_and_fewer_than_five_seeds(self) -> None:
         add_work_item(self.conn, "q08", "Q08", "PASS", evidence="q08.json")
-        add_work_item(self.conn, "q09n", "Q09_NEWS", "CONFIG_LOCKED", evidence="q09.json")
-        add_work_item(self.conn, "q10-hash", "Q10", None, evidence="q10-hash.json")
-        add_work_item(self.conn, "q10-seeds", "Q10", None, evidence="q10-seeds.json")
+        add_work_item(self.conn, "q09n", NEWS_PHASE, "CONFIG_LOCKED", evidence="q09.json")
+        add_work_item(self.conn, "q10-hash", INCUMBENT_PHASE, None, evidence="q10-hash.json")
+        add_work_item(self.conn, "q10-seeds", INCUMBENT_PHASE, None, evidence="q10-seeds.json")
         self.conn.commit()
         schema.ensure_schema(self.conn)
         add_bundle(self.conn)
@@ -474,7 +482,7 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
         schema.add_dependency(
             self.conn,
             child_work_item_id="q10-hash",
-            dependency_role="Q09_NEWS",
+            dependency_role=NEWS_ROLE,
             parent_work_item_id="q09n",
             parent_evidence_sha256=_hash("wrong-q09-evidence"),
             required_verdicts=["CONFIG_LOCKED"],
@@ -484,7 +492,7 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
         schema.add_dependency(
             self.conn,
             child_work_item_id="q10-seeds",
-            dependency_role="Q09_NEWS",
+            dependency_role=NEWS_ROLE,
             parent_work_item_id="q09n",
             parent_evidence_sha256=_hash("q09-evidence"),
             required_verdicts=["CONFIG_LOCKED"],
@@ -494,8 +502,8 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
 
     def test_q10_gate_accepts_contract_v3_single_physical_seed(self) -> None:
         add_work_item(self.conn, "q08", "Q08", "PASS", evidence="q08.json")
-        add_work_item(self.conn, "q09n", "Q09_NEWS", "CONFIG_LOCKED", evidence="q09.json")
-        add_work_item(self.conn, "q10", "Q10", None, evidence="q10.json")
+        add_work_item(self.conn, "q09n", NEWS_PHASE, "CONFIG_LOCKED", evidence="q09.json")
+        add_work_item(self.conn, "q10", INCUMBENT_PHASE, None, evidence="q10.json")
         self.conn.commit()
         schema.ensure_schema(self.conn)
         add_bundle(self.conn)
@@ -515,7 +523,7 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
         schema.add_dependency(
             self.conn,
             child_work_item_id="q10",
-            dependency_role="Q09_NEWS",
+            dependency_role=NEWS_ROLE,
             parent_work_item_id="q09n",
             parent_evidence_sha256=_hash("q09-evidence"),
             required_verdicts=["CONFIG_LOCKED"],

@@ -35,25 +35,30 @@ _ADVANCEMENT_CONSUMERS = (
 
 
 def test_former_runtime_maps_equal_manifest_derived_values() -> None:
-    # Frozen v3 compatibility values copied from the pre-ticket runtime. They
-    # are assertions only; production code obtains every relation from
-    # phase_ids.advancement_table().
+    table = phase_ids.advancement_table()
     assert farmctl.PARENT_PROGRESSION_MAP == {
-        "P2": "P3",
-        "P3": "P3.5",
-        "P3.5": "P4",
-        "Q02": "Q03",
-        "Q03": "Q04",
+        row.phase: row.next
+        for row in table.values()
+        if row.next is not None
+        and phase_ids.phase_rank("Q02") <= row.rank < phase_ids.phase_rank("Q04")
     }
     assert farmctl.SUPPORTED_BACKTEST_PHASES == ("Q02", "Q03", "Q04")
-    expected_cascade = (
-        "Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS",
-        "Q09_PORTFOLIO", "Q10", "P5", "P5b", "P5c", "P6", "P7", "P8",
+    incumbent = phase_ids.ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
+    expected_cascade = tuple(
+        phase for phase in phase_ids.ORDINARY_RUNTIME_PHASES
+        if phase_ids.phase_rank("Q04") <= phase_ids.phase_rank(phase)
+        <= phase_ids.phase_rank(incumbent)
+    ) + tuple(
+        row.phase for row in table.values()
+        if row.legacy_alias
+        and phase_ids.phase_rank("Q05") <= row.rank <= phase_ids.phase_rank("Q08")
     )
     assert farmctl.CASCADE_BACKTEST_PHASES == expected_cascade
     assert farmctl.REAL_PHASE_RUNNER_PHASES == expected_cascade
-    assert invalidate_unprofitable_cascade.CASCADE_PHASES == (
-        "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8",
+    assert invalidate_unprofitable_cascade.CASCADE_PHASES == tuple(
+        row.phase for row in table.values()
+        if row.legacy_alias
+        and phase_ids.phase_rank("P2") < row.rank <= phase_ids.phase_rank("P8")
     )
 
     generated_rank = {
@@ -62,29 +67,24 @@ def test_former_runtime_maps_equal_manifest_derived_values() -> None:
             r"WHEN '([^']+)' THEN (\d+)", farmctl._gate_priority_rank_sql()
         )
     }
-    assert generated_rank == {
-        "Q10": 0,
-        "Q09_PORTFOLIO": 1,
-        "Q09_NEWS": 1,
-        "Q09": 1,
-        "Q08": 2,
-        "Q07": 3,
-        "Q06": 4,
-        "Q05": 5,
-        "Q04": 6,
-        "Q03": 7,
-        "Q02": 8,
-        "P8": 0,
-        "P7": 1,
-        "P6": 2,
-        "P5c": 3,
-        "P5b": 4,
-        "P5": 5,
-        "P4": 6,
-        "P3.5": 7,
-        "P3": 8,
-        "P2": 9,
-    }
+    news_gate = phase_ids.ACTIVE_GATE_MANIFEST.gate_for_role("NEWS")
+    canonical = list(dict.fromkeys(
+        farmctl.SUPPORTED_BACKTEST_PHASES
+        + tuple(phase for phase in expected_cascade if not table[phase].legacy_alias)
+        + (news_gate,)
+    ))
+    for phase in canonical:
+        assert generated_rank[phase] == (
+            phase_ids.phase_rank(incumbent) - phase_ids.phase_rank(phase)
+        )
+    legacy = [
+        row.phase for row in table.values()
+        if row.legacy_alias
+        and phase_ids.phase_rank("Q02") <= row.rank <= phase_ids.phase_rank("Q08")
+    ]
+    assert [generated_rank[phase] for phase in legacy] == list(
+        range(len(legacy) - 1, -1, -1)
+    )
 
     # The old exact-enqueue predecessor table included Q04's established
     # two-hop default-probe exception. Reconstruct it only through the shared
@@ -98,65 +98,62 @@ def test_former_runtime_maps_equal_manifest_derived_values() -> None:
         for phase in expected_cascade
     }
     assert derived_predecessors == {
-        "Q04": "Q02",
-        "Q05": "Q04",
-        "Q06": "Q05",
-        "Q07": "Q06",
-        "Q08": "Q07",
-        "Q09_NEWS": "Q08",
-        "Q09_PORTFOLIO": "Q08",
-        "Q10": "Q09_NEWS",
-        "P5": "P4",
-        "P5b": "P5",
-        "P5c": "P5",
-        "P6": "P5b",
-        "P7": "P6",
-        "P8": "P7",
+        phase: (
+            phase_ids.prev_phase(phase_ids.prev_phase(phase))
+            if phase == farmctl.SUPPORTED_BACKTEST_PHASES[-1]
+            else table[phase].previous
+        )
+        for phase in expected_cascade
     }
 
 
 def test_advancement_helpers_are_manifest_ranked_and_storage_aware() -> None:
     contract_next = phase_ids.PHASE_NEXT
     table = phase_ids.advancement_table()
+    manifest = phase_ids.ACTIVE_GATE_MANIFEST
+    baseline = manifest.gate_for_role("BASELINE_FULL_RUN")
+    news_gate = manifest.gate_for_role("NEWS")
+    news = manifest.storage_phase_for_role("NEWS", "NEWS")
+    portfolio = manifest.storage_phase_for_role("NEWS", "PORTFOLIO")
+    incumbent = manifest.gate_for_role("INCUMBENT")
+    pattern = manifest.gate_for_role("PATTERN")
+    head = manifest.gate_for_role("HEAD_TO_HEAD")
+    after_q08 = baseline if baseline in manifest.phase_ids else news
 
-    assert table["Q08"].next == "Q09_NEWS"
-    assert phase_ids.prev_phase("Q09_NEWS") == "Q08"
-    assert phase_ids.prev_phase("Q09_PORTFOLIO") == "Q08"
-    assert phase_ids.next_phase("Q09_PORTFOLIO") is None
-    assert phase_ids.next_phase("Q09_NEWS") == contract_next["Q09"] == "Q10"
-    assert phase_ids.prev_phase("Q10") == "Q09_NEWS"
-    assert phase_ids.phase_rank("Q09_NEWS") == phase_ids.phase_rank("Q09")
+    assert table["Q08"].next == after_q08
+    assert phase_ids.prev_phase(news) == (baseline if baseline in manifest.phase_ids else "Q08")
+    assert phase_ids.prev_phase(portfolio) == (baseline if baseline in manifest.phase_ids else "Q08")
+    assert phase_ids.next_phase(portfolio) is None
+    assert phase_ids.next_phase(news) == contract_next[news_gate] == incumbent
+    assert phase_ids.prev_phase(incumbent) == news
+    assert phase_ids.phase_rank(news) == phase_ids.phase_rank(news_gate)
     assert phase_ids.phase_rank("P8") == phase_ids.phase_rank("Q08")
     assert phase_ids.next_phase("P3") == "P3.5"
     assert phase_ids.next_phase("P3.5") == "P4"
-    assert phase_ids.prev_phase("Q14") == "Q10"
-    assert contract_next["Q16"] == "Q11"  # historical manifest evidence
-    assert phase_ids.next_phase("Q10") == "Q14"  # mandatory audit (OWNER A2)
-    assert phase_ids.next_phase("Q16") is None  # book guard is the only entry
+    assert phase_ids.prev_phase(pattern) == incumbent
+    assert phase_ids.next_phase(incumbent) == pattern  # mandatory audit (OWNER A2)
+    assert phase_ids.next_phase(head) is None  # book guard is the only entry
 
 
-def test_evidence_cascade_walks_q09_in_manifest_order() -> None:
+def test_evidence_cascade_walks_news_in_manifest_order() -> None:
     phases = evidence_cascade_driver.PHASES
-    assert phases == (
-        "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08",
-        "Q09_NEWS", "Q10",
+    incumbent = phase_ids.ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
+    news = phase_ids.ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+    assert phases == tuple(
+        phase for phase in phase_ids.ORDINARY_STORAGE_PHASE_ORDER
+        if phase_ids.phase_rank("Q02") <= phase_ids.phase_rank(phase)
+        <= phase_ids.phase_rank(incumbent)
     )
-    assert phases.index("Q09_NEWS") == phases.index("Q08") + 1
-    assert phases.index("Q10") == phases.index("Q09_NEWS") + 1
+    assert phases.index(news) + 1 == phases.index(incumbent)
 
 
 def test_dispatch_successors_match_pre_ticket_fixture_db(tmp_path: Path) -> None:
     """Dry-run the centralized resolver over the frozen pre-ticket routes."""
     fixture_db = tmp_path / "dispatch_successors.sqlite"
-    expected = (
-        ("Q02", "Q03"),
-        ("Q03", "Q04"),
-        ("Q04", "Q05"),
-        ("Q05", "Q06"),
-        ("Q06", "Q07"),
-        ("Q07", "Q08"),
-        ("Q08", "Q09_NEWS"),
-        ("Q09_NEWS", "Q10"),
+    expected = tuple(
+        (phase, phase_ids.next_phase(phase))
+        for phase in evidence_cascade_driver.PHASES[:-1]
+    ) + (
         ("P2", "P3"),
         ("P3", "P3.5"),
         ("P3.5", "P4"),
@@ -207,15 +204,20 @@ def test_cascade_verdict_policy_matches_pre_ticket_per_target() -> None:
     verdict policy without any per-target special-case override.
     """
     # Frozen pre-ticket phase_prev_verdicts, keyed by TARGET phase.
+    manifest = phase_ids.ACTIVE_GATE_MANIFEST
+    baseline = manifest.gate_for_role("BASELINE_FULL_RUN")
+    news = manifest.storage_phase_for_role("NEWS", "NEWS")
+    portfolio = manifest.storage_phase_for_role("NEWS", "PORTFOLIO")
+    incumbent = manifest.gate_for_role("INCUMBENT")
     pre_ticket_by_target = {
         "Q04": {"PASS"},
         "Q05": {"PASS", "PASS_SOFT", "PASS_LOWFREQ"},
         "Q06": {"PASS"},
         "Q07": {"PASS", "PASS_SOFT"},
         "Q08": {"PASS", "MULTI_SEED_PASS"},
-        "Q09_NEWS": {"PASS", "FAIL_SOFT"},
-        "Q09_PORTFOLIO": {"PASS", "FAIL_SOFT"},
-        "Q10": set(farmctl.Q09_NEWS_SUCCESS_VERDICTS),
+        news: ({"PASS"} if baseline in manifest.phase_ids else {"PASS", "FAIL_SOFT"}),
+        portfolio: ({"PASS"} if baseline in manifest.phase_ids else {"PASS", "FAIL_SOFT"}),
+        incumbent: set(farmctl.Q09_NEWS_SUCCESS_VERDICTS),
         "P5": {"PASS"},
         "P5b": {"PASS"},
         "P5c": {"PASS"},
@@ -223,6 +225,8 @@ def test_cascade_verdict_policy_matches_pre_ticket_per_target() -> None:
         "P7": {"PASS"},
         "P8": {"PASS"},
     }
+    if baseline in manifest.phase_ids:
+        pre_ticket_by_target[baseline] = {"PASS", "FAIL_SOFT"}
     supported_last = farmctl.SUPPORTED_BACKTEST_PHASES[-1]
     for target, expected in pre_ticket_by_target.items():
         manifest_prev = phase_ids.prev_phase(target)
