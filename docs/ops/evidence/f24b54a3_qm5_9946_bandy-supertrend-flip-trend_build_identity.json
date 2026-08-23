@@ -4,7 +4,9 @@
   "ea_label": "QM5_9946_bandy-supertrend-flip-trend",
   "build_check_passed": true,
   "mq5_path": "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/QM5_9946_bandy-supertrend-flip-trend.mq5",
-  "mq5_sha256": "b63de225332711c0c605b863be51ae14222191f29fbc9549f1fd1f55596b798e",
+  "mq5_sha256": "1d3ebe66d5f87ba879872c23f1c2fbebe77f33c77de90f450b5ee430c3be558c",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/QM5_9946_bandy-supertrend-flip-trend.ex5",
+  "ex5_sha256": "d3d2120e84dd18a46a44f6ba648ff61d62bd3dc0a2cea873bd19c46523e22d7d",
   "setfiles_generated": [
     "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_AUDUSD.DWX_D1_backtest.set",
     "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_EURUSD.DWX_D1_backtest.set",
