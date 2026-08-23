@@ -22,6 +22,12 @@ import re
 import sys
 from pathlib import Path
 
+try:
+    from tools.strategy_farm import risk_freeze
+except ModuleNotFoundError:  # direct script execution
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+    from tools.strategy_farm import risk_freeze
+
 MANIFEST = Path(r"D:/QM/reports/portfolio/portfolio_manifest_sunday_FINAL24b_TOTALRISK12_20260726.json")
 BASE_SET = Path(r"C:/QM/repo/framework/EAs/QM5_11422_williams-18ma-outside-bar-entry-d1/"
                 r"sets/QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_q10_confirmation.set")
@@ -42,6 +48,11 @@ def build(argv=None) -> int:
     ap.add_argument("--json", type=Path, required=True, help="unified staging report output path")
     ap.add_argument("--apply", action="store_true", help="write the built preset (default: dry-run)")
     args = ap.parse_args(argv)
+
+    if args.apply:
+        risk_freeze.assert_live_book_mutation_allowed(
+            "stage a new T_Live book sleeve preset",
+        )
 
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8-sig"))
     sleeve = next(s for s in manifest["sleeves"] if s["ea_id"] == 11422 and s["symbol"] == "USDCAD.DWX")

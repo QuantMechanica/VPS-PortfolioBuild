@@ -34,6 +34,7 @@ if __package__ in (None, ""):
 from tools.strategy_farm.portfolio.portfolio_common import align, load_streams, to_daily_pnl
 from tools.strategy_farm.portfolio.portfolio_kpi import metrics_from_daily_pnl
 from tools.strategy_farm.portfolio.marginal_contribution_eval import capped_inverse_vol_weights
+from tools.strategy_farm import risk_freeze
 
 # ---------------------------------------------------------------- constants (no side effects)
 BASE_MANIFEST = Path(r"D:/QM/reports/portfolio/portfolio_manifest_sunday_FINAL24b_TOTALRISK12_20260726.json")
@@ -91,6 +92,10 @@ def main() -> int:
     ap.add_argument("--cap", type=float, default=1.0, help="per-sleeve cap %% (OWNER hard constraint)")
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT, help="output manifest path")
     args = ap.parse_args()
+
+    risk_freeze.assert_live_book_mutation_allowed(
+        "mint the legacy DXZ FINAL23 manifest",
+    )
     TOTAL, CAP = args.total_risk, args.cap
 
     base = json.loads(BASE_MANIFEST.read_text(encoding="utf-8-sig"))

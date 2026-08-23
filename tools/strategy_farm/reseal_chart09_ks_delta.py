@@ -42,6 +42,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:
+    from tools.strategy_farm import risk_freeze
+except ModuleNotFoundError:  # direct script execution
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from tools.strategy_farm import risk_freeze
+
 SEALED = Path(r'C:\QM\mt5\T_Live\MT5_Base\MQL5\Profiles\Charts\DarwinexZero_V2\chart09.chr')
 BK_DIR = Path(r'D:\QM\reports\state\task_backups\20260813_uptime')
 BK = BK_DIR / 'sealed_chart09_before.chr'
@@ -57,6 +63,9 @@ def sha256(data: bytes) -> str:
 
 
 def main() -> int:
+    risk_freeze.assert_live_book_mutation_allowed(
+        "re-seal a T_Live DXZ chart contract",
+    )
     raw = SEALED.read_bytes()
     txt = raw.decode('utf-16-le')  # strict: abort loudly on any encoding surprise
     before = sha256(raw)

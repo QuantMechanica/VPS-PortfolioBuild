@@ -5,8 +5,15 @@ import csv
 import datetime as dt
 import json
 import math
+import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+
+try:
+    from tools.strategy_farm import risk_freeze
+except ModuleNotFoundError:  # direct script execution
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+    from tools.strategy_farm import risk_freeze
 
 try:
     from .commission import describe_model, load_model
@@ -397,6 +404,9 @@ def main(argv: list[str] | None = None) -> int:
             manifest["mc_dd_error"] = str(exc)
     finalize_cap_decision(
         manifest, mc_p95_dd=mc_p95, observed_dd=observed_dd, cap_pct=float(args.max_dd_pct)
+    )
+    risk_freeze.assert_live_book_mutation_allowed(
+        "mint a T_Live portfolio manifest",
     )
     write_manifest(manifest, args.out)
     print(f"wrote {args.out} ({manifest['n_sleeves']} sleeves)")

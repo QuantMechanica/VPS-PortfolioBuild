@@ -23,6 +23,12 @@ import re
 import sys
 from pathlib import Path
 
+try:
+    from tools.strategy_farm import risk_freeze
+except ModuleNotFoundError:  # direct script execution
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+    from tools.strategy_farm import risk_freeze
+
 DEFAULT_PRESETS = Path(r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Presets")
 DEFAULT_MANIFEST = Path(
     r"D:\QM\reports\portfolio\portfolio_manifest_sunday_24sleeve_TOTALRISK12_20260726.json"
@@ -60,6 +66,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--apply", action="store_true", help="write staged files (default: dry-run)")
     ap.add_argument("--json", type=Path, help="write the verification report here")
     args = ap.parse_args(argv)
+
+    if args.apply:
+        risk_freeze.assert_live_book_mutation_allowed(
+            "stage T_Live preset risk changes",
+        )
 
     manifest = json.loads(args.manifest.read_text(encoding="utf-8-sig"))
     # Full-precision risk per (ea_id, bare symbol) — the preset filename carries the bare

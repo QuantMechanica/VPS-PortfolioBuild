@@ -199,6 +199,10 @@ class PortfolioManifestTests(unittest.TestCase):
                 portfolio_manifest,
                 "mc_build_artifact",
                 side_effect=RuntimeError("no streams in test"),  # force observed-DD fallback
+            ), mock.patch.object(
+                portfolio_manifest.risk_freeze,
+                "assert_live_book_mutation_allowed",
+                return_value={"allowed": True},
             ):
                 rc = portfolio_manifest.main(
                     ["--out", str(out), "--max-dd-pct", "6.0", "--book-source", "q12-ready-all"]
@@ -239,6 +243,10 @@ class PortfolioManifestTests(unittest.TestCase):
                 portfolio_manifest,
                 "build_manifest",
                 return_value=manifest,
+            ), mock.patch.object(
+                portfolio_manifest.risk_freeze,
+                "assert_live_book_mutation_allowed",
+                return_value={"allowed": True},
             ):
                 rc = portfolio_manifest.main(
                     ["--out", str(out), "--max-dd-pct", "6.0", "--book-source", "q12-ready-all"]

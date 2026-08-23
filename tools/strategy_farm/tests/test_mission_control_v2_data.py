@@ -262,6 +262,8 @@ def test_full_contract_is_schema_valid(fixture_db, monkeypatch, tmp_path):
                     encoding="utf-8")
     monkeypatch.setattr(mc, "OWNER_DECISIONS_FILE", feed)
     monkeypatch.setattr(mc, "HEALTH_FILE", tmp_path / "missing_health.json")
+    monkeypatch.setattr(mc, "RISK_FREEZE_STATE", tmp_path / "missing_freeze.json")
+    monkeypatch.setattr(mc, "RISK_FREEZE_PRESETS", tmp_path / "missing_presets")
 
     contract = mc.build_contract(fixture_db, now=NOW)
     # must not raise
@@ -284,5 +286,7 @@ def test_live_preview_validates_if_present():
     if not preview.exists():
         pytest.skip("no live preview file present")
     doc = json.loads(preview.read_text(encoding="utf-8"))
+    if "risk_freeze" not in doc:
+        pytest.skip("live preview predates the risk-freeze contract field")
     mc.validate_contract(doc)
     assert doc["schema_version"] == "qm.mission_control.v2"

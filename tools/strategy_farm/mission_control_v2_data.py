@@ -50,11 +50,13 @@ try:  # package import (tests, module consumers)
     )
     from tools.strategy_farm import live_observability_contract as live_obs
     from tools.strategy_farm import q09_autoseal_hold_census
+    from tools.strategy_farm import risk_freeze
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/mission_control_v2_data.py``
     from work_item_clean_view import install_clean_view
     from phase_ids import phase_label, normalize_phase_id, PHASE_NAME
     import live_observability_contract as live_obs
     import q09_autoseal_hold_census
+    import risk_freeze
 
 
 SCHEMA_VERSION = "qm.mission_control.v2"
@@ -66,6 +68,8 @@ DB = ROOT / "state" / "farm_state.sqlite"
 REPORTS_STATE = Path(r"D:\QM\reports\state")
 OUTPUT_PATH = REPORTS_STATE / "mission_control_v2_preview.json"
 LIVE_BOOK_PULSE_STATE = REPORTS_STATE / "live_book_pulse.json"
+RISK_FREEZE_STATE = REPORTS_STATE / "live_risk_freeze.json"
+RISK_FREEZE_PRESETS = Path(r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Presets")
 
 HEALTH_FILE = ROOT / "state" / "health.json"
 FACTORY_OFF_FLAG = ROOT / "state" / "FACTORY_OFF.flag"
@@ -579,9 +583,9 @@ def build_queue(con: sqlite3.Connection, *, now: dt.datetime | None = None) -> d
         FROM work_items_clean
         WHERE status IN ('done','failed')
           AND UPPER(phase) IN ({placeholders})
-          AND updated_at >= datetime('now','-{ETA_THROUGHPUT_WINDOW_HOURS} hours')
+          AND datetime(updated_at) >= datetime(?)
         """,
-        phase_params,
+        (*phase_params, _iso(now - dt.timedelta(hours=ETA_THROUGHPUT_WINDOW_HOURS))),
     )[0]["n"]
     tput = int(tput or 0)
     per_hour = tput / ETA_THROUGHPUT_WINDOW_HOURS if tput else 0.0
@@ -905,6 +909,37 @@ def _load_live_observability(
     )
 
 
+def build_risk_freeze(*, now: dt.datetime | None = None) -> dict[str, Any]:
+    """Expose the canonical freeze result without reinterpreting its state."""
+    now = now or _now_utc()
+    result = risk_freeze.diff_against_baseline(
+        state_path=RISK_FREEZE_STATE,
+        presets_dir=RISK_FREEZE_PRESETS,
+    )
+    status = str(result.get("status") or "UNKNOWN")
+    degraded_reason = None
+    if status in {"NO_FREEZE_STATE", "STATE_UNREADABLE", "STATE_INVALID"}:
+        degraded_reason = "; ".join(str(item) for item in result.get("drift", [])) or status
+    return {
+        "meta": _section_meta(
+            source=str(RISK_FREEZE_STATE),
+            source_as_of=_file_mtime_iso(RISK_FREEZE_STATE),
+            degraded_reason=degraded_reason,
+            now=now,
+        ),
+        "status": status,
+        "held": result.get("held"),
+        "armed_at_utc": result.get("armed_at_utc"),
+        "baseline_sleeve_count": result.get("baseline_sleeve_count"),
+        "current_sleeve_count": result.get("current_sleeve_count"),
+        "baseline_total_risk_percent": result.get("baseline_total_risk_percent"),
+        "current_total_risk_percent": result.get("current_total_risk_percent"),
+        "drift": list(result.get("drift") or []),
+        "lift_conditions": list(result.get("lift_conditions") or []),
+        "lift_rule": result.get("lift_rule"),
+    }
+
+
 def build_contract(
     db: Path | None = None,
     *,
@@ -931,12 +966,14 @@ def build_contract(
         now=now,
         pulse_path=live_pulse_path,
     )
+    freeze = build_risk_freeze(now=now)
 
     return {
         "schema_version": SCHEMA_VERSION,
         "generated_at": _iso(now),
         "source_db": str(db),
         "live_observability": live_observability,
+        "risk_freeze": freeze,
         "control_strip": control_strip,
         "queue": queue,
         "q09_autoseal_holds": q09_autoseal_holds,
@@ -968,7 +1005,7 @@ CONTRACT_SCHEMA: dict[str, Any] = {
     "title": "qm.mission_control.v2",
     "type": "object",
     "required": [
-        "schema_version", "generated_at", "control_strip", "queue",
+        "schema_version", "generated_at", "risk_freeze", "control_strip", "queue",
         "q09_autoseal_holds", "progress", "terminals", "owner_decisions",
     ],
     "properties": {
@@ -988,6 +1025,27 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                 "sources": {"type": "object"},
                 "fingerprints": {"type": "object"},
                 "latency": {"type": "object"},
+            },
+        },
+        "risk_freeze": {
+            "type": "object",
+            "required": [
+                "meta", "status", "held", "baseline_sleeve_count",
+                "current_sleeve_count", "baseline_total_risk_percent",
+                "current_total_risk_percent", "drift", "lift_conditions",
+            ],
+            "properties": {
+                "meta": _section_meta_schema(),
+                "status": {"type": "string"},
+                "held": {"type": ["boolean", "null"]},
+                "armed_at_utc": {"type": ["string", "null"]},
+                "baseline_sleeve_count": {"type": ["integer", "null"]},
+                "current_sleeve_count": {"type": ["integer", "null"]},
+                "baseline_total_risk_percent": {"type": ["number", "null"]},
+                "current_total_risk_percent": {"type": ["number", "null"]},
+                "drift": {"type": "array", "items": {"type": "string"}},
+                "lift_conditions": {"type": "array"},
+                "lift_rule": {"type": ["string", "null"]},
             },
         },
         "control_strip": {

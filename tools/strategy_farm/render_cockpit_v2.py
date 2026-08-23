@@ -354,6 +354,62 @@ def _render_owner_decisions(contract: dict) -> str:
   </section>'''
 
 
+def _render_risk_freeze(contract: dict) -> str:
+    freeze = contract.get("risk_freeze", {}) or {}
+    status = str(freeze.get("status") or "UNKNOWN")
+    held = freeze.get("held")
+    if status == "ACTIVE" and held is True:
+        colour, held_label = "var(--pass)", "JA"
+    elif status == "ACTIVE" and held is False:
+        colour, held_label = "var(--fail)", "NEIN"
+    elif held is None:
+        colour, held_label = "var(--warn)", "—"
+    else:
+        colour, held_label = "var(--warn)", "NEIN"
+
+    conditions = freeze.get("lift_conditions") or []
+    rows = []
+    for condition in conditions:
+        if not isinstance(condition, dict):
+            continue
+        detail = condition.get("blocked_by") or condition.get("requirement") or "—"
+        rows.append(f'''
+        <tr>
+          <td class="mono">{e(condition.get('id'))}</td>
+          <td>{e(condition.get('status') or 'OPEN')}</td>
+          <td title="{e(detail)}">{e(condition.get('requirement') or detail)}</td>
+        </tr>''')
+    drift = freeze.get("drift") or []
+    drift_html = "".join(f"<li>{e(item)}</li>" for item in drift)
+    if not drift_html:
+        drift_html = "<li>keine Abweichung gemeldet</li>"
+
+    return f'''
+  <section class="mc-section" id="risk-freeze">
+    <div class="mc-h2"><span>Live Risk Freeze</span>
+      <span class="mc-h2-aux"><span class="mc-dot" style="background:{colour}"></span>
+        {e(status)} · held {held_label} {_stale_badge(freeze.get('meta', {}))}</span></div>
+    <table class="mc-table">
+      <thead><tr><th></th><th class="mc-num">Baseline</th><th class="mc-num">Ist</th></tr></thead>
+      <tbody>
+        <tr><td class="mc-rowlabel">Sleeves</td><td class="mc-num">{_int(freeze.get('baseline_sleeve_count'))}</td>
+          <td class="mc-num">{_int(freeze.get('current_sleeve_count'))}</td></tr>
+        <tr><td class="mc-rowlabel">Total RISK_PERCENT</td>
+          <td class="mc-num">{_de(freeze.get('baseline_total_risk_percent'), 4)}</td>
+          <td class="mc-num">{_de(freeze.get('current_total_risk_percent'), 4)}</td></tr>
+      </tbody>
+    </table>
+    <div class="mc-foot">
+      <div class="mc-foot-line"><b>Abweichung:</b><ul>{drift_html}</ul></div>
+      <div class="mc-foot-line"><b>Lift-Regel:</b> {e(freeze.get('lift_rule') or 'explicit written OWNER lift required')}</div>
+    </div>
+    <table class="mc-table">
+      <thead><tr><th>Lift-Bedingung</th><th>Status</th><th>Anforderung</th></tr></thead>
+      <tbody>{''.join(rows)}</tbody>
+    </table>
+  </section>'''
+
+
 def _render_progress(contract: dict) -> str:
     pr = contract.get("progress", {}) or {}
     today = pr.get("today", {}) or {}
@@ -773,6 +829,7 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
 
     body = "".join([
         _render_control_strip(contract),
+        _render_risk_freeze(contract),
         _render_owner_decisions(contract),
         _render_progress(contract),
         _render_terminals(contract, ea_page_exists=ea_page_exists),

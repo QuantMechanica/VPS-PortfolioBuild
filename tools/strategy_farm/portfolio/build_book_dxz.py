@@ -40,6 +40,7 @@ from tools.strategy_farm.portfolio.book_builder_common import (
 )
 from tools.strategy_farm.portfolio import concentration_tail
 from tools.strategy_farm.portfolio.portfolio_common import load_streams
+from tools.strategy_farm import risk_freeze
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -272,6 +273,9 @@ def main(argv: list[str] | None = None) -> int:
             as_of=args.as_of,
         )
         validate_dual_book_manifest(manifest)
+        risk_freeze.assert_live_book_mutation_allowed(
+            "mint a proposed DXZ book manifest",
+        )
         write_json(manifest_path, manifest)
         write_text(out_dir / "evidence.md", evidence_markdown(manifest, manifest_path))
     except BookBuildError as exc:

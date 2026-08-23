@@ -12,6 +12,7 @@ import sys, json, math, csv, glob, os, argparse
 sys.path.insert(0, r"C:/QM/repo")
 from pathlib import Path
 from tools.strategy_farm.portfolio.portfolio_common import load_streams, to_daily_pnl, align
+from tools.strategy_farm import risk_freeze
 
 DEFAULT_OUT = r"D:/QM/reports/portfolio/portfolio_manifest_sunday_final_24sleeve_DRAFT_20260719.json"
 
@@ -27,6 +28,10 @@ _ap.add_argument("--cap", type=float, default=1.0, help="per-sleeve cap %% (OWNE
 _ap.add_argument("--out", default=DEFAULT_OUT,
                  help="output manifest path; point it away from the deployed file for a what-if")
 _args = _ap.parse_args()
+
+risk_freeze.assert_live_book_mutation_allowed(
+    "mint the legacy DXZ final manifest",
+)
 
 STARTING_CAPITAL = 100_000.0; TOTAL_RISK = _args.total_risk; CAP = _args.cap
 BUNDLE = Path(r"D:/QM/reports/portfolio/dxz_final_20260719")

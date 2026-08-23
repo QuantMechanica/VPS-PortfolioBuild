@@ -40,6 +40,12 @@ import sys
 from pathlib import Path
 from typing import Any, Optional
 
+try:
+    from tools.strategy_farm import risk_freeze
+except ModuleNotFoundError:  # direct script execution
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from tools.strategy_farm import risk_freeze
+
 SCHEMA_VERSION = "qm.live_deployment_pointer.v1"
 DEFAULT_OUT = Path(r"D:\QM\reports\state\live_deployment_pointer.json")
 
@@ -184,7 +190,7 @@ def build_pointer(args: argparse.Namespace) -> dict:
     return pointer
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--manifest", required=True, help="path to the signed portfolio manifest JSON")
     ap.add_argument("--environment", default="T_Live/DXZ", help="deployment environment label")
@@ -200,7 +206,16 @@ def main() -> int:
     ap.add_argument("--approval-evidence", default=None, help="required with --signed: path to the OWNER approval record")
     ap.add_argument("--out", default=str(DEFAULT_OUT), help="output path (default: runtime pointer path)")
     ap.add_argument("--dry-run", action="store_true", help="print the computed pointer, write nothing")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
+
+    # A signed runtime pointer authenticates a proposed composition as the live
+    # book.  It is therefore a freeze boundary even though this tool never
+    # copies an EA or preset.  Unsigned drafts and signed dry-runs remain
+    # available for diagnosis/review while the book is frozen.
+    if args.signed and not args.dry_run:
+        risk_freeze.assert_live_book_mutation_allowed(
+            "mint a signed T_Live deployment pointer",
+        )
 
     pointer = build_pointer(args)
 

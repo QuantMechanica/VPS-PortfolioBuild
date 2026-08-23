@@ -94,6 +94,26 @@ def make_contract(*, factory_state="NOMINAL", n_decisions=3,
         "schema_version": "qm.mission_control.v2",
         "generated_at": "2026-08-21T14:00:00+00:00",
         "source_db": r"D:\QM\strategy_farm\state\farm_state.sqlite",
+        "risk_freeze": {
+            "meta": _meta(staleness="N/A"),
+            "status": "ACTIVE",
+            "held": True,
+            "armed_at_utc": "2026-08-22T18:00:00+00:00",
+            "baseline_sleeve_count": 24,
+            "current_sleeve_count": 24,
+            "baseline_total_risk_percent": 9.7499,
+            "current_total_risk_percent": 9.7499,
+            "drift": [],
+            "lift_conditions": [
+                {"id": "SP-A1/A2-DEPLOY-POINTER", "status": "BLOCKED",
+                 "requirement": "signed deploy pointer", "blocked_by": "provenance repair"},
+                {"id": "NEWS-CONTRACT-V2", "status": "PARTIAL",
+                 "requirement": "news taxonomy", "blocked_by": "Q09 rerun"},
+                {"id": "GOVERNOR-HARDENING", "status": "PARTIAL",
+                 "requirement": "governor enforcement", "blocked_by": "OWNER deploy"},
+            ],
+            "lift_rule": "All three conditions and explicit written OWNER lift.",
+        },
         "control_strip": {
             "meta": control_meta or _meta(),
             "factory_state": factory_state,
@@ -260,6 +280,17 @@ def test_no_action_elements():
     assert "<form" not in low
     assert "onclick" not in low
     assert "<input" not in low
+
+
+def test_active_risk_freeze_is_visible_with_baseline_current_and_lift_conditions():
+    html = r.render(make_contract())
+    assert "Live Risk Freeze" in html
+    assert "ACTIVE · held JA" in html
+    assert "9,7499" in html
+    for condition in (
+        "SP-A1/A2-DEPLOY-POINTER", "NEWS-CONTRACT-V2", "GOVERNOR-HARDENING"
+    ):
+        assert condition in html
 
 
 # ---------------------------------------------------------------------------

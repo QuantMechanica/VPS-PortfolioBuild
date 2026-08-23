@@ -64,6 +64,20 @@ $sealedSha256 = [ordered]@{
 $monitorChartSha256 = '57AA19FF44B8361446D314BEB201BB97D57CC21B6EAACD96852B40147802DDBB'
 $monitorBinarySha256 = '8699ADC79BC0448563B6A53D59163EC149A30B6EF767E2F99FE148E5EFB4B9E5'
 
+# VerifyOnly is part of uptime recovery and is intentionally read-only.  The
+# creation path mints the chart profile that defines the loaded sleeve roster,
+# so it is a live-book mutation boundary and must obey the canonical OWNER
+# freeze.  The Python command exits non-zero for ACTIVE, missing, unreadable,
+# invalid, or otherwise unauthorised state and prints all lift conditions.
+if (-not $VerifyOnly) {
+    $freezeGuard = Join-Path $PSScriptRoot 'risk_freeze.py'
+    & python $freezeGuard guard --operation 'create the T_Live DXZ operational chart profile'
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host 'DXZ LiveOps profile creation refused by live-risk freeze guard.'
+        exit 3
+    }
+}
+
 # Assert-True and Get-Sha256 are provided by liveops_profile_contract.ps1
 # (dot-sourced above) -- the single shared implementation.
 

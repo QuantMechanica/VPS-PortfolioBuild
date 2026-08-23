@@ -19,6 +19,11 @@ import sys, json, math, csv, glob, os
 sys.path.insert(0, r"C:/QM/repo")
 from pathlib import Path
 from tools.strategy_farm.portfolio.portfolio_common import load_streams, to_daily_pnl, align
+from tools.strategy_farm import risk_freeze
+
+risk_freeze.assert_live_book_mutation_allowed(
+    "mint the legacy DXZ weekend manifest",
+)
 
 STARTING_CAPITAL = 100_000.0; TOTAL_RISK = 9.75; CAP = 1.0
 BUNDLE = Path(r"D:/QM/reports/portfolio/dxz24_weekend_frozen_20260717")
