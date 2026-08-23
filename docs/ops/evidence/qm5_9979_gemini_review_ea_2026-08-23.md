@@ -28,19 +28,21 @@ substitute for that Codex review. Task stays in `REVIEW`, not advanced to
   not exceeding it).
 - Provenance check: SPEC.md/mq5 header cite
   `artifacts/cards_approved/QM5_9979_bandy-index-gap-fade-mr-index.md`, which
-  does **not** exist on disk. Traced instead through
+  does **not** exist under the git checkout (`C:/QM/repo/artifacts/cards_approved/`).
+  **Correction (see the 11496/11516/11517 review batch,
+  `docs/ops/evidence/2026-08-23_review_ea_11496_11516_11517.md`): the approved
+  card actually exists at the canonical runtime location
+  `D:/QM/strategy_farm/artifacts/cards_approved/QM5_9979_bandy-index-gap-fade-mr-index.md`**
+  — I had not checked that path when this doc was first written and called it
+  "missing" on a git-checkout-only search; it is not missing, just not
+  git-tracked. Independently, provenance was also traced through
   `D:/QM/strategy_farm/artifacts/source_notes/9ef19e06-5ca6-5b35-aa06-b8187aa0e016.md`
   (my own prior research note, Batch 12 addendum, 2026-05-19): QM5_9979 was
   G0-approved as "`bandy-index-gap-fade-mr-index` — direct mirror of QM5_9965
   (gap-and-go): same gap-significance threshold + regime gate, opposite
   commitment direction, mean-reversion trade targeting the gap-fill." This
-  matches the implemented logic (see below). The missing card file is a
-  pre-existing on-disk/source-notes drift already flagged repeatedly as an
-  Open Question inside that same source-notes file across multiple batches
-  (e.g. Batch 4/5 mismatch on 9728-9730) — not a defect introduced by this
-  build, but registry hygiene remains genuinely outstanding for this source.
-  Recommend a future registry-hygiene pass reconstruct or backfill the missing
-  card files for this source's approved slugs.
+  matches the implemented logic (see below). No registry-hygiene action needed
+  after this correction.
 - Entry logic (`Strategy_EntrySignal`): `gap = bar1.open - bar2.close` (D1,
   shift1 vs shift2, no look-ahead — ATR/SMA also read at shift consistent with
   a closed gap bar); significance `|gap| >= 0.5*ATR(14)`; long when
