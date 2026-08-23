@@ -49,6 +49,13 @@ NUMERIC_SURFACE_TYPE = "NUMERIC"
 PREDICATE_DIRECTIONS = {"BUY", "SELL"}
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST  # noqa: E402
+
+ADMISSION_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("PATTERN")
+FREEZE_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("PARAM_OPT")
+ADMISSION_DEPENDENCY_ROLE = ACTIVE_GATE_MANIFEST.dependency_role("Q14_ADMISSION")
 DEFAULT_FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 DEFAULT_REPORT_ROOT = Path(r"D:\QM\reports\opt_track")
 
@@ -988,7 +995,8 @@ def _timeframe_from_set(path: Path, symbol: str) -> str:
 def _lookup_q14(conn: sqlite3.Connection, *, card_id: str, card_path: Path, card_sha256: str) -> sqlite3.Row:
     conn.row_factory = sqlite3.Row
     rows = conn.execute(
-        "SELECT * FROM work_items WHERE upper(phase)='Q14' AND upper(coalesce(verdict,''))='OPT_ELIGIBLE'"
+        "SELECT * FROM work_items WHERE upper(phase)=? AND upper(coalesce(verdict,''))='OPT_ELIGIBLE'",
+        (ADMISSION_PHASE,),
     ).fetchall()
     matches: list[sqlite3.Row] = []
     for row in rows:
@@ -1162,7 +1170,7 @@ def build_freeze_plan(
     q02_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"qm:q15:q02:{q15_id}"))
     q15_payload = {
         "schema": Q15_PAYLOAD_SCHEMA,
-        "phase": "Q15",
+        "phase": FREEZE_PHASE,
         "card_id": card_id,
         "source_q14_work_item_id": str(q14["id"]),
         "challenger_ea_id": identity["ea_id"],
@@ -1303,9 +1311,9 @@ def _ensure_dependency(
         """
         SELECT parent_work_item_id,parent_evidence_sha256,required_verdicts_json
         FROM work_item_dependencies
-        WHERE child_work_item_id=? AND dependency_role='Q14_ADMISSION'
+        WHERE child_work_item_id=? AND dependency_role=?
         """,
-        (child_id,),
+        (child_id, ADMISSION_DEPENDENCY_ROLE),
     ).fetchone()
     if existing is not None:
         try:
@@ -1322,7 +1330,7 @@ def _ensure_dependency(
     farmctl.add_q09_dependency(
         conn,
         child_work_item_id=child_id,
-        dependency_role="Q14_ADMISSION",
+        dependency_role=ADMISSION_DEPENDENCY_ROLE,
         parent_work_item_id=parent_id,
         parent_evidence_sha256=parent_sha,
         required_verdicts=["OPT_ELIGIBLE"],
@@ -1356,7 +1364,7 @@ def apply_freeze_plan(plan: Mapping[str, Any], *, enforce_apply_guards: bool = T
             if q14 is None:
                 raise Q15Error("Q14 dependency disappeared before apply")
             if (
-                str(q14["phase"]).upper() != "Q14"
+                str(q14["phase"]).upper() != ADMISSION_PHASE
                 or str(q14["status"]).lower() != "done"
                 or str(q14["verdict"] or "").upper() != "OPT_ELIGIBLE"
                 or _sha256_file(Path(str(q14["evidence_path"]))) != private["card_sha256"]
@@ -1364,7 +1372,7 @@ def apply_freeze_plan(plan: Mapping[str, Any], *, enforce_apply_guards: bool = T
                 raise Q15Error("Q14 dependency is no longer the sealed OPT_ELIGIBLE row")
             q15_existing = conn.execute("SELECT * FROM work_items WHERE id=?", (q15_id,)).fetchone()
             if q15_existing is not None and (
-                str(q15_existing["phase"]).upper() != "Q15"
+                str(q15_existing["phase"]).upper() != FREEZE_PHASE
                 or str(q15_existing["status"]).lower() != "done"
                 or str(q15_existing["verdict"] or "").upper() != "CHALLENGER_SPAWNED"
                 or str(q15_existing["payload_json"]) != q15_payload_json
@@ -1401,7 +1409,7 @@ def apply_freeze_plan(plan: Mapping[str, Any], *, enforce_apply_guards: bool = T
                     ) VALUES(?,?,?,?,?,?,'done','CHALLENGER_SPAWNED',0,NULL,?,NULL,?,?,?)
                     """,
                     (
-                        q15_id, "development", "Q15", plan["challenger_ea_id"], plan["symbol"],
+                        q15_id, "development", FREEZE_PHASE, plan["challenger_ea_id"], plan["symbol"],
                         str(q02_set), plan["freeze_addendum_path"], q15_payload_json, now, now,
                     ),
                 )

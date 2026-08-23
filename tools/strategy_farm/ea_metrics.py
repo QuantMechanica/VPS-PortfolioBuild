@@ -39,15 +39,26 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+try:
+    from phase_ids import ACTIVE_GATE_MANIFEST, PHASE_ORDER
+except ModuleNotFoundError:
+    from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST, PHASE_ORDER
+
+NEWS_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+NEWS_PORTFOLIO_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "PORTFOLIO")
+NEWS_GATE = ACTIVE_GATE_MANIFEST.gate_for_role("NEWS")
+BASELINE_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("BASELINE_FULL_RUN")
+INCUMBENT_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
+PATTERN_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("PATTERN")
+PARAM_OPT_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("PARAM_OPT")
+HEAD_TO_HEAD_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("HEAD_TO_HEAD")
+
 FARM_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 
 # Phases that emit `runs[]`-shaped summary.json (in-sample / multi-symbol backtests).
 _SUMMARY_RUN_PHASES = {"P2", "Q02", "Q03"}
 # Walk-forward / stress / multi-seed / robustness / portfolio: each its own aggregate.json shape.
-_AGG_PHASES = {
-    "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_NEWS",
-    "Q09_PORTFOLIO", "Q10", "Q11", "Q14", "Q15", "Q16",
-}
+_AGG_PHASES = set(PHASE_ORDER) | {NEWS_PHASE, NEWS_PORTFOLIO_PHASE}
 
 _DD_PCT_RE = re.compile(r"\(([\d.,]+)\s*%\)")
 
@@ -339,16 +350,16 @@ def _extract_metadata_phase(phase: str, d: dict) -> tuple[dict, dict, str] | Non
     """
     schema = d.get("schema") or d.get("schema_version") or d.get("evidence_schema")
     known = False
-    if phase == "Q09_NEWS":
+    if phase == NEWS_PHASE:
         known = schema in {
             "q09-live-news-diagnostic-summary/v1",
             "q09-news-adjudication/v2",
-        } or (schema is None and d.get("phase") == "Q09_NEWS")
-    elif phase == "Q14":
+        } or (schema is None and d.get("phase") == NEWS_PHASE)
+    elif phase == PATTERN_PHASE:
         known = schema == "qm.opt-card/v1"
-    elif phase == "Q15":
+    elif phase == PARAM_OPT_PHASE:
         known = schema == "qm.opt-card-freeze/v1"
-    elif phase == "Q16":
+    elif phase == HEAD_TO_HEAD_PHASE:
         known = schema in {
             "qm.q16-head-to-head-result/v1",
             "qm.q16-lineage/v1",
@@ -390,14 +401,14 @@ def extract_one(phase: str, evidence_path: str | None) -> tuple[dict, dict, str]
             return _extract_q07(d)
         if phase == "Q08":
             return _extract_q08(d)
-        if phase in ("Q09", "Q09_PORTFOLIO"):
+        if phase in (NEWS_GATE, NEWS_PORTFOLIO_PHASE):
             return _extract_q09_portfolio(d)
-        if phase in ("Q10", "Q11"):
+        if phase in (BASELINE_PHASE, INCUMBENT_PHASE):
             # Q10/Q11 reuse the summary.json runs[] shape when present, else flat.
             if d.get("runs"):
                 return _extract_summary_runs(d)
             return _extract_q05_q06(d)
-        if phase in ("Q09_NEWS", "Q14", "Q15", "Q16"):
+        if phase in (NEWS_PHASE, PATTERN_PHASE, PARAM_OPT_PHASE, HEAD_TO_HEAD_PHASE):
             metadata = _extract_metadata_phase(phase, d)
             if metadata is not None:
                 return metadata
@@ -538,8 +549,11 @@ def build(con: sqlite3.Connection, *, full: bool = False, ea: str | None = None)
 # --------------------------------------------------------------------------- #
 
 # The Qxx phase order (for --latest tie-breaks and default ordering).
-_PHASE_ORDER = ["P2", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08",
-                "Q09", "Q09_NEWS", "Q09_PORTFOLIO", "Q10", "Q11", "Q14", "Q15", "Q16"]
+_PHASE_ORDER = ["P2"]
+for _phase in PHASE_ORDER:
+    _PHASE_ORDER.append(_phase)
+    if _phase == ACTIVE_GATE_MANIFEST.gate_for_role("NEWS"):
+        _PHASE_ORDER.extend((NEWS_PHASE, NEWS_PORTFOLIO_PHASE))
 
 _ORDER_COLS = {
     "pf": "profit_factor", "net": "net_profit", "trades": "trades",

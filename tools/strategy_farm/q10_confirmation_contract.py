@@ -18,6 +18,11 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Mapping, Sequence
 
 try:
+    from phase_ids import ACTIVE_GATE_MANIFEST
+except ModuleNotFoundError:
+    from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+
+try:
     from q09_news_contract import (
         ADJUDICATION_SCHEMA_VERSION,
         TEMPORAL_MODE_IDS,
@@ -101,15 +106,17 @@ def verify_q10_binding(
     except SchemaError as exc:
         raise Q10BindingError(str(exc)) from exc
 
+    news_phase = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+    portfolio_phase = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "PORTFOLIO")
     news_row = conn.execute(
         """
         SELECT w.evidence_path,t.aggregate_path,b.manifest_path,b.manifest_sha256,b.content_sha256
         FROM work_items w
         JOIN q09_news_tests t ON t.work_item_id=w.id
         JOIN news_calendar_bundles b ON b.bundle_id=t.calendar_bundle_id
-        WHERE w.id=? AND w.phase='Q09_NEWS' AND w.verdict='CONFIG_LOCKED'
+        WHERE w.id=? AND w.phase=? AND w.verdict='CONFIG_LOCKED'
         """,
-        (gate.q09_news_work_item_id,),
+        (gate.q09_news_work_item_id, news_phase),
     ).fetchone()
     if news_row is None:
         raise Q10BindingError("Q09_NEWS result/header/calendar binding is incomplete")
@@ -150,10 +157,10 @@ def verify_q10_binding(
         portfolio_row = conn.execute(
             """
             SELECT evidence_path FROM work_items
-            WHERE id=? AND phase='Q09_PORTFOLIO' AND status='done'
+            WHERE id=? AND phase=? AND status='done'
               AND verdict IN ('PASS_PORTFOLIO','FAIL_PORTFOLIO','FAIL_SYSTEM')
             """,
-            (gate.q09_portfolio_work_item_id,),
+            (gate.q09_portfolio_work_item_id, portfolio_phase),
         ).fetchone()
         if portfolio_row is None or not portfolio_row[0]:
             raise Q10BindingError("informational Q09_PORTFOLIO evidence path is missing")
@@ -311,16 +318,20 @@ def materialize_q10_inputs(
     if source_setfile.read_bytes() != source_before:
         raise Q10BindingError("source setfile changed while materializing Q10 inputs")
     generated_sha = sha256_file(setfile_path)
+    news_dependency = ACTIVE_GATE_MANIFEST.dependency_role("Q09_NEWS")
+    portfolio_dependency = ACTIVE_GATE_MANIFEST.dependency_role("Q09_PORTFOLIO")
+    incumbent_phase = ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
     manifest: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "q10_work_item_id": binding.q10_work_item_id,
+        "phase": incumbent_phase,
         "dependencies": {
-            "Q09_NEWS": {
+            news_dependency: {
                 "work_item_id": binding.q09_news_work_item_id,
                 "evidence_path": binding.q09_news_evidence_path,
                 "evidence_sha256": binding.q09_news_evidence_sha256,
             },
-            "Q09_PORTFOLIO": {
+            portfolio_dependency: {
                 "work_item_id": binding.q09_portfolio_work_item_id,
                 "evidence_path": binding.q09_portfolio_evidence_path,
                 "evidence_sha256": binding.q09_portfolio_evidence_sha256,

@@ -49,11 +49,13 @@ from framework.scripts.q10_recency import (
     RECENCY_SCHEMA_VERSION,
     compute_recency_shadow,
 )
+from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
 
 # Wrapper must outlive the tester budget (2026-07-06 audit G16).
 RUNNER_HEADROOM_SEC = 120
 
-GATE_NAME = "Q10"
+GATE_NAME = ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
+BASELINE_GATE_NAME = ACTIVE_GATE_MANIFEST.gate_for_role("BASELINE_FULL_RUN")
 PF_FLOOR = 1.0
 # 15->25 to match Q02/Q05/Q06. The OWNER decision of 2026-07-15 raised the per-EA DD
 # ceiling to 25% at norm risk but listed only p2_baseline.py and q05_stress_medium.py as
@@ -254,7 +256,8 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
                       report_root: Path, timeout_sec: int = 3600,
                       latest_full_year: int | None = None,
                       full_history_from: str | None = None,
-                      work_item_created_at: str | None = None) -> dict:
+                      work_item_created_at: str | None = None,
+                      gate_phase: str = GATE_NAME) -> dict:
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
     history_year, history_from, history_to = full_history_window(latest_full_year, full_history_from)
@@ -267,7 +270,7 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         "-Terminal", terminal,
         "-Period", period,
         "-DispatchSubGateHash", f"q10_{ea_id}_{symbol.replace('.', '_')}",
-        "-DispatchPhase", "Q10",
+        "-DispatchPhase", gate_phase,
         "-DispatchVersion", "q10_full_history_confirmation",
         "-Runs", "1",
         "-MinTrades", "20",
@@ -345,7 +348,7 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
     )
 
     return {
-        "phase": GATE_NAME,
+        "phase": gate_phase,
         "ea_id": ea_id,
         "symbol": symbol,
         "verdict": verdict,
@@ -449,9 +452,17 @@ def main() -> int:
                     help="Override full-history start date as YYYY.MM.DD for custom-symbol cohorts")
     ap.add_argument("--work-item-created-at", required=True,
                     help="Canonical work_items.created_at; controls the dated recency cohort")
+    ap.add_argument("--gate-phase", default=GATE_NAME,
+                    help="Manifest-resolved baseline or incumbent gate id")
     ap.add_argument("--no-baseline-capture", action="store_true",
                     help="Skip the gen_q10_baseline.py trigger after PASS")
     args = ap.parse_args()
+    allowed_gate_phases = {GATE_NAME}
+    if BASELINE_GATE_NAME in ACTIVE_GATE_MANIFEST.phase_ids:
+        allowed_gate_phases.add(BASELINE_GATE_NAME)
+    if args.gate_phase not in allowed_gate_phases:
+        print(f"unsupported gate phase: {args.gate_phase}", file=sys.stderr)
+        return 2
 
     ea_match = re.match(r"QM5_(\d+)_?", args.ea)
     if not ea_match:
@@ -469,7 +480,7 @@ def main() -> int:
     canonical = write_canonical_setfile(args.baseline_setfile,
                                          args.news_temporal,
                                          args.news_compliance)
-    print(f"Q10 {args.ea} {args.symbol}: canonical setfile {canonical.name}")
+    print(f"{args.gate_phase} {args.ea} {args.symbol}: canonical setfile {canonical.name}")
     print(f"  news: temporal={args.news_temporal}  compliance={args.news_compliance}")
 
     res = run_confirmation(
@@ -479,17 +490,25 @@ def main() -> int:
         latest_full_year=args.latest_full_year,
         full_history_from=args.full_history_from,
         work_item_created_at=args.work_item_created_at,
+        gate_phase=args.gate_phase,
     )
     res["news_temporal"] = args.news_temporal
     res["news_compliance"] = args.news_compliance
 
-    out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q10" / args.symbol.replace(".", "_"))
+    out_dir = ensure_dir(
+        args.report_root / f"QM5_{ea_id}" / args.gate_phase / args.symbol.replace(".", "_")
+    )
     write_json(out_dir / "aggregate.json", res)
 
-    print(f"Q10 {args.ea} {args.symbol}: {res['verdict']}  pf={res['pf']}  dd_pct={res['dd_pct']}  trades={res['trades']}")
+    print(f"{args.gate_phase} {args.ea} {args.symbol}: {res['verdict']}  pf={res['pf']}  dd_pct={res['dd_pct']}  trades={res['trades']}")
 
     # After PASS: capture the trade-distribution baseline for Q13 KS kill-switch.
-    if res["verdict"] == "PASS" and not args.no_baseline_capture and res.get("report_htm"):
+    if (
+        args.gate_phase == GATE_NAME
+        and res["verdict"] == "PASS"
+        and not args.no_baseline_capture
+        and res.get("report_htm")
+    ):
         print("  Q10 PASS → triggering baseline capture for Q13 KS kill-switch...")
         trigger_baseline_capture(ea_id, args.symbol, res["report_htm"])
 

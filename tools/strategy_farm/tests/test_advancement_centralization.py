@@ -130,7 +130,9 @@ def test_advancement_helpers_are_manifest_ranked_and_storage_aware() -> None:
     assert phase_ids.next_phase("P3") == "P3.5"
     assert phase_ids.next_phase("P3.5") == "P4"
     assert phase_ids.prev_phase("Q14") == "Q10"
-    assert phase_ids.next_phase("Q16") == contract_next["Q16"] == "Q11"
+    assert contract_next["Q16"] == "Q11"  # historical manifest evidence
+    assert phase_ids.next_phase("Q10") == "Q14"  # mandatory audit (OWNER A2)
+    assert phase_ids.next_phase("Q16") is None  # book guard is the only entry
 
 
 def test_evidence_cascade_walks_q09_in_manifest_order() -> None:

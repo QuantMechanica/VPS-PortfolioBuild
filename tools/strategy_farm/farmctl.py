@@ -31,6 +31,7 @@ except ModuleNotFoundError:
 try:
     from phase_ids import (
         ACTIVE_GATE_CONTRACT_VERSION,
+        ACTIVE_GATE_MANIFEST,
         LEGACY_P_TO_Q,
         ORDINARY_RUNTIME_PHASES,
         ORDINARY_STORAGE_PHASE_ORDER,
@@ -46,6 +47,7 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm.phase_ids import (
         ACTIVE_GATE_CONTRACT_VERSION,
+        ACTIVE_GATE_MANIFEST,
         LEGACY_P_TO_Q,
         ORDINARY_RUNTIME_PHASES,
         ORDINARY_STORAGE_PHASE_ORDER,
@@ -217,9 +219,17 @@ def _load_phase_runner_allowlist() -> tuple[str, dict[str, str], dict[str, str]]
     for raw_entry in entries:
         if not isinstance(raw_entry, dict):
             raise RuntimeError("phase-runner allowlist entry must be an object")
-        phase = str(raw_entry.get("phase") or "").strip()
         relative = str(raw_entry.get("repo_relative_path") or "").strip().replace("\\", "/")
         selector = str(raw_entry.get("terminal_selector") or "").strip()
+        phase = str(raw_entry.get("phase") or "").strip()
+        # The versioned allowlist remains a v3-compatible artifact.  Its stable
+        # runner paths identify the three renumbered executable entries.
+        if relative == "tools/strategy_farm/q09_news_runner.py":
+            phase = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+        elif relative == "framework/scripts/q09_portfolio.py":
+            phase = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "PORTFOLIO")
+        elif relative == "framework/scripts/q10_confirmation.py":
+            phase = ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
         parts = Path(relative).parts
         phase_key = phase.casefold()
         repo_path_key = relative.casefold()
@@ -247,6 +257,12 @@ def _load_phase_runner_allowlist() -> tuple[str, dict[str, str], dict[str, str]]
         seen_repo_path_keys.add(repo_path_key)
         scripts[phase] = script_name
         repo_paths[phase] = relative
+    baseline_phase = ACTIVE_GATE_MANIFEST.gate_for_role("BASELINE_FULL_RUN")
+    if baseline_phase in ACTIVE_GATE_MANIFEST.phase_ids:
+        scripts.setdefault(baseline_phase, "q10_confirmation.py")
+        repo_paths.setdefault(
+            baseline_phase, "framework/scripts/q10_confirmation.py"
+        )
     return schema, scripts, repo_paths
 
 
@@ -331,7 +347,21 @@ SUPPORTED_BACKTEST_PHASES = tuple(
 # by adding phases to this set, never as a refactor side effect.
 _DISPATCH_TICK_AUTO_CASCADE_PHASES: frozenset[str] = frozenset()
 _CASCADE_MIN_RANK = phase_rank("Q04")
-_CASCADE_MAX_RANK = phase_rank("Q10")
+_NEWS_GATE = ACTIVE_GATE_MANIFEST.gate_for_role("NEWS")
+_NEWS_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+_NEWS_PORTFOLIO_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "PORTFOLIO")
+_INCUMBENT_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
+_BASELINE_FULL_RUN_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("BASELINE_FULL_RUN")
+_PATTERN_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("PATTERN")
+_PARAM_OPT_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("PARAM_OPT")
+_HEAD_TO_HEAD_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("HEAD_TO_HEAD")
+_INSPECTION_ONLY_NEWS_ALIAS = (
+    _NEWS_GATE if ACTIVE_GATE_MANIFEST.baseline_stage is not None else ""
+)
+_NEWS_DEPENDENCY_ROLE = ACTIVE_GATE_MANIFEST.dependency_role("Q09_NEWS")
+_NEWS_PORTFOLIO_DEPENDENCY_ROLE = ACTIVE_GATE_MANIFEST.dependency_role("Q09_PORTFOLIO")
+_ADMISSION_DEPENDENCY_ROLE = ACTIVE_GATE_MANIFEST.dependency_role("Q14_ADMISSION")
+_CASCADE_MAX_RANK = phase_rank(_INCUMBENT_PHASE)
 _CANONICAL_CASCADE_PHASES = tuple(
     phase
     for phase in ORDINARY_RUNTIME_PHASES
@@ -525,8 +555,9 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "Q06": 120,    # HARSH stress, full history (follows Q05; shares DEFAULT_TIMEOUT_SEC)
     "Q07": 120,    # 5 seeds × full history under HARSH stress
     "Q08": 120,    # aggregator runs a full-history baseline backtest; basket EAs (Model 4 multi-symbol) need 90min
-    "Q09": 120,    # news-mode sweep (1 or 7 modes)
-    "Q10": 60,     # full-history canonical confirmation
+    _BASELINE_FULL_RUN_PHASE: 120,
+    _NEWS_GATE: 120,       # news-mode sweep (1 or 7 modes)
+    _INCUMBENT_PHASE: 60,  # full-history canonical confirmation
 }
 # Q04 launches one run_smoke child per fold.  The runner's historical flat
 # 1800-second child cap was independent of the worker/reaper budget, so a Q02
@@ -1295,9 +1326,9 @@ def _gate_priority_rank_sql() -> str:
     canonical = list(dict.fromkeys(SUPPORTED_BACKTEST_PHASES + _CANONICAL_CASCADE_PHASES))
     # Historical canonical Q09 rows remain inspection-only, but retain the same
     # queue rank if surfaced by a diagnostic query.
-    canonical.append(_ADVANCEMENT["Q09"].phase)
+    canonical.append(_ADVANCEMENT[_NEWS_GATE].phase)
     canonical_lines = [
-        f"            WHEN '{phase}' THEN {phase_rank('Q10') - phase_rank(phase)}"
+        f"            WHEN '{phase}' THEN {phase_rank(_INCUMBENT_PHASE) - phase_rank(phase)}"
         for phase in canonical
     ]
     legacy = [
@@ -1414,15 +1445,15 @@ def pending_claim_order_sql() -> str:
             ELSE 3 END AS _asset_rank
         FROM work_items w
         WHERE w.status='pending'
-          -- Historical Q09 is an inspection-only alias.  New work is Q09_NEWS
+          -- A historical top-level news alias is inspection-only under v3.
           -- and legacy rows must never be claimed/re-executed under a new contract.
-          AND w.phase<>'Q09'
-          -- A Q09_NEWS row becomes executable only after bind-q09-plan writes
+          AND w.phase<>'{_INSPECTION_ONLY_NEWS_ALIAS}'
+          -- A NEWS-lane row becomes executable only after bind-q09-plan writes
           -- the complete self-hashed dispatch binding. New enqueue paths also
           -- install a database hold so already-running workers enforce this
           -- boundary before they are restarted onto this selector version.
           AND (
-            w.phase<>'Q09_NEWS'
+            w.phase<>'{_NEWS_PHASE}'
             OR (
               json_valid(w.payload_json)=1
               AND json_extract(w.payload_json, '$.q09_binding_version')='q09-news-dispatch-binding/v1'
@@ -5117,7 +5148,7 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         return verdict_upper, reason or "phase runner not implemented yet"
     if verdict_upper == "WAITING_INPUT":
         return verdict_upper, reason or "phase runner waiting for required input"
-    if raw_phase_key == "Q09_NEWS" and verdict_upper in {
+    if raw_phase_key == _NEWS_PHASE and verdict_upper in {
         "CONFIG_LOCKED", "REVIEW_REQUIRED", "INVALID_EVIDENCE",
     }:
         return verdict_upper, reason or raw_verdict
@@ -5299,7 +5330,7 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
     """
     if (
         ("phase" in summary and "runs" not in summary)
-        or str(phase or "").strip().upper() == "Q09_NEWS"
+        or str(phase or "").strip().upper() == _NEWS_PHASE
     ):
         return _derive_phase_runner_verdict(summary, min_trades=min_trades, phase=phase)
 
@@ -7249,7 +7280,10 @@ def _phase_runner_inputs(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
     # this function in unit/diagnostic contexts with raw P-keys
     # (P5/P5b/P5c/P7/P8), so do NOT short-circuit on the normalized P-key,
     # only on the inbound Q-name.
-    if raw_phase in ("Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS", "Q09_PORTFOLIO", "Q10"):
+    if raw_phase in (
+        "Q04", "Q05", "Q06", "Q07", "Q08",
+        _NEWS_PHASE, _NEWS_PORTFOLIO_PHASE, _INCUMBENT_PHASE,
+    ):
         return {}
 
     phase_key = _normalize_phase(phase)
@@ -7564,7 +7598,7 @@ def _phase_runner_script_path(phase: str, repo_root: Path | None = None) -> Path
         )
     if repo_relative and script_name == expected_script_name:
         path = root / Path(repo_relative)
-    elif phase_key == "Q09_NEWS":
+    elif phase_key == _NEWS_PHASE:
         # Preserve the historical mutable-test seam when a test replaces the
         # mapping entry with a deliberately missing filename.
         path = root / "tools" / "strategy_farm" / script_name
@@ -7864,7 +7898,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         payload = json.loads(item_row["payload_json"] or "{}")
     except json.JSONDecodeError:
         payload = {}
-    if phase == "Q10":
+    if phase == _INCUMBENT_PHASE:
         # Historical Q10 rows may predate the paired Q09 contract.  They remain
         # visible, but can no longer execute without both authenticated arms.
         try:
@@ -8030,7 +8064,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
                 latest_year = None
             if latest_year is not None:
                 cmd.extend(["--latest-full-year", str(latest_year)])
-    elif phase in ("Q05", "Q06", "Q10"):
+    elif phase in ("Q05", "Q06", _BASELINE_FULL_RUN_PHASE, _INCUMBENT_PHASE):
         # These take --baseline-setfile instead of --setfile.
         cmd.extend([
             "--baseline-setfile", str(item_row["setfile_path"] or ""),
@@ -8040,7 +8074,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             timeout_sec = _phase_runner_timeout_sec_from_payload(payload)
             if timeout_sec is not None:
                 cmd.extend(["--timeout-sec", str(timeout_sec)])
-        if phase in ("Q05", "Q06", "Q10"):
+        if phase in ("Q05", "Q06", _BASELINE_FULL_RUN_PHASE, _INCUMBENT_PHASE):
             latest_full_year = payload.get("q04_latest_full_year", payload.get("latest_full_year"))
             if latest_full_year is not None:
                 try:
@@ -8052,14 +8086,17 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         full_history_from = _q_phase_full_history_from(payload, phase)
         if full_history_from:
             cmd.extend(["--full-history-from", full_history_from])
-        if phase == "Q10":
+        if phase in {_BASELINE_FULL_RUN_PHASE, _INCUMBENT_PHASE}:
             try:
                 work_item_created_at = str(item_row["created_at"] or "").strip()
             except (IndexError, KeyError):
                 work_item_created_at = ""
             if not work_item_created_at:
                 return None
-            cmd.extend(["--work-item-created-at", work_item_created_at])
+            cmd.extend([
+                "--work-item-created-at", work_item_created_at,
+                "--gate-phase", phase,
+            ])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "Q07":
         cmd.extend([
@@ -8113,7 +8150,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
                 "--recovery-lineage-manifest", str(lineage_manifest),
                 "--expected-recovery-lineage-sha256", lineage_manifest_sha,
             ])
-    elif phase == "Q09_NEWS":
+    elif phase == _NEWS_PHASE:
         # Q09 executes its immutable cell plan inside this already-reserved
         # factory slot. Binding is content-addressed and performed separately;
         # an unbound historical placeholder remains fail-closed.
@@ -8149,7 +8186,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         q09_output_root = (
             report_root
             / f"QM5_{ea_num}"
-            / "Q09_NEWS"
+            / _NEWS_PHASE
             / str(symbol).replace(".", "_")
         )
         cmd = [
@@ -8185,7 +8222,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             for helper_terminal in helper_terminals:
                 cmd.extend(["--helper-terminal", str(helper_terminal)])
             cmd.extend(["--helper-reserved-by", reserved_by])
-    elif phase == "Q09_PORTFOLIO":
+    elif phase == _NEWS_PORTFOLIO_PHASE:
         payload = json.loads(item_row["payload_json"] or "{}")
         cmd = [
             _console_python_executable(),
@@ -8213,8 +8250,11 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     # sealed plan. Carry --out-prefix into --report-root for every Q phase;
     # --report-root otherwise defaults to the shared pipeline tree and breaks
     # per-work-item evidence isolation.
-    if phase in {"Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS", "Q09_PORTFOLIO", "Q10"}:
-        if phase != "Q09_NEWS":
+    if phase in {
+        "Q04", "Q05", "Q06", "Q07", "Q08", _BASELINE_FULL_RUN_PHASE,
+        _NEWS_PHASE, _NEWS_PORTFOLIO_PHASE, _INCUMBENT_PHASE,
+    }:
+        if phase != _NEWS_PHASE:
             _remove_cmd_arg(cmd, "--period")
         if "--out-prefix" in cmd:
             cmd[cmd.index("--out-prefix")] = "--report-root"
@@ -8360,13 +8400,13 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
     phase_evidence_path: str | None = None
     if phase == "Q04":
         phase_evidence_path = str(_q04_durable_aggregate_path(item_row))
-    elif phase == "Q09_NEWS":
+    elif phase == _NEWS_PHASE:
         ea_num = _ea_numeric_id(item_row["ea_id"])
         if ea_num is not None:
             phase_evidence_path = str(
                 report_root
                 / f"QM5_{ea_num}"
-                / "Q09_NEWS"
+                / _NEWS_PHASE
                 / str(item_row["symbol"] or "").replace(".", "_")
                 / "aggregate.json"
             )
@@ -9756,7 +9796,9 @@ def _apply_q02_multisymbol_timeout_min(
 
 
 def _q_phase_full_history_from(payload: dict[str, Any], phase: str) -> str | None:
-    if str(phase or "").upper() not in {"Q05", "Q06", "Q07", "Q10"}:
+    if str(phase or "").upper() not in {
+        "Q05", "Q06", "Q07", _BASELINE_FULL_RUN_PHASE, _INCUMBENT_PHASE,
+    }:
         return None
     explicit = str(payload.get("full_history_from") or "").strip()
     if explicit:
@@ -10216,7 +10258,7 @@ _CASCADE_PASS_VERDICTS_BY_PREDECESSOR = {
     "Q06": {"PASS", "PASS_SOFT"},
     "Q07": {"PASS", "MULTI_SEED_PASS"},
     "Q08": {"PASS", "FAIL_SOFT"},
-    "Q09_NEWS": Q09_NEWS_SUCCESS_VERDICTS,
+    _NEWS_PHASE: Q09_NEWS_SUCCESS_VERDICTS,
     "P2": {"PASS"},
     "P3": {"PASS"},
     "P3.5": {"PASS"},
@@ -15444,8 +15486,8 @@ def _record_q09_autoseal_failure(
     with connect(root) as conn:
         conn.execute("BEGIN IMMEDIATE")
         row = conn.execute(
-            "SELECT status,claimed_by,payload_json FROM work_items WHERE id=? AND phase='Q09_NEWS'",
-            (str(work_item_id),),
+            "SELECT status,claimed_by,payload_json FROM work_items WHERE id=? AND phase=?",
+            (str(work_item_id), _NEWS_PHASE),
         ).fetchone()
         if row is None:
             conn.rollback()
@@ -15499,12 +15541,12 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
             """
             SELECT w.* FROM work_items w
             JOIN work_item_holds h ON h.work_item_id=w.id
-            WHERE w.phase='Q09_NEWS' AND w.status='pending'
+            WHERE w.phase=? AND w.status='pending'
               AND COALESCE(w.claimed_by,'')=''
               AND h.hold_code=? AND h.active=1
             ORDER BY w.created_at ASC,w.id ASC LIMIT ?
             """,
-            (Q09_ACTIVATION_HOLD_CODE, max(0, int(limit))),
+            (_NEWS_PHASE, Q09_ACTIVATION_HOLD_CODE, max(0, int(limit))),
         ).fetchall()
 
     results: list[dict[str, Any]] = []
@@ -15733,7 +15775,7 @@ def _q10_dependency_context(
           ON d.child_work_item_id=p.id
          AND d.dependency_role='Q08_INPUT'
          AND d.parent_work_item_id=?
-        WHERE p.phase='Q09_PORTFOLIO'
+        WHERE p.phase=?
           AND p.status='done'
           AND p.verdict IN ('PASS_PORTFOLIO','FAIL_PORTFOLIO','FAIL_SYSTEM')
           AND p.ea_id=? AND p.symbol=? AND p.setfile_path=?
@@ -15743,6 +15785,7 @@ def _q10_dependency_context(
         """,
         (
             q08_id,
+            _NEWS_PORTFOLIO_PHASE,
             q09_news_work_item["ea_id"],
             q09_news_work_item["symbol"],
             q09_news_work_item["setfile_path"],
@@ -15769,7 +15812,7 @@ def _bind_q10_dependencies(
     add_q09_dependency(
         conn,
         child_work_item_id=q10_work_item_id,
-        dependency_role="Q09_NEWS",
+        dependency_role=_NEWS_DEPENDENCY_ROLE,
         parent_work_item_id=q09_news_work_item_id,
         parent_evidence_sha256=dependency_context["q09_news_evidence_sha256"],
         required_verdicts=["CONFIG_LOCKED"],
@@ -15779,7 +15822,7 @@ def _bind_q10_dependencies(
         add_q09_dependency(
             conn,
             child_work_item_id=q10_work_item_id,
-            dependency_role="Q09_PORTFOLIO",
+            dependency_role=_NEWS_PORTFOLIO_DEPENDENCY_ROLE,
             parent_work_item_id=str(portfolio["id"]),
             parent_evidence_sha256=dependency_context["q09_portfolio_evidence_sha256"],
             required_verdicts=["PASS_PORTFOLIO", "FAIL_PORTFOLIO", "FAIL_SYSTEM"],
@@ -15809,7 +15852,7 @@ def auto_enqueue_q10_after_q09_result(
     if payload.get("diagnostic_non_admission") is True:
         return {"enqueued": False, "reason": "diagnostic_non_admission"}
     if not (
-        row["phase"] == "Q09_NEWS"
+        row["phase"] == _NEWS_PHASE
         and row["status"] == "done"
         and row["verdict"] == "CONFIG_LOCKED"
     ):
@@ -15819,7 +15862,7 @@ def auto_enqueue_q10_after_q09_result(
     return enqueue_cascade_backtest_for_ea(
         root,
         str(row["ea_id"]),
-        "Q10",
+        next_phase(_NEWS_PHASE, ACTIVE_GATE_MANIFEST),
         predecessor_work_item_id=str(q09_news_work_item_id),
     )
 
@@ -15931,10 +15974,11 @@ def _promote_q08_soft_fails_to_q09_portfolio(
             SELECT 1 FROM work_items w2
             WHERE w2.ea_id = w.ea_id
               AND w2.symbol = w.symbol
-              AND w2.phase = 'Q09_PORTFOLIO'
+              AND w2.phase = ?
           )
         ORDER BY w.updated_at ASC LIMIT 10
-        """
+        """,
+        (_NEWS_PORTFOLIO_PHASE,),
     ).fetchall()
     promoted_pairs: set[tuple[str, str]] = set()
     for wi in q08_soft_rows:
@@ -15976,11 +16020,12 @@ def _promote_q08_soft_fails_to_q09_portfolio(
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
                    verdict, attempt_count, parent_task_id, evidence_path,
                    payload_json, created_at, updated_at, gate_contract_version)
-                VALUES (?, 'backtest', 'Q09_PORTFOLIO', ?, ?, ?, 'done',
+                VALUES (?, 'backtest', ?, ?, ?, ?, 'done',
                         'FAIL', 0, NULL, ?, ?, ?, ?, ?)
                 """,
                 (
                     new_id,
+                    _NEWS_PORTFOLIO_PHASE,
                     wi["ea_id"],
                     wi["symbol"],
                     wi["setfile_path"],
@@ -16028,11 +16073,12 @@ def _promote_q08_soft_fails_to_q09_portfolio(
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
                    verdict, attempt_count, parent_task_id, evidence_path,
                    payload_json, created_at, updated_at, gate_contract_version)
-                VALUES (?, 'backtest', 'Q09_PORTFOLIO', ?, ?, ?, 'done',
+                VALUES (?, 'backtest', ?, ?, ?, ?, 'done',
                         'NEED_MORE_DATA', 0, NULL, ?, ?, ?, ?, ?)
                 """,
                 (
                     new_id,
+                    _NEWS_PORTFOLIO_PHASE,
                     wi["ea_id"],
                     wi["symbol"],
                     wi["setfile_path"],
@@ -16066,11 +16112,12 @@ def _promote_q08_soft_fails_to_q09_portfolio(
               (id, kind, phase, ea_id, symbol, setfile_path, status,
                attempt_count, parent_task_id, payload_json, created_at, updated_at,
                gate_contract_version)
-            VALUES (?, 'backtest', 'Q09_PORTFOLIO', ?, ?, ?, 'pending',
+            VALUES (?, 'backtest', ?, ?, ?, ?, 'pending',
                     0, NULL, ?, ?, ?, ?)
             """,
             (
                 new_id,
+                _NEWS_PORTFOLIO_PHASE,
                 wi["ea_id"],
                 wi["symbol"],
                 wi["setfile_path"],
@@ -16131,11 +16178,12 @@ def _promote_paired_q09_portfolio_passes_to_news(
           {defect_exclusion}
           AND NOT EXISTS (
             SELECT 1 FROM work_items n
-            WHERE n.phase='Q09_NEWS' AND n.ea_id=q.ea_id
+            WHERE n.phase=? AND n.ea_id=q.ea_id
               AND n.symbol=q.symbol AND n.setfile_path=q.setfile_path
           )
         ORDER BY q.updated_at ASC,q.id ASC
-        """
+        """,
+        (_NEWS_PHASE,),
     ).fetchall()
     promoted = 0
     for row in rows:
@@ -16177,10 +16225,10 @@ def _promote_paired_q09_portfolio_passes_to_news(
             INSERT INTO work_items(
               id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
               parent_task_id,payload_json,created_at,updated_at,gate_contract_version
-            ) VALUES(?, 'backtest','Q09_NEWS',?,?,?,'pending',0,NULL,?,?,?,?)
+            ) VALUES(?, 'backtest',?,?,?,?,'pending',0,NULL,?,?,?,?)
             """,
             (
-                new_id,row["ea_id"],row["symbol"],row["setfile_path"],
+                new_id,_NEWS_PHASE,row["ea_id"],row["symbol"],row["setfile_path"],
                 json.dumps(payload, sort_keys=True),now,now,ACTIVE_GATE_CONTRACT_VERSION,
             ),
         )
@@ -18035,7 +18083,7 @@ def _pump_unlocked(
     cascade_phase_map = {
         phase: next_phase(phase)
         for phase in ORDINARY_STORAGE_PHASE_ORDER
-        if phase_rank("Q03") <= phase_rank(phase) < phase_rank("Q10")
+        if phase_rank("Q03") <= phase_rank(phase) < phase_rank(_INCUMBENT_PHASE)
     }
     cascade_pass_verdicts = {
         "Q03": {"PASS"},
@@ -18045,7 +18093,7 @@ def _pump_unlocked(
         "Q06": {"PASS", "PASS_SOFT"},
         "Q07": {"PASS"},
         "Q08": {"PASS", "FAIL_SOFT"},
-        "Q09_NEWS": Q09_NEWS_SUCCESS_VERDICTS,
+        _NEWS_PHASE: Q09_NEWS_SUCCESS_VERDICTS,
         # Pre-rewrite keys retained inert for any orphan reads against the
         # empty post-wipe DB. These will never match new rows.
         "P3": {"PASS"},
@@ -18074,7 +18122,7 @@ def _pump_unlocked(
                 WHERE w.status='done' AND w.phase=? AND w.verdict in ({placeholders})
                   {_cascade_defect_exclusion}
                   AND NOT (
-                    w.phase='Q09_NEWS'
+                    w.phase=?
                     AND json_valid(w.payload_json)=1
                     AND json_extract(w.payload_json, '$.diagnostic_non_admission')=1
                   )
@@ -18099,6 +18147,7 @@ def _pump_unlocked(
                 (
                     prev_phase,
                     *verdicts,
+                    _NEWS_PHASE,
                     successor_phase,
                 ),
             ).fetchall()
@@ -18116,7 +18165,7 @@ def _pump_unlocked(
                     continue
                 q08_evidence_sha256: str | None = None
                 q10_dependency_context: dict[str, Any] | None = None
-                if successor_phase == "Q09_NEWS":
+                if successor_phase == _NEWS_PHASE:
                     q08_evidence_sha256 = _work_item_evidence_sha256(wi)
                     if not q08_evidence_sha256:
                         result["cascade_promotions_skipped"].append({
@@ -18128,7 +18177,7 @@ def _pump_unlocked(
                             "reason": "q08_evidence_missing_or_unreadable",
                         })
                         continue
-                elif successor_phase == "Q10":
+                elif successor_phase == _INCUMBENT_PHASE:
                     q10_dependency_context, dependency_reason = _q10_dependency_context(conn, wi)
                     if q10_dependency_context is None:
                         result["cascade_promotions_skipped"].append({
@@ -18163,9 +18212,9 @@ def _pump_unlocked(
                     _apply_q04_timeout_budget(conn, wi, payload)
                 if successor_phase in {"Q05", "Q06", "Q08"}:
                     _apply_phase_timeout_min(payload, successor_phase)
-                if successor_phase in {"Q05", "Q06", "Q07", "Q10"}:
+                if successor_phase in {"Q05", "Q06", "Q07", _INCUMBENT_PHASE}:
                     _apply_q_phase_full_history_from(payload, successor_phase)
-                contract_phase = successor_phase in {"Q09_NEWS", "Q10"}
+                contract_phase = successor_phase in {_NEWS_PHASE, _INCUMBENT_PHASE}
                 insert_sql = """
                     INSERT INTO work_items
                       (id, kind, phase, ea_id, symbol, setfile_path, status,
@@ -18184,7 +18233,7 @@ def _pump_unlocked(
                     conn.execute("SAVEPOINT q09_contract_promotion")
                     try:
                         conn.execute(insert_sql, insert_args)
-                        if successor_phase == "Q09_NEWS":
+                        if successor_phase == _NEWS_PHASE:
                             _add_q08_input_dependency(
                                 conn,
                                 child_work_item_id=new_id,
@@ -20800,7 +20849,7 @@ def _q02_authenticated_q15_freeze_evidence(
     identity_ok = bool(
         q15_row
         and q15_row["kind"] == "development"
-        and q15_row["phase"] == "Q15"
+        and q15_row["phase"] == _PARAM_OPT_PHASE
         and q15_row["ea_id"] == target["ea_id"]
         and q15_row["symbol"] == target["symbol"]
         and q15_row["setfile_path"] == target["setfile_path"]
@@ -21859,11 +21908,11 @@ def enqueue_cascade_backtest_for_ea(
     reviewed adjudication overlay supersedes them.
     """
     phase_token = str(phase or "").strip().upper()
-    if phase_token == "Q09":
+    if phase_token == _NEWS_GATE:
         return {
             "enqueued": False,
-            "phase": "Q09",
-            "reason": "historical Q09 alias is read-only; use Q09_NEWS",
+            "phase": _NEWS_GATE,
+            "reason": f"canonical NEWS gate is read-only; use {_NEWS_PHASE}",
         }
     if phase_token == "Q02" and (append_only_rerun_of or predecessor_work_item_id):
         return _enqueue_q02_append_only_exact_row_rerun(
@@ -21971,7 +22020,7 @@ def enqueue_cascade_backtest_for_ea(
                 continue
             q08_evidence_sha256: str | None = None
             q10_dependency_context: dict[str, Any] | None = None
-            if phase in {"Q09_NEWS", "Q09_PORTFOLIO"}:
+            if phase in {_NEWS_PHASE, _NEWS_PORTFOLIO_PHASE}:
                 q08_evidence_sha256 = _work_item_evidence_sha256(prev)
                 if not q08_evidence_sha256:
                     skipped.append({
@@ -21980,7 +22029,7 @@ def enqueue_cascade_backtest_for_ea(
                         "reason": "q08_evidence_missing_or_unreadable",
                     })
                     continue
-            elif phase == "Q10":
+            elif phase == _INCUMBENT_PHASE:
                 q10_dependency_context, dependency_reason = _q10_dependency_context(conn, prev)
                 if q10_dependency_context is None:
                     skipped.append({
@@ -22025,7 +22074,7 @@ def enqueue_cascade_backtest_for_ea(
                 _apply_q04_latest_full_year_from_history(prev, payload)
             if phase in {"Q05", "Q06", "Q08"}:
                 _apply_phase_timeout_min(payload, phase)
-            if phase in {"Q05", "Q06", "Q07", "Q10"}:
+            if phase in {"Q05", "Q06", "Q07", _INCUMBENT_PHASE}:
                 _apply_q_phase_full_history_from(payload, phase)
             if phase in {"Q05", "P5"}:
                 required_oos_to_year = P5_REQUIRED_OOS_TO_YEAR
@@ -22174,21 +22223,23 @@ def enqueue_cascade_backtest_for_ea(
                     now,
                     ACTIVE_GATE_CONTRACT_VERSION,
                 )
-                contract_phase = phase in {"Q09_NEWS", "Q09_PORTFOLIO", "Q10"}
+                contract_phase = phase in {
+                    _NEWS_PHASE, _NEWS_PORTFOLIO_PHASE, _INCUMBENT_PHASE
+                }
                 if not contract_phase:
                     conn.execute(insert_sql, insert_args)
                 else:
                     conn.execute("SAVEPOINT q09_contract_append_only_enqueue")
                     try:
                         conn.execute(insert_sql, insert_args)
-                        if phase in {"Q09_NEWS", "Q09_PORTFOLIO"}:
+                        if phase in {_NEWS_PHASE, _NEWS_PORTFOLIO_PHASE}:
                             _add_q08_input_dependency(
                                 conn,
                                 child_work_item_id=wid,
                                 q08_work_item=prev,
                                 evidence_sha256=str(q08_evidence_sha256),
                             )
-                            if phase == "Q09_NEWS":
+                            if phase == _NEWS_PHASE:
                                 _mark_q09_awaiting_sealed_plan(
                                     conn,
                                     work_item_id=wid,
@@ -22221,7 +22272,7 @@ def enqueue_cascade_backtest_for_ea(
                 })
                 continue
             if existing:
-                if phase == "Q10":
+                if phase == _INCUMBENT_PHASE:
                     try:
                         assert_q10_dependency_gate(conn, str(existing["id"]))
                     except (Q09NewsSchemaError, sqlite3.Error) as exc:
@@ -22253,7 +22304,7 @@ def enqueue_cascade_backtest_for_ea(
                     """,
                     (json.dumps(payload, sort_keys=True), now, existing["id"]),
                 )
-                if phase == "Q09_NEWS":
+                if phase == _NEWS_PHASE:
                     _mark_q09_awaiting_sealed_plan(
                         conn,
                         work_item_id=str(existing["id"]),
@@ -22263,7 +22314,9 @@ def enqueue_cascade_backtest_for_ea(
                 requeued.append({"id": existing["id"], "symbol": existing["symbol"]})
                 continue
             wid = str(uuid.uuid4())
-            contract_phase = phase in {"Q09_NEWS", "Q09_PORTFOLIO", "Q10"}
+            contract_phase = phase in {
+                _NEWS_PHASE, _NEWS_PORTFOLIO_PHASE, _INCUMBENT_PHASE
+            }
             insert_sql = """
                 INSERT INTO work_items
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
@@ -22288,14 +22341,14 @@ def enqueue_cascade_backtest_for_ea(
                 conn.execute("SAVEPOINT q09_contract_enqueue")
                 try:
                     conn.execute(insert_sql, insert_args)
-                    if phase in {"Q09_NEWS", "Q09_PORTFOLIO"}:
+                    if phase in {_NEWS_PHASE, _NEWS_PORTFOLIO_PHASE}:
                         _add_q08_input_dependency(
                             conn,
                             child_work_item_id=wid,
                             q08_work_item=prev,
                             evidence_sha256=str(q08_evidence_sha256),
                         )
-                        if phase == "Q09_NEWS":
+                        if phase == _NEWS_PHASE:
                             _mark_q09_awaiting_sealed_plan(
                                 conn,
                                 work_item_id=wid,
@@ -25065,13 +25118,27 @@ def record_review_result(root: Path, review_task_id: str, result_file: str) -> d
 
 def _q16_dependency_spec(
     work_item: sqlite3.Row,
-    lineage: dict[str, Any],
+    lineage: dict[str, Any] | None,
     *,
     dependency_role: str,
-) -> dict[str, str]:
-    """Bind a Q16 dependency to the exact Q10 evidence used by its lineage."""
+    required_verdicts: tuple[str, ...] = ("PASS",),
+) -> dict[str, Any]:
+    """Bind a head-to-head dependency to immutable evidence bytes.
+
+    ``required_verdicts`` records the verdict set the bound parent is allowed
+    to carry. The confirmation/incumbent/challenger lanes are PASS-only; the
+    v4 BASELINE_Q09 lane legitimately accepts a ``FAIL_SOFT`` parent (the
+    baseline selection query and the BASELINE_Q09 trigger both admit
+    ``verdict IN ('PASS','FAIL_SOFT')``), so its spec must record that set to
+    keep ``required_verdicts_json`` consistent with the accepted verdicts.
+    """
     db_evidence = str(work_item["evidence_path"] or "").strip()
-    lineage_evidence = lineage["q10"]["evidence"]
+    lineage_evidence = (
+        lineage["q10"]["evidence"] if lineage is not None else {
+            "path": db_evidence,
+            "sha256": _sha256_file(Path(db_evidence)) if db_evidence else "",
+        }
+    )
     lineage_path = Path(str(lineage_evidence["path"])).resolve()
     if not db_evidence:
         raise ValueError(f"Q16 {dependency_role} Q10 row has no evidence_path")
@@ -25086,6 +25153,7 @@ def _q16_dependency_spec(
         "dependency_role": dependency_role,
         "parent_work_item_id": str(work_item["id"]),
         "parent_evidence_sha256": expected,
+        "required_verdicts": list(required_verdicts),
     }
 
 
@@ -25093,9 +25161,10 @@ def _ensure_q16_dependency(
     conn: sqlite3.Connection,
     *,
     child_work_item_id: str,
-    spec: dict[str, str],
+    spec: dict[str, Any],
 ) -> bool:
     """Append one Q16 dependency, or verify an identical prior append."""
+    expected_verdicts = list(spec.get("required_verdicts", ["PASS"]))
     existing = conn.execute(
         """
         SELECT parent_work_item_id,parent_evidence_sha256,required_verdicts_json
@@ -25112,7 +25181,7 @@ def _ensure_q16_dependency(
         if (
             str(existing["parent_work_item_id"]) != spec["parent_work_item_id"]
             or str(existing["parent_evidence_sha256"]) != spec["parent_evidence_sha256"]
-            or required != ["PASS"]
+            or required != expected_verdicts
         ):
             raise ValueError(f"Q16 {spec['dependency_role']} dependency differs from sealed payload")
         return False
@@ -25122,7 +25191,7 @@ def _ensure_q16_dependency(
         dependency_role=spec["dependency_role"],
         parent_work_item_id=spec["parent_work_item_id"],
         parent_evidence_sha256=spec["parent_evidence_sha256"],
-        required_verdicts=["PASS"],
+        required_verdicts=expected_verdicts,
     )
     return True
 
@@ -25139,6 +25208,7 @@ def enqueue_head_to_head(
     parent_q10_work_item_id: str | None,
     challenger_q10_work_item_id: str | None,
     apply: bool,
+    baseline_work_item_id: str | None = None,
 ) -> dict[str, Any]:
     """Validate and optionally enqueue one analytic Q16 evaluator work item.
 
@@ -25179,28 +25249,43 @@ def enqueue_head_to_head(
         raise ValueError("enqueue-head-to-head parent lineage does not match opt-card")
     if parent["key"][1] != challenger["key"][1]:
         raise ValueError("enqueue-head-to-head parent/challenger symbols differ")
+    dependency_roles = ACTIVE_GATE_MANIFEST.head_to_head_dependency_roles
     payload = {
         "schema": "qm.enqueue-head-to-head/v1",
-        "phase": "Q16",
+        "phase": _HEAD_TO_HEAD_PHASE,
         "card_id": card.get("card_id"),
         "parent": {"ea_id": f"QM5_{parent['key'][0]}", "symbol": parent["key"][1]},
         "challenger": {"ea_id": f"QM5_{challenger['key'][0]}", "symbol": challenger["key"][1]},
         "bindings": bindings,
-        "dependency_refs": {
-            "PARENT_LINEAGE": {
-                "work_item_id": parent_q10_work_item_id,
-                "evidence_sha256": parent["q10"]["evidence"]["sha256"],
-            },
-            "CHALLENGER_Q10": {
-                "work_item_id": challenger_q10_work_item_id,
-                "evidence_sha256": challenger["q10"]["evidence"]["sha256"],
-            },
-        },
+        "dependency_refs": {},
         "runner": "framework/scripts/q16_head_to_head.py",
         "execution_lane": "ANALYTIC_DISPATCH_NOT_TERMINAL_WORKER",
     }
+    if len(dependency_roles) == 2:
+        payload["dependency_refs"] = {
+            dependency_roles[0]: {
+                "work_item_id": parent_q10_work_item_id,
+                "evidence_sha256": parent["q10"]["evidence"]["sha256"],
+            },
+            dependency_roles[1]: {
+                "work_item_id": challenger_q10_work_item_id,
+                "evidence_sha256": challenger["q10"]["evidence"]["sha256"],
+            },
+        }
+    else:
+        payload["dependency_refs"] = {
+            dependency_roles[0]: {"work_item_id": baseline_work_item_id},
+            dependency_roles[1]: {
+                "work_item_id": parent_q10_work_item_id,
+                "evidence_sha256": parent["q10"]["evidence"]["sha256"],
+            },
+            dependency_roles[2]: {
+                "work_item_id": challenger_q10_work_item_id,
+                "evidence_sha256": challenger["q10"]["evidence"]["sha256"],
+            },
+        }
     identity = _canonical_json_sha256(payload)
-    work_item_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"qm:q16:{identity}"))
+    work_item_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"qm:head-to-head:{identity}"))
     preview = {
         "enqueued": False,
         "dry_run": not apply,
@@ -25210,23 +25295,43 @@ def enqueue_head_to_head(
     if not apply:
         return preview
     if not parent_q10_work_item_id or not challenger_q10_work_item_id:
-        raise ValueError("--apply requires parent and challenger Q10 work-item ids")
+        raise ValueError("--apply requires incumbent and challenger confirmation work-item ids")
     init_db(root)
     with connect(root) as conn:
         conn.execute("BEGIN IMMEDIATE")
+        if len(dependency_roles) == 3 and not baseline_work_item_id:
+            baseline = conn.execute(
+                """
+                SELECT * FROM work_items
+                WHERE ea_id=? AND symbol=? AND phase IN (?, 'Q08')
+                  AND status='done' AND verdict IN ('PASS','FAIL_SOFT')
+                ORDER BY CASE WHEN phase=? THEN 0 ELSE 1 END, updated_at DESC, id DESC
+                LIMIT 1
+                """,
+                (
+                    f"QM5_{parent['key'][0]}", parent["key"][1],
+                    _BASELINE_FULL_RUN_PHASE, _BASELINE_FULL_RUN_PHASE,
+                ),
+            ).fetchone()
+            if baseline is None:
+                conn.rollback()
+                raise ValueError("v4 head-to-head requires a hash-bound Q09/Q08 baseline")
+            baseline_work_item_id = str(baseline["id"])
+            payload["dependency_refs"][dependency_roles[0]]["work_item_id"] = baseline_work_item_id
         rows = {}
         dependency_specs = []
-        for role, item_id, expected_key, lineage in (
-            ("PARENT_LINEAGE", parent_q10_work_item_id, parent["key"], parent),
-            ("CHALLENGER_Q10", challenger_q10_work_item_id, challenger["key"], challenger),
-        ):
+        confirmation_inputs = (
+            (dependency_roles[-2], parent_q10_work_item_id, parent["key"], parent),
+            (dependency_roles[-1], challenger_q10_work_item_id, challenger["key"], challenger),
+        )
+        for role, item_id, expected_key, lineage in confirmation_inputs:
             row = conn.execute("SELECT * FROM work_items WHERE id=?", (item_id,)).fetchone()
             if row is None:
                 conn.rollback()
                 raise ValueError(f"Q16 dependency {role} work item is missing: {item_id}")
             actual_key = (_ea_numeric_id(row["ea_id"]), str(row["symbol"]).upper())
             if (
-                str(row["phase"]).upper() != "Q10"
+                str(row["phase"]).upper() != _INCUMBENT_PHASE
                 or str(row["status"]).lower() != "done"
                 or str(row["verdict"] or "").upper() != "PASS"
                 or actual_key != expected_key
@@ -25237,6 +25342,30 @@ def enqueue_head_to_head(
             dependency_specs.append(
                 _q16_dependency_spec(row, lineage, dependency_role=role)
             )
+        if len(dependency_roles) == 3:
+            baseline_row = conn.execute(
+                "SELECT * FROM work_items WHERE id=?", (baseline_work_item_id,),
+            ).fetchone()
+            if (
+                baseline_row is None
+                or str(baseline_row["phase"]).upper() not in {_BASELINE_FULL_RUN_PHASE, "Q08"}
+                or str(baseline_row["status"]).lower() != "done"
+                or str(baseline_row["verdict"] or "").upper() not in {"PASS", "FAIL_SOFT"}
+                or (_ea_numeric_id(baseline_row["ea_id"]), str(baseline_row["symbol"]).upper()) != parent["key"]
+            ):
+                conn.rollback()
+                raise ValueError("BASELINE_Q09 is not the matching hash-bound Q09/Q08 row")
+            rows[dependency_roles[0]] = baseline_row
+            baseline_spec = _q16_dependency_spec(
+                baseline_row,
+                None,
+                dependency_role=dependency_roles[0],
+                required_verdicts=("PASS", "FAIL_SOFT"),
+            )
+            payload["dependency_refs"][dependency_roles[0]]["evidence_sha256"] = (
+                baseline_spec["parent_evidence_sha256"]
+            )
+            dependency_specs.insert(0, baseline_spec)
         existing = conn.execute("SELECT payload_json,status FROM work_items WHERE id=?", (work_item_id,)).fetchone()
         payload_json = json.dumps(payload, sort_keys=True)
         if existing is not None:
@@ -25257,14 +25386,14 @@ def enqueue_head_to_head(
             ) VALUES(?,?,?,?,?,?,'pending',NULL,0,NULL,NULL,NULL,?,?,?,?)
             """,
             (
-                work_item_id, "analytic", "Q16", f"QM5_{challenger['key'][0]}",
-                challenger["key"][1], str(rows["CHALLENGER_Q10"]["setfile_path"]),
+                work_item_id, "analytic", _HEAD_TO_HEAD_PHASE, f"QM5_{challenger['key'][0]}",
+                challenger["key"][1], str(rows[dependency_roles[-1]]["setfile_path"]),
                 payload_json, now, now, ACTIVE_GATE_CONTRACT_VERSION,
             ),
         )
         for spec in dependency_specs:
             _ensure_q16_dependency(conn, child_work_item_id=work_item_id, spec=spec)
-        event(conn, "work_item", work_item_id, "q16_head_to_head_enqueued", {
+        event(conn, "work_item", work_item_id, f"{_HEAD_TO_HEAD_PHASE.lower()}_head_to_head_enqueued", {
             "card_id": card.get("card_id"), "payload_sha256": identity,
             "dependency_refs": payload["dependency_refs"],
         })
@@ -26334,7 +26463,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     q14 = sub.add_parser(
         "admit-optimization",
-        help="Evaluate Q10 PASS survivors for deterministic Q14 opt-card admission (dry-run default).",
+        help=f"Evaluate {_INCUMBENT_PHASE} PASS survivors for deterministic {_PATTERN_PHASE} opt-card admission (dry-run default).",
     )
     q14.add_argument("--config")
     q14.add_argument("--report-root")
@@ -26342,7 +26471,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     q14_enqueue = sub.add_parser(
         "enqueue-opt-admission",
-        help="Canonical Q14 opt-card admission enqueue path (dry-run default).",
+        help=f"Canonical {_PATTERN_PHASE} opt-card admission enqueue path (dry-run default).",
     )
     q14_enqueue.add_argument("--config")
     q14_enqueue.add_argument("--report-root")
@@ -26350,7 +26479,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     q16 = sub.add_parser(
         "enqueue-head-to-head",
-        help="Validate and optionally enqueue one analytic Q16 sealed comparison (dry-run default).",
+        help=f"Validate and optionally enqueue one analytic {_HEAD_TO_HEAD_PHASE} sealed comparison (dry-run default).",
     )
     q16.add_argument("--opt-card", required=True)
     q16.add_argument("--parent-lineage", required=True)
@@ -26360,6 +26489,7 @@ def build_parser() -> argparse.ArgumentParser:
     q16.add_argument("--book-stream-manifest", required=True)
     q16.add_argument("--parent-q10-work-item-id")
     q16.add_argument("--challenger-q10-work-item-id")
+    q16.add_argument("--baseline-work-item-id")
     q16.add_argument("--apply", action="store_true")
 
     return parser
@@ -26603,6 +26733,7 @@ def main(argv: list[str] | None = None) -> int:
             book_stream_manifest_path=args.book_stream_manifest,
             parent_q10_work_item_id=args.parent_q10_work_item_id,
             challenger_q10_work_item_id=args.challenger_q10_work_item_id,
+            baseline_work_item_id=args.baseline_work_item_id,
             apply=args.apply,
         ))
     elif args.command == "enqueue-compile":

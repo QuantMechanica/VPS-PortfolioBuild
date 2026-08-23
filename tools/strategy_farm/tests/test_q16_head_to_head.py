@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import sqlite3
 import tempfile
 from pathlib import Path
 
@@ -311,3 +312,100 @@ def test_farmctl_head_to_head_is_dry_run_default_and_apply_is_idempotent(tmp_pat
         conn.commit()
     with pytest.raises(ValueError, match="DB evidence does not match"):
         farmctl.enqueue_head_to_head(root, apply=True, **kwargs)
+
+
+def _insert_wi(
+    conn: sqlite3.Connection,
+    *,
+    item_id: str,
+    phase: str,
+    verdict: str | None,
+    status: str = "done",
+    kind: str = "backtest",
+) -> None:
+    now = "2026-08-23T00:00:00+00:00"
+    conn.execute(
+        """
+        INSERT INTO work_items(
+            id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+            parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at
+        ) VALUES(?, ?, ?, 'QM5_12990', 'GBPUSD.DWX', 'x.set', ?, ?, 0,
+                 NULL, 'e.json', NULL, '{}', ?, ?)
+        """,
+        (item_id, kind, phase, status, verdict, now, now),
+    )
+
+
+def test_baseline_q09_dependency_records_fail_soft_verdict_set(tmp_path: Path) -> None:
+    """The v4 BASELINE_Q09 lane binds ['PASS','FAIL_SOFT'] so a FAIL_SOFT
+    baseline parent is accepted by the append-only insert trigger, and the
+    stored ``required_verdicts_json`` matches the accepted verdicts."""
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        # v4 head-to-head child lives at Q14; the baseline parent is a FAIL_SOFT Q08 row.
+        _insert_wi(conn, item_id="h2h", phase="Q14", verdict=None,
+                   status="pending", kind="analytic")
+        _insert_wi(conn, item_id="baseline", phase="Q08", verdict="FAIL_SOFT")
+        conn.commit()
+
+        spec = {
+            "dependency_role": "BASELINE_Q09",
+            "parent_work_item_id": "baseline",
+            "parent_evidence_sha256": "a" * 64,
+            "required_verdicts": ["PASS", "FAIL_SOFT"],
+        }
+        assert farmctl._ensure_q16_dependency(conn, child_work_item_id="h2h", spec=spec) is True
+        # Re-appending the identical spec verifies without a second insert.
+        assert farmctl._ensure_q16_dependency(conn, child_work_item_id="h2h", spec=spec) is False
+        conn.commit()
+        stored = conn.execute(
+            "SELECT required_verdicts_json FROM work_item_dependencies "
+            "WHERE child_work_item_id='h2h' AND dependency_role='BASELINE_Q09'"
+        ).fetchone()
+    assert json.loads(stored["required_verdicts_json"]) == ["PASS", "FAIL_SOFT"]
+
+
+def test_baseline_q09_pass_only_binding_is_rejected_for_fail_soft_parent(tmp_path: Path) -> None:
+    """Regression guard for the P2 finding: binding a FAIL_SOFT baseline with
+    the old hardcoded ['PASS'] set is rejected by the schema insert trigger
+    (parent verdict not in required set), proving the fix is load-bearing."""
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_wi(conn, item_id="h2h", phase="Q14", verdict=None,
+                   status="pending", kind="analytic")
+        _insert_wi(conn, item_id="baseline", phase="Q08", verdict="FAIL_SOFT")
+        conn.commit()
+        bad_spec = {
+            "dependency_role": "BASELINE_Q09",
+            "parent_work_item_id": "baseline",
+            "parent_evidence_sha256": "a" * 64,
+            "required_verdicts": ["PASS"],
+        }
+        with pytest.raises(sqlite3.Error):
+            farmctl._ensure_q16_dependency(conn, child_work_item_id="h2h", spec=bad_spec)
+
+
+def test_default_dependency_spec_stays_pass_only(tmp_path: Path) -> None:
+    """The confirmation/incumbent/challenger lanes keep the PASS-only default
+    when ``required_verdicts`` is not supplied."""
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_wi(conn, item_id="h2h", phase="Q16", verdict=None,
+                   status="pending", kind="analytic")
+        _insert_wi(conn, item_id="parent", phase="Q10", verdict="PASS")
+        conn.commit()
+        spec = {
+            "dependency_role": "PARENT_LINEAGE",
+            "parent_work_item_id": "parent",
+            "parent_evidence_sha256": "b" * 64,
+        }
+        assert farmctl._ensure_q16_dependency(conn, child_work_item_id="h2h", spec=spec) is True
+        conn.commit()
+        stored = conn.execute(
+            "SELECT required_verdicts_json FROM work_item_dependencies "
+            "WHERE child_work_item_id='h2h' AND dependency_role='PARENT_LINEAGE'"
+        ).fetchone()
+    assert json.loads(stored["required_verdicts_json"]) == ["PASS"]

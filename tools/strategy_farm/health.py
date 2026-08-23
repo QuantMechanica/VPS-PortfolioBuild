@@ -51,6 +51,15 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm import q09_autoseal_hold_census
 try:
+    from phase_ids import ACTIVE_GATE_MANIFEST, ORDINARY_RUNTIME_PHASES, advancement_table, phase_rank
+except ModuleNotFoundError:
+    from tools.strategy_farm.phase_ids import (
+        ACTIVE_GATE_MANIFEST,
+        ORDINARY_RUNTIME_PHASES,
+        advancement_table,
+        phase_rank,
+    )
+try:
     from factory_mutation_lock import (
         DEFAULT_PATH as FACTORY_MUTATION_LOCK_PATH,
         DEFAULT_STALE_REAP_SECONDS as FACTORY_MUTATION_LOCK_DEAD_FAIL_SECONDS,
@@ -92,6 +101,7 @@ FACTORY_ON_CEREMONY_INCOMPLETE_PATH = (
     ROOT / "state" / "FACTORY_ON_CEREMONY_INCOMPLETE.json"
 )
 Q09_SEALED_PLAN_HOLD_FAIL_HOURS = 6
+NEWS_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
 PENDING_BINDING_DRIFT_DETAIL_LIMIT = 20
 DISK_SCRATCH_WINDOW_MINUTES = 20
 DISK_SCRATCH_RATE_WARN_GB_PER_HOUR = 20.0
@@ -2160,9 +2170,11 @@ def chk_p_pass_stagnation(con) -> dict:
     """
     cutoff_6h = (_utc_now() - dt.timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M:%S")
     cutoff_12h = (_utc_now() - dt.timedelta(hours=12)).strftime("%Y-%m-%dT%H:%M:%S")
-    phases = (
-        "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10", "Q11",
-        "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8",
+    phases = tuple(
+        phase for phase in ORDINARY_RUNTIME_PHASES if phase_rank(phase) >= phase_rank("Q03")
+    ) + tuple(
+        row.phase for row in advancement_table().values()
+        if row.legacy_alias and row.rank >= phase_rank("Q03")
     )
     placeholders = ",".join("?" for _ in phases)
     n_recent_p3plus = con.execute(
@@ -3807,20 +3819,23 @@ def chk_q09_sealed_plan_hold_age(con) -> dict:
         SELECT w.id,w.ea_id,w.symbol,w.created_at,h.created_at AS held_at
         FROM work_items w
         JOIN work_item_holds h ON h.work_item_id=w.id
-        WHERE w.phase='Q09_NEWS' AND w.status='pending'
+        WHERE w.phase=? AND w.status='pending'
           AND h.hold_code='Q09_AWAITING_SEALED_PLAN' AND h.active=1
         ORDER BY h.created_at ASC,w.id ASC
-        """
+        """,
+        (NEWS_PHASE,),
     ).fetchall()
     completed_24h = con.execute(
         """
         SELECT COUNT(*) FROM work_items
-        WHERE phase='Q09_NEWS' AND status IN ('done','failed')
+        WHERE phase=? AND status IN ('done','failed')
           AND julianday(updated_at) >= julianday('now','-24 hours')
-        """
+        """,
+        (NEWS_PHASE,),
     ).fetchone()[0]
     pending = con.execute(
-        "SELECT COUNT(*) FROM work_items WHERE phase='Q09_NEWS' AND status='pending'"
+        "SELECT COUNT(*) FROM work_items WHERE phase=? AND status='pending'",
+        (NEWS_PHASE,),
     ).fetchone()[0]
     now = _utc_now()
     aged: list[tuple[sqlite3.Row, float]] = []
@@ -3847,7 +3862,7 @@ def chk_q09_sealed_plan_hold_age(con) -> dict:
         age = "unparseable" if hours == float("inf") else f"{hours:.1f}h"
         rendered.append(f"{row['id'][:8]}:{row['ea_id']}:{row['symbol']}:{age}")
     detail = (
-        f"{service}; {len(aged)} Q09_NEWS sealed-plan hold(s) older than "
+        f"{service}; {len(aged)} {NEWS_PHASE} sealed-plan hold(s) older than "
         f"{Q09_SEALED_PLAN_HOLD_FAIL_HOURS}h; " + ", ".join(rendered)
     )
     hint = (

@@ -13,6 +13,13 @@ import sqlite3
 from collections import Counter
 from typing import Any
 
+try:
+    from phase_ids import ACTIVE_GATE_MANIFEST
+except ModuleNotFoundError:
+    from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+
+NEWS_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+
 
 SCHEMA_VERSION = "qm.q09_autoseal_hold_census.v1"
 HOLD_CODE = "Q09_AWAITING_SEALED_PLAN"
@@ -61,11 +68,11 @@ def collect(con: sqlite3.Connection, *, now: dt.datetime | None = None) -> dict[
                h.created_at AS held_at,w.payload_json
         FROM work_items w
         JOIN work_item_holds h ON h.work_item_id=w.id
-        WHERE w.phase='Q09_NEWS' AND w.status='pending'
+        WHERE w.phase=? AND w.status='pending'
           AND h.hold_code=? AND h.active=1
         ORDER BY h.created_at ASC,w.id ASC
         """,
-        (HOLD_CODE,),
+        (NEWS_PHASE, HOLD_CODE),
     ).fetchall()
 
     parsed_rows: list[dict[str, Any]] = []

@@ -21,12 +21,22 @@ import math
 import os
 import re
 import sqlite3
+import sys
 import tempfile
 import uuid
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST  # noqa: E402
+
+INCUMBENT_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
+ADMISSION_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("PATTERN")
+HEAD_TO_HEAD_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("HEAD_TO_HEAD")
 
 
 OPT_PROGRAM_SCHEMA = "qm.opt-program/v1"
@@ -40,7 +50,6 @@ PREDICATE_ABLATION_LEVER = "PREDICATE_ABLATION"
 CATEGORICAL_SURFACE_TYPE = "CATEGORICAL"
 PREDICATE_DIRECTIONS = {"BUY", "SELL"}
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm")) / "state" / "farm_state.sqlite"
 DEFAULT_CONFIG = REPO_ROOT / "tools" / "strategy_farm" / "config" / "opt_program.v1.json"
 DEFAULT_REPORT_ROOT = Path(r"D:\QM\reports\opt_track")
@@ -363,11 +372,12 @@ def load_q10_population(conn: sqlite3.Connection) -> list[Q10Row]:
                m.trades,m.drawdown_pct
         FROM work_items AS w
         LEFT JOIN ea_metrics AS m ON m.work_item_id=w.id
-        WHERE upper(w.phase)='Q10'
+        WHERE upper(w.phase)=?
           AND lower(w.status)='done'
           AND upper(coalesce(w.verdict,''))='PASS'
         ORDER BY w.updated_at DESC,w.id DESC
-        """
+        """,
+        (INCUMBENT_PHASE,),
     ).fetchall()
     distinct: dict[tuple[int, str], Q10Row] = {}
     for raw in rows:
@@ -582,7 +592,8 @@ def _existing_card_state(
     """
     open_cards: dict[str, tuple[int, str]] = {}
     q14_rows = conn.execute(
-        "SELECT ea_id,symbol,payload_json FROM work_items WHERE upper(phase)='Q14' AND upper(coalesce(verdict,''))='OPT_ELIGIBLE'"
+        "SELECT ea_id,symbol,payload_json FROM work_items WHERE upper(phase)=? AND upper(coalesce(verdict,''))='OPT_ELIGIBLE'",
+        (ADMISSION_PHASE,),
     ).fetchall()
     for row in q14_rows:
         try:
@@ -596,7 +607,8 @@ def _existing_card_state(
             continue
         open_cards[card_id] = key
     q16_rows = conn.execute(
-        "SELECT payload_json FROM work_items WHERE upper(phase)='Q16' AND lower(status) IN ('done','failed')"
+        "SELECT payload_json FROM work_items WHERE upper(phase)=? AND lower(status) IN ('done','failed')",
+        (HEAD_TO_HEAD_PHASE,),
     ).fetchall()
     for row in q16_rows:
         try:
@@ -622,7 +634,7 @@ def _decision_payload(
 ) -> dict[str, Any]:
     return {
         "schema": Q14_PAYLOAD_SCHEMA,
-        "phase": "Q14",
+        "phase": ADMISSION_PHASE,
         "source_q10_work_item_id": row.work_item_id,
         "program_id": program_id,
         "program_config_sha256": config_sha256,
@@ -833,7 +845,7 @@ def apply_plan(conn: sqlite3.Connection, plan: Mapping[str, Any]) -> dict[str, A
             ) VALUES(?,?,?,?,?,?,'done',?,0,NULL,?,NULL,?,?,?)
             """,
             (
-                decision["work_item_id"], "analytic", "Q14", decision["ea_id"],
+                decision["work_item_id"], "analytic", ADMISSION_PHASE, decision["ea_id"],
                 decision["symbol"], decision["setfile_path"], decision["verdict"],
                 decision["opt_card_path"], payload_json, now, now,
             ),
