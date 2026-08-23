@@ -41,6 +41,10 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 | `strategy_rollover_start_hhmm` | 2355 | (see source) | (see strategy logic) |
 | `strategy_rollover_end_hhmm` | 5 | (see source) | (see strategy logic) |
 | `strategy_spread_filter_mult` | 1.8 | (see source) | (see strategy logic) |
+| `strategy_daily_loss_halt_pct` | 2.0 | (see source) | Daily realized-loss entry halt percent |
+| `strategy_daily_hard_stop_pct` | 2.5 | (see source) | Daily equity hard stop percent |
+| `strategy_total_dd_halt_pct` | 5.0 | (see source) | Account total drawdown stop percent |
+| `strategy_per_trade_risk_cap_pct` | 0.5 | (see source) | Per-trade risk cap percent |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
