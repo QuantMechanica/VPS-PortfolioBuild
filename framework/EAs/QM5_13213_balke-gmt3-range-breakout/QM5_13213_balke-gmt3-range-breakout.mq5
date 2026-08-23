@@ -308,6 +308,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    g_strategy_range_day_key = day_key;
 
    QM_EntryRequest buy_req;
+   ZeroMemory(buy_req);
    Strategy_PopulateEntry(buy_req, QM_BUY_STOP, range_high, range_low, "BALKE_RANGE_BUY_STOP");
    ulong buy_ticket = 0;
    QM_TM_OpenPosition(buy_req, buy_ticket);
@@ -465,6 +466,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
@@ -515,6 +518,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
