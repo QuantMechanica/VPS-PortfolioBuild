@@ -788,6 +788,8 @@ bool Strategy_LoadMonthlyOutsideResidence(
 
    for(int i = 0; i < new_month_sessions; ++i)
      {
+      if(i < 0 || i >= ArraySize(newest_ratios))
+         return false;
       const double ratio = newest_ratios[i];
       if(!MathIsValidNumber(ratio))
          return false;

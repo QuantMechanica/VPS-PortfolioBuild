@@ -6593,6 +6593,7 @@ def enqueue_compile_eas(
     *,
     from_file: str | None = None,
     apply: bool = False,
+    source_repair_authority: str | None = None,
 ) -> dict[str, Any]:
     """Create guarded COMPILE_EA utility work items.
 
@@ -6628,6 +6629,7 @@ def enqueue_compile_eas(
         ea_labels,
         from_file=from_file,
         apply=apply,
+        source_repair_authority=source_repair_authority,
     )
 
 
@@ -26733,6 +26735,13 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Apply the batch form; positional/manual labels already imply apply",
     )
+    enqueue_compile.add_argument(
+        "--source-repair-authority",
+        help=(
+            "Append a source-hash-bound repair successor under an exact governed "
+            "authority; ordinary enqueue guards remain fail-closed"
+        ),
+    )
     compile_status = sub.add_parser(
         "compile-status",
         help="Report latest COMPILE_EA status and failure classes per EA",
@@ -27296,6 +27305,7 @@ def main(argv: list[str] | None = None) -> int:
             args.ea_labels,
             from_file=args.from_file,
             apply=args.apply,
+            source_repair_authority=args.source_repair_authority,
         )
         print_json(compile_enqueue_result)
         if not compile_enqueue_result.get("ok", False):

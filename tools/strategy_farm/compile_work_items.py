@@ -39,6 +39,30 @@ COMPILE_RECHECK_RETRY_AUTHORITY_TASK_ID = "1fb9943f-1b87-4515-b2b4-f5ca3ffb56f8"
 COMPILE_RECHECK_FAILURE_CLASS = "CANDIDATE_RECHECK_REFUSED"
 COMPILE_BINDING_RETRY_CONTRACT_VERSION = "qm.compile-ea-build-binding-retry/v1"
 COMPILE_BINDING_FAILURE_CLASS = "BUILD_CHECK_FAILED"
+SOURCE_REPAIR_CONTRACT_VERSION = "qm.compile-ea-source-repair/v1"
+SOURCE_REPAIR_AUTHORITY = "router_ops_issue:50467e7e"
+SOURCE_REPAIR_EA_LABELS = frozenset({
+    "QM5_41104_xauxag-mmedian-shift-rv",
+    "QM5_41109_xauxag-mmean-median-rv",
+    "QM5_41110_xauxag-moutside-res-rv",
+    "QM5_41111_wti-mdaybreadth-mom",
+    "QM5_41112_xauxag-mdaybreadth-rv",
+    "QM5_41113_xauxag-mhalfagree-rv",
+    "QM5_41116_xauxag-mthirdvote-rv",
+    "QM5_41118_xauxag-mlatehalf-dom-rv",
+    "QM5_41119_xauxag-mclose-quartile-rv",
+    "QM5_41120_xauxag-mopen-residence-rv",
+    "QM5_41121_xauxag-mseqdom-rv",
+    "QM5_41123_xauxag-mpath-eff-rv",
+    "QM5_41124_wti-mrms-coherence-mom",
+    "QM5_41125_xauxag-mrms-coherence-rv",
+    "QM5_41126_wti-mpath-eff-mom",
+    "QM5_41127_wti-mdaily-persist-mom",
+    "QM5_41128_xauxag-mdaily-persist-rv",
+    "QM5_41130_wti-mopen-residence-mom",
+    "QM5_41131_wti-mdaily-tailtrim-mom",
+    "QM5_41132_wti-mweekday-med-mom",
+})
 COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
@@ -351,15 +375,51 @@ def classify_candidate(
     current_work_item_id: str | None = None,
     sanctioned_predecessor_ids: Iterable[str] = (),
     force_rebuild_ea_ids: frozenset[str] = frozenset(),
+    source_repair_authority: str | None = None,
 ) -> dict[str, Any]:
     parts = _label_parts(label)
     if not parts:
         return {"ea_label": label, "eligible": False, "reason": "EA_LABEL_INVALID"}
     canonical_label, ea_id, _slug = parts
+    repair_requested = source_repair_authority is not None
+    repair_authorized = (
+        source_repair_authority == SOURCE_REPAIR_AUTHORITY
+        and canonical_label in SOURCE_REPAIR_EA_LABELS
+    )
+    sanctioned_ids = {
+        str(value) for value in sanctioned_predecessor_ids if str(value or "")
+    }
+    ea_dir = repo_root / "framework" / "EAs" / canonical_label
+    source = ea_dir / f"{canonical_label}.mq5"
+    source_sha = sha256_file(source) if source.is_file() else None
+    prior_compile_rows = [
+        row
+        for row in inventory["work_rows"].get(ea_id, [])
+        if row.get("phase") == COMPILE_EA_PHASE
+        and str(row.get("id")) != str(current_work_item_id or "")
+    ]
+    current_compile_ok = []
+    for row in prior_compile_rows:
+        prior_payload = _json_object(row.get("payload_json"))
+        if (
+            row.get("verdict") == "COMPILE_OK"
+            and source_sha
+            and str(prior_payload.get("mq5_sha256") or "").lower()
+            == source_sha.lower()
+        ):
+            current_compile_ok.append(str(row.get("id")))
     open_rows = [
         row for row in inventory["open_compile"].get(ea_id, [])
         if str(row.get("id")) != str(current_work_item_id or "")
+        and str(row.get("id")) not in sanctioned_ids
     ]
+    if repair_authorized and source_sha:
+        open_rows = [
+            row
+            for row in open_rows
+            if str(_json_object(row.get("payload_json")).get("mq5_sha256") or "").lower()
+            == source_sha.lower()
+        ]
     if open_rows:
         return {
             "ea_label": canonical_label,
@@ -369,10 +429,12 @@ def classify_candidate(
             "reason": "OPEN_COMPILE_EA_EXISTS",
             "work_item_ids": [row["id"] for row in open_rows],
         }
-    ea_dir = repo_root / "framework" / "EAs" / canonical_label
-    source = ea_dir / f"{canonical_label}.mq5"
     ex5 = ea_dir / f"{canonical_label}.ex5"
     reasons: list[str] = []
+    if repair_requested and not repair_authorized:
+        reasons.append("SOURCE_REPAIR_AUTHORITY_INVALID")
+    if repair_authorized and current_compile_ok:
+        reasons.append("USABLE_CURRENT_COMPILE_VERDICT_EXISTS")
     if not ea_dir.is_dir():
         reasons.append("EA_DIRECTORY_MISSING")
     if not source.is_file():
@@ -400,9 +462,6 @@ def classify_candidate(
     ]
     if invalid_symbols:
         reasons.append("SETFILE_SYMBOL_UNSUPPORTED")
-    sanctioned_ids = {
-        str(value) for value in sanctioned_predecessor_ids if str(value or "")
-    }
     ignored_ids = sanctioned_ids | {str(current_work_item_id or "")}
     other_work = [
         row for row in inventory["work_rows"].get(ea_id, [])
@@ -432,6 +491,14 @@ def classify_candidate(
         reasons = [
             reason for reason in reasons if reason not in FORCE_REBUILD_WAIVABLE_REASONS
         ]
+    source_repair_waived_reasons: list[str] = []
+    if repair_authorized and not current_compile_ok:
+        source_repair_waived_reasons = sorted(
+            reason for reason in reasons if reason in FORCE_REBUILD_WAIVABLE_REASONS
+        )
+        reasons = [
+            reason for reason in reasons if reason not in FORCE_REBUILD_WAIVABLE_REASONS
+        ]
 
     return {
         "ea_label": canonical_label,
@@ -439,7 +506,7 @@ def classify_candidate(
         "numeric_ea_id": ea_id,
         "ea_dir": str(ea_dir),
         "mq5_path": str(source),
-        "mq5_sha256": sha256_file(source) if source.is_file() else None,
+        "mq5_sha256": source_sha,
         "eligible": not reasons,
         "reason": "ELIGIBLE" if not reasons else reasons[0],
         "reasons": reasons,
@@ -451,6 +518,21 @@ def classify_candidate(
         "sanctioned_predecessor_ids": sorted(sanctioned_ids),
         "force_rebuild_authorized": force_rebuild_authorized,
         "force_rebuild_waived_reasons": force_rebuild_waived_reasons,
+        "source_repair_authorized": repair_authorized and not current_compile_ok,
+        "source_repair_authority": source_repair_authority,
+        "source_repair_contract_version": SOURCE_REPAIR_CONTRACT_VERSION,
+        "source_repair_waived_reasons": source_repair_waived_reasons,
+        "source_repair_predecessor_work_item_ids": sorted(
+            str(row.get("id")) for row in prior_compile_rows
+        ),
+        "source_repair_stale_open_work_item_ids": sorted(
+            str(row.get("id"))
+            for row in inventory["open_compile"].get(ea_id, [])
+            if str(row.get("id")) != str(current_work_item_id or "")
+            and str(_json_object(row.get("payload_json")).get("mq5_sha256") or "").lower()
+            != str(source_sha or "").lower()
+        ),
+        "current_compile_ok_work_item_ids": current_compile_ok,
     }
 
 
@@ -655,6 +737,7 @@ def enqueue_compile_eas(
     *,
     from_file: str | None = None,
     apply: bool = False,
+    source_repair_authority: str | None = None,
 ) -> dict[str, Any]:
     labels, input_metadata = load_labels(explicit_labels, from_file, repo_root)
     if not labels:
@@ -668,6 +751,7 @@ def enqueue_compile_eas(
         classify_candidate(
             root, repo_root, label, inventory,
             force_rebuild_ea_ids=force_rebuild_ea_ids,
+            source_repair_authority=source_repair_authority,
         )
         for label in labels
     ]
@@ -680,21 +764,41 @@ def enqueue_compile_eas(
         with _connect(root) as conn:
             conn.execute("BEGIN IMMEDIATE")
             for candidate in eligible:
-                existing = conn.execute(
-                    "SELECT id FROM work_items WHERE ea_id=? AND phase=? "
-                    "AND status IN ('pending','active') ORDER BY created_at LIMIT 1",
+                existing_rows = conn.execute(
+                    "SELECT id,payload_json FROM work_items WHERE ea_id=? AND phase=? "
+                    "AND status IN ('pending','active') ORDER BY created_at,id",
                     (candidate["ea_id"], COMPILE_EA_PHASE),
-                ).fetchone()
-                if existing:
-                    idempotent.append({
-                        **candidate,
-                        "eligible": False,
-                        "idempotent_open": True,
-                        "reason": "OPEN_COMPILE_EA_EXISTS",
-                        "work_item_ids": [existing["id"]],
-                    })
-                    continue
-                if not candidate.get("force_rebuild_authorized"):
+                ).fetchall()
+                if existing_rows:
+                    current_hash = str(candidate.get("mq5_sha256") or "").lower()
+                    current_hash_rows = [
+                        row
+                        for row in existing_rows
+                        if str(
+                            _json_object(row["payload_json"]).get("mq5_sha256") or ""
+                        ).lower() == current_hash
+                    ]
+                    if (
+                        not candidate.get("source_repair_authorized")
+                        or current_hash_rows
+                    ):
+                        blocking_rows = (
+                            current_hash_rows
+                            if candidate.get("source_repair_authorized")
+                            else existing_rows
+                        )
+                        idempotent.append({
+                            **candidate,
+                            "eligible": False,
+                            "idempotent_open": True,
+                            "reason": "OPEN_COMPILE_EA_EXISTS",
+                            "work_item_ids": [row["id"] for row in blocking_rows],
+                        })
+                        continue
+                if (
+                    not candidate.get("force_rebuild_authorized")
+                    and not candidate.get("source_repair_authorized")
+                ):
                     any_work = conn.execute(
                         "SELECT id FROM work_items WHERE ea_id=? LIMIT 1",
                         (candidate["ea_id"],),
@@ -731,6 +835,23 @@ def enqueue_compile_eas(
                         ),
                         "force_rebuild_waived_reasons": candidate.get(
                             "force_rebuild_waived_reasons", []
+                        ),
+                    })
+                if candidate.get("source_repair_authorized"):
+                    payload.update({
+                        "compile_source_repair_contract_version": (
+                            SOURCE_REPAIR_CONTRACT_VERSION
+                        ),
+                        "compile_source_repair_authority": source_repair_authority,
+                        "append_only_source_repair": True,
+                        "source_repair_predecessor_work_item_ids": candidate.get(
+                            "source_repair_predecessor_work_item_ids", []
+                        ),
+                        "source_repair_stale_open_work_item_ids": candidate.get(
+                            "source_repair_stale_open_work_item_ids", []
+                        ),
+                        "source_repair_waived_reasons": candidate.get(
+                            "source_repair_waived_reasons", []
                         ),
                     })
                 conn.execute(
@@ -791,6 +912,7 @@ def enqueue_compile_eas(
         "refused": refused,
         "candidate_classification": classified if not apply_effective else None,
         "no_gate_verdict": True,
+        "source_repair_authority": source_repair_authority,
     }
 
 
@@ -1047,6 +1169,13 @@ def run_compile_work_item(
             current_work_item_id=work_item_id,
             sanctioned_predecessor_ids=sanctioned_predecessors,
             force_rebuild_ea_ids=force_rebuild_allowlist(root, repo_root),
+            source_repair_authority=(
+                str(payload.get("compile_source_repair_authority") or "")
+                if payload.get("append_only_source_repair") is True
+                and payload.get("compile_source_repair_contract_version")
+                == SOURCE_REPAIR_CONTRACT_VERSION
+                else None
+            ),
         )
         evidence["ea_label"] = label
         evidence["candidate_recheck"] = candidate

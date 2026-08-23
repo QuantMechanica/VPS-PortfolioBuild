@@ -520,8 +520,9 @@ bool Strategy_LoadDailyMedianSignal(const int current_month_key,
    int return_count = 0;
    for(int index = month_sessions - 1; index >= 0; --index)
      {
-      if(index >= ArraySize(month_closes) ||
-         return_count >= ArraySize(daily_returns))
+      if(index >= ArraySize(month_closes))
+         return false;
+      if(return_count >= ArraySize(daily_returns))
          return false;
       const double current_close = month_closes[index];
       if(current_close <= 0.0 || !MathIsValidNumber(current_close) ||
@@ -553,6 +554,8 @@ bool Strategy_LoadDailyMedianSignal(const int current_month_key,
    ArraySort(daily_returns);
    for(int index = 0; index < return_count; ++index)
      {
+      if(index >= ArraySize(daily_returns))
+         return false;
       if(!MathIsValidNumber(daily_returns[index]))
          return false;
       if(index > 0 &&
@@ -562,6 +565,8 @@ bool Strategy_LoadDailyMedianSignal(const int current_month_key,
 
    const int center = return_count / 2;
    if(center < 0 || center >= return_count)
+      return false;
+   if(center >= ArraySize(daily_returns))
       return false;
    if((return_count % 2) == 1)
      {
