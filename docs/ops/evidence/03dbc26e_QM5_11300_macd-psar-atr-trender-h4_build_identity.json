@@ -1,0 +1,16 @@
+{
+  "task_id": "03dbc26e-174f-4879-bbbc-ac69b07ec692",
+  "ea_id": "QM5_11300",
+  "ea_label": "QM5_11300_macd-psar-atr-trender-h4",
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11300_macd-psar-atr-trender-h4\\QM5_11300_macd-psar-atr-trender-h4.mq5",
+  "mq5_sha256": "83ef727b80d9010706c7faddc8d1eea90a933a3bf37226a2bccd140af7504b53",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11300_macd-psar-atr-trender-h4\\QM5_11300_macd-psar-atr-trender-h4.ex5",
+  "ex5_sha256": "272e3f06bd4e04f1280665368a263fac4b2ede156610cd080276b968c6cd642a",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11300_macd-psar-atr-trender-h4\\sets\\QM5_11300_macd-psar-atr-trender-h4_AUDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11300_macd-psar-atr-trender-h4\\sets\\QM5_11300_macd-psar-atr-trender-h4_EURUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11300_macd-psar-atr-trender-h4\\sets\\QM5_11300_macd-psar-atr-trender-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11300_macd-psar-atr-trender-h4\\sets\\QM5_11300_macd-psar-atr-trender-h4_USDJPY.DWX_H4_backtest.set"
+  ]
+}

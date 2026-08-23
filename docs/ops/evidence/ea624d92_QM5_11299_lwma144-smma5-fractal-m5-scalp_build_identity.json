@@ -1,0 +1,14 @@
+{
+  "task_id": "ea624d92-20db-425b-9deb-840b11c83d40",
+  "ea_id": "QM5_11299",
+  "ea_label": "QM5_11299_lwma144-smma5-fractal-m5-scalp",
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11299_lwma144-smma5-fractal-m5-scalp\\QM5_11299_lwma144-smma5-fractal-m5-scalp.mq5",
+  "mq5_sha256": "bc7ae0c2110fb16408bb1de58a46ca812c155d62bc47b386067b0f4ea7f94ca3",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11299_lwma144-smma5-fractal-m5-scalp\\QM5_11299_lwma144-smma5-fractal-m5-scalp.ex5",
+  "ex5_sha256": "2489a3372177a1627619e6bcf7535fb26d1412fbb32346ba4f9101e2e378932b",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11299_lwma144-smma5-fractal-m5-scalp\\sets\\QM5_11299_lwma144-smma5-fractal-m5-scalp_EURUSD.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11299_lwma144-smma5-fractal-m5-scalp\\sets\\QM5_11299_lwma144-smma5-fractal-m5-scalp_GBPUSD.DWX_M5_backtest.set"
+  ]
+}
