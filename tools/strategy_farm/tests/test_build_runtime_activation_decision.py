@@ -15,6 +15,7 @@ sys.path.insert(0, str(HERE.parent))
 
 import build_runtime_activation_decision as builder  # noqa: E402
 import factory_runtime_activation as fra  # noqa: E402
+import gate_manifest  # noqa: E402
 
 
 NOW = dt.datetime(2026, 7, 30, 12, 0, tzinfo=dt.UTC)
@@ -254,6 +255,46 @@ def test_builder_self_verifies_candidate_and_preserves_crlf_normalization(
             factory_off_flag=flag_path,
             now_utc=NOW,
         )
+
+
+def test_builder_binds_active_gate_contract_into_payload(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo, flag_path = _seed_repo(tmp_path, monkeypatch)
+
+    result = builder.build_runtime_activation_decision(
+        repo_root=repo,
+        flag_path=flag_path,
+        decision_id="OWNER_GO_GATE_CONTRACT",
+        now_utc=NOW,
+    )
+
+    manifest = gate_manifest.load_gate_manifest()
+    decision = json.loads(
+        (repo / fra.DECISION_RELATIVE_PATH).read_text(encoding="utf-8")
+    )
+    gate_contract = decision["gate_contract"]
+    assert set(gate_contract) == {
+        "schema_version",
+        "manifest_path",
+        "sha256",
+        "activation_state",
+    }
+    assert gate_contract["sha256"] == manifest.sha256
+    assert gate_contract["schema_version"] == manifest.schema_version
+    assert gate_contract["activation_state"] == manifest.activation_state
+    assert gate_contract["manifest_path"] == (
+        "tools/strategy_farm/config/gate_manifest.v3.json"
+    )
+    # The additive block flows through candidate + published self-verification.
+    assert result["gate_contract_sha256"] == manifest.sha256
+    assert result["published_validated"] is True
+    # The sidecar binds the full decision bytes, gate_contract included.
+    assert (repo / fra.DIGEST_RELATIVE_PATH).read_text(encoding="ascii") == (
+        f"{_sha256((repo / fra.DECISION_RELATIVE_PATH).read_bytes())}  "
+        f"{fra.DECISION_RELATIVE_PATH.name}\n"
+    )
 
 
 def test_builder_carries_empty_declared_plan_forward(

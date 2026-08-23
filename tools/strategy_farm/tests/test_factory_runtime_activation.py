@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import json
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -15,6 +16,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 
 import factory_runtime_activation as fra  # noqa: E402
+import gate_manifest  # noqa: E402
 
 
 NOW = dt.datetime(2026, 7, 30, 12, 0, tzinfo=dt.UTC)
@@ -505,6 +507,88 @@ def test_schema_and_template_pin_structural_restart_and_source_contracts() -> No
     assert task_map_sha256 == template["restore_intent"][
         "task_enabled_before_sha256"
     ]
+
+
+def _active_gate_contract() -> dict:
+    manifest = gate_manifest.load_gate_manifest()
+    return {
+        "schema_version": manifest.schema_version,
+        "manifest_path": "tools/strategy_farm/config/gate_manifest.v3.json",
+        "sha256": manifest.sha256,
+        "activation_state": manifest.activation_state,
+    }
+
+
+def test_missing_gate_contract_block_is_grandfathered_with_warning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    # _build_repo mints a pre-contract-binding decision (no gate_contract).
+    repo, flag_path, _ = _build_repo(tmp_path, monkeypatch)
+
+    with caplog.at_level(logging.WARNING, logger=fra.__name__):
+        result = _validate(repo, flag_path)
+
+    assert result["authorized"] is True
+    assert result["gate_contract"] is None
+    assert any(
+        "no gate_contract block" in record.getMessage()
+        for record in caplog.records
+    )
+
+
+def test_matching_gate_contract_block_passes_and_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    gate_contract = _active_gate_contract()
+
+    def add_contract(decision: dict) -> None:
+        decision["gate_contract"] = gate_contract
+
+    repo, flag_path, _ = _build_repo(
+        tmp_path, monkeypatch, mutate_decision=add_contract
+    )
+
+    result = _validate(repo, flag_path)
+
+    assert result["authorized"] is True
+    assert result["gate_contract"] == gate_contract
+
+
+def test_gate_contract_sha_mismatch_refuses_activation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def add_wrong_contract(decision: dict) -> None:
+        contract = _active_gate_contract()
+        contract["sha256"] = "0" * 64
+        decision["gate_contract"] = contract
+
+    repo, flag_path, _ = _build_repo(
+        tmp_path, monkeypatch, mutate_decision=add_wrong_contract
+    )
+
+    with pytest.raises(
+        fra.RuntimeActivationError,
+        match="does not match the active default gate manifest",
+    ):
+        _validate(repo, flag_path)
+
+
+def test_gate_contract_block_rejects_extra_key(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def add_malformed_contract(decision: dict) -> None:
+        contract = _active_gate_contract()
+        contract["unexpected"] = "x"
+        decision["gate_contract"] = contract
+
+    repo, flag_path, _ = _build_repo(
+        tmp_path, monkeypatch, mutate_decision=add_malformed_contract
+    )
+
+    with pytest.raises(fra.RuntimeActivationError, match="gate_contract key-set mismatch"):
+        _validate(repo, flag_path)
 
 
 def test_cli_emits_exactly_one_versioned_framed_record(
