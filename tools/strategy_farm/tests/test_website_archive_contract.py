@@ -269,6 +269,9 @@ def test_report_id_is_path_free_and_stable():
 def test_public_gate_maps_legacy_and_drops_internal():
     assert wac._public_gate("P2") == "Q02"
     assert wac._public_gate("Q06") == "Q06"
+    assert wac._public_gate("Q10", "v3") == "Q11"
+    assert wac._public_gate("Q10", "v4") == "Q10"
+    assert wac._public_gate("Q10_NEWS", "v4") == "Q10"
     assert wac._public_gate("HARNESS_PP_FIXTURE") is None
 
 
@@ -384,3 +387,188 @@ def test_write_refuses_public_data_dir(tmp_path):
     target = wac.PUBLIC_DATA_DIR / "website_preview"
     with pytest.raises(SystemExit):
         wac.write_contract(contract, target)
+
+
+# ---------------------------------------------------------------------------
+# Numeric-free public snapshot blocks
+# ---------------------------------------------------------------------------
+
+def _make_public_blocks_fixture(path: Path) -> None:
+    with sqlite3.connect(path) as con:
+        con.execute("""
+            CREATE TABLE work_items (
+                id TEXT, kind TEXT, phase TEXT, ea_id TEXT, symbol TEXT,
+                setfile_path TEXT, status TEXT, verdict TEXT, attempt_count INTEGER,
+                parent_task_id TEXT, evidence_path TEXT, claimed_by TEXT,
+                payload_json TEXT, created_at TEXT, updated_at TEXT,
+                gate_contract_version TEXT
+            )""")
+
+        def add(
+            row_id: str,
+            ea_id: str,
+            phase: str,
+            verdict: str | None,
+            *,
+            version: str,
+            status: str = "done",
+            symbol: str = "EURUSD.DWX",
+        ) -> None:
+            con.execute(
+                "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    row_id, "backtest", phase, ea_id, symbol, None, status,
+                    verdict, 0, None, None, None, "{}", "2026-08-23T00:00:00Z",
+                    "2026-08-23T00:00:00Z", version,
+                ),
+            )
+
+        # Historical v3 incumbent evidence resolves to v4 Q11, but cannot jump
+        # the missing v4 Q09/Q10 prerequisites. Public progress stops at Q08.
+        for phase in ("Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08"):
+            add(f"a-{phase}", "QM5_9001", phase, "PASS", version="v3")
+        add("a-incumbent", "QM5_9001", "Q10", "PASS", version="v3")
+
+        add("b-q02", "QM5_9002", "Q02", "PASS", version="v4")
+        add("b-q03", "QM5_9002", "Q03", "FAIL", version="v4")
+        add("c-q02", "QM5_9003", "Q02", None, version="v4", status="pending")
+
+        # A complete v4 phase-two chain with contiguous phase-three evidence.
+        for phase in tuple(f"Q{i:02d}" for i in range(2, 14)):
+            add(f"d-{phase}", "QM5_9004", phase, "PASS", version="v4")
+        add("d-q14", "QM5_9004", "Q14", "KEEP_INCUMBENT", version="v4")
+        add("d-q15", "QM5_9004", "Q15_DXZ", "PASS_PORTFOLIO", version="v4")
+        add("d-q16", "QM5_9004", "Q16", None, version="v4", status="active")
+        # Isolated later evidence must not leap over the active Q16 frontier.
+        add("d-q17", "QM5_9004", "Q17", "PASS", version="v4")
+
+
+def _make_public_card(root: Path, ea_id: str, *, public_summary: str | None = None) -> None:
+    cards = root / "artifacts" / "cards_approved"
+    cards.mkdir(parents=True, exist_ok=True)
+    summary = f"public_summary: \"{public_summary}\"\n" if public_summary else ""
+    (cards / f"{ea_id}_demo.md").write_text(
+        "---\n"
+        f"ea_id: {ea_id}\n"
+        "slug: demo\n"
+        f"{summary}"
+        "g0_status: APPROVED\n"
+        "---\n"
+        "# Internal card body\n",
+        encoding="utf-8",
+    )
+
+
+def _public_card_for_ea(block: dict, farm_root: Path, ea_id: str) -> dict:
+    card_path = next((farm_root / "artifacts" / "cards_approved").glob(f"{ea_id}_*.md"))
+    public_id = wac.project_card(card_path)["card_id"]
+    return next(item for item in block["cards"] if item["public_id"] == public_id)
+
+
+def test_public_snapshot_archive_is_version_aware_contiguous_and_number_free(
+    tmp_path: Path,
+) -> None:
+    db = tmp_path / "farm.sqlite"
+    _make_public_blocks_fixture(db)
+    farm_root = tmp_path / "farm"
+    for ea_id in ("QM5_9001", "QM5_9002", "QM5_9003", "QM5_9004", "QM5_9005"):
+        _make_public_card(
+            farm_root,
+            ea_id,
+            public_summary=(
+                "A trend-following mechanism based on persistent directional movement."
+                if ea_id == "QM5_9001" else None
+            ),
+        )
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    blocks = wac.build_public_snapshot_blocks(db, farm_root, repo_root)
+    archive = blocks["public_archive"]
+    historical = _public_card_for_ea(archive, farm_root, "QM5_9001")
+    failed = _public_card_for_ea(archive, farm_root, "QM5_9002")
+    running = _public_card_for_ea(archive, farm_root, "QM5_9003")
+    complete = _public_card_for_ea(archive, farm_root, "QM5_9004")
+    card_only = _public_card_for_ea(archive, farm_root, "QM5_9005")
+
+    assert historical["mechanism_class"].startswith("A trend-following mechanism")
+    assert all(historical["gates"][f"Q{i:02d}"] == "PASS" for i in range(9))
+    assert all(historical["gates"][f"Q{i:02d}"] == "UNTESTED" for i in range(9, 18))
+    assert failed["gates"]["Q02"] == "PASS"
+    assert failed["gates"]["Q03"] == "FAIL"
+    assert running["gates"]["Q02"] == "IN_PROGRESS"
+    assert complete["gates"]["Q15"] == "PASS"
+    assert complete["gates"]["Q16"] == "IN_PROGRESS"
+    assert complete["gates"]["Q17"] == "UNTESTED"
+    assert card_only["gates"]["Q00"] == "PASS"
+    assert card_only["gates"]["Q01"] == "UNTESTED"
+    serialized = json.dumps(blocks)
+    assert "QM5_" not in serialized
+    assert ":\\" not in serialized
+    assert "work_item_id" not in serialized
+    assert "symbol" not in serialized
+    assert "@" not in serialized
+    wac.assert_public_snapshot_blocks_safe(blocks)
+
+
+@pytest.mark.parametrize(
+    "unsafe",
+    [
+        r"A mechanism documented at D:\QM\private\card.md.",
+        "A mechanism maintained by analyst@example.com.",
+        "A mechanism with a threshold of twelve percent and PF 1.2.",
+    ],
+)
+def test_public_snapshot_redaction_guard_fails_closed_on_public_summary(
+    tmp_path: Path, unsafe: str
+) -> None:
+    db = tmp_path / "farm.sqlite"
+    _make_public_blocks_fixture(db)
+    farm_root = tmp_path / "farm"
+    _make_public_card(farm_root, "QM5_9001", public_summary=unsafe)
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    with pytest.raises(wac.PublicSnapshotContractError):
+        wac.build_public_snapshot_blocks(db, farm_root, repo_root)
+
+
+def test_public_gate_copy_is_active_v4_three_phase_and_has_no_threshold_numbers() -> None:
+    block = wac.build_pipeline_gates_block()
+    assert [gate["id"] for gate in block["gates"]] == list(wac.PUBLIC_GATE_IDS)
+    assert len(block["macro_phases"]) == 3
+    assert len({gate["macro_phase"] for gate in block["gates"]}) == 3
+    for gate in block["gates"]:
+        assert not any(ch.isdigit() for ch in gate["name"])
+        assert not any(ch.isdigit() for ch in gate["purpose"])
+        assert gate["purpose"].endswith(".")
+
+
+def test_public_snapshot_schema_pins_archive_and_gate_copy_contracts() -> None:
+    schema = json.loads(
+        (REPO / "public-data" / "public-snapshot.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert {"public_archive", "pipeline_gates"} <= set(schema["required"])
+    archive = schema["properties"]["public_archive"]
+    gates = schema["properties"]["pipeline_gates"]
+    assert archive["additionalProperties"] is False
+    assert gates["additionalProperties"] is False
+    assert schema["$defs"]["public_gate_state"]["enum"] == [
+        "PASS", "FAIL", "UNTESTED", "IN_PROGRESS"
+    ]
+
+
+def test_exporter_invokes_fail_closed_public_projection() -> None:
+    source = (REPO / "scripts" / "export_public_snapshot.ps1").read_text(
+        encoding="utf-8-sig"
+    )
+    generator = source.index("--public-snapshot-blocks")
+    archive_assignment = source.index("public_archive = $publicBlocks.public_archive")
+    schema_validation = source.index(
+        "Validate-JsonAgainstSchema -Object $publicSnapshot"
+    )
+    assert generator < archive_assignment < schema_validation
+    assert "Public archive redaction grep guard refused generated blocks" in source
+    assert "pipeline_gates = $publicBlocks.pipeline_gates" in source

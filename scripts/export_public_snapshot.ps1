@@ -3,6 +3,9 @@ param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$PublicDataDir = "C:\QM\repo\public-data",
     [string]$PipelineStatePath = "D:\QM\reports\state\pipeline_state.json",
+    [string]$FarmDbPath = "D:\QM\strategy_farm\state\farm_state.sqlite",
+    [string]$FarmRoot = "D:\QM\strategy_farm",
+    [string]$PythonExe = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe",
     [switch]$NoGit,
     [switch]$NoNetlifyFallback,
     [switch]$DryRun
@@ -70,7 +73,7 @@ function Validate-JsonAgainstSchema {
     # Windows PowerShell 5.x fallback validation (schema-aligned checks).
     switch ($Name) {
         "public-snapshot" {
-            $requiredTop = @("schema_version", "generated_at", "phase", "agents", "pipeline", "t6", "expenses")
+            $requiredTop = @("schema_version", "generated_at", "phase", "agents", "pipeline", "public_archive", "pipeline_gates", "t6", "expenses")
             foreach ($key in $requiredTop) {
                 if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key '$key' in $Name." }
             }
@@ -87,13 +90,44 @@ function Validate-JsonAgainstSchema {
                 if ($null -eq $Object.pipeline.by_phase.$k -or $Object.pipeline.by_phase.$k -lt 0) { throw "Invalid pipeline.by_phase.$k in $Name." }
             }
             if ($Object.pipeline.by_gate_v4.gate_contract_version -ne "v4") { throw "Invalid pipeline.by_gate_v4.gate_contract_version in $Name." }
-            foreach ($k in $Object.pipeline.by_gate_v4.PSObject.Properties.Name) {
-                if ($k -eq "gate_contract_version") { continue }
-                if ($k -notmatch '^Q(?:0[0-9]|1[0-7])$' -or $Object.pipeline.by_gate_v4.$k -lt 0) { throw "Invalid pipeline.by_gate_v4.$k in $Name." }
+            $v4GateKeys = @(0..17 | ForEach-Object { 'Q{0:d2}' -f $_ })
+            foreach ($k in $v4GateKeys) {
+                if (-not (Test-ObjectHasKey -Target $Object.pipeline.by_gate_v4 -Key $k) -or
+                    $Object.pipeline.by_gate_v4.$k -lt 0) {
+                    throw "Invalid pipeline.by_gate_v4.$k in $Name."
+                }
             }
             if ($Object.t6.status -notin @("offline", "demo", "live", "degraded")) { throw "Invalid t6.status in $Name." }
             if ($Object.t6.risk_state -notin @("green", "yellow", "red")) { throw "Invalid t6.risk_state in $Name." }
             if ($Object.expenses.spent_eur -lt 0 -or $Object.expenses.budget_eur -lt 0 -or $Object.expenses.entries -lt 0) { throw "Invalid expenses fields in $Name." }
+            if ($Object.public_archive.gate_contract_version -cne "v4" -or
+                $Object.public_archive.progress_metric -cne "highest_contiguous_valid_gate") {
+                throw "Invalid public_archive contract in $Name."
+            }
+            $publicGateIds = @($Object.public_archive.gates)
+            if ($publicGateIds.Count -ne 18 -or
+                ($publicGateIds -join ',') -cne ((0..17 | ForEach-Object { 'Q{0:d2}' -f $_ }) -join ',')) {
+                throw "Invalid public_archive gate order in $Name."
+            }
+            foreach ($card in @($Object.public_archive.cards)) {
+                if ([string]$card.public_id -cnotmatch '^card_[0-9a-f]{16}$') {
+                    throw "Invalid public_archive public_id in $Name."
+                }
+                foreach ($gateId in $publicGateIds) {
+                    if ($card.gates.$gateId -cnotin @('PASS','FAIL','UNTESTED','IN_PROGRESS')) {
+                        throw "Invalid public_archive state at $gateId in $Name."
+                    }
+                }
+            }
+            if ($Object.pipeline_gates.gate_contract_version -cne "v4" -or
+                @($Object.pipeline_gates.macro_phases).Count -ne 3 -or
+                @($Object.pipeline_gates.gates).Count -ne 18) {
+                throw "Invalid pipeline_gates contract in $Name."
+            }
+            $gateCopyIds = @($Object.pipeline_gates.gates | ForEach-Object { [string]$_.id })
+            if (($gateCopyIds -join ',') -cne ($publicGateIds -join ',')) {
+                throw "Invalid pipeline_gates gate order in $Name."
+            }
         }
         "process-roadmap" {
             foreach ($key in @("schema_version", "generated_at", "total", "items")) {
@@ -134,6 +168,65 @@ function Validate-JsonAgainstSchema {
             throw "No fallback validator implemented for $Name."
         }
     }
+}
+
+function Get-PublicSnapshotBlocks {
+    param(
+        [string]$PythonPath,
+        [string]$GeneratorPath,
+        [string]$DatabasePath,
+        [string]$RuntimeRoot,
+        [string]$RepositoryRoot
+    )
+    if (-not (Test-Path -LiteralPath $PythonPath -PathType Leaf)) {
+        throw "Python executable not found: $PythonPath"
+    }
+    if (-not (Test-Path -LiteralPath $GeneratorPath -PathType Leaf)) {
+        throw "Public archive contract generator not found: $GeneratorPath"
+    }
+    $priorErrorPreference = $ErrorActionPreference
+    try {
+        # Windows PowerShell converts native stderr into error records under
+        # Stop. Capture it, then trust only one complete JSON output record.
+        $ErrorActionPreference = "Continue"
+        $output = @(& $PythonPath $GeneratorPath `
+            --public-snapshot-blocks `
+            --db $DatabasePath `
+            --farm-root $RuntimeRoot `
+            --repo-root $RepositoryRoot 2>&1)
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $priorErrorPreference
+    }
+    $jsonLines = @($output | ForEach-Object { [string]$_ } |
+        Where-Object { $_.Trim().StartsWith('{') -and $_.Trim().EndsWith('}') })
+    if ($exitCode -ne 0 -or $jsonLines.Count -ne 1) {
+        throw ("Public archive contract generation failed " +
+            "(rc=$exitCode output=$($output -join ' | '))")
+    }
+    try {
+        $blocks = [string]$jsonLines[0] | ConvertFrom-Json -ErrorAction Stop
+    }
+    catch {
+        throw "Public archive contract returned invalid JSON: $($_.Exception.Message)"
+    }
+    # Defence in depth: the Python allowlist is authoritative, while this grep
+    # guard independently refuses the leak classes from the website incident.
+    $serialized = $blocks | ConvertTo-Json -Depth 20 -Compress
+    $forbidden = @(
+        '(?i)(?<![A-Za-z0-9])[A-Za-z]:[\\/]',
+        '(?i)file:/{2,}',
+        '\\\\[A-Za-z0-9._$-]+\\',
+        '(?i)\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b',
+        '(?i)"(?:work_item_id|ea_id|symbol|path|email|threshold|metrics?)"\s*:'
+    )
+    foreach ($pattern in $forbidden) {
+        if ($serialized -match $pattern) {
+            throw "Public archive redaction grep guard refused generated blocks."
+        }
+    }
+    return $blocks
 }
 
 function Get-ExpenseSummary {
@@ -243,6 +336,12 @@ $strategyArchive = Get-StrategyArchiveSnapshot `
         "D:\QM\strategy_farm\artifacts\cards_approved",
         "D:\QM\strategy_farm\artifacts\cards_draft"
     )
+$publicBlocks = Get-PublicSnapshotBlocks `
+    -PythonPath $PythonExe `
+    -GeneratorPath (Join-Path $RepoRoot "tools\strategy_farm\website_archive_contract.py") `
+    -DatabasePath $FarmDbPath `
+    -RuntimeRoot $FarmRoot `
+    -RepositoryRoot $RepoRoot
 
 # Load pipeline_state.json (single source of truth for the public-snapshot live fields).
 # Built by scripts/build_pipeline_state.py against D:/QM/reports/pipeline + watchdog + aggregator state.
@@ -300,6 +399,8 @@ $publicSnapshot = [ordered]@{
         by_phase = $byPhaseLive
         by_gate_v4 = $byGateV4
     }
+    public_archive = $publicBlocks.public_archive
+    pipeline_gates = $publicBlocks.pipeline_gates
     t6 = @{
         status = "offline"
         autotrading = $false
