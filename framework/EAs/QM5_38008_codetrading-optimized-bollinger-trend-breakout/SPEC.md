@@ -31,13 +31,16 @@ Stop Loss is set at 2.0× ATR(14, D1)[1] from the entry price. Position exit is 
 | `strategy_trend_slope_lookback` | `5` | `3-10` | Lookback bars for EMA slope calculation |
 | `strategy_atr_period` | `14` | `10-20` | ATR period for volatility distance & spread filter |
 | `strategy_atr_sl_mult` | `2.0` | `1.5-3.0` | Multiplier on ATR for stop loss placement |
-| `strategy_tp_rr_mult` | `5.0` | `3.0-8.0` | Cap take profit multiplier for trend riding |
 | `strategy_use_mid_exit` | `true` | `true/false` | Close position on 20 SMA midline cross |
 | `strategy_be_enabled` | `true` | `true/false` | Enable moving stop loss to break-even |
 | `strategy_be_trigger_r` | `1.0` | `0.5-2.0` | Profit in R-multiples to trigger break-even move |
 | `strategy_rollover_start_hhmm` | `2355` | `0-2359` | Start time for daily rollover blackout window |
 | `strategy_rollover_end_hhmm` | `5` | `0-2359` | End time for daily rollover blackout window |
 | `strategy_spread_filter_mult` | `1.8` | `1.0-3.0` | Max allowable spread as a multiple of ATR |
+| `strategy_daily_loss_halt_pct` | `2.0` | `1.0-5.0` | Daily realized-loss entry halt percent |
+| `strategy_daily_hard_stop_pct` | `2.5` | `1.0-5.0` | Daily equity hard stop percent |
+| `strategy_total_dd_halt_pct` | `5.0` | `2.0-10.0` | Account total drawdown stop percent |
+| `strategy_per_trade_risk_cap_pct` | `0.5` | `0.1-1.0` | Per-trade risk cap percent |
 
 ---
 

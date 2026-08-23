@@ -28,7 +28,6 @@ strategy_trend_ema_period=200
 strategy_trend_slope_lookback=5
 strategy_atr_period=14
 strategy_atr_sl_mult=2.0
-strategy_tp_rr_mult=5.0
 strategy_use_mid_exit=true
 strategy_be_enabled=true
 strategy_be_trigger_r=1.0
