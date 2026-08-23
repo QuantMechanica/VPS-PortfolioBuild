@@ -42,7 +42,28 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
 
+try:
+    from sqlite_busy import (
+        BUSY_TIMEOUT_MS,
+        configure_connection as configure_sqlite_connection,
+        retry_sqlite_busy,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.sqlite_busy import (
+        BUSY_TIMEOUT_MS,
+        configure_connection as configure_sqlite_connection,
+        retry_sqlite_busy,
+    )
+
 NEWS_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+
+
+def _configure_database_connection(connection: sqlite3.Connection) -> sqlite3.Connection:
+    return configure_sqlite_connection(connection)
+
+
+def _begin_immediate_with_retry(connection: sqlite3.Connection) -> None:
+    retry_sqlite_busy(lambda: connection.execute("BEGIN IMMEDIATE"))
 
 
 PLAN_SCHEMA = "q09-news-run-plan/v2"
@@ -1102,13 +1123,14 @@ def bind_plan_to_work_item(
 
     connection = sqlite3.connect(
         f"file:{database.as_posix()}?mode=ro" if dry_run else str(database),
-        timeout=30,
+        timeout=BUSY_TIMEOUT_MS / 1000.0,
         uri=bool(dry_run),
     )
     connection.row_factory = sqlite3.Row
+    _configure_database_connection(connection)
     try:
         if not dry_run:
-            connection.execute("BEGIN IMMEDIATE")
+            _begin_immediate_with_retry(connection)
         item = connection.execute(
             "SELECT * FROM work_items WHERE id=?", (str(work_item_id),)
         ).fetchone()
@@ -1347,10 +1369,11 @@ def bind_diagnostic_plan_to_work_item(
     if not database.is_file():
         raise RunnerError(f"strategy-farm database missing: {database}")
 
-    connection = sqlite3.connect(str(database), timeout=30)
+    connection = sqlite3.connect(str(database), timeout=BUSY_TIMEOUT_MS / 1000.0)
     connection.row_factory = sqlite3.Row
+    _configure_database_connection(connection)
     try:
-        connection.execute("BEGIN IMMEDIATE")
+        _begin_immediate_with_retry(connection)
         item = connection.execute(
             "SELECT * FROM work_items WHERE id=?", (str(work_item_id),)
         ).fetchone()
@@ -2319,8 +2342,9 @@ def assert_factory_capacity(
     database = _farm_db_path(farm_root)
     if not database.is_file():
         raise CapacityError(f"strategy-farm database missing: {database}")
-    connection = sqlite3.connect(str(database), timeout=10)
+    connection = sqlite3.connect(str(database), timeout=BUSY_TIMEOUT_MS / 1000.0)
     connection.row_factory = sqlite3.Row
+    _configure_database_connection(connection)
     try:
         row = connection.execute(
             "SELECT * FROM work_items WHERE id=?", (str(work_item_id),)
@@ -3297,7 +3321,8 @@ def _persist_q09_result(
     adjudication = _load_json(Path(str(result["aggregate_path"])), "Q09 adjudication")
     database = _farm_db_path(farm_root)
     if capacity["payload"].get("diagnostic_non_admission") is True:
-        connection = sqlite3.connect(str(database), timeout=30)
+        connection = sqlite3.connect(str(database), timeout=BUSY_TIMEOUT_MS / 1000.0)
+        _configure_database_connection(connection)
         try:
             recorded = connection.execute(
                 "SELECT 1 FROM q09_news_tests WHERE work_item_id=?", (str(work_item_id),)
@@ -3331,15 +3356,18 @@ def _persist_q09_result(
             "summary_path": str(summary_path),
             "summary_sha256": contract.sha256_file(summary_path),
         }
-    connection = sqlite3.connect(str(database), timeout=30)
+    connection = sqlite3.connect(str(database), timeout=BUSY_TIMEOUT_MS / 1000.0)
     connection.row_factory = sqlite3.Row
+    _configure_database_connection(connection)
     try:
-        summary_inserted = news_schema.record_q09_adjudication(
-            connection,
-            evidence_payload=evidence_payload,
-            adjudication=adjudication,
-            aggregate_path=str(result["aggregate_path"]),
-            aggregate_sha256=str(result["aggregate_sha256"]),
+        summary_inserted = retry_sqlite_busy(
+            lambda: news_schema.record_q09_adjudication(
+                connection,
+                evidence_payload=evidence_payload,
+                adjudication=adjudication,
+                aggregate_path=str(result["aggregate_path"]),
+                aggregate_sha256=str(result["aggregate_sha256"]),
+            )
         )
         recorded = connection.execute(
             "SELECT verdict,aggregate_sha256 FROM q09_news_tests WHERE work_item_id=?",

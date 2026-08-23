@@ -271,7 +271,7 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             )
             rows.append(
                 (
-                    "q09-news-1", "Q09_NEWS", "pending", None, None,
+                    "q09-news-1", runner.NEWS_PHASE, "pending", None, None,
                     json.dumps(q09_payload, sort_keys=True),
                 )
             )
@@ -297,7 +297,7 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
                         id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
                         attempt_count,parent_task_id,evidence_path,claimed_by,
                         payload_json,created_at,updated_at
-                    ) VALUES('q09-portfolio-1','backtest','Q09_PORTFOLIO',
+                    ) VALUES('q09-portfolio-1','backtest','Q10_PORTFOLIO',
                              'QM5_9999','EURUSD.DWX',?,'done','PASS_PORTFOLIO',
                              0,NULL,?,NULL,'{}',?,?)
                     """,
@@ -2041,7 +2041,7 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             "T2",
             reserved_by,
             minutes=30,
-            reason="Q09_NEWS helper for q09-news-1",
+            reason=f"{runner.NEWS_PHASE} helper for q09-news-1",
         )
         helper_failed_key: list[str] = []
         successful_terminals: dict[str, str] = {}

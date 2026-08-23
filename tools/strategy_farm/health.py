@@ -790,6 +790,51 @@ def chk_work_items_timestamp_sanity(con) -> dict:
     return _check("work_items_timestamp_sanity", "OK", 0, 0, "timestamps sane", "")
 
 
+def chk_sqlite_lock_crash_infra_24h(
+    con: sqlite3.Connection, *, now: dt.datetime | None = None
+) -> dict:
+    """Count worker-crash INFRA rows whose traceback is SQLite contention."""
+
+    observed_at = now or dt.datetime.now(dt.timezone.utc)
+    if observed_at.tzinfo is None:
+        observed_at = observed_at.replace(tzinfo=dt.timezone.utc)
+    cutoff = (observed_at.astimezone(dt.timezone.utc) - dt.timedelta(hours=24)).isoformat()
+    rows = con.execute(
+        """
+        SELECT id,ea_id,symbol,phase,updated_at,COUNT(*) OVER() AS crash_count
+        FROM work_items
+        WHERE verdict='INFRA_FAIL' AND updated_at>=?
+          AND json_valid(payload_json)=1
+          AND json_extract(payload_json,'$.verdict_reason')='worker_crashed_handling_item'
+          AND lower(payload_json) LIKE '%database is locked%'
+        ORDER BY updated_at DESC
+        LIMIT 25
+        """,
+        (cutoff,),
+    ).fetchall()
+    count = int(rows[0][5]) if rows else 0
+    if count:
+        samples = ", ".join(
+            f"{row[0][:8]}:{row[1]}:{row[2]}:{row[3]}@{row[4]}" for row in rows[:5]
+        )
+        return _check(
+            "sqlite_lock_crash_infra_24h",
+            "FAIL",
+            count,
+            0,
+            f"{count} SQLite-lock worker crash INFRA row(s) in 24h; {samples}",
+            "Inspect terminal_worker logs and pump stage_timings; contention must defer/retry, never manufacture INFRA_FAIL.",
+        )
+    return _check(
+        "sqlite_lock_crash_infra_24h",
+        "OK",
+        0,
+        0,
+        "no SQLite-lock worker crash INFRA rows in the last 24h",
+        "",
+    )
+
+
 def chk_pump_task_health() -> dict:
     """Scheduled task QM_StrategyFarm_Pump_5min LastResult must be 0 (or a
     known-benign busy code), and the pump lock must not be orphaned by a dead
@@ -1154,6 +1199,46 @@ def chk_ea_metrics_fresh(con) -> dict:
                       "pump logs; see docs/ops/EA_METRICS_ARCHIVE_LAYER_2026-06-22.md")
     return _check("ea_metrics_fresh", "OK", age_min, STALE_MIN,
                   f"{count} rows, refreshed {age_min}m ago", "")
+
+
+def chk_db_backup_fresh() -> dict:
+    """farm_state.sqlite hourly snapshots must stay current.
+
+    `_hourly_db_backup` was moved out of the 5-min pump into the lower-frequency
+    `farmctl pump-maintenance` command (latency rebaseline 2026-08-23). If that
+    task is never scheduled — or its scheduled run stalls — backups silently
+    stop and the durability outage is otherwise invisible (there is no other
+    producer of state/backups/farm_state_*.sqlite). This check makes the gap
+    observable. Backups run hourly behind a 50-min guard, so a newest snapshot
+    older than STALE_MIN means the maintenance task is not running.
+
+    During an operator FACTORY_OFF window the maintenance writer is intentionally
+    quiesced, so staleness there is expected, not a fault — reported OK.
+    """
+    STALE_MIN = 150  # hourly cadence + 50-min guard; >150m ⇒ maintenance stalled
+    if (ROOT / "state" / "FACTORY_OFF.flag").exists():
+        return _check("db_backup_fresh", "OK", None, STALE_MIN,
+                      "FACTORY_OFF.flag set — hourly DB backup intentionally paused",
+                      "")
+    backup_dir = ROOT / "state" / "backups"
+    backups = list(backup_dir.glob("farm_state_*.sqlite")) if backup_dir.is_dir() else []
+    if not backups:
+        return _check("db_backup_fresh", "FAIL", 0, STALE_MIN,
+                      "no state/backups/farm_state_*.sqlite present — hourly DB "
+                      "backup has never run; schedule QM_StrategyFarm_PumpMaintenance_Hourly",
+                      "python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py pump-maintenance; "
+                      "then install tools/strategy_farm/install_pump_maintenance_scheduled_task.ps1")
+    newest = max(backups, key=lambda p: p.stat().st_mtime)
+    age_min = int((_utc_now().timestamp() - newest.stat().st_mtime) // 60)
+    if age_min > STALE_MIN:
+        return _check("db_backup_fresh", "FAIL", age_min, STALE_MIN,
+                      f"newest DB backup {age_min}m old (>{STALE_MIN}m); "
+                      f"pump-maintenance backup stage stalled ({len(backups)} snapshots)",
+                      "Verify QM_StrategyFarm_PumpMaintenance_Hourly is registered and "
+                      "enabled; run python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py "
+                      "pump-maintenance and check its log")
+    return _check("db_backup_fresh", "OK", age_min, STALE_MIN,
+                  f"{len(backups)} snapshots, newest {age_min}m ago", "")
 
 
 def chk_ablation_grandchildren(con) -> dict:
@@ -4091,8 +4176,10 @@ ALL_CHECKS = [
     ("custom_history_repairs_24h", chk_custom_history_repairs, False),
     ("usn_journal_d",          chk_usn_journal_d,          False),
     ("work_items_timestamp_sanity", chk_work_items_timestamp_sanity, True),
+    ("sqlite_lock_crash_infra_24h", chk_sqlite_lock_crash_infra_24h, True),
     ("p2_pass_no_p3",          chk_p2_pass_no_p3,          True),
     ("ea_metrics_fresh",       chk_ea_metrics_fresh,       True),
+    ("db_backup_fresh",        chk_db_backup_fresh,        False),
     ("ablation_grandchildren", chk_ablation_grandchildren, True),
     ("claude_review_starved",  chk_claude_review_starved,  True),
     ("mt5_dispatch_idle",      chk_mt5_dispatch_idle,      True),
