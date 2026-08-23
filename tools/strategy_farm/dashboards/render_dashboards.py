@@ -3839,7 +3839,7 @@ def _render_ftmo_q09_detail(detail: dict) -> str:
     rows = []
     for row in ftmo.get("rows") or []:
         suitable = row.get("suitable") is True
-        recommendation = "JA" if suitable else "NEIN"
+        recommendation = "YES" if suitable else "NO"
         css_class = "v-pass" if suitable else "v-fail"
         rows.append(
             f'<tr><td class="symcell">{e(row.get("symbol"))}</td>'
@@ -3850,12 +3850,12 @@ def _render_ftmo_q09_detail(detail: dict) -> str:
         )
     return f"""
 <div class="rescue-detail">
-  <div class="rescue-detail-title">Q09 News Impact · FTMO geeignet</div>
-  <div class="rescue-detail-note">Explizite JA/NEIN-Empfehlung aus der bestehenden
-  <code>ftmo_q09_admission</code>-Logik. Diese Darstellung ändert keine Kriterien oder
-  Verdikte und erteilt keine Challenge-, Deployment- oder AutoTrading-Autorität.</div>
+  <div class="rescue-detail-title">Q09 News Impact · FTMO suitability</div>
+  <div class="rescue-detail-note">An explicit YES/NO recommendation from the existing
+  <code>ftmo_q09_admission</code> logic. This view changes no criterion and no verdict, and
+  grants no challenge, deployment or AutoTrading authority.</div>
   <table class="wi-table rescue-detail-table">
-    <thead><tr><th>Symbol</th><th>FTMO geeignet</th><th>News-Modus</th><th>Begründung</th><th>Q09-Evidenz</th></tr></thead>
+    <thead><tr><th>Symbol</th><th>FTMO suitable</th><th>News mode</th><th>Reason</th><th>Q09 evidence</th></tr></thead>
     <tbody>{''.join(rows)}</tbody>
   </table>
 </div>
