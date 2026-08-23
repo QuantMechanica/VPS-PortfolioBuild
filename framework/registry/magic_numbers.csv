@@ -17855,3 +17855,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41124,wti-mrms-coherence-mom,0,XTIUSD.DWX,411240000,2026-08-23,Codex governed allocator,active
 41125,xauxag-mrms-coherence-rv,0,XAUUSD.DWX,411250000,2026-08-23,Codex governed allocator,active
 41125,xauxag-mrms-coherence-rv,1,XAGUSD.DWX,411250001,2026-08-23,Codex governed allocator,active
+41126,wti-mpath-eff-mom,0,XTIUSD.DWX,411260000,2026-08-23,Codex governed allocator,active
