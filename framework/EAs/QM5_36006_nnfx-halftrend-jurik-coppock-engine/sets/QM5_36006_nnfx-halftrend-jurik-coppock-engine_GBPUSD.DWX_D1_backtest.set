@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   29660a1262b260900abaf7fb5f6b385c97be5130135fad25c4e9d51fb30cfddc
+; build_hash:   016d8b5ba15352b04c9e81190724ef120aa0e2e764b7a128407de394c09189a8
 ; author:       Gemini
 ; date:         2026-08-17
 ;==========================================================
@@ -21,6 +21,7 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 strategy_halftrend_amp=2
 strategy_halftrend_atr_period=100
+strategy_halftrend_atr_mult=2.0
 strategy_jurik_period=14
 strategy_coppock_roc1=14
 strategy_coppock_roc2=11
@@ -29,4 +30,10 @@ strategy_cmf_period=20
 strategy_atr_period=14
 strategy_sl_atr_mult=1.00
 strategy_tp_atr_mult=1.00
+strategy_tp1_fraction=0.50
+strategy_be_buffer_pips=1
 strategy_spread_atr_mult=1.80
+strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
+strategy_total_dd_halt_pct=5.0
+strategy_per_trade_risk_cap_pct=0.5
