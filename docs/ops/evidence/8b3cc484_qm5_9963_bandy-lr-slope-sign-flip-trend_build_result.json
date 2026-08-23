@@ -1,0 +1,51 @@
+{
+  "task_id": "8b3cc484-dc8e-494d-a3b8-3a5d0d8e5e56",
+  "ea_id": "QM5_9963",
+  "ea_dir": "framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/QM5_9963_bandy-lr-slope-sign-flip-trend.mq5",
+  "mq5_sha256": "734cb1232fa75bad74b1f31a244f39fd3a573cca4fcae9741edb6ca90f93069e",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/QM5_9963_bandy-lr-slope-sign-flip-trend.ex5",
+  "ex5_sha256": "0a0f072ddabd3f2f198b7e408a2800a866da8fb83a499e22435ab762194f0c2b",
+  "magic_base": 99630000,
+  "symbols_registered": [
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "SP500.DWX",
+    "UK100.DWX",
+    "WS30.DWX",
+    "XAUUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "USDCHF.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_GDAXI.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_NDX.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_SP500.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_UK100.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_WS30.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_XAUUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_EURUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_GBPUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_USDJPY.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_USDCHF.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_AUDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_USDCAD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/sets/QM5_9963_bandy-lr-slope-sign-flip-trend_NZDUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_9963_bandy-lr-slope-sign-flip-trend/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "framework_error",
+  "smoke_report_path": null,
+  "blocked_reason": "Custom-history isolation REFUSED T10 before tester launch: active Custom-history isolation requires a worker-bound work item whose archives were privatized before run_smoke",
+  "open_questions": [
+    "The approved card identifies oil as portable, but no active QM5_9963 XTIUSD.DWX magic row exists; governed allocation is required before adding oil.",
+    "Strict build_check PASS evidence: D:/QM/reports/framework/21/build_check_20260823_083404.json; standalone compile PASS 0/0 log: C:/QM/repo/framework/build/compile/20260823_083511/QM5_9963_bandy-lr-slope-sign-flip-trend.compile.log.",
+    "Exactly one Q01 smoke dispatch was attempted; it was refused before terminal launch, so no smoke report exists and no retry was made."
+  ]
+}
