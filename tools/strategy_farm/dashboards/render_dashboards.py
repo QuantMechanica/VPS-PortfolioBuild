@@ -2443,6 +2443,12 @@ def _load_book_manifest(root: Path) -> tuple[dict[str, Any] | None, Path | None]
         return None, p
 
 
+try:  # direct script run and package import both have to work
+    import archive_matrix
+except ModuleNotFoundError:  # pragma: no cover
+    from tools.strategy_farm.dashboards import archive_matrix
+
+
 def collect_archive_v2(root: Path, slug_map: dict[str, str]) -> dict[str, Any]:
     """Single pass over work_items → everything strategies.html needs.
 
@@ -3263,7 +3269,7 @@ def render_strategies(state: dict, root: Path) -> str:
 </section>
 
 <section class="arch2-sec">
-  <div class="sec-head"><span class="sec-kicker">Archive</span><h2>Full EA index</h2><span class="sec-meta">{n_total} EAs · click any row for the full evidence trail</span></div>
+  <div class="sec-head"><span class="sec-kicker">Archive</span><h2>Full EA index</h2><span class="sec-meta">{n_total} EAs · click any row for the full evidence trail · <a href="strategy_archive.html" style="color:var(--signal)">card × gate × symbol matrix ↗</a></span></div>
   <div class="idx-controls">
     <input type="search" id="idx-search" placeholder="search ea id or slug…">
     <select id="idx-status">
@@ -4617,7 +4623,13 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   </table>
 </div>
 """
-    return html_head(f"{ea_id} · {slug}", ARCHIVE_CSS + EA_DETAIL_CSS + DETAIL2_CSS + SWIMLANE_CSS) + f"""
+    # OWNER 2026-08-23: the strategy card itself and the complete run list with
+    # native MT5 report links belong on this page. The old three-paragraph teaser is
+    # superseded by the full card; the pipeline-stage evidence below is untouched.
+    card_section = archive_matrix.render_card_section(ea_id)
+    backtests_html = archive_matrix.render_backtests_section(archive_matrix.runs_for_ea(ea_id))
+
+    return html_head(f"{ea_id} · {slug}", ARCHIVE_CSS + EA_DETAIL_CSS + DETAIL2_CSS + SWIMLANE_CSS + archive_matrix.CARD_SECTION_CSS) + f"""
 <div class="detail-wrap">
   <a class="detail-back" href="strategies.html">← back to Strategy Archive</a>
   <div class="detail-head">
@@ -4634,11 +4646,12 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   {availability_html}
   {ftmo_html}
   {rescue_html}
-  {desc_html}
+  {card_section}
   {kpis_html}
   {swimlane_html}
   <h2 class="acc-title">Pipeline-Stage Evidence · Q01 → Q11 ascending</h2>
   {''.join(phases_html_chunks)}
+  {backtests_html}
   {files_html}
   <div class="archive-footer">
     QuantMechanica V5 · every number on this page is parsed from native MetaTrader 5 backtest reports —
@@ -5124,6 +5137,13 @@ def main() -> int:
         state = collect_farm_state(root)
         strategies_path = dashboards_dir / "strategies.html"
         strategies_path.write_text(render_strategies(state, root), encoding="utf-8")
+        matrix_path = dashboards_dir / "strategy_archive.html"
+        try:
+            matrix_path.write_text(
+                archive_matrix.render_matrix_page(archive_matrix.collect()),
+                encoding="utf-8")
+        except Exception as exc:  # noqa: BLE001 - never block the run
+            print(f"WARN: strategy_archive.html failed: {exc!r}", file=sys.stderr)
         print(f"strategies written: {strategies_path}")
         return 0
 
@@ -5153,6 +5173,13 @@ def main() -> int:
     # current.html retired 2026-05-23 (OWNER decision); cockpit.html (render_cockpit.py) is the canonical live ops view.
     strategies_path = dashboards_dir / "strategies.html"
     strategies_path.write_text(render_strategies(state, root), encoding="utf-8")
+    matrix_path = dashboards_dir / "strategy_archive.html"
+    try:
+        matrix_path.write_text(
+            archive_matrix.render_matrix_page(archive_matrix.collect()),
+            encoding="utf-8")
+    except Exception as exc:  # noqa: BLE001 - never block the run
+        print(f"WARN: strategy_archive.html failed: {exc!r}", file=sys.stderr)
 
     portfolio_path = dashboards_dir / "portfolio.html"
     portfolio_path.write_text(render_portfolio(root), encoding="utf-8")
