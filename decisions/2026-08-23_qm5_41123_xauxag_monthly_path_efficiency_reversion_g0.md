@@ -28,7 +28,7 @@ enqueue, no live action, and no portfolio-gate or T_Live-manifest mutation.
 - logical symbol: `QM5_41123_XAU_XAG_MPATH_EFF_RV_D1`
 
 The governed allocator reserved `41123` in
-`framework/registry/ea_id_registry.csv` at commit `bbf866a00`. Magic allocation
+`framework/registry/ea_id_registry.csv` before this decision. Magic allocation
 must follow the governed directory-first sequence before implementation and
 compile; this decision does not bypass that gate.
 
