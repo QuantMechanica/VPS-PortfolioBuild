@@ -19,10 +19,10 @@ from pathlib import Path
 from typing import Callable
 
 try:
-    from tools.strategy_farm import risk_freeze
+    from tools.strategy_farm import book_build_guard, risk_freeze
 except ModuleNotFoundError:  # direct script execution
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-    from tools.strategy_farm import risk_freeze
+    from tools.strategy_farm import book_build_guard, risk_freeze
 
 
 SCHEMA = "qm.tlive_book_copy_plan.v1"
@@ -119,8 +119,14 @@ def execute(
     backup_dir: Path | None = None,
     apply: bool = False,
     guard: Callable[..., dict] = risk_freeze.assert_live_book_mutation_allowed,
+    book_guard: Callable[..., object] = book_build_guard.require_book_build_allowed,
+    book_db_path: Path = book_build_guard.DEFAULT_DB_PATH,
+    order_dir: Path = book_build_guard.DEFAULT_ORDER_DIR,
 ) -> dict:
     """Validate the entire batch, then optionally perform guarded atomic copies."""
+    # Book authority is required even for a dry-run copy-plan analysis.  This is
+    # deliberately before plan reads, directory creation, or live mutation.
+    book_guard("dxz", book_db_path, order_dir)
     if apply:
         # Deliberately first: ACTIVE/missing/unreadable freeze state refuses
         # before directories, backups, or destination temp files are created.
@@ -188,12 +194,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--live-root", type=Path, default=DEFAULT_LIVE_ROOT)
     parser.add_argument("--backup-dir", type=Path)
     parser.add_argument("--apply", action="store_true", help="perform copies; default is dry-run")
+    parser.add_argument("--book-db", type=Path, default=book_build_guard.DEFAULT_DB_PATH)
+    parser.add_argument("--order-dir", type=Path, default=book_build_guard.DEFAULT_ORDER_DIR)
     args = parser.parse_args(argv)
     result = execute(
         args.plan,
         live_root=args.live_root,
         backup_dir=args.backup_dir,
         apply=args.apply,
+        book_db_path=args.book_db,
+        order_dir=args.order_dir,
     )
     print(json.dumps(result, indent=2))
     return 0

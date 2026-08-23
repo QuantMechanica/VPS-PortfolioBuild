@@ -126,6 +126,27 @@ class GateManifest:
         return {gate.id: gate.next for gate in self.gates}
 
     @property
+    def terminal_requalification_gate(self) -> str:
+        """Return the active contract's terminal per-EA requalification gate.
+
+        The evidence role is stable across gate renumberings (Q16 in v3 and
+        Q14 in the proposed v4 contract), so consumers never infer this
+        authority from a numeric gate literal or a non-monotone ``next`` edge.
+        """
+        matches = [
+            gate.id
+            for gate in self.gates
+            if gate.evidence_role.startswith(
+                "SEALED_BEST_SETTINGS_VS_BASELINE_AND_INCUMBENT"
+            )
+        ]
+        if len(matches) != 1:
+            raise GateManifestError(
+                "gate manifest must define exactly one terminal requalification gate"
+            )
+        return matches[0]
+
+    @property
     def baseline_stage(self) -> Mapping[str, Any] | None:
         """The v3 Q10A baseline evidence-binding stage (None before v3)."""
         if not self.extension_topology:

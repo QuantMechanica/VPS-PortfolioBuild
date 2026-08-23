@@ -263,6 +263,11 @@ def test_portfolio_manifest_guard_negative_and_positive(tmp_path: Path, monkeypa
 
 def test_current_dxz_book_builder_guard_negative_and_positive(tmp_path: Path, monkeypatch):
     manifest = {"status": "DRY_RUN", "sleeves": []}
+    monkeypatch.setattr(
+        build_book_dxz.book_build_guard,
+        "require_book_build_allowed",
+        lambda *_args: None,
+    )
     monkeypatch.setattr(build_book_dxz, "build_dxz_manifest", lambda **_kw: manifest)
     monkeypatch.setattr(build_book_dxz, "validate_dual_book_manifest", lambda _m: None)
     monkeypatch.setattr(build_book_dxz, "evidence_markdown", lambda *_a: "fixture")
@@ -333,7 +338,7 @@ def test_tlive_copy_guard_negative_and_positive(tmp_path: Path):
     with pytest.raises(risk_freeze.RiskFreezeBlocked):
         deploy_tlive_book.execute(
             plan, live_root=live_root, backup_dir=tmp_path / "never-backup",
-            apply=True, guard=_guard_for(state, presets),
+            apply=True, guard=_guard_for(state, presets), book_guard=lambda *_args: None,
         )
     assert not destination.exists()
     assert not (tmp_path / "never-backup").exists()
@@ -344,7 +349,7 @@ def test_tlive_copy_guard_negative_and_positive(tmp_path: Path):
     backup = tmp_path / "backup"
     result = deploy_tlive_book.execute(
         plan, live_root=live_root, backup_dir=backup,
-        apply=True, guard=_guard_for(lifted, presets),
+        apply=True, guard=_guard_for(lifted, presets), book_guard=lambda *_args: None,
     )
     assert result["written_items"] == 1
     assert destination.read_bytes() == b"new live bytes"
@@ -356,7 +361,9 @@ def test_tlive_copy_dry_run_remains_read_only_during_active_freeze(tmp_path: Pat
     source.write_bytes(b"staged")
     plan = _copy_plan(tmp_path, source)
     live_root = tmp_path / "T_Live" / "MT5_Base"
-    result = deploy_tlive_book.execute(plan, live_root=live_root, apply=False)
+    result = deploy_tlive_book.execute(
+        plan, live_root=live_root, apply=False, book_guard=lambda *_args: None
+    )
     assert result["mode"] == "DRY_RUN"
     assert result["written_items"] == 0
     assert not live_root.exists()

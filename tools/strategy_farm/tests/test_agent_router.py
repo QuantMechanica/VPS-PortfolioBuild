@@ -763,8 +763,8 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
                 )
                 conn.commit()
 
-            first = agent_router.sync_q11_candidates(root)
-            second = agent_router.sync_q11_candidates(root)
+            first = agent_router.sync_q11_candidates(root, guard=lambda *_args: None)
+            second = agent_router.sync_q11_candidates(root, guard=lambda *_args: None)
 
             self.assertEqual(first["created"], 1)
             self.assertEqual(second["created"], 0)

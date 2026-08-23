@@ -18,6 +18,7 @@ import json
 import sqlite3
 import sys
 from pathlib import Path
+from typing import Callable
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
@@ -31,6 +32,7 @@ if __package__ in (None, ""):
     )
     from tools.strategy_farm.portfolio.portfolio_manifest import DEFAULT_STARTING_CAPITAL
     from tools.strategy_farm.portfolio import concentration_tail
+    from tools.strategy_farm import book_build_guard
 else:
     from .portfolio_common import (
         DEFAULT_CANDIDATES_DB, DEFAULT_COMMON_DIR, _coerce_ea_int, align, key_label,
@@ -40,6 +42,10 @@ else:
     from .portfolio_assemble import greedy_select, select_and_validate
     from .portfolio_manifest import DEFAULT_STARTING_CAPITAL
     from . import concentration_tail
+    try:
+        from tools.strategy_farm import book_build_guard
+    except ModuleNotFoundError:  # imported as top-level ``portfolio`` in legacy tests
+        import book_build_guard  # type: ignore
 
 BOMBERS = ("10809", "11072", "11092")
 DEFAULT_OUT_DIR = Path(r"D:\QM\reports\portfolio")
@@ -79,7 +85,11 @@ def build_report(
     generated_at: str | None = None,
     concentration_policy_path: Path = concentration_tail.DEFAULT_POLICY_PATH,
     symbol_matrix_path: Path = concentration_tail.DEFAULT_SYMBOL_MATRIX,
+    venue: str = "dxz",
+    order_dir: Path = book_build_guard.DEFAULT_ORDER_DIR,
+    guard: Callable[..., object] = book_build_guard.require_book_build_allowed,
 ) -> dict:
+    guard(venue, candidates_db, order_dir)
     pairs = robust_pairs(candidates_db)
     model = load_model()
     streams = {
@@ -188,6 +198,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--starting-capital", type=float, default=DEFAULT_STARTING_CAPITAL)
     p.add_argument("--concentration-policy", type=Path, default=concentration_tail.DEFAULT_POLICY_PATH)
     p.add_argument("--symbol-matrix", type=Path, default=concentration_tail.DEFAULT_SYMBOL_MATRIX)
+    p.add_argument("--venue", choices=("dxz", "ftmo"), default="dxz")
+    p.add_argument("--order-dir", type=Path, default=book_build_guard.DEFAULT_ORDER_DIR)
     p.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     p.add_argument("--stamp", default=None, help="UTC timestamp (the scheduler passes this; "
                                                  "Date.now is unavailable in some contexts)")
@@ -206,6 +218,8 @@ def main(argv: list[str] | None = None) -> int:
         generated_at=stamp,
         concentration_policy_path=args.concentration_policy,
         symbol_matrix_path=args.symbol_matrix,
+        venue=args.venue,
+        order_dir=args.order_dir,
     )
     args.out_dir.mkdir(parents=True, exist_ok=True)
     (args.out_dir / "portfolio_latest.json").write_text(

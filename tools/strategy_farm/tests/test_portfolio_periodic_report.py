@@ -23,6 +23,7 @@ class PortfolioPeriodicReportTests(unittest.TestCase):
                     common_dir=Path(tmp),
                     candidates_db=Path(tmp) / "farm_state.sqlite",
                     generated_at="2026-06-26T00:00:00+00:00",
+                    guard=lambda *_args: None,
                 )
 
         self.assertEqual(report["basis"], "q08_fail_soft_robust_pool")

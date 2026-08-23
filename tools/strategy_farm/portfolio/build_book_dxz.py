@@ -40,7 +40,7 @@ from tools.strategy_farm.portfolio.book_builder_common import (
 )
 from tools.strategy_farm.portfolio import concentration_tail
 from tools.strategy_farm.portfolio.portfolio_common import load_streams
-from tools.strategy_farm import risk_freeze
+from tools.strategy_farm import book_build_guard, risk_freeze
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -252,11 +252,14 @@ def parser() -> argparse.ArgumentParser:
     ap.add_argument("--symbol-matrix", type=Path, default=DEFAULT_SYMBOL_MATRIX)
     ap.add_argument("--as-of", default="2026-08-12")
     ap.add_argument("--out-dir", type=Path)
+    ap.add_argument("--book-db", type=Path, default=book_build_guard.DEFAULT_DB_PATH)
+    ap.add_argument("--order-dir", type=Path, default=book_build_guard.DEFAULT_ORDER_DIR)
     return ap
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
+    book_build_guard.require_book_build_allowed("dxz", args.book_db, args.order_dir)
     out_dir = args.out_dir or DEFAULT_REPORT_ROOT / f"book_dxz_{args.as_of}"
     manifest_path = out_dir / "manifest.json"
     try:
