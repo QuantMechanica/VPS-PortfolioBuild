@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9909
+; ea_slug:      bandy-lrchannel-breakout-trend
+; ea_version:   v5.0
+; set_version:  s20260823-001
+; symbol:       GDAXI.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3c5c7dd75f7501698280a3c89fcc8b26bcb4ff2012c09657b9fc7516c623d2fc
+; author:       Development
+; date:         2026-08-23
+;==========================================================
+qm_ea_id=9909
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9909_bandy-lrchannel-breakout-trend.md
+strategy_lr_window=50
+strategy_channel_sigma=2.0
+strategy_atr_period=14
+strategy_trail_atr_mult=2.5
+strategy_sl_atr_mult=5.0
+strategy_time_stop_bars=40
+strategy_spread_max_atr=0.30
+strategy_warmup_bars=60

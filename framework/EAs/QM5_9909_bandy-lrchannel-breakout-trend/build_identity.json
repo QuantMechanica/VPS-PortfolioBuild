@@ -1,0 +1,22 @@
+{
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\QM5_9909_bandy-lrchannel-breakout-trend.mq5",
+  "mq5_sha256": "3c5c7dd75f7501698280a3c89fcc8b26bcb4ff2012c09657b9fc7516c623d2fc",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\QM5_9909_bandy-lrchannel-breakout-trend.ex5",
+  "ex5_sha256": "e83cdf3119b6e008198cb326edab358740c51220b1050ea4dab2c736952531ee",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_AUDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_GDAXI.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_NZDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_UK100.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_USDCAD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_USDCHF.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_USDJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_WS30.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9909_bandy-lrchannel-breakout-trend\\sets\\QM5_9909_bandy-lrchannel-breakout-trend_XAUUSD.DWX_D1_backtest.set"
+  ]
+}
