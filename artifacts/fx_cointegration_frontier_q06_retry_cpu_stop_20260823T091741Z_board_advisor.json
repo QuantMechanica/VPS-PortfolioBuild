@@ -1,0 +1,123 @@
+{
+  "artifact_type": "fx_cointegration_frontier_q06_retry_cpu_stop",
+  "generated_at_utc": "2026-08-23T09:17:41Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "2fc95eea7d32cdc9ceda37577918262e988d9eec",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "scan_reconciliation": {
+    "source": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "durable_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "new_unbuilt_pair_eligible": false
+  },
+  "anchor_state": {
+    "QM5_12532": {
+      "q02": "PASS",
+      "later_chain": "Q04 PASS; Q05 FAIL",
+      "current_q02_oninit_or_no_history_block": false
+    },
+    "QM5_12533": {
+      "q02": "PASS",
+      "later_chain": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_block": false
+    }
+  },
+  "selected_existing_fx_basket": {
+    "ea_id": "QM5_20208",
+    "ea_label": "QM5_20208_nzdusd-euraud",
+    "pair": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "scan_rank": 27,
+    "lineage": [
+      {
+        "phase": "Q02",
+        "work_item_id": "1935fc01-6eaa-4db1-8397-660d22ebdfbb",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "phase": "Q04",
+        "work_item_id": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+        "status": "done",
+        "verdict": "PASS_LOWFREQ"
+      },
+      {
+        "phase": "Q05",
+        "work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "phase": "Q06",
+        "work_item_id": "776e6310-7ad6-41ba-8a08-4d63e045d4e5",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "attempt_count": 1,
+        "updated_at_utc": "2026-08-23T08:56:10.920839Z",
+        "evidence_path": null
+      }
+    ],
+    "exact_q06_row_count": 1,
+    "attempt_artifacts": {
+      "attempt_directory": "D:/QM/reports/work_items/776e6310-7ad6-41ba-8a08-4d63e045d4e5/QM5_20208/20260823_085041",
+      "tester_ini_present": true,
+      "summary_present": false,
+      "aggregate_present": false,
+      "tester_report_present": false,
+      "interpretation": "The first governed attempt returned the unique row to pending without terminal evidence; no economic or implementation verdict is inferred."
+    },
+    "non_duplicate_delta": "The preceding 2026-08-23T08:46:59Z snapshot observed this same row active on T6 at attempt 0; it is now pending and unclaimed at attempt 1."
+  },
+  "capacity_sample": {
+    "observed_at_utc": "2026-08-23T09:17:41Z",
+    "cpu_samples_percent": [
+      94.145999,
+      88.035240,
+      91.201679,
+      100.0,
+      100.0
+    ],
+    "cpu_average_percent": 94.676584,
+    "cpu_maximum_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "active_work_items": 6,
+    "active_phase_summary": {
+      "Q09_NEWS": 6
+    },
+    "observed_factory_terminals": [
+      "T2",
+      "T4",
+      "T5",
+      "T9"
+    ]
+  },
+  "actions_this_run": {
+    "new_card_or_ea": false,
+    "candidate_advance": false,
+    "enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "compile_or_build_check": false,
+    "tester_launch_or_backtest": false,
+    "terminal_control": false,
+    "evidence_commit_only": true
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
