@@ -172,6 +172,79 @@ def test_dispatch_successors_match_pre_ticket_fixture_db(tmp_path: Path) -> None
     assert actual == expected
 
 
+def test_dispatch_tick_auto_cascade_domain_is_inert() -> None:
+    """Regression for review P1: the centralized next_phase() lookup must not
+    silently activate the dispatch_tick PASS auto-cascade.
+
+    Pre-centralization the branch used a legacy P-name map guarded by
+    ``in SUPPORTED_BACKTEST_PHASES`` and was therefore DEAD for every phase.
+    The effective activation domain must stay empty so dispatch_tick behavior is
+    byte-identical to pre-ticket; turning it on is a separate GELB decision.
+    """
+    assert farmctl._DISPATCH_TICK_AUTO_CASCADE_PHASES == frozenset()
+
+    # If the domain is empty, no phase can pass the guard even though the
+    # centralized resolver returns supported successors for Q02/Q03.
+    for phase in ("Q02", "Q03"):
+        successor = phase_ids.next_phase(phase)
+        assert successor in farmctl.SUPPORTED_BACKTEST_PHASES  # resolver is live
+        assert phase not in farmctl._DISPATCH_TICK_AUTO_CASCADE_PHASES  # gate is shut
+
+    # Static guard: the dispatch_tick PASS branch must gate on the domain set,
+    # so a future edit cannot re-enable the cascade by dropping the guard.
+    source = (STRATEGY_FARM / "farmctl.py").read_text(encoding="utf-8")
+    dispatch_body = source.split("def dispatch_tick(", 1)[1].split(
+        "\ndef ", 1
+    )[0]
+    assert "_DISPATCH_TICK_AUTO_CASCADE_PHASES" in dispatch_body
+
+
+def test_cascade_verdict_policy_matches_pre_ticket_per_target() -> None:
+    """Regression for review P2: the predecessor-keyed verdict dict must be the
+    single applied source of truth and reproduce the pre-ticket per-target
+    verdict policy without any per-target special-case override.
+    """
+    # Frozen pre-ticket phase_prev_verdicts, keyed by TARGET phase.
+    pre_ticket_by_target = {
+        "Q04": {"PASS"},
+        "Q05": {"PASS", "PASS_SOFT", "PASS_LOWFREQ"},
+        "Q06": {"PASS"},
+        "Q07": {"PASS", "PASS_SOFT"},
+        "Q08": {"PASS", "MULTI_SEED_PASS"},
+        "Q09_NEWS": {"PASS", "FAIL_SOFT"},
+        "Q09_PORTFOLIO": {"PASS", "FAIL_SOFT"},
+        "Q10": set(farmctl.Q09_NEWS_SUCCESS_VERDICTS),
+        "P5": {"PASS"},
+        "P5b": {"PASS"},
+        "P5c": {"PASS"},
+        "P6": {"PASS"},
+        "P7": {"PASS"},
+        "P8": {"PASS"},
+    }
+    supported_last = farmctl.SUPPORTED_BACKTEST_PHASES[-1]
+    for target, expected in pre_ticket_by_target.items():
+        manifest_prev = phase_ids.prev_phase(target)
+        effective_prev = (
+            phase_ids.prev_phase(manifest_prev)
+            if target == supported_last
+            else manifest_prev
+        )
+        resolved = set(farmctl._CASCADE_PASS_VERDICTS_BY_PREDECESSOR[effective_prev])
+        assert resolved == expected, (
+            f"target {target} (effective_prev {effective_prev}) resolved "
+            f"{resolved!r}, expected {expected!r}"
+        )
+
+    # P7 must still admit on {PASS} only, now via the dict rather than a shadow.
+    assert farmctl._CASCADE_PASS_VERDICTS_BY_PREDECESSOR["P6"] == {"PASS"}
+    # The removed special-case must not reappear in enqueue_cascade.
+    source = (STRATEGY_FARM / "farmctl.py").read_text(encoding="utf-8")
+    cascade_body = source.split(
+        "def enqueue_cascade_backtest_for_ea(", 1
+    )[1].split("\ndef ", 1)[0]
+    assert 'if phase.upper() == "P7"' not in cascade_body
+
+
 def test_static_grep_guard_has_no_literal_advancement_maps() -> None:
     """Fail if a listed consumer grows another literal phase-to-phase dict."""
     violations: list[str] = []

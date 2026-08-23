@@ -309,6 +309,20 @@ SUPPORTED_BACKTEST_PHASES = tuple(
     for phase in ORDINARY_STORAGE_PHASE_ORDER
     if _SUPPORTED_MIN_RANK <= phase_rank(phase) <= _SUPPORTED_MAX_RANK
 )
+# dispatch_tick PASS auto-cascade domain. The pre-centralization branch used a
+# legacy P-name map ({"P2":"P3","P3":"P3.5","P3.5":"P4"}) guarded by
+# `in SUPPORTED_BACKTEST_PHASES` (Q02/Q03/Q04): no legacy successor is a Qxx
+# storage phase, so the branch was DEAD and dispatch_tick never auto-enqueued a
+# successor (verified empirically 2026-08-23; see evidence doc). dispatch_tick
+# runs inside the live ~5-min pump (_pump_unlocked), so replacing the dead map
+# with the centralized next_phase() lookup would silently activate a
+# Q02->Q03->Q04 auto-cascade — a forward throughput change, not the "no
+# semantics change" this refactor claims. Keep the effective domain EMPTY so
+# dispatch_tick behavior stays byte-identical to pre-ticket. Activating the
+# cascade is a deliberate GELB decision (Stehende Vollmacht) requiring an
+# evidence before/after update, a fixture test, and operational sign-off — done
+# by adding phases to this set, never as a refactor side effect.
+_DISPATCH_TICK_AUTO_CASCADE_PHASES: frozenset[str] = frozenset()
 _CASCADE_MIN_RANK = phase_rank("Q04")
 _CASCADE_MAX_RANK = phase_rank("Q10")
 _CANONICAL_CASCADE_PHASES = tuple(
@@ -10102,7 +10116,11 @@ _CASCADE_PASS_VERDICTS_BY_PREDECESSOR = {
     "P5": {"PASS"},
     "P5b": {"PASS"},
     "P5c": {"PASS"},
-    "P6": {"PASS", "MULTI_SEED_PASS"},
+    # Effective predecessor of the (inert, post-wipe) P7 cascade target. The
+    # pre-ticket policy admitted P7 on a P6 {PASS} only; keep it {PASS} so this
+    # dict is the single applied source of truth and no P7 special-case is
+    # needed to override a wrong value here.
+    "P6": {"PASS"},
     "P7": {"PASS"},
 }
 
@@ -21780,11 +21798,10 @@ def enqueue_cascade_backtest_for_ea(
         if is_q04_default_probe and predecessor_work_item_id
         else (effective_prev_phase,)
     )
-    verdicts = sorted(
-        {"PASS"}
-        if phase.upper() == "P7"
-        else _CASCADE_PASS_VERDICTS_BY_PREDECESSOR[effective_prev_phase]
-    )
+    # Verdict policy is ROT: it comes solely from the predecessor-keyed dict,
+    # which is self-consistent with the pre-ticket per-target policy (e.g. P7
+    # admits on P6 {PASS}). No per-target special-case shadows the dict.
+    verdicts = sorted(_CASCADE_PASS_VERDICTS_BY_PREDECESSOR[effective_prev_phase])
     placeholders = ",".join("?" for _ in verdicts)
     phase_placeholders = ",".join("?" for _ in prev_phases)
     init_db(root)
@@ -22668,7 +22685,16 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                         }
                     elif verdict == "PASS":
                         successor = next_phase(phase)
-                        if successor and successor in SUPPORTED_BACKTEST_PHASES:
+                        # Domain gate keeps this convenience inert (empty set)
+                        # so the centralization refactor does not silently turn
+                        # on a live Q02->Q03->Q04 auto-cascade. See
+                        # _DISPATCH_TICK_AUTO_CASCADE_PHASES for the rationale
+                        # and the GELB activation path.
+                        if (
+                            successor
+                            and successor in SUPPORTED_BACKTEST_PHASES
+                            and phase in _DISPATCH_TICK_AUTO_CASCADE_PHASES
+                        ):
                             next_phase_kind = successor.lower().replace(".", "")  # P3.5 → 'p35'
                             existing_next = conn.execute(
                                 "SELECT id FROM tasks WHERE kind = ? AND payload_json LIKE ?",
