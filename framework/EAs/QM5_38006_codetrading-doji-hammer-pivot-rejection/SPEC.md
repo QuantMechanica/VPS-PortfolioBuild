@@ -3,8 +3,8 @@
 **EA ID:** QM5_38006
 **Slug:** codetrading-doji-hammer-pivot-rejection
 **Source:** codetrading-doji-hammer-pivot-rejection-official-source (see `strategy-seeds/sources/codetrading-doji-hammer-pivot-rejection/`)
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-18
+**Author of this spec:** Codex
+**Last revised:** 2026-08-23
 
 ---
 
@@ -16,7 +16,7 @@ A Long entry is triggered when a Hammer candle is identified (Body <= 0.25 × Ra
 
 A Short entry is triggered when a Shooting Star candle is identified (Body <= 0.25 × Range, Upper Rejection Wick >= 0.60 × Range, bearish close: Close < Open), and the candle's High is within dynamic proximity to EMA(50) (|High - EMA(50)| <= 0.50 × ATR(14)).
 
-Stop Loss is set 2.0 pips beyond the candle extreme (below Hammer Low for Long, above Shooting Star High for Short). Take Profit is set at 1.8× the Stop Loss distance (1:1.8 Risk-to-Reward ratio). Open positions are moved to Break-Even (+2 points buffer) once floating profit reaches +1.0R.
+Stop Loss is set exactly 2.0 pips beyond the candle extreme (below Hammer Low for Long, above Shooting Star High for Short). Take Profit is set at 1.8× the Stop Loss distance (1:1.8 Risk-to-Reward ratio). Open positions move their stop to the exact entry price once favorable movement reaches the original broker-side stop distance (+1.0R). No ATR fallback replaces an invalid structural stop.
 
 ---
 
@@ -24,7 +24,7 @@ Stop Loss is set 2.0 pips beyond the candle extreme (below Hammer Low for Long, 
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_signal_tf` | `PERIOD_H1` | `M15-H4` | Base execution and indicator timeframe |
+| `strategy_signal_tf` | `PERIOD_H1` | `H1` | Base execution and indicator timeframe |
 | `strategy_ema_period` | `50` | `20-100` | Dynamic support/resistance EMA period |
 | `strategy_max_body_ratio` | `0.25` | `0.15-0.35` | Maximum candle body to range ratio |
 | `strategy_min_wick_ratio` | `0.60` | `0.50-0.75` | Minimum rejection wick to range ratio |
@@ -32,11 +32,16 @@ Stop Loss is set 2.0 pips beyond the candle extreme (below Hammer Low for Long, 
 | `strategy_atr_period` | `14` | `10-20` | ATR period for volatility distance & spread filter |
 | `strategy_sl_buffer_pips` | `2.0` | `1.0-5.0` | Buffer in pips beyond candlestick extreme for SL |
 | `strategy_tp_rr_mult` | `1.8` | `1.0-3.0` | Risk:Reward multiplier for take profit |
-| `strategy_be_enabled` | `true` | `true/false` | Enable moving stop loss to break-even |
-| `strategy_be_trigger_r` | `1.0` | `0.5-2.0` | Profit in R-multiples to trigger break-even move |
+| `strategy_be_enabled` | `true` | `true` | Enable the mandatory break-even transition |
+| `strategy_be_trigger_r` | `1.0` | `1.0` | Original-risk multiple that triggers exact break-even |
 | `strategy_rollover_start_hhmm` | `2355` | `0-2359` | Start time for daily rollover blackout window |
 | `strategy_rollover_end_hhmm` | `5` | `0-2359` | End time for daily rollover blackout window |
 | `strategy_spread_filter_mult` | `1.8` | `1.0-3.0` | Max allowable spread as a multiple of ATR |
+| `strategy_max_slippage_ticks` | `3` | `1-3` | Maximum market-order deviation in trade ticks |
+| `strategy_daily_loss_halt_pct` | `2.0` | `(0, 2.0]` | Realized daily-loss entry halt |
+| `strategy_daily_hard_stop_pct` | `2.5` | `(0, 2.5]` | Framework daily hard-stop ceiling |
+| `strategy_total_dd_halt_pct` | `5.0` | `(0, 5.0]` | Framework total-drawdown hard-stop ceiling |
+| `strategy_per_trade_risk_cap_pct` | `0.5` | `(0, 0.5]` | Framework per-trade account-risk ceiling |
 
 ---
 
@@ -58,7 +63,7 @@ Stop Loss is set 2.0 pips beyond the candle extreme (below Hammer Low for Long, 
 |---|---|
 | Base timeframe | `PERIOD_H1` |
 | Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, strategy_signal_tf)` |
 
 ---
 
@@ -102,3 +107,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Task 9b992eb5-9773-40ff-b4f3-ef03719e373e |
+| v2 | 2026-08-23 | Card-conformance remediation | Reachable +1R management, current-bar ATR admission, UTC rollover, exact structural stops, three-tick deviation, and explicit risk rails |
