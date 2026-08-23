@@ -1,24 +1,44 @@
-;==========================================================
-; QM5 Set File
-; ea_id:        12932
-; ea_slug:      wyckoff-phase-e-markdown-continuation-h4
-; ea_version:   v5.0
-; set_version:  s20260822-001
-; symbol:       UK100.DWX
-; timeframe:    H4
-; environment:  backtest
-; magic_slot:   3
-; risk_mode:    FIXED
-; portfolio_weight: 1
-; build_hash:   4458c93e988954eee2db51838b895751328fda3faeba27a7df77fc02eaf91455
-; author:       Development
-; date:         2026-08-22
-;==========================================================
-qm_ea_id=12932
-qm_magic_slot_offset=3
-RISK_FIXED=1000
-RISK_PERCENT=0
-PORTFOLIO_WEIGHT=1
-; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12932_wyckoff-phase-e-markdown-continuation-h4.md
-; card_defaults_status=none_found
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        12932
+; ea_slug:      wyckoff-phase-e-markdown-continuation-h4
+; ea_version:   v5.0
+; set_version:  s20260823-001
+; symbol:       UK100.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   fd7f1340393bc08cfc3b319e403f5ab999163b898ec4f82e1ec416c7ca4922b4
+; author:       Development
+; date:         2026-08-23
+;==========================================================
+qm_ea_id=12932
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12932_wyckoff-phase-e-markdown-continuation-h4.md
+strategy_signal_tf=16388
+strategy_atr_period=14
+strategy_d1_sma_period=50
+strategy_range_min_duration=50
+strategy_range_max_lookback=300
+strategy_range_min_amp_atr=3.0
+strategy_range_max_amp_atr=14.0
+strategy_containment_min_ratio=0.80
+strategy_break_threshold_atr=0.50
+strategy_pre_trend_min_slope=0.08
+strategy_min_markdown_atr=1.50
+strategy_min_pullback_atr=0.80
+strategy_max_retrace_ratio=0.75
+strategy_resistance_tol_atr=0.50
+strategy_trend_max_slope=-0.05
+strategy_min_trend_dist_atr=2.00
+strategy_max_spread_atr=0.20
+strategy_pattern_reuse_bars=20
+strategy_sl_max_atr=3.50
+strategy_sl_buffer_atr=0.50
+strategy_time_stop_bars=50
