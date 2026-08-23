@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_20090 Unknown Strategy"
+#property description "QM5_20090 PriceBob TTR stop-order breakout"
 
 #include <QM/QM_Common.mqh>
 
@@ -47,7 +47,10 @@ input int    strategy_max_signals_per_session  = 3;
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-bool Strategy_NoTradeFilter() { return false; }
+bool Strategy_NoTradeFilter()
+{
+   return (_Period != PERIOD_M5);
+}
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
@@ -200,6 +203,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    // Build Buy Stop Request
    QM_EntryRequest buy_req;
+   ZeroMemory(buy_req);
    buy_req.type = QM_BUY_STOP;
    buy_req.price = buy_price;
    buy_req.sl = buy_sl;
@@ -274,11 +278,25 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 int OnInit()
 {
+   const int start_hour = strategy_session_start_hhmm / 100;
+   const int start_min = strategy_session_start_hhmm % 100;
+   const int end_hour = strategy_session_end_hhmm / 100;
+   const int end_min = strategy_session_end_hhmm % 100;
+   if(start_hour < 0 || start_hour > 23 || start_min < 0 || start_min > 59 ||
+      end_hour < 0 || end_hour > 23 || end_min < 0 || end_min > 59 ||
+      start_hour * 60 + start_min >= end_hour * 60 + end_min ||
+      strategy_atr_period < 2 || strategy_bar_tr_atr_max <= 0.0 ||
+      strategy_envelope_atr_buffer < 0.0 || strategy_d1_box_floor_atr <= 0.0 ||
+      strategy_spread_box_max <= 0.0 || strategy_buffer_atr_mult < 0.0 ||
+      strategy_max_signals_per_session < 1)
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_20090_pricebob-ttr-brooks-stoporder-breakout-audusd\"}");
    return INIT_SUCCEEDED;
 }
 
@@ -286,17 +304,9 @@ void OnDeinit(const int reason) { QM_FrameworkShutdown(); }
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
@@ -314,10 +324,19 @@ void OnTick()
       }
    }
 
+   if(Strategy_NewsFilterHook(broker_now)) return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
+
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
