@@ -18368,6 +18368,18 @@ def _pump_unlocked(
     # cannot starve the remaining cohort.
     result["q09_autoseal"] = auto_seal_pending_q09_news(root)
 
+    # OWNER A2: every incumbent confirmation enters the mandatory optimization
+    # audit.  The role-driven driver is append-only and never launches MT5; it
+    # only materializes the next governed analytic row after authenticating the
+    # predecessor and DL-089 fixture-harness evidence.
+    try:
+        result["optimization_fork"] = advance_opt_fork(root, apply=True)
+    except Exception as exc:  # one analytic routing defect must not stop the pump
+        result["optimization_fork"] = {
+            "applied": False,
+            "machine_reason": f"OPTIMIZATION_FORK_ROUTING_FAILED:{exc}",
+        }
+
     # §10d Synthetic variants for proven winners — EAs with ≥3 P2-PASSes
     # get a one-shot 30-variant burst exploring symbol family + bool flips +
     # ±30% on top-2 numerics. Triggers ONCE per EA (idempotent via
@@ -25423,6 +25435,39 @@ def admit_optimization(
     )
 
 
+def advance_opt_fork(
+    root: Path,
+    *,
+    apply: bool,
+    ea_id: str | None = None,
+    symbol: str | None = None,
+) -> dict[str, Any]:
+    """Run the manifest-role-driven append-only optimization fork router."""
+    try:
+        import optimization_fork_driver as driver
+    except ModuleNotFoundError:
+        from tools.strategy_farm import optimization_fork_driver as driver
+
+    if bool(ea_id) != bool(symbol):
+        raise ValueError("--ea and --symbol must be supplied together")
+    targets = None if not ea_id else [(str(ea_id), str(symbol))]
+    database = db_path(root).resolve()
+    if not database.is_file():
+        raise ValueError(f"farm database is missing: {database}")
+    if apply:
+        with connect(root) as conn:
+            return driver.advance_optimization_fork(
+                conn, manifest=ACTIVE_GATE_MANIFEST, target_pairs=targets, apply=True,
+            )
+    uri = f"file:{database.as_posix()}?mode=ro"
+    with sqlite3.connect(uri, uri=True, timeout=30) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA query_only=ON")
+        return driver.advance_optimization_fork(
+            conn, manifest=ACTIVE_GATE_MANIFEST, target_pairs=targets, apply=False,
+        )
+
+
 def print_json(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True))
 
@@ -26475,7 +26520,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     q14_enqueue.add_argument("--config")
     q14_enqueue.add_argument("--report-root")
+    q14_enqueue.add_argument("--ea", help="enqueue exactly this incumbent EA")
+    q14_enqueue.add_argument("--symbol", help="enqueue exactly this incumbent symbol")
     q14_enqueue.add_argument("--apply", action="store_true")
+
+    opt_advance = sub.add_parser(
+        "advance-optimization-fork",
+        help="Append all currently licensed manifest-role optimization successors.",
+    )
+    opt_advance.add_argument("--ea")
+    opt_advance.add_argument("--symbol")
+    opt_advance.add_argument("--apply", action="store_true")
 
     q16 = sub.add_parser(
         "enqueue-head-to-head",
@@ -26517,7 +26572,7 @@ def _command_mutates_state(args: argparse.Namespace) -> bool:
         return not bool(getattr(args, "dry_run", False))
     if args.command == "enqueue-compile":
         return bool(args.apply or not args.from_file)
-    if args.command in {"admit-optimization", "enqueue-opt-admission"}:
+    if args.command in {"admit-optimization", "enqueue-opt-admission", "advance-optimization-fork"}:
         return bool(args.apply)
     if args.command == "enqueue-head-to-head":
         return bool(args.apply)
@@ -26715,12 +26770,31 @@ def main(argv: list[str] | None = None) -> int:
             symbol = str(args.symbol).upper().replace(".DWX", "")
             rows = [r for r in rows if r["sleeve"].split(":", 1)[-1] == symbol]
         print_json({**payload, "rows": rows})
-    elif args.command in {"admit-optimization", "enqueue-opt-admission"}:
+    elif args.command == "admit-optimization":
         print_json(admit_optimization(
             root,
             config_path=args.config,
             report_root=args.report_root,
             apply=args.apply,
+        ))
+    elif args.command == "enqueue-opt-admission":
+        if args.ea or args.symbol:
+            print_json(advance_opt_fork(
+                root, apply=args.apply, ea_id=args.ea, symbol=args.symbol,
+            ))
+        else:
+            # Backward-compatible bulk admission surface.  New commissioning
+            # uses the exact-pair form above so the first production tranche is
+            # bounded and auditable.
+            print_json(admit_optimization(
+                root,
+                config_path=args.config,
+                report_root=args.report_root,
+                apply=args.apply,
+            ))
+    elif args.command == "advance-optimization-fork":
+        print_json(advance_opt_fork(
+            root, apply=args.apply, ea_id=args.ea, symbol=args.symbol,
         ))
     elif args.command == "enqueue-head-to-head":
         print_json(enqueue_head_to_head(
