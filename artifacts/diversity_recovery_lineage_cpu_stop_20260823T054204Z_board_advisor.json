@@ -1,0 +1,123 @@
+{
+  "artifact_type": "diversity_recovery_lineage_hard_cpu_stop",
+  "generated_at_utc": "2026-08-23T05:42:04Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "c3751fdddfde9c849b2c7edc2a994bc686f02f60",
+  "mission_outcome": "NO_INVALID_REQUALIFICATION_STOPPED_AT_BACKTEST_CPU_CEILING",
+  "priority_1_build_backlog": {
+    "outcome": "NO_COLLISION_FREE_LOW_FREQUENCY_DIVERSITY_BUILD",
+    "highest_diversity_observation": "QM5_41125_xauxag-mrms-coherence-rv was already being advanced by the commodity paced agent and was excluded to avoid collision.",
+    "remaining_strict_candidates": [
+      {
+        "ea_id": "QM5_11213",
+        "reason_excluded": "M5 card; not low-frequency"
+      },
+      {
+        "ea_id": "QM5_11214",
+        "reason_excluded": "M5 card; not low-frequency"
+      },
+      {
+        "ea_id": "QM5_1557",
+        "reason_excluded": "ambiguous legacy USOIL identity; not a governed new diversity build"
+      }
+    ],
+    "prior_backlog_evidence": "artifacts/diversity_build_backlog_stale_audit_cpu_stop_20260823T031909Z_board_advisor.json"
+  },
+  "priority_2_recovery_triage": {
+    "outcome": "LATEST_INFRA_ROW_FALSE_POSITIVES_EXCLUDED",
+    "QM5_1096": {
+      "slug": "unger-donchian-channel-tf",
+      "period": "D1",
+      "reason_excluded": "The approved card authorizes XAUUSD.DWX, XAGUSD.DWX, XTIUSD.DWX, NDX.DWX, WS30.DWX, and GDAXI.DWX. Its legacy EURUSD/EURNZD/EURJPY/EURGBP Q02 rows are outside the approved symbol universe and must not be revived as FX diversity sleeves."
+    },
+    "QM5_11018": {
+      "slug": "the5ers-outbar-cont",
+      "period": "H4",
+      "approved_target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX",
+        "AUDUSD.DWX",
+        "EURJPY.DWX",
+        "XAUUSD.DWX"
+      ],
+      "expected_trades_per_year_per_symbol": 36,
+      "risk_setfile": "framework/EAs/QM5_11018_the5ers-outbar-cont/sets/QM5_11018_the5ers-outbar-cont_EURUSD.DWX_H4_backtest.set",
+      "risk_mode": "RISK_FIXED=1000",
+      "work_item_summary": {
+        "total": 40,
+        "Q02_done_FAIL": 6,
+        "Q02_done_INFRA_FAIL": 1,
+        "Q02_failed_INFRA_FAIL": 33
+      },
+      "eurusd_lineage": {
+        "economic_terminal": {
+          "work_item_id": "5e09f006-ee48-4555-9288-a8ff76e64974",
+          "status": "done",
+          "verdict": "FAIL",
+          "updated_at": "2026-06-21T13:13:30+00:00"
+        },
+        "later_infra_row": {
+          "work_item_id": "084b9c06-5583-4ba4-a70f-154bb5ccd2ed",
+          "status": "failed",
+          "verdict": "INFRA_FAIL",
+          "updated_at": "2026-06-22T21:22:37+00:00"
+        }
+      },
+      "binary_observation": {
+        "mq5_sha256": "7ea8d62c7da4f51ffed828a818490c407b345c3fd920ee93475f4143c59fa5b9",
+        "ex5_sha256": "8af237c2a08e2c58a6317b402499479bdb0b037681227c62eaeb13b4871ea277",
+        "qm_common_sha256": "527402695a11ec97b36b476ab5cc158fd920498e6ac8464f12218942f5ea7d9a",
+        "observation": "The EX5 predates the current framework, but stale bytes alone do not authorize a Q02 rerun after an economic Q02 FAIL."
+      },
+      "reason_excluded": "This EA is not built-but-stuck solely on infrastructure. All six authorized symbols already have terminal Q02 FAIL outcomes; selecting only the newest row per symbol hid those economic verdicts."
+    },
+    "query_lesson": "A recovery inventory must exclude an EA-symbol once any valid terminal economic Q02/Q03 outcome exists; latest-row-only ranking can surface an older lineage's later INFRA_FAIL as a false recovery candidate."
+  },
+  "capacity_sample": {
+    "cpu_sample_count": 10,
+    "cpu_sample_interval_seconds": 1,
+    "cpu_samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "cpu_average_percent": 100.0,
+    "cpu_max_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "metatester64_process_count": 4,
+    "terminal64_process_count": 7
+  },
+  "non_duplicate_delta": {
+    "relative_to": "artifacts/diversity_build_backlog_stale_audit_cpu_stop_20260823T031909Z_board_advisor.json",
+    "new_evidence": "This run audited priority-2 lineage and rejected two apparent diversity recoveries: one out-of-card FX fan-out and one latest-INFRA-row false positive that already had economic Q02 outcomes."
+  },
+  "actions_this_run": {
+    "ea_source_mutation": false,
+    "ex5_compile": false,
+    "setfile_mutation": false,
+    "farm_db_mutation": false,
+    "queue_mutation": false,
+    "tester_or_backtest_run": false,
+    "terminal_control": false,
+    "evidence_commit_only": true,
+    "reason": "The explicit hard CPU stop bound before compile or enqueue."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_changes_staged_or_committed": false
+  }
+}
