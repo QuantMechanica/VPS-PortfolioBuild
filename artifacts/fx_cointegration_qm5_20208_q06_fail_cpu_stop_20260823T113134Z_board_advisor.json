@@ -1,0 +1,162 @@
+{
+  "artifact_type": "fx_cointegration_q06_fail_hard_cpu_stop",
+  "generated_at_utc": "2026-08-23T11:31:34Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "a5854b0ebd59012f3298248e271d2d2e067417a0",
+  "mission_outcome": "EXISTING_PAIR_Q06_FAIL_STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "scan_reconciliation": {
+    "source": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "durable_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "new_unbuilt_pair_eligible": false
+  },
+  "anchor_state": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "terminal_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02": "PASS",
+      "later_chain": "Q04 PASS; Q05 FAIL",
+      "current_q02_oninit_or_no_history_block": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "terminal_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02": "PASS",
+      "later_chain": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_block": false
+    }
+  },
+  "selected_existing_fx_basket": {
+    "ea_id": "QM5_20208",
+    "ea_label": "QM5_20208_nzdusd-euraud",
+    "pair": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "scan_rank": 27,
+    "lineage": {
+      "q02": {
+        "work_item_id": "1935fc01-6eaa-4db1-8397-660d22ebdfbb",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "q04": {
+        "work_item_id": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+        "status": "done",
+        "verdict": "PASS_LOWFREQ"
+      },
+      "q05": {
+        "work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "q06": {
+        "work_item_id": "776e6310-7ad6-41ba-8a08-4d63e045d4e5",
+        "row_count": 1,
+        "status": "done",
+        "attempt_count": 1,
+        "updated_at_utc": "2026-08-23T09:41:02Z",
+        "verdict": "FAIL"
+      }
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "further_advance_performed": false,
+    "reason": "The unique governed Q06 row reached a terminal FAIL; the subsequent host sample bound the explicit CPU stop before any next-candidate selection or queue action."
+  },
+  "capacity_sample": {
+    "mt5_slots_observed_at_utc": "2026-08-23T11:31:19Z",
+    "cpu_sample_end_utc": "2026-08-23T11:31:34Z",
+    "paced_launch_gate": 1,
+    "running_factory_terminal_count": 5,
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T8"
+    ],
+    "active_work_items": [
+      {
+        "terminal": "T2",
+        "work_item_id": "db92d69a-c86f-4a48-a31b-e68f1034e006",
+        "ea_id": "QM5_12849",
+        "phase": "Q09_NEWS"
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "5ae08016-5566-4e01-a249-161463e6d957",
+        "ea_id": "QM5_10146",
+        "phase": "Q09_NEWS"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "c665c1aa-9b3f-410e-bcde-048ef187652d",
+        "ea_id": "QM5_1537",
+        "phase": "Q09_NEWS"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "3bc3b088-94f3-4390-8b7d-5fd134336dac",
+        "ea_id": "QM5_20206",
+        "phase": "Q02"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "aff7d366-2ee6-4dda-ab1a-21f59921effc",
+        "ea_id": "QM5_12823",
+        "phase": "Q09_NEWS"
+      }
+    ],
+    "cpu_samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "cpu_average_percent": 100.0,
+    "cpu_maximum_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "t_live_observed_only": true,
+    "t_live_controlled": false
+  },
+  "non_duplicate_delta": {
+    "previous_evidence": "artifacts/fx_cointegration_fleet_cpu_stop_20260823T100039Z_board_advisor.json",
+    "previous_evidence_commit": "4422c0b49c17b6b986ec7a6090eb32efe31beadf",
+    "previous_selected_q06_status": "pending",
+    "previous_selected_q06_verdict": null,
+    "current_selected_q06_status": "done",
+    "current_selected_q06_verdict": "FAIL",
+    "reason_for_fresh_evidence": "The sole governed QM5_20208 Q06 row reached a terminal verdict after the previous receipt."
+  },
+  "actions_this_run": {
+    "new_card_or_ea": false,
+    "enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "compile_or_build_check": false,
+    "tester_launch_or_backtest": false,
+    "terminal_control": false,
+    "evidence_commit_only": true
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false,
+    "preexisting_untracked_fx_setfiles_preserved": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
