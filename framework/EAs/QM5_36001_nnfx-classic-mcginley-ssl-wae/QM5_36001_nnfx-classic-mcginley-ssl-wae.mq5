@@ -93,7 +93,7 @@ double Strategy_McGinley(const string sym, const int period, const int shift)
    return md;
 }
 
-int Strategy_SSLSignal(const int shift)
+int Strategy_SSLState(const int shift)
 {
    const double close_price = iClose(_Symbol, PERIOD_D1, shift); // perf-allowed: closed-bar reference behind QM_IsNewBar()
    const double high_ma = QM_SMA(_Symbol, PERIOD_D1, strategy_ssl_period, shift, PRICE_HIGH);
@@ -103,6 +103,17 @@ int Strategy_SSLSignal(const int shift)
    if(close_price > high_ma)
       return 1;
    if(close_price < low_ma)
+      return -1;
+   return 0;
+}
+
+int Strategy_SSLCross(const int shift)
+{
+   const int state_now = Strategy_SSLState(shift);
+   const int state_prev = Strategy_SSLState(shift + 1);
+   if(state_now == 1 && state_prev != 1)
+      return 1;
+   if(state_now == -1 && state_prev != -1)
       return -1;
    return 0;
 }
@@ -142,26 +153,36 @@ bool Strategy_Vortex(const string sym, const int period, const int shift, double
    return true;
 }
 
-int Strategy_WAESignal()
+bool Strategy_WAEPass(const int direction, double &wae_val, double &explosion_val)
 {
+   wae_val = 0.0;
+   explosion_val = 0.0;
    const double macd_now  = QM_MACD_Main(_Symbol, PERIOD_D1, strategy_wae_fast, strategy_wae_slow, strategy_wae_signal, 1, PRICE_CLOSE);
    const double macd_prev = QM_MACD_Main(_Symbol, PERIOD_D1, strategy_wae_fast, strategy_wae_slow, strategy_wae_signal, 2, PRICE_CLOSE);
    const double bb_upper  = QM_BB_Upper(_Symbol, PERIOD_D1, strategy_wae_bb_period, strategy_wae_bb_deviation, 1, PRICE_CLOSE);
    const double bb_lower  = QM_BB_Lower(_Symbol, PERIOD_D1, strategy_wae_bb_period, strategy_wae_bb_deviation, 1, PRICE_CLOSE);
    const double point     = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(bb_upper <= 0.0 || bb_lower <= 0.0 || point <= 0.0)
-      return 0;
+      return false;
 
-   const double momentum = (macd_now - macd_prev) * (double)strategy_wae_sensitivity;
    const double explosion = MathAbs(bb_upper - bb_lower);
    const double deadzone = (double)strategy_wae_deadzone_pts * point;
    const double threshold = MathMax(explosion, deadzone);
+   explosion_val = threshold;
 
-   if(momentum > threshold)
-      return 1;
-   if(-momentum > threshold)
-      return -1;
-   return 0;
+   if(direction > 0)
+   {
+      const double wae_bull = (macd_now - macd_prev) * (double)strategy_wae_sensitivity;
+      wae_val = wae_bull;
+      return (wae_bull > threshold);
+   }
+   else if(direction < 0)
+   {
+      const double wae_bear = (macd_prev - macd_now) * (double)strategy_wae_sensitivity;
+      wae_val = wae_bear;
+      return (wae_bear > threshold);
+   }
+   return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -170,10 +191,17 @@ int Strategy_WAESignal()
 
 bool Strategy_NoTradeFilter()
 {
-   const datetime now = TimeCurrent();
-   const int hhmm = GetBarHhmm(now);
+   const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
+   const int hhmm = GetBarHhmm(utc_now);
    if(hhmm >= 2355 || hhmm < 5)
       return true;
+
+   if(g_qm_ks_day_start_equity > 0.0)
+   {
+      const double eq = AccountInfoDouble(ACCOUNT_EQUITY);
+      if(eq > 0.0 && ((g_qm_ks_day_start_equity - eq) / g_qm_ks_day_start_equity * 100.0) >= 2.0)
+         return true;
+   }
 
    const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -214,16 +242,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(mcginley_1 <= 0.0)
       return false;
 
-   const int ssl_signal = Strategy_SSLSignal(1);
-   if(ssl_signal == 0)
+   const int ssl_cross = Strategy_SSLCross(1);
+   if(ssl_cross == 0)
       return false;
 
    double vi_plus = 0.0, vi_minus = 0.0;
    if(!Strategy_Vortex(_Symbol, strategy_vortex_period, 1, vi_plus, vi_minus))
-      return false;
-
-   const int wae_signal = Strategy_WAESignal();
-   if(wae_signal == 0)
       return false;
 
    const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
@@ -236,10 +260,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double sl_dist = MathMax(strategy_sl_atr_mult * atr_1, 10.0 * pip_size);
-   const double tp_dist = MathMax(strategy_tp_atr_mult * atr_1, 10.0 * pip_size);
 
-   // Long: Close > McGinley AND SSL == UP (+1) AND Vortex+ > Vortex- AND WAE == UP (+1)
-   if(close_1 > mcginley_1 && ssl_signal > 0 && vi_plus > vi_minus && wae_signal > 0)
+   double wae_val = 0.0, explosion_val = 0.0;
+
+   // Long: Close > McGinley AND SSL Crossover == UP AND Vortex+ > Vortex- AND WAE > ExplosionLine
+   if(close_1 > mcginley_1 && ssl_cross > 0 && vi_plus > vi_minus && Strategy_WAEPass(1, wae_val, explosion_val))
    {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double exec_price = (ask > 0.0) ? ask : close_1;
@@ -247,13 +272,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_BUY;
       req.price = 0.0;
       req.sl = QM_TM_NormalizePrice(_Symbol, exec_price - sl_dist);
-      req.tp = QM_TM_NormalizePrice(_Symbol, exec_price + tp_dist);
+      req.tp = 0.0;
       req.reason = "nnfx_classic_long";
       return true;
    }
 
-   // Short: Close < McGinley AND SSL == DOWN (-1) AND Vortex- > Vortex+ AND WAE == DOWN (-1)
-   if(close_1 < mcginley_1 && ssl_signal < 0 && vi_minus > vi_plus && wae_signal < 0)
+   // Short: Close < McGinley AND SSL Crossover == DOWN AND Vortex- > Vortex+ AND WAE > ExplosionLine
+   if(close_1 < mcginley_1 && ssl_cross < 0 && vi_minus > vi_plus && Strategy_WAEPass(-1, wae_val, explosion_val))
    {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double exec_price = (bid > 0.0) ? bid : close_1;
@@ -261,7 +286,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_SELL;
       req.price = 0.0;
       req.sl = QM_TM_NormalizePrice(_Symbol, exec_price + sl_dist);
-      req.tp = QM_TM_NormalizePrice(_Symbol, exec_price - tp_dist);
+      req.tp = 0.0;
       req.reason = "nnfx_classic_short";
       return true;
    }
@@ -287,33 +312,30 @@ void Strategy_ManageOpenPosition()
       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
 
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool is_buy = (pos_type == POSITION_TYPE_BUY);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
+      const double volume = PositionGetDouble(POSITION_VOLUME);
+      const double price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID) : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(open_price <= 0.0 || price <= 0.0 || volume <= 0.0) continue;
 
-      if(pos_type == POSITION_TYPE_BUY)
+      const double trigger = is_buy ? (open_price + be_trigger) : (open_price - be_trigger);
+      const bool hit_trigger = is_buy ? (price >= trigger) : (price <= trigger);
+      const bool sl_not_breakeven = (current_sl <= 0.0) ||
+                                    (is_buy ? (current_sl < open_price) : (current_sl > open_price));
+
+      if(hit_trigger && sl_not_breakeven)
       {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(bid <= 0.0 || open_price <= 0.0) continue;
-
-         // Move to break-even once open profit >= 1.0 ATR
-         if((bid - open_price) >= be_trigger)
+         const double half_lots = QM_TM_NormalizeVolume(_Symbol, volume * 0.5);
+         if(half_lots > 0.0 && half_lots < volume && QM_TM_PartialClose(ticket, half_lots, QM_EXIT_PARTIAL))
          {
-            const double target_sl = QM_TM_NormalizePrice(_Symbol, open_price + 1.0 * pip_size);
-            if(target_sl > current_sl + point * 0.5)
-               QM_TM_MoveSL(ticket, target_sl, "nnfx_be_plus_1");
+            const double be_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (open_price + 1.0 * pip_size) : (open_price - 1.0 * pip_size));
+            QM_TM_MoveSL(ticket, be_sl, "nnfx_tp1_partial_move_be");
          }
-      }
-      else if(pos_type == POSITION_TYPE_SELL)
-      {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(ask <= 0.0 || open_price <= 0.0) continue;
-
-         // Move to break-even once open profit >= 1.0 ATR
-         if((open_price - ask) >= be_trigger)
+         else
          {
-            const double target_sl = QM_TM_NormalizePrice(_Symbol, open_price - 1.0 * pip_size);
-            if(current_sl <= 0.0 || target_sl < current_sl - point * 0.5)
-               QM_TM_MoveSL(ticket, target_sl, "nnfx_be_plus_1");
+            const double be_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (open_price + 1.0 * pip_size) : (open_price - 1.0 * pip_size));
+            QM_TM_MoveSL(ticket, be_sl, "nnfx_tp1_move_be");
          }
       }
    }
@@ -325,7 +347,8 @@ bool Strategy_ExitSignal()
    if(magic <= 0) return false;
 
    const double demarker_1 = QM_DeMarker(_Symbol, PERIOD_D1, strategy_demarker_period, 1);
-   const int ssl_signal = Strategy_SSLSignal(1);
+   const double demarker_2 = QM_DeMarker(_Symbol, PERIOD_D1, strategy_demarker_period, 2);
+   const int ssl_state_1 = Strategy_SSLState(1);
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
    {
@@ -335,16 +358,16 @@ bool Strategy_ExitSignal()
 
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
 
-      // Long exit: DeMarker overbought exit (> 0.70) or SSL flipped DOWN (-1)
+      // Long runner exit: DeMarker crosses overbought (>= 0.70 while bar 2 was < 0.70) OR SSL flips DOWN (< 0)
       if(pos_type == POSITION_TYPE_BUY)
       {
-         if((demarker_1 > 0.70) || (ssl_signal < 0))
+         if((demarker_1 >= 0.70 && demarker_2 < 0.70) || (ssl_state_1 < 0))
             return true;
       }
-      // Short exit: DeMarker oversold exit (< 0.30) or SSL flipped UP (+1)
+      // Short runner exit: DeMarker crosses oversold (<= 0.30 while bar 2 was > 0.30) OR SSL flips UP (> 0)
       else if(pos_type == POSITION_TYPE_SELL)
       {
-         if((demarker_1 > 0.0 && demarker_1 < 0.30) || (ssl_signal > 0))
+         if((demarker_1 > 0.0 && demarker_1 <= 0.30 && demarker_2 > 0.30) || (ssl_state_1 > 0))
             return true;
       }
    }
@@ -368,6 +391,9 @@ int OnInit()
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   QM_KillSwitchInit(qm_ea_id, QM_FrameworkMagic(), 2.5, 5.0, 1.0);
+
    return INIT_SUCCEEDED;
 }
 
@@ -381,7 +407,6 @@ void OnTick()
    QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
 
    Strategy_ManageOpenPosition();
 
@@ -407,10 +432,13 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows) return;
 
+   if(Strategy_NoTradeFilter()) return;
+
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
@@ -433,3 +461,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
 }
+

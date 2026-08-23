@@ -3,16 +3,16 @@
 ; ea_id:        36004
 ; ea_slug:      nnfx-alma-qqe-volume-flow-sniper
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260823-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8826c41d094f2f174b7b9c4bb0e5a7119cac5124e532a74a8f86848427f17133
+; build_hash:   pending
 ; author:       Development
-; date:         2026-08-17
+; date:         2026-08-23
 ;==========================================================
 qm_ea_id=36004
 qm_magic_slot_offset=0

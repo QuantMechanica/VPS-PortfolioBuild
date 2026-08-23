@@ -3,22 +3,24 @@
 ; ea_id:        36001
 ; ea_slug:      nnfx-classic-mcginley-ssl-wae
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260823-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   53f9f6883154d21e9405cf363194875a2eb1745e13b0cfd8584844a0c99d94ba
-; author:       Gemini
-; date:         2026-08-17
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-23
 ;==========================================================
 qm_ea_id=36001
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_36001_nnfx-classic-mcginley-ssl-wae.md
 strategy_mcginley_period=14
 strategy_ssl_period=10
 strategy_vortex_period=14

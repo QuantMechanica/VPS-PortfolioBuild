@@ -46,7 +46,7 @@ input int    strategy_dpo_period          = 20;     // Detrended Price Oscillato
 input int    strategy_vfi_period          = 130;    // Volume Flow Indicator lookback period
 input int    strategy_atr_period          = 14;     // ATR period for stop loss and spread filter
 input double strategy_sl_atr_mult         = 1.00;   // Stop loss ATR multiplier
-input double strategy_tp_atr_mult         = 1.00;   // Take profit ATR multiplier
+input double strategy_tp_atr_mult         = 1.00;   // Take profit ATR multiplier (TP1 partial close level)
 input double strategy_spread_atr_mult     = 1.80;   // Spread filter ATR multiplier
 
 // -----------------------------------------------------------------------------
@@ -90,8 +90,11 @@ double Strategy_ALMA(const string sym, const int period, const double sigma, con
    return sum_w / sum_weight;
 }
 
-int Strategy_QQESignal(const string sym, const int shift)
+bool Strategy_QQEValue(const string sym, const int shift, double &out_rsi_ma, double &out_trail)
 {
+   out_rsi_ma = 0.0;
+   out_trail = 0.0;
+
    const int sf = strategy_qqe_sf;
    const int wilder = strategy_qqe_wilder;
    const int rsi_p = strategy_qqe_rsi_period;
@@ -99,14 +102,14 @@ int Strategy_QQESignal(const string sym, const int shift)
 
    const int warmup = sf + 2 * wilder + 30;
    const int n = warmup;
-   if(n < 2) return 0;
+   if(n < 2) return false;
 
    double rsi_ma[];
    ArrayResize(rsi_ma, n);
 
    const double k = 2.0 / ((double)sf + 1.0);
    double ema = QM_RSI(sym, PERIOD_D1, rsi_p, shift + n - 1, PRICE_CLOSE);
-   if(ema <= 0.0 && ema != 0.0) return 0;
+   if(ema <= 0.0 && ema != 0.0) return false;
    rsi_ma[n - 1] = ema;
 
    for(int i = n - 2; i >= 0; --i)
@@ -158,8 +161,28 @@ int Strategy_QQESignal(const string sym, const int shift)
       }
    }
 
-   if(rsi_ma[0] > trail) return 1;  // Bullish (+1)
-   if(rsi_ma[0] < trail) return -1; // Bearish (-1)
+   out_rsi_ma = rsi_ma[0];
+   out_trail = trail;
+   return true;
+}
+
+int Strategy_QQEState(const string sym, const int shift)
+{
+   double rsi_ma = 0.0, trail = 0.0;
+   if(!Strategy_QQEValue(sym, shift, rsi_ma, trail)) return 0;
+   if(rsi_ma > trail) return 1;
+   if(rsi_ma < trail) return -1;
+   return 0;
+}
+
+int Strategy_QQECross(const string sym, const int shift)
+{
+   const int state_now = Strategy_QQEState(sym, shift);
+   const int state_prev = Strategy_QQEState(sym, shift + 1);
+   if(state_now == 1 && state_prev != 1)
+      return 1;
+   if(state_now == -1 && state_prev != -1)
+      return -1;
    return 0;
 }
 
@@ -218,10 +241,17 @@ double Strategy_VFI(const string sym, const int period, const int shift)
 
 bool Strategy_NoTradeFilter()
 {
-   const datetime now = TimeCurrent();
-   const int hhmm = GetBarHhmm(now);
+   const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
+   const int hhmm = GetBarHhmm(utc_now);
    if(hhmm >= 2355 || hhmm < 5)
       return true;
+
+   if(g_qm_ks_day_start_equity > 0.0)
+   {
+      const double eq = AccountInfoDouble(ACCOUNT_EQUITY);
+      if(eq > 0.0 && ((g_qm_ks_day_start_equity - eq) / g_qm_ks_day_start_equity * 100.0) >= 2.0)
+         return true;
+   }
 
    const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -262,8 +292,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(alma_1 <= 0.0)
       return false;
 
-   const int qqe_signal = Strategy_QQESignal(_Symbol, 1);
-   if(qqe_signal == 0)
+   const int qqe_cross = Strategy_QQECross(_Symbol, 1);
+   if(qqe_cross == 0)
       return false;
 
    const double dpo_1 = Strategy_DPO(_Symbol, strategy_dpo_period, 1);
@@ -279,10 +309,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double sl_dist = MathMax(strategy_sl_atr_mult * atr_1, 10.0 * pip_size);
-   const double tp_dist = MathMax(strategy_tp_atr_mult * atr_1, 10.0 * pip_size);
 
-   // Long: Close > ALMA AND QQE == UP (+1) AND DPO > 0 AND VFI > 0
-   if(close_1 > alma_1 && qqe_signal > 0 && dpo_1 > 0.0 && vfi_1 > 0.0)
+   // Long: Close > ALMA AND QQE Cross == UP AND DPO > 0 AND VFI > 0
+   if(close_1 > alma_1 && qqe_cross > 0 && dpo_1 > 0.0 && vfi_1 > 0.0)
    {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double exec_price = (ask > 0.0) ? ask : close_1;
@@ -290,13 +319,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_BUY;
       req.price = 0.0;
       req.sl = QM_TM_NormalizePrice(_Symbol, exec_price - sl_dist);
-      req.tp = QM_TM_NormalizePrice(_Symbol, exec_price + tp_dist);
+      req.tp = 0.0;
       req.reason = "nnfx_alma_qqe_long";
       return true;
    }
 
-   // Short: Close < ALMA AND QQE == DOWN (-1) AND DPO < 0 AND VFI < 0
-   if(close_1 < alma_1 && qqe_signal < 0 && dpo_1 < 0.0 && vfi_1 < 0.0)
+   // Short: Close < ALMA AND QQE Cross == DOWN AND DPO < 0 AND VFI < 0
+   if(close_1 < alma_1 && qqe_cross < 0 && dpo_1 < 0.0 && vfi_1 < 0.0)
    {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double exec_price = (bid > 0.0) ? bid : close_1;
@@ -304,7 +333,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_SELL;
       req.price = 0.0;
       req.sl = QM_TM_NormalizePrice(_Symbol, exec_price + sl_dist);
-      req.tp = QM_TM_NormalizePrice(_Symbol, exec_price - tp_dist);
+      req.tp = 0.0;
       req.reason = "nnfx_alma_qqe_short";
       return true;
    }
@@ -330,33 +359,30 @@ void Strategy_ManageOpenPosition()
       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
 
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool is_buy = (pos_type == POSITION_TYPE_BUY);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
+      const double volume = PositionGetDouble(POSITION_VOLUME);
+      const double price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID) : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(open_price <= 0.0 || price <= 0.0 || volume <= 0.0) continue;
 
-      if(pos_type == POSITION_TYPE_BUY)
+      const double trigger = is_buy ? (open_price + be_trigger) : (open_price - be_trigger);
+      const bool hit_trigger = is_buy ? (price >= trigger) : (price <= trigger);
+      const bool sl_not_breakeven = (current_sl <= 0.0) ||
+                                    (is_buy ? (current_sl < open_price) : (current_sl > open_price));
+
+      if(hit_trigger && sl_not_breakeven)
       {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(bid <= 0.0 || open_price <= 0.0) continue;
-
-         // Move to break-even once open profit >= 1.0 ATR
-         if((bid - open_price) >= be_trigger)
+         const double half_lots = QM_TM_NormalizeVolume(_Symbol, volume * 0.5);
+         if(half_lots > 0.0 && half_lots < volume && QM_TM_PartialClose(ticket, half_lots, QM_EXIT_PARTIAL))
          {
-            const double target_sl = QM_TM_NormalizePrice(_Symbol, open_price + 1.0 * pip_size);
-            if(target_sl > current_sl + point * 0.5)
-               QM_TM_MoveSL(ticket, target_sl, "nnfx_be_plus_1");
+            const double be_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (open_price + 1.0 * pip_size) : (open_price - 1.0 * pip_size));
+            QM_TM_MoveSL(ticket, be_sl, "nnfx_tp1_partial_move_be");
          }
-      }
-      else if(pos_type == POSITION_TYPE_SELL)
-      {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(ask <= 0.0 || open_price <= 0.0) continue;
-
-         // Move to break-even once open profit >= 1.0 ATR
-         if((open_price - ask) >= be_trigger)
+         else
          {
-            const double target_sl = QM_TM_NormalizePrice(_Symbol, open_price - 1.0 * pip_size);
-            if(current_sl <= 0.0 || target_sl < current_sl - point * 0.5)
-               QM_TM_MoveSL(ticket, target_sl, "nnfx_be_plus_1");
+            const double be_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (open_price + 1.0 * pip_size) : (open_price - 1.0 * pip_size));
+            QM_TM_MoveSL(ticket, be_sl, "nnfx_tp1_move_be");
          }
       }
    }
@@ -367,7 +393,7 @@ bool Strategy_ExitSignal()
    const int magic = QM_FrameworkMagic();
    if(magic <= 0) return false;
 
-   const int qqe_signal = Strategy_QQESignal(_Symbol, 1);
+   const int qqe_state = Strategy_QQEState(_Symbol, 1);
    const double close_1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed-bar reference behind QM_IsNewBar()
    const double alma_1 = Strategy_ALMA(_Symbol, strategy_alma_period, strategy_alma_sigma, strategy_alma_offset, 1);
 
@@ -382,13 +408,13 @@ bool Strategy_ExitSignal()
       // Long exit: QQE flipped DOWN (< 0) or Close dropped below ALMA
       if(pos_type == POSITION_TYPE_BUY)
       {
-         if(qqe_signal < 0 || (alma_1 > 0.0 && close_1 < alma_1))
+         if(qqe_state < 0 || (alma_1 > 0.0 && close_1 < alma_1))
             return true;
       }
       // Short exit: QQE flipped UP (> 0) or Close rose above ALMA
       else if(pos_type == POSITION_TYPE_SELL)
       {
-         if(qqe_signal > 0 || (alma_1 > 0.0 && close_1 > alma_1))
+         if(qqe_state > 0 || (alma_1 > 0.0 && close_1 > alma_1))
             return true;
       }
    }
@@ -412,6 +438,9 @@ int OnInit()
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   QM_KillSwitchInit(qm_ea_id, QM_FrameworkMagic(), 2.5, 5.0, 1.0);
+
    return INIT_SUCCEEDED;
 }
 
@@ -425,7 +454,6 @@ void OnTick()
    QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
 
    Strategy_ManageOpenPosition();
 
@@ -451,10 +479,13 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows) return;
 
+   if(Strategy_NoTradeFilter()) return;
+
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
@@ -477,3 +508,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
 }
+
