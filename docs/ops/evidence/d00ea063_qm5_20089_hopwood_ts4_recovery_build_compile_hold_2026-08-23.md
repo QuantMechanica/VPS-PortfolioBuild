@@ -54,4 +54,10 @@ The sanctioned compile command accepted governed work item
 sets. Activation is held under `COMPILE_EA_WORKER_ROLLOUT_PENDING`; no current EX5 or
 strict build PASS exists yet. Smoke was not run, and no pipeline verdict is claimed.
 
+The requested `REVIEW` transition was attempted after commit and refused with
+`D6_BUILD_IDENTITY_MISSING`. A review packet must bind a committed current EX5 and
+strict build PASS; neither can truthfully be asserted while work item `271b603f` is
+activation-held. The router task is therefore dispositioned `BLOCKED` without a
+fabricated build identity.
+
 Short verdict: `SOURCE_READY_COMPILE_HELD: static gates PASS; governed compile 271b603f pending under worker-rollout activation hold.`
