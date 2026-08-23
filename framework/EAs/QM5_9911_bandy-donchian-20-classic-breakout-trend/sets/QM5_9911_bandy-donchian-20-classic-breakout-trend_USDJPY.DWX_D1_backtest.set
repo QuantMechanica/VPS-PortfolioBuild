@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9911
+; ea_slug:      bandy-donchian-20-classic-breakout-trend
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       USDJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   8
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   dd1338d27c6795ff02bdb5f00045b15a6f16920051f79f113b9f60ad4362ea87
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=9911
+qm_magic_slot_offset=8
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9911_bandy-donchian-20-classic-breakout-trend.md
+strategy_entry_lookback=20
+strategy_exit_lookback=10
+strategy_regime_sma_period=200
+strategy_atr_period=14
+strategy_atr_stop_mult=2.5
+strategy_time_stop_bars=60
