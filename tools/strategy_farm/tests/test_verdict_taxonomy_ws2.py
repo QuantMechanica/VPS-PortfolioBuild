@@ -34,7 +34,8 @@ def _memory_work_items_conn() -> sqlite3.Connection:
             claimed_by TEXT,
             payload_json TEXT NOT NULL,
             created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
+            updated_at TEXT NOT NULL,
+            gate_contract_version TEXT
         )
         """
     )
@@ -295,7 +296,8 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
                 changed = farmctl._promote_q08_soft_fails_to_q09_portfolio(conn, result)
                 self.assertTrue(changed)
                 row = conn.execute(
-                    "SELECT id, phase, status FROM work_items WHERE phase='Q09_PORTFOLIO'"
+                    "SELECT id, phase, status FROM work_items WHERE phase=?",
+                    (farmctl._NEWS_PORTFOLIO_PHASE,),
                 ).fetchone()
                 self.assertIsNotNone(row)
                 self.assertEqual(row["status"], "pending")
@@ -345,7 +347,8 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
                 first = farmctl._promote_q08_soft_fails_to_q09_portfolio(conn, result)
                 second = farmctl._promote_q08_soft_fails_to_q09_portfolio(conn, result)
                 q09_count = conn.execute(
-                    "SELECT COUNT(*) FROM work_items WHERE phase='Q09_PORTFOLIO'"
+                    "SELECT COUNT(*) FROM work_items WHERE phase=?",
+                    (farmctl._NEWS_PORTFOLIO_PHASE,),
                 ).fetchone()[0]
                 self.assertEqual(first, 1)
                 self.assertEqual(second, 0)

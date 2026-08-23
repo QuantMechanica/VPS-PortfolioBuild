@@ -815,11 +815,12 @@ def test_exact_q15_seeded_infra_accepts_authenticated_freeze_evidence(
                 id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
                 attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,
                 created_at,updated_at
-            ) VALUES(?, 'development', 'Q15', ?, 'EURUSD.DWX', ?, 'done',
+            ) VALUES(?, 'development', ?, ?, 'EURUSD.DWX', ?, 'done',
                      'CHALLENGER_SPAWNED', 0, NULL, ?, NULL, ?, ?, ?)
             """,
             (
                 q15_id,
+                farmctl._PARAM_OPT_PHASE,
                 art["ea_id"],
                 str(setfile),
                 str(freeze),
@@ -912,11 +913,12 @@ def test_exact_q15_seeded_infra_refuses_tampered_freeze_evidence(
                 id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
                 attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,
                 created_at,updated_at
-            ) VALUES(?, 'development', 'Q15', ?, 'EURUSD.DWX', ?, 'done',
+            ) VALUES(?, 'development', ?, ?, 'EURUSD.DWX', ?, 'done',
                      'CHALLENGER_SPAWNED', 0, NULL, ?, NULL, ?, ?, ?)
             """,
             (
                 q15_id,
+                farmctl._PARAM_OPT_PHASE,
                 art["ea_id"],
                 str(setfile),
                 str(freeze),
@@ -1972,7 +1974,7 @@ def test_append_only_q09_portfolio_from_q08_pass_binds_exact_dependency(
     tmp_path: Path, monkeypatch
 ) -> None:
     art = _artifacts(tmp_path, monkeypatch)
-    _insert_work_item(
+    q08_evidence = _insert_work_item(
         art,
         item_id="q08-current",
         phase="Q08",
@@ -1980,10 +1982,20 @@ def test_append_only_q09_portfolio_from_q08_pass_binds_exact_dependency(
         verdict="PASS",
         payload=_payload(art, stale=False),
     )
+    baseline_payload = _payload(art, stale=False)
+    baseline_payload["promoted_from_work_item"] = "q08-current"
+    _insert_work_item(
+        art,
+        item_id="q09-baseline-current",
+        phase=farmctl._BASELINE_FULL_RUN_PHASE,
+        status="done",
+        verdict="PASS",
+        payload=baseline_payload,
+    )
     _insert_work_item(
         art,
         item_id="q09p-historical",
-        phase="Q09_PORTFOLIO",
+        phase=farmctl._NEWS_PORTFOLIO_PHASE,
         status="done",
         verdict="FAIL_PORTFOLIO",
         payload=_payload(art, stale=True),
@@ -1992,8 +2004,8 @@ def test_append_only_q09_portfolio_from_q08_pass_binds_exact_dependency(
     result = farmctl.enqueue_cascade_backtest_for_ea(
         art["root"],
         art["ea_id"],
-        "Q09_PORTFOLIO",
-        predecessor_work_item_id="q08-current",
+        farmctl._NEWS_PORTFOLIO_PHASE,
+        predecessor_work_item_id="q09-baseline-current",
         append_only_rerun_of="q09p-historical",
         rerun_reason="candidate repair",
         expected_current_ex5_sha256=art["current_ex5"],
@@ -2016,6 +2028,7 @@ def test_append_only_q09_portfolio_from_q08_pass_binds_exact_dependency(
             "SELECT status,verdict FROM work_items WHERE id='q09p-historical'"
         ).fetchone()
     assert dependency == ("Q08_INPUT", "q08-current")
+    assert q08_evidence.is_file()
     assert historical == ("done", "FAIL_PORTFOLIO")
 
 

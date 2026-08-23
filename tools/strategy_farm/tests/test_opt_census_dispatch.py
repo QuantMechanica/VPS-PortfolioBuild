@@ -73,8 +73,10 @@ def test_opt_census_ranks_tier6_not_priority(tmp_path: Path) -> None:
         ordered = conn.execute(farmctl.pending_claim_order_sql()).fetchall()
 
     by_id = {r["id"]: r for r in ordered}
-    # OPT_CENSUS is Q04's tier and is never priority_track.
-    assert by_id["opt1"]["_phase_rank"] == by_id["plain_q04"]["_phase_rank"] == 6
+    # OPT_CENSUS tracks Q04's tier under the active manifest and is never
+    # priority_track (v4 inserts another upstream gate, shifting the tier to 7).
+    expected_q04_rank = farmctl.phase_rank(farmctl._INCUMBENT_PHASE) - farmctl.phase_rank("Q04")
+    assert by_id["opt1"]["_phase_rank"] == by_id["plain_q04"]["_phase_rank"] == expected_q04_rank
     assert by_id["opt1"]["_priority_track_rank"] == 1
     order = [r["id"] for r in ordered]
     # Priority funnel rows drain first; OPT_CENSUS interleaves with ordinary Q04

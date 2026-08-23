@@ -285,7 +285,7 @@ def test_builder_binds_active_gate_contract_into_payload(
     assert gate_contract["schema_version"] == manifest.schema_version
     assert gate_contract["activation_state"] == manifest.activation_state
     assert gate_contract["manifest_path"] == (
-        "tools/strategy_farm/config/gate_manifest.v3.json"
+        "tools/strategy_farm/config/gate_manifest.v4.json"
     )
     # The additive block flows through candidate + published self-verification.
     assert result["gate_contract_sha256"] == manifest.sha256

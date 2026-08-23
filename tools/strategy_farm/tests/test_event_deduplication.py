@@ -258,7 +258,7 @@ def test_zero_trade_terminal_detector_uses_deduped_event(tmp_path):
     payload = json.dumps({"verdict_reason": "MIN_TRADES_NOT_MET"})
     con.executemany(
         "INSERT INTO work_items VALUES (?,?,?,?,?,'Q02','failed')",
-        [("QM5_1", "FAIL", payload, None, _at(0).isoformat())] * 5,
+        [("QM5_1", "FAIL", payload, None, dt.datetime.now(dt.UTC).isoformat())] * 5,
     )
     con.executemany(
         "INSERT INTO tasks VALUES (?,?, 'build_ea', ?, ?, 'done')",

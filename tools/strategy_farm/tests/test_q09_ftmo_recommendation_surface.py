@@ -113,8 +113,8 @@ def test_strategy_archive_detail_renders_pair_level_recommendation() -> None:
         {"q09_ftmo_recommendation": _recommendation_fixture()}
     )
 
-    assert "Q09 News Impact · FTMO geeignet" in html
+    assert "Q09 News Impact · FTMO suitability" in html
     assert "EURUSD.DWX" in html and "USDJPY.DWX" in html
-    assert ">JA<" in html and ">NEIN<" in html
+    assert ">YES<" in html and ">NO<" in html
     assert "FTMO_Q09_ADMITTED" in html
-    assert "keine Challenge-, Deployment- oder AutoTrading-Autorität" in html
+    assert "grants no challenge, deployment or AutoTrading authority" in html
