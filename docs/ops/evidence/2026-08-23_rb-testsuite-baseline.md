@@ -195,6 +195,21 @@ python -m pytest test_rebaseline_census.py test_pipeline_view_work_items.py \
 138 passed in 118.15s
 ```
 
+Full post-merge suite (UTF-8 console, `chcp 65001`) — count rises from the
+pre-merge 4488 because the merge brings board-advisor's additional tests onto
+this branch:
+
+```text
+python -m pytest tools/strategy_farm/tests -q   (chcp 65001)
+4531 passed, 4 skipped, 42 subtests passed in 1241.37s (0:20:41)
+```
+
+Mergeability confirmed: `git merge-tree --write-tree agents/board-advisor
+rb-testsuite-baseline` returns exit 0 with no conflicted paths, so
+rb-testsuite-baseline now merges into `agents/board-advisor` with zero
+conflicts. The merge commit has two parents (rb-testsuite-baseline HEAD and
+board-advisor `6af0cbda`).
+
 ### P2 — `test_codex_session_supervisor.py` UTF-8-console dependency (documented; not owned by this branch)
 
 `test_supervisor_resumes_after_unexpected_child_exit` fails with
