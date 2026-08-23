@@ -86,6 +86,27 @@ via Planner (REBIND_STALE) statt manueller Release; (5) Testsuite-Baseline 22 vo
 
 ---
 
+## 0d · Offener Stand 2026-08-23 spätabends
+
+| ToDo | Was | Hängt an |
+|---|---|---|
+| `-512` | SH-2 Artefakt-Identität je Lauf | **OWNER: Factory-OFF-Fenster** |
+| `-502` | Gate-Nummerierung `Q10.1–Q10.3` | **OWNER: Go für die Welle** (geparkt) |
+| `-513` | `QM5_13036` auf XAUUSD ausspielen? | **OWNER-Entscheid** (Kandidatenmenge = ROT) |
+| `-511` | Strategy Archive online (Abdeckungsebene) | OWNER-Entscheid Öffentlichkeitsgrad |
+| `-514` | **EA-Schauseiten fürs Live-Buch — sollen den MQL5-Kauf auslösen** | **MQL5-Produkt-EA existiert nicht; Quellenrechte je EA ungeklärt** |
+| `-509` | SH-3-Nachfolger (typisierte Spalten) | OFF-Fenster |
+| `-505`/`-508`/`-510` | Detailseiten-Vollausbau, DL-090-Job, Karteneingang Englisch | beauftragt, laufen |
+
+**Neu 2026-08-23 (OWNER):** die Website bekommt **zwei** Flächen — das Archiv als
+Abdeckungsnachweis, und Schauseiten für die Live-Buch-EAs, die verkaufen müssen.
+**Zielkonflikt, der das Design bestimmt:** die interne Card enthält die vollständige
+Mechanisierung; wer sie veröffentlicht, nimmt dem Leser den Grund zu kaufen. Die öffentliche
+Card ist ein abgeleitetes, reduziertes Artefakt — These, Evidenzkette, Risikoprofil,
+Versagensmodi, **kein Regelsatz**. Router `cc61dbf2` (BACKLOG, blockiert).
+
+---
+
 ## 0c · 2026-08-23 abends — „setze alles endgültig um" abgearbeitet
 
 | Punkt | Zustand | Beleg |
