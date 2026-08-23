@@ -1253,6 +1253,9 @@ def _with_sqlite_write_retry(fn, retries: int = 8, base_sleep_seconds: float = 1
 RECOVERY_CLASS_PAYLOAD_KEY = "recovery_class"
 # LIKE pattern for the SQL rank. Robust to the ": " vs ":" JSON spacing.
 RECOVERY_MARKER_LIKE = '%"recovery_class":%'
+UNIVERSE_EXPANSION_PAYLOAD_KEY = "universe_expansion"
+UNIVERSE_EXPANSION_MARKER_LIKE = '%"universe_expansion": true%'
+UNIVERSE_EXPANSION_OWNER_DECISION = "OWNER-DEC-13036-XAU"
 # Rolling idle-cap semantics (documented in the decision record):
 #   * worker-set = ALL terminal workers claiming against this one farm DB; they
 #     share ONE global ledger, so the cap is a fleet-wide rolling cap on SUCCESSFUL
@@ -1354,6 +1357,12 @@ def pending_claim_order_sql() -> str:
     """
     return f"""
         SELECT w.*,
+          CASE
+            -- OWNER-DEC-13036-XAU extends the economic search universe, but
+            -- these fresh Q02 rows must never starve the rebaseline path to
+            -- 25.  Keep them below ordinary AND recovery/backfill work.
+            WHEN w.payload_json LIKE '{UNIVERSE_EXPANSION_MARKER_LIKE}' THEN 1
+            ELSE 0 END AS _universe_expansion_rank,
           CASE
             -- Recovery-class rows (classify_recovery_pending.py marker) sort LAST so
             -- they are only ever reached when no eligible priority/frontier row
@@ -1469,7 +1478,7 @@ def pending_claim_order_sql() -> str:
             WHERE q.ea_id=w.ea_id AND q.symbol=w.symbol AND q.phase=w.phase
               AND q.active=1
           )
-        ORDER BY _recovery_rank ASC,
+        ORDER BY _universe_expansion_rank ASC, _recovery_rank ASC,
                  (_priority_track_rank * 10 + _phase_rank - _age_weeks) ASC,
                  _basket_q02_rank ASC, _diagnostic_queue_rank ASC,
                  _winner_rank ASC, _asset_rank ASC,
@@ -9858,6 +9867,10 @@ BASKET_CONTEXT_PAYLOAD_KEYS = (
 PROMOTION_QUEUE_CONTEXT_PAYLOAD_KEYS = (
     "priority_track",
     "priority_reason",
+    "recovery_class",
+    "universe_expansion",
+    "universe_expansion_priority",
+    "universe_expansion_owner_decision",
 )
 
 
@@ -19689,6 +19702,311 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
     return out, skipped
 
 
+def enqueue_universe_expansion_q02(
+    root: Path,
+    ea_id: str,
+    *,
+    target_symbol: str,
+    target_timeframe: str,
+    target_setfile: str | os.PathLike[str],
+    native_pass_work_item_id: str,
+    owner_decision: str,
+    expected_current_ex5_sha256: str,
+) -> dict[str, Any]:
+    """Append one low-priority Q02 row for OWNER-DEC-13036-XAU.
+
+    This is deliberately an exact-row path: the caller supplies one generated
+    setfile and one native Q02 PASS parent, and the transaction refuses when
+    *any* historical work-item already exists for the target ``(EA, symbol)``.
+    It never requeues or clears an existing verdict.
+    """
+    ea_id = _normalise_ea_label(ea_id)
+    symbol = str(target_symbol or "").strip().upper()
+    timeframe = str(target_timeframe or "").strip().upper()
+    if owner_decision != UNIVERSE_EXPANSION_OWNER_DECISION:
+        return {
+            "enqueued": False,
+            "reason": "universe_expansion_owner_decision_mismatch",
+            "expected": UNIVERSE_EXPANSION_OWNER_DECISION,
+            "actual": owner_decision,
+        }
+    if factory_is_off(root):
+        return {
+            "enqueued": False,
+            "blocked": True,
+            "reason": "factory_off",
+            "phase": "Q02",
+            "factory_off_flag": str(factory_off_flag_path(root)),
+        }
+    symbol_reason = _q02_symbol_skip_reason(symbol)
+    if symbol_reason:
+        return {
+            "enqueued": False,
+            "reason": symbol_reason,
+            "ea_id": ea_id,
+            "symbol": symbol,
+        }
+    if not re.fullmatch(
+        r"(?:M1|M2|M3|M4|M5|M6|M10|M12|M15|M20|M30|H1|H2|H3|H4|H6|H8|H12|D1|W1|MN1)",
+        timeframe,
+    ):
+        return {
+            "enqueued": False,
+            "reason": "invalid_target_timeframe",
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "timeframe": timeframe,
+        }
+    artifact_failure = _ea_build_artifact_failure(ea_id)
+    if artifact_failure:
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "symbol": symbol,
+            **artifact_failure,
+        }
+    ea_dir = _preferred_ea_dir(ea_id)
+    assert ea_dir is not None  # proven by _ea_build_artifact_failure
+    ex5_path = ea_dir / f"{ea_dir.name}.ex5"
+    mq5_path = ea_dir / f"{ea_dir.name}.mq5"
+    observed_ex5_sha256 = _sha256_file(ex5_path)
+    if not re.fullmatch(r"[0-9a-f]{64}", str(expected_current_ex5_sha256 or "")):
+        return {
+            "enqueued": False,
+            "reason": "expected_current_ex5_sha256_missing_or_invalid",
+            "ea_id": ea_id,
+            "symbol": symbol,
+        }
+    if observed_ex5_sha256 != str(expected_current_ex5_sha256).lower():
+        return {
+            "enqueued": False,
+            "reason": "expected_current_ex5_sha256_mismatch",
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "expected": str(expected_current_ex5_sha256).lower(),
+            "actual": observed_ex5_sha256,
+        }
+    setfile_path = Path(target_setfile)
+    if not setfile_path.is_absolute():
+        setfile_path = REPO_ROOT / setfile_path
+    try:
+        setfile_path = setfile_path.resolve(strict=True)
+        expected_parent = (ea_dir / "sets").resolve(strict=True)
+    except OSError as exc:
+        return {
+            "enqueued": False,
+            "reason": "universe_expansion_setfile_unresolvable",
+            "detail": str(exc),
+            "ea_id": ea_id,
+            "symbol": symbol,
+        }
+    expected_name = f"{ea_dir.name}_{symbol}_{timeframe}_backtest.set"
+    if setfile_path.parent != expected_parent or setfile_path.name != expected_name:
+        return {
+            "enqueued": False,
+            "reason": "universe_expansion_setfile_identity_mismatch",
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "expected": str(expected_parent / expected_name),
+            "actual": str(setfile_path),
+        }
+    card = _find_approved_card_for_ea(root, ea_id)
+    if card is None:
+        return {
+            "enqueued": False,
+            "reason": "approved_card_missing",
+            "ea_id": ea_id,
+            "symbol": symbol,
+        }
+    card_fm = parse_card_frontmatter(card)
+    inactive = {"RETIRED", "OBSOLETE", "SUPERSEDED"}
+    if any(str(card_fm.get(key) or "").strip().upper() in inactive for key in ("status", "g0_status")):
+        return {
+            "enqueued": False,
+            "reason": "card_inactive",
+            "ea_id": ea_id,
+            "symbol": symbol,
+        }
+    if symbol not in _card_declared_universe_for_ea(root, ea_id):
+        return {
+            "enqueued": False,
+            "reason": "target_symbol_not_in_card_target_symbols",
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "card_path": str(card),
+        }
+    numeric_id = _ea_numeric_id(ea_id)
+    magic_rows = [
+        row for row in _read_csv_dicts_if_exists(
+            REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+        )
+        if str(row.get("ea_id") or "").strip() == str(numeric_id)
+        and str(row.get("symbol") or "").strip().upper() == symbol
+        and str(row.get("status") or "").strip().lower() == "active"
+    ]
+    if len(magic_rows) != 1:
+        return {
+            "enqueued": False,
+            "reason": "active_magic_row_count_invalid",
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "active_magic_rows": len(magic_rows),
+        }
+    history_window = _p2_history_window_for_symbol(
+        symbol,
+        timeframe,
+        P2_DEFAULT_FROM_YEAR,
+        P2_DEFAULT_TO_YEAR,
+    )
+    if history_window.get("skip"):
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "symbol": symbol,
+            **history_window,
+        }
+    archive_admission = custom_history_archive_admission(
+        root,
+        ea_id=ea_id,
+        symbols=[symbol],
+        card_path=card,
+    )
+    if not archive_admission.get("ok"):
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "reason": archive_admission.get("reason"),
+            "custom_history_archive_admission": archive_admission,
+        }
+
+    init_db(root)
+    now = utc_now()
+    with connect(root) as conn:
+        _scope_guard(
+            "mt5.backtest.dispatch",
+            tool="enqueue_universe_expansion_q02",
+            args_summary=f"{ea_id}:{symbol}:{timeframe}",
+            conn=conn,
+        )
+        native = conn.execute(
+            "SELECT id,symbol,evidence_path,updated_at FROM work_items "
+            "WHERE id=? AND ea_id=? AND phase IN ('Q02','P2') "
+            "AND status='done' AND verdict='PASS'",
+            (str(native_pass_work_item_id), ea_id),
+        ).fetchone()
+        if native is None:
+            return {
+                "enqueued": False,
+                "reason": "native_q02_pass_parent_invalid",
+                "ea_id": ea_id,
+                "symbol": symbol,
+                "native_pass_work_item_id": str(native_pass_work_item_id),
+            }
+        existing = conn.execute(
+            "SELECT id,phase,status,verdict FROM work_items "
+            "WHERE ea_id=? AND upper(symbol)=? ORDER BY created_at ASC LIMIT 1",
+            (ea_id, symbol),
+        ).fetchone()
+        if existing is not None:
+            return {
+                "enqueued": False,
+                "reason": "ea_symbol_already_tested",
+                "ea_id": ea_id,
+                "symbol": symbol,
+                "existing_work_item_id": existing["id"],
+                "existing_phase": existing["phase"],
+                "existing_status": existing["status"],
+                "existing_verdict": existing["verdict"],
+            }
+        setfile_sha256 = _sha256_file(setfile_path)
+        if not mq5_path.is_file():
+            return {
+                "enqueued": False,
+                "reason": "mq5_missing_or_unreadable",
+                "ea_id": ea_id,
+                "symbol": symbol,
+                "path": str(mq5_path),
+            }
+        mq5_sha256 = _sha256_file(mq5_path)
+        native_evidence_path = Path(str(native["evidence_path"] or ""))
+        native_evidence_sha256 = (
+            _sha256_file(native_evidence_path)
+            if native_evidence_path.is_file()
+            else ""
+        )
+        payload: dict[str, Any] = {
+            "enqueued_at_utc": now,
+            "enqueued_by": "farmctl.enqueue-backtest:universe-expansion",
+            "from_year": history_window["from_year"],
+            "to_year": history_window["to_year"],
+            "requested_from_year": P2_DEFAULT_FROM_YEAR,
+            "requested_to_year": P2_DEFAULT_TO_YEAR,
+            "history_first_year": history_window["first_year"],
+            "history_last_year": history_window["last_year"],
+            "expected_current_ex5_sha256": observed_ex5_sha256,
+            "expected_ex5_sha256": observed_ex5_sha256,
+            "expected_mq5_sha256": mq5_sha256,
+            "expected_setfile_sha256": setfile_sha256,
+            "expected_symbol": symbol,
+            "expected_period": timeframe,
+            "expected_expert": f"QM\\{ea_dir.name}",
+            "target_symbols": [symbol],
+            "target_timeframe": timeframe,
+            "native_q02_pass_work_item_id": str(native["id"]),
+            "native_q02_pass_symbol": str(native["symbol"]),
+            "native_q02_pass_updated_at": str(native["updated_at"]),
+            "native_q02_pass_evidence_sha256": native_evidence_sha256,
+            "priority_track": False,
+            "priority_reason": "below_rebaseline_backfill_frontier",
+            "recovery_class": "UNIVERSE_EXPANSION_LOW_PRIORITY",
+            "universe_expansion": True,
+            "universe_expansion_priority": "BELOW_ALL_REBASELINE_BACKFILL",
+            "universe_expansion_owner_decision": owner_decision,
+            "universe_expansion_setfile_identity": {
+                "path": str(setfile_path),
+                "sha256": setfile_sha256,
+            },
+        }
+        if history_window.get("adjusted"):
+            payload["history_adjusted"] = True
+        _stamp_custom_history_archive_admission(payload, archive_admission)
+        _apply_q02_multisymbol_timeout_min(
+            payload,
+            phase="Q02",
+            ea_id=ea_id,
+            symbol=symbol,
+        )
+        work_item_id = str(uuid.uuid4())
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,"
+            "parent_task_id,payload_json,created_at,updated_at,gate_contract_version) "
+            "VALUES (?,'backtest','Q02',?,?,?,'pending',0,NULL,?,?,?,?)",
+            (
+                work_item_id,
+                ea_id,
+                symbol,
+                str(setfile_path),
+                json.dumps(payload, sort_keys=True),
+                now,
+                now,
+                ACTIVE_GATE_CONTRACT_VERSION,
+            ),
+        )
+    return {
+        "enqueued": True,
+        "id": work_item_id,
+        "ea_id": ea_id,
+        "phase": "Q02",
+        "symbol": symbol,
+        "timeframe": timeframe,
+        "setfile_path": str(setfile_path),
+        "priority": "BELOW_ALL_REBASELINE_BACKFILL",
+        "owner_decision": owner_decision,
+    }
+
+
 def _setfile_path_exists(setfile_path: str) -> bool:
     path = Path(setfile_path)
     if path.exists():
@@ -26370,6 +26688,22 @@ def build_parser() -> argparse.ArgumentParser:
             "candidate-specific Q03"
         ),
     )
+    enqueue_bt.add_argument(
+        "--target-symbol",
+        help="Exact new Q02 symbol for the governed universe-expansion path",
+    )
+    enqueue_bt.add_argument(
+        "--target-timeframe",
+        help="Exact setfile/tester timeframe for --target-symbol",
+    )
+    enqueue_bt.add_argument(
+        "--target-setfile",
+        help="Exact governed-generator setfile for --target-symbol",
+    )
+    enqueue_bt.add_argument(
+        "--owner-decision",
+        help="Required OWNER decision id for the universe-expansion path",
+    )
     harness_pp = sub.add_parser(
         "enqueue-pattern-fixture-harness",
         help=(
@@ -26827,7 +27161,43 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "reconcile-mt5":
         print_json(reconcile_mt5_slots(root, fix_workers=args.fix_workers, fix_orphan_terminals=args.fix_orphan_terminals))
     elif args.command == "enqueue-backtest":
-        if args.ea:
+        universe_args = (
+            args.target_symbol,
+            args.target_timeframe,
+            args.target_setfile,
+            args.owner_decision,
+        )
+        if any(universe_args):
+            if not args.ea or not all(universe_args) or not args.from_work_item_id:
+                print_json({
+                    "enqueued": False,
+                    "reason": (
+                        "Universe expansion requires --ea, --phase Q02, "
+                        "--target-symbol, --target-timeframe, --target-setfile, "
+                        "--from-work-item-id, --owner-decision, and "
+                        "--expected-current-ex5-sha256."
+                    ),
+                })
+            elif args.phase != "Q02":
+                print_json({
+                    "enqueued": False,
+                    "reason": "Universe expansion supports Q02 only.",
+                    "phase": args.phase,
+                })
+            else:
+                print_json(enqueue_universe_expansion_q02(
+                    root,
+                    args.ea,
+                    target_symbol=args.target_symbol,
+                    target_timeframe=args.target_timeframe,
+                    target_setfile=args.target_setfile,
+                    native_pass_work_item_id=args.from_work_item_id,
+                    owner_decision=args.owner_decision,
+                    expected_current_ex5_sha256=(
+                        args.expected_current_ex5_sha256 or ""
+                    ),
+                ))
+        elif args.ea:
             print_json(enqueue_cascade_backtest_for_ea(
                 root,
                 args.ea,
