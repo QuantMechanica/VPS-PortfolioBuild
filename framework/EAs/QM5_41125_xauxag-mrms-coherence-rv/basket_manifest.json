@@ -1,0 +1,22 @@
+{
+  "logical_symbol": "QM5_41125_XAU_XAG_MRMS_COHERENCE_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg monthly gold/silver relative-value package. Q02 must evaluate combined package PnL, paired costs, density, and later Q09 correlation; neither leg is a standalone strategy.",
+    "The EA includes the adjacent older synchronized pair and every relative return ending in the immediately completed 17-23-session month, requires inclusive abs(sum(r))/sqrt(n*sum(r^2)) coherence of at least 0.16, fades net displacement, targets equal absolute notionals, and caps combined frozen-stop risk at one RISK_FIXED budget.",
+    "Manifest follows the validated QM5_12533 logical-basket host-symbol recipe while keeping USD tester currency and the canonical 100000 deposit for the XAU/XAG carrier."
+  ]
+}
