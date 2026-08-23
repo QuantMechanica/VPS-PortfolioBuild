@@ -15477,11 +15477,11 @@ def _q10_dependency_context(
     conn: sqlite3.Connection,
     q09_news_work_item: sqlite3.Row,
 ) -> tuple[dict[str, Any] | None, str]:
-    """Resolve one fully authenticated portfolio sibling for a Q09_NEWS row."""
+    """Authenticate Q09_NEWS and discover an optional portfolio information edge."""
     news_id = str(q09_news_work_item["id"])
     q08_dependency = conn.execute(
         """
-        SELECT parent_work_item_id FROM work_item_dependencies
+        SELECT parent_work_item_id,parent_evidence_sha256 FROM work_item_dependencies
         WHERE child_work_item_id=? AND dependency_role='Q08_INPUT'
         """,
         (news_id,),
@@ -15515,7 +15515,14 @@ def _q10_dependency_context(
     except OSError:
         return None, "q09_news_evidence_unreadable"
 
-    portfolio_rows = conn.execute(
+    context: dict[str, Any] = {
+        "q08_work_item_id": q08_id,
+        "q09_news_evidence_sha256": news_evidence_sha256,
+        "q09_portfolio_work_item": None,
+        "q09_portfolio_evidence_sha256": None,
+        "q09_portfolio_info_omitted_reason": "matching_terminal_sibling_absent",
+    }
+    portfolio = conn.execute(
         """
         SELECT p.* FROM work_items p
         JOIN work_item_dependencies d
@@ -15524,29 +15531,28 @@ def _q10_dependency_context(
          AND d.parent_work_item_id=?
         WHERE p.phase='Q09_PORTFOLIO'
           AND p.status='done'
-          AND p.verdict='PASS_PORTFOLIO'
+          AND p.verdict IN ('PASS_PORTFOLIO','FAIL_PORTFOLIO','FAIL_SYSTEM')
           AND p.ea_id=? AND p.symbol=? AND p.setfile_path=?
+          AND d.parent_evidence_sha256=?
         ORDER BY p.updated_at DESC, p.id DESC
+        LIMIT 1
         """,
         (
             q08_id,
             q09_news_work_item["ea_id"],
             q09_news_work_item["symbol"],
             q09_news_work_item["setfile_path"],
+            str(q08_dependency[1]),
         ),
-    ).fetchall()
-    for portfolio in portfolio_rows:
+    ).fetchone()
+    if portfolio is not None:
         portfolio_sha256 = _work_item_evidence_sha256(portfolio)
-        if portfolio_sha256:
-            return {
-                "q08_work_item_id": q08_id,
-                "q09_news_evidence_sha256": news_evidence_sha256,
-                "q09_portfolio_work_item": portfolio,
-                "q09_portfolio_evidence_sha256": portfolio_sha256,
-            }, ""
-    if portfolio_rows:
-        return None, "q09_portfolio_evidence_missing_or_unreadable"
-    return None, "matching_q09_portfolio_pass_missing"
+        if not portfolio_sha256:
+            return None, "latest_terminal_sibling_evidence_missing_or_unreadable"
+        context["q09_portfolio_work_item"] = portfolio
+        context["q09_portfolio_evidence_sha256"] = portfolio_sha256
+        context["q09_portfolio_info_omitted_reason"] = None
+    return context, ""
 
 
 def _bind_q10_dependencies(
@@ -15556,7 +15562,6 @@ def _bind_q10_dependencies(
     q09_news_work_item_id: str,
     dependency_context: dict[str, Any],
 ) -> None:
-    portfolio = dependency_context["q09_portfolio_work_item"]
     add_q09_dependency(
         conn,
         child_work_item_id=q10_work_item_id,
@@ -15565,15 +15570,17 @@ def _bind_q10_dependencies(
         parent_evidence_sha256=dependency_context["q09_news_evidence_sha256"],
         required_verdicts=["CONFIG_LOCKED"],
     )
-    add_q09_dependency(
-        conn,
-        child_work_item_id=q10_work_item_id,
-        dependency_role="Q09_PORTFOLIO",
-        parent_work_item_id=str(portfolio["id"]),
-        parent_evidence_sha256=dependency_context["q09_portfolio_evidence_sha256"],
-        required_verdicts=["PASS_PORTFOLIO"],
-    )
-    # This additionally proves the paired arms and all five canonical seeds.
+    portfolio = dependency_context.get("q09_portfolio_work_item")
+    if portfolio is not None:
+        add_q09_dependency(
+            conn,
+            child_work_item_id=q10_work_item_id,
+            dependency_role="Q09_PORTFOLIO",
+            parent_work_item_id=str(portfolio["id"]),
+            parent_evidence_sha256=dependency_context["q09_portfolio_evidence_sha256"],
+            required_verdicts=["PASS_PORTFOLIO", "FAIL_PORTFOLIO", "FAIL_SYSTEM"],
+        )
+    # This proves CONFIG_LOCKED, paired arms, and all five canonical seeds.
     assert_q10_dependency_gate(conn, q10_work_item_id)
 
 
@@ -15603,8 +15610,8 @@ def auto_enqueue_q10_after_q09_result(
         and row["verdict"] == "CONFIG_LOCKED"
     ):
         return {"enqueued": False, "reason": "q09_news_not_config_locked_done"}
-    # The enqueue path re-authenticates q09_news_tests, aggregate hashes, the
-    # exact Q08 sibling, and PASS_PORTFOLIO evidence before inserting Q10.
+    # The enqueue path re-authenticates q09_news_tests, aggregate hashes, and
+    # the exact Q08 lineage; terminal portfolio evidence is informational.
     return enqueue_cascade_backtest_for_ea(
         root,
         str(row["ea_id"]),
@@ -15888,12 +15895,11 @@ def _promote_paired_q09_portfolio_passes_to_news(
     *,
     include_defect_blocked_evidence: bool = False,
 ) -> int:
-    """Create the missing news arm for an authenticated portfolio-rescue pair.
+    """Backfill a held news arm from each latest Q08 PASS/FAIL_SOFT lineage.
 
-    Legacy portfolio rows predate dependency sidecars.  For a canonical plain
-    DWX set only, bind the latest exact Q08 PASS/FAIL_SOFT evidence to the
-    PASS_PORTFOLIO row, then create the paired held Q09_NEWS row.  Q10 still
-    requires both authenticated arms; no gate threshold is changed.
+    The historical function name and result keys remain stable for pump output
+    compatibility. Portfolio measurement is independent and is never a
+    prerequisite for Q09_NEWS creation.
     """
 
     result.setdefault("q09_paired_news_promotions", [])
@@ -15904,33 +15910,23 @@ def _promote_paired_q09_portfolio_passes_to_news(
     rows = conn.execute(
         f"""
         SELECT
-          p.id AS portfolio_id,p.ea_id,p.symbol,p.setfile_path,
-          p.evidence_path AS portfolio_evidence_path,p.updated_at AS portfolio_updated_at,
-          q.id AS q08_id,q.evidence_path AS q08_evidence_path,
+          q.id AS q08_id,q.ea_id,q.symbol,q.setfile_path,
+          q.evidence_path AS q08_evidence_path,
           q.verdict AS q08_verdict,q.updated_at AS q08_updated_at,
           ROW_NUMBER() OVER (
-            PARTITION BY p.ea_id,p.symbol,p.setfile_path
-            ORDER BY q.updated_at DESC,p.updated_at DESC,p.id DESC
+            PARTITION BY q.ea_id,q.symbol,q.setfile_path
+            ORDER BY q.updated_at DESC,q.id DESC
           ) AS lineage_rank
-        FROM work_items p
-        JOIN work_items q
-          ON q.ea_id=p.ea_id AND q.symbol=p.symbol
-         AND q.setfile_path=p.setfile_path
-        WHERE p.phase='Q09_PORTFOLIO' AND p.status='done'
-          AND p.verdict='PASS_PORTFOLIO'
-          AND q.phase='Q08' AND q.status='done'
+        FROM work_items q
+        WHERE q.phase='Q08' AND q.status='done'
           AND q.verdict IN ('PASS','FAIL_SOFT')
           {defect_exclusion}
-          AND p.symbol LIKE '%.DWX'
-          AND lower(p.setfile_path) NOT LIKE '%_ablation_%'
-          AND lower(p.setfile_path) NOT LIKE '%_grid_%'
-          AND lower(p.setfile_path) NOT LIKE '%_synth_%'
           AND NOT EXISTS (
             SELECT 1 FROM work_items n
-            WHERE n.phase='Q09_NEWS' AND n.ea_id=p.ea_id
-              AND n.symbol=p.symbol AND n.setfile_path=p.setfile_path
+            WHERE n.phase='Q09_NEWS' AND n.ea_id=q.ea_id
+              AND n.symbol=q.symbol AND n.setfile_path=q.setfile_path
           )
-        ORDER BY q.updated_at ASC,p.updated_at ASC
+        ORDER BY q.updated_at ASC,q.id ASC
         """
     ).fetchall()
     promoted = 0
@@ -15940,19 +15936,13 @@ def _promote_paired_q09_portfolio_passes_to_news(
         q08 = conn.execute(
             "SELECT * FROM work_items WHERE id=?", (str(row["q08_id"]),)
         ).fetchone()
-        portfolio = conn.execute(
-            "SELECT * FROM work_items WHERE id=?", (str(row["portfolio_id"]),)
-        ).fetchone()
-        if q08 is None or portfolio is None:
+        if q08 is None:
             continue
         q08_sha256 = _work_item_evidence_sha256(q08)
-        portfolio_sha256 = _work_item_evidence_sha256(portfolio)
         setfile = Path(str(row["setfile_path"] or ""))
         skip_reason = None
         if q08_sha256 is None:
             skip_reason = "q08_evidence_missing_or_unreadable"
-        elif portfolio_sha256 is None:
-            skip_reason = "q09_portfolio_evidence_missing_or_unreadable"
         elif not setfile.is_file():
             skip_reason = "missing_setfile"
         if skip_reason:
@@ -15960,40 +15950,9 @@ def _promote_paired_q09_portfolio_passes_to_news(
                 "ea_id": row["ea_id"],
                 "symbol": row["symbol"],
                 "q08_work_item_id": row["q08_id"],
-                "q09_portfolio_work_item_id": row["portfolio_id"],
                 "reason": skip_reason,
             })
             continue
-
-        existing_portfolio_dependency = conn.execute(
-            """
-            SELECT parent_work_item_id,parent_evidence_sha256
-            FROM work_item_dependencies
-            WHERE child_work_item_id=? AND dependency_role='Q08_INPUT'
-            """,
-            (str(row["portfolio_id"]),),
-        ).fetchone()
-        if existing_portfolio_dependency is not None and (
-            str(existing_portfolio_dependency["parent_work_item_id"])
-            != str(row["q08_id"])
-            or str(existing_portfolio_dependency["parent_evidence_sha256"]).lower()
-            != str(q08_sha256).lower()
-        ):
-            result["q09_paired_news_promotions_skipped"].append({
-                "ea_id": row["ea_id"],
-                "symbol": row["symbol"],
-                "q08_work_item_id": row["q08_id"],
-                "q09_portfolio_work_item_id": row["portfolio_id"],
-                "reason": "portfolio_q08_dependency_conflict",
-            })
-            continue
-        if existing_portfolio_dependency is None:
-            _add_q08_input_dependency(
-                conn,
-                child_work_item_id=str(row["portfolio_id"]),
-                q08_work_item=q08,
-                evidence_sha256=str(q08_sha256),
-            )
 
         new_id = str(uuid.uuid4())
         now = utc_now()
@@ -16002,9 +15961,7 @@ def _promote_paired_q09_portfolio_passes_to_news(
             {
                 "promoted_from_phase": "Q08",
                 "promoted_from_work_item": row["q08_id"],
-                "promotion_source": "pump_q09_paired_portfolio_news",
-                "q09_portfolio_work_item_id": row["portfolio_id"],
-                "q09_portfolio_evidence_sha256": portfolio_sha256,
+                "promotion_source": "pump_q08_news_backfill",
             },
         )
         conn.execute(
@@ -16034,7 +15991,6 @@ def _promote_paired_q09_portfolio_passes_to_news(
             "symbol": row["symbol"],
             "q08_work_item_id": row["q08_id"],
             "q08_verdict": row["q08_verdict"],
-            "q09_portfolio_work_item_id": row["portfolio_id"],
         })
         promoted += 1
     return promoted
@@ -16046,10 +16002,10 @@ def _admit_q09_portfolio_passes(
 ) -> int:
     """Historical compatibility hook; direct portfolio admission is forbidden.
 
-    Q09_PORTFOLIO is one dependency of Q10, never an independent Q12
-    qualification authority.  Eligible candidates are exposed only by the
+    Q09_PORTFOLIO is an optional informational edge, never an independent Q12
+    qualification authority. Eligible candidates are exposed only by the
     additive ``portfolio_candidates_eligible`` view after a complete bound
-    Q09_NEWS + Q09_PORTFOLIO + Q10 qualification is appended.
+    Q09_NEWS + Q10 qualification is appended.
     """
     del conn, result
     return 0
@@ -17864,8 +17820,8 @@ def _pump_unlocked(
     result["q09_portfolio_promotions"] = []
     result["q09_portfolio_promotions_skipped"] = []
     result["q09_portfolio_admissions"] = []
-    # Q09_NEWS is a canonical, evidence-producing phase.  Q10 is created only
-    # after its CONFIG_LOCKED result can be paired with a PASS_PORTFOLIO sibling.
+    # Q09_NEWS is a canonical, evidence-producing phase. Q10 requires its
+    # CONFIG_LOCKED result; portfolio output is optional information.
     cascade_phase_map = {
         "Q03": "Q04",
         "Q04": "Q05",
@@ -17882,7 +17838,7 @@ def _pump_unlocked(
         # OWNER Option A 2026-08-21: Q06 PASS_SOFT (probation:q06_soft band) advances to Q07.
         "Q06": {"PASS", "PASS_SOFT"},
         "Q07": {"PASS"},
-        "Q08": {"PASS"},
+        "Q08": {"PASS", "FAIL_SOFT"},
         "Q09_NEWS": Q09_NEWS_SUCCESS_VERDICTS,
         # Pre-rewrite keys retained inert for any orphan reads against the
         # empty post-wipe DB. These will never match new rows.
@@ -21765,7 +21721,7 @@ def enqueue_cascade_backtest_for_ea(
         # OWNER Option A 2026-08-21: creating Q07 accepts a Q06 PASS_SOFT predecessor.
         "Q07": {"PASS", "PASS_SOFT"},
         "Q08": {"PASS", "MULTI_SEED_PASS"},  # Q07 = multi-seed phase
-        "Q09_NEWS": {"PASS"},
+        "Q09_NEWS": {"PASS", "FAIL_SOFT"},
         "Q09_PORTFOLIO": {"PASS", "FAIL_SOFT"},
         "Q10": Q09_NEWS_SUCCESS_VERDICTS,
         "P5": {"PASS"},

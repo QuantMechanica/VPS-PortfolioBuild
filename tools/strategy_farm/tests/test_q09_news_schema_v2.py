@@ -82,7 +82,11 @@ def add_bundle(conn: sqlite3.Connection) -> None:
     schema.record_calendar_bundle(conn, manifest, "manifest.json")
 
 
-def add_q09_final(conn: sqlite3.Connection) -> None:
+def add_q09_final(
+    conn: sqlite3.Connection,
+    *,
+    seeds: tuple[int, ...] = (42, 17, 99, 7, 2026),
+) -> None:
     conn.execute(
         """
         INSERT INTO q09_news_tests(
@@ -102,7 +106,7 @@ def add_q09_final(conn: sqlite3.Connection) -> None:
         ),
     )
     for arm, mode, compliance in (("CONTROL_OFF", "OFF", "NONE"), ("POLICY_ON", "PRE30", "DXZ")):
-        for seed in (42, 17, 99, 7, 2026):
+        for seed in seeds:
             identity = f"{arm}/{mode}/{compliance}/{seed}"
             conn.execute(
                 """
@@ -205,7 +209,7 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
             self.conn.execute(
                 "SELECT schema_version FROM q09_news_schema_meta WHERE schema_name='q09_news'"
             ).fetchone()[0],
-            5,
+            schema.SCHEMA_VERSION,
         )
 
         add_work_item(self.conn, "q10", "Q10", "PASS")
@@ -268,7 +272,7 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
         with self.assertRaises(sqlite3.IntegrityError):
             self.conn.execute("DELETE FROM news_calendar_bundle_files WHERE bundle_id='bundle-v2'")
 
-    def test_q10_gate_and_eligibility_require_both_dependencies_and_two_arms(self) -> None:
+    def test_q10_gate_and_eligibility_require_news_only_and_two_arms(self) -> None:
         add_work_item(self.conn, "q08", "Q08", "PASS", evidence="q08.json")
         add_work_item(self.conn, "q09n", "Q09_NEWS", "CONFIG_LOCKED", evidence="q09.json")
         add_work_item(self.conn, "q09p", "Q09_PORTFOLIO", "PASS_PORTFOLIO", evidence="q09p.json")
@@ -293,14 +297,10 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
             self.conn, child_work_item_id="q10", dependency_role="Q09_NEWS", parent_work_item_id="q09n",
             parent_evidence_sha256=_hash("q09-evidence"), required_verdicts=["CONFIG_LOCKED"],
         )
-        with self.assertRaises(schema.SchemaError):
-            schema.assert_q10_dependency_gate(self.conn, "q10")
-        schema.add_dependency(
-            self.conn, child_work_item_id="q10", dependency_role="Q09_PORTFOLIO", parent_work_item_id="q09p",
-            parent_evidence_sha256=_hash("q09p-evidence"), required_verdicts=["PASS_PORTFOLIO"],
-        )
         gate = schema.assert_q10_dependency_gate(self.conn, "q10")
         self.assertEqual(gate.q09_news_work_item_id, "q09n")
+        self.assertIsNone(gate.q09_portfolio_work_item_id)
+        self.assertIsNone(gate.q09_portfolio_evidence_sha256)
         schema.append_qualification(
             self.conn,
             {
@@ -311,10 +311,10 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
                 "contract_version": schema.CONTRACT_VERSION,
                 "q08_work_item_id": "q08",
                 "q09_news_work_item_id": "q09n",
-                "q09_portfolio_work_item_id": "q09p",
+                "q09_portfolio_work_item_id": None,
                 "q10_work_item_id": "q10",
                 "q09_news_evidence_sha256": _hash("q09-evidence"),
-                "q09_portfolio_evidence_sha256": _hash("q09p-evidence"),
+                "q09_portfolio_evidence_sha256": None,
                 "q10_evidence_sha256": _hash("q10-evidence"),
                 "baseline_setfile_sha256": _hash("baseline"),
                 "q10_setfile_sha256": _hash("q10-setfile"),
@@ -352,6 +352,90 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
             },
         )
         self.assertEqual(self.conn.execute("SELECT count(*) FROM portfolio_candidates_eligible").fetchone()[0], 0)
+
+    def test_q10_optional_fail_portfolio_dependency_is_informational(self) -> None:
+        add_work_item(self.conn, "q08", "Q08", "PASS", evidence="q08.json")
+        add_work_item(self.conn, "q09n", "Q09_NEWS", "CONFIG_LOCKED", evidence="q09.json")
+        add_work_item(
+            self.conn,
+            "q09p",
+            "Q09_PORTFOLIO",
+            "FAIL_PORTFOLIO",
+            evidence="q09p.json",
+        )
+        add_work_item(self.conn, "q10", "Q10", None, evidence="q10.json")
+        self.conn.commit()
+        schema.ensure_schema(self.conn)
+        add_bundle(self.conn)
+        for child in ("q09n", "q09p"):
+            schema.add_dependency(
+                self.conn,
+                child_work_item_id=child,
+                dependency_role="Q08_INPUT",
+                parent_work_item_id="q08",
+                parent_evidence_sha256=_hash("q08"),
+                required_verdicts=["PASS"],
+            )
+        add_q09_final(self.conn)
+        schema.add_dependency(
+            self.conn,
+            child_work_item_id="q10",
+            dependency_role="Q09_NEWS",
+            parent_work_item_id="q09n",
+            parent_evidence_sha256=_hash("q09-evidence"),
+            required_verdicts=["CONFIG_LOCKED"],
+        )
+        schema.add_dependency(
+            self.conn,
+            child_work_item_id="q10",
+            dependency_role="Q09_PORTFOLIO",
+            parent_work_item_id="q09p",
+            parent_evidence_sha256=_hash("q09p-evidence"),
+            required_verdicts=["PASS_PORTFOLIO", "FAIL_PORTFOLIO", "FAIL_SYSTEM"],
+        )
+
+        gate = schema.assert_q10_dependency_gate(self.conn, "q10")
+
+        self.assertEqual(gate.q09_portfolio_work_item_id, "q09p")
+        self.assertEqual(gate.q09_portfolio_evidence_sha256, _hash("q09p-evidence"))
+
+    def test_q10_gate_rejects_news_hash_mismatch_and_fewer_than_five_seeds(self) -> None:
+        add_work_item(self.conn, "q08", "Q08", "PASS", evidence="q08.json")
+        add_work_item(self.conn, "q09n", "Q09_NEWS", "CONFIG_LOCKED", evidence="q09.json")
+        add_work_item(self.conn, "q10-hash", "Q10", None, evidence="q10-hash.json")
+        add_work_item(self.conn, "q10-seeds", "Q10", None, evidence="q10-seeds.json")
+        self.conn.commit()
+        schema.ensure_schema(self.conn)
+        add_bundle(self.conn)
+        schema.add_dependency(
+            self.conn,
+            child_work_item_id="q09n",
+            dependency_role="Q08_INPUT",
+            parent_work_item_id="q08",
+            parent_evidence_sha256=_hash("q08"),
+            required_verdicts=["PASS"],
+        )
+        add_q09_final(self.conn, seeds=(42, 17, 99, 7))
+        schema.add_dependency(
+            self.conn,
+            child_work_item_id="q10-hash",
+            dependency_role="Q09_NEWS",
+            parent_work_item_id="q09n",
+            parent_evidence_sha256=_hash("wrong-q09-evidence"),
+            required_verdicts=["CONFIG_LOCKED"],
+        )
+        with self.assertRaisesRegex(schema.SchemaError, "evidence hash mismatch"):
+            schema.assert_q10_dependency_gate(self.conn, "q10-hash")
+        schema.add_dependency(
+            self.conn,
+            child_work_item_id="q10-seeds",
+            dependency_role="Q09_NEWS",
+            parent_work_item_id="q09n",
+            parent_evidence_sha256=_hash("q09-evidence"),
+            required_verdicts=["CONFIG_LOCKED"],
+        )
+        with self.assertRaisesRegex(schema.SchemaError, "five-seed evidence is incomplete"):
+            schema.assert_q10_dependency_gate(self.conn, "q10-seeds")
 
 
 if __name__ == "__main__":

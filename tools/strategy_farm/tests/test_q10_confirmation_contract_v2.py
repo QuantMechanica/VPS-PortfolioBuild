@@ -194,26 +194,29 @@ class Q10ConfirmationContractV2Tests(unittest.TestCase):
     def _add_portfolio_dependency(self) -> None:
         schema.add_dependency(
             self.conn, child_work_item_id="q10", dependency_role="Q09_PORTFOLIO", parent_work_item_id="q09p",
-            parent_evidence_sha256=sha256_file(self.portfolio_evidence), required_verdicts=["PASS_PORTFOLIO"],
+            parent_evidence_sha256=sha256_file(self.portfolio_evidence),
+            required_verdicts=["PASS_PORTFOLIO", "FAIL_PORTFOLIO", "FAIL_SYSTEM"],
         )
         self.conn.commit()
 
-    def test_q10_is_blocked_until_both_dependencies_are_bound(self) -> None:
-        with self.assertRaises(q10_contract.Q10BindingError):
-            q10_contract.verify_q10_binding(self.conn, "q10")
+    def test_q10_requires_config_locked_news_but_not_portfolio(self) -> None:
+        binding = q10_contract.verify_q10_binding(self.conn, "q10")
+        self.assertEqual(binding.q09_news_work_item_id, "q09n")
+        self.assertIsNone(binding.q09_portfolio_work_item_id)
+        self.assertIsNone(binding.q09_portfolio_evidence_path)
+        self.assertIsNone(binding.q09_portfolio_evidence_sha256)
+
         self._add_portfolio_dependency()
         binding = q10_contract.verify_q10_binding(self.conn, "q10")
         self.assertEqual(binding.q09_news_work_item_id, "q09n")
         self.assertEqual(binding.q09_portfolio_work_item_id, "q09p")
 
     def test_upstream_evidence_hash_mismatch_blocks_q10(self) -> None:
-        self._add_portfolio_dependency()
         self.q09_evidence.write_bytes(b"tampered")
         with self.assertRaisesRegex(q10_contract.Q10BindingError, "SHA-256 mismatch"):
             q10_contract.verify_q10_binding(self.conn, "q10")
 
     def test_materialization_is_isolated_and_source_set_remains_immutable(self) -> None:
-        self._add_portfolio_dependency()
         binding = q10_contract.verify_q10_binding(self.conn, "q10")
         source_before = self.source_set.read_bytes()
         result = q10_contract.materialize_q10_inputs(
@@ -237,10 +240,13 @@ class Q10ConfirmationContractV2Tests(unittest.TestCase):
         )
         manifest = json.loads(Path(result["manifest_path"]).read_text(encoding="utf-8"))
         self.assertEqual(set(manifest["dependencies"]), {"Q09_NEWS", "Q09_PORTFOLIO"})
+        self.assertEqual(
+            manifest["dependencies"]["Q09_PORTFOLIO"],
+            {"work_item_id": None, "evidence_path": None, "evidence_sha256": None},
+        )
         self.assertEqual(manifest["inputs"]["baseline_source_setfile_sha256"], sha256_file(self.source_set))
 
     def test_binary_identity_mismatch_blocks_materialization(self) -> None:
-        self._add_portfolio_dependency()
         binding = q10_contract.verify_q10_binding(self.conn, "q10")
         self.ex5.write_bytes(b"different-binary")
         with self.assertRaisesRegex(q10_contract.Q10BindingError, "compiled EX5 SHA-256 mismatch"):
@@ -252,6 +258,21 @@ class Q10ConfirmationContractV2Tests(unittest.TestCase):
                 report_root=self.root / "reports",
                 calendar_relative_common_path=f"q09_news/{self.bundle_id}/events.csv",
             )
+
+    def test_fail_portfolio_sibling_is_authenticated_as_information(self) -> None:
+        self.portfolio_evidence.write_bytes(b'{"verdict":"FAIL_PORTFOLIO"}\n')
+        self.conn.execute(
+            "UPDATE work_items SET verdict='FAIL_PORTFOLIO' WHERE id='q09p'"
+        )
+        self._add_portfolio_dependency()
+
+        binding = q10_contract.verify_q10_binding(self.conn, "q10")
+
+        self.assertEqual(binding.q09_portfolio_work_item_id, "q09p")
+        self.assertEqual(
+            binding.q09_portfolio_evidence_sha256,
+            sha256_file(self.portfolio_evidence),
+        )
 
 
 if __name__ == "__main__":

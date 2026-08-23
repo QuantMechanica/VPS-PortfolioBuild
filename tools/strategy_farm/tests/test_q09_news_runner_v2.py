@@ -354,17 +354,19 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             ).fetchone()
         self.assertEqual(hold[0], 0)
 
-    def test_plan_binding_rejects_unpaired_fail_soft(self) -> None:
+    def test_plan_binding_accepts_fail_soft_without_portfolio(self) -> None:
         plan = self.build(output="binding-unpaired-fail-soft")
-        with self.assertRaisesRegex(
-            runner.RunnerError, "lacks an authenticated portfolio sibling"
-        ):
-            self.setup_bound_farm(
-                plan,
-                activate=False,
-                q08_verdict="FAIL_SOFT",
-                portfolio_rescue=False,
-            )
+        farm_root, _ = self.setup_bound_farm(
+            plan,
+            activate=False,
+            q08_verdict="FAIL_SOFT",
+            portfolio_rescue=False,
+        )
+        with closing(farmctl.connect(farm_root)) as connection:
+            hold = connection.execute(
+                "SELECT active FROM work_item_holds WHERE work_item_id='q09-news-1'"
+            ).fetchone()
+        self.assertEqual(hold[0], 0)
 
     def test_identity_bound_fallback_binds_when_promoted_from_is_absent(self) -> None:
         plan = self.build(output="lineage-fallback-ok")

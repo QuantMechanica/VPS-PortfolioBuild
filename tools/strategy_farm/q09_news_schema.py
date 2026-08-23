@@ -39,7 +39,7 @@ except ModuleNotFoundError:
     )
 
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 CONTRACT_VERSION = "Q09_NEWS_V2"
 ACTIVATION_HOLD_CODE = "Q09_AWAITING_SEALED_PLAN"
 ACTIVATION_HOLD_REASON = (
@@ -611,20 +611,27 @@ BEGIN
     ) THEN RAISE(ABORT, 'candidate source cannot change lineage key') END;
     SELECT CASE WHEN NEW.state='QUALIFIED' AND (
         NEW.q08_work_item_id IS NULL OR NEW.q09_news_work_item_id IS NULL OR
-        NEW.q09_portfolio_work_item_id IS NULL OR NEW.q10_work_item_id IS NULL OR
-        NEW.q09_news_evidence_sha256 IS NULL OR NEW.q09_portfolio_evidence_sha256 IS NULL OR
+        NEW.q10_work_item_id IS NULL OR NEW.q09_news_evidence_sha256 IS NULL OR
         NEW.q10_evidence_sha256 IS NULL OR NEW.baseline_setfile_sha256 IS NULL OR
         NEW.q10_setfile_sha256 IS NULL OR NEW.ex5_sha256 IS NULL OR
         NEW.include_closure_sha256 IS NULL OR NEW.calendar_bundle_id IS NULL
     ) THEN RAISE(ABORT, 'QUALIFIED lineage is incomplete') END;
+    SELECT CASE WHEN NEW.state='QUALIFIED' AND (
+        (NEW.q09_portfolio_work_item_id IS NULL AND NEW.q09_portfolio_evidence_sha256 IS NOT NULL) OR
+        (NEW.q09_portfolio_work_item_id IS NOT NULL AND NEW.q09_portfolio_evidence_sha256 IS NULL)
+    ) THEN RAISE(ABORT, 'QUALIFIED optional portfolio lineage is incomplete') END;
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NOT EXISTS (
-        SELECT 1 FROM work_items q08, work_items q09n, work_items q09p, work_items q10
+        SELECT 1 FROM work_items q08, work_items q09n, work_items q10
         WHERE q08.id=NEW.q08_work_item_id AND q08.phase='Q08'
           AND q09n.id=NEW.q09_news_work_item_id AND q09n.phase='Q09_NEWS' AND q09n.verdict='CONFIG_LOCKED'
-          AND q09p.id=NEW.q09_portfolio_work_item_id AND q09p.phase='Q09_PORTFOLIO'
-              AND q09p.verdict='PASS_PORTFOLIO'
           AND q10.id=NEW.q10_work_item_id AND q10.phase='Q10' AND q10.verdict='PASS'
     ) THEN RAISE(ABORT, 'QUALIFIED work-item verdict chain invalid') END;
+    SELECT CASE WHEN NEW.state='QUALIFIED' AND NEW.q09_portfolio_work_item_id IS NOT NULL AND NOT EXISTS (
+        SELECT 1 FROM work_items q09p
+        WHERE q09p.id=NEW.q09_portfolio_work_item_id
+          AND q09p.phase='Q09_PORTFOLIO' AND q09p.status='done'
+          AND q09p.verdict IN ('PASS_PORTFOLIO','FAIL_PORTFOLIO','FAIL_SYSTEM')
+    ) THEN RAISE(ABORT, 'QUALIFIED optional portfolio verdict invalid') END;
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NOT EXISTS (
         SELECT 1 FROM q09_news_tests t
         WHERE t.work_item_id=NEW.q09_news_work_item_id AND t.verdict='CONFIG_LOCKED'
@@ -656,21 +663,27 @@ BEGIN
           AND t.calendar_bundle_id=NEW.calendar_bundle_id
     ) THEN RAISE(ABORT, 'QUALIFIED q09 identity tuple mismatch') END;
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NOT EXISTS (
-        SELECT 1 FROM work_item_dependencies dn, work_item_dependencies dp
+        SELECT 1 FROM work_item_dependencies dn
         WHERE dn.child_work_item_id=NEW.q10_work_item_id AND dn.dependency_role='Q09_NEWS'
           AND dn.parent_work_item_id=NEW.q09_news_work_item_id
           AND dn.parent_evidence_sha256=NEW.q09_news_evidence_sha256
-          AND dp.child_work_item_id=NEW.q10_work_item_id AND dp.dependency_role='Q09_PORTFOLIO'
-          AND dp.parent_work_item_id=NEW.q09_portfolio_work_item_id
-          AND dp.parent_evidence_sha256=NEW.q09_portfolio_evidence_sha256
     ) THEN RAISE(ABORT, 'QUALIFIED Q10 dependencies missing') END;
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NOT EXISTS (
-        SELECT 1 FROM work_item_dependencies dn, work_item_dependencies dp
+        SELECT 1 FROM work_item_dependencies dn
         WHERE dn.child_work_item_id=NEW.q09_news_work_item_id AND dn.dependency_role='Q08_INPUT'
           AND dn.parent_work_item_id=NEW.q08_work_item_id
-          AND dp.child_work_item_id=NEW.q09_portfolio_work_item_id AND dp.dependency_role='Q08_INPUT'
-          AND dp.parent_work_item_id=NEW.q08_work_item_id
     ) THEN RAISE(ABORT, 'QUALIFIED Q08 convergence missing') END;
+    SELECT CASE WHEN NEW.state='QUALIFIED' AND NEW.q09_portfolio_work_item_id IS NOT NULL AND NOT EXISTS (
+        SELECT 1 FROM work_item_dependencies dp
+        WHERE dp.child_work_item_id=NEW.q10_work_item_id AND dp.dependency_role='Q09_PORTFOLIO'
+          AND dp.parent_work_item_id=NEW.q09_portfolio_work_item_id
+          AND dp.parent_evidence_sha256=NEW.q09_portfolio_evidence_sha256
+    ) THEN RAISE(ABORT, 'QUALIFIED optional portfolio Q10 dependency missing') END;
+    SELECT CASE WHEN NEW.state='QUALIFIED' AND NEW.q09_portfolio_work_item_id IS NOT NULL AND NOT EXISTS (
+        SELECT 1 FROM work_item_dependencies dp
+        WHERE dp.child_work_item_id=NEW.q09_portfolio_work_item_id AND dp.dependency_role='Q08_INPUT'
+          AND dp.parent_work_item_id=NEW.q08_work_item_id
+    ) THEN RAISE(ABORT, 'QUALIFIED optional portfolio Q08 convergence missing') END;
 END;
 
 CREATE TRIGGER IF NOT EXISTS trg_wic_no_update BEFORE UPDATE ON work_item_contracts
@@ -1293,9 +1306,9 @@ def record_q09_adjudication(
 class Q10DependencyGate:
     q10_work_item_id: str
     q09_news_work_item_id: str
-    q09_portfolio_work_item_id: str
+    q09_portfolio_work_item_id: str | None
     q09_news_evidence_sha256: str
-    q09_portfolio_evidence_sha256: str
+    q09_portfolio_evidence_sha256: str | None
     calendar_bundle_id: str
     chosen_temporal: str
     chosen_compliance: str
@@ -1310,17 +1323,24 @@ def assert_q10_dependency_gate(conn: sqlite3.Connection, q10_work_item_id: str) 
         raise SchemaError("Q10 work item missing or wrong phase")
     rows = conn.execute(
         """
-        SELECT dependency_role,parent_work_item_id,parent_evidence_sha256
+        SELECT dependency_role,parent_work_item_id,parent_evidence_sha256,required_verdicts_json
         FROM work_item_dependencies
         WHERE child_work_item_id=? AND dependency_role IN ('Q09_NEWS','Q09_PORTFOLIO')
         """,
         (q10_work_item_id,),
     ).fetchall()
     dependencies = {row[0]: row for row in rows}
-    if set(dependencies) != {"Q09_NEWS", "Q09_PORTFOLIO"}:
-        raise SchemaError("Q10 requires bound Q09_NEWS and Q09_PORTFOLIO dependencies")
+    if "Q09_NEWS" not in dependencies:
+        raise SchemaError("Q10 requires a bound Q09_NEWS dependency")
+    try:
+        news_required_verdicts = set(json.loads(str(dependencies["Q09_NEWS"][3])))
+    except (TypeError, json.JSONDecodeError) as exc:
+        raise SchemaError("Q09_NEWS dependency verdict contract is invalid") from exc
+    if news_required_verdicts != {"CONFIG_LOCKED"}:
+        raise SchemaError("Q09_NEWS dependency must require only CONFIG_LOCKED")
     news_id = dependencies["Q09_NEWS"][1]
-    portfolio_id = dependencies["Q09_PORTFOLIO"][1]
+    portfolio_dependency = dependencies.get("Q09_PORTFOLIO")
+    portfolio_id = portfolio_dependency[1] if portfolio_dependency is not None else None
     news = conn.execute(
         """
         SELECT verdict,calendar_bundle_id,chosen_temporal,chosen_compliance,aggregate_sha256,
@@ -1333,11 +1353,40 @@ def assert_q10_dependency_gate(conn: sqlite3.Connection, q10_work_item_id: str) 
         raise SchemaError("Q09_NEWS dependency is not CONFIG_LOCKED")
     if news[4] != dependencies["Q09_NEWS"][2]:
         raise SchemaError("Q09_NEWS dependency evidence hash mismatch")
-    portfolio = conn.execute(
-        "SELECT verdict FROM work_items WHERE id=? AND phase='Q09_PORTFOLIO'", (portfolio_id,)
-    ).fetchone()
-    if portfolio is None or portfolio[0] != "PASS_PORTFOLIO":
-        raise SchemaError("Q09_PORTFOLIO dependency is not PASS_PORTFOLIO")
+    if portfolio_dependency is not None:
+        try:
+            portfolio_required_verdicts = set(json.loads(str(portfolio_dependency[3])))
+        except (TypeError, json.JSONDecodeError) as exc:
+            raise SchemaError("Q09_PORTFOLIO dependency verdict contract is invalid") from exc
+        terminal_portfolio_verdicts = {"PASS_PORTFOLIO", "FAIL_PORTFOLIO", "FAIL_SYSTEM"}
+        if portfolio_required_verdicts != terminal_portfolio_verdicts:
+            raise SchemaError("Q09_PORTFOLIO dependency must be informational for all terminal verdicts")
+        portfolio = conn.execute(
+            "SELECT status,verdict FROM work_items WHERE id=? AND phase='Q09_PORTFOLIO'",
+            (portfolio_id,),
+        ).fetchone()
+        if (
+            portfolio is None
+            or portfolio[0] != "done"
+            or portfolio[1] not in terminal_portfolio_verdicts
+        ):
+            raise SchemaError("Q09_PORTFOLIO dependency is not a terminal informational result")
+        lineage = conn.execute(
+            """
+            SELECT child_work_item_id,parent_work_item_id,parent_evidence_sha256
+            FROM work_item_dependencies
+            WHERE dependency_role='Q08_INPUT' AND child_work_item_id IN (?,?)
+            """,
+            (news_id, portfolio_id),
+        ).fetchall()
+        q08_dependencies = {row[0]: row for row in lineage}
+        if (
+            news_id not in q08_dependencies
+            or portfolio_id not in q08_dependencies
+            or q08_dependencies[news_id][1] != q08_dependencies[portfolio_id][1]
+            or q08_dependencies[news_id][2] != q08_dependencies[portfolio_id][2]
+        ):
+            raise SchemaError("Q09_PORTFOLIO informational dependency has different Q08 lineage")
     if conn.execute(
         "SELECT count(*) FROM q09_news_arms WHERE q09_news_work_item_id=?", (news_id,)
     ).fetchone()[0] != 2:
@@ -1365,7 +1414,9 @@ def assert_q10_dependency_gate(conn: sqlite3.Connection, q10_work_item_id: str) 
         q09_news_work_item_id=news_id,
         q09_portfolio_work_item_id=portfolio_id,
         q09_news_evidence_sha256=dependencies["Q09_NEWS"][2],
-        q09_portfolio_evidence_sha256=dependencies["Q09_PORTFOLIO"][2],
+        q09_portfolio_evidence_sha256=(
+            portfolio_dependency[2] if portfolio_dependency is not None else None
+        ),
         calendar_bundle_id=news[1],
         chosen_temporal=news[2],
         chosen_compliance=news[3],

@@ -72,6 +72,58 @@ def legacy_rows(path: Path) -> tuple[list[tuple], list[tuple]]:
 
 
 class Q09NewsMigrationV2Tests(unittest.TestCase):
+    def test_schema_v5_to_v6_rebuilds_optional_portfolio_trigger_without_legacy_writes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            database = Path(temporary) / "farm.sqlite"
+            create_legacy_database(database)
+            original_rows = legacy_rows(database)
+
+            conn = sqlite3.connect(database)
+            try:
+                schema.ensure_schema(conn)
+                protected_before = schema.protected_legacy_sha256(conn)
+                conn.execute(
+                    "UPDATE q09_news_schema_meta SET schema_version=5 "
+                    "WHERE schema_name='q09_news'"
+                )
+                conn.execute("DROP TRIGGER trg_cq_validate_insert")
+                conn.executescript(
+                    """
+                    CREATE TRIGGER trg_cq_validate_insert
+                    BEFORE INSERT ON candidate_qualifications
+                    BEGIN
+                        SELECT CASE WHEN NEW.state='QUALIFIED' AND (
+                            NEW.q09_portfolio_work_item_id IS NULL OR
+                            NEW.q09_portfolio_evidence_sha256 IS NULL
+                        ) THEN RAISE(ABORT, 'v5 requires portfolio lineage') END;
+                    END;
+                    """
+                )
+                conn.commit()
+            finally:
+                conn.close()
+
+            migrated = sqlite3.connect(database)
+            try:
+                schema.ensure_schema(migrated)
+                version = migrated.execute(
+                    "SELECT schema_version FROM q09_news_schema_meta "
+                    "WHERE schema_name='q09_news'"
+                ).fetchone()[0]
+                trigger_sql = migrated.execute(
+                    "SELECT sql FROM sqlite_master "
+                    "WHERE type='trigger' AND name='trg_cq_validate_insert'"
+                ).fetchone()[0]
+                protected_after = schema.protected_legacy_sha256(migrated)
+            finally:
+                migrated.close()
+
+            self.assertEqual(version, 6)
+            self.assertIn("optional portfolio lineage is incomplete", trigger_sql)
+            self.assertNotIn("v5 requires portfolio lineage", trigger_sql)
+            self.assertEqual(protected_after, protected_before)
+            self.assertEqual(legacy_rows(database), original_rows)
+
     def test_plan_whatif_apply_idempotency_and_guarded_revert(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

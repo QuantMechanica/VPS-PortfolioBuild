@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Fail-closed Q10 input binding for Q09_NEWS v2.
 
-This module validates that a Q10 work item has *both* authenticated upstream
-dependencies (Q09_NEWS and Q09_PORTFOLIO), verifies their evidence bytes, and
-materializes a generated setfile below the isolated Q10 report root.  The
-source setfile is never modified.
+This module validates the authenticated Q09_NEWS dependency required by Q10,
+verifies an optional informational Q09_PORTFOLIO sibling when one is bound, and
+materializes a generated setfile below the isolated Q10 report root.  The source
+setfile is never modified.
 """
 
 from __future__ import annotations
@@ -53,11 +53,11 @@ class Q10BindingError(RuntimeError):
 class VerifiedBinding:
     q10_work_item_id: str
     q09_news_work_item_id: str
-    q09_portfolio_work_item_id: str
+    q09_portfolio_work_item_id: str | None
     q09_news_evidence_path: str
     q09_news_evidence_sha256: str
-    q09_portfolio_evidence_path: str
-    q09_portfolio_evidence_sha256: str
+    q09_portfolio_evidence_path: str | None
+    q09_portfolio_evidence_sha256: str | None
     calendar_bundle_id: str
     calendar_manifest_path: str
     calendar_manifest_sha256: str
@@ -94,7 +94,7 @@ def verify_q10_binding(
     *,
     evidence_root: Path | None = None,
 ) -> VerifiedBinding:
-    """Authenticate both dependencies and every file hash needed by Q10."""
+    """Authenticate the required news lock and any informational portfolio edge."""
 
     try:
         gate: Q10DependencyGate = assert_q10_dependency_gate(conn, q10_work_item_id)
@@ -145,17 +145,26 @@ def verify_q10_binding(
     ):
         raise Q10BindingError("Q09_NEWS aggregate binary/input identity contradicts database lock")
 
-    portfolio_row = conn.execute(
-        """
-        SELECT evidence_path FROM work_items
-        WHERE id=? AND phase='Q09_PORTFOLIO' AND verdict='PASS_PORTFOLIO'
-        """,
-        (gate.q09_portfolio_work_item_id,),
-    ).fetchone()
-    if portfolio_row is None or not portfolio_row[0]:
-        raise Q10BindingError("Q09_PORTFOLIO PASS evidence path is missing")
-    portfolio_path = _resolve_evidence_path(str(portfolio_row[0]), evidence_root)
-    _verify_file(portfolio_path, gate.q09_portfolio_evidence_sha256, "Q09_PORTFOLIO aggregate")
+    portfolio_path: Path | None = None
+    if gate.q09_portfolio_work_item_id is not None:
+        portfolio_row = conn.execute(
+            """
+            SELECT evidence_path FROM work_items
+            WHERE id=? AND phase='Q09_PORTFOLIO' AND status='done'
+              AND verdict IN ('PASS_PORTFOLIO','FAIL_PORTFOLIO','FAIL_SYSTEM')
+            """,
+            (gate.q09_portfolio_work_item_id,),
+        ).fetchone()
+        if portfolio_row is None or not portfolio_row[0]:
+            raise Q10BindingError("informational Q09_PORTFOLIO evidence path is missing")
+        if gate.q09_portfolio_evidence_sha256 is None:
+            raise Q10BindingError("informational Q09_PORTFOLIO evidence hash is missing")
+        portfolio_path = _resolve_evidence_path(str(portfolio_row[0]), evidence_root)
+        _verify_file(
+            portfolio_path,
+            gate.q09_portfolio_evidence_sha256,
+            "informational Q09_PORTFOLIO aggregate",
+        )
 
     calendar_path = _resolve_evidence_path(str(news_row[2]), evidence_root)
     _verify_file(calendar_path, str(news_row[3]), "calendar manifest")
@@ -191,7 +200,7 @@ def verify_q10_binding(
         q09_portfolio_work_item_id=gate.q09_portfolio_work_item_id,
         q09_news_evidence_path=str(news_path),
         q09_news_evidence_sha256=gate.q09_news_evidence_sha256,
-        q09_portfolio_evidence_path=str(portfolio_path),
+        q09_portfolio_evidence_path=(str(portfolio_path) if portfolio_path is not None else None),
         q09_portfolio_evidence_sha256=gate.q09_portfolio_evidence_sha256,
         calendar_bundle_id=gate.calendar_bundle_id,
         calendar_manifest_path=str(calendar_path),

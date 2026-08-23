@@ -263,16 +263,14 @@ def test_q09_portfolio_pass_cannot_directly_create_q12_candidate(tmp_path: Path)
         assert conn.execute("SELECT count(*) FROM portfolio_candidates").fetchone()[0] == 0
 
 
-def test_q10_enqueue_requires_and_binds_both_q09_dependencies(tmp_path: Path) -> None:
+def test_q10_enqueue_requires_news_only_and_leaves_portfolio_nullable(tmp_path: Path) -> None:
     farmctl.init_db(tmp_path)
     setfile = tmp_path / "base.set"
     q08_path = tmp_path / "q08.json"
     q09_path = tmp_path / "q09.json"
-    q09p_path = tmp_path / "q09p.json"
     setfile.write_text("x=1\n", encoding="utf-8")
     q08_path.write_text('{"verdict":"PASS"}', encoding="utf-8")
     q09_path.write_text('{"verdict":"CONFIG_LOCKED"}', encoding="utf-8")
-    q09p_path.write_text('{"verdict":"PASS_PORTFOLIO"}', encoding="utf-8")
 
     with farmctl.connect(tmp_path) as conn:
         _insert_work_item(
@@ -294,28 +292,9 @@ def test_q10_enqueue_requires_and_binds_both_q09_dependencies(tmp_path: Path) ->
         _insert_locked_q09(conn, q09_path)
 
     with mock.patch.object(farmctl, "_ea_build_artifact_failure", return_value=None):
-        first = farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", "Q10")
-    assert not first["created"]
-    assert first["skipped"][0]["reason"] == "matching_q09_portfolio_pass_missing"
-    with farmctl.connect(tmp_path) as conn:
-        assert conn.execute("SELECT count(*) FROM work_items WHERE phase='Q10'").fetchone()[0] == 0
-        _insert_work_item(
-            conn, item_id="q09p", phase="Q09_PORTFOLIO", verdict="PASS_PORTFOLIO",
-            evidence_path=q09p_path, setfile_path=setfile,
-        )
-        schema.add_dependency(
-            conn,
-            child_work_item_id="q09p",
-            dependency_role="Q08_INPUT",
-            parent_work_item_id="q08",
-            parent_evidence_sha256=_sha(q08_path),
-            required_verdicts=["PASS"],
-        )
-
-    with mock.patch.object(farmctl, "_ea_build_artifact_failure", return_value=None):
-        second = farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", "Q10")
-    assert len(second["created"]) == 1
-    q10_id = second["created"][0]["id"]
+        result = farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", "Q10")
+    assert len(result["created"]) == 1
+    q10_id = result["created"][0]["id"]
     with farmctl.connect(tmp_path) as conn:
         roles = {
             row[0]
@@ -324,10 +303,113 @@ def test_q10_enqueue_requires_and_binds_both_q09_dependencies(tmp_path: Path) ->
                 (q10_id,),
             ).fetchall()
         }
-        assert roles == {"Q09_NEWS", "Q09_PORTFOLIO"}
+        assert roles == {"Q09_NEWS"}
         gate = schema.assert_q10_dependency_gate(conn, q10_id)
         assert gate.q09_news_work_item_id == "q09n"
-        assert gate.q09_portfolio_work_item_id == "q09p"
+        assert gate.q09_portfolio_work_item_id is None
+        assert gate.q09_portfolio_evidence_sha256 is None
+
+
+def test_q10_binds_newest_terminal_portfolio_sibling_as_information(tmp_path: Path) -> None:
+    farmctl.init_db(tmp_path)
+    setfile = tmp_path / "base.set"
+    q08_path = tmp_path / "q08.json"
+    q09_path = tmp_path / "q09.json"
+    q09p_path = tmp_path / "q09p.json"
+    setfile.write_text("x=1\n", encoding="utf-8")
+    q08_path.write_text('{"verdict":"PASS"}', encoding="utf-8")
+    q09_path.write_text('{"verdict":"CONFIG_LOCKED"}', encoding="utf-8")
+    q09p_path.write_text('{"verdict":"FAIL_PORTFOLIO"}', encoding="utf-8")
+
+    with farmctl.connect(tmp_path) as conn:
+        _insert_work_item(
+            conn, item_id="q08", phase="Q08", verdict="PASS",
+            evidence_path=q08_path, setfile_path=setfile,
+        )
+        _insert_work_item(
+            conn, item_id="q09n", phase="Q09_NEWS", verdict="CONFIG_LOCKED",
+            evidence_path=q09_path, setfile_path=setfile,
+        )
+        _insert_work_item(
+            conn, item_id="q09p", phase="Q09_PORTFOLIO", verdict="FAIL_PORTFOLIO",
+            evidence_path=q09p_path, setfile_path=setfile,
+        )
+        for child in ("q09n", "q09p"):
+            schema.add_dependency(
+                conn,
+                child_work_item_id=child,
+                dependency_role="Q08_INPUT",
+                parent_work_item_id="q08",
+                parent_evidence_sha256=_sha(q08_path),
+                required_verdicts=["PASS"],
+            )
+        _insert_locked_q09(conn, q09_path)
+
+    with mock.patch.object(farmctl, "_ea_build_artifact_failure", return_value=None):
+        result = farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", "Q10")
+    assert len(result["created"]) == 1
+    q10_id = result["created"][0]["id"]
+    with farmctl.connect(tmp_path) as conn:
+        edge = conn.execute(
+            """
+            SELECT parent_work_item_id,required_verdicts_json
+            FROM work_item_dependencies
+            WHERE child_work_item_id=? AND dependency_role='Q09_PORTFOLIO'
+            """,
+            (q10_id,),
+        ).fetchone()
+        gate = schema.assert_q10_dependency_gate(conn, q10_id)
+
+    assert edge["parent_work_item_id"] == "q09p"
+    assert json.loads(edge["required_verdicts_json"]) == [
+        "PASS_PORTFOLIO", "FAIL_PORTFOLIO", "FAIL_SYSTEM"
+    ]
+    assert gate.q09_portfolio_work_item_id == "q09p"
+
+
+def test_q10_fails_closed_when_present_terminal_portfolio_evidence_is_unreadable(
+    tmp_path: Path,
+) -> None:
+    farmctl.init_db(tmp_path)
+    setfile = tmp_path / "base.set"
+    q08_path = tmp_path / "q08.json"
+    q09_path = tmp_path / "q09.json"
+    missing_portfolio_path = tmp_path / "missing-q09p.json"
+    setfile.write_text("x=1\n", encoding="utf-8")
+    q08_path.write_text('{"verdict":"PASS"}', encoding="utf-8")
+    q09_path.write_text('{"verdict":"CONFIG_LOCKED"}', encoding="utf-8")
+
+    with farmctl.connect(tmp_path) as conn:
+        _insert_work_item(
+            conn, item_id="q08", phase="Q08", verdict="PASS",
+            evidence_path=q08_path, setfile_path=setfile,
+        )
+        _insert_work_item(
+            conn, item_id="q09n", phase="Q09_NEWS", verdict="CONFIG_LOCKED",
+            evidence_path=q09_path, setfile_path=setfile,
+        )
+        _insert_work_item(
+            conn, item_id="q09p", phase="Q09_PORTFOLIO", verdict="FAIL_SYSTEM",
+            evidence_path=missing_portfolio_path, setfile_path=setfile,
+        )
+        for child in ("q09n", "q09p"):
+            schema.add_dependency(
+                conn,
+                child_work_item_id=child,
+                dependency_role="Q08_INPUT",
+                parent_work_item_id="q08",
+                parent_evidence_sha256=_sha(q08_path),
+                required_verdicts=["PASS"],
+            )
+        _insert_locked_q09(conn, q09_path)
+
+    with mock.patch.object(farmctl, "_ea_build_artifact_failure", return_value=None):
+        result = farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", "Q10")
+
+    assert not result["created"]
+    assert result["skipped"][0]["reason"] == (
+        "latest_terminal_sibling_evidence_missing_or_unreadable"
+    )
 
 
 def test_q10_rejects_plain_news_pass_and_names_exact_governed_verdict(tmp_path: Path) -> None:
@@ -473,66 +555,57 @@ def test_q09_phase_builder_executes_bound_plan_in_reserved_slot(tmp_path: Path) 
     ) is None
 
 
-def test_paired_portfolio_rescue_creates_exact_held_news_arm(tmp_path: Path) -> None:
-    farmctl.init_db(tmp_path)
-    q08_path = tmp_path / "q08.json"
-    portfolio_path = tmp_path / "portfolio.json"
-    setfile = tmp_path / "baseline.set"
-    q08_path.write_text('{"verdict":"FAIL_SOFT"}\n', encoding="utf-8")
-    portfolio_path.write_text('{"verdict":"PASS_PORTFOLIO"}\n', encoding="utf-8")
-    setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
-    now = farmctl.utc_now()
-    with farmctl.connect(tmp_path) as conn:
-        conn.execute(
-            """
-            INSERT INTO work_items(
-              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
-              attempt_count,evidence_path,payload_json,created_at,updated_at
-            ) VALUES('q08-soft','backtest','Q08','QM5_20266','EURUSD.DWX',?,
-                     'done','FAIL_SOFT',0,?,'{}',?,?)
-            """,
-            (str(setfile), str(q08_path), now, now),
-        )
-        conn.execute(
-            """
-            INSERT INTO work_items(
-              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
-              attempt_count,evidence_path,payload_json,created_at,updated_at
-            ) VALUES('portfolio-pass','backtest','Q09_PORTFOLIO','QM5_20266',
-                     'EURUSD.DWX',?,'done','PASS_PORTFOLIO',0,?,'{}',?,?)
-            """,
-            (str(setfile), str(portfolio_path), now, now),
-        )
-        result: dict[str, object] = {}
-        promoted = farmctl._promote_paired_q09_portfolio_passes_to_news(
-            conn, result
-        )
-        conn.commit()
-        news = conn.execute(
-            "SELECT id,status,payload_json FROM work_items WHERE phase='Q09_NEWS'"
-        ).fetchone()
-        dependencies = conn.execute(
-            """
-            SELECT child_work_item_id,parent_work_item_id,parent_evidence_sha256
-            FROM work_item_dependencies ORDER BY child_work_item_id
-            """
-        ).fetchall()
-        hold = conn.execute(
-            "SELECT active,hold_code FROM work_item_holds WHERE work_item_id=?",
-            (news["id"],),
-        ).fetchone()
+def test_q08_pass_and_fail_soft_create_held_news_arms_without_portfolio(tmp_path: Path) -> None:
+    for verdict in ("PASS", "FAIL_SOFT"):
+        root = tmp_path / verdict.lower()
+        farmctl.init_db(root)
+        q08_path = root / "q08.json"
+        setfile = root / "baseline.set"
+        q08_path.write_text(json.dumps({"verdict": verdict}) + "\n", encoding="utf-8")
+        setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+        now = farmctl.utc_now()
+        q08_id = f"q08-{verdict.lower()}"
+        with farmctl.connect(root) as conn:
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                  id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                  attempt_count,evidence_path,payload_json,created_at,updated_at
+                ) VALUES(?,'backtest','Q08','QM5_20266','EURUSD.DWX',?,
+                         'done',?,0,?,'{}',?,?)
+                """,
+                (q08_id, str(setfile), verdict, str(q08_path), now, now),
+            )
+            result: dict[str, object] = {}
+            promoted = farmctl._promote_paired_q09_portfolio_passes_to_news(
+                conn, result
+            )
+            conn.commit()
+            news = conn.execute(
+                "SELECT id,status,payload_json FROM work_items WHERE phase='Q09_NEWS'"
+            ).fetchone()
+            dependencies = conn.execute(
+                """
+                SELECT child_work_item_id,parent_work_item_id,parent_evidence_sha256
+                FROM work_item_dependencies ORDER BY child_work_item_id
+                """
+            ).fetchall()
+            hold = conn.execute(
+                "SELECT active,hold_code FROM work_item_holds WHERE work_item_id=?",
+                (news["id"],),
+            ).fetchone()
 
-    assert promoted == 1
-    assert news["status"] == "pending"
-    payload = json.loads(news["payload_json"])
-    assert payload["q09_portfolio_work_item_id"] == "portfolio-pass"
-    assert payload["q09_portfolio_evidence_sha256"] == _sha(portfolio_path)
-    assert hold["active"] == 1
-    assert hold["hold_code"] == schema.ACTIVATION_HOLD_CODE
-    assert {(row["child_work_item_id"], row["parent_work_item_id"]) for row in dependencies} == {
-        ("portfolio-pass", "q08-soft"),
-        (news["id"], "q08-soft"),
-    }
+        assert promoted == 1
+        assert news["status"] == "pending"
+        payload = json.loads(news["payload_json"])
+        assert "q09_portfolio_work_item_id" not in payload
+        assert "q09_portfolio_evidence_sha256" not in payload
+        assert hold["active"] == 1
+        assert hold["hold_code"] == schema.ACTIVATION_HOLD_CODE
+        assert [
+            (row["child_work_item_id"], row["parent_work_item_id"])
+            for row in dependencies
+        ] == [(news["id"], q08_id)]
 
 
 def test_q09_autopilot_uses_oracle_standard_v2_semantics(tmp_path: Path) -> None:
