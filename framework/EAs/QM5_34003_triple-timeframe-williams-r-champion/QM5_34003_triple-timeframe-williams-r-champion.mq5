@@ -172,6 +172,7 @@ void OnDeinit(const int reason) { QM_FrameworkShutdown(); }
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
@@ -212,7 +213,7 @@ void OnTick()
 }
 
 void OnTimer() { QM_FrameworkOnTimer(); }
-void OnTradKTransaction(const MqlTradeTransaction &t, const MqlTradeRequest &r, const MqlTradeResult &res)
+void OnTradeTransaction(const MqlTradeTransaction &t, const MqlTradeRequest &r, const MqlTradeResult &res)
 {
    QM_FrameworkOnTradeTransaction(t, r, res);
 }

@@ -48,12 +48,19 @@ input double          strategy_spread_filter_mult  = 1.8;
 // -----------------------------------------------------------------------------
 // State Cache & Indicators
 // -----------------------------------------------------------------------------
-double g_fast_atr       = 0.0;
-double g_slow_atr       = 0.0;
-double g_trend_ema      = 0.0;
-double g_close1         = 0.0;
-double g_close5         = 0.0;
-int    g_last_signal    = 0;
+const double STRATEGY_DAILY_ENTRY_HALT_PCT = 2.0;
+const double STRATEGY_DAILY_HARD_STOP_PCT  = 2.5;
+const double STRATEGY_TOTAL_DD_STOP_PCT    = 5.0;
+
+double g_fast_atr         = 0.0;
+double g_atr_sma          = 0.0;
+double g_spread_atr       = 0.0;
+double g_trend_ema        = 0.0;
+double g_close1           = 0.0;
+double g_close5           = 0.0;
+int    g_last_signal      = 0;
+int    g_daily_loss_day   = -1;
+bool   g_daily_entry_halt = true;
 
 int StrategyHhmm(const datetime t)
 {
@@ -70,25 +77,109 @@ bool StrategyInRolloverWindow(const datetime t)
    return (hhmm >= strategy_rollover_start_hhmm && hhmm < strategy_rollover_end_hhmm);
 }
 
+int StrategyDayKey(const datetime t)
+{
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return dt.year * 1000 + dt.day_of_year;
+}
+
+datetime StrategyDayStart(const datetime t)
+{
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   dt.hour = 0;
+   dt.min = 0;
+   dt.sec = 0;
+   return StructToTime(dt);
+}
+
+// Account-wide realised P&L is refreshed at the broker-day boundary and after
+// every trade transaction. The per-tick no-trade path only reads the cache.
+void StrategyRefreshDailyEntryHalt(const bool force_refresh)
+{
+   const datetime now = TimeCurrent();
+   const int day_key = StrategyDayKey(now);
+   if(!force_refresh && day_key == g_daily_loss_day)
+      return;
+
+   g_daily_loss_day = day_key;
+   g_daily_entry_halt = true; // history failure must fail closed
+
+   const datetime day_start = StrategyDayStart(now);
+   if(day_start <= 0 || !HistorySelect(day_start, now))
+      return;
+
+   double realised = 0.0;
+   const int deals = HistoryDealsTotal();
+   for(int i = 0; i < deals; ++i)
+   {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         continue;
+      const ENUM_DEAL_TYPE deal_type = (ENUM_DEAL_TYPE)HistoryDealGetInteger(deal, DEAL_TYPE);
+      if(deal_type != DEAL_TYPE_BUY && deal_type != DEAL_TYPE_SELL)
+         continue;
+      realised += HistoryDealGetDouble(deal, DEAL_PROFIT);
+      realised += HistoryDealGetDouble(deal, DEAL_SWAP);
+      realised += HistoryDealGetDouble(deal, DEAL_COMMISSION);
+      realised += HistoryDealGetDouble(deal, DEAL_FEE);
+   }
+
+   const double day_start_balance = AccountInfoDouble(ACCOUNT_BALANCE) - realised;
+   if(day_start_balance <= 0.0)
+      return;
+
+   g_daily_entry_halt = (realised <= -(STRATEGY_DAILY_ENTRY_HALT_PCT / 100.0) * day_start_balance);
+}
+
 void AdvanceState_OnNewBar()
 {
-   const double c1 = iClose(_Symbol, strategy_signal_tf, 1);                            // perf-allowed: closed-bar calculation
-   const double c5 = iClose(_Symbol, strategy_signal_tf, 1 + strategy_momentum_bars);   // perf-allowed: closed-bar calculation
+   // Clear every cached decision before a fallible data read. A missing bar or
+   // indicator can therefore never leave the previous bar's setup armed.
+   g_last_signal = 0;
+   g_fast_atr = 0.0;
+   g_atr_sma = 0.0;
+   g_spread_atr = 0.0;
+   g_trend_ema = 0.0;
+   g_close1 = 0.0;
+   g_close5 = 0.0;
 
+   if(strategy_fast_atr_period < 1 || strategy_slow_atr_period < 2 ||
+      strategy_trend_ema_period < 1 || strategy_momentum_bars < 2)
+      return;
+
+   const double c1 = iClose(_Symbol, strategy_signal_tf, 1);                          // perf-allowed: one closed-bar read inside the framework new-bar gate
+   const double c5 = iClose(_Symbol, strategy_signal_tf, strategy_momentum_bars);     // perf-allowed: card requires Close[5] when the input is 5
    if(c1 <= 0.0 || c5 <= 0.0)
       return;
 
-   g_fast_atr  = QM_ATR(_Symbol, strategy_signal_tf, strategy_fast_atr_period, 1);
-   g_slow_atr  = QM_ATR(_Symbol, strategy_signal_tf, strategy_slow_atr_period, 1);
-   g_trend_ema = QM_EMA(_Symbol, strategy_signal_tf, strategy_trend_ema_period, 1, PRICE_CLOSE);
-   g_close1    = c1;
-   g_close5    = c5;
+   const double fast_atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_fast_atr_period, 1);
+   const double spread_atr = QM_ATR(_Symbol, strategy_signal_tf, 14, 1);
+   const double trend_ema = QM_EMA(_Symbol, strategy_signal_tf, strategy_trend_ema_period, 1, PRICE_CLOSE);
+   if(fast_atr <= 0.0 || spread_atr <= 0.0 || trend_ema <= 0.0)
+      return;
 
-   g_last_signal = 0;
-
-   if(g_fast_atr > 0.0 && g_slow_atr > 0.0 && g_trend_ema > 0.0)
+   double atr_sum = 0.0;
+   for(int i = 0; i < strategy_slow_atr_period; ++i)
    {
-      const bool ready = (g_fast_atr < g_slow_atr);
+      const double atr_sample = QM_ATR(_Symbol, strategy_signal_tf,
+                                       strategy_fast_atr_period, 1 + i);
+      if(atr_sample <= 0.0)
+         return;
+      atr_sum += atr_sample;
+   }
+
+   g_fast_atr = fast_atr;
+   g_atr_sma = atr_sum / (double)strategy_slow_atr_period;
+   g_spread_atr = spread_atr;
+   g_trend_ema = trend_ema;
+   g_close1 = c1;
+   g_close5 = c5;
+
+   if(g_fast_atr > 0.0 && g_atr_sma > 0.0 && g_trend_ema > 0.0)
+   {
+      const bool ready = (g_fast_atr < g_atr_sma);
       const double go_threshold = strategy_go_atr_mult * g_fast_atr;
 
       if(ready)
@@ -109,6 +200,10 @@ void AdvanceState_OnNewBar()
 
 bool Strategy_NoTradeFilter()
 {
+   StrategyRefreshDailyEntryHalt(false);
+   if(g_daily_entry_halt)
+      return true;
+
    if(StrategyInRolloverWindow(TimeCurrent()))
       return true;
 
@@ -121,10 +216,10 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return true;
 
-   if(ask > bid && g_fast_atr > 0.0)
+   if(ask > bid && g_spread_atr > 0.0)
    {
       const double spread = ask - bid;
-      if(spread > g_fast_atr * strategy_spread_filter_mult)
+      if(spread > g_spread_atr * strategy_spread_filter_mult)
          return true;
    }
 
@@ -194,6 +289,9 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
 {
+   if(strategy_signal_tf != PERIOD_H1)
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -212,6 +310,20 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"))
+      return INIT_FAILED;
+
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         STRATEGY_DAILY_HARD_STOP_PCT,
+                         STRATEGY_TOTAL_DD_STOP_PCT,
+                         1.0))
+      return INIT_FAILED;
+
+   StrategyRefreshDailyEntryHalt(true);
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
 }
@@ -229,9 +341,6 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -253,6 +362,9 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
       }
    }
+
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
 
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
@@ -286,6 +398,7 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeResult &result)
 {
    QM_FrameworkOnTradeTransaction(trans, request, result);
+   StrategyRefreshDailyEntryHalt(true);
 }
 
 double OnTester()

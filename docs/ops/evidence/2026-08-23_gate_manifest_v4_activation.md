@@ -1,246 +1,81 @@
-# Gate Manifest v4 — activation evidence (tool + dry-run)
+# Gate Manifest v4 — activation evidence
 
 Date: 2026-08-23
-Branch: `rb-activate`
-Tool: `tools/strategy_farm/activate_gate_manifest_v4.py`
 
-## Status and safety
+Mode: APPLY
 
-PASS (dry-run). This ticket delivers the orchestrator's one-shot, idempotent
-activation tool for Gate Manifest **v4** (the linear three-phase renumbering,
-OWNER decision `decisions/2026-08-23_owner_gate_manifest_v4_linear.md`).
-`--apply` was **not** run. The live database was opened only through a `mode=ro`
-URI for the precondition census; the migration was exercised against a
-throw-away **copy** in `scratch/rb-activate-dryrun/`. The factory was not
-toggled and `T_Live` was not touched.
+Authority: OWNER decision `decisions/2026-08-23_owner_gate_manifest_v4_linear.md` (linear three-phase renumbering, executed under the Stehende Vollmacht Auffangregel). v4 carries every v3 gate criterion verbatim; only identifiers, order and phase grouping change.
 
-v4 carries every v3 gate criterion verbatim (ROT untouched); only identifiers,
-order and phase grouping change. v3 stays loadable as a fixture, so the flip is
-a one-line revert.
+## Step results
 
-## What the tool does (six framed steps, fail-closed in `--apply`)
+- [PASS] precondition: git tree clean for target files
+  - clean: 5 target files
+- [PASS] precondition: FACTORY_OFF.flag present
+  - present: D:\QM\strategy_farm\state\FACTORY_OFF.flag
+- [PASS] precondition: open meaning-changing rows are cutover-eligible
+  - eligible work_items=28 (--allow-active is no longer required)
+  - dependency-role rewrites=0
+- [PASS] precondition: v4 draft validates READ_INERT under the loader
+  - READ_INERT; sha256=c51fbfffb1aca470...
+  - schema=qm.gate-manifest/v4
+- [PASS] promote: write gate_manifest.v4.json (ACTIVE)
+  - activated_by=CLAUDE activated_at=2026-08-23
+  - review_refs=['a4990f77a', 'decisions/2026-08-23_owner_gate_manifest_v4_linear.md']
+  - target sha256=f71c1ea63f1e847b3670904a6de25bcb4b337df9e0a7cff8ee6405d9c3aa2c83
+  - written: C:\QM\repo\tools\strategy_farm\config\gate_manifest.v4.json
+- [PASS] flip: DEFAULT_MANIFEST + SCHEMA_VERSION -> v4
+  - before sha256=abd09914e9f10648e3aec469caaac2526a52c01eea4f562c59f4cc285f8a6acb
+  - after  sha256=bd4c7f43e18bf909a4a3ce41a1359d38f0be3cdc2849a0446ddf1bcec1914c07
+  - gate_manifest.py flipped
+- [PASS] flip smoke: v4 default loads and renders
+  - schema=qm.gate-manifest/v4 active=v4
+  - phase_order=Q00..Q17 linear; next(Q14)=None
+  - macro: Q10=2_OPTIMIERUNG Q15=3_BUCHBEWERTUNG
+  - phase_label('Q10','v3')='Q11 (v3:Q10)'
+- [PASS] db migration: gate_contract_version + q09 schema
+  - backup: D:\QM\strategy_farm\backups\farm_state_pre_v4_20260823T155246Z.sqlite (integrity_check=ok)
+  - gate_contract_version before={legacy=111392, v3=26} after={legacy=111369, v3=21, v4=28}
+  - dependency rows before=104 after=104 (equal)
+  - cutover work_items=28 dependencies=0
+  - activation stamped: contract_version=v4
+- [PASS] verify: pytest activation + orchestrator integration suites
+  - .....................................s.............................. [ 99%]
+  - .                                                                        [100%]
+  - 208 passed, 3 skipped, 6 subtests passed in 56.62s
+  - full output: C:\QM\repo\scratch\rb-v4-cutover\activation_verify.log
 
-1. **Preconditions** — git tree clean for the tool's target files
-   (`gate_manifest.py`, `config/gate_manifest.*.json`); `FACTORY_OFF.flag`
-   present under `D:/QM/strategy_farm/state` (or `--allow-factory-on`, loud
-   warning); no active (`pending`/`active`) `work_items` in a v3 storage phase
-   whose id changes meaning under v4 — `Q09_NEWS, Q09_PORTFOLIO, Q10, Q14, Q15,
-   Q16` (or `--allow-active`); the v4 draft validates `READ_INERT` under the
-   loader.
-2. **Promote** — writes `config/gate_manifest.v4.json` = the frozen draft with
-   `activation_guard` set ACTIVE (`default_manifest_switch=true`,
-   `activated_by=CLAUDE`, `activated_at=2026-08-23`, `review_refs =
-   ["a4990f77a", "decisions/2026-08-23_owner_gate_manifest_v4_linear.md"]`) and
-   `status=ACTIVE`. Only `status` and `activation_guard` differ from the draft.
-   The loader's v4 ACTIVE guard now requires **both** those review refs
-   (`gate_manifest.V4_ACTIVATION_REVIEW_REFS`), mirroring the v3 pattern;
-   READ_INERT can never be the default. `.gitattributes` LF-pins the file.
-3. **Flip** — `DEFAULT_MANIFEST = V4_MANIFEST`, `SCHEMA_VERSION =
-   SCHEMA_VERSION_V4` in `gate_manifest.py` (byte-exact single-anchor,
-   idempotent). `phase_ids` rebuilds from the new default. A `python -c` smoke
-   runs in a **subprocess** (Python binds `load_gate_manifest`'s default arg at
-   def-time, so the flip must be a real source edit + fresh import): asserts
-   default schema v4, `PHASE_ORDER == Q00..Q17` linear, `next(Q14) is None`,
-   macro phases present, and `phase_label('Q10','v3') == "Q11 (v3:Q10)"`.
-4. **DB migration** — `sqlite3` backup-API copy to
-   `D:/QM/strategy_farm/backups/farm_state_pre_v4_<ts>.sqlite`
-   (`integrity_check=ok`), then the reviewed additive/append-only
-   `ensure_work_item_gate_contract_schema` + `q09_news_schema.ensure_schema`;
-   prints `gate_contract_version` counts and dependency-row counts before/after
-   (dependency total must be equal or the step fails closed), then stamps a row
-   in a new `gate_contract_activations(contract_version, activated_at,
-   manifest_sha256, backup_path, git_head)` table. In `--apply` this runs in a
-   post-flip subprocess so the new-row trigger stamps `v4`; in `--dry-run` it
-   runs on the copy.
-5. **Verify** — `pytest` on `test_gate_manifest.py`,
-   `test_gate_contract_version.py`, `test_advancement_centralization.py`,
-   `test_book_build_guard.py`, `test_q09_news_schema_v2.py`; then writes this
-   evidence file.
-6. **`--rollback-plan`** — prints the exact rollback commands.
+## Touched-file hashes (before / after)
 
-## Dry-run result (clean tree, `--allow-factory-on --allow-active`)
-
-```
-[PASS] precondition: git tree clean for target files
-[PASS] precondition: FACTORY_OFF.flag present
-[PASS] precondition: no active work_items in meaning-changing phases
-[PASS] precondition: v4 draft validates READ_INERT under the loader
-[PASS] promote: write gate_manifest.v4.json (ACTIVE)
-        target sha256=f71c1ea63f1e847b3670904a6de25bcb4b337df9e0a7cff8ee6405d9c3aa2c83
-[PASS] flip: DEFAULT_MANIFEST + SCHEMA_VERSION -> v4
-        before sha256=8032f2c6abea9f236d3fbfe5a4776bd7bbc12d8303e286fc3a86da4edf32135c
-        after  sha256=d3f1bcbdde61f0374285e1c60d2ded01e77a095ad184ec5b178cbf785274b050
-[PASS] flip smoke: v4 default loads and renders  (subprocess; --apply only)
-[PASS] db migration: gate_contract_version + q09 schema
-        gate_contract_version before={legacy=111392, v3=8} after={legacy=111392, v3=8}
-        dependency rows before=102 after=102 (equal)
-        activation stamped: contract_version=v4
-[PASS] verify: pytest suites  (--apply only)
-```
-
-## Real environment state (honest `--dry-run`, no override flags)
-
-The plain dry-run reports two real environmental holds the orchestrator must
-resolve before `--apply`:
-
-- **`FACTORY_OFF.flag` is absent** — the factory is currently ON. Run
-  `Factory_OFF.ps1` first (never toggle it from here), or pass
-  `--allow-factory-on` deliberately.
-- **24 active `Q09_NEWS` rows** — the live news frontier. Because
-  `Q09_NEWS -> Q10_NEWS` is a pure renumber and every historical row is read
-  only under its own `gate_contract_version`, `--allow-active` is defensible,
-  but it is an orchestrator/OWNER judgment, not a default.
-
-The git-clean precondition also fails on a dirty dev tree; it passes once the
-code commit is in (this branch, commit `e40f359c9`).
-
-## Migrated counts (real, measured on the live-DB copy)
-
-The live database already carries the additive `gate_contract_version` column
-(installed by a routine `farmctl` init after rb-contract-version merged), so the
-migration is a verified idempotent no-op on existing rows:
-
-| Metric | Before | After |
+| File | Before | After |
 |---|---|---|
-| `gate_contract_version=legacy` | 111392 | 111392 |
-| `gate_contract_version=v3` | 8 | 8 |
-| `work_item_dependencies` rows | 102 | 102 |
+| tools/strategy_farm/gate_manifest.py | see flip step | bd4c7f43e18bf909a4a3ce41a1359d38f0be3cdc2849a0446ddf1bcec1914c07 |
+| tools/strategy_farm/config/gate_manifest.v4.json | see flip step | f71c1ea63f1e847b3670904a6de25bcb4b337df9e0a7cff8ee6405d9c3aa2c83 |
 
-Backup path pattern (apply):
-`D:/QM/strategy_farm/backups/farm_state_pre_v4_<UTCstamp>.sqlite`.
+## Database migration
 
-## Touched-file hashes
-
-Code changes (committed `e40f359c9`; before = parent blob, after = working):
-
-| File | Before (sha256) | After (sha256) |
-|---|---|---|
-| `tools/strategy_farm/gate_manifest.py` | `4716222f0ea103eeb24ffb2a8ef72243682249def49cb4adf24acac335cd55b2` | `ef6ccbd1bcde47225feae905912c0aaf2943f8ef877c931f1eee909ec7bf7dc9` |
-| `tools/strategy_farm/phase_ids.py` | `3625b07da3eb3e98e6719495d1b0915990af1bd9c11def90b37c9cd35be0adc6` | `16211d10b4311ee67926a76ba02dd0cdad527b3a2b923a10e5a31572b7116be9` |
-| `tools/strategy_farm/tests/test_gate_manifest.py` | `8d4e22c57ea1719ba31efc025f7ab2c04f4eea4c194dc1add217edf9c48ad0df` | `db07335f70f108a664a097920e6a4f5c68d596853ce654c0d2f8ebc9bc777950` |
-| `.gitattributes` | `6c853a8ff1cb460a4c7c6cb2414c756b38b0c2a58a0d2d1a5a8ee76e06358f20` | `80ad5ad2804154ca3bebde37ded37b236dd1049df2e0bfdd8753f8a5ee609b46` |
-
-Apply-time changes (reported by the dry-run):
-
-| File | Change | sha256 |
-|---|---|---|
-| `tools/strategy_farm/config/gate_manifest.v4.json` | created (ACTIVE) | `f71c1ea63f1e847b3670904a6de25bcb4b337df9e0a7cff8ee6405d9c3aa2c83` |
-| `tools/strategy_farm/gate_manifest.py` | flip (before) | `8032f2c6abea9f236d3fbfe5a4776bd7bbc12d8303e286fc3a86da4edf32135c` |
-| `tools/strategy_farm/gate_manifest.py` | flip (after) | `d3f1bcbdde61f0374285e1c60d2ded01e77a095ad184ec5b178cbf785274b050` |
-
-(The flip before/after digests are the tool's in-memory text encoding; the
-`gate_manifest.py` on-disk content hashes are in the table above.)
-
-## Verification
-
-```
-> python -m pytest tools/strategy_farm/tests/test_gate_manifest.py \
-    tools/strategy_farm/tests/test_gate_contract_version.py \
-    tools/strategy_farm/tests/test_advancement_centralization.py \
-    tools/strategy_farm/tests/test_book_build_guard.py \
-    tools/strategy_farm/tests/test_q09_news_schema_v2.py \
-    tools/strategy_farm/tests/test_activate_gate_manifest_v4.py -q
-79 passed, 2 skipped
-```
-
-The 2 skips are the optional `jsonschema` Draft-2020-12 checks (library absent
-in the base environment). The v3 default and all v3 runtime tables are
-byte-identical after the `phase_ids` change (the v4 branches activate only when
-the default is v4).
-
-## Exact apply command (for the orchestrator)
-
-Prerequisite: tree clean (this commit merged), factory OFF, and either the 24
-active `Q09_NEWS` rows drained or `--allow-active` chosen deliberately.
-
-```powershell
-cd C:/QM/worktrees/rb-activate   # or the canonical checkout carrying this commit
-# 1) stop the factory the normal way (NEVER toggled from this tool):
-#    Factory_OFF.ps1
-# 2) then activate:
-python tools/strategy_farm/activate_gate_manifest_v4.py --apply --allow-active
-#    (add --allow-factory-on ONLY if intentionally activating with the factory ON)
-# 3) commit the apply artifacts (flip + v4.json + evidence) with explicit pathspecs,
-#    then re-mint the runtime-activation decision and run Factory_ON.
-```
+- backup: `D:\QM\strategy_farm\backups\farm_state_pre_v4_20260823T155246Z.sqlite`
+- gate_contract_version before: `{legacy=111392, v3=26}`
+- gate_contract_version after: `{legacy=111369, v3=21, v4=28}`
+- dependency rows before/after: 104 / 104 (equal)
 
 ## Rollback
 
 ```
-# 1. Revert the flip + promotion commit (restores the v3 default)
+# Rollback Gate Manifest v4 activation
+
+## 1. Revert the flip + promotion commit (restores v3 default)
 git revert --no-edit <activation-commit-sha>
-#    or, before committing:
+#   or, before committing:
 git checkout -- tools/strategy_farm/gate_manifest.py
 git rm -f tools/strategy_farm/config/gate_manifest.v4.json
 
-# 2. Restore the pre-v4 DB backup ONLY if a bad migration must be undone.
-#    The migration is additive + append-only, so normally NO db restore is
-#    needed. If required, stop the factory first, then:
-copy /Y "D:\QM\strategy_farm\backups\farm_state_pre_v4_<ts>.sqlite" \
-        "D:\QM\strategy_farm\state\farm_state.sqlite"
-#    (delete stale -wal/-shm sidecars beside the DB before restart)
+## 2. Restore the pre-v4 database backup (only if a bad migration must be undone)
+#   The migration is additive + append-only; normally NO db restore is needed.
+#   If required, stop the factory first, then:
+copy /Y "D:\QM\strategy_farm\backups\farm_state_pre_v4_20260823T155246Z.sqlite" "D:\QM\strategy_farm\state\farm_state.sqlite"
+#   (delete stale -wal/-shm sidecars beside the DB before restart)
 
-# 3. Re-mint the runtime-activation decision and run Factory_ON once the tree
-#    is clean again.
+## 3. Re-mint the runtime-activation decision and run Factory_ON
+#   after the tree is clean again.
 ```
 
-`python tools/strategy_farm/activate_gate_manifest_v4.py --rollback-plan` prints
-this list.
-
-## Risks / notes
-
-- **Deferred (as in the v3 activation):** the deep v4 runtime rebinding of
-  `work_item_dependencies` roles (`CHALLENGER_Q10 -> CHALLENGER_Q11`,
-  `Q14_ADMISSION -> Q12_ADMISSION`) and the head-to-head / Q09 enqueue paths is
-  a separately reviewed change. The `q09_news_schema` CHECK already accepts the
-  v4 role union (append-only), and historical rows are read under their own
-  contract version, so activation is safe without it; new v4-role writes are a
-  follow-on.
-- `phase_ids` v4 news-lane semantics (`Q10_NEWS/Q10_PORTFOLIO`) are derived from
-  the manifest equivalence table and take effect only under a v4 default; the
-  full factory dispatch/cascade behaviour under v4 has not been exercised
-  end-to-end (no `--apply`).
-- `--apply` runs the migration in a subprocess so the new-row trigger stamps
-  `v4`; existing rows are never reclassified.
-
-## Review fixes (2026-08-23)
-
-Reviewer verdict FIX_REQUIRED. Applied:
-
-- **P1 — `phase_ids.py` merge conflict with `rb-v4-runtime` (resolved).**
-  `rb-activate` had independently made `phase_ids.py` v4-aware via a
-  `contract_equivalence`-driven `_V3_TO_V4` mapping. `rb-v4-runtime` merges into
-  `agents/board-advisor` FIRST and rewrote the same regions role-based
-  (`gate_for_role('NEWS')`, `storage_phase_for_role(...)`,
-  `build_advancement_table(manifest)`), producing 4 conflict hunks. Both
-  implementations are semantically equivalent; the role-based one is canonical.
-  Fix: `rb-activate`'s `phase_ids.py` delta was dropped entirely (file restored
-  to the `board-advisor` base), so this branch no longer touches `phase_ids.py`.
-  The three-way merge in the production order (`v4-runtime -> surfaces ->
-  activate`) now takes `rb-v4-runtime`'s version with zero conflicts. The
-  activation tool only consumes the public `phase_ids` API
-  (`PHASE_ORDER`, `next_phase_id`, `phase_label`, `ACTIVE_GATE_CONTRACT_VERSION`),
-  all present in `rb-v4-runtime`'s version, so no tool change was needed.
-
-- **P2 — hidden `--_run-migration` subprocess entrypoint had no guard of its
-  own (fixed).** The SUPPRESSED entrypoint mutates the live DB and previously
-  trusted its caller for all preconditions. It now re-asserts the one
-  precondition that is invariant across the manifest flip: `check_factory_off`,
-  failing closed (rc=1, no DB mutation) when the factory is ON without an
-  override. `git-clean` is deliberately NOT re-checked here because Step 2
-  already flips `gate_manifest.py`, so the target tree is expected dirty at
-  migration time. The apply flow forwards `--allow-factory-on` so a
-  deliberately-allowed run is not false-failed. Covered by three new tests
-  (`test_run_migration_entrypoint_{refuses_when_factory_on,proceeds_when_factory_off,honors_factory_on_override}`).
-
-- **P2 — end-to-end v4 `--apply` smoke not in CI (declined on this branch, by
-  design).** The real smoke imports `phase_ids` under a v4 default; with the P1
-  resolution the v4-aware `phase_ids` lives in `rb-v4-runtime`, not here, so a
-  real v4 flip + smoke cannot pass on `rb-activate` in isolation (it would
-  fail-closed, which is safe). This guard belongs in the post-merge
-  `board-advisor` tree once `v4-runtime` is present; it remains a documented
-  coverage gap here (see Risks above). `--apply` is still never exercised in
-  this branch's CI.
-
-Touched-test result: `test_activate_gate_manifest_v4.py` + `test_gate_manifest.py`
-= 46 passed, 2 skipped.

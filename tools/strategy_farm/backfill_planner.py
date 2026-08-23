@@ -6,9 +6,9 @@ Dry-run is the default.  The farm database is always inspected through a
 explicit guards it invokes the governed ``farmctl enqueue-backtest`` command
 recorded in the plan, bounded by ``--max-rows``.
 
-The active runtime is still gate contract v3.  Consequently this planner uses
-the gate chain emitted by ``rebaseline_census.py`` and records the contract
-version on every row.  It does not activate the read-inert v4 draft.
+The planner uses the active gate chain emitted by ``rebaseline_census.py`` and
+records the active contract version on every proposed row.  It never activates
+or changes a manifest itself.
 """
 from __future__ import annotations
 
@@ -34,14 +34,23 @@ DEFAULT_DB = Path("D:/QM/strategy_farm/state/farm_state.sqlite")
 DEFAULT_FARM_ROOT = Path("D:/QM/strategy_farm")
 DEFAULT_OUT_DIR = Path("D:/QM/reports/rebaseline")
 DEFAULT_MD_DIR = Path("docs/ops/rebaseline")
-DEFAULT_CONTRACT_VERSION = "v3"
+DEFAULT_CONTRACT_VERSION = census.ACTIVE_GATE_CONTRACT_VERSION
 ACTIVE_SYMBOL_CAP = 3  # farmctl.CLAIM_SYMBOL_ACTIVE_CAP; checked at runtime too.
 
 GATE_CHAIN = tuple(census.GATE_CHAIN)
 GATE_INDEX = {gate: index for index, gate in enumerate(GATE_CHAIN)}
-RUNTIME_PHASE = {**{gate: gate for gate in GATE_CHAIN}, "Q09": "Q09_NEWS"}
+NEWS_GATE = census.NEWS_GATE
+NEWS_PHASE = census.ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+NEWS_PORTFOLIO_PHASE = census.ACTIVE_GATE_MANIFEST.storage_phase_for_role(
+    "NEWS", "PORTFOLIO"
+)
+NEWS_PREDECESSOR = GATE_CHAIN[GATE_INDEX[NEWS_GATE] - 1]
+RUNTIME_PHASE = {**{gate: gate for gate in GATE_CHAIN}, NEWS_GATE: NEWS_PHASE}
 FARMCTL_BACKTEST_PHASES = {
-    "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS", "Q10"
+    "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08",
+    census.ACTIVE_GATE_MANIFEST.gate_for_role("BASELINE_FULL_RUN"),
+    NEWS_PHASE,
+    census.ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT"),
 }
 
 TERMINAL_STATUSES = {"done", "failed"}
@@ -206,11 +215,15 @@ def _load_work_items(connection: sqlite3.Connection) -> list[dict[str, Any]]:
     missing = required - columns
     if missing:
         raise RuntimeError(f"work_items schema missing required columns: {sorted(missing)}")
-    placeholders = ",".join("?" for _ in range(len(GATE_CHAIN) + 3))
-    phases = (*GATE_CHAIN, "Q09_NEWS", "Q09_PORTFOLIO", "COMPILE_EA")
+    phases = tuple(dict.fromkeys((*GATE_CHAIN, NEWS_PHASE, NEWS_PORTFOLIO_PHASE, "COMPILE_EA")))
+    placeholders = ",".join("?" for _ in phases)
+    contract_select = (
+        "gate_contract_version" if "gate_contract_version" in columns
+        else "NULL AS gate_contract_version"
+    )
     query = (
         "SELECT id,phase,ea_id,symbol,setfile_path,status,verdict,evidence_path,"
-        "claimed_by,payload_json,created_at,updated_at FROM work_items "
+        f"claimed_by,payload_json,created_at,updated_at,{contract_select} FROM work_items "
         f"WHERE phase IN ({placeholders})"
     )
     return [dict(row) for row in connection.execute(query, phases)]
@@ -284,11 +297,11 @@ def _target_source(rows: list[dict[str, Any]], action: str) -> dict[str, Any] | 
     return _latest(terminal)
 
 
-def _q09_news_action(rows: list[dict[str, Any]]) -> tuple[str, str]:
-    """Classify the economic Q09 lane; portfolio output is informational only."""
+def _news_action(rows: list[dict[str, Any]]) -> tuple[str, str]:
+    """Classify the active economic NEWS lane; portfolio is informational."""
     news = [
         row for row in rows
-        if str(row.get("phase") or "").upper() in {"Q09", "Q09_NEWS"}
+        if str(row.get("phase") or "").upper() in {NEWS_GATE, NEWS_PHASE}
     ]
     if not news:
         return "FILL_MISSING", "q09_news_prerequisite_missing"
@@ -326,8 +339,11 @@ def _parent_for_gate(
         if str(row.get("status") or "").lower() == "done"
         and str(row.get("verdict") or "").upper() in PASS_VERDICTS
     ]
-    if target_gate == "Q10":
-        news = [row for row in candidates if str(row.get("phase") or "").upper() == "Q09_NEWS"]
+    if predecessor == NEWS_GATE:
+        news = [
+            row for row in candidates
+            if str(row.get("phase") or "").upper() == NEWS_PHASE
+        ]
         candidates = news or candidates
     return _latest(candidates)
 
@@ -479,7 +495,9 @@ def build_plan(
         if str(item.get("status") or "").lower() == "active" and symbol:
             active_counts[symbol.upper()] += 1
             active_pairs.add((ea_id, symbol.upper()))
-        gate = census.canonical_gate(item.get("phase"))
+        gate = census.canonical_gate(
+            item.get("phase"), item.get("gate_contract_version")
+        )
         if not gate or not ea_id or not symbol:
             continue
         key = (ea_id, symbol)
@@ -496,36 +514,32 @@ def build_plan(
         gates = by_pair_gate.get((ea_id, symbol), {})
         target_rows = gates.get(target_gate, []) if target_gate else []
 
-        # Q09_PORTFOLIO is informational (OWNER E1); it can neither fill the
-        # Q09_NEWS hole nor let a later gate skip it.  The census contiguity walk
-        # credits Q09 via a PASS_PORTFOLIO row (census keeps PASS_PORTFOLIO in
-        # PASS_ECON), so a pair with a Q10/Q14 PASS above an unpassed Q09_NEWS
-        # otherwise reports a frontier past Q09 with the news hole masked.  Cap
-        # the frontier at Q08 and re-target the economic Q09_NEWS lane whenever
-        # the reported chain has crossed Q09 without a valid Q09_NEWS pass,
-        # regardless of how high the frontier string ran.
-        q09_rows = gates.get("Q09", [])
-        q09_news_valid = any(
-            str(item.get("phase") or "").upper() in {"Q09", "Q09_NEWS"}
+        # The portfolio lane is informational (OWNER E1); it can neither fill
+        # the NEWS hole nor let a later gate skip it.  Cap the frontier at the
+        # active NEWS predecessor and re-target the economic NEWS lane whenever
+        # the reported chain crossed NEWS without a valid NEWS-lane pass.
+        news_rows = gates.get(NEWS_GATE, [])
+        news_valid = any(
+            str(item.get("phase") or "").upper() in {NEWS_GATE, NEWS_PHASE}
             and str(item.get("status") or "").lower() == "done"
             and str(item.get("verdict") or "").upper() in PASS_VERDICTS
-            for item in q09_rows
+            for item in news_rows
         )
         reported_frontier = str(census_row.get("highest_contiguous_valid_gate") or "")
-        if GATE_INDEX.get(reported_frontier, -1) >= GATE_INDEX["Q09"] and not q09_news_valid:
-            target_gate = "Q09"
+        if GATE_INDEX.get(reported_frontier, -1) >= GATE_INDEX[NEWS_GATE] and not news_valid:
+            target_gate = NEWS_GATE
             target_rows = [
-                item for item in q09_rows
-                if str(item.get("phase") or "").upper() != "Q09_PORTFOLIO"
+                item for item in news_rows
+                if str(item.get("phase") or "").upper() != NEWS_PORTFOLIO_PHASE
             ]
-            action, reason = _q09_news_action(q09_rows)
-            reported_frontier = "Q08"
-        elif target_gate == "Q09":
+            action, reason = _news_action(news_rows)
+            reported_frontier = NEWS_PREDECESSOR
+        elif target_gate == NEWS_GATE:
             target_rows = [
-                item for item in q09_rows
-                if str(item.get("phase") or "").upper() != "Q09_PORTFOLIO"
+                item for item in news_rows
+                if str(item.get("phase") or "").upper() != NEWS_PORTFOLIO_PHASE
             ]
-            action, reason = _q09_news_action(q09_rows)
+            action, reason = _news_action(news_rows)
 
         open_target = _latest(
             row for row in target_rows

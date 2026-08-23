@@ -18,29 +18,42 @@ def _mk_con():
         " id TEXT, kind TEXT, phase TEXT, ea_id TEXT, symbol TEXT,"
         " setfile_path TEXT, status TEXT, verdict TEXT, attempt_count INTEGER,"
         " parent_task_id TEXT, evidence_path TEXT, claimed_by TEXT,"
-        " payload_json TEXT, created_at TEXT, updated_at TEXT)"
+        " payload_json TEXT, created_at TEXT, updated_at TEXT,"
+        " gate_contract_version TEXT)"
     )
     con.row_factory = sqlite3.Row
     return con
 
 
-def _ins(con, rid, phase, ea, sym, status, verdict, payload=None):
+def _ins(con, rid, phase, ea, sym, status, verdict, payload=None, version="v4"):
+    # ``version`` defaults to the active contract so that a bare v4 gate id in a
+    # fixture is read under v4 numbering (a NULL/legacy stamp would be re-read as
+    # v3 and renumbered forward).  Legacy-alias fixtures pass version-independent
+    # P* tokens.
     con.execute(
-        "INSERT INTO work_items (id, phase, ea_id, symbol, status, verdict, payload_json)"
-        " VALUES (?,?,?,?,?,?,?)",
+        "INSERT INTO work_items"
+        " (id, phase, ea_id, symbol, status, verdict, payload_json, gate_contract_version)"
+        " VALUES (?,?,?,?,?,?,?,?)",
         (rid, phase, ea, sym, status, verdict,
-         json.dumps(payload) if payload else None),
+         json.dumps(payload) if payload else None, version),
     )
 
 
 def test_canonical_gate_mapping():
-    assert rc.canonical_gate("Q02") == "Q02"
-    assert rc.canonical_gate("P2") == "Q02"          # legacy alias
-    assert rc.canonical_gate("Q09_NEWS") == "Q09"    # Q09 prefix merge
-    assert rc.canonical_gate("Q09_PORTFOLIO") == "Q09"
-    assert rc.canonical_gate("COMPILE_EA") is None    # off-chain
-    assert rc.canonical_gate("OPT_CENSUS") is None
-    assert rc.canonical_gate("Q11") is None
+    # v4 is the active contract. Q02 is unchanged across contracts.
+    assert rc.canonical_gate("Q02", "v4") == "Q02"
+    assert rc.canonical_gate("P2") == "Q02"                       # legacy alias
+    # Native v4 NEWS storage lanes collapse to the active NEWS gate (Q10).
+    assert rc.canonical_gate("Q10_NEWS", "v4") == rc.NEWS_GATE
+    assert rc.canonical_gate("Q10_PORTFOLIO", "v4") == rc.NEWS_GATE
+    # A v3 NEWS lane translates forward to the same active NEWS gate.
+    assert rc.canonical_gate("Q09_NEWS", "v3") == rc.NEWS_GATE
+    # v3 incumbent (Q10) renumbers to v4 Q11, which is on the v4 chain.
+    assert rc.canonical_gate("Q10", "v3") == "Q11"
+    assert rc.canonical_gate("COMPILE_EA", "v4") is None          # off-chain
+    assert rc.canonical_gate("OPT_CENSUS", "v4") is None
+    # v3 Q11 (retirement/book) renumbers off the v4 requalification chain.
+    assert rc.canonical_gate("Q11", "v3") is None
 
 
 def test_vclass():
@@ -147,17 +160,19 @@ def test_missing_pair_no_chain_rows():
 
 
 def test_full_chain_reusable_and_valid_at_gates():
-    """Contiguous PASS through Q16 -> REUSABLE, counts at Q08/Q10/Q16."""
+    """Contiguous PASS through the v4 terminal gate -> REUSABLE, counts hold."""
     con = _mk_con()
-    for g in rc.GATE_CHAIN:
+    for g in rc.GATE_CHAIN:  # v4 chain Q02..Q14, stamped v4 by default
         _ins(con, f"r{g}", g, "QM5_7", "EURJPY.DWX", "done", "PASS")
     res = rc.compute(con, None)
     row = res["pair_rows"][0]
-    assert row["highest_contiguous_valid_gate"] == "Q16"
+    assert rc.GATE_CHAIN[-1] == "Q14"  # v4 terminal requalification gate
+    assert row["highest_contiguous_valid_gate"] == rc.GATE_CHAIN[-1]
     assert row["earliest_missing_prerequisite"] == ""
     assert row["disposition"] == "REUSABLE"
     assert row["macro_phase"] == "2_OPTIMIERUNG"
     s = res["summary"]
+    # Public summary keys keep their pre-v4 names but resolve to active gates.
     assert s["pairs_valid_at_least_Q08"] == 1
     assert s["pairs_valid_at_least_Q10"] == 1
     assert s["pairs_valid_at_least_Q16"] == 1
@@ -169,13 +184,14 @@ def test_full_chain_reusable_and_valid_at_gates():
 )
 def test_terminal_requalification_outcomes_complete_contiguous_chain(terminal_verdict):
     con = _mk_con()
+    terminal = rc.GATE_CHAIN[-1]  # v4 terminal requalification gate (Q14)
     for gate in rc.GATE_CHAIN[:-1]:
         _ins(con, f"r{gate}", gate, "QM5_9", "EURUSD.DWX", "done", "PASS")
-    _ins(con, "rQ16", "Q16", "QM5_9", "EURUSD.DWX", "done", terminal_verdict)
+    _ins(con, f"r{terminal}", terminal, "QM5_9", "EURUSD.DWX", "done", terminal_verdict)
 
     row = rc.compute(con, None)["pair_rows"][0]
 
-    assert row["highest_contiguous_valid_gate"] == "Q16"
+    assert row["highest_contiguous_valid_gate"] == terminal
 
 
 def test_finer_key_hash_extraction_and_validity():

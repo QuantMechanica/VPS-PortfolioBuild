@@ -72,8 +72,8 @@ bool Strategy_IsMonthlyRebalanceBar()
    if(_Period != PERIOD_D1)
       return false;
 
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0);
-   const datetime prior_bar = iTime(_Symbol, PERIOD_D1, 1);
+   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: monthly rebalance check
+   const datetime prior_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: monthly rebalance check
    if(current_bar <= 0 || prior_bar <= 0)
       return false;
    return Strategy_MonthKey(current_bar) != Strategy_MonthKey(prior_bar);
@@ -115,7 +115,7 @@ double Strategy_MedianDailySpreadPoints()
    int count = 0;
    for(int shift = 1; shift <= n; ++shift)
    {
-      const long spread = iSpread(_Symbol, PERIOD_D1, shift);
+      const long spread = iSpread(_Symbol, PERIOD_D1, shift); // perf-allowed: median spread calculation
       if(spread > 0)
       {
          values[count] = (double)spread;
@@ -158,11 +158,11 @@ int Strategy_TsmomDirection()
       return 0;
 
    const int min_bars = MathMax(strategy_min_d1_bars, strategy_lookback_d1_bars + 5);
-   if(Bars(_Symbol, PERIOD_D1) < min_bars)
+   if(Bars(_Symbol, PERIOD_D1) < min_bars) // perf-allowed: minimum history bars check
       return 0;
 
-   const double recent_close = iClose(_Symbol, PERIOD_D1, 1);
-   const double lookback_close = iClose(_Symbol, PERIOD_D1, 1 + strategy_lookback_d1_bars);
+   const double recent_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: tsmom recent close
+   const double lookback_close = iClose(_Symbol, PERIOD_D1, 1 + strategy_lookback_d1_bars); // perf-allowed: tsmom lookback close
    if(recent_close <= 0.0 || lookback_close <= 0.0)
       return 0;
 
@@ -179,7 +179,7 @@ double Strategy_RealizedAnnualizedVol()
    if(n <= 1)
       return strategy_target_vol;
 
-   if(Bars(_Symbol, PERIOD_D1) < n + 2)
+   if(Bars(_Symbol, PERIOD_D1) < n + 2) // perf-allowed: realized vol bars check
       return strategy_target_vol;
 
    double log_returns[];
@@ -188,8 +188,8 @@ double Strategy_RealizedAnnualizedVol()
 
    for(int i = 1; i <= n; ++i)
    {
-      const double c0 = iClose(_Symbol, PERIOD_D1, i);
-      const double c1 = iClose(_Symbol, PERIOD_D1, i + 1);
+      const double c0 = iClose(_Symbol, PERIOD_D1, i); // perf-allowed: realized vol log-return calculation
+      const double c1 = iClose(_Symbol, PERIOD_D1, i + 1); // perf-allowed: realized vol log-return calculation
       if(c0 <= 0.0 || c1 <= 0.0)
          return strategy_target_vol;
       const double r = MathLog(c0 / c1);
@@ -255,7 +255,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_IsMonthlyRebalanceBar())
       return false;
 
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0);
+   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: monthly rebalance check
    const int rebalance_key = Strategy_MonthKey(current_bar);
    if(rebalance_key <= 0 || rebalance_key == g_last_entry_rebalance_key)
       return false;
@@ -378,6 +378,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 

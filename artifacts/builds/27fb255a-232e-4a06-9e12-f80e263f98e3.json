@@ -1,20 +1,24 @@
 {
   "task_id": "27fb255a-232e-4a06-9e12-f80e263f98e3",
   "ea_id": "QM5_12612",
-  "slug": "tsmom-12m-vol-scaled-ndx",
-  "card_path": "framework/EAs/QM5_12612_tsmom-12m-vol-scaled-ndx/docs/strategy_card.md",
-  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12612_tsmom-12m-vol-scaled-ndx",
-  "build_check_passed": true,
-  "compile_succeeded": true,
-  "compile_errors": 0,
-  "compile_warnings": 0,
+  "ea_dir": "framework/EAs/QM5_12612_tsmom-12m-vol-scaled-ndx",
   "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12612_tsmom-12m-vol-scaled-ndx\\QM5_12612_tsmom-12m-vol-scaled-ndx.mq5",
-  "mq5_sha256": "a21444cf6daf3ff27bcfe96ce46ec5d9984a5900d01db63176fd40df352252d8",
+  "mq5_sha256": "eceb50fa82fb5a32496fed383bcf9aae35b65a9b1ec154193165edf8d4a48291",
   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12612_tsmom-12m-vol-scaled-ndx\\QM5_12612_tsmom-12m-vol-scaled-ndx.ex5",
   "ex5_sha256": "d1395e74301d98cd86ad1afa4b05ee64e3bae954806530e41619944e70749960",
+  "magic_base": 126120000,
+  "symbols_registered": [
+    "NDX.DWX"
+  ],
   "setfiles_generated": [
     "C:\\QM\\repo\\framework\\EAs\\QM5_12612_tsmom-12m-vol-scaled-ndx\\sets\\QM5_12612_tsmom-12m-vol-scaled-ndx_NDX.DWX_D1_backtest.set"
   ],
-  "built_by": "Gemini",
-  "built_at": "2026-08-21T14:53:00Z"
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12612_tsmom-12m-vol-scaled-ndx\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Active Custom-history isolation requires a worker-bound work item; deferred to Q02 dispatch.",
+  "blocked_reason": "",
+  "open_questions": []
 }

@@ -69,16 +69,20 @@ def _cell(data: dict, ea: str, symbol: str, gate: str) -> dict:
                 if item["symbol_index"] == symbol_index)
 
 
-def test_manifest_columns_preserve_active_v3_order_and_render_v4_terminal() -> None:
+def test_manifest_columns_are_active_v4_linear_and_v3_pins_v3_order() -> None:
+    # v4 is the ACTIVE contract the factory runs: the ambient columns are the
+    # linear Q02..Q17 topology.
     active = archive.build_archive_columns()
     assert [column.gate_id for column in active] == [
-        "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10",
-        "Q14", "Q15", "Q16", "Q11", "Q12", "Q13",
+        f"Q{i:02d}" for i in range(2, 18)
     ]
 
-    v4 = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
-    assert [column.gate_id for column in archive.build_archive_columns(v4)] == [
-        f"Q{i:02d}" for i in range(2, 18)
+    # Pinning the v3 manifest explicitly still yields the v3 fork order — the
+    # topology is manifest-derived, not ambient-only.
+    v3 = gate_manifest.load_gate_manifest(gate_manifest.V3_MANIFEST)
+    assert [column.gate_id for column in archive.build_archive_columns(v3)] == [
+        "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10",
+        "Q14", "Q15", "Q16", "Q11", "Q12", "Q13",
     ]
     source = Path(archive.__file__).read_text(encoding="utf-8")
     assert re.search(r"\b(?:COLUMNS|ORDINARY|GATE_IDX)\b", source) is None
@@ -88,8 +92,11 @@ def test_manifest_columns_preserve_active_v3_order_and_render_v4_terminal() -> N
 def test_contract_resolution_planner_holes_stop_and_tooltips(
     tmp_path: Path, monkeypatch
 ) -> None:
-    assert archive.resolved_gate("Q10", "v3") == "Q10"
-    assert archive.resolved_gate("Q10", "v4") == "Q09"
+    # v4 active: a v3 Q10 (Incumbent) renumbers to v4 Q11; a v4 Q10 is native.
+    assert archive.resolved_gate("Q10", "v3") == "Q11"
+    assert archive.resolved_gate("Q10", "v4") == "Q10"
+    # A legacy/NULL stamp is read under v3 numbering (pre-v4 corpus).
+    assert archive.resolved_gate("Q10", "legacy") == "Q11"
     db = _fixture(tmp_path / "farm.sqlite")
     monkeypatch.setattr(archive, "BACKFILL_PLAN", tmp_path / "absent.csv")
     monkeypatch.setattr(archive, "_card_metadata", lambda: {
@@ -100,13 +107,24 @@ def test_contract_resolution_planner_holes_stop_and_tooltips(
 
     data = archive.collect(db)
 
-    v3_incumbent = _cell(data, "QM5_900001", "EURUSD.DWX", "Q10")
-    v4_news = _cell(data, "QM5_900001", "EURUSD.DWX", "Q09")
-    v4_terminal = _cell(data, "QM5_900001", "EURUSD.DWX", "Q13")
+    # v4 active: the v3 Incumbent (stored Q10/v3) lands in the v4 Q11 column
+    # with explicit (v3:Q10) provenance — never in the v4 Q10 (News) column.
+    v3_incumbent = _cell(data, "QM5_900001", "EURUSD.DWX", "Q11")
+    v4_news = _cell(data, "QM5_900001", "EURUSD.DWX", "Q10")
+    v4_terminal = _cell(data, "QM5_900001", "EURUSD.DWX", "Q17")
     assert "mixed-v3-q10" in v3_incumbent["title"]
-    assert "(v4:Q10_NEWS)" in v4_news["title"]
-    assert "(v4:Q17)" in v4_terminal["title"]
+    assert "(v3:Q10)" in v3_incumbent["title"]
+    # The native v4 rows carry no cross-contract provenance suffix.
+    assert "mixed-v4-news" in v4_news["title"]
+    assert "(v3:" not in v4_news["title"] and "(v4:" not in v4_news["title"]
+    assert "mixed-v4-q17" in v4_terminal["title"]
+    assert "(v3:" not in v4_terminal["title"] and "(v4:" not in v4_terminal["title"]
+    # The v3 Incumbent must NOT be mislabelled into the v4 Q10 (News) column.
+    assert "mixed-v3-q10" not in v4_news["title"]
 
+    # QM5_900002 has Q02..Q08 PASS plus an informational Q09_PORTFOLIO row.
+    # Under v4 the first missing prerequisite after Q08 is Q09 (Baseline Full
+    # Run); the informational portfolio lane never licenses a successor gap.
     news_gap = _cell(data, "QM5_900002", "EURUSD.DWX", "Q09")
     assert news_gap["state"] == archive.ST_HOLE
     assert news_gap["action"] == "FILL_MISSING"
@@ -168,9 +186,48 @@ def test_detail_page_gate_labels_keep_contract_provenance(
     items = archive.runs_for_ea("QM5_900001", db)
     rendered = archive.render_backtests_section(items)
 
-    assert "Q09_NEWS (v4:Q10_NEWS)" in rendered
-    assert "Q13 Live Burn-In DXZ (v4:Q17)" in rendered
-    assert "Q10 Incumbent Full-History Confirmation" in rendered
+    # v4 active: the v3 Incumbent row keeps explicit (v3:Q10) provenance under
+    # v4 numbering; the native v4 rows render without a provenance suffix.
+    assert "Q11 Incumbent Full-History Confirmation (v3:Q10)" in rendered
+    assert "Q10_NEWS" in rendered
+    assert "(v4:Q10_NEWS)" not in rendered
+    assert "Q17 Live Burn-In DXZ" in rendered
+    assert "(v4:Q17)" not in rendered
+
+
+def test_legacy_stamped_incumbent_renders_in_v4_incumbent_column(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Regression (P0): the live corpus stamps historical rows 'legacy', which
+    ``_normalise_contract_version`` maps to None.  Before the fix such a v3 Q10
+    (Incumbent) PASS collided with the v4 Q10 (News) column and lost its
+    provenance.  With v4 active it MUST render in the v4 Q11 (Incumbent) column
+    carrying (v3:Q10) provenance, and NEVER in the v4 Q10 (News) column.
+    """
+    db = tmp_path / "legacy.sqlite"
+    with sqlite3.connect(db) as con:
+        con.execute(DDL)
+        for phase in ("Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08"):
+            _insert(con, f"leg-{phase}", "QM5_910001", phase, "PASS", version="legacy")
+        # v3 Incumbent Full-History Confirmation, stored under a 'legacy' stamp.
+        _insert(con, "leg-incumbent", "QM5_910001", "Q10", "PASS", version="legacy")
+    monkeypatch.setattr(archive, "BACKFILL_PLAN", tmp_path / "absent.csv")
+
+    # active manifest is v4 (the factory contract)
+    assert gate_manifest.load_gate_manifest().schema_version.endswith("/v4")
+    assert archive.resolved_gate("Q10", "legacy") == "Q11"
+
+    data = archive.collect(db)
+    incumbent = _cell(data, "QM5_910001", "EURUSD.DWX", "Q11")
+    assert "leg-incumbent" in incumbent["title"]
+    assert "(v3:Q10)" in incumbent["title"]
+    assert incumbent["state"] == archive.ST_PASS
+
+    # The News column (v4 Q10) must not carry the incumbent row.
+    news_cells = next(
+        card for card in data["cards"] if card["ea"] == "QM5_910001"
+    )["cells"].get("Q10", [])
+    assert all("leg-incumbent" not in cell["title"] for cell in news_cells)
 
 
 def test_shared_frontier_model_uses_governed_plan_action(tmp_path: Path) -> None:

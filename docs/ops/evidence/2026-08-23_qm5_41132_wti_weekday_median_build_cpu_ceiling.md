@@ -52,7 +52,9 @@ Identity is active in both deterministic registries:
   the resolver retains 17,833 rows with zero drops and embeds the target magic.
 - MQ5 SHA-256 at enqueue:
   `B53B6392D13FD0C08AF726712A99CF77B5370A7F2E47EA4FE2C215617DE3C78B`.
-- `git diff --check`: clean for the EA package.
+- Package whitespace audit: no finding outside the enqueue-bound MQ5's final
+  blank line; that byte is retained deliberately so the working source remains
+  identical to the governed compile-row SHA-256 above.
 
 The repository-wide registry validator still reports the known legacy corpus
 findings outside EA 41132. No target-specific finding names `41132`, and those

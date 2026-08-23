@@ -1429,7 +1429,7 @@ class Q06SoftStackingTests(unittest.TestCase):
                 conn.commit()
                 q09 = [dict(r) for r in conn.execute(
                     "SELECT ea_id, status, verdict, payload_json FROM work_items "
-                    "WHERE phase='Q09_PORTFOLIO'")]
+                    "WHERE phase=?", (farmctl._NEWS_PORTFOLIO_PHASE,))]
 
             def _reason(row):
                 return json.loads(row["payload_json"] or "{}").get("verdict_reason")
@@ -1509,7 +1509,9 @@ class DefectBlockExclusionTests(unittest.TestCase):
                         )
                         conn.commit()
                         q09_eas = {r[0] for r in conn.execute(
-                            "SELECT DISTINCT ea_id FROM work_items WHERE phase='Q09_PORTFOLIO'")}
+                            "SELECT DISTINCT ea_id FROM work_items WHERE phase=?",
+                            (farmctl._NEWS_PORTFOLIO_PHASE,),
+                        )}
                     # The clean EA always advances; the cohort EA only under override.
                     self.assertIn("QM5_2", q09_eas)
                     self.assertEqual(self.COHORT_EA in q09_eas, expect_cohort)

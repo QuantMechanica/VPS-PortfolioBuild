@@ -25,5 +25,7 @@
   "open_questions": [
     "EA built cleanly from approved card QM5_34005; SPEC.md validated PASS; build_check and compile_one passed with 0 errors.",
     "Standalone smoke deferred to paced worker queue per active Custom-history isolation governance."
-  ]
+  ],
+  "mq5_sha256": "e5fe5061fa998a2e4935603e55c022133048264f4e96767a4c12679fd4f48da6",
+  "ex5_sha256": "64bab99b447e2c40d92adcf7b33d4fc3e6405852601af1214ed236a51f7be425"
 }

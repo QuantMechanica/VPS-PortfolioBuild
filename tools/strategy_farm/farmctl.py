@@ -355,9 +355,7 @@ _BASELINE_FULL_RUN_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("BASELINE_FULL_RUN
 _PATTERN_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("PATTERN")
 _PARAM_OPT_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("PARAM_OPT")
 _HEAD_TO_HEAD_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("HEAD_TO_HEAD")
-_INSPECTION_ONLY_NEWS_ALIAS = (
-    _NEWS_GATE if ACTIVE_GATE_MANIFEST.baseline_stage is not None else ""
-)
+_INSPECTION_ONLY_NEWS_ALIAS = _NEWS_GATE
 _NEWS_DEPENDENCY_ROLE = ACTIVE_GATE_MANIFEST.dependency_role("Q09_NEWS")
 _NEWS_PORTFOLIO_DEPENDENCY_ROLE = ACTIVE_GATE_MANIFEST.dependency_role("Q09_PORTFOLIO")
 _ADMISSION_DEPENDENCY_ROLE = ACTIVE_GATE_MANIFEST.dependency_role("Q14_ADMISSION")
@@ -4841,6 +4839,16 @@ PHASE_NOMENCLATURE = {
     "Q12": "P9",
     "Q13": "P9b",
 }
+# Meaning-changing ids cannot be interpreted from their number after a
+# contract flip.  Overlay the legacy runner semantics by manifest role so v4
+# Q10_NEWS remains the P6 news runner and v4 Q11 remains the P7 incumbent
+# runner.  The v4 Q09 baseline intentionally retains full-run/P6 metric rules.
+PHASE_NOMENCLATURE.update({
+    _NEWS_GATE: "P6",
+    _NEWS_PHASE: "P6",
+    _NEWS_PORTFOLIO_PHASE: "P6",
+    _INCUMBENT_PHASE: "P7",
+})
 
 
 def _normalize_phase(phase: str | None) -> str:
@@ -10258,6 +10266,10 @@ _CASCADE_PASS_VERDICTS_BY_PREDECESSOR = {
     "Q06": {"PASS", "PASS_SOFT"},
     "Q07": {"PASS", "MULTI_SEED_PASS"},
     "Q08": {"PASS", "FAIL_SOFT"},
+    # v4 promotes the historical Q10A evidence binding into a real Q09 gate.
+    # A completed baseline full run advances only on its ordinary PASS; under
+    # v3 this Q10A key remains display-only and is never selected by routing.
+    _BASELINE_FULL_RUN_PHASE: {"PASS"},
     _NEWS_PHASE: Q09_NEWS_SUCCESS_VERDICTS,
     "P2": {"PASS"},
     "P3": {"PASS"},
@@ -15430,6 +15442,48 @@ def _work_item_evidence_sha256(work_item: sqlite3.Row) -> str | None:
         return None
 
 
+def _q08_input_for_news_predecessor(
+    conn: sqlite3.Connection, predecessor: sqlite3.Row
+) -> sqlite3.Row | None:
+    """Resolve the stable Q08 lineage behind the active NEWS predecessor.
+
+    Under v3 NEWS follows Q08 directly.  Under v4 the promoted baseline-full-
+    run gate sits between them, while the news sidecar contract intentionally
+    continues to bind the original frozen Q08 input.  Follow only the exact
+    ``promoted_from_work_item`` edge written by the ordinary cascade; never
+    guess by EA/symbol or by the largest gate id.
+    """
+
+    if str(predecessor["phase"] or "").upper() == "Q08":
+        return predecessor
+    if (
+        _BASELINE_FULL_RUN_PHASE not in ACTIVE_GATE_MANIFEST.phase_ids
+        or str(predecessor["phase"] or "").upper() != _BASELINE_FULL_RUN_PHASE
+    ):
+        return None
+    try:
+        payload = json.loads(str(predecessor["payload_json"] or "{}"))
+    except (TypeError, json.JSONDecodeError):
+        return None
+    source_id = str(payload.get("promoted_from_work_item") or "").strip()
+    if not source_id:
+        return None
+    row = conn.execute(
+        "SELECT * FROM work_items WHERE id=? AND phase='Q08' "
+        "AND status='done' AND verdict IN ('PASS','FAIL_SOFT')",
+        (source_id,),
+    ).fetchone()
+    if row is None:
+        return None
+    if (
+        str(row["ea_id"]) != str(predecessor["ea_id"])
+        or str(row["symbol"]) != str(predecessor["symbol"])
+        or str(row["setfile_path"]) != str(predecessor["setfile_path"])
+    ):
+        return None
+    return row
+
+
 def _add_q08_input_dependency(
     conn: sqlite3.Connection,
     *,
@@ -18093,6 +18147,7 @@ def _pump_unlocked(
         "Q06": {"PASS", "PASS_SOFT"},
         "Q07": {"PASS"},
         "Q08": {"PASS", "FAIL_SOFT"},
+        _BASELINE_FULL_RUN_PHASE: {"PASS"},
         _NEWS_PHASE: Q09_NEWS_SUCCESS_VERDICTS,
         # Pre-rewrite keys retained inert for any orphan reads against the
         # empty post-wipe DB. These will never match new rows.
@@ -22019,9 +22074,15 @@ def enqueue_cascade_backtest_for_ea(
                 })
                 continue
             q08_evidence_sha256: str | None = None
+            q08_input_work_item: sqlite3.Row | None = None
             q10_dependency_context: dict[str, Any] | None = None
             if phase in {_NEWS_PHASE, _NEWS_PORTFOLIO_PHASE}:
-                q08_evidence_sha256 = _work_item_evidence_sha256(prev)
+                q08_input_work_item = _q08_input_for_news_predecessor(conn, prev)
+                q08_evidence_sha256 = (
+                    _work_item_evidence_sha256(q08_input_work_item)
+                    if q08_input_work_item is not None
+                    else None
+                )
                 if not q08_evidence_sha256:
                     skipped.append({
                         "id": prev["id"],
@@ -22236,7 +22297,7 @@ def enqueue_cascade_backtest_for_ea(
                             _add_q08_input_dependency(
                                 conn,
                                 child_work_item_id=wid,
-                                q08_work_item=prev,
+                                q08_work_item=q08_input_work_item,
                                 evidence_sha256=str(q08_evidence_sha256),
                             )
                             if phase == _NEWS_PHASE:
@@ -22345,7 +22406,7 @@ def enqueue_cascade_backtest_for_ea(
                         _add_q08_input_dependency(
                             conn,
                             child_work_item_id=wid,
-                            q08_work_item=prev,
+                            q08_work_item=q08_input_work_item,
                             evidence_sha256=str(q08_evidence_sha256),
                         )
                         if phase == _NEWS_PHASE:
