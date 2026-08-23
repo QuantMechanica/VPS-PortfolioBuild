@@ -146,3 +146,17 @@ trusting any number in this doc.
 Task moves to `REVIEW`, not `APPROVED`/`PIPELINE` — first `--execute` run and
 scheduled-task installation still need a look before this touches real data
 at scale.
+
+## Addendum: duplicate router task
+
+While this task (`b24d7875`) was being closed out, the router routed a
+**second** task for the same job: `4e67a1a0-37bb-4995-9497-ebf05d35c172`
+("Implement DL-090 report retention job"), payload identical in substance
+(same decision record, same fail-closed list, same rule, same measured
+figures) with `assignee_lane: codex` but assigned to claude (Codex's 5/5
+parallel slots were saturated at routing time). Both tasks are the same
+DL-090 implementing job commissioned twice. Rather than build a second
+script, I closed `4e67a1a0` against this same artifact and verification —
+see its own `update-task` verdict. No new code was written for it; the
+`--execute` decision remains outstanding for whichever actor (Codex or a
+later cycle) is ready to run it live.
