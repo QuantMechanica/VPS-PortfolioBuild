@@ -1,0 +1,85 @@
+{
+  "artifact_type": "diversity_build_backlog_stale_audit_cpu_stop",
+  "generated_at_utc": "2026-08-23T03:19:09Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "810bad076",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "build_skill_gate": {
+    "skill": "qm-build-ea-from-card",
+    "eligible_priority_1_candidate_found": false,
+    "reason": "Every pending build_ea row already resolves to an existing EA source directory, and the approved-card reservoir contains no active-registry identity whose exact EA directory is absent. Starting another build would duplicate an existing identity or bypass a deterministic preflight gate."
+  },
+  "pending_build_backlog_audit": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "sqlite_read_only_uri",
+    "pending_build_ea_tasks": 38,
+    "unique_ea_ids": 37,
+    "tasks_with_existing_ea_directory": 38,
+    "tasks_with_existing_mq5": 38,
+    "tasks_with_existing_ex5": 36,
+    "fresh_unbuilt_tasks": 0,
+    "approved_active_registry_identities_without_exact_ea_directory": 0,
+    "known_no_binary_rows": [
+      {
+        "ea_id": "QM5_1459",
+        "reason": "durably blocked because the approved card requires unavailable lumber and IEF series"
+      },
+      {
+        "ea_id": "QM5_1457",
+        "reason": "durably blocked because the approved card requires unavailable rates/bond inputs"
+      }
+    ],
+    "interpretation": "The nominal pending build count is rework and historical queue residue, not a source of fresh diversity builds."
+  },
+  "diverse_anchor_check": {
+    "QM5_12532": "logical AUD/NZD cointegration basket already has Q02 PASS and Q04 PASS",
+    "QM5_12533": "logical EURJPY/GBPJPY cointegration basket already has Q02 PASS; latest economic Q04 verdict is FAIL, not a current Q02-Q03 infrastructure block",
+    "priority_2_global_scan_completed": false,
+    "priority_2_stop_reason": "whole-host CPU hard ceiling became binding during the read-only infrastructure-candidate audit"
+  },
+  "capacity_sample": {
+    "observed_at_utc": "2026-08-23T03:18:59Z",
+    "cpu_samples_percent": [
+      99.12,
+      98.47,
+      99.32,
+      96.6,
+      99.42
+    ],
+    "cpu_average_percent": 98.586,
+    "cpu_maximum_percent": 99.42,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "previous_evidence": "artifacts/diversity_funnel_hard_cpu_stop_20260823T020610Z_board_advisor.json",
+    "previous_run_ranked_backlog": false,
+    "current_run_ranked_backlog": true,
+    "new_finding": "all 38 pending build tasks already have EA source directories and no approved active-registry identity lacks its exact EA directory",
+    "reason_for_fresh_evidence": "This closes the apparent priority-1 backlog path instead of merely repeating the capacity snapshot."
+  },
+  "actions_this_run": {
+    "farm_claim": false,
+    "candidate_advance": false,
+    "card_or_ea_mutation": false,
+    "registry_or_magic_mutation": false,
+    "compile_or_build_check": false,
+    "smoke_or_backtest_run": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_control": false,
+    "evidence_commit_only": true
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
