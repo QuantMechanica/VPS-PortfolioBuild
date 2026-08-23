@@ -145,15 +145,15 @@ def classify(db_path: Path) -> dict[str, Any]:
     try:
         connection.row_factory = None
         rows = connection.execute(
-            f"SELECT id, ea_id, symbol, phase, status, verdict, verdict_taxonomy, "
-            f"evidence_path, updated_at FROM {CLEAN_VIEW_NAME} "
+            f"SELECT id, ea_id, symbol, phase, status, raw_status, verdict, "
+            f"verdict_taxonomy, evidence_path, updated_at FROM {CLEAN_VIEW_NAME} "
             f"WHERE evidence_path IS NOT NULL"
         ).fetchall()
     finally:
         connection.close()
 
-    cols = ["id", "ea_id", "symbol", "phase", "status", "verdict", "verdict_taxonomy",
-            "evidence_path", "updated_at"]
+    cols = ["id", "ea_id", "symbol", "phase", "status", "raw_status", "verdict",
+            "verdict_taxonomy", "evidence_path", "updated_at"]
     items: list[dict[str, Any]] = []
     for row in rows:
         rec = dict(zip(cols, row))
@@ -185,10 +185,17 @@ def classify(db_path: Path) -> dict[str, Any]:
 
     for rec in items:
         status = str(rec["status"] or "")
+        raw_status = str(rec["raw_status"] or "")
         taxonomy = str(rec["verdict_taxonomy"] or "")
         verdict = str(rec["verdict"] or "")
 
-        if status in OPEN_STATUSES:
+        # DL-090 S4.6: a run still pending/active/claimed is never touched. Guard
+        # on the RAW status too, not only the clean status: the clean view
+        # restamps any row carrying a verdict to done/failed, so an actively
+        # claimed row with a stale verdict would otherwise slip past this check
+        # and be aged out (the docstring's "file-locked to the OPEN_STATUSES
+        # check" requirement).
+        if status in OPEN_STATUSES or raw_status in OPEN_STATUSES:
             classes["skip_open_status"].append(rec)
             continue
         if taxonomy == "strategy":

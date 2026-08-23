@@ -206,6 +206,8 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
         self.assertIn("PARENT_LINEAGE", table_sql)
         self.assertIn("CHALLENGER_Q10", table_sql)
         self.assertIn("Q14_ADMISSION", table_sql)
+        for role in schema.DEPENDENCY_ROLES:
+            self.assertIn(role, table_sql)
         self.assertEqual(
             self.conn.execute(
                 "SELECT schema_version FROM q09_news_schema_meta WHERE schema_name='q09_news'"
@@ -235,6 +237,58 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
             parent_evidence_sha256=_hash("q14"),
             required_verdicts=["OPT_ELIGIBLE"],
         )
+        # A second ensure is a true no-op for the table rebuild and preserves
+        # every dependency byte-for-byte.
+        before_rows = [
+            tuple(row)
+            for row in self.conn.execute(
+                "SELECT * FROM work_item_dependencies ORDER BY child_work_item_id,dependency_role"
+            )
+        ]
+        self.conn.commit()
+        schema.ensure_schema(self.conn)
+        after_rows = [
+            tuple(row)
+            for row in self.conn.execute(
+                "SELECT * FROM work_item_dependencies ORDER BY child_work_item_id,dependency_role"
+            )
+        ]
+        self.assertEqual(after_rows, before_rows)
+
+    def test_dependency_check_accepts_v3_and_v4_union_and_rejects_junk(self) -> None:
+        add_work_item(self.conn, "parent", "Q08", "PASS")
+        add_work_item(self.conn, "child", "Q10", None)
+        self.conn.commit()
+        schema.ensure_schema(self.conn)
+        # Isolate the table CHECK vocabulary from the separate phase/lineage
+        # trigger contract, which intentionally applies role-specific rules.
+        self.conn.execute("DROP TRIGGER trg_wid_validate_insert")
+
+        for role in schema.DEPENDENCY_ROLES:
+            schema.add_dependency(
+                self.conn,
+                child_work_item_id="child",
+                dependency_role=role,
+                parent_work_item_id="parent",
+                parent_evidence_sha256=_hash(role),
+                required_verdicts=["PASS"],
+            )
+        stored = {
+            row[0]
+            for row in self.conn.execute(
+                "SELECT dependency_role FROM work_item_dependencies WHERE child_work_item_id='child'"
+            )
+        }
+        self.assertEqual(stored, set(schema.DEPENDENCY_ROLES))
+        with self.assertRaises(sqlite3.IntegrityError):
+            schema.add_dependency(
+                self.conn,
+                child_work_item_id="child",
+                dependency_role="JUNK_ROLE",
+                parent_work_item_id="parent",
+                parent_evidence_sha256=_hash("junk"),
+                required_verdicts=["PASS"],
+            )
 
     def test_dependency_trigger_rejects_missing_parent_with_foreign_keys_off(self) -> None:
         add_work_item(self.conn, "q09n", "Q09_NEWS", None)

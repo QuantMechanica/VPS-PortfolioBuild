@@ -30,6 +30,7 @@ except ModuleNotFoundError:
 
 try:
     from phase_ids import (
+        ACTIVE_GATE_CONTRACT_VERSION,
         LEGACY_P_TO_Q,
         ORDINARY_RUNTIME_PHASES,
         ORDINARY_STORAGE_PHASE_ORDER,
@@ -44,6 +45,7 @@ try:
     )
 except ModuleNotFoundError:
     from tools.strategy_farm.phase_ids import (
+        ACTIVE_GATE_CONTRACT_VERSION,
         LEGACY_P_TO_Q,
         ORDINARY_RUNTIME_PHASES,
         ORDINARY_STORAGE_PHASE_ORDER,
@@ -1569,6 +1571,104 @@ def init_dirs(root: Path) -> None:
         (root / rel).mkdir(parents=True, exist_ok=True)
 
 
+# v3 became the DEFAULT manifest at commit d4e4dcfcb (2026-08-23 12:18:19 +0200
+# = 2026-08-23T10:18:19Z).  Rows enqueued before that instant ran under the v2
+# default and must not be reinterpreted as v3, so the append-only backfill is
+# pinned to the true activation instant, not to local midnight (review fix
+# P2 #2; evidence docs/ops/evidence/2026-08-23_gate_manifest_v3_activation.md).
+GATE_CONTRACT_V3_BACKFILL_CUTOFF = "2026-08-23T10:18:19Z"
+_WORK_ITEM_GATE_CONTRACT_TRIGGER = "trg_work_items_stamp_gate_contract_version"
+_WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER = (
+    "trg_work_items_gate_contract_version_immutable"
+)
+
+
+def ensure_work_item_gate_contract_schema(conn: sqlite3.Connection) -> dict[str, int]:
+    """Add and append-only backfill the per-row gate-contract discriminator.
+
+    The historical update is deliberately limited to NULL/blank stamps, so a
+    repeated migration never reclassifies a row and an explicit prior stamp is
+    never overwritten.  The insert trigger is rebuilt from the manifest-loaded
+    active version on every schema init, which also makes a future authorized
+    default-manifest activation change new-row stamps without a code literal.
+    """
+
+    columns = {
+        str(row[1]) for row in conn.execute("PRAGMA table_info(work_items)").fetchall()
+    }
+    if not columns:
+        raise RuntimeError("work_items table is missing")
+    column_added = int("gate_contract_version" not in columns)
+    if column_added:
+        conn.execute("ALTER TABLE work_items ADD COLUMN gate_contract_version TEXT")
+        columns.add("gate_contract_version")
+
+    version_sources = [
+        "CASE WHEN json_valid(payload_json) THEN "
+        "json_extract(payload_json, '$.pipeline_version') END",
+        "CASE WHEN json_valid(payload_json) THEN "
+        "json_extract(payload_json, '$.gate_contract_version') END",
+        "CASE WHEN json_valid(payload_json) THEN "
+        "json_extract(payload_json, '$.contract_version') END",
+    ]
+    if "pipeline_version" in columns:
+        version_sources.insert(0, "pipeline_version")
+    v2_predicate = " OR ".join(
+        f"lower(trim(CAST({source} AS TEXT))) IN "
+        "('v2','qm.gate-manifest/v2','v5-q00-q16-opt-2026-08-12')"
+        for source in version_sources
+    )
+    before = conn.total_changes
+    conn.execute(
+        f"""
+        UPDATE work_items
+        SET gate_contract_version = CASE
+            WHEN julianday(created_at) >= julianday(?) THEN 'v3'
+            WHEN {v2_predicate} THEN 'v2'
+            ELSE 'legacy'
+        END
+        WHERE gate_contract_version IS NULL
+           OR trim(gate_contract_version) = ''
+        """,
+        (GATE_CONTRACT_V3_BACKFILL_CUTOFF,),
+    )
+    rows_backfilled = conn.total_changes - before
+
+    # A fallback at the storage boundary covers infrequent enqueue utilities
+    # outside farmctl as well. Named farmctl paths also stamp explicitly.
+    stamp = ACTIVE_GATE_CONTRACT_VERSION.replace("'", "''")
+    conn.execute(f"DROP TRIGGER IF EXISTS {_WORK_ITEM_GATE_CONTRACT_TRIGGER}")
+    conn.execute(
+        f"DROP TRIGGER IF EXISTS {_WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER}"
+    )
+    conn.execute(
+        f"""
+        CREATE TRIGGER {_WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER}
+        BEFORE UPDATE OF gate_contract_version ON work_items
+        WHEN OLD.gate_contract_version IS NOT NULL
+         AND trim(OLD.gate_contract_version) <> ''
+         AND NEW.gate_contract_version IS NOT OLD.gate_contract_version
+        BEGIN
+            SELECT RAISE(ABORT, 'work_item gate_contract_version is append-only');
+        END
+        """
+    )
+    conn.execute(
+        f"""
+        CREATE TRIGGER {_WORK_ITEM_GATE_CONTRACT_TRIGGER}
+        AFTER INSERT ON work_items
+        WHEN NEW.gate_contract_version IS NULL
+          OR trim(NEW.gate_contract_version) = ''
+        BEGIN
+            UPDATE work_items
+            SET gate_contract_version = '{stamp}'
+            WHERE id = NEW.id;
+        END
+        """
+    )
+    return {"column_added": column_added, "rows_backfilled": rows_backfilled}
+
+
 def init_db(root: Path) -> None:
     init_dirs(root)
     with connect(root) as conn:
@@ -1655,6 +1755,7 @@ def init_db(root: Path) -> None:
                 payload_json TEXT NOT NULL,     -- extra context
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
+                gate_contract_version TEXT,     -- manifest schema stamp: v2/v3/v4/legacy
                 FOREIGN KEY(parent_task_id) REFERENCES tasks(id)
             );
 
@@ -1842,6 +1943,7 @@ def init_db(root: Path) -> None:
             conn.execute("ALTER TABLE sources ADD COLUMN assigned_worker TEXT")
         except sqlite3.OperationalError:
             pass  # already exists
+        ensure_work_item_gate_contract_schema(conn)
         # Q09_NEWS v2 is an additive sidecar schema.  Install it on every
         # init/repair without rewriting historical work_items or candidates.
         _ensure_portfolio_candidates_table(conn)
@@ -6566,8 +6668,8 @@ def enqueue_pattern_fixture_harness(
     with connect(root) as conn:
         conn.execute(
             "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
-            "status, attempt_count, payload_json, created_at, updated_at) "
-            "VALUES (?, ?, ?, ?, ?, '', 'pending', 0, ?, ?, ?)",
+            "status, attempt_count, payload_json, created_at, updated_at, gate_contract_version) "
+            "VALUES (?, ?, ?, ?, ?, '', 'pending', 0, ?, ?, ?, ?)",
             (
                 item_id,
                 HARNESS_WORK_ITEM_KIND,
@@ -6577,6 +6679,7 @@ def enqueue_pattern_fixture_harness(
                 json.dumps(payload, sort_keys=True),
                 now,
                 now,
+                ACTIVE_GATE_CONTRACT_VERSION,
             ),
         )
         conn.commit()
@@ -15867,9 +15970,9 @@ def _promote_q08_soft_fails_to_q09_portfolio(
                 INSERT INTO work_items
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
                    verdict, attempt_count, parent_task_id, evidence_path,
-                   payload_json, created_at, updated_at)
+                   payload_json, created_at, updated_at, gate_contract_version)
                 VALUES (?, 'backtest', 'Q09_PORTFOLIO', ?, ?, ?, 'done',
-                        'FAIL', 0, NULL, ?, ?, ?, ?)
+                        'FAIL', 0, NULL, ?, ?, ?, ?, ?)
                 """,
                 (
                     new_id,
@@ -15880,6 +15983,7 @@ def _promote_q08_soft_fails_to_q09_portfolio(
                     json.dumps(payload, sort_keys=True),
                     now,
                     now,
+                    ACTIVE_GATE_CONTRACT_VERSION,
                 ),
             )
             _add_q08_input_dependency(
@@ -15918,9 +16022,9 @@ def _promote_q08_soft_fails_to_q09_portfolio(
                 INSERT INTO work_items
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
                    verdict, attempt_count, parent_task_id, evidence_path,
-                   payload_json, created_at, updated_at)
+                   payload_json, created_at, updated_at, gate_contract_version)
                 VALUES (?, 'backtest', 'Q09_PORTFOLIO', ?, ?, ?, 'done',
-                        'NEED_MORE_DATA', 0, NULL, ?, ?, ?, ?)
+                        'NEED_MORE_DATA', 0, NULL, ?, ?, ?, ?, ?)
                 """,
                 (
                     new_id,
@@ -15931,6 +16035,7 @@ def _promote_q08_soft_fails_to_q09_portfolio(
                     json.dumps(payload, sort_keys=True),
                     now,
                     now,
+                    ACTIVE_GATE_CONTRACT_VERSION,
                 ),
             )
             _add_q08_input_dependency(
@@ -15954,9 +16059,10 @@ def _promote_q08_soft_fails_to_q09_portfolio(
             """
             INSERT INTO work_items
               (id, kind, phase, ea_id, symbol, setfile_path, status,
-               attempt_count, parent_task_id, payload_json, created_at, updated_at)
+               attempt_count, parent_task_id, payload_json, created_at, updated_at,
+               gate_contract_version)
             VALUES (?, 'backtest', 'Q09_PORTFOLIO', ?, ?, ?, 'pending',
-                    0, NULL, ?, ?, ?)
+                    0, NULL, ?, ?, ?, ?)
             """,
             (
                 new_id,
@@ -15966,6 +16072,7 @@ def _promote_q08_soft_fails_to_q09_portfolio(
                 json.dumps(payload, sort_keys=True),
                 now,
                 now,
+                ACTIVE_GATE_CONTRACT_VERSION,
             ),
         )
         _add_q08_input_dependency(
@@ -16064,12 +16171,12 @@ def _promote_paired_q09_portfolio_passes_to_news(
             """
             INSERT INTO work_items(
               id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
-              parent_task_id,payload_json,created_at,updated_at
-            ) VALUES(?, 'backtest','Q09_NEWS',?,?,?,'pending',0,NULL,?,?,?)
+              parent_task_id,payload_json,created_at,updated_at,gate_contract_version
+            ) VALUES(?, 'backtest','Q09_NEWS',?,?,?,'pending',0,NULL,?,?,?,?)
             """,
             (
                 new_id,row["ea_id"],row["symbol"],row["setfile_path"],
-                json.dumps(payload, sort_keys=True),now,now,
+                json.dumps(payload, sort_keys=True),now,now,ACTIVE_GATE_CONTRACT_VERSION,
             ),
         )
         _add_q08_input_dependency(
@@ -17882,11 +17989,13 @@ def _pump_unlocked(
                 """
                 INSERT INTO work_items
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
-                   attempt_count, parent_task_id, payload_json, created_at, updated_at)
-                VALUES (?, 'backtest', 'Q03', ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
+                   attempt_count, parent_task_id, payload_json, created_at, updated_at,
+                   gate_contract_version)
+                VALUES (?, 'backtest', 'Q03', ?, ?, ?, 'pending', 0, ?, ?, ?, ?, ?)
                 """,
                 (new_id, wi["ea_id"], wi["symbol"], wi["setfile_path"],
-                 parent["id"], json.dumps(payload), now, now),
+                 parent["id"], json.dumps(payload), now, now,
+                 ACTIVE_GATE_CONTRACT_VERSION),
             )
             # Re-open parent Q03 task so classify_aggregate re-runs when this
             # work_item finishes. No-op if already pending.
@@ -18055,12 +18164,14 @@ def _pump_unlocked(
                 insert_sql = """
                     INSERT INTO work_items
                       (id, kind, phase, ea_id, symbol, setfile_path, status,
-                       attempt_count, parent_task_id, payload_json, created_at, updated_at)
-                    VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
+                       attempt_count, parent_task_id, payload_json, created_at, updated_at,
+                       gate_contract_version)
+                    VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?, ?)
                 """
                 insert_args = (
                     new_id, successor_phase, wi["ea_id"], wi["symbol"], wi["setfile_path"],
                     parent_id, json.dumps(payload, sort_keys=True), now, now,
+                    ACTIVE_GATE_CONTRACT_VERSION,
                 )
                 if not contract_phase:
                     conn.execute(insert_sql, insert_args)
@@ -18162,11 +18273,13 @@ def _pump_unlocked(
                 """
                 INSERT INTO work_items
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
-                   attempt_count, parent_task_id, payload_json, created_at, updated_at)
-                VALUES (?, 'backtest', 'Q04', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
+                   attempt_count, parent_task_id, payload_json, created_at, updated_at,
+                   gate_contract_version)
+                VALUES (?, 'backtest', 'Q04', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
                 """,
                 (probe_id, wi["ea_id"], wi["symbol"], wi["setfile_path"],
-                 json.dumps(payload, sort_keys=True), now, now),
+                 json.dumps(payload, sort_keys=True), now, now,
+                 ACTIVE_GATE_CONTRACT_VERSION),
             )
             result["cascade_promotions"].append({
                 "work_item_id": probe_id,
@@ -19455,11 +19568,13 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
             """
             INSERT INTO work_items
               (id, kind, phase, ea_id, symbol, setfile_path, status,
-               attempt_count, parent_task_id, payload_json, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
+               attempt_count, parent_task_id, payload_json, created_at, updated_at,
+               gate_contract_version)
+            VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?, ?)
             """,
             (wid, "backtest", phase, ea_id, sym, setfile_path, parent_task_id,
-             json.dumps(payload, sort_keys=True), now, now),
+             json.dumps(payload, sort_keys=True), now, now,
+             ACTIVE_GATE_CONTRACT_VERSION),
         )
         out.append({"id": wid, "symbol": sym, "setfile_path": setfile_path, "payload": payload})
     return out, skipped
@@ -20590,8 +20705,9 @@ def enqueue_fresh_q02_seed(
             """
             INSERT INTO work_items
               (id, kind, phase, ea_id, symbol, setfile_path, status,
-               attempt_count, parent_task_id, payload_json, created_at, updated_at)
-            VALUES (?, 'backtest', 'Q02', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
+               attempt_count, parent_task_id, payload_json, created_at, updated_at,
+               gate_contract_version)
+            VALUES (?, 'backtest', 'Q02', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
             """,
             (
                 wid,
@@ -20601,6 +20717,7 @@ def enqueue_fresh_q02_seed(
                 json.dumps(payload, sort_keys=True),
                 now,
                 now,
+                ACTIVE_GATE_CONTRACT_VERSION,
             ),
         )
         created = [{
@@ -21215,8 +21332,9 @@ def _enqueue_q02_append_only_exact_row_rerun(
             """
             INSERT INTO work_items
               (id, kind, phase, ea_id, symbol, setfile_path, status,
-               attempt_count, parent_task_id, payload_json, created_at, updated_at)
-            VALUES (?, 'backtest', 'Q02', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
+               attempt_count, parent_task_id, payload_json, created_at, updated_at,
+               gate_contract_version)
+            VALUES (?, 'backtest', 'Q02', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
             """,
             (
                 wid,
@@ -21226,6 +21344,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 json.dumps(payload, sort_keys=True),
                 now,
                 now,
+                ACTIVE_GATE_CONTRACT_VERSION,
             ),
         )
         created = [{
@@ -21659,8 +21778,8 @@ def _enqueue_q03_exact_identity(
             """
             INSERT INTO work_items
               (id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
-               parent_task_id,payload_json,created_at,updated_at)
-            VALUES (?, 'backtest', 'Q03', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
+               parent_task_id,payload_json,created_at,updated_at,gate_contract_version)
+            VALUES (?, 'backtest', 'Q03', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
             """,
             (
                 wid,
@@ -21670,6 +21789,7 @@ def _enqueue_q03_exact_identity(
                 json.dumps(payload, sort_keys=True),
                 now,
                 now,
+                ACTIVE_GATE_CONTRACT_VERSION,
             ),
         )
         created = [{
@@ -22034,8 +22154,9 @@ def enqueue_cascade_backtest_for_ea(
                 insert_sql = """
                     INSERT INTO work_items
                       (id, kind, phase, ea_id, symbol, setfile_path, status,
-                       attempt_count, parent_task_id, payload_json, created_at, updated_at)
-                    VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
+                       attempt_count, parent_task_id, payload_json, created_at, updated_at,
+                       gate_contract_version)
+                    VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
                 """
                 insert_args = (
                     wid,
@@ -22046,6 +22167,7 @@ def enqueue_cascade_backtest_for_ea(
                     json.dumps(payload, sort_keys=True),
                     now,
                     now,
+                    ACTIVE_GATE_CONTRACT_VERSION,
                 )
                 contract_phase = phase in {"Q09_NEWS", "Q09_PORTFOLIO", "Q10"}
                 if not contract_phase:
@@ -22140,8 +22262,9 @@ def enqueue_cascade_backtest_for_ea(
             insert_sql = """
                 INSERT INTO work_items
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
-                   attempt_count, parent_task_id, payload_json, created_at, updated_at)
-                VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
+                   attempt_count, parent_task_id, payload_json, created_at, updated_at,
+                   gate_contract_version)
+                VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
             """
             insert_args = (
                 wid,
@@ -22152,6 +22275,7 @@ def enqueue_cascade_backtest_for_ea(
                 json.dumps(payload, sort_keys=True),
                 now,
                 now,
+                ACTIVE_GATE_CONTRACT_VERSION,
             )
             if not contract_phase:
                 conn.execute(insert_sql, insert_args)
@@ -24648,10 +24772,10 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
             )
             conn.execute(
                 "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
-                "status, attempt_count, payload_json, created_at, updated_at) "
-                "VALUES (?, 'backtest', 'Q02', ?, ?, ?, 'pending', 0, ?, ?, ?)",
+                "status, attempt_count, payload_json, created_at, updated_at, gate_contract_version) "
+                "VALUES (?, 'backtest', 'Q02', ?, ?, ?, 'pending', 0, ?, ?, ?, ?)",
                 (wi_id, ea_id, symbol, str(setfile_path),
-                 json.dumps(payload), now_iso, now_iso),
+                 json.dumps(payload), now_iso, now_iso, ACTIVE_GATE_CONTRACT_VERSION),
             )
             enqueued.append({"wi_id": wi_id[:8], "symbol": symbol, "tf": tf,
                              "setfile": setfile_path.name})
@@ -25108,13 +25232,13 @@ def enqueue_head_to_head(
             INSERT INTO work_items(
                 id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
                 attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,
-                created_at,updated_at
-            ) VALUES(?,?,?,?,?,?,'pending',NULL,0,NULL,NULL,NULL,?,?,?)
+                created_at,updated_at,gate_contract_version
+            ) VALUES(?,?,?,?,?,?,'pending',NULL,0,NULL,NULL,NULL,?,?,?,?)
             """,
             (
                 work_item_id, "analytic", "Q16", f"QM5_{challenger['key'][0]}",
                 challenger["key"][1], str(rows["CHALLENGER_Q10"]["setfile_path"]),
-                payload_json, now, now,
+                payload_json, now, now, ACTIVE_GATE_CONTRACT_VERSION,
             ),
         )
         for spec in dependency_specs:

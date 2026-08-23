@@ -173,6 +173,32 @@ def test_v4_equivalence_round_trips_every_phase2_and_phase3_gate() -> None:
     assert draft.equivalent_gate("Q10_NEWS", "v4", "v3") == "Q09_NEWS"
 
 
+def test_version_aware_phase_display_never_silently_reinterprets_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Current active v3: the same stored token has different semantics under a
+    # v4 stamp and must translate back to the active v3 gate with provenance.
+    assert phase_ids.phase_qid("Q10", "v3") == "Q10"
+    assert phase_ids.phase_qid("Q10", "v4") == "Q09"
+    assert phase_ids.normalize_phase_id("Q10", "v4") == "Q09"
+    assert phase_ids.display_phase("Q10", "v4") == "Q09 (v4:Q10)"
+    assert phase_ids.display_phase("Q10", "v2") == "Q10 (v2:Q10)"
+
+    # Simulate the future authorized default switch without loading the draft
+    # as DEFAULT_MANIFEST. Historical v3 Q10 then renders exactly as proposed.
+    monkeypatch.setattr(phase_ids, "ACTIVE_GATE_CONTRACT_VERSION", "v4")
+    assert phase_ids.phase_qid("Q10", "v3") == "Q11"
+    assert phase_ids.normalize_phase_id("Q10", "v3") == "Q11"
+    assert phase_ids.display_phase("Q10", "v3") == "Q11 (v3:Q10)"
+
+
+def test_unstamped_phase_rows_keep_the_legacy_alias_fallback() -> None:
+    assert phase_ids.phase_qid("P9") == "Q11"
+    assert phase_ids.normalize_phase_id(" p9 ") == "Q11"
+    assert phase_ids.display_phase("P9", None) == "Q11"
+    assert phase_ids.phase_qid("COMPILE_EA", "v3") == "COMPILE_EA"
+
+
 def test_v4_is_linear_with_a_trigger_only_phase3_entry() -> None:
     draft = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
     ordinal = {gate.id: gate.ordinal for gate in draft.gates}
@@ -262,7 +288,20 @@ def test_v4_sha256_is_stable_and_binds_exact_draft_bytes() -> None:
     expected = hashlib.sha256(gate_manifest.V4_DRAFT_MANIFEST.read_bytes()).hexdigest()
 
     assert first.sha256 == second.sha256 == expected
-    assert expected == "a8932729bd839f8ab17e59d97810a93d3ba516b11e3de02758813b9a9403cb46"
+    # LF-pinned hash of the criteria-preserving v4 draft (a4990f77a). The
+    # manifest is byte-normalised to LF via .gitattributes so this stays stable
+    # on both autocrlf (VPS) and LF (CI) checkouts; see review fix P2 #4.
+    assert expected == "c51fbfffb1aca470207bc0d027b172625e8680095a7a5c75ceed6327e48ae0bc"
+
+
+def test_v4_draft_manifest_is_lf_pinned_on_disk() -> None:
+    """The byte-hashed manifest must stay LF so its digest — and the pinned hash
+    above — is identical on autocrlf (VPS) and LF (CI) checkouts. A CRLF smudge
+    would silently change the stamped contract provenance (review fix P2 #4)."""
+
+    raw = gate_manifest.V4_DRAFT_MANIFEST.read_bytes()
+    assert b"\r\n" not in raw
+    assert b"\r" not in raw
 
 
 def test_v4_activation_guard_and_future_final_path_fail_closed(tmp_path: Path) -> None:
