@@ -27,7 +27,7 @@ SCHEMA_VERSION_V1 = "qm.gate-manifest/v1"
 SCHEMA_VERSION_V2 = "qm.gate-manifest/v2"
 SCHEMA_VERSION_V3 = "qm.gate-manifest/v3"
 SCHEMA_VERSION_V4 = "qm.gate-manifest/v4"
-SCHEMA_VERSION = SCHEMA_VERSION_V3
+SCHEMA_VERSION = SCHEMA_VERSION_V4
 SUPPORTED_SCHEMA_VERSIONS = frozenset(
     {SCHEMA_VERSION_V1, SCHEMA_VERSION_V2, SCHEMA_VERSION_V3, SCHEMA_VERSION_V4}
 )
@@ -45,7 +45,7 @@ V4_MANIFEST = CONFIG_DIR / "gate_manifest.v4.json"
 # OPS-Q10-REALIGN-E1-E2 review 9b40ff25 was APPROVED.  The activation guard is
 # fail-closed (see _validate_v3_activation_guard): a READ_INERT manifest can
 # never become the default, and an ACTIVE manifest must carry both review refs.
-DEFAULT_MANIFEST = V3_MANIFEST
+DEFAULT_MANIFEST = V4_MANIFEST
 # The two review references that must be recorded before a v3 manifest may be
 # ACTIVE: OPS-Q10-REALIGN-E1-E2 closure (9b40ff25) and the v3 Claude review
 # (d5c13a08).
