@@ -3,14 +3,16 @@
 **EA ID:** QM5_41005
 **Slug:** richard-donchian-50day-cta-benchmark
 **Source:** richard-donchian-50day-cta-benchmark-official-source
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-18
+**Author of this spec:** Gemini; corrected by Codex
+**Last revised:** 2026-08-23
 
 ---
 
 ## 1. Strategy Logic
 
-The strategy implements the classic Richard Donchian 50-day CTA trend following benchmark on daily (D1) bars. On each closed D1 bar, the EA checks for a 50-day breakout (highest high or lowest low of the preceding 50 bars). When a long breakout occurs, the EA buys with an ATR-based stop loss at 3.0x ATR(20). When a short breakout occurs, the EA sells with an ATR-based stop loss at 3.0x ATR(20). Open positions are trailed and exited when the price breaches the opposite 20-day Donchian channel.
+The strategy implements the classic Richard Donchian 50-day CTA trend following benchmark on daily (D1) bars. On each closed D1 bar, the EA checks for a 50-day breakout (highest high or lowest low of the preceding 50 bars). When a long breakout occurs, the EA buys with an ATR-based stop loss at 3.0x ATR(20). When a short breakout occurs, the EA sells with an ATR-based stop loss at 3.0x ATR(20). Open positions exit when the closed price breaches the opposite 20-day Donchian channel; both entry and exit channels are cached once per D1 bar.
+
+Account-wide realised losses halt new entries at 2.0% for the broker day. The framework kill switch flattens at 2.5% daily equity loss and consumes the 5.0% portfolio drawdown signal.
 
 ---
 
@@ -87,3 +89,4 @@ This card was mechanised from:
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Task 30ceeacd-0647-485a-9886-725af2139d61 |
+| v2 | 2026-08-23 | Card-faithful rework after Codex review | Added execution/loss contracts and cached the 20-day exit calculation on the D1 new-bar path |
