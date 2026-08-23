@@ -95,12 +95,15 @@ def _phase_trial_counts(payload: Any, *, phase: str, label: str) -> tuple[int, i
 
 def _validate_q10_evidence(path: Path) -> dict[str, Any]:
     payload = _read_json(path, "Q10 evidence")
+    incumbent_phase = q16.ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
     if (
         not isinstance(payload, Mapping)
-        or str(payload.get("phase") or "").upper() != "Q10"
+        or str(payload.get("phase") or "").upper() != incumbent_phase
         or str(payload.get("verdict") or "").upper() != "PASS"
     ):
-        raise EmitQ16LineageError(f"Q10 evidence {path} is not a Q10 PASS artifact")
+        raise EmitQ16LineageError(
+            f"Q10 evidence {path} is not an active {incumbent_phase} PASS artifact"
+        )
     return {"verdict": "PASS", "evidence": _binding(path, "Q10 evidence")}
 
 
