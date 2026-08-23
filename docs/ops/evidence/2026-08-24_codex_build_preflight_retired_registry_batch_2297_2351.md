@@ -2,7 +2,7 @@
 
 Date: 2026-08-24 (Europe/Berlin)  
 Lane: `codex` scheduled orchestration  
-Outcome: `BUILD_REFUSED_PRECONDITION`
+Outcome: `BUILD_BLOCKED_PRECONDITION`
 
 ## Scope
 
@@ -50,4 +50,6 @@ C269374D779EDF237F1794FAA927C477503A6675CCC81A804BA9E842BB89A9A6
 
 The `qm-build-ea-from-card` preflight requires an active allocated `ea_id`, an exact slug identity, and governed magic rows before implementation. Those conditions are absent and the related identities are explicitly OWNER-retired. No EA, setfile, registry, resolver, terminal, or pipeline mutation was made, and compile was intentionally not run.
 
-Return all five tasks to `REVIEW` as `BUILD_REFUSED_PRECONDITION`. Any future build requires a new OWNER-governed active allocation and magic rows that supersede the retirement evidence; Codex must not manufacture that authority.
+The required `REVIEW` transition was attempted for every task and refused by the canonical router with `D6_BUILD_IDENTITY_MISSING` / `build_identity_json_missing_review_dispatch_refused`. A build review packet must bind committed current MQ5, EX5, setfiles, and strict-build PASS; none can truthfully exist after a failed registry preflight. Following the canonical preflight-hold precedent, all five tasks were therefore dispositioned `BLOCKED` with this artifact, without fabricating build identity.
+
+Any future build requires a new OWNER-governed active allocation and magic rows that supersede the retirement evidence; Codex must not manufacture that authority.
