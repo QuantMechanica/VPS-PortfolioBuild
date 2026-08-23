@@ -212,11 +212,11 @@ def test_repair_sparse_q09_overlap_fail_downgrades_to_need_more_data(tmp_path: P
             payload_json, evidence_path, updated_at
         )
         VALUES (
-            'q09-1', 'Q09_PORTFOLIO', 'QM5_10940', 'XAUUSD.DWX',
+            'q09-1', ?, 'QM5_10940', 'XAUUSD.DWX',
             'done', 'FAIL_PORTFOLIO', '{}', ?, '2026-06-16T00:54:54+00:00'
         )
         """,
-        (str(evidence),),
+        (repair._NEWS_PORTFOLIO_PHASE, str(evidence)),
     )
     conn.commit()
 

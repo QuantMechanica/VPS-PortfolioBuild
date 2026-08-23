@@ -201,10 +201,10 @@ static const int QM_MAGIC_REG_MAGIC[QM_MAGIC_REGISTRY_ROWS] = {{203010000}};
             INSERT INTO work_items(
                 id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
                 parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at
-            ) VALUES('q14-fixture','analytic','Q14','QM5_13213','USDJPY.DWX',?,
+            ) VALUES('q14-fixture','analytic',?,'QM5_13213','USDJPY.DWX',?,
                      'done','OPT_ELIGIBLE',0,NULL,?,NULL,?,?,?)
             """,
-            (str(parent_set), str(card_path), json.dumps(q14_payload, sort_keys=True), now, now),
+            (q15.ADMISSION_PHASE, str(parent_set), str(card_path), json.dumps(q14_payload, sort_keys=True), now, now),
         )
         conn.commit()
     return {
@@ -355,7 +355,10 @@ def test_q15_dry_run_is_read_only_and_deterministic(tmp_path: Path) -> None:
     assert not (Path(paths["ledger_path"]).parent / "freeze_addendum.json").exists()
     assert Path(paths["ledger_path"]).read_bytes() == before
     with farmctl.connect(Path(paths["farm"])) as conn:
-        assert conn.execute("SELECT count(*) FROM work_items WHERE phase IN ('Q15','Q02')").fetchone()[0] == 0
+        assert conn.execute(
+            "SELECT count(*) FROM work_items WHERE phase IN (?, 'Q02')",
+            (q15.FREEZE_PHASE,),
+        ).fetchone()[0] == 0
 
 
 def test_categorical_selection_passes_all_three_rules_without_ordered_plateau(
@@ -503,10 +506,14 @@ def test_q15_apply_freezes_ledger_binds_q14_and_seeds_one_q02(tmp_path: Path) ->
             "SELECT count(*) FROM events WHERE entity_id=? AND event='q15_challenger_frozen'",
             (first["q15_work_item_id"],),
         ).fetchone()[0]
-    assert tuple(q15_row[:3]) == ("Q15", "done", "CHALLENGER_SPAWNED")
+    assert tuple(q15_row[:3]) == (q15.FREEZE_PHASE, "done", "CHALLENGER_SPAWNED")
     assert tuple(q02_row[:3]) == ("Q02", "pending", None)
     assert json.loads(q02_row["payload_json"])["expected_setfile_sha256"] == hashlib.sha256(Path(paths["q02_set"]).read_bytes()).hexdigest()
-    assert tuple(dependency) == ("Q14_ADMISSION", "q14-fixture", '["OPT_ELIGIBLE"]')
+    assert tuple(dependency) == (
+        q15.ADMISSION_DEPENDENCY_ROLE,
+        "q14-fixture",
+        '["OPT_ELIGIBLE"]',
+    )
     assert event_count == 1
 
 

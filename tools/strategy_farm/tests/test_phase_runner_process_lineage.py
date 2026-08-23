@@ -41,16 +41,27 @@ def test_python_and_powershell_consume_the_same_versioned_allowlist() -> None:
         (REPO / "tools" / "strategy_farm" / "phase_runner_allowlist.v1.json")
         .read_text(encoding="utf-8")
     )
-    expected_paths = {
-        str(entry["phase"]): str(entry["repo_relative_path"])
-        for entry in payload["entries"]
-    }
+    expected_paths = {}
+    for entry in payload["entries"]:
+        relative = str(entry["repo_relative_path"])
+        phase = str(entry["phase"])
+        if relative == "tools/strategy_farm/q09_news_runner.py":
+            phase = farmctl._NEWS_PHASE
+        elif relative == "framework/scripts/q09_portfolio.py":
+            phase = farmctl._NEWS_PORTFOLIO_PHASE
+        elif relative == "framework/scripts/q10_confirmation.py":
+            phase = farmctl._INCUMBENT_PHASE
+        expected_paths[phase] = relative
+    expected_paths.setdefault(
+        farmctl._BASELINE_FULL_RUN_PHASE,
+        "framework/scripts/q10_confirmation.py",
+    )
 
     assert payload["schema_version"] == "qm-phase-runner-allowlist/v1"
     assert farmctl.PHASE_RUNNER_ALLOWLIST_VERSION == payload["schema_version"]
     assert farmctl.PHASE_RUNNER_REPO_PATHS == expected_paths
-    assert len(expected_paths) == 16
-    assert len(expected_paths) == len(set(expected_paths.values()))
+    assert len(expected_paths) == 17
+    assert set(expected_paths) == set(farmctl.PHASE_RUNNER_SCRIPTS)
 
 
 @pytest.mark.parametrize("mutation", ["schema_mismatch", "duplicate_path"])
@@ -119,15 +130,19 @@ def test_all_allowlisted_factory_commands_parse_and_carry_uuid_lineage(
     allowlist = json.loads(
         farmctl.PHASE_RUNNER_ALLOWLIST_PATH.read_text(encoding="utf-8")
     )["entries"]
-    selector_by_phase = {
-        str(entry["phase"]): str(entry["terminal_selector"])
+    selector_by_path = {
+        str(entry["repo_relative_path"]): str(entry["terminal_selector"])
         for entry in allowlist
+    }
+    selector_by_phase = {
+        phase: selector_by_path[relative]
+        for phase, relative in farmctl.PHASE_RUNNER_REPO_PATHS.items()
     }
 
     commands: dict[str, list[str]] = {}
     for phase in selector_by_phase:
         row = _row(phase)
-        if phase == "Q09_NEWS":
+        if phase == farmctl._NEWS_PHASE:
             row["payload_json"] = json.dumps(
                 {
                     "q09_binding_version": "q09-news-dispatch-binding/v1",
@@ -160,7 +175,8 @@ def test_all_allowlisted_factory_commands_parse_and_carry_uuid_lineage(
             assert cmd.count("--terminal") <= 1, phase
         commands[phase] = cmd
 
-    assert commands["Q10"][commands["Q10"].index("--work-item-created-at") + 1] == (
+    incumbent = commands[farmctl._INCUMBENT_PHASE]
+    assert incumbent[incumbent.index("--work-item-created-at") + 1] == (
         "2026-09-01T00:00:00+00:00"
     )
 
@@ -219,9 +235,16 @@ $result = foreach ($entry in @($payload)) {{
     assert classified.returncode == 0, classified.stderr
     classifier_rows = json.loads(classified.stdout)
     assert len(classifier_rows) == len(selector_by_phase)
+    legacy_phase_by_path = {
+        str(entry["repo_relative_path"]): str(entry["phase"])
+        for entry in allowlist
+    }
     for row in classifier_rows:
         assert row["disposition"] == "FACTORY_OWNED", row
-        assert row["classified_phase"] == row["phase"], row
+        expected_classified_phase = legacy_phase_by_path[
+            farmctl.PHASE_RUNNER_REPO_PATHS[row["phase"]]
+        ]
+        assert row["classified_phase"] == expected_classified_phase, row
         assert row["work_item_id"] == WORK_ITEM_ID, row
 
 

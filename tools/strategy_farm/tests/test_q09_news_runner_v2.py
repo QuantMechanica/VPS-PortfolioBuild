@@ -297,11 +297,16 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
                         id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
                         attempt_count,parent_task_id,evidence_path,claimed_by,
                         payload_json,created_at,updated_at
-                    ) VALUES('q09-portfolio-1','backtest','Q10_PORTFOLIO',
+                    ) VALUES('q09-portfolio-1','backtest',?,
                              'QM5_9999','EURUSD.DWX',?,'done','PASS_PORTFOLIO',
                              0,NULL,?,NULL,'{}',?,?)
                     """,
-                    (str(self.setfile), str(portfolio_evidence), now, now),
+                    (
+                        schema.ACTIVE_GATE_MANIFEST.storage_phase_for_role(
+                            "NEWS", "PORTFOLIO"
+                        ),
+                        str(self.setfile), str(portfolio_evidence), now, now,
+                    ),
                 )
                 schema.add_dependency(
                     connection,

@@ -25,7 +25,10 @@ def _challenger_inputs(tmp_path: Path, *, q07_declared=154, q07_observed=154, q0
     binary = _write(tmp_path / "challenger.ex5", "challenger-binary")
     setfile = _write(tmp_path / "challenger.set", SET_BODY)
     stream = _write(tmp_path / "challenger.jsonl", "{}\n")
-    q10 = _write(tmp_path / "q10.json", {"phase": "Q10", "verdict": "PASS"})
+    q10 = _write(
+        tmp_path / "q10.json",
+        {"phase": q16.ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT"), "verdict": "PASS"},
+    )
     ledger = _write(tmp_path / "trial_ledger.json", {
         "schema": q16.TRIAL_LEDGER_SCHEMA, "card_id": "opt-census-1", "status": "CLOSED",
         "declared_trial_count": 154,
@@ -86,7 +89,10 @@ def test_parent_lineage_accepted_by_q16_loader(tmp_path):
     binary = _write(tmp_path / "parent.ex5", "parent-binary")
     setfile = _write(tmp_path / "parent.set", SET_BODY)
     stream = _write(tmp_path / "parent.jsonl", "{}\n")
-    q10 = _write(tmp_path / "q10_parent.json", {"phase": "Q10", "verdict": "PASS"})
+    q10 = _write(
+        tmp_path / "q10_parent.json",
+        {"phase": q16.ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT"), "verdict": "PASS"},
+    )
     kwargs = {
         "role": "PARENT", "ea_id": 10939, "symbol": "GBPUSD.DWX",
         "binary_path": binary, "setfile_path": setfile, "stream_path": stream,

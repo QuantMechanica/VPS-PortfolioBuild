@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sqlite3
 from pathlib import Path
 
 from tools.strategy_farm import agent_router, drain_backlog, farmctl
@@ -24,7 +23,7 @@ def _fixture(tmp_path: Path, ea_id: str = "QM5_9009") -> drain_backlog.Config:
 
 
 def _insert_work_item(cfg: drain_backlog.Config, *, ea_id: str, status: str, verdict: str | None) -> None:
-    with sqlite3.connect(cfg.db) as con:
+    with agent_router.connect(cfg.farm_root) as con:
         con.execute(
             """
             INSERT INTO work_items(
@@ -129,7 +128,7 @@ def test_gemini_recycle_build_is_held_for_codex_review(tmp_path: Path) -> None:
     task = agent_router.enqueue_task(
         cfg.farm_root, "build_ea", state="RECYCLE", payload={"ea_id": "QM5_9009"}
     )
-    with sqlite3.connect(cfg.db) as con:
+    with agent_router.connect(cfg.farm_root) as con:
         con.execute(
             "UPDATE agent_tasks SET assigned_agent='gemini' WHERE id=?",
             (task["task_id"],),

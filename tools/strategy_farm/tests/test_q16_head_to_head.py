@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from framework.scripts import q16_head_to_head as q16
 from framework.scripts.q16_head_to_head import (
     _is_mutable_mt5_storage,
     evaluate_q16,
@@ -72,8 +73,15 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
         )
         for ea in range(3, 13)
     }
-    q10_parent = _write(tmp_path / "parent_q10.json", {"phase": "Q10", "verdict": "PASS"})
-    q10_challenger = _write(tmp_path / "challenger_q10.json", {"phase": "Q10", "verdict": "PASS"})
+    incumbent_phase = q16.ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
+    q10_parent = _write(
+        tmp_path / "parent_q10.json",
+        {"phase": incumbent_phase, "verdict": "PASS"},
+    )
+    q10_challenger = _write(
+        tmp_path / "challenger_q10.json",
+        {"phase": incumbent_phase, "verdict": "PASS"},
+    )
     q07 = _write(tmp_path / "q07.json", {
         "phase": "Q07", "trial_ledger": {"declared_trial_count": 2, "observed_trial_count": 2}
     })
@@ -261,6 +269,7 @@ def test_farmctl_head_to_head_is_dry_run_default_and_apply_is_idempotent(tmp_pat
     farmctl.init_db(root)
     now = "2026-08-12T00:00:00+00:00"
     with farmctl.connect(root) as conn:
+        incumbent_phase = q16.ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
         for item_id, ea_id, evidence_path in (
             ("parent-q10", "QM5_10939", paths["parent_lineage_path"].parent / "parent_q10.json"),
             ("challenger-q10", "QM5_12990", paths["challenger_lineage_path"].parent / "challenger_q10.json"),
@@ -270,14 +279,29 @@ def test_farmctl_head_to_head_is_dry_run_default_and_apply_is_idempotent(tmp_pat
                 INSERT INTO work_items(
                     id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
                     parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at
-                ) VALUES(?, 'backtest', 'Q10', ?, 'GBPUSD.DWX', ?, 'done', 'PASS', 0,
+                ) VALUES(?, 'backtest', ?, ?, 'GBPUSD.DWX', ?, 'done', 'PASS', 0,
                          NULL, ?, NULL, '{}', ?, ?)
                 """,
                 (
-                    item_id, ea_id, str(paths["challenger_lineage_path"]),
+                    item_id, incumbent_phase, ea_id, str(paths["challenger_lineage_path"]),
                     str(evidence_path), now, now,
                 ),
             )
+        conn.execute(
+            """
+            INSERT INTO work_items(
+                id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+                parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at
+            ) VALUES('baseline-q08', 'backtest', 'Q08', 'QM5_10939', 'GBPUSD.DWX', ?,
+                     'done', 'PASS', 0, NULL, ?, NULL, '{}', ?, ?)
+            """,
+            (
+                str(paths["parent_lineage_path"]),
+                str(paths["opt_card_path"].parent / "q08.json"),
+                now,
+                now,
+            ),
+        )
         conn.commit()
     applied = farmctl.enqueue_head_to_head(root, apply=True, **kwargs)
     repeated = farmctl.enqueue_head_to_head(root, apply=True, **kwargs)
@@ -296,10 +320,15 @@ def test_farmctl_head_to_head_is_dry_run_default_and_apply_is_idempotent(tmp_pat
             """,
             (applied["would_create_work_item_id"],),
         ).fetchall()
-    assert tuple(row) == ("analytic", "Q16", "pending")
+    assert tuple(row) == (
+        "analytic",
+        q16.ACTIVE_GATE_MANIFEST.gate_for_role("HEAD_TO_HEAD"),
+        "pending",
+    )
     assert [tuple(row) for row in dependencies] == [
-        ("CHALLENGER_Q10", "challenger-q10", '["PASS"]'),
-        ("PARENT_LINEAGE", "parent-q10", '["PASS"]'),
+        ("BASELINE_Q09", "baseline-q08", '["PASS","FAIL_SOFT"]'),
+        ("CHALLENGER_Q11", "challenger-q10", '["PASS"]'),
+        ("INCUMBENT_Q11", "parent-q10", '["PASS"]'),
     ]
 
     # A later DB/path substitution cannot ride the deterministic idempotent

@@ -33,6 +33,7 @@ import q09_news_contract as contract  # noqa: E402
 import q09_news_runner as q09  # noqa: E402
 
 
+NEWS_PHASE = q09.NEWS_PHASE
 CAMPAIGN_ID = "q09-live-news-backfill-20260805-v1"
 ARTIFACT_ROOT = Path(r"D:\QM\strategy_farm\artifacts\q09_live_news_backfill_20260805")
 FARM_ROOT = Path(r"D:\QM\strategy_farm")
@@ -568,12 +569,12 @@ def enqueue_campaign(campaign: dict[str, Any]) -> dict[str, Any]:
                 "router_task_id": campaign["router_task_id"],
             }
             connection.execute(
-                """
+                f"""
                 INSERT INTO work_items(
                     id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
                     attempt_count,parent_task_id,evidence_path,claimed_by,
                     payload_json,created_at,updated_at
-                ) VALUES(?, 'backtest', 'Q09_NEWS', ?, ?, ?, 'pending', NULL,
+                ) VALUES(?, 'backtest', '{NEWS_PHASE}', ?, ?, ?, 'pending', NULL,
                          0, NULL, NULL, NULL, ?, ?, ?)
                 """,
                 (
@@ -685,8 +686,8 @@ def _authenticated_spawn_refusal(
         not predecessor_id
         or _row_value(predecessor, "status") != "failed"
         or _row_value(predecessor, "verdict") != "INFRA_FAIL"
-        or str(_row_value(predecessor, "phase") or "") != "Q09_NEWS"
-        or phase != "Q09_NEWS"
+        or str(_row_value(predecessor, "phase") or "") != NEWS_PHASE
+        or phase != NEWS_PHASE
         or terminal not in ALLOWED_TERMINALS
         or not failed_at
         or str(_row_value(predecessor, "updated_at") or "") != failed_at
@@ -789,7 +790,7 @@ def _transient_generation_failure_proof(
         if (
             preflight.get("verdict") != "INFRA_FAIL"
             or preflight.get("reason") != "staged_ex5_preflight_failed"
-            or preflight.get("phase") != "Q09_NEWS"
+            or preflight.get("phase") != NEWS_PHASE
             or str(preflight.get("ea_id") or "") != str(predecessor["ea_id"])
             or str(preflight.get("symbol") or "") != str(predecessor["symbol"])
             or payload_failure.get("reason") != preflight.get("reason")
@@ -1217,12 +1218,12 @@ def enqueue_transient_generation_rerun(
         ).fetchone()
         if existing is None:
             connection.execute(
-                """
+                f"""
                 INSERT INTO work_items(
                     id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
                     attempt_count,parent_task_id,evidence_path,claimed_by,
                     payload_json,created_at,updated_at
-                ) VALUES(?, 'backtest', 'Q09_NEWS', ?, ?, ?, 'pending', NULL,
+                ) VALUES(?, 'backtest', '{NEWS_PHASE}', ?, ?, ?, 'pending', NULL,
                          0, ?, NULL, NULL, ?, ?, ?)
                 """,
                 (
@@ -1509,12 +1510,12 @@ def enqueue_append_only_rerun(
         ).fetchone() is not None:
             raise BackfillError(f"append-only rerun already exists: {new_id}")
         connection.execute(
-            """
+            f"""
             INSERT INTO work_items(
                 id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
                 attempt_count,parent_task_id,evidence_path,claimed_by,
                 payload_json,created_at,updated_at
-            ) VALUES(?, 'backtest', 'Q09_NEWS', ?, ?, ?, 'pending', NULL,
+            ) VALUES(?, 'backtest', '{NEWS_PHASE}', ?, ?, ?, 'pending', NULL,
                      0, ?, NULL, NULL, ?, ?, ?)
             """,
             (
@@ -1905,12 +1906,12 @@ def _enqueue_fresh_build_rerun(
         ).fetchone()
         if existing is None:
             connection.execute(
-                """
+                f"""
                 INSERT INTO work_items(
                     id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
                     attempt_count,parent_task_id,evidence_path,claimed_by,
                     payload_json,created_at,updated_at
-                ) VALUES(?, 'backtest', 'Q09_NEWS', ?, ?, ?, 'pending', NULL,
+                ) VALUES(?, 'backtest', '{NEWS_PHASE}', ?, ?, ?, 'pending', NULL,
                          0, ?, NULL, NULL, ?, ?, ?)
                 """,
                 (

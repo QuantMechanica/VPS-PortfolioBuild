@@ -142,10 +142,17 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
                 INSERT INTO work_items(
                     id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
                     attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at
-                ) VALUES(?, 'backtest','Q09_NEWS','QM5_9999','EURUSD.DWX',?,'pending',NULL,
+                ) VALUES(?, 'backtest',?,'QM5_9999','EURUSD.DWX',?,'pending',NULL,
                          0,NULL,NULL,NULL,?,?,?)
                 """,
-                (self.work_item_id, str(self.setfile), json.dumps(payload), now, now),
+                (
+                    self.work_item_id,
+                    runner.NEWS_PHASE,
+                    str(self.setfile),
+                    json.dumps(payload),
+                    now,
+                    now,
+                ),
             )
             connection.commit()
 
@@ -327,7 +334,7 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
         aggregate.write_text('{"verdict":"CONFIG_LOCKED"}\n', encoding="utf-8")
         summary = {
             "schema_version": runner.DIAGNOSTIC_SUMMARY_SCHEMA,
-            "phase": "Q09_NEWS",
+            "phase": backfill.NEWS_PHASE,
             "verdict": "REVIEW_REQUIRED",
             "reason": "diagnostic_non_admission",
             "reason_codes": ["diagnostic_non_admission", "owner_review_required"],
@@ -601,7 +608,7 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
         failed_at = "2026-08-06T22:55:09+00:00"
         refusal = {
             "failed_at_utc": failed_at,
-            "phase": "Q09_NEWS",
+            "phase": backfill.NEWS_PHASE,
             "phase_runner_scope_blocked": False,
             "reason": "worker_staged_ex5_destination_path_mismatch",
             "terminal": "T3",
@@ -764,7 +771,7 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
                 "created_at": "2026-08-06T03:17:45+00:00",
                 "detail": f"staged_ex5_source_sha256_mismatch:{observed_hash}",
                 "ea_id": "QM5_9999",
-                "phase": "Q09_NEWS",
+                "phase": backfill.NEWS_PHASE,
                 "reason": "staged_ex5_preflight_failed",
                 "setfile_path": str(self.setfile.resolve()),
                 "symbol": "EURUSD.DWX",

@@ -187,13 +187,13 @@ class SharedOrderingTests(unittest.TestCase):
         db = _FarmDB()
         self.addCleanup(db.close)
         db.insert("q02plain", "Q02", "AAA")
-        db.insert("q10", "Q10", "BBB")
+        db.insert("incumbent", farmctl._INCUMBENT_PHASE, "BBB")
         db.insert("q02prio", "Q02", "CCC", priority_track=True)
         db.insert("rec", "Q02", "DDD", recovery="stranded_infra_fail")
         order = db.order_ids()
         self.assertEqual(order[-1], "rec")            # recovery ALWAYS last
         self.assertEqual(order[0], "q02prio")         # priority_track beats phase
-        self.assertLess(order.index("q10"), order.index("q02plain"))  # Q10 before Q02
+        self.assertLess(order.index("incumbent"), order.index("q02plain"))
 
     def test_ordering_inert_without_any_recovery_tag(self) -> None:
         db = _FarmDB()
@@ -207,7 +207,7 @@ class SharedOrderingTests(unittest.TestCase):
     def _assert_payload_priority(self, payload_json: str, *, expected: bool) -> None:
         db = _FarmDB()
         self.addCleanup(db.close)
-        db.insert("q10plain", "Q10", "AAA")
+        db.insert("incumbent", farmctl._INCUMBENT_PHASE, "AAA")
         db.insert("q02candidate", "Q02", "BBB", raw_payload_json=payload_json)
         order = db.order_ids()
         self.assertEqual(order[0] == "q02candidate", expected)

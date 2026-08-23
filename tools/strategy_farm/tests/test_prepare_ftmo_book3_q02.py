@@ -669,12 +669,18 @@ def test_real_a02_compile_manifest_loads_when_present() -> None:
     path = planner.DEFAULT_ARTIFACT_ROOT / planner.COMPILE_MANIFEST_NAME
     if not path.is_file():
         pytest.skip("real A02 compile manifest is not present")
-    binding, hashes = planner._load_compile_manifest(
-        repo=planner.DEFAULT_REPO,
-        artifact_root=planner.DEFAULT_ARTIFACT_ROOT,
-        flag=planner.DEFAULT_ROOT / "state/FACTORY_OFF.flag",
-        authoritative_source_commit="6c8917a9a90f4ee9ecd2668ab90cc356c8d49e91",
-    )
+    flag = planner.DEFAULT_ROOT / "state/FACTORY_OFF.flag"
+    kwargs = {
+        "repo": planner.DEFAULT_REPO,
+        "artifact_root": planner.DEFAULT_ARTIFACT_ROOT,
+        "flag": flag,
+        "authoritative_source_commit": "6c8917a9a90f4ee9ecd2668ab90cc356c8d49e91",
+    }
+    if not flag.is_file():
+        with pytest.raises(planner.ContractError, match="FACTORY_OFF binding drifted"):
+            planner._load_compile_manifest(**kwargs)
+        return
+    binding, hashes = planner._load_compile_manifest(**kwargs)
     assert binding["path"] == str(path.resolve())
     assert set(hashes) == {"QM5_9936", "QM5_10145", "QM5_13108", "QM5_20181"}
 

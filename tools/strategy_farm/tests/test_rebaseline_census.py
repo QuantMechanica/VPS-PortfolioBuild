@@ -40,20 +40,32 @@ def _ins(con, rid, phase, ea, sym, status, verdict, payload=None, version="v4"):
 
 
 def test_canonical_gate_mapping():
-    # v4 is the active contract. Q02 is unchanged across contracts.
+    # v4 is the active contract. Both branches' checks are unioned here: the
+    # active-v4-context form (no version arg -> ACTIVE contract) and the explicit
+    # "v3"/"v4" forms are complementary and all hold.
+    # Q02 is unchanged across contracts.
+    assert rc.canonical_gate("Q02") == "Q02"
     assert rc.canonical_gate("Q02", "v4") == "Q02"
     assert rc.canonical_gate("P2") == "Q02"                       # legacy alias
     # Native v4 NEWS storage lanes collapse to the active NEWS gate (Q10).
+    assert rc.canonical_gate("Q10_NEWS") == "Q10"                 # active v4 lane collapse
     assert rc.canonical_gate("Q10_NEWS", "v4") == rc.NEWS_GATE
+    assert rc.canonical_gate("Q10_PORTFOLIO") == "Q10"
     assert rc.canonical_gate("Q10_PORTFOLIO", "v4") == rc.NEWS_GATE
     # A v3 NEWS lane translates forward to the same active NEWS gate.
+    assert rc.canonical_gate("Q09_NEWS", "v3") == "Q10"
     assert rc.canonical_gate("Q09_NEWS", "v3") == rc.NEWS_GATE
+    assert rc.canonical_gate("Q09_PORTFOLIO", "v3") == "Q10"
     # v3 incumbent (Q10) renumbers to v4 Q11, which is on the v4 chain.
     assert rc.canonical_gate("Q10", "v3") == "Q11"
-    assert rc.canonical_gate("COMPILE_EA", "v4") is None          # off-chain
+    assert rc.canonical_gate("COMPILE_EA") is None                # off-chain
+    assert rc.canonical_gate("COMPILE_EA", "v4") is None
+    assert rc.canonical_gate("OPT_CENSUS") is None
     assert rc.canonical_gate("OPT_CENSUS", "v4") is None
-    # v3 Q11 (retirement/book) renumbers off the v4 requalification chain.
+    # Q11 is on the active v4 chain, but v3 Q11 (retirement/book) renumbers off it.
+    assert rc.canonical_gate("Q11") == "Q11"
     assert rc.canonical_gate("Q11", "v3") is None
+    assert rc.canonical_gate("Q15") is None
 
 
 def test_vclass():

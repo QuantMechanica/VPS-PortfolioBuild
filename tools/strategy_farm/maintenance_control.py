@@ -92,6 +92,17 @@ def sqlite_state_sha256(path: Path) -> str:
     return hashlib.sha256(image).hexdigest()
 
 
+def sqlite_bindings(path: Path) -> tuple[str, str]:
+    """Return a mutually consistent raw-file and logical-state binding.
+
+    Opening a recently closed WAL database for the first logical read can
+    finalize SQLite recovery metadata on Windows. Compute the logical image
+    first, then bind the raw file bytes that exist after that read.
+    """
+    state_sha256 = sqlite_state_sha256(path)
+    return sha256_file(path), state_sha256
+
+
 def _wal_checkpoint_once(path: Path) -> tuple[int, int, int]:
     with sqlite3.connect(path, timeout=30, isolation_level=None) as conn:
         conn.execute("PRAGMA busy_timeout=5000")
@@ -375,12 +386,13 @@ def inspect_manifest(db: Path, manifest: dict[str, Any]) -> dict[str, Any]:
                 },
                 "mismatches": mismatches,
             })
+    db_sha256, db_state_sha256 = sqlite_bindings(db)
     return {
         "mode": "dry_run",
         "run_id": manifest["run_id"],
         "db": str(db),
-        "db_sha256": sha256_file(db),
-        "db_state_sha256": sqlite_state_sha256(db),
+        "db_sha256": db_sha256,
+        "db_state_sha256": db_state_sha256,
         "valid": not errors,
         "errors": errors,
         "operations": rows,
@@ -999,8 +1011,7 @@ def _verify_apply_bindings(
 ) -> tuple[str, str, str]:
     if not factory_off_flag.is_file():
         raise RuntimeError(f"FACTORY_OFF flag missing: {factory_off_flag}")
-    actual_db = sha256_file(db)
-    actual_state = sqlite_state_sha256(db)
+    actual_db, actual_state = sqlite_bindings(db)
     actual_flag = sha256_file(factory_off_flag)
     if actual_db.lower() != expected_db_sha256.strip().lower():
         raise RuntimeError(f"DB SHA-256 mismatch: expected {expected_db_sha256}, actual {actual_db}")

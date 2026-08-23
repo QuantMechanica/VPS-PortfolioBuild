@@ -151,12 +151,13 @@ def _prepare_restart_holds(
     manifest = _write_and_load_manifest(tmp_path / "manifest.json")
     flag = root / "state" / "FACTORY_OFF.flag"
     flag.write_text("intentional\n", encoding="utf-8")
+    db_sha256, db_state_sha256 = mc.sqlite_bindings(db)
     mc.apply_manifest(
         db,
         manifest,
         factory_off_flag=flag,
-        expected_db_sha256=mc.sha256_file(db),
-        expected_db_state_sha256=mc.sqlite_state_sha256(db),
+        expected_db_sha256=db_sha256,
+        expected_db_state_sha256=db_state_sha256,
         expected_factory_off_sha256=mc.sha256_file(flag),
         snapshot_path=tmp_path / "restart-hold-snapshot.sqlite",
     )
@@ -286,6 +287,8 @@ def test_dry_run_is_read_only_and_reports_exact_prestate(tmp_path: Path) -> None
 
     assert result["valid"] is True
     assert len(result["operations"]) == 3
+    assert result["db_sha256"] == before
+    assert result["db_state_sha256"] == mc.sqlite_state_sha256(db)
     assert mc.sha256_file(db) == before
 
 
