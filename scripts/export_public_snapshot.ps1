@@ -51,6 +51,14 @@ function Test-ObjectHasKey {
     return $Target.PSObject.Properties.Name.Contains($Key)
 }
 
+function Get-ObjectKeys {
+    param([object]$Target)
+    if ($Target -is [System.Collections.IDictionary]) {
+        return @($Target.Keys | ForEach-Object { [string]$_ })
+    }
+    return @($Target.PSObject.Properties.Name)
+}
+
 function Validate-JsonAgainstSchema {
     param(
         [object]$Object,
@@ -87,7 +95,7 @@ function Validate-JsonAgainstSchema {
                 if ($null -eq $Object.pipeline.by_phase.$k -or $Object.pipeline.by_phase.$k -lt 0) { throw "Invalid pipeline.by_phase.$k in $Name." }
             }
             if ($Object.pipeline.by_gate_v4.gate_contract_version -ne "v4") { throw "Invalid pipeline.by_gate_v4.gate_contract_version in $Name." }
-            foreach ($k in $Object.pipeline.by_gate_v4.PSObject.Properties.Name) {
+            foreach ($k in (Get-ObjectKeys -Target $Object.pipeline.by_gate_v4)) {
                 if ($k -eq "gate_contract_version") { continue }
                 if ($k -notmatch '^Q(?:0[0-9]|1[0-7])$' -or $Object.pipeline.by_gate_v4.$k -lt 0) { throw "Invalid pipeline.by_gate_v4.$k in $Name." }
             }
