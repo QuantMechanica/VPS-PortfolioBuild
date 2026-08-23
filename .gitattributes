@@ -68,3 +68,9 @@ docs/ops/evidence/2026-08-04_factory_preparation_owner_decision_evening.json -te
 docs/ops/evidence/2026-08-09_factory_preparation_owner_decision_isolation.json -text
 docs/ops/evidence/2026-08-10_factory_preparation_owner_decision_isolation_rampsoak.json -text
 docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimited.json -text
+
+# The gate manifest is a byte-hashed contract: gate_manifest.load_gate_manifest
+# hashes its on-disk bytes and stamps the digest as the stored contract
+# provenance.  Pin LF so that digest - and the pinned v4 test hash - is
+# identical on autocrlf (VPS) and LF (CI) checkouts (review fix P2 #4).
+tools/strategy_farm/config/gate_manifest.v4.draft.json text eol=lf

@@ -158,3 +158,83 @@ the six v4-only roles, then perform the same transactional table rebuild with
 the v3 six-token CHECK, copy all rows, compare count and digest, swap, and
 reinstall triggers. Do not narrow the CHECK while any v4-role row exists. Do not
 NULL or rewrite `gate_contract_version`, phase, verdict, or evidence fields.
+
+## Review fixes (2026-08-23, reviewer verdict FIX_REQUIRED)
+
+Reviewer flagged one P1 (not cleanly mergeable to the factory) and three P2s.
+All applied on this branch; the feature commit was rebased and the P2 changes
+committed on top.
+
+### P1 - rebase onto the integration branch, resolve board-advisor conflicts (FIXED)
+
+The branch was based on rb-v4-loader@1919bb581, before the criteria-preservation
+fix a4990f77a and before board-advisor's advancement-centralization refactor, so
+a merge to the factory conflicted in phase_ids.py, farmctl.py and
+test_gate_manifest.py. The single feature commit was rebased onto
+agents/board-advisor (26cb49463), which already carries a4990f77a (board-advisor's
+criteria-preserving v4 manifest + hash) and the advancement refactor. Conflicts
+resolved as directed:
+
+- phase_ids.py: kept board-advisor's advancement machinery (PhaseAdvancement,
+  advancement_table, next_phase/prev_phase/phase_rank) as the base and layered the
+  contract_version-aware helpers on top (_normalise_contract_version,
+  _resolve_versioned_phase; phase_qid/phase_label/normalize_phase_id gained the
+  optional contract_version parameter). Module imports and runtime helpers verified.
+- farmctl.py: unioned the phase_ids import block; adopted board-advisor's
+  successor_phase rename in the cascade so the local no longer shadows the imported
+  next_phase function, and kept the ACTIVE_GATE_CONTRACT_VERSION stamp on the
+  cascade INSERT.
+- test_gate_manifest.py: took board-advisor's criteria-preserving v4 manifest and
+  its hash (LF form, see P2 #4).
+
+farmctl.py is a `-text` byte-exact contract in .gitattributes (its bytes feed the
+runtime-activation decision hash). The initial text-mode conflict edit normalized
+the whole file CRLF->LF (52k-line phantom churn that would trip Factory_ON's
+clean-checkout gate). Reconstructed so unchanged lines keep the parent's exact
+bytes and only the ~157 semantic additions are new (CRLF), reducing the farmctl
+diff-vs-parent from full-file to 195 lines.
+
+Trial merge into the current agents/board-advisor tip: clean, zero conflicts (see
+below).
+
+### P2 #2 - backfill cutoff pinned to the true v3 activation instant (FIXED)
+
+`GATE_CONTRACT_V3_BACKFILL_CUTOFF` changed from `2026-08-23T09:00:00Z` to
+`2026-08-23T10:18:19Z`, the actual v3 default-activation instant (commit d4e4dcfcb,
+2026-08-23 12:18:19 +0200). Rows enqueued in the 09:00-10:18Z window ran while v2
+was still the default and are now backfilled as legacy/v2, not silently v3. A
+code comment ties the constant to the activation evidence. New test
+test_backfill_cutoff_is_the_true_v3_activation_instant asserts the constant and
+that a 09:30Z row stamps `legacy` while a 10:18:19Z row stamps `v3`.
+
+### P2 #3 - display helpers degrade instead of raising (FIXED)
+
+_normalise_contract_version gained a `strict` keyword (default False). The display
+helpers (phase_qid/phase_label/normalize_phase_id via _resolve_versioned_phase)
+call it non-strict: an unrecognised version token no longer raises, it is returned
+as raw provenance and the phase degrades to a pass-through (e.g.
+phase_label("Q05","v9") -> "Q05 (v9:Q05)"). The strict raise is retained for
+explicit write/validation paths (strict=True). New tests
+test_display_helpers_degrade_on_unknown_contract_version and
+test_contract_version_normaliser_strict_mode_still_rejects.
+
+### P2 #4 - v4 manifest line endings pinned to LF (FIXED)
+
+Added a .gitattributes rule
+`tools/strategy_farm/config/gate_manifest.v4.draft.json text eol=lf` and
+normalized the working copy to LF (the git blob was already LF; no content change).
+The loader hashes the on-disk bytes, so LF-pinning makes the stamped contract
+digest - and the pinned test hash - identical on autocrlf (VPS) and LF (CI)
+checkouts. The v4 sha256 test asserts the LF digest
+c51fbfffb1aca470207bc0d027b172625e8680095a7a5c75ceed6327e48ae0bc; new test
+test_v4_draft_manifest_is_lf_pinned_on_disk guards against CRLF reintroduction.
+
+### Verification
+
+```
+> python -m pytest tools/strategy_farm/tests/test_gate_manifest.py     tools/strategy_farm/tests/test_gate_contract_version.py     tools/strategy_farm/tests/test_q09_news_schema_v2.py     tools/strategy_farm/tests/test_advancement_centralization.py -q
+48 passed, 2 skipped
+
+> python -m pytest tools/strategy_farm/tests/test_isolated_work_item_runner.py     tools/strategy_farm/tests/test_mission_control_v2_data.py     tools/strategy_farm/tests/test_mnt009_010_reconciliation.py     tools/strategy_farm/tests/test_render_cockpit_v2.py -q
+105 passed, 1 skipped
+```

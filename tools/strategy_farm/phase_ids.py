@@ -322,7 +322,18 @@ def phase_rank(phase: str | None) -> int:
     return -1 if row is None else row.rank
 
 
-def _normalise_contract_version(contract_version: str | None) -> str | None:
+def _normalise_contract_version(
+    contract_version: str | None, *, strict: bool = False
+) -> str | None:
+    """Normalise a stored contract-version token.
+
+    ``strict=True`` is for explicit write/validation paths and rejects an
+    unrecognised token.  The default (``strict=False``) is for the display
+    helpers, which promise graceful degradation and must never hard-fail on a
+    typo or a future version they do not yet know: an unrecognised token is
+    returned lower-cased and passed through so it can still be surfaced as raw
+    provenance, and the phase itself degrades to a pass-through.
+    """
     if contract_version is None:
         return None
     value = str(contract_version).strip().lower()
@@ -331,7 +342,9 @@ def _normalise_contract_version(contract_version: str | None) -> str | None:
     value = value.rsplit("/", 1)[-1]
     if value in {"v1", "v2", "v3", "v4"}:
         return value
-    raise ValueError(f"unsupported gate contract version: {contract_version!r}")
+    if strict:
+        raise ValueError(f"unsupported gate contract version: {contract_version!r}")
+    return value
 
 
 def _resolve_versioned_phase(

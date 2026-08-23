@@ -294,6 +294,16 @@ def test_v4_sha256_is_stable_and_binds_exact_draft_bytes() -> None:
     assert expected == "c51fbfffb1aca470207bc0d027b172625e8680095a7a5c75ceed6327e48ae0bc"
 
 
+def test_v4_draft_manifest_is_lf_pinned_on_disk() -> None:
+    """The byte-hashed manifest must stay LF so its digest — and the pinned hash
+    above — is identical on autocrlf (VPS) and LF (CI) checkouts. A CRLF smudge
+    would silently change the stamped contract provenance (review fix P2 #4)."""
+
+    raw = gate_manifest.V4_DRAFT_MANIFEST.read_bytes()
+    assert b"\r\n" not in raw
+    assert b"\r" not in raw
+
+
 def test_v4_activation_guard_and_future_final_path_fail_closed(tmp_path: Path) -> None:
     original = json.loads(gate_manifest.V4_DRAFT_MANIFEST.read_text(encoding="utf-8"))
 

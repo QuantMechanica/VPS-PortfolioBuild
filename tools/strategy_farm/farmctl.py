@@ -1571,7 +1571,12 @@ def init_dirs(root: Path) -> None:
         (root / rel).mkdir(parents=True, exist_ok=True)
 
 
-GATE_CONTRACT_V3_BACKFILL_CUTOFF = "2026-08-23T09:00:00Z"
+# v3 became the DEFAULT manifest at commit d4e4dcfcb (2026-08-23 12:18:19 +0200
+# = 2026-08-23T10:18:19Z).  Rows enqueued before that instant ran under the v2
+# default and must not be reinterpreted as v3, so the append-only backfill is
+# pinned to the true activation instant, not to local midnight (review fix
+# P2 #2; evidence docs/ops/evidence/2026-08-23_gate_manifest_v3_activation.md).
+GATE_CONTRACT_V3_BACKFILL_CUTOFF = "2026-08-23T10:18:19Z"
 _WORK_ITEM_GATE_CONTRACT_TRIGGER = "trg_work_items_stamp_gate_contract_version"
 _WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER = (
     "trg_work_items_gate_contract_version_immutable"
