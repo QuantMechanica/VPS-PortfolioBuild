@@ -197,13 +197,72 @@ def test_v4_is_linear_with_a_trigger_only_phase3_entry() -> None:
     assert phase_ids.PHASE_NEXT["Q16"] == "Q11"
 
 
+def test_v4_preserves_v3_criteria_for_every_mapped_gate() -> None:
+    """Every v4 gate with a real top-level v3 source keeps that gate's name and
+    evidence_role (evidence_role modulo the mechanical incumbent-gate renumber)
+    and authority/runner; the Q09<-Q10A promotion is the only exemption."""
+
+    draft = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
+    v3 = {g.id: g for g in gate_manifest.load_gate_manifest(gate_manifest.V3_MANIFEST).gates}
+    source_by_gate = gate_manifest.V4_SOURCE_BY_GATE
+
+    checked_mapped = 0
+    for gate in draft.gates:
+        source = v3.get(source_by_gate[gate.id])
+        if source is None:
+            # The only None source is the promoted non-top-level Q10A stage.
+            assert gate.id == "Q09"
+            assert source_by_gate[gate.id] == "Q10A"
+            continue
+        checked_mapped += 1
+        assert gate.name == source.name, gate.id
+        assert gate.authority == source.authority, gate.id
+        assert gate.runner == source.runner, gate.id
+        assert gate.evidence_role == gate_manifest._v3_role_to_v4(source.evidence_role), gate.id
+
+    # Q00-Q08 plus the eight renumbered Phase-2/3 gates.
+    assert checked_mapped == 17
+
+    # The renumbered incumbent reference is the tracked v4 number, not a stale
+    # v3 one and not a dropped suffix, and carries no new "holdout" criterion.
+    q14 = next(g for g in draft.gates if g.id == "Q14")
+    assert q14.name == "Best-Settings Head-to-Head"
+    assert q14.evidence_role == "SEALED_BEST_SETTINGS_VS_BASELINE_AND_INCUMBENT_Q11"
+    assert gate_manifest._v3_role_to_v4("DEPLOYMENT_READINESS") == "DEPLOYMENT_READINESS"
+
+
+def test_v4_criteria_drift_from_v3_source_is_rejected(tmp_path: Path) -> None:
+    """A silent criteria change on a mapped gate must fail closed, so a v3 pass
+    can never be reused as a v4 pass under different stated criteria."""
+
+    raw = json.loads(gate_manifest.V4_DRAFT_MANIFEST.read_text(encoding="utf-8"))
+
+    def load_with_q14(**overrides: str) -> None:
+        mutated = json.loads(json.dumps(raw))
+        q14 = next(g for g in mutated["gates"] if g["id"] == "Q14")
+        q14.update(overrides)
+        path = tmp_path / "gate_manifest.v4.draft.json"
+        path.write_text(json.dumps(mutated), encoding="utf-8")
+        with pytest.raises(gate_manifest.GateManifestError, match="criteria drift"):
+            gate_manifest.load_gate_manifest(path)
+
+    # Added "+ Holdout" criterion (the exact drift the reviewer flagged).
+    load_with_q14(name="Best-Settings Head-to-Head + Holdout")
+    # Dropped incumbent-gate reference suffix entirely.
+    load_with_q14(evidence_role="SEALED_BEST_SETTINGS_VS_BASELINE_AND_INCUMBENT")
+    # Stale v3 number kept instead of the faithful v4 renumber.
+    load_with_q14(evidence_role="SEALED_BEST_SETTINGS_VS_BASELINE_AND_INCUMBENT_Q10")
+    # Authority tamper on a mapped Phase-2 gate.
+    load_with_q14(authority="OWNER")
+
+
 def test_v4_sha256_is_stable_and_binds_exact_draft_bytes() -> None:
     first = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
     second = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
     expected = hashlib.sha256(gate_manifest.V4_DRAFT_MANIFEST.read_bytes()).hexdigest()
 
     assert first.sha256 == second.sha256 == expected
-    assert expected == "702318775a756a19025e65fd2b9cdc18ff32d5880f43cdbaa5b75843e2c39c32"
+    assert expected == "a8932729bd839f8ab17e59d97810a93d3ba516b11e3de02758813b9a9403cb46"
 
 
 def test_v4_activation_guard_and_future_final_path_fail_closed(tmp_path: Path) -> None:

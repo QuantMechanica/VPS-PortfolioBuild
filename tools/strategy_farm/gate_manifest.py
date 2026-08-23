@@ -114,6 +114,25 @@ V4_SOURCE_BY_GATE = {
 }
 
 
+def _v3_role_to_v4(role: str) -> str:
+    """Renumber a trailing embedded v3 gate reference in an ``evidence_role``.
+
+    A v3 ``evidence_role`` may end in a ``_Q<NN>`` token that names another v3
+    gate (only ``SEALED_..._INCUMBENT_Q10`` does today).  Under v4 that
+    referenced gate is renumbered per :data:`V4_CONTRACT_EQUIVALENCE`
+    (v3 ``Q10`` incumbent -> v4 ``Q11``), so the faithful v4 role carries the
+    v4 number.  Every other role has no such token and is returned byte-for-byte
+    unchanged, keeping the caller's comparison strict.  This is the ONLY drift
+    the criteria-preservation check tolerates: a mechanical renumber driven
+    entirely by the authoritative equivalence table, never a semantic change.
+    """
+
+    prefix, sep, token = role.rpartition("_")
+    if sep and token in V4_CONTRACT_EQUIVALENCE and V4_CONTRACT_EQUIVALENCE[token] in V4_PHASE_IDS:
+        return f"{prefix}{sep}{V4_CONTRACT_EQUIVALENCE[token]}"
+    return role
+
+
 class GateManifestError(ValueError):
     """The gate manifest or a requested phase ID violates the contract."""
 
@@ -625,16 +644,21 @@ def _validate_v4_topology(
         if not str(row.get("reuse_rule") or "").strip():
             raise GateManifestError(f"v4 reuse_rule missing for {gate.id}")
         source = v3_gates.get(str(row["v3_source"]))
+        # Every v4 gate whose v3_source is a real top-level v3 gate must
+        # preserve that gate's stated criteria byte-for-byte (authority, runner,
+        # name and evidence_role); the only tolerated change is the mechanical
+        # gate-number renumber inside an evidence_role (see _v3_role_to_v4).
+        # The lone documented exception is the Q09<-Q10A promotion, where the v3
+        # source is a non-top-level evidence stage and thus resolves to None.
         if source is not None and (
-            gate.authority != source.authority or gate.runner != source.runner
+            gate.authority != source.authority
+            or gate.runner != source.runner
+            or gate.name != source.name
+            or gate.evidence_role != _v3_role_to_v4(source.evidence_role)
         ):
             raise GateManifestError(
-                f"v4 authority/runner criteria drift from v3 for {gate.id}"
+                f"v4 gate criteria drift from v3 source {source.id} for {gate.id}"
             )
-        if gate.ordinal <= 8 and (
-            gate.name != source.name or gate.evidence_role != source.evidence_role
-        ):
-            raise GateManifestError(f"v4 Phase 1 contract drift for {gate.id}")
     q12 = value["gates"][12]
     if (
         q12.get("selection_contract") != "DL-089"
