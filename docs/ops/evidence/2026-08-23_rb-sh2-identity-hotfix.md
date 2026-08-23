@@ -154,3 +154,14 @@ The existing live DB still contains the pre-hotfix SH-3 trigger SQL until the de
 refreshes those two triggers in an authorized schema window. Healthy sampled Q04/Q07/Q09/Q10
 rows resolve sufficient real identity through this code, but the live trigger refresh is still
 required for the general nullable-partial contract. No trigger DDL was applied by this ticket.
+
+## Orchestrator activation (2026-08-24 ~01:20)
+
+- Branch merged to `agents/board-advisor` (`438b241dd`) after focused Opus review (APPROVE;
+  114 tests + 6 subtests green on the merged tree).
+- The stale pre-hotfix SH-3 materialize triggers on the LIVE DB were refreshed atomically from
+  the hotfixed generator (`_sh3_trigger_sql`, AND-all-null predicate), SQL backup:
+  `D:/QM/strategy_farm/backups/sh3_trigger_pre_hotfix_20260823.sql`. Workers pick up the fixed
+  completion path on their next watchdog respawn.
+- Casualties: 3 append-only reruns live (9e4b5dfc/831bdffc/2eebe7ff), 5 deduped, 1 blocked on
+  pending Q09 predecessor, 3 = separate vintage cohort (Q07/Q08-Regen in flight).
