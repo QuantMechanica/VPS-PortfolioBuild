@@ -1,0 +1,175 @@
+{
+  "artifact_type": "fx_cointegration_frontier_q06_hard_cpu_stop",
+  "generated_at_utc": "2026-08-23T05:32:45Z",
+  "cpu_observed_at_utc": "2026-08-23T05:32:43Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "ff5ccf6a48c3ee6ba007dbee27cd75f74c9b5375",
+  "mission_outcome": "EXISTING_PAIR_Q06_ALREADY_PENDING_STOPPED_AT_BACKTEST_CPU_CEILING",
+  "frontier": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "reconciliation_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "new_card_or_ea_created": false,
+    "reason": "The frozen sign-aware reconciliation covers every relationship from analyze_cross_asset_v3.py --include-negative-hedges; a new scan-derived identity would duplicate governed work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_20208",
+    "ea_slug": "nzdusd-euraud",
+    "scan_rank": 27,
+    "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "traded_legs": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "lineage": {
+      "q02": {
+        "work_item_id": "1935fc01-6eaa-4db1-8397-660d22ebdfbb",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "q04": {
+        "work_item_id": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+        "status": "done",
+        "verdict": "PASS_LOWFREQ"
+      },
+      "q05": {
+        "work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "q06": {
+        "work_item_id": "776e6310-7ad6-41ba-8a08-4d63e045d4e5",
+        "row_count": 1,
+        "status": "pending",
+        "claimed_by": null,
+        "attempt_count": 0,
+        "verdict": null,
+        "enqueue_or_requeue_performed": false
+      }
+    }
+  },
+  "capacity_sample": {
+    "cpu_sample_count": 5,
+    "cpu_sample_interval_seconds": 0.5,
+    "cpu_samples_percent": [
+      100.0,
+      100.0,
+      98.55446,
+      100.0,
+      98.947559
+    ],
+    "cpu_average_percent": 99.500404,
+    "cpu_max_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "active_work_item_count": 10,
+    "active_phase_counts": {
+      "Q09_NEWS": 10
+    },
+    "supported_process_scan_at_utc": "2026-08-23T05:32:34Z",
+    "running_factory_tester_count": 5,
+    "running_factory_testers": [
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "claimed_without_visible_terminal_process": [
+      "T1",
+      "T2",
+      "T3",
+      "T5",
+      "T10"
+    ],
+    "immediate_followup_factory_testers": [
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "process_rotation_observation": "T3 appeared after the supported mt5-slots scan and before the CPU samples completed; the instantaneous roster change is recorded without inferring a verdict or repair diagnosis.",
+    "terminal_reservation_count": 7,
+    "free_disk_gib_d": 121.43,
+    "excluded_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "non_duplicate_delta": {
+    "previous_evidence": "artifacts/fx_cointegration_frontier_q06_cpu_stop_20260823T043414Z_board_advisor.json",
+    "previous_running_factory_tester_count": 7,
+    "current_supported_running_factory_tester_count": 5,
+    "previous_running_factory_testers": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "current_supported_running_factory_testers": [
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "appeared_factory_testers": [
+      "T9"
+    ],
+    "disappeared_factory_testers": [
+      "T1",
+      "T2",
+      "T10"
+    ],
+    "current_active_work_item_count": 10,
+    "current_active_phase": "Q09_NEWS",
+    "selected_q06_row_changed": false,
+    "previous_cpu_average_percent": 100.0,
+    "current_cpu_average_percent": 99.500404,
+    "reason_for_fresh_evidence": "The visible governed roster rotated from T1/T2/T4/T6/T7/T8/T10 to T4/T6/T7/T8/T9, then T3 appeared during the observation window; the singular QM5_20208 Q06 successor remained pending while whole-host CPU stayed above the hard ceiling."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "The scan frontier is fully covered, the correct QM5_20208 Q06 row already exists exactly once, and the CPU preflight hit the hard ceiling."
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false,
+    "preexisting_untracked_fx_setfiles_preserved": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
