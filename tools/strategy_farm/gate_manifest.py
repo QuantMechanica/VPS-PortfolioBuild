@@ -50,6 +50,14 @@ DEFAULT_MANIFEST = V3_MANIFEST
 # ACTIVE: OPS-Q10-REALIGN-E1-E2 closure (9b40ff25) and the v3 Claude review
 # (d5c13a08).
 ACTIVATION_REVIEW_REFS = ("9b40ff25", "d5c13a08")
+# The two references that must be recorded before a v4 manifest may be ACTIVE:
+# the v4 loader review-fix commit (a4990f77a) and the OWNER decision record for
+# the linear three-phase renumbering.  Mirrors the v3 pattern: an ACTIVE v4
+# manifest must carry BOTH, so a green review is always provable from the file.
+V4_ACTIVATION_REVIEW_REFS = (
+    "a4990f77a",
+    "decisions/2026-08-23_owner_gate_manifest_v4_linear.md",
+)
 ACTIVATION_STATES = frozenset({"READ_INERT", "ACTIVE"})
 REQUIRED_VERDICT_DIMENSIONS = (
     "execution_status",
@@ -589,6 +597,12 @@ def _validate_v4_activation_guard(guard: Any, *, is_default: bool) -> None:
         or any(not str(item).strip() for item in refs)
     ):
         raise GateManifestError("v4 ACTIVE manifest must record unique review_refs")
+    if not set(V4_ACTIVATION_REVIEW_REFS).issubset(
+        {str(item).strip() for item in refs}
+    ):
+        raise GateManifestError(
+            "v4 ACTIVE manifest must record both v4 activation review refs"
+        )
 
 
 def _validate_v4_contract_equivalence(raw: Any) -> Mapping[str, Any]:

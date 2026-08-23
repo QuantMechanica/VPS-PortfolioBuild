@@ -95,11 +95,18 @@ PHASE_ORDER, PHASE_NAME, PHASE_NEXT = build_phase_tables(_GATE_MANIFEST)
 if _GATE_MANIFEST.extension_topology is None:
     ORDINARY_PHASE_ORDER = list(_GATE_MANIFEST.phase_ids)
     OPTIMIZATION_PHASE_ORDER: list[str] = []
-else:
+elif "ordinary_chain" in _GATE_MANIFEST.extension_topology:
+    # v2/v3 carry the ordinary chain and the optimization fork inside the
+    # extension topology (Q00->Q13 ordinary; Q10->Q14->Q15->Q16->Q11 fork).
     ORDINARY_PHASE_ORDER = list(_GATE_MANIFEST.extension_topology["ordinary_chain"])
     OPTIMIZATION_PHASE_ORDER = list(
         _GATE_MANIFEST.extension_topology["optimization_fork"]["path"]
     )
+else:
+    # v4 is strictly linear: the ordinary chain is the whole gate list and there
+    # is no optimization fork (Q14 is the terminal per-EA gate, next=None).
+    ORDINARY_PHASE_ORDER = list(_GATE_MANIFEST.phase_ids)
+    OPTIMIZATION_PHASE_ORDER = []
 
 # Legacy P-key → new Qxx mapping. Used only as a back-compat shim for any
 # orphan call sites that still pass P-keys (old report files on disk,
@@ -148,14 +155,28 @@ class PhaseAdvancement:
 
 _PHASE_RANK = {phase: index for index, phase in enumerate(PHASE_ORDER)}
 
-# Q09 is a contract gate but not a writable work_items token.  NEWS is the
-# mandatory lane and PORTFOLIO is a sibling informational lane.  The latter has
-# the same predecessor and rank, but deliberately no successor: Q10 requires a
-# CONFIG_LOCKED NEWS result and must never be licensed by portfolio evidence.
-_CANONICAL_TO_PRIMARY_STORAGE = {"Q09": "Q09_NEWS"}
+# The news gate is a contract gate whose writable work_items tokens are its two
+# storage lanes.  NEWS is the mandatory lane; PORTFOLIO is a sibling
+# informational lane with the same predecessor and rank but deliberately no
+# successor (the successor gate requires a CONFIG_LOCKED NEWS result and must
+# never be licensed by portfolio evidence).  v3 numbers the news gate Q09 with
+# lanes Q09_NEWS/Q09_PORTFOLIO; v4 renumbers it to Q10 with lanes
+# Q10_NEWS/Q10_PORTFOLIO.  The mapping is driven by the manifest's own v3->v4
+# equivalence table (present only on v4) so no gate literal is hard-wired to one
+# contract version.
+if _GATE_MANIFEST.contract_equivalence is not None:
+    _V3_TO_V4 = dict(_GATE_MANIFEST.contract_equivalence["v3_to_v4"])
+    _NEWS_CANONICAL = _V3_TO_V4["Q09"]
+    _NEWS_LANE = _V3_TO_V4["Q09_NEWS"]
+    _PORTFOLIO_LANE = _V3_TO_V4["Q09_PORTFOLIO"]
+else:
+    _NEWS_CANONICAL = "Q09"
+    _NEWS_LANE = "Q09_NEWS"
+    _PORTFOLIO_LANE = "Q09_PORTFOLIO"
+_CANONICAL_TO_PRIMARY_STORAGE = {_NEWS_CANONICAL: _NEWS_LANE}
 _STORAGE_LANE_CANONICAL = {
-    "Q09_NEWS": "Q09",
-    "Q09_PORTFOLIO": "Q09",
+    _NEWS_LANE: _NEWS_CANONICAL,
+    _PORTFOLIO_LANE: _NEWS_CANONICAL,
 }
 
 # Historical rows used mixed-case B/C suffixes.  Manifest aliases are compared
@@ -215,24 +236,24 @@ def _build_advancement_table() -> Mapping[str, PhaseAdvancement]:
             ordinary=phase in ordinary_set,
         )
 
-    q09_canonical = _STORAGE_LANE_CANONICAL["Q09_NEWS"]
-    q09_rank = _PHASE_RANK[q09_canonical]
-    q09_next = PHASE_NEXT[q09_canonical]
-    table["Q09_NEWS"] = PhaseAdvancement(
-        phase="Q09_NEWS",
-        canonical_phase=q09_canonical,
-        previous=ordinary_previous[q09_canonical],
-        next=q09_next,
-        rank=q09_rank,
+    news_canonical = _STORAGE_LANE_CANONICAL[_NEWS_LANE]
+    news_rank = _PHASE_RANK[news_canonical]
+    news_next = PHASE_NEXT[news_canonical]
+    table[_NEWS_LANE] = PhaseAdvancement(
+        phase=_NEWS_LANE,
+        canonical_phase=news_canonical,
+        previous=ordinary_previous[news_canonical],
+        next=news_next,
+        rank=news_rank,
         ordinary=True,
         storage_lane=True,
     )
-    table["Q09_PORTFOLIO"] = PhaseAdvancement(
-        phase="Q09_PORTFOLIO",
-        canonical_phase=_STORAGE_LANE_CANONICAL["Q09_PORTFOLIO"],
-        previous=ordinary_previous[q09_canonical],
+    table[_PORTFOLIO_LANE] = PhaseAdvancement(
+        phase=_PORTFOLIO_LANE,
+        canonical_phase=_STORAGE_LANE_CANONICAL[_PORTFOLIO_LANE],
+        previous=ordinary_previous[news_canonical],
         next=None,
-        rank=q09_rank,
+        rank=news_rank,
         ordinary=True,
         storage_lane=True,
     )
