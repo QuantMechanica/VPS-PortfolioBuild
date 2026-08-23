@@ -55,6 +55,22 @@
 
 ---
 
+## 0c · 2026-08-23 abends — „setze alles endgültig um" abgearbeitet
+
+| Punkt | Zustand | Beleg |
+|---|---|---|
+| Archivmatrix produktiv | **erledigt** — `strategy_archive.html` aus dem stündlichen Dashboard-Task, aus `strategies.html` verlinkt | `tools/strategy_farm/dashboards/archive_matrix.py` |
+| Detailseite löst `ea_*.html` ab | **erledigt** — 3.194 Seiten mit voller Strategy Card, allen Läufen, MT5-Reportlinks und Grund-Spalte | Commit `4e4fbc257` + Folgecommit |
+| DL-090 Aufbewahrungsjob | **erledigt und gelaufen** — 43.056 Dateien (1,69 GB) in Quarantäne, 30.819 behaltene komprimiert 7,32 → 0,41 GB (6,91 GB frei), Task 04:20 | `tools/strategy_farm/report_retention.py` |
+| SH-1 Taxonomie materialisiert | **erledigt und live** — 111.399 Zeilen, 0 Drift, Validator grün, stündlicher Nachlauf-Task | `tools/strategy_farm/schema_hardening.py` |
+| SH-3 Fremdschlüssel | **Annahme widerlegt** — Monitor ausgeliefert, Nachfolger beauftragt (typisierte Spalten, OFF-Fenster) | `FARM_DB_SCHEMA_HARDENING_2026-08-23.md` §Umsetzungsstand |
+| SH-2 Artefakt-Identität | **offen** — braucht Factory-OFF-Fenster + Review | dito |
+| Balke/XAUUSD | **erledigt** — gemessener OWNER-genehmigter Negativbefund, kein Rerun; Oberflächendefekt behoben | `evidence/2026-08-23_balke_xauusd_adjudication.md` |
+| Gate-Nummerierung `Q10.1–Q10.3` | **weiterhin vom OWNER geparkt** (`74e72403`) | Spec §3a |
+| 13036 auf XAUUSD ausspielen | **OWNER-Entscheidung offen** — Kandidatenmenge = ROT | Balke-Evidenz §„Der eine Teil, der hält" |
+
+---
+
 ## 0a · Ultracode-Sitzung 2026-08-22 spätabends — Q09-Push 12969 + Balke 13213 + OFF/ON
 
 **Geliefert** (Evidenz `docs/ops/evidence/2026-08-22_ultracode_q09_push_12969_13213.md`)
