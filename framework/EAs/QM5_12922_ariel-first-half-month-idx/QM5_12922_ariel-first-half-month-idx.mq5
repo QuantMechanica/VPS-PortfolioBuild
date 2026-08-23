@@ -42,32 +42,88 @@ input bool   strategy_require_d1         = true;
 int  g_strategy_last_day_key             = 0;
 int  g_strategy_last_month_key           = 0;
 int  g_strategy_trading_day_index        = 0;
+int  g_strategy_last_traded_month_key    = 0;
+bool g_strategy_entry_deferred           = false;
 bool g_strategy_entry_due                = false;
 bool g_strategy_exit_due                 = false;
 
+int Strategy_GetTradingDayOfMonth(const datetime current_d1_time)
+  {
+   if(current_d1_time <= 0)
+      return 0;
+
+   MqlDateTime dt_curr;
+   TimeToStruct(current_d1_time, dt_curr);
+
+   MqlDateTime dt_start = dt_curr;
+   dt_start.day = 1;
+   dt_start.hour = 0;
+   dt_start.min = 0;
+   dt_start.sec = 0;
+   const datetime month_start_time = StructToTime(dt_start);
+   if(month_start_time <= 0)
+      return 0;
+
+   datetime d1_times[];
+   ArraySetAsSeries(d1_times, false);
+   const int count = CopyTime(_Symbol, PERIOD_D1, month_start_time, current_d1_time, d1_times);
+   if(count <= 0)
+      return 0;
+
+   return count;
+  }
+
 void Strategy_AdvanceCalendarState()
   {
-   const int day_key = QM_CalendarPeriodKey(PERIOD_D1);
-   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1);
-   if(day_key == 0 || month_key == 0)
+   const datetime d1_time = iTime(_Symbol, PERIOD_D1, 0);
+   if(d1_time <= 0)
+     {
+      g_strategy_trading_day_index = 0;
+      g_strategy_entry_due = false;
+      g_strategy_exit_due = false;
       return;
+     }
+
+   MqlDateTime dt;
+   TimeToStruct(d1_time, dt);
+   const int day_key = dt.year * 10000 + dt.mon * 100 + dt.day;
+   const int month_key = dt.year * 100 + dt.mon;
 
    if(day_key == g_strategy_last_day_key)
       return;
 
-   const bool have_prior_bar = (g_strategy_last_day_key > 0);
-   const bool is_new_month = (have_prior_bar && month_key != g_strategy_last_month_key);
+   const int trading_day = Strategy_GetTradingDayOfMonth(d1_time);
+   if(trading_day <= 0)
+     {
+      g_strategy_trading_day_index = 0;
+      g_strategy_entry_due = false;
+      g_strategy_exit_due = false;
+      return;
+     }
 
-   if(is_new_month || !have_prior_bar)
-      g_strategy_trading_day_index = 1;
-   else
-      g_strategy_trading_day_index++;
-
+   g_strategy_trading_day_index = trading_day;
    g_strategy_last_day_key = day_key;
    g_strategy_last_month_key = month_key;
 
-   g_strategy_entry_due = (g_strategy_trading_day_index == 1);
-   g_strategy_exit_due = (have_prior_bar && g_strategy_trading_day_index > MathMax(1, strategy_hold_trading_days));
+   const bool already_traded_this_month = (g_strategy_last_traded_month_key == month_key);
+
+   if(g_strategy_trading_day_index == 1 && !already_traded_this_month)
+     {
+      g_strategy_entry_due = true;
+     }
+   else if(g_strategy_trading_day_index == 2 && g_strategy_entry_deferred && !already_traded_this_month)
+     {
+      g_strategy_entry_due = true;
+     }
+   else
+     {
+      g_strategy_entry_due = false;
+      if(g_strategy_trading_day_index > 2)
+         g_strategy_entry_deferred = false;
+     }
+
+   const int hold_days = MathMax(1, strategy_hold_trading_days);
+   g_strategy_exit_due = (g_strategy_trading_day_index > hold_days);
   }
 
 // -----------------------------------------------------------------------------
@@ -85,11 +141,12 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   ZeroMemory(req);
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "ARIEL_FIRST_HALF_MONTH_T1";
+   req.reason = (g_strategy_trading_day_index == 1) ? "ARIEL_FIRST_HALF_MONTH_T1" : "ARIEL_FIRST_HALF_MONTH_T2_DEFERRED";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -210,20 +267,35 @@ void OnTick()
         }
      }
 
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
-
-   QM_EntryRequest req;
-   ZeroMemory(req);
-   if(Strategy_EntrySignal(req))
+   if(g_strategy_entry_due)
      {
-      ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      bool news_allows = true;
+      if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+         news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+      else
+         news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+
+      if(!news_allows)
+        {
+         if(g_strategy_trading_day_index == 1)
+           {
+            g_strategy_entry_deferred = true;
+           }
+         g_strategy_entry_due = false;
+         return;
+        }
+
+      QM_EntryRequest req;
+      ZeroMemory(req);
+      if(Strategy_EntrySignal(req))
+        {
+         ulong out_ticket = 0;
+         if(QM_TM_OpenPosition(req, out_ticket))
+           {
+            g_strategy_last_traded_month_key = g_strategy_last_month_key;
+            g_strategy_entry_deferred = false;
+           }
+        }
      }
   }
 
