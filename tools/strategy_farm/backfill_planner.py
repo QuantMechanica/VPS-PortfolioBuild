@@ -55,7 +55,6 @@ ALL_ACTIONS = (
     "RERUN_INFRA", "FILL_MISSING", "REBIND_STALE", "SKIP_REUSABLE",
     "STOP_ECONOMIC_FAIL", "STOP_NOT_APPLICABLE", "UNKNOWN",
 )
-Q09_NEWS_VALID_VERDICTS = {"CONFIG_LOCKED"}
 
 STDLIB_MISSING_SIGNATURES = (
     "file 'include\\trade\\trade.mqh' not found",
@@ -300,11 +299,11 @@ def _q09_news_action(rows: list[dict[str, Any]]) -> tuple[str, str]:
         if str(row.get("status") or "").lower() in TERMINAL_STATUSES
     ]
     verdicts = {str(row.get("verdict") or "").upper() for row in terminal}
-    if verdicts & Q09_NEWS_VALID_VERDICTS:
-        return "SKIP_REUSABLE", "q09_news_config_locked_reusable"
     if verdicts & ECONOMIC_FAIL_VERDICTS:
         return "STOP_ECONOMIC_FAIL", "terminal_economic_fail_at_q09_news"
     if verdicts & STALE_VERDICTS:
+        # CONFIG_LOCKED is a STALE_CLS verdict in census; it is re-bound, never
+        # silently reused as a valid Q09_NEWS resting state (reviewer P2 #4).
         return "REBIND_STALE", "stale_or_contract_gap_at_q09_news"
     if verdicts & set(census.INFRA_CLS):
         return "RERUN_INFRA", "infra_failure_at_q09_news"
@@ -493,20 +492,22 @@ def build_plan(
         target_rows = gates.get(target_gate, []) if target_gate else []
 
         # Q09_PORTFOLIO is informational (OWNER E1); it can neither fill the
-        # Q09_NEWS hole nor stop promotion.  Correct the coarse census merge
-        # before selecting a command, including the two current pairs whose
-        # PASS_PORTFOLIO otherwise makes Q10 look contiguous.
+        # Q09_NEWS hole nor let a later gate skip it.  The census contiguity walk
+        # credits Q09 via a PASS_PORTFOLIO row (census keeps PASS_PORTFOLIO in
+        # PASS_ECON), so a pair with a Q10/Q14 PASS above an unpassed Q09_NEWS
+        # otherwise reports a frontier past Q09 with the news hole masked.  Cap
+        # the frontier at Q08 and re-target the economic Q09_NEWS lane whenever
+        # the reported chain has crossed Q09 without a valid Q09_NEWS pass,
+        # regardless of how high the frontier string ran.
         q09_rows = gates.get("Q09", [])
         q09_news_valid = any(
             str(item.get("phase") or "").upper() in {"Q09", "Q09_NEWS"}
             and str(item.get("status") or "").lower() == "done"
-            and str(item.get("verdict") or "").upper() in (
-                PASS_VERDICTS | Q09_NEWS_VALID_VERDICTS
-            )
+            and str(item.get("verdict") or "").upper() in PASS_VERDICTS
             for item in q09_rows
         )
         reported_frontier = str(census_row.get("highest_contiguous_valid_gate") or "")
-        if target_gate == "Q10" and reported_frontier == "Q09" and not q09_news_valid:
+        if GATE_INDEX.get(reported_frontier, -1) >= GATE_INDEX["Q09"] and not q09_news_valid:
             target_gate = "Q09"
             target_rows = [
                 item for item in q09_rows
@@ -692,6 +693,13 @@ def write_outputs(
     observed_counts = Counter(str(row["action"]) for row in rows)
     counts = {action: observed_counts.get(action, 0) for action in ALL_ACTIONS}
     estimated = round(sum(float(row.get("estimated_factory_hours") or 0) for row in rows), 3)
+    estimated_eligible = round(
+        sum(
+            float(row.get("estimated_factory_hours") or 0)
+            for row in rows if bool(row.get("enqueue_eligible"))
+        ),
+        3,
+    )
     document = {
         "meta": {
             "schema_version": "qm.rebaseline-backfill-plan/v1",
@@ -712,6 +720,7 @@ def write_outputs(
             "enqueue_eligible_rows": sum(bool(row["enqueue_eligible"]) for row in rows),
             "counts_per_action": counts,
             "estimated_factory_hours": estimated,
+            "estimated_factory_hours_enqueue_ready": estimated_eligible,
             "phase_median_hours": result["phase_median_hours"],
         },
         "rows": [_json_ready(row) for row in rows],
@@ -732,8 +741,11 @@ def write_outputs(
         f"- Rows: **{len(rows)}** ({document['summary']['pair_rows']} pair, "
         f"{document['summary']['compile_rows']} compile classifications)",
         f"- Enqueue-ready after binding/cap checks: **{document['summary']['enqueue_eligible_rows']}**",
-        f"- Estimated factory time: **{estimated:.3f} h** (sum of target-phase medians; "
-        "work-item `updated_at - created_at`)",
+        f"- Estimated factory time (full reparable backfill, bindings pending): "
+        f"**{estimated:.3f} h** (sum of target-phase medians over every enqueue-action "
+        "row; work-item `updated_at - created_at`)",
+        f"- Estimated factory time (enqueue-ready now): **{estimated_eligible:.3f} h** "
+        "(enqueue-eligible rows only)",
         "",
         "| action | rows |",
         "|---|---:|",

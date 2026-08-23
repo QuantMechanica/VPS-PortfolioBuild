@@ -98,6 +98,69 @@ def test_q09_portfolio_pass_never_fills_news_hole() -> None:
     assert row["reason"] == "q09_news_manual_review_required"
 
 
+def test_q10_pass_above_news_hole_is_capped_not_skipped() -> None:
+    connection = _connection()
+    payload = {"expected_ex5_sha256": "a" * 64, "expected_setfile_sha256": "b" * 64}
+    # Q02..Q08 pass, Q09 credited only via a PASS_PORTFOLIO row, and Q10 + Q14
+    # pass on top.  The census contiguity walk therefore runs the frontier past
+    # Q09 (to Q10/Q14) while the economic Q09_NEWS lane never validly passed.
+    for gate in planner.GATE_CHAIN[:7]:
+        _insert(connection, f"hole-{gate}", gate, "QM5_HOLE", "XAUUSD.DWX", payload=payload)
+    _insert(
+        connection, "hole-portfolio", "Q09_PORTFOLIO", "QM5_HOLE", "XAUUSD.DWX",
+        verdict="PASS_PORTFOLIO", payload=payload,
+    )
+    _insert(
+        connection, "hole-news", "Q09_NEWS", "QM5_HOLE", "XAUUSD.DWX",
+        verdict="REVIEW_REQUIRED", payload=payload,
+    )
+    _insert(connection, "hole-q10", "Q10", "QM5_HOLE", "XAUUSD.DWX", payload=payload)
+    _insert(connection, "hole-q14", "Q14", "QM5_HOLE", "XAUUSD.DWX", payload=payload)
+
+    # A genuinely-complete pair: a valid Q09_NEWS PASS through the whole chain.
+    for gate in planner.GATE_CHAIN:
+        _insert(connection, f"full-{gate}", gate, "QM5_FULL", "GBPUSD.DWX", payload=payload)
+
+    result = planner.build_plan(connection, _census_rows(connection))
+    pairs = {row["ea_id"]: row for row in result["rows"] if row["record_type"] == "PAIR"}
+    hole = pairs["QM5_HOLE"]
+
+    # The frontier must be capped at Q08 and re-targeted at the Q09_NEWS hole,
+    # not left reported at Q10/Q14 with the hole masked.
+    assert hole["highest_contiguous_valid_gate"] == "Q08"
+    assert hole["target_gate"] == "Q09"
+    assert hole["action"] == "UNKNOWN"
+    assert hole["reason"] == "q09_news_manual_review_required"
+    # The masked hole must not outrank a genuinely-complete pair.
+    assert pairs["QM5_FULL"]["rank"] < hole["rank"]
+
+
+def test_config_locked_q09_news_is_rebind_not_reusable() -> None:
+    connection = _connection()
+    payload = {"expected_ex5_sha256": "a" * 64, "expected_setfile_sha256": "b" * 64}
+    for gate in planner.GATE_CHAIN[:7]:
+        _insert(connection, f"cl-{gate}", gate, "QM5_CL", "USDCHF.DWX", payload=payload)
+    _insert(
+        connection, "cl-portfolio", "Q09_PORTFOLIO", "QM5_CL", "USDCHF.DWX",
+        verdict="PASS_PORTFOLIO", payload=payload,
+    )
+    _insert(
+        connection, "cl-news", "Q09_NEWS", "QM5_CL", "USDCHF.DWX",
+        status="failed", verdict="CONFIG_LOCKED", payload=payload,
+    )
+    _insert(connection, "cl-q10", "Q10", "QM5_CL", "USDCHF.DWX", payload=payload)
+
+    result = planner.build_plan(connection, _census_rows(connection))
+    row = next(item for item in result["rows"] if item["record_type"] == "PAIR")
+
+    # CONFIG_LOCKED is a census STALE class; it must be re-bound at Q09, never
+    # silently treated as a reusable/valid Q09_NEWS resting state that skips it.
+    assert row["highest_contiguous_valid_gate"] == "Q08"
+    assert row["target_gate"] == "Q09"
+    assert row["action"] == "REBIND_STALE"
+    assert row["reason"].startswith("stale_or_contract_gap_at_q09_news")
+
+
 def test_exact_reusable_full_chain_is_skipped() -> None:
     connection = _connection()
     payload = {

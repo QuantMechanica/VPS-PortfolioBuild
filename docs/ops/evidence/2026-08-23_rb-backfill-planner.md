@@ -116,3 +116,40 @@ artifacts. The CSV/JSON files under `D:/QM/reports/rebaseline/` are derived dry-
 and can be archived or removed independently; they contain no state needed by the farm.
 No database, verdict, queue, factory, or live-terminal rollback is required because this
 ticket executed no apply path.
+
+## Review fixes (2026-08-23)
+
+Reviewer returned FIX_REQUIRED. Applied on branch `rb-backfill-planner`:
+
+- **P1 — Q09_NEWS hole-skip past a Q10/Q14 PASS** (`backfill_planner.py:~500`). The narrow
+  correction only fired for `target_gate == "Q10" and reported_frontier == "Q09"`. When the
+  census contiguity walk credited Q09 via a `PASS_PORTFOLIO` row *and* a Q10 (or Q14) PASS sat
+  above it, the reported frontier advanced to Q10/Q14 with the unpassed `Q09_NEWS` economic
+  lane masked — ranking such pairs at the top of the frontier-first plan and parking real
+  bindable Q09_NEWS `RERUN_INFRA`/`REBIND_STALE` units as non-eligible Q14 rows. Generalized
+  the guard to `GATE_INDEX.get(reported_frontier, -1) >= GATE_INDEX["Q09"] and not
+  q09_news_valid`: it now caps the frontier at Q08 and re-targets the non-portfolio Q09 rows
+  via `_q09_news_action` regardless of how high the string ran. Directive §5 (no later gate may
+  skip a hole) and §4 (progress = `highest_contiguous_valid_gate`) restored.
+- **P2 — test coverage for the hole-skip class** (`tests/test_backfill_planner.py`). Added
+  `test_q10_pass_above_news_hole_is_capped_not_skipped`: Q02–Q08 pass, Q09 via `PASS_PORTFOLIO`
+  only, `Q09_NEWS = REVIEW_REQUIRED`, Q10 + Q14 PASS on top; asserts frontier=Q08, target=Q09,
+  action=UNKNOWN and that the masked hole does not outrank a genuinely-complete pair.
+- **P2 — factory-hour estimate conflation** (`backfill_planner.py:write_outputs`). The headline
+  summed `estimated_factory_hours` over the full reparable universe (incl. rows lacking
+  hash/window/parent bindings). Added an enqueue-ready-now total: JSON summary now carries both
+  `estimated_factory_hours` (full reparable backfill, bindings pending) and
+  `estimated_factory_hours_enqueue_ready` (enqueue-eligible rows only); the MD headline prints
+  both with explicit labels.
+- **P2 — undocumented CONFIG_LOCKED divergence from census** (`backfill_planner.py:58,304,~500`).
+  Removed the planner-local `Q09_NEWS_VALID_VERDICTS = {"CONFIG_LOCKED"}` special case, which
+  had silently reclassified a census STALE verdict as a valid/reusable Q09_NEWS resting state
+  (uncited to any OWNER decision) and could strand a CONFIG_LOCKED pair at Q09 without ever
+  proposing a missing Q10. Chose reviewer option (b): keep census's STALE classification —
+  a CONFIG_LOCKED Q09_NEWS row now falls through to `REBIND_STALE` and no longer counts toward
+  `q09_news_valid`, so the frontier is correctly capped and a rebind is proposed. Added
+  `test_config_locked_q09_news_is_rebind_not_reusable` to lock the behavior.
+
+Test run: `python -m pytest tests/test_backfill_planner.py -q` → **15 passed** (13 prior + 2 new).
+Nothing declined; all four findings addressed. Scope unchanged: no enqueue, no DB writes,
+`mode=ro` preserved, v4 remains read-inert.
