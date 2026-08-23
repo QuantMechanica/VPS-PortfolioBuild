@@ -1,0 +1,15 @@
+{
+  "task_id": "53266c28-bd4a-4400-80da-dd621c2558ff",
+  "ea_id": "QM5_11516",
+  "ea_label": "QM5_11516_carter-t-sma7-21-cci5-m15",
+  "build_check_passed": true,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11516_carter-t-sma7-21-cci5-m15\\QM5_11516_carter-t-sma7-21-cci5-m15.mq5",
+  "mq5_sha256": "931a1646e0608b615cdfe189e5a43ab2e46d7fd279e083c2df3db62b3f739d7b",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11516_carter-t-sma7-21-cci5-m15\\QM5_11516_carter-t-sma7-21-cci5-m15.ex5",
+  "ex5_sha256": "520c169ea8a9dee22914347fe79ed78d54c0bddc14de9c3f361a098c1d52dfb9",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11516_carter-t-sma7-21-cci5-m15\\sets\\QM5_11516_carter-t-sma7-21-cci5-m15_EURUSD.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11516_carter-t-sma7-21-cci5-m15\\sets\\QM5_11516_carter-t-sma7-21-cci5-m15_GBPUSD.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11516_carter-t-sma7-21-cci5-m15\\sets\\QM5_11516_carter-t-sma7-21-cci5-m15_USDJPY.DWX_M15_backtest.set"
+  ]
+}
