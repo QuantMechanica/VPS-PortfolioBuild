@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11516
+; ea_slug:      carter-t-sma7-21-cci5-m15
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       EURUSD.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   592ac9bc86949336e7315c04e460ce15c5410aa1981b9c777f1a6c4673c743e4
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=11516
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11516_carter-t-sma7-21-cci5-m15.md
+; card_defaults_status=none_found
+strategy_sma_fast_period=7
+strategy_sma_slow_period=21
+strategy_cci_period=5
+strategy_cross_lookback=2
+strategy_sync_bars=1
+strategy_sl_pips=15
+strategy_tp1_pips=25
+strategy_partial_close_ratio=0.50
+strategy_be_buffer_pips=0
+strategy_spread_cap_pips=12
+strategy_no_friday_entry=true
