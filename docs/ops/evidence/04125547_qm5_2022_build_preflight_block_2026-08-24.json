@@ -1,0 +1,72 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "04125547-feee-4d50-9423-eac60e1eec8a",
+  "task_type": "build_ea",
+  "priority": 10,
+  "checked_at_utc": "2026-08-23T22:19:53.4279961Z",
+  "canonical_checkout": "C:/QM/repo",
+  "branch": "agents/board-advisor",
+  "git_head_inspected": "2a35082b7185ba359ed1780d829164b9802cf7bf",
+  "requested_identity": {
+    "ea_id": "QM5_2022",
+    "slug": "ehlers-hilbert-phase-trend-h4",
+    "ea_dir": "C:/QM/repo/framework/EAs/QM5_2022_ehlers-hilbert-phase-trend-h4"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_2022_ehlers-hilbert-phase-trend-h4.md",
+    "sha256": "a1abb2284b68eabd0d5c708cfc10eeaf8f4b0a498ec2808dcd56903b88f44e21",
+    "length_bytes": 13453,
+    "ea_id": "QM5_2022",
+    "slug": "ehlers-hilbert-phase-trend-h4",
+    "g0_status": "APPROVED",
+    "gate_result": "PASS"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "6f35fe80ce868e059a701355c13800bbbb7e0b65613414983be6a43f5f6b0966",
+    "exact_ea_id_2022_rows": [],
+    "exact_identity_gate": "FAIL",
+    "slug_alias_row": {
+      "ea_id": "12284",
+      "slug": "QM5_2022_ehlers-hilbert-phase-trend-h4",
+      "status": "retired",
+      "retired_at": "2026-08-21T18:52:35+00:00",
+      "retired_reason": "OWNER-approved D1 disposition; action=RETIRE only",
+      "retired_evidence": "docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv",
+      "disposition_line": 628
+    },
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "716f82d1f48a0c5e1680bfd1bdf576291c68d7363b200b929a8a45946514e144",
+    "exact_ea_id_2022_magic_rows": [],
+    "magic_gate": "FAIL"
+  },
+  "existing_source_observation": {
+    "files": [
+      {
+        "path": "framework/EAs/QM5_2022_ehlers-hilbert-phase-trend-h4/QM5_2022_ehlers-hilbert-phase-trend-h4.mq5",
+        "sha256": "3b6a5a4cec55818749cd2e1b58516530932b0be05c3afb73873bfbaf294aeb3f",
+        "length_bytes": 4082
+      }
+    ],
+    "note": "A pre-existing mq5-only folder does not substitute for governed identity and magic allocation."
+  },
+  "router_context": {
+    "routed_at": "2026-08-23T21:59:42+00:00",
+    "tracking_task": "8d1d903f-39cc-461f-ab90-7b932ce62fee",
+    "prior_review_close_state": "RECYCLE",
+    "prior_review_close_verdict": "Only .mq5 present; no .ex5, no SPEC.md, no registry row for 2022."
+  },
+  "verdict": "BUILD_NOT_STARTED_REGISTRY_GATE_FAIL",
+  "blocked_reason": "Requested ea_id 2022 has no deterministic EA registry row and no magic rows. The only slug-related registry identity is different ea_id 12284 and is OWNER-retired, so build or compile under 2022 is forbidden by qm-build-ea-from-card.",
+  "required_next_action": "Keep the build out of implementation until the governed registry/card writer supplies the exact active identity and all required magic rows. Any reroute must also preserve the mandatory news-blackout and current V5 risk contracts.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "setfile_modified": false,
+    "compile_attempted": false,
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "live_or_autotrading_changed": false
+  }
+}
