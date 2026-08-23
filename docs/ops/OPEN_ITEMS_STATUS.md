@@ -32,8 +32,10 @@
 |---|---|---|
 | Strategy Archive Matrix (Card × Gate × Symbol) — Spezifikation **v1.0** | **geliefert**, alle acht Fragen entschieden, noch nicht gebaut | `docs/ops/STRATEGY_ARCHIVE_MATRIX_SPEC_2026-08-23.md` §11a |
 | Beauftragung | Router `2ee6427d` (`ops_issue`, Prio 62, **TODO**, entblockt) | `agent_tasks` |
-| Nächster Schritt | Build-Hash-Abdeckung messen → Prototyp auf echten Daten → OWNER-Abnahme → Vollausbau | Spec §14 |
-| **Neu abgetrennt:** Gate-Nummerierung → Unterstufen `Q10.1–Q10.3` (Q11–Q13 bleiben) | beauftragt, Router `74e72403` (Prio 66, TODO) | Spec §3a |
+| **Prototyp gebaut + gegen die DB verifiziert** | **geliefert** — 3,61 MB, 2.984 Karten, 5.377 Löcher, 0 Abweichungen im Vollabgleich | `docs/ops/evidence/2026-08-23_strategy_archive_matrix_prototype.md` |
+| F4 Stale-Pass | **nicht baubar** — DB führt keine Build-Identität je Zelle (0,3 % Hash-Abdeckung); vorregistrierter Rückfall (a) umgesetzt | Evidenz §1 |
+| Datenbank-Befund (OWNER-Frage) | **geliefert** — Engine gesund, gespeicherte Urteilsfelder nicht: 9.381 Status-Widersprüche, 50.883 Zeilen ohne Taxonomie, 99 FK-Waisen bei abgeschalteter Durchsetzung | Evidenz §2 |
+| Gate-Nummerierung → `Q10.1–Q10.3` | **vom OWNER geparkt** (Router `74e72403` BACKLOG) — Auftrag festgehalten, Welle nicht gestartet | Spec §3a |
 | Nebenbefund, messbar | 4.661 Paare mit Q02-PASS und **ohne jede Q03-Zeile**; 2.165 Zellen ohne wirtschaftliches Urteil | Spec §1/§4 |
 
 ---
