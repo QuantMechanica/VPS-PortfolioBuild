@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_20089 Unknown Strategy"
+#property description "QM5_20089 Hopwood TS4 H4 trend-stack recovery"
 
 #include <QM/QM_Common.mqh>
 
@@ -48,11 +48,23 @@ input int    strategy_timestop_bars     = 24;
 input double strategy_range_gate_mult   = 0.4;
 input double strategy_spread_gate_mult  = 0.35;
 
+double g_cached_atr_h4 = 0.0;
+double g_cached_psar_h4 = 0.0;
+
+void Strategy_RefreshClosedBarCache()
+{
+   g_cached_atr_h4 = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
+   g_cached_psar_h4 = QM_SAR(_Symbol, PERIOD_H4, strategy_psar_step, strategy_psar_max, 1);
+}
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-bool Strategy_NoTradeFilter() { return false; }
+bool Strategy_NoTradeFilter()
+{
+   return (_Period != PERIOD_H4);
+}
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
@@ -95,6 +107,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // 4. Spread filter
    const double spread = SymbolInfoDouble(_Symbol, SYMBOL_ASK) - SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double atr_val = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
+   if(atr_val <= 0.0)
+      return false;
    if(spread > strategy_spread_gate_mult * atr_val)
       return false;
 
@@ -142,10 +156,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    
    // Set initial stop loss (1.5 * ATR from entry)
    const double entry_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_ASK) : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   req.sl = is_buy ? (entry_price - strategy_atr_sl_mult * atr_val) : (entry_price + strategy_atr_sl_mult * atr_val);
+   if(entry_price <= 0.0)
+      return false;
+   req.sl = QM_StopATR(_Symbol, req.type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
    req.tp = 0.0; // Dynamic TP
 
-   return true;
+   return (is_buy ? (req.sl > 0.0 && req.sl < entry_price)
+                  : (req.sl > entry_price));
 }
 
 void Strategy_ManageOpenPosition()
@@ -172,7 +189,9 @@ void Strategy_ManageOpenPosition()
       if(current_sl > 0.0)
          entry_atr = MathAbs(entry_price - current_sl) / strategy_atr_sl_mult;
       if(entry_atr <= 0.0)
-         entry_atr = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
+         entry_atr = g_cached_atr_h4;
+      if(entry_atr <= 0.0)
+         continue;
 
       // 1. T1 Target check: 2.0 * ATR from entry
       const double current_bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -182,8 +201,9 @@ void Strategy_ManageOpenPosition()
 
       // 2. Check if we already moved to Break Even (to prevent re-running T1 logic)
       const double spread = SymbolInfoDouble(_Symbol, SYMBOL_ASK) - SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      bool already_moved_be = is_buy ? (current_sl >= entry_price - 1e-5)
-                                     : (current_sl > 0.0 && current_sl <= entry_price + 1e-5);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      bool already_moved_be = is_buy ? (current_sl >= entry_price - point * 0.5)
+                                     : (current_sl > 0.0 && current_sl <= entry_price + point * 0.5);
 
       if(t1_reached && !already_moved_be)
       {
@@ -201,17 +221,17 @@ void Strategy_ManageOpenPosition()
       }
 
       // 3. PSAR Trail (only after T1 BE has been established)
-      if(already_moved_be)
+      if(already_moved_be && g_cached_psar_h4 > 0.0)
       {
-         const double sar = QM_TM_NormalizePrice(_Symbol, QM_SAR(_Symbol, PERIOD_H4, strategy_psar_step, strategy_psar_max, 1));
+         const double sar = QM_TM_NormalizePrice(_Symbol, g_cached_psar_h4);
          if(is_buy)
          {
-            if(sar > current_sl)
+            if(sar > current_sl && sar < current_bid)
                QM_TM_MoveSL(ticket, sar, "TS4_PSAR_trail");
          }
          else
          {
-            if(current_sl > 0.0 && sar < current_sl)
+            if(current_sl > 0.0 && sar < current_sl && sar > current_ask)
                QM_TM_MoveSL(ticket, sar, "TS4_PSAR_trail");
          }
       }
@@ -281,11 +301,21 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 int OnInit()
 {
+   if(strategy_dmi_period < 2 || strategy_macd_fast < 2 ||
+      strategy_macd_slow <= strategy_macd_fast || strategy_macd_signal < 2 ||
+      strategy_channel_period < 2 || strategy_atr_period < 2 ||
+      strategy_atr_sl_mult <= 0.0 || strategy_atr_tp_mult <= 0.0 ||
+      strategy_psar_step <= 0.0 || strategy_psar_max <= strategy_psar_step ||
+      strategy_cooldown_bars < 0 || strategy_timestop_bars < 1 ||
+      strategy_range_gate_mult <= 0.0 || strategy_spread_gate_mult <= 0.0)
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_20089_hopwood-ts4-standalone-h4-r1-recovery\"}");
    return INIT_SUCCEEDED;
 }
 
@@ -293,21 +323,17 @@ void OnDeinit(const int reason) { QM_FrameworkShutdown(); }
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
    Strategy_ManageOpenPosition();
+
+   if(!QM_IsNewBar()) return;
+   QM_EquityStreamOnNewBar();
+   Strategy_RefreshClosedBarCache();
 
    if(Strategy_ExitSignal())
    {
@@ -321,10 +347,16 @@ void OnTick()
       }
    }
 
-   if(!QM_IsNewBar()) return;
-   QM_EquityStreamOnNewBar();
+   if(Strategy_NewsFilterHook(broker_now)) return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
