@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 import factory_runtime_activation as fra
+import gate_manifest
 
 
 DEFAULT_REPO_ROOT = Path(r"C:\QM\repo")
@@ -232,6 +233,36 @@ def _source_bindings(repo_root: Path, *, head: str) -> dict[str, dict[str, str]]
     return bindings
 
 
+def _gate_contract_binding() -> dict[str, Any]:
+    """Bind the active default gate contract for the decision payload.
+
+    Additive-only.  Records which gate contract a Factory start ran under:
+    schema version, the repo-relative manifest path, the manifest sha256, and its
+    activation state.  Fail-closed — a decision that cannot bind the active
+    contract is not minted.
+    """
+
+    try:
+        manifest = gate_manifest.load_gate_manifest()
+        strategy_farm_dir = Path(gate_manifest.__file__).resolve().parent
+        manifest_relative = gate_manifest.DEFAULT_MANIFEST.resolve().relative_to(
+            strategy_farm_dir
+        )
+    except (gate_manifest.GateManifestError, OSError, ValueError) as exc:
+        raise DecisionBuildError(
+            f"gate contract binding failed: {exc}",
+            exit_code=EXIT_PRECONDITION,
+            category="PRECONDITION",
+        ) from exc
+    manifest_path = (Path("tools/strategy_farm") / manifest_relative).as_posix()
+    return {
+        "schema_version": manifest.schema_version,
+        "manifest_path": manifest_path,
+        "sha256": manifest.sha256,
+        "activation_state": manifest.activation_state,
+    }
+
+
 def _restore_artifact(path: Path, prior: bytes | None, *, scratch: Path) -> None:
     if prior is None:
         path.unlink(missing_ok=True)
@@ -432,6 +463,7 @@ def build_runtime_activation_decision(
     payload["restore_intent"]["factory_off_flag_sha256"] = flag_sha256
     payload["restore_intent"]["task_enabled_before_sha256"] = task_map_sha256
     payload["source_bindings"] = source_bindings
+    payload["gate_contract"] = _gate_contract_binding()
 
     decision_bytes = (json.dumps(payload, indent=2) + "\n").encode("utf-8")
     decision_sha256 = _sha256(decision_bytes)
@@ -490,6 +522,8 @@ def build_runtime_activation_decision(
         "authorized_at_utc": payload["authorized_at_utc"],
         "expires_at_utc": payload["expires_at_utc"],
         "source_binding_head": head,
+        "gate_contract_sha256": payload["gate_contract"]["sha256"],
+        "gate_contract_schema_version": payload["gate_contract"]["schema_version"],
         "candidate_validated": candidate_result["candidate_validated"],
         "published_validated": published_result["candidate_validated"],
     }

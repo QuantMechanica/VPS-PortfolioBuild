@@ -14,13 +14,24 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import logging
 import re
 import subprocess
 from pathlib import Path
 from typing import Any
 
 
+logger = logging.getLogger(__name__)
+
 RUNTIME_ACTIVATION_RECORD_PREFIX = "QM_FACTORY_RUNTIME_ACTIVATION_V1:"
+
+# Additive, optional block bound by build_runtime_activation_decision.py so a
+# Factory start records which gate contract it ran under.  Decisions minted
+# before this binding lack the block and are grandfathered (see
+# _validate_gate_contract).
+GATE_CONTRACT_KEYS = frozenset(
+    {"schema_version", "manifest_path", "sha256", "activation_state"}
+)
 
 
 SCHEMA_VERSION = "qm.factory-runtime-activation-owner-decision/v1"
@@ -270,6 +281,71 @@ def _require_runtime_authorizations(payload: dict[str, Any]) -> None:
         )
 
 
+def _load_default_gate_manifest() -> Any:
+    """Load the currently active default gate manifest, fail-closed.
+
+    Imported lazily so the runtime validator has no import-time dependency on the
+    gate-contract loader.  Any failure to load the active contract is fail-closed:
+    an activation that cannot confirm its gate contract must be refused.
+    """
+
+    try:
+        import gate_manifest  # noqa: PLC0415 - lazy, keeps import graph decoupled
+
+        return gate_manifest.load_gate_manifest()
+    except Exception as exc:  # noqa: BLE001 - fail-closed on any loader failure
+        raise RuntimeActivationError(
+            f"active default gate manifest could not be loaded for gate-contract "
+            f"validation: {exc}"
+        ) from exc
+
+
+def _validate_gate_contract(payload: dict[str, Any]) -> dict[str, Any] | None:
+    """Validate the optional gate_contract binding against the active manifest.
+
+    * A decision without the block is grandfathered (older mint) and passes with
+      a logged warning.
+    * A decision with the block must carry the exact key set and a sha256 that
+      matches the currently loaded default gate manifest; any mismatch is
+      fail-closed and refuses activation.
+    """
+
+    contract = payload.get("gate_contract")
+    if contract is None:
+        logger.warning(
+            "runtime activation decision has no gate_contract block; "
+            "grandfathering a pre-contract-binding decision without confirming "
+            "the active gate contract"
+        )
+        return None
+    if not isinstance(contract, dict):
+        raise RuntimeActivationError("gate_contract must be a JSON object")
+    _require_exact_keys(contract, set(GATE_CONTRACT_KEYS), label="gate_contract")
+    sha256 = contract.get("sha256")
+    if not isinstance(sha256, str) or SHA256_RE.fullmatch(sha256) is None:
+        raise RuntimeActivationError("gate_contract.sha256 is invalid")
+    manifest_path = contract.get("manifest_path")
+    if not isinstance(manifest_path, str) or not manifest_path.strip():
+        raise RuntimeActivationError("gate_contract.manifest_path must be non-empty")
+    manifest = _load_default_gate_manifest()
+    if sha256 != manifest.sha256:
+        raise RuntimeActivationError(
+            "gate_contract sha256 does not match the active default gate manifest: "
+            f"decision={sha256} active={manifest.sha256}"
+        )
+    if contract.get("schema_version") != manifest.schema_version:
+        raise RuntimeActivationError(
+            "gate_contract schema_version does not match the active default gate "
+            "manifest"
+        )
+    if contract.get("activation_state") != manifest.activation_state:
+        raise RuntimeActivationError(
+            "gate_contract activation_state does not match the active default gate "
+            "manifest"
+        )
+    return dict(contract)
+
+
 def _validate_runtime_activation_artifacts(
     *,
     repo_root: Path = REPO_ROOT,
@@ -302,25 +378,26 @@ def _validate_runtime_activation_artifacts(
         raise RuntimeActivationError("runtime decision SHA-256 sidecar mismatch")
     payload = _load_json(decision_raw, label="runtime activation decision")
     _require_runtime_authorizations(payload)
-    _require_exact_keys(
-        payload,
-        {
-            "schema_version",
-            "decision_id",
-            "activation_nonce",
-            "authority",
-            "status",
-            "authorized_at_utc",
-            "expires_at_utc",
-            "preparation_decision",
-            "authorizations",
-            "restart_holds",
-            "worker_policy",
-            "restore_intent",
-            "source_bindings",
-        },
-        label="runtime decision",
-    )
+    expected_payload_keys = {
+        "schema_version",
+        "decision_id",
+        "activation_nonce",
+        "authority",
+        "status",
+        "authorized_at_utc",
+        "expires_at_utc",
+        "preparation_decision",
+        "authorizations",
+        "restart_holds",
+        "worker_policy",
+        "restore_intent",
+        "source_bindings",
+    }
+    if "gate_contract" in payload:
+        # Additive-only: the block is optional so older (grandfathered) decisions
+        # remain valid, but when present it must be an exact, recognized key.
+        expected_payload_keys = expected_payload_keys | {"gate_contract"}
+    _require_exact_keys(payload, expected_payload_keys, label="runtime decision")
     decision_id = payload.get("decision_id")
     if not isinstance(decision_id, str) or not decision_id.strip():
         raise RuntimeActivationError("runtime decision_id must be non-empty")
@@ -483,6 +560,8 @@ def _validate_runtime_activation_artifacts(
             expected_blob=binding["git_blob"],
         )
 
+    gate_contract = _validate_gate_contract(payload)
+
     result = {
         "authorized": True,
         "decision_id": decision_id,
@@ -500,6 +579,7 @@ def _validate_runtime_activation_artifacts(
         "worker_policy_disabled_terminals": list(
             worker_policy["disabled_terminals"]
         ),
+        "gate_contract": gate_contract,
     }
     if require_artifact_provenance:
         decision_provenance = _verify_committed_file(

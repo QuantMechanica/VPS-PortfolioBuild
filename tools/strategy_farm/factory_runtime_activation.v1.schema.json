@@ -104,6 +104,17 @@
         "public_snapshot_task_wrapper": { "$ref": "#/$defs/fileBinding" },
         "public_snapshot_incident_guard": { "$ref": "#/$defs/fileBinding" }
       }
+    },
+    "gate_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "manifest_path", "sha256", "activation_state"],
+      "properties": {
+        "schema_version": { "type": "string", "minLength": 1 },
+        "manifest_path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "activation_state": { "type": ["string", "null"] }
+      }
     }
   },
   "$defs": {

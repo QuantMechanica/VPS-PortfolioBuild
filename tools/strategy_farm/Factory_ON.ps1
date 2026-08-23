@@ -474,6 +474,52 @@ function Get-CanonicalRuntimeActivationAuthorization {
     return $authorization
 }
 
+function Write-GateContractLine {
+    param([Parameter(Mandatory = $true)][string]$Context)
+
+    # Record which gate contract this Factory start ran under.  Fail-closed:
+    # a start that cannot read the active gate contract aborts (same pattern as
+    # the other python preflights above).
+    $gateContractProbe = @"
+import json, sys
+sys.path.insert(0, r'$PSScriptRoot')
+import gate_manifest
+manifest = gate_manifest.load_gate_manifest()
+print('QM_GATE_CONTRACT_V1:' + json.dumps({
+    'schema_version': manifest.schema_version,
+    'sha256': manifest.sha256,
+    'activation_state': manifest.activation_state,
+}))
+"@
+    $priorGateContractErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $output = @(& $pythonExe -c $gateContractProbe 2>&1)
+        $probeExitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $priorGateContractErrorActionPreference
+    }
+    if ($probeExitCode -ne 0) {
+        throw ("gate-contract preflight failed during ${Context}: " +
+            ($output -join [Environment]::NewLine))
+    }
+    $recordPrefix = 'QM_GATE_CONTRACT_V1:'
+    $records = @($output | ForEach-Object { [string]$_ } | Where-Object {
+        $_.StartsWith($recordPrefix, [System.StringComparison]::Ordinal)
+    })
+    if ($records.Count -ne 1) {
+        throw ("gate-contract preflight returned $($records.Count) framed records " +
+            "during ${Context}; expected exactly one")
+    }
+    try {
+        $contract = $records[0].Substring($recordPrefix.Length) | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        throw "gate-contract preflight returned invalid JSON during ${Context}: $($_.Exception.Message)"
+    }
+    Write-Host ("GATE_CONTRACT schema={0} sha256={1} state={2}" -f `
+        [string]$contract.schema_version, [string]$contract.sha256, [string]$contract.activation_state)
+}
+
 function Assert-CanonicalPublicSnapshotTaskAction {
     param([Parameter(Mandatory = $true)][string]$Context)
 
@@ -1222,6 +1268,7 @@ try {
     Assert-CanonicalOwnerRestartDecision
     Assert-CanonicalPublicSnapshotTaskAction -Context 'initial read-only preflight'
     Assert-CleanFactoryCheckout -Context 'initial read-only preflight' | Out-Null
+    Write-GateContractLine -Context 'initial read-only preflight'
     Assert-NoPendingFactoryOffRequest -Context 'runtime authorization preflight'
     $script:runtimeAuthorization = Get-CanonicalRuntimeActivationAuthorization
     [string[]]$runtimeRestartHoldIds = @($script:runtimeAuthorization.restart_hold_ids |

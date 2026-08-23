@@ -687,6 +687,44 @@ Write-Host '  QuantMechanica  -  FACTORY OFF' -ForegroundColor Yellow
 Write-Host '=====================================================' -ForegroundColor Yellow
 Write-Host ''
 
+# Informational: record which gate contract was active at drain start.  This is
+# never blocking for an OFF drain -- any read failure is reported and OFF
+# continues.
+try {
+    $gateContractProbe = @"
+import json, sys
+sys.path.insert(0, r'$PSScriptRoot')
+import gate_manifest
+manifest = gate_manifest.load_gate_manifest()
+print('QM_GATE_CONTRACT_V1:' + json.dumps({
+    'schema_version': manifest.schema_version,
+    'sha256': manifest.sha256,
+    'activation_state': manifest.activation_state,
+}))
+"@
+    $priorGateContractErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $gateContractOutput = @(& $pythonExe -c $gateContractProbe 2>&1)
+        $gateContractExitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $priorGateContractErrorActionPreference
+    }
+    $gateContractPrefix = 'QM_GATE_CONTRACT_V1:'
+    $gateContractRecords = @($gateContractOutput | ForEach-Object { [string]$_ } |
+        Where-Object { $_.StartsWith($gateContractPrefix, [System.StringComparison]::Ordinal) })
+    if ($gateContractExitCode -eq 0 -and $gateContractRecords.Count -eq 1) {
+        $gateContract = $gateContractRecords[0].Substring($gateContractPrefix.Length) |
+            ConvertFrom-Json -ErrorAction Stop
+        Write-Host ("  GATE_CONTRACT schema={0} sha256={1} state={2}" -f `
+            [string]$gateContract.schema_version, [string]$gateContract.sha256, [string]$gateContract.activation_state)
+    } else {
+        Write-Host '  GATE_CONTRACT unavailable (informational; OFF continues)'
+    }
+} catch {
+    Write-Host ("  GATE_CONTRACT unavailable (informational; OFF continues): {0}" -f $_.Exception.Message)
+}
+
 # The shared lock was acquired before task-state capture and is held through the
 # verified final OFF record.  Thus Factory_ON cannot delete an OFF intent that
 # this invocation publishes, and admitted writers drained before publication.
