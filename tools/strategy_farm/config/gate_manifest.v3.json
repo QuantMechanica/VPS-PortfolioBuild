@@ -1,0 +1,96 @@
+{
+  "schema_version": "qm.gate-manifest/v3",
+  "pipeline_version": "V5-Q10A-Q16-TARGET-2026-08-22",
+  "canonical_id_pattern": "^Q(?:0[0-9]|1[0-6])$",
+  "write_policy": "CANONICAL_ONLY",
+  "legacy_policy": "READ_AND_MIGRATION_ONLY",
+  "verdict_dimensions": [
+    "execution_status",
+    "evidence_strength",
+    "economic_merit",
+    "target_eligibility",
+    "promotion_decision"
+  ],
+  "gates": [
+    {"id":"Q00","ordinal":0,"name":"Research Intake","authority":"OWNER","runner":"MANUAL","evidence_role":"HYPOTHESIS_AND_AUTHORIZATION","next":"Q01"},
+    {"id":"Q01","ordinal":1,"name":"Build & Spec","authority":"DEVELOPMENT","runner":"MANUAL_OR_ROUTED","evidence_role":"BUILD_CONFORMANCE","next":"Q02"},
+    {"id":"Q02","ordinal":2,"name":"Baseline Screening","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"CHEAP_PROMOTION_SCREEN","next":"Q03"},
+    {"id":"Q03","ordinal":3,"name":"Parameter Sweep","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"PREREGISTERED_PARAMETER_STABILITY","next":"Q04"},
+    {"id":"Q04","ordinal":4,"name":"Walk-Forward + Commission","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"LOCKED_PARAMETER_SEQUENTIAL_OOS","next":"Q05"},
+    {"id":"Q05","ordinal":5,"name":"Gross Full-History Robustness","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"FULL_HISTORY_REPRODUCIBILITY","next":"Q06"},
+    {"id":"Q06","ordinal":6,"name":"Stress HARSH","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"EXECUTION_STRESS","next":"Q07"},
+    {"id":"Q07","ordinal":7,"name":"Multi-Seed","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"DISTRIBUTIONAL_ROBUSTNESS","next":"Q08"},
+    {"id":"Q08","ordinal":8,"name":"Davey Statistical Validation","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"TARGET_NEUTRAL_EVIDENCE_DOSSIER","next":"Q09"},
+    {"id":"Q09","ordinal":9,"name":"News Impact + FTMO Recommendation","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"NEWS_MODE_SELECTION_AND_FTMO_RECOMMENDATION","next":"Q10"},
+    {"id":"Q10","ordinal":10,"name":"Incumbent Full-History Confirmation","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"LOCKED_CONFIGURATION_REPRODUCIBILITY","next":"Q11"},
+    {"id":"Q11","ordinal":11,"name":"Final Portfolio Construction","authority":"OWNER","runner":"MANUAL_OR_ANALYTIC","evidence_role":"TARGET_SPECIFIC_PORTFOLIO_ADMISSION","next":"Q12"},
+    {"id":"Q12","ordinal":12,"name":"Operational Readiness","authority":"OWNER","runner":"MANUAL","evidence_role":"DEPLOYMENT_READINESS","next":"Q13"},
+    {"id":"Q13","ordinal":13,"name":"Live Burn-In DXZ","authority":"OWNER","runner":"MANUAL","evidence_role":"PROSPECTIVE_BURN_IN","next":null},
+    {"id":"Q14","ordinal":14,"name":"Pattern Filter Selection","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"DL089_PREREGISTERED_PATTERN_FILTER_SELECTION","next":"Q15"},
+    {"id":"Q15","ordinal":15,"name":"Parameter Optimization & Freeze","authority":"DEVELOPMENT","runner":"MANUAL_OR_ROUTED","evidence_role":"DEV_ONLY_PARAMETER_SWEEP_AND_FREEZE","next":"Q16"},
+    {"id":"Q16","ordinal":16,"name":"Best-Settings Head-to-Head","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"SEALED_BEST_SETTINGS_VS_BASELINE_AND_INCUMBENT_Q10","next":"Q11"}
+  ],
+  "legacy_aliases": {
+    "G0":"Q00","P1":"Q01","P2":"Q02","P3":"Q03","P3.5":"Q03",
+    "P4":"Q04","P5":"Q05","P5B":"Q05","P5C":"Q05","P6":"Q07",
+    "P7":"Q08","P8":"Q08","P9":"Q11","P9B":"Q12","P10":"Q13"
+  },
+  "extension_topology": {
+    "ordinary_chain": [
+      "Q00","Q01","Q02","Q03","Q04","Q05","Q06","Q07","Q08","Q09","Q10","Q11","Q12","Q13"
+    ],
+    "baseline_stage": {
+      "id": "Q10A",
+      "name": "Baseline Full Run",
+      "top_level": false,
+      "kind": "EVIDENCE_BINDING",
+      "source_phase": "Q08",
+      "source_evidence_role": "TARGET_NEUTRAL_EVIDENCE_DOSSIER",
+      "reuse_policy": "REUSE_ONLY_HASH_BOUND_FULL_HISTORY_Q08_BASELINE",
+      "missing_binding_action": "REQUIRE_Q10A_BASELINE_RUN",
+      "next": "Q09"
+    },
+    "target_sequence": ["Q10A","Q09","Q10","Q14","Q15","Q16","Q11"],
+    "optimization_fork": {
+      "from": "Q10",
+      "entry": "Q14",
+      "path": ["Q14","Q15","Q16"],
+      "rejoins": "Q11",
+      "activation": "EXPLICIT_Q14_ADMISSION_RUN",
+      "pattern_filter_cap_per_direction": 3,
+      "selection_contract": "DL-089"
+    },
+    "q16_dependencies": [
+      {"role":"BASELINE_FULL_RUN","phase":"Q10A","source_phase":"Q08"},
+      {"role":"INCUMBENT_Q10","phase":"Q10","source_phase":"Q10"}
+    ],
+    "portfolio_routes": [
+      {"from":"Q10","condition":"NOT_OPTIMIZED","to":"Q11"},
+      {"from":"Q16","condition":"OPTIMIZED","to":"Q11"}
+    ],
+    "storage_lanes": [
+      {
+        "id": "Q11_DXZ",
+        "parent": "Q11",
+        "authority": "OWNER",
+        "runner": "MANUAL_OR_ANALYTIC",
+        "evidence_role": "HASH_BOUND_DXZ_BOOK_MANIFEST",
+        "top_level": false
+      },
+      {
+        "id": "Q11_FTMO",
+        "parent": "Q11",
+        "authority": "OWNER",
+        "runner": "MANUAL_OR_ANALYTIC",
+        "evidence_role": "HASH_BOUND_FTMO_BOOK_MANIFEST",
+        "top_level": false
+      }
+    ],
+    "activation_guard": {
+      "state": "READ_INERT",
+      "requires_completed_review": "OPS-Q10-REALIGN-E1-E2",
+      "requires_approver": "CLAUDE",
+      "default_manifest_switch": false
+    }
+  }
+}

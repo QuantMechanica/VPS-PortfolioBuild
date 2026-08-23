@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "qm.gate-manifest/v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "pipeline_version", "canonical_id_pattern", "write_policy",
+    "legacy_policy", "verdict_dimensions", "gates", "legacy_aliases", "extension_topology"
+  ],
+  "properties": {
+    "schema_version": {"const": "qm.gate-manifest/v3"},
+    "pipeline_version": {"const": "V5-Q10A-Q16-TARGET-2026-08-22"},
+    "canonical_id_pattern": {"const": "^Q(?:0[0-9]|1[0-6])$"},
+    "write_policy": {"const": "CANONICAL_ONLY"},
+    "legacy_policy": {"const": "READ_AND_MIGRATION_ONLY"},
+    "verdict_dimensions": {
+      "const": [
+        "execution_status", "evidence_strength", "economic_merit",
+        "target_eligibility", "promotion_decision"
+      ]
+    },
+    "gates": {
+      "type": "array", "minItems": 17, "maxItems": 17,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "ordinal", "name", "authority", "runner", "evidence_role", "next"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^Q(?:0[0-9]|1[0-6])$"},
+          "ordinal": {"type": "integer", "minimum": 0, "maximum": 16},
+          "name": {"type": "string", "minLength": 1},
+          "authority": {"enum": ["OWNER", "DEVELOPMENT", "PIPELINE"]},
+          "runner": {"enum": ["MANUAL", "MANUAL_OR_ROUTED", "AUTOMATED", "MANUAL_OR_ANALYTIC"]},
+          "evidence_role": {"type": "string", "minLength": 1},
+          "next": {"type": ["string", "null"], "pattern": "^Q(?:0[0-9]|1[0-6])$"}
+        }
+      }
+    },
+    "legacy_aliases": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "pattern": "^Q(?:0[0-9]|1[0-6])$"}
+    },
+    "extension_topology": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ordinary_chain", "baseline_stage", "target_sequence", "optimization_fork",
+        "q16_dependencies", "portfolio_routes", "storage_lanes", "activation_guard"
+      ],
+      "properties": {
+        "ordinary_chain": {
+          "const": ["Q00","Q01","Q02","Q03","Q04","Q05","Q06","Q07","Q08","Q09","Q10","Q11","Q12","Q13"]
+        },
+        "baseline_stage": {
+          "type": "object", "additionalProperties": false,
+          "required": ["id", "name", "top_level", "kind", "source_phase", "source_evidence_role", "reuse_policy", "missing_binding_action", "next"],
+          "properties": {
+            "id": {"const": "Q10A"},
+            "name": {"const": "Baseline Full Run"},
+            "top_level": {"const": false},
+            "kind": {"const": "EVIDENCE_BINDING"},
+            "source_phase": {"const": "Q08"},
+            "source_evidence_role": {"const": "TARGET_NEUTRAL_EVIDENCE_DOSSIER"},
+            "reuse_policy": {"const": "REUSE_ONLY_HASH_BOUND_FULL_HISTORY_Q08_BASELINE"},
+            "missing_binding_action": {"const": "REQUIRE_Q10A_BASELINE_RUN"},
+            "next": {"const": "Q09"}
+          }
+        },
+        "target_sequence": {"const": ["Q10A","Q09","Q10","Q14","Q15","Q16","Q11"]},
+        "optimization_fork": {
+          "type": "object", "additionalProperties": false,
+          "required": ["from", "entry", "path", "rejoins", "activation", "pattern_filter_cap_per_direction", "selection_contract"],
+          "properties": {
+            "from": {"const": "Q10"},
+            "entry": {"const": "Q14"},
+            "path": {"const": ["Q14", "Q15", "Q16"]},
+            "rejoins": {"const": "Q11"},
+            "activation": {"const": "EXPLICIT_Q14_ADMISSION_RUN"},
+            "pattern_filter_cap_per_direction": {"const": 3},
+            "selection_contract": {"const": "DL-089"}
+          }
+        },
+        "q16_dependencies": {
+          "const": [
+            {"role":"BASELINE_FULL_RUN","phase":"Q10A","source_phase":"Q08"},
+            {"role":"INCUMBENT_Q10","phase":"Q10","source_phase":"Q10"}
+          ]
+        },
+        "portfolio_routes": {
+          "const": [
+            {"from":"Q10","condition":"NOT_OPTIMIZED","to":"Q11"},
+            {"from":"Q16","condition":"OPTIMIZED","to":"Q11"}
+          ]
+        },
+        "storage_lanes": {
+          "type": "array", "minItems": 2, "maxItems": 2,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "parent", "authority", "runner", "evidence_role", "top_level"],
+            "properties": {
+              "id": {"enum": ["Q11_DXZ", "Q11_FTMO"]},
+              "parent": {"const": "Q11"},
+              "authority": {"const": "OWNER"},
+              "runner": {"const": "MANUAL_OR_ANALYTIC"},
+              "evidence_role": {"type": "string", "minLength": 1},
+              "top_level": {"const": false}
+            }
+          }
+        },
+        "activation_guard": {
+          "const": {
+            "state": "READ_INERT",
+            "requires_completed_review": "OPS-Q10-REALIGN-E1-E2",
+            "requires_approver": "CLAUDE",
+            "default_manifest_switch": false
+          }
+        }
+      }
+    }
+  }
+}

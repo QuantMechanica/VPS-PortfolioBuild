@@ -5,8 +5,10 @@ new database write or evidence artifact must call :func:`write_phase_id`, which
 rejects aliases and unknown values.
 
 The v2 default adds the read-inert Q10 -> Q14 -> Q15 -> Q16 -> Q11
-optimization fork.  The ordinary Q00 -> Q13 chain remains explicit and v1
-manifests remain valid fixtures.
+optimization fork.  The v3 candidate describes the OWNER-approved Q10A
+baseline evidence binding and revised Q09/Q14-Q16/Q11 presentation, but remains
+opt-in until its prerequisite review closes.  The ordinary Q00 -> Q13 chain
+remains explicit and v1/v2 manifests remain valid fixtures.
 """
 
 from __future__ import annotations
@@ -22,11 +24,17 @@ from typing import Any, Mapping
 
 SCHEMA_VERSION_V1 = "qm.gate-manifest/v1"
 SCHEMA_VERSION_V2 = "qm.gate-manifest/v2"
+SCHEMA_VERSION_V3 = "qm.gate-manifest/v3"
 SCHEMA_VERSION = SCHEMA_VERSION_V2
-SUPPORTED_SCHEMA_VERSIONS = frozenset({SCHEMA_VERSION_V1, SCHEMA_VERSION_V2})
+SUPPORTED_SCHEMA_VERSIONS = frozenset(
+    {SCHEMA_VERSION_V1, SCHEMA_VERSION_V2, SCHEMA_VERSION_V3}
+)
 CONFIG_DIR = Path(__file__).resolve().parent / "config"
 V1_MANIFEST = CONFIG_DIR / "gate_manifest.v1.json"
+# Deliberately keep v2 active.  Switching DEFAULT_MANIFEST is an activation act
+# that requires Claude review after OPS-Q10-REALIGN-E1-E2 is closed.
 DEFAULT_MANIFEST = CONFIG_DIR / "gate_manifest.v2.json"
+V3_MANIFEST = CONFIG_DIR / "gate_manifest.v3.json"
 REQUIRED_VERDICT_DIMENSIONS = (
     "execution_status",
     "evidence_strength",
@@ -88,6 +96,21 @@ class GateManifest:
     @property
     def names(self) -> dict[str, str]:
         return {gate.id: gate.name for gate in self.gates}
+
+    @property
+    def display_names(self) -> dict[str, str]:
+        """Gate names plus non-writable evidence-stage display tokens.
+
+        Q10A in v3 is intentionally not a database phase and therefore never
+        appears in :attr:`phase_ids`; it is a label for a hash-bound Q08 evidence
+        reuse.  Keeping it in this display-only map prevents accidental writes.
+        """
+
+        names = self.names
+        if self.schema_version == SCHEMA_VERSION_V3 and self.extension_topology:
+            stage = self.extension_topology["baseline_stage"]
+            names[str(stage["id"])] = str(stage["name"])
+        return names
 
     @property
     def next_by_phase(self) -> dict[str, str | None]:
@@ -177,6 +200,85 @@ def _validate_v2_topology(raw: Any) -> Mapping[str, Any]:
     return _freeze(raw)
 
 
+def _validate_v3_topology(raw: Any) -> Mapping[str, Any]:
+    expected_keys = {
+        "ordinary_chain",
+        "baseline_stage",
+        "target_sequence",
+        "optimization_fork",
+        "q16_dependencies",
+        "portfolio_routes",
+        "storage_lanes",
+        "activation_guard",
+    }
+    if not isinstance(raw, dict) or set(raw) != expected_keys:
+        raise GateManifestError("v3 extension_topology key set mismatch")
+    if raw["ordinary_chain"] != list(V1_PHASE_IDS):
+        raise GateManifestError("v3 ordinary_chain must preserve Q00 through Q13")
+    if raw["baseline_stage"] != {
+        "id": "Q10A",
+        "name": "Baseline Full Run",
+        "top_level": False,
+        "kind": "EVIDENCE_BINDING",
+        "source_phase": "Q08",
+        "source_evidence_role": "TARGET_NEUTRAL_EVIDENCE_DOSSIER",
+        "reuse_policy": "REUSE_ONLY_HASH_BOUND_FULL_HISTORY_Q08_BASELINE",
+        "missing_binding_action": "REQUIRE_Q10A_BASELINE_RUN",
+        "next": "Q09",
+    }:
+        raise GateManifestError("v3 Q10A must be a read-only Q08 evidence binding")
+    if raw["target_sequence"] != [
+        "Q10A", "Q09", "Q10", "Q14", "Q15", "Q16", "Q11"
+    ]:
+        raise GateManifestError("v3 target sequence mismatch")
+    if raw["optimization_fork"] != {
+        "from": "Q10",
+        "entry": "Q14",
+        "path": ["Q14", "Q15", "Q16"],
+        "rejoins": "Q11",
+        "activation": "EXPLICIT_Q14_ADMISSION_RUN",
+        "pattern_filter_cap_per_direction": 3,
+        "selection_contract": "DL-089",
+    }:
+        raise GateManifestError("v3 optimization fork contract mismatch")
+    if raw["q16_dependencies"] != [
+        {"role": "BASELINE_FULL_RUN", "phase": "Q10A", "source_phase": "Q08"},
+        {"role": "INCUMBENT_Q10", "phase": "Q10", "source_phase": "Q10"},
+    ]:
+        raise GateManifestError("v3 Q16 dependency contract mismatch")
+    if raw["portfolio_routes"] != [
+        {"from": "Q10", "condition": "NOT_OPTIMIZED", "to": "Q11"},
+        {"from": "Q16", "condition": "OPTIMIZED", "to": "Q11"},
+    ]:
+        raise GateManifestError("v3 Q11 routing contract mismatch")
+    lanes = raw["storage_lanes"]
+    if not isinstance(lanes, list) or len(lanes) != 2:
+        raise GateManifestError("v3 requires exactly two Q11 storage lanes")
+    expected_lane_ids = ("Q11_DXZ", "Q11_FTMO")
+    for index, (lane, lane_id) in enumerate(zip(lanes, expected_lane_ids)):
+        if not isinstance(lane, dict) or set(lane) != {
+            "id", "parent", "authority", "runner", "evidence_role", "top_level"
+        }:
+            raise GateManifestError(f"v3 storage_lanes[{index}] key set mismatch")
+        if (
+            lane.get("id") != lane_id
+            or lane.get("parent") != "Q11"
+            or lane.get("authority") != "OWNER"
+            or lane.get("runner") != "MANUAL_OR_ANALYTIC"
+            or lane.get("top_level") is not False
+            or not str(lane.get("evidence_role") or "").strip()
+        ):
+            raise GateManifestError(f"invalid v3 Q11 storage lane: {lane_id}")
+    if raw["activation_guard"] != {
+        "state": "READ_INERT",
+        "requires_completed_review": "OPS-Q10-REALIGN-E1-E2",
+        "requires_approver": "CLAUDE",
+        "default_manifest_switch": False,
+    }:
+        raise GateManifestError("v3 activation guard mismatch")
+    return _freeze(raw)
+
+
 def load_gate_manifest(path: Path = DEFAULT_MANIFEST) -> GateManifest:
     value, raw = _load_json(Path(path))
     schema_version = str(value.get("schema_version") or "")
@@ -186,7 +288,7 @@ def load_gate_manifest(path: Path = DEFAULT_MANIFEST) -> GateManifest:
         "schema_version", "pipeline_version", "canonical_id_pattern", "write_policy",
         "legacy_policy", "verdict_dimensions", "gates", "legacy_aliases",
     }
-    if schema_version == SCHEMA_VERSION_V2:
+    if schema_version in {SCHEMA_VERSION_V2, SCHEMA_VERSION_V3}:
         expected_top.add("extension_topology")
     if set(value) != expected_top:
         raise GateManifestError("gate manifest top-level key set mismatch")
@@ -259,11 +361,12 @@ def load_gate_manifest(path: Path = DEFAULT_MANIFEST) -> GateManifest:
     if normalized_aliases != REQUIRED_LEGACY_ALIASES:
         raise GateManifestError("legacy_aliases differ from the frozen v1 contract")
 
-    extension_topology = (
-        _validate_v2_topology(value["extension_topology"])
-        if schema_version == SCHEMA_VERSION_V2
-        else None
-    )
+    if schema_version == SCHEMA_VERSION_V2:
+        extension_topology = _validate_v2_topology(value["extension_topology"])
+    elif schema_version == SCHEMA_VERSION_V3:
+        extension_topology = _validate_v3_topology(value["extension_topology"])
+    else:
+        extension_topology = None
 
     return GateManifest(
         schema_version=schema_version,

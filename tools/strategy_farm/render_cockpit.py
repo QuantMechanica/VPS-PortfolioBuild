@@ -55,13 +55,19 @@ except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpi
     )
 
 try:  # package import in tests and module consumers
+    from tools.strategy_farm import q09_ftmo_recommendation
+except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
+    import q09_ftmo_recommendation
+
+try:  # package import in tests and module consumers
     from tools.strategy_farm.phase_ids import (
+        PHASE_NAME,
         PHASE_ORDER as Q_DISPLAY_ORDER,
         Q_TO_LEGACY_ALIASES,
         phase_label,
     )
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
-    from phase_ids import PHASE_ORDER as Q_DISPLAY_ORDER, Q_TO_LEGACY_ALIASES, phase_label
+    from phase_ids import PHASE_NAME, PHASE_ORDER as Q_DISPLAY_ORDER, Q_TO_LEGACY_ALIASES, phase_label
 
 try:  # package import in tests and module consumers
     from tools.strategy_farm.work_item_clean_view import install_clean_view
@@ -354,6 +360,16 @@ def pipeline_cohort_snapshot() -> dict:
         "q09_upstream_pass": 0,
         "q10_historical_visible": 0,
         "q10_current_contract_bound": 0,
+        "q09_ftmo_recommendation": {
+            "schema_version": q09_ftmo_recommendation.SCHEMA_VERSION,
+            "available": False,
+            "total": 0,
+            "suitable_yes": 0,
+            "suitable_no": 0,
+            "reason_counts": {},
+            "rows": [],
+            "error": "not collected",
+        },
     }
     try:
         adjacent_rows = db_rows(
@@ -549,6 +565,10 @@ def pipeline_cohort_snapshot() -> dict:
             out["q10_current_contract_bound"] = int(
                 q10_rows[0].get("current_contract_bound") or 0
             )
+        with sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True) as connection:
+            connection.row_factory = sqlite3.Row
+            connection.execute("PRAGMA query_only=ON")
+            out["q09_ftmo_recommendation"] = q09_ftmo_recommendation.collect(connection)
         out["available"] = True
     except sqlite3.Error as exc:
         out["error"] = str(exc)
@@ -596,6 +616,14 @@ def render_pipeline_cohorts(snapshot: dict) -> str:
         for row in snapshot.get("q09_arms") or []
     )
     headers = "".join(f"<th>{e(bucket)}</th>" for bucket in PIPELINE_COHORT_BUCKETS)
+    ftmo = snapshot.get("q09_ftmo_recommendation") or {}
+    ftmo_total = int(ftmo.get("total") or 0)
+    ftmo_detail = (
+        f'{int(ftmo.get("suitable_yes") or 0):,} JA / '
+        f'{int(ftmo.get("suitable_no") or 0):,} NEIN'
+        if ftmo.get("available")
+        else "UNAVAILABLE"
+    )
     return f"""
   <div class="section cohort-section">
     <div class="section-head">
@@ -625,6 +653,11 @@ def render_pipeline_cohorts(snapshot: dict) -> str:
         <b>{int(snapshot.get("q10_current_contract_bound") or 0):,}</b>
         <small>PASS rows with both Q09 dependency roles</small>
       </div>
+      <div class="cohort-tail-card">
+        <span>Q09 FTMO GEEIGNET</span>
+        <b>{e(ftmo_detail)}</b>
+        <small>{ftmo_total:,} evaluated pairs · presentation only</small>
+      </div>
     </div>
     <div class="cohort-foot">
       Strict upstream PASS pairs; lifetime canonical-row evidence. Adjacent precedence:
@@ -641,11 +674,6 @@ def render_pipeline_cohorts(snapshot: dict) -> str:
 def render_optimization_track(snapshot: dict) -> str:
     """Render read-only Q14--Q16 outcomes and parked Q11 lane manifests."""
 
-    phase_names = {
-        "Q14": "Optimization Admission",
-        "Q15": "Challenger Build & Freeze",
-        "Q16": "Head-to-Head Requalification",
-    }
     phases = snapshot.get("phases") or {}
     phase_cards = []
     for phase in ("Q14", "Q15", "Q16"):
@@ -658,7 +686,7 @@ def render_optimization_track(snapshot: dict) -> str:
         phase_cards.append(
             '<div class="opt-phase-card">'
             f'<div class="opt-phase-id">{phase}</div>'
-            f'<div class="opt-phase-name">{e(phase_names[phase])}</div>'
+            f'<div class="opt-phase-name">{e(PHASE_NAME.get(phase, phase))}</div>'
             f'<div class="opt-phase-total">{int(row.get("total") or 0):,}</div>'
             f'<div class="opt-phase-outcomes">{outcome_html}'
             f'<span><b>OPEN / OTHER</b> {int(row.get("open") or 0):,}</span></div>'

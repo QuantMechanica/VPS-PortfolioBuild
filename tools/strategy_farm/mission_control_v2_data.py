@@ -50,12 +50,14 @@ try:  # package import (tests, module consumers)
     )
     from tools.strategy_farm import live_observability_contract as live_obs
     from tools.strategy_farm import q09_autoseal_hold_census
+    from tools.strategy_farm import q09_ftmo_recommendation
     from tools.strategy_farm import risk_freeze
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/mission_control_v2_data.py``
     from work_item_clean_view import install_clean_view
     from phase_ids import phase_label, normalize_phase_id, PHASE_NAME
     import live_observability_contract as live_obs
     import q09_autoseal_hold_census
+    import q09_ftmo_recommendation
     import risk_freeze
 
 
@@ -957,6 +959,7 @@ def build_contract(
         progress = build_progress(con, now=now)
         queue = build_queue(con, now=now)
         q09_autoseal_holds = build_q09_autoseal_holds(con, now=now)
+        q09_ftmo = q09_ftmo_recommendation.collect(con)
         owner = build_owner_decisions(con, now=now)
         control_strip = build_control_strip(con, queue, terminals, owner, now=now)
     finally:
@@ -977,6 +980,7 @@ def build_contract(
         "control_strip": control_strip,
         "queue": queue,
         "q09_autoseal_holds": q09_autoseal_holds,
+        "q09_ftmo_recommendation": q09_ftmo,
         "progress": progress,
         "terminals": terminals,
         "owner_decisions": owner,
@@ -1119,6 +1123,24 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                 "groups": {"type": "array"},
                 "reason_groups": {"type": "array"},
                 "thresholds": {"type": "object"},
+            },
+        },
+        "q09_ftmo_recommendation": {
+            "type": "object",
+            "required": [
+                "schema_version", "available", "criteria_source", "total",
+                "suitable_yes", "suitable_no", "reason_counts", "rows",
+            ],
+            "properties": {
+                "schema_version": {"const": q09_ftmo_recommendation.SCHEMA_VERSION},
+                "available": {"type": "boolean"},
+                "criteria_source": {"type": "string"},
+                "total": {"type": "integer"},
+                "suitable_yes": {"type": "integer"},
+                "suitable_no": {"type": "integer"},
+                "reason_counts": {"type": "object"},
+                "rows": {"type": "array"},
+                "error": {"type": ["string", "null"]},
             },
         },
         "progress": {

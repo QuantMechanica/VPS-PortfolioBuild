@@ -36,6 +36,7 @@ from tools.strategy_farm.phase_ids import (
     next_phase_id,
     phase_label,
 )
+from tools.strategy_farm import q09_ftmo_recommendation
 from tools.strategy_farm.work_item_clean_view import open_clean_view_connection
 
 PHASE_DISPLAY = PHASE_QID
@@ -3321,6 +3322,7 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
         "set_files": [],
         "work_items": [],
         "q08_portfolio_rescue": [],
+        "q09_ftmo_recommendation": {},
         "kpis_by_phase": {},
         "symbols": [],
     }
@@ -3349,6 +3351,17 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
             except sqlite3.OperationalError:
                 # ea_metrics not built yet — degrade to legacy recovered_stats path.
                 metrics_by_wid = {}
+            detail["q09_ftmo_recommendation"] = q09_ftmo_recommendation.collect(
+                conn,
+                ea_id=ea_id,
+                symbols=sorted(
+                    {
+                        str(row.get("symbol") or "").strip()
+                        for row in rows
+                        if str(row.get("symbol") or "").strip()
+                    }
+                ),
+            )
         # Collect ALL chronological attempts per (phase, symbol) — needed for
         # the expandable timeline (OWNER call 2026-05-23: latest-only display
         # hid that NDX Q02 had 30+ historical PASS attempts, making the
@@ -3811,6 +3824,36 @@ def _render_symbol_swimlane(detail: dict) -> str:
         f'<table class="swimlane"><thead><tr><th class="sym-h">Symbol</th>{head}</tr></thead>'
         f'<tbody>{"".join(rows)}</tbody></table>{legend}</div>'
     )
+
+
+def _render_ftmo_q09_detail(detail: dict) -> str:
+    ftmo = detail.get("q09_ftmo_recommendation") or {}
+    if not ftmo.get("available") or int(ftmo.get("total") or 0) <= 0:
+        return ""
+    rows = []
+    for row in ftmo.get("rows") or []:
+        suitable = row.get("suitable") is True
+        recommendation = "JA" if suitable else "NEIN"
+        css_class = "v-pass" if suitable else "v-fail"
+        rows.append(
+            f'<tr><td class="symcell">{e(row.get("symbol"))}</td>'
+            f'<td class="{css_class}">{recommendation}</td>'
+            f'<td>{e(row.get("chosen_temporal") or "—")}</td>'
+            f'<td class="mono">{e(row.get("reason_code") or "—")}</td>'
+            f'<td class="mono">{e(row.get("q09_news_work_item_id") or "—")}</td></tr>'
+        )
+    return f"""
+<div class="rescue-detail">
+  <div class="rescue-detail-title">Q09 News Impact · FTMO geeignet</div>
+  <div class="rescue-detail-note">Explizite JA/NEIN-Empfehlung aus der bestehenden
+  <code>ftmo_q09_admission</code>-Logik. Diese Darstellung ändert keine Kriterien oder
+  Verdikte und erteilt keine Challenge-, Deployment- oder AutoTrading-Autorität.</div>
+  <table class="wi-table rescue-detail-table">
+    <thead><tr><th>Symbol</th><th>FTMO geeignet</th><th>News-Modus</th><th>Begründung</th><th>Q09-Evidenz</th></tr></thead>
+    <tbody>{''.join(rows)}</tbody>
+  </table>
+</div>
+"""
 
 
 def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
@@ -4454,7 +4497,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
         is_open = " open" if phase == most_advanced else ""
         phases_html_chunks.append(
             f'<details class="stage-acc"{is_open}>'
-            f'<summary><span class="sa-phase">{e(phase_label(phase))}</span>'
+            f'<summary><span class="sa-phase">{e(phase_label(phase, include_name=True))}</span>'
             f'<span class="sa-verdicts">{e(verd_html)}</span>'
             f'<span class="sa-kpi">{kpi_html}</span></summary>'
             f'<div class="sa-body">{fail_box}{table_block}</div></details>'
@@ -4520,6 +4563,8 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
         f'<div class="availability {avail_cls}"><span class="av-label">{e(avail_label)}</span>'
         f'<span class="av-body">{e(avail_body)}</span></div>'
     )
+
+    ftmo_html = _render_ftmo_q09_detail(detail)
 
     swimlane_html = _render_symbol_swimlane(detail)
     rescue_rows = detail.get("q08_portfolio_rescue") or []
@@ -4587,6 +4632,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   </div>
   {decision_header}
   {availability_html}
+  {ftmo_html}
   {rescue_html}
   {desc_html}
   {kpis_html}

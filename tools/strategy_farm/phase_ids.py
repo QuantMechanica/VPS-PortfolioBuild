@@ -51,7 +51,9 @@ except ModuleNotFoundError:  # package imports in tests and module consumers
 _GATE_MANIFEST = load_gate_manifest()
 
 PHASE_ORDER = list(_GATE_MANIFEST.phase_ids)
-PHASE_NAME = _GATE_MANIFEST.names
+# Includes display-only evidence stages when the active manifest defines them.
+# Such stages (v3 Q10A) are not in PHASE_ORDER and remain invalid for writes.
+PHASE_NAME = _GATE_MANIFEST.display_names
 PHASE_NEXT = _GATE_MANIFEST.next_by_phase
 if _GATE_MANIFEST.extension_topology is None:
     ORDINARY_PHASE_ORDER = list(_GATE_MANIFEST.phase_ids)

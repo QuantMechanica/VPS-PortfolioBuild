@@ -410,6 +410,37 @@ def _render_risk_freeze(contract: dict) -> str:
   </section>'''
 
 
+def _render_q09_ftmo_recommendation(contract: dict) -> str:
+    recommendation = contract.get("q09_ftmo_recommendation") or {}
+    if not recommendation:
+        return ""
+    available = recommendation.get("available") is True
+    yes = int(recommendation.get("suitable_yes") or 0)
+    no = int(recommendation.get("suitable_no") or 0)
+    total = int(recommendation.get("total") or 0)
+    reasons = recommendation.get("reason_counts") or {}
+    reason_rows = "".join(
+        f'<tr><td class="mono">{e(reason)}</td><td class="mc-num">{_int(count)}</td></tr>'
+        for reason, count in sorted(reasons.items())
+    )
+    if not reason_rows:
+        reason_rows = '<tr><td class="mc-dim">keine ausgewerteten Q09-Paare</td><td class="mc-num">0</td></tr>'
+    status = f"{yes} JA · {no} NEIN" if available else "UNAVAILABLE"
+    return f'''
+  <section class="mc-section" id="q09-ftmo-recommendation">
+    <div class="mc-h2"><span>Q09 News Impact · FTMO geeignet</span>
+      <span class="mc-h2-aux">{e(status)} · {total} Paare</span></div>
+    <table class="mc-table">
+      <thead><tr><th>Begründung aus ftmo_q09_admission</th><th class="mc-num">Paare</th></tr></thead>
+      <tbody>{reason_rows}</tbody>
+    </table>
+    <div class="mc-foot"><div class="mc-foot-line">
+      Reine Präsentation der bestehenden Q09-Zulassungslogik; keine Schwellen-,
+      Verdikt-, Challenge- oder Deployment-Autorität.
+    </div></div>
+  </section>'''
+
+
 def _render_progress(contract: dict) -> str:
     pr = contract.get("progress", {}) or {}
     today = pr.get("today", {}) or {}
@@ -830,6 +861,7 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
     body = "".join([
         _render_control_strip(contract),
         _render_risk_freeze(contract),
+        _render_q09_ftmo_recommendation(contract),
         _render_owner_decisions(contract),
         _render_progress(contract),
         _render_terminals(contract, ea_page_exists=ea_page_exists),

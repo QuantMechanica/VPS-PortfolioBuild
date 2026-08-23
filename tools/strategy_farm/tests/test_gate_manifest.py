@@ -63,6 +63,58 @@ def test_v1_manifest_remains_a_valid_closed_fixture() -> None:
         gate_manifest.write_phase_id("Q14", contract)
 
 
+def test_v3_candidate_encodes_owner_sequence_but_default_remains_v2() -> None:
+    active = gate_manifest.load_gate_manifest()
+    candidate = gate_manifest.load_gate_manifest(gate_manifest.V3_MANIFEST)
+
+    assert active.schema_version == "qm.gate-manifest/v2"
+    assert gate_manifest.DEFAULT_MANIFEST.name == "gate_manifest.v2.json"
+    assert candidate.schema_version == "qm.gate-manifest/v3"
+    assert candidate.phase_ids == tuple(f"Q{i:02d}" for i in range(17))
+    assert "Q10A" not in candidate.phase_ids
+    assert candidate.display_names["Q10A"] == "Baseline Full Run"
+    with pytest.raises(gate_manifest.GateManifestError, match="non-canonical"):
+        gate_manifest.write_phase_id("Q10A", candidate)
+
+    topology = candidate.extension_topology
+    assert topology is not None
+    assert tuple(topology["target_sequence"]) == (
+        "Q10A", "Q09", "Q10", "Q14", "Q15", "Q16", "Q11"
+    )
+    assert topology["baseline_stage"]["source_phase"] == "Q08"
+    assert topology["baseline_stage"]["reuse_policy"] == (
+        "REUSE_ONLY_HASH_BOUND_FULL_HISTORY_Q08_BASELINE"
+    )
+    assert topology["baseline_stage"]["missing_binding_action"] == (
+        "REQUIRE_Q10A_BASELINE_RUN"
+    )
+    assert topology["optimization_fork"]["pattern_filter_cap_per_direction"] == 3
+    assert topology["q16_dependencies"][0]["source_phase"] == "Q08"
+    assert topology["q16_dependencies"][1]["source_phase"] == "Q10"
+    assert topology["portfolio_routes"][0]["from"] == "Q10"
+    assert topology["portfolio_routes"][1]["from"] == "Q16"
+    assert topology["activation_guard"] == {
+        "state": "READ_INERT",
+        "requires_completed_review": "OPS-Q10-REALIGN-E1-E2",
+        "requires_approver": "CLAUDE",
+        "default_manifest_switch": False,
+    }
+
+
+def test_v3_changes_no_authority_runner_next_or_verdict_dimension() -> None:
+    v2 = gate_manifest.load_gate_manifest()
+    v3 = gate_manifest.load_gate_manifest(gate_manifest.V3_MANIFEST)
+
+    def frozen_fields(gate: gate_manifest.Gate) -> tuple[object, ...]:
+        return gate.id, gate.ordinal, gate.authority, gate.runner, gate.next
+
+    assert [frozen_fields(gate) for gate in v3.gates] == [
+        frozen_fields(gate) for gate in v2.gates
+    ]
+    assert v3.verdict_dimensions == v2.verdict_dimensions
+    assert dict(v3.legacy_aliases) == dict(v2.legacy_aliases)
+
+
 def test_manifest_alias_inverse_is_complete_and_has_no_invented_keys() -> None:
     contract = gate_manifest.load_gate_manifest()
 
@@ -125,12 +177,15 @@ def test_duplicate_json_keys_and_non_contiguous_gates_fail_closed(tmp_path: Path
         gate_manifest.load_gate_manifest(broken_path)
 
 
-def test_schemas_declare_closed_v1_and_v2_contracts() -> None:
+def test_schemas_declare_closed_v1_v2_and_v3_contracts() -> None:
     v1 = json.loads(
         (STRATEGY_FARM / "schemas" / "gate_manifest.v1.schema.json").read_text(encoding="utf-8")
     )
     v2 = json.loads(
         (STRATEGY_FARM / "schemas" / "gate_manifest.v2.schema.json").read_text(encoding="utf-8")
+    )
+    v3 = json.loads(
+        (STRATEGY_FARM / "schemas" / "gate_manifest.v3.schema.json").read_text(encoding="utf-8")
     )
     assert v1["additionalProperties"] is False
     assert v1["properties"]["gates"]["minItems"] == 14
@@ -139,6 +194,37 @@ def test_schemas_declare_closed_v1_and_v2_contracts() -> None:
     assert v2["properties"]["gates"]["minItems"] == 17
     assert v2["properties"]["gates"]["maxItems"] == 17
     assert v2["properties"]["extension_topology"]["additionalProperties"] is False
+    assert v3["additionalProperties"] is False
+    assert v3["properties"]["gates"]["minItems"] == 17
+    assert v3["properties"]["gates"]["maxItems"] == 17
+    assert v3["properties"]["extension_topology"]["additionalProperties"] is False
+
+
+def test_v3_json_schema_validates_candidate_when_jsonschema_is_available() -> None:
+    jsonschema = pytest.importorskip("jsonschema")
+    schema = json.loads(
+        (STRATEGY_FARM / "schemas" / "gate_manifest.v3.schema.json").read_text(encoding="utf-8")
+    )
+    manifest = json.loads(gate_manifest.V3_MANIFEST.read_text(encoding="utf-8"))
+    jsonschema.Draft202012Validator.check_schema(schema)
+    jsonschema.validate(instance=manifest, schema=schema)
+
+
+def test_v3_fail_closed_on_baseline_cap_dependency_or_activation_drift(tmp_path: Path) -> None:
+    original = json.loads(gate_manifest.V3_MANIFEST.read_text(encoding="utf-8"))
+    mutations = [
+        ("baseline", lambda value: value["extension_topology"]["baseline_stage"].update({"reuse_policy": "REUSE_ANY_Q08"})),
+        ("cap", lambda value: value["extension_topology"]["optimization_fork"].update({"pattern_filter_cap_per_direction": 4})),
+        ("dependency", lambda value: value["extension_topology"]["q16_dependencies"][0].update({"source_phase": "Q10"})),
+        ("activation", lambda value: value["extension_topology"]["activation_guard"].update({"default_manifest_switch": True})),
+    ]
+    for name, mutate in mutations:
+        value = json.loads(json.dumps(original))
+        mutate(value)
+        path = tmp_path / f"broken_{name}.json"
+        path.write_text(json.dumps(value), encoding="utf-8")
+        with pytest.raises(gate_manifest.GateManifestError, match="v3"):
+            gate_manifest.load_gate_manifest(path)
 
 
 def test_v2_topology_and_legacy_aliases_fail_closed(tmp_path: Path) -> None:
@@ -166,8 +252,10 @@ def test_renderers_use_shared_phase_ids_without_local_display_maps() -> None:
     assert "\nPHASE_DISPLAY =" not in cockpit_source
     assert "_q_with_legacy =" not in cockpit_source
     assert "Q_DISPLAY_ORDER = [" not in cockpit_source
+    assert "PHASE_NAME.get(phase, phase)" in cockpit_source
     assert "next_phase_id" in dashboard_source
     assert "PHASE_ORDER[idx + 1]" not in dashboard_source
+    assert "phase_label(phase, include_name=True)" in dashboard_source
 
     from tools.strategy_farm import render_cockpit
     from tools.strategy_farm.dashboards import render_dashboards

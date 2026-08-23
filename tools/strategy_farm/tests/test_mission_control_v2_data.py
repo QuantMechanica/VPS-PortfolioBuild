@@ -272,6 +272,12 @@ def test_full_contract_is_schema_valid(fixture_db, monkeypatch, tmp_path):
     assert contract["control_strip"]["factory_state"] in (
         "NOMINAL", "DEGRADED", "MAINTENANCE", "CRITICAL")
     assert len(contract["terminals"]["terminals"]) == 10
+    assert contract["q09_ftmo_recommendation"]["schema_version"] == (
+        "qm.q09-ftmo-recommendation/v1"
+    )
+    assert contract["q09_ftmo_recommendation"]["criteria_source"].endswith(
+        "evaluate_ftmo_q09_admission"
+    )
 
 
 def test_validator_rejects_bad_document():
