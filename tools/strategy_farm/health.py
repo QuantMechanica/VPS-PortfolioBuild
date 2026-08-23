@@ -782,6 +782,51 @@ def chk_work_items_timestamp_sanity(con) -> dict:
     return _check("work_items_timestamp_sanity", "OK", 0, 0, "timestamps sane", "")
 
 
+def chk_sqlite_lock_crash_infra_24h(
+    con: sqlite3.Connection, *, now: dt.datetime | None = None
+) -> dict:
+    """Count worker-crash INFRA rows whose traceback is SQLite contention."""
+
+    observed_at = now or dt.datetime.now(dt.timezone.utc)
+    if observed_at.tzinfo is None:
+        observed_at = observed_at.replace(tzinfo=dt.timezone.utc)
+    cutoff = (observed_at.astimezone(dt.timezone.utc) - dt.timedelta(hours=24)).isoformat()
+    rows = con.execute(
+        """
+        SELECT id,ea_id,symbol,phase,updated_at,COUNT(*) OVER() AS crash_count
+        FROM work_items
+        WHERE verdict='INFRA_FAIL' AND updated_at>=?
+          AND json_valid(payload_json)=1
+          AND json_extract(payload_json,'$.verdict_reason')='worker_crashed_handling_item'
+          AND lower(payload_json) LIKE '%database is locked%'
+        ORDER BY updated_at DESC
+        LIMIT 25
+        """,
+        (cutoff,),
+    ).fetchall()
+    count = int(rows[0][5]) if rows else 0
+    if count:
+        samples = ", ".join(
+            f"{row[0][:8]}:{row[1]}:{row[2]}:{row[3]}@{row[4]}" for row in rows[:5]
+        )
+        return _check(
+            "sqlite_lock_crash_infra_24h",
+            "FAIL",
+            count,
+            0,
+            f"{count} SQLite-lock worker crash INFRA row(s) in 24h; {samples}",
+            "Inspect terminal_worker logs and pump stage_timings; contention must defer/retry, never manufacture INFRA_FAIL.",
+        )
+    return _check(
+        "sqlite_lock_crash_infra_24h",
+        "OK",
+        0,
+        0,
+        "no SQLite-lock worker crash INFRA rows in the last 24h",
+        "",
+    )
+
+
 def chk_pump_task_health() -> dict:
     """Scheduled task QM_StrategyFarm_Pump_5min LastResult must be 0 (or a
     known-benign busy code), and the pump lock must not be orphaned by a dead
@@ -4021,6 +4066,7 @@ ALL_CHECKS = [
     ("custom_history_repairs_24h", chk_custom_history_repairs, False),
     ("usn_journal_d",          chk_usn_journal_d,          False),
     ("work_items_timestamp_sanity", chk_work_items_timestamp_sanity, True),
+    ("sqlite_lock_crash_infra_24h", chk_sqlite_lock_crash_infra_24h, True),
     ("p2_pass_no_p3",          chk_p2_pass_no_p3,          True),
     ("ea_metrics_fresh",       chk_ea_metrics_fresh,       True),
     ("ablation_grandchildren", chk_ablation_grandchildren, True),
