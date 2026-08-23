@@ -17847,3 +17847,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41119,xauxag-mclose-quartile-rv,1,XAGUSD.DWX,411190001,2026-08-22,Codex governed allocator,active
 41121,xauxag-mseqdom-rv,0,XAUUSD.DWX,411210000,2026-08-23,Codex governed allocator,active
 41121,xauxag-mseqdom-rv,1,XAGUSD.DWX,411210001,2026-08-23,Codex governed allocator,active
+41122,wti-mextreme-sequence-mom,0,XTIUSD.DWX,411220000,2026-08-23,Codex governed allocator,active
