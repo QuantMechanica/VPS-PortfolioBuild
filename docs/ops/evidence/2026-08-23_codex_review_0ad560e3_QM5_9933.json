@@ -1,0 +1,21 @@
+{
+  "review_task_id": "0ad560e3-9dbb-41b7-908a-9e3073fed0c0",
+  "build_task_id": "c10c1e2c-6932-4db8-afdd-40907ea34246",
+  "ea_id": "QM5_9933",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "FAIL",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "Approved card targets SP500.DWX, NDX.DWX, and WS30.DWX only, but the build generated and registered setfiles for ten additional symbols: AUDUSD.DWX, EURUSD.DWX, GBPUSD.DWX, GDAXI.DWX, NZDUSD.DWX, UK100.DWX, USDCAD.DWX, USDCHF.DWX, USDJPY.DWX, and XAUUSD.DWX.",
+    "Source artifact is not the canonical build_result.json schema: required fields ea_dir, magic_base, symbols_registered, compile_succeeded, smoke_result, and smoke_report_path are absent.",
+    "[ONTICK-ORDER-ADVISORY] The news gate precedes Friday-close and strategy-exit handling; every entry carries a server-side SL, so this remains advisory under the mechanical review contract."
+  ],
+  "reviewed_at": "2026-08-23T07:05:29Z"
+}

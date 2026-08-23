@@ -1,0 +1,20 @@
+{
+  "review_task_id": "ec1528a0-459b-4bed-be3c-320d7808f705",
+  "build_task_id": "4b9809f2-0f51-4773-9f73-f0787c5c3a17",
+  "ea_id": "QM5_9925",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "build_result records smoke_result=deferred_p2_smoke with blocked_reason=null; the waiver requires durable measured tester-capacity evidence in blocked_reason, and a generic open_questions note is not sufficient.",
+    "[ONTICK-ORDER-ADVISORY] The news gate precedes Friday-close and strategy-exit handling; every entry carries a server-side SL, so this remains advisory under the mechanical review contract."
+  ],
+  "reviewed_at": "2026-08-23T07:05:29Z"
+}

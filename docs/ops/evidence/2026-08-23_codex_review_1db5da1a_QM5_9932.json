@@ -1,0 +1,21 @@
+{
+  "review_task_id": "1db5da1a-e87a-486f-a6f6-2224724a09fe",
+  "build_task_id": "c71f308a-76be-456f-8ae7-a5d7c3abc4e0",
+  "ea_id": "QM5_9932",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "FAIL",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "Approved card targets SP500.DWX, NDX.DWX, and WS30.DWX only, but the build generated and registered setfiles for ten additional symbols: AUDUSD.DWX, EURUSD.DWX, GBPUSD.DWX, GDAXI.DWX, NZDUSD.DWX, UK100.DWX, USDCAD.DWX, USDCHF.DWX, USDJPY.DWX, and XAUUSD.DWX.",
+    "build_result records smoke_result=deferred_p2_smoke with blocked_reason=null; the waiver requires durable measured tester-capacity evidence in blocked_reason, and a generic open_questions note is not sufficient.",
+    "[ONTICK-ORDER-ADVISORY] The news gate precedes Friday-close and strategy-exit handling; every entry carries a server-side SL, so this remains advisory under the mechanical review contract."
+  ],
+  "reviewed_at": "2026-08-23T07:05:29Z"
+}
