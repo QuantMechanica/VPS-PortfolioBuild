@@ -1,0 +1,50 @@
+{
+  "schema": "qm.cpu-ceiling-observation/v1",
+  "recorded_at_utc": "2026-08-23T22:07:26.9313076Z",
+  "scope": "QM5_41135 governed compile and Q02 admission",
+  "command": "Get-Counter '\\\\Processor(_Total)\\\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+  "sample_interval_seconds": 1,
+  "samples_percent": [
+    94.6,
+    93.4,
+    86,
+    98.2,
+    100
+  ],
+  "average_percent": 94.4,
+  "max_percent": 100,
+  "claim_ceiling_percent": 97,
+  "resume_ceiling_percent": 90,
+  "policy_source": "tools/strategy_farm/terminal_worker.py",
+  "ceiling_breached": true,
+  "free_ram_gb": 25.4,
+  "total_ram_gb": 63.1,
+  "running_factory_terminals_observed": [
+    "T1",
+    "T10",
+    "T3",
+    "T4",
+    "T5"
+  ],
+  "source_commit": "51fbbfd190b545588336b5e26cdc8f9736c141bb",
+  "set_binding_fix_commit": "889d248cd6bb299ce7c69c45053be60ae2059ff9",
+  "mq5_sha256": "4AB2F54163C06B57C130D7E067C3BFBA02F6B057A4683A4B832266BB7D5D17DE",
+  "ex5_exists": false,
+  "compile_status": "NOT_ENQUEUED",
+  "compile_enqueue_evidence": [
+    {
+      "result": "REFUSED_BEFORE_MUTATION",
+      "reason": "BOUND_SETFILE_HASH_EXISTS",
+      "disposition": "Corrected new-build set headers from a 64-zero placeholder to the canonical pending marker and committed the fix."
+    },
+    {
+      "result": "NO_MUTATION",
+      "reason": "sqlite3.OperationalError: database is locked",
+      "disposition": "Did not bypass the live farm writer; exact read-only target query remained empty."
+    }
+  ],
+  "target_work_items": [],
+  "q01_enqueued": false,
+  "q02_enqueued": false,
+  "stop_reason": "OWNER mission says to stop and summarize when the backtest CPU ceiling is reached"
+}

@@ -64,8 +64,8 @@ r2_mechanical: PASS
 r3_data_available: PASS_WITH_CALENDAR_SYNCHRONIZATION_AND_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED_Q01_PENDING
+q01_status: SOURCE_READY_COMPILE_NOT_ENQUEUED_CPU_CEILING
+q02_status: NOT_ENQUEUED_Q01_PENDING_CPU_CEILING
 review_focus: "Falsify a completed-month gold/silver daily-relative-return interquartile-mean reversion basket outside the certified directional XAU/SP500/NDX/XNG book. Verify exact synchronization, older boundary pair, every relative return ending in the month, endpoint identity, full ascending sort, floor(n/4) removal from both tails, exact retained membership, central arithmetic mean direction independent of the raw endpoint, contrarian equal-notional sides, one attempt, aggregate fixed risk, atomicity, and next-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -410,8 +410,10 @@ priors are not pipeline evidence.
 
 - Q00/G0: APPROVED by the current explicit OWNER mission and this recorded
   deterministic review.
-- Q01: PENDING_BUILD.
-- Q02: NOT_ENQUEUED_Q01_PENDING.
+- Q01: SOURCE_READY_COMPILE_NOT_ENQUEUED_CPU_CEILING. Static reference,
+  spec, guardrail, and basket-scope checks pass; no EX5 or strict compile
+  verdict exists.
+- Q02: NOT_ENQUEUED_Q01_PENDING_CPU_CEILING.
 - Q03+: NOT_STARTED.
 
 ## Safety Boundary
@@ -427,3 +429,4 @@ correlation waiver, or decorrelation claim. Q09 alone owns portfolio overlap.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-08-23 | approved source extraction | G0-approved card; QM5_41135 reserved; magics pending governed allocation |
+| v1 | 2026-08-24 | branch build and CPU-ceiling handoff | source/spec/tests/manifest/RISK_FIXED sets committed; no EX5; Q02 not enqueued after 100% CPU observation |
