@@ -80,7 +80,7 @@ def test_plan_preserves_payoff_order_and_skips_undeclared_or_inactive(tmp_path: 
     assert [item.ea_id for item in plan["planned"]] == [1]
     assert plan["decisions"][1]["action"] == "defer"
     assert plan["decisions"][2]["reason"] == "card_missing_target_symbols"
-    assert plan["decisions"][3]["reason"] == "ea_id_not_active"
+    assert plan["decisions"][3]["reason"] == "ea_id_not_active:retired"
     assert plan["decisions"][4]["reason"] == "prohibited_technique:grid"
 
 
@@ -118,7 +118,17 @@ def test_directory_and_card_exist_before_registry_write(tmp_path: Path, monkeypa
 def test_dirty_registry_aborts_with_paths_and_clear_check_passes(tmp_path: Path) -> None:
     repo = _fixture_repo(tmp_path)
     subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
-    subprocess.run(["git", "add", "framework/registry/magic_numbers.csv", "framework/include/QM/QM_MagicResolver.mqh"], cwd=repo, check=True)
+    subprocess.run(
+        [
+            "git",
+            "add",
+            "framework/registry/ea_id_registry.csv",
+            "framework/registry/magic_numbers.csv",
+            "framework/include/QM/QM_MagicResolver.mqh",
+        ],
+        cwd=repo,
+        check=True,
+    )
     subprocess.run(
         ["git", "-c", "user.name=pytest", "-c", "user.email=pytest@example.invalid", "commit", "-qm", "fixture"],
         cwd=repo,
@@ -176,6 +186,112 @@ def test_exact_card_candidate_uses_only_declared_symbols_and_refuses_retired_his
     assert item.symbols == ("EURUSD.DWX", "GBPUSD.DWX")
     assert plan["planned"] == []
     assert plan["decisions"][0]["reason"] == "retired_magic_history_requires_review_do_not_unretire"
+
+
+def test_live_approved_discovery_includes_post_worklist_card(tmp_path: Path) -> None:
+    repo = _fixture_repo(tmp_path)
+    approved = tmp_path / "cards_approved"
+    approved.mkdir()
+    card = approved / "QM5_9001_post-0817.md"
+    card.write_text(
+        "---\nea_id: QM5_9001\nslug: post-0817\nsource_id: source-post-0817\n"
+        "g0_status: APPROVED\ntarget_symbols: [EURUSD.DWX]\n---\n",
+        encoding="utf-8",
+    )
+
+    candidates, findings = allocator.load_approved_card_candidates(repo, approved)
+
+    assert findings == []
+    assert [item.ea_id for item in candidates] == [9001]
+    assert candidates[0].strategy_id == "source-post-0817"
+    assert candidates[0].stage == "approved_live"
+
+
+def test_missing_exact_identity_and_magic_are_allocated_in_one_governed_write(
+    tmp_path: Path,
+) -> None:
+    repo = _fixture_repo(tmp_path)
+    item = _candidate(repo, 6, "post-worklist", "approved_live", ("EURUSD.DWX",))
+    item = allocator.Candidate(
+        item.ea_id,
+        item.slug,
+        item.stage,
+        item.directory,
+        item.card,
+        item.symbols,
+        item.symbol_policy,
+        "source-post-worklist",
+    )
+    _, identity_rows = allocator._read_csv(repo / allocator.EA_ID_REGISTRY)
+    registry = allocator._active_ea_registry(repo / allocator.EA_ID_REGISTRY)
+    plan = allocator.build_plan(
+        repo,
+        [item],
+        registry,
+        [],
+        max_eas=1,
+        ea_registry_rows=identity_rows,
+    )
+    assert plan["planned_identity_ids"] == [6]
+
+    def regenerate(_: Path) -> None:
+        _, rows = allocator._read_csv(repo / allocator.MAGIC_REGISTRY)
+        generated = [(999, 0, "EURUSD.DWX", 9990000)]
+        generated.extend(
+            (int(row["ea_id"]), int(row["symbol_slot"]), row["symbol"], int(row["magic"]))
+            for row in rows
+            if row["status"] == "active"
+        )
+        _resolver(repo / allocator.MAGIC_RESOLVER, sorted(generated))
+
+    result = allocator.apply_plan(
+        repo,
+        plan,
+        allocator.MAGIC_FIELDS,
+        [],
+        regenerate=regenerate,
+    )
+
+    assert result["identity_ids_added"] == ["QM5_6"]
+    assert result["allocated_rows"] == 1
+    _, identities_after = allocator._read_csv(repo / allocator.EA_ID_REGISTRY)
+    assert any(
+        row["ea_id"] == "6"
+        and row["slug"] == "post-worklist"
+        and row["status"] == "active"
+        for row in identities_after
+    )
+    _, magic_after = allocator._read_csv(repo / allocator.MAGIC_REGISTRY)
+    assert magic_after[-1]["magic"] == "60000"
+
+
+def test_ambiguous_identity_is_never_selected_for_allocation(tmp_path: Path) -> None:
+    repo = _fixture_repo(tmp_path)
+    fields, rows = allocator._read_csv(repo / allocator.EA_ID_REGISTRY)
+    rows.append(
+        {
+            "ea_id": "1",
+            "slug": "compiled-duplicate",
+            "strategy_id": "other",
+            "status": "active",
+            "owner": "x",
+            "created_at": "x",
+        }
+    )
+    _write_csv(repo / allocator.EA_ID_REGISTRY, fields, rows)
+    item = _candidate(repo, 1, "compiled", "approved_live", ("EURUSD.DWX",))
+
+    plan = allocator.build_plan(
+        repo,
+        [item],
+        allocator._active_ea_registry(repo / allocator.EA_ID_REGISTRY),
+        [],
+        max_eas=1,
+        ea_registry_rows=rows,
+    )
+
+    assert plan["planned"] == []
+    assert plan["decisions"][0]["reason"] == "ea_id_registry_ambiguous:rows=2"
 
 
 def test_full_dry_run_zero_cap_is_allowed_but_real_zero_cap_is_rejected() -> None:

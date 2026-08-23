@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Bounded, serial magic-row allocation for governed EA worklists.
+"""Bounded, serial identity and magic allocation for approved Strategy Cards.
 
 The allocator is deliberately separate from the build and pipeline lanes.  It
-creates a missing EA directory and card-of-record first, appends the EA's magic
-rows second, regenerates the canonical resolver third, and finally proves that
-every new row survived regeneration.  No EA is built, enqueued, or promoted.
+discovers the live approved-card source, creates a missing EA directory and
+card-of-record first, writes governed registry rows second, regenerates the
+canonical resolver third, and finally proves that every new row survived
+regeneration.  No EA is built, enqueued, or promoted.
 
 The default real-run cap is five EAs.  ``--max-eas 0`` is accepted only with
 ``--dry-run`` so a full-inventory report cannot accidentally become an
@@ -29,6 +30,7 @@ from typing import Callable, Iterator, Sequence
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_APPROVED_CARDS = Path("D:/QM/strategy_farm/artifacts/cards_approved")
 DEFAULT_FLEET_WORKLIST = REPO_ROOT / "artifacts" / "fleet_magic_allocation_worklist_20260817.json"
 DEFAULT_CENTURY_WORKLIST = REPO_ROOT / "artifacts" / "century_prebuild_worklist_20260817.json"
 EA_ID_REGISTRY = Path("framework/registry/ea_id_registry.csv")
@@ -37,6 +39,17 @@ MAGIC_RESOLVER = Path("framework/include/QM/QM_MagicResolver.mqh")
 REGENERATOR = Path("framework/scripts/update_magic_resolver.py")
 SYMBOL_MATRIX = Path("framework/registry/dwx_symbol_matrix.csv")
 DEFAULT_LOCK = Path("D:/QM/strategy_farm/state/governed_magic_allocator.lock")
+EA_ID_FIELDS = [
+    "ea_id",
+    "slug",
+    "strategy_id",
+    "status",
+    "owner",
+    "created_at",
+    "retired_at",
+    "retired_reason",
+    "retired_evidence",
+]
 MAGIC_FIELDS = [
     "ea_id",
     "ea_slug",
@@ -95,6 +108,7 @@ class Candidate:
     card: Path
     symbols: tuple[str, ...]
     symbol_policy: str = "CARD_DECLARED"
+    strategy_id: str = ""
 
 
 def _read_json(path: Path) -> dict:
@@ -132,11 +146,36 @@ def _candidate(raw: dict, stage: str, repo: Path, *, dl087: bool = False) -> Can
     if dl087:
         symbols = DL087_SYMBOLS
         symbol_policy = DL087_POLICY
-    return Candidate(ea_id, slug, stage, directory, card, symbols, symbol_policy)
+    return Candidate(
+        ea_id,
+        slug,
+        stage,
+        directory,
+        card,
+        symbols,
+        symbol_policy,
+        str(raw.get("source_id") or raw.get("strategy_id") or "").strip(),
+    )
 
 
-def candidate_from_card(repo: Path, card_path: Path) -> Candidate:
-    """Build one exact allocator candidate from explicit card frontmatter."""
+def _card_target_symbols(value: object) -> tuple[str, ...]:
+    if isinstance(value, (list, tuple)):
+        values = list(value)
+    else:
+        text = str(value or "").strip()
+        if text.startswith("[") and text.endswith("]"):
+            text = text[1:-1]
+        values = text.split(",") if text else []
+    result: list[str] = []
+    for item in values:
+        symbol = str(item).strip().strip('"').strip("'").upper()
+        if symbol and symbol not in result:
+            result.append(symbol)
+    return tuple(result)
+
+
+def candidate_from_card(repo: Path, card_path: Path, *, stage: str = "exact_card") -> Candidate:
+    """Build one allocator candidate from an explicit approved card."""
     try:
         try:
             import farmctl
@@ -152,27 +191,72 @@ def candidate_from_card(repo: Path, card_path: Path) -> Candidate:
     slug = str(fm.get("slug") or "").strip()
     if ea_id is None or not slug:
         raise AllocationError(f"exact_card_identity_missing:{card}")
-    raw_symbols = fm.get("target_symbols")
-    if isinstance(raw_symbols, (list, tuple)):
-        values = list(raw_symbols)
-    else:
-        text = str(raw_symbols or "").strip()
-        if text.startswith("[") and text.endswith("]"):
-            text = text[1:-1]
-        values = text.split(",") if text else []
-    symbols = tuple(
-        str(value).strip().strip('"').strip("'").upper()
-        for value in values
-        if str(value).strip()
-    )
+    if str(fm.get("g0_status") or "").strip().upper() != "APPROVED":
+        raise AllocationError(f"exact_card_not_approved:{card}")
+    symbols = _card_target_symbols(fm.get("target_symbols"))
     return Candidate(
         ea_id=ea_id,
         slug=slug,
-        stage="exact_card",
+        stage=stage,
         directory=repo / "framework" / "EAs" / f"QM5_{ea_id}_{slug}",
         card=card,
         symbols=symbols,
+        strategy_id=str(fm.get("source_id") or "").strip(),
     )
+
+
+def load_approved_card_candidates(
+    repo: Path,
+    cards_dir: Path,
+) -> tuple[list[Candidate], list[dict[str, object]]]:
+    """Discover the live approved-card corpus without a frozen worklist.
+
+    Duplicate card identities are excluded as a group rather than selecting an
+    arbitrary winner.  That keeps allocation deterministic while allowing
+    unrelated, valid cards to continue through a bounded batch.
+    """
+    source = cards_dir.resolve()
+    if not source.is_dir():
+        raise AllocationError(f"approved_cards_dir_missing:{source}")
+    parsed: list[Candidate] = []
+    findings: list[dict[str, object]] = []
+    for card in sorted(source.glob("QM5_*.md"), key=lambda path: path.name.casefold()):
+        try:
+            parsed.append(candidate_from_card(repo, card, stage="approved_live"))
+        except AllocationError as exc:
+            findings.append(
+                {
+                    "card": str(card),
+                    "classification": "card_discovery_refused",
+                    "reason": str(exc),
+                }
+            )
+
+    by_id: dict[int, list[Candidate]] = {}
+    by_slug: dict[str, list[Candidate]] = {}
+    for item in parsed:
+        by_id.setdefault(item.ea_id, []).append(item)
+        by_slug.setdefault(item.slug.casefold(), []).append(item)
+    conflicted = {
+        item
+        for group in list(by_id.values()) + list(by_slug.values())
+        if len(group) > 1
+        for item in group
+    }
+    for item in sorted(conflicted, key=lambda value: (value.ea_id, value.slug, str(value.card))):
+        findings.append(
+            {
+                "card": str(item.card),
+                "ea_id": f"QM5_{item.ea_id}",
+                "slug": item.slug,
+                "classification": "duplicate_approved_card_identity",
+            }
+        )
+    candidates = sorted(
+        (item for item in parsed if item not in conflicted),
+        key=lambda item: (item.ea_id, item.slug.casefold(), item.card.name.casefold()),
+    )
+    return candidates, findings
 
 
 def load_candidates(repo: Path, fleet_worklist: Path, century_worklist: Path) -> list[Candidate]:
@@ -263,8 +347,8 @@ def _safe_ea_directory(repo: Path, candidate: Candidate) -> bool:
     return not any(part.startswith("_obsolete_") for part in directory.parts)
 
 
-def _candidate_issue_for_repo(repo: Path, candidate: Candidate, registry_row: dict[str, str] | None) -> str | None:
-    issue = _candidate_issue_without_directory(candidate, registry_row)
+def _candidate_issue_for_repo(repo: Path, candidate: Candidate) -> str | None:
+    issue = _candidate_issue_without_directory(candidate)
     if issue:
         return issue
     if not _safe_ea_directory(repo, candidate):
@@ -272,19 +356,12 @@ def _candidate_issue_for_repo(repo: Path, candidate: Candidate, registry_row: di
     return None
 
 
-def _candidate_issue_without_directory(candidate: Candidate, registry_row: dict[str, str] | None) -> str | None:
+def _candidate_issue_without_directory(candidate: Candidate) -> str | None:
     if candidate.ea_id in WITHHELD_EA_IDS:
         return "withheld"
     prohibited = [token for token in PROHIBITED_SLUG_TOKENS if token in candidate.slug.lower()]
     if prohibited:
         return "prohibited_technique:" + ",".join(prohibited)
-    if registry_row is None:
-        return "ea_id_not_registered"
-    if str(registry_row.get("status") or "").strip().lower() != "active":
-        return "ea_id_not_active"
-    registered_slug = str(registry_row.get("slug") or "").strip()
-    if registered_slug != candidate.slug:
-        return f"slug_mismatch:{registered_slug}"
     if not candidate.symbols:
         return "card_missing_target_symbols"
     invalid = [symbol for symbol in candidate.symbols if not SYMBOL_RE.fullmatch(symbol)]
@@ -297,6 +374,37 @@ def _candidate_issue_without_directory(candidate: Candidate, registry_row: dict[
     return None
 
 
+def _magic_row_contract_issue(
+    candidate: Candidate,
+    rows: Sequence[dict[str, str]],
+) -> str | None:
+    if len(rows) != len(candidate.symbols):
+        return f"active_magic_row_count_mismatch:expected={len(candidate.symbols)}:actual={len(rows)}"
+    by_slot: dict[int, dict[str, str]] = {}
+    for row in rows:
+        try:
+            slot = int(str(row.get("symbol_slot") or ""))
+            magic = int(str(row.get("magic") or ""))
+        except ValueError:
+            return "active_magic_row_numeric_field_invalid"
+        if slot in by_slot:
+            return f"active_magic_duplicate_slot:{slot}"
+        by_slot[slot] = row
+        expected_magic = candidate.ea_id * 10_000 + slot
+        if magic != expected_magic:
+            return f"active_magic_formula_mismatch:slot={slot}:expected={expected_magic}:actual={magic}"
+        if str(row.get("ea_slug") or "").strip() != candidate.slug:
+            return f"active_magic_slug_mismatch:slot={slot}"
+    expected_slots = set(range(len(candidate.symbols)))
+    if set(by_slot) != expected_slots:
+        return "active_magic_slots_not_contiguous_from_zero"
+    for slot, symbol in enumerate(candidate.symbols):
+        actual = str(by_slot[slot].get("symbol") or "").strip().upper()
+        if actual != symbol:
+            return f"active_magic_symbol_mismatch:slot={slot}:expected={symbol}:actual={actual}"
+    return None
+
+
 def build_plan(
     repo: Path,
     candidates: Sequence[Candidate],
@@ -304,7 +412,8 @@ def build_plan(
     magic_rows: Sequence[dict[str, str]],
     *,
     max_eas: int,
-    refuse_retired_reallocation: bool = False,
+    refuse_retired_reallocation: bool = True,
+    ea_registry_rows: Sequence[dict[str, str]] | None = None,
 ) -> dict:
     by_ea: dict[int, list[dict[str, str]]] = {}
     retired_rows: list[dict[str, str]] = []
@@ -316,57 +425,119 @@ def build_plan(
         if str(row.get("status") or "").strip().lower() == "retired":
             retired_rows.append(dict(row))
 
+    identity_rows = list(ea_registry_rows) if ea_registry_rows is not None else list(ea_registry.values())
+    identity_by_id: dict[int, list[dict[str, str]]] = {}
+    slug_rows: dict[str, list[dict[str, str]]] = {}
+    for row in identity_rows:
+        numeric = _numeric_ea_id(row.get("ea_id"))
+        if numeric is not None:
+            identity_by_id.setdefault(numeric, []).append(row)
+        slug_rows.setdefault(str(row.get("slug") or "").strip().casefold(), []).append(row)
+
     decisions: list[dict] = []
     planned: list[Candidate] = []
+    planned_identity_ids: set[int] = set()
     eligible = 0
+    allocated_before = 0
     for item in candidates:
-        issue = _candidate_issue_for_repo(repo, item, ea_registry.get(item.ea_id))
+        issue = _candidate_issue_for_repo(repo, item)
+        registered_rows = identity_by_id.get(item.ea_id, [])
+        registry_row = registered_rows[0] if len(registered_rows) == 1 else None
+        reserve_identity = False
+        if issue is None and len(registered_rows) > 1:
+            issue = f"ea_id_registry_ambiguous:rows={len(registered_rows)}"
+        elif issue is None and registry_row is None:
+            slug_conflicts = slug_rows.get(item.slug.casefold(), [])
+            if slug_conflicts:
+                conflict_ids = sorted(
+                    str(row.get("ea_id") or "").strip() for row in slug_conflicts
+                )
+                issue = "ea_slug_already_registered:" + ",".join(conflict_ids)
+            elif not item.strategy_id:
+                issue = "card_missing_source_id_for_identity_reservation"
+            else:
+                reserve_identity = True
+        elif issue is None and registry_row is not None:
+            status = str(registry_row.get("status") or "").strip().lower()
+            registered_slug = str(registry_row.get("slug") or "").strip()
+            if status != "active":
+                issue = f"ea_id_not_active:{status or '<blank>'}"
+            elif registered_slug != item.slug:
+                issue = f"slug_mismatch:{registered_slug}"
+
         existing = by_ea.get(item.ea_id, [])
-        active = [row for row in existing if str(row.get("status") or "").strip().lower() != "retired"]
+        active = [
+            row
+            for row in existing
+            if str(row.get("status") or "").strip().lower() == "active"
+        ]
         retired = [row for row in existing if str(row.get("status") or "").strip().lower() == "retired"]
+        other_status = [
+            row
+            for row in existing
+            if str(row.get("status") or "").strip().lower() not in {"active", "retired"}
+        ]
         decision = {
             "ea_id": f"QM5_{item.ea_id}",
             "slug": item.slug,
             "stage": item.stage,
             "symbols": list(item.symbols),
             "symbol_policy": item.symbol_policy,
+            "identity_registered": bool(registered_rows),
+            "identity_registry_rows": len(registered_rows),
         }
         if issue:
             decision.update(action="skip", reason=issue)
-        elif active:
-            eligible += 1
-            decision.update(action="skip", reason="already_allocated", existing_rows=len(active))
+        elif reserve_identity and existing:
+            decision.update(
+                action="skip",
+                reason="orphan_magic_rows_without_ea_identity",
+                existing_rows=len(existing),
+            )
         elif retired and refuse_retired_reallocation:
             decision.update(
                 action="skip",
                 reason="retired_magic_history_requires_review_do_not_unretire",
                 retired_rows=len(retired),
             )
+        elif other_status:
+            decision.update(
+                action="skip",
+                reason="non_active_magic_history_requires_review",
+                rows=len(other_status),
+            )
+        elif active:
+            row_issue = _magic_row_contract_issue(item, active)
+            if row_issue:
+                decision.update(
+                    action="skip",
+                    reason="active_magic_contract_mismatch:" + row_issue,
+                    existing_rows=len(active),
+                )
+                decisions.append(decision)
+                continue
+            eligible += 1
+            allocated_before += 1
+            decision.update(action="skip", reason="already_allocated", existing_rows=len(active))
         else:
             eligible += 1
             if max_eas and len(planned) >= max_eas:
                 decision.update(action="defer", reason="batch_cap")
             else:
                 planned.append(item)
+                if reserve_identity:
+                    planned_identity_ids.add(item.ea_id)
                 decision.update(
                     action="allocate",
                     reason="eligible",
                     rows=len(item.symbols),
-                    retired_rows_to_delete=len(retired),
+                    reserve_identity=reserve_identity,
+                    retired_rows_to_delete=0,
                     create_directory=not item.directory.is_dir(),
                     copy_card=not (item.directory / "docs/strategy_card.md").is_file(),
                 )
         decisions.append(decision)
 
-    allocated_before = sum(
-        1
-        for item in candidates
-        if _candidate_issue_for_repo(repo, item, ea_registry.get(item.ea_id)) is None
-        and any(
-            str(row.get("status") or "").strip().lower() != "retired"
-            for row in by_ea.get(item.ea_id, [])
-        )
-    )
     return {
         "schema": "qm.governed-magic-allocation/v1",
         "stage_order": list(STAGE_ORDER),
@@ -374,6 +545,7 @@ def build_plan(
         "eligible": eligible,
         "allocated_before": allocated_before,
         "planned": planned,
+        "planned_identity_ids": sorted(planned_identity_ids),
         "decisions": decisions,
         "retired_rows_found": retired_rows,
     }
@@ -387,6 +559,7 @@ def dirty_registry_paths(repo: Path) -> list[str]:
         "status",
         "--porcelain",
         "--",
+        EA_ID_REGISTRY.as_posix(),
         MAGIC_REGISTRY.as_posix(),
         MAGIC_RESOLVER.as_posix(),
     ]
@@ -438,13 +611,73 @@ def serial_lock(path: Path) -> Iterator[None]:
             handle.close()
 
 
-def _write_magic_registry(path: Path, fieldnames: Sequence[str], rows: Sequence[dict[str, str]]) -> None:
+def _write_registry(path: Path, fieldnames: Sequence[str], rows: Sequence[dict[str, str]]) -> None:
     temporary = path.with_suffix(path.suffix + ".tmp")
     with temporary.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(fieldnames), extrasaction="ignore", lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     os.replace(temporary, path)
+
+
+def _write_magic_registry(path: Path, fieldnames: Sequence[str], rows: Sequence[dict[str, str]]) -> None:
+    _write_registry(path, fieldnames, rows)
+
+
+@contextmanager
+def identity_registry_lock(path: Path) -> Iterator[None]:
+    """Coordinate exact-ID writes with farmctl's O_EXCL identity lock."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        descriptor = os.open(str(path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError as exc:
+        raise AllocationError(f"ea_id_registry_lock_busy:{path}") from exc
+    try:
+        os.write(
+            descriptor,
+            json.dumps(
+                {
+                    "pid": os.getpid(),
+                    "created_at": dt.datetime.now(dt.UTC).isoformat(),
+                    "writer": "governed_magic_allocator",
+                },
+                sort_keys=True,
+            ).encode("utf-8"),
+        )
+        yield
+    finally:
+        os.close(descriptor)
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+
+
+def _status_aware_magic_collisions(rows: Sequence[dict[str, str]]) -> list[dict[str, object]]:
+    by_magic: dict[str, list[dict[str, str]]] = {}
+    for row in rows:
+        if str(row.get("status") or "").strip().lower() not in {"active", "reserved"}:
+            continue
+        by_magic.setdefault(str(row.get("magic") or "").strip(), []).append(dict(row))
+    return [
+        {"magic": magic, "rows": grouped}
+        for magic, grouped in sorted(by_magic.items())
+        if not magic or len(grouped) > 1
+    ]
+
+
+def _identity_collision_counts(rows: Sequence[dict[str, str]]) -> dict[str, int]:
+    by_id: dict[str, int] = {}
+    by_slug: dict[str, int] = {}
+    for row in rows:
+        ea_id = str(row.get("ea_id") or "").strip()
+        slug = str(row.get("slug") or "").strip().casefold()
+        by_id[ea_id] = by_id.get(ea_id, 0) + 1
+        by_slug[slug] = by_slug.get(slug, 0) + 1
+    return {
+        "duplicate_ea_ids": sum(count > 1 for key, count in by_id.items() if key),
+        "duplicate_slugs": sum(count > 1 for key, count in by_slug.items() if key),
+    }
 
 
 def _run_regenerator(repo: Path) -> None:
@@ -492,24 +725,29 @@ def apply_plan(
     regenerate: Callable[[Path], None] = _run_regenerator,
 ) -> dict:
     planned: list[Candidate] = list(plan["planned"])
+    identity_path = repo / EA_ID_REGISTRY
     registry_path = repo / MAGIC_REGISTRY
     resolver_path = repo / MAGIC_RESOLVER
+    identity_before = identity_path.read_bytes()
     registry_before = registry_path.read_bytes()
     resolver_before = resolver_path.read_bytes()
     resolver_rows_before = len(_resolver_rows(resolver_path))
+    identity_fields, identity_rows = _read_csv(identity_path)
+    required_identity_fields = set(EA_ID_FIELDS[:6])
+    if not required_identity_fields.issubset(identity_fields):
+        raise AllocationError(f"unexpected_ea_id_registry_columns:{identity_fields}")
+    identity_collisions_before = _identity_collision_counts(identity_rows)
+    magic_collisions_before = _status_aware_magic_collisions(magic_rows)
+    if magic_collisions_before:
+        raise AllocationError(
+            f"status_aware_magic_collision_preexisting:{len(magic_collisions_before)}"
+        )
     created_dirs: list[Path] = []
     created_cards: list[Path] = []
     now = dt.datetime.now(dt.UTC).date().isoformat()
+    new_identity_rows: list[dict[str, str]] = []
     new_rows: list[dict[str, str]] = []
-    selected_ids = {item.ea_id for item in planned}
-    retained_rows = [
-        row
-        for row in magic_rows
-        if not (
-            _numeric_ea_id(row.get("ea_id")) in selected_ids
-            and str(row.get("status") or "").strip().lower() == "retired"
-        )
-    ]
+    planned_identity_ids = set(plan.get("planned_identity_ids") or [])
     try:
         # Ordering invariant: directory and durable card exist before any row is written.
         for item in planned:
@@ -522,6 +760,20 @@ def apply_plan(
             if not card_target.exists():
                 shutil.copyfile(item.card, card_target)
                 created_cards.append(card_target)
+            if item.ea_id in planned_identity_ids:
+                new_identity_rows.append(
+                    {
+                        "ea_id": str(item.ea_id),
+                        "slug": item.slug,
+                        "strategy_id": item.strategy_id,
+                        "status": "active",
+                        "owner": "Research",
+                        "created_at": now,
+                        "retired_at": "",
+                        "retired_reason": "",
+                        "retired_evidence": "",
+                    }
+                )
             for slot, symbol in enumerate(item.symbols):
                 new_rows.append(
                     {
@@ -536,8 +788,42 @@ def apply_plan(
                     }
                 )
 
-        _write_magic_registry(registry_path, magic_fields, retained_rows + new_rows)
+        # Both CSV writes happen only after every directory/card-of-record is durable.
+        _write_registry(identity_path, identity_fields, identity_rows + new_identity_rows)
+        _write_magic_registry(registry_path, magic_fields, magic_rows + new_rows)
         regenerate(repo)
+
+        _, identity_after_rows = _read_csv(identity_path)
+        identity_collisions_after = _identity_collision_counts(identity_after_rows)
+        if identity_collisions_after != identity_collisions_before:
+            raise AllocationError(
+                "ea_identity_collision_delta:"
+                f"before={identity_collisions_before}:after={identity_collisions_after}"
+            )
+        identity_by_id: dict[int, list[dict[str, str]]] = {}
+        for row in identity_after_rows:
+            numeric = _numeric_ea_id(row.get("ea_id"))
+            if numeric is not None:
+                identity_by_id.setdefault(numeric, []).append(row)
+        for item in planned:
+            rows = identity_by_id.get(item.ea_id, [])
+            matching = [
+                row
+                for row in rows
+                if str(row.get("slug") or "").strip() == item.slug
+                and str(row.get("status") or "").strip().lower() == "active"
+            ]
+            if len(matching) != 1:
+                raise AllocationError(
+                    f"active_identity_verification_failed:QM5_{item.ea_id}:rows={len(matching)}"
+                )
+
+        _, magic_after_rows = _read_csv(registry_path)
+        magic_collisions_after = _status_aware_magic_collisions(magic_after_rows)
+        if magic_collisions_after:
+            raise AllocationError(
+                f"status_aware_magic_collision_after_write:{len(magic_collisions_after)}"
+            )
         generated = set(_resolver_rows(resolver_path))
         expected = {
             (int(row["ea_id"]), int(row["symbol_slot"]), row["symbol"], int(row["magic"]))
@@ -553,6 +839,7 @@ def apply_plan(
                 f"before={resolver_rows_before}:after={resolver_rows_after}:new={len(new_rows)}"
             )
     except Exception:
+        identity_path.write_bytes(identity_before)
         registry_path.write_bytes(registry_before)
         resolver_path.write_bytes(resolver_before)
         for path in reversed(created_cards):
@@ -567,11 +854,19 @@ def apply_plan(
         "allocated_eas": len(planned),
         "allocated_rows": len(new_rows),
         "allocated_ids": [f"QM5_{item.ea_id}" for item in planned],
+        "identity_rows_added": len(new_identity_rows),
+        "identity_ids_added": [f"QM5_{row['ea_id']}" for row in new_identity_rows],
+        "ea_registry_rows_before": len(identity_rows),
+        "ea_registry_rows_after": len(identity_rows) + len(new_identity_rows),
+        "identity_collision_counts_before": identity_collisions_before,
+        "identity_collision_counts_after": identity_collisions_after,
         "registry_rows_before": len(magic_rows),
-        "registry_rows_after": len(retained_rows) + len(new_rows),
+        "registry_rows_after": len(magic_rows) + len(new_rows),
+        "status_aware_magic_collisions_before": len(magic_collisions_before),
+        "status_aware_magic_collisions_after": len(magic_collisions_after),
         "resolver_rows_before": resolver_rows_before,
         "resolver_rows_after": resolver_rows_after,
-        "retired_rows_deleted": len(magic_rows) - len(retained_rows),
+        "retired_rows_deleted": 0,
     }
 
 
@@ -587,6 +882,7 @@ def _public_report(plan: dict, *, dry_run: bool, result: dict | None = None) -> 
         "batch_cap": plan["batch_cap"],
         "planned_eas": len(planned),
         "planned_rows": sum(len(item.symbols) for item in planned),
+        "planned_identity_rows": len(plan.get("planned_identity_ids") or []),
         "progress": {
             "allocated": allocated_after,
             "eligible": plan["eligible"],
@@ -607,6 +903,12 @@ def _public_report(plan: dict, *, dry_run: bool, result: dict | None = None) -> 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=REPO_ROOT)
+    parser.add_argument(
+        "--cards-dir",
+        type=Path,
+        default=DEFAULT_APPROVED_CARDS,
+        help="Live approved-card source used by default discovery",
+    )
     parser.add_argument("--fleet-worklist", type=Path, default=DEFAULT_FLEET_WORKLIST)
     parser.add_argument("--century-worklist", type=Path, default=DEFAULT_CENTURY_WORKLIST)
     parser.add_argument("--max-eas", type=int, default=5, help="Bounded EAs per run; 0 means full dry-run only")
@@ -630,18 +932,37 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.max_eas < 0 or (args.max_eas == 0 and not args.dry_run):
         parser.error("--max-eas 0 is allowed only with --dry-run")
     try:
-        with serial_lock(args.lock_path):
+        with serial_lock(args.lock_path), identity_registry_lock(
+            repo / "framework" / "registry" / ".ea_id_registry.lock"
+        ):
             dirty = dirty_registry_paths(repo)
             if dirty:
                 raise AllocationError("dirty_registry_abort:" + "|".join(dirty))
             exact_card_mode = bool(args.card)
             if exact_card_mode and args.scope != "all":
                 raise AllocationError("exact_card_mode_does_not_accept_scope")
-            candidates = (
-                [candidate_from_card(repo, card) for card in args.card]
-                if exact_card_mode
-                else load_candidates(repo, args.fleet_worklist, args.century_worklist)
-            )
+            discovery_findings: list[dict[str, object]] = []
+            if exact_card_mode:
+                candidates = [candidate_from_card(repo, card) for card in args.card]
+                discovery_source = {
+                    "mode": "exact_card",
+                    "cards": [str(item.card) for item in candidates],
+                }
+            elif args.scope == "dl087":
+                candidates = load_candidates(repo, args.fleet_worklist, args.century_worklist)
+                discovery_source = {
+                    "mode": "dl087_owner_worklist",
+                    "fleet_worklist": str(args.fleet_worklist),
+                    "century_worklist": str(args.century_worklist),
+                }
+            else:
+                candidates, discovery_findings = load_approved_card_candidates(
+                    repo, args.cards_dir
+                )
+                discovery_source = {
+                    "mode": "live_approved_cards",
+                    "cards_dir": str(args.cards_dir.resolve()),
+                }
             dl087_verified = None
             if args.scope == "dl087":
                 candidates = [item for item in candidates if item.symbol_policy == DL087_POLICY]
@@ -650,7 +971,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                         f"dl087_candidate_count_mismatch:expected={DL087_EXPECTED_EAS}:actual={len(candidates)}"
                     )
                 dl087_verified = validate_dl087_symbols(repo)
-            ea_registry = _active_ea_registry(repo / EA_ID_REGISTRY)
+            ea_fields, ea_rows = _read_csv(repo / EA_ID_REGISTRY)
+            if not set(EA_ID_FIELDS[:6]).issubset(ea_fields):
+                raise AllocationError(f"unexpected_ea_id_registry_columns:{ea_fields}")
+            ea_registry = {
+                numeric: row
+                for row in ea_rows
+                if (numeric := _numeric_ea_id(row.get("ea_id"))) is not None
+            }
             magic_fields, magic_rows = _read_csv(repo / MAGIC_REGISTRY)
             if magic_fields != MAGIC_FIELDS:
                 raise AllocationError(f"unexpected_magic_registry_columns:{magic_fields}")
@@ -660,13 +988,22 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ea_registry,
                 magic_rows,
                 max_eas=args.max_eas,
-                refuse_retired_reallocation=exact_card_mode,
+                refuse_retired_reallocation=True,
+                ea_registry_rows=ea_rows,
             )
             if exact_card_mode:
                 plan["stage_order"] = ["exact_card"]
+            elif args.scope != "dl087":
+                plan["stage_order"] = ["approved_live"]
             result = None if args.dry_run else apply_plan(repo, plan, magic_fields, magic_rows)
             report = _public_report(plan, dry_run=args.dry_run, result=result)
             report["scope"] = args.scope
+            report["discovery"] = {
+                **discovery_source,
+                "candidate_count": len(candidates),
+                "finding_count": len(discovery_findings),
+                "findings": discovery_findings,
+            }
             if dl087_verified is not None:
                 report["dl087"]["matrix_verified"] = dl087_verified
     except AllocationError as exc:

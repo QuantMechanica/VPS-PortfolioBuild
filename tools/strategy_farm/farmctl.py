@@ -2160,7 +2160,10 @@ _CARDS_NAME_CACHE: dict[str, tuple[tuple[int, int], list[str]]] = {}
 _CSV_ROWS_BY_EA_CACHE: dict[
     str, tuple[tuple[int, int], dict[str, list[dict[str, str]]]]
 ] = {}
-_MAGIC_RESOLVER_IDS_CACHE: dict[str, tuple[tuple[int, int], set[str] | None]] = {}
+_MAGIC_RESOLVER_ROWS_CACHE: dict[
+    str,
+    tuple[tuple[int, int], tuple[tuple[str, int, str, int], ...] | None],
+] = {}
 
 
 def _stat_token(path: Path) -> tuple[int, int] | None:
@@ -2632,31 +2635,118 @@ def _parse_card_target_symbols(value: Any) -> list[str]:
     return result
 
 
-def _magic_resolver_ea_ids(path: Path) -> set[str] | None:
-    """Read the generated EA-ID array; ``None`` means the resolver is unreadable."""
+def _magic_resolver_rows(
+    path: Path,
+) -> tuple[tuple[str, int, str, int], ...] | None:
+    """Read and zip all generated resolver arrays into exact row tuples."""
     token = _stat_token(path)
     if token is None:
         return None
     key = str(path)
-    cached = _MAGIC_RESOLVER_IDS_CACHE.get(key)
+    cached = _MAGIC_RESOLVER_ROWS_CACHE.get(key)
     if cached and cached[0] == token:
         return cached[1]
     try:
         text = path.read_text(encoding="utf-8", errors="strict")
     except (OSError, UnicodeError):
-        _MAGIC_RESOLVER_IDS_CACHE[key] = (token, None)
+        _MAGIC_RESOLVER_ROWS_CACHE[key] = (token, None)
         return None
-    match = re.search(r"QM_MAGIC_REG_EA_ID\[[^\]]+\]\s*=\s*\{([^}]*)\};", text)
-    if not match:
-        _MAGIC_RESOLVER_IDS_CACHE[key] = (token, None)
+
+    bodies: dict[str, str] = {}
+    for name in ("EA_ID", "SLOT", "SYMBOL", "MAGIC"):
+        match = re.search(
+            rf"QM_MAGIC_REG_{name}\[[^\]]+\]\s*=\s*\{{([^}}]*)\}};",
+            text,
+        )
+        if not match:
+            _MAGIC_RESOLVER_ROWS_CACHE[key] = (token, None)
+            return None
+        bodies[name] = match.group(1)
+
+    def numeric_values(body: str) -> list[int] | None:
+        if not body.strip():
+            return []
+        raw_values = [value.strip() for value in body.split(",")]
+        if any(not re.fullmatch(r"-?\d+", value) for value in raw_values):
+            return None
+        return [int(value) for value in raw_values]
+
+    ea_ids = numeric_values(bodies["EA_ID"])
+    slots = numeric_values(bodies["SLOT"])
+    magics = numeric_values(bodies["MAGIC"])
+    try:
+        symbols = (
+            next(csv.reader([bodies["SYMBOL"]], skipinitialspace=True))
+            if bodies["SYMBOL"].strip()
+            else []
+        )
+    except (csv.Error, StopIteration):
+        symbols = []
+    if ea_ids is None or slots is None or magics is None:
+        rows = None
+    elif len({len(ea_ids), len(slots), len(symbols), len(magics)}) != 1:
+        rows = None
+    elif any(not str(symbol).strip() for symbol in symbols):
+        rows = None
+    else:
+        rows = tuple(
+            (str(ea_id), slot, str(symbol).strip(), magic)
+            for ea_id, slot, symbol, magic in zip(ea_ids, slots, symbols, magics)
+        )
+    _MAGIC_RESOLVER_ROWS_CACHE[key] = (token, rows)
+    return rows
+
+
+def _magic_resolver_ea_ids(path: Path) -> set[str] | None:
+    """Backward-compatible EA-ID projection of the exact resolver parser."""
+    rows = _magic_resolver_rows(path)
+    if rows is None:
         return None
-    values: set[str] = set()
-    for raw in match.group(1).split(","):
-        value = raw.strip()
-        if value.isdigit():
-            values.add(value)
-    _MAGIC_RESOLVER_IDS_CACHE[key] = (token, values)
-    return values
+    return {row[0] for row in rows}
+
+
+def _active_magic_contract_issues(
+    ea_id: str,
+    slug: str,
+    symbols: list[str],
+    active_rows: list[dict[str, str]],
+) -> list[str]:
+    """Prove one exact active row per declared symbol and deterministic slot."""
+    issues: list[str] = []
+    if len(active_rows) != len(symbols):
+        issues.append(
+            f"active_row_count:expected={len(symbols)}:actual={len(active_rows)}"
+        )
+    by_slot: dict[int, dict[str, str]] = {}
+    for row in active_rows:
+        try:
+            slot = int(str(row.get("symbol_slot") or ""))
+            magic = int(str(row.get("magic") or ""))
+        except ValueError:
+            issues.append("active_row_numeric_field_invalid")
+            continue
+        if slot in by_slot:
+            issues.append(f"duplicate_slot:{slot}")
+            continue
+        by_slot[slot] = row
+        if str(row.get("ea_slug") or "").strip() != slug:
+            issues.append(f"slug_mismatch:slot={slot}")
+        expected_magic = int(ea_id) * 10_000 + slot
+        if magic != expected_magic:
+            issues.append(
+                f"magic_formula:slot={slot}:expected={expected_magic}:actual={magic}"
+            )
+        if slot < 0 or slot >= len(symbols):
+            issues.append(f"slot_out_of_card_range:{slot}")
+        else:
+            actual_symbol = str(row.get("symbol") or "").strip().upper()
+            if actual_symbol != symbols[slot]:
+                issues.append(
+                    f"symbol_mismatch:slot={slot}:expected={symbols[slot]}:actual={actual_symbol}"
+                )
+    if set(by_slot) != set(range(len(symbols))):
+        issues.append("slots_not_contiguous_from_zero")
+    return issues
 
 
 def magic_allocation_precheck(
@@ -2666,9 +2756,11 @@ def magic_allocation_precheck(
 ) -> dict[str, Any]:
     """Classify the build-time magic precondition without mutating registries.
 
-    ``never_allocated`` is the only class eligible for the governed allocator.
-    Retired history is never revived. Active CSV rows missing from the generated
-    resolver are a regeneration defect, not an allocation request.
+    Build dispatch is ready only when the approved card has one exact active
+    identity, one exact active magic row for every declared symbol, and the same
+    complete tuples in the generated resolver. Missing identity plus empty magic
+    history, or ``never_allocated``, is eligible for the governed allocator.
+    Retired, ambiguous, partial, or mismatched history is never auto-repaired.
     """
     code_root = repo_root or REPO_ROOT
     raw_id = str(fm.get("ea_id") or "").strip()
@@ -2686,29 +2778,21 @@ def magic_allocation_precheck(
             "target_symbols": symbols,
         }
     ea_id = match.group(1)
-    identity_rows = _csv_rows_by_ea_id(
-        code_root / "framework" / "registry" / "ea_id_registry.csv"
-    ).get(ea_id, [])
-    matching_active_identity = [
+    identity_path = code_root / "framework" / "registry" / "ea_id_registry.csv"
+    magic_path = code_root / "framework" / "registry" / "magic_numbers.csv"
+    identity_rows = _csv_rows_by_ea_id(identity_path).get(ea_id, [])
+    all_identity_rows = _read_csv_dicts_if_exists(identity_path)
+    slug_conflicts = [
         row
-        for row in identity_rows
-        if str(row.get("status") or "").strip().lower() == "active"
-        and str(row.get("slug") or "").strip() == slug
+        for row in all_identity_rows
+        if str(row.get("slug") or "").strip().casefold() == slug.casefold()
+        and str(row.get("ea_id") or row.get("id") or "")
+        .strip()
+        .upper()
+        .removeprefix("QM5_")
+        != ea_id
     ]
-    if len(matching_active_identity) != 1:
-        return {
-            "ready": False,
-            "classification": "active_registry_identity_missing_or_ambiguous",
-            "action": "REFUSE",
-            "ea_id": f"QM5_{ea_id}",
-            "slug": slug,
-            "target_symbols": symbols,
-            "matching_active_registry_rows": len(matching_active_identity),
-        }
-
-    magic_rows = _csv_rows_by_ea_id(
-        code_root / "framework" / "registry" / "magic_numbers.csv"
-    ).get(ea_id, [])
+    magic_rows = _csv_rows_by_ea_id(magic_path).get(ea_id, [])
     active_rows = [
         row for row in magic_rows
         if str(row.get("status") or "").strip().lower() == "active"
@@ -2717,6 +2801,10 @@ def magic_allocation_precheck(
         row for row in magic_rows
         if str(row.get("status") or "").strip().lower() == "retired"
     ]
+    other_status_rows = [
+        row for row in magic_rows
+        if str(row.get("status") or "").strip().lower() not in {"active", "retired"}
+    ]
     base = {
         "ea_id": f"QM5_{ea_id}",
         "ea_id_numeric": int(ea_id),
@@ -2724,13 +2812,70 @@ def magic_allocation_precheck(
         "target_symbols": symbols,
         "target_symbols_valid": bool(symbols) and not invalid_symbols,
         "invalid_target_symbols": invalid_symbols,
+        "identity_registry_rows": len(identity_rows),
         "active_magic_rows": len(active_rows),
         "retired_magic_rows": len(retired_rows),
+        "other_status_magic_rows": len(other_status_rows),
         "total_magic_rows": len(magic_rows),
         "ea_directory_exists": (
             code_root / "framework" / "EAs" / f"QM5_{ea_id}_{slug}"
         ).is_dir(),
     }
+    if not slug:
+        return {
+            **base,
+            "ready": False,
+            "classification": "card_identity_missing_or_invalid",
+            "action": "CARD_AMENDMENT_REQUIRED",
+        }
+    if not base["target_symbols_valid"]:
+        return {
+            **base,
+            "ready": False,
+            "classification": "card_target_symbols_missing_or_invalid",
+            "action": "CARD_AMENDMENT_REQUIRED",
+        }
+    if not identity_rows:
+        if slug_conflicts or magic_rows:
+            return {
+                **base,
+                "ready": False,
+                "classification": "registry_identity_conflict",
+                "action": "REVIEW_REQUIRED",
+                "slug_conflict_rows": len(slug_conflicts),
+                "reason": (
+                    "slug_registered_to_different_ea_id"
+                    if slug_conflicts
+                    else "orphan_magic_rows_without_identity"
+                ),
+            }
+        if not str(fm.get("source_id") or "").strip():
+            return {
+                **base,
+                "ready": False,
+                "classification": "card_source_id_missing_for_identity_reservation",
+                "action": "CARD_AMENDMENT_REQUIRED",
+            }
+        return {
+            **base,
+            "ready": False,
+            "classification": "ea_id_not_registered",
+            "action": "GOVERNED_ALLOCATE",
+        }
+
+    identity = identity_rows[0] if len(identity_rows) == 1 else {}
+    identity_active = str(identity.get("status") or "").strip().lower() == "active"
+    identity_slug_matches = str(identity.get("slug") or "").strip() == slug
+    if len(identity_rows) != 1 or not identity_active or not identity_slug_matches:
+        return {
+            **base,
+            "ready": False,
+            "classification": "registry_identity_conflict",
+            "action": "REVIEW_REQUIRED_DO_NOT_REACTIVATE",
+            "identity_active": identity_active,
+            "identity_slug_matches": identity_slug_matches,
+        }
+
     if not active_rows:
         if retired_rows:
             return {
@@ -2739,33 +2884,63 @@ def magic_allocation_precheck(
                 "classification": "allocated_then_retired",
                 "action": "REVIEW_REQUIRED_DO_NOT_UNRETIRE",
             }
+        if other_status_rows:
+            return {
+                **base,
+                "ready": False,
+                "classification": "non_active_magic_history",
+                "action": "REVIEW_REQUIRED",
+            }
         return {
             **base,
             "ready": False,
             "classification": "never_allocated",
-            "action": (
-                "GOVERNED_ALLOCATE"
-                if base["target_symbols_valid"]
-                else "CARD_AMENDMENT_REQUIRED"
-            ),
+            "action": "GOVERNED_ALLOCATE",
         }
 
-    resolver_ids = _magic_resolver_ea_ids(
+    if retired_rows or other_status_rows:
+        return {
+            **base,
+            "ready": False,
+            "classification": "mixed_magic_history",
+            "action": "REVIEW_REQUIRED_DO_NOT_UNRETIRE",
+        }
+    contract_issues = _active_magic_contract_issues(ea_id, slug, symbols, active_rows)
+    if contract_issues:
+        return {
+            **base,
+            "ready": False,
+            "classification": "active_magic_contract_mismatch",
+            "action": "REVIEW_REQUIRED",
+            "contract_issues": contract_issues,
+        }
+
+    resolver_rows = _magic_resolver_rows(
         code_root / "framework" / "include" / "QM" / "QM_MagicResolver.mqh"
     )
-    if resolver_ids is None:
+    if resolver_rows is None:
         return {
             **base,
             "ready": False,
             "classification": "resolver_unreadable",
             "action": "REGENERATE_AND_VERIFY_RESOLVER",
         }
-    if ea_id not in resolver_ids:
+    expected_resolver_rows = [
+        (ea_id, slot, symbol, int(ea_id) * 10_000 + slot)
+        for slot, symbol in enumerate(symbols)
+    ]
+    actual_resolver_rows = sorted(
+        (row for row in resolver_rows if row[0] == ea_id),
+        key=lambda row: (row[1], row[2], row[3]),
+    )
+    if actual_resolver_rows != expected_resolver_rows:
         return {
             **base,
             "ready": False,
             "classification": "resolver_regeneration_missed",
             "action": "REGENERATE_AND_VERIFY_RESOLVER",
+            "resolver_expected_rows": expected_resolver_rows,
+            "resolver_actual_rows": actual_resolver_rows,
         }
     return {
         **base,
@@ -2797,7 +2972,9 @@ def missing_magic_allocation_inventory(
             if precheck.get("ready") or ea_id in seen:
                 continue
             if precheck.get("classification") in {
-                "invalid_ea_id", "active_registry_identity_missing_or_ambiguous"
+                "invalid_ea_id",
+                "card_identity_missing_or_invalid",
+                "registry_identity_conflict",
             }:
                 continue
             seen.add(ea_id)
@@ -2834,6 +3011,32 @@ def _ensure_magic_precondition_task(
             "reason": "magic_precondition_task_enqueue_failed",
             "detail": repr(exc),
         }
+
+
+def _approved_card_registry_precondition(
+    root: Path,
+    card_path: Path,
+    *,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    """Bind card approval to one deterministic identity/magic precondition."""
+    fm = parse_card_frontmatter(card_path)
+    try:
+        precheck = magic_allocation_precheck(fm, repo_root=repo_root)
+    except Exception as exc:
+        precheck = {
+            "ready": False,
+            "classification": "registry_precheck_failed",
+            "action": "REVIEW_REQUIRED",
+            "ea_id": str(fm.get("ea_id") or ""),
+            "slug": str(fm.get("slug") or ""),
+            "target_symbols": _parse_card_target_symbols(fm.get("target_symbols")),
+            "detail": repr(exc),
+        }
+    task = None
+    if not precheck["ready"]:
+        task = _ensure_magic_precondition_task(root, card_path, precheck)
+    return {"precheck": precheck, "task": task}
 
 
 def strategy_card_schema_issues(card_path: Path, fm: dict[str, Any] | None = None) -> list[str]:
@@ -22947,12 +23150,19 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
             "reasoning": reasoning[:300],
         })
 
+    registry_precondition = _approved_card_registry_precondition(root, final_path)
+    registry_ready = bool(registry_precondition["precheck"].get("ready"))
     return {
         "approved": True,
         "ea_id": ea_id,
         "card_path": str(final_path),
         "reasoning": reasoning,
-        "next_action_hint": f"python tools/strategy_farm/farmctl.py build-ea --card \"{final_path}\"",
+        "registry_precondition": registry_precondition,
+        "next_action_hint": (
+            f"python tools/strategy_farm/farmctl.py build-ea --card \"{final_path}\""
+            if registry_ready
+            else "Complete the governed identity/magic precondition task before build dispatch"
+        ),
     }
 
 
