@@ -1,0 +1,69 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "47cbab28-c904-4fac-a2e7-f96fef54f17f",
+  "task_type": "build_ea",
+  "priority": 10,
+  "checked_at_utc": "2026-08-23T21:46:33.4684520Z",
+  "canonical_checkout": "C:/QM/repo",
+  "branch": "agents/board-advisor",
+  "git_head_inspected": "cffe3096d8af0dbfd12f16db63464d0b57d37641",
+  "requested_identity": {
+    "ea_id": "QM5_1966",
+    "slug": "colby-demand-index-h4",
+    "ea_dir": "C:/QM/repo/framework/EAs/QM5_1966_colby-demand-index-h4"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1966_colby-demand-index-h4.md",
+    "sha256": "8bc2f12fb334c4b015ba56611d68f6412702fcf113382a906c5aaad24ee78d4b",
+    "ea_id": "QM5_1966",
+    "slug": "colby-demand-index-h4",
+    "g0_status": "APPROVED",
+    "gate_result": "PASS"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "6f35fe80ce868e059a701355c13800bbbb7e0b65613414983be6a43f5f6b0966",
+    "exact_ea_id_1966_rows": [],
+    "exact_identity_gate": "FAIL",
+    "slug_alias_row": {
+      "line": 3172,
+      "ea_id": "12278",
+      "slug": "QM5_1966_colby-demand-index-h4",
+      "status": "retired",
+      "retired_at": "2026-08-21T18:52:35+00:00",
+      "retired_reason": "OWNER-approved D1 disposition; action=RETIRE only"
+    },
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "716f82d1f48a0c5e1680bfd1bdf576291c68d7363b200b929a8a45946514e144",
+    "exact_ea_id_1966_magic_rows": [],
+    "magic_gate": "FAIL",
+    "owner_disposition_evidence": {
+      "path": "C:/QM/repo/docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv",
+      "sha256": "b3bba0e9ae27124906708c77361bb25f9a8587d9939f1239a28d7af35ce29924",
+      "line": 622
+    }
+  },
+  "existing_source_observation": {
+    "files": [
+      {
+        "path": "framework/EAs/QM5_1966_colby-demand-index-h4/QM5_1966_colby-demand-index-h4.mq5",
+        "sha256": "d13733ff94da7a4369db883689fc7ec3f6e177bf509db7900c0399d47189d950",
+        "length_bytes": 4082
+      }
+    ],
+    "note": "A pre-existing mq5-only folder does not substitute for governed identity and magic allocation."
+  },
+  "verdict": "BLOCKED_REGISTRY_IDENTITY_NOT_ALLOCATED",
+  "blocked_reason": "The requested numeric ea_id 1966 has no deterministic EA registry row and no magic rows. The only matching slug alias belongs to different ea_id 12278 and is OWNER-retired, so implementation or compilation under 1966 is forbidden by qm-build-ea-from-card.",
+  "required_next_action": "Disposition this stale router task. If the strategy is still wanted, the OWNER-governed registry/card writer must allocate a fresh active collision-free identity and all required magic rows, then route a new build task.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "setfile_modified": false,
+    "compile_attempted": false,
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "live_or_autotrading_changed": false
+  }
+}
