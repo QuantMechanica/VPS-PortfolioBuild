@@ -4,7 +4,7 @@
 **Slug:** hopwood-dmi-cross-h1-card
 **Source:** 6e967762-b26d-59a3-b076-35c17f2e7c36
 **Author of this spec:** Codex
-**Last revised:** 2026-08-21
+**Last revised:** 2026-08-23
 
 ---
 
@@ -46,6 +46,7 @@ Which `.DWX` symbols this EA is designed for.
 - `NDX.DWX` — US tech equity index with established trend characteristics.
 - `WS30.DWX` — US industrial equity index.
 - `UK100.DWX` — UK equity index.
+- `SP500.DWX` — US large-cap benchmark (backtest-only).
 
 **Explicitly NOT for:**
 - `XAUUSD.DWX` — Highly erratic precious metals whip without session trend confirmation.
@@ -104,3 +105,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-21 | Initial build from card | f9e1abeb-a14c-4f02-9869-b9d99fcbf303 |
+| v2 | 2026-08-23 | Harmonize 9-symbol universe with setfiles | f9e1abeb-a14c-4f02-9869-b9d99fcbf303 |
