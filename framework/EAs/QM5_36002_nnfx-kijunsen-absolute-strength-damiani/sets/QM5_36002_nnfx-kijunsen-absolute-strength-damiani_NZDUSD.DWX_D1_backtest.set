@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5c46004bae2b43f884c3cb6bbcf69e483f57d9aadd22071aab145cce6b671bec
+; build_hash:   3cb46b43a01a9a578cceedc3b6fe6980bef4bf38a962a37772ca79780d414671
 ; author:       Gemini
 ; date:         2026-08-17
 ;==========================================================
@@ -31,4 +31,10 @@ strategy_damiani_threshold=1.40
 strategy_atr_period=14
 strategy_sl_atr_mult=1.00
 strategy_tp_atr_mult=1.00
+strategy_tp1_fraction=0.50
+strategy_be_buffer_pips=1
 strategy_spread_atr_mult=1.80
+strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
+strategy_total_dd_halt_pct=5.0
+strategy_per_trade_risk_cap_pct=0.5

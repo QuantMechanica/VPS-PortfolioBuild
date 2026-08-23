@@ -16,7 +16,7 @@ input int    qm_magic_slot_offset         = 0;
 input uint   qm_rng_seed                  = 42;
 
 input group "Risk"
-input double RISK_PERCENT                 = 0.5;
+input double RISK_PERCENT                 = 0.0;
 input double RISK_FIXED                   = 1000.0;
 input double PORTFOLIO_WEIGHT             = 1.0;
 
@@ -46,8 +46,14 @@ input int    strategy_damiani_sed_period  = 40;     // Damiani Volatmeter sedime
 input double strategy_damiani_threshold   = 1.40;   // Damiani Volatmeter threshold multiplier
 input int    strategy_atr_period          = 14;     // ATR period for stop loss and spread filter
 input double strategy_sl_atr_mult         = 1.00;   // Stop loss ATR multiplier
-input double strategy_tp_atr_mult         = 1.00;   // Take profit ATR multiplier
+input double strategy_tp_atr_mult         = 1.00;   // TP1 trigger ATR multiplier
+input double strategy_tp1_fraction        = 0.50;   // TP1 partial-close volume fraction
+input int    strategy_be_buffer_pips      = 1;      // Runner break-even buffer in pips
 input double strategy_spread_atr_mult     = 1.80;   // Spread filter ATR multiplier
+input double strategy_daily_loss_halt_pct = 2.0;    // Daily realized-loss entry halt percent
+input double strategy_daily_hard_stop_pct = 2.5;    // Daily equity hard stop percent
+input double strategy_total_dd_halt_pct   = 5.0;    // Account-level total drawdown stop percent
+input double strategy_per_trade_risk_cap_pct = 0.5; // Per-trade risk cap percent
 
 // -----------------------------------------------------------------------------
 // Helpers & Indicator Math
@@ -58,6 +64,41 @@ int GetBarHhmm(const datetime t)
    MqlDateTime dt;
    TimeToStruct(t, dt);
    return (dt.hour * 100 + dt.min);
+}
+
+bool Strategy_ConfigValid()
+{
+   if(strategy_kijun_period < 2 || strategy_tenkan_period < 2 || strategy_senkou_period < 2)
+      return false;
+   if(strategy_aso_period < 1 || strategy_aroon_period < 2)
+      return false;
+   if(strategy_damiani_vis_period < 2 || strategy_damiani_sed_period < 2)
+      return false;
+   if(strategy_atr_period < 2 || strategy_sl_atr_mult <= 0.0 || strategy_tp_atr_mult <= 0.0)
+      return false;
+   if(strategy_tp1_fraction <= 0.0 || strategy_tp1_fraction >= 1.0 || strategy_be_buffer_pips < 0)
+      return false;
+   if(strategy_spread_atr_mult <= 0.0)
+      return false;
+   if(strategy_daily_loss_halt_pct <= 0.0 || strategy_daily_hard_stop_pct <= 0.0 ||
+      strategy_daily_loss_halt_pct > strategy_daily_hard_stop_pct || strategy_total_dd_halt_pct <= 0.0)
+      return false;
+   if(strategy_per_trade_risk_cap_pct <= 0.0 || strategy_per_trade_risk_cap_pct > 1.0)
+      return false;
+   return true;
+}
+
+bool Strategy_DailyRealizedLossHalt()
+{
+   // Card semantics are realized loss, not floating equity. Query the whole
+   // account so another strategy's closed loss cannot be ignored by this EA.
+   int closed_trades = 0;
+   const double realized_pnl = QM_ChartUITodayPnL(0, closed_trades);
+   const double balance_now = AccountInfoDouble(ACCOUNT_BALANCE);
+   const double day_start_balance = balance_now - realized_pnl;
+   if(balance_now <= 0.0 || day_start_balance <= 0.0)
+      return true;
+   return (realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0));
 }
 
 bool Strategy_HasOpenPosition()
@@ -139,9 +180,12 @@ bool Strategy_DamianiTrade(const string sym, const int shift)
 
 bool Strategy_NoTradeFilter()
 {
-   const datetime now = TimeCurrent();
-   const int hhmm = GetBarHhmm(now);
+   const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
+   const int hhmm = GetBarHhmm(utc_now);
    if(hhmm >= 2355 || hhmm < 5)
+      return true;
+
+   if(Strategy_DailyRealizedLossHalt())
       return true;
 
    const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
@@ -204,7 +248,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double sl_dist = MathMax(strategy_sl_atr_mult * atr_1, 10.0 * pip_size);
-   const double tp_dist = MathMax(strategy_tp_atr_mult * atr_1, 10.0 * pip_size);
 
    // Long: Close[1] > Kijun[1] AND ASO_Bulls[1] > ASO_Bears[1] AND AroonUp[1] >= 70.0 AND Damiani Trade == TRUE
    if(close_1 > kijun_1 && aso_bulls > aso_bears && aroon_up >= strategy_aroon_threshold)
@@ -215,7 +258,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_BUY;
       req.price = 0.0;
       req.sl = QM_TM_NormalizePrice(_Symbol, exec_price - sl_dist);
-      req.tp = QM_TM_NormalizePrice(_Symbol, exec_price + tp_dist);
+      req.tp = 0.0; // TP1 is a managed 50% partial close; the remainder is the Kijun runner.
       req.reason = "nnfx_kijun_aso_long";
       return true;
    }
@@ -229,7 +272,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_SELL;
       req.price = 0.0;
       req.sl = QM_TM_NormalizePrice(_Symbol, exec_price + sl_dist);
-      req.tp = QM_TM_NormalizePrice(_Symbol, exec_price - tp_dist);
+      req.tp = 0.0; // TP1 is a managed 50% partial close; the remainder is the Kijun runner.
       req.reason = "nnfx_kijun_aso_short";
       return true;
    }
@@ -245,9 +288,6 @@ void Strategy_ManageOpenPosition()
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(pip_size <= 0.0 || point <= 0.0) return;
 
-   const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   const double be_trigger = (atr_1 > 0.0) ? (strategy_tp_atr_mult * atr_1) : (20.0 * pip_size);
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
    {
       ulong ticket = PositionGetTicket(i);
@@ -257,32 +297,41 @@ void Strategy_ManageOpenPosition()
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
+      const double volume = PositionGetDouble(POSITION_VOLUME);
+      if(open_price <= 0.0 || current_sl <= 0.0 || volume <= 0.0)
+         continue;
 
-      if(pos_type == POSITION_TYPE_BUY)
+      const bool is_buy = (pos_type == POSITION_TYPE_BUY);
+      const bool unprotected = is_buy ? (current_sl < open_price - point * 0.5)
+                                      : (current_sl > open_price + point * 0.5);
+      if(!unprotected)
+         continue; // TP1 already completed; do not repeatedly halve the runner.
+
+      const double initial_risk = is_buy ? (open_price - current_sl)
+                                         : (current_sl - open_price);
+      if(initial_risk <= 0.0)
+         continue;
+
+      const double atr_at_entry = initial_risk / strategy_sl_atr_mult;
+      const double trigger_distance = strategy_tp_atr_mult * atr_at_entry;
+      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double favorable_move = is_buy ? (market_price - open_price)
+                                           : (open_price - market_price);
+      if(market_price <= 0.0 || favorable_move < trigger_distance)
+         continue;
+
+      const double partial_lots = QM_TM_NormalizeVolume(_Symbol, volume * strategy_tp1_fraction);
+      const double min_lot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+      if(partial_lots <= 0.0 || partial_lots >= volume ||
+         volume - partial_lots < min_lot - 1e-8)
+         continue;
+
+      if(QM_TM_PartialClose(ticket, partial_lots, QM_EXIT_PARTIAL))
       {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(bid <= 0.0 || open_price <= 0.0) continue;
-
-         // Move to break-even once open profit >= 1.0 ATR
-         if((bid - open_price) >= be_trigger)
-         {
-            const double target_sl = QM_TM_NormalizePrice(_Symbol, open_price + 1.0 * pip_size);
-            if(target_sl > current_sl + point * 0.5)
-               QM_TM_MoveSL(ticket, target_sl, "nnfx_be_plus_1");
-         }
-      }
-      else if(pos_type == POSITION_TYPE_SELL)
-      {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(ask <= 0.0 || open_price <= 0.0) continue;
-
-         // Move to break-even once open profit >= 1.0 ATR
-         if((open_price - ask) >= be_trigger)
-         {
-            const double target_sl = QM_TM_NormalizePrice(_Symbol, open_price - 1.0 * pip_size);
-            if(current_sl <= 0.0 || target_sl < current_sl - point * 0.5)
-               QM_TM_MoveSL(ticket, target_sl, "nnfx_be_plus_1");
-         }
+         const double be_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_be_buffer_pips);
+         const double target_sl = is_buy ? (open_price + be_buffer) : (open_price - be_buffer);
+         QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, target_sl), "NNFX_TP1_BE_PROTECTION");
       }
    }
 }
@@ -334,10 +383,20 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
 {
+   if(!Strategy_ConfigValid())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
+      return INIT_FAILED;
+
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         strategy_daily_hard_stop_pct,
+                         strategy_total_dd_halt_pct,
+                         strategy_per_trade_risk_cap_pct))
       return INIT_FAILED;
    return INIT_SUCCEEDED;
 }
@@ -352,8 +411,8 @@ void OnTick()
    QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
 
+   // Entry blackouts must not suppress management or strategy exits.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -378,10 +437,12 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows) return;
 
-   if(!QM_IsNewBar()) return;
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1)) return;
+   if(Strategy_NoTradeFilter()) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;

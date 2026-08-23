@@ -27,10 +27,11 @@ The NNFX algorithmic framework on D1 combines Kijun-Sen (Baseline), Absolute Str
 - Long Entry: Close[1] > Kijun[1] AND ASO_Bulls[1] > ASO_Bears[1] AND AroonUp[1] >= 70.0 AND Damiani Trade == TRUE.
 - Short Entry: Close[1] < Kijun[1] AND ASO_Bears[1] > ASO_Bulls[1] AND AroonDown[1] >= 70.0 AND Damiani Trade == TRUE.
 - Stop Loss: Placed at 1.0 * ATR(14, D1)[1] from entry.
-- Take Profit: Placed at 1.0 * ATR(14, D1)[1] from entry.
-- Break-Even: Move SL to Entry + 1.0 pip when open profit reaches +1.0R (1.0x ATR).
+- TP1: At +1.0R (the entry stop distance, derived from ATR), close 50% once.
+- Runner protection: After TP1, move SL to Entry + 1.0 pip for a long or Entry - 1.0 pip for a short.
 - Runner Exit: Close position when price re-crosses Kijun-Sen line (Close[1] < Kijun[1] for Long, Close[1] > Kijun[1] for Short).
-- No-Trade Filter: Dynamic spread filter (Spread > 1.8 * ATR(14, D1)[1]) and rollover blackout 23:55–00:05 GMT.
+- No-Trade Filter: Dynamic spread filter (Spread > 1.8 * ATR(14, D1)[1]), rollover blackout 23:55–00:05 UTC (broker time converted with `QM_BrokerToUTC`), and a 2.0% account realized-loss entry halt.
+- Hard stops: Framework kill switch at 2.5% daily equity drawdown and the 5.0% account-level total-drawdown signal.
 
 ---
 
@@ -49,8 +50,14 @@ The NNFX algorithmic framework on D1 combines Kijun-Sen (Baseline), Absolute Str
 | `strategy_damiani_threshold` | 1.40 | 1.0 - 2.0 | Damiani Volatmeter threshold multiplier |
 | `strategy_atr_period` | 14 | 10 - 20 | ATR period for stop loss and spread filter |
 | `strategy_sl_atr_mult` | 1.00 | 0.8 - 1.5 | Stop loss distance as ATR multiplier |
-| `strategy_tp_atr_mult` | 1.00 | 0.8 - 1.5 | Take profit distance as ATR multiplier |
+| `strategy_tp_atr_mult` | 1.00 | 0.8 - 1.5 | TP1 trigger as a multiple of the entry ATR risk |
+| `strategy_tp1_fraction` | 0.50 | 0.1 - 0.9 | Volume closed once at TP1 |
+| `strategy_be_buffer_pips` | 1 | 0 - 5 | Runner stop offset beyond entry after TP1 |
 | `strategy_spread_atr_mult` | 1.80 | 1.0 - 2.5 | Spread filter ATR multiplier |
+| `strategy_daily_loss_halt_pct` | 2.0 | 0.1 - 2.5 | Account realized-loss threshold that blocks new entries |
+| `strategy_daily_hard_stop_pct` | 2.5 | 0.1 - 5.0 | Restart-safe framework daily equity hard stop |
+| `strategy_total_dd_halt_pct` | 5.0 | 0.1 - 10.0 | Account-level total-drawdown signal threshold |
+| `strategy_per_trade_risk_cap_pct` | 0.5 | 0.1 - 1.0 | Framework per-trade risk cap |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
