@@ -11,8 +11,23 @@ Same defect class as the sibling reviewed alongside it in this batch
 (`docs/ops/evidence/2026-08-23_review_ea_11300_9972_9979.md`, `QM5_11300` section) —
 reviewed independently against that precedent's checklist for consistency.
 
-Verdict: **REQUEST_CHANGES — no SPEC.md, no approved card, and the news filter is fully
-disabled by default with no documented exemption; do not promote to PIPELINE**
+Verdict: **REQUEST_CHANGES — no SPEC.md and an unwired strategy input; do not promote to
+PIPELINE**
+
+**Correction (post-review, same day):** findings #2 and #3 below are **wrong** — an
+approved card exists, just not inside this git checkout (it lives at
+`D:/QM/strategy_farm/artifacts/cards_approved/QM5_11299_lwma144-smma5-fractal-m5-scalp.md`,
+a runtime-only location I failed to check), and that card explicitly states
+"News filter: off in P2" — the disabled news filter is a **documented, card-specified
+choice**, not an undocumented gap. A concurrent review
+(`docs/ops/evidence/2026-08-23_review_ea_11300_9972_9979.md`, `QM5_11299` section,
+commit `bb0857246`) caught both errors and additionally found a real defect I missed:
+`input double strategy_tp_atr_mult = 2.0` (line 42) is never read — the take-profit is
+computed with a hardcoded `2.0` literal instead (lines 194/203), so the input is dead
+(behavior-identical today since the literal matches the default, but a setfile/P3 override
+of this input would silently do nothing). See that doc for the corrected, authoritative
+version of this review. The original (partially incorrect) findings below are left
+unedited for the record, per the instruction not to overwrite prior evidence.
 
 ## Findings
 
