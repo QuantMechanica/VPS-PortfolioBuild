@@ -111,3 +111,63 @@ because this ticket performs no live migration or state mutation. If the
 separate activation ticket has already run, roll that activation/migration back
 first under its own runbook; reverting this code alone must not be used against
 an active v4 database.
+
+## Review fixes (2026-08-23)
+
+Reviewer verdict FIX_REQUIRED. Two findings addressed.
+
+### P1 — sibling merge conflict in phase_ids.py (merge-order safety)
+
+Verified the P1 finding is already resolved on the branch that owns the fix.
+rb-activate carries commit `db0aa2ebc fix(rebaseline): drop rb-activate
+phase_ids delta, guard v4 migration entrypoint`, so `rb-activate` no longer
+touches `tools/strategy_farm/phase_ids.py` (`git diff --stat be2d247 rb-activate
+-- tools/strategy_farm/phase_ids.py` is empty). rb-v4-runtime's own phase_ids.py
+bytes are the accumulated correct version and are kept verbatim.
+
+Merge-order confirmation (shared merge-base `be2d247`):
+
+- Real sequential merge into `agents/board-advisor` in a throwaway worktree:
+  step1 `rb-v4-runtime` CLEAN, step2 `rb-surfaces` CLEAN, step3 `rb-activate`
+  CLEAN (0 unmerged files at every step).
+- Pairwise `git merge-tree --write-tree`: v4-runtime+surfaces CLEAN,
+  surfaces+activate CLEAN, v4-runtime+activate CLEAN.
+
+A2 runtime policy invariant re-verified on rb-v4-runtime (active schema
+`qm.gate-manifest/v3`, v4 READ_INERT):
+
+- `build_advancement_table` path from Q08: `Q08 -> Q09_NEWS -> Q10 -> Q14 ->
+  Q15 -> Q16` (Q16 terminal). Q10 advances to Q14, not Q11.
+- `portfolio_route(optimized=False)` and `portfolio_route(optimized=True)` both
+  return `None` — the auto-portfolio / Q16->Q11 back-edge stays neutered.
+
+### P2 — BASELINE_Q09 required_verdicts contract mismatch (fixed)
+
+`tools/strategy_farm/farmctl.py`: the v4 head-to-head baseline lane is
+legitimately allowed a `FAIL_SOFT` parent (baseline selection query and the
+`BASELINE_Q09` insert trigger both admit `verdict IN ('PASS','FAIL_SOFT')`), but
+the dependency was bound via `_ensure_q16_dependency -> add_dependency` with a
+hardcoded `required_verdicts=['PASS']`. This is more than cosmetic once v4
+activates: the append-only `trg_wid_validate_insert` trigger rejects any
+dependency whose parent verdict is not in `required_verdicts_json`, so a
+`FAIL_SOFT` baseline bound with `['PASS']` would be ABORTed.
+
+Fix: threaded `required_verdicts` through `_q16_dependency_spec` (default
+`('PASS',)`) into `_ensure_q16_dependency` (used for both the append and the
+idempotent re-verify comparison), and bound the BASELINE_Q09 spec with
+`('PASS','FAIL_SOFT')`. The confirmation/incumbent/challenger lanes keep the
+PASS-only default. v4 is READ_INERT, so no live migration is implied.
+
+Tests (`tools/strategy_farm/tests/test_q16_head_to_head.py`):
+
+- `test_baseline_q09_dependency_records_fail_soft_verdict_set` — FAIL_SOFT
+  baseline binds and stores `["PASS","FAIL_SOFT"]`, idempotent re-verify passes.
+- `test_baseline_q09_pass_only_binding_is_rejected_for_fail_soft_parent` —
+  regression guard: `['PASS']` on a FAIL_SOFT baseline is rejected by the
+  insert trigger.
+- `test_default_dependency_spec_stays_pass_only` — default lanes remain
+  PASS-only.
+
+Test run: `test_q16_head_to_head.py` 11 passed; `test_v4_runtime_wiring.py` +
+`test_gate_manifest.py` + `test_q09_news_farmctl_integration.py` 56 passed,
+2 skipped.

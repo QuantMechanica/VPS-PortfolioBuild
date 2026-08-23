@@ -25100,8 +25100,17 @@ def _q16_dependency_spec(
     lineage: dict[str, Any] | None,
     *,
     dependency_role: str,
-) -> dict[str, str]:
-    """Bind a head-to-head dependency to immutable evidence bytes."""
+    required_verdicts: tuple[str, ...] = ("PASS",),
+) -> dict[str, Any]:
+    """Bind a head-to-head dependency to immutable evidence bytes.
+
+    ``required_verdicts`` records the verdict set the bound parent is allowed
+    to carry. The confirmation/incumbent/challenger lanes are PASS-only; the
+    v4 BASELINE_Q09 lane legitimately accepts a ``FAIL_SOFT`` parent (the
+    baseline selection query and the BASELINE_Q09 trigger both admit
+    ``verdict IN ('PASS','FAIL_SOFT')``), so its spec must record that set to
+    keep ``required_verdicts_json`` consistent with the accepted verdicts.
+    """
     db_evidence = str(work_item["evidence_path"] or "").strip()
     lineage_evidence = (
         lineage["q10"]["evidence"] if lineage is not None else {
@@ -25123,6 +25132,7 @@ def _q16_dependency_spec(
         "dependency_role": dependency_role,
         "parent_work_item_id": str(work_item["id"]),
         "parent_evidence_sha256": expected,
+        "required_verdicts": list(required_verdicts),
     }
 
 
@@ -25130,9 +25140,10 @@ def _ensure_q16_dependency(
     conn: sqlite3.Connection,
     *,
     child_work_item_id: str,
-    spec: dict[str, str],
+    spec: dict[str, Any],
 ) -> bool:
     """Append one Q16 dependency, or verify an identical prior append."""
+    expected_verdicts = list(spec.get("required_verdicts", ["PASS"]))
     existing = conn.execute(
         """
         SELECT parent_work_item_id,parent_evidence_sha256,required_verdicts_json
@@ -25149,7 +25160,7 @@ def _ensure_q16_dependency(
         if (
             str(existing["parent_work_item_id"]) != spec["parent_work_item_id"]
             or str(existing["parent_evidence_sha256"]) != spec["parent_evidence_sha256"]
-            or required != ["PASS"]
+            or required != expected_verdicts
         ):
             raise ValueError(f"Q16 {spec['dependency_role']} dependency differs from sealed payload")
         return False
@@ -25159,7 +25170,7 @@ def _ensure_q16_dependency(
         dependency_role=spec["dependency_role"],
         parent_work_item_id=spec["parent_work_item_id"],
         parent_evidence_sha256=spec["parent_evidence_sha256"],
-        required_verdicts=["PASS"],
+        required_verdicts=expected_verdicts,
     )
     return True
 
@@ -25325,7 +25336,10 @@ def enqueue_head_to_head(
                 raise ValueError("BASELINE_Q09 is not the matching hash-bound Q09/Q08 row")
             rows[dependency_roles[0]] = baseline_row
             baseline_spec = _q16_dependency_spec(
-                baseline_row, None, dependency_role=dependency_roles[0]
+                baseline_row,
+                None,
+                dependency_role=dependency_roles[0],
+                required_verdicts=("PASS", "FAIL_SOFT"),
             )
             payload["dependency_refs"][dependency_roles[0]]["evidence_sha256"] = (
                 baseline_spec["parent_evidence_sha256"]
