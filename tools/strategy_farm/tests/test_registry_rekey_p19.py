@@ -15,12 +15,13 @@ ACTIVE_IDENTITIES = {
     "12074": "qp-stress-reversal-sp500",
     "1619": "aa-overnight-mom",
     "12247": "ehlers-adaptive-cg-h4",
+    # Post-P19 approved rebuild; see
+    # docs/ops/evidence/02da6437_qm5_1624_ehlers_adaptive_cg_build_ea_2026-08-22.md.
+    "1624": "ehlers-adaptive-cg-h4",
     "1158": "french-weekend-effect-idx",
-    "12075": "qp-january-barometer",
     "1258": "hopwood-bermaui-rsi-h1",
-    "12076": "hopwood-dmi-cross-h1",
 }
-ALL_REKEY_IDS = frozenset({*ACTIVE_IDENTITIES, "12249", "1624", "1643"})
+ALL_REKEY_IDS = frozenset({*ACTIVE_IDENTITIES, "12075", "12076", "12249", "1643"})
 TARGET_SLUGS = frozenset(ACTIVE_IDENTITIES.values())
 PRODUCTION_IDENTITIES = {
     key: value
@@ -127,13 +128,10 @@ def test_p19_active_registry_owns_each_identity_once() -> None:
     assert strategy_ids[("1158", "french-weekend-effect-idx")] == (
         "afab7a6f-c3c8-51ae-a609-f376744beb8e"
     )
-    assert strategy_ids[("12075", "qp-january-barometer")] == (
-        "7ede58dd-d184-5099-9d48-7a65de230853"
-    )
     assert strategy_ids[("1258", "hopwood-bermaui-rsi-h1")] == (
         "6e967762-b26d-59a3-b076-35c17f2e7c36"
     )
-    assert strategy_ids[("12076", "hopwood-dmi-cross-h1")] == (
+    assert strategy_ids[("1624", "ehlers-adaptive-cg-h4")] == (
         "6e967762-b26d-59a3-b076-35c17f2e7c36"
     )
 
@@ -239,15 +237,16 @@ def test_p19_remaining_registry_only_duplicates_are_rekeyed() -> None:
         ]
         assert len(retired_loser) == 1
 
-        new_active = [
+        new_retired = [
             row
             for row in rows
             if row["ea_id"].removeprefix("QM5_") == new_id
-            and row["status"].lower() == "active"
+            and row["status"].lower() == "retired"
         ]
-        assert len(new_active) == 1
-        assert _normalized_slug(new_active[0]["slug"]) == loser_slug
-        assert new_active[0]["strategy_id"] == strategy_id
+        assert len(new_retired) == 1
+        assert _normalized_slug(new_retired[0]["slug"]) == loser_slug
+        assert new_retired[0]["strategy_id"] == strategy_id
+        assert new_retired[0]["retired_reason"].startswith("OWNER-approved D1 disposition")
 
 
 def test_p19_remaining_rekeys_are_registry_only_and_keep_built_owner() -> None:

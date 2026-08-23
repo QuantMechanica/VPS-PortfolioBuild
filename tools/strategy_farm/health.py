@@ -51,6 +51,18 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm import q09_autoseal_hold_census
 try:
+    import optimization_fork_driver
+except ModuleNotFoundError:
+    from tools.strategy_farm import optimization_fork_driver
+try:
+    import news_gate_service
+except ModuleNotFoundError:
+    from tools.strategy_farm import news_gate_service
+try:
+    from gate_manifest import load_gate_manifest
+except ModuleNotFoundError:
+    from tools.strategy_farm.gate_manifest import load_gate_manifest
+try:
     from phase_ids import ACTIVE_GATE_MANIFEST, ORDINARY_RUNTIME_PHASES, advancement_table, phase_rank
 except ModuleNotFoundError:
     from tools.strategy_farm.phase_ids import (
@@ -102,6 +114,12 @@ FACTORY_ON_CEREMONY_INCOMPLETE_PATH = (
 )
 Q09_SEALED_PLAN_HOLD_FAIL_HOURS = 6
 NEWS_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+NEWS_READ_PHASES = tuple(dict.fromkeys((
+    NEWS_PHASE,
+    ACTIVE_GATE_MANIFEST.equivalent_gate(NEWS_PHASE, "v4", "v3")
+    if ACTIVE_GATE_MANIFEST.schema_version.endswith("/v4")
+    else NEWS_PHASE,
+)))
 PENDING_BINDING_DRIFT_DETAIL_LIMIT = 20
 DISK_SCRATCH_WINDOW_MINUTES = 20
 DISK_SCRATCH_RATE_WARN_GB_PER_HOUR = 20.0
@@ -782,6 +800,51 @@ def chk_work_items_timestamp_sanity(con) -> dict:
     return _check("work_items_timestamp_sanity", "OK", 0, 0, "timestamps sane", "")
 
 
+def chk_sqlite_lock_crash_infra_24h(
+    con: sqlite3.Connection, *, now: dt.datetime | None = None
+) -> dict:
+    """Count worker-crash INFRA rows whose traceback is SQLite contention."""
+
+    observed_at = now or dt.datetime.now(dt.timezone.utc)
+    if observed_at.tzinfo is None:
+        observed_at = observed_at.replace(tzinfo=dt.timezone.utc)
+    cutoff = (observed_at.astimezone(dt.timezone.utc) - dt.timedelta(hours=24)).isoformat()
+    rows = con.execute(
+        """
+        SELECT id,ea_id,symbol,phase,updated_at,COUNT(*) OVER() AS crash_count
+        FROM work_items
+        WHERE verdict='INFRA_FAIL' AND updated_at>=?
+          AND json_valid(payload_json)=1
+          AND json_extract(payload_json,'$.verdict_reason')='worker_crashed_handling_item'
+          AND lower(payload_json) LIKE '%database is locked%'
+        ORDER BY updated_at DESC
+        LIMIT 25
+        """,
+        (cutoff,),
+    ).fetchall()
+    count = int(rows[0][5]) if rows else 0
+    if count:
+        samples = ", ".join(
+            f"{row[0][:8]}:{row[1]}:{row[2]}:{row[3]}@{row[4]}" for row in rows[:5]
+        )
+        return _check(
+            "sqlite_lock_crash_infra_24h",
+            "FAIL",
+            count,
+            0,
+            f"{count} SQLite-lock worker crash INFRA row(s) in 24h; {samples}",
+            "Inspect terminal_worker logs and pump stage_timings; contention must defer/retry, never manufacture INFRA_FAIL.",
+        )
+    return _check(
+        "sqlite_lock_crash_infra_24h",
+        "OK",
+        0,
+        0,
+        "no SQLite-lock worker crash INFRA rows in the last 24h",
+        "",
+    )
+
+
 def chk_pump_task_health() -> dict:
     """Scheduled task QM_StrategyFarm_Pump_5min LastResult must be 0 (or a
     known-benign busy code), and the pump lock must not be orphaned by a dead
@@ -1146,6 +1209,46 @@ def chk_ea_metrics_fresh(con) -> dict:
                       "pump logs; see docs/ops/EA_METRICS_ARCHIVE_LAYER_2026-06-22.md")
     return _check("ea_metrics_fresh", "OK", age_min, STALE_MIN,
                   f"{count} rows, refreshed {age_min}m ago", "")
+
+
+def chk_db_backup_fresh() -> dict:
+    """farm_state.sqlite hourly snapshots must stay current.
+
+    `_hourly_db_backup` was moved out of the 5-min pump into the lower-frequency
+    `farmctl pump-maintenance` command (latency rebaseline 2026-08-23). If that
+    task is never scheduled — or its scheduled run stalls — backups silently
+    stop and the durability outage is otherwise invisible (there is no other
+    producer of state/backups/farm_state_*.sqlite). This check makes the gap
+    observable. Backups run hourly behind a 50-min guard, so a newest snapshot
+    older than STALE_MIN means the maintenance task is not running.
+
+    During an operator FACTORY_OFF window the maintenance writer is intentionally
+    quiesced, so staleness there is expected, not a fault — reported OK.
+    """
+    STALE_MIN = 150  # hourly cadence + 50-min guard; >150m ⇒ maintenance stalled
+    if (ROOT / "state" / "FACTORY_OFF.flag").exists():
+        return _check("db_backup_fresh", "OK", None, STALE_MIN,
+                      "FACTORY_OFF.flag set — hourly DB backup intentionally paused",
+                      "")
+    backup_dir = ROOT / "state" / "backups"
+    backups = list(backup_dir.glob("farm_state_*.sqlite")) if backup_dir.is_dir() else []
+    if not backups:
+        return _check("db_backup_fresh", "FAIL", 0, STALE_MIN,
+                      "no state/backups/farm_state_*.sqlite present — hourly DB "
+                      "backup has never run; schedule QM_StrategyFarm_PumpMaintenance_Hourly",
+                      "python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py pump-maintenance; "
+                      "then install tools/strategy_farm/install_pump_maintenance_scheduled_task.ps1")
+    newest = max(backups, key=lambda p: p.stat().st_mtime)
+    age_min = int((_utc_now().timestamp() - newest.stat().st_mtime) // 60)
+    if age_min > STALE_MIN:
+        return _check("db_backup_fresh", "FAIL", age_min, STALE_MIN,
+                      f"newest DB backup {age_min}m old (>{STALE_MIN}m); "
+                      f"pump-maintenance backup stage stalled ({len(backups)} snapshots)",
+                      "Verify QM_StrategyFarm_PumpMaintenance_Hourly is registered and "
+                      "enabled; run python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py "
+                      "pump-maintenance and check its log")
+    return _check("db_backup_fresh", "OK", age_min, STALE_MIN,
+                  f"{len(backups)} snapshots, newest {age_min}m ago", "")
 
 
 def chk_ablation_grandchildren(con) -> dict:
@@ -4009,6 +4112,98 @@ def chk_pending_artifact_binding_drift(con) -> dict:
     return _check("pending_artifact_binding_drift", "FAIL", len(findings), 0, detail, hint)
 
 
+def _optimization_manifests() -> tuple:
+    """Active contract plus the v4 fixture, deduplicated by manifest hash."""
+    manifests = [ACTIVE_GATE_MANIFEST]
+    v4_path = (
+        REPO_ROOT / "tools" / "strategy_farm" / "config" /
+        "gate_manifest.v4.draft.json"
+    )
+    if v4_path.is_file():
+        try:
+            manifests.append(load_gate_manifest(v4_path))
+        except Exception:
+            pass
+    return tuple({manifest.sha256: manifest for manifest in manifests}.values())
+
+
+def chk_opt_fork_service_rate(con) -> dict:
+    """Expose completed rows/day for pattern, parameter, and head-to-head gates."""
+    manifests = _optimization_manifests()
+    metrics = optimization_fork_driver.service_metrics(con, manifests=manifests)
+    phases = sorted({
+        manifest.gate_for_role(role)
+        for manifest in manifests
+        for role in ("PATTERN", "PARAM_OPT", "HEAD_TO_HEAD")
+    })
+    placeholders = ",".join("?" for _ in phases)
+    backlog = int(con.execute(
+        f"SELECT count(*) FROM work_items WHERE upper(phase) IN ({placeholders}) "
+        "AND lower(status) IN ('pending','active')",
+        tuple(phases),
+    ).fetchone()[0])
+    rates = metrics["completed_per_day_by_gate"]
+    completed = sum(int(value) for value in rates.values())
+    status = "WARN" if backlog and completed == 0 else "OK"
+    return _check(
+        "opt_fork_service_rate",
+        status,
+        rates,
+        "visibility SLO: nonzero 24h completion when backlog exists",
+        f"24h completed by contract/gate={json.dumps(rates, sort_keys=True)}; "
+        f"pending_or_active={backlog}",
+        "Inspect the earliest held optimization row and its machine_reason; do not bypass prerequisites."
+        if status == "WARN" else "",
+    )
+
+
+def chk_news_gate_service_rate(con) -> dict:
+    """Expose conclusions/day and every unresolved news-gate dam component."""
+
+    metrics = news_gate_service.service_metrics(
+        con, news_phases=NEWS_READ_PHASES, now=_utc_now()
+    )
+    backlog = int(metrics["expansions_pending"]) + int(
+        metrics["pending_runner_count"]
+    )
+    stalled = backlog > 0 and int(metrics["conclusive_verdicts_per_day"]) == 0
+    status = "WARN" if stalled else "OK"
+    detail = (
+        f"conclusive_verdicts_24h={metrics['conclusive_verdicts_per_day']}; "
+        f"expansions_pending={metrics['expansions_pending']}; "
+        f"PENDING_RUNNER={metrics['pending_runner_count']}"
+    )
+    return _check(
+        "news_gate_service_rate",
+        status,
+        metrics,
+        "visibility SLO: a conclusive 24h verdict while unresolved work exists",
+        detail,
+        (
+            "Inspect expansion child/hold IDs and legacy placeholder lineage; only "
+            "append a governed continuation, never rewrite the historical verdict."
+        )
+        if stalled else "",
+    )
+
+
+def chk_terminal_requalification_verdicts_count(con) -> dict:
+    """Expose the lifetime count of terminal per-pair requalification verdict rows."""
+    metrics = optimization_fork_driver.service_metrics(
+        con, manifests=_optimization_manifests()
+    )
+    count = int(metrics["terminal_requalification_verdicts_count"])
+    return _check(
+        "terminal_requalification_verdicts_count",
+        "WARN" if count == 0 else "OK",
+        count,
+        ">=1 proves the optimization fork has completed at least once",
+        f"terminal requalification verdict rows across versioned v3/v4 roles: {count}",
+        "Follow the opt-fork pending IDs through pattern, parameter freeze, and sealed head-to-head."
+        if count == 0 else "",
+    )
+
+
 ALL_CHECKS = [
     ("ea_id_slug_uniqueness", chk_ea_id_slug_uniqueness, False),
     ("card_registry_identity_integrity", chk_card_registry_identity_integrity, False),
@@ -4021,8 +4216,10 @@ ALL_CHECKS = [
     ("custom_history_repairs_24h", chk_custom_history_repairs, False),
     ("usn_journal_d",          chk_usn_journal_d,          False),
     ("work_items_timestamp_sanity", chk_work_items_timestamp_sanity, True),
+    ("sqlite_lock_crash_infra_24h", chk_sqlite_lock_crash_infra_24h, True),
     ("p2_pass_no_p3",          chk_p2_pass_no_p3,          True),
     ("ea_metrics_fresh",       chk_ea_metrics_fresh,       True),
+    ("db_backup_fresh",        chk_db_backup_fresh,        False),
     ("ablation_grandchildren", chk_ablation_grandchildren, True),
     ("claude_review_starved",  chk_claude_review_starved,  True),
     ("mt5_dispatch_idle",      chk_mt5_dispatch_idle,      True),
@@ -4060,6 +4257,9 @@ ALL_CHECKS = [
     ("q09_sealed_plan_hold_age", chk_q09_sealed_plan_hold_age, True),
     ("q09_autoseal_hold_census", chk_q09_autoseal_hold_census, True),
     ("pending_artifact_binding_drift", chk_pending_artifact_binding_drift, True),
+    ("news_gate_service_rate", chk_news_gate_service_rate, True),
+    ("opt_fork_service_rate", chk_opt_fork_service_rate, True),
+    ("terminal_requalification_verdicts_count", chk_terminal_requalification_verdicts_count, True),
 ]
 
 

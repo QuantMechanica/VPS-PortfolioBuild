@@ -1,0 +1,22 @@
+{
+  "review_task_id": "c600e224-e78c-46a2-853e-b1f4ffd26e42",
+  "build_task_id": "f2e0fa39-1871-43b8-a282-e0f2ea55e1cf",
+  "ea_id": "QM5_12940",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_12940 source lines 281 and 293 reset the directional cooldown inside Strategy_EntrySignal before QM_TM_OpenPosition runs at line 514, so an order rejection consumes the signal and suppresses the next eligible entry for the configured cooldown.",
+    "QM5_12940 source lines 354-359 and 385-390 set g_trade_state.t1_hit=true even when normalized half-volume is invalid or the bool-returning QM_TM_PartialClose call fails; the required 50% T1 close can therefore be skipped while post-T1 trailing is activated.",
+    "QM5_12940 OnInit zeroes g_trade_state at line 441, while open-position reconstruction at lines 312-320 forces t1_hit=false and derives T1 from the current signal globals rather than durable original-entry state; a restart cannot deterministically resume the card's partial-close and post-T1 trail state.",
+    "Build artifact artifacts/qm5_12940_build_result.json marks smoke_result as deferred_p2_smoke with blocked_reason=null; this lacks the tester-saturation evidence required by the deferred-smoke waiver, and no QM5_12940 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:40:09Z"
+}

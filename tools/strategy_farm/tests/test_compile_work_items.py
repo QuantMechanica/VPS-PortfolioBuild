@@ -90,6 +90,109 @@ def test_enqueue_compile_is_idempotent_for_existing_open_row(tmp_path: Path) -> 
     )
 
 
+def test_source_repair_appends_fresh_row_without_mutating_stale_open(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    monkeypatch.setattr(
+        compile_work_items, "SOURCE_REPAIR_EA_LABELS", frozenset({label})
+    )
+    first = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    old_id = first["enqueued"][0]["work_item_id"]
+    source = repo / "framework" / "EAs" / label / f"{label}.mq5"
+    source.write_text(source.read_text(encoding="utf-8") + "// repaired\n", encoding="utf-8")
+    current_sha = compile_work_items.sha256_file(source)
+
+    repair = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority=compile_work_items.SOURCE_REPAIR_AUTHORITY,
+    )
+
+    assert repair["ok"] is True
+    assert repair["enqueued_count"] == 1
+    new_id = repair["enqueued"][0]["work_item_id"]
+    assert new_id != old_id
+    with farmctl.connect(root) as conn:
+        rows = conn.execute(
+            "SELECT id,status,verdict,payload_json FROM work_items "
+            "WHERE ea_id='QM5_1001' ORDER BY created_at,id"
+        ).fetchall()
+    assert {
+        row["id"]: (row["status"], row["verdict"]) for row in rows
+    } == {
+        old_id: ("pending", None),
+        new_id: ("pending", None),
+    }
+    payload = json.loads(next(row["payload_json"] for row in rows if row["id"] == new_id))
+    assert payload["mq5_sha256"] == current_sha
+    assert payload["append_only_source_repair"] is True
+    assert payload["compile_source_repair_authority"] == (
+        compile_work_items.SOURCE_REPAIR_AUTHORITY
+    )
+    assert payload["source_repair_stale_open_work_item_ids"] == [old_id]
+
+    repeated = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority=compile_work_items.SOURCE_REPAIR_AUTHORITY,
+    )
+
+    assert repeated["ok"] is True
+    assert repeated["enqueued_count"] == 0
+    assert repeated["idempotent_open_count"] == 1
+    assert repeated["idempotent_open"][0]["work_item_ids"] == [new_id]
+    with farmctl.connect(root) as conn:
+        row_count = conn.execute(
+            "SELECT COUNT(*) FROM work_items WHERE ea_id='QM5_1001'"
+        ).fetchone()[0]
+    assert row_count == 2
+
+    worker_recheck = compile_work_items.classify_candidate(
+        root,
+        repo,
+        label,
+        compile_work_items._inventory(root, repo),
+        current_work_item_id=new_id,
+        source_repair_authority=compile_work_items.SOURCE_REPAIR_AUTHORITY,
+    )
+    assert worker_recheck["eligible"] is True
+    assert worker_recheck["source_repair_authorized"] is True
+    assert worker_recheck["source_repair_waived_reasons"] == ["WORK_ITEMS_EXIST"]
+
+
+def test_source_repair_refuses_current_compile_ok(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    monkeypatch.setattr(
+        compile_work_items, "SOURCE_REPAIR_EA_LABELS", frozenset({label})
+    )
+    first = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    work_item_id = first["enqueued"][0]["work_item_id"]
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE work_items SET status='done',verdict='COMPILE_OK' WHERE id=?",
+            (work_item_id,),
+        )
+        conn.commit()
+
+    repair = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority=compile_work_items.SOURCE_REPAIR_AUTHORITY,
+    )
+
+    assert repair["ok"] is False
+    assert repair["enqueued_count"] == 0
+    assert repair["refused"][0]["reason"] == "USABLE_CURRENT_COMPILE_VERDICT_EXISTS"
+
+
 def test_batch_from_file_is_dry_run_until_apply(tmp_path: Path) -> None:
     labels = [
         "QM5_1001_compile-fixture-h1",

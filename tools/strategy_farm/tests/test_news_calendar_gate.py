@@ -416,6 +416,10 @@ def test_candidate_and_output_symlink_components_are_rejected(tmp_path: Path) ->
 def test_production_policy_is_exact_and_cli_exposes_no_authority_overrides(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    # Validate the production authority identity while executing the suite from
+    # a linked ticket worktree; the subsequent copied-script assertion retains
+    # the fail-closed check for any non-canonical production invocation.
+    monkeypatch.setattr(gate, "__file__", str(gate.PRODUCTION_GATE_SCRIPT))
     policy = gate._validated_policy(gate._PRODUCTION_POLICY)
     assert gate.PRODUCTION_GATE_SCRIPT == Path(
         r"C:\QM\repo\tools\strategy_farm\news_calendar_gate.py"
@@ -485,7 +489,10 @@ def test_multi_plan_cli_rejects_caller_selected_authority(
     assert exc.value.code == 2
 
 
-def test_arbitrary_candidates_are_unavailable_to_production_policy(tmp_path: Path) -> None:
+def test_arbitrary_candidates_are_unavailable_to_production_policy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(gate, "__file__", str(gate.PRODUCTION_GATE_SCRIPT))
     candidates = tmp_path / "candidates"
     _write_pair(candidates)
     with pytest.raises(gate.NewsCalendarError, match="exact D source pair"):

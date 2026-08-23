@@ -116,6 +116,7 @@ def test_shared_spawn_boundary_never_calls_runner_when_calendar_is_bad(
     tmp_path: Path,
 ) -> None:
     row = {
+        "kind": "backtest",
         "phase": "P2",
         "id": "wi-calendar",
     }

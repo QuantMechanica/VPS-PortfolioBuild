@@ -30,11 +30,15 @@ def test_f4_marks_only_identity_backed_mismatched_pass_as_stale(
             )
         con.commit()
     monkeypatch.setattr(archive_matrix, "current_ex5_sha256_by_ea", lambda: {"QM5_1": "b" * 64})
-    monkeypatch.setattr(archive_matrix, "_card_targets", lambda: {})
+    monkeypatch.setattr(
+        archive_matrix,
+        "_card_metadata",
+        lambda: {"targets": {}, "universes": {}, "buckets": {}},
+    )
 
     data = archive_matrix.collect(root / farmctl.DB_REL)
     card = data["cards"][0]
-    states = [packed & 7 for packed in card["cells"]["Q02"]]
+    states = [cell["state"] for cell in card["cells"]["Q02"]]
     assert archive_matrix.ST_STALE in states
     assert archive_matrix.ST_PASS in states
     assert data["identity_cells"] == 1

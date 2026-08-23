@@ -1,0 +1,212 @@
+{
+  "artifact_type": "diversity_backlog_eligibility_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-23T20:29:16.172701+00:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "8d5be98ca81d39b0d1505b8a17a5598e4d771e26",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "diversity_backlog_preflight": {
+    "ranking_command": "python tools/strategy_farm/strategy_priority.py --dry-run --top 80",
+    "nominal_top_candidate": {
+      "ea_id": "QM5_30001",
+      "strategy": "bollinger-bands-grid-waka-waka",
+      "asset_class": "fx_cross",
+      "strategy_family": "relative_value",
+      "timeframe": "M15",
+      "priority_score": 75.05,
+      "eligible": false,
+      "reason": "The EA identity is retired in ea_id_registry. This build lane has no authority to reactivate it."
+    },
+    "collision_exclusions": [
+      {
+        "ea_id": "QM5_20087",
+        "reason": "The nominal second-ranked card is an index sleeve, has no allocated active magic rows, and already has assigned task ownership."
+      },
+      {
+        "ea_id": "QM5_11716",
+        "reason": "A compiled EX5 already exists; the no-work-item scorer result is not an unbuilt-artifact verdict."
+      },
+      {
+        "ea_id": "QM5_11848",
+        "reason": "A compiled EX5 already exists; the no-work-item scorer result is not an unbuilt-artifact verdict."
+      },
+      {
+        "ea_id": "QM5_36005",
+        "reason": "The highest-ranked uncompiled FX candidate already has a BLOCKED agent task and a governed force-rebuild authorization hold documented in docs/ops/evidence/cf9b27fd_qm5_36005_card_remediation_compile_hold_2026-08-23.md."
+      }
+    ],
+    "candidate_claimed": false,
+    "infra_repair_selected": false,
+    "reason_for_no_claim": "The explicit CPU ceiling bound before an append-only Q02 or Q03 infrastructure recovery could be safely admitted."
+  },
+  "capacity_sample": {
+    "observed_at_utc": "2026-08-23T20:28:19.8093087Z",
+    "cpu_samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "cpu_average_percent": 100.0,
+    "cpu_maximum_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "resource_headroom": {
+      "free_physical_gib": 21.03,
+      "free_virtual_gib": 49.54,
+      "d_free_gib": 139.1
+    }
+  },
+  "farm_snapshot": {
+    "database_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "sqlite_uri_mode_ro_with_query_only",
+    "quick_check": "ok",
+    "observed_at_utc": "2026-08-23T20:29:16.172701+00:00",
+    "work_item_status_counts": {
+      "active": 9,
+      "done": 59651,
+      "failed": 48710,
+      "pending": 3854
+    },
+    "active_phase_counts": {
+      "Q02": 1,
+      "Q10_NEWS": 8
+    },
+    "active_claims": [
+      {
+        "terminal": "T1",
+        "work_item_id": "02c82887-8f28-403e-bbc4-4e903cda3db0",
+        "ea_id": "QM5_10916",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T10",
+        "work_item_id": "1e3b7aa9-6a2d-466b-bea2-198964fda73f",
+        "ea_id": "QM5_20010",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T2",
+        "work_item_id": "bf2dab64-017b-4a67-9c0b-238c562c7077",
+        "ea_id": "QM5_20086",
+        "symbol": "NDX.DWX",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "07d44cb2-8f7a-42cd-b422-1b92f32cf978",
+        "ea_id": "QM5_21505",
+        "symbol": "XAGUSD.DWX",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "3bc3b088-94f3-4390-8b7d-5fd134336dac",
+        "ea_id": "QM5_20206",
+        "symbol": "QM5_20206_XAU_XAG_MOMIVOL_D1",
+        "phase": "Q02"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "d00ee295-0e9b-4346-aaf7-7c3378bcc015",
+        "ea_id": "QM5_12849",
+        "symbol": "XTIUSD.DWX",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "08b4a32d-9ede-4401-aac1-52384c2fd7dc",
+        "ea_id": "QM5_21506",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "3a44e240-c86d-41a3-8367-ee9d7aa90436",
+        "ea_id": "QM5_12708",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": "5f1b3b71-51f3-4cbe-9cf5-08ce6d11404d",
+        "ea_id": "QM5_20266",
+        "symbol": "XTIUSD.DWX",
+        "phase": "Q10_NEWS"
+      }
+    ],
+    "build_task_counts": {
+      "blocked": 33,
+      "done": 1816,
+      "failed": 1351,
+      "pending": 42
+    }
+  },
+  "process_snapshot": {
+    "observed_at_utc": "2026-08-23T20:27:33+00:00",
+    "supported_command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "path_anchored_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T10"
+    ],
+    "factory_worker_services_present": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "process_and_database_snapshots_atomic": false,
+    "excluded_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "non_duplicate_delta": {
+    "previous_evidence": "artifacts/fx_cointegration_qm5_20219_pending_hard_cpu_stop_20260823T195033Z_board_advisor.json",
+    "previous_observation_utc": "2026-08-23T19:50:33.0046163Z",
+    "elapsed_minutes": 38.72,
+    "previous_active_work_item_count": 10,
+    "current_active_work_item_count": 9,
+    "current_active_phase_counts": {
+      "Q02": 1,
+      "Q10_NEWS": 8
+    },
+    "new_eligibility_finding": "The diversity scorer's nominal leader QM5_30001 is a retired identity, while the highest-ranked uncompiled FX candidate QM5_36005 is already governed by a compile-authorization hold.",
+    "reason_for_fresh_evidence": "The paced fleet topology and active count changed, and the current diversity ranking required a new retired-identity and compile-hold exclusion before the same explicit CPU ceiling bound."
+  },
+  "actions_this_run": {
+    "farm_claim": false,
+    "new_card_or_ea": false,
+    "registry_or_magic_mutation": false,
+    "build_check_compile_or_smoke": false,
+    "enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "tester_launch_or_terminal_control": false,
+    "evidence_commit_only": true,
+    "reason": "The mission explicitly requires a stop when the backtest CPU ceiling is hit."
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}

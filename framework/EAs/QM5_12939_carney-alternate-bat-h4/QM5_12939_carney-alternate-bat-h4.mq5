@@ -49,7 +49,9 @@ input double strategy_rsi_d1_min          = 25.0;   // D1 RSI filter range min
 input double strategy_rsi_d1_max          = 75.0;   // D1 RSI filter range max
 input int    strategy_atr_period          = 14;     // ATR period for stops and targets
 input double strategy_atr_sl_mult         = 1.27;   // Beyond D-pivot by 1.27 * ATR
-input double strategy_tp_ad_retracement   = 0.382;  // Take profit AD retracement fraction
+input double strategy_tp1_ad_retracement  = 0.382;  // T1 partial target: 50% position at 38.2% AD
+input double strategy_tp2_ad_retracement  = 0.618;  // T2 final target: remaining 50% at 61.8% AD
+input double strategy_atr_trail_mult      = 1.0;    // ATR trail multiplier after T1 hit
 input int    strategy_max_hold_bars       = 30;     // Time stop in H4 bars
 input int    strategy_cooldown_bars       = 18;     // Cooldown between entries in H4 bars
 input double strategy_spread_max_atr_mult = 0.3;    // Maximum spread threshold in ATR
@@ -62,19 +64,30 @@ struct StrategyPivot
    datetime time;
 };
 
+struct StrategyTradeState
+{
+   ulong    ticket;
+   bool     t1_hit;
+   double   t1_price;
+   double   t2_price;
+};
+
 // -----------------------------------------------------------------------------
 // File-scope cached state (advanced once per closed H4 bar)
 // -----------------------------------------------------------------------------
-double   g_atr_1 = 0.0;
-bool     g_long_signal = false;
-bool     g_short_signal = false;
-double   g_long_sl = 0.0;
-double   g_long_tp = 0.0;
-double   g_short_sl = 0.0;
-double   g_short_tp = 0.0;
-bool     g_state_ready = false;
-int      g_bars_since_last_long = 100;
-int      g_bars_since_last_short = 100;
+double             g_atr_1 = 0.0;
+bool               g_long_signal = false;
+bool               g_short_signal = false;
+double             g_long_sl = 0.0;
+double             g_long_t1 = 0.0;
+double             g_long_t2 = 0.0;
+double             g_short_sl = 0.0;
+double             g_short_t1 = 0.0;
+double             g_short_t2 = 0.0;
+bool               g_state_ready = false;
+int                g_bars_since_last_long = 100;
+int                g_bars_since_last_short = 100;
+StrategyTradeState g_trade_state;
 
 bool Strategy_FractalHigh(const MqlRates &rates[], const int index, const int total, const int wing)
 {
@@ -235,7 +248,8 @@ void AdvanceState_OnNewBar()
             g_long_signal = true;
             g_long_sl = d_piv.price - strategy_atr_sl_mult * g_atr_1;
             const double ad = a_piv.price - d_piv.price;
-            g_long_tp = d_piv.price + strategy_tp_ad_retracement * ad;
+            g_long_t1 = d_piv.price + strategy_tp1_ad_retracement * ad;
+            g_long_t2 = d_piv.price + strategy_tp2_ad_retracement * ad;
          }
       }
    }
@@ -274,7 +288,8 @@ void AdvanceState_OnNewBar()
             g_short_signal = true;
             g_short_sl = d_piv.price + strategy_atr_sl_mult * g_atr_1;
             const double ad = d_piv.price - a_piv.price;
-            g_short_tp = d_piv.price - strategy_tp_ad_retracement * ad;
+            g_short_t1 = d_piv.price - strategy_tp1_ad_retracement * ad;
+            g_short_t2 = d_piv.price - strategy_tp2_ad_retracement * ad;
          }
       }
    }
@@ -295,6 +310,10 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
+   ZeroMemory(req);
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    if(!g_state_ready) return false;
 
    if(g_long_signal)
@@ -302,9 +321,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_BUY;
       req.reason = "QM5_12939_ALT_BAT_BUY";
       req.price = 0.0;
-      req.sl = g_long_sl;
-      req.tp = g_long_tp;
-      req.symbol_slot = qm_magic_slot_offset;
+      req.sl = NormalizeDouble(g_long_sl, _Digits);
+      req.tp = NormalizeDouble(g_long_t2, _Digits);
 
       g_bars_since_last_long = 0;
       return true;
@@ -315,9 +333,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_SELL;
       req.reason = "QM5_12939_ALT_BAT_SELL";
       req.price = 0.0;
-      req.sl = g_short_sl;
-      req.tp = g_short_tp;
-      req.symbol_slot = qm_magic_slot_offset;
+      req.sl = NormalizeDouble(g_short_sl, _Digits);
+      req.tp = NormalizeDouble(g_short_t2, _Digits);
 
       g_bars_since_last_short = 0;
       return true;
@@ -333,25 +350,124 @@ void Strategy_ManageOpenPosition()
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
    {
-      ulong ticket = PositionGetTicket(i);
+      const ulong ticket = PositionGetTicket(i);
       if(!PositionSelectByTicket(ticket)) continue;
-      if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
+
+      if(g_trade_state.ticket != ticket)
+      {
+         g_trade_state.ticket = ticket;
+         g_trade_state.t1_hit = false;
+         const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+         if(ptype == POSITION_TYPE_BUY)
+         {
+            g_trade_state.t1_price = g_long_t1;
+            g_trade_state.t2_price = g_long_t2;
+         }
+         else
+         {
+            g_trade_state.t1_price = g_short_t1;
+            g_trade_state.t2_price = g_short_t2;
+         }
+      }
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
       const int bars_open = iBarShift(_Symbol, _Period, open_time); // perf-allowed
 
-      // Time stop exit
+      // Time stop exit: 30 H4 bars
       if(bars_open >= strategy_max_hold_bars)
       {
          QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
          continue;
+      }
+
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double current_vol = PositionGetDouble(POSITION_VOLUME);
+
+      if(pos_type == POSITION_TYPE_BUY)
+      {
+         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         // T1 partial close: 50% at 38.2% AD retracement
+         if(!g_trade_state.t1_hit && g_trade_state.t1_price > 0.0 && bid >= g_trade_state.t1_price)
+         {
+            const double half_vol = QM_TM_NormalizeVolume(_Symbol, current_vol * 0.5);
+            if(half_vol > 0.0 && half_vol < current_vol)
+            {
+               QM_TM_PartialClose(ticket, half_vol, QM_EXIT_STRATEGY);
+            }
+            g_trade_state.t1_hit = true;
+         }
+
+         // Post-T1 ATR trail: trail SL at ATR(14) * 1.0 below bar 1 low
+         if(g_trade_state.t1_hit)
+         {
+            const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+            if(atr > 0.0)
+            {
+               const double bar_low = iLow(_Symbol, _Period, 1); // perf-allowed
+               const double trail_sl = QM_TM_NormalizePrice(_Symbol, bar_low - atr * strategy_atr_trail_mult);
+               const double current_sl = PositionGetDouble(POSITION_SL);
+               const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+               if(trail_sl > current_sl + point * 0.5 && trail_sl < bid)
+               {
+                  QM_TM_MoveSL(ticket, trail_sl, "alt_bat_post_t1_atr_trail");
+               }
+            }
+         }
+      }
+      else if(pos_type == POSITION_TYPE_SELL)
+      {
+         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         // T1 partial close: 50% at 38.2% AD retracement
+         if(!g_trade_state.t1_hit && g_trade_state.t1_price > 0.0 && ask <= g_trade_state.t1_price)
+         {
+            const double half_vol = QM_TM_NormalizeVolume(_Symbol, current_vol * 0.5);
+            if(half_vol > 0.0 && half_vol < current_vol)
+            {
+               QM_TM_PartialClose(ticket, half_vol, QM_EXIT_STRATEGY);
+            }
+            g_trade_state.t1_hit = true;
+         }
+
+         // Post-T1 ATR trail: trail SL at ATR(14) * 1.0 above bar 1 high
+         if(g_trade_state.t1_hit)
+         {
+            const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+            if(atr > 0.0)
+            {
+               const double bar_high = iHigh(_Symbol, _Period, 1); // perf-allowed
+               const double trail_sl = QM_TM_NormalizePrice(_Symbol, bar_high + atr * strategy_atr_trail_mult);
+               const double current_sl = PositionGetDouble(POSITION_SL);
+               const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+               if((current_sl <= 0.0 || trail_sl < current_sl - point * 0.5) && trail_sl > ask)
+               {
+                  QM_TM_MoveSL(ticket, trail_sl, "alt_bat_post_t1_atr_trail");
+               }
+            }
+         }
       }
    }
 }
 
 bool Strategy_ExitSignal()
 {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0) return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket)) continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY && g_short_signal)
+         return true;
+      if(ptype == POSITION_TYPE_SELL && g_long_signal)
+         return true;
+   }
    return false;
 }
 
@@ -363,56 +479,75 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 int OnInit()
 {
+   ZeroMemory(g_trade_state);
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12939_carney-alternate-bat-h4\"}");
    return INIT_SUCCEEDED;
 }
 
-void OnDeinit(const int reason) { QM_FrameworkShutdown(); }
+void OnDeinit(const int reason)
+{
+   QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
+   QM_FrameworkShutdown();
+}
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck()) return;
+
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
    if(QM_FrameworkHandleFridayClose()) return;
 
-   if(QM_IsNewBar(_Symbol, _Period))
+   const bool is_new_bar = QM_IsNewBar(_Symbol, _Period);
+   if(is_new_bar)
    {
       AdvanceState_OnNewBar();
+      QM_EquityStreamOnNewBar();
    }
 
    if(Strategy_NoTradeFilter()) return;
 
    Strategy_ManageOpenPosition();
 
-   const int magic = QM_FrameworkMagic();
-   bool has_position = false;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   if(Strategy_ExitSignal())
    {
-      ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket)) continue;
-      if(PositionGetInteger(POSITION_MAGIC) == magic && PositionGetString(POSITION_SYMBOL) == _Symbol)
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
       {
-         has_position = true;
-         break;
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket)) continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
+
+         const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+         if((ptype == POSITION_TYPE_BUY && g_short_signal) || (ptype == POSITION_TYPE_SELL && g_long_signal))
+         {
+            QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         }
       }
    }
 
-   if(!has_position && QM_IsNewBar(_Symbol, _Period))
+   if(!is_new_bar) return;
+
+   if(Strategy_NewsFilterHook(broker_now)) return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
+
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) == 0)
    {
       QM_EntryRequest req;
+      ZeroMemory(req);
       if(Strategy_EntrySignal(req))
       {
          ulong ticket = 0;

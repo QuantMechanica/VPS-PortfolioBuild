@@ -725,6 +725,9 @@ bool Strategy_LoadMonthlyRatioMedians(
          MathLog(xau_bar.close) - MathLog(xag_bar.close);
       if(!MathIsValidNumber(ratio))
          return false;
+      if(new_month_sessions < 0 ||
+         new_month_sessions >= ArraySize(new_ratios))
+         return false;
       new_ratios[new_month_sessions] = ratio;
       ++new_month_sessions;
       ++index;
@@ -760,6 +763,9 @@ bool Strategy_LoadMonthlyRatioMedians(
       const double ratio =
          MathLog(xau_bar.close) - MathLog(xag_bar.close);
       if(!MathIsValidNumber(ratio))
+         return false;
+      if(parent_month_sessions < 0 ||
+         parent_month_sessions >= ArraySize(parent_ratios))
          return false;
       parent_ratios[parent_month_sessions] = ratio;
       ++parent_month_sessions;

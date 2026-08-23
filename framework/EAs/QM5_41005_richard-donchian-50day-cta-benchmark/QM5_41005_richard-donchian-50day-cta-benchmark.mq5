@@ -16,7 +16,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -41,18 +41,114 @@ input int    InpAtrPeriod               = 20;     // ATR period for stop loss
 input double InpAtrSlMult               = 3.0;    // ATR stop loss multiplier
 input double InpSpreadAtrMult           = 1.8;    // Max spread as multiple of D1 ATR(14)
 
+const double STRATEGY_DAILY_ENTRY_HALT_PCT = 2.0;
+const double STRATEGY_DAILY_HARD_STOP_PCT  = 2.5;
+const double STRATEGY_TOTAL_DD_STOP_PCT    = 5.0;
+
+double g_spread_atr       = 0.0;
+double g_stop_atr         = 0.0;
+int    g_entry_breakout   = 0;
+int    g_exit_breakout    = 0;
+bool   g_state_ready      = false;
+int    g_daily_loss_day   = -1;
+bool   g_daily_entry_halt = true;
+
+int StrategyDayKey(const datetime t)
+{
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return dt.year * 1000 + dt.day_of_year;
+}
+
+datetime StrategyDayStart(const datetime t)
+{
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   dt.hour = 0;
+   dt.min = 0;
+   dt.sec = 0;
+   return StructToTime(dt);
+}
+
+void StrategyRefreshDailyEntryHalt(const bool force_refresh)
+{
+   const datetime now = TimeCurrent();
+   const int day_key = StrategyDayKey(now);
+   if(!force_refresh && day_key == g_daily_loss_day)
+      return;
+
+   g_daily_loss_day = day_key;
+   g_daily_entry_halt = true;
+   const datetime day_start = StrategyDayStart(now);
+   if(day_start <= 0 || !HistorySelect(day_start, now))
+      return;
+
+   double realised = 0.0;
+   const int deals = HistoryDealsTotal();
+   for(int i = 0; i < deals; ++i)
+   {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         continue;
+      const ENUM_DEAL_TYPE deal_type = (ENUM_DEAL_TYPE)HistoryDealGetInteger(deal, DEAL_TYPE);
+      if(deal_type != DEAL_TYPE_BUY && deal_type != DEAL_TYPE_SELL)
+         continue;
+      realised += HistoryDealGetDouble(deal, DEAL_PROFIT);
+      realised += HistoryDealGetDouble(deal, DEAL_SWAP);
+      realised += HistoryDealGetDouble(deal, DEAL_COMMISSION);
+      realised += HistoryDealGetDouble(deal, DEAL_FEE);
+   }
+
+   const double day_start_balance = AccountInfoDouble(ACCOUNT_BALANCE) - realised;
+   if(day_start_balance <= 0.0)
+      return;
+   g_daily_entry_halt = (realised <= -(STRATEGY_DAILY_ENTRY_HALT_PCT / 100.0) * day_start_balance);
+}
+
+void AdvanceState_OnNewBar()
+{
+   g_spread_atr = 0.0;
+   g_stop_atr = 0.0;
+   g_entry_breakout = 0;
+   g_exit_breakout = 0;
+   g_state_ready = false;
+
+   if(InpEntryLookback < 1 || InpExitLookback < 1 || InpAtrPeriod < 1)
+      return;
+
+   const int max_lookback = (InpEntryLookback > InpExitLookback) ? InpEntryLookback : InpExitLookback;
+   const int warmup = max_lookback + 2;
+   const double oldest_close = iClose(_Symbol, PERIOD_D1, warmup); // perf-allowed: one warmup probe inside the framework new-bar gate
+   if(oldest_close <= 0.0)
+      return;
+
+   const double spread_atr = QM_ATR(_Symbol, PERIOD_D1, 14, 1);
+   const double stop_atr = QM_ATR(_Symbol, PERIOD_D1, InpAtrPeriod, 1);
+   if(spread_atr <= 0.0 || stop_atr <= 0.0)
+      return;
+
+   g_spread_atr = spread_atr;
+   g_stop_atr = stop_atr;
+   g_entry_breakout = QM_Sig_Range_Breakout(_Symbol, PERIOD_D1, InpEntryLookback, 1);
+   g_exit_breakout = QM_Sig_Range_Breakout(_Symbol, PERIOD_D1, InpExitLookback, 1);
+   g_state_ready = true;
+}
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
 bool Strategy_NoTradeFilter()
 {
+   StrategyRefreshDailyEntryHalt(false);
+   if(g_daily_entry_halt)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask > 0.0 && bid > 0.0 && ask > bid)
    {
-      const double atr = QM_ATR(_Symbol, PERIOD_D1, 14, 1);
-      if(atr > 0.0 && (ask - bid) > InpSpreadAtrMult * atr)
+      if(g_spread_atr > 0.0 && (ask - bid) > InpSpreadAtrMult * g_spread_atr)
          return true;
    }
 
@@ -69,12 +165,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const int brk = QM_Sig_Range_Breakout(_Symbol, PERIOD_D1, InpEntryLookback, 1);
+   if(!g_state_ready)
+      return false;
+
+   const int brk = g_entry_breakout;
    if(brk == 0)
       return false;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, InpAtrPeriod, 1);
-   if(atr <= 0.0)
+   if(g_stop_atr <= 0.0)
       return false;
 
    if(brk > 0)
@@ -85,7 +183,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = ask - InpAtrSlMult * atr;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, ask - InpAtrSlMult * g_stop_atr);
       req.tp = 0.0;
       req.reason = "DONCHIAN50_BUY";
       req.symbol_slot = qm_magic_slot_offset;
@@ -100,7 +198,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       req.type = QM_SELL;
       req.price = 0.0;
-      req.sl = bid + InpAtrSlMult * atr;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, bid + InpAtrSlMult * g_stop_atr);
       req.tp = 0.0;
       req.reason = "DONCHIAN50_SELL";
       req.symbol_slot = qm_magic_slot_offset;
@@ -115,6 +213,9 @@ void Strategy_ManageOpenPosition() {}
 
 bool Strategy_ExitSignal()
 {
+   if(!g_state_ready)
+      return false;
+
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
@@ -131,10 +232,9 @@ bool Strategy_ExitSignal()
          continue;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const int exit_brk = QM_Sig_Range_Breakout(_Symbol, PERIOD_D1, InpExitLookback, 1);
-      if(ptype == POSITION_TYPE_BUY && exit_brk < 0)
+      if(ptype == POSITION_TYPE_BUY && g_exit_breakout < 0)
          return true;
-      if(ptype == POSITION_TYPE_SELL && exit_brk > 0)
+      if(ptype == POSITION_TYPE_SELL && g_exit_breakout > 0)
          return true;
    }
 
@@ -149,11 +249,29 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 int OnInit()
 {
+   if(InpEntryLookback < 1 || InpExitLookback < 1 || InpAtrPeriod < 1 ||
+      InpAtrSlMult <= 0.0 || InpSpreadAtrMult <= 0.0)
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"))
+      return INIT_FAILED;
+
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         STRATEGY_DAILY_HARD_STOP_PCT,
+                         STRATEGY_TOTAL_DD_STOP_PCT,
+                         1.0))
+      return INIT_FAILED;
+
+   StrategyRefreshDailyEntryHalt(true);
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_41005\",\"ea\":\"richard-donchian-50day-cta-benchmark\"}");
    return INIT_SUCCEEDED;
@@ -171,9 +289,12 @@ void OnTick()
 
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
+
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
+      AdvanceState_OnNewBar();
 
    Strategy_ManageOpenPosition();
 
@@ -189,6 +310,8 @@ void OnTick()
       }
    }
 
+   if(Strategy_NewsFilterHook(broker_now)) return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -196,7 +319,7 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows) return;
 
-   if(!QM_IsNewBar()) return;
+   if(!is_new_bar) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -212,6 +335,7 @@ void OnTimer() { QM_FrameworkOnTimer(); }
 void OnTradeTransaction(const MqlTradeTransaction &t, const MqlTradeRequest &r, const MqlTradeResult &res)
 {
    QM_FrameworkOnTradeTransaction(t, r, res);
+   StrategyRefreshDailyEntryHalt(true);
 }
 
 double OnTester()

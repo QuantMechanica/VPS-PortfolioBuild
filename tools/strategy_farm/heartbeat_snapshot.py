@@ -190,7 +190,9 @@ def probe_goal(out, conn):
 @guarded
 def probe_operator_surface(out):
     """Versioned pair frontiers, three phase bands, and the book guard."""
-    out["operator_surface"] = build_operator_snapshot(DB_PATH)
+    snapshot = build_operator_snapshot(DB_PATH)
+    out["operator_surface"] = snapshot
+    out["path_to_25"] = snapshot.get("path_to_25") or {}
 
 
 @guarded
@@ -402,6 +404,7 @@ def render_markdown(out) -> str:
     q, h = out.get("quota", {}), out.get("health", {})
     sl, fu = out.get("source_lane", {}), out.get("funnel", {})
     operator = out.get("operator_surface", {})
+    path25 = out.get("path_to_25", {})
 
     L = []
     L.append("# Heartbeat — Fabrik & Agenten")
@@ -454,6 +457,45 @@ def render_markdown(out) -> str:
     if tf:
         L.append(f"| Fehlschlagende Aufgaben | {', '.join(tf)} |")
     L.append("")
+
+    if path25:
+        news = path25.get("news_gate") or {}
+        opt = path25.get("opt_fork") or {}
+        backfill = path25.get("backfill") or {}
+        frontier = " · ".join(
+            f"{gate} {count}"
+            for gate, count in (path25.get("frontier_histogram") or {}).items()
+            if int(count or 0) > 0
+        )
+        eta = path25.get("eta_days")
+        eta_text = f"{eta} Tage" if eta is not None else "nicht belastbar"
+        L.append("## Weg zu 25")
+        L.append("")
+        L.append(
+            f"- **Qualifiziert:** {path25.get('qualified_pairs', 0)} / 25 Paare · "
+            f"{path25.get('distinct_eas', 0)} EAs · {path25.get('families', 0)} Familien"
+        )
+        L.append(f"- **Frontier:** {frontier or 'noch keine lückenlose Qxx-Frontier'}")
+        L.append(
+            f"- **Q10 News:** 7 T konklusiv {news.get('conclusive_verdicts_7d', 0)} · "
+            f"PASS {news.get('pass_7d', 0)} · offen {news.get('pending', 0)} · "
+            f"Holds {news.get('holds', 0)}"
+        )
+        opt_bits = []
+        for gate in ("Q12", "Q13", "Q14"):
+            counts = opt.get(gate) or {}
+            opt_bits.append(
+                f"{gate} pending {counts.get('pending', 0)}/done {counts.get('done', 0)}"
+            )
+        verdicts = ", ".join(
+            f"{key} {value}" for key, value in (opt.get("terminal_verdicts") or {}).items()
+        ) or "keine"
+        L.append(f"- **Opt-Fork:** {' · '.join(opt_bits)} · Q14-Verdikte {verdicts}")
+        L.append(
+            f"- **Backfill:** heute {backfill.get('enqueued_today', 0)} enqueued · "
+            f"RERUN_INFRA offen {backfill.get('rerun_infra_open', 0)} · ETA {eta_text}"
+        )
+        L.append("")
 
     if operator:
         L.append("## Drei Makrophasen")

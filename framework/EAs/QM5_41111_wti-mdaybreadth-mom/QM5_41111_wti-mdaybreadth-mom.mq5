@@ -549,6 +549,8 @@ bool Strategy_LoadDailyBreadthSignal(const int current_month_key,
    double previous_close = parent_final_close;
    for(int index = new_month_bars - 1; index >= 0; --index)
      {
+      if(index >= ArraySize(newest_closes))
+         return false;
       const double current_close = newest_closes[index];
       if(current_close <= 0.0 ||
          !MathIsValidNumber(current_close))

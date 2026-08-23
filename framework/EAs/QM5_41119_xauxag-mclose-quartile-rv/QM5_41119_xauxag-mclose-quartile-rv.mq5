@@ -719,6 +719,9 @@ bool Strategy_LoadMonthlyCloseQuartile(
    while(index < strategy_history_bars_d1 &&
          Strategy_MonthKey(xau_bars[index].time) == completed_month_key)
      {
+      if(completed_month_sessions < 0 ||
+         completed_month_sessions >= ArraySize(ratios))
+         return false;
       if(completed_month_sessions >= strategy_max_month_sessions ||
          !Strategy_SynchronizedPairValid(xau_bars, xag_bars, index) ||
          Strategy_MonthKey(xag_bars[index].time) != completed_month_key ||
@@ -751,6 +754,8 @@ bool Strategy_LoadMonthlyCloseQuartile(
    newest_rank = 0;
    for(int i = 1; i < completed_month_sessions; ++i)
      {
+      if(i < 0 || i >= ArraySize(ratios))
+         return false;
       if(!MathIsValidNumber(ratios[i]))
          return false;
       if(ratios[i] == newest_ratio)

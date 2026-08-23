@@ -474,6 +474,9 @@ bool Strategy_LoadPathEfficiencySignal(const int current_month_key,
 
       if(month_key == completed_month_key)
         {
+         if(month_sessions < 0 ||
+            month_sessions >= ArraySize(month_closes))
+            return false;
          if(month_sessions >= strategy_max_month_sessions ||
             (last_date_key > 0 && date_key >= last_date_key))
             return false;
@@ -500,6 +503,8 @@ bool Strategy_LoadPathEfficiencySignal(const int current_month_key,
    double previous_close = boundary_close;
    for(int index = month_sessions - 1; index >= 0; --index)
      {
+      if(index >= ArraySize(month_closes))
+         return false;
       const double current_close = month_closes[index];
       if(current_close <= 0.0 || !MathIsValidNumber(current_close) ||
          previous_close <= 0.0 || !MathIsValidNumber(previous_close))

@@ -3,14 +3,16 @@
 **EA ID:** QM5_41006
 **Slug:** man-ahl-multispeed-ewma-trend
 **Source:** man-ahl-multispeed-ewma-trend-official-source
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-18
+**Author of this spec:** Gemini; corrected by Codex
+**Last revised:** 2026-08-23
 
 ---
 
 ## 1. Strategy Logic
 
-Institutional trend following engine evaluating a composite continuous trend forecast signal across six EWMA crossover horizons (2/8, 4/16, 8/32, 16/64, 32/128, 64/256 days) normalized by D1 realized volatility (ATR 60). On closed D1 bars, the EA enters Long when the composite score crosses above +0.35, and enters Short when the composite score crosses below -0.35. Entries carry an initial stop loss of 2.5x ATR(14). Positions are closed when the composite forecast signal crosses back across zero or opposite threshold.
+Institutional trend following engine evaluating a composite continuous trend forecast signal across six EWMA crossover horizons (2/8, 4/16, 8/32, 16/64, 32/128, 64/256 days). Each spread is normalized by the 60-day sample standard deviation of D1 close-to-close changes, and every volatility and EMA input must be ready before the score is valid. On closed D1 bars, the EA enters Long when the bounded score crosses above +0.35, and enters Short when it crosses below -0.35. Entries carry an initial stop loss of 2.5x ATR(14).
+
+While a forecast remains active, the EA closes and reopens through framework trade helpers once per D1 bar, sizing the new risk amount to `abs(S_t)` of the configured risk budget. That implements the card's continuous forecast-driven rebalancing; a sign change closes the old direction and only a qualifying opposite threshold crossing opens the reverse side. Account-wide realised losses halt new entries at 2.0% for the broker day, while the framework kill switch flattens at 2.5% daily equity loss and consumes the 5.0% portfolio drawdown signal.
 
 ---
 
@@ -19,7 +21,7 @@ Institutional trend following engine evaluating a composite continuous trend for
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
 | `InpForecastThreshold` | 0.35 | 0.20-0.50 | Minimum composite trend forecast score threshold for trade entry |
-| `InpVolWindow` | 60 | 30-90 | Realized volatility normalizer lookback window in D1 bars |
+| `InpVolWindow` | 60 | 30-90 | Sample standard-deviation window for D1 close changes |
 | `InpAtrSlPeriod` | 14 | 10-30 | ATR period for stop loss sizing |
 | `InpAtrSlMult` | 2.5 | 1.5-4.0 | ATR multiplier for stop loss placement |
 | `InpSpreadAtrMult` | 1.8 | 1.0-3.0 | Maximum allowable spread as multiple of D1 ATR(14) |
@@ -87,3 +89,4 @@ This card was mechanised from:
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Task b42bac52-ccda-4a73-b49b-faab46b48c88 |
+| v2 | 2026-08-23 | Card-faithful rework after Codex review | Replaced ATR(60) with realised close-change volatility, fail-closed all EMA horizons, added forecast-proportional D1 rebalancing, execution contract, and loss limits |

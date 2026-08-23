@@ -43,7 +43,7 @@ def _db() -> sqlite3.Connection:
 
 
 def _at(hour: int) -> dt.datetime:
-    return dt.datetime(2026, 7, 29, hour, 0, tzinfo=dt.UTC)
+    return dt.datetime(2026, 8, 23, hour, 0, tzinfo=dt.UTC)
 
 
 def test_init_db_installs_additive_dedupe_sidecar(tmp_path):
@@ -123,7 +123,7 @@ def test_unchanged_signal_recurs_after_window_and_raw_history_is_append_only():
         con, "ea", "QM5_1", "dead_zero", detail, dedupe_hours=24, now=_at(1)
     )
     recurring = farmctl.event_deduped(
-        con, "ea", "QM5_1", "dead_zero", detail, dedupe_hours=24, now=dt.datetime(2026, 7, 30, tzinfo=dt.UTC)
+        con, "ea", "QM5_1", "dead_zero", detail, dedupe_hours=24, now=dt.datetime(2026, 8, 24, tzinfo=dt.UTC)
     )
 
     assert recurring["appended"] is True
@@ -222,7 +222,7 @@ def test_census_separates_rolling_24h_from_lifetime():
     rows = [
         (_at(0).isoformat(), "ea", "QM5_1", "dead_zero", "{}"),
         (_at(1).isoformat(), "ea", "QM5_2", "dead_zero", "{}"),
-        (dt.datetime(2026, 7, 30, 5, tzinfo=dt.UTC).isoformat(), "ea", "QM5_1", "dead_zero", "{}"),
+        (dt.datetime(2026, 8, 24, 5, tzinfo=dt.UTC).isoformat(), "ea", "QM5_1", "dead_zero", "{}"),
     ]
     con.executemany(
         "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) VALUES (?,?,?,?,?)",
@@ -233,7 +233,7 @@ def test_census_separates_rolling_24h_from_lifetime():
         con,
         "dead_zero",
         rolling_hours=24,
-        now=dt.datetime(2026, 7, 30, 6, tzinfo=dt.UTC),
+        now=dt.datetime(2026, 8, 24, 6, tzinfo=dt.UTC),
     )
 
     assert census["measurement_windows"]["lifetime"] == {"rows": 3, "entities": 2}
@@ -258,7 +258,7 @@ def test_zero_trade_terminal_detector_uses_deduped_event(tmp_path):
     payload = json.dumps({"verdict_reason": "MIN_TRADES_NOT_MET"})
     con.executemany(
         "INSERT INTO work_items VALUES (?,?,?,?,?,'Q02','failed')",
-        [("QM5_1", "FAIL", payload, None, _at(0).isoformat())] * 5,
+        [("QM5_1", "FAIL", payload, None, dt.datetime.now(dt.UTC).isoformat())] * 5,
     )
     con.executemany(
         "INSERT INTO tasks VALUES (?,?, 'build_ea', ?, ?, 'done')",

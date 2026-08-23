@@ -1,0 +1,2250 @@
+{
+  "comparison": "raw UTF-8 bytes after '=' for every ordered non-comment assignment",
+  "float_policy": "no numeric coercion; exponent and decimal spellings must be byte-identical",
+  "presets": [
+    {
+      "comment_diff": {
+        "build_hash": {
+          "byte_equal": false,
+          "deployed_value": "pending",
+          "regenerated_value": "b71d302997ecdb661f1627e12b9e5e766e9679c780461b82fa018db7f2078a6a"
+        },
+        "environment": {
+          "byte_equal": true,
+          "deployed_value": "live",
+          "regenerated_value": "live"
+        },
+        "risk_mode": {
+          "byte_equal": true,
+          "deployed_value": "PERCENT",
+          "regenerated_value": "PERCENT"
+        }
+      },
+      "deployed_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\15_NDX_H1_QM5_10440_mql5-ohlc-mtf.set",
+      "deployed_sha256": "cc7c9e3ba36c65a4721335be5abbc1c88780adb38a53586155baf18c75c53769",
+      "ea_label": "QM5_10440_mql5-ohlc-mtf",
+      "friday_keys": [],
+      "functional_key_diff": {
+        "all_functional_keys_byte_equal": true,
+        "keys": [
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_magic_slot_offset",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "RISK_FIXED",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.0577",
+            "deployed_value_hex": "302e30353737",
+            "key": "RISK_PERCENT",
+            "regenerated_value": "0.0577",
+            "regenerated_value_hex": "302e30353737"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.0",
+            "deployed_value_hex": "312e30",
+            "key": "PORTFOLIO_WEIGHT",
+            "regenerated_value": "1.0",
+            "regenerated_value_hex": "312e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "qm_filter_news_enabled",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_filter_news_mode",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_regime_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "100",
+            "deployed_value_hex": "313030",
+            "key": "qm_filter_regime_lookback_bars",
+            "regenerated_value": "100",
+            "regenerated_value_hex": "313030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bull_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bear_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_volatility_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "qm_filter_volatility_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "50",
+            "deployed_value_hex": "3530",
+            "key": "qm_filter_volatility_lookback_bars",
+            "regenerated_value": "50",
+            "regenerated_value_hex": "3530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.75",
+            "deployed_value_hex": "302e3735",
+            "key": "qm_filter_volatility_compression_ratio",
+            "regenerated_value": "0.75",
+            "regenerated_value_hex": "302e3735"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.25",
+            "deployed_value_hex": "312e3235",
+            "key": "qm_filter_volatility_expansion_ratio",
+            "regenerated_value": "1.25",
+            "regenerated_value_hex": "312e3235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "strategy_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.07",
+            "deployed_value_hex": "302e3037",
+            "key": "strategy_entry_atr_offset_mult",
+            "regenerated_value": "0.07",
+            "regenerated_value_hex": "302e3037"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.65",
+            "deployed_value_hex": "302e3635",
+            "key": "strategy_stop_min_atr_mult",
+            "regenerated_value": "0.65",
+            "regenerated_value_hex": "302e3635"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3.25",
+            "deployed_value_hex": "332e3235",
+            "key": "strategy_stop_max_atr_mult",
+            "regenerated_value": "3.25",
+            "regenerated_value_hex": "332e3235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.00",
+            "deployed_value_hex": "322e3030",
+            "key": "strategy_take_profit_r",
+            "regenerated_value": "2.00",
+            "regenerated_value_hex": "322e3030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "strategy_role_reversal_bars",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "240",
+            "deployed_value_hex": "323430",
+            "key": "strategy_pending_expiry_minutes",
+            "regenerated_value": "240",
+            "regenerated_value_hex": "323430"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "30",
+            "deployed_value_hex": "3330",
+            "key": "strategy_day_blackout_minutes",
+            "regenerated_value": "30",
+            "regenerated_value_hex": "3330"
+          }
+        ],
+        "ordered_keys_equal": true
+      },
+      "news_mode": "3",
+      "reason": null,
+      "regenerated_sha256": "af2678b4446e10741f68444cb457a16da33059b0150658857f400aa575cea717",
+      "regenerated_source": "framework/EAs/QM5_10440_mql5-ohlc-mtf/sets/QM5_10440_mql5-ohlc-mtf_NDX.DWX_H1_live.set",
+      "seed_keys": [],
+      "spotlight": {
+        "PORTFOLIO_WEIGHT": "1.0",
+        "RISK_FIXED": "0",
+        "RISK_PERCENT": "0.0577",
+        "qm_filter_news_enabled": "1",
+        "qm_filter_news_mode": "3",
+        "qm_magic_slot_offset": "3"
+      },
+      "status": "REGENERABLE"
+    },
+    {
+      "comment_diff": {
+        "build_hash": {
+          "byte_equal": false,
+          "deployed_value": "pending",
+          "regenerated_value": "04b62af28c6466e01741aacaa915d9a68714cd7c23288ae277615ae068d63898"
+        },
+        "environment": {
+          "byte_equal": true,
+          "deployed_value": "live",
+          "regenerated_value": "live"
+        },
+        "risk_mode": {
+          "byte_equal": true,
+          "deployed_value": "PERCENT",
+          "regenerated_value": "PERCENT"
+        }
+      },
+      "deployed_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\19_XAUUSD_D1_QM5_10513_mql5-ichimoku.set",
+      "deployed_sha256": "7d15a3491465b916e7e5a0f2ef36212f76f43fde6fc186586cde542431080408",
+      "ea_label": "QM5_10513_mql5-ichimoku",
+      "friday_keys": [],
+      "functional_key_diff": {
+        "all_functional_keys_byte_equal": true,
+        "keys": [
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_magic_slot_offset",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "RISK_FIXED",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.3050",
+            "deployed_value_hex": "302e33303530",
+            "key": "RISK_PERCENT",
+            "regenerated_value": "0.3050",
+            "regenerated_value_hex": "302e33303530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.0",
+            "deployed_value_hex": "312e30",
+            "key": "PORTFOLIO_WEIGHT",
+            "regenerated_value": "1.0",
+            "regenerated_value_hex": "312e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "qm_filter_news_enabled",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_filter_news_mode",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_regime_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "100",
+            "deployed_value_hex": "313030",
+            "key": "qm_filter_regime_lookback_bars",
+            "regenerated_value": "100",
+            "regenerated_value_hex": "313030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bull_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bear_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_volatility_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "qm_filter_volatility_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "50",
+            "deployed_value_hex": "3530",
+            "key": "qm_filter_volatility_lookback_bars",
+            "regenerated_value": "50",
+            "regenerated_value_hex": "3530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.75",
+            "deployed_value_hex": "302e3735",
+            "key": "qm_filter_volatility_compression_ratio",
+            "regenerated_value": "0.75",
+            "regenerated_value_hex": "302e3735"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.25",
+            "deployed_value_hex": "312e3235",
+            "key": "qm_filter_volatility_expansion_ratio",
+            "regenerated_value": "1.25",
+            "regenerated_value_hex": "312e3235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "6",
+            "deployed_value_hex": "36",
+            "key": "strategy_tenkan_period",
+            "regenerated_value": "6",
+            "regenerated_value_hex": "36"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "18",
+            "deployed_value_hex": "3138",
+            "key": "strategy_kijun_period",
+            "regenerated_value": "18",
+            "regenerated_value_hex": "3138"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "68",
+            "deployed_value_hex": "3638",
+            "key": "strategy_senkou_b_period",
+            "regenerated_value": "68",
+            "regenerated_value_hex": "3638"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "18",
+            "deployed_value_hex": "3138",
+            "key": "strategy_atr_period",
+            "regenerated_value": "18",
+            "regenerated_value_hex": "3138"
+          }
+        ],
+        "ordered_keys_equal": true
+      },
+      "news_mode": "3",
+      "reason": null,
+      "regenerated_sha256": "722e1344a4fa6bd60a43be79d1d1920730b7a5d62f8236c0b812f8764f596dde",
+      "regenerated_source": "framework/EAs/QM5_10513_mql5-ichimoku/sets/QM5_10513_mql5-ichimoku_XAUUSD.DWX_D1_live.set",
+      "seed_keys": [],
+      "spotlight": {
+        "PORTFOLIO_WEIGHT": "1.0",
+        "RISK_FIXED": "0",
+        "RISK_PERCENT": "0.3050",
+        "qm_filter_news_enabled": "1",
+        "qm_filter_news_mode": "3",
+        "qm_magic_slot_offset": "3"
+      },
+      "status": "REGENERABLE"
+    },
+    {
+      "comment_diff": {
+        "build_hash": {
+          "byte_equal": false,
+          "deployed_value": "pending",
+          "regenerated_value": "01e34b2059de6ed505d445ce9fcbac7da0eb10d51e5cbcbbd18d38a968916078"
+        },
+        "environment": {
+          "byte_equal": true,
+          "deployed_value": "live",
+          "regenerated_value": "live"
+        },
+        "risk_mode": {
+          "byte_equal": true,
+          "deployed_value": "PERCENT",
+          "regenerated_value": "PERCENT"
+        }
+      },
+      "deployed_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\11_GBPUSD_H1_QM5_10706_tv-mon-ls.set",
+      "deployed_sha256": "e807c3706ff0bedbdbbe17d6bf64df833cf247e7a14b910802c1ae3a432f6377",
+      "ea_label": "QM5_10706_tv-mon-ls",
+      "friday_keys": [
+        "FridayExitHourBroker",
+        "FridayExitMinuteBroker"
+      ],
+      "functional_key_diff": {
+        "all_functional_keys_byte_equal": true,
+        "keys": [
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "qm_magic_slot_offset",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "RISK_FIXED",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.0530",
+            "deployed_value_hex": "302e30353330",
+            "key": "RISK_PERCENT",
+            "regenerated_value": "0.0530",
+            "regenerated_value_hex": "302e30353330"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "PORTFOLIO_WEIGHT",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "qm_filter_news_enabled",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_filter_news_mode",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_regime_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "100",
+            "deployed_value_hex": "313030",
+            "key": "qm_filter_regime_lookback_bars",
+            "regenerated_value": "100",
+            "regenerated_value_hex": "313030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bull_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bear_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_volatility_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "qm_filter_volatility_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "50",
+            "deployed_value_hex": "3530",
+            "key": "qm_filter_volatility_lookback_bars",
+            "regenerated_value": "50",
+            "regenerated_value_hex": "3530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.75",
+            "deployed_value_hex": "302e3735",
+            "key": "qm_filter_volatility_compression_ratio",
+            "regenerated_value": "0.75",
+            "regenerated_value_hex": "302e3735"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.25",
+            "deployed_value_hex": "312e3235",
+            "key": "qm_filter_volatility_expansion_ratio",
+            "regenerated_value": "1.25",
+            "regenerated_value_hex": "312e3235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.25",
+            "deployed_value_hex": "302e3235",
+            "key": "strategy_spread_atr_mult",
+            "regenerated_value": "0.25",
+            "regenerated_value_hex": "302e3235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "7",
+            "deployed_value_hex": "37",
+            "key": "MondayBoxShiftHours",
+            "regenerated_value": "7",
+            "regenerated_value_hex": "37"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.0002",
+            "deployed_value_hex": "302e30303032",
+            "key": "LiqPct",
+            "regenerated_value": "0.0002",
+            "regenerated_value_hex": "302e30303032"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.0025",
+            "deployed_value_hex": "302e30303235",
+            "key": "MaxWickPct",
+            "regenerated_value": "0.0025",
+            "regenerated_value_hex": "302e30303235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.0002",
+            "deployed_value_hex": "302e30303032",
+            "key": "SlPct",
+            "regenerated_value": "0.0002",
+            "regenerated_value_hex": "302e30303032"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3.5",
+            "deployed_value_hex": "332e35",
+            "key": "RrTarget",
+            "regenerated_value": "3.5",
+            "regenerated_value_hex": "332e35"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.30",
+            "deployed_value_hex": "312e3330",
+            "key": "MondayRangeTpPct",
+            "regenerated_value": "1.30",
+            "regenerated_value_hex": "312e3330"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.5",
+            "deployed_value_hex": "312e35",
+            "key": "BeTriggerR",
+            "regenerated_value": "1.5",
+            "regenerated_value_hex": "312e35"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "24",
+            "deployed_value_hex": "3234",
+            "key": "BeBars",
+            "regenerated_value": "24",
+            "regenerated_value_hex": "3234"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.1",
+            "deployed_value_hex": "302e31",
+            "key": "BeLockFrac",
+            "regenerated_value": "0.1",
+            "regenerated_value_hex": "302e31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "EntryMode",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "18",
+            "deployed_value_hex": "3138",
+            "key": "FridayExitHourBroker",
+            "regenerated_value": "18",
+            "regenerated_value_hex": "3138"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "30",
+            "deployed_value_hex": "3330",
+            "key": "FridayExitMinuteBroker",
+            "regenerated_value": "30",
+            "regenerated_value_hex": "3330"
+          }
+        ],
+        "ordered_keys_equal": true
+      },
+      "news_mode": "3",
+      "reason": null,
+      "regenerated_sha256": "d9d432347648a41b5dfefeb98f1aedf1c26b4d19f0a9db07ea3e1d0bc900f26f",
+      "regenerated_source": "framework/EAs/QM5_10706_tv-mon-ls/sets/QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_live.set",
+      "seed_keys": [],
+      "spotlight": {
+        "FridayExitHourBroker": "18",
+        "FridayExitMinuteBroker": "30",
+        "PORTFOLIO_WEIGHT": "1",
+        "RISK_FIXED": "0",
+        "RISK_PERCENT": "0.0530",
+        "qm_filter_news_enabled": "1",
+        "qm_filter_news_mode": "3",
+        "qm_magic_slot_offset": "1"
+      },
+      "status": "REGENERABLE"
+    },
+    {
+      "comment_diff": {
+        "build_hash": {
+          "byte_equal": false,
+          "deployed_value": "pending",
+          "regenerated_value": "a815c73da991736d25a02c027bbcfb23f68615adb66b7325cc2efcdc52344158"
+        },
+        "environment": {
+          "byte_equal": true,
+          "deployed_value": "live",
+          "regenerated_value": "live"
+        },
+        "risk_mode": {
+          "byte_equal": true,
+          "deployed_value": "PERCENT",
+          "regenerated_value": "PERCENT"
+        }
+      },
+      "deployed_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\13_GDAXI_H1_QM5_10911_grimes-complex-pb.set",
+      "deployed_sha256": "6a503e2b60328bda8fdc9ed2900f14270e8a20c28302060ba6c012cccdbce8ec",
+      "ea_label": "QM5_10911_grimes-complex-pb",
+      "friday_keys": [],
+      "functional_key_diff": {
+        "all_functional_keys_byte_equal": true,
+        "keys": [
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_magic_slot_offset",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "RISK_FIXED",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.1276",
+            "deployed_value_hex": "302e31323736",
+            "key": "RISK_PERCENT",
+            "regenerated_value": "0.1276",
+            "regenerated_value_hex": "302e31323736"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.0",
+            "deployed_value_hex": "312e30",
+            "key": "PORTFOLIO_WEIGHT",
+            "regenerated_value": "1.0",
+            "regenerated_value_hex": "312e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "qm_filter_news_enabled",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_filter_news_mode",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_regime_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "100",
+            "deployed_value_hex": "313030",
+            "key": "qm_filter_regime_lookback_bars",
+            "regenerated_value": "100",
+            "regenerated_value_hex": "313030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bull_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bear_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_volatility_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "qm_filter_volatility_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "50",
+            "deployed_value_hex": "3530",
+            "key": "qm_filter_volatility_lookback_bars",
+            "regenerated_value": "50",
+            "regenerated_value_hex": "3530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.75",
+            "deployed_value_hex": "302e3735",
+            "key": "qm_filter_volatility_compression_ratio",
+            "regenerated_value": "0.75",
+            "regenerated_value_hex": "302e3735"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.25",
+            "deployed_value_hex": "312e3235",
+            "key": "qm_filter_volatility_expansion_ratio",
+            "regenerated_value": "1.25",
+            "regenerated_value_hex": "312e3235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "50",
+            "deployed_value_hex": "3530",
+            "key": "strategy_ema_trend_period",
+            "regenerated_value": "50",
+            "regenerated_value_hex": "3530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "20",
+            "deployed_value_hex": "3230",
+            "key": "strategy_ema_exit_period",
+            "regenerated_value": "20",
+            "regenerated_value_hex": "3230"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "strategy_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "20",
+            "deployed_value_hex": "3230",
+            "key": "strategy_thrust_lookback_bars",
+            "regenerated_value": "20",
+            "regenerated_value_hex": "3230"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "20",
+            "deployed_value_hex": "3230",
+            "key": "strategy_thrust_prior_high_bars",
+            "regenerated_value": "20",
+            "regenerated_value_hex": "3230"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.00",
+            "deployed_value_hex": "312e3030",
+            "key": "strategy_thrust_range_atr_mult",
+            "regenerated_value": "1.00",
+            "regenerated_value_hex": "312e3030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.80",
+            "deployed_value_hex": "302e3830",
+            "key": "strategy_pullback_atr_mult",
+            "regenerated_value": "0.80",
+            "regenerated_value_hex": "302e3830"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "5",
+            "deployed_value_hex": "35",
+            "key": "strategy_failure_window_bars",
+            "regenerated_value": "5",
+            "regenerated_value_hex": "35"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "8",
+            "deployed_value_hex": "38",
+            "key": "strategy_min_thrust_to_entry_bars",
+            "regenerated_value": "8",
+            "regenerated_value_hex": "38"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.20",
+            "deployed_value_hex": "302e3230",
+            "key": "strategy_stop_buffer_atr_mult",
+            "regenerated_value": "0.20",
+            "regenerated_value_hex": "302e3230"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.50",
+            "deployed_value_hex": "312e3530",
+            "key": "strategy_target_r_mult",
+            "regenerated_value": "1.50",
+            "regenerated_value_hex": "312e3530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "30",
+            "deployed_value_hex": "3330",
+            "key": "strategy_max_hold_bars",
+            "regenerated_value": "30",
+            "regenerated_value_hex": "3330"
+          }
+        ],
+        "ordered_keys_equal": true
+      },
+      "news_mode": "3",
+      "reason": null,
+      "regenerated_sha256": "daf0f2143955d3bc052f5bce5b6b8510e7a55354839139f587e11d6ef13f6e1c",
+      "regenerated_source": "framework/EAs/QM5_10911_grimes-complex-pb/sets/QM5_10911_grimes-complex-pb_GDAXI.DWX_H1_live.set",
+      "seed_keys": [],
+      "spotlight": {
+        "PORTFOLIO_WEIGHT": "1.0",
+        "RISK_FIXED": "0",
+        "RISK_PERCENT": "0.1276",
+        "qm_filter_news_enabled": "1",
+        "qm_filter_news_mode": "3",
+        "qm_magic_slot_offset": "3"
+      },
+      "status": "REGENERABLE"
+    },
+    {
+      "comment_diff": {
+        "build_hash": {
+          "byte_equal": false,
+          "deployed_value": "971210abd47d55efd80451764adae91e221c68639933af39b1df13434d17f014",
+          "regenerated_value": "57e0db8401616a5fb10c68557c24e8b7a7e98254cb8ddf57245fc178aa3a4691"
+        },
+        "environment": {
+          "byte_equal": false,
+          "deployed_value": "backtest",
+          "regenerated_value": "live"
+        },
+        "risk_mode": {
+          "byte_equal": false,
+          "deployed_value": "FIXED",
+          "regenerated_value": "PERCENT"
+        }
+      },
+      "deployed_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\04_XTIUSD_H4_QM5_10919_grimes-overshoot.set",
+      "deployed_sha256": "10cbf478dcb6e4900325b2fc24ece2a0ce61878f8908384b0fe96e0ea11f9199",
+      "ea_label": "QM5_10919_grimes-overshoot",
+      "friday_keys": [],
+      "functional_key_diff": {
+        "all_functional_keys_byte_equal": true,
+        "keys": [
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "qm_magic_slot_offset",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "RISK_FIXED",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.9181",
+            "deployed_value_hex": "302e39313831",
+            "key": "RISK_PERCENT",
+            "regenerated_value": "0.9181",
+            "regenerated_value_hex": "302e39313831"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.0",
+            "deployed_value_hex": "312e30",
+            "key": "PORTFOLIO_WEIGHT",
+            "regenerated_value": "1.0",
+            "regenerated_value_hex": "312e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "qm_filter_news_enabled",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_filter_news_mode",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_regime_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "100",
+            "deployed_value_hex": "313030",
+            "key": "qm_filter_regime_lookback_bars",
+            "regenerated_value": "100",
+            "regenerated_value_hex": "313030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bull_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bear_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_volatility_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "qm_filter_volatility_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "50",
+            "deployed_value_hex": "3530",
+            "key": "qm_filter_volatility_lookback_bars",
+            "regenerated_value": "50",
+            "regenerated_value_hex": "3530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.75",
+            "deployed_value_hex": "302e3735",
+            "key": "qm_filter_volatility_compression_ratio",
+            "regenerated_value": "0.75",
+            "regenerated_value_hex": "302e3735"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.25",
+            "deployed_value_hex": "312e3235",
+            "key": "qm_filter_volatility_expansion_ratio",
+            "regenerated_value": "1.25",
+            "regenerated_value_hex": "312e3235"
+          }
+        ],
+        "ordered_keys_equal": true
+      },
+      "news_mode": "3",
+      "reason": null,
+      "regenerated_sha256": "af3f2a4a2aa656ec1f9f5f247c55b2331a3c2c842d633afb48f849b98da735fc",
+      "regenerated_source": "framework/EAs/QM5_10919_grimes-overshoot/sets/QM5_10919_grimes-overshoot_XTIUSD.DWX_H4_live.set",
+      "seed_keys": [],
+      "spotlight": {
+        "PORTFOLIO_WEIGHT": "1.0",
+        "RISK_FIXED": "0",
+        "RISK_PERCENT": "0.9181",
+        "qm_filter_news_enabled": "1",
+        "qm_filter_news_mode": "3",
+        "qm_magic_slot_offset": "1"
+      },
+      "status": "REGENERABLE"
+    },
+    {
+      "comment_diff": {
+        "build_hash": {
+          "byte_equal": false,
+          "deployed_value": "pending",
+          "regenerated_value": "308604a3546c44fc8bfb40ecff36801e5479bf33887847b8b6e5650943312aac"
+        },
+        "environment": {
+          "byte_equal": true,
+          "deployed_value": "live",
+          "regenerated_value": "live"
+        },
+        "risk_mode": {
+          "byte_equal": true,
+          "deployed_value": "PERCENT",
+          "regenerated_value": "PERCENT"
+        }
+      },
+      "deployed_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\12_GBPUSD_H4_QM5_10939_grimes-context-pb.set",
+      "deployed_sha256": "4869e29a3a6d217d45ebb23be2e406a41780ad0c71c6588502e3f7507390e90a",
+      "ea_label": "QM5_10939_grimes-context-pb",
+      "friday_keys": [],
+      "functional_key_diff": {
+        "all_functional_keys_byte_equal": true,
+        "keys": [
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "qm_magic_slot_offset",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "RISK_FIXED",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.1887",
+            "deployed_value_hex": "302e31383837",
+            "key": "RISK_PERCENT",
+            "regenerated_value": "0.1887",
+            "regenerated_value_hex": "302e31383837"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.0",
+            "deployed_value_hex": "312e30",
+            "key": "PORTFOLIO_WEIGHT",
+            "regenerated_value": "1.0",
+            "regenerated_value_hex": "312e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "qm_filter_news_enabled",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_filter_news_mode",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_regime_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "100",
+            "deployed_value_hex": "313030",
+            "key": "qm_filter_regime_lookback_bars",
+            "regenerated_value": "100",
+            "regenerated_value_hex": "313030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bull_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bear_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_volatility_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "qm_filter_volatility_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "50",
+            "deployed_value_hex": "3530",
+            "key": "qm_filter_volatility_lookback_bars",
+            "regenerated_value": "50",
+            "regenerated_value_hex": "3530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.75",
+            "deployed_value_hex": "302e3735",
+            "key": "qm_filter_volatility_compression_ratio",
+            "regenerated_value": "0.75",
+            "regenerated_value_hex": "302e3735"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.25",
+            "deployed_value_hex": "312e3235",
+            "key": "qm_filter_volatility_expansion_ratio",
+            "regenerated_value": "1.25",
+            "regenerated_value_hex": "312e3235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "20",
+            "deployed_value_hex": "3230",
+            "key": "strategy_atr_period",
+            "regenerated_value": "20",
+            "regenerated_value_hex": "3230"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "20",
+            "deployed_value_hex": "3230",
+            "key": "strategy_d1_fast_ema",
+            "regenerated_value": "20",
+            "regenerated_value_hex": "3230"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "50",
+            "deployed_value_hex": "3530",
+            "key": "strategy_d1_slow_ema",
+            "regenerated_value": "50",
+            "regenerated_value_hex": "3530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "strategy_d1_adx_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "16.0",
+            "deployed_value_hex": "31362e30",
+            "key": "strategy_d1_adx_min",
+            "regenerated_value": "16.0",
+            "regenerated_value_hex": "31362e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "12",
+            "deployed_value_hex": "3132",
+            "key": "strategy_surprise_lookback",
+            "regenerated_value": "12",
+            "regenerated_value_hex": "3132"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "30",
+            "deployed_value_hex": "3330",
+            "key": "strategy_breakout_lookback",
+            "regenerated_value": "30",
+            "regenerated_value_hex": "3330"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.5",
+            "deployed_value_hex": "322e35",
+            "key": "strategy_surprise_atr_mult",
+            "regenerated_value": "2.5",
+            "regenerated_value_hex": "322e35"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3.0",
+            "deployed_value_hex": "332e30",
+            "key": "strategy_climax_bar_atr_mult",
+            "regenerated_value": "3.0",
+            "regenerated_value_hex": "332e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "strategy_pullback_min_bars",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "10",
+            "deployed_value_hex": "3130",
+            "key": "strategy_pullback_max_bars",
+            "regenerated_value": "10",
+            "regenerated_value_hex": "3130"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "25.0",
+            "deployed_value_hex": "32352e30",
+            "key": "strategy_pullback_min_pct",
+            "regenerated_value": "25.0",
+            "regenerated_value_hex": "32352e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "55.0",
+            "deployed_value_hex": "35352e30",
+            "key": "strategy_pullback_max_pct",
+            "regenerated_value": "55.0",
+            "regenerated_value_hex": "35352e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "strategy_trigger_lookback",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.5",
+            "deployed_value_hex": "312e35",
+            "key": "strategy_pullback_bar_atr_mult",
+            "regenerated_value": "1.5",
+            "regenerated_value_hex": "312e35"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.25",
+            "deployed_value_hex": "302e3235",
+            "key": "strategy_stop_atr_buffer",
+            "regenerated_value": "0.25",
+            "regenerated_value_hex": "302e3235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.25",
+            "deployed_value_hex": "322e3235",
+            "key": "strategy_max_stop_atr_mult",
+            "regenerated_value": "2.25",
+            "regenerated_value_hex": "322e3235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "strategy_target_r_mult",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.0",
+            "deployed_value_hex": "312e30",
+            "key": "strategy_breakeven_r_mult",
+            "regenerated_value": "1.0",
+            "regenerated_value_hex": "312e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "18",
+            "deployed_value_hex": "3138",
+            "key": "strategy_time_exit_h4_bars",
+            "regenerated_value": "18",
+            "regenerated_value_hex": "3138"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "8.0",
+            "deployed_value_hex": "382e30",
+            "key": "strategy_spread_stop_max_pct",
+            "regenerated_value": "8.0",
+            "regenerated_value_hex": "382e30"
+          }
+        ],
+        "ordered_keys_equal": true
+      },
+      "news_mode": "3",
+      "reason": null,
+      "regenerated_sha256": "298bcd6a7867a967c1b491953fecad83e631b3dc5c001af70462be9e11e4c60e",
+      "regenerated_source": "framework/EAs/QM5_10939_grimes-context-pb/sets/QM5_10939_grimes-context-pb_GBPUSD.DWX_H4_live.set",
+      "seed_keys": [],
+      "spotlight": {
+        "PORTFOLIO_WEIGHT": "1.0",
+        "RISK_FIXED": "0",
+        "RISK_PERCENT": "0.1887",
+        "qm_filter_news_enabled": "1",
+        "qm_filter_news_mode": "3",
+        "qm_magic_slot_offset": "1"
+      },
+      "status": "REGENERABLE"
+    },
+    {
+      "comment_diff": {
+        "build_hash": {
+          "byte_equal": false,
+          "deployed_value": "pending",
+          "regenerated_value": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152"
+        },
+        "environment": {
+          "byte_equal": true,
+          "deployed_value": "live",
+          "regenerated_value": "live"
+        },
+        "risk_mode": {
+          "byte_equal": true,
+          "deployed_value": "PERCENT",
+          "regenerated_value": "PERCENT"
+        }
+      },
+      "deployed_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\16_SP500_D1_QM5_11132_tm-cum-rsi2.set",
+      "deployed_sha256": "76a984f06f69c750e1bae264bb4854a263eda7cddffbf8a2ec95065dd092f94d",
+      "ea_label": "QM5_11132_tm-cum-rsi2",
+      "friday_keys": [],
+      "functional_key_diff": {
+        "all_functional_keys_byte_equal": true,
+        "keys": [
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_magic_slot_offset",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "RISK_FIXED",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.4562",
+            "deployed_value_hex": "302e34353632",
+            "key": "RISK_PERCENT",
+            "regenerated_value": "0.4562",
+            "regenerated_value_hex": "302e34353632"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.0",
+            "deployed_value_hex": "312e30",
+            "key": "PORTFOLIO_WEIGHT",
+            "regenerated_value": "1.0",
+            "regenerated_value_hex": "312e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "qm_filter_news_enabled",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_filter_news_mode",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_regime_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "100",
+            "deployed_value_hex": "313030",
+            "key": "qm_filter_regime_lookback_bars",
+            "regenerated_value": "100",
+            "regenerated_value_hex": "313030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bull_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bear_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_volatility_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "qm_filter_volatility_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "50",
+            "deployed_value_hex": "3530",
+            "key": "qm_filter_volatility_lookback_bars",
+            "regenerated_value": "50",
+            "regenerated_value_hex": "3530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.75",
+            "deployed_value_hex": "302e3735",
+            "key": "qm_filter_volatility_compression_ratio",
+            "regenerated_value": "0.75",
+            "regenerated_value_hex": "302e3735"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.25",
+            "deployed_value_hex": "312e3235",
+            "key": "qm_filter_volatility_expansion_ratio",
+            "regenerated_value": "1.25",
+            "regenerated_value_hex": "312e3235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2",
+            "deployed_value_hex": "32",
+            "key": "strategy_rsi_period",
+            "regenerated_value": "2",
+            "regenerated_value_hex": "32"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2",
+            "deployed_value_hex": "32",
+            "key": "strategy_cum_window",
+            "regenerated_value": "2",
+            "regenerated_value_hex": "32"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "38.0",
+            "deployed_value_hex": "33382e30",
+            "key": "strategy_cum_rsi_entry",
+            "regenerated_value": "38.0",
+            "regenerated_value_hex": "33382e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "66.0",
+            "deployed_value_hex": "36362e30",
+            "key": "strategy_rsi_exit",
+            "regenerated_value": "66.0",
+            "regenerated_value_hex": "36362e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "165",
+            "deployed_value_hex": "313635",
+            "key": "strategy_sma_period",
+            "regenerated_value": "165",
+            "regenerated_value_hex": "313635"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "12",
+            "deployed_value_hex": "3132",
+            "key": "strategy_atr_period",
+            "regenerated_value": "12",
+            "regenerated_value_hex": "3132"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "strategy_atr_sl_mult",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "5",
+            "deployed_value_hex": "35",
+            "key": "strategy_max_hold_bars",
+            "regenerated_value": "5",
+            "regenerated_value_hex": "35"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "300",
+            "deployed_value_hex": "333030",
+            "key": "strategy_max_spread_points",
+            "regenerated_value": "300",
+            "regenerated_value_hex": "333030"
+          }
+        ],
+        "ordered_keys_equal": true
+      },
+      "news_mode": "3",
+      "reason": null,
+      "regenerated_sha256": "87fc8288070ab8bf56356ec9ab6a89f0216004df03dd2766e49e3aef3bdd5694",
+      "regenerated_source": "framework/EAs/QM5_11132_tm-cum-rsi2/sets/QM5_11132_tm-cum-rsi2_SP500.DWX_D1_live.set",
+      "seed_keys": [],
+      "spotlight": {
+        "PORTFOLIO_WEIGHT": "1.0",
+        "RISK_FIXED": "0",
+        "RISK_PERCENT": "0.4562",
+        "qm_filter_news_enabled": "1",
+        "qm_filter_news_mode": "3",
+        "qm_magic_slot_offset": "0"
+      },
+      "status": "REGENERABLE"
+    },
+    {
+      "comment_diff": {
+        "build_hash": {
+          "byte_equal": false,
+          "deployed_value": "pending",
+          "regenerated_value": "5d5be334288e76a582349dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9"
+        },
+        "environment": {
+          "byte_equal": true,
+          "deployed_value": "live",
+          "regenerated_value": "live"
+        },
+        "risk_mode": {
+          "byte_equal": true,
+          "deployed_value": "PERCENT",
+          "regenerated_value": "PERCENT"
+        }
+      },
+      "deployed_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\23_XNGUSD_D1_QM5_12567_cum-rsi2-commodity.set",
+      "deployed_sha256": "c7a3d43ff6c8fc6e84f5495e627aa584a1f4cccc85fc8feb97e96e7c67711551",
+      "ea_label": "QM5_12567_cum-rsi2-commodity",
+      "friday_keys": [],
+      "functional_key_diff": {
+        "all_functional_keys_byte_equal": true,
+        "keys": [
+          {
+            "byte_equal": true,
+            "deployed_value": "2",
+            "deployed_value_hex": "32",
+            "key": "qm_magic_slot_offset",
+            "regenerated_value": "2",
+            "regenerated_value_hex": "32"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "RISK_FIXED",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.9797",
+            "deployed_value_hex": "302e39373937",
+            "key": "RISK_PERCENT",
+            "regenerated_value": "0.9797",
+            "regenerated_value_hex": "302e39373937"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.0",
+            "deployed_value_hex": "312e30",
+            "key": "PORTFOLIO_WEIGHT",
+            "regenerated_value": "1.0",
+            "regenerated_value_hex": "312e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "qm_filter_news_enabled",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_filter_news_mode",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_regime_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "100",
+            "deployed_value_hex": "313030",
+            "key": "qm_filter_regime_lookback_bars",
+            "regenerated_value": "100",
+            "regenerated_value_hex": "313030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bull_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bear_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_volatility_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "qm_filter_volatility_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "50",
+            "deployed_value_hex": "3530",
+            "key": "qm_filter_volatility_lookback_bars",
+            "regenerated_value": "50",
+            "regenerated_value_hex": "3530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.75",
+            "deployed_value_hex": "302e3735",
+            "key": "qm_filter_volatility_compression_ratio",
+            "regenerated_value": "0.75",
+            "regenerated_value_hex": "302e3735"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.25",
+            "deployed_value_hex": "312e3235",
+            "key": "qm_filter_volatility_expansion_ratio",
+            "regenerated_value": "1.25",
+            "regenerated_value_hex": "312e3235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2",
+            "deployed_value_hex": "32",
+            "key": "strategy_rsi_period",
+            "regenerated_value": "2",
+            "regenerated_value_hex": "32"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2",
+            "deployed_value_hex": "32",
+            "key": "strategy_cum_window",
+            "regenerated_value": "2",
+            "regenerated_value_hex": "32"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "30.0",
+            "deployed_value_hex": "33302e30",
+            "key": "strategy_cum_rsi_entry",
+            "regenerated_value": "30.0",
+            "regenerated_value_hex": "33302e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "65.0",
+            "deployed_value_hex": "36352e30",
+            "key": "strategy_rsi_exit",
+            "regenerated_value": "65.0",
+            "regenerated_value_hex": "36352e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "200",
+            "deployed_value_hex": "323030",
+            "key": "strategy_sma_period",
+            "regenerated_value": "200",
+            "regenerated_value_hex": "323030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "strategy_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.5",
+            "deployed_value_hex": "322e35",
+            "key": "strategy_atr_sl_mult",
+            "regenerated_value": "2.5",
+            "regenerated_value_hex": "322e35"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "5",
+            "deployed_value_hex": "35",
+            "key": "strategy_max_hold_bars",
+            "regenerated_value": "5",
+            "regenerated_value_hex": "35"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "300",
+            "deployed_value_hex": "333030",
+            "key": "strategy_max_spread_points",
+            "regenerated_value": "300",
+            "regenerated_value_hex": "333030"
+          }
+        ],
+        "ordered_keys_equal": true
+      },
+      "news_mode": "3",
+      "reason": null,
+      "regenerated_sha256": "26537d011b553ba6acb668d99945584be3c0ab0991dc4459fc84de8278cc4e79",
+      "regenerated_source": "framework/EAs/QM5_12567_cum-rsi2-commodity/sets/QM5_12567_cum-rsi2-commodity_XNGUSD.DWX_D1_live.set",
+      "seed_keys": [],
+      "spotlight": {
+        "PORTFOLIO_WEIGHT": "1.0",
+        "RISK_FIXED": "0",
+        "RISK_PERCENT": "0.9797",
+        "qm_filter_news_enabled": "1",
+        "qm_filter_news_mode": "3",
+        "qm_magic_slot_offset": "2"
+      },
+      "status": "REGENERABLE"
+    },
+    {
+      "comment_diff": {
+        "build_hash": {
+          "byte_equal": false,
+          "deployed_value": "pending",
+          "regenerated_value": "7f2c298f4a8b4395480e47f20f9cefb8d5c53083bd63f7ea9ef1db067f52c4d2"
+        },
+        "environment": {
+          "byte_equal": true,
+          "deployed_value": "live",
+          "regenerated_value": "live"
+        },
+        "risk_mode": {
+          "byte_equal": false,
+          "deployed_value": "PERCENT_DRAFT_INVOL_SUMRISK_CAPPED_S3-D2D-15-SWAP",
+          "regenerated_value": "PERCENT"
+        }
+      },
+      "deployed_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\21_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2.set",
+      "deployed_sha256": "a04013c587a5967fb28eb807d36e4b3d5897cdbe0a20e96310570825696bdeb8",
+      "ea_label": "QM5_12989_grimes-nested-pb-v2",
+      "friday_keys": [],
+      "functional_key_diff": {
+        "all_functional_keys_byte_equal": true,
+        "keys": [
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_magic_slot_offset",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "RISK_FIXED",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.2420",
+            "deployed_value_hex": "302e32343230",
+            "key": "RISK_PERCENT",
+            "regenerated_value": "0.2420",
+            "regenerated_value_hex": "302e32343230"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.0",
+            "deployed_value_hex": "312e30",
+            "key": "PORTFOLIO_WEIGHT",
+            "regenerated_value": "1.0",
+            "regenerated_value_hex": "312e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "qm_filter_news_enabled",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "3",
+            "deployed_value_hex": "33",
+            "key": "qm_filter_news_mode",
+            "regenerated_value": "3",
+            "regenerated_value_hex": "33"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_regime_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "100",
+            "deployed_value_hex": "313030",
+            "key": "qm_filter_regime_lookback_bars",
+            "regenerated_value": "100",
+            "regenerated_value_hex": "313030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bull_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "qm_filter_regime_bear_return_pct",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_filter_volatility_enabled",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "qm_filter_volatility_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "50",
+            "deployed_value_hex": "3530",
+            "key": "qm_filter_volatility_lookback_bars",
+            "regenerated_value": "50",
+            "regenerated_value_hex": "3530"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0.75",
+            "deployed_value_hex": "302e3735",
+            "key": "qm_filter_volatility_compression_ratio",
+            "regenerated_value": "0.75",
+            "regenerated_value_hex": "302e3735"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.25",
+            "deployed_value_hex": "312e3235",
+            "key": "qm_filter_volatility_expansion_ratio",
+            "regenerated_value": "1.25",
+            "regenerated_value_hex": "312e3235"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.5",
+            "deployed_value_hex": "312e35",
+            "key": "strategy_breakeven_trigger_r",
+            "regenerated_value": "1.5",
+            "regenerated_value_hex": "312e35"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "40",
+            "deployed_value_hex": "3430",
+            "key": "strategy_time_exit_bars",
+            "regenerated_value": "40",
+            "regenerated_value_hex": "3430"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "strategy_use_atr_trail_after_be",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.5",
+            "deployed_value_hex": "312e35",
+            "key": "strategy_atr_trail_trigger_r",
+            "regenerated_value": "1.5",
+            "regenerated_value_hex": "312e35"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "strategy_atr_trail_mult",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          }
+        ],
+        "ordered_keys_equal": true
+      },
+      "news_mode": "3",
+      "reason": null,
+      "regenerated_sha256": "9fb2c0f85ad92a1b6de7afeb58988c7fe3fbe56ac9be5f6025af6a5d18d2a5f4",
+      "regenerated_source": "framework/EAs/QM5_12989_grimes-nested-pb-v2/sets/QM5_12989_grimes-nested-pb-v2_XAUUSD.DWX_H4_live.set",
+      "seed_keys": [],
+      "spotlight": {
+        "PORTFOLIO_WEIGHT": "1.0",
+        "RISK_FIXED": "0",
+        "RISK_PERCENT": "0.2420",
+        "qm_filter_news_enabled": "1",
+        "qm_filter_news_mode": "3",
+        "qm_magic_slot_offset": "3"
+      },
+      "status": "REGENERABLE"
+    },
+    {
+      "comment_diff": {
+        "build_hash": {
+          "byte_equal": false,
+          "deployed_value": "pending",
+          "regenerated_value": "364867a9fe8d58478ade5526aad19deb377a35b313cfdac29763bb2eb82d273b"
+        },
+        "environment": {
+          "byte_equal": true,
+          "deployed_value": "live",
+          "regenerated_value": "live"
+        },
+        "risk_mode": {
+          "byte_equal": true,
+          "deployed_value": "PERCENT",
+          "regenerated_value": "PERCENT"
+        }
+      },
+      "deployed_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\14_NDX_H1_QM5_13128_pre-fomc-drift-ndx.set",
+      "deployed_sha256": "3aa27e4b869a4f1e0dac25457d3c5056664613e58e3b41556b78a5db18549ffb",
+      "ea_label": "QM5_13128_pre-fomc-drift-ndx",
+      "friday_keys": [],
+      "functional_key_diff": {
+        "all_functional_keys_byte_equal": true,
+        "keys": [
+          {
+            "byte_equal": true,
+            "deployed_value": "13128",
+            "deployed_value_hex": "3133313238",
+            "key": "qm_ea_id",
+            "regenerated_value": "13128",
+            "regenerated_value_hex": "3133313238"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "qm_magic_slot_offset",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "0",
+            "deployed_value_hex": "30",
+            "key": "RISK_FIXED",
+            "regenerated_value": "0",
+            "regenerated_value_hex": "30"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1.0000",
+            "deployed_value_hex": "312e30303030",
+            "key": "RISK_PERCENT",
+            "regenerated_value": "1.0000",
+            "regenerated_value_hex": "312e30303030"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "1",
+            "deployed_value_hex": "31",
+            "key": "PORTFOLIO_WEIGHT",
+            "regenerated_value": "1",
+            "regenerated_value_hex": "31"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "16385",
+            "deployed_value_hex": "3136333835",
+            "key": "strategy_timeframe",
+            "regenerated_value": "16385",
+            "regenerated_value_hex": "3136333835"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "21",
+            "deployed_value_hex": "3231",
+            "key": "strategy_entry_hour",
+            "regenerated_value": "21",
+            "regenerated_value_hex": "3231"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "20",
+            "deployed_value_hex": "3230",
+            "key": "strategy_exit_hour",
+            "regenerated_value": "20",
+            "regenerated_value_hex": "3230"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "14",
+            "deployed_value_hex": "3134",
+            "key": "strategy_atr_period",
+            "regenerated_value": "14",
+            "regenerated_value_hex": "3134"
+          },
+          {
+            "byte_equal": true,
+            "deployed_value": "2.0",
+            "deployed_value_hex": "322e30",
+            "key": "strategy_stop_atr_mult",
+            "regenerated_value": "2.0",
+            "regenerated_value_hex": "322e30"
+          }
+        ],
+        "ordered_keys_equal": true
+      },
+      "news_mode": "ABSENT",
+      "reason": null,
+      "regenerated_sha256": "743326c316de6c2ccdab6080dab6dfff2d010afc9843a75798701f39e981be4e",
+      "regenerated_source": "framework/EAs/QM5_13128_pre-fomc-drift-ndx/sets/QM5_13128_pre-fomc-drift-ndx_NDX.DWX_H1_live.set",
+      "seed_keys": [],
+      "spotlight": {
+        "PORTFOLIO_WEIGHT": "1",
+        "RISK_FIXED": "0",
+        "RISK_PERCENT": "1.0000",
+        "qm_magic_slot_offset": "0"
+      },
+      "status": "REGENERABLE"
+    }
+  ],
+  "schema_version": "qm.tlive_preset_functional_diff.v1",
+  "status": "REGENERABLE",
+  "ticket": "rb-pointer-presets-repair"
+}

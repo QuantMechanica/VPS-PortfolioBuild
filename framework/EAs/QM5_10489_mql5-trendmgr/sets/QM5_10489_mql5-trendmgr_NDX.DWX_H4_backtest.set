@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10489
+; ea_slug:      mql5-trendmgr
+; ea_version:   v5.0
+; set_version:  s20260823-001
+; symbol:       NDX.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   6
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b79402c263c53b66816c5cbf763fe549f9661a31106ecdbe3714d2511c47066f
+; author:       Development
+; date:         2026-08-23
+;==========================================================
+qm_ea_id=10489
+qm_magic_slot_offset=6
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10489_mql5-trendmgr.md
+strategy_fast_sma_period=23
+strategy_slow_sma_period=84
+strategy_dv_limit_points=70
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_take_profit_rr=2.0
+strategy_max_hold_minutes=1200

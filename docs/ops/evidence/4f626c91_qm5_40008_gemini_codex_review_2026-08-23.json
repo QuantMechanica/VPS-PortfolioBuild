@@ -1,0 +1,21 @@
+{
+  "review_task_id": "4f626c91-ebe2-4df1-b689-d2d30bbfb24d",
+  "build_task_id": "3e8438fe-884f-4337-974d-7c8c2a1dd459",
+  "ea_id": "QM5_40008",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_40008 source lines 129-147 hand-roll a quarterly calendar key with file-scope year/quarter state and use it for exits at line 321; calendar-cadence strategies must use QM_IsNewCalendarPeriod and/or QM_CalendarPeriodKey.",
+    "QM5_40008 does not configure the approved card's three-tick market-order slippage limit; QM_FrameworkInit leaves QM_EntryConfigure at the framework's 20-point deviation default.",
+    "Build artifact artifacts/qm5_40008_build_result.json marks smoke_result as deferred_p2_smoke but blocked_reason is null; the generic smoke_skipped_reason is not the durable resolver/process occupancy evidence required by SCHEMAS.md, and no QM5_40008 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T18:53:08Z"
+}

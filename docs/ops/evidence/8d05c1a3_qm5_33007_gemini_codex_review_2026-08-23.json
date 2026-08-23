@@ -1,0 +1,24 @@
+{
+  "review_task_id": "8d05c1a3-5dab-4fc1-8bce-03feb6e1fa70",
+  "build_task_id": "5b130e06-566f-4ceb-897c-386e9e1f824d",
+  "ea_id": "QM5_33007",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_33007 source line 7 directly includes Trade/Trade.mqh, violating the V5 corset requirement that the EA include QM_Common.mqh and only QM modules transitively.",
+    "QM5_33007 source lines 19-20 default RISK_PERCENT=0.5 and RISK_FIXED=1000.0 simultaneously; QM_FrameworkValidateRiskInputs rejects both-positive inputs, so default OnInit fails unless a setfile overrides the source contract.",
+    "QM5_33007 source lines 61-66 evaluates the card's 23:55-00:05 GMT rollover blackout with TimeCurrent broker time and never converts through QM_BrokerToUTC.",
+    "QM5_33007 does not configure the card's three-tick market-order slippage limit; QM_FrameworkInit leaves QM_EntryConfigure at the framework's 20-point deviation default.",
+    "QM5_33007 does not configure the card's 2.0% daily realized-loss halt, 2.5% daily hard stop, or 5.0% total drawdown stop; it relies on QM_FrameworkInit's generic kill-switch defaults.",
+    "Build artifact artifacts/qm5_33007_build_result.json marks smoke_result as deferred_p2_smoke but has blocked_reason=null and no durable tester-capacity evidence; no QM5_33007 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T18:53:08Z"
+}

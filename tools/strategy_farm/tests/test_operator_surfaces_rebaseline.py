@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 
 from scripts import build_pipeline_state
-from tools.strategy_farm import book_build_guard, operator_surfaces
+from tools.strategy_farm import book_build_guard, operator_surfaces, phase_ids
 from tools.strategy_farm import render_cockpit_v2
 
 
@@ -40,6 +40,7 @@ def _fixture_db(path: Path) -> Path:
     # Q14 row and must render under active v3 semantics with raw provenance.
     for phase in ("Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08"):
         add(f"v3-{phase}", phase, "v3", "QM5_900001")
+    add("v4-baseline", "Q09", "v4", "QM5_900001")
     add("v4-news", "Q10_NEWS", "v4", "QM5_900001")
     add("v4-incumbent", "Q11", "v4", "QM5_900001")
     add("v4-pattern", "Q12", "v4", "QM5_900001")
@@ -78,14 +79,19 @@ def test_mixed_contract_frontiers_bands_guard_and_no_legacy_html(
         f"Q{i:02d}" for i in range(9)
     ]
     pair = next(row for row in snapshot["pairs"] if row["ea_id"] == "QM5_900001")
-    assert pair["highest_contiguous_valid_gate"] == "Q16"
-    assert "(v4:Q14)" in pair["highest_contiguous_valid_label"]
+    terminal = phase_ids.ACTIVE_GATE_MANIFEST.terminal_requalification_gate
+    assert pair["highest_contiguous_valid_gate"] == terminal
+    assert pair["highest_contiguous_valid_label"] == phase_ids.display_phase(
+        "Q14", "v4", include_name=True
+    )
     book_pair = next(row for row in snapshot["pairs"] if row["ea_id"] == "QM5_900002")
     assert book_pair["highest_observed_gate"] == "Q15"
-    assert "(v4:Q15_DXZ)" in book_pair["highest_observed_label"]
+    assert "Q15" in book_pair["highest_observed_label"]
     assert snapshot["book_guard"]["qualified_pairs"] == 1
     assert snapshot["book_guard"]["minimum_qualified_pairs"] == 25
     assert len(snapshot["phase_bands"]) == 3
+    assert snapshot["path_to_25"]["qualified_pairs"] == 1
+    assert snapshot["path_to_25"]["frontier_histogram"]["Q14"] == 1
     assert LEGACY_PHASE_RE.search(html) is None
 
 

@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10428
+; ea_slug:      et-hg-adx
+; ea_version:   v5.0
+; set_version:  s20260823-001
+; symbol:       UK100.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   8
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   898365936b7cbb62fdf6a58be18325c5167457190861215b50c212114d5e88c3
+; author:       Development
+; date:         2026-08-23
+;==========================================================
+qm_ea_id=10428
+qm_magic_slot_offset=8
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10428_et-hg-adx.md
+strategy_adx_period=14
+strategy_adx_cutoff=30.0
+strategy_xma_period=20
+strategy_sma_slope_period=5
+strategy_stop_lookback=3
+strategy_target_lookback=10
+strategy_atr_period=20
+strategy_atr_floor_mult=1.0
+strategy_max_hold_bars=20
+strategy_pending_bars=1

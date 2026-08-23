@@ -719,6 +719,9 @@ bool Strategy_LoadMonthlyRatioBreadth(
    while(index < strategy_history_bars_d1 &&
          Strategy_MonthKey(xau_bars[index].time) == completed_month_key)
      {
+      if(completed_month_sessions < 0 ||
+         completed_month_sessions >= ArraySize(newest_ratios))
+         return false;
       if(completed_month_sessions >= strategy_max_month_sessions ||
          !Strategy_SynchronizedPairValid(xau_bars, xag_bars, index) ||
          Strategy_MonthKey(xag_bars[index].time) != completed_month_key ||
@@ -782,6 +785,8 @@ bool Strategy_LoadMonthlyRatioBreadth(
        series_index >= 0;
        --series_index)
      {
+      if(series_index >= ArraySize(newest_ratios))
+         return false;
       const double relative_return =
          newest_ratios[series_index] - previous_ratio;
       if(!MathIsValidNumber(relative_return))

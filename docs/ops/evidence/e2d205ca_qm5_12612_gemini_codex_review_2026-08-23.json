@@ -1,0 +1,21 @@
+{
+  "review_task_id": "e2d205ca-3b70-4b7d-8d31-ff030c987b1e",
+  "build_task_id": "27fb255a-232e-4a06-9e12-f80e263f98e3",
+  "ea_id": "QM5_12612",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_12612 source lines 55 and 63-79 hand-roll a monthly calendar key with file-scope rebalance state and raw iTime calls, then reuse raw iTime at lines 258-260; monthly cadence must use QM_IsNewCalendarPeriod and/or QM_CalendarPeriodKey.",
+    "[ONTICK-ORDER-ADVISORY] QM5_12612 returns on the news blackout at lines 390-396 before management/exit at lines 404-420; actual entries carry a server-side ATR stop, so this is advisory under the review contract.",
+    "Build artifact artifacts/builds/27fb255a-232e-4a06-9e12-f80e263f98e3.json marks smoke_result as deferred_p2_smoke with an empty blocked_reason and only a generic custom-history explanation; this is not durable tester-saturation evidence, and no QM5_12612 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:13:28Z"
+}

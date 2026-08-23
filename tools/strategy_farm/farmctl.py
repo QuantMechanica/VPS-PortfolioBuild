@@ -21,7 +21,7 @@ import sys
 import time
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 try:
     from artifact_identity import (
@@ -30,6 +30,23 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm.artifact_identity import (
         IDENTITY_COLUMNS, extract_identity, identity_update_clause, prepare_completion,
+    )
+
+try:
+    from pump_budget import PumpCycleBudget
+    from sqlite_busy import (
+        BUSY_TIMEOUT_MS,
+        configure_connection as configure_sqlite_connection,
+        is_sqlite_busy,
+        retry_sqlite_busy,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.pump_budget import PumpCycleBudget
+    from tools.strategy_farm.sqlite_busy import (
+        BUSY_TIMEOUT_MS,
+        configure_connection as configure_sqlite_connection,
+        is_sqlite_busy,
+        retry_sqlite_busy,
     )
 
 try:
@@ -141,6 +158,11 @@ try:
     import news_calendar_gate
 except ModuleNotFoundError:
     from tools.strategy_farm import news_calendar_gate
+
+try:
+    import news_gate_service
+except ModuleNotFoundError:
+    from tools.strategy_farm import news_gate_service
 
 try:
     from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
@@ -364,9 +386,7 @@ _BASELINE_FULL_RUN_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("BASELINE_FULL_RUN
 _PATTERN_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("PATTERN")
 _PARAM_OPT_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("PARAM_OPT")
 _HEAD_TO_HEAD_PHASE = ACTIVE_GATE_MANIFEST.gate_for_role("HEAD_TO_HEAD")
-_INSPECTION_ONLY_NEWS_ALIAS = (
-    _NEWS_GATE if ACTIVE_GATE_MANIFEST.baseline_stage is not None else ""
-)
+_INSPECTION_ONLY_NEWS_ALIAS = _NEWS_GATE
 _NEWS_DEPENDENCY_ROLE = ACTIVE_GATE_MANIFEST.dependency_role("Q09_NEWS")
 _NEWS_PORTFOLIO_DEPENDENCY_ROLE = ACTIVE_GATE_MANIFEST.dependency_role("Q09_PORTFOLIO")
 _ADMISSION_DEPENDENCY_ROLE = ACTIVE_GATE_MANIFEST.dependency_role("Q14_ADMISSION")
@@ -1233,25 +1253,21 @@ def factory_is_off(root: Path) -> bool:
 
 
 def connect(root: Path) -> sqlite3.Connection:
-    conn = sqlite3.connect(db_path(root), timeout=30)
+    conn = sqlite3.connect(db_path(root), timeout=BUSY_TIMEOUT_MS / 1000.0)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA busy_timeout=30000")
-    return conn
+    return configure_sqlite_connection(conn)
 
 
 def _is_sqlite_locked(exc: sqlite3.OperationalError) -> bool:
-    return "locked" in str(exc).lower()
+    return is_sqlite_busy(exc)
 
 
-def _with_sqlite_write_retry(fn, retries: int = 8, base_sleep_seconds: float = 1.5):
-    for attempt in range(1, retries + 1):
-        try:
-            return fn()
-        except sqlite3.OperationalError as exc:
-            if not _is_sqlite_locked(exc) or attempt == retries:
-                raise
-            time.sleep(min(30.0, base_sleep_seconds * attempt))
-    raise RuntimeError("unreachable sqlite retry state")
+def _with_sqlite_write_retry(fn, retries: int = 8, base_sleep_seconds: float = 0.05):
+    return retry_sqlite_busy(
+        fn,
+        attempts=retries,
+        base_delay_seconds=base_sleep_seconds,
+    )
 
 
 # --- ULTRACODE WS-A (2026-07-26): one claim-ordering contract + durable recovery idle-cap ---
@@ -1264,6 +1280,9 @@ def _with_sqlite_write_retry(fn, retries: int = 8, base_sleep_seconds: float = 1
 RECOVERY_CLASS_PAYLOAD_KEY = "recovery_class"
 # LIKE pattern for the SQL rank. Robust to the ": " vs ":" JSON spacing.
 RECOVERY_MARKER_LIKE = '%"recovery_class":%'
+UNIVERSE_EXPANSION_PAYLOAD_KEY = "universe_expansion"
+UNIVERSE_EXPANSION_MARKER_LIKE = '%"universe_expansion": true%'
+UNIVERSE_EXPANSION_OWNER_DECISION = "OWNER-DEC-13036-XAU"
 # Rolling idle-cap semantics (documented in the decision record):
 #   * worker-set = ALL terminal workers claiming against this one farm DB; they
 #     share ONE global ledger, so the cap is a fleet-wide rolling cap on SUCCESSFUL
@@ -1365,6 +1384,12 @@ def pending_claim_order_sql() -> str:
     """
     return f"""
         SELECT w.*,
+          CASE
+            -- OWNER-DEC-13036-XAU extends the economic search universe, but
+            -- these fresh Q02 rows must never starve the rebaseline path to
+            -- 25.  Keep them below ordinary AND recovery/backfill work.
+            WHEN w.payload_json LIKE '{UNIVERSE_EXPANSION_MARKER_LIKE}' THEN 1
+            ELSE 0 END AS _universe_expansion_rank,
           CASE
             -- Recovery-class rows (classify_recovery_pending.py marker) sort LAST so
             -- they are only ever reached when no eligible priority/frontier row
@@ -1480,7 +1505,7 @@ def pending_claim_order_sql() -> str:
             WHERE q.ea_id=w.ea_id AND q.symbol=w.symbol AND q.phase=w.phase
               AND q.active=1
           )
-        ORDER BY _recovery_rank ASC,
+        ORDER BY _universe_expansion_rank ASC, _recovery_rank ASC,
                  (_priority_track_rank * 10 + _phase_rank - _age_weeks) ASC,
                  _basket_q02_rank ASC, _diagnostic_queue_rank ASC,
                  _winner_rank ASC, _asset_rank ASC,
@@ -1814,6 +1839,8 @@ def init_db(root: Path) -> None:
                 event TEXT NOT NULL,
                 detail_json TEXT NOT NULL
             );
+            CREATE INDEX IF NOT EXISTS idx_events_event_ts_entity
+                ON events(event, ts, entity_type, entity_id);
 
             -- MNT-015: compact mutable index used only to decide whether a raw
             -- event should be appended.  `events` itself remains append-only;
@@ -1882,6 +1909,8 @@ def init_db(root: Path) -> None:
             -- recovery windows (freeze_stack evidence 20260814T010101Z).
             CREATE INDEX IF NOT EXISTS idx_work_items_verdict_ea
                 ON work_items(verdict, ea_id);
+            CREATE INDEX IF NOT EXISTS idx_work_items_verdict_updated
+                ON work_items(verdict, updated_at);
             CREATE INDEX IF NOT EXISTS idx_work_items_ex5_sha256 ON work_items(ex5_sha256);
             CREATE INDEX IF NOT EXISTS idx_work_items_setfile_sha256 ON work_items(setfile_sha256);
             CREATE INDEX IF NOT EXISTS idx_work_items_mq5_sha256 ON work_items(mq5_sha256);
@@ -4923,6 +4952,16 @@ PHASE_NOMENCLATURE = {
     "Q12": "P9",
     "Q13": "P9b",
 }
+# Meaning-changing ids cannot be interpreted from their number after a
+# contract flip.  Overlay the legacy runner semantics by manifest role so v4
+# Q10_NEWS remains the P6 news runner and v4 Q11 remains the P7 incumbent
+# runner.  The v4 Q09 baseline intentionally retains full-run/P6 metric rules.
+PHASE_NOMENCLATURE.update({
+    _NEWS_GATE: "P6",
+    _NEWS_PHASE: "P6",
+    _NEWS_PORTFOLIO_PHASE: "P6",
+    _INCUMBENT_PHASE: "P7",
+})
 
 
 def _normalize_phase(phase: str | None) -> str:
@@ -6650,6 +6689,7 @@ def enqueue_compile_eas(
     *,
     from_file: str | None = None,
     apply: bool = False,
+    source_repair_authority: str | None = None,
 ) -> dict[str, Any]:
     """Create guarded COMPILE_EA utility work items.
 
@@ -6685,6 +6725,7 @@ def enqueue_compile_eas(
         ea_labels,
         from_file=from_file,
         apply=apply,
+        source_repair_authority=source_repair_authority,
     )
 
 
@@ -9932,6 +9973,10 @@ BASKET_CONTEXT_PAYLOAD_KEYS = (
 PROMOTION_QUEUE_CONTEXT_PAYLOAD_KEYS = (
     "priority_track",
     "priority_reason",
+    "recovery_class",
+    "universe_expansion",
+    "universe_expansion_priority",
+    "universe_expansion_owner_decision",
 )
 
 
@@ -10340,6 +10385,10 @@ _CASCADE_PASS_VERDICTS_BY_PREDECESSOR = {
     "Q06": {"PASS", "PASS_SOFT"},
     "Q07": {"PASS", "MULTI_SEED_PASS"},
     "Q08": {"PASS", "FAIL_SOFT"},
+    # v4 promotes the historical Q10A evidence binding into a real Q09 gate.
+    # A completed baseline full run advances only on its ordinary PASS; under
+    # v3 this Q10A key remains display-only and is never selected by routing.
+    _BASELINE_FULL_RUN_PHASE: {"PASS"},
     _NEWS_PHASE: Q09_NEWS_SUCCESS_VERDICTS,
     "P2": {"PASS"},
     "P3": {"PASS"},
@@ -15539,6 +15588,48 @@ def _work_item_evidence_sha256(work_item: sqlite3.Row) -> str | None:
         return None
 
 
+def _q08_input_for_news_predecessor(
+    conn: sqlite3.Connection, predecessor: sqlite3.Row
+) -> sqlite3.Row | None:
+    """Resolve the stable Q08 lineage behind the active NEWS predecessor.
+
+    Under v3 NEWS follows Q08 directly.  Under v4 the promoted baseline-full-
+    run gate sits between them, while the news sidecar contract intentionally
+    continues to bind the original frozen Q08 input.  Follow only the exact
+    ``promoted_from_work_item`` edge written by the ordinary cascade; never
+    guess by EA/symbol or by the largest gate id.
+    """
+
+    if str(predecessor["phase"] or "").upper() == "Q08":
+        return predecessor
+    if (
+        _BASELINE_FULL_RUN_PHASE not in ACTIVE_GATE_MANIFEST.phase_ids
+        or str(predecessor["phase"] or "").upper() != _BASELINE_FULL_RUN_PHASE
+    ):
+        return None
+    try:
+        payload = json.loads(str(predecessor["payload_json"] or "{}"))
+    except (TypeError, json.JSONDecodeError):
+        return None
+    source_id = str(payload.get("promoted_from_work_item") or "").strip()
+    if not source_id:
+        return None
+    row = conn.execute(
+        "SELECT * FROM work_items WHERE id=? AND phase='Q08' "
+        "AND status='done' AND verdict IN ('PASS','FAIL_SOFT')",
+        (source_id,),
+    ).fetchone()
+    if row is None:
+        return None
+    if (
+        str(row["ea_id"]) != str(predecessor["ea_id"])
+        or str(row["symbol"]) != str(predecessor["symbol"])
+        or str(row["setfile_path"]) != str(predecessor["setfile_path"])
+    ):
+        return None
+    return row
+
+
 def _add_q08_input_dependency(
     conn: sqlite3.Connection,
     *,
@@ -15636,7 +15727,449 @@ def _q09_candidate_lineage_key(ea_id: str, symbol: str, q08_work_item_id: str) -
     return hashlib.sha256(material).hexdigest()
 
 
-def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any]:
+def _spawn_q09_replacements_for_regenerated_q08(
+    root: Path, *, limit: int
+) -> list[dict[str, str]]:
+    """Append a Q09 successor when a held row's immutable Q08 edge is stale.
+
+    ``work_item_dependencies`` is append-only, so a held Q09 row cannot be
+    rebound in place.  A completed append-only Q08 regeneration therefore gets
+    a new held Q09 child.  The original child and dependency remain durable and
+    are superseded only after the replacement plan binds successfully.
+    """
+    if limit <= 0:
+        return []
+    spawned: list[dict[str, str]] = []
+    now = utc_now()
+    with connect(root) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        held = conn.execute(
+            """
+            SELECT w.*,d.parent_work_item_id AS prior_q08_id,
+                   p.created_at AS prior_q08_created_at
+            FROM work_items w
+            JOIN work_item_holds h ON h.work_item_id=w.id
+            JOIN work_item_dependencies d
+              ON d.child_work_item_id=w.id AND d.dependency_role='Q08_INPUT'
+            JOIN work_items p ON p.id=d.parent_work_item_id
+            WHERE w.phase=? AND w.status='pending'
+              AND COALESCE(w.claimed_by,'')=''
+              AND h.hold_code=? AND h.active=1
+            ORDER BY w.created_at,w.id
+            LIMIT ?
+            """,
+            (_NEWS_PHASE, Q09_ACTIVATION_HOLD_CODE, int(limit)),
+        ).fetchall()
+        for prior in held:
+            replacement_q08 = conn.execute(
+                """
+                SELECT q.* FROM work_items q
+                WHERE q.ea_id=? AND q.symbol=? AND q.setfile_path=?
+                  AND q.phase='Q08' AND q.status='done'
+                  AND q.verdict IN ('PASS','FAIL_SOFT')
+                  AND q.id<>?
+                  AND q.created_at>?
+                  AND json_valid(q.payload_json)=1
+                  AND json_extract(q.payload_json,'$.append_only_rerun')=1
+                  AND NOT EXISTS (
+                    SELECT 1 FROM work_item_dependencies dx
+                    JOIN work_items cx ON cx.id=dx.child_work_item_id
+                    WHERE dx.dependency_role='Q08_INPUT'
+                      AND dx.parent_work_item_id=q.id
+                      AND cx.phase=?
+                  )
+                ORDER BY q.updated_at DESC,q.id DESC LIMIT 1
+                """,
+                (
+                    prior["ea_id"], prior["symbol"], prior["setfile_path"],
+                    prior["prior_q08_id"], prior["prior_q08_created_at"], _NEWS_PHASE,
+                ),
+            ).fetchone()
+            if replacement_q08 is None:
+                continue
+            evidence_sha256 = _work_item_evidence_sha256(replacement_q08)
+            if not evidence_sha256:
+                continue
+            replacement_id = str(uuid.uuid4())
+            payload = _promotion_payload_with_basket_context(
+                replacement_q08,
+                {
+                    "promoted_from_phase": "Q08",
+                    "promoted_from_work_item": replacement_q08["id"],
+                    "promotion_source": "q09_autoseal_regenerated_q08",
+                    "supersedes_held_q09_work_item": prior["id"],
+                },
+            )
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                  id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
+                  parent_task_id,payload_json,created_at,updated_at,gate_contract_version
+                ) VALUES(?,'backtest',?,?,?,?, 'pending',0,NULL,?,?,?,?)
+                """,
+                (
+                    replacement_id, _NEWS_PHASE, replacement_q08["ea_id"],
+                    replacement_q08["symbol"], replacement_q08["setfile_path"],
+                    json.dumps(payload, sort_keys=True), now, now,
+                    ACTIVE_GATE_CONTRACT_VERSION,
+                ),
+            )
+            _add_q08_input_dependency(
+                conn,
+                child_work_item_id=replacement_id,
+                q08_work_item=replacement_q08,
+                evidence_sha256=evidence_sha256,
+            )
+            _mark_q09_awaiting_sealed_plan(
+                conn, work_item_id=replacement_id, payload=payload, now=now
+            )
+            spawned.append({
+                "prior_q09_work_item_id": str(prior["id"]),
+                "prior_q08_work_item_id": str(prior["prior_q08_id"]),
+                "replacement_q08_work_item_id": str(replacement_q08["id"]),
+                "replacement_q09_work_item_id": replacement_id,
+            })
+        conn.commit()
+    return spawned
+
+
+def _supersede_stale_q09_holds_after_rebind(
+    conn: sqlite3.Connection,
+    *,
+    replacement_q09_id: str,
+    replacement_q08_id: str,
+    now: str,
+) -> list[str]:
+    """Retire older unadjudicated holds only after a replacement binds."""
+    replacement = conn.execute(
+        """
+        SELECT w.ea_id,w.symbol,w.setfile_path,q.created_at AS q08_created_at
+        FROM work_items w
+        JOIN work_item_dependencies d
+          ON d.child_work_item_id=w.id AND d.dependency_role='Q08_INPUT'
+        JOIN work_items q ON q.id=d.parent_work_item_id
+        WHERE w.id=? AND q.id=?
+          AND json_valid(q.payload_json)=1
+          AND json_extract(q.payload_json,'$.append_only_rerun')=1
+        """,
+        (replacement_q09_id, replacement_q08_id),
+    ).fetchone()
+    if replacement is None:
+        return []
+    stale = conn.execute(
+        """
+        SELECT w.id,w.payload_json FROM work_items w
+        JOIN work_item_holds h ON h.work_item_id=w.id
+        JOIN work_item_dependencies d
+          ON d.child_work_item_id=w.id AND d.dependency_role='Q08_INPUT'
+        JOIN work_items prior_q08 ON prior_q08.id=d.parent_work_item_id
+        WHERE w.phase=? AND w.status='pending' AND w.id<>?
+          AND w.ea_id=? AND w.symbol=? AND w.setfile_path=?
+          AND d.parent_work_item_id<>?
+          AND prior_q08.created_at<?
+          AND h.hold_code=? AND h.active=1
+          AND NOT EXISTS (
+            SELECT 1 FROM q09_news_tests t WHERE t.work_item_id=w.id
+          )
+        ORDER BY w.created_at,w.id
+        """,
+        (
+            _NEWS_PHASE, replacement_q09_id, replacement["ea_id"],
+            replacement["symbol"], replacement["setfile_path"],
+            replacement_q08_id, replacement["q08_created_at"],
+            Q09_ACTIVATION_HOLD_CODE,
+        ),
+    ).fetchall()
+    superseded: list[str] = []
+    for row in stale:
+        payload = json.loads(str(row["payload_json"] or "{}"))
+        payload.update({
+            "historical_work_item_preserved": True,
+            "superseded_by_work_item_id": replacement_q09_id,
+            "superseded_by_q08_work_item_id": replacement_q08_id,
+            "superseded_reason": "regenerated_q08_identity_bound_to_replacement_q09",
+        })
+        conn.execute(
+            """
+            UPDATE work_items
+            SET status='done',verdict='SUPERSEDED',payload_json=?,updated_at=?
+            WHERE id=? AND status='pending' AND verdict IS NULL
+            """,
+            (json.dumps(payload, sort_keys=True), now, row["id"]),
+        )
+        conn.execute(
+            """
+            UPDATE work_item_holds
+            SET active=0,updated_at=?,released_at=?,
+                release_note='superseded after regenerated Q08 replacement plan bound'
+            WHERE work_item_id=? AND hold_code=? AND active=1
+            """,
+            (now, now, row["id"], Q09_ACTIVATION_HOLD_CODE),
+        )
+        superseded.append(str(row["id"]))
+    return superseded
+
+
+def _news_read_phases(*, include_historical: bool) -> tuple[str, ...]:
+    """Return manifest-derived storage lanes used for current or UNION reads."""
+
+    phases = [_NEWS_PHASE]
+    if include_historical and ACTIVE_GATE_CONTRACT_VERSION == "v4":
+        historical = ACTIVE_GATE_MANIFEST.equivalent_gate(
+            _NEWS_PHASE, "v4", "v3"
+        )
+        if historical not in phases:
+            phases.append(historical)
+    return tuple(phases)
+
+
+def _news_expansion_pair_allowlist(path: Path | None) -> set[tuple[str, str]] | None:
+    if path is None:
+        return None
+    allowed: set[tuple[str, str]] = set()
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if not reader.fieldnames or not {"ea_id", "symbol"}.issubset(reader.fieldnames):
+            raise ValueError("news expansion allowlist requires ea_id and symbol columns")
+        for row in reader:
+            ea_id = str(row.get("ea_id") or "").strip()
+            symbol = str(row.get("symbol") or "").strip()
+            if ea_id and symbol:
+                allowed.add((ea_id, symbol))
+    return allowed
+
+
+def _force_expanded_news_matrix(work_item: sqlite3.Row | dict[str, Any]) -> bool:
+    try:
+        payload = json.loads(str(work_item["payload_json"] or "{}"))
+    except (KeyError, TypeError, json.JSONDecodeError):
+        return False
+    return bool(
+        isinstance(payload, dict) and payload.get("force_expanded_news_matrix") is True
+    )
+
+
+def author_news_expansion_continuations(
+    root: Path,
+    *,
+    limit: int = 2,
+    include_historical: bool = False,
+    pair_allowlist_path: Path | None = None,
+    apply: bool = True,
+) -> dict[str, Any]:
+    """Append sealed-plan holds for authenticated full-matrix requests.
+
+    The source adjudication and its exact frozen input dependency are preserved.
+    Each child is a new current-contract row; the pump's ordinary autosealer then
+    authors a contract-v3 one-seed, seam-reconstructed full matrix and releases
+    the hold only after the plan is hash-bound.
+    """
+
+    bounded_limit = max(0, int(limit))
+    if apply:
+        init_db(root)
+    allowed_pairs = _news_expansion_pair_allowlist(pair_allowlist_path)
+    phases = _news_read_phases(include_historical=include_historical)
+    connection = connect(root) if apply else sqlite3.connect(
+        f"file:{db_path(root).as_posix()}?mode=ro", uri=True
+    )
+    connection.row_factory = sqlite3.Row
+    created: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    planned: list[dict[str, Any]] = []
+    try:
+        candidates = news_gate_service.expansion_requests(
+            connection, news_phases=phases
+        )
+        for source in candidates:
+            if len(planned) >= bounded_limit:
+                break
+            pair = (str(source["ea_id"]), str(source["symbol"]))
+            if allowed_pairs is not None and pair not in allowed_pairs:
+                continue
+            existing = connection.execute(
+                """
+                SELECT id,status,verdict FROM work_items
+                WHERE json_valid(payload_json)=1
+                  AND json_extract(payload_json,'$.news_expansion_of_work_item')=?
+                ORDER BY created_at DESC,id DESC LIMIT 1
+                """,
+                (str(source["id"]),),
+            ).fetchone()
+            if existing is not None:
+                skipped.append({
+                    "source_work_item_id": source["id"],
+                    "ea_id": source["ea_id"],
+                    "symbol": source["symbol"],
+                    "reason": "expansion_continuation_already_exists",
+                    "existing_work_item_id": existing["id"],
+                    "existing_status": existing["status"],
+                    "existing_verdict": existing["verdict"],
+                })
+                continue
+            dependency = connection.execute(
+                """
+                SELECT d.parent_evidence_sha256,p.*
+                FROM work_item_dependencies d
+                JOIN work_items p ON p.id=d.parent_work_item_id
+                WHERE d.child_work_item_id=? AND d.dependency_role='Q08_INPUT'
+                """,
+                (str(source["id"]),),
+            ).fetchone()
+            if dependency is None:
+                skipped.append({
+                    "source_work_item_id": source["id"],
+                    "ea_id": source["ea_id"],
+                    "symbol": source["symbol"],
+                    "reason": "source_q08_input_dependency_missing",
+                })
+                continue
+            parent_hash = str(dependency["parent_evidence_sha256"] or "").lower()
+            q08_hash = _work_item_evidence_sha256(dependency)
+            if (
+                dependency["phase"] != "Q08"
+                or dependency["status"] != "done"
+                or dependency["verdict"] not in {"PASS", "FAIL_SOFT"}
+                or str(dependency["ea_id"]) != str(source["ea_id"])
+                or str(dependency["symbol"]) != str(source["symbol"])
+                or str(dependency["setfile_path"]) != str(source["setfile_path"])
+                or not q08_hash
+                or q08_hash.lower() != parent_hash
+            ):
+                skipped.append({
+                    "source_work_item_id": source["id"],
+                    "ea_id": source["ea_id"],
+                    "symbol": source["symbol"],
+                    "reason": "source_q08_input_dependency_invalid",
+                })
+                continue
+            plan = {
+                "source_work_item_id": str(source["id"]),
+                "ea_id": str(source["ea_id"]),
+                "symbol": str(source["symbol"]),
+                "setfile_path": str(source["setfile_path"]),
+                "q08_work_item_id": str(dependency["id"]),
+                "q08_evidence_sha256": parent_hash,
+                "source_aggregate_sha256": str(source["aggregate_sha256"]),
+            }
+            planned.append(plan)
+            if not apply:
+                continue
+            now = utc_now()
+            child_id = str(uuid.uuid4())
+            payload = _promotion_payload_with_basket_context(
+                source,
+                {
+                    "append_only_rerun": True,
+                    "append_only_rerun_of_work_item": str(source["id"]),
+                    "historical_work_item_preserved": True,
+                    "news_expansion_of_work_item": str(source["id"]),
+                    "news_expansion_source_aggregate_sha256": str(
+                        source["aggregate_sha256"]
+                    ),
+                    "news_expansion_reason_code": news_gate_service.EXPANSION_REASON,
+                    "force_expanded_news_matrix": True,
+                    "rerun_reason": (
+                        "authenticated news adjudication requires the full compliance matrix"
+                    ),
+                    "promotion_source": "farmctl_news_expansion_continuation",
+                    "promoted_from_phase": str(source["phase"]),
+                    "promoted_from_work_item": str(source["id"]),
+                    "requeued_at": now,
+                },
+            )
+            connection.execute("SAVEPOINT news_expansion_continuation")
+            try:
+                connection.execute(
+                    """
+                    INSERT INTO work_items(
+                      id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
+                      parent_task_id,payload_json,created_at,updated_at,gate_contract_version
+                    ) VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
+                    """,
+                    (
+                        child_id,
+                        _NEWS_PHASE,
+                        source["ea_id"],
+                        source["symbol"],
+                        source["setfile_path"],
+                        json.dumps(payload, sort_keys=True),
+                        now,
+                        now,
+                        ACTIVE_GATE_CONTRACT_VERSION,
+                    ),
+                )
+                _add_q08_input_dependency(
+                    connection,
+                    child_work_item_id=child_id,
+                    q08_work_item=dependency,
+                    evidence_sha256=parent_hash,
+                )
+                _mark_q09_awaiting_sealed_plan(
+                    connection,
+                    work_item_id=child_id,
+                    payload=payload,
+                    now=now,
+                )
+            except Exception:
+                connection.execute("ROLLBACK TO news_expansion_continuation")
+                connection.execute("RELEASE news_expansion_continuation")
+                raise
+            connection.execute("RELEASE news_expansion_continuation")
+            connection.commit()
+            created.append({**plan, "work_item_id": child_id, "phase": _NEWS_PHASE})
+    finally:
+        connection.close()
+    return {
+        "applied": bool(apply),
+        "limit": bounded_limit,
+        "read_phases": list(phases),
+        "allowlist_path": str(pair_allowlist_path) if pair_allowlist_path else None,
+        "candidate_count": len(candidates),
+        "planned_count": len(planned),
+        "created_count": len(created),
+        "planned": planned,
+        "created": created,
+        "skipped": skipped,
+    }
+
+
+def _validated_q09_include_closure(
+    closure_builder: Any,
+    *,
+    ea_id: str,
+    work_item_id: str,
+) -> tuple[Path, dict[str, Any]]:
+    """Return a current immutable closure without replacing an older snapshot."""
+
+    canonical = Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT / f"{ea_id}_include_closure.json"
+    if not canonical.exists():
+        canonical = closure_builder.build_include_closure(
+            ea_id, Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT
+        )
+    try:
+        return canonical, closure_builder.validate_include_closure(ea_id, canonical)
+    except RuntimeError as exc:
+        stale_markers = (
+            "include closure EX5 hash mismatch",
+            "include closure source inventory/hash mismatch",
+        )
+        if not any(marker in str(exc) for marker in stale_markers):
+            raise
+        successor_root = Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT / work_item_id
+        successor = successor_root / f"{ea_id}_include_closure.json"
+        if not successor.exists():
+            successor = closure_builder.build_include_closure(ea_id, successor_root)
+        return successor, closure_builder.validate_include_closure(ea_id, successor)
+
+
+def auto_seal_pending_q09_news(
+    root: Path,
+    *,
+    limit: int = 100,
+    deadline_monotonic: float | None = None,
+    work_item_ids: Iterable[str] | None = None,
+) -> dict[str, Any]:
     """Create and bind approved contract-v3 plans for held Q09 rows.
 
     Every identity comes from the exact work-item/dependency lineage.  Missing
@@ -15645,21 +16178,36 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
     """
 
     init_db(root)
+    predecessor_refresh = _spawn_q09_replacements_for_regenerated_q08(
+        root, limit=max(0, int(limit))
+    )
+    selected_ids = tuple(dict.fromkeys(str(value) for value in (work_item_ids or ())))
     with connect(root) as conn:
+        selection_sql = ""
+        parameters: list[Any] = [_NEWS_PHASE, Q09_ACTIVATION_HOLD_CODE]
+        if selected_ids:
+            selection_sql = f" AND w.id IN ({','.join('?' for _ in selected_ids)})"
+            parameters.extend(selected_ids)
+        parameters.append(max(0, int(limit)))
         candidates = conn.execute(
-            """
+            f"""
             SELECT w.* FROM work_items w
             JOIN work_item_holds h ON h.work_item_id=w.id
             WHERE w.phase=? AND w.status='pending'
               AND COALESCE(w.claimed_by,'')=''
               AND h.hold_code=? AND h.active=1
+              {selection_sql}
             ORDER BY w.created_at ASC,w.id ASC LIMIT ?
             """,
-            (_NEWS_PHASE, Q09_ACTIVATION_HOLD_CODE, max(0, int(limit))),
+            parameters,
         ).fetchall()
 
     results: list[dict[str, Any]] = []
+    budget_exhausted = False
     for candidate in candidates:
+        if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+            budget_exhausted = True
+            break
         work_item_id = str(candidate["id"])
         stage = "derive_lineage"
         try:
@@ -15723,12 +16271,11 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                 import build_q09_include_closure as closure_builder
             except ModuleNotFoundError:
                 from tools.strategy_farm import build_q09_include_closure as closure_builder
-            closure = Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT / f"{ea_id}_include_closure.json"
-            if not closure.exists():
-                closure = closure_builder.build_include_closure(
-                    ea_id, Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT
-                )
-            closure_validation = closure_builder.validate_include_closure(ea_id, closure)
+            closure, closure_validation = _validated_q09_include_closure(
+                closure_builder,
+                ea_id=ea_id,
+                work_item_id=work_item_id,
+            )
             generated_closure_drift = list(
                 closure_validation.get("generated_source_drift") or []
             )
@@ -15752,7 +16299,7 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                 cost_profile="DXZ_CANONICAL_REAL_TICKS_V1",
                 output_root=output_root,
                 news_or_event_strategy=False,
-                force_expanded_matrix=False,
+                force_expanded_matrix=_force_expanded_news_matrix(candidate),
                 contract_version=q09_runner.contract.SCHEMA_VERSION_V3,
                 **Q09_AUTOPILOT_WINDOWS,
             )
@@ -15798,6 +16345,12 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                     "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
                     (json.dumps(current_payload, sort_keys=True), utc_now(), work_item_id),
                 )
+                superseded_q09_ids = _supersede_stale_q09_holds_after_rebind(
+                    conn,
+                    replacement_q09_id=work_item_id,
+                    replacement_q08_id=q08_id,
+                    now=utc_now(),
+                )
                 conn.commit()
             results.append({
                 "work_item_id": work_item_id,
@@ -15810,6 +16363,7 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                 "plan_sha256": plan["plan_sha256"],
                 "cell_count": plan["cell_count"],
                 "activation_hold_released": bound["activation_hold_released"],
+                "superseded_q09_work_item_ids": superseded_q09_ids,
             })
         except Exception as exc:  # fail closed per row; continue the cohort
             results.append(
@@ -15821,9 +16375,12 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                 )
             )
     return {
+        "predecessor_refresh": predecessor_refresh,
         "candidate_count": len(candidates),
+        "attempted_count": len(results),
         "sealed_count": sum(1 for row in results if row.get("sealed") is True),
         "failed_count": sum(1 for row in results if row.get("sealed") is False),
+        "budget_exhausted": budget_exhausted,
         "rows": results,
     }
 
@@ -16258,6 +16815,8 @@ def _promote_paired_q09_portfolio_passes_to_news(
     result: dict[str, Any],
     *,
     include_defect_blocked_evidence: bool = False,
+    max_rows: int | None = None,
+    commit_each: bool = False,
 ) -> int:
     """Backfill a held news arm from each latest Q08 PASS/FAIL_SOFT lineage.
 
@@ -16295,9 +16854,13 @@ def _promote_paired_q09_portfolio_passes_to_news(
         (_NEWS_PHASE,),
     ).fetchall()
     promoted = 0
+    attempted = 0
     for row in rows:
         if int(row["lineage_rank"]) != 1:
             continue
+        if max_rows is not None and attempted >= max(0, int(max_rows)):
+            break
+        attempted += 1
         q08 = conn.execute(
             "SELECT * FROM work_items WHERE id=?", (str(row["q08_id"]),)
         ).fetchone()
@@ -16358,6 +16921,8 @@ def _promote_paired_q09_portfolio_passes_to_news(
             "q08_verdict": row["q08_verdict"],
         })
         promoted += 1
+        if commit_each:
+            conn.commit()
     return promoted
 
 
@@ -16782,6 +17347,16 @@ def _reconcile_magic_resolver(root: Path) -> dict[str, Any]:
         return {"regenerated": False, "reason": f"exception:{exc!r}"[:200]}
 
 
+PUMP_TOTAL_BUDGET_SECONDS = 270.0
+PUMP_DISPATCH_BUDGET_SECONDS = 30.0
+PUMP_AUTOCOMMIT_BUDGET_SECONDS = 30.0
+PUMP_LATE_AUTOSEAL_BUDGET_SECONDS = 45.0
+PUMP_DISPATCH_AUTOSEAL_LIMIT = 2
+PUMP_LATE_AUTOSEAL_LIMIT = 4
+PUMP_NEWS_EXPANSION_LIMIT = 2
+PUMP_OPT_FORK_BUDGET_SECONDS = 30.0
+
+
 def _pump_unlocked(
     root: Path, include_defect_blocked_evidence: bool = False
 ) -> dict[str, Any]:
@@ -16803,22 +17378,49 @@ def _pump_unlocked(
     factory_off_flag = factory_off_flag_path(root)
     if factory_off_flag.exists():
         return {"pumped_at": utc_now(), "skipped": "FACTORY_OFF.flag set"}
-    init_db(root)
+    cycle_budget = PumpCycleBudget(PUMP_TOTAL_BUDGET_SECONDS)
+    dispatch_deadline = cycle_budget.stage_deadline(PUMP_DISPATCH_BUDGET_SECONDS)
+    dispatch_result = cycle_budget.run(
+        "dispatch_tick",
+        lambda: dispatch_tick(
+            root,
+            q09_autoseal_limit=PUMP_DISPATCH_AUTOSEAL_LIMIT,
+            q09_autoseal_deadline_monotonic=dispatch_deadline,
+        ),
+        budget_seconds=PUMP_DISPATCH_BUDGET_SECONDS,
+        required=True,
+    )
     # Reap stuck codex procs FIRST — they hold the build proc-cap and silently
     # halt all builds (see _reap_stuck_codex_procs). Then deterministic artifact
     # commit clears the working tree before the build guard checks it.
-    reap_result = _reap_stuck_codex_procs(root)
-    reap_result["work_repair"] = _repair_reaped_codex_work(root, reap_result)
+    def _reap_stage() -> dict[str, Any]:
+        reaped = _reap_stuck_codex_procs(root)
+        reaped["work_repair"] = _repair_reaped_codex_work(root, reaped)
+        return reaped
+
+    reap_result = cycle_budget.run(
+        "process_reap", _reap_stage, budget_seconds=20.0, minimum_start_seconds=5.0
+    )
     # Resync the magic resolver BEFORE the artifact commit so a stale .mqh from
     # the concurrent-build race never reaches codex_review (see _reconcile_magic_resolver).
-    resolver_reconcile = _reconcile_magic_resolver(root)
-    auto_commit_result = _auto_commit_build_artifacts(root)
+    resolver_reconcile = cycle_budget.run(
+        "magic_resolver",
+        lambda: _reconcile_magic_resolver(root),
+        budget_seconds=10.0,
+        minimum_start_seconds=5.0,
+    )
+    auto_commit_result = cycle_budget.run(
+        "artifact_auto_commit",
+        lambda: _auto_commit_build_artifacts(root),
+        budget_seconds=PUMP_AUTOCOMMIT_BUDGET_SECONDS,
+        minimum_start_seconds=15.0,
+    )
     result: dict[str, Any] = {
         "pumped_at": utc_now(),
         "reaped_stuck_procs": reap_result,
         "magic_resolver": resolver_reconcile,
         "auto_commit": auto_commit_result,
-        "dispatch": None,
+        "dispatch": dispatch_result,
         "codex_spawn": None,
         "build_records": [],
         "build_retries": [],
@@ -16863,6 +17465,7 @@ def _pump_unlocked(
     except Exception as exc:
         result["codex_auth_broken"] = {"tripped": False, "error": repr(exc)}
 
+    queue_stage_started = time.monotonic()
     # 1a. Per-symbol work_items dispatch is owned by the per-terminal daemon
     #     fleet (tools/strategy_farm/terminal_worker.py). Pump-cron keeps the
     #     active-timeout detector but no longer spawns MT5 work_items.
@@ -16930,14 +17533,13 @@ def _pump_unlocked(
     # 1b. Legacy bundled-task dispatch — handles any backtest_<phase> tasks
     #     created WITHOUT matching work_items (e.g. older runs). Will become
     #     a no-op once all enqueues create work_items.
-    result["dispatch"] = dispatch_tick(root)
     with connect(root) as conn:
         result["zerotrade_rework_flagged"] = _detect_zerotrade_dead_eas(conn, root)
-        result["zerotrade_terminal_event_census"] = event_census(
-            conn,
-            DEAD_ZERO_TRADE_EVENT,
-            rolling_hours=DEAD_ZERO_TRADE_EVENT_DEDUPE_HOURS,
-        )
+        result["zerotrade_terminal_event_census"] = {
+            "deferred": True,
+            "reason": "moved_to_pump_maintenance",
+            "command": "farmctl pump-maintenance",
+        }
 
     result["resume_mining"] = resume_mining(root)
     result["research_cards_extracted"] = _extract_cards_from_research_results(root)
@@ -17086,6 +17688,14 @@ def _pump_unlocked(
             "last_blocked_reason": blocked_reason[:120],
         })
 
+    cycle_budget.record_elapsed(
+        "queue_maintenance_and_intake", queue_stage_started, budget_seconds=60.0
+    )
+    if cycle_budget.remaining_seconds <= 15.0:
+        result["build_dispatch"] = {"skipped": "cycle_budget_exhausted"}
+        result["stage_timings"] = cycle_budget.snapshot()
+        return result
+    build_stage_started = time.monotonic()
     # 3. Codex builds for up to MAX_PARALLEL_CODEX pending build_ea tasks.
     #    Each Codex builds a DIFFERENT EA — races on shared writes (CSV
     #    appends + update_magic_resolver.py rewrite) are resolved at the
@@ -17624,6 +18234,14 @@ def _pump_unlocked(
             })
         conn.commit()
 
+    cycle_budget.record_elapsed(
+        "build_dispatch", build_stage_started, budget_seconds=60.0
+    )
+    if cycle_budget.remaining_seconds <= 15.0:
+        result["review_stage"] = {"skipped": "cycle_budget_exhausted"}
+        result["stage_timings"] = cycle_budget.snapshot()
+        return result
+    review_stage_started = time.monotonic()
     # 5a. CODEX pre-review for done build_ea without codex_review yet.
     #     Codex catches mechanical bugs (Framework Corset, INTRADAY DISCIPLINE,
     #     magic collisions, 0-trade smoke) BEFORE final EA review burns
@@ -17965,6 +18583,14 @@ def _pump_unlocked(
     result["codex_research_spawn"] = (result["codex_research_spawns"][0]
                                        if result["codex_research_spawns"] else None)
 
+    cycle_budget.record_elapsed(
+        "reviews_and_research", review_stage_started, budget_seconds=60.0
+    )
+    if cycle_budget.remaining_seconds <= 15.0:
+        result["pre_promotion_stage"] = {"skipped": "cycle_budget_exhausted"}
+        result["stage_timings"] = cycle_budget.snapshot()
+        return result
+    pre_promotion_stage_started = time.monotonic()
     # 10. Parameter ablation — phase-aware:
     #     - P2-PASS (exploration): 5 random ±25% mutations to find a viable
     #       region. OWNER 2026-05-16 "Ablation auf Gewinner statt Greenfield".
@@ -18050,14 +18676,16 @@ def _pump_unlocked(
     # catch them after the first PASS goes through normal auto-enqueue).
     result["p3_promotions"] = []
     result["p3_promotions_skipped"] = []
-    # Refresh the normalized metric layer so the profit pre-filter below sees
-    # current numbers (incremental, mtime-gated; must never break the pump).
-    try:
-        import ea_metrics as _ea_metrics  # parent dir already on sys.path above
-        with connect(root) as _mconn:
-            _ea_metrics.build(_mconn, full=False)
-    except Exception:
-        pass
+    # The normalized metric layer is a throughput/observability aggregate, not
+    # a gate.  Its 61k-path stat scan and tens of thousands of stale-row upserts
+    # now run under the lower-frequency ``pump-maintenance`` command.  Promotion
+    # still reads the latest committed metrics and therefore changes no gate
+    # criterion; a fresh result can be delayed by one maintenance interval.
+    result["ea_metrics_refresh"] = {
+        "deferred": True,
+        "reason": "moved_to_pump_maintenance",
+        "command": "farmctl pump-maintenance",
+    }
     with connect(root) as conn:
         # §10c starvation fix (2026-06-22): the candidate set is every Q02-PASS
         # without a Q03 sibling. The overwhelming majority are permanently
@@ -18202,6 +18830,7 @@ def _pump_unlocked(
         "Q06": {"PASS", "PASS_SOFT"},
         "Q07": {"PASS"},
         "Q08": {"PASS", "FAIL_SOFT"},
+        _BASELINE_FULL_RUN_PHASE: {"PASS"},
         _NEWS_PHASE: Q09_NEWS_SUCCESS_VERDICTS,
         # Pre-rewrite keys retained inert for any orphan reads against the
         # empty post-wipe DB. These will never match new rows.
@@ -18219,10 +18848,28 @@ def _pump_unlocked(
     _cascade_defect_exclusion = _defect_block_exclusion_clause(
         include_defect_blocked_evidence
     )
+    cycle_budget.record_elapsed(
+        "pre_promotion_automation", pre_promotion_stage_started, budget_seconds=45.0
+    )
+    if cycle_budget.remaining_seconds <= 15.0:
+        result["promotion_stage"] = {
+            "skipped": "cycle_budget_exhausted",
+            "remaining_seconds": cycle_budget.remaining_seconds,
+        }
+        result["stage_timings"] = cycle_budget.snapshot()
+        return result
+    promotion_stage_started = time.monotonic()
+    promotion_deadline = cycle_budget.stage_deadline(60.0)
     with connect(root) as conn:
-        conn.execute("BEGIN IMMEDIATE")
         reopened_parents: set[str] = set()
         for prev_phase, successor_phase in cascade_phase_map.items():
+            if time.monotonic() >= promotion_deadline:
+                result["cascade_promotions_skipped"].append({
+                    "reason": "promotion_stage_budget_exhausted",
+                    "from_phase": prev_phase,
+                    "to_phase": successor_phase,
+                })
+                break
             verdicts = sorted(cascade_pass_verdicts[prev_phase])
             placeholders = ",".join("?" for _ in verdicts)
             promotable = conn.execute(
@@ -18251,7 +18898,7 @@ def _pump_unlocked(
                 -- ten permanently unpromotable old rows starve every later
                 -- Q08 PASS, including 16 pairs that already had a portfolio
                 -- sibling but never received Q09_NEWS.
-                ORDER BY w.updated_at ASC LIMIT 500
+                ORDER BY w.updated_at ASC LIMIT 50
                 """,
                 (
                     prev_phase,
@@ -18261,6 +18908,13 @@ def _pump_unlocked(
                 ),
             ).fetchall()
             for wi in promotable:
+                if time.monotonic() >= promotion_deadline:
+                    result["cascade_promotions_skipped"].append({
+                        "reason": "promotion_stage_budget_exhausted",
+                        "from_phase": prev_phase,
+                        "to_phase": successor_phase,
+                    })
+                    break
                 if not _setfile_path_exists(wi["setfile_path"]):
                     result["cascade_promotions_skipped"].append({
                         "ea_id": wi["ea_id"],
@@ -18394,6 +19048,10 @@ def _pump_unlocked(
                     "parent_task_id": parent_id,
                     "reopened_parent": reopened_parent,
                 })
+                # Keep the serialized writer interval to one promotion.  The
+                # global pump claim prevents a second promoter; terminal workers
+                # regain the WAL writer slot between rows.
+                conn.commit()
         # DL-074 (gate-acceleration #3) Q04-early probe: every Q02-PASS
         # primary goes straight to a Q04 walk-forward probe on its DEFAULT
         # params, in parallel with the normal Q02->Q03 path. ~88% of EAs die
@@ -18455,13 +19113,18 @@ def _pump_unlocked(
                 "reopened_parent": False,
                 "q04_default_probe": True,
             })
+            conn.commit()
         q09_promoted = _promote_q08_soft_fails_to_q09_portfolio(
             conn, result, include_defect_blocked_evidence=include_defect_blocked_evidence
         )
+        if q09_promoted:
+            conn.commit()
         q09_paired_news = _promote_paired_q09_portfolio_passes_to_news(
             conn,
             result,
             include_defect_blocked_evidence=include_defect_blocked_evidence,
+            max_rows=20,
+            commit_each=True,
         )
         q09_admitted = 0
         if (
@@ -18472,10 +19135,69 @@ def _pump_unlocked(
         ):
             conn.commit()
 
-    # Newly created and previously parked Q09 rows become runnable in the same
+    cycle_budget.record_elapsed(
+        "promotions", promotion_stage_started, budget_seconds=60.0
+    )
+    # A completed standard-scope adjudication can require the full compliance
+    # matrix.  Materialize an append-only continuation before autoseal so the
+    # same cycle can author, hash-bind, and release its expanded plan.
+    result["news_expansions"] = cycle_budget.run(
+        "news_expansions",
+        lambda: author_news_expansion_continuations(
+            root, limit=PUMP_NEWS_EXPANSION_LIMIT, apply=True
+        ),
+        budget_seconds=10.0,
+        minimum_start_seconds=10.0,
+    )
+
+    # Newly created and previously parked news rows become runnable in the same
     # pump cycle.  Each row is independently fail-closed, so one bad lineage
     # cannot starve the remaining cohort.
-    result["q09_autoseal"] = auto_seal_pending_q09_news(root)
+    late_autoseal_deadline = cycle_budget.stage_deadline(
+        PUMP_LATE_AUTOSEAL_BUDGET_SECONDS
+    )
+    result["q09_autoseal"] = cycle_budget.run(
+        "q09_autoseal",
+        lambda: auto_seal_pending_q09_news(
+            root,
+            limit=PUMP_LATE_AUTOSEAL_LIMIT,
+            deadline_monotonic=late_autoseal_deadline,
+        ),
+        budget_seconds=PUMP_LATE_AUTOSEAL_BUDGET_SECONDS,
+        minimum_start_seconds=15.0,
+    )
+
+    # OWNER A2: every incumbent confirmation enters the mandatory optimization
+    # audit.  The role-driven driver is append-only and never launches MT5; it
+    # only materializes the next governed analytic row after authenticating the
+    # predecessor and DL-089 fixture-harness evidence.  It runs as a budgeted
+    # cycle stage placed BEFORE the post-promotion early return: on a tight
+    # cycle its own minimum_start guard DEFERS it (idempotent/append-only —
+    # it resumes next cycle) instead of either blowing the 270s ceiling or
+    # being permanently starved behind the return below.
+    def _opt_fork_stage() -> dict[str, Any]:
+        try:
+            return advance_opt_fork(root, apply=True)
+        except Exception as exc:  # one analytic routing defect must not stop the pump
+            return {
+                "applied": False,
+                "machine_reason": f"OPTIMIZATION_FORK_ROUTING_FAILED:{exc}",
+            }
+
+    result["optimization_fork"] = cycle_budget.run(
+        "optimization_fork",
+        _opt_fork_stage,
+        budget_seconds=PUMP_OPT_FORK_BUDGET_SECONDS,
+        minimum_start_seconds=10.0,
+    )
+
+    if cycle_budget.remaining_seconds <= 15.0:
+        result["post_promotion_stage"] = {
+            "skipped": "cycle_budget_exhausted",
+            "remaining_seconds": cycle_budget.remaining_seconds,
+        }
+        result["stage_timings"] = cycle_budget.snapshot()
+        return result
 
     # §10d Synthetic variants for proven winners — EAs with ≥3 P2-PASSes
     # get a one-shot 30-variant burst exploring symbol family + bool flips +
@@ -18539,7 +19261,11 @@ def _pump_unlocked(
                     "children_count": 0, "reason": f"error: {exc!r}",
                 })
 
-    result["db_backup"] = _hourly_db_backup(root)
+    result["db_backup"] = {
+        "deferred": True,
+        "reason": "moved_to_pump_maintenance",
+        "command": "farmctl pump-maintenance",
+    }
     result["p_pass_stagnation_alarm"] = {
         "triggered": False,
         "reason": "mail disabled in pump; separate pipeline FAIL/OK mail channel OWNER-disabled 2026-07-23",
@@ -18553,7 +19279,44 @@ def _pump_unlocked(
         "reason": "disabled_by_owner_2026_05_22; one-shot ping email channel retired",
     }
 
+    result["stage_timings"] = cycle_budget.snapshot()
     return result
+
+
+def pump_maintenance(root: Path) -> dict[str, Any]:
+    """Run lower-frequency aggregate/statistics work removed from the 5m pump.
+
+    This command does not dispatch, promote, enqueue, or alter verdicts.  It is
+    safe to schedule hourly independently of the latency-sensitive pump.
+    """
+
+    started = time.monotonic()
+
+    def _refresh_metrics() -> dict[str, Any]:
+        try:
+            import ea_metrics as metrics
+        except ModuleNotFoundError:
+            from tools.strategy_farm import ea_metrics as metrics
+        with connect(root) as conn:
+            return metrics.build(conn, full=False)
+
+    metrics_result = _with_sqlite_write_retry(_refresh_metrics)
+    with connect(root) as conn:
+        zero_trade_census = event_census(
+            conn,
+            DEAD_ZERO_TRADE_EVENT,
+            rolling_hours=DEAD_ZERO_TRADE_EVENT_DEDUPE_HOURS,
+        )
+    backup_result = _hourly_db_backup(root)
+    return {
+        "maintained_at": utc_now(),
+        "elapsed_seconds": round(time.monotonic() - started, 6),
+        "ea_metrics": metrics_result,
+        "zerotrade_terminal_event_census": zero_trade_census,
+        "db_backup": backup_result,
+        "dispatch_performed": False,
+        "verdicts_changed": False,
+    }
 
 
 def pump(
@@ -19741,6 +20504,311 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
         )
         out.append({"id": wid, "symbol": sym, "setfile_path": setfile_path, "payload": payload})
     return out, skipped
+
+
+def enqueue_universe_expansion_q02(
+    root: Path,
+    ea_id: str,
+    *,
+    target_symbol: str,
+    target_timeframe: str,
+    target_setfile: str | os.PathLike[str],
+    native_pass_work_item_id: str,
+    owner_decision: str,
+    expected_current_ex5_sha256: str,
+) -> dict[str, Any]:
+    """Append one low-priority Q02 row for OWNER-DEC-13036-XAU.
+
+    This is deliberately an exact-row path: the caller supplies one generated
+    setfile and one native Q02 PASS parent, and the transaction refuses when
+    *any* historical work-item already exists for the target ``(EA, symbol)``.
+    It never requeues or clears an existing verdict.
+    """
+    ea_id = _normalise_ea_label(ea_id)
+    symbol = str(target_symbol or "").strip().upper()
+    timeframe = str(target_timeframe or "").strip().upper()
+    if owner_decision != UNIVERSE_EXPANSION_OWNER_DECISION:
+        return {
+            "enqueued": False,
+            "reason": "universe_expansion_owner_decision_mismatch",
+            "expected": UNIVERSE_EXPANSION_OWNER_DECISION,
+            "actual": owner_decision,
+        }
+    if factory_is_off(root):
+        return {
+            "enqueued": False,
+            "blocked": True,
+            "reason": "factory_off",
+            "phase": "Q02",
+            "factory_off_flag": str(factory_off_flag_path(root)),
+        }
+    symbol_reason = _q02_symbol_skip_reason(symbol)
+    if symbol_reason:
+        return {
+            "enqueued": False,
+            "reason": symbol_reason,
+            "ea_id": ea_id,
+            "symbol": symbol,
+        }
+    if not re.fullmatch(
+        r"(?:M1|M2|M3|M4|M5|M6|M10|M12|M15|M20|M30|H1|H2|H3|H4|H6|H8|H12|D1|W1|MN1)",
+        timeframe,
+    ):
+        return {
+            "enqueued": False,
+            "reason": "invalid_target_timeframe",
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "timeframe": timeframe,
+        }
+    artifact_failure = _ea_build_artifact_failure(ea_id)
+    if artifact_failure:
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "symbol": symbol,
+            **artifact_failure,
+        }
+    ea_dir = _preferred_ea_dir(ea_id)
+    assert ea_dir is not None  # proven by _ea_build_artifact_failure
+    ex5_path = ea_dir / f"{ea_dir.name}.ex5"
+    mq5_path = ea_dir / f"{ea_dir.name}.mq5"
+    observed_ex5_sha256 = _sha256_file(ex5_path)
+    if not re.fullmatch(r"[0-9a-f]{64}", str(expected_current_ex5_sha256 or "")):
+        return {
+            "enqueued": False,
+            "reason": "expected_current_ex5_sha256_missing_or_invalid",
+            "ea_id": ea_id,
+            "symbol": symbol,
+        }
+    if observed_ex5_sha256 != str(expected_current_ex5_sha256).lower():
+        return {
+            "enqueued": False,
+            "reason": "expected_current_ex5_sha256_mismatch",
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "expected": str(expected_current_ex5_sha256).lower(),
+            "actual": observed_ex5_sha256,
+        }
+    setfile_path = Path(target_setfile)
+    if not setfile_path.is_absolute():
+        setfile_path = REPO_ROOT / setfile_path
+    try:
+        setfile_path = setfile_path.resolve(strict=True)
+        expected_parent = (ea_dir / "sets").resolve(strict=True)
+    except OSError as exc:
+        return {
+            "enqueued": False,
+            "reason": "universe_expansion_setfile_unresolvable",
+            "detail": str(exc),
+            "ea_id": ea_id,
+            "symbol": symbol,
+        }
+    expected_name = f"{ea_dir.name}_{symbol}_{timeframe}_backtest.set"
+    if setfile_path.parent != expected_parent or setfile_path.name != expected_name:
+        return {
+            "enqueued": False,
+            "reason": "universe_expansion_setfile_identity_mismatch",
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "expected": str(expected_parent / expected_name),
+            "actual": str(setfile_path),
+        }
+    card = _find_approved_card_for_ea(root, ea_id)
+    if card is None:
+        return {
+            "enqueued": False,
+            "reason": "approved_card_missing",
+            "ea_id": ea_id,
+            "symbol": symbol,
+        }
+    card_fm = parse_card_frontmatter(card)
+    inactive = {"RETIRED", "OBSOLETE", "SUPERSEDED"}
+    if any(str(card_fm.get(key) or "").strip().upper() in inactive for key in ("status", "g0_status")):
+        return {
+            "enqueued": False,
+            "reason": "card_inactive",
+            "ea_id": ea_id,
+            "symbol": symbol,
+        }
+    if symbol not in _card_declared_universe_for_ea(root, ea_id):
+        return {
+            "enqueued": False,
+            "reason": "target_symbol_not_in_card_target_symbols",
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "card_path": str(card),
+        }
+    numeric_id = _ea_numeric_id(ea_id)
+    magic_rows = [
+        row for row in _read_csv_dicts_if_exists(
+            REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+        )
+        if str(row.get("ea_id") or "").strip() == str(numeric_id)
+        and str(row.get("symbol") or "").strip().upper() == symbol
+        and str(row.get("status") or "").strip().lower() == "active"
+    ]
+    if len(magic_rows) != 1:
+        return {
+            "enqueued": False,
+            "reason": "active_magic_row_count_invalid",
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "active_magic_rows": len(magic_rows),
+        }
+    history_window = _p2_history_window_for_symbol(
+        symbol,
+        timeframe,
+        P2_DEFAULT_FROM_YEAR,
+        P2_DEFAULT_TO_YEAR,
+    )
+    if history_window.get("skip"):
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "symbol": symbol,
+            **history_window,
+        }
+    archive_admission = custom_history_archive_admission(
+        root,
+        ea_id=ea_id,
+        symbols=[symbol],
+        card_path=card,
+    )
+    if not archive_admission.get("ok"):
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "reason": archive_admission.get("reason"),
+            "custom_history_archive_admission": archive_admission,
+        }
+
+    init_db(root)
+    now = utc_now()
+    with connect(root) as conn:
+        _scope_guard(
+            "mt5.backtest.dispatch",
+            tool="enqueue_universe_expansion_q02",
+            args_summary=f"{ea_id}:{symbol}:{timeframe}",
+            conn=conn,
+        )
+        native = conn.execute(
+            "SELECT id,symbol,evidence_path,updated_at FROM work_items "
+            "WHERE id=? AND ea_id=? AND phase IN ('Q02','P2') "
+            "AND status='done' AND verdict='PASS'",
+            (str(native_pass_work_item_id), ea_id),
+        ).fetchone()
+        if native is None:
+            return {
+                "enqueued": False,
+                "reason": "native_q02_pass_parent_invalid",
+                "ea_id": ea_id,
+                "symbol": symbol,
+                "native_pass_work_item_id": str(native_pass_work_item_id),
+            }
+        existing = conn.execute(
+            "SELECT id,phase,status,verdict FROM work_items "
+            "WHERE ea_id=? AND upper(symbol)=? ORDER BY created_at ASC LIMIT 1",
+            (ea_id, symbol),
+        ).fetchone()
+        if existing is not None:
+            return {
+                "enqueued": False,
+                "reason": "ea_symbol_already_tested",
+                "ea_id": ea_id,
+                "symbol": symbol,
+                "existing_work_item_id": existing["id"],
+                "existing_phase": existing["phase"],
+                "existing_status": existing["status"],
+                "existing_verdict": existing["verdict"],
+            }
+        setfile_sha256 = _sha256_file(setfile_path)
+        if not mq5_path.is_file():
+            return {
+                "enqueued": False,
+                "reason": "mq5_missing_or_unreadable",
+                "ea_id": ea_id,
+                "symbol": symbol,
+                "path": str(mq5_path),
+            }
+        mq5_sha256 = _sha256_file(mq5_path)
+        native_evidence_path = Path(str(native["evidence_path"] or ""))
+        native_evidence_sha256 = (
+            _sha256_file(native_evidence_path)
+            if native_evidence_path.is_file()
+            else ""
+        )
+        payload: dict[str, Any] = {
+            "enqueued_at_utc": now,
+            "enqueued_by": "farmctl.enqueue-backtest:universe-expansion",
+            "from_year": history_window["from_year"],
+            "to_year": history_window["to_year"],
+            "requested_from_year": P2_DEFAULT_FROM_YEAR,
+            "requested_to_year": P2_DEFAULT_TO_YEAR,
+            "history_first_year": history_window["first_year"],
+            "history_last_year": history_window["last_year"],
+            "expected_current_ex5_sha256": observed_ex5_sha256,
+            "expected_ex5_sha256": observed_ex5_sha256,
+            "expected_mq5_sha256": mq5_sha256,
+            "expected_setfile_sha256": setfile_sha256,
+            "expected_symbol": symbol,
+            "expected_period": timeframe,
+            "expected_expert": f"QM\\{ea_dir.name}",
+            "target_symbols": [symbol],
+            "target_timeframe": timeframe,
+            "native_q02_pass_work_item_id": str(native["id"]),
+            "native_q02_pass_symbol": str(native["symbol"]),
+            "native_q02_pass_updated_at": str(native["updated_at"]),
+            "native_q02_pass_evidence_sha256": native_evidence_sha256,
+            "priority_track": False,
+            "priority_reason": "below_rebaseline_backfill_frontier",
+            "recovery_class": "UNIVERSE_EXPANSION_LOW_PRIORITY",
+            "universe_expansion": True,
+            "universe_expansion_priority": "BELOW_ALL_REBASELINE_BACKFILL",
+            "universe_expansion_owner_decision": owner_decision,
+            "universe_expansion_setfile_identity": {
+                "path": str(setfile_path),
+                "sha256": setfile_sha256,
+            },
+        }
+        if history_window.get("adjusted"):
+            payload["history_adjusted"] = True
+        _stamp_custom_history_archive_admission(payload, archive_admission)
+        _apply_q02_multisymbol_timeout_min(
+            payload,
+            phase="Q02",
+            ea_id=ea_id,
+            symbol=symbol,
+        )
+        work_item_id = str(uuid.uuid4())
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,"
+            "parent_task_id,payload_json,created_at,updated_at,gate_contract_version) "
+            "VALUES (?,'backtest','Q02',?,?,?,'pending',0,NULL,?,?,?,?)",
+            (
+                work_item_id,
+                ea_id,
+                symbol,
+                str(setfile_path),
+                json.dumps(payload, sort_keys=True),
+                now,
+                now,
+                ACTIVE_GATE_CONTRACT_VERSION,
+            ),
+        )
+    return {
+        "enqueued": True,
+        "id": work_item_id,
+        "ea_id": ea_id,
+        "phase": "Q02",
+        "symbol": symbol,
+        "timeframe": timeframe,
+        "setfile_path": str(setfile_path),
+        "priority": "BELOW_ALL_REBASELINE_BACKFILL",
+        "owner_decision": owner_decision,
+    }
 
 
 def _setfile_path_exists(setfile_path: str) -> bool:
@@ -22128,9 +23196,15 @@ def enqueue_cascade_backtest_for_ea(
                 })
                 continue
             q08_evidence_sha256: str | None = None
+            q08_input_work_item: sqlite3.Row | None = None
             q10_dependency_context: dict[str, Any] | None = None
             if phase in {_NEWS_PHASE, _NEWS_PORTFOLIO_PHASE}:
-                q08_evidence_sha256 = _work_item_evidence_sha256(prev)
+                q08_input_work_item = _q08_input_for_news_predecessor(conn, prev)
+                q08_evidence_sha256 = (
+                    _work_item_evidence_sha256(q08_input_work_item)
+                    if q08_input_work_item is not None
+                    else None
+                )
                 if not q08_evidence_sha256:
                     skipped.append({
                         "id": prev["id"],
@@ -22345,7 +23419,7 @@ def enqueue_cascade_backtest_for_ea(
                             _add_q08_input_dependency(
                                 conn,
                                 child_work_item_id=wid,
-                                q08_work_item=prev,
+                                q08_work_item=q08_input_work_item,
                                 evidence_sha256=str(q08_evidence_sha256),
                             )
                             if phase == _NEWS_PHASE:
@@ -22454,7 +23528,7 @@ def enqueue_cascade_backtest_for_ea(
                         _add_q08_input_dependency(
                             conn,
                             child_work_item_id=wid,
-                            q08_work_item=prev,
+                            q08_work_item=q08_input_work_item,
                             evidence_sha256=str(q08_evidence_sha256),
                         )
                         if phase == _NEWS_PHASE:
@@ -22869,7 +23943,13 @@ def _payload_assigned_terminal(payload: dict[str, Any]) -> str | None:
     return None
 
 
-def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
+def dispatch_tick(
+    root: Path,
+    timeout_hours: float = 6.0,
+    *,
+    q09_autoseal_limit: int = 100,
+    q09_autoseal_deadline_monotonic: float | None = None,
+) -> dict[str, Any]:
     """Poll historical parent tasks without spawning new legacy runners.
 
     MNT-046 deprecated both historical direct-spawn modes because their argv
@@ -22879,7 +23959,11 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
     All current spawning is owned by ``dispatch_work_items``.
     """
     init_db(root)
-    q09_autoseal = auto_seal_pending_q09_news(root)
+    q09_autoseal = auto_seal_pending_q09_news(
+        root,
+        limit=q09_autoseal_limit,
+        deadline_monotonic=q09_autoseal_deadline_monotonic,
+    )
     actions: list[dict[str, Any]] = []
     started_iso = utc_now()
     running_mt5_terminals = _running_mt5_terminals()
@@ -25532,6 +26616,39 @@ def admit_optimization(
     )
 
 
+def advance_opt_fork(
+    root: Path,
+    *,
+    apply: bool,
+    ea_id: str | None = None,
+    symbol: str | None = None,
+) -> dict[str, Any]:
+    """Run the manifest-role-driven append-only optimization fork router."""
+    try:
+        import optimization_fork_driver as driver
+    except ModuleNotFoundError:
+        from tools.strategy_farm import optimization_fork_driver as driver
+
+    if bool(ea_id) != bool(symbol):
+        raise ValueError("--ea and --symbol must be supplied together")
+    targets = None if not ea_id else [(str(ea_id), str(symbol))]
+    database = db_path(root).resolve()
+    if not database.is_file():
+        raise ValueError(f"farm database is missing: {database}")
+    if apply:
+        with connect(root) as conn:
+            return driver.advance_optimization_fork(
+                conn, manifest=ACTIVE_GATE_MANIFEST, target_pairs=targets, apply=True,
+            )
+    uri = f"file:{database.as_posix()}?mode=ro"
+    with sqlite3.connect(uri, uri=True, timeout=30) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA query_only=ON")
+        return driver.advance_optimization_fork(
+            conn, manifest=ACTIVE_GATE_MANIFEST, target_pairs=targets, apply=False,
+        )
+
+
 def print_json(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True))
 
@@ -26261,6 +27378,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sub.add_parser("pipeline", help="Per-EA lifecycle view (where does each EA stand?)")
     sub.add_parser("pump", help="Continuous deterministic worker: dispatch MT5 + auto-spawn Codex + record builds. Run every 5 min.")
+    sub.add_parser(
+        "pump-maintenance",
+        help="Lower-frequency metrics/event census/database backup; never dispatches.",
+    )
     sub.add_parser("health", help="Run 10 pipeline invariants; write state/health.json + alarms log. Cockpit reads health.json for top banner.")
     sub.add_parser("repair", help="Auto-fix detected pipeline anomalies (stranded sources, phantom review fails, ablation grandchildren, stale work_items). Idempotent; safe to run any time.")
     work_items_p = sub.add_parser("work-items", help="Per-(EA × symbol × phase) work_items view")
@@ -26319,6 +27440,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--apply",
         action="store_true",
         help="Apply the batch form; positional/manual labels already imply apply",
+    )
+    enqueue_compile.add_argument(
+        "--source-repair-authority",
+        help=(
+            "Append a source-hash-bound repair successor under an exact governed "
+            "authority; ordinary enqueue guards remain fail-closed"
+        ),
     )
     compile_status = sub.add_parser(
         "compile-status",
@@ -26418,6 +27546,22 @@ def build_parser() -> argparse.ArgumentParser:
             "candidate-specific Q03"
         ),
     )
+    enqueue_bt.add_argument(
+        "--target-symbol",
+        help="Exact new Q02 symbol for the governed universe-expansion path",
+    )
+    enqueue_bt.add_argument(
+        "--target-timeframe",
+        help="Exact setfile/tester timeframe for --target-symbol",
+    )
+    enqueue_bt.add_argument(
+        "--target-setfile",
+        help="Exact governed-generator setfile for --target-symbol",
+    )
+    enqueue_bt.add_argument(
+        "--owner-decision",
+        help="Required OWNER decision id for the universe-expansion path",
+    )
     harness_pp = sub.add_parser(
         "enqueue-pattern-fixture-harness",
         help=(
@@ -26479,6 +27623,28 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run",
         action="store_true",
         help="Validate the exact binding through a read-only SQLite connection",
+    )
+
+    news_expansions = sub.add_parser(
+        "enqueue-news-expansions",
+        help=(
+            "Plan or append bounded full-matrix continuations from authenticated "
+            "news adjudications"
+        ),
+    )
+    news_expansions.add_argument("--limit", type=int, default=10)
+    news_expansions.add_argument(
+        "--include-historical",
+        action="store_true",
+        help="UNION-read the explicitly versioned predecessor news storage lane",
+    )
+    news_expansions.add_argument(
+        "--pair-allowlist-csv",
+        type=Path,
+        help="CSV containing ea_id,symbol; used for a bounded frontier backfill",
+    )
+    news_expansions.add_argument(
+        "--apply", action="store_true", help="Create append-only child rows; default is read-only"
     )
 
     dispatch = sub.add_parser(
@@ -26584,7 +27750,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     q14_enqueue.add_argument("--config")
     q14_enqueue.add_argument("--report-root")
+    q14_enqueue.add_argument("--ea", help="enqueue exactly this incumbent EA")
+    q14_enqueue.add_argument("--symbol", help="enqueue exactly this incumbent symbol")
     q14_enqueue.add_argument("--apply", action="store_true")
+
+    opt_advance = sub.add_parser(
+        "advance-optimization-fork",
+        help="Append all currently licensed manifest-role optimization successors.",
+    )
+    opt_advance.add_argument("--ea")
+    opt_advance.add_argument("--symbol")
+    opt_advance.add_argument("--apply", action="store_true")
 
     q16 = sub.add_parser(
         "enqueue-head-to-head",
@@ -26610,7 +27786,7 @@ def build_parser() -> argparse.ArgumentParser:
 # (2026-07-03 mass false-invalidation incident, 5167 work_items).
 _CANONICAL_CHECKOUT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
 _STATE_MUTATING_COMMANDS = frozenset({
-    "init", "pump", "repair", "dispatch-tick", "tick", "backfill-work-items",
+    "init", "pump", "pump-maintenance", "repair", "dispatch-tick", "tick", "backfill-work-items",
     "enqueue-backtest", "seed-fresh-q02", "bind-q09-plan", "approve-card", "reidentify-recovery-card",
     "enqueue-pattern-fixture-harness",
     "reject-card", "seed-sources", "record-build", "record-review",
@@ -26626,7 +27802,9 @@ def _command_mutates_state(args: argparse.Namespace) -> bool:
         return not bool(getattr(args, "dry_run", False))
     if args.command == "enqueue-compile":
         return bool(args.apply or not args.from_file)
-    if args.command in {"admit-optimization", "enqueue-opt-admission"}:
+    if args.command == "enqueue-news-expansions":
+        return bool(args.apply)
+    if args.command in {"admit-optimization", "enqueue-opt-admission", "advance-optimization-fork"}:
         return bool(args.apply)
     if args.command == "enqueue-head-to-head":
         return bool(args.apply)
@@ -26703,6 +27881,9 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "pump":
         _assert_canonical_checkout()
         print_json(pump(root))
+    elif args.command == "pump-maintenance":
+        _assert_canonical_checkout()
+        print_json(pump_maintenance(root))
     elif args.command == "health":
         try:
             from health import run_all as _health_run_all
@@ -26824,12 +28005,31 @@ def main(argv: list[str] | None = None) -> int:
             symbol = str(args.symbol).upper().replace(".DWX", "")
             rows = [r for r in rows if r["sleeve"].split(":", 1)[-1] == symbol]
         print_json({**payload, "rows": rows})
-    elif args.command in {"admit-optimization", "enqueue-opt-admission"}:
+    elif args.command == "admit-optimization":
         print_json(admit_optimization(
             root,
             config_path=args.config,
             report_root=args.report_root,
             apply=args.apply,
+        ))
+    elif args.command == "enqueue-opt-admission":
+        if args.ea or args.symbol:
+            print_json(advance_opt_fork(
+                root, apply=args.apply, ea_id=args.ea, symbol=args.symbol,
+            ))
+        else:
+            # Backward-compatible bulk admission surface.  New commissioning
+            # uses the exact-pair form above so the first production tranche is
+            # bounded and auditable.
+            print_json(admit_optimization(
+                root,
+                config_path=args.config,
+                report_root=args.report_root,
+                apply=args.apply,
+            ))
+    elif args.command == "advance-optimization-fork":
+        print_json(advance_opt_fork(
+            root, apply=args.apply, ea_id=args.ea, symbol=args.symbol,
         ))
     elif args.command == "enqueue-head-to-head":
         print_json(enqueue_head_to_head(
@@ -26851,6 +28051,7 @@ def main(argv: list[str] | None = None) -> int:
             args.ea_labels,
             from_file=args.from_file,
             apply=args.apply,
+            source_repair_authority=args.source_repair_authority,
         )
         print_json(compile_enqueue_result)
         if not compile_enqueue_result.get("ok", False):
@@ -26875,7 +28076,43 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "reconcile-mt5":
         print_json(reconcile_mt5_slots(root, fix_workers=args.fix_workers, fix_orphan_terminals=args.fix_orphan_terminals))
     elif args.command == "enqueue-backtest":
-        if args.ea:
+        universe_args = (
+            args.target_symbol,
+            args.target_timeframe,
+            args.target_setfile,
+            args.owner_decision,
+        )
+        if any(universe_args):
+            if not args.ea or not all(universe_args) or not args.from_work_item_id:
+                print_json({
+                    "enqueued": False,
+                    "reason": (
+                        "Universe expansion requires --ea, --phase Q02, "
+                        "--target-symbol, --target-timeframe, --target-setfile, "
+                        "--from-work-item-id, --owner-decision, and "
+                        "--expected-current-ex5-sha256."
+                    ),
+                })
+            elif args.phase != "Q02":
+                print_json({
+                    "enqueued": False,
+                    "reason": "Universe expansion supports Q02 only.",
+                    "phase": args.phase,
+                })
+            else:
+                print_json(enqueue_universe_expansion_q02(
+                    root,
+                    args.ea,
+                    target_symbol=args.target_symbol,
+                    target_timeframe=args.target_timeframe,
+                    target_setfile=args.target_setfile,
+                    native_pass_work_item_id=args.from_work_item_id,
+                    owner_decision=args.owner_decision,
+                    expected_current_ex5_sha256=(
+                        args.expected_current_ex5_sha256 or ""
+                    ),
+                ))
+        elif args.ea:
             print_json(enqueue_cascade_backtest_for_ea(
                 root,
                 args.ea,
@@ -26919,6 +28156,14 @@ def main(argv: list[str] | None = None) -> int:
             expected_plan_file_sha256=args.plan_file_sha256,
             cell_timeout_sec=args.cell_timeout_sec,
             dry_run=args.dry_run,
+        ))
+    elif args.command == "enqueue-news-expansions":
+        print_json(author_news_expansion_continuations(
+            root,
+            limit=args.limit,
+            include_historical=args.include_historical,
+            pair_allowlist_path=args.pair_allowlist_csv,
+            apply=args.apply,
         ))
     elif args.command == "dispatch-tick":
         print_json(dispatch_tick(root, timeout_hours=args.timeout_hours))

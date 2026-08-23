@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10494
+; ea_slug:      mql5-dema-chan
+; ea_version:   v5.0
+; set_version:  s20260823-001
+; symbol:       NZDUSD.DWX
+; timeframe:    H8
+; environment:  backtest
+; magic_slot:   7
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   dd2078ec80b09436a2eb0c3338106d889bb596acacf90de84d5ff795064d5b8b
+; author:       Development
+; date:         2026-08-23
+;==========================================================
+qm_ea_id=10494
+qm_magic_slot_offset=7
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10494_mql5-dema-chan.md
+strategy_signal_tf=16392
+strategy_dema_period=14
+strategy_channel_shift_bars=3
+strategy_price_shift_points=0.0
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_target_rr=2.0
+strategy_hold_minutes=1920
+strategy_min_atr_points=20.0
+strategy_max_spread_points=35

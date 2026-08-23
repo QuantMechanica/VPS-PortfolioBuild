@@ -6,9 +6,9 @@ Dry-run is the default.  The farm database is always inspected through a
 explicit guards it invokes the governed ``farmctl enqueue-backtest`` command
 recorded in the plan, bounded by ``--max-rows``.
 
-The active runtime is still gate contract v3.  Consequently this planner uses
-the gate chain emitted by ``rebaseline_census.py`` and records the contract
-version on every row.  It does not activate the read-inert v4 draft.
+The planner uses the active gate chain emitted by ``rebaseline_census.py`` and
+records the active contract version on every proposed row.  It never activates
+or changes a manifest itself.
 """
 from __future__ import annotations
 
@@ -34,14 +34,23 @@ DEFAULT_DB = Path("D:/QM/strategy_farm/state/farm_state.sqlite")
 DEFAULT_FARM_ROOT = Path("D:/QM/strategy_farm")
 DEFAULT_OUT_DIR = Path("D:/QM/reports/rebaseline")
 DEFAULT_MD_DIR = Path("docs/ops/rebaseline")
-DEFAULT_CONTRACT_VERSION = "v3"
+DEFAULT_CONTRACT_VERSION = census.ACTIVE_GATE_CONTRACT_VERSION
 ACTIVE_SYMBOL_CAP = 3  # farmctl.CLAIM_SYMBOL_ACTIVE_CAP; checked at runtime too.
 
 GATE_CHAIN = tuple(census.GATE_CHAIN)
 GATE_INDEX = {gate: index for index, gate in enumerate(GATE_CHAIN)}
-RUNTIME_PHASE = {**{gate: gate for gate in GATE_CHAIN}, "Q09": "Q09_NEWS"}
+NEWS_GATE = census.NEWS_GATE
+NEWS_PHASE = census.ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+NEWS_PORTFOLIO_PHASE = census.ACTIVE_GATE_MANIFEST.storage_phase_for_role(
+    "NEWS", "PORTFOLIO"
+)
+NEWS_PREDECESSOR = GATE_CHAIN[GATE_INDEX[NEWS_GATE] - 1]
+RUNTIME_PHASE = {**{gate: gate for gate in GATE_CHAIN}, NEWS_GATE: NEWS_PHASE}
 FARMCTL_BACKTEST_PHASES = {
-    "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS", "Q10"
+    "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08",
+    census.ACTIVE_GATE_MANIFEST.gate_for_role("BASELINE_FULL_RUN"),
+    NEWS_PHASE,
+    census.ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT"),
 }
 
 TERMINAL_STATUSES = {"done", "failed"}
@@ -53,7 +62,8 @@ NA_VERDICTS = set(census.NA_CLS)
 ENQUEUE_ACTIONS = {"RERUN_INFRA", "FILL_MISSING", "REBIND_STALE"}
 ALL_ACTIONS = (
     "RERUN_INFRA", "FILL_MISSING", "REBIND_STALE", "SKIP_REUSABLE",
-    "STOP_ECONOMIC_FAIL", "STOP_NOT_APPLICABLE", "UNKNOWN",
+    "STOP_ECONOMIC_FAIL", "STOP_DETERMINISTIC_INFRA",
+    "STOP_NOT_APPLICABLE", "UNKNOWN",
 )
 
 STDLIB_MISSING_SIGNATURES = (
@@ -206,11 +216,15 @@ def _load_work_items(connection: sqlite3.Connection) -> list[dict[str, Any]]:
     missing = required - columns
     if missing:
         raise RuntimeError(f"work_items schema missing required columns: {sorted(missing)}")
-    placeholders = ",".join("?" for _ in range(len(GATE_CHAIN) + 3))
-    phases = (*GATE_CHAIN, "Q09_NEWS", "Q09_PORTFOLIO", "COMPILE_EA")
+    phases = tuple(dict.fromkeys((*GATE_CHAIN, NEWS_PHASE, NEWS_PORTFOLIO_PHASE, "COMPILE_EA")))
+    placeholders = ",".join("?" for _ in phases)
+    contract_select = (
+        "gate_contract_version" if "gate_contract_version" in columns
+        else "NULL AS gate_contract_version"
+    )
     query = (
         "SELECT id,phase,ea_id,symbol,setfile_path,status,verdict,evidence_path,"
-        "claimed_by,payload_json,created_at,updated_at FROM work_items "
+        f"claimed_by,payload_json,created_at,updated_at,{contract_select} FROM work_items "
         f"WHERE phase IN ({placeholders})"
     )
     return [dict(row) for row in connection.execute(query, phases)]
@@ -284,11 +298,78 @@ def _target_source(rows: list[dict[str, Any]], action: str) -> dict[str, Any] | 
     return _latest(terminal)
 
 
-def _q09_news_action(rows: list[dict[str, Any]]) -> tuple[str, str]:
-    """Classify the economic Q09 lane; portfolio output is informational only."""
+def _failure_text(row: dict[str, Any] | None) -> str:
+    """Return normalized failure evidence from a row and its JSON artifact."""
+    if not row:
+        return ""
+
+    fragments: list[str] = []
+
+    def collect(value: Any) -> None:
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if any(token in str(key).lower() for token in ("reason", "failure", "error")):
+                    collect(item)
+        elif isinstance(value, (list, tuple, set)):
+            for item in value:
+                collect(item)
+        elif value is not None:
+            fragments.append(str(value))
+
+    collect(_payload(row))
+    evidence_path = Path(str(row.get("evidence_path") or ""))
+    if evidence_path.is_file():
+        try:
+            evidence = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError):
+            evidence = None
+        collect(evidence)
+    fragments.extend((str(row.get("verdict") or ""), str(row.get("status") or "")))
+    return "\n".join(fragments).upper()
+
+
+def _has_ea_defect_compile_class(row: dict[str, Any] | None) -> bool:
+    """Identify compile failures that require an EA code fix, not an infra rerun."""
+    payload = _payload(row)
+    compile_result = payload.get("compile_result")
+    classes: list[str] = []
+    for source in (payload, compile_result if isinstance(compile_result, dict) else {}):
+        values = source.get("failure_classes") if isinstance(source, dict) else None
+        if isinstance(values, list):
+            classes.extend(str(value).upper() for value in values)
+
+    evidence_path = Path(str((row or {}).get("evidence_path") or ""))
+    if evidence_path.is_file():
+        try:
+            evidence = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError):
+            evidence = {}
+        if isinstance(evidence, dict):
+            for source in (evidence, evidence.get("compile_result")):
+                values = source.get("failure_classes") if isinstance(source, dict) else None
+                if isinstance(values, list):
+                    classes.extend(str(value).upper() for value in values)
+    return any(value.startswith("EA_") or value.startswith("SOURCE_") for value in classes)
+
+
+def _deterministic_infra_reason(row: dict[str, Any] | None) -> str:
+    """Classify deterministic code/input defects that a blind rerun cannot heal."""
+    if not row:
+        return ""
+    verdict = str(row.get("verdict") or "").upper()
+    failure_text = _failure_text(row)
+    if verdict == "COMPILE_FAIL" and _has_ea_defect_compile_class(row):
+        return "compile_fail_ea_defect_requires_code_fix"
+    if verdict in INFRA_VERDICTS and "ONINIT_FAILED" in failure_text:
+        return "oninit_failed_inputsvalid_framework_pin_requires_code_fix"
+    return ""
+
+
+def _news_action(rows: list[dict[str, Any]]) -> tuple[str, str]:
+    """Classify the active economic NEWS lane; portfolio is informational."""
     news = [
         row for row in rows
-        if str(row.get("phase") or "").upper() in {"Q09", "Q09_NEWS"}
+        if str(row.get("phase") or "").upper() in {NEWS_GATE, NEWS_PHASE}
     ]
     if not news:
         return "FILL_MISSING", "q09_news_prerequisite_missing"
@@ -326,13 +407,21 @@ def _parent_for_gate(
         if str(row.get("status") or "").lower() == "done"
         and str(row.get("verdict") or "").upper() in PASS_VERDICTS
     ]
-    if target_gate == "Q10":
-        news = [row for row in candidates if str(row.get("phase") or "").upper() == "Q09_NEWS"]
+    if predecessor == NEWS_GATE:
+        news = [
+            row for row in candidates
+            if str(row.get("phase") or "").upper() == NEWS_PHASE
+        ]
         candidates = news or candidates
     return _latest(candidates)
 
 
-def _action_for_census(row: dict[str, Any]) -> tuple[str, str]:
+def action_for_census(row: dict[str, Any]) -> tuple[str, str]:
+    """Return the governed planner action for one census frontier row.
+
+    Kept public so read-only operator surfaces can present exactly the same
+    action vocabulary without cloning planner policy.
+    """
     disposition = str(row.get("disposition") or "").upper()
     frontier_class = str(row.get("frontier_class") or "").upper()
     target = str(row.get("earliest_missing_prerequisite") or "").upper()
@@ -415,6 +504,7 @@ def _compile_failure_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             except OSError:
                 log_text = ""
         stdlib_missing = bool(log_text) and any(signature in log_text for signature in STDLIB_MISSING_SIGNATURES)
+        deterministic_reason = _deterministic_infra_reason(source)
         created = _parse_time(source.get("created_at"))
         now = dt.datetime.now(dt.timezone.utc)
         output.append({
@@ -422,8 +512,13 @@ def _compile_failure_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "record_type": "COMPILE_EA",
             "ea_id": source.get("ea_id") or "",
             "symbol": source.get("symbol") or "",
-            "action": "RERUN_INFRA" if stdlib_missing else "UNKNOWN",
+            "action": (
+                "STOP_DETERMINISTIC_INFRA" if deterministic_reason else
+                "RERUN_INFRA" if stdlib_missing else "UNKNOWN"
+            ),
             "reason": (
+                deterministic_reason
+                if deterministic_reason else
                 "stdlib_missing_signature_reachable;separate_compile_repair_ticket"
                 if stdlib_missing else
                 "compile_fail_without_reachable_stdlib_missing_signature;separate_compile_repair_ticket"
@@ -474,7 +569,9 @@ def build_plan(
         if str(item.get("status") or "").lower() == "active" and symbol:
             active_counts[symbol.upper()] += 1
             active_pairs.add((ea_id, symbol.upper()))
-        gate = census.canonical_gate(item.get("phase"))
+        gate = census.canonical_gate(
+            item.get("phase"), item.get("gate_contract_version")
+        )
         if not gate or not ea_id or not symbol:
             continue
         key = (ea_id, symbol)
@@ -487,40 +584,36 @@ def build_plan(
         ea_id = str(census_row.get("ea_id") or "")
         symbol = str(census_row.get("symbol") or "")
         target_gate = str(census_row.get("earliest_missing_prerequisite") or "").upper()
-        action, reason = _action_for_census(census_row)
+        action, reason = action_for_census(census_row)
         gates = by_pair_gate.get((ea_id, symbol), {})
         target_rows = gates.get(target_gate, []) if target_gate else []
 
-        # Q09_PORTFOLIO is informational (OWNER E1); it can neither fill the
-        # Q09_NEWS hole nor let a later gate skip it.  The census contiguity walk
-        # credits Q09 via a PASS_PORTFOLIO row (census keeps PASS_PORTFOLIO in
-        # PASS_ECON), so a pair with a Q10/Q14 PASS above an unpassed Q09_NEWS
-        # otherwise reports a frontier past Q09 with the news hole masked.  Cap
-        # the frontier at Q08 and re-target the economic Q09_NEWS lane whenever
-        # the reported chain has crossed Q09 without a valid Q09_NEWS pass,
-        # regardless of how high the frontier string ran.
-        q09_rows = gates.get("Q09", [])
-        q09_news_valid = any(
-            str(item.get("phase") or "").upper() in {"Q09", "Q09_NEWS"}
+        # The portfolio lane is informational (OWNER E1); it can neither fill
+        # the NEWS hole nor let a later gate skip it.  Cap the frontier at the
+        # active NEWS predecessor and re-target the economic NEWS lane whenever
+        # the reported chain crossed NEWS without a valid NEWS-lane pass.
+        news_rows = gates.get(NEWS_GATE, [])
+        news_valid = any(
+            str(item.get("phase") or "").upper() in {NEWS_GATE, NEWS_PHASE}
             and str(item.get("status") or "").lower() == "done"
             and str(item.get("verdict") or "").upper() in PASS_VERDICTS
-            for item in q09_rows
+            for item in news_rows
         )
         reported_frontier = str(census_row.get("highest_contiguous_valid_gate") or "")
-        if GATE_INDEX.get(reported_frontier, -1) >= GATE_INDEX["Q09"] and not q09_news_valid:
-            target_gate = "Q09"
+        if GATE_INDEX.get(reported_frontier, -1) >= GATE_INDEX[NEWS_GATE] and not news_valid:
+            target_gate = NEWS_GATE
             target_rows = [
-                item for item in q09_rows
-                if str(item.get("phase") or "").upper() != "Q09_PORTFOLIO"
+                item for item in news_rows
+                if str(item.get("phase") or "").upper() != NEWS_PORTFOLIO_PHASE
             ]
-            action, reason = _q09_news_action(q09_rows)
-            reported_frontier = "Q08"
-        elif target_gate == "Q09":
+            action, reason = _news_action(news_rows)
+            reported_frontier = NEWS_PREDECESSOR
+        elif target_gate == NEWS_GATE:
             target_rows = [
-                item for item in q09_rows
-                if str(item.get("phase") or "").upper() != "Q09_PORTFOLIO"
+                item for item in news_rows
+                if str(item.get("phase") or "").upper() != NEWS_PORTFOLIO_PHASE
             ]
-            action, reason = _q09_news_action(q09_rows)
+            action, reason = _news_action(news_rows)
 
         open_target = _latest(
             row for row in target_rows
@@ -531,6 +624,10 @@ def build_plan(
             reason = f"earliest_prerequisite_already_{str(open_target['status']).lower()}"
 
         source = _target_source(target_rows, action)
+        deterministic_reason = _deterministic_infra_reason(source)
+        if deterministic_reason:
+            action = "STOP_DETERMINISTIC_INFRA"
+            reason = deterministic_reason
         parent = _parent_for_gate(gates, target_gate) if target_gate in GATE_INDEX else None
         review = reviews.get(ea_id) if target_gate == "Q02" else None
         if target_gate == "Q02" and action in {"RERUN_INFRA", "REBIND_STALE"}:
@@ -779,9 +876,11 @@ def write_outputs(
         "Rows lacking build/setfile/window/parent-evidence bindings, rows behind the active symbol cap, and "
         "runtime phases unsupported by `farmctl enqueue-backtest` are visible but not apply-eligible.",
         "",
-        "COMPILE_EA failures are a separate repair ticket. They are `RERUN_INFRA` only when a reachable "
-        "compile log contains the documented missing `Trade/Trade.mqh` or `Object.mqh` signature; all other "
-        "COMPILE_FAIL rows are `UNKNOWN` and never become backtest commands.",
+        "Deterministic `ONINIT_FAILED` / INPUTSVALID framework pins and EA-defect compile classes are "
+        "`STOP_DETERMINISTIC_INFRA`: they require a code fix and never become rerun commands. "
+        "Other COMPILE_EA failures are `RERUN_INFRA` only when a reachable compile log contains the "
+        "documented missing `Trade/Trade.mqh` or `Object.mqh` signature; unclassified compile failures "
+        "remain `UNKNOWN`.",
         "",
         f"Machine artifacts: `{str(csv_path).replace(chr(92), '/')}` and "
         f"`{str(json_path).replace(chr(92), '/')}`.",

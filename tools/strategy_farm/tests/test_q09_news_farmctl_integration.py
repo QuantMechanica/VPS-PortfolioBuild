@@ -1,4 +1,5 @@
 import hashlib
+import inspect
 import json
 import sqlite3
 import sys
@@ -16,6 +17,15 @@ import q09_news_runner  # noqa: E402
 import q09_news_schema as schema  # noqa: E402
 import terminal_worker  # noqa: E402
 
+NEWS_GATE = farmctl.ACTIVE_GATE_MANIFEST.gate_for_role("NEWS")
+NEWS_PHASE = farmctl.ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+PORTFOLIO_PHASE = farmctl.ACTIVE_GATE_MANIFEST.storage_phase_for_role(
+    "NEWS", "PORTFOLIO"
+)
+INCUMBENT_PHASE = farmctl.ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
+NEWS_ROLE = farmctl.ACTIVE_GATE_MANIFEST.dependency_role("Q09_NEWS")
+PORTFOLIO_ROLE = farmctl.ACTIVE_GATE_MANIFEST.dependency_role("Q09_PORTFOLIO")
+
 
 def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -30,6 +40,7 @@ def _insert_work_item(
     evidence_path: Path,
     setfile_path: Path,
     status: str = "done",
+    payload: dict | None = None,
 ) -> None:
     now = "2026-07-29T00:00:00Z"
     conn.execute(
@@ -41,8 +52,22 @@ def _insert_work_item(
         ) VALUES(?, 'backtest', ?, 'QM5_9999', 'EURUSD.DWX', ?, ?, ?,
                  1, NULL, ?, NULL, '{}', ?, ?)
         """,
-        (item_id, phase, str(setfile_path), status, verdict, str(evidence_path), now, now),
+        (
+            item_id,
+            phase,
+            str(setfile_path),
+            status,
+            verdict,
+            str(evidence_path),
+            now,
+            now,
+        ),
     )
+    if payload is not None:
+        conn.execute(
+            "UPDATE work_items SET payload_json=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), item_id),
+        )
 
 
 def _insert_locked_q09(conn: sqlite3.Connection, q09_path: Path) -> None:
@@ -138,14 +163,14 @@ def test_init_activates_additive_q09_schema_without_enabling_foreign_keys(tmp_pa
 
 
 def test_q09_news_is_writable_canonical_phase_and_q09_alias_is_read_only(tmp_path: Path) -> None:
-    assert "Q09_NEWS" in farmctl.CASCADE_BACKTEST_PHASES
-    assert "Q09_NEWS" in farmctl.REAL_PHASE_RUNNER_PHASES
-    assert "Q09" not in farmctl.CASCADE_BACKTEST_PHASES
-    assert "Q09" not in farmctl.REAL_PHASE_RUNNER_PHASES
-    assert farmctl._normalize_phase("Q09") == "P6"
-    assert farmctl._normalize_phase("Q09_NEWS") == "P6"
-    assert farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", "Q09")["reason"].endswith(
-        "use Q09_NEWS"
+    assert NEWS_PHASE in farmctl.CASCADE_BACKTEST_PHASES
+    assert NEWS_PHASE in farmctl.REAL_PHASE_RUNNER_PHASES
+    assert NEWS_GATE not in farmctl.CASCADE_BACKTEST_PHASES
+    assert NEWS_GATE not in farmctl.REAL_PHASE_RUNNER_PHASES
+    assert farmctl._normalize_phase(NEWS_GATE) == "P6"
+    assert farmctl._normalize_phase(NEWS_PHASE) == "P6"
+    assert farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", NEWS_GATE)["reason"].endswith(
+        f"use {NEWS_PHASE}"
     )
     farmctl.init_db(tmp_path)
     setfile = tmp_path / "base.set"
@@ -153,7 +178,7 @@ def test_q09_news_is_writable_canonical_phase_and_q09_alias_is_read_only(tmp_pat
     setfile.write_text("x=1\n", encoding="utf-8")
     evidence.write_text("{}", encoding="utf-8")
     with farmctl.connect(tmp_path) as conn:
-        for item_id, phase in (("legacy-q09", "Q09"), ("canonical-q09", "Q09_NEWS")):
+        for item_id, phase in (("legacy-q09", NEWS_GATE), ("canonical-q09", NEWS_PHASE)):
             _insert_work_item(
                 conn,
                 item_id=item_id,
@@ -197,14 +222,27 @@ def test_q09_enqueue_installs_explicit_plan_hold_before_row_is_claimable(tmp_pat
             evidence_path=q08_path,
             setfile_path=setfile,
         )
+        predecessor_id = "q08"
+        predecessor_phase = farmctl.prev_phase(NEWS_PHASE)
+        if predecessor_phase != "Q08":
+            predecessor_id = "baseline-full-run"
+            _insert_work_item(
+                conn,
+                item_id=predecessor_id,
+                phase=str(predecessor_phase),
+                verdict="PASS",
+                evidence_path=q08_path,
+                setfile_path=setfile,
+                payload={"promoted_from_work_item": "q08"},
+            )
         conn.commit()
 
     with mock.patch.object(farmctl, "_ea_build_artifact_failure", return_value=None):
         result = farmctl.enqueue_cascade_backtest_for_ea(
             tmp_path,
             "QM5_9999",
-            "Q09_NEWS",
-            predecessor_work_item_id="q08",
+            NEWS_PHASE,
+            predecessor_work_item_id=predecessor_id,
         )
 
     assert len(result["created"]) == 1
@@ -251,7 +289,7 @@ def test_q09_portfolio_pass_cannot_directly_create_q12_candidate(tmp_path: Path)
         _insert_work_item(
             conn,
             item_id="q09p",
-            phase="Q09_PORTFOLIO",
+            phase=PORTFOLIO_PHASE,
             verdict="PASS_PORTFOLIO",
             evidence_path=evidence,
             setfile_path=setfile,
@@ -278,7 +316,7 @@ def test_q10_enqueue_requires_news_only_and_leaves_portfolio_nullable(tmp_path: 
             evidence_path=q08_path, setfile_path=setfile,
         )
         _insert_work_item(
-            conn, item_id="q09n", phase="Q09_NEWS", verdict="CONFIG_LOCKED",
+            conn, item_id="q09n", phase=NEWS_PHASE, verdict="CONFIG_LOCKED",
             evidence_path=q09_path, setfile_path=setfile,
         )
         schema.add_dependency(
@@ -292,7 +330,7 @@ def test_q10_enqueue_requires_news_only_and_leaves_portfolio_nullable(tmp_path: 
         _insert_locked_q09(conn, q09_path)
 
     with mock.patch.object(farmctl, "_ea_build_artifact_failure", return_value=None):
-        result = farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", "Q10")
+        result = farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", INCUMBENT_PHASE)
     assert len(result["created"]) == 1
     q10_id = result["created"][0]["id"]
     with farmctl.connect(tmp_path) as conn:
@@ -303,7 +341,7 @@ def test_q10_enqueue_requires_news_only_and_leaves_portfolio_nullable(tmp_path: 
                 (q10_id,),
             ).fetchall()
         }
-        assert roles == {"Q09_NEWS"}
+        assert roles == {NEWS_ROLE}
         gate = schema.assert_q10_dependency_gate(conn, q10_id)
         assert gate.q09_news_work_item_id == "q09n"
         assert gate.q09_portfolio_work_item_id is None
@@ -327,11 +365,11 @@ def test_q10_binds_newest_terminal_portfolio_sibling_as_information(tmp_path: Pa
             evidence_path=q08_path, setfile_path=setfile,
         )
         _insert_work_item(
-            conn, item_id="q09n", phase="Q09_NEWS", verdict="CONFIG_LOCKED",
+            conn, item_id="q09n", phase=NEWS_PHASE, verdict="CONFIG_LOCKED",
             evidence_path=q09_path, setfile_path=setfile,
         )
         _insert_work_item(
-            conn, item_id="q09p", phase="Q09_PORTFOLIO", verdict="FAIL_PORTFOLIO",
+            conn, item_id="q09p", phase=PORTFOLIO_PHASE, verdict="FAIL_PORTFOLIO",
             evidence_path=q09p_path, setfile_path=setfile,
         )
         for child in ("q09n", "q09p"):
@@ -346,7 +384,7 @@ def test_q10_binds_newest_terminal_portfolio_sibling_as_information(tmp_path: Pa
         _insert_locked_q09(conn, q09_path)
 
     with mock.patch.object(farmctl, "_ea_build_artifact_failure", return_value=None):
-        result = farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", "Q10")
+        result = farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", INCUMBENT_PHASE)
     assert len(result["created"]) == 1
     q10_id = result["created"][0]["id"]
     with farmctl.connect(tmp_path) as conn:
@@ -354,9 +392,9 @@ def test_q10_binds_newest_terminal_portfolio_sibling_as_information(tmp_path: Pa
             """
             SELECT parent_work_item_id,required_verdicts_json
             FROM work_item_dependencies
-            WHERE child_work_item_id=? AND dependency_role='Q09_PORTFOLIO'
+            WHERE child_work_item_id=? AND dependency_role=?
             """,
-            (q10_id,),
+            (q10_id, PORTFOLIO_ROLE),
         ).fetchone()
         gate = schema.assert_q10_dependency_gate(conn, q10_id)
 
@@ -385,11 +423,11 @@ def test_q10_fails_closed_when_present_terminal_portfolio_evidence_is_unreadable
             evidence_path=q08_path, setfile_path=setfile,
         )
         _insert_work_item(
-            conn, item_id="q09n", phase="Q09_NEWS", verdict="CONFIG_LOCKED",
+            conn, item_id="q09n", phase=NEWS_PHASE, verdict="CONFIG_LOCKED",
             evidence_path=q09_path, setfile_path=setfile,
         )
         _insert_work_item(
-            conn, item_id="q09p", phase="Q09_PORTFOLIO", verdict="FAIL_SYSTEM",
+            conn, item_id="q09p", phase=PORTFOLIO_PHASE, verdict="FAIL_SYSTEM",
             evidence_path=missing_portfolio_path, setfile_path=setfile,
         )
         for child in ("q09n", "q09p"):
@@ -404,7 +442,7 @@ def test_q10_fails_closed_when_present_terminal_portfolio_evidence_is_unreadable
         _insert_locked_q09(conn, q09_path)
 
     with mock.patch.object(farmctl, "_ea_build_artifact_failure", return_value=None):
-        result = farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", "Q10")
+        result = farmctl.enqueue_cascade_backtest_for_ea(tmp_path, "QM5_9999", INCUMBENT_PHASE)
 
     assert not result["created"]
     assert result["skipped"][0]["reason"] == (
@@ -422,7 +460,7 @@ def test_q10_rejects_plain_news_pass_and_names_exact_governed_verdict(tmp_path: 
         _insert_work_item(
             conn,
             item_id="plain-pass",
-            phase="Q09_NEWS",
+            phase=NEWS_PHASE,
             verdict="PASS",
             evidence_path=q09_path,
             setfile_path=setfile,
@@ -433,19 +471,19 @@ def test_q10_rejects_plain_news_pass_and_names_exact_governed_verdict(tmp_path: 
         result = farmctl.enqueue_cascade_backtest_for_ea(
             tmp_path,
             "QM5_9999",
-            "Q10",
+            INCUMBENT_PHASE,
             predecessor_work_item_id="plain-pass",
         )
 
     assert farmctl.Q09_NEWS_SUCCESS_VERDICTS == frozenset({"CONFIG_LOCKED"})
     assert not result["enqueued"]
-    assert "Q09_NEWS CONFIG_LOCKED" in result["reason"]
+    assert f"{NEWS_PHASE} CONFIG_LOCKED" in result["reason"]
 
 
 def test_q09_news_verdict_taxonomy_is_preserved() -> None:
     for verdict in ("CONFIG_LOCKED", "REVIEW_REQUIRED", "INVALID_EVIDENCE"):
         actual, _ = farmctl._derive_verdict_from_summary(
-            {"verdict": verdict}, phase="Q09_NEWS"
+            {"verdict": verdict}, phase=NEWS_PHASE
         )
         assert actual == verdict
 
@@ -465,7 +503,7 @@ def test_terminal_worker_requires_matching_q09_sidecar(tmp_path: Path) -> None:
             evidence_path=q08_path, setfile_path=setfile,
         )
         _insert_work_item(
-            connection, item_id="q09n", phase="Q09_NEWS", verdict="CONFIG_LOCKED",
+            connection, item_id="q09n", phase=NEWS_PHASE, verdict="CONFIG_LOCKED",
             evidence_path=q09_path, setfile_path=setfile,
         )
         schema.add_dependency(
@@ -518,10 +556,10 @@ def test_q09_phase_builder_executes_bound_plan_in_reserved_slot(tmp_path: Path) 
             INSERT INTO work_items(
                 id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
                 payload_json,created_at,updated_at
-            ) VALUES('q09-exec', 'backtest', 'Q09_NEWS', 'QM5_9999',
+            ) VALUES('q09-exec', 'backtest', ?, 'QM5_9999',
                      'EURUSD.DWX', ?, 'active', 0, ?, ?, ?)
             """,
-            (str(setfile), json.dumps(payload), now, now),
+            (NEWS_PHASE, str(setfile), json.dumps(payload), now, now),
         )
         connection.commit()
         row = connection.execute(
@@ -548,7 +586,7 @@ def test_q09_phase_builder_executes_bound_plan_in_reserved_slot(tmp_path: Path) 
     assert parsed.helper_terminals == ["T4", "T5"]
     assert parsed.helper_reserved_by == "q09_cell_shard:123:fixture"
     assert Path(command[command.index("--output-root") + 1]) == (
-        report_root / "QM5_9999" / "Q09_NEWS" / "EURUSD_DWX"
+        report_root / "QM5_9999" / NEWS_PHASE / "EURUSD_DWX"
     )
     assert farmctl._phase_runner_cmd_for_work_item(
         tmp_path, row, report_root, None, REPO
@@ -582,7 +620,8 @@ def test_q08_pass_and_fail_soft_create_held_news_arms_without_portfolio(tmp_path
             )
             conn.commit()
             news = conn.execute(
-                "SELECT id,status,payload_json FROM work_items WHERE phase='Q09_NEWS'"
+                "SELECT id,status,payload_json FROM work_items WHERE phase=?",
+                (NEWS_PHASE,),
             ).fetchone()
             dependencies = conn.execute(
                 """
@@ -644,10 +683,11 @@ def test_q09_autopilot_uses_approved_contract_v3_semantics(tmp_path: Path) -> No
             INSERT INTO work_items(
               id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
               payload_json,created_at,updated_at
-            ) VALUES(?, 'backtest','Q09_NEWS',?,?,?,'pending',0,?, ?,?)
+            ) VALUES(?, 'backtest',?,?,?,?,'pending',0,?, ?,?)
             """,
             (
                 q09_id,
+                NEWS_PHASE,
                 ea_id,
                 symbol,
                 str(setfile),
@@ -697,6 +737,7 @@ def test_q09_autopilot_uses_approved_contract_v3_semantics(tmp_path: Path) -> No
     assert kwargs["tester_model"] == "REAL_TICKS"
     assert kwargs["cost_profile"] == "DXZ_CANONICAL_REAL_TICKS_V1"
     assert kwargs["contract_version"] == q09_news_runner.contract.SCHEMA_VERSION_V3
+    assert kwargs["force_expanded_matrix"] is False
     assert Path(kwargs["output_root"]).name == "q09_contract_v3"
     assert kwargs["calendar_common_relative_path"] == (
         "QM/q09_news/q09cal-20150101-20260809-0bb19b5bb9790b76/events.csv"
@@ -718,6 +759,113 @@ def test_q09_autopilot_uses_approved_contract_v3_semantics(tmp_path: Path) -> No
     assert "q09_activation_next_action" not in payload
 
 
+def test_pump_retries_autoseal_after_regenerated_q08_promotion() -> None:
+    """A fresh Q08 identity must be promoted before the same-cycle seal retry."""
+    source = inspect.getsource(farmctl._pump_unlocked)
+
+    promotion = source.index("_promote_paired_q09_portfolio_passes_to_news")
+    # The late autoseal retry is now wrapped in the pump cycle budget (latency
+    # rebaseline 2026-08-23) but must still run AFTER the paired-Q09 promotion so
+    # a freshly promoted Q08 identity is sealable in the same cycle.
+    post_cascade_retry = source.index('result["q09_autoseal"] = cycle_budget.run(')
+
+    assert promotion < post_cascade_retry
+
+
+def test_autoseal_replaces_immutable_predecessor_after_append_only_q08(
+    tmp_path: Path,
+) -> None:
+    farmctl.init_db(tmp_path)
+    setfile = tmp_path / "baseline.set"
+    old_evidence = tmp_path / "q08-old.json"
+    new_evidence = tmp_path / "q08-new.json"
+    setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+    old_evidence.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
+    new_evidence.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
+    with farmctl.connect(tmp_path) as conn:
+        for row_id, evidence, created, payload in (
+            ("q08-old", old_evidence, "2026-08-01T00:00:00Z", {}),
+            (
+                "q08-new", new_evidence, "2026-08-02T00:00:00Z",
+                {"append_only_rerun": True, "append_only_rerun_of_work_item": "q08-old"},
+            ),
+        ):
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                  id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                  attempt_count,evidence_path,payload_json,created_at,updated_at
+                ) VALUES(?,'backtest','Q08','QM5_1','EURUSD.DWX',?,'done','PASS',
+                         0,?,?,?,?)
+                """,
+                (
+                    row_id, str(setfile), str(evidence), json.dumps(payload),
+                    created, created,
+                ),
+            )
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
+              payload_json,created_at,updated_at
+            ) VALUES('q09-old','backtest',?,'QM5_1','EURUSD.DWX',?,
+                     'pending',0,'{}','2026-08-01T01:00:00Z','2026-08-01T01:00:00Z')
+            """,
+            (NEWS_PHASE, str(setfile)),
+        )
+        schema.add_dependency(
+            conn, child_work_item_id="q09-old", dependency_role="Q08_INPUT",
+            parent_work_item_id="q08-old", parent_evidence_sha256=_sha(old_evidence),
+            required_verdicts=["PASS"],
+        )
+        schema.hold_until_plan_bound(conn, "q09-old", now="2026-08-01T01:00:00Z")
+        conn.commit()
+
+    spawned = farmctl._spawn_q09_replacements_for_regenerated_q08(tmp_path, limit=10)
+
+    assert len(spawned) == 1
+    replacement_id = spawned[0]["replacement_q09_work_item_id"]
+    assert spawned[0]["replacement_q08_work_item_id"] == "q08-new"
+    with farmctl.connect(tmp_path) as conn:
+        dependency = conn.execute(
+            """
+            SELECT parent_work_item_id FROM work_item_dependencies
+            WHERE child_work_item_id=? AND dependency_role='Q08_INPUT'
+            """,
+            (replacement_id,),
+        ).fetchone()
+        replacement_hold = conn.execute(
+            "SELECT active FROM work_item_holds WHERE work_item_id=?",
+            (replacement_id,),
+        ).fetchone()
+        assert farmctl._supersede_stale_q09_holds_after_rebind(
+            conn,
+            replacement_q09_id="q09-old",
+            replacement_q08_id="q08-old",
+            now="2026-08-02T00:30:00Z",
+        ) == []
+        superseded = farmctl._supersede_stale_q09_holds_after_rebind(
+            conn,
+            replacement_q09_id=replacement_id,
+            replacement_q08_id="q08-new",
+            now="2026-08-02T01:00:00Z",
+        )
+        conn.commit()
+        old = conn.execute(
+            "SELECT status,verdict FROM work_items WHERE id='q09-old'"
+        ).fetchone()
+        old_hold = conn.execute(
+            "SELECT active,release_note FROM work_item_holds WHERE work_item_id='q09-old'"
+        ).fetchone()
+
+    assert dependency[0] == "q08-new"
+    assert replacement_hold[0] == 1
+    assert superseded == ["q09-old"]
+    assert tuple(old) == ("done", "SUPERSEDED")
+    assert old_hold[0] == 0
+    assert "regenerated Q08" in old_hold[1]
+
+
 def test_q09_autopilot_derivation_gap_stays_held_with_machine_reason(tmp_path: Path) -> None:
     farmctl.init_db(tmp_path)
     now = farmctl.utc_now()
@@ -727,10 +875,10 @@ def test_q09_autopilot_derivation_gap_stays_held_with_machine_reason(tmp_path: P
             INSERT INTO work_items(
               id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
               payload_json,created_at,updated_at
-            ) VALUES('q09-gap','backtest','Q09_NEWS','QM5_1','EURUSD.DWX',
+            ) VALUES('q09-gap','backtest',?,'QM5_1','EURUSD.DWX',
                      'missing.set','pending',0,'{}',?,?)
             """,
-            (now, now),
+            (NEWS_PHASE, now, now),
         )
         schema.hold_until_plan_bound(conn, "q09-gap", now=now)
         conn.commit()
@@ -748,6 +896,72 @@ def test_q09_autopilot_derivation_gap_stays_held_with_machine_reason(tmp_path: P
         "Q09_AUTOSEAL_DERIVE_LINEAGE_FAILED"
     )
     assert hold[0] == 1
+
+
+def test_news_autoseal_can_target_exact_work_items(tmp_path: Path) -> None:
+    connection = mock.MagicMock()
+    connection.execute.return_value.fetchall.return_value = []
+    connection_context = mock.MagicMock()
+    connection_context.__enter__.return_value = connection
+    connection_context.__exit__.return_value = False
+    with (
+        mock.patch.object(farmctl, "init_db"),
+        mock.patch.object(
+            farmctl,
+            "_spawn_q09_replacements_for_regenerated_q08",
+            return_value={},
+        ),
+        mock.patch.object(farmctl, "connect", return_value=connection_context),
+    ):
+        result = farmctl.auto_seal_pending_q09_news(
+            tmp_path,
+            work_item_ids=["child-b", "child-a", "child-b"],
+        )
+
+    sql, parameters = connection.execute.call_args.args
+    assert "w.id IN (?,?)" in sql
+    assert parameters == [
+        NEWS_PHASE,
+        farmctl.Q09_ACTIVATION_HOLD_CODE,
+        "child-b",
+        "child-a",
+        100,
+    ]
+    assert result["attempted_count"] == 0
+
+
+def test_news_autoseal_preserves_stale_closure_and_builds_scoped_successor(
+    tmp_path: Path,
+) -> None:
+    canonical = tmp_path / "QM5_1_include_closure.json"
+    canonical.write_text("{}", encoding="utf-8")
+    successor = tmp_path / "child-1" / canonical.name
+    builder = mock.MagicMock()
+    builder.validate_include_closure.side_effect = [
+        RuntimeError("include closure source inventory/hash mismatch"),
+        {"generated_source_drift": []},
+    ]
+    builder.build_include_closure.return_value = successor
+
+    with mock.patch.object(
+        farmctl, "Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT", tmp_path
+    ):
+        path, validation = farmctl._validated_q09_include_closure(
+            builder,
+            ea_id="QM5_1",
+            work_item_id="child-1",
+        )
+
+    assert path == successor
+    assert validation == {"generated_source_drift": []}
+    assert canonical.read_text(encoding="utf-8") == "{}"
+    builder.build_include_closure.assert_called_once_with(
+        "QM5_1", tmp_path / "child-1"
+    )
+    assert builder.validate_include_closure.call_args_list == [
+        mock.call("QM5_1", canonical),
+        mock.call("QM5_1", successor),
+    ]
 
 
 def test_bind_q09_dry_run_does_not_initialize_or_write_database(tmp_path: Path) -> None:
@@ -785,10 +999,10 @@ def test_q09_config_locked_auto_cascade_is_exact_predecessor_bound(tmp_path: Pat
             INSERT INTO work_items(
               id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
               attempt_count,payload_json,created_at,updated_at
-            ) VALUES('q09-done','backtest','Q09_NEWS','QM5_9','EURUSD.DWX',
+            ) VALUES('q09-done','backtest',?,'QM5_9','EURUSD.DWX',
                      'base.set','done','CONFIG_LOCKED',0,'{}',?,?)
             """,
-            (now, now),
+            (NEWS_PHASE, now, now),
         )
         conn.commit()
     with mock.patch.object(
@@ -799,7 +1013,7 @@ def test_q09_config_locked_auto_cascade_is_exact_predecessor_bound(tmp_path: Pat
         )
     assert result["enqueued"] is True
     enqueue.assert_called_once_with(
-        tmp_path, "QM5_9", "Q10", predecessor_work_item_id="q09-done"
+        tmp_path, "QM5_9", INCUMBENT_PHASE, predecessor_work_item_id="q09-done"
     )
 
 

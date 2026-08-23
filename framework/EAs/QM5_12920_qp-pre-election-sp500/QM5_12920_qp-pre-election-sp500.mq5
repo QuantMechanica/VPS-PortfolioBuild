@@ -125,7 +125,7 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;
-   if(Bars(_Symbol, PERIOD_D1) < strategy_min_d1_bars)
+   if(Bars(_Symbol, PERIOD_D1) < strategy_min_d1_bars) // perf-allowed: minimum history bars check
       return true;
    return false;
 }
@@ -140,7 +140,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime current_bar_time = iTime(_Symbol, PERIOD_D1, 0);
+   const datetime current_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: pre-election date check
    if(current_bar_time <= 0)
       return false;
 
@@ -192,7 +192,7 @@ bool Strategy_ExitSignal()
    if(!Strategy_HasOpenPosition(ticket))
       return false;
 
-   const datetime current_bar_time = iTime(_Symbol, PERIOD_D1, 0);
+   const datetime current_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: pre-election exit date check
    if(current_bar_time <= 0)
       return false;
 
@@ -246,6 +246,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 

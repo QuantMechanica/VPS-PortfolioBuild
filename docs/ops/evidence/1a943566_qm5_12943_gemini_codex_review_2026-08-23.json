@@ -1,0 +1,22 @@
+{
+  "review_task_id": "1a943566-684f-4925-b881-e3b9b7c67eb1",
+  "build_task_id": "e3a2083b-eeb7-40e0-b865-0cc7d001997e",
+  "ea_id": "QM5_12943",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "FAIL",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The approved QM5_12943 universe is EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, and XAUUSD.DWX. Although the retry deleted nine extra setfiles, nine out-of-card active magic rows remain; current build_gate_hardening reports EA_SYMBOL_NOT_IN_CARD_UNIVERSE for AUDUSD, GDAXI, NDX, NZDUSD, SP500, UK100, USDCAD, USDCHF, and WS30.",
+    "Commit 978f9dc86 functionally changed the MQ5 by 55 insertions and 32 deletions but did not update the EX5. The on-disk EX5 is dated 2026-08-21 and retains the exact pre-fix hash e8566960b6f6e3ad3af0238fdf7868855e17a6aa51033b85886785b6b5470acb, so compile_succeeded=true does not bind a compiled binary to the reviewed retry source.",
+    "The approved card says the 96-H1-bar time stop closes at break-even, but source lines 165-172 unconditionally calls QM_TM_ClosePosition at market once bars_open reaches 96 and implements no break-even condition; this defect from the prior Codex review remains.",
+    "Build artifact artifacts/qm5_12943_build_result.json marks smoke_result as deferred_p2_smoke with only the generic blocked_reason 'deferred_p2_smoke per fleet capacity ceiling'; it contains no status=no_capacity or measured occupancy evidence, and no QM5_12943 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:48:53Z"
+}

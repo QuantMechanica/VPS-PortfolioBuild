@@ -1,0 +1,26 @@
+{
+  "review_task_id": "30f8c4ef-f787-4c52-b380-4699a183e226",
+  "build_task_id": "a0f709cd-2c0b-40db-a01b-372c715beef9",
+  "ea_id": "QM5_34005",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_34005 source line 7 directly includes Trade/Trade.mqh, violating the V5 corset requirement that the EA include QM_Common.mqh and only QM modules transitively.",
+    "QM5_34005 source lines 19-20 default RISK_PERCENT=0.5 and RISK_FIXED=1000.0 simultaneously; QM_FrameworkValidateRiskInputs rejects both-positive inputs, so default OnInit fails unless a setfile overrides the source contract.",
+    "The current build_gate_hardening check fails QM5_34005 with three EA_CARD_LOSS_LIMIT_MISMATCH findings: the card's 2.0% daily realized-loss halt, 2.5% daily hard stop, and 5.0% total drawdown stop have no matching source inputs or implementation.",
+    "The current build_gate_hardening check fails QM5_34005 with EA_BROKER_TIME_USED_FOR_GMT_WINDOW: source lines 63-66 apply the card's 23:55-00:05 GMT blackout to raw TimeCurrent without QM_BrokerToUTC.",
+    "QM5_34005 source line 175 maps the card's dynamic parabolic ATR trailing stop to the plain QM_TM_TrailATR ratchet using the initial 1.5 ATR multiplier; the approved card supplies neither this substitution nor a parabolic acceleration formula.",
+    "QM5_34005 generates H4 signals but does not enforce H4 attachment, while QM_TM_TrailATR reads PERIOD_CURRENT; attaching the EA to another timeframe silently changes the exit mechanic.",
+    "QM5_34005 does not configure the approved card's three-tick market-order slippage limit; QM_FrameworkInit leaves QM_EntryConfigure at the framework's 20-point deviation default.",
+    "Build artifact artifacts/qm5_34005_build_result.json marks smoke_result as deferred_p2_smoke with blocked_reason=null and only a paced-queue explanation; this lacks the saturation evidence required by the waiver, and no QM5_34005 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:31:33Z"
+}

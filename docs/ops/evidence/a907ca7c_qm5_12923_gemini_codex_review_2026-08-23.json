@@ -1,0 +1,22 @@
+{
+  "review_task_id": "a907ca7c-a3d5-4486-9ab6-f5c8715131b5",
+  "build_task_id": "f9e1abeb-a14c-4f02-9869-b9d99fcbf303",
+  "ea_id": "QM5_12923",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "FAIL",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The approved card expressly defines the P2 DWX universe as EURUSD, GBPUSD, USDJPY, AUDUSD, EURJPY, and GBPJPY. The retry instead changes only the ex-post SPEC and generates nine setfiles that omit EURJPY/GBPJPY and add GDAXI, NDX, SP500, UK100, and WS30; the 13 active registry rows also do not contain either approved JPY cross, so the rebuild did not conform the build universe to the approved card.",
+    "The approved card requires a 25-point spread cap, but Strategy_NoTradeFilter at source lines 69-75 checks only timeframe and parameter validity and no other source path evaluates spread; the entry logic can trade above the mandated cap.",
+    "The card requires ADX[1] > 22, while source lines 91-94 rejects only values below the threshold and therefore accepts ADX exactly equal to 22; the boundary predicate is not the approved closed-form rule.",
+    "Build artifact artifacts/qm5_12923_build_result.json marks smoke_result as deferred_p2_smoke with blocked_reason=null; this lacks the tester-saturation evidence required by the deferred-smoke waiver, and no QM5_12923 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:48:53Z"
+}

@@ -3,8 +3,8 @@
 **EA ID:** QM5_41003
 **Slug:** kaufman-ready-set-go-momentum
 **Source:** kaufman-ready-set-go-momentum-official-source (see `D:/QM/strategy_farm/artifacts/cards_approved/QM5_41003_kaufman-ready-set-go-momentum.md`)
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-18
+**Author of this spec:** Development (Codex)
+**Last revised:** 2026-08-23
 
 ---
 
@@ -12,13 +12,15 @@
 
 The strategy implements Perry Kaufman's 3-stage momentum filter model on the H1 timeframe. All indicator evaluations and entry triggers are executed strictly at the close of bar [1] (Shift = 1).
 
-Stage 1 ('Ready') tests for volatility compression: fast ATR(10)[1] must be less than baseline slow ATR(30)[1].
+Stage 1 ('Ready') tests for volatility compression: ATR(10)[1] must be less than the 30-sample simple moving average of the ATR(10) series ending at bar [1].
 
 Stage 2 ('Set') evaluates the directional trend filter: Close[1] > EMA(50)[1] for Long setups, or Close[1] < EMA(50)[1] for Short setups.
 
 Stage 3 ('Go') evaluates momentum acceleration breakout: Close[1] - Close[5] > 1.5× ATR(10)[1] for Long entry, or Close[5] - Close[1] > 1.5× ATR(10)[1] for Short entry.
 
-Stop Loss is placed at 1.5× ATR(10, H1)[1] from the entry price. Take Profit is placed at 2.0× Stop Loss distance (1:2.0 Risk-to-Reward ratio).
+Stop Loss is placed at 1.5× ATR(10, H1)[1] from the entry price. Take Profit is placed at 2.0× Stop Loss distance (1:2.0 Risk-to-Reward ratio). New entries are blocked from 23:55 through 00:05 GMT, the framework caps market-order deviation at three symbol ticks, and the zero-spread model used by `.DWX` remains valid.
+
+Account-wide realised losses halt new entries at 2.0% for the broker day. The framework kill switch flattens at 2.5% daily equity loss and consumes the 5.0% portfolio drawdown signal.
 
 ---
 
@@ -28,14 +30,14 @@ Stop Loss is placed at 1.5× ATR(10, H1)[1] from the entry price. Take Profit is
 |---|---|---|---|
 | `strategy_signal_tf` | `PERIOD_H1` | `H1` | Base execution and indicator timeframe |
 | `strategy_fast_atr_period` | `10` | `5-15` | Fast ATR compression period |
-| `strategy_slow_atr_period` | `30` | `20-50` | Slow baseline ATR period |
+| `strategy_slow_atr_period` | `30` | `20-50` | Sample count for the SMA of ATR(10) baseline |
 | `strategy_trend_ema_period` | `50` | `30-80` | Directional trend EMA period |
 | `strategy_momentum_bars` | `5` | `3-10` | Lookback bar count for momentum acceleration |
 | `strategy_go_atr_mult` | `1.5` | `1.0-2.5` | ATR multiplier threshold for Go momentum |
 | `strategy_sl_atr_mult` | `1.5` | `1.0-2.5` | Multiplier on ATR for stop loss placement |
 | `strategy_tp_rr_mult` | `2.0` | `1.5-3.0` | Take profit multiple relative to stop distance |
-| `strategy_rollover_start_hhmm` | `2355` | `0-2359` | Start time for daily rollover blackout window |
-| `strategy_rollover_end_hhmm` | `5` | `0-2359` | End time for daily rollover blackout window |
+| `strategy_rollover_start_hhmm` | `2355` | `0-2359` | Start time in GMT for the daily rollover blackout window |
+| `strategy_rollover_end_hhmm` | `5` | `0-2359` | End time in GMT for the daily rollover blackout window |
 | `strategy_spread_filter_mult` | `1.8` | `1.0-3.0` | Max allowable spread as a multiple of ATR |
 
 ---
@@ -67,10 +69,10 @@ Stop Loss is placed at 1.5× ATR(10, H1)[1] from the entry price. Take Profit is
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 70 |
-| Typical hold time | 4 hours to 3 days |
+| Typical hold time | Not specified by the card; positions remain open until SL, TP, kill-switch, or framework Friday close |
 | Expected drawdown profile | Low to Moderate, < 15% Max Drawdown |
-| Regime preference | High Volatility / Strong Momentum Breakout |
-| Win rate target (qualitative) | High (60-72%) with 1:2.0 R:R payoff |
+| Regime preference | Volatility compression followed by trend-aligned momentum expansion |
+| Win rate target (qualitative) | Unverified at Q01; the card records a high source claim that requires pipeline evidence |
 
 ---
 
@@ -81,7 +83,7 @@ This card was mechanised from:
 **Source ID:** `kaufman-ready-set-go-momentum-official-source`
 **Source type:** `verified_quantitative_model`
 **Pointer:** `Kaufman, P. J. (2013). Trading Systems and Methods, 5th Edition. John Wiley & Sons.`
-**R1–R4 verdict (Q00):** all PASS / see `D:/QM/strategy_farm/artifacts/cards_approved/QM5_41003_kaufman-ready-set-go-momentum.md`
+**R1–R4 verdict (Q00):** R1 lineage recorded and R2–R4 PASS per `artifacts/cards_approved/QM5_41003_kaufman-ready-set-go-momentum.md`
 
 ---
 
@@ -93,7 +95,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+Risk-mode validation is enforced by `QM_FrameworkInit`; strict build validation reports the framework's emitted risk diagnostics.
 
 ---
 
@@ -102,3 +104,5 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Task 8de78517-0995-43b1-9c4e-30e0a0f1b1df |
+| v2 | 2026-08-23 | Card-faithful rework after Codex review | Correct ATR baseline, Close[5] horizon, fail-closed cache, ATR(14) spread filter, execution contract, and loss limits |
+| v3 | 2026-08-23 | In-place Q01 rebuild from approved card | c56ae519-dbde-4c50-a46f-0d4cdf4275a8 |

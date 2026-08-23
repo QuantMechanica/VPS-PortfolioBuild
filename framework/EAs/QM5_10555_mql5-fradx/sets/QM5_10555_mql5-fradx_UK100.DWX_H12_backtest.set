@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10555
+; ea_slug:      mql5-fradx
+; ea_version:   v5.0
+; set_version:  s20260823-001
+; symbol:       UK100.DWX
+; timeframe:    H12
+; environment:  backtest
+; magic_slot:   9
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   bbaef1a48c44d75da94e89e749b6534600f930d79f77af85869d8e7a567571b1
+; author:       Development
+; date:         2026-08-23
+;==========================================================
+qm_ea_id=10555
+qm_magic_slot_offset=9
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10555_mql5-fradx.md
+strategy_signal_tf=16396
+strategy_e_period=14
+strategy_adx_min=0.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_target_r_multiple=1.5

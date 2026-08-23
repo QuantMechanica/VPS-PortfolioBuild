@@ -62,12 +62,34 @@ framework/EAs/QM5_41046_wti-wed-trend-pb/sets/QM5_41046_wti-wed-trend-pb_XTIUSD.
 framework/EAs/QM5_41047_xng-thu-trend-pb/sets/QM5_41047_xng-thu-trend-pb_XNGUSD.DWX_D1_backtest.set -text
 framework/EAs/QM5_41048_xng-thu-trend-agree/sets/QM5_41048_xng-thu-trend-agree_XNGUSD.DWX_D1_backtest.set -text
 framework/EAs/QM5_41049_wti-wed-overnight-dom/sets/QM5_41049_wti-wed-overnight-dom_XTIUSD.DWX_D1_backtest.set -text
+
+# Prepared T_Live preset repairs are SHA-bound deploy artifacts. Preserve the
+# exact LF bytes generated from the read-only deployed templates.
+framework/EAs/QM5_10440_mql5-ohlc-mtf/sets/QM5_10440_mql5-ohlc-mtf_NDX.DWX_H1_live.set -text
+framework/EAs/QM5_10513_mql5-ichimoku/sets/QM5_10513_mql5-ichimoku_XAUUSD.DWX_D1_live.set -text
+framework/EAs/QM5_10706_tv-mon-ls/sets/QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_live.set -text
+framework/EAs/QM5_10911_grimes-complex-pb/sets/QM5_10911_grimes-complex-pb_GDAXI.DWX_H1_live.set -text
+framework/EAs/QM5_10919_grimes-overshoot/sets/QM5_10919_grimes-overshoot_XTIUSD.DWX_H4_live.set -text
+framework/EAs/QM5_10939_grimes-context-pb/sets/QM5_10939_grimes-context-pb_GBPUSD.DWX_H4_live.set -text
+framework/EAs/QM5_11132_tm-cum-rsi2/sets/QM5_11132_tm-cum-rsi2_SP500.DWX_D1_live.set -text
+framework/EAs/QM5_12567_cum-rsi2-commodity/sets/QM5_12567_cum-rsi2-commodity_XNGUSD.DWX_D1_live.set -text
+framework/EAs/QM5_12989_grimes-nested-pb-v2/sets/QM5_12989_grimes-nested-pb-v2_XAUUSD.DWX_H4_live.set -text
+framework/EAs/QM5_13128_pre-fomc-drift-ndx/sets/QM5_13128_pre-fomc-drift-ndx_NDX.DWX_H1_live.set -text
 docs/ops/evidence/2026-08-03_factory_preparation_owner_decision.json -text
 docs/ops/evidence/2026-08-04_factory_preparation_owner_decision.json -text
 docs/ops/evidence/2026-08-04_factory_preparation_owner_decision_evening.json -text
 docs/ops/evidence/2026-08-09_factory_preparation_owner_decision_isolation.json -text
 docs/ops/evidence/2026-08-10_factory_preparation_owner_decision_isolation_rampsoak.json -text
 docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimited.json -text
+
+# Target-rulepack source snapshots are raw-byte sealed evidence. Their SHA-256
+# bindings are validated directly from disk, so autocrlf must not alter them.
+docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json text eol=lf
+docs/ops/evidence/2026-07-30_factory_preparation_owner_decision.json text eol=lf
+
+# These generated/raw-byte bindings are calculated from Git-canonical LF bytes.
+framework/registry/magic_numbers.csv text eol=lf
+framework/EAs/QM5_12954_pring-coppock-h4-variant/QM5_12954_pring-coppock-h4-variant.mq5 text eol=lf
 
 # The gate manifest is a byte-hashed contract: gate_manifest.load_gate_manifest
 # hashes its on-disk bytes and stamps the digest as the stored contract
