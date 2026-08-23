@@ -174,24 +174,29 @@ def check_book_build_allowed(
     venue: str,
     db_path: str | Path,
     order_dir: str | Path = "decisions",
+    *,
+    qualified_rows: Iterable[dict] | None = None,
 ) -> GuardResult:
     """Measure the two mandatory book-build conditions without changing state."""
     normalized_venue = _normalize_venue(venue)
     reasons: list[str] = []
-    qualified_rows: list[dict] = []
+    measured_rows: list[dict] = []
     distinct_eas = 0
     strategy_families = 0
 
     try:
-        manifest = gate_manifest.load_gate_manifest()
-        terminal_gate = manifest.terminal_requalification_gate
-        qualified_rows = _qualified_pair_rows(Path(db_path), terminal_gate)
-        distinct_eas = _count_distinct_eas(qualified_rows)
-        strategy_families = _count_strategy_families(qualified_rows)
+        if qualified_rows is None:
+            manifest = gate_manifest.load_gate_manifest()
+            terminal_gate = manifest.terminal_requalification_gate
+            measured_rows = _qualified_pair_rows(Path(db_path), terminal_gate)
+        else:
+            measured_rows = list(qualified_rows)
+        distinct_eas = _count_distinct_eas(measured_rows)
+        strategy_families = _count_strategy_families(measured_rows)
     except Exception as exc:
         reasons.append(f"qualified_pool_unavailable: {type(exc).__name__}: {exc}")
 
-    qualified_pairs = len(qualified_rows)
+    qualified_pairs = len(measured_rows)
     if qualified_pairs < MIN_QUALIFIED_PAIRS:
         reasons.append(
             f"qualified_pairs_below_minimum: {qualified_pairs} < {MIN_QUALIFIED_PAIRS}"

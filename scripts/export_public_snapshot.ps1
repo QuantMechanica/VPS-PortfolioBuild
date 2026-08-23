@@ -81,9 +81,15 @@ function Validate-JsonAgainstSchema {
             foreach ($k in @("strategy_cards", "eas_built")) {
                 if ($null -eq $Object.pipeline.$k -or $Object.pipeline.$k -lt 0) { throw "Invalid pipeline.$k in $Name." }
             }
+            if (-not $Object.pipeline.by_phase.gate_contract_version) { throw "Missing pipeline.by_phase.gate_contract_version in $Name." }
             $phaseKeys = @("G0", "P1", "P2", "P3", "P3_5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8", "P9", "P9b", "P10")
             foreach ($k in $phaseKeys) {
                 if ($null -eq $Object.pipeline.by_phase.$k -or $Object.pipeline.by_phase.$k -lt 0) { throw "Invalid pipeline.by_phase.$k in $Name." }
+            }
+            if ($Object.pipeline.by_gate_v4.gate_contract_version -ne "v4") { throw "Invalid pipeline.by_gate_v4.gate_contract_version in $Name." }
+            foreach ($k in $Object.pipeline.by_gate_v4.PSObject.Properties.Name) {
+                if ($k -eq "gate_contract_version") { continue }
+                if ($k -notmatch '^Q(?:0[0-9]|1[0-7])$' -or $Object.pipeline.by_gate_v4.$k -lt 0) { throw "Invalid pipeline.by_gate_v4.$k in $Name." }
             }
             if ($Object.t6.status -notin @("offline", "demo", "live", "degraded")) { throw "Invalid t6.status in $Name." }
             if ($Object.t6.risk_state -notin @("green", "yellow", "red")) { throw "Invalid t6.risk_state in $Name." }
@@ -250,10 +256,10 @@ if ([int]$pipelineState.schema_version -ne 1) {
 
 # Derive phase label: highest phase any EA has reached (best signal of company progress)
 # under DL-061 Endausbaustufe-Modus (no company-level phase gating).
-$phaseOrder = @("G0", "P1", "P2", "P3", "P3_5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8", "P9", "P9b", "P10")
+$phaseOrder = @($pipelineState.by_gate_v4.PSObject.Properties.Name | Where-Object { $_ -match '^Q(?:0[0-9]|1[0-7])$' })
 $highestPhase = $null
 foreach ($p in $phaseOrder) {
-    if ([int]$pipelineState.by_phase.$p -gt 0) { $highestPhase = $p }
+    if ([int]$pipelineState.by_gate_v4.$p -gt 0) { $highestPhase = $p }
 }
 if ($null -eq $highestPhase) {
     $phaseLabel = "Endausbaustufe-Modus - no EA past G0 yet"
@@ -269,9 +275,14 @@ $agentsOffline = [int]$pipelineState.agents_watchdog.offline_count
 $agentsBlocked = 0
 
 # pipeline.{strategy_cards,eas_built,by_phase} from pipeline_state.json.
-$byPhaseLive = @{}
-foreach ($p in $phaseOrder) {
+$legacyPhaseOrder = @("G0", "P1", "P2", "P3", "P3_5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8", "P9", "P9b", "P10")
+$byPhaseLive = [ordered]@{ gate_contract_version = [string]$pipelineState.by_phase_gate_contract_version }
+foreach ($p in $legacyPhaseOrder) {
     $byPhaseLive[$p] = [int]$pipelineState.by_phase.$p
+}
+$byGateV4 = [ordered]@{ gate_contract_version = [string]$pipelineState.by_gate_v4_gate_contract_version }
+foreach ($p in $phaseOrder) {
+    $byGateV4[$p] = [int]$pipelineState.by_gate_v4.$p
 }
 
 $publicSnapshot = [ordered]@{
@@ -287,6 +298,7 @@ $publicSnapshot = [ordered]@{
         strategy_cards = [int]$pipelineState.strategy_cards_count
         eas_built = [int]$pipelineState.eas_registered_count
         by_phase = $byPhaseLive
+        by_gate_v4 = $byGateV4
     }
     t6 = @{
         status = "offline"

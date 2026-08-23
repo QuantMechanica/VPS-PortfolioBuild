@@ -52,6 +52,7 @@ try:  # package import (tests, module consumers)
     from tools.strategy_farm import q09_autoseal_hold_census
     from tools.strategy_farm import q09_ftmo_recommendation
     from tools.strategy_farm import risk_freeze
+    from tools.strategy_farm import operator_surfaces
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/mission_control_v2_data.py``
     from work_item_clean_view import install_clean_view
     from phase_ids import phase_label, normalize_phase_id, PHASE_NAME
@@ -59,6 +60,7 @@ except ModuleNotFoundError:  # direct ``python tools/strategy_farm/mission_contr
     import q09_autoseal_hold_census
     import q09_ftmo_recommendation
     import risk_freeze
+    import operator_surfaces
 
 
 SCHEMA_VERSION = "qm.mission_control.v2"
@@ -212,11 +214,19 @@ def load_ea_slugs(path: Path | None = None) -> dict[str, str]:
 # ---------------------------------------------------------------------------
 # section builders
 # ---------------------------------------------------------------------------
-def _phase_display(phase: str | None) -> dict[str, str]:
+def _phase_display(
+    phase: str | None, gate_contract_version: str | None = None
+) -> dict[str, str]:
     """Return the Qxx label and name for a stored phase key (never a P-key)."""
-    qid = phase_label(phase)  # always Qxx (or pass-through for odd keys)
-    name = PHASE_NAME.get(qid, "")
+    qid = phase_label(phase, gate_contract_version)
+    canonical = normalize_phase_id(phase, gate_contract_version)
+    name = PHASE_NAME.get(canonical, "")
     return {"phase_qid": qid, "phase_name": name}
+
+
+def _has_contract_column(con: sqlite3.Connection) -> bool:
+    columns = {str(row[1]).lower() for row in con.execute("PRAGMA table_info(work_items)")}
+    return "gate_contract_version" in columns
 
 
 def build_terminals(con: sqlite3.Connection, ea_slugs: dict[str, str],
@@ -235,10 +245,13 @@ def build_terminals(con: sqlite3.Connection, ea_slugs: dict[str, str],
     """
     now = now or _now_utc()
 
+    contract_expr = "w.gate_contract_version" if _has_contract_column(con) else "NULL"
     active = _rows(
         con,
-        "SELECT id, ea_id, phase, symbol, claimed_by, updated_at "
-        "FROM work_items_clean WHERE status='active'",
+        f"SELECT c.id, c.ea_id, c.phase, c.symbol, c.claimed_by, c.updated_at, "
+        f"{contract_expr} AS gate_contract_version "
+        "FROM work_items_clean c LEFT JOIN work_items w ON w.id=c.id "
+        "WHERE c.status='active'",
     )
     by_terminal: dict[str, dict] = {}
     for r in active:
@@ -273,7 +286,9 @@ def build_terminals(con: sqlite3.Connection, ea_slugs: dict[str, str],
             state = "RUNNING"
             running += 1
             start_iso = _iso(_parse_iso(row.get("updated_at")) or now)
-            disp = _phase_display(row.get("phase"))
+            disp = _phase_display(
+                row.get("phase"), row.get("gate_contract_version")
+            )
             ea_id = str(row.get("ea_id") or "")
             terminals.append({
                 "terminal": term,
@@ -543,14 +558,15 @@ def build_queue(con: sqlite3.Connection, *, now: dt.datetime | None = None) -> d
     phase_params = tuple(sorted(MT5_TESTER_PHASES))
 
     # Pending backlog by phase (all pending, then split executable vs parked).
+    contract_expr = "w.gate_contract_version" if _has_contract_column(con) else "NULL"
     pending_by_phase = _rows(
         con,
-        """
-        SELECT phase, COUNT(*) AS pending,
-               MIN(created_at) AS oldest_created_at
-        FROM work_items_clean
-        WHERE status='pending'
-        GROUP BY phase
+        f"""
+        SELECT c.phase, {contract_expr} AS gate_contract_version, COUNT(*) AS pending,
+               MIN(c.created_at) AS oldest_created_at
+        FROM work_items_clean c LEFT JOIN work_items w ON w.id=c.id
+        WHERE c.status='pending'
+        GROUP BY c.phase, gate_contract_version
         ORDER BY pending DESC
         """,
     )
@@ -563,7 +579,7 @@ def build_queue(con: sqlite3.Connection, *, now: dt.datetime | None = None) -> d
     pending_executable = 0
     pending_parked = 0
     for r in pending_by_phase:
-        disp = _phase_display(r.get("phase"))
+        disp = _phase_display(r.get("phase"), r.get("gate_contract_version"))
         entry = {
             "phase_qid": disp["phase_qid"],
             "phase_name": disp["phase_name"],
@@ -970,6 +986,7 @@ def build_contract(
         pulse_path=live_pulse_path,
     )
     freeze = build_risk_freeze(now=now)
+    operator_surface = operator_surfaces.build_operator_snapshot(db)
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -984,6 +1001,7 @@ def build_contract(
         "progress": progress,
         "terminals": terminals,
         "owner_decisions": owner,
+        "operator_surface": operator_surface,
     }
 
 
@@ -1011,6 +1029,7 @@ CONTRACT_SCHEMA: dict[str, Any] = {
     "required": [
         "schema_version", "generated_at", "risk_freeze", "control_strip", "queue",
         "q09_autoseal_holds", "progress", "terminals", "owner_decisions",
+        "operator_surface",
     ],
     "properties": {
         "schema_version": {"const": SCHEMA_VERSION},
@@ -1216,6 +1235,22 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                         },
                     },
                 },
+            },
+        },
+        "operator_surface": {
+            "type": "object",
+            "required": [
+                "gate_contract_version", "progress_metric", "phase_bands",
+                "pair_count", "pairs", "book_guard",
+            ],
+            "properties": {
+                "gate_contract_version": {"type": "string"},
+                "progress_metric": {"const": "highest_contiguous_valid_gate"},
+                "phase_bands": {"type": "array", "minItems": 3, "maxItems": 3},
+                "pair_count": {"type": "integer"},
+                "pairs": {"type": "array"},
+                "counts": {"type": "object"},
+                "book_guard": {"type": "object"},
             },
         },
     },

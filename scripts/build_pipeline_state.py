@@ -40,6 +40,13 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+WORKTREE_ROOT = Path(__file__).resolve().parents[1]
+if str(WORKTREE_ROOT) not in sys.path:
+    sys.path.insert(0, str(WORKTREE_ROOT))
+
+from tools.strategy_farm import gate_manifest, operator_surfaces
+from tools.strategy_farm.phase_ids import phase_qid
+
 REPO_ROOT = Path(r"C:/QM/repo")
 PIPELINE_ROOT = Path(r"D:/QM/reports/pipeline")
 STATE_DIR = Path(r"D:/QM/reports/state")
@@ -61,6 +68,8 @@ FARM_DB = Path(r"D:/QM/strategy_farm/state/farm_state.sqlite")
 # to satisfy the public-snapshot schema.
 PHASES = ["G0", "P1", "P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8", "P9", "P9b", "P10"]
 PHASE_TO_KEY = {p: p.replace(".", "_") for p in PHASES}
+LEGACY_COMPAT_GATE_CONTRACT_VERSION = "legacy-p-frozen/v1"
+V4_GATE_CONTRACT_VERSION = "v4"
 MANUAL_GATES = {"G0", "P9", "P9b", "P10"}
 ADVANCED_PHASE_RESULT_MIN_UTC = datetime(2026, 5, 15, tzinfo=timezone.utc)
 ADVANCED_PHASES = {"P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8"}
@@ -367,11 +376,22 @@ DB_Q_TO_LEGACY_P = {
     "Q11": "P9", "Q12": "P9b", "Q13": "P10",
 }
 
-# Canonical Qxx ordering for latest-pass ranking (mirror phase_ids.PHASE_ORDER).
-QXX_ORDER = ["Q00", "Q01", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08",
-             "Q09", "Q10", "Q11", "Q12", "Q13"]
+ACTIVE_MANIFEST = gate_manifest.load_gate_manifest()
+V4_MANIFEST = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
+
+# Canonical ordering and names always come from the active manifest loader.
+QXX_ORDER = list(ACTIVE_MANIFEST.phase_ids)
 QXX_RANK = {q: i for i, q in enumerate(QXX_ORDER)}
-TERMINAL_QXX = {"Q10", "Q11", "Q12", "Q13"}
+TERMINAL_QXX = {
+    gate.id
+    for gate in ACTIVE_MANIFEST.gates
+    if gate.evidence_role in {
+        "LOCKED_CONFIGURATION_REPRODUCIBILITY",
+        "TARGET_SPECIFIC_PORTFOLIO_ADMISSION",
+        "DEPLOYMENT_READINESS",
+        "PROSPECTIVE_BURN_IN",
+    }
+}
 
 # DB phase-key normalization: residual legacy P-keys / odd variants -> canonical
 # Qxx (mirror phase_ids.LEGACY_P_TO_Q for the keys that appear in this DB).
@@ -386,6 +406,7 @@ DB_PHASE_NORMALIZE = {
 DB_PASS_VERDICTS = {
     "PASS", "AUTO_PASS", "MODE_SELECTED", "MULTI_SEED_PASS", "MULTI_SEED_MIXED",
     "PASS_SOFT", "PASS_LOWFREQ", "PASS_PORTFOLIO",
+    "PROMOTE_CHALLENGER", "CHALLENGER_PROMOTED", "KEEP_INCUMBENT", "ADMIT_BOTH",
 }
 DB_FAIL_VERDICTS = {
     "FAIL", "FAIL_SOFT", "FAIL_HARD", "INVALID", "INVALID_BUILD_STATIC_FIDELITY",
@@ -408,8 +429,11 @@ def _canon_ea_id(raw: object) -> str:
     return ea
 
 
-def _norm_db_phase(raw: object) -> str:
-    ph = str(raw or "").strip().upper()
+def _norm_db_phase(raw: object, gate_contract_version: object = None) -> str:
+    ph = phase_qid(str(raw or ""), str(gate_contract_version or "") or None).upper()
+    # Storage lanes are evidence for their top-level contract gate.
+    if re.fullmatch(r"Q\d{2}(?:_.+)?", ph):
+        return ph[:3]
     return DB_PHASE_NORMALIZE.get(ph, ph)
 
 
@@ -477,8 +501,15 @@ def load_per_ea_from_db() -> tuple[list[dict], bool]:
         con = sqlite3.connect(f"file:{FARM_DB.as_posix()}?mode=ro", uri=True)
         con.row_factory = sqlite3.Row
         con.execute("PRAGMA busy_timeout=4000")
+        columns = {
+            str(row[1]).lower() for row in con.execute("PRAGMA table_info(work_items)")
+        }
+        version_expr = (
+            "gate_contract_version" if "gate_contract_version" in columns else "NULL"
+        )
         rows = con.execute(
-            "SELECT ea_id, phase, verdict, updated_at FROM work_items "
+            f"SELECT ea_id, phase, verdict, updated_at, {version_expr} "
+            "AS gate_contract_version FROM work_items "
             "WHERE status='done' AND verdict IS NOT NULL"
         ).fetchall()
     except sqlite3.Error:
@@ -496,7 +527,7 @@ def load_per_ea_from_db() -> tuple[list[dict], bool]:
         ea = _canon_ea_id(row["ea_id"])
         if not ea:
             continue
-        phase = _norm_db_phase(row["phase"])
+        phase = _norm_db_phase(row["phase"], row["gate_contract_version"])
         verdict = str(row["verdict"] or "").strip().upper()
         rank = _verdict_rank(verdict)
         slot = per.setdefault(ea, {"phases": {}, "last": None})
@@ -557,12 +588,31 @@ def db_by_phase_legacy(per_ea: list[dict]) -> dict[str, int]:
     return legacy
 
 
+def db_by_gate_v4(per_ea: list[dict]) -> dict[str, int]:
+    """Additive Q00..Q17 funnel under the proposed v4 numbering."""
+
+    qxx_pass: dict[str, set[str]] = {gate.id: set() for gate in V4_MANIFEST.gates}
+    active_version = str(ACTIVE_MANIFEST.schema_version).rsplit("/", 1)[-1]
+    for ea in per_ea:
+        for phase, verdict in ea.get("phase_verdicts", {}).items():
+            if str(verdict).upper() not in DB_PASS_VERDICTS:
+                continue
+            try:
+                v4_gate = V4_MANIFEST.equivalent_gate(phase, active_version, "v4")
+            except gate_manifest.GateManifestError:
+                continue
+            if v4_gate in qxx_pass:
+                qxx_pass[v4_gate].add(ea["ea_id"])
+    return {gate.id: len(qxx_pass[gate.id]) for gate in V4_MANIFEST.gates}
+
+
 def build() -> dict:
     per_ea, db_ok = load_per_ea_from_db()
     per_ea_source = "work_items"
 
     if db_ok:
         by_phase = db_by_phase_legacy(per_ea)
+        by_gate_v4 = db_by_gate_v4(per_ea)
     else:
         # Resilience fallback ONLY: the farm DB could not be opened. Reconstruct
         # the coarse/incomplete legacy view from filesystem artifacts (FB-05:
@@ -578,6 +628,20 @@ def build() -> dict:
         if sum(db_by_phase.values()) > 0:
             for phase in ("P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8"):
                 by_phase[PHASE_TO_KEY[phase]] = db_by_phase[PHASE_TO_KEY[phase]]
+        by_gate_v4 = {gate.id: 0 for gate in V4_MANIFEST.gates}
+
+    operator_surface = (
+        operator_surfaces.build_operator_snapshot(FARM_DB) if db_ok else {
+            "gate_contract_version": str(ACTIVE_MANIFEST.schema_version).rsplit("/", 1)[-1],
+            "progress_metric": "highest_contiguous_valid_gate",
+            "phase_bands": operator_surfaces.macro_phase_bands(ACTIVE_MANIFEST),
+            "pair_count": 0,
+            "pairs": [],
+            "counts": {},
+            "pairs_by_macro_phase": {},
+            "book_guard": {},
+        }
+    )
 
     registry = read_ea_registry()
     cards = count_strategy_cards()
@@ -591,6 +655,10 @@ def build() -> dict:
         "eas_registered_count": len(registry),
         "eas_with_reports_count": len(per_ea),
         "by_phase": by_phase,
+        "by_phase_gate_contract_version": LEGACY_COMPAT_GATE_CONTRACT_VERSION,
+        "by_gate_v4": by_gate_v4,
+        "by_gate_v4_gate_contract_version": V4_GATE_CONTRACT_VERSION,
+        "operator_surface": operator_surface,
         "by_status": aggregate_by_status(per_ea),
         "mt5": mt5_state(),
         "agents_watchdog": agents_watchdog_state(),
@@ -612,6 +680,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true", help="Print JSON, do not write file.")
     ap.add_argument("--verbose", action="store_true")
+    ap.add_argument("--output", type=Path, default=STATE_FILE)
     args = ap.parse_args()
 
     state = build()
@@ -621,9 +690,9 @@ def main() -> int:
         print(out)
         return 0
 
-    atomic_write(STATE_FILE, out)
+    atomic_write(args.output, out)
     if args.verbose:
-        print(f"Wrote {STATE_FILE} ({len(out)} bytes)")
+        print(f"Wrote {args.output} ({len(out)} bytes)")
         print(f"  strategy_cards={state['strategy_cards_count']} eas_registered={state['eas_registered_count']} eas_with_reports={state['eas_with_reports_count']}")
         print(f"  by_phase={state['by_phase']}")
         print(f"  by_status={state['by_status']}")

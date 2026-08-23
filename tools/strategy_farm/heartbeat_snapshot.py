@@ -25,8 +25,14 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+try:  # package import in tests and module consumers
+    from tools.strategy_farm.operator_surfaces import build_operator_snapshot
+except ModuleNotFoundError:  # direct ``python tools/strategy_farm/heartbeat_snapshot.py``
+    from operator_surfaces import build_operator_snapshot
+
 REPO = Path(r"C:\QM\repo")
-DB = "file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro"
+DB_PATH = Path(r"D:/QM/strategy_farm/state/farm_state.sqlite")
+DB = f"file:{DB_PATH.as_posix()}?mode=ro"
 STATE = Path(r"D:/QM/reports/state/heartbeat_state.json")
 QUOTA = Path(r"D:/QM/reports/state/quota_governor_state.json")
 FLAG_DIR = Path(r"D:/QM/strategy_farm/state")
@@ -166,18 +172,25 @@ def probe_agent_lane(out, conn):
 @guarded
 def probe_goal(out, conn):
     """Distance to the actual objective: survivors that could reach a book."""
-    def n(sql, *a):
-        return conn.execute(sql, a).fetchone()[0]
-
+    operator = out.get("operator_surface") or {}
+    macro_counts = operator.get("pairs_by_macro_phase") or {}
     out["funnel"] = {
-        "Q10_PASS": n("SELECT COUNT(DISTINCT ea_id||symbol) FROM work_items "
-                      "WHERE phase='Q10' AND verdict LIKE 'PASS%'"),
-        "Q14_rows": n("SELECT COUNT(*) FROM work_items WHERE phase='Q14'"),
-        "Q09_NEWS_pending": n("SELECT COUNT(*) FROM work_items "
-                              "WHERE phase='Q09_NEWS' AND status='pending'"),
-        "pass_soft_q06": n("SELECT COUNT(*) FROM work_items "
-                           "WHERE phase='Q06' AND verdict='PASS_SOFT'"),
+        "progress_metric": operator.get("progress_metric"),
+        "macro_phases": [
+            {
+                "id": band.get("id"),
+                "name": band.get("name"),
+                "pairs": int(macro_counts.get(band.get("id"), 0)),
+            }
+            for band in operator.get("phase_bands") or []
+        ],
     }
+
+
+@guarded
+def probe_operator_surface(out):
+    """Versioned pair frontiers, three phase bands, and the book guard."""
+    out["operator_surface"] = build_operator_snapshot(DB_PATH)
 
 
 @guarded
@@ -388,6 +401,7 @@ def render_markdown(out) -> str:
     fa, at = out.get("factory", {}), out.get("agent_tasks", {})
     q, h = out.get("quota", {}), out.get("health", {})
     sl, fu = out.get("source_lane", {}), out.get("funnel", {})
+    operator = out.get("operator_surface", {})
 
     L = []
     L.append("# Heartbeat — Fabrik & Agenten")
@@ -422,12 +436,36 @@ def render_markdown(out) -> str:
     if sl:
         L.append(f"| Quellen-Zulauf | {sl.get('leads_total')} Leads · **{sl.get('QUALIFIED')} qualifiziert** "
                  f"· {sl.get('REJECTED')} abgelehnt · {sl.get('NEW')} offen |")
-    L.append(f"| Trichter | Q10-PASS {fu.get('Q10_PASS')} · Q14 {fu.get('Q14_rows')} · "
-             f"Q09_NEWS offen {fu.get('Q09_NEWS_pending')} · Q06 PASS_SOFT {fu.get('pass_soft_q06')} |")
+    funnel_text = " · ".join(
+        f"{phase.get('name')} {phase.get('pairs')}"
+        for phase in fu.get("macro_phases") or []
+    )
+    L.append(f"| Trichter | {funnel_text or 'nicht verfügbar'} |")
+    guard = operator.get("book_guard") or {}
+    if operator:
+        L.append(
+            f"| Lückenlose Frontier | {operator.get('pair_count', 0)} EA/Symbol-Paare · "
+            f"Buch-Guard {guard.get('qualified_pairs', 0)} / "
+            f"{guard.get('minimum_qualified_pairs', 25)} · "
+            f"{guard.get('distinct_eas', 0)} EAs · "
+            f"{guard.get('strategy_families', 0)} Familien |"
+        )
     tf = out.get("tasks_failing") or []
     if tf:
         L.append(f"| Fehlschlagende Aufgaben | {', '.join(tf)} |")
     L.append("")
+
+    if operator:
+        L.append("## Drei Makrophasen")
+        L.append("")
+        macro_counts = operator.get("pairs_by_macro_phase") or {}
+        for band in operator.get("phase_bands") or []:
+            gate_ids = " → ".join(g.get("linear_gate_id", "") for g in band.get("gates") or [])
+            L.append(
+                f"- **{band.get('name')}** — {macro_counts.get(band.get('id'), 0)} Paare; "
+                f"`{gate_ids}`"
+            )
+        L.append("")
 
     if out.get("stuck_in_progress"):
         L.append("## Hängende Tickets")
@@ -494,6 +532,7 @@ def main() -> int:
     probe_risk_freeze(out)
     probe_scheduled_tasks(out)
     probe_source_lane(out)
+    probe_operator_surface(out)
     try:
         conn = sqlite3.connect(DB, uri=True, timeout=20)
         conn.execute("PRAGMA busy_timeout=15000")
