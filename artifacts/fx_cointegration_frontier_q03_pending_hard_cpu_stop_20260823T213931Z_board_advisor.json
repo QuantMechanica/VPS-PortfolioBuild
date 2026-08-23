@@ -1,0 +1,171 @@
+{
+  "artifact_type": "fx_cointegration_frontier_q03_pending_hard_cpu_stop",
+  "generated_at_utc": "2026-08-23T21:39:31Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "920faec31636dd312cc2f2d35c04b9f45f484b4a",
+  "mission_outcome": "EXISTING_PAIR_ALREADY_ADVANCED_TO_Q03_STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "scan_reconciliation": {
+    "source": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "durable_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "new_unbuilt_pair_eligible": false,
+    "reason": "Every relationship in the frozen sign-aware 66-pair scan already resolves to governed work; another card or EA would duplicate an existing sleeve."
+  },
+  "anchor_state": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02": "PASS",
+      "later_chain": "Q04 PASS; Q05 FAIL",
+      "current_q02_oninit_or_no_history_block": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02": "PASS",
+      "later_chain": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_block": false
+    }
+  },
+  "selected_existing_pair": {
+    "selection_reason": "Ranks above 40 are either terminal at an economic gate or already represented by an open successor; USDJPY/NZDUSD is the highest-ranked scan relationship with no terminal economic verdict and an exact current successor already pending.",
+    "ea_id": "QM5_20219",
+    "ea_label": "QM5_20219_usdjpy-nzdusd",
+    "pair": [
+      "USDJPY.DWX",
+      "NZDUSD.DWX"
+    ],
+    "logical_symbol": "QM5_20219_USDJPY_NZDUSD_COINTEGRATION_D1",
+    "scan_rank": 40,
+    "scan_evidence": {
+      "dev_net_sharpe": 0.12191561234631561,
+      "oos_net_sharpe": 0.05091758006605608,
+      "oos_return_percent": 0.5798657681076694,
+      "oos_state_changes": 14,
+      "dev_beta": -0.7823029792857074,
+      "half_life_d1_bars": 206.28130086271622
+    },
+    "source": {
+      "citation": "Chan, Ernest P. (2009), Quantitative Trading, Wiley, Examples 3.6, 7.2, 7.3, and 7.5",
+      "approved_card": "framework/EAs/QM5_20219_usdjpy-nzdusd/docs/strategy_card.md",
+      "approved_card_sha256": "696486d101c7fac2216bb6f6558e78189d833a506c2aea3491fd0b5654ee096b",
+      "g0_decision": "decisions/2026-08-05_usdjpy_nzdusd_cointegration_g0.md",
+      "g0_decision_sha256": "04be8f4426eb05f6aa901a1233d841e2c09da5f7259e57b5efcf574568532963",
+      "g0_status": "APPROVED",
+      "quality_tier": "A"
+    },
+    "build_contract": {
+      "basket_manifest": "framework/EAs/QM5_20219_usdjpy-nzdusd/basket_manifest.json",
+      "basket_manifest_sha256": "f3fb7c93c0bebf8cd86aeae11a2e43e94b4d4bc976a14315092394db992ab54c",
+      "mq5_sha256": "a3d9f49b79b5eba8eacc96f63fc74266ac4d3deebd17a35d89510758406fed13",
+      "ex5_sha256": "4f9758038a5ddfd2d4ca3ffa21ea22facf73973af9b623d4fc924e61eff1caba",
+      "setfile": "framework/EAs/QM5_20219_usdjpy-nzdusd/sets/QM5_20219_usdjpy-nzdusd_QM5_20219_USDJPY_NZDUSD_COINTEGRATION_D1_D1_backtest.set",
+      "setfile_sha256": "58bce294bf0ae7d46d398da737b5857e8ec71d985dae202b3f12a54a8a2361bc",
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "portfolio_weight": 1.0,
+      "timeframe": "D1",
+      "structural_fixed_beta": true,
+      "ml_or_banned_indicator_component": false
+    },
+    "lineage": {
+      "q02": {
+        "work_item_id": "5eb61981-472e-4f08-82c0-53fbec77d6c8",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "q03": {
+        "work_item_id": "4514a6c7-0a2e-4523-a756-b63a232dd8aa",
+        "status": "pending",
+        "verdict": null,
+        "attempt_count": 0,
+        "claimed_by": null,
+        "gate_contract_version": "v4",
+        "created_at_utc": "2026-08-23T18:59:50Z",
+        "priority_track": true,
+        "promoted_from_work_item": "5eb61981-472e-4f08-82c0-53fbec77d6c8",
+        "duplicate_enqueue_performed": false
+      },
+      "legacy_q04": {
+        "work_item_id": "b721ce82-2d53-46db-b2d0-f20b561a1513",
+        "status": "pending",
+        "verdict": null,
+        "attempt_count": 0,
+        "claimed_by": null,
+        "created_at_utc": "2026-08-05T08:16:57Z",
+        "duplicate_enqueue_performed": false
+      }
+    }
+  },
+  "capacity_sample": {
+    "mt5_slots_observed_at_utc": "2026-08-23T21:39:19Z",
+    "cpu_sample_start_utc": "2026-08-23T21:39:18.8024224Z",
+    "cpu_sample_end_utc": "2026-08-23T21:39:31.8045478Z",
+    "paced_launch_gate": 1,
+    "running_factory_terminal_count": 2,
+    "running_factory_terminals": [
+      "T1",
+      "T3"
+    ],
+    "running_factory_work_items": [
+      {
+        "terminal": "T1",
+        "work_item_id": "8214410d-7708-4077-8626-c3c449ee862c",
+        "ea_id": "QM5_11294",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "dac8cff3-bc8a-4112-b418-3bed399fb510",
+        "ea_id": "QM5_1354",
+        "phase": "Q10_NEWS"
+      }
+    ],
+    "cpu_samples_percent": [
+      98.50405768966287,
+      88.41394646207772,
+      67.88276640268927,
+      57.86601319263364,
+      65.49090721521902
+    ],
+    "cpu_average_percent": 75.6315381924565,
+    "cpu_maximum_percent": 98.50405768966287,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "paced_launch_capacity_also_binding": true,
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "unrelated_ftmo_terminal_observed_only": true
+  },
+  "non_duplicate_delta": {
+    "previous_evidence": "artifacts/fx_cointegration_frontier_exhausted_cpu_stop_20260823T170235Z_board_advisor.json",
+    "previous_selected_pair": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "previous_selected_pair_terminal_state": "Q06 FAIL",
+    "current_selected_pair": "QM5_20219_USDJPY_NZDUSD_COINTEGRATION_D1",
+    "material_change": "A hash-bound v4 Q03 successor for QM5_20219 was created after the previous receipt and is already pending exactly once, so a second enqueue would be duplicate work."
+  },
+  "actions_this_run": {
+    "new_card_or_ea": false,
+    "enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "compile_or_build_check": false,
+    "tester_launch_or_backtest": false,
+    "terminal_control": false,
+    "evidence_commit_only": true,
+    "stop_reason": "The five-sample CPU maximum exceeded the explicit 97 percent hard ceiling, and two factory terminals also exceeded the paced launch gate of one."
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
