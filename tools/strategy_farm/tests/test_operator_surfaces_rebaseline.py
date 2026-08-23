@@ -90,6 +90,8 @@ def test_mixed_contract_frontiers_bands_guard_and_no_legacy_html(
     assert snapshot["book_guard"]["qualified_pairs"] == 1
     assert snapshot["book_guard"]["minimum_qualified_pairs"] == 25
     assert len(snapshot["phase_bands"]) == 3
+    assert snapshot["path_to_25"]["qualified_pairs"] == 1
+    assert snapshot["path_to_25"]["frontier_histogram"]["Q14"] == 1
     assert LEGACY_PHASE_RE.search(html) is None
 
 

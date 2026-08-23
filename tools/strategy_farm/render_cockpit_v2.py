@@ -502,6 +502,77 @@ def _render_progress(contract: dict) -> str:
   </section>'''
 
 
+def _render_path_to_25(contract: dict) -> str:
+    metrics = contract.get("path_to_25", {}) or {}
+    if not metrics:
+        return ""
+    news = metrics.get("news_gate", {}) or {}
+    opt = metrics.get("opt_fork", {}) or {}
+    backfill = metrics.get("backfill", {}) or {}
+    eta = metrics.get("eta_days")
+    eta_text = f"{_de(eta, 2)} Tage" if eta is not None else "nicht belastbar"
+
+    frontier = "".join(
+        f'<span class="mc-p25-gate"><b>{e(gate)}</b>{_int(count)}</span>'
+        for gate, count in (metrics.get("frontier_histogram") or {}).items()
+        if int(count or 0) > 0
+    )
+    if not frontier:
+        frontier = '<span class="mc-dim">noch keine lückenlose Qxx-Frontier</span>'
+
+    opt_rows = "".join(
+        '<tr>'
+        f'<td class="mc-rowlabel">{gate}</td>'
+        f'<td class="mc-num">{_int((opt.get(gate) or {}).get("pending"))}</td>'
+        f'<td class="mc-num">{_int((opt.get(gate) or {}).get("done"))}</td>'
+        '</tr>'
+        for gate in ("Q12", "Q13", "Q14")
+    )
+    verdicts = " · ".join(
+        f"{key} {_int(value)}"
+        for key, value in (opt.get("terminal_verdicts") or {}).items()
+    ) or "keine"
+
+    return f'''
+  <section class="mc-section mc-p25" id="path-to-25">
+    <div class="mc-h2"><span>Weg zu 25</span>
+      <span class="mc-h2-aux">Q14 terminal · ETA {e(eta_text)} · 10 Terminals</span></div>
+    <div class="mc-p25-head">
+      <div><span class="mc-p25-value">{_int(metrics.get("qualified_pairs"))}<small>/25</small></span>
+        <span class="mc-p25-label">voll qualifizierte Paare</span></div>
+      <div class="mc-p25-stat"><b>{_int(metrics.get("distinct_eas"))}</b><span>EAs</span></div>
+      <div class="mc-p25-stat"><b>{_int(metrics.get("families"))}</b><span>Familien</span></div>
+      <div class="mc-p25-stat"><b>{e(eta_text)}</b><span>Median-ETA</span></div>
+    </div>
+    <div class="mc-p25-frontier"><span>Frontier</span>{frontier}</div>
+    <div class="mc-p25-grid">
+      <div>
+        <div class="mc-sublabel">Q10 News</div>
+        <table class="mc-table"><tbody>
+          <tr><td class="mc-rowlabel">konklusive Verdikte · 7 T</td><td class="mc-num">{_int(news.get("conclusive_verdicts_7d"))}</td></tr>
+          <tr><td class="mc-rowlabel">PASS · 7 T</td><td class="mc-num">{_int(news.get("pass_7d"))}</td></tr>
+          <tr><td class="mc-rowlabel">pending/aktiv</td><td class="mc-num">{_int(news.get("pending"))}</td></tr>
+          <tr><td class="mc-rowlabel">Holds</td><td class="mc-num">{_int(news.get("holds"))}</td></tr>
+        </tbody></table>
+      </div>
+      <div>
+        <div class="mc-sublabel">Opt-Fork</div>
+        <table class="mc-table"><thead><tr><th></th><th class="mc-num">pending</th><th class="mc-num">done</th></tr></thead>
+          <tbody>{opt_rows}</tbody></table>
+        <div class="mc-foot"><b>Q14 terminal:</b> {e(verdicts)}</div>
+      </div>
+      <div>
+        <div class="mc-sublabel">Backfill</div>
+        <table class="mc-table"><tbody>
+          <tr><td class="mc-rowlabel">heute enqueued</td><td class="mc-num">{_int(backfill.get("enqueued_today"))}</td></tr>
+          <tr><td class="mc-rowlabel">RERUN_INFRA offen</td><td class="mc-num">{_int(backfill.get("rerun_infra_open"))}</td></tr>
+        </tbody></table>
+        <div class="mc-foot">ETA = nächstgelegene Pfade aus Phasenmedianen / 10; ohne vollständige Medianbasis keine Schätzung.</div>
+      </div>
+    </div>
+  </section>'''
+
+
 _STATE_STYLE = {
     "RUNNING": ("var(--signal)", "RUNNING"),
     "RESERVED": ("var(--promising)", "RESERVED"),
@@ -706,6 +777,22 @@ _PAGE_CSS = """
 
   .mc-section{margin-bottom:var(--space-8);border:1px solid var(--border);
     background:var(--surface-1);padding:var(--space-5) var(--space-6)}
+  .mc-p25{--path25-accent:#2954d4;border-left:4px solid var(--path25-accent)}
+  .mc-p25 .mc-h2>span:first-child{color:var(--path25-accent)}
+  .mc-p25-head{display:grid;grid-template-columns:2fr repeat(3,1fr);gap:var(--space-4);
+    padding:var(--space-4);background:var(--surface-2);border:1px solid var(--border)}
+  .mc-p25-value{font-family:var(--font-mono);font-size:var(--fs-3xl);color:var(--text)}
+  .mc-p25-value small{font-size:var(--fs-md);color:var(--path25-accent);margin-left:var(--space-1)}
+  .mc-p25-label,.mc-p25-stat span{display:block;font-family:var(--font-mono);font-size:var(--fs-xs);
+    color:var(--text-3);text-transform:uppercase;letter-spacing:.08em}
+  .mc-p25-stat{border-left:1px solid var(--border);padding-left:var(--space-4)}
+  .mc-p25-stat b{display:block;font-family:var(--font-mono);font-size:var(--fs-lg);color:var(--text)}
+  .mc-p25-frontier{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;
+    margin:var(--space-4) 0;font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-3)}
+  .mc-p25-gate{display:inline-flex;gap:var(--space-2);padding:var(--space-1) var(--space-2);
+    border:1px solid var(--border-2);color:var(--text-2)}
+  .mc-p25-gate b{color:var(--path25-accent)}
+  .mc-p25-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-6)}
   .mc-h2{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-4);
     margin-bottom:var(--space-4);border-bottom:1px solid var(--border);
     padding-bottom:var(--space-2);flex-wrap:wrap}
@@ -799,6 +886,7 @@ _PAGE_CSS = """
     .mc-t-grid{grid-template-columns:repeat(2,1fr)}
     .mc-strip{grid-template-columns:repeat(3,1fr)}
     .mc-cell:nth-child(3n){border-right:none}
+    .mc-p25-grid{grid-template-columns:1fr}
     .mc-queue-grid{grid-template-columns:1fr}
   }
   @media(max-width:720px){
@@ -863,6 +951,7 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
     body = "".join([
         _render_control_strip(contract),
         _render_risk_freeze(contract),
+        _render_path_to_25(contract),
         _render_q09_ftmo_recommendation(contract),
         _render_owner_decisions(contract),
         render_operator_surface_html(contract.get("operator_surface") or {}),

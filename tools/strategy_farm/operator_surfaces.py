@@ -23,6 +23,7 @@ from tools.strategy_farm import (
     backfill_planner,
     book_build_guard,
     gate_manifest,
+    path_to_25,
     rebaseline_census,
 )
 from tools.strategy_farm.phase_ids import (
@@ -160,6 +161,7 @@ def _observed_frontiers(db_path: Path) -> tuple[dict[tuple[str, str], dict], dic
     rank = {gate.id: gate.ordinal for gate in v4.gates}
     observed: dict[tuple[str, str], dict] = {}
     by_macro = {macro_id: 0 for macro_id in MACRO_PHASE_NAMES}
+    resolution_cache: dict[tuple[str, str], dict[str, Any] | None] = {}
     connection = rebaseline_census.open_ro(str(db_path))
     try:
         columns = {
@@ -175,28 +177,35 @@ def _observed_frontiers(db_path: Path) -> tuple[dict[tuple[str, str], dict], dic
             "AND symbol IS NOT NULL AND symbol<>''"
         )
         for ea_id, symbol, phase, contract_version in rows:
-            source_version = str(contract_version or "").strip().lower()
-            active_id = phase_qid(phase, contract_version).upper()
-            # Collapse a storage lane to its top-level gate after the explicit
-            # contract translation performed by phase_qid.
-            top_id = active_id[:3] if len(active_id) >= 3 and active_id[0] == "Q" else active_id
-            if source_version == "v4":
-                linear_id = str(phase).strip().upper()[:3]
-            else:
-                try:
-                    linear_id = v4.equivalent_gate(top_id, "v3", "v4")
-                except gate_manifest.GateManifestError:
-                    continue
-            if linear_id not in rank:
+            resolution_key = (str(phase or ""), str(contract_version or ""))
+            candidate = resolution_cache.get(resolution_key)
+            if resolution_key not in resolution_cache:
+                source_version = str(contract_version or "").strip().lower()
+                active_id = phase_qid(phase, contract_version).upper()
+                # Collapse a storage lane to its top-level gate after the explicit
+                # contract translation performed by phase_qid.
+                top_id = active_id[:3] if len(active_id) >= 3 and active_id[0] == "Q" else active_id
+                if source_version == "v4":
+                    linear_id = str(phase).strip().upper()[:3]
+                else:
+                    try:
+                        linear_id = v4.equivalent_gate(top_id, "v3", "v4")
+                    except gate_manifest.GateManifestError:
+                        linear_id = ""
+                candidate = (
+                    {
+                        "linear_gate": linear_id,
+                        "rank": rank[linear_id],
+                        "label": phase_label(phase, contract_version, include_name=True),
+                        "macro_phase": v4.macro_phase(linear_id),
+                    }
+                    if linear_id in rank else None
+                )
+                resolution_cache[resolution_key] = candidate
+            if candidate is None:
                 continue
             key = (str(ea_id), str(symbol))
             prior = observed.get(key)
-            candidate = {
-                "linear_gate": linear_id,
-                "rank": rank[linear_id],
-                "label": phase_label(phase, contract_version, include_name=True),
-                "macro_phase": v4.macro_phase(linear_id),
-            }
             if prior is None or candidate["rank"] > prior["rank"]:
                 observed[key] = candidate
     finally:
@@ -226,6 +235,7 @@ def build_operator_snapshot(
     manifest = gate_manifest.load_gate_manifest()
     observed, by_macro = _observed_frontiers(db_path)
     qualified = _qualified_rows(pair_rows, manifest.terminal_requalification_gate)
+    path_metrics = path_to_25.path_to_25_metrics(db_path, _pair_rows=pair_rows)
     guard_dir = Path(order_dir) if order_dir is not None else book_build_guard.DEFAULT_ORDER_DIR
     venue_status = {}
     for venue in ("dxz", "ftmo"):
@@ -282,6 +292,7 @@ def build_operator_snapshot(
             "strategy_families": venue_status["dxz"]["strategy_families"],
             "venues": venue_status,
         },
+        "path_to_25": path_metrics,
     }
 
 

@@ -9,18 +9,20 @@ send path (re-used from gmail_alarm.py: same SMTP host, creds in
 .private/secrets/, recipient). It also keeps the Drive-vault archive so OWNER
 has a scrollable off-VPS history.
 
-Six sections (German content — OWNER-chat is German), Qxx labels only:
+Seven sections (German content — OWNER-chat is German), Qxx labels only:
   1. LIVE-BUCH · Nachtbilanz   — DXZ Final-24: deals, EA-emittierte Equity + Δ,
                                   Journal-Alter, aktive EA-Logs /24, Fehler-Zeilen,
                                   FTMO-Status (Trial beendet).
   2. FRONTIER · Kandidaten     — frische Q08/Q09/Q10-PASSes seit gestern 18:00 +
                                   Q07-PASS mit Q08 laufend (nächstes Buch ~26.07.).
-  3. FACTORY-AMPEL             — Worker, D:-frei, INFRA-Anteil 24h, FACTORY_OFF.flag
+  3. WEG ZU 25                — Q14-qualifizierte Paare, Q10-News, Opt-Fork,
+                                  Backfill und medianbasierte 10-Terminal-ETA.
+  4. FACTORY-AMPEL             — Worker, D:-frei, INFRA-Anteil 24h, FACTORY_OFF.flag
                                   → eine Zeile GRÜN/GELB/ROT (ROT nur echtes Down).
-  4. OWNER-ENTSCHEIDUNGEN      — severity=action, fällig ≤ 7 Tage, fällig-sortiert
+  5. OWNER-ENTSCHEIDUNGEN      — severity=action, fällig ≤ 7 Tage, fällig-sortiert
                                   (gleiche Logik wie das Cockpit).
-  5. QUOTA (Woche)             — Claude + Codex Wochen-% (kein 5h-Fenster mehr).
-  6. OPS-HEARTBEATS            — Backup / Governor / Purge — je ✓ / ⚠ / ✕.
+  6. QUOTA (Woche)             — Claude + Codex Wochen-% (kein 5h-Fenster mehr).
+  7. OPS-HEARTBEATS            — Backup / Governor / Purge — je ✓ / ⚠ / ✕.
 
 Data logic is re-used from render_cockpit.py (single source of truth) so the
 mail never contradicts the cockpit. The HTML rendering lives here.
@@ -56,6 +58,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import render_cockpit as rc          # noqa: E402
 import gmail_alarm as ga             # noqa: E402
 import live_observability_contract as live_obs  # noqa: E402
+import path_to_25 as path25_model    # noqa: E402
 
 # ── Brand tokens (PAPER / INK Direction C — paper-light bg, steel-blue
 #    accent, green/red = status + P&L only, sharp edges, no glow) ─────────
@@ -966,6 +969,24 @@ def frontier() -> dict:
         return {"fresh_pass": [], "in_flight": [], "fresh_count": 0, "inflight_count": 0}
 
 
+def path_to_25() -> dict:
+    """Read the shared qualification model without risking the 06:00 delivery."""
+    try:
+        return path25_model.path_to_25_metrics(DB)
+    except Exception as exc:
+        return {
+            "qualified_pairs": 0,
+            "distinct_eas": 0,
+            "families": 0,
+            "frontier_histogram": {},
+            "news_gate": {},
+            "opt_fork": {},
+            "backfill": {},
+            "eta_days": None,
+            "degraded_reason": f"{type(exc).__name__}: {exc}",
+        }
+
+
 def factory_light() -> dict:
     """GRÜN / GELB / ROT with reason. ROT only on a genuine factory-down."""
     try:
@@ -1216,6 +1237,58 @@ def render_live_section(live: dict) -> str:
     )
 
 
+def render_path_to_25_section(metrics: dict) -> str:
+    """German OWNER section backed only by ``path_to_25_metrics`` fields."""
+    p25 = metrics or {}
+    news = p25.get("news_gate") or {}
+    opt = p25.get("opt_fork") or {}
+    backfill = p25.get("backfill") or {}
+    eta = p25.get("eta_days")
+    eta_text = (
+        f"{float(eta):.2f}".replace(".", ",") + " Tage"
+        if eta is not None else "nicht belastbar"
+    )
+    frontier = " · ".join(
+        f"{gate} {count}"
+        for gate, count in (p25.get("frontier_histogram") or {}).items()
+        if int(count or 0) > 0
+    ) or "noch keine lückenlose Qxx-Frontier"
+    opt_text = " · ".join(
+        f"{gate} pending {(opt.get(gate) or {}).get('pending', 0)} / "
+        f"done {(opt.get(gate) or {}).get('done', 0)}"
+        for gate in ("Q12", "Q13", "Q14")
+    )
+    terminal = ", ".join(
+        f"{key} {value}" for key, value in (opt.get("terminal_verdicts") or {}).items()
+    ) or "keine"
+    body = (
+        f'<table width="100%" cellpadding="0" cellspacing="0" border="0" '
+        f'style="background:{P["surface_2"]};border:1px solid {P["border"]};"><tr>'
+        f'<td width="34%" style="padding:13px 14px;border-left:4px solid #2954d4;">'
+        f'<div style="font-size:28px;font-weight:800;color:{P["text"]};font-family:{MONO};">'
+        f'{e(p25.get("qualified_pairs", 0))}<span style="font-size:14px;color:#2954d4;">/25</span></div>'
+        f'<div style="font-size:10px;color:{P["text_muted"]};">voll qualifizierte Paare</div></td>'
+        f'<td style="padding:13px 14px;font-size:11px;color:{P["text_dim"]};line-height:1.55;">'
+        f'{e(p25.get("distinct_eas", 0))} EAs · {e(p25.get("families", 0))} Familien · '
+        f'ETA {e(eta_text)}<br><span style="color:{P["text_muted"]};">{e(frontier)}</span></td>'
+        f'</tr></table>'
+        + _list_line(
+            '<b>Q10 News · 7 Tage</b>',
+            f'konklusiv {news.get("conclusive_verdicts_7d", 0)} · '
+            f'PASS {news.get("pass_7d", 0)} · offen {news.get("pending", 0)} · '
+            f'Holds {news.get("holds", 0)}')
+        + _list_line('<b>Opt-Fork</b>', opt_text)
+        + _list_line('<b>Q14 terminale Verdikte</b>', terminal)
+        + _list_line(
+            '<b>Backfill</b>',
+            f'heute {backfill.get("enqueued_today", 0)} enqueued · '
+            f'RERUN_INFRA offen {backfill.get("rerun_infra_open", 0)}')
+    )
+    if p25.get("degraded_reason"):
+        body += _list_line('<b>Messung nicht verfügbar</b>', p25["degraded_reason"], FAIL)
+    return _section_open("Weg zu 25", "#2954d4", "Q14 terminal · 10 Terminals") + _row(body)
+
+
 def render_html(data: dict) -> str:
     live = data["live"]
     nb = data["night"]
@@ -1225,6 +1298,7 @@ def render_html(data: dict) -> str:
     acts = data["actions"]
     qt = data["quota"]
     hb = data["heartbeats"]
+    p25 = data.get("path_to_25") or {}
     now_local = data["now_local"]
     tz = data["tz"]
     date_h = data["date_h"]
@@ -1302,6 +1376,7 @@ def render_html(data: dict) -> str:
         _section_open("Frontier · Kandidaten", ORANGE, "nächstes Buch ~26.07.")
         + _row(body2)
     )
+    sec25 = render_path_to_25_section(p25) if p25 else ""
 
     # ── Section 3: FACTORY-AMPEL ────────────────────────────────────────
     sec3 = (
@@ -1436,7 +1511,7 @@ def render_html(data: dict) -> str:
         f'<tr><td align="center" style="padding:20px 10px;">'
         f'<table width="640" cellpadding="0" cellspacing="0" border="0" '
         f'style="max-width:640px;width:100%;background:{P["surface_1"]};border:1px solid {P["border"]};">'
-        f'{header}{sec0}{sec1}{sec2}{sec3}{sec4}{sec5}{sec6}{footer}'
+        f'{header}{sec0}{sec1}{sec2}{sec25}{sec3}{sec4}{sec5}{sec6}{footer}'
         f'</table></td></tr></table></body></html>'
     )
 
@@ -1446,6 +1521,7 @@ def render_text(data: dict) -> str:
     nb, fr, fl = data["night"], data["frontier"], data["factory"]
     qt, hb = data["quota"], data["heartbeats"]
     live = data["live"]
+    p25 = data.get("path_to_25") or {}
     L = []
     L.append(f"QM MORGENBRIEFING {data['date_h']}  (gerendert {data['now_local']} {data['tz']})")
     L.append("=" * 60)
@@ -1476,6 +1552,40 @@ def render_text(data: dict) -> str:
         L.append(f"   Keine frischen Q08/Q09/Q10-PASSes seit {data['since'][:16].replace('T',' ')}.")
     for r in inflight:
         L.append(f"   [Q08 laeuft] {r['ea_id']} {r['symbol']} — {r['status']}")
+    L.append("")
+    news25 = p25.get("news_gate") or {}
+    opt25 = p25.get("opt_fork") or {}
+    backfill25 = p25.get("backfill") or {}
+    eta25 = p25.get("eta_days")
+    eta25_text = f"{eta25:.2f} Tage" if isinstance(eta25, (int, float)) else "nicht belastbar"
+    L.append("WEG ZU 25 (Q14 terminal)")
+    L.append(
+        f"   Qualifiziert {p25.get('qualified_pairs', 0)}/25 Paare | "
+        f"{p25.get('distinct_eas', 0)} EAs | {p25.get('families', 0)} Familien | "
+        f"ETA {eta25_text}"
+    )
+    frontier25 = " · ".join(
+        f"{gate} {count}"
+        for gate, count in (p25.get("frontier_histogram") or {}).items()
+        if int(count or 0) > 0
+    ) or "keine"
+    L.append(f"   Frontier: {frontier25}")
+    L.append(
+        f"   Q10 News: 7T konklusiv {news25.get('conclusive_verdicts_7d', 0)} | "
+        f"PASS {news25.get('pass_7d', 0)} | offen {news25.get('pending', 0)} | "
+        f"Holds {news25.get('holds', 0)}"
+    )
+    L.append("   Opt: " + " | ".join(
+        f"{gate} pending {(opt25.get(gate) or {}).get('pending', 0)}/"
+        f"done {(opt25.get(gate) or {}).get('done', 0)}"
+        for gate in ("Q12", "Q13", "Q14")
+    ))
+    L.append(
+        f"   Backfill: heute {backfill25.get('enqueued_today', 0)} enqueued | "
+        f"RERUN_INFRA offen {backfill25.get('rerun_infra_open', 0)}"
+    )
+    if p25.get("degraded_reason"):
+        L.append(f"   Messung nicht verfuegbar: {p25['degraded_reason']}")
     L.append("")
     L.append(f"3) FACTORY-AMPEL: {fl['label']} — {fl['reason']}")
     L.append(f"   04:45-SAFETY: {data['morning_safety']['label']} — {data['morning_safety']['summary']}")
@@ -1558,6 +1668,7 @@ def collect() -> dict:
         "night": night_balance(),
         "since": _yesterday_18(),
         "frontier": frontier(),
+        "path_to_25": path_to_25(),
         "factory": factory_light(),
         "morning_safety": morning_safety_summary(),
         "actions": owner_actions(),

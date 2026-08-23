@@ -566,7 +566,7 @@ def build_queue(con: sqlite3.Connection, *, now: dt.datetime | None = None) -> d
                MIN(c.created_at) AS oldest_created_at
         FROM work_items_clean c LEFT JOIN work_items w ON w.id=c.id
         WHERE c.status='pending'
-        GROUP BY c.phase, gate_contract_version
+        GROUP BY c.phase, {contract_expr}
         ORDER BY pending DESC
         """,
     )
@@ -987,6 +987,7 @@ def build_contract(
     )
     freeze = build_risk_freeze(now=now)
     operator_surface = operator_surfaces.build_operator_snapshot(db)
+    path_to_25 = operator_surface["path_to_25"]
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -1002,6 +1003,7 @@ def build_contract(
         "terminals": terminals,
         "owner_decisions": owner,
         "operator_surface": operator_surface,
+        "path_to_25": path_to_25,
     }
 
 
@@ -1251,6 +1253,24 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                 "pairs": {"type": "array"},
                 "counts": {"type": "object"},
                 "book_guard": {"type": "object"},
+            },
+        },
+        "path_to_25": {
+            "type": "object",
+            "required": [
+                "qualified_pairs", "distinct_eas", "families",
+                "frontier_histogram", "news_gate", "opt_fork", "backfill",
+                "eta_days",
+            ],
+            "properties": {
+                "qualified_pairs": {"type": "integer"},
+                "distinct_eas": {"type": "integer"},
+                "families": {"type": "integer"},
+                "frontier_histogram": {"type": "object"},
+                "news_gate": {"type": "object"},
+                "opt_fork": {"type": "object"},
+                "backfill": {"type": "object"},
+                "eta_days": {"type": ["number", "null"]},
             },
         },
     },

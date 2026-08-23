@@ -35,7 +35,8 @@ CREATE TABLE work_items (
     claimed_by TEXT,
     payload_json TEXT,
     created_at TEXT,
-    updated_at TEXT
+    updated_at TEXT,
+    gate_contract_version TEXT
 );
 CREATE TABLE agent_tasks (
     id TEXT PRIMARY KEY,
@@ -278,6 +279,8 @@ def test_full_contract_is_schema_valid(fixture_db, monkeypatch, tmp_path):
     assert contract["q09_ftmo_recommendation"]["criteria_source"].endswith(
         "evaluate_ftmo_q09_admission"
     )
+    assert contract["path_to_25"] == contract["operator_surface"]["path_to_25"]
+    assert contract["path_to_25"]["qualified_pairs"] == 0
 
 
 def test_validator_rejects_bad_document():
