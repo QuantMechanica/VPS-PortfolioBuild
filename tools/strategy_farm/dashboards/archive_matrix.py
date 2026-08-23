@@ -577,7 +577,8 @@ border:1px solid var(--border-2);color:var(--text-2);white-space:nowrap}
 
 .sc-stats{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--border);
 border-bottom:1px solid var(--border);background:var(--surface-2)}
-.sc-stat{padding:9px 18px 8px;border-right:1px solid var(--border);min-width:132px}
+.sc-stat{padding:9px 18px 8px;border-right:1px solid var(--border);min-width:132px;flex:1 1 auto}
+.sc-stat:last-child{border-right:0}
 .sc-stat b{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.11em;
 color:var(--text-4);font-weight:500;margin-bottom:3px}
 .sc-stat span{font-family:var(--font-mono);font-size:14px;color:var(--text)}
