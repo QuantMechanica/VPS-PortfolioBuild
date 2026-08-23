@@ -1,0 +1,155 @@
+{
+  "schema": "qm.qm5-41123.source-build-q02-cpu-ceiling-handoff/v1",
+  "generated_at_utc": "2026-08-23T02:22:37.4285082Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41123",
+  "ea_label": "QM5_41123_xauxag-mpath-eff-rv",
+  "strategy_id": "SCHWEIKERT-MOP-CME-XAUXAG-MPATH-EFF-RV-2026_S01",
+  "logical_symbol": "QM5_41123_XAU_XAG_MPATH_EFF_RV_D1",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_ENQUEUED_ACTIVATION_HELD_CPU_CEILING_Q01_PENDING_Q02_NOT_ENQUEUED",
+  "commits": {
+    "source_approval_and_preallocation_dedup": "13cb898ac1dd210a2ecbaadb67ddfd374ada67bb",
+    "bounded_source_extraction": "e6fda1b6756804d1e2ccc02340e6283f65fe6692",
+    "ea_id_reservation": "7ca524a9d0e75ec69b1c3d51b42778b3c129c958",
+    "g0_card_and_postallocation_dedup": "533e6e78f877247681093001a62919031cf47117",
+    "magic_allocation": "9ed11967ee717f759ab7fff62b94241e6958778e",
+    "resolver_binding": "ff8559a5c6d700cd0e25fb68463e65f4690261b9",
+    "source_build": "4129a2e7cbe370181c0411fd554dc9f9a142761e",
+    "approved_card_binding_cleanup": "5cae187287bb8624dc980398415445ad4b545f0b"
+  },
+  "identity": {
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "logical_symbol": "QM5_41123_XAU_XAG_MPATH_EFF_RV_D1",
+    "symbol_slots": [0, 1],
+    "magics": [411230000, 411230001]
+  },
+  "mechanic": {
+    "formation": "immediately completed calendar month with exactly 17-23 synchronized XAU/XAG D1 close pairs",
+    "returns": "every chronological adjacent change in log(XAU close)-log(XAG close), including exact-zero constituent returns",
+    "statistic": "N=sum(r), P=sum(abs(r)), E=abs(N)/P; require finite P>0, E in bounds, inclusive E>=0.20, and nonzero N",
+    "entry": "positive N => SELL XAU/BUY XAG; negative N => BUY XAU/SELL XAG",
+    "attempt_cadence": "one durable attempt per broker month, persisted before all fallible gates",
+    "exit": "first synchronized D1 boundary in a later broker month, with forty-calendar-day stale repair",
+    "q02_frequency_floor": "at least five completed packages per full post-warm-up year"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "equal_absolute_notional_target": true,
+    "maximum_notional_mismatch_pct": 20.0,
+    "atr_period_d1": 20,
+    "atr_stop_multiple": 3.5,
+    "profit_target": false,
+    "friday_close": false,
+    "news_temporal": "OFF",
+    "news_compliance": "NONE"
+  },
+  "dedup": {
+    "preallocation_verdict": "CLEAN",
+    "registry_identities_scanned": 4622,
+    "cards_scanned": 1291,
+    "strategy_wiki_nodes_scanned": 45,
+    "postallocation_verdict": "EXPECTED_SELF_HITS_ONLY"
+  },
+  "resolver_regeneration": {
+    "directory_first": true,
+    "strict_default_used": true,
+    "transient_preservation_for_preexisting_missing_legacy_ids": [1001, 1015, 1016],
+    "allow_dropped_used": false,
+    "resolver_rows_kept": 17820,
+    "resolver_rows_dropped": 0,
+    "registry_sha256_binding": "A25763A7B81D9A84400821CB859874EAFC00E5D7F3C51FADA42BD8687B4B1124"
+  },
+  "validations": {
+    "card_schema_lint": "PASS",
+    "g0_card_status": "APPROVED",
+    "registry_identity": "PASS",
+    "magic_rows_and_resolver": "PASS",
+    "reference_tests": {
+      "verdict": "PASS",
+      "tests_passed": 8
+    },
+    "spec_validator": "PASS",
+    "build_guardrails": {
+      "verdict": "PASS",
+      "findings": 0,
+      "files_checked": 2
+    },
+    "symbol_scope": {
+      "verdict": "BASKET_OK",
+      "violations": 0,
+      "symbols": ["XAUUSD.DWX", "XAGUSD.DWX"]
+    },
+    "card_copy_sha256_equal": true,
+    "strict_compile": "REFUSED_BEFORE_COMPILE_LIVE_FACTORY_GUARD",
+    "q01": "PENDING"
+  },
+  "compile": {
+    "direct_attempt_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_compile_enqueued": true,
+    "compile_status_at_handoff": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "work_item_id": "96d25526-218a-434f-95eb-36d80f1016b8",
+    "ex5_exists": false,
+    "setfile_build_hash": "pending",
+    "build_check_result": null
+  },
+  "capacity": {
+    "sample_completed_at_utc": "2026-08-23T02:19:01.0799111Z",
+    "counter": "Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 2,
+    "whole_host_cpu_pct": [86.94, 100.0, 100.0, 100.0, 98.39],
+    "average_cpu_pct": 97.07,
+    "maximum_cpu_pct": 100.0,
+    "terminal64_process_count_at_sample_end": 10,
+    "metatester_process_count_at_sample_end": 6,
+    "mt5_slots_scanned_at_utc": "2026-08-23T02:21:44+00:00",
+    "running_governed_terminals": ["T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9"],
+    "running_governed_terminal_count": 8,
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "ceiling_pct": 97,
+    "ceiling_hit": true,
+    "binding_stop": true
+  },
+  "q02": {
+    "requested": true,
+    "preview_run": false,
+    "enqueued": false,
+    "work_item_id": null,
+    "blocking_gates": [
+      "BACKTEST_CPU_CEILING_HIT",
+      "COMPILE_WORK_ITEM_ACTIVATION_HELD",
+      "STRICT_COMPILE_EX5_FINAL_SET_BINDING_AND_Q01_PASS_ABSENT"
+    ]
+  },
+  "hashes_sha256": {
+    "bounded_source": "5AECEE90AE604D3E0A966A2F1FA85BA32D2E2F6A953A0E8197965A48D662B23A",
+    "approved_and_build_card": "77CCB0095F0CEAFAAA8C0599D752D565F5379A81795064EC8FE74275FAED000A",
+    "mq5": "380AD07B1011FE871993F61368546DF9FE90367EAA18908A62C58A318863A754",
+    "spec": "7B1568B882B62634CD6520082E69EFE82EE402DFA44AC23EDA0D23AFCDA210C8",
+    "basket_manifest": "4E45BF4B635B9F0B7661CA2F8AD2D2D10C366DC6183739AF0ED432F55F19DD2E",
+    "reference_suite": "38D57BA30DFDA0725554A69FFCD841DCFBC60AE6F96A9F22F804655C6456321A",
+    "unbound_backtest_set": "CFC4A454377FDDFFA538436EAA9A016F66D246706D220DB9504D9BE7317EBEB2",
+    "magic_registry": "A25763A7B81D9A84400821CB859874EAFC00E5D7F3C51FADA42BD8687B4B1124",
+    "magic_resolver": "1D5EFE11EA187753C23CE7DF1E5BC84AD5E68E48A29552B31260CCB24F786053"
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_reservation_or_control": false,
+    "compile_queue_mutated": true,
+    "backtest_queue_mutated": false,
+    "autotrading_toggled": false,
+    "t_live_observed_read_only": true,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
