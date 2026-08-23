@@ -41,20 +41,36 @@ The `phase_label()` and `phase_qid()` helpers stay backwards-compatible:
 from __future__ import annotations
 
 try:  # direct ``python tools/strategy_farm/<script>.py`` imports
-    from gate_manifest import load_gate_manifest
+    from gate_manifest import GateManifest, load_gate_manifest
 except ModuleNotFoundError:  # package imports in tests and module consumers
-    from tools.strategy_farm.gate_manifest import load_gate_manifest
+    from tools.strategy_farm.gate_manifest import GateManifest, load_gate_manifest
+
+
+def build_phase_tables(
+    manifest: GateManifest,
+) -> tuple[list[str], dict[str, str], dict[str, str | None]]:
+    """Build independent phase order/name/next tables from one loaded contract.
+
+    The function is pure: it performs no manifest load and mutates neither the
+    supplied immutable manifest nor the module defaults.  This lets migration
+    and display code inspect the READ_INERT v4 draft explicitly while all
+    existing imports continue to use the active v3 tables below.
+    """
+
+    return (
+        list(manifest.phase_ids),
+        dict(manifest.display_names),
+        dict(manifest.next_by_phase),
+    )
 
 
 # Load and validate the versioned contract once at import time.  Runtime helpers
 # below use these in-memory tables; hot paths never re-parse the JSON manifest.
 _GATE_MANIFEST = load_gate_manifest()
 
-PHASE_ORDER = list(_GATE_MANIFEST.phase_ids)
+PHASE_ORDER, PHASE_NAME, PHASE_NEXT = build_phase_tables(_GATE_MANIFEST)
 # Includes display-only evidence stages when the active manifest defines them.
 # Such stages (v3 Q10A) are not in PHASE_ORDER and remain invalid for writes.
-PHASE_NAME = _GATE_MANIFEST.display_names
-PHASE_NEXT = _GATE_MANIFEST.next_by_phase
 if _GATE_MANIFEST.extension_topology is None:
     ORDINARY_PHASE_ORDER = list(_GATE_MANIFEST.phase_ids)
     OPTIMIZATION_PHASE_ORDER: list[str] = []

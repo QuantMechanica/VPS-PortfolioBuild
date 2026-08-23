@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -138,6 +139,110 @@ def test_v3_loader_exposes_q11_routing_and_q16_dependencies() -> None:
     assert v2.baseline_reuse_policy is None
 
 
+def test_v4_draft_loads_read_inert_without_changing_v3_default() -> None:
+    active = gate_manifest.load_gate_manifest()
+    draft = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
+
+    assert active.schema_version == gate_manifest.SCHEMA_VERSION_V3
+    assert gate_manifest.SCHEMA_VERSION == gate_manifest.SCHEMA_VERSION_V3
+    assert gate_manifest.DEFAULT_MANIFEST == gate_manifest.V3_MANIFEST
+    assert draft.schema_version == gate_manifest.SCHEMA_VERSION_V4
+    assert draft.activation_state == "READ_INERT"
+    assert draft.phase_ids == tuple(f"Q{i:02d}" for i in range(18))
+    assert draft.macro_phase("Q00") == "1_STRATEGIEBEWEIS"
+    assert draft.macro_phase("Q14") == "2_OPTIMIERUNG"
+    assert draft.macro_phase("Q15") == "3_BUCHBEWERTUNG"
+
+
+def test_v4_equivalence_round_trips_every_phase2_and_phase3_gate() -> None:
+    draft = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
+    forward = dict(draft.contract_equivalence["v3_to_v4"])
+    source_by_gate = {
+        target: source for source, target in forward.items() if target in draft.phase_ids
+    }
+
+    assert set(source_by_gate) == set(draft.phase_ids)
+    for v4_gate in draft.phase_ids[9:]:
+        v3_gate = source_by_gate[v4_gate]
+        assert draft.equivalent_gate(v3_gate, "v3", "v4") == v4_gate
+        assert draft.equivalent_gate(v4_gate, "v4", "v3") == v3_gate
+        assert gate_manifest.equivalent_gate(v3_gate, "v3", "v4", draft) == v4_gate
+
+    # Storage-lane translations are versioned and reversible too.
+    assert draft.equivalent_gate("Q09_NEWS", "v3", "v4") == "Q10_NEWS"
+    assert draft.equivalent_gate("Q10_NEWS", "v4", "v3") == "Q09_NEWS"
+
+
+def test_v4_is_linear_with_a_trigger_only_phase3_entry() -> None:
+    draft = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
+    ordinal = {gate.id: gate.ordinal for gate in draft.gates}
+
+    assert [gate.ordinal for gate in draft.gates] == list(range(18))
+    assert [gate.id for gate in draft.gates if gate.ordinal <= 14 and gate.next is None] == [
+        "Q14"
+    ]
+    assert draft.next_by_phase["Q14"] is None
+    assert draft.next_by_phase["Q17"] is None
+    assert "Q15" not in {target for target in draft.next_by_phase.values() if target}
+    for gate in draft.gates:
+        if gate.next is not None:
+            assert ordinal[gate.next] == gate.ordinal + 1
+
+    order, names, successors = phase_ids.build_phase_tables(draft)
+    assert order == list(draft.phase_ids)
+    assert names == draft.display_names
+    assert successors == draft.next_by_phase
+    # Explicit v4 inspection does not mutate the active v3 module defaults.
+    assert phase_ids.PHASE_ORDER == [f"Q{i:02d}" for i in range(17)]
+    assert phase_ids.PHASE_NEXT["Q16"] == "Q11"
+
+
+def test_v4_sha256_is_stable_and_binds_exact_draft_bytes() -> None:
+    first = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
+    second = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
+    expected = hashlib.sha256(gate_manifest.V4_DRAFT_MANIFEST.read_bytes()).hexdigest()
+
+    assert first.sha256 == second.sha256 == expected
+    assert expected == "702318775a756a19025e65fd2b9cdc18ff32d5880f43cdbaa5b75843e2c39c32"
+
+
+def test_v4_activation_guard_and_future_final_path_fail_closed(tmp_path: Path) -> None:
+    original = json.loads(gate_manifest.V4_DRAFT_MANIFEST.read_text(encoding="utf-8"))
+
+    # A future final filename is accepted only when its ACTIVE record is complete.
+    active = json.loads(json.dumps(original))
+    active["status"] = "ACTIVE"
+    active["extension_topology"]["activation_guard"] = {
+        "state": "ACTIVE",
+        "requires_completed_review": "OWNER-RATIFY-GATE-MANIFEST-V4",
+        "requires_approver": "OWNER",
+        "default_manifest_switch": True,
+        "activated_by": "OWNER",
+        "activated_at": "2026-08-23T12:00:00Z",
+        "review_refs": ["owner-ratification", "migration-review"],
+    }
+    final_path = tmp_path / gate_manifest.V4_MANIFEST.name
+    final_path.write_text(json.dumps(active), encoding="utf-8")
+    assert gate_manifest.load_gate_manifest(final_path).activation_state == "ACTIVE"
+
+    missing_refs = json.loads(json.dumps(active))
+    missing_refs["extension_topology"]["activation_guard"]["review_refs"] = []
+    final_path.write_text(json.dumps(missing_refs), encoding="utf-8")
+    with pytest.raises(gate_manifest.GateManifestError, match="review_refs"):
+        gate_manifest.load_gate_manifest(final_path)
+
+    # The checked-in READ_INERT draft can never be treated as DEFAULT_MANIFEST.
+    saved = gate_manifest.DEFAULT_MANIFEST
+    gate_manifest.DEFAULT_MANIFEST = gate_manifest.V4_DRAFT_MANIFEST
+    try:
+        with pytest.raises(
+            gate_manifest.GateManifestError, match="cannot be loaded as the default"
+        ):
+            gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
+    finally:
+        gate_manifest.DEFAULT_MANIFEST = saved
+
+
 def test_v3_changes_no_authority_runner_next_or_verdict_dimension() -> None:
     v2 = gate_manifest.load_gate_manifest(gate_manifest.V2_MANIFEST)
     v3 = gate_manifest.load_gate_manifest(gate_manifest.V3_MANIFEST)
@@ -214,7 +319,7 @@ def test_duplicate_json_keys_and_non_contiguous_gates_fail_closed(tmp_path: Path
         gate_manifest.load_gate_manifest(broken_path)
 
 
-def test_schemas_declare_closed_v1_v2_and_v3_contracts() -> None:
+def test_schemas_declare_closed_v1_v2_v3_and_v4_contracts() -> None:
     v1 = json.loads(
         (STRATEGY_FARM / "schemas" / "gate_manifest.v1.schema.json").read_text(encoding="utf-8")
     )
@@ -223,6 +328,9 @@ def test_schemas_declare_closed_v1_v2_and_v3_contracts() -> None:
     )
     v3 = json.loads(
         (STRATEGY_FARM / "schemas" / "gate_manifest.v3.schema.json").read_text(encoding="utf-8")
+    )
+    v4 = json.loads(
+        (STRATEGY_FARM / "schemas" / "gate_manifest.v4.schema.json").read_text(encoding="utf-8")
     )
     assert v1["additionalProperties"] is False
     assert v1["properties"]["gates"]["minItems"] == 14
@@ -235,6 +343,10 @@ def test_schemas_declare_closed_v1_v2_and_v3_contracts() -> None:
     assert v3["properties"]["gates"]["minItems"] == 17
     assert v3["properties"]["gates"]["maxItems"] == 17
     assert v3["properties"]["extension_topology"]["additionalProperties"] is False
+    assert v4["additionalProperties"] is False
+    assert v4["properties"]["gates"]["minItems"] == 18
+    assert v4["properties"]["gates"]["maxItems"] == 18
+    assert v4["$defs"]["extensionTopology"]["additionalProperties"] is False
 
 
 def test_v3_json_schema_validates_candidate_when_jsonschema_is_available() -> None:
@@ -243,6 +355,16 @@ def test_v3_json_schema_validates_candidate_when_jsonschema_is_available() -> No
         (STRATEGY_FARM / "schemas" / "gate_manifest.v3.schema.json").read_text(encoding="utf-8")
     )
     manifest = json.loads(gate_manifest.V3_MANIFEST.read_text(encoding="utf-8"))
+    jsonschema.Draft202012Validator.check_schema(schema)
+    jsonschema.validate(instance=manifest, schema=schema)
+
+
+def test_v4_json_schema_validates_draft_when_jsonschema_is_available() -> None:
+    jsonschema = pytest.importorskip("jsonschema")
+    schema = json.loads(
+        (STRATEGY_FARM / "schemas" / "gate_manifest.v4.schema.json").read_text(encoding="utf-8")
+    )
+    manifest = json.loads(gate_manifest.V4_DRAFT_MANIFEST.read_text(encoding="utf-8"))
     jsonschema.Draft202012Validator.check_schema(schema)
     jsonschema.validate(instance=manifest, schema=schema)
 
