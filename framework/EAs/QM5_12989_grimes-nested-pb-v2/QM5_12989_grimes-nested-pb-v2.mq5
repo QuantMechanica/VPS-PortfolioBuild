@@ -165,6 +165,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(percentile_index >= strategy_d1_atr_percentile_lookback)
       percentile_index = strategy_d1_atr_percentile_lookback - 1;
 
+   if(percentile_index >= ArraySize(atr_values))
+      return false;
    const double current_d1_atr = QM_ATR(_Symbol, PERIOD_D1, strategy_h4_atr_period, 1);
    if(current_d1_atr <= 0.0 || current_d1_atr < atr_values[percentile_index])
       return false;
