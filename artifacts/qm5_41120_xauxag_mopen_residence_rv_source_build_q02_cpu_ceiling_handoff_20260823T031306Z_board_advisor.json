@@ -1,0 +1,120 @@
+{
+  "schema": "qm.commodity-source-build-cpu-ceiling-handoff/v1",
+  "generated_at_utc": "2026-08-23T03:13:06.7769657Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41120",
+  "ea_label": "QM5_41120_xauxag-mopen-residence-rv",
+  "strategy_id": "SCHWEIKERT-CME-XAUXAG-MOPEN-RESIDENCE-RV-2026_S01",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_PENDING_CPU_CEILING_STOP_Q02_NOT_ENQUEUED",
+  "edge": {
+    "logical_symbol": "QM5_41120_XAU_XAG_MOPEN_RESIDENCE_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "frequency": "one consumed attempt per broker month",
+    "mechanic": "immediately completed 17-23-session synchronized gold-minus-silver log-ratio month; first ratio fixed as anchor; at least ceil(3*(n-1)/4) later ratios and final ratio strictly on one side; fade the qualifying side",
+    "risk": "one equal-absolute-notional opposite-leg package sharing aggregate RISK_FIXED=1000 with frozen 3.5*ATR(20,D1) stops",
+    "portfolio_claim": "market-neutral design only; Q09 owns realized correlation"
+  },
+  "source_and_governance": {
+    "approved_card": "strategy-seeds/cards/approved/QM5_41120_xauxag-mopen-residence-rv_card.md",
+    "approved_card_sha256": "F5CB98D5E944F1293119652CFEA03D6F3E1A434549E12A60F7C0946823E5D878",
+    "local_card_sha256": "F5CB98D5E944F1293119652CFEA03D6F3E1A434549E12A60F7C0946823E5D878",
+    "source_packet": "strategy-seeds/sources/SCHWEIKERT-CME-XAUXAG-MOPEN-RESIDENCE-RV-2026/source.md",
+    "source_approval": "decisions/2026-08-22_xauxag_monthly_open_residence_reversion_source_approval.md",
+    "g0_decision": "decisions/2026-08-22_qm5_41120_xauxag_monthly_open_residence_reversion_g0.md",
+    "g0_status": "APPROVED",
+    "execution_contract_status": "APPROVED",
+    "dedup_verdict": "CLEAN_XAUXAG_COMPLETED_MONTH_FIXED_OPEN_RESIDENCE_REVERSION_AFTER_FAMILY_REVIEW"
+  },
+  "commits": {
+    "source_approval": "a7d733f31",
+    "source_extraction": "2bb49c71f",
+    "ea_id_reservation": "bf8a336c4",
+    "approved_card": "26d2e4c43",
+    "magic_allocation": "af0fb64fc",
+    "source_build": "1e2cc637a"
+  },
+  "registry": {
+    "magic_registry_sha256": "7B821FD790B7432BC61B961E4E091AB22B36A9E2C427F4FE3F79E117750E9A38",
+    "resolver_embedded_sha256": "7B821FD790B7432BC61B961E4E091AB22B36A9E2C427F4FE3F79E117750E9A38",
+    "resolver_rows": 17822,
+    "rows": [
+      {
+        "slot": 0,
+        "symbol": "XAUUSD.DWX",
+        "magic": 411200000
+      },
+      {
+        "slot": 1,
+        "symbol": "XAGUSD.DWX",
+        "magic": 411200001
+      }
+    ],
+    "retired_rows_deleted": 0,
+    "allow_dropped_used": false,
+    "transient_legacy_directory_materialization_cleaned": true
+  },
+  "build": {
+    "mq5_sha256": "B5744054C9DEB95A28F44829E9934F5A9EDA6D697357F53EE40A860290237741",
+    "setfile_sha256_before_compile": "4E84E5FA5676665989030999929297D47FA2A3D71FD5AE1290895A222C2A5E1B",
+    "setfile_build_hash": "pending",
+    "ex5_exists": false,
+    "q01_status": "PENDING_GOVERNED_COMPILE",
+    "validations": {
+      "card_schema_lint": "PASS",
+      "reference_tests": "7_PASS",
+      "spec_validation": "PASS",
+      "build_guardrails": "PASS_ZERO_FINDINGS",
+      "symbol_scope": "BASKET_OK_ZERO_VIOLATIONS",
+      "scoped_whitespace": "PASS",
+      "strict_compile": "PENDING"
+    }
+  },
+  "compile_queue": {
+    "work_item_id": "30ff1030-eb5b-412d-a293-f4bc3f275b85",
+    "status_at_last_check": "pending",
+    "claimed_by": null,
+    "activation_hold": null,
+    "source_hash_fresh": true,
+    "release_dryrun_receipt": "artifacts/qm5_41120_compile_release_dryrun_20260823.json",
+    "release_apply_receipt": "artifacts/qm5_41120_compile_release_apply_20260823.json",
+    "backup_path": "D:/QM/strategy_farm/state/backups/farm_state_before_compile_wave_20260823T030845Z_45edcd2a.sqlite",
+    "backup_sha256": "bbf93ebcc05a48c9759f9275e8e8930bc5cfe4e309209341697c4941c3004702",
+    "direct_compile_bypassed": false,
+    "terminal_started_or_stopped_by_session": false
+  },
+  "cpu_preflight_below_ceiling": {
+    "sampled_at_utc": "2026-08-23T03:06:38.2057869Z",
+    "samples_percent": [73.76, 70.55, 71.96, 76.88, 84.52],
+    "average_percent": 75.53,
+    "maximum_percent": 84.52,
+    "threshold_percent": 97.0,
+    "ceiling_hit": false
+  },
+  "cpu_stop": {
+    "sampled_at_utc": "2026-08-23T03:13:06.7769657Z",
+    "samples_percent": [92.93, 82.86, 83.57, 94.18, 98.73],
+    "average_percent": 90.45,
+    "maximum_percent": 98.73,
+    "threshold_percent": 97.0,
+    "ceiling_hit": true,
+    "terminal64_count": 6,
+    "metatester64_count": 2
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_id": null,
+    "reason": "binding CPU ceiling reached while strict compile and Q01 remained pending",
+    "manual_backtest_run": false,
+    "dispatch_tick_run": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_claimed": false
+  }
+}

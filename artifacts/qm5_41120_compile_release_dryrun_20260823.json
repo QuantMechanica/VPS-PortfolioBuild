@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "b5744054c9deb95a28f44829e9934f5a9eda6d697357f53ee40a860290237741",
+      "ea_id": "QM5_41120",
+      "ea_label": "QM5_41120_xauxag-mopen-residence-rv",
+      "expected_mq5_sha256": "b5744054c9deb95a28f44829e9934f5a9eda6d697357f53ee40a860290237741",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41120_xauxag-mopen-residence-rv\\QM5_41120_xauxag-mopen-residence-rv.mq5",
+      "work_item_id": "30ff1030-eb5b-412d-a293-f4bc3f275b85"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "30ff1030-eb5b-412d-a293-f4bc3f275b85"
+}
