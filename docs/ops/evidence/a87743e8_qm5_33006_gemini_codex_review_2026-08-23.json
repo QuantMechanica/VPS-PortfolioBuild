@@ -1,0 +1,24 @@
+{
+  "review_task_id": "a87743e8-9ede-4b97-b4ce-e6206614d836",
+  "build_task_id": "1da33eb5-f18a-4d65-9346-e7e9ef07fbf9",
+  "ea_id": "QM5_33006",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_33006 source lines 7 and 71-72 directly include Trade/Trade.mqh and call CTrade.OrderDelete instead of a QM trade-management helper, bypassing the V5 framework corset.",
+    "QM5_33006 source lines 19-20 default RISK_PERCENT=0.5 and RISK_FIXED=1000.0 simultaneously; QM_FrameworkValidateRiskInputs rejects both-positive inputs, so default OnInit fails unless a setfile overrides the source contract.",
+    "QM5_33006 source lines 100-105 evaluates the card's 23:55-00:05 GMT rollover blackout with TimeCurrent broker time and never converts through QM_BrokerToUTC.",
+    "QM5_33006 checks the news blackout at lines 259-264 before pending-order management, leaving 24-hour broker-side stop orders live and able to trigger during the mandatory news blackout.",
+    "QM5_33006 does not configure the card's 2.0% daily realized-loss halt, 2.5% daily hard stop, or 5.0% total drawdown stop; it relies on QM_FrameworkInit's generic kill-switch defaults.",
+    "Build artifact artifacts/qm5_33006_build_result.json marks smoke_result as deferred_p2_smoke but has blocked_reason=null and no durable tester-capacity evidence; no QM5_33006 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T18:53:08Z"
+}

@@ -1,0 +1,21 @@
+{
+  "review_task_id": "0860930e-72cb-44a3-bb8b-94060ca4d8e2",
+  "build_task_id": "9fbca489-f822-4412-8066-a819bc100eb7",
+  "ea_id": "QM5_41001",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_41001 does not configure the approved card's three-tick market-order slippage limit; QM_FrameworkInit leaves QM_EntryConfigure at the framework's 20-point deviation default.",
+    "QM5_41001 SPEC.md line 32 declares strategy_tp_rr_mult=8.0, but the source has no such input and explicitly emits open-ended entries with req.tp=0 at lines 177 and 211, so the reviewed specification does not describe the compiled source.",
+    "Build artifact artifacts/qm5_41001_build_result.json marks smoke_result as deferred_p2_smoke but blocked_reason is null; the generic smoke_skipped_reason is not the durable resolver/process occupancy evidence required by SCHEMAS.md, and no QM5_41001 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T18:53:08Z"
+}
