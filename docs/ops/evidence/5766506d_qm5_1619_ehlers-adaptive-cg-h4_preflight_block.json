@@ -1,0 +1,62 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "5766506d-8630-44b8-b85c-229d93051449",
+  "task_type": "build_ea",
+  "checked_at_utc": "2026-08-23T08:41:06.3744705Z",
+  "git_head": "44b7f111f6d18180dfeef10b40d526a57e885c60",
+  "requested_identity": {
+    "ea_id": "QM5_1619",
+    "slug": "ehlers-adaptive-cg-h4",
+    "ea_dir": "C:/QM/repo/framework/EAs/QM5_1619_ehlers-adaptive-cg-h4"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1619_ehlers-adaptive-cg-h4.md",
+    "sha256": "5993706dc12cdece588048af94ad5bf10e47926606d41bc04d3c8896db33862e",
+    "ea_id": "QM5_1619",
+    "slug": "ehlers-adaptive-cg-h4",
+    "source_id": "6e967762-b26d-59a3-b076-35c17f2e7c36",
+    "g0_status": "APPROVED"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "8ea60f1d78d5821445189dd88de543b103ae51dd43ea8fcb5548f28de91cfc88",
+    "ea_id_1619_row": {
+      "ea_id": "1619",
+      "slug": "aa-overnight-mom",
+      "strategy_id": "ede348b4-0fa7-5be1-baa8-09e9089b67b7",
+      "status": "active",
+      "owner": "Research",
+      "created_at": "2026-05-19"
+    },
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "5c7a98100c2db84f5b930817c1a763cdf9074fa183d782e66ee1fac6167fad6d",
+    "ea_id_1619_magic_owner": "aa-overnight-mom",
+    "ea_id_1619_active_magic_rows": [
+      "SP500.DWX:16190000",
+      "NDX.DWX:16190001",
+      "WS30.DWX:16190002",
+      "GDAXI.DWX:16190003",
+      "UK100.DWX:16190004"
+    ]
+  },
+  "filesystem_and_lineage_observations": {
+    "requested_ea_dir_exists": false,
+    "active_ea_id_1619_dir": "C:/QM/repo/framework/EAs/QM5_1619_aa-overnight-mom",
+    "same_slug_active_registry_candidates": [
+      "QM5_1624_ehlers-adaptive-cg-h4",
+      "QM5_12247_ehlers-adaptive-cg-h4"
+    ],
+    "prior_collision_evidence": "C:/QM/repo/docs/ops/evidence/2026-07-20_p19_ea_id_collision_rekey_codex.md"
+  },
+  "verdict": "BLOCKED_IDENTITY_COLLISION",
+  "blocked_reason": "The requested card identity QM5_1619/ehlers-adaptive-cg-h4 conflicts with the active deterministic registry owner QM5_1619/aa-overnight-mom and its five magic rows; the build contract forbids registry guessing, reassignment, or compilation under a colliding ID.",
+  "required_next_action": "OWNER plus the governed registry/card writer must retire or supersede the stale QM5_1619 Ehlers card/task and explicitly select an already-registered same-slug identity or allocate a fresh collision-free ea_id before any build.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "compile_attempted": false,
+    "smoke_attempted": false,
+    "pipeline_phase_run": false,
+    "live_or_autotrading_changed": false
+  }
+}
