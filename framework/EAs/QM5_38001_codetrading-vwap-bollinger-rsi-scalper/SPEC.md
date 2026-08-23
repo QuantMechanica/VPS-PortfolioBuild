@@ -3,18 +3,24 @@
 **EA ID:** QM5_38001
 **Slug:** codetrading-vwap-bollinger-rsi-scalper
 **Source:** codetrading-vwap-bollinger-rsi-scalper-official-source (see `strategy-seeds/sources/codetrading-vwap-bollinger-rsi-scalper/`)
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-18
+**Author of this spec:** Development
+**Last revised:** 2026-08-23
 
 ---
 
 ## 1. Strategy Logic
 
-The strategy is an intraday mean-reversion scalper on the M5 timeframe combining Session VWAP, Bollinger Bands (20, 2.0), and RSI(14). On each closed M5 bar, cumulative intraday Volume-Weighted Average Price (VWAP) is updated from the session start. 
+The strategy is an intraday mean-reversion scalper on the M5 timeframe combining
+UTC-day Session VWAP, Bollinger Bands (20, 2.0), and RSI(14). The EA reconstructs
+the closed-bar session VWAP from UTC midnight on initialization, a day change,
+or a detected bar gap, and otherwise advances it once per contiguous M5 bar.
 
 A Long entry is triggered when the previous closed bar's Low penetrates or touches the Lower Bollinger Band, the Close is below the Session VWAP, RSI(14) is oversold (<= 30.0), and the candle is bullish (Close > Open). A Short entry is triggered when the previous bar's High penetrates or touches the Upper Bollinger Band, the Close is above Session VWAP, RSI(14) is overbought (>= 70.0), and the candle is bearish (Close < Open). 
 
-Stop Loss is set at 1.5× ATR(14) from entry price. Take Profit targets the Session VWAP line (with a fallback to 1.8× Risk-to-Reward if VWAP is too close or unfavorable). Open positions are moved to Break-Even (+2 points buffer) once floating profit reaches +1.0R.
+Stop Loss is set at 1.5× ATR(14) from entry price. Take Profit targets the
+Session VWAP when that line remains favorable at entry, with the card's 1.8R
+fallback otherwise. At +1.0 times the original broker-side stop distance, the
+stop moves to the exact normalized entry price.
 
 ---
 
@@ -22,7 +28,7 @@ Stop Loss is set at 1.5× ATR(14) from entry price. Take Profit targets the Sess
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_signal_tf` | `PERIOD_M5` | `M1-M15` | Base execution and indicator timeframe |
+| `strategy_signal_tf` | `PERIOD_M5` | `PERIOD_M5` | Base execution and indicator timeframe |
 | `strategy_bb_period` | `20` | `14-30` | Bollinger Bands moving average period |
 | `strategy_bb_dev` | `2.00` | `1.5-2.5` | Bollinger Bands standard deviation multiplier |
 | `strategy_rsi_period` | `14` | `7-21` | RSI oscillator period |
@@ -37,6 +43,11 @@ Stop Loss is set at 1.5× ATR(14) from entry price. Take Profit targets the Sess
 | `strategy_rollover_start_hhmm` | `2355` | `0-2359` | Start time for daily rollover blackout window |
 | `strategy_rollover_end_hhmm` | `5` | `0-2359` | End time for daily rollover blackout window |
 | `strategy_spread_filter_mult` | `1.8` | `1.0-3.0` | Max allowable spread as a multiple of ATR |
+| `strategy_max_slippage_ticks` | `3` | `1` or greater | Maximum market-order deviation in trade ticks |
+| `strategy_daily_loss_halt_pct` | `2.0` | `(0, daily hard stop]` | Account realized-loss entry halt |
+| `strategy_daily_hard_stop_pct` | `2.5` | positive | Restart-safe daily equity hard stop |
+| `strategy_total_dd_halt_pct` | `5.0` | positive | Account-level total drawdown stop |
+| `strategy_per_trade_risk_cap_pct` | `0.5` | `(0, 1.0]` | Framework per-trade risk cap |
 
 ---
 
@@ -58,7 +69,7 @@ Stop Loss is set at 1.5× ATR(14) from entry price. Take Profit targets the Sess
 |---|---|
 | Base timeframe | `PERIOD_M5` |
 | Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, strategy_signal_tf)` with `PERIOD_M5` enforced at initialization |
 
 ---
 
@@ -102,3 +113,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Task 33322516-1797-4d97-8a74-eb4fd7385953 |
+| v2 | 2026-08-23 | Codex remediation of mandatory review | Restart-safe UTC session VWAP, current-bar admission, reachable exact +1R BE, card risk rails and three-tick deviation |
