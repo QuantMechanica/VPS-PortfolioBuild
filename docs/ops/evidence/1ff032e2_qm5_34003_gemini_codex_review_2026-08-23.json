@@ -1,0 +1,25 @@
+{
+  "review_task_id": "1ff032e2-8ae5-44ed-9494-9832debee9bb",
+  "build_task_id": "d5a96505-0d9a-4dfa-8b59-119e6b114d61",
+  "ea_id": "QM5_34003",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_34003 source line 7 directly includes Trade/Trade.mqh, violating the V5 corset requirement that the EA include QM_Common.mqh and only QM modules transitively.",
+    "QM5_34003 source lines 19-20 default RISK_PERCENT=0.5 and RISK_FIXED=1000.0 simultaneously; QM_FrameworkValidateRiskInputs rejects both-positive inputs, so default OnInit fails unless a setfile overrides the source contract.",
+    "The current build_gate_hardening check fails QM5_34003 with three EA_CARD_LOSS_LIMIT_MISMATCH findings: the card's 2.0% daily realized-loss halt, 2.5% daily hard stop, and 5.0% total drawdown stop have no matching source inputs or implementation.",
+    "The current build_gate_hardening check fails QM5_34003 with EA_BROKER_TIME_USED_FOR_GMT_WINDOW: source lines 67-70 apply the card's 23:55-00:05 GMT blackout to raw TimeCurrent without QM_BrokerToUTC.",
+    "QM5_34003 does not configure the approved card's three-tick market-order slippage limit; QM_FrameworkInit leaves QM_EntryConfigure at the framework's 20-point deviation default.",
+    "[ONTICK-ORDER-ADVISORY] QM5_34003 returns on the news blackout at lines 177-185 before management/exit at lines 190-202; actual entries carry server-side SL and TP, so this remains advisory under the review contract.",
+    "Build artifact artifacts/builds/d5a96505-0d9a-4dfa-8b59-119e6b114d61.json claims build_check_passed despite the current semantic-gate failures and marks smoke_result as deferred_p2_smoke with an empty blocked_reason and only a generic custom-history explanation; no QM5_34003 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:23:22Z"
+}
