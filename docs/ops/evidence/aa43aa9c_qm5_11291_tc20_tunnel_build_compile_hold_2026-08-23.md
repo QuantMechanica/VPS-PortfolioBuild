@@ -53,4 +53,10 @@ was refused without creating a row: `WORK_ITEMS_EXIST`. The terminal predecessor
 source. Fresh governed compile supersede authorization is required. Smoke was not run,
 and no pipeline verdict is claimed.
 
+The requested `REVIEW` transition was attempted after commit and refused with
+`D6_BUILD_IDENTITY_MISSING`: review dispatch requires a committed current EX5 and
+strict build PASS in a hash-bound JSON identity. Those facts do not exist while the
+governed compile is held, so the task is dispositioned `BLOCKED` without fabricated
+evidence.
+
 Short verdict: `SOURCE_READY_COMPILE_HELD: implementation/static gates PASS; strict compile held by live-factory guard and prior work item.`
