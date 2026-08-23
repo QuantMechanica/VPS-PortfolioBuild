@@ -24,7 +24,7 @@ import hashlib
 import json
 import math
 import statistics
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from functools import cmp_to_key
 from pathlib import Path
@@ -33,6 +33,13 @@ from typing import Any, Mapping, Sequence
 
 SCHEMA_VERSION = "q09-news-evidence/v2"
 ADJUDICATION_SCHEMA_VERSION = "q09-news-adjudication/v2"
+SCHEMA_VERSION_V3 = "q09-news-evidence/v3"
+ADJUDICATION_SCHEMA_VERSION_V3 = "q09-news-adjudication/v3"
+SUPPORTED_SCHEMA_VERSIONS = frozenset({SCHEMA_VERSION, SCHEMA_VERSION_V3})
+SUPPORTED_ADJUDICATION_SCHEMA_VERSIONS = frozenset(
+    {ADJUDICATION_SCHEMA_VERSION, ADJUDICATION_SCHEMA_VERSION_V3}
+)
+V3_SEED = 17
 
 TEMPORAL_MODES: tuple[str, ...] = (
     "OFF",
@@ -471,9 +478,22 @@ def _material_effect(policy_by_mode: Mapping[str, Sequence[Cell]], control: Mapp
     }
 
 
-def _invalid(reason: str, *, details: Mapping[str, Any] | None = None) -> dict[str, Any]:
+def _adjudication_schema(evidence_schema: Any) -> str:
+    return (
+        ADJUDICATION_SCHEMA_VERSION_V3
+        if evidence_schema == SCHEMA_VERSION_V3
+        else ADJUDICATION_SCHEMA_VERSION
+    )
+
+
+def _invalid(
+    reason: str,
+    *,
+    details: Mapping[str, Any] | None = None,
+    schema_version: str = ADJUDICATION_SCHEMA_VERSION,
+) -> dict[str, Any]:
     result: dict[str, Any] = {
-        "schema_version": ADJUDICATION_SCHEMA_VERSION,
+        "schema_version": schema_version,
         "verdict": "INVALID_EVIDENCE",
         "reason_codes": [reason],
         "chosen_config": None,
@@ -486,8 +506,11 @@ def _invalid(reason: str, *, details: Mapping[str, Any] | None = None) -> dict[s
 
 
 def _validated_header(payload: Mapping[str, Any]) -> dict[str, Any]:
-    if payload.get("schema_version") != SCHEMA_VERSION:
-        raise ContractError(f"schema_version must be {SCHEMA_VERSION}")
+    evidence_schema = payload.get("schema_version")
+    if evidence_schema not in SUPPORTED_SCHEMA_VERSIONS:
+        raise ContractError(
+            "schema_version must be one of " + ", ".join(sorted(SUPPORTED_SCHEMA_VERSIONS))
+        )
     deployment_target = _require_nonempty(payload.get("deployment_target"), "deployment_target")
     target_compliance = compliance_for_target(deployment_target)
     work_item_id = _require_nonempty(payload.get("work_item_id"), "work_item_id")
@@ -553,6 +576,7 @@ def _validated_header(payload: Mapping[str, Any]) -> dict[str, Any]:
     ):
         raise ContractError("calendar bundle does not cover the full experiment window")
     return {
+        "schema_version": evidence_schema,
         "work_item_id": work_item_id,
         "deployment_target": deployment_target,
         "target_compliance": target_compliance,
@@ -582,6 +606,8 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
 
     if not isinstance(payload, Mapping):
         raise TypeError("payload must be a mapping")
+    evidence_schema = payload.get("schema_version")
+    adjudication_schema = _adjudication_schema(evidence_schema)
     try:
         header = _validated_header(payload)
         raw_cells = payload.get("cells")
@@ -599,8 +625,40 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         base_identity = header["identities"]["paired_base_identity_sha256"]
         if any(cell.paired_base_identity_sha256 != base_identity for cell in cells):
             raise ContractError("cell paired_base_identity_sha256 mismatch")
+        if evidence_schema == SCHEMA_VERSION_V3:
+            if {cell.seed for cell in cells} != {V3_SEED}:
+                raise ContractError("contract v3 requires only canonical seed 17")
+            expected_configs = 1 + len(TEMPORAL_MODES)
+            if len(cells) not in {
+                expected_configs,
+                1 + len(TEMPORAL_MODES) * len(COMPLIANCE_MODES),
+            }:
+                raise ContractError("contract v3 cell count is not a complete 8- or 29-config matrix")
+            cells = [
+                replace(cell, seed=seed, requested_seed=seed, effective_seed=seed)
+                for cell in cells
+                for seed in SEEDS
+            ]
     except ContractError as exc:
-        return _invalid("contract_invalid", details={"error": str(exc)})
+        return _invalid(
+            "contract_invalid",
+            details={"error": str(exc)},
+            schema_version=adjudication_schema,
+        )
+
+    seed_provenance = (
+        {
+            "executed_seed_set": [V3_SEED],
+            "selector_seed_set": list(SEEDS),
+            "inert_seed_fanout": True,
+        }
+        if evidence_schema == SCHEMA_VERSION_V3
+        else {
+            "executed_seed_set": list(SEEDS),
+            "selector_seed_set": list(SEEDS),
+            "inert_seed_fanout": False,
+        }
+    )
 
     by_key = {cell.key: cell for cell in cells}
     control: dict[int, Cell] = {}
@@ -623,13 +681,17 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
                 mode_cells.append(by_key[key])
         policy_by_mode[temporal] = mode_cells
     if missing:
-        return _invalid("required_matrix_cells_missing", details={"missing_cells": missing})
+        return _invalid(
+            "required_matrix_cells_missing",
+            details={"missing_cells": missing},
+            schema_version=adjudication_schema,
+        )
 
     control_valid, control_reasons = _valid_config_cells(list(control.values()))
     off_valid, off_reasons = _valid_config_cells(policy_by_mode["OFF"])
     if not control_valid or not off_valid:
         result = {
-            "schema_version": ADJUDICATION_SCHEMA_VERSION,
+            "schema_version": adjudication_schema,
             "verdict": "REVIEW_REQUIRED",
             "reason_codes": ["control_or_policy_off_not_qualifiable"],
             "details": {"control_reasons": control_reasons, "policy_off_reasons": off_reasons},
@@ -658,7 +720,7 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
                         missing_expanded.append("/".join(map(str, key)))
         if missing_expanded:
             result = {
-                "schema_version": ADJUDICATION_SCHEMA_VERSION,
+                "schema_version": adjudication_schema,
                 "verdict": "REVIEW_REQUIRED",
                 "reason_codes": ["expanded_7x4_matrix_required"],
                 "details": {
@@ -669,6 +731,7 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
                 },
                 "chosen_config": None,
                 "locked_arms": [],
+                "seed_provenance": seed_provenance,
             }
             result["adjudication_sha256"] = sha256_bytes(canonical_json_bytes(result))
             return result
@@ -701,7 +764,7 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         },
     ]
     result = {
-        "schema_version": ADJUDICATION_SCHEMA_VERSION,
+        "schema_version": adjudication_schema,
         "verdict": "CONFIG_LOCKED",
         "reason_codes": ["robust_policy_selected" if robust_scores else "off_fallback_no_robust_improvement"],
         "work_item_id": header["work_item_id"],
@@ -718,6 +781,7 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         "matrix_scope": "7x4" if expansion_reasons else "7x1_target_compliance",
         "expansion_reasons": expansion_reasons,
         "material_effect": material,
+        "seed_provenance": seed_provenance,
         "calendar_bundle": {
             key: (value.isoformat().replace("+00:00", "Z") if isinstance(value, datetime) else value)
             for key, value in header["calendar"].items()

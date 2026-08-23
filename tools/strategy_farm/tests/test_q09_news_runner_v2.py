@@ -123,7 +123,14 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             ):
                 runner._single_ok_run({"runs": runs})
 
-    def build(self, *, target: str = "DXZ", output: str = "experiment", news: bool = False) -> dict:
+    def build(
+        self,
+        *,
+        target: str = "DXZ",
+        output: str = "experiment",
+        news: bool = False,
+        contract_version: str = contract.SCHEMA_VERSION,
+    ) -> dict:
         return runner.build_run_plan(
             work_item_id="q09-news-1",
             candidate_lineage_key=contract.sha256_bytes(b"candidate"),
@@ -147,6 +154,7 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             cost_profile="DXZ_MED",
             output_root=self.root / output,
             news_or_event_strategy=news,
+            contract_version=contract_version,
         )
 
     def write_receipt(self, spec: dict) -> None:
@@ -165,7 +173,11 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         evidence.write_bytes(
             contract.canonical_json_bytes(
                 {
-                    "schema_version": runner.CELL_EVIDENCE_SCHEMA,
+                    "schema_version": (
+                        runner.CELL_EVIDENCE_SCHEMA_V3
+                        if spec.get("contract_version") == contract.SCHEMA_VERSION_V3
+                        else runner.CELL_EVIDENCE_SCHEMA
+                    ),
                     "run_identity_sha256": spec["run_identity_sha256"],
                     "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
                     "requested_seed": spec["seed"],
@@ -179,7 +191,11 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             )
         )
         receipt = {
-            "schema_version": runner.CELL_RECEIPT_SCHEMA,
+            "schema_version": (
+                runner.CELL_RECEIPT_SCHEMA_V3
+                if spec.get("contract_version") == contract.SCHEMA_VERSION_V3
+                else runner.CELL_RECEIPT_SCHEMA
+            ),
             "run_identity_sha256": spec["run_identity_sha256"],
             "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
             "arm": spec["arm"],
@@ -213,6 +229,7 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         q08_payload: dict | None = None,
         q07_payload: dict | None = None,
         insert_q07: bool = True,
+        bind: bool = True,
     ) -> tuple[Path, str]:
         farm_root = self.root / "farm"
         farmctl.init_db(farm_root)
@@ -305,6 +322,8 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             schema.hold_until_plan_bound(connection, "q09-news-1", now=now)
             connection.commit()
         plan_hash = contract.sha256_file(Path(plan["plan_path"]))
+        if not bind:
+            return farm_root, plan_hash
         binding = runner.bind_plan_to_work_item(
             farm_root,
             work_item_id="q09-news-1",
@@ -435,6 +454,82 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertIn("qm_news_calendar_bundle_id=" + manifest["bundle_id"], text)
         repeated = self.build()
         self.assertEqual(repeated["plan_sha256"], plan["plan_sha256"])
+
+    def test_v3_plan_materializes_eight_one_seed_configs_and_collects_verdict(self) -> None:
+        plan = self.build(
+            output="contract-v3",
+            contract_version=contract.SCHEMA_VERSION_V3,
+        )
+        self.assertEqual(plan["schema_version"], runner.PLAN_SCHEMA_V3)
+        self.assertEqual(plan["cell_count"], 8)
+        self.assertEqual({cell["seed"] for cell in plan["cells"]}, {17})
+        self.write_receipts(plan)
+
+        result = runner.collect_run_plan(Path(plan["plan_path"]))
+
+        self.assertEqual(result["verdict"], "CONFIG_LOCKED")
+        self.assertEqual(
+            result["adjudication"]["schema_version"],
+            contract.ADJUDICATION_SCHEMA_VERSION_V3,
+        )
+
+    def test_bind_dry_run_is_read_only_and_reports_release(self) -> None:
+        plan = self.build(output="binding-dry-run")
+        farm_root, plan_hash = self.setup_bound_farm(
+            plan,
+            activate=False,
+            bind=False,
+        )
+        with closing(farmctl.connect(farm_root)) as connection:
+            before = connection.execute(
+                "SELECT payload_json,updated_at FROM work_items WHERE id='q09-news-1'"
+            ).fetchone()
+
+        result = runner.bind_plan_to_work_item(
+            farm_root,
+            work_item_id="q09-news-1",
+            plan_path=Path(plan["plan_path"]),
+            expected_plan_file_sha256=plan_hash,
+            cell_timeout_sec=60,
+            dry_run=True,
+        )
+
+        self.assertTrue(result["dry_run"])
+        self.assertTrue(result["would_release_activation_hold"])
+        with closing(farmctl.connect(farm_root)) as connection:
+            after = connection.execute(
+                "SELECT payload_json,updated_at FROM work_items WHERE id='q09-news-1'"
+            ).fetchone()
+            hold = connection.execute(
+                "SELECT active FROM work_item_holds WHERE work_item_id='q09-news-1'"
+            ).fetchone()
+        self.assertEqual(tuple(after), tuple(before))
+        self.assertEqual(hold[0], 1)
+
+    def test_binder_rejects_q08_setfile_vintage_before_lineage(self) -> None:
+        q08 = json.loads(self.q08.read_text(encoding="utf-8"))
+        q08["baseline_run"]["baseline_setfile_sha256"] = "a" * 64
+        self.q08.write_text(json.dumps(q08) + "\n", encoding="utf-8")
+        plan = self.build(output="q08-setfile-vintage")
+        farm_root, plan_hash = self.setup_bound_farm(
+            plan,
+            activate=False,
+            insert_q07=False,
+            bind=False,
+        )
+
+        with self.assertRaisesRegex(
+            runner.RunnerError,
+            "Q08 baseline setfile vintage mismatch",
+        ):
+            runner.bind_plan_to_work_item(
+                farm_root,
+                work_item_id="q09-news-1",
+                plan_path=Path(plan["plan_path"]),
+                expected_plan_file_sha256=plan_hash,
+                cell_timeout_sec=60,
+                dry_run=True,
+            )
 
     def test_prop_or_event_strategy_plans_full_7x4_matrix(self) -> None:
         ftmo = self.build(target="FTMO", output="ftmo")
@@ -1274,6 +1369,84 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             len(list((self.root / "production-multi-cell").rglob("cell_receipt.json"))),
             40,
         )
+
+    def test_contract_v3_production_executes_eight_configs_two_windows_and_persists(self) -> None:
+        plan = self.build(
+            output="production-contract-v3",
+            contract_version=contract.SCHEMA_VERSION_V3,
+        )
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        commands: list[list[str]] = []
+
+        def fake_run(command: list[str], **_kwargs: object) -> SimpleNamespace:
+            commands.append(command)
+            report_root = Path(command[command.index("-ReportRoot") + 1])
+            summary = report_root / "QM5_9999" / "fixture" / "summary.json"
+            summary.parent.mkdir(parents=True, exist_ok=True)
+            summary.write_text("{}\n", encoding="utf-8")
+            return SimpleNamespace(returncode=0, stdout="fixture PASS\n", stderr="")
+
+        def fake_validate(summary_path: Path, **kwargs: object) -> tuple[dict, dict]:
+            spec = kwargs["spec"]
+            window = next(name for name in ("selection", "holdout") if name in summary_path.parts)
+            delta = (
+                0.10
+                if spec["arm"] == "POLICY_ON" and spec["temporal_mode"] == "PRE30"
+                else 0.0
+            )
+            value = (0.50 if window == "selection" else 0.40) + delta
+            logger = summary_path.parent / "logger.jsonl"
+            days = (20230101, 20231231) if window == "selection" else (20240101, 20241231)
+            logger.write_text(
+                "".join(
+                    json.dumps(
+                        {
+                            "event": "EQUITY_SNAPSHOT",
+                            "payload": {"scope": "account", "day_key": day, "equity": equity},
+                        }
+                    )
+                    + "\n"
+                    for day, equity in zip(days, (100.0, 101.0))
+                ),
+                encoding="utf-8",
+            )
+            return metrics(value), {
+                "cost_execution_identity_sha256": "c" * 64,
+                "logger_sample_path": str(logger),
+                "gross_profit": 200.0,
+                "gross_loss": -100.0,
+            }
+
+        with (
+            patch.object(runner.subprocess, "run", side_effect=fake_run),
+            patch.object(runner, "_wait_for_claimed_terminal_exit") as wait_for_exit,
+            patch.object(runner, "_validate_window_summary", side_effect=fake_validate),
+        ):
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "production-contract-v3-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-production-contract-v3",
+            )
+
+        self.assertEqual(result["verdict"], "CONFIG_LOCKED")
+        self.assertEqual(result["authenticated_cell_count"], 8)
+        self.assertEqual(len(commands), 16)
+        self.assertEqual(wait_for_exit.call_count, 16)
+        with closing(farmctl.connect(farm_root)) as connection:
+            stored = connection.execute(
+                "SELECT contract_version,verdict FROM q09_news_tests WHERE work_item_id='q09-news-1'"
+            ).fetchone()
+        self.assertEqual(tuple(stored), (schema.CONTRACT_VERSION_V3, "CONFIG_LOCKED"))
 
     def _drive_one_failing_cell_through_fork(
         self,

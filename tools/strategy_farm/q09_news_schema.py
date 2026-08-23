@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Additive SQLite sidecars for the Q09_NEWS v2 evidence contract.
+"""Additive SQLite sidecars for the Q09_NEWS v2/v3 evidence contracts.
 
 The production farm database contains historical foreign-key violations and
 runs with ``PRAGMA foreign_keys=OFF``.  This module therefore does not toggle
@@ -24,23 +24,30 @@ from typing import Any, Iterator, Mapping, Sequence
 try:
     from q09_news_contract import (
         ADJUDICATION_SCHEMA_VERSION,
+        ADJUDICATION_SCHEMA_VERSION_V3,
         CANONICAL_VERDICTS,
         SEEDS,
+        SUPPORTED_ADJUDICATION_SCHEMA_VERSIONS,
+        V3_SEED,
         canonical_json_bytes,
         sha256_file,
     )
 except ModuleNotFoundError:
     from tools.strategy_farm.q09_news_contract import (
         ADJUDICATION_SCHEMA_VERSION,
+        ADJUDICATION_SCHEMA_VERSION_V3,
         CANONICAL_VERDICTS,
         SEEDS,
+        SUPPORTED_ADJUDICATION_SCHEMA_VERSIONS,
+        V3_SEED,
         canonical_json_bytes,
         sha256_file,
     )
 
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 CONTRACT_VERSION = "Q09_NEWS_V2"
+CONTRACT_VERSION_V3 = "Q09_NEWS_V3"
 ACTIVATION_HOLD_CODE = "Q09_AWAITING_SEALED_PLAN"
 ACTIVATION_HOLD_REASON = (
     "Q09_NEWS is not claimable until a sealed run plan is hash-bound"
@@ -645,14 +652,26 @@ BEGIN
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NOT EXISTS (
         SELECT 1 FROM q09_news_tests t
         WHERE t.work_item_id=NEW.q09_news_work_item_id
-          AND (SELECT count(DISTINCT seed) FROM q09_news_cells_by_work_item c
-               WHERE c.q09_news_work_item_id=t.work_item_id
-                  AND c.arm='CONTROL_OFF' AND c.temporal_mode='OFF' AND c.compliance_mode='NONE')=5
-          AND (SELECT count(DISTINCT seed) FROM q09_news_cells_by_work_item c
-               WHERE c.q09_news_work_item_id=t.work_item_id
-                  AND c.arm='POLICY_ON' AND c.temporal_mode=t.chosen_temporal
-                  AND c.compliance_mode=t.chosen_compliance)=5
-    ) THEN RAISE(ABORT, 'QUALIFIED q09 paired five-seed cells missing') END;
+          AND (
+            (t.contract_version='Q09_NEWS_V2'
+             AND (SELECT count(DISTINCT seed) FROM q09_news_cells_by_work_item c
+                  WHERE c.q09_news_work_item_id=t.work_item_id
+                    AND c.arm='CONTROL_OFF' AND c.temporal_mode='OFF' AND c.compliance_mode='NONE')=5
+             AND (SELECT count(DISTINCT seed) FROM q09_news_cells_by_work_item c
+                  WHERE c.q09_news_work_item_id=t.work_item_id
+                    AND c.arm='POLICY_ON' AND c.temporal_mode=t.chosen_temporal
+                    AND c.compliance_mode=t.chosen_compliance)=5)
+            OR
+            (t.contract_version='Q09_NEWS_V3'
+             AND (SELECT group_concat(DISTINCT seed) FROM q09_news_cells_by_work_item c
+                  WHERE c.q09_news_work_item_id=t.work_item_id
+                    AND c.arm='CONTROL_OFF' AND c.temporal_mode='OFF' AND c.compliance_mode='NONE')='17'
+             AND (SELECT group_concat(DISTINCT seed) FROM q09_news_cells_by_work_item c
+                  WHERE c.q09_news_work_item_id=t.work_item_id
+                    AND c.arm='POLICY_ON' AND c.temporal_mode=t.chosen_temporal
+                    AND c.compliance_mode=t.chosen_compliance)='17')
+          )
+    ) THEN RAISE(ABORT, 'QUALIFIED q09 paired contract seed evidence missing') END;
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NOT EXISTS (
         SELECT 1 FROM q09_news_tests t
         WHERE t.work_item_id=NEW.q09_news_work_item_id
@@ -1116,7 +1135,8 @@ def record_q09_adjudication(
     occurrence ledger and never rewrite the canonical cell row.
     """
 
-    if adjudication.get("schema_version") != ADJUDICATION_SCHEMA_VERSION:
+    adjudication_schema = adjudication.get("schema_version")
+    if adjudication_schema not in SUPPORTED_ADJUDICATION_SCHEMA_VERSIONS:
         raise SchemaError("unsupported adjudication schema")
     _verify_adjudication_hash(adjudication)
     aggregate_file = Path(aggregate_path)
@@ -1137,9 +1157,14 @@ def record_q09_adjudication(
     if verdict not in CANONICAL_VERDICTS:
         raise SchemaError("non-canonical Q09 verdict")
     created_at = utc_now()
+    contract_version = (
+        CONTRACT_VERSION_V3
+        if adjudication_schema == ADJUDICATION_SCHEMA_VERSION_V3
+        else CONTRACT_VERSION
+    )
     summary_content = {
         "work_item_id": work_item_id,
-        "contract_version": CONTRACT_VERSION,
+        "contract_version": contract_version,
         "deployment_target": evidence_payload["deployment_target"],
         "target_compliance": (
             adjudication.get("target_compliance")
@@ -1391,24 +1416,42 @@ def assert_q10_dependency_gate(conn: sqlite3.Connection, q10_work_item_id: str) 
         "SELECT count(*) FROM q09_news_arms WHERE q09_news_work_item_id=?", (news_id,)
     ).fetchone()[0] != 2:
         raise SchemaError("Q09_NEWS two-arm lock is incomplete")
-    control_seed_count = conn.execute(
-        """
-        SELECT count(DISTINCT seed) FROM q09_news_cells_by_work_item
-        WHERE q09_news_work_item_id=? AND arm='CONTROL_OFF'
-          AND temporal_mode='OFF' AND compliance_mode='NONE'
-        """,
+    control_seeds = {
+        int(row[0])
+        for row in conn.execute(
+            """
+            SELECT DISTINCT seed FROM q09_news_cells_by_work_item
+            WHERE q09_news_work_item_id=? AND arm='CONTROL_OFF'
+              AND temporal_mode='OFF' AND compliance_mode='NONE'
+            """,
+            (news_id,),
+        ).fetchall()
+    }
+    policy_seeds = {
+        int(row[0])
+        for row in conn.execute(
+            """
+            SELECT DISTINCT seed FROM q09_news_cells_by_work_item
+            WHERE q09_news_work_item_id=? AND arm='POLICY_ON'
+              AND temporal_mode=? AND compliance_mode=?
+            """,
+            (news_id, news[2], news[3]),
+        ).fetchall()
+    }
+    contract_version = conn.execute(
+        "SELECT contract_version FROM q09_news_tests WHERE work_item_id=?",
         (news_id,),
     ).fetchone()[0]
-    policy_seed_count = conn.execute(
-        """
-        SELECT count(DISTINCT seed) FROM q09_news_cells_by_work_item
-        WHERE q09_news_work_item_id=? AND arm='POLICY_ON'
-          AND temporal_mode=? AND compliance_mode=?
-        """,
-        (news_id, news[2], news[3]),
-    ).fetchone()[0]
-    if control_seed_count != 5 or policy_seed_count != 5:
-        raise SchemaError("Q09_NEWS paired five-seed evidence is incomplete")
+    required_seeds = (
+        {V3_SEED} if contract_version == CONTRACT_VERSION_V3 else set(SEEDS)
+    )
+    if control_seeds != required_seeds or policy_seeds != required_seeds:
+        qualifier = (
+            "contract-v3 seed"
+            if contract_version == CONTRACT_VERSION_V3
+            else "five-seed"
+        )
+        raise SchemaError(f"Q09_NEWS paired {qualifier} evidence is incomplete")
     return Q10DependencyGate(
         q10_work_item_id=q10_work_item_id,
         q09_news_work_item_id=news_id,
@@ -1485,6 +1528,7 @@ def protected_legacy_sha256(conn: sqlite3.Connection) -> str:
 
 __all__ = [
     "CONTRACT_VERSION",
+    "CONTRACT_VERSION_V3",
     "Q10DependencyGate",
     "SCHEMA_VERSION",
     "SchemaError",

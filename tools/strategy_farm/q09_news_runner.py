@@ -30,15 +30,32 @@ try:
     import q09_news_contract as contract
     import q09_news_calendar as calendar_bundle
     import q09_news_schema as news_schema
+    import q09_news_seam as seam_reconstruction
 except ModuleNotFoundError:
     from tools.strategy_farm import q09_news_calendar as calendar_bundle
     from tools.strategy_farm import q09_news_contract as contract
     from tools.strategy_farm import q09_news_schema as news_schema
+    from tools.strategy_farm import q09_news_seam as seam_reconstruction
 
 
 PLAN_SCHEMA = "q09-news-run-plan/v2"
 CELL_RECEIPT_SCHEMA = "q09-news-cell-receipt/v2"
 CELL_EVIDENCE_SCHEMA = "q09-news-cell-evidence/v2"
+PLAN_SCHEMA_V3 = "q09-news-run-plan/v3"
+INPUT_MANIFEST_SCHEMA = "q09-news-input-manifest/v2"
+INPUT_MANIFEST_SCHEMA_V3 = "q09-news-input-manifest/v3"
+CELL_RECEIPT_SCHEMA_V3 = "q09-news-cell-receipt/v3"
+CELL_EVIDENCE_SCHEMA_V3 = "q09-news-cell-evidence/v3"
+SUPPORTED_PLAN_SCHEMAS = frozenset({PLAN_SCHEMA, PLAN_SCHEMA_V3})
+SUPPORTED_INPUT_MANIFEST_SCHEMAS = frozenset(
+    {INPUT_MANIFEST_SCHEMA, INPUT_MANIFEST_SCHEMA_V3}
+)
+SUPPORTED_CELL_RECEIPT_SCHEMAS = frozenset(
+    {CELL_RECEIPT_SCHEMA, CELL_RECEIPT_SCHEMA_V3}
+)
+SUPPORTED_CELL_EVIDENCE_SCHEMAS = frozenset(
+    {CELL_EVIDENCE_SCHEMA, CELL_EVIDENCE_SCHEMA_V3}
+)
 NEWS_SELFREPORT_SCHEMA = "qm.news-calendar-run-selfreport/v1"
 # SP-B2/ROT-2 is deliberately blocked pending the OWNER's authoritative-source
 # and impact-taxonomy decision. New receipts must still state that fact rather
@@ -377,12 +394,22 @@ def _is_prop_target(deployment_target: str) -> bool:
     return normalized in {"FTMO", "5ERS", "THE5ERS", "THE_5ERS"}
 
 
-def _cell_specs(target_compliance: str, expanded: bool) -> list[tuple[str, str, str, int]]:
-    specs = [("CONTROL_OFF", "OFF", "NONE", seed) for seed in contract.SEEDS]
+def _cell_specs(
+    target_compliance: str,
+    expanded: bool,
+    *,
+    contract_version: str = contract.SCHEMA_VERSION,
+) -> list[tuple[str, str, str, int]]:
+    seeds = (
+        (contract.V3_SEED,)
+        if contract_version == contract.SCHEMA_VERSION_V3
+        else contract.SEEDS
+    )
+    specs = [("CONTROL_OFF", "OFF", "NONE", seed) for seed in seeds]
     compliances = contract.COMPLIANCE_MODES if expanded else (target_compliance,)
     for compliance in compliances:
         for temporal in contract.TEMPORAL_MODES:
-            for seed in contract.SEEDS:
+            for seed in seeds:
                 specs.append(("POLICY_ON", temporal, compliance, seed))
     return specs
 
@@ -412,9 +439,12 @@ def build_run_plan(
     output_root: Path,
     news_or_event_strategy: bool = False,
     force_expanded_matrix: bool = False,
+    contract_version: str = contract.SCHEMA_VERSION,
 ) -> dict[str, Any]:
     """Seal an immutable queue plan and per-cell setfiles."""
 
+    if contract_version not in contract.SUPPORTED_SCHEMA_VERSIONS:
+        raise RunnerError(f"unsupported Q09 evidence contract: {contract_version}")
     output_root = output_root.resolve()
     source_paths = {
         "q08_evidence": q08_evidence_path.resolve(),
@@ -474,12 +504,13 @@ def build_run_plan(
         "windows": windows,
         "tester_model": tester_model,
         "cost_profile": cost_profile,
+        "contract_version": contract_version,
     }
     paired_base_identity = hashlib.sha256(contract.canonical_json_bytes(base_material)).hexdigest()
     identities["paired_base_identity_sha256"] = paired_base_identity
     # Reuse contract header validation so planner and adjudicator cannot drift.
     header_probe = {
-        "schema_version": contract.SCHEMA_VERSION,
+        "schema_version": contract_version,
         "work_item_id": work_item_id,
         "deployment_target": deployment_target,
         "identities": identities,
@@ -495,7 +526,11 @@ def build_run_plan(
     source_bytes = source_paths["baseline_setfile"].read_bytes()
     source_text, encoding, bom = _decode_setfile(source_bytes)
     cells: list[dict[str, Any]] = []
-    for arm, temporal, compliance, seed in _cell_specs(target_compliance, expanded):
+    for arm, temporal, compliance, seed in _cell_specs(
+        target_compliance,
+        expanded,
+        contract_version=contract_version,
+    ):
         run_material = {
             "paired_base_identity_sha256": paired_base_identity,
             "arm": arm,
@@ -522,6 +557,7 @@ def build_run_plan(
         cells.append(
             {
                 **run_material,
+                "contract_version": contract_version,
                 "run_identity_sha256": run_identity,
                 "setfile_path": str(setfile_path.resolve()),
                 "setfile_sha256": contract.sha256_file(setfile_path),
@@ -532,7 +568,12 @@ def build_run_plan(
         raise RunnerError("baseline source setfile changed during planning")
 
     input_manifest = {
-        "schema_version": "q09-news-input-manifest/v2",
+        "schema_version": (
+            INPUT_MANIFEST_SCHEMA_V3
+            if contract_version == contract.SCHEMA_VERSION_V3
+            else INPUT_MANIFEST_SCHEMA
+        ),
+        "contract_version": contract_version,
         "work_item_id": work_item_id,
         "candidate_lineage_key": candidate_lineage_key,
         "deployment_target": deployment_target,
@@ -550,7 +591,12 @@ def build_run_plan(
     input_manifest_bytes = contract.canonical_json_bytes(input_manifest)
     _write_immutable(input_manifest_path, input_manifest_bytes)
     plan: dict[str, Any] = {
-        "schema_version": PLAN_SCHEMA,
+        "schema_version": (
+            PLAN_SCHEMA_V3
+            if contract_version == contract.SCHEMA_VERSION_V3
+            else PLAN_SCHEMA
+        ),
+        "contract_version": contract_version,
         "work_item_id": work_item_id,
         "candidate_lineage_key": candidate_lineage_key,
         "input_manifest_path": str(input_manifest_path.resolve()),
@@ -558,6 +604,7 @@ def build_run_plan(
         "matrix_scope": input_manifest["matrix_scope"],
         "target_compliance": target_compliance,
         "cell_count": len(cells),
+        "window_count": 2 if contract_version == contract.SCHEMA_VERSION_V3 else 3,
         "cells": cells,
     }
     plan["plan_sha256"] = _plan_hash(plan)
@@ -568,7 +615,7 @@ def build_run_plan(
 
 def load_run_plan(path: Path) -> dict[str, Any]:
     plan = _load_json(path, "Q09 run plan")
-    if plan.get("schema_version") != PLAN_SCHEMA:
+    if plan.get("schema_version") not in SUPPORTED_PLAN_SCHEMAS:
         raise RunnerError("unsupported Q09 run-plan schema")
     if plan.get("plan_sha256") != _plan_hash(plan):
         raise RunnerError("Q09 run-plan SHA-256 mismatch")
@@ -627,8 +674,19 @@ def load_authenticated_plan(
         input_path = Path(str(plan["input_manifest_path"]))
         _verify_hash(input_path, str(plan["input_manifest_sha256"]), "Q09 input manifest")
         input_manifest = _load_json(input_path, "Q09 input manifest")
-        if input_manifest.get("schema_version") != "q09-news-input-manifest/v2":
+        if input_manifest.get("schema_version") not in SUPPORTED_INPUT_MANIFEST_SCHEMAS:
             raise RunnerError("unsupported Q09 input-manifest schema")
+        expected_contract = (
+            contract.SCHEMA_VERSION_V3
+            if plan.get("schema_version") == PLAN_SCHEMA_V3
+            else contract.SCHEMA_VERSION
+        )
+        if (
+            plan.get("contract_version", contract.SCHEMA_VERSION) != expected_contract
+            or input_manifest.get("contract_version", contract.SCHEMA_VERSION)
+            != expected_contract
+        ):
+            raise RunnerError("Q09 plan/input-manifest contract version mismatch")
         if input_manifest.get("work_item_id") != plan.get("work_item_id"):
             raise RunnerError("Q09 plan/input-manifest work_item_id mismatch")
         if input_manifest.get("candidate_lineage_key") != plan.get("candidate_lineage_key"):
@@ -712,10 +770,79 @@ def resolve_execution_period(
     return sealed_period
 
 
+def validate_q08_source_vintage(
+    q08_evidence_path: Path,
+    *,
+    baseline_setfile_path: Path,
+    ex5_path: Path,
+) -> dict[str, str]:
+    """Authenticate the runnable Q09 inputs against the bound Q08 baseline.
+
+    The former binder compared the plan only with the mutable work-item paths;
+    ``sealed_plan_period`` discovered Q08 drift after activation.  This guard
+    moves the same identity check before plan binding (and before autoseal
+    writes a new plan), with deterministic operator-facing causes.
+    """
+
+    evidence = _load_json(q08_evidence_path, "Q08 evidence")
+    baseline = evidence.get("baseline_run")
+    if not isinstance(baseline, Mapping):
+        raise RunnerError("Q08 baseline identity is missing from dependency evidence")
+    expected_setfile = _hex64(baseline.get("baseline_setfile_sha256"))
+    expected_ex5 = _hex64(baseline.get("baseline_ex5_sha256"))
+    if not expected_setfile or not expected_ex5:
+        raise RunnerError("Q08 baseline identity is incomplete in dependency evidence")
+    actual_setfile = contract.sha256_file(baseline_setfile_path)
+    if actual_setfile != expected_setfile:
+        raise RunnerError(
+            "Q08 baseline setfile vintage mismatch: "
+            f"expected {expected_setfile}, got {actual_setfile}"
+        )
+    actual_ex5 = contract.sha256_file(ex5_path)
+    if actual_ex5 != expected_ex5:
+        raise RunnerError(
+            "Q08 baseline EX5 vintage mismatch: "
+            f"expected {expected_ex5}, got {actual_ex5}"
+        )
+    mq5_path = Path(str(baseline.get("baseline_mq5_path") or ""))
+    expected_mq5 = _hex64(baseline.get("baseline_mq5_sha256"))
+    actual_mq5 = ""
+    if expected_mq5:
+        if not mq5_path.is_file():
+            raise RunnerError(f"Q08 baseline MQ5 source is missing: {mq5_path}")
+        actual_mq5 = contract.sha256_file(mq5_path)
+        if actual_mq5 != expected_mq5:
+            raise RunnerError(
+                "Q08 baseline MQ5 vintage mismatch: "
+                f"expected {expected_mq5}, got {actual_mq5}"
+            )
+    return {
+        "baseline_setfile_sha256": actual_setfile,
+        "ex5_sha256": actual_ex5,
+        "mq5_sha256": actual_mq5,
+    }
+
+
+def _validate_include_closure_source(ea_id: str, manifest: Mapping[str, Any]) -> None:
+    closure_path = Path(str((manifest.get("source_paths") or {}).get("include_closure", "")))
+    closure = _load_json(closure_path, "Q09 include closure")
+    if closure.get("schema") != "qm-q09-include-closure/v1":
+        return
+    try:
+        import build_q09_include_closure as closure_builder
+    except ModuleNotFoundError:
+        from tools.strategy_farm import build_q09_include_closure as closure_builder
+    try:
+        closure_builder.validate_include_closure(str(ea_id), closure_path)
+    except RuntimeError as exc:
+        raise RunnerError(f"Q09 include closure source vintage mismatch: {exc}") from exc
+
+
 def required_factory_timeout_min(
     cell_count: int,
     *,
     cell_timeout_sec: int = DEFAULT_CELL_TIMEOUT_SEC,
+    window_count: int = len(WINDOW_NAMES),
 ) -> int:
     """Conservative serial-run outer budget for three tester windows per cell."""
 
@@ -723,7 +850,9 @@ def required_factory_timeout_min(
         raise RunnerError("Q09 plan must contain at least one cell")
     if not 60 <= int(cell_timeout_sec) <= 28800:
         raise RunnerError("Q09 cell timeout must be between 60 and 28800 seconds")
-    total_seconds = int(cell_count) * len(WINDOW_NAMES) * (
+    if int(window_count) not in {2, 3}:
+        raise RunnerError("Q09 plan must contain two or three tester windows per cell")
+    total_seconds = int(cell_count) * int(window_count) * (
         int(cell_timeout_sec) + CELL_TIMEOUT_HEADROOM_SEC
     )
     return math.ceil(total_seconds / 60) + 60
@@ -934,6 +1063,7 @@ def bind_plan_to_work_item(
     plan_path: Path,
     expected_plan_file_sha256: str,
     cell_timeout_sec: int = DEFAULT_CELL_TIMEOUT_SEC,
+    dry_run: bool = False,
 ) -> dict[str, Any]:
     """Atomically bind one sealed plan to one pending canonical Q09 row.
 
@@ -955,16 +1085,23 @@ def bind_plan_to_work_item(
         raise RunnerError("Q09 execution requires a sealed REAL_TICKS tester model")
     timeout_sec = int(cell_timeout_sec)
     timeout_min = required_factory_timeout_min(
-        int(plan["cell_count"]), cell_timeout_sec=timeout_sec
+        int(plan["cell_count"]),
+        cell_timeout_sec=timeout_sec,
+        window_count=int(plan.get("window_count") or len(WINDOW_NAMES)),
     )
     database = _farm_db_path(farm_root)
     if not database.is_file():
         raise RunnerError(f"strategy-farm database missing: {database}")
 
-    connection = sqlite3.connect(str(database), timeout=30)
+    connection = sqlite3.connect(
+        f"file:{database.as_posix()}?mode=ro" if dry_run else str(database),
+        timeout=30,
+        uri=bool(dry_run),
+    )
     connection.row_factory = sqlite3.Row
     try:
-        connection.execute("BEGIN IMMEDIATE")
+        if not dry_run:
+            connection.execute("BEGIN IMMEDIATE")
         item = connection.execute(
             "SELECT * FROM work_items WHERE id=?", (str(work_item_id),)
         ).fetchone()
@@ -1016,6 +1153,12 @@ def bind_plan_to_work_item(
         source_baseline = Path(str((manifest.get("source_paths") or {}).get("baseline_setfile", "")))
         if source_baseline.resolve() != setfile_path.resolve():
             raise RunnerError("Q09 plan baseline path differs from the work-item setfile")
+        validate_q08_source_vintage(
+            q08_path,
+            baseline_setfile_path=setfile_path,
+            ex5_path=Path(str((manifest.get("source_paths") or {}).get("ex5", ""))),
+        )
+        _validate_include_closure_source(str(item["ea_id"]), manifest)
 
         try:
             q08_payload = json.loads(str(dependency["payload_json"] or "{}"))
@@ -1063,9 +1206,10 @@ def bind_plan_to_work_item(
             (calendar_id,),
         ).fetchone()
         if registered is None:
-            news_schema.record_calendar_bundle(
-                connection, verified_calendar, str(calendar_manifest.resolve())
-            )
+            if not dry_run:
+                news_schema.record_calendar_bundle(
+                    connection, verified_calendar, str(calendar_manifest.resolve())
+                )
         elif (
             registered["manifest_sha256"] != verified_calendar["manifest_sha256"]
             or registered["content_sha256"] != verified_calendar["content_sha256"]
@@ -1097,27 +1241,39 @@ def bind_plan_to_work_item(
         payload["timeout_min"] = max(int(payload.get("timeout_min") or 0), timeout_min)
         bound_at = datetime.now(timezone.utc).isoformat()
         payload["q09_plan_bound_at"] = bound_at
-        connection.execute(
-            "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
-            (
-                json.dumps(payload, sort_keys=True),
-                bound_at,
+        active_hold = connection.execute(
+            """
+            SELECT 1 FROM work_item_holds
+            WHERE work_item_id=? AND hold_code=? AND active=1
+            """,
+            (str(work_item_id), news_schema.ACTIVATION_HOLD_CODE),
+        ).fetchone() is not None
+        if dry_run:
+            activation_hold_released = False
+        else:
+            connection.execute(
+                "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
+                (
+                    json.dumps(payload, sort_keys=True),
+                    bound_at,
+                    str(work_item_id),
+                ),
+            )
+            activation_hold_released = news_schema.release_plan_bound_hold(
+                connection,
                 str(work_item_id),
-            ),
-        )
-        activation_hold_released = news_schema.release_plan_bound_hold(
-            connection,
-            str(work_item_id),
-            now=bound_at,
-        )
-        connection.commit()
+                now=bound_at,
+            )
+            connection.commit()
     except BaseException:
-        connection.rollback()
+        if connection.in_transaction:
+            connection.rollback()
         raise
     finally:
         connection.close()
     return {
-        "bound": True,
+        "bound": not dry_run,
+        "dry_run": bool(dry_run),
         "work_item_id": str(work_item_id),
         "plan_path": str(plan_path),
         "plan_file_sha256": contract.sha256_file(plan_path),
@@ -1128,7 +1284,12 @@ def bind_plan_to_work_item(
         "dispatch_binding_sha256": payload["q09_dispatch_binding_sha256"],
         "activation_state": payload["q09_activation_state"],
         "activation_hold_released": activation_hold_released,
-        "next_action": "ordinary factory pump/terminal worker may now claim this pending Q09_NEWS row",
+        "would_release_activation_hold": bool(active_hold),
+        "next_action": (
+            "apply the identical authenticated binding to release the activation hold"
+            if dry_run
+            else "ordinary factory pump/terminal worker may now claim this pending Q09_NEWS row"
+        ),
     }
 
 
@@ -1371,7 +1532,12 @@ def bind_diagnostic_plan_to_work_item(
 def _receipt_to_cell(spec: Mapping[str, Any]) -> dict[str, Any]:
     receipt_path = Path(spec["receipt_path"])
     receipt = _load_json(receipt_path, f"cell receipt {receipt_path}")
-    if receipt.get("schema_version") != CELL_RECEIPT_SCHEMA:
+    expected_receipt_schema = (
+        CELL_RECEIPT_SCHEMA_V3
+        if spec.get("contract_version") == contract.SCHEMA_VERSION_V3
+        else CELL_RECEIPT_SCHEMA
+    )
+    if receipt.get("schema_version") != expected_receipt_schema:
         raise RunnerError(f"unsupported cell receipt schema: {receipt_path}")
     for field in ("run_identity_sha256", "paired_base_identity_sha256", "arm", "temporal_mode", "compliance_mode", "seed"):
         if receipt.get(field) != spec.get(field):
@@ -1400,7 +1566,12 @@ def _receipt_to_cell(spec: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(metrics, Mapping) or not all(key in metrics for key in ("selection", "holdout", "full")):
         raise RunnerError(f"cell receipt metrics incomplete: {receipt_path}")
     evidence_document = _load_json(artifact_paths["evidence"], f"cell evidence {artifact_paths['evidence']}")
-    if evidence_document.get("schema_version") != CELL_EVIDENCE_SCHEMA:
+    expected_evidence_schema = (
+        CELL_EVIDENCE_SCHEMA_V3
+        if spec.get("contract_version") == contract.SCHEMA_VERSION_V3
+        else CELL_EVIDENCE_SCHEMA
+    )
+    if evidence_document.get("schema_version") != expected_evidence_schema:
         raise RunnerError(f"unsupported cell evidence schema: {artifact_paths['evidence']}")
     evidence_bindings = {
         "run_identity_sha256": spec["run_identity_sha256"],
@@ -1879,7 +2050,9 @@ def _evidence_payload(
     cells: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     return {
-        "schema_version": contract.SCHEMA_VERSION,
+        "schema_version": input_manifest.get(
+            "contract_version", contract.SCHEMA_VERSION
+        ),
         "work_item_id": input_manifest["work_item_id"],
         "deployment_target": input_manifest["deployment_target"],
         "identities": input_manifest["identities"],
@@ -1906,7 +2079,11 @@ def _nonlocking_adjudication(
     if verdict not in {"REVIEW_REQUIRED", "INVALID_EVIDENCE"}:
         raise RunnerError("non-locking Q09 adjudication verdict is invalid")
     result: dict[str, Any] = {
-        "schema_version": contract.ADJUDICATION_SCHEMA_VERSION,
+        "schema_version": (
+            contract.ADJUDICATION_SCHEMA_VERSION_V3
+            if input_manifest.get("contract_version") == contract.SCHEMA_VERSION_V3
+            else contract.ADJUDICATION_SCHEMA_VERSION
+        ),
         "verdict": verdict,
         "reason_codes": [reason_code],
         "target_compliance": contract.compliance_for_target(
@@ -2751,6 +2928,13 @@ def _validate_window_summary(
         ),
         "news_calendar": summary.get("news_calendar"),
     }
+    if input_manifest.get("contract_version") == contract.SCHEMA_VERSION_V3:
+        artifacts["gross_profit"] = _finite_report_number(
+            _report_cell_after(report_path, "Gross Profit"), "gross profit"
+        )
+        artifacts["gross_loss"] = _finite_report_number(
+            _report_cell_after(report_path, "Gross Loss"), "gross loss"
+        )
     return metrics, artifacts
 
 
@@ -2882,7 +3066,13 @@ def _production_dispatch_cell(
     metrics: dict[str, Any] = {}
     artifacts: dict[str, Any] = {}
     ea_id = int(context["ea_id"])
-    for window_name in WINDOW_NAMES:
+    contract_version = manifest.get("contract_version", contract.SCHEMA_VERSION)
+    window_names = (
+        ("selection", "holdout")
+        if contract_version == contract.SCHEMA_VERSION_V3
+        else WINDOW_NAMES
+    )
+    for window_name in window_names:
         assert_factory_capacity(
             Path(context["farm_root"]),
             work_item_id=str(context["work_item_id"]),
@@ -2991,6 +3181,26 @@ def _production_dispatch_cell(
         artifacts[window_name]["run_smoke_log_path"] = str(run_log.resolve())
         artifacts[window_name]["run_smoke_log_sha256"] = contract.sha256_file(run_log)
 
+    seam: dict[str, Any] | None = None
+    if contract_version == contract.SCHEMA_VERSION_V3:
+        try:
+            seam = seam_reconstruction.reconstruct_full_metrics(
+                metrics["selection"],
+                metrics["holdout"],
+                selection_logger_path=Path(artifacts["selection"]["logger_sample_path"]),
+                holdout_logger_path=Path(artifacts["holdout"]["logger_sample_path"]),
+                selection_gross_profit=float(artifacts["selection"]["gross_profit"]),
+                selection_gross_loss=float(artifacts["selection"]["gross_loss"]),
+                holdout_gross_profit=float(artifacts["holdout"]["gross_profit"]),
+                holdout_gross_loss=float(artifacts["holdout"]["gross_loss"]),
+            )
+        except seam_reconstruction.SeamError as exc:
+            raise RunnerError(f"Q09 contract-v3 seam reconstruction failed: {exc}") from exc
+        metrics["full"] = seam["metrics"]
+        artifacts["full"] = {
+            key: value for key, value in seam.items() if key != "metrics"
+        }
+
     cell_dir = Path(str(spec["receipt_path"])).parent
     report_manifest_path = cell_dir / "report_manifest.json"
     report_manifest = {
@@ -3004,7 +3214,11 @@ def _production_dispatch_cell(
     report_sha = contract.sha256_file(report_manifest_path)
     evidence_path = cell_dir / "cell_evidence.json"
     evidence = {
-        "schema_version": CELL_EVIDENCE_SCHEMA,
+        "schema_version": (
+            CELL_EVIDENCE_SCHEMA_V3
+            if contract_version == contract.SCHEMA_VERSION_V3
+            else CELL_EVIDENCE_SCHEMA
+        ),
         "run_identity_sha256": spec["run_identity_sha256"],
         "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
         "requested_seed": spec["seed"],
@@ -3016,14 +3230,23 @@ def _production_dispatch_cell(
         "q07_work_item_id": context["q07_work_item_id"],
         "q07_evidence_sha256": context["q07_evidence_sha256"],
         "flat_at_event_receipt_sha256": None,
-        "execution_contract": "FACTORY_RESERVED_RUN_SMOKE_MODEL4_THREE_WINDOWS_V1",
+        "execution_contract": (
+            "FACTORY_RESERVED_RUN_SMOKE_MODEL4_TWO_WINDOWS_SEAM_V3"
+            if contract_version == contract.SCHEMA_VERSION_V3
+            else "FACTORY_RESERVED_RUN_SMOKE_MODEL4_THREE_WINDOWS_V1"
+        ),
         "cost_profile": manifest["cost_profile"],
         "cost_execution_identity_sha256": context.get("cost_execution_identity_sha256"),
         "news_selfreport": context["news_selfreport"],
+        "seam_reconstruction": seam,
     }
     _write_immutable(evidence_path, contract.canonical_json_bytes(evidence))
     receipt = {
-        "schema_version": CELL_RECEIPT_SCHEMA,
+        "schema_version": (
+            CELL_RECEIPT_SCHEMA_V3
+            if contract_version == contract.SCHEMA_VERSION_V3
+            else CELL_RECEIPT_SCHEMA
+        ),
         "run_identity_sha256": spec["run_identity_sha256"],
         "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
         "arm": spec["arm"],
@@ -3040,6 +3263,7 @@ def _production_dispatch_cell(
         "metrics": metrics,
         "q07_seed_stability_pass": True,
         "news_selfreport": context["news_selfreport"],
+        "seam_reconstruction": seam,
     }
     _write_immutable(
         Path(str(spec["receipt_path"])), contract.canonical_json_bytes(receipt)
@@ -3470,6 +3694,11 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--out-prefix", type=Path, help=argparse.SUPPRESS)
     plan.add_argument("--news-or-event-strategy", action="store_true")
     plan.add_argument("--force-expanded-matrix", action="store_true")
+    plan.add_argument(
+        "--contract-version",
+        choices=sorted(contract.SUPPORTED_SCHEMA_VERSIONS),
+        default=contract.SCHEMA_VERSION,
+    )
     collect = sub.add_parser("collect")
     collect.add_argument("--plan", required=True, type=Path)
     collect.add_argument("--output-root", type=Path)
@@ -3531,6 +3760,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             output_root=args.output_root,
             news_or_event_strategy=args.news_or_event_strategy,
             force_expanded_matrix=args.force_expanded_matrix,
+            contract_version=args.contract_version,
         )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
