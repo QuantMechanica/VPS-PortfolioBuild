@@ -83,9 +83,13 @@ double Strategy_CalculateKAMA(const string sym, const int period, const int fast
    const double fast_sc = 2.0 / (double)(fast_ema + 1);
    const double slow_sc = 2.0 / (double)(slow_ema + 1);
 
+   if(start >= ArraySize(closes))
+      return 0.0;
    double current_kama = closes[start];
    for(int s = start; s >= shift; --s)
    {
+      if(s >= ArraySize(closes))
+         return 0.0;
       double change = MathAbs(closes[s] - closes[s + period]);
       double volatility = 0.0;
       for(int k = 0; k < period; ++k)
@@ -148,6 +152,8 @@ double Strategy_TSI(const string sym, const int r, const int s, const int shift)
    const double alpha_s = 2.0 / (double)(s + 1);
 
    int start = total_bars - 1;
+   if(start >= ArraySize(closes))
+      return 0.0;
    double e1_m = closes[start] - closes[start + 1];
    double e1_a = MathAbs(closes[start] - closes[start + 1]);
    double e2_m = e1_m;
@@ -155,6 +161,8 @@ double Strategy_TSI(const string sym, const int r, const int s, const int shift)
 
    for(int i = start - 1; i >= shift; --i)
    {
+      if(i >= ArraySize(closes))
+         return 0.0;
       double dp = closes[i] - closes[i + 1];
       double abs_dp = MathAbs(dp);
 
