@@ -94,9 +94,20 @@ via Planner (REBIND_STALE) statt manueller Release; (5) Testsuite-Baseline 22 vo
 | `-502` | Gate-Nummerierung `Q10.1–Q10.3` | **OWNER: Go für die Welle** (geparkt) |
 | `-513` | `QM5_13036` auf XAUUSD ausspielen? | **OWNER-Entscheid** (Kandidatenmenge = ROT) |
 | `-511` | Strategy Archive online (Abdeckungsebene) | OWNER-Entscheid Öffentlichkeitsgrad |
-| `-514` | **EA-Schauseiten fürs Live-Buch — sollen den MQL5-Kauf auslösen** | **MQL5-Produkt-EA existiert nicht; Quellenrechte je EA ungeklärt** |
+| `-514` | **EA-Schauseiten fürs Live-Buch — sollen den MQL5-Kauf auslösen** | **nur noch: MQL5-Produkt-EA fehlt** (Rechtefrage 2026-08-23 entschieden) |
 | `-509` | SH-3-Nachfolger (typisierte Spalten) | OFF-Fenster |
 | `-505`/`-508`/`-510` | Detailseiten-Vollausbau, DL-090-Job, Karteneingang Englisch | beauftragt, laufen |
+
+**Reduktionsregel festgeschrieben (OWNER 2026-08-23, mit Beispiel).** Öffentlich wird die
+**Mechanismusklasse in einem Satz** — der Balke Time Range Breakout wird zu *„Ausbrüche aus
+Ranges zu gewissen Uhrzeiten“*. Intern bleiben Uhrzeiten, Schwellen, Filter, Regime-Gates,
+Exit-Prioritäten, Sizing und Setfiles. **Das Verkaufsargument ist die Validierung, nicht die
+Idee:** 14 Gates, Walk-forward, Multi-Seed, Stress, Venue-Kostenmodell, Portfolio-Fit.
+
+**Quellenrechte entschieden — kein Blocker** (`OWNER-DEC-MQL5-RIGHTS`): die EAs sind
+Eigenleistung, die Quellen waren Inspiration, die Attribution in den Karten bleibt. Eine
+Marketing-Auflage bleibt: nicht mit Fremdnamen werben. `-514` hängt damit nur noch am
+Produkt-EA.
 
 **Neu 2026-08-23 (OWNER):** die Website bekommt **zwei** Flächen — das Archiv als
 Abdeckungsnachweis, und Schauseiten für die Live-Buch-EAs, die verkaufen müssen.
