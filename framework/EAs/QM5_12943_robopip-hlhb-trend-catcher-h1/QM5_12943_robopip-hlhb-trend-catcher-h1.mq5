@@ -14,7 +14,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -78,6 +78,7 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
+   ZeroMemory(req);
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
@@ -99,13 +100,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ema5_1 <= 0.0 || ema5_2 <= 0.0 || ema10_1 <= 0.0 || ema10_2 <= 0.0 || rsi_1 <= 0.0)
       return false;
 
-   double atr_daily = QM_ATR(_Symbol, PERIOD_D1, strategy_daily_atr_period, 1);
-   if(atr_daily <= 0.0)
-   {
-      const double atr_h1 = QM_ATR(_Symbol, PERIOD_H1, strategy_daily_atr_period, 1);
-      atr_daily = atr_h1 * 24.0;
-   }
+   const double atr_h1 = QM_ATR(_Symbol, PERIOD_H1, strategy_daily_atr_period, 1);
+   if(atr_h1 <= 0.0)
+      return false;
 
+   const double atr_daily = atr_h1 * 24.0;
    const double min_atr_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_min_daily_atr_pips);
    if(min_atr_dist > 0.0 && atr_daily < min_atr_dist)
       return false;
@@ -119,7 +118,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ema5_2 <= ema10_2 && ema5_1 > ema10_1 && rsi_1 > strategy_rsi_midline)
    {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double entry_p = (ask > 0.0) ? ask : iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: entry reference
+      const double entry_p = (ask > 0.0) ? ask : iClose(_Symbol, PERIOD_H1, 1); // perf-allowed
       if(entry_p <= 0.0) return false;
 
       req.type = QM_BUY;
@@ -134,7 +133,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ema5_2 >= ema10_2 && ema5_1 < ema10_1 && rsi_1 < strategy_rsi_midline)
    {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double entry_p = (bid > 0.0) ? bid : iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: entry reference
+      const double entry_p = (bid > 0.0) ? bid : iClose(_Symbol, PERIOD_H1, 1); // perf-allowed
       if(entry_p <= 0.0) return false;
 
       req.type = QM_SELL;
@@ -148,7 +147,32 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
 }
 
-void Strategy_ManageOpenPosition() {}
+void Strategy_ManageOpenPosition()
+{
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0) return;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      const int bars_open = iBarShift(_Symbol, PERIOD_H1, open_time); // perf-allowed
+
+      // Time stop exit after 96 closed H1 bars
+      if(strategy_time_stop_bars > 0 && bars_open >= strategy_time_stop_bars)
+      {
+         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
+         continue;
+      }
+   }
+}
 
 bool Strategy_ExitSignal()
 {
@@ -164,9 +188,6 @@ bool Strategy_ExitSignal()
    const bool bear_cross = (ema5_2 >= ema10_2 && ema5_1 < ema10_1);
    const bool bull_cross = (ema5_2 <= ema10_2 && ema5_1 > ema10_1);
 
-   const datetime now_time = TimeCurrent();
-   const int max_hold_sec = (strategy_time_stop_bars > 0) ? (strategy_time_stop_bars * 3600) : 0;
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
    {
       const ulong ticket = PositionGetTicket(i);
@@ -177,24 +198,11 @@ bool Strategy_ExitSignal()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      if(max_hold_sec > 0 && open_time > 0 && (now_time - open_time) >= max_hold_sec)
-      {
-         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
-         continue;
-      }
-
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       if(pos_type == POSITION_TYPE_BUY && bear_cross)
-      {
-         QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
-         continue;
-      }
-      else if(pos_type == POSITION_TYPE_SELL && bull_cross)
-      {
-         QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
-         continue;
-      }
+         return true;
+      if(pos_type == POSITION_TYPE_SELL && bull_cross)
+         return true;
    }
 
    return false;
@@ -238,6 +246,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck()) return;
 
    const datetime broker_now = TimeCurrent();
@@ -253,10 +263,23 @@ void OnTick()
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
       {
-         ulong ticket = PositionGetTicket(i);
+         const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket)) continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
+
+         const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+         const double ema5_1 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_fast_period, 1, PRICE_CLOSE);
+         const double ema5_2 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_fast_period, 2, PRICE_CLOSE);
+         const double ema10_1 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_slow_period, 1, PRICE_CLOSE);
+         const double ema10_2 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_slow_period, 2, PRICE_CLOSE);
+         const bool bear_cross = (ema5_2 >= ema10_2 && ema5_1 < ema10_1);
+         const bool bull_cross = (ema5_2 <= ema10_2 && ema5_1 > ema10_1);
+
+         if((pos_type == POSITION_TYPE_BUY && bear_cross) || (pos_type == POSITION_TYPE_SELL && bull_cross))
+         {
+            QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
+         }
       }
    }
 
