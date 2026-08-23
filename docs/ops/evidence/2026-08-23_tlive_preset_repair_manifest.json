@@ -1,0 +1,66 @@
+{
+  "schema_version": "qm.tlive_preset_repair.v1",
+  "ticket": "rb-pointer-presets-repair",
+  "owner_decision": "OWNER-DEC-POINTER-PRESETS option (a), approved 2026-08-23",
+  "status": "PREPARED_NOT_DEPLOYED",
+  "deployment_authority": "Claude after SHA verification; Codex must not deploy or sign",
+  "portfolio_manifest_path": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+  "portfolio_manifest_sha256": "8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6",
+  "portfolio_sleeves": 24,
+  "portfolio_total_risk_pct": "9.7499",
+  "magic_registry_path": "framework/registry/magic_numbers.csv",
+  "news_calendar_path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+  "functional_diff_path": "docs/ops/evidence/2026-08-23_tlive_preset_repair_functional_diff.json",
+  "presets": [
+    {
+      "ea_label": "QM5_10440_mql5-ohlc-mtf", "ea_id": 10440, "symbol": "NDX.DWX", "timeframe": "H1", "symbol_slot": 3, "magic": 104400003, "risk_percent": "0.0577",
+      "source_path": "framework/EAs/QM5_10440_mql5-ohlc-mtf/sets/QM5_10440_mql5-ohlc-mtf_NDX.DWX_H1_live.set", "source_sha256": "af2678b4446e10741f68444cb457a16da33059b0150658857f400aa575cea717",
+      "target_tlive_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\15_NDX_H1_QM5_10440_mql5-ohlc-mtf.set", "expected_pre_deploy_sha256": "cc7c9e3ba36c65a4721335be5abbc1c88780adb38a53586155baf18c75c53769", "expected_build_hash": "b71d302997ecdb661f1627e12b9e5e766e9679c780461b82fa018db7f2078a6a", "regeneration_status": "REGENERABLE"
+    },
+    {
+      "ea_label": "QM5_10513_mql5-ichimoku", "ea_id": 10513, "symbol": "XAUUSD.DWX", "timeframe": "D1", "symbol_slot": 3, "magic": 105130003, "risk_percent": "0.3050",
+      "source_path": "framework/EAs/QM5_10513_mql5-ichimoku/sets/QM5_10513_mql5-ichimoku_XAUUSD.DWX_D1_live.set", "source_sha256": "722e1344a4fa6bd60a43be79d1d1920730b7a5d62f8236c0b812f8764f596dde",
+      "target_tlive_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\19_XAUUSD_D1_QM5_10513_mql5-ichimoku.set", "expected_pre_deploy_sha256": "7d15a3491465b916e7e5a0f2ef36212f76f43fde6fc186586cde542431080408", "expected_build_hash": "04b62af28c6466e01741aacaa915d9a68714cd7c23288ae277615ae068d63898", "regeneration_status": "REGENERABLE"
+    },
+    {
+      "ea_label": "QM5_10706_tv-mon-ls", "ea_id": 10706, "symbol": "GBPUSD.DWX", "timeframe": "H1", "symbol_slot": 1, "magic": 107060001, "risk_percent": "0.0530",
+      "source_path": "framework/EAs/QM5_10706_tv-mon-ls/sets/QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_live.set", "source_sha256": "d9d432347648a41b5dfefeb98f1aedf1c26b4d19f0a9db07ea3e1d0bc900f26f",
+      "target_tlive_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\11_GBPUSD_H1_QM5_10706_tv-mon-ls.set", "expected_pre_deploy_sha256": "e807c3706ff0bedbdbbe17d6bf64df833cf247e7a14b910802c1ae3a432f6377", "expected_build_hash": "01e34b2059de6ed505d445ce9fcbac7da0eb10d51e5cbcbbd18d38a968916078", "regeneration_status": "REGENERABLE"
+    },
+    {
+      "ea_label": "QM5_10911_grimes-complex-pb", "ea_id": 10911, "symbol": "GDAXI.DWX", "timeframe": "H1", "symbol_slot": 3, "magic": 109110003, "risk_percent": "0.1276",
+      "source_path": "framework/EAs/QM5_10911_grimes-complex-pb/sets/QM5_10911_grimes-complex-pb_GDAXI.DWX_H1_live.set", "source_sha256": "daf0f2143955d3bc052f5bce5b6b8510e7a55354839139f587e11d6ef13f6e1c",
+      "target_tlive_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\13_GDAXI_H1_QM5_10911_grimes-complex-pb.set", "expected_pre_deploy_sha256": "6a503e2b60328bda8fdc9ed2900f14270e8a20c28302060ba6c012cccdbce8ec", "expected_build_hash": "a815c73da991736d25a02c027bbcfb23f68615adb66b7325cc2efcdc52344158", "regeneration_status": "REGENERABLE"
+    },
+    {
+      "ea_label": "QM5_10919_grimes-overshoot", "ea_id": 10919, "symbol": "XTIUSD.DWX", "timeframe": "H4", "symbol_slot": 1, "magic": 109190001, "risk_percent": "0.9181",
+      "source_path": "framework/EAs/QM5_10919_grimes-overshoot/sets/QM5_10919_grimes-overshoot_XTIUSD.DWX_H4_live.set", "source_sha256": "af3f2a4a2aa656ec1f9f5f247c55b2331a3c2c842d633afb48f849b98da735fc",
+      "target_tlive_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\04_XTIUSD_H4_QM5_10919_grimes-overshoot.set", "expected_pre_deploy_sha256": "10cbf478dcb6e4900325b2fc24ece2a0ce61878f8908384b0fe96e0ea11f9199", "expected_build_hash": "57e0db8401616a5fb10c68557c24e8b7a7e98254cb8ddf57245fc178aa3a4691", "regeneration_status": "REGENERABLE"
+    },
+    {
+      "ea_label": "QM5_10939_grimes-context-pb", "ea_id": 10939, "symbol": "GBPUSD.DWX", "timeframe": "H4", "symbol_slot": 1, "magic": 109390001, "risk_percent": "0.1887",
+      "source_path": "framework/EAs/QM5_10939_grimes-context-pb/sets/QM5_10939_grimes-context-pb_GBPUSD.DWX_H4_live.set", "source_sha256": "298bcd6a7867a967c1b491953fecad83e631b3dc5c001af70462be9e11e4c60e",
+      "target_tlive_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\12_GBPUSD_H4_QM5_10939_grimes-context-pb.set", "expected_pre_deploy_sha256": "4869e29a3a6d217d45ebb23be2e406a41780ad0c71c6588502e3f7507390e90a", "expected_build_hash": "308604a3546c44fc8bfb40ecff36801e5479bf33887847b8b6e5650943312aac", "regeneration_status": "REGENERABLE"
+    },
+    {
+      "ea_label": "QM5_11132_tm-cum-rsi2", "ea_id": 11132, "symbol": "SP500.DWX", "timeframe": "D1", "symbol_slot": 0, "magic": 111320000, "risk_percent": "0.4562",
+      "source_path": "framework/EAs/QM5_11132_tm-cum-rsi2/sets/QM5_11132_tm-cum-rsi2_SP500.DWX_D1_live.set", "source_sha256": "87fc8288070ab8bf56356ec9ab6a89f0216004df03dd2766e49e3aef3bdd5694",
+      "target_tlive_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\16_SP500_D1_QM5_11132_tm-cum-rsi2.set", "expected_pre_deploy_sha256": "76a984f06f69c750e1bae264bb4854a263eda7cddffbf8a2ec95065dd092f94d", "expected_build_hash": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152", "regeneration_status": "REGENERABLE"
+    },
+    {
+      "ea_label": "QM5_12567_cum-rsi2-commodity", "ea_id": 12567, "symbol": "XNGUSD.DWX", "timeframe": "D1", "symbol_slot": 2, "magic": 125670002, "risk_percent": "0.9797",
+      "source_path": "framework/EAs/QM5_12567_cum-rsi2-commodity/sets/QM5_12567_cum-rsi2-commodity_XNGUSD.DWX_D1_live.set", "source_sha256": "26537d011b553ba6acb668d99945584be3c0ab0991dc4459fc84de8278cc4e79",
+      "target_tlive_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\23_XNGUSD_D1_QM5_12567_cum-rsi2-commodity.set", "expected_pre_deploy_sha256": "c7a3d43ff6c8fc6e84f5495e627aa584a1f4cccc85fc8feb97e96e7c67711551", "expected_build_hash": "5d5be334288e76a582349dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9", "regeneration_status": "REGENERABLE"
+    },
+    {
+      "ea_label": "QM5_12989_grimes-nested-pb-v2", "ea_id": 12989, "symbol": "XAUUSD.DWX", "timeframe": "H4", "symbol_slot": 3, "magic": 129890003, "risk_percent": "0.2420",
+      "source_path": "framework/EAs/QM5_12989_grimes-nested-pb-v2/sets/QM5_12989_grimes-nested-pb-v2_XAUUSD.DWX_H4_live.set", "source_sha256": "9fb2c0f85ad92a1b6de7afeb58988c7fe3fbe56ac9be5f6025af6a5d18d2a5f4",
+      "target_tlive_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\21_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2.set", "expected_pre_deploy_sha256": "a04013c587a5967fb28eb807d36e4b3d5897cdbe0a20e96310570825696bdeb8", "expected_build_hash": "7f2c298f4a8b4395480e47f20f9cefb8d5c53083bd63f7ea9ef1db067f52c4d2", "regeneration_status": "REGENERABLE"
+    },
+    {
+      "ea_label": "QM5_13128_pre-fomc-drift-ndx", "ea_id": 13128, "symbol": "NDX.DWX", "timeframe": "H1", "symbol_slot": 0, "magic": 131280000, "risk_percent": "1.0000",
+      "source_path": "framework/EAs/QM5_13128_pre-fomc-drift-ndx/sets/QM5_13128_pre-fomc-drift-ndx_NDX.DWX_H1_live.set", "source_sha256": "743326c316de6c2ccdab6080dab6dfff2d010afc9843a75798701f39e981be4e",
+      "target_tlive_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\14_NDX_H1_QM5_13128_pre-fomc-drift-ndx.set", "expected_pre_deploy_sha256": "3aa27e4b869a4f1e0dac25457d3c5056664613e58e3b41556b78a5db18549ffb", "expected_build_hash": "364867a9fe8d58478ade5526aad19deb377a35b313cfdac29763bb2eb82d273b", "regeneration_status": "REGENERABLE"
+    }
+  ]
+}

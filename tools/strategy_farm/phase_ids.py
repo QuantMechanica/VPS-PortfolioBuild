@@ -372,12 +372,35 @@ def _resolve_versioned_phase(
     source_key = str(phase).strip()
     source_id = source_key.upper()
     source_version = _normalise_contract_version(contract_version)
+    active_version = ACTIVE_GATE_CONTRACT_VERSION
     if source_version is None:
+        # The live corpus stamps every pre-cutover row ``legacy`` (see the v4
+        # storage_strategy).  ``legacy`` is an EXPLICIT pre-v4 marker: because the
+        # 2026-08-23 v4 activation was the first gate renumbering, such a row
+        # carries v3 numbering (v1/v2 share v3 numbering for every renumbered
+        # gate).  When the active contract renumbered the gate, read the id under
+        # v3 and translate it forward, exposing explicit ``(v3:<id>)`` provenance
+        # — the old id is NEVER silently reinterpreted under the new semantics
+        # (OWNER: "historical rows are never re-read with v4 semantics").  Ids the
+        # equivalence table leaves unchanged, P-keys, and utility phases keep the
+        # historical pass-through with no synthesised provenance.
+        #
+        # A genuinely absent/empty stamp is "no contract information" (the display
+        # helpers' graceful-degradation contract), NOT a pre-v4 assertion, so it
+        # keeps the plain active pass-through.  The live DB holds no such rows.
+        raw = "" if contract_version is None else str(contract_version).strip().lower()
+        equivalence_target = "v3" if active_version in {"v1", "v2"} else active_version
+        if raw == "legacy" and equivalence_target != "v3":
+            try:
+                active_id = equivalent_gate(source_id, "v3", equivalence_target)
+            except GateManifestError:
+                active_id = None
+            if active_id is not None and active_id != source_id:
+                return active_id, source_id, "v3"
         if source_id in PHASE_NAME:
             return source_id, source_id, None
         return LEGACY_P_TO_Q.get(source_id, source_key), source_id, None
 
-    active_version = ACTIVE_GATE_CONTRACT_VERSION
     if source_version == active_version:
         return source_id, source_id, source_version
 

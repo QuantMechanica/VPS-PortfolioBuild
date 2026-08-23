@@ -1,0 +1,24 @@
+{
+  "review_task_id": "149b2735-5c5d-4543-afab-b71796d7c14a",
+  "build_task_id": "57041b21-12da-464d-b275-c91cb3fa8673",
+  "ea_id": "QM5_39005",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "PASS",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_39005 source lines 34-35 default RISK_PERCENT=0.5 and RISK_FIXED=1000.0 simultaneously; QM_FrameworkValidateRiskInputs rejects both-positive inputs, so default OnInit fails unless a setfile overrides the source contract.",
+    "QM5_39005 source lines 119-149 indexes the dynamic cci_buf array using warmup rather than a direct ArraySize bounds proof after ArrayResize, violating the V5 dynamic-buffer safety contract.",
+    "QM5_39005 source line 199 uses direct iClose for a simple closed-bar price read instead of a pooled QM reader; unlike the bespoke GHL reconstruction at line 165, this is not a justified structural exception.",
+    "QM5_39005 source lines 242-246 evaluate the card's 23:55-00:05 GMT rollover blackout with TimeCurrent broker time and never convert through QM_BrokerToUTC.",
+    "QM5_39005's approved card caps market-order slippage at three symbol ticks, but the source never calls QM_EntryConfigure and therefore retains the framework's 20-point default deviation.",
+    "Build artifact 57041b21-12da-464d-b275-c91cb3fa8673.json omits required smoke_result and smoke_report_path fields, and no QM5_39005 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T18:32:06Z"
+}

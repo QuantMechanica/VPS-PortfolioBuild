@@ -213,7 +213,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 root,
                 "q09-sharded",
                 "EURUSD.DWX",
-                phase=farmctl._NEWS_PHASE,
+                phase=terminal_worker._Q09_NEWS_PHASE,
                 status="active",
                 claimed_by="T1",
                 payload={"q09_cell_count": 40, "q09_cell_timeout_sec": 60},

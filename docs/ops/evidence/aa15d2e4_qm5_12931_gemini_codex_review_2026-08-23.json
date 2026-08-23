@@ -1,0 +1,28 @@
+{
+  "review_task_id": "aa15d2e4-40a5-40b0-a8a1-0df2d4b3cc62",
+  "build_task_id": "ab171f6d-bd52-4b39-9386-936314d5439e",
+  "ea_id": "QM5_12931",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "FAIL"
+  },
+  "findings": [
+    "The approved card requires a SELL-STOP at neckline minus 0.4 ATR with 12-H4-bar validity, but QM5_12931 source lines 426-460 waits for a closed-bar breakdown and creates a QM_SELL market request; build_gate_hardening reports EA_CARD_PENDING_ORDER_TYPE_MISMATCH.",
+    "The approved Gate 1 requires each peak to stand at least 0.5 ATR above its surrounding 20-bar high, but strategy_peak_height_atr is declared at source line 46 and never used; the detector starts with generic three-bar fractals and therefore omits a mandatory structural gate.",
+    "QM5_12931 source lines 93, 101, 182, 280, and 520 directly use iATR, iMA, and CopyBuffer in the user EA instead of the QM indicator wrappers, violating both the framework corset and forbidden-code checklist.",
+    "QM5_12931 source lines 181-187 interpret CopyBuffer(start=1,count=2) backwards: index 0 is the older shift-2 value and index 1 is shift 1, so sma_vals[0] <= sma_vals[1] admits a rising D1 SMA instead of the card-required flat-or-falling bias; build_gate_hardening reports EA_CARD_SMA_DIRECTION_INVERTED.",
+    "The approved news blackout is plus/minus two H4 bars (480/480 minutes), while source inputs and QM_FrameworkInit configure PRE30_POST30 and 30/30 at lines 25 and 545-548; build_gate_hardening reports EA_CARD_NEWS_WINDOW_MISMATCH.",
+    "QM5_12931 OnTick returns on the news gate at source line 575 before partial management and exits at lines 580-590, despite the card defining news as entry-only; build_gate_hardening reports EA_CARD_NEWS_BLOCKS_MANAGEMENT.",
+    "QM5_12931 source lines 484-492 ignores the bool result of QM_TM_PartialClose and unconditionally sets g_tp1_done=true; a rejected or unrepresentable 50% close permanently skips the card's partial exit.",
+    "The partial/failure-exit state is file-scope only and is not reconstructed on OnInit: Strategy_ManageOpenPosition returns when g_active_setup_valid is false at lines 470-475, so restarting with an open position disables the 50% partial, break-even move, and first-eight-bar failure exit.",
+    "Current build_gate_hardening finds four source failures even though the build artifact says build_check_passed=true. Commit 02f10d024 changed the MQ5 by 500 insertions and 10 deletions without updating the EX5; the EX5 timestamp predates the changed MQ5 and therefore does not verify the reviewed source despite compile_succeeded=true.",
+    "Build artifact artifacts/builds/ab171f6d-bd52-4b39-9386-936314d5439e.json marks smoke_result as deferred_p2_smoke with blocked_reason empty; smoke_skipped_reason is not durable tester-occupancy evidence, and no QM5_12931 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:48:53Z"
+}

@@ -4,7 +4,7 @@
 **Slug:** `mql5-macd-obv-div-card`
 **Source:** `ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb`
 **Author of this spec:** Codex
-**Last revised:** 2026-08-22
+**Last revised:** 2026-08-23
 
 ---
 
@@ -31,14 +31,14 @@ Friday-close and news-entry controls remain authoritative.
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---:|---|
-| `strategy_macd_fast` | 12 | 6-24 | Fast EMA period in standard MACD main. |
-| `strategy_macd_slow` | 26 | 18-52 | Slow EMA period; must exceed the fast period. |
-| `strategy_macd_signal` | 9 | 5-18 | MACD signal period used by the pooled MACD handle. |
-| `strategy_atr_period` | 14 | 7-28 | ATR period for the structural stop buffer. |
-| `strategy_atr_swing_buffer` | 0.25 | 0.10-0.75 | ATR multiple beyond the divergence swing. |
-| `strategy_reward_risk` | 2.0 | 1.0-4.0 | Fixed take-profit multiple of initial risk. |
-| `strategy_divergence_expiry_bars` | 10 | 3-20 | Bars allowed for the first confirming candle. |
-| `strategy_swing_scan_bars` | 160 | 48-480 | Bounded closed-bar window used to locate the prior fractal and build OBV. |
+| `strategy_macd_fast` | 12 | Card does not specify; implementation requires >=2 and < slow | Fast EMA period in standard MACD main. |
+| `strategy_macd_slow` | 26 | Card does not specify; implementation requires > fast | Slow EMA period in standard MACD main. |
+| `strategy_macd_signal` | 9 | Card does not specify; implementation requires >=1 | MACD signal period used by the pooled MACD handle. |
+| `strategy_atr_period` | 14 | >=1 | ATR period for the structural stop buffer. |
+| `strategy_atr_swing_buffer` | 0.25 | >0 | ATR multiple beyond the divergence swing. |
+| `strategy_reward_risk` | 2.0 | >0 | Fixed take-profit multiple of initial risk. |
+| `strategy_divergence_expiry_bars` | 10 | >=1 | Bars allowed for the first confirming candle. |
+| `strategy_swing_scan_bars` | 160 | >=48; card does not specify a maximum | Bounded closed-bar window used to locate the prior fractal and build OBV. |
 
 The card fixes fractal strength at 3-left/3-right and the post-swing OBV trend
 at three bars; they are compile-time constants rather than optimisation inputs.
@@ -81,10 +81,10 @@ The entry hook rejects any chart period other than H1.
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | approximately 35 |
-| Typical hold time | hours to several days |
-| Expected drawdown profile | clustered losses when trends continue through apparent divergence |
-| Regime preference | reversal after momentum and volume participation weaken |
-| Win rate target (qualitative) | medium |
+| Typical hold time | Not specified in the approved card. |
+| Expected drawdown profile | Not specified in the approved card. |
+| Regime preference | Reversal is the explicit card concept; no narrower regime is specified. |
+| Win rate target (qualitative) | Not specified in the approved card. |
 
 ---
 
@@ -97,7 +97,7 @@ This card was mechanised from:
 **Pointer:** Christian Benjamin, "MQL5 Wizard Techniques you should know
 (Part 71): MACD plus OBV," 2025-05-28,
 `https://www.mql5.com/en/articles/18462`
-**R1-R4 verdict (Q00):** all PASS; see
+**R1-R4 verdict (Q00):** R1 lineage recorded and R2-R4 PASS per
 `artifacts/cards_approved/QM5_12946_mql5-macd-obv-div-card.md`.
 
 ---
@@ -106,9 +106,9 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02-Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio, typically 0.3%-0.5% |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
 ENV-to-mode validation is enforced by `QM_FrameworkInit`
 (`EA_INPUT_RISK_MODE_MISMATCH`).
@@ -119,4 +119,4 @@ ENV-to-mode validation is enforced by `QM_FrameworkInit`
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-22 | Initial build from approved card | Build task `7bc9f0f5-251e-4755-b829-33e38cfd740b`. |
+| v1 | 2026-08-23 | Initial build from card | `7bc9f0f5-251e-4755-b829-33e38cfd740b` |

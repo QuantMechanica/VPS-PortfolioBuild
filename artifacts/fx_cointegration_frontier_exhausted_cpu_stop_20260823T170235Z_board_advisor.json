@@ -1,0 +1,145 @@
+{
+  "artifact_type": "fx_cointegration_frontier_exhausted_hard_cpu_stop",
+  "generated_at_utc": "2026-08-23T17:03:28Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "978f9dc8655c1e4fd368e893ffadd5f223964694",
+  "mission_outcome": "EXHAUSTED_FRONTIER_STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "scan_reconciliation": {
+    "source": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "durable_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "new_unbuilt_pair_eligible": false,
+    "reason": "Every relationship in the frozen sign-aware 66-pair scan already resolves to governed work; creating another identity would duplicate an existing sleeve."
+  },
+  "anchor_state": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_chain": "Q04 PASS; Q05 FAIL",
+      "current_q02_oninit_or_no_history_block": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_chain": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_block": false
+    }
+  },
+  "existing_pair_fallback": {
+    "ea_id": "QM5_20208",
+    "ea_label": "QM5_20208_nzdusd-euraud",
+    "pair": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "scan_rank": 27,
+    "durable_terminal_evidence": "artifacts/fx_cointegration_qm5_20208_q06_fail_cpu_stop_20260823T113134Z_board_advisor.json",
+    "lineage": "Q02 PASS; Q04 PASS_LOWFREQ; Q05 PASS; Q06 FAIL",
+    "q06_work_item_id": "776e6310-7ad6-41ba-8a08-4d63e045d4e5",
+    "q06_status": "done",
+    "q06_verdict": "FAIL",
+    "duplicate_or_post_fail_advance_allowed": false,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "capacity_sample": {
+    "mt5_slots_observed_at_utc": "2026-08-23T17:02:09Z",
+    "cpu_sample_end_utc": "2026-08-23T17:03:28Z",
+    "paced_launch_gate": 1,
+    "running_factory_terminal_count": 6,
+    "running_factory_terminals": [
+      "T1",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T10"
+    ],
+    "active_work_items": [
+      {
+        "terminal": "T1",
+        "work_item_id": "02c82887-8f28-403e-bbc4-4e903cda3db0",
+        "ea_id": "QM5_10916",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "c8f1f977-46fe-48ea-9d20-68926f938d7c",
+        "ea_id": "QM5_21505",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "3bc3b088-94f3-4390-8b7d-5fd134336dac",
+        "ea_id": "QM5_20206",
+        "phase": "Q02"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "ffe82ff0-1b1b-4817-8b13-65c69b5abd49",
+        "ea_id": "QM5_11294",
+        "phase": "Q07"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "e8d5aced-4335-401b-a8f2-8904f7da9ea6",
+        "ea_id": "QM5_11182",
+        "phase": "Q07"
+      },
+      {
+        "terminal": "T10",
+        "work_item_id": "1e3b7aa9-6a2d-466b-bea2-198964fda73f",
+        "ea_id": "QM5_20010",
+        "phase": "Q10_NEWS"
+      }
+    ],
+    "cpu_samples_percent": [
+      92.79,
+      100.0,
+      94.26,
+      100.0,
+      96.29
+    ],
+    "cpu_average_percent": 96.668,
+    "cpu_maximum_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "unrelated_ftmo_terminal_observed_only": true
+  },
+  "non_duplicate_delta": {
+    "previous_evidence": "artifacts/fx_cointegration_qm5_20208_q06_fail_cpu_stop_20260823T113134Z_board_advisor.json",
+    "current_factory_snapshot_utc": "2026-08-23T17:02:09Z",
+    "current_running_factory_terminal_count": 6,
+    "current_cpu_maximum_percent": 100.0,
+    "reason_for_fresh_evidence": "This receipt provides a current supported capacity census on the requested branch after the prior selected fallback reached its terminal Q06 FAIL, preventing duplicate card and queue work."
+  },
+  "actions_this_run": {
+    "new_card_or_ea": false,
+    "enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "compile_or_build_check": false,
+    "tester_launch_or_backtest": false,
+    "terminal_control": false,
+    "evidence_commit_only": true
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}

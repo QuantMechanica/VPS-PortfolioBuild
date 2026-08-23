@@ -25,3 +25,7 @@ The D1 50-day entry and 20-day opposite-channel exit are now computed once per f
 The strict build wrapper refused an ad-hoc compile with `LIVE_FACTORY_AD_HOC_COMPILE_REFUSED` because protected T1–T10 processes were active. No process was stopped. The required governed fallback, `farmctl enqueue-compile QM5_41005`, then refused the bound existing build with `EX5_ALREADY_PRESENT` and `BOUND_SETFILE_HASH_EXISTS`; `force_rebuild_authorized` was false. Consequently no fresh EX5 was emitted and no smoke or pipeline verdict is claimed. The existing EX5 is explicitly stale relative to this source (EX5 SHA-256 `12e35b8185adb912bc6023947a5cea20c5c7a540e16542669c924d1aa0b585d6`, modified `2026-08-18T17:23:02Z`).
 
 Disposition: rework is complete and static verification passes; fresh strict compilation remains held by the governed interlock and requires authorized force rebuild.
+
+## Scheduled single-pass recheck — 2026-08-23T18:19:24Z
+
+Codex repeated `validate_spec_doc.py`, `validate_build_guardrails.py --max-news-stale-hours 336`, `validate_symbol_scope.py --fail-on-leak`, raw-source quarantine, and `git diff --check`; all static checks passed and the source hash remained `7be25a6c0d0eeff3f45f4c2f0728dd22270e8abb4a17aab90ce4f6fab00f1ba6`. The sanctioned `compile_ea.py --ea-id 41005 --json --fail-on-error` attempt stopped with `COMPILE_FAILED / INCLUDE_MIRROR_REFUSED`. Contemporaneous farm health reported 9 active rows, 20 PowerShell workers, and all 10 T1-T10 workers alive. No process was stopped or started; no fresh EX5, smoke, or pipeline verdict is claimed.

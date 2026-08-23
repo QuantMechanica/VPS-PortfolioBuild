@@ -1,0 +1,23 @@
+{
+  "review_task_id": "4550f45e-827d-4cb4-96f8-f25eaef2a30a",
+  "build_task_id": "01bd8a9d-bd3f-4da5-a275-be9192a763ed",
+  "ea_id": "QM5_12944",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_12944 source defaults set RISK_PERCENT=0.5 and RISK_FIXED=1000 simultaneously at lines 17-18. QM_FrameworkValidateRiskInputs rejects any configuration with both values positive, so a default attach fails OnInit with EA_INPUT_RISK_BOTH_SET even though the generated backtest setfiles correctly override RISK_PERCENT to zero.",
+    "The retry claims all prior findings were addressed, but strategy_min_pivots remains an exposed input at source line 38 with no use site; both fault-line searches still hard-code three pivots at lines 119-130 and 165-176.",
+    "The approved card specifies a plus/minus 15-minute high-impact-news blackout, while source lines 22 and 399-414 configure PRE30_POST30 and literal 30/30 minutes; the reviewed implementation does not match the approved fixed parameter.",
+    "Commit 02f10d024 changed the QM5_12944 MQ5 by 65 insertions and 19 deletions but did not update the EX5. The EX5 retains the exact pre-rework hash e19a9d287c247aaec8f074ff0469aeb977f0fc03b349a95617aa02a347c2d711 and predates the changed source, so compile_succeeded=true does not verify the reviewed retry.",
+    "Build artifact artifacts/builds/01bd8a9d-bd3f-4da5-a275-be9192a763ed.json marks smoke_result as deferred_p2_smoke with blocked_reason empty; smoke_skipped_reason is not durable tester-occupancy evidence, and no QM5_12944 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:58:06Z"
+}

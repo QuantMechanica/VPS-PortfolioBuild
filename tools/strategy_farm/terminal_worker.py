@@ -46,6 +46,20 @@ import custom_history_lease
 import custom_history_master
 from framework.scripts._phase_utils import cold_cache_summary_signature
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
+try:
+    from sqlite_busy import (
+        BUSY_TIMEOUT_MS,
+        configure_connection as configure_sqlite_connection,
+        is_sqlite_busy,
+        retry_sqlite_busy,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.sqlite_busy import (
+        BUSY_TIMEOUT_MS,
+        configure_connection as configure_sqlite_connection,
+        is_sqlite_busy,
+        retry_sqlite_busy,
+    )
 
 
 _EARLY_RUN_SMOKE_PHASES = frozenset(
@@ -263,8 +277,8 @@ LOG_BOMB_RATE_MB_PER_MIN = 1500.0             # >> any legit EA's journal growth
 LOG_BOMB_HARD_CEIL_BYTES = 4 * 1024 ** 3      # 4 GB absolute backstop (disk safety; 4x7 terminals = 28GB worst case)
 LOG_BOMB_JOURNAL_CAP_BYTES = LOG_BOMB_HARD_CEIL_BYTES  # back-compat alias (kill-record field)
 LOG_BOMB_CHECK_EVERY_ITERS = 5                # ~every 10s (loop sleeps 2s)
-SQLITE_WRITE_RETRIES = 12
-SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.5
+SQLITE_WRITE_RETRIES = 8
+SQLITE_WRITE_RETRY_SLEEP_SECONDS = 0.05
 # run_smoke can spend up to 240 seconds publishing a report after terminal_exit.
 # The outer worker therefore waits through that complete contract plus 60 seconds
 # of margin before treating the wrapper as stalled. A 60-second ceiling destroyed
@@ -353,18 +367,15 @@ def _launch_fault_defer_seconds(previous_fault_count: object) -> float:
 
 
 def _with_sqlite_retry(fn):
-    for attempt in range(1, SQLITE_WRITE_RETRIES + 1):
-        try:
-            return fn()
-        except sqlite3.OperationalError as exc:
-            if "locked" not in str(exc).lower() or attempt == SQLITE_WRITE_RETRIES:
-                raise
-            time.sleep(min(30.0, SQLITE_WRITE_RETRY_SLEEP_SECONDS * attempt) + random.random())
-    raise RuntimeError("unreachable sqlite retry state")
+    return retry_sqlite_busy(
+        fn,
+        attempts=SQLITE_WRITE_RETRIES,
+        base_delay_seconds=SQLITE_WRITE_RETRY_SLEEP_SECONDS,
+    )
 
 
 def _is_sqlite_locked(exc: sqlite3.OperationalError) -> bool:
-    return "locked" in str(exc).lower()
+    return is_sqlite_busy(exc)
 
 
 def _start_stalldump_watcher(terminal: str) -> None:
@@ -1681,9 +1692,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
         # (Codex review 2026-07-26, 33a18bb2e). Inside the transaction the call
         # is then a ~0.4us cache hit. Fail-open: errors are swallowed there.
         _process_private_snapshot()
-        with sqlite3.connect(db_path, timeout=30) as conn:
+        with sqlite3.connect(db_path, timeout=BUSY_TIMEOUT_MS / 1000.0) as conn:
             conn.row_factory = sqlite3.Row
-            conn.execute("PRAGMA busy_timeout=30000")
+            configure_sqlite_connection(conn)
             conn.execute("BEGIN IMMEDIATE")
             try:
                 active_terminal = conn.execute(
@@ -2156,9 +2167,9 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
         # (Codex review 2026-07-26, 33a18bb2e). Inside the transaction the call
         # is then a ~0.4us cache hit. Fail-open: errors are swallowed there.
         _process_private_snapshot()
-        with sqlite3.connect(db_path, timeout=30) as conn:
+        with sqlite3.connect(db_path, timeout=BUSY_TIMEOUT_MS / 1000.0) as conn:
             conn.row_factory = sqlite3.Row
-            conn.execute("PRAGMA busy_timeout=30000")
+            configure_sqlite_connection(conn)
             conn.execute("BEGIN IMMEDIATE")
             try:
                 active_terminal = conn.execute(
@@ -4192,6 +4203,61 @@ def _monitor_spawned_work_item(
     return {"action": "finished", "item_id": item["id"], **finish_result}
 
 
+def _record_active_payload(
+    root: Path,
+    item_id: str,
+    payload: dict[str, Any],
+    *,
+    terminal: str | None = None,
+) -> bool:
+    """Persist an active-row payload through the bounded contention policy."""
+
+    def _write() -> bool:
+        with farmctl.connect(root) as conn:
+            where = "id=? AND status='active'"
+            args: list[Any] = [
+                json.dumps(payload, sort_keys=True),
+                farmctl.utc_now(),
+                item_id,
+            ]
+            if terminal is not None:
+                where += " AND claimed_by=?"
+                args.append(terminal)
+            cursor = conn.execute(
+                f"UPDATE work_items SET payload_json=?, updated_at=? WHERE {where}",
+                tuple(args),
+            )
+            conn.commit()
+            return cursor.rowcount == 1
+
+    return bool(_with_sqlite_retry(_write))
+
+
+def _record_unspawned_terminal_state(
+    root: Path,
+    item_id: str,
+    *,
+    verdict: str,
+    payload: dict[str, Any],
+    updated_at: str,
+) -> bool:
+    def _write() -> bool:
+        with farmctl.connect(root) as conn:
+            cursor = conn.execute(
+                """
+                UPDATE work_items
+                SET status='done', verdict=?, claimed_by=NULL,
+                    payload_json=?, updated_at=?
+                WHERE id=? AND status='active'
+                """,
+                (verdict, json.dumps(payload, sort_keys=True), updated_at, item_id),
+            )
+            conn.commit()
+            return cursor.rowcount == 1
+
+    return bool(_with_sqlite_retry(_write))
+
+
 def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_seconds: int) -> dict[str, Any]:
     with farmctl.connect(root) as conn:
         row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
@@ -4315,12 +4381,8 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
     existing_payload["expected_ex5_sha256"] = staging["required_sha256"]
     existing_payload["expected_ex5_path"] = staging["source_path"]
     existing_payload["dispatch_ex5_verified_at"] = farmctl.utc_now()
-    with farmctl.connect(root) as conn:
-        conn.execute(
-            "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
-            (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
-        )
-        conn.commit()
+    if not _record_active_payload(root, item["id"], existing_payload):
+        return {"action": "missing_item", "item_id": item["id"]}
     row = dict(row)
     row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
     history_gate = _custom_history_gate(root, terminal)
@@ -4347,12 +4409,8 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         existing_payload["custom_history_pre_copy_audit_sha256"] = history_gate.get(
             "audit_sha256"
         )
-        with farmctl.connect(root) as conn:
-            conn.execute(
-                "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
-                (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
-            )
-            conn.commit()
+        if not _record_active_payload(root, item["id"], existing_payload):
+            return {"action": "missing_item", "item_id": item["id"]}
         row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
 
     # Re-audit the mixed topology after every mutation.  This proves both the
@@ -4371,28 +4429,16 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         existing_payload["custom_history_post_copy_audit_sha256"] = post_copy_gate.get(
             "audit_sha256"
         )
-        with farmctl.connect(root) as conn:
-            conn.execute(
-                "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
-                (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
-            )
-            conn.commit()
+        if not _record_active_payload(root, item["id"], existing_payload):
+            return {"action": "missing_item", "item_id": item["id"]}
         row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
     q09_helper_lease = _reserve_q09_helper_terminals(root, row, terminal)
     if q09_helper_lease is not None:
         existing_payload["q09_cell_sharding"] = q09_helper_lease
-        with farmctl.connect(root) as conn:
-            conn.execute(
-                "UPDATE work_items SET payload_json=?, updated_at=? "
-                "WHERE id=? AND status='active' AND claimed_by=?",
-                (
-                    json.dumps(existing_payload, sort_keys=True),
-                    farmctl.utc_now(),
-                    item["id"],
-                    terminal,
-                ),
-            )
-            conn.commit()
+        if not _record_active_payload(
+            root, item["id"], existing_payload, terminal=terminal
+        ):
+            return {"action": "missing_item", "item_id": item["id"]}
         row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
     try:
         _acquire_launch_slot(terminal)
@@ -4422,17 +4468,14 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
                 "log_path": spawn.get("log_path"),
                 "report_root": spawn.get("report_root"),
             })
-            with farmctl.connect(root) as conn:
-                conn.execute(
-                    """
-                    UPDATE work_items
-                    SET status='done', verdict='PENDING_RUNNER', claimed_by=NULL,
-                        payload_json=?, updated_at=?
-                    WHERE id=?
-                    """,
-                    (json.dumps(payload, sort_keys=True), now, item["id"]),
-                )
-                conn.commit()
+            if not _record_unspawned_terminal_state(
+                root,
+                item["id"],
+                verdict="PENDING_RUNNER",
+                payload=payload,
+                updated_at=now,
+            ):
+                return {"action": "missing_item", "item_id": item["id"]}
             return {
                 "action": "pending_runner",
                 "item_id": item["id"],
@@ -4454,17 +4497,14 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
                 "log_path": spawn.get("log_path"),
                 "report_root": spawn.get("report_root"),
             })
-            with farmctl.connect(root) as conn:
-                conn.execute(
-                    """
-                    UPDATE work_items
-                    SET status='done', verdict='WAITING_INPUT', claimed_by=NULL,
-                        payload_json=?, updated_at=?
-                    WHERE id=?
-                    """,
-                    (json.dumps(payload, sort_keys=True), now, item["id"]),
-                )
-                conn.commit()
+            if not _record_unspawned_terminal_state(
+                root,
+                item["id"],
+                verdict="WAITING_INPUT",
+                payload=payload,
+                updated_at=now,
+            ):
+                return {"action": "missing_item", "item_id": item["id"]}
             return {
                 "action": "waiting_input",
                 "item_id": item["id"],
@@ -4545,7 +4585,15 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             )
             conn.commit()
 
-    _with_sqlite_retry(_record_spawn)
+    try:
+        _with_sqlite_retry(_record_spawn)
+    except sqlite3.OperationalError as exc:
+        if not _is_sqlite_locked(exc):
+            raise
+        # The child already exists; never rerun the whole item and double-spawn.
+        # Continue monitoring with the in-memory binding.  Completion persists
+        # the same payload through its own bounded retry transaction.
+        payload["spawn_record_deferred_sqlite_busy"] = True
 
     # The outer watchdog must never fire before the inner budget just computed
     # and handed to run_smoke.ps1 as -TimeoutSeconds — the CLI --timeout-minutes
@@ -4778,6 +4826,52 @@ def _pause_after_unclaimed(claim: dict[str, Any], terminal: str) -> None:
     time.sleep(POLL_SLEEP_SECONDS)
 
 
+def _defer_item_after_sqlite_busy(
+    root: Path,
+    item: dict[str, Any],
+    terminal: str,
+    exc: sqlite3.OperationalError,
+) -> bool:
+    """Return a pre-spawn item to pending without manufacturing INFRA evidence."""
+
+    def _defer() -> bool:
+        with farmctl.connect(root) as conn:
+            row = conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=? AND status='active' AND claimed_by=?",
+                (item["id"], terminal),
+            ).fetchone()
+            if row is None:
+                return False
+            payload = _json_loads(row["payload_json"])
+            payload["sqlite_busy_deferred_at_iso"] = farmctl.utc_now()
+            payload["sqlite_busy_deferred_operation"] = "run_claimed_item_pre_spawn"
+            payload["sqlite_busy_error"] = str(exc)[:240]
+            _clear_stale_runtime_payload(payload)
+            cursor = conn.execute(
+                """
+                UPDATE work_items
+                SET status='pending', verdict=NULL, claimed_by=NULL,
+                    payload_json=?, updated_at=?
+                WHERE id=? AND status='active' AND claimed_by=?
+                """,
+                (
+                    json.dumps(payload, sort_keys=True),
+                    farmctl.utc_now(),
+                    item["id"],
+                    terminal,
+                ),
+            )
+            conn.commit()
+            return cursor.rowcount == 1
+
+    try:
+        return bool(retry_sqlite_busy(_defer, attempts=12))
+    except sqlite3.OperationalError as defer_exc:
+        if not _is_sqlite_locked(defer_exc):
+            raise
+        return False
+
+
 def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
     """Run the resident production owner for this terminal's runner Jobs.
 
@@ -4883,6 +4977,25 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
             }), flush=True)
             try:
                 result = _run_claimed_item(root, item, terminal, timeout_seconds)
+            except sqlite3.OperationalError as exc:
+                if not _is_sqlite_locked(exc):
+                    raise
+                deferred = _defer_item_after_sqlite_busy(root, item, terminal, exc)
+                print(json.dumps({
+                    "event": "run_item_sqlite_busy_deferred",
+                    "terminal": terminal,
+                    "item_id": item["id"],
+                    "deferred_to_pending": deferred,
+                    "error": str(exc),
+                    "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                }), flush=True)
+                if not deferred:
+                    # Exit cleanly without writing a verdict.  The supervisor
+                    # restarts the daemon; the dead worker PID makes the claim
+                    # safely releasable on the next atomic claim pass.
+                    return 1
+                time.sleep(random.uniform(0.05, 0.25))
+                continue
             except Exception as exc:  # noqa: BLE001 — a bad ITEM must never kill the DAEMON
                 # 2026-08-22 fleet attrition: an unhandled exception here used to
                 # propagate through run_loop (which only had a finally) straight

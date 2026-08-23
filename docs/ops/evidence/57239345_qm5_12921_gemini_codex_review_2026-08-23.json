@@ -1,0 +1,25 @@
+{
+  "review_task_id": "57239345-d21c-4c93-bff4-3000a50a773b",
+  "build_task_id": "63c95ae9-d593-403a-928b-c51ac9848a1b",
+  "ea_id": "QM5_12921",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_12921 has no approved Strategy Card of record: the sole card is D:/QM/strategy_farm/artifacts/cards_rejected/QM5_12921_qp-january-barometer-card.md, and current build_gate_hardening reports card missing; the stale g0_status field inside a rejected artifact does not authorize the build.",
+    "QM5_12921 source line 67 captures shift-1 PRICE_OPEN on the first observed January bar, which is the prior December bar's open rather than the card's final-December-close January-return baseline.",
+    "QM5_12921 updates g_strategy_jan_close only inside the January branch at line 69, so the February transition uses the penultimate observed January close instead of the final January close from shift 1.",
+    "QM5_12921 source line 110 clears g_strategy_entry_due before input, position, price, stop, and order-success checks; a validation or order failure consumes the annual entry opportunity, and restart in February cannot reconstruct the January state.",
+    "QM5_12921 defaults qm_friday_close_enabled=true at lines 29-31 and executes QM_FrameworkHandleFridayClose at lines 204-205; the intended February-to-December position is therefore closed on its first Friday instead of the card's year-end exit.",
+    "QM5_12921 generates active setfiles for NDX.DWX, WS30.DWX, GDAXI.DWX, and UK100.DWX in addition to SP500.DWX, but the rejected source card authorizes only the SP500 January-barometer baseline and treats NDX/WS30 solely as a later live-promotion caveat.",
+    "Build artifact artifacts/qm5_12921_build_result.json records smoke_result=framework_error with a non-empty generic Custom-history blocked_reason and no smoke report; this fails build-result sanity and no QM5_12921 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:31:33Z"
+}

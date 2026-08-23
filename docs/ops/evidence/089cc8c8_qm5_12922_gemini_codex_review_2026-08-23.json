@@ -1,0 +1,24 @@
+{
+  "review_task_id": "089cc8c8-db14-4c63-90fc-7fa2aa5f711f",
+  "build_task_id": "11468a5a-89fc-4872-b6ec-2a78250ae792",
+  "ea_id": "QM5_12922",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_12922 source lines 78-90 uses raw iTime(_Symbol, PERIOD_D1, 0) plus hand-rolled day/month keys for seasonal calendar cadence; the Codex corset requires QM_IsNewCalendarPeriod, QM_CalendarPeriodKey, or the allowed higher-timeframe QM_IsNewBar helper for this boundary.",
+    "The approved card requires deferral whenever FOMC, NFP, or ECB falls anywhere on T+1, but source lines 270-285 only evaluates the current PRE30_POST30 news gate at the first D1 tick; it neither scans the T+1 event day nor implements the named-event predicate, so a later same-day event does not cause the required T+2 deferral.",
+    "QM5_12922 keeps g_strategy_last_traded_month_key and g_strategy_entry_deferred only in file-scope memory at source lines 45-46 and performs no OnInit reconstruction; a restart can lose a T+1 deferral or forget that the month was already traded.",
+    "QM5_12922 source line 155 clears g_strategy_entry_due before price, stop, and position validation and before QM_TM_OpenPosition runs at line 293; a transient validation or order failure permanently consumes that month's T+1 entry without the card-authorized T+2 news deferral.",
+    "QM5_12922 enables QM Framework Friday close by default at source lines 29-31 and calls it at lines 242-243, while the approved card requires holding from T+1 through the T+9 close; positions spanning a Friday are closed several trading days before the mechanical time exit.",
+    "Build artifact artifacts/qm5_12922_build_result.json marks smoke_result as deferred_p2_smoke with blocked_reason=null; this lacks the tester-saturation evidence required by the deferred-smoke waiver, and no QM5_12922 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:40:09Z"
+}

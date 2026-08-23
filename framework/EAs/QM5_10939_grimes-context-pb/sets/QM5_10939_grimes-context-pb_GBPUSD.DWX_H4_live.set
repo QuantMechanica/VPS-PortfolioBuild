@@ -3,20 +3,20 @@
 ; ea_id:        10939
 ; ea_slug:      grimes-context-pb
 ; ea_version:   v5.0
-; set_version:  s20260628-d2c-r075
+; set_version:  s20260823-pointer-provenance-repair
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H4
 ; environment:  live
 ; magic_slot:   1
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1.0
-; build_hash:   fa0981ae68d5171150c654cb6b7e23e8c71b422d8bb0935a58844f2e5d58c36a
-; author:       Claude
-; date:         2026-06-28
+; build_hash:   308604a3546c44fc8bfb40ecff36801e5479bf33887847b8b6e5650943312aac
+; author:       Codex
+; date:         2026-08-23
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=0
-RISK_PERCENT=0.7500
+RISK_PERCENT=0.1887
 PORTFOLIO_WEIGHT=1.0
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1

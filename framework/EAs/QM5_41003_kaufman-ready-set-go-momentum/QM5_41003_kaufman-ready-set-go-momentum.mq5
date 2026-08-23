@@ -51,6 +51,7 @@ input double          strategy_spread_filter_mult  = 1.8;
 const double STRATEGY_DAILY_ENTRY_HALT_PCT = 2.0;
 const double STRATEGY_DAILY_HARD_STOP_PCT  = 2.5;
 const double STRATEGY_TOTAL_DD_STOP_PCT    = 5.0;
+const int    STRATEGY_MAX_SLIPPAGE_TICKS   = 3;
 
 double g_fast_atr         = 0.0;
 double g_atr_sma          = 0.0;
@@ -149,8 +150,11 @@ void AdvanceState_OnNewBar()
       strategy_trend_ema_period < 1 || strategy_momentum_bars < 2)
       return;
 
-   const double c1 = iClose(_Symbol, strategy_signal_tf, 1);                          // perf-allowed: one closed-bar read inside the framework new-bar gate
-   const double c5 = iClose(_Symbol, strategy_signal_tf, strategy_momentum_bars);     // perf-allowed: card requires Close[5] when the input is 5
+   // A period-1 SMA is exactly the closed-bar price and keeps all indicator
+   // access inside the pooled QM_Indicators reader contract.
+   const double c1 = QM_SMA(_Symbol, strategy_signal_tf, 1, 1, PRICE_CLOSE);
+   const double c5 = QM_SMA(_Symbol, strategy_signal_tf, 1,
+                            strategy_momentum_bars, PRICE_CLOSE);
    if(c1 <= 0.0 || c5 <= 0.0)
       return;
 
@@ -204,7 +208,8 @@ bool Strategy_NoTradeFilter()
    if(g_daily_entry_halt)
       return true;
 
-   if(StrategyInRolloverWindow(TimeCurrent()))
+   // The card states this window in GMT, not broker time.
+   if(StrategyInRolloverWindow(QM_BrokerToUTC(TimeCurrent())))
       return true;
 
    const int magic = QM_FrameworkMagic();
@@ -240,28 +245,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const QM_OrderType side = (g_last_signal > 0) ? QM_BUY : QM_SELL;
-   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double entry = (side == QM_BUY) ? ask : bid;
    if(entry <= 0.0)
       return false;
 
-   const double sl_dist = g_fast_atr * strategy_sl_atr_mult;
-   if(sl_dist <= 0.0)
+   // Re-check the spread after this bar's ATR cache has advanced. This keeps
+   // the entry gate exact on the first tick of a new H1 bar while the per-tick
+   // no-trade path remains O(1). Zero modeled spread is valid on .DWX.
+   if(ask > 0.0 && bid > 0.0 && ask > bid &&
+      (ask - bid) > g_spread_atr * strategy_spread_filter_mult)
       return false;
 
-   double sl = 0.0;
-   double tp = 0.0;
-
-   if(side == QM_BUY)
-   {
-      sl = QM_StopRulesNormalizePrice(_Symbol, entry - sl_dist);
-      tp = QM_StopRulesNormalizePrice(_Symbol, entry + sl_dist * strategy_tp_rr_mult);
-   }
-   else
-   {
-      sl = QM_StopRulesNormalizePrice(_Symbol, entry + sl_dist);
-      tp = QM_StopRulesNormalizePrice(_Symbol, entry - sl_dist * strategy_tp_rr_mult);
-   }
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry,
+                                         g_fast_atr, strategy_sl_atr_mult);
+   const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_tp_rr_mult);
 
    req.type = side;
    req.sl = sl;
@@ -309,6 +308,24 @@ int OnInit()
                         qm_news_temporal,
                         qm_news_compliance))
       return INIT_FAILED;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   const int deviation_points = (point > 0.0 && tick_size > 0.0)
+      ? (int)MathFloor(((double)STRATEGY_MAX_SLIPPAGE_TICKS * tick_size / point) + 1e-9)
+      : 0;
+   if(deviation_points < 1)
+      return INIT_FAILED;
+
+   // Card maximum: three market-order ticks. Reconfigure only the framework
+   // entry policy; preserve all news, stress and host-magic bindings.
+   QM_EntryConfigure(qm_ea_id,
+                     qm_news_mode_legacy,
+                     deviation_points,
+                     qm_stress_reject_probability,
+                     qm_news_temporal,
+                     qm_news_compliance,
+                     QM_FrameworkMagic());
 
    if(!QM_FrameworkDeclareExecutionContract(PERIOD_H1,
                                              QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,

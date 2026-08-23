@@ -1,31 +1,33 @@
-;==========================================================
-; QM5 Set File
-; ea_id:        11899
-; ea_slug:      psar-ao-ac-confluence-h1
-; ea_version:   v5.0
-; set_version:  s20260823-001
-; symbol:       EURUSD.DWX
-; timeframe:    H1
-; environment:  backtest
-; magic_slot:   0
-; risk_mode:    FIXED
-; portfolio_weight: 1
-; build_hash:   fca622aa3b81c55058ffc9be815c9451ce680d8b22a0c40482eb0f2792c98231
-; author:       Development
-; date:         2026-08-23
-;==========================================================
-qm_ea_id=11899
-qm_magic_slot_offset=0
-RISK_FIXED=1000
-RISK_PERCENT=0
-PORTFOLIO_WEIGHT=1
-; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11899_psar-ao-ac-confluence-h1.md
-strategy_psar_step=0.02
-strategy_psar_max=0.2
-strategy_ao_fast_period=5
-strategy_ao_slow_period=34
-strategy_ac_period=5
-strategy_target_rr=1.0
-strategy_alt_exit=true
-strategy_time_stop_bars=96
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        11899
+; ea_slug:      psar-ao-ac-confluence-h1
+; ea_version:   v5.0
+; set_version:  s20260823-001
+; symbol:       EURUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   ce15938dad79c393e3289fb018a446fbb1829bb2cfe179867e33fe6384c03a62
+; author:       Development
+; date:         2026-08-23
+;==========================================================
+qm_ea_id=11899
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11899_psar-ao-ac-confluence-h1.md
+strategy_signal_tf=16385
+strategy_psar_step=0.02
+strategy_psar_max=0.2
+strategy_ao_fast_period=5
+strategy_ao_slow_period=34
+strategy_ac_period=5
+strategy_target_rr=1.0
+strategy_sl_buffer_pips=2.0
+strategy_alt_exit=true
+strategy_time_stop_bars=96

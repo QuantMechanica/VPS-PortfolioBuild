@@ -721,6 +721,9 @@ bool Strategy_LoadMonthlyRatioMeanMedian(
          MathLog(xau_bar.close) - MathLog(xag_bar.close);
       if(!MathIsValidNumber(ratio))
          return false;
+      if(completed_month_sessions < 0 ||
+         completed_month_sessions >= ArraySize(ratios))
+         return false;
       ratios[completed_month_sessions] = ratio;
       ratio_sum += ratio;
       if(!MathIsValidNumber(ratio_sum))

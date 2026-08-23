@@ -1,0 +1,26 @@
+{
+  "review_task_id": "93e11b54-6405-4f6a-acc4-92f356a176ee",
+  "build_task_id": "f9a8b8f7-3307-44d7-a1c4-2ad8c2a4cac9",
+  "ea_id": "QM5_34001",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_34001 source line 7 directly includes Trade/Trade.mqh, violating the V5 corset requirement that the EA include QM_Common.mqh and only QM modules transitively.",
+    "QM5_34001 source lines 19-20 default RISK_PERCENT=0.5 and RISK_FIXED=1000.0 simultaneously; QM_FrameworkValidateRiskInputs rejects both-positive inputs, so default OnInit fails unless a setfile overrides the source contract.",
+    "The current build_gate_hardening check fails QM5_34001 with three EA_CARD_LOSS_LIMIT_MISMATCH findings: the card's 2.0% daily realized-loss halt, 2.5% daily hard stop, and 5.0% total drawdown stop have no matching source inputs or implementation.",
+    "The current build_gate_hardening check fails QM5_34001 with EA_BROKER_TIME_USED_FOR_GMT_WINDOW: source lines 100-103 apply the card's 23:55-00:05 GMT blackout to raw TimeCurrent without QM_BrokerToUTC.",
+    "QM5_34001 source lines 162-165 and 177-180 replace the card's Kalman-state take-profit with an unauthorized 1.5R target whenever the state estimate is on the wrong side of entry instead of declining the trade.",
+    "QM5_34001 does not configure the approved card's three-tick market-order slippage limit; QM_FrameworkInit leaves QM_EntryConfigure at the framework's 20-point deviation default.",
+    "[ONTICK-ORDER-ADVISORY] QM5_34001 returns on the news blackout at lines 223-228 before management/exit at lines 233-245; actual entries carry server-side stops, so this is advisory under the review contract.",
+    "Build artifact artifacts/builds/f9a8b8f7-3307-44d7-a1c4-2ad8c2a4cac9.json claims build_check_passed despite the current semantic gate failures and marks smoke_result as deferred_p2_smoke with an empty blocked_reason and only a generic custom-history explanation; no QM5_34001 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:13:28Z"
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reclassify the Q02 `summary_missing_retries_exhausted` graveyard IN PLACE.
+"""Classify Q02 summary-missing failures and append approved INVALID dispositions.
 
 Census rank 1 (docs/ops/evidence/2026-07-27_factory_loose_ends_census.md): a single
 `summary_missing_retries_exhausted` label carried under `verdict=INFRA_FAIL` dominates
@@ -35,9 +35,10 @@ WHAT THIS TOOL WRITES: only three payload keys — `failure_class` (action axis)
 `verdict`, `status`, `attempt_count`, `evidence_path`, `claimed_by` or `updated_at`, and
 it NEVER requeues a row. Reclassification is therefore invisible to the claim path and
 has zero throughput/capacity impact — it only makes the honest cause visible to reason
-histograms, dashboards and the new health detectors. Promoting the DETERMINISTIC class's
-`verdict` from INFRA_FAIL to the non-retryable INVALID (the going-forward behaviour) is a
-separate, OWNER-gated decision and is deliberately NOT done here.
+histograms, dashboards and the new health detectors. Promoting the DETERMINISTIC class
+from INFRA_FAIL to the non-retryable INVALID remains OWNER-gated.  The bounded
+``OWNER-DEC-STRANDED-182`` mode appends one INVALID disposition per reviewed pair and
+never updates a historical verdict row.
 
 Safety (mirrors backfill_verdict_reason.py, ratified WP-3 pattern):
   * --dry-run is the DEFAULT. Nothing is written without --apply.
@@ -62,13 +63,34 @@ import os
 import re
 import sqlite3
 import sys
+import uuid
+import hashlib
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
+from factory_mutation_lock import FactoryMutationLock
+
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 DEFAULT_REGISTRY = Path(r"C:\QM\repo\framework\registry\ea_id_registry.csv")
 SNAPSHOT_DIR = Path(r"D:\QM\reports\state")
+OWNER_DECISION_ID = "OWNER-DEC-STRANDED-182"
+OWNER_DECISION_PATH = Path("decisions/2026-08-23_owner_decisions_evening_batch_2.md")
+OWNER_EXPECTED_PAIR_COUNT = 182
+MUTATION_LOCK = Path(r"D:\QM\strategy_farm\state\FACTORY_MUTATION.lock")
+DISPOSITION_NAMESPACE = uuid.UUID("5c0d8085-9ef1-4dca-95f6-49d18c9920e7")
+
+STRANDED_COHORT_SQL = """
+SELECT ea_id, symbol
+FROM work_items
+WHERE phase IN ('Q02','P2')
+GROUP BY ea_id, symbol
+HAVING SUM(CASE WHEN status IN ('done','failed') AND verdict IS NOT NULL
+                 AND TRIM(verdict)<>'' AND UPPER(verdict)<>'INFRA_FAIL'
+                THEN 1 ELSE 0 END)=0
+   AND SUM(CASE WHEN status IN ('pending','active') THEN 1 ELSE 0 END)=0
+   AND SUM(CASE WHEN UPPER(verdict)='INFRA_FAIL' THEN 1 ELSE 0 END)>=12
+""".strip()
 
 # The graveyard tag the terminal worker stamps at summary-missing exhaustion.
 GRAVEYARD_TAG = "summary_missing_retries_exhausted"
@@ -98,6 +120,25 @@ def _connect_ro(db: Path) -> sqlite3.Connection:
     conn = sqlite3.connect(f"file:{db.as_posix()}?mode=ro", uri=True, timeout=30)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def _sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def _canonical_bytes(value: Any) -> bytes:
+    return (json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+            + "\n").encode("utf-8")
+
+
+def _write_new_json(path: Path, value: Any) -> str:
+    path = path.resolve(strict=False)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        raise RuntimeError(f"refusing to overwrite receipt/plan: {path}")
+    raw = _canonical_bytes(value)
+    path.write_bytes(raw)
+    return _sha256_bytes(raw)
 
 
 def _ea_int(ea_id: Any) -> int | None:
@@ -247,6 +288,201 @@ def _plan(db: Path, phase: str, registry: Path, limit: int | None) -> dict[str, 
     }
 
 
+def _owner_disposition_plan(db: Path, expected_count: int) -> dict[str, Any]:
+    """Freeze the exact 2026-08-22 census semantics and reviewed pair list."""
+    conn = _connect_ro(db)
+    try:
+        rows = conn.execute(
+            f"""
+            WITH cohort AS ({STRANDED_COHORT_SQL}), ranked AS (
+              SELECT w.*,
+                     ROW_NUMBER() OVER (
+                       PARTITION BY w.ea_id,w.symbol
+                       ORDER BY w.updated_at DESC,w.created_at ASC,w.id ASC
+                     ) AS rn
+              FROM work_items w JOIN cohort c USING(ea_id,symbol)
+              WHERE w.phase IN ('Q02','P2')
+            )
+            SELECT * FROM ranked
+            WHERE rn=1
+              AND json_extract(payload_json,'$.failure_class')=?
+            ORDER BY ea_id,symbol,id
+            """,
+            (CLASS_DETERMINISTIC,),
+        ).fetchall()
+        targets: list[dict[str, Any]] = []
+        for row in rows:
+            prior_text = str(row["payload_json"] or "")
+            payload = json.loads(prior_text)
+            disposition_id = str(uuid.uuid5(
+                DISPOSITION_NAMESPACE,
+                f"{OWNER_DECISION_ID}:{row['ea_id']}:{row['symbol']}:{row['id']}",
+            ))
+            targets.append({
+                "source_work_item_id": str(row["id"]),
+                "disposition_work_item_id": disposition_id,
+                "ea_id": str(row["ea_id"]),
+                "symbol": str(row["symbol"]),
+                "phase": str(row["phase"]),
+                "kind": str(row["kind"]),
+                "setfile_path": str(row["setfile_path"]),
+                "source_updated_at": str(row["updated_at"]),
+                "source_payload_sha256": _sha256_bytes(prior_text.encode("utf-8")),
+                "failure_class": str(payload.get("failure_class")),
+                "failure_subclass": str(payload.get("failure_subclass") or ""),
+                "source_evidence_path": row["evidence_path"],
+                "gate_contract_version": row["gate_contract_version"],
+            })
+        if len(targets) != expected_count:
+            raise RuntimeError(
+                f"OWNER scope mismatch: expected {expected_count} deterministic stranded "
+                f"pairs, found {len(targets)}"
+            )
+        if targets:
+            duplicate_ids = conn.execute(
+                "SELECT COUNT(*) FROM work_items WHERE id IN (%s)" %
+                ",".join("?" for _ in targets),
+                [row["disposition_work_item_id"] for row in targets],
+            ).fetchone()[0]
+            if duplicate_ids:
+                raise RuntimeError(
+                    f"{duplicate_ids} deterministic disposition ids already exist"
+                )
+        decision_raw = OWNER_DECISION_PATH.read_bytes()
+        if (OWNER_DECISION_ID.encode() not in decision_raw
+                or "alle drei genehmigt".encode() not in decision_raw):
+            raise RuntimeError("OWNER decision artifact does not contain the approval")
+        plan = {
+            "schema": "qm.summary-missing-stranded-invalid-plan/v1",
+            "mode": "dry_run",
+            "generated_at_utc": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
+            "database": str(db.resolve()),
+            "owner_decision": {
+                "id": OWNER_DECISION_ID,
+                "path": str(OWNER_DECISION_PATH.resolve()),
+                "sha256": _sha256_bytes(decision_raw),
+            },
+            "selection": {
+                "expected_pair_count": expected_count,
+                "actual_pair_count": len(targets),
+                "cohort_sql": STRANDED_COHORT_SQL,
+                "tie_break": "updated_at DESC, created_at ASC, id ASC",
+            },
+            "mutation": "APPEND_INVALID_WORK_ITEM_ONLY",
+            "historical_verdict_rows_updated": 0,
+            "targets": targets,
+        }
+        plan["targets_sha256"] = _sha256_bytes(_canonical_bytes(targets))
+        return plan
+    finally:
+        conn.close()
+
+
+def _apply_owner_dispositions(
+    db: Path, plan: dict[str, Any], expected_plan_sha256: str, receipt_out: Path
+) -> dict[str, Any]:
+    if plan.get("schema") != "qm.summary-missing-stranded-invalid-plan/v1":
+        raise RuntimeError("unsupported OWNER disposition plan schema")
+    if plan.get("owner_decision", {}).get("id") != OWNER_DECISION_ID:
+        raise RuntimeError("wrong OWNER decision in disposition plan")
+    if len(plan.get("targets") or []) != OWNER_EXPECTED_PAIR_COUNT:
+        raise RuntimeError("disposition plan is not the exact approved 182-pair scope")
+    if _sha256_bytes(_canonical_bytes(plan["targets"])) != plan.get("targets_sha256"):
+        raise RuntimeError("disposition target list hash mismatch")
+
+    now = dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()
+    inserted: list[str] = []
+    with FactoryMutationLock(
+        MUTATION_LOCK, owner="classify_summary_missing.owner_dec_stranded_182"
+    ):
+        conn = sqlite3.connect(str(db), timeout=30)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            for target in plan["targets"]:
+                source = conn.execute(
+                    "SELECT * FROM work_items WHERE id=?", (target["source_work_item_id"],)
+                ).fetchone()
+                if source is None:
+                    raise RuntimeError(f"source row vanished: {target['source_work_item_id']}")
+                source_payload = str(source["payload_json"] or "")
+                if _sha256_bytes(source_payload.encode("utf-8")) != target["source_payload_sha256"]:
+                    raise RuntimeError(f"source payload drifted: {source['id']}")
+                if source["verdict"] != "INFRA_FAIL" or source["status"] not in ("done", "failed"):
+                    raise RuntimeError(f"source terminal identity drifted: {source['id']}")
+                pair = conn.execute(
+                    f"SELECT 1 FROM ({STRANDED_COHORT_SQL}) WHERE ea_id=? AND symbol=?",
+                    (target["ea_id"], target["symbol"]),
+                ).fetchone()
+                if pair is None:
+                    raise RuntimeError(
+                        f"pair left stranded cohort: {target['ea_id']}/{target['symbol']}"
+                    )
+                payload = {
+                    "disposition_only": True,
+                    "owner_decision_id": OWNER_DECISION_ID,
+                    "owner_decision_sha256": plan["owner_decision"]["sha256"],
+                    "source_work_item_id": source["id"],
+                    "source_payload_sha256": target["source_payload_sha256"],
+                    "failure_class": CLASS_DETERMINISTIC,
+                    "failure_subclass": target["failure_subclass"],
+                    "verdict_reason": "OWNER_APPROVED_DETERMINISTIC_NO_SUMMARY_INVALID",
+                    "historical_infra_rows_preserved": True,
+                    "backtest_enqueued": False,
+                    "plan_sha256": expected_plan_sha256,
+                }
+                evidence = target.get("source_evidence_path") or (
+                    f"EVIDENCE_UNAVAILABLE:{OWNER_DECISION_ID}:{source['id']}"
+                )
+                conn.execute(
+                    """
+                    INSERT INTO work_items(
+                      id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+                      parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at,
+                      verdict_taxonomy_stored,clean_status_stored,gate_contract_version
+                    ) VALUES(?,?,?,?,?,?,'failed','INVALID',0,NULL,?,NULL,?,?,?,
+                             'invalid','failed',?)
+                    """,
+                    (
+                        target["disposition_work_item_id"], target["kind"], target["phase"],
+                        target["ea_id"], target["symbol"], target["setfile_path"], evidence,
+                        json.dumps(payload, sort_keys=True, separators=(",", ":")), now, now,
+                        target.get("gate_contract_version") or "legacy",
+                    ),
+                )
+                conn.execute(
+                    "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
+                    "VALUES(?,?,?,?,?)",
+                    (now, "work_item", target["disposition_work_item_id"],
+                     "owner_stranded_summary_missing_invalid_appended",
+                     json.dumps(payload, sort_keys=True, separators=(",", ":"))),
+                )
+                inserted.append(target["disposition_work_item_id"])
+            conn.commit()
+        except BaseException:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+    receipt = {
+        "schema": "qm.summary-missing-stranded-invalid-receipt/v1",
+        "applied_at_utc": now,
+        "database": str(db.resolve()),
+        "owner_decision_id": OWNER_DECISION_ID,
+        "plan_sha256": expected_plan_sha256,
+        "inserted_count": len(inserted),
+        "inserted_work_item_ids": inserted,
+        "historical_verdict_rows_updated": 0,
+        "rollback": "append an OWNER-authorized superseding disposition; never delete history",
+    }
+    receipt_sha = _write_new_json(receipt_out, receipt)
+    return {
+        **receipt,
+        "receipt_path": str(receipt_out.resolve()),
+        "receipt_sha256": receipt_sha,
+    }
+
+
 def _print_plan(plan: dict[str, Any]) -> None:
     print(f"summary-missing reclassification  (phase={plan['phase']})")
     print(f"population (verdict=INFRA_FAIL, final_failure={GRAVEYARD_TAG!r}): {plan['population']}")
@@ -368,6 +604,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--revert", type=Path, metavar="SNAPSHOT", help="restore rows from a snapshot")
     ap.add_argument("--limit", type=int, default=None, help="cap rows written (canary)")
     ap.add_argument("--batch", type=int, default=500, help="rows per commit (lock friendliness)")
+    ap.add_argument("--owner-decision", choices=[OWNER_DECISION_ID])
+    ap.add_argument("--expected-pairs", type=int, default=OWNER_EXPECTED_PAIR_COUNT)
+    ap.add_argument("--plan-out", type=Path)
+    ap.add_argument("--plan", type=Path)
+    ap.add_argument("--expected-plan-sha256")
+    ap.add_argument("--receipt-out", type=Path)
     args = ap.parse_args(argv)
 
     if args.apply and args.revert:
@@ -382,6 +624,37 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         restored, skipped = _revert(args.db, args.revert, args.batch)
         print(f"revert: restored={restored} skipped(changed_or_already_reverted)={skipped}")
+        return 0
+
+    if args.owner_decision:
+        if args.apply:
+            if not args.plan or not args.expected_plan_sha256 or not args.receipt_out:
+                ap.error(
+                    "OWNER apply requires --plan, --expected-plan-sha256 and --receipt-out"
+                )
+            raw = args.plan.read_bytes()
+            actual_sha = _sha256_bytes(raw)
+            if actual_sha != args.expected_plan_sha256.lower():
+                raise RuntimeError(
+                    f"plan SHA-256 mismatch: expected={args.expected_plan_sha256} "
+                    f"actual={actual_sha}"
+                )
+            result = _apply_owner_dispositions(
+                args.db, json.loads(raw), actual_sha, args.receipt_out
+            )
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 0
+        if args.plan_out is None:
+            ap.error("OWNER dry-run requires --plan-out")
+        plan = _owner_disposition_plan(args.db, args.expected_pairs)
+        plan_sha = _write_new_json(args.plan_out, plan)
+        print(json.dumps({
+            "mode": "dry_run",
+            "pair_count": len(plan["targets"]),
+            "plan_path": str(args.plan_out.resolve()),
+            "plan_sha256": plan_sha,
+            "targets": plan["targets"],
+        }, indent=2, sort_keys=True))
         return 0
 
     plan = _plan(args.db, args.phase, args.registry, args.limit if args.apply else None)

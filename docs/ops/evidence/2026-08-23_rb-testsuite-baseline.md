@@ -141,4 +141,85 @@ or re-seal either DXZ repair amendment as part of rollback.
   supplies no qualification, deployment, or live-use authority.
 - The A02 compile manifest remains unusable while the factory is active and
   `FACTORY_OFF.flag` is absent. This ticket did not alter that state.
-- There are no remaining test failures.
+- One test (`test_codex_session_supervisor.py::test_supervisor_resumes_after_unexpected_child_exit`)
+  is env-sensitive on console codepage and is not owned by this branch — see the
+  "Review fixes" section below. The full green run above is conditional on a
+  UTF-8 console.
+
+## Review fixes (2026-08-23, FIX_REQUIRED verdict)
+
+A cross-branch review returned `FIX_REQUIRED` with two findings. Both are
+addressed here without changing any gate threshold, acceptance criterion, or
+verdict logic.
+
+### P1 — mergeability into `agents/board-advisor` (RESOLVED)
+
+Root cause: duplicated work. `rb-testsuite-baseline` and `agents/board-advisor`
+each performed the same gate-manifest v4 test cutover independently, so a trial
+`git merge --no-commit --no-ff agents/board-advisor` produced six conflicted
+files. All six conflicts are trivial parallel v4-migration edits that are
+semantically equivalent between the two branches; there is no logic divergence.
+`agents/board-advisor` was merged into this branch and all six were resolved:
+
+- `tools/strategy_farm/farmctl.py` — comment-only conflict; the `OPT_CENSUS`
+  rank expression `phase_rank(_INCUMBENT_PHASE) - phase_rank("Q04")` is identical
+  on both sides. Kept the active-manifest wording.
+- `tools/strategy_farm/tests/test_pipeline_view_work_items.py` — identical
+  `["Q05", "Q16"]` assertion; kept board-advisor's added explanatory comment.
+- `tools/strategy_farm/tests/test_q09_news_runner_v2.py` — HEAD binds `?` =
+  `ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "PORTFOLIO")`,
+  board-advisor uses the literal `'Q10_PORTFOLIO'`; both resolve to
+  `Q10_PORTFOLIO`. Kept HEAD's manifest-derived binding (non-brittle).
+- `tools/strategy_farm/tests/test_render_cockpit_cohorts.py` — hardcoded
+  `"Q00-Q17"` vs an f-string of `expected_range` (verified `== "Q00-Q17"`);
+  kept the derived f-string.
+- `tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py` —
+  `farmctl._NEWS_PHASE` vs `terminal_worker._Q09_NEWS_PHASE`; both defined as
+  `storage_phase_for_role("NEWS", "NEWS")` == `"Q10_NEWS"`. Kept the
+  module-local symbol.
+- `tools/strategy_farm/tests/test_rebaseline_census.py` (4 hunks) — the
+  `test_canonical_gate_mapping` assertions were **unioned**, not one-sided:
+  HEAD's active-v4-context checks (default version arg) and board-advisor's
+  explicit `"v3"`/`"v4"` checks are complementary and all hold. Each unioned
+  assertion was empirically verified against the live module
+  (`NEWS_GATE == "Q10"`, `GATE_CHAIN[-1] == "Q14"`, `Q11` on the v4 chain but
+  `canonical_gate("Q11", "v3") is None`). The three docstring/added-assertion/
+  local-variable hunks kept the richer board-advisor side.
+
+Post-resolution the six affected modules run clean:
+
+```text
+python -m pytest test_rebaseline_census.py test_pipeline_view_work_items.py \
+  test_q09_news_runner_v2.py test_render_cockpit_cohorts.py \
+  test_terminal_worker_atomic_claim.py -q
+138 passed in 118.15s
+```
+
+### P2 — `test_codex_session_supervisor.py` UTF-8-console dependency (documented; not owned by this branch)
+
+`test_supervisor_resumes_after_unexpected_child_exit` fails with
+`UnicodeDecodeError: 'utf-8' codec can't decode byte 0x84 in position 178`
+(cp850 `ä`). The test spawns the supervisor via `fixtures/fake_codex_supervisor.cmd`,
+which `echo %*` the German resume prompt (umlauts: `Prüfe`, `übernimm`,
+`selbstständig`) into `args.txt`. `cmd.exe` writes in the console OEM codepage,
+but the test reads `args_path.read_text(encoding="utf-8")`. This fails
+deterministically under an OEM-codepage console and passes under `chcp 65001`.
+Reproduced both ways on this VPS: fails under the Git Bash OEM console, passes
+under a `chcp 65001` (UTF-8) console.
+
+Ownership: this is **pre-existing and not owned by `rb-testsuite-baseline`**.
+`git diff` of the test, `codex_session_supervisor.ps1`, and the `.cmd` fixture
+against the merge-base (`978f9dc8`) is empty for **both** this branch and
+`agents/board-advisor` — none of the three files was touched by either branch.
+The assertion is correct and was **not weakened**.
+
+Consequence for this ticket's evidence: the "`4488 passed / 0 failed`" green run
+required a UTF-8 console (`chcp 65001`). Under a default OEM-codepage console
+this single test fails and the count is `4487 passed, 1 failed`. It is recorded
+here as a **known env-sensitive pre-existing failure**, excluded from this
+branch's green-baseline scope.
+
+Routing: the actual fix belongs to the `codex_session_supervisor` owner
+(Codex/ops) — make the test tolerant of the child's OEM codepage (read with the
+console codepage, or have the fixture write UTF-8 / `chcp 65001`). This branch
+does not modify the supervisor test, `.ps1`, or `.cmd` fixture.

@@ -724,6 +724,9 @@ bool Strategy_LoadMonthlyThirdVote(
    while(index < strategy_history_bars_d1 &&
          Strategy_MonthKey(xau_bars[index].time) == completed_month_key)
      {
+      if(completed_month_sessions < 0 ||
+         completed_month_sessions >= ArraySize(newest_ratios))
+         return false;
       if(completed_month_sessions >= strategy_max_month_sessions ||
          !Strategy_SynchronizedPairValid(xau_bars, xag_bars, index) ||
          Strategy_MonthKey(xag_bars[index].time) != completed_month_key ||
@@ -793,7 +796,11 @@ bool Strategy_LoadMonthlyThirdVote(
    if(split_a <= 0 || split_a >= split_b ||
       split_b >= completed_month_sessions ||
       series_index_a <= 0 || series_index_a >= completed_month_sessions ||
-      series_index_b <= 0 || series_index_b >= series_index_a)
+       series_index_b <= 0 || series_index_b >= series_index_a)
+      return false;
+   if(series_index_a >= ArraySize(newest_ratios))
+      return false;
+   if(series_index_b >= ArraySize(newest_ratios))
       return false;
 
    const double ratio_a = newest_ratios[series_index_a];

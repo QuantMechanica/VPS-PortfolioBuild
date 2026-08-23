@@ -62,7 +62,8 @@ NA_VERDICTS = set(census.NA_CLS)
 ENQUEUE_ACTIONS = {"RERUN_INFRA", "FILL_MISSING", "REBIND_STALE"}
 ALL_ACTIONS = (
     "RERUN_INFRA", "FILL_MISSING", "REBIND_STALE", "SKIP_REUSABLE",
-    "STOP_ECONOMIC_FAIL", "STOP_NOT_APPLICABLE", "UNKNOWN",
+    "STOP_ECONOMIC_FAIL", "STOP_DETERMINISTIC_INFRA",
+    "STOP_NOT_APPLICABLE", "UNKNOWN",
 )
 
 STDLIB_MISSING_SIGNATURES = (
@@ -297,6 +298,73 @@ def _target_source(rows: list[dict[str, Any]], action: str) -> dict[str, Any] | 
     return _latest(terminal)
 
 
+def _failure_text(row: dict[str, Any] | None) -> str:
+    """Return normalized failure evidence from a row and its JSON artifact."""
+    if not row:
+        return ""
+
+    fragments: list[str] = []
+
+    def collect(value: Any) -> None:
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if any(token in str(key).lower() for token in ("reason", "failure", "error")):
+                    collect(item)
+        elif isinstance(value, (list, tuple, set)):
+            for item in value:
+                collect(item)
+        elif value is not None:
+            fragments.append(str(value))
+
+    collect(_payload(row))
+    evidence_path = Path(str(row.get("evidence_path") or ""))
+    if evidence_path.is_file():
+        try:
+            evidence = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError):
+            evidence = None
+        collect(evidence)
+    fragments.extend((str(row.get("verdict") or ""), str(row.get("status") or "")))
+    return "\n".join(fragments).upper()
+
+
+def _has_ea_defect_compile_class(row: dict[str, Any] | None) -> bool:
+    """Identify compile failures that require an EA code fix, not an infra rerun."""
+    payload = _payload(row)
+    compile_result = payload.get("compile_result")
+    classes: list[str] = []
+    for source in (payload, compile_result if isinstance(compile_result, dict) else {}):
+        values = source.get("failure_classes") if isinstance(source, dict) else None
+        if isinstance(values, list):
+            classes.extend(str(value).upper() for value in values)
+
+    evidence_path = Path(str((row or {}).get("evidence_path") or ""))
+    if evidence_path.is_file():
+        try:
+            evidence = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError):
+            evidence = {}
+        if isinstance(evidence, dict):
+            for source in (evidence, evidence.get("compile_result")):
+                values = source.get("failure_classes") if isinstance(source, dict) else None
+                if isinstance(values, list):
+                    classes.extend(str(value).upper() for value in values)
+    return any(value.startswith("EA_") or value.startswith("SOURCE_") for value in classes)
+
+
+def _deterministic_infra_reason(row: dict[str, Any] | None) -> str:
+    """Classify deterministic code/input defects that a blind rerun cannot heal."""
+    if not row:
+        return ""
+    verdict = str(row.get("verdict") or "").upper()
+    failure_text = _failure_text(row)
+    if verdict == "COMPILE_FAIL" and _has_ea_defect_compile_class(row):
+        return "compile_fail_ea_defect_requires_code_fix"
+    if verdict in INFRA_VERDICTS and "ONINIT_FAILED" in failure_text:
+        return "oninit_failed_inputsvalid_framework_pin_requires_code_fix"
+    return ""
+
+
 def _news_action(rows: list[dict[str, Any]]) -> tuple[str, str]:
     """Classify the active economic NEWS lane; portfolio is informational."""
     news = [
@@ -348,7 +416,12 @@ def _parent_for_gate(
     return _latest(candidates)
 
 
-def _action_for_census(row: dict[str, Any]) -> tuple[str, str]:
+def action_for_census(row: dict[str, Any]) -> tuple[str, str]:
+    """Return the governed planner action for one census frontier row.
+
+    Kept public so read-only operator surfaces can present exactly the same
+    action vocabulary without cloning planner policy.
+    """
     disposition = str(row.get("disposition") or "").upper()
     frontier_class = str(row.get("frontier_class") or "").upper()
     target = str(row.get("earliest_missing_prerequisite") or "").upper()
@@ -431,6 +504,7 @@ def _compile_failure_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             except OSError:
                 log_text = ""
         stdlib_missing = bool(log_text) and any(signature in log_text for signature in STDLIB_MISSING_SIGNATURES)
+        deterministic_reason = _deterministic_infra_reason(source)
         created = _parse_time(source.get("created_at"))
         now = dt.datetime.now(dt.timezone.utc)
         output.append({
@@ -438,8 +512,13 @@ def _compile_failure_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "record_type": "COMPILE_EA",
             "ea_id": source.get("ea_id") or "",
             "symbol": source.get("symbol") or "",
-            "action": "RERUN_INFRA" if stdlib_missing else "UNKNOWN",
+            "action": (
+                "STOP_DETERMINISTIC_INFRA" if deterministic_reason else
+                "RERUN_INFRA" if stdlib_missing else "UNKNOWN"
+            ),
             "reason": (
+                deterministic_reason
+                if deterministic_reason else
                 "stdlib_missing_signature_reachable;separate_compile_repair_ticket"
                 if stdlib_missing else
                 "compile_fail_without_reachable_stdlib_missing_signature;separate_compile_repair_ticket"
@@ -505,7 +584,7 @@ def build_plan(
         ea_id = str(census_row.get("ea_id") or "")
         symbol = str(census_row.get("symbol") or "")
         target_gate = str(census_row.get("earliest_missing_prerequisite") or "").upper()
-        action, reason = _action_for_census(census_row)
+        action, reason = action_for_census(census_row)
         gates = by_pair_gate.get((ea_id, symbol), {})
         target_rows = gates.get(target_gate, []) if target_gate else []
 
@@ -545,6 +624,10 @@ def build_plan(
             reason = f"earliest_prerequisite_already_{str(open_target['status']).lower()}"
 
         source = _target_source(target_rows, action)
+        deterministic_reason = _deterministic_infra_reason(source)
+        if deterministic_reason:
+            action = "STOP_DETERMINISTIC_INFRA"
+            reason = deterministic_reason
         parent = _parent_for_gate(gates, target_gate) if target_gate in GATE_INDEX else None
         review = reviews.get(ea_id) if target_gate == "Q02" else None
         if target_gate == "Q02" and action in {"RERUN_INFRA", "REBIND_STALE"}:
@@ -793,9 +876,11 @@ def write_outputs(
         "Rows lacking build/setfile/window/parent-evidence bindings, rows behind the active symbol cap, and "
         "runtime phases unsupported by `farmctl enqueue-backtest` are visible but not apply-eligible.",
         "",
-        "COMPILE_EA failures are a separate repair ticket. They are `RERUN_INFRA` only when a reachable "
-        "compile log contains the documented missing `Trade/Trade.mqh` or `Object.mqh` signature; all other "
-        "COMPILE_FAIL rows are `UNKNOWN` and never become backtest commands.",
+        "Deterministic `ONINIT_FAILED` / INPUTSVALID framework pins and EA-defect compile classes are "
+        "`STOP_DETERMINISTIC_INFRA`: they require a code fix and never become rerun commands. "
+        "Other COMPILE_EA failures are `RERUN_INFRA` only when a reachable compile log contains the "
+        "documented missing `Trade/Trade.mqh` or `Object.mqh` signature; unclassified compile failures "
+        "remain `UNKNOWN`.",
         "",
         f"Machine artifacts: `{str(csv_path).replace(chr(92), '/')}` and "
         f"`{str(json_path).replace(chr(92), '/')}`.",

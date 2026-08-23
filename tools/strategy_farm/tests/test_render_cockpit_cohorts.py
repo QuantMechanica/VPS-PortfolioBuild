@@ -143,10 +143,15 @@ def test_cohort_renderer_labels_mixed_era_chips_and_q09_q10_contracts(
         render_cockpit.pipeline_cohort_snapshot()
     )
 
-    # The label must name the range the strip actually renders (Q00..Q16) and must
-    # keep the two honesty tokens: the counts are lifetime and span gate-regime eras.
+    # The label must name the range the strip actually renders (manifest-derived:
+    # Q00..Q17 under the active v4 contract) and keep the two honesty tokens: the
+    # counts are lifetime and span gate-regime eras.
+    expected_range = (
+        f"{render_cockpit.Q_DISPLAY_ORDER[0]}-{render_cockpit.Q_DISPLAY_ORDER[-1]}"
+    )
+    assert expected_range == "Q00-Q17"  # v4 active terminal gate
     assert render_cockpit.LIFETIME_PASS_CHIP_LABEL == (
-        "Q00-Q17 // PIPELINE OCCUPANCY (LIFETIME, MIXED ERAS)"
+        f"{expected_range} // PIPELINE OCCUPANCY (LIFETIME, MIXED ERAS)"
     )
     assert "LIFETIME" in render_cockpit.LIFETIME_PASS_CHIP_LABEL
     assert "MIXED ERAS" in render_cockpit.LIFETIME_PASS_CHIP_LABEL

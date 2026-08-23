@@ -23,6 +23,19 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+try:
+    from sqlite_busy import (
+        BUSY_TIMEOUT_MS,
+        configure_connection as configure_sqlite_connection,
+        retry_sqlite_busy,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.sqlite_busy import (
+        BUSY_TIMEOUT_MS,
+        configure_connection as configure_sqlite_connection,
+        retry_sqlite_busy,
+    )
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_POLICY_PATH = REPO_ROOT / "framework" / "registry" / "agent_capabilities.json"
 
@@ -106,10 +119,9 @@ def _file_backed_audit_connection(conn: Any) -> sqlite3.Connection | None:
             continue
         if name != "main" or not filename:
             continue
-        durable = sqlite3.connect(filename, timeout=30)
+        durable = sqlite3.connect(filename, timeout=BUSY_TIMEOUT_MS / 1000.0)
         durable.row_factory = sqlite3.Row
-        durable.execute("PRAGMA busy_timeout=30000")
-        return durable
+        return configure_sqlite_connection(durable)
     return None
 
 
@@ -134,15 +146,21 @@ def _audit(agent_id: str, scope: str, *, tool: str, args_summary: str,
                 farmctl.event(conn, "agent_audit", agent_id, scope, detail)
                 return
             try:
-                farmctl.event(durable, "agent_audit", agent_id, scope, detail)
-                durable.commit()
+                def _write_durable() -> None:
+                    farmctl.event(durable, "agent_audit", agent_id, scope, detail)
+                    durable.commit()
+
+                retry_sqlite_busy(_write_durable)
             finally:
                 durable.close()
             return
         own = farmctl.connect(farmctl.DEFAULT_ROOT)
         try:
-            farmctl.event(own, "agent_audit", agent_id, scope, detail)
-            own.commit()
+            def _write_own() -> None:
+                farmctl.event(own, "agent_audit", agent_id, scope, detail)
+                own.commit()
+
+            retry_sqlite_busy(_write_own)
         finally:
             own.close()
     except Exception:  # pragma: no cover - audit must never crash the guard

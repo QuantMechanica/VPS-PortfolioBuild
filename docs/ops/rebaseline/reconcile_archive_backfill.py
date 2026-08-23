@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only reconciliation: Strategy Archive holes vs rebaseline backfill actions.
-
-Answers Task A(2): are the archive's "reachable gap" cells the same set as the
-backfill planner's per-pair FILL_MISSING actions? Where they differ, why, with
-counts. Nothing is written to the farm DB; the backfill CSV is read from disk.
-
-    python docs/ops/rebaseline/reconcile_archive_backfill.py
-"""
+"""Read-only reconciliation of archive work gaps and the governed backfill plan."""
 from __future__ import annotations
 
 import csv
@@ -21,83 +14,75 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm" / "dashboards"))
 import archive_matrix as am  # noqa: E402
 
 BACKFILL_CSV = Path("D:/QM/reports/rebaseline/backfill_plan_2026-08-23.csv")
+ACTIONABLE = {"FILL_MISSING", "RERUN_INFRA", "REBIND_STALE"}
 
 
-def archive_holes() -> dict[tuple[str, str], str]:
-    """(ea, symbol) -> gate of its single reachable gap, as the matrix draws it."""
+def archive_actions() -> tuple[dict[tuple[str, str], tuple[str, str]], dict]:
+    """Return work-item-backed archive gaps; Card-Ziel gaps stay separate."""
     data = am.collect()
-    holes: dict[tuple[str, str], str] = {}
+    actions: dict[tuple[str, str], tuple[str, str]] = {}
     for card in data["cards"]:
-        ea = card["ea"]
-        syms = card["symbols"]
-        for tok, _l, _g, _s in am.COLUMNS:
-            for packed in card["cells"].get(tok, []):
-                if (packed & 7) == am.ST_HOLE:
-                    si = packed >> 3
-                    holes[(ea, syms[si])] = tok
-    return holes, data
+        for gate, cells in card["cells"].items():
+            for cell in cells:
+                if cell["state"] != am.ST_HOLE:
+                    continue
+                symbol = card["symbols"][cell["symbol_index"]]
+                actions[(card["ea"], symbol)] = (gate, str(cell["action"]))
+    return actions, data
 
 
 def backfill_rows() -> list[dict]:
-    with BACKFILL_CSV.open(encoding="utf-8") as fh:
-        return [r for r in csv.DictReader(fh) if r.get("record_type") == "PAIR"]
+    with BACKFILL_CSV.open(encoding="utf-8", newline="") as handle:
+        return [row for row in csv.DictReader(handle) if row.get("record_type") == "PAIR"]
 
 
 def main() -> int:
-    holes, data = archive_holes()
+    archive, data = archive_actions()
     rows = backfill_rows()
-    by_action = Counter(r["action"] for r in rows)
+    planned = {
+        (row["ea_id"], row["symbol"]): (row["target_gate"], row["action"])
+        for row in rows if row["action"] in ACTIONABLE
+    }
 
-    # backfill FILL_MISSING keyed by pair -> target gate
-    fill_missing = {(r["ea_id"], r["symbol"]): r["target_gate"]
-                    for r in rows if r["action"] == "FILL_MISSING"}
-    all_actions = {(r["ea_id"], r["symbol"]): (r["action"], r["target_gate"])
-                   for r in rows}
-
-    hk = set(holes)
-    fk = set(fill_missing)
-
-    both = hk & fk
-    gate_match = sum(1 for k in both if holes[k] == fill_missing[k])
-    gate_mismatch = {k: (holes[k], fill_missing[k]) for k in both
-                     if holes[k] != fill_missing[k]}
-
-    only_archive = hk - fk
-    only_backfill = fk - hk
-
-    # classify archive-only holes by what the backfill said instead
-    oa_by_backfill_action = Counter()
-    oa_gate = Counter()
-    for k in only_archive:
-        oa_gate[holes[k]] += 1
-        act = all_actions.get(k, ("<no pair row>", ""))[0]
-        oa_by_backfill_action[act] += 1
-
-    ob_gate = Counter(fill_missing[k] for k in only_backfill)
+    archive_keys = set(archive)
+    planned_keys = set(planned)
+    both = archive_keys & planned_keys
+    mismatches = {key: (archive[key], planned[key]) for key in both
+                  if archive[key] != planned[key]}
+    archive_only = archive_keys - planned_keys
+    backfill_only = planned_keys - archive_keys
 
     print("=== TOTALS ===")
-    print(f"archive reachable-gap pairs (one gap each): {len(hk)}")
-    print(f"  (matrix reports total hole cells: {sum(data['hole_by_gate'].values())})")
-    print(f"  archive hole_by_gate: {dict(data['hole_by_gate'].most_common())}")
-    print(f"  archive untested_targets (frontmatter, synthetic Q02 gaps): {data['untested_targets']}")
-    print(f"backfill pair rows: {len(rows)}  actions={dict(by_action)}")
-    print(f"backfill FILL_MISSING pairs: {len(fk)}")
-    print(f"  FILL_MISSING by target gate: {dict(Counter(fill_missing.values()).most_common())}")
+    print(f"archive work-item gap pairs: {len(archive_keys)}")
+    print(f"  by action: {dict(Counter(action for _, action in archive.values()).most_common())}")
+    print(f"  by gate: {dict(Counter(gate for gate, _ in archive.values()).most_common())}")
+    print(f"archive second-source Card-Ziel gaps: {data['untested_targets']}")
+    print(f"backfill actionable pairs: {len(planned_keys)}")
+    print(f"  by action: {dict(Counter(action for _, action in planned.values()).most_common())}")
     print()
-    print("=== INTERSECTION (pairs in both hole-set and FILL_MISSING) ===")
-    print(f"in both: {len(both)}  gate agrees: {gate_match}  gate differs: {len(gate_mismatch)}")
-    if gate_mismatch:
-        c = Counter((a, b) for a, b in gate_mismatch.values())
-        print(f"  gate-mismatch (archive_gate -> backfill_gate): {dict(c.most_common(12))}")
+    print("=== INTERSECTION ===")
+    print(f"in both: {len(both)}  exact gate+action: {len(both) - len(mismatches)}  "
+          f"mismatch: {len(mismatches)}")
+    if mismatches:
+        print(f"  mismatch classes: {dict(Counter(mismatches.values()).most_common(12))}")
     print()
-    print("=== ARCHIVE-ONLY (matrix shows a gap, backfill has no FILL_MISSING) ===")
-    print(f"count: {len(only_archive)}")
-    print(f"  by archive gate: {dict(oa_gate.most_common())}")
-    print(f"  what backfill said instead: {dict(oa_by_backfill_action.most_common())}")
+    print("=== ARCHIVE-ONLY ===")
+    print(f"count: {len(archive_only)}")
+    print(f"  by gate/action: {dict(Counter(archive[key] for key in archive_only).most_common())}")
     print()
-    print("=== BACKFILL-ONLY (FILL_MISSING, matrix shows no gap) ===")
-    print(f"count: {len(only_backfill)}")
-    print(f"  by backfill target gate: {dict(ob_gate.most_common())}")
+    print("=== BACKFILL-ONLY ===")
+    print(f"count: {len(backfill_only)}")
+    print(f"  by gate/action: {dict(Counter(planned[key] for key in backfill_only).most_common())}")
+    archive_eas = {card["ea"] for card in data["cards"]}
+    causes = Counter()
+    for ea_id, symbol in backfill_only:
+        if am.symbol_class(symbol) == "relic":
+            causes["relic symbol excluded by archive F7"] += 1
+        elif ea_id not in archive_eas:
+            causes["no manifest-gate row/card row on archive surface"] += 1
+        else:
+            causes["unclassified"] += 1
+    print(f"  causes: {dict(causes.most_common())}")
     return 0
 
 

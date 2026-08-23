@@ -263,6 +263,9 @@ def test_pipeline_view_folds_mixed_case_legacy_suffix_phases(tmp_path: Path) -> 
     view = farmctl.pipeline_view(root)
     ea = next(row for row in view["eas"] if row["ea_id"] == "QM5_10008")
 
+    # v4 active: the P-key legacy aliases resolve through the active manifest, so
+    # P5b/P5c fold into Q05 and P9b folds into the v4 Q16 (Operational Readiness),
+    # not the v3 Q12.
     assert list(ea["phases"]) == ["Q05", "Q16"]
     assert ea["phases"]["Q05"]["work_item_count"] == 2
     assert ea["phases"]["Q16"]["latest_work_item_id"] == "legacy-p9b"

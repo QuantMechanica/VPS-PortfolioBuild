@@ -24,6 +24,23 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from pump_budget import PumpCycleBudget
+    from sqlite_busy import (
+        BUSY_TIMEOUT_MS,
+        configure_connection as configure_sqlite_connection,
+        is_sqlite_busy,
+        retry_sqlite_busy,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.pump_budget import PumpCycleBudget
+    from tools.strategy_farm.sqlite_busy import (
+        BUSY_TIMEOUT_MS,
+        configure_connection as configure_sqlite_connection,
+        is_sqlite_busy,
+        retry_sqlite_busy,
+    )
+
+try:
     from cache_audit import has_ea_history_window, has_history_window
 except ModuleNotFoundError:
     from tools.strategy_farm.cache_audit import has_ea_history_window, has_history_window
@@ -1222,25 +1239,21 @@ def factory_is_off(root: Path) -> bool:
 
 
 def connect(root: Path) -> sqlite3.Connection:
-    conn = sqlite3.connect(db_path(root), timeout=30)
+    conn = sqlite3.connect(db_path(root), timeout=BUSY_TIMEOUT_MS / 1000.0)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA busy_timeout=30000")
-    return conn
+    return configure_sqlite_connection(conn)
 
 
 def _is_sqlite_locked(exc: sqlite3.OperationalError) -> bool:
-    return "locked" in str(exc).lower()
+    return is_sqlite_busy(exc)
 
 
-def _with_sqlite_write_retry(fn, retries: int = 8, base_sleep_seconds: float = 1.5):
-    for attempt in range(1, retries + 1):
-        try:
-            return fn()
-        except sqlite3.OperationalError as exc:
-            if not _is_sqlite_locked(exc) or attempt == retries:
-                raise
-            time.sleep(min(30.0, base_sleep_seconds * attempt))
-    raise RuntimeError("unreachable sqlite retry state")
+def _with_sqlite_write_retry(fn, retries: int = 8, base_sleep_seconds: float = 0.05):
+    return retry_sqlite_busy(
+        fn,
+        attempts=retries,
+        base_delay_seconds=base_sleep_seconds,
+    )
 
 
 # --- ULTRACODE WS-A (2026-07-26): one claim-ordering contract + durable recovery idle-cap ---
@@ -1748,6 +1761,8 @@ def init_db(root: Path) -> None:
                 event TEXT NOT NULL,
                 detail_json TEXT NOT NULL
             );
+            CREATE INDEX IF NOT EXISTS idx_events_event_ts_entity
+                ON events(event, ts, entity_type, entity_id);
 
             -- MNT-015: compact mutable index used only to decide whether a raw
             -- event should be appended.  `events` itself remains append-only;
@@ -1806,6 +1821,8 @@ def init_db(root: Path) -> None:
             -- recovery windows (freeze_stack evidence 20260814T010101Z).
             CREATE INDEX IF NOT EXISTS idx_work_items_verdict_ea
                 ON work_items(verdict, ea_id);
+            CREATE INDEX IF NOT EXISTS idx_work_items_verdict_updated
+                ON work_items(verdict, updated_at);
 
             CREATE TABLE IF NOT EXISTS poison_pill_quarantine (
                 ea_id TEXT NOT NULL,
@@ -6576,6 +6593,7 @@ def enqueue_compile_eas(
     *,
     from_file: str | None = None,
     apply: bool = False,
+    source_repair_authority: str | None = None,
 ) -> dict[str, Any]:
     """Create guarded COMPILE_EA utility work items.
 
@@ -6611,6 +6629,7 @@ def enqueue_compile_eas(
         ea_labels,
         from_file=from_file,
         apply=apply,
+        source_repair_authority=source_repair_authority,
     )
 
 
@@ -15581,7 +15600,195 @@ def _q09_candidate_lineage_key(ea_id: str, symbol: str, q08_work_item_id: str) -
     return hashlib.sha256(material).hexdigest()
 
 
-def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any]:
+def _spawn_q09_replacements_for_regenerated_q08(
+    root: Path, *, limit: int
+) -> list[dict[str, str]]:
+    """Append a Q09 successor when a held row's immutable Q08 edge is stale.
+
+    ``work_item_dependencies`` is append-only, so a held Q09 row cannot be
+    rebound in place.  A completed append-only Q08 regeneration therefore gets
+    a new held Q09 child.  The original child and dependency remain durable and
+    are superseded only after the replacement plan binds successfully.
+    """
+    if limit <= 0:
+        return []
+    spawned: list[dict[str, str]] = []
+    now = utc_now()
+    with connect(root) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        held = conn.execute(
+            """
+            SELECT w.*,d.parent_work_item_id AS prior_q08_id,
+                   p.created_at AS prior_q08_created_at
+            FROM work_items w
+            JOIN work_item_holds h ON h.work_item_id=w.id
+            JOIN work_item_dependencies d
+              ON d.child_work_item_id=w.id AND d.dependency_role='Q08_INPUT'
+            JOIN work_items p ON p.id=d.parent_work_item_id
+            WHERE w.phase=? AND w.status='pending'
+              AND COALESCE(w.claimed_by,'')=''
+              AND h.hold_code=? AND h.active=1
+            ORDER BY w.created_at,w.id
+            LIMIT ?
+            """,
+            (_NEWS_PHASE, Q09_ACTIVATION_HOLD_CODE, int(limit)),
+        ).fetchall()
+        for prior in held:
+            replacement_q08 = conn.execute(
+                """
+                SELECT q.* FROM work_items q
+                WHERE q.ea_id=? AND q.symbol=? AND q.setfile_path=?
+                  AND q.phase='Q08' AND q.status='done'
+                  AND q.verdict IN ('PASS','FAIL_SOFT')
+                  AND q.id<>?
+                  AND q.created_at>?
+                  AND json_valid(q.payload_json)=1
+                  AND json_extract(q.payload_json,'$.append_only_rerun')=1
+                  AND NOT EXISTS (
+                    SELECT 1 FROM work_item_dependencies dx
+                    JOIN work_items cx ON cx.id=dx.child_work_item_id
+                    WHERE dx.dependency_role='Q08_INPUT'
+                      AND dx.parent_work_item_id=q.id
+                      AND cx.phase=?
+                  )
+                ORDER BY q.updated_at DESC,q.id DESC LIMIT 1
+                """,
+                (
+                    prior["ea_id"], prior["symbol"], prior["setfile_path"],
+                    prior["prior_q08_id"], prior["prior_q08_created_at"], _NEWS_PHASE,
+                ),
+            ).fetchone()
+            if replacement_q08 is None:
+                continue
+            evidence_sha256 = _work_item_evidence_sha256(replacement_q08)
+            if not evidence_sha256:
+                continue
+            replacement_id = str(uuid.uuid4())
+            payload = _promotion_payload_with_basket_context(
+                replacement_q08,
+                {
+                    "promoted_from_phase": "Q08",
+                    "promoted_from_work_item": replacement_q08["id"],
+                    "promotion_source": "q09_autoseal_regenerated_q08",
+                    "supersedes_held_q09_work_item": prior["id"],
+                },
+            )
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                  id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
+                  parent_task_id,payload_json,created_at,updated_at,gate_contract_version
+                ) VALUES(?,'backtest',?,?,?,?, 'pending',0,NULL,?,?,?,?)
+                """,
+                (
+                    replacement_id, _NEWS_PHASE, replacement_q08["ea_id"],
+                    replacement_q08["symbol"], replacement_q08["setfile_path"],
+                    json.dumps(payload, sort_keys=True), now, now,
+                    ACTIVE_GATE_CONTRACT_VERSION,
+                ),
+            )
+            _add_q08_input_dependency(
+                conn,
+                child_work_item_id=replacement_id,
+                q08_work_item=replacement_q08,
+                evidence_sha256=evidence_sha256,
+            )
+            _mark_q09_awaiting_sealed_plan(
+                conn, work_item_id=replacement_id, payload=payload, now=now
+            )
+            spawned.append({
+                "prior_q09_work_item_id": str(prior["id"]),
+                "prior_q08_work_item_id": str(prior["prior_q08_id"]),
+                "replacement_q08_work_item_id": str(replacement_q08["id"]),
+                "replacement_q09_work_item_id": replacement_id,
+            })
+        conn.commit()
+    return spawned
+
+
+def _supersede_stale_q09_holds_after_rebind(
+    conn: sqlite3.Connection,
+    *,
+    replacement_q09_id: str,
+    replacement_q08_id: str,
+    now: str,
+) -> list[str]:
+    """Retire older unadjudicated holds only after a replacement binds."""
+    replacement = conn.execute(
+        """
+        SELECT w.ea_id,w.symbol,w.setfile_path,q.created_at AS q08_created_at
+        FROM work_items w
+        JOIN work_item_dependencies d
+          ON d.child_work_item_id=w.id AND d.dependency_role='Q08_INPUT'
+        JOIN work_items q ON q.id=d.parent_work_item_id
+        WHERE w.id=? AND q.id=?
+          AND json_valid(q.payload_json)=1
+          AND json_extract(q.payload_json,'$.append_only_rerun')=1
+        """,
+        (replacement_q09_id, replacement_q08_id),
+    ).fetchone()
+    if replacement is None:
+        return []
+    stale = conn.execute(
+        """
+        SELECT w.id,w.payload_json FROM work_items w
+        JOIN work_item_holds h ON h.work_item_id=w.id
+        JOIN work_item_dependencies d
+          ON d.child_work_item_id=w.id AND d.dependency_role='Q08_INPUT'
+        JOIN work_items prior_q08 ON prior_q08.id=d.parent_work_item_id
+        WHERE w.phase=? AND w.status='pending' AND w.id<>?
+          AND w.ea_id=? AND w.symbol=? AND w.setfile_path=?
+          AND d.parent_work_item_id<>?
+          AND prior_q08.created_at<?
+          AND h.hold_code=? AND h.active=1
+          AND NOT EXISTS (
+            SELECT 1 FROM q09_news_tests t WHERE t.work_item_id=w.id
+          )
+        ORDER BY w.created_at,w.id
+        """,
+        (
+            _NEWS_PHASE, replacement_q09_id, replacement["ea_id"],
+            replacement["symbol"], replacement["setfile_path"],
+            replacement_q08_id, replacement["q08_created_at"],
+            Q09_ACTIVATION_HOLD_CODE,
+        ),
+    ).fetchall()
+    superseded: list[str] = []
+    for row in stale:
+        payload = json.loads(str(row["payload_json"] or "{}"))
+        payload.update({
+            "historical_work_item_preserved": True,
+            "superseded_by_work_item_id": replacement_q09_id,
+            "superseded_by_q08_work_item_id": replacement_q08_id,
+            "superseded_reason": "regenerated_q08_identity_bound_to_replacement_q09",
+        })
+        conn.execute(
+            """
+            UPDATE work_items
+            SET status='done',verdict='SUPERSEDED',payload_json=?,updated_at=?
+            WHERE id=? AND status='pending' AND verdict IS NULL
+            """,
+            (json.dumps(payload, sort_keys=True), now, row["id"]),
+        )
+        conn.execute(
+            """
+            UPDATE work_item_holds
+            SET active=0,updated_at=?,released_at=?,
+                release_note='superseded after regenerated Q08 replacement plan bound'
+            WHERE work_item_id=? AND hold_code=? AND active=1
+            """,
+            (now, now, row["id"], Q09_ACTIVATION_HOLD_CODE),
+        )
+        superseded.append(str(row["id"]))
+    return superseded
+
+
+def auto_seal_pending_q09_news(
+    root: Path,
+    *,
+    limit: int = 100,
+    deadline_monotonic: float | None = None,
+) -> dict[str, Any]:
     """Create and bind approved contract-v3 plans for held Q09 rows.
 
     Every identity comes from the exact work-item/dependency lineage.  Missing
@@ -15590,6 +15797,9 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
     """
 
     init_db(root)
+    predecessor_refresh = _spawn_q09_replacements_for_regenerated_q08(
+        root, limit=max(0, int(limit))
+    )
     with connect(root) as conn:
         candidates = conn.execute(
             """
@@ -15604,7 +15814,11 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
         ).fetchall()
 
     results: list[dict[str, Any]] = []
+    budget_exhausted = False
     for candidate in candidates:
+        if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+            budget_exhausted = True
+            break
         work_item_id = str(candidate["id"])
         stage = "derive_lineage"
         try:
@@ -15743,6 +15957,12 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                     "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
                     (json.dumps(current_payload, sort_keys=True), utc_now(), work_item_id),
                 )
+                superseded_q09_ids = _supersede_stale_q09_holds_after_rebind(
+                    conn,
+                    replacement_q09_id=work_item_id,
+                    replacement_q08_id=q08_id,
+                    now=utc_now(),
+                )
                 conn.commit()
             results.append({
                 "work_item_id": work_item_id,
@@ -15755,6 +15975,7 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                 "plan_sha256": plan["plan_sha256"],
                 "cell_count": plan["cell_count"],
                 "activation_hold_released": bound["activation_hold_released"],
+                "superseded_q09_work_item_ids": superseded_q09_ids,
             })
         except Exception as exc:  # fail closed per row; continue the cohort
             results.append(
@@ -15766,9 +15987,12 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                 )
             )
     return {
+        "predecessor_refresh": predecessor_refresh,
         "candidate_count": len(candidates),
+        "attempted_count": len(results),
         "sealed_count": sum(1 for row in results if row.get("sealed") is True),
         "failed_count": sum(1 for row in results if row.get("sealed") is False),
+        "budget_exhausted": budget_exhausted,
         "rows": results,
     }
 
@@ -16203,6 +16427,8 @@ def _promote_paired_q09_portfolio_passes_to_news(
     result: dict[str, Any],
     *,
     include_defect_blocked_evidence: bool = False,
+    max_rows: int | None = None,
+    commit_each: bool = False,
 ) -> int:
     """Backfill a held news arm from each latest Q08 PASS/FAIL_SOFT lineage.
 
@@ -16240,9 +16466,13 @@ def _promote_paired_q09_portfolio_passes_to_news(
         (_NEWS_PHASE,),
     ).fetchall()
     promoted = 0
+    attempted = 0
     for row in rows:
         if int(row["lineage_rank"]) != 1:
             continue
+        if max_rows is not None and attempted >= max(0, int(max_rows)):
+            break
+        attempted += 1
         q08 = conn.execute(
             "SELECT * FROM work_items WHERE id=?", (str(row["q08_id"]),)
         ).fetchone()
@@ -16303,6 +16533,8 @@ def _promote_paired_q09_portfolio_passes_to_news(
             "q08_verdict": row["q08_verdict"],
         })
         promoted += 1
+        if commit_each:
+            conn.commit()
     return promoted
 
 
@@ -16727,6 +16959,15 @@ def _reconcile_magic_resolver(root: Path) -> dict[str, Any]:
         return {"regenerated": False, "reason": f"exception:{exc!r}"[:200]}
 
 
+PUMP_TOTAL_BUDGET_SECONDS = 270.0
+PUMP_DISPATCH_BUDGET_SECONDS = 30.0
+PUMP_AUTOCOMMIT_BUDGET_SECONDS = 30.0
+PUMP_LATE_AUTOSEAL_BUDGET_SECONDS = 45.0
+PUMP_DISPATCH_AUTOSEAL_LIMIT = 2
+PUMP_LATE_AUTOSEAL_LIMIT = 4
+PUMP_OPT_FORK_BUDGET_SECONDS = 30.0
+
+
 def _pump_unlocked(
     root: Path, include_defect_blocked_evidence: bool = False
 ) -> dict[str, Any]:
@@ -16748,22 +16989,49 @@ def _pump_unlocked(
     factory_off_flag = factory_off_flag_path(root)
     if factory_off_flag.exists():
         return {"pumped_at": utc_now(), "skipped": "FACTORY_OFF.flag set"}
-    init_db(root)
+    cycle_budget = PumpCycleBudget(PUMP_TOTAL_BUDGET_SECONDS)
+    dispatch_deadline = cycle_budget.stage_deadline(PUMP_DISPATCH_BUDGET_SECONDS)
+    dispatch_result = cycle_budget.run(
+        "dispatch_tick",
+        lambda: dispatch_tick(
+            root,
+            q09_autoseal_limit=PUMP_DISPATCH_AUTOSEAL_LIMIT,
+            q09_autoseal_deadline_monotonic=dispatch_deadline,
+        ),
+        budget_seconds=PUMP_DISPATCH_BUDGET_SECONDS,
+        required=True,
+    )
     # Reap stuck codex procs FIRST — they hold the build proc-cap and silently
     # halt all builds (see _reap_stuck_codex_procs). Then deterministic artifact
     # commit clears the working tree before the build guard checks it.
-    reap_result = _reap_stuck_codex_procs(root)
-    reap_result["work_repair"] = _repair_reaped_codex_work(root, reap_result)
+    def _reap_stage() -> dict[str, Any]:
+        reaped = _reap_stuck_codex_procs(root)
+        reaped["work_repair"] = _repair_reaped_codex_work(root, reaped)
+        return reaped
+
+    reap_result = cycle_budget.run(
+        "process_reap", _reap_stage, budget_seconds=20.0, minimum_start_seconds=5.0
+    )
     # Resync the magic resolver BEFORE the artifact commit so a stale .mqh from
     # the concurrent-build race never reaches codex_review (see _reconcile_magic_resolver).
-    resolver_reconcile = _reconcile_magic_resolver(root)
-    auto_commit_result = _auto_commit_build_artifacts(root)
+    resolver_reconcile = cycle_budget.run(
+        "magic_resolver",
+        lambda: _reconcile_magic_resolver(root),
+        budget_seconds=10.0,
+        minimum_start_seconds=5.0,
+    )
+    auto_commit_result = cycle_budget.run(
+        "artifact_auto_commit",
+        lambda: _auto_commit_build_artifacts(root),
+        budget_seconds=PUMP_AUTOCOMMIT_BUDGET_SECONDS,
+        minimum_start_seconds=15.0,
+    )
     result: dict[str, Any] = {
         "pumped_at": utc_now(),
         "reaped_stuck_procs": reap_result,
         "magic_resolver": resolver_reconcile,
         "auto_commit": auto_commit_result,
-        "dispatch": None,
+        "dispatch": dispatch_result,
         "codex_spawn": None,
         "build_records": [],
         "build_retries": [],
@@ -16808,6 +17076,7 @@ def _pump_unlocked(
     except Exception as exc:
         result["codex_auth_broken"] = {"tripped": False, "error": repr(exc)}
 
+    queue_stage_started = time.monotonic()
     # 1a. Per-symbol work_items dispatch is owned by the per-terminal daemon
     #     fleet (tools/strategy_farm/terminal_worker.py). Pump-cron keeps the
     #     active-timeout detector but no longer spawns MT5 work_items.
@@ -16875,14 +17144,13 @@ def _pump_unlocked(
     # 1b. Legacy bundled-task dispatch — handles any backtest_<phase> tasks
     #     created WITHOUT matching work_items (e.g. older runs). Will become
     #     a no-op once all enqueues create work_items.
-    result["dispatch"] = dispatch_tick(root)
     with connect(root) as conn:
         result["zerotrade_rework_flagged"] = _detect_zerotrade_dead_eas(conn, root)
-        result["zerotrade_terminal_event_census"] = event_census(
-            conn,
-            DEAD_ZERO_TRADE_EVENT,
-            rolling_hours=DEAD_ZERO_TRADE_EVENT_DEDUPE_HOURS,
-        )
+        result["zerotrade_terminal_event_census"] = {
+            "deferred": True,
+            "reason": "moved_to_pump_maintenance",
+            "command": "farmctl pump-maintenance",
+        }
 
     result["resume_mining"] = resume_mining(root)
     result["research_cards_extracted"] = _extract_cards_from_research_results(root)
@@ -17031,6 +17299,14 @@ def _pump_unlocked(
             "last_blocked_reason": blocked_reason[:120],
         })
 
+    cycle_budget.record_elapsed(
+        "queue_maintenance_and_intake", queue_stage_started, budget_seconds=60.0
+    )
+    if cycle_budget.remaining_seconds <= 15.0:
+        result["build_dispatch"] = {"skipped": "cycle_budget_exhausted"}
+        result["stage_timings"] = cycle_budget.snapshot()
+        return result
+    build_stage_started = time.monotonic()
     # 3. Codex builds for up to MAX_PARALLEL_CODEX pending build_ea tasks.
     #    Each Codex builds a DIFFERENT EA — races on shared writes (CSV
     #    appends + update_magic_resolver.py rewrite) are resolved at the
@@ -17569,6 +17845,14 @@ def _pump_unlocked(
             })
         conn.commit()
 
+    cycle_budget.record_elapsed(
+        "build_dispatch", build_stage_started, budget_seconds=60.0
+    )
+    if cycle_budget.remaining_seconds <= 15.0:
+        result["review_stage"] = {"skipped": "cycle_budget_exhausted"}
+        result["stage_timings"] = cycle_budget.snapshot()
+        return result
+    review_stage_started = time.monotonic()
     # 5a. CODEX pre-review for done build_ea without codex_review yet.
     #     Codex catches mechanical bugs (Framework Corset, INTRADAY DISCIPLINE,
     #     magic collisions, 0-trade smoke) BEFORE final EA review burns
@@ -17910,6 +18194,14 @@ def _pump_unlocked(
     result["codex_research_spawn"] = (result["codex_research_spawns"][0]
                                        if result["codex_research_spawns"] else None)
 
+    cycle_budget.record_elapsed(
+        "reviews_and_research", review_stage_started, budget_seconds=60.0
+    )
+    if cycle_budget.remaining_seconds <= 15.0:
+        result["pre_promotion_stage"] = {"skipped": "cycle_budget_exhausted"}
+        result["stage_timings"] = cycle_budget.snapshot()
+        return result
+    pre_promotion_stage_started = time.monotonic()
     # 10. Parameter ablation — phase-aware:
     #     - P2-PASS (exploration): 5 random ±25% mutations to find a viable
     #       region. OWNER 2026-05-16 "Ablation auf Gewinner statt Greenfield".
@@ -17995,14 +18287,16 @@ def _pump_unlocked(
     # catch them after the first PASS goes through normal auto-enqueue).
     result["p3_promotions"] = []
     result["p3_promotions_skipped"] = []
-    # Refresh the normalized metric layer so the profit pre-filter below sees
-    # current numbers (incremental, mtime-gated; must never break the pump).
-    try:
-        import ea_metrics as _ea_metrics  # parent dir already on sys.path above
-        with connect(root) as _mconn:
-            _ea_metrics.build(_mconn, full=False)
-    except Exception:
-        pass
+    # The normalized metric layer is a throughput/observability aggregate, not
+    # a gate.  Its 61k-path stat scan and tens of thousands of stale-row upserts
+    # now run under the lower-frequency ``pump-maintenance`` command.  Promotion
+    # still reads the latest committed metrics and therefore changes no gate
+    # criterion; a fresh result can be delayed by one maintenance interval.
+    result["ea_metrics_refresh"] = {
+        "deferred": True,
+        "reason": "moved_to_pump_maintenance",
+        "command": "farmctl pump-maintenance",
+    }
     with connect(root) as conn:
         # §10c starvation fix (2026-06-22): the candidate set is every Q02-PASS
         # without a Q03 sibling. The overwhelming majority are permanently
@@ -18165,10 +18459,28 @@ def _pump_unlocked(
     _cascade_defect_exclusion = _defect_block_exclusion_clause(
         include_defect_blocked_evidence
     )
+    cycle_budget.record_elapsed(
+        "pre_promotion_automation", pre_promotion_stage_started, budget_seconds=45.0
+    )
+    if cycle_budget.remaining_seconds <= 15.0:
+        result["promotion_stage"] = {
+            "skipped": "cycle_budget_exhausted",
+            "remaining_seconds": cycle_budget.remaining_seconds,
+        }
+        result["stage_timings"] = cycle_budget.snapshot()
+        return result
+    promotion_stage_started = time.monotonic()
+    promotion_deadline = cycle_budget.stage_deadline(60.0)
     with connect(root) as conn:
-        conn.execute("BEGIN IMMEDIATE")
         reopened_parents: set[str] = set()
         for prev_phase, successor_phase in cascade_phase_map.items():
+            if time.monotonic() >= promotion_deadline:
+                result["cascade_promotions_skipped"].append({
+                    "reason": "promotion_stage_budget_exhausted",
+                    "from_phase": prev_phase,
+                    "to_phase": successor_phase,
+                })
+                break
             verdicts = sorted(cascade_pass_verdicts[prev_phase])
             placeholders = ",".join("?" for _ in verdicts)
             promotable = conn.execute(
@@ -18197,7 +18509,7 @@ def _pump_unlocked(
                 -- ten permanently unpromotable old rows starve every later
                 -- Q08 PASS, including 16 pairs that already had a portfolio
                 -- sibling but never received Q09_NEWS.
-                ORDER BY w.updated_at ASC LIMIT 500
+                ORDER BY w.updated_at ASC LIMIT 50
                 """,
                 (
                     prev_phase,
@@ -18207,6 +18519,13 @@ def _pump_unlocked(
                 ),
             ).fetchall()
             for wi in promotable:
+                if time.monotonic() >= promotion_deadline:
+                    result["cascade_promotions_skipped"].append({
+                        "reason": "promotion_stage_budget_exhausted",
+                        "from_phase": prev_phase,
+                        "to_phase": successor_phase,
+                    })
+                    break
                 if not _setfile_path_exists(wi["setfile_path"]):
                     result["cascade_promotions_skipped"].append({
                         "ea_id": wi["ea_id"],
@@ -18340,6 +18659,10 @@ def _pump_unlocked(
                     "parent_task_id": parent_id,
                     "reopened_parent": reopened_parent,
                 })
+                # Keep the serialized writer interval to one promotion.  The
+                # global pump claim prevents a second promoter; terminal workers
+                # regain the WAL writer slot between rows.
+                conn.commit()
         # DL-074 (gate-acceleration #3) Q04-early probe: every Q02-PASS
         # primary goes straight to a Q04 walk-forward probe on its DEFAULT
         # params, in parallel with the normal Q02->Q03 path. ~88% of EAs die
@@ -18401,13 +18724,18 @@ def _pump_unlocked(
                 "reopened_parent": False,
                 "q04_default_probe": True,
             })
+            conn.commit()
         q09_promoted = _promote_q08_soft_fails_to_q09_portfolio(
             conn, result, include_defect_blocked_evidence=include_defect_blocked_evidence
         )
+        if q09_promoted:
+            conn.commit()
         q09_paired_news = _promote_paired_q09_portfolio_passes_to_news(
             conn,
             result,
             include_defect_blocked_evidence=include_defect_blocked_evidence,
+            max_rows=20,
+            commit_each=True,
         )
         q09_admitted = 0
         if (
@@ -18418,10 +18746,57 @@ def _pump_unlocked(
         ):
             conn.commit()
 
+    cycle_budget.record_elapsed(
+        "promotions", promotion_stage_started, budget_seconds=60.0
+    )
     # Newly created and previously parked Q09 rows become runnable in the same
     # pump cycle.  Each row is independently fail-closed, so one bad lineage
     # cannot starve the remaining cohort.
-    result["q09_autoseal"] = auto_seal_pending_q09_news(root)
+    late_autoseal_deadline = cycle_budget.stage_deadline(
+        PUMP_LATE_AUTOSEAL_BUDGET_SECONDS
+    )
+    result["q09_autoseal"] = cycle_budget.run(
+        "q09_autoseal",
+        lambda: auto_seal_pending_q09_news(
+            root,
+            limit=PUMP_LATE_AUTOSEAL_LIMIT,
+            deadline_monotonic=late_autoseal_deadline,
+        ),
+        budget_seconds=PUMP_LATE_AUTOSEAL_BUDGET_SECONDS,
+        minimum_start_seconds=15.0,
+    )
+
+    # OWNER A2: every incumbent confirmation enters the mandatory optimization
+    # audit.  The role-driven driver is append-only and never launches MT5; it
+    # only materializes the next governed analytic row after authenticating the
+    # predecessor and DL-089 fixture-harness evidence.  It runs as a budgeted
+    # cycle stage placed BEFORE the post-promotion early return: on a tight
+    # cycle its own minimum_start guard DEFERS it (idempotent/append-only —
+    # it resumes next cycle) instead of either blowing the 270s ceiling or
+    # being permanently starved behind the return below.
+    def _opt_fork_stage() -> dict[str, Any]:
+        try:
+            return advance_opt_fork(root, apply=True)
+        except Exception as exc:  # one analytic routing defect must not stop the pump
+            return {
+                "applied": False,
+                "machine_reason": f"OPTIMIZATION_FORK_ROUTING_FAILED:{exc}",
+            }
+
+    result["optimization_fork"] = cycle_budget.run(
+        "optimization_fork",
+        _opt_fork_stage,
+        budget_seconds=PUMP_OPT_FORK_BUDGET_SECONDS,
+        minimum_start_seconds=10.0,
+    )
+
+    if cycle_budget.remaining_seconds <= 15.0:
+        result["post_promotion_stage"] = {
+            "skipped": "cycle_budget_exhausted",
+            "remaining_seconds": cycle_budget.remaining_seconds,
+        }
+        result["stage_timings"] = cycle_budget.snapshot()
+        return result
 
     # §10d Synthetic variants for proven winners — EAs with ≥3 P2-PASSes
     # get a one-shot 30-variant burst exploring symbol family + bool flips +
@@ -18485,7 +18860,11 @@ def _pump_unlocked(
                     "children_count": 0, "reason": f"error: {exc!r}",
                 })
 
-    result["db_backup"] = _hourly_db_backup(root)
+    result["db_backup"] = {
+        "deferred": True,
+        "reason": "moved_to_pump_maintenance",
+        "command": "farmctl pump-maintenance",
+    }
     result["p_pass_stagnation_alarm"] = {
         "triggered": False,
         "reason": "mail disabled in pump; separate pipeline FAIL/OK mail channel OWNER-disabled 2026-07-23",
@@ -18499,7 +18878,44 @@ def _pump_unlocked(
         "reason": "disabled_by_owner_2026_05_22; one-shot ping email channel retired",
     }
 
+    result["stage_timings"] = cycle_budget.snapshot()
     return result
+
+
+def pump_maintenance(root: Path) -> dict[str, Any]:
+    """Run lower-frequency aggregate/statistics work removed from the 5m pump.
+
+    This command does not dispatch, promote, enqueue, or alter verdicts.  It is
+    safe to schedule hourly independently of the latency-sensitive pump.
+    """
+
+    started = time.monotonic()
+
+    def _refresh_metrics() -> dict[str, Any]:
+        try:
+            import ea_metrics as metrics
+        except ModuleNotFoundError:
+            from tools.strategy_farm import ea_metrics as metrics
+        with connect(root) as conn:
+            return metrics.build(conn, full=False)
+
+    metrics_result = _with_sqlite_write_retry(_refresh_metrics)
+    with connect(root) as conn:
+        zero_trade_census = event_census(
+            conn,
+            DEAD_ZERO_TRADE_EVENT,
+            rolling_hours=DEAD_ZERO_TRADE_EVENT_DEDUPE_HOURS,
+        )
+    backup_result = _hourly_db_backup(root)
+    return {
+        "maintained_at": utc_now(),
+        "elapsed_seconds": round(time.monotonic() - started, 6),
+        "ea_metrics": metrics_result,
+        "zerotrade_terminal_event_census": zero_trade_census,
+        "db_backup": backup_result,
+        "dispatch_performed": False,
+        "verdicts_changed": False,
+    }
 
 
 def pump(
@@ -22821,7 +23237,13 @@ def _payload_assigned_terminal(payload: dict[str, Any]) -> str | None:
     return None
 
 
-def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
+def dispatch_tick(
+    root: Path,
+    timeout_hours: float = 6.0,
+    *,
+    q09_autoseal_limit: int = 100,
+    q09_autoseal_deadline_monotonic: float | None = None,
+) -> dict[str, Any]:
     """Poll historical parent tasks without spawning new legacy runners.
 
     MNT-046 deprecated both historical direct-spawn modes because their argv
@@ -22831,7 +23253,11 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
     All current spawning is owned by ``dispatch_work_items``.
     """
     init_db(root)
-    q09_autoseal = auto_seal_pending_q09_news(root)
+    q09_autoseal = auto_seal_pending_q09_news(
+        root,
+        limit=q09_autoseal_limit,
+        deadline_monotonic=q09_autoseal_deadline_monotonic,
+    )
     actions: list[dict[str, Any]] = []
     started_iso = utc_now()
     running_mt5_terminals = _running_mt5_terminals()
@@ -25484,6 +25910,39 @@ def admit_optimization(
     )
 
 
+def advance_opt_fork(
+    root: Path,
+    *,
+    apply: bool,
+    ea_id: str | None = None,
+    symbol: str | None = None,
+) -> dict[str, Any]:
+    """Run the manifest-role-driven append-only optimization fork router."""
+    try:
+        import optimization_fork_driver as driver
+    except ModuleNotFoundError:
+        from tools.strategy_farm import optimization_fork_driver as driver
+
+    if bool(ea_id) != bool(symbol):
+        raise ValueError("--ea and --symbol must be supplied together")
+    targets = None if not ea_id else [(str(ea_id), str(symbol))]
+    database = db_path(root).resolve()
+    if not database.is_file():
+        raise ValueError(f"farm database is missing: {database}")
+    if apply:
+        with connect(root) as conn:
+            return driver.advance_optimization_fork(
+                conn, manifest=ACTIVE_GATE_MANIFEST, target_pairs=targets, apply=True,
+            )
+    uri = f"file:{database.as_posix()}?mode=ro"
+    with sqlite3.connect(uri, uri=True, timeout=30) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA query_only=ON")
+        return driver.advance_optimization_fork(
+            conn, manifest=ACTIVE_GATE_MANIFEST, target_pairs=targets, apply=False,
+        )
+
+
 def print_json(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True))
 
@@ -26213,6 +26672,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sub.add_parser("pipeline", help="Per-EA lifecycle view (where does each EA stand?)")
     sub.add_parser("pump", help="Continuous deterministic worker: dispatch MT5 + auto-spawn Codex + record builds. Run every 5 min.")
+    sub.add_parser(
+        "pump-maintenance",
+        help="Lower-frequency metrics/event census/database backup; never dispatches.",
+    )
     sub.add_parser("health", help="Run 10 pipeline invariants; write state/health.json + alarms log. Cockpit reads health.json for top banner.")
     sub.add_parser("repair", help="Auto-fix detected pipeline anomalies (stranded sources, phantom review fails, ablation grandchildren, stale work_items). Idempotent; safe to run any time.")
     work_items_p = sub.add_parser("work-items", help="Per-(EA × symbol × phase) work_items view")
@@ -26271,6 +26734,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--apply",
         action="store_true",
         help="Apply the batch form; positional/manual labels already imply apply",
+    )
+    enqueue_compile.add_argument(
+        "--source-repair-authority",
+        help=(
+            "Append a source-hash-bound repair successor under an exact governed "
+            "authority; ordinary enqueue guards remain fail-closed"
+        ),
     )
     compile_status = sub.add_parser(
         "compile-status",
@@ -26536,7 +27006,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     q14_enqueue.add_argument("--config")
     q14_enqueue.add_argument("--report-root")
+    q14_enqueue.add_argument("--ea", help="enqueue exactly this incumbent EA")
+    q14_enqueue.add_argument("--symbol", help="enqueue exactly this incumbent symbol")
     q14_enqueue.add_argument("--apply", action="store_true")
+
+    opt_advance = sub.add_parser(
+        "advance-optimization-fork",
+        help="Append all currently licensed manifest-role optimization successors.",
+    )
+    opt_advance.add_argument("--ea")
+    opt_advance.add_argument("--symbol")
+    opt_advance.add_argument("--apply", action="store_true")
 
     q16 = sub.add_parser(
         "enqueue-head-to-head",
@@ -26562,7 +27042,7 @@ def build_parser() -> argparse.ArgumentParser:
 # (2026-07-03 mass false-invalidation incident, 5167 work_items).
 _CANONICAL_CHECKOUT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
 _STATE_MUTATING_COMMANDS = frozenset({
-    "init", "pump", "repair", "dispatch-tick", "tick", "backfill-work-items",
+    "init", "pump", "pump-maintenance", "repair", "dispatch-tick", "tick", "backfill-work-items",
     "enqueue-backtest", "seed-fresh-q02", "bind-q09-plan", "approve-card", "reidentify-recovery-card",
     "enqueue-pattern-fixture-harness",
     "reject-card", "seed-sources", "record-build", "record-review",
@@ -26578,7 +27058,7 @@ def _command_mutates_state(args: argparse.Namespace) -> bool:
         return not bool(getattr(args, "dry_run", False))
     if args.command == "enqueue-compile":
         return bool(args.apply or not args.from_file)
-    if args.command in {"admit-optimization", "enqueue-opt-admission"}:
+    if args.command in {"admit-optimization", "enqueue-opt-admission", "advance-optimization-fork"}:
         return bool(args.apply)
     if args.command == "enqueue-head-to-head":
         return bool(args.apply)
@@ -26655,6 +27135,9 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "pump":
         _assert_canonical_checkout()
         print_json(pump(root))
+    elif args.command == "pump-maintenance":
+        _assert_canonical_checkout()
+        print_json(pump_maintenance(root))
     elif args.command == "health":
         try:
             from health import run_all as _health_run_all
@@ -26776,12 +27259,31 @@ def main(argv: list[str] | None = None) -> int:
             symbol = str(args.symbol).upper().replace(".DWX", "")
             rows = [r for r in rows if r["sleeve"].split(":", 1)[-1] == symbol]
         print_json({**payload, "rows": rows})
-    elif args.command in {"admit-optimization", "enqueue-opt-admission"}:
+    elif args.command == "admit-optimization":
         print_json(admit_optimization(
             root,
             config_path=args.config,
             report_root=args.report_root,
             apply=args.apply,
+        ))
+    elif args.command == "enqueue-opt-admission":
+        if args.ea or args.symbol:
+            print_json(advance_opt_fork(
+                root, apply=args.apply, ea_id=args.ea, symbol=args.symbol,
+            ))
+        else:
+            # Backward-compatible bulk admission surface.  New commissioning
+            # uses the exact-pair form above so the first production tranche is
+            # bounded and auditable.
+            print_json(admit_optimization(
+                root,
+                config_path=args.config,
+                report_root=args.report_root,
+                apply=args.apply,
+            ))
+    elif args.command == "advance-optimization-fork":
+        print_json(advance_opt_fork(
+            root, apply=args.apply, ea_id=args.ea, symbol=args.symbol,
         ))
     elif args.command == "enqueue-head-to-head":
         print_json(enqueue_head_to_head(
@@ -26803,6 +27305,7 @@ def main(argv: list[str] | None = None) -> int:
             args.ea_labels,
             from_file=args.from_file,
             apply=args.apply,
+            source_repair_authority=args.source_repair_authority,
         )
         print_json(compile_enqueue_result)
         if not compile_enqueue_result.get("ok", False):

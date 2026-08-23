@@ -1,0 +1,24 @@
+{
+  "review_task_id": "fed1b6f6-7b93-43fd-9810-1dcad0036c29",
+  "build_task_id": "19c8295f-c2aa-47b6-9e55-47e0fa465b0f",
+  "ea_id": "QM5_12920",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_12920 source lines 143 and 195 use raw iTime D1 calendar keys for entry and exit; the V5 review contract requires seasonal daily cadence to use QM_CalendarPeriodKey/QM_IsNewCalendarPeriod, and perf-allowed comments do not waive that corset rule.",
+    "QM5_12920 source lines 157-160 allow a fresh entry on every D1 bar after D-5 through D0, rather than only at the D-5 close; the file-scope g_last_traded_election_year mask resets on EA restart and therefore does not make the entry window deterministic.",
+    "QM5_12920 source line 183 marks the election year traded before QM_TM_OpenPosition runs at line 299, so a rejected order consumes the election opportunity for the remainder of that process.",
+    "QM5_12920 defaults qm_friday_close_enabled=true at lines 36-38 and executes QM_FrameworkHandleFridayClose at lines 266-267; a D-5 Tuesday entry is therefore closed on Friday instead of the card-mandated D0 election-day close.",
+    "[ONTICK-ORDER-ADVISORY] QM5_12920 returns on the news blackout at lines 254-264 before its mandatory election-time exit at lines 274-288; actual entries carry a server-side ATR stop, so this remains advisory under the review contract.",
+    "Build artifact artifacts/builds/19c8295f-c2aa-47b6-9e55-47e0fa465b0f.json marks smoke_result as deferred_p2_smoke with an empty blocked_reason and only a generic custom-history explanation; this does not satisfy the saturation-only waiver, and no QM5_12920 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:23:22Z"
+}
