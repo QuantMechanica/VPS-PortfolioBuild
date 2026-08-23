@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4792c4c169470fd55a3e5305255007bed3b086aeebe915b4ea15bee723a9f3c1
+; build_hash:   94c163077bb645ea2b25a85901904f5c3304bad979d8374930c493b0313958ef
 ; author:       Development
 ; date:         2026-08-18
 ;==========================================================
@@ -27,3 +27,11 @@ InpSlowTrix=18
 strategy_atr_period=14
 strategy_sl_buffer_pips=2.0
 strategy_tp_rr=2.0
+strategy_rollover_start_hhmm=2355
+strategy_rollover_end_hhmm=5
+strategy_spread_filter_mult=1.8
+strategy_max_slippage_ticks=3
+strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
+strategy_total_dd_halt_pct=5.0
+strategy_per_trade_risk_cap_pct=0.5
