@@ -40,6 +40,21 @@
 
 ---
 
+## 0b · 2026-08-23 abends — Relikt-Löschung, Detailseiten, Aufbewahrungsregel
+
+| Punkt | Zustand | Beleg |
+|---|---|---|
+| Relikt-Symbole aus der DB gelöscht (228 Zeilen, korrigierter Umfang) | **ausgeführt** | `docs/ops/evidence/2026-08-23_relic_symbol_purge_rows.json`, Backup `farm_state_20260823T114644Z_pre_relic_purge.sqlite` |
+| Matrix englisch + 2.984 Detailseiten mit MT5-Report-Links | **geliefert** (Prototyp) | `docs/ops/evidence/2026-08-23_strategy_archive_matrix_prototype.md` §4 |
+| Detailseite löst `ea_*.html` ab | beauftragt, Router `0b6f3039` | OWNER 2026-08-23 |
+| **Aufbewahrungsregel für MT5-Reports** | **ratifiziert — DL-090** (B′ + C) | `decisions/DL-090_backtest_report_retention_policy.md` |
+| DL-090 Job bauen | beauftragt, Router siehe Vault-ToDo `-508` | DL-090 §4 |
+| Farm-DB Schema-Härtung SH-1…SH-3 | beauftragt, Router `4467448f` | `docs/ops/FARM_DB_SCHEMA_HARDENING_2026-08-23.md` |
+| Balke/XAUUSD ist ein Loch, kein Fehlschlag | beauftragt, Router `051eb0bf` | Messung in der Vault-ToDo |
+| Gate-Nummerierung `Q10.1–Q10.3` | **vom OWNER geparkt** (`74e72403` BACKLOG) | Spec §3a |
+
+---
+
 ## 0a · Ultracode-Sitzung 2026-08-22 spätabends — Q09-Push 12969 + Balke 13213 + OFF/ON
 
 **Geliefert** (Evidenz `docs/ops/evidence/2026-08-22_ultracode_q09_push_12969_13213.md`)

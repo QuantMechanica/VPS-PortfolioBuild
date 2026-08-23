@@ -18,6 +18,7 @@ approval gates.
 
 | Topic | Canonical document |
 |---|---|
+| Backtest report retention | [`DL-090_backtest_report_retention_policy.md`](DL-090_backtest_report_retention_policy.md) |
 | Pipeline phase model | [`docs/ops/PIPELINE_PHASE_SPEC.md`](../docs/ops/PIPELINE_PHASE_SPEC.md) |
 | Framework boundary | [`2026-04-26_v5_framework_design.md`](2026-04-26_v5_framework_design.md) |
 | Clean-slate V5 boundary | [`2026-04-26_v5_restart_clean_slate.md`](2026-04-26_v5_restart_clean_slate.md) |
