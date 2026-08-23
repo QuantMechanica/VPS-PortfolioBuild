@@ -504,6 +504,7 @@ def install_clean_view(connection: sqlite3.Connection) -> None:
             {raw_payload} AS payload_json,
             {source('created_at')} AS created_at,
             {source('updated_at')} AS updated_at,
+            {source('gate_contract_version')} AS gate_contract_version,
             ({taxonomy_sql}) AS verdict_taxonomy,
             qm_clean_verdict_reason({raw_status}, {raw_verdict}, {raw_payload}) AS verdict_reason,
             {state} AS raw_status,

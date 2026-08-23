@@ -348,7 +348,12 @@ def _parent_for_gate(
     return _latest(candidates)
 
 
-def _action_for_census(row: dict[str, Any]) -> tuple[str, str]:
+def action_for_census(row: dict[str, Any]) -> tuple[str, str]:
+    """Return the governed planner action for one census frontier row.
+
+    Kept public so read-only operator surfaces can present exactly the same
+    action vocabulary without cloning planner policy.
+    """
     disposition = str(row.get("disposition") or "").upper()
     frontier_class = str(row.get("frontier_class") or "").upper()
     target = str(row.get("earliest_missing_prerequisite") or "").upper()
@@ -505,7 +510,7 @@ def build_plan(
         ea_id = str(census_row.get("ea_id") or "")
         symbol = str(census_row.get("symbol") or "")
         target_gate = str(census_row.get("earliest_missing_prerequisite") or "").upper()
-        action, reason = _action_for_census(census_row)
+        action, reason = action_for_census(census_row)
         gates = by_pair_gate.get((ea_id, symbol), {})
         target_rows = gates.get(target_gate, []) if target_gate else []
 
