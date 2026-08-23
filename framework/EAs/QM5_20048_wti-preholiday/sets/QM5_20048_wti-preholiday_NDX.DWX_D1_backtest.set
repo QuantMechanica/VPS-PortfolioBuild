@@ -1,0 +1,27 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20048
+; ea_slug:      wti-preholiday
+; ea_version:   v5.0
+; set_version:  s20260823-001
+; symbol:       NDX.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   5
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   058afae7049a382cf88dc7ebd1e5ee0f107e023411cc6569d9dfc8c7f41378a2
+; author:       Development
+; date:         2026-08-23
+;==========================================================
+qm_ea_id=20048
+qm_magic_slot_offset=5
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\worktrees\rb-universe-expansion\strategy-seeds\cards\wti-preholiday_card.md
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_max_hold_days=4
+strategy_max_spread_points=1200
