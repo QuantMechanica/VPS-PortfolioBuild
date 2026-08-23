@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sqlite3
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -39,8 +40,24 @@ except ModuleNotFoundError:
     )
 
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 CONTRACT_VERSION = "Q09_NEWS_V2"
+DEPENDENCY_ROLES = (
+    # v3 historical vocabulary
+    "Q08_INPUT",
+    "Q09_NEWS",
+    "Q09_PORTFOLIO",
+    "PARENT_LINEAGE",
+    "CHALLENGER_Q10",
+    "Q14_ADMISSION",
+    # v4 append-only vocabulary
+    "Q10_NEWS",
+    "Q10_PORTFOLIO",
+    "CHALLENGER_Q11",
+    "Q12_ADMISSION",
+    "BASELINE_Q09",
+    "INCUMBENT_Q11",
+)
 ACTIVATION_HOLD_CODE = "Q09_AWAITING_SEALED_PLAN"
 ACTIVATION_HOLD_REASON = (
     "Q09_NEWS is not claimable until a sealed run plan is hash-bound"
@@ -191,7 +208,9 @@ CREATE TABLE IF NOT EXISTS work_item_dependencies (
     dependency_role TEXT NOT NULL CHECK (
         dependency_role IN (
             'Q08_INPUT', 'Q09_NEWS', 'Q09_PORTFOLIO',
-            'PARENT_LINEAGE', 'CHALLENGER_Q10', 'Q14_ADMISSION'
+            'PARENT_LINEAGE', 'CHALLENGER_Q10', 'Q14_ADMISSION',
+            'Q10_NEWS', 'Q10_PORTFOLIO', 'CHALLENGER_Q11',
+            'Q12_ADMISSION', 'BASELINE_Q09', 'INCUMBENT_Q11'
         )
     ),
     parent_work_item_id TEXT NOT NULL,
@@ -794,7 +813,13 @@ def _dependency_role_migration_scripts(conn: sqlite3.Connection) -> tuple[str, s
         "SELECT sql FROM sqlite_master WHERE type='table' AND name='work_item_dependencies'"
     ).fetchone()
     sql = str(row[0] or "") if row else ""
-    if all(role in sql for role in ("PARENT_LINEAGE", "CHALLENGER_Q10", "Q14_ADMISSION")):
+    role_check = re.search(
+        r"dependency_role\s+IN\s*\((.*?)\)", sql, flags=re.IGNORECASE | re.DOTALL
+    )
+    accepted_roles = (
+        set(re.findall(r"'([^']+)'", role_check.group(1))) if role_check else set()
+    )
+    if accepted_roles == set(DEPENDENCY_ROLES):
         return "", ""
     before = f"""
         DROP TRIGGER IF EXISTS trg_wid_validate_insert;

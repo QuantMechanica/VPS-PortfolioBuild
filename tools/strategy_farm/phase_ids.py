@@ -45,9 +45,14 @@ from types import MappingProxyType
 from typing import Mapping
 
 try:  # direct ``python tools/strategy_farm/<script>.py`` imports
-    from gate_manifest import GateManifest, load_gate_manifest
+    from gate_manifest import GateManifest, GateManifestError, equivalent_gate, load_gate_manifest
 except ModuleNotFoundError:  # package imports in tests and module consumers
-    from tools.strategy_farm.gate_manifest import GateManifest, load_gate_manifest
+    from tools.strategy_farm.gate_manifest import (
+        GateManifest,
+        GateManifestError,
+        equivalent_gate,
+        load_gate_manifest,
+    )
 
 
 def build_phase_tables(
@@ -71,6 +76,18 @@ def build_phase_tables(
 # Load and validate the versioned contract once at import time.  Runtime helpers
 # below use these in-memory tables; hot paths never re-parse the JSON manifest.
 _GATE_MANIFEST = load_gate_manifest()
+
+
+def _short_contract_version(schema_version: str) -> str:
+    """Return the storage stamp (``vN``) from a manifest schema version."""
+
+    suffix = str(schema_version).rsplit("/", 1)[-1].lower()
+    if not suffix.startswith("v") or not suffix[1:].isdigit():
+        raise ValueError(f"invalid gate manifest schema version: {schema_version!r}")
+    return suffix
+
+
+ACTIVE_GATE_CONTRACT_VERSION = _short_contract_version(_GATE_MANIFEST.schema_version)
 
 PHASE_ORDER, PHASE_NAME, PHASE_NEXT = build_phase_tables(_GATE_MANIFEST)
 # Includes display-only evidence stages when the active manifest defines them.
@@ -305,35 +322,104 @@ def phase_rank(phase: str | None) -> int:
     return -1 if row is None else row.rank
 
 
-def phase_qid(phase: str | None) -> str:
+def _normalise_contract_version(contract_version: str | None) -> str | None:
+    if contract_version is None:
+        return None
+    value = str(contract_version).strip().lower()
+    if not value or value == "legacy":
+        return None
+    value = value.rsplit("/", 1)[-1]
+    if value in {"v1", "v2", "v3", "v4"}:
+        return value
+    raise ValueError(f"unsupported gate contract version: {contract_version!r}")
+
+
+def _resolve_versioned_phase(
+    phase: str | None, contract_version: str | None
+) -> tuple[str, str, str | None]:
+    """Resolve one stored phase into active numbering plus source provenance."""
+
+    if phase is None:
+        return "", "", _normalise_contract_version(contract_version)
+    source_key = str(phase).strip()
+    source_id = source_key.upper()
+    source_version = _normalise_contract_version(contract_version)
+    if source_version is None:
+        if source_id in PHASE_NAME:
+            return source_id, source_id, None
+        return LEGACY_P_TO_Q.get(source_id, source_key), source_id, None
+
+    active_version = ACTIVE_GATE_CONTRACT_VERSION
+    if source_version == active_version:
+        return source_id, source_id, source_version
+
+    # v1/v2 and v3 retain the same numbered storage IDs.  The v4 manifest owns
+    # the only renumbering equivalence table, so pre-v3 records translate via
+    # the v3 side of that explicit table rather than by ordinal guessing.
+    equivalence_source = "v3" if source_version in {"v1", "v2"} else source_version
+    equivalence_target = "v3" if active_version in {"v1", "v2"} else active_version
+    if equivalence_source == equivalence_target:
+        return source_id, source_id, source_version
+    try:
+        active_id = equivalent_gate(source_id, equivalence_source, equivalence_target)
+    except GateManifestError:
+        # Display helpers historically pass unknown utility phases through.  A
+        # version stamp must not turn COMPILE_EA/HARNESS rows into exceptions.
+        active_id = source_id
+    return active_id, source_id, source_version
+
+
+def phase_qid(phase: str | None, contract_version: str | None = None) -> str:
     """Return the canonical Qxx for a given key (Qxx or legacy P-key).
 
     Unknown keys pass through unchanged — phase_qid is a *display* helper,
     not a validator. Callers that need validation should check membership
     in PHASE_ORDER explicitly.
     """
-    if phase is None:
-        return ""
-    key = str(phase)
-    upper = key.upper()
-    if upper in PHASE_NAME:
-        return upper
-    return LEGACY_P_TO_Q.get(upper, key)
+    active_id, _source_id, _source_version = _resolve_versioned_phase(
+        phase, contract_version
+    )
+    return active_id
 
 
-def phase_label(phase: str | None, *, include_name: bool = False) -> str:
+def phase_label(
+    phase: str | None,
+    contract_version: str | None = None,
+    *,
+    include_name: bool = False,
+) -> str:
     """Return the operator-facing label for a phase key.
 
     Always Qxx. Legacy P-keys are mapped via LEGACY_P_TO_Q. Unknown keys
     pass through unchanged (graceful degradation — preferable to a hard
     fail on a typo in a free-text reason string).
     """
-    qid = phase_qid(phase)
+    qid, source_id, source_version = _resolve_versioned_phase(phase, contract_version)
+    label = qid
     if include_name:
         name = PHASE_NAME.get(qid)
         if name:
-            return f"{qid} {name}"
-    return qid
+            label = f"{qid} {name}"
+    if source_version is not None and (
+        source_version != ACTIVE_GATE_CONTRACT_VERSION or source_id != qid
+    ):
+        label += f" ({source_version}:{source_id})"
+    return label
+
+
+def display_phase(
+    phase: str | None,
+    contract_version: str | None,
+    *,
+    include_name: bool = False,
+) -> str:
+    """Render active numbering and retain an explicit historical provenance."""
+
+    return phase_label(
+        phase,
+        contract_version,
+        include_name=include_name,
+    )
 
 
 def next_phase_id(phase: str | None) -> str | None:
@@ -342,14 +428,18 @@ def next_phase_id(phase: str | None) -> str | None:
     return PHASE_NEXT.get(qid)
 
 
-def normalize_phase_id(value: str | None) -> str:
+def normalize_phase_id(
+    value: str | None, contract_version: str | None = None
+) -> str:
     """Normalize any input (Qxx, legacy P-key, lowercase, whitespace) to the
     canonical Qxx storage key. Used by readers ingesting external data.
     """
-    if value is None:
-        return ""
-    key = str(value).strip()
-    upper = key.upper()
-    if upper in PHASE_NAME:
-        return upper
-    return LEGACY_P_TO_Q.get(upper, upper)
+    if contract_version is None:
+        if value is None:
+            return ""
+        upper = str(value).strip().upper()
+        if upper in PHASE_NAME:
+            return upper
+        return LEGACY_P_TO_Q.get(upper, upper)
+    active_id, _source_id, _source_version = _resolve_versioned_phase(value, contract_version)
+    return active_id
