@@ -24,6 +24,10 @@ This is also an identity-adjudication case. The normalized slug `ehlers-ebsw-cyc
 
 No source, card, registry, resolver, setfile, binary, terminal, pipeline, `T_Live`, or AutoTrading state was changed. No compile or pipeline verdict is claimed.
 
+## Router disposition
+
+The required REVIEW transition was attempted with this committed evidence and was refused by the canonical router at `D6_BUILD_IDENTITY_MISSING` (`build_identity_json_missing_review_dispatch_refused`). REVIEW for a `build_ea` task requires a truthful JSON identity binding committed current MQ5, EX5, setfiles, and strict-build PASS. Those artifacts cannot exist before the card and governed identity prerequisites are satisfied. Following the canonical compile-hold precedent, this task is therefore dispositioned `BLOCKED`; no build identity was fabricated.
+
 ## Required handoff
 
 OWNER/Card Governance must add explicit canonical `target_symbols` and `expected_trades_per_year_per_symbol`, then adjudicate the requested 1651 identity against active EA 1671 and the retired alias history. Only after the governed allocator creates an exact active identity, one magic tuple per approved symbol, and matching resolver tuples may this build be routed again.

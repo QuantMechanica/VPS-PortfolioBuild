@@ -24,6 +24,10 @@ The normalized slug `demark-td-sequential-tdst-overlay-h4` has retired registry 
 
 No source, card, registry, resolver, setfile, binary, terminal, pipeline, `T_Live`, or AutoTrading state was changed. No compile or pipeline verdict is claimed.
 
+## Router disposition
+
+The canonical REVIEW gate for every `build_ea` task requires a truthful JSON identity binding committed current MQ5, EX5, setfiles, and strict-build PASS. Those artifacts cannot exist before the card and governed identity prerequisites are satisfied; a prose precondition artifact necessarily returns `D6_BUILD_IDENTITY_MISSING`. Following the canonical compile-hold precedent, this task is therefore dispositioned `BLOCKED`; no build identity was fabricated.
+
 ## Required handoff
 
 OWNER/Card Governance must add explicit canonical `target_symbols` and `expected_trades_per_year_per_symbol`, then adjudicate the duplicated/retired Demark identity history. Only after the governed allocator creates an exact active identity for the adjudicated card, one magic tuple per approved symbol, and matching resolver tuples may this build be routed again.
