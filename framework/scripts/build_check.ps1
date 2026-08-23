@@ -15,6 +15,9 @@ param(
     [switch]$SkipPerfStaticCheck,
     [switch]$SkipMaeHookCheck,
     [switch]$NormalizeExponentFloats,
+    [string]$PresetRepairTemplatePath,
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$PresetRepairBuildHash,
     [string]$CompileWorkItemId,
     [ValidatePattern('^T(?:10|[1-9])$')]
     [string]$ClaimedTerminal
@@ -33,6 +36,7 @@ $script:QmEventNames = @{}
 $script:Q08EventNames = @{}
 $script:QmRequiredFields = @()
 $script:Q08RequiredFields = @()
+$script:PresetRepairGeneratedPath = $null
 $script:QmSchemaVersion = 0
 $script:Q08SchemaVersion = 0
 
@@ -429,7 +433,9 @@ function Invoke-SetValidation {
     $setFiles = @()
     $easRoot = Join-Path $ResolvedRepoRoot "framework\EAs"
     if (Test-Path -LiteralPath $easRoot) {
-        if ($EALabel) {
+        if ($script:PresetRepairGeneratedPath) {
+            $setFiles = @(Get-Item -LiteralPath $script:PresetRepairGeneratedPath -ErrorAction SilentlyContinue)
+        } elseif ($EALabel) {
             $targetRoot = Join-Path $easRoot $EALabel
             if (Test-Path -LiteralPath $targetRoot) {
                 $setFiles = @(Get-ChildItem -LiteralPath $targetRoot -Recurse -File -Filter "*.set" | Sort-Object FullName)
@@ -478,7 +484,13 @@ function Invoke-SetValidation {
             }
         }
 
-        Update-SetFileBuildHash -SetFilePath $setFile.FullName
+        if ($script:PresetRepairGeneratedPath -and $setFile.FullName -eq $script:PresetRepairGeneratedPath) {
+            if ($headerMap['build_hash'] -notmatch '^[0-9a-f]{64}$') {
+                Add-Failure "BUILD_CHECK_PRESET_REPAIR_BUILD_HASH_INVALID: $($setFile.FullName)."
+            }
+        } else {
+            Update-SetFileBuildHash -SetFilePath $setFile.FullName
+        }
     }
 }
 
@@ -1272,8 +1284,78 @@ function Invoke-ExponentFloatNormalization {
     }
 }
 
+function Invoke-PresetProvenanceRepair {
+    param(
+        [Parameter(Mandatory = $true)][string]$ResolvedRepoRoot
+    )
+
+    if (-not $PresetRepairTemplatePath -and -not $PresetRepairBuildHash) {
+        return
+    }
+    if (-not $EALabel -or -not $PresetRepairTemplatePath -or -not $PresetRepairBuildHash) {
+        Add-Failure 'BUILD_CHECK_PRESET_REPAIR_BINDING_INCOMPLETE: -EALabel, -PresetRepairTemplatePath, and -PresetRepairBuildHash are required together.'
+        return
+    }
+    if (-not (Test-Path -LiteralPath $PresetRepairTemplatePath -PathType Leaf)) {
+        Add-Failure "BUILD_CHECK_PRESET_REPAIR_TEMPLATE_MISSING: $PresetRepairTemplatePath."
+        return
+    }
+
+    $template = Get-Content -LiteralPath $PresetRepairTemplatePath
+    $headers = @{}
+    $assignments = @{}
+    foreach ($line in $template) {
+        if ($line -match '^\s*;\s*(?<key>[A-Za-z0-9_]+)\s*:\s*(?<value>.*)$') {
+            $headers[$matches['key'].ToLowerInvariant()] = $matches['value'].Trim()
+        } elseif ($line -match '^(?<key>[A-Za-z_][A-Za-z0-9_]*)=(?<value>.*)$') {
+            $assignments[$matches['key']] = $matches['value']
+        }
+    }
+    foreach ($required in @('symbol', 'timeframe', 'ea_id', 'ea_slug')) {
+        if (-not $headers.ContainsKey($required)) {
+            Add-Failure "BUILD_CHECK_PRESET_REPAIR_HEADER_MISSING: $required."
+            return
+        }
+    }
+    $templateLabel = "QM5_$($headers['ea_id'])_$($headers['ea_slug'])"
+    if ($templateLabel -ne $EALabel) {
+        Add-Failure "BUILD_CHECK_PRESET_REPAIR_LABEL_MISMATCH: template=$templateLabel scope=$EALabel."
+        return
+    }
+
+    $genPath = Join-Path $ResolvedRepoRoot 'framework\scripts\gen_setfile.ps1'
+    $oldBinding = ${env:QM_BUILD_CHECK_PRESET_REPAIR}
+    try {
+        ${env:QM_BUILD_CHECK_PRESET_REPAIR} = $EALabel
+        & $genPath -EaSlug $EALabel -Symbol $headers['symbol'] -TF $headers['timeframe'] `
+            -Env live -RiskFixed 0 -RiskPercent ([double]$assignments['RISK_PERCENT']) `
+            -PortfolioWeight ([double]$assignments['PORTFOLIO_WEIGHT']) `
+            -ProvenanceTemplatePath $PresetRepairTemplatePath -BuildHash $PresetRepairBuildHash
+    }
+    catch {
+        Add-Failure "BUILD_CHECK_PRESET_REPAIR_GENERATION_FAILED: $($_.Exception.Message)"
+        return
+    }
+    finally {
+        ${env:QM_BUILD_CHECK_PRESET_REPAIR} = $oldBinding
+    }
+
+    $script:PresetRepairGeneratedPath = Join-Path $ResolvedRepoRoot "framework\EAs\$EALabel\sets\$($EALabel)_$($headers['symbol'])_$($headers['timeframe'])_live.set"
+    if (-not (Test-Path -LiteralPath $script:PresetRepairGeneratedPath -PathType Leaf)) {
+        Add-Failure "BUILD_CHECK_PRESET_REPAIR_OUTPUT_MISSING: $script:PresetRepairGeneratedPath."
+        $script:PresetRepairGeneratedPath = $null
+        return
+    }
+    Write-Output "build_check.preset_repair=$script:PresetRepairGeneratedPath"
+}
+
 $resolvedRepoRoot = Resolve-RepoRoot
-Assert-CompilePipelineGuard -ResolvedRepoRoot $resolvedRepoRoot
+if (-not ($SkipCompile.IsPresent -and $PresetRepairTemplatePath -and $PresetRepairBuildHash -and $EALabel)) {
+    Assert-CompilePipelineGuard -ResolvedRepoRoot $resolvedRepoRoot
+} else {
+    Write-Output 'build_check.compile_guard=SKIPPED_PRESET_REPAIR_NO_COMPILE'
+}
+Invoke-PresetProvenanceRepair -ResolvedRepoRoot $resolvedRepoRoot
 if (-not $CompileScriptPath) {
     $CompileScriptPath = Join-Path $resolvedRepoRoot "framework\scripts\compile_one.ps1"
 }
@@ -1303,23 +1385,25 @@ if (-not $SkipMagicCheck.IsPresent) {
 if (-not $SkipSetValidation.IsPresent) {
     Invoke-SetValidation -ResolvedRepoRoot $resolvedRepoRoot
 }
-if (-not $SkipLoggerSchema.IsPresent) {
+if (-not $script:PresetRepairGeneratedPath -and -not $SkipLoggerSchema.IsPresent) {
     Invoke-LoggerSchemaValidation -ResolvedRepoRoot $resolvedRepoRoot -SamplePath $LoggerSamplePath
 }
 if (-not $SkipForbiddenScan.IsPresent) {
     Invoke-ForbiddenScan -ResolvedRepoRoot $resolvedRepoRoot
 }
-if (-not $SkipInputGroupCheck.IsPresent) {
+if (-not $script:PresetRepairGeneratedPath -and -not $SkipInputGroupCheck.IsPresent) {
     Invoke-InputGroupCheck -ResolvedRepoRoot $resolvedRepoRoot
     Invoke-RiskSizerStaticCheck -ResolvedRepoRoot $resolvedRepoRoot
 }
-if (-not $SkipMaeHookCheck.IsPresent) {
+if (-not $script:PresetRepairGeneratedPath -and -not $SkipMaeHookCheck.IsPresent) {
     Invoke-MaeHookStaticCheck -ResolvedRepoRoot $resolvedRepoRoot
 }
-if (-not $SkipPerfStaticCheck.IsPresent) {
+if (-not $script:PresetRepairGeneratedPath -and -not $SkipPerfStaticCheck.IsPresent) {
     Invoke-PerfStaticCheck -ResolvedRepoRoot $resolvedRepoRoot
 }
-Invoke-BuildGateHardeningCheck -ResolvedRepoRoot $resolvedRepoRoot
+if (-not $script:PresetRepairGeneratedPath) {
+    Invoke-BuildGateHardeningCheck -ResolvedRepoRoot $resolvedRepoRoot
+}
 
 Write-GateEvidence -ResolvedReportRoot $ReportRoot
 

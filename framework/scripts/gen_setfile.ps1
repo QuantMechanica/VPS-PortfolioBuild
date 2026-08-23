@@ -11,7 +11,10 @@ param(
     [string]$Env = 'backtest',
     [double]$RiskFixed = 1000,
     [double]$RiskPercent = 0,
-    [double]$PortfolioWeight = 1.0
+    [double]$PortfolioWeight = 1.0,
+    [string]$ProvenanceTemplatePath,
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$BuildHash
 )
 
 Set-StrictMode -Version Latest
@@ -431,12 +434,140 @@ function Normalize-CardDefaultsForSetfile {
     return $normalized
 }
 
+function Invoke-ProvenanceTemplateRepair {
+    param(
+        [Parameter(Mandatory = $true)][string]$TemplatePath,
+        [Parameter(Mandatory = $true)][string]$TargetPath,
+        [Parameter(Mandatory = $true)][string]$ExpectedEaSlug,
+        [Parameter(Mandatory = $true)][string]$ExpectedSymbol,
+        [Parameter(Mandatory = $true)][string]$ExpectedTimeframe,
+        [Parameter(Mandatory = $true)][string]$ExpectedBuildHash
+    )
+
+    if (${env:QM_BUILD_CHECK_PRESET_REPAIR} -ne $ExpectedEaSlug) {
+        throw 'PROVENANCE_TEMPLATE_REPAIR_REQUIRES_SCOPED_BUILD_CHECK'
+    }
+    if (-not (Test-Path -LiteralPath $TemplatePath -PathType Leaf)) {
+        throw "PROVENANCE_TEMPLATE_MISSING: $TemplatePath"
+    }
+
+    $raw = [System.IO.File]::ReadAllBytes($TemplatePath)
+    $hasUtf8Bom = $raw.Length -ge 3 -and $raw[0] -eq 0xEF -and $raw[1] -eq 0xBB -and $raw[2] -eq 0xBF
+    $offset = if ($hasUtf8Bom) { 3 } else { 0 }
+    $utf8Strict = [System.Text.UTF8Encoding]::new($false, $true)
+    try {
+        $text = $utf8Strict.GetString($raw, $offset, $raw.Length - $offset)
+    }
+    catch {
+        throw "PROVENANCE_TEMPLATE_NOT_UTF8: $TemplatePath"
+    }
+
+    $header = @{}
+    foreach ($match in [regex]::Matches($text, '(?m)^\s*;\s*(?<key>[A-Za-z0-9_]+)\s*:\s*(?<value>[^\r\n]*)$')) {
+        $key = $match.Groups['key'].Value.ToLowerInvariant()
+        if ($header.ContainsKey($key)) {
+            throw "PROVENANCE_TEMPLATE_DUPLICATE_HEADER: $key"
+        }
+        $header[$key] = $match.Groups['value'].Value.Trim()
+    }
+    foreach ($required in @('ea_id', 'ea_slug', 'symbol', 'timeframe', 'environment', 'risk_mode', 'build_hash')) {
+        if (-not $header.ContainsKey($required)) {
+            throw "PROVENANCE_TEMPLATE_HEADER_MISSING: $required"
+        }
+    }
+    $expectedLabel = "QM5_$($header['ea_id'])_$($header['ea_slug'])"
+    if ($expectedLabel -ne $ExpectedEaSlug -or $header['symbol'] -ne $ExpectedSymbol -or $header['timeframe'] -ne $ExpectedTimeframe) {
+        throw "PROVENANCE_TEMPLATE_IDENTITY_MISMATCH: template=$expectedLabel/$($header['symbol'])/$($header['timeframe']) requested=$ExpectedEaSlug/$ExpectedSymbol/$ExpectedTimeframe"
+    }
+
+    $assignmentsBefore = @([regex]::Matches($text, '(?m)^(?!\s*;)(?<line>[A-Za-z_][A-Za-z0-9_]*=[^\r\n]*)$') | ForEach-Object { $_.Groups['line'].Value })
+    $assignmentKeys = @{}
+    foreach ($line in $assignmentsBefore) {
+        $key = $line.Substring(0, $line.IndexOf('='))
+        if ($assignmentKeys.ContainsKey($key)) {
+            throw "PROVENANCE_TEMPLATE_DUPLICATE_ASSIGNMENT: $key"
+        }
+        $assignmentKeys[$key] = $line.Substring($line.IndexOf('=') + 1)
+    }
+    foreach ($required in @('qm_magic_slot_offset', 'RISK_FIXED', 'RISK_PERCENT', 'PORTFOLIO_WEIGHT')) {
+        if (-not $assignmentKeys.ContainsKey($required)) {
+            throw "PROVENANCE_TEMPLATE_ASSIGNMENT_MISSING: $required"
+        }
+    }
+    if ($assignmentKeys['RISK_FIXED'] -ne '0') {
+        throw "PROVENANCE_TEMPLATE_RISK_FIXED_NOT_ZERO: $($assignmentKeys['RISK_FIXED'])"
+    }
+    if ([decimal]::Parse($assignmentKeys['RISK_PERCENT'], [Globalization.CultureInfo]::InvariantCulture) -le 0) {
+        throw "PROVENANCE_TEMPLATE_RISK_PERCENT_NOT_POSITIVE: $($assignmentKeys['RISK_PERCENT'])"
+    }
+
+    $markerMatches = @([regex]::Matches($text, '(?im)^[^\r\n]*(?:DRAFT_ONLY|DO_NOT_COPY_TO_T_LIVE)[^\r\n]*(?:\r\n|\n|$)'))
+    foreach ($marker in $markerMatches) {
+        if ($marker.Value.TrimStart() -notmatch '^;') {
+            throw 'PROVENANCE_TEMPLATE_MARKER_OUTSIDE_COMMENT'
+        }
+    }
+    $rewritten = [regex]::Replace($text, '(?im)^[^\r\n]*(?:DRAFT_ONLY|DO_NOT_COPY_TO_T_LIVE)[^\r\n]*(?:\r\n|\n|$)', '')
+
+    $replacementHeaders = [ordered]@{
+        set_version = 's20260823-pointer-provenance-repair'
+        environment = 'live'
+        risk_mode = 'PERCENT'
+        build_hash = $ExpectedBuildHash
+        author = 'Codex'
+        date = '2026-08-23'
+    }
+    foreach ($key in $replacementHeaders.Keys) {
+        $pattern = "(?m)^(?<prefix>\s*;\s*$key\s*:\s*)[^\r\n]*$"
+        $matches = @([regex]::Matches($rewritten, $pattern))
+        if ($matches.Count -ne 1) {
+            throw "PROVENANCE_TEMPLATE_HEADER_COUNT: $key=$($matches.Count)"
+        }
+        $value = $replacementHeaders[$key]
+        $rewritten = [regex]::Replace($rewritten, $pattern, "`${prefix}$value")
+    }
+
+    $assignmentsAfter = @([regex]::Matches($rewritten, '(?m)^(?!\s*;)(?<line>[A-Za-z_][A-Za-z0-9_]*=[^\r\n]*)$') | ForEach-Object { $_.Groups['line'].Value })
+    if (($assignmentsBefore -join "`n") -cne ($assignmentsAfter -join "`n")) {
+        throw 'PROVENANCE_TEMPLATE_FUNCTIONAL_ASSIGNMENTS_CHANGED'
+    }
+    if ($rewritten -match '(?i)DRAFT_ONLY|DO_NOT_COPY_TO_T_LIVE') {
+        throw 'PROVENANCE_TEMPLATE_FORBIDDEN_MARKER_REMAINS'
+    }
+
+    [System.IO.Directory]::CreateDirectory((Split-Path -Parent $TargetPath)) | Out-Null
+    [System.IO.File]::WriteAllText($TargetPath, $rewritten, [System.Text.UTF8Encoding]::new($hasUtf8Bom))
+}
+
 if ($EaSlug -notmatch '^QM5_[A-Za-z0-9_-]+$') {
     throw "EaSlug must start with QM5_ and contain only letters, digits, underscores, and hyphens. Got: $EaSlug"
 }
 
 $eaFolder = Join-Path $easRoot $EaSlug
 New-Item -ItemType Directory -Path $eaFolder -Force | Out-Null
+
+if ($ProvenanceTemplatePath) {
+    if ($Env -ne 'live' -or -not $BuildHash) {
+        throw 'PROVENANCE_TEMPLATE_REPAIR_REQUIRES_LIVE_AND_BUILD_HASH'
+    }
+    $setsFolder = Join-Path $eaFolder 'sets'
+    $targetPath = Join-Path $setsFolder "${EaSlug}_${Symbol}_${TF}_live.set"
+    Invoke-ProvenanceTemplateRepair -TemplatePath $ProvenanceTemplatePath -TargetPath $targetPath `
+        -ExpectedEaSlug $EaSlug -ExpectedSymbol $Symbol -ExpectedTimeframe $TF -ExpectedBuildHash $BuildHash
+    $sha = (Get-FileHash -Algorithm SHA256 -LiteralPath $targetPath).Hash.ToLowerInvariant()
+    [pscustomobject]@{
+        status = 'ok'
+        mode = 'provenance_template_repair'
+        ea = $EaSlug
+        env = $Env
+        symbol = $Symbol
+        tf = $TF
+        setfile_path = $targetPath
+        setfile_sha256 = $sha
+    } | ConvertTo-Json -Depth 4
+    return
+}
+
 $eaInputDefaults = Get-EAInputDefaults -EAFolder $eaFolder
 
 $setsFolder = Join-Path $eaFolder 'sets'

@@ -3,20 +3,20 @@
 ; ea_id:        10440
 ; ea_slug:      mql5-ohlc-mtf
 ; ea_version:   v5.0
-; set_version:  s20260628-d2c-r075
+; set_version:  s20260823-pointer-provenance-repair
 ; symbol:       NDX.DWX
 ; timeframe:    H1
 ; environment:  live
 ; magic_slot:   3
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1.0
-; build_hash:   b486402ad12b3c8c0354b7ec5712dcfe9f443ea56862e1401911104a6542fd86
-; author:       Claude
-; date:         2026-06-28
+; build_hash:   b71d302997ecdb661f1627e12b9e5e766e9679c780461b82fa018db7f2078a6a
+; author:       Codex
+; date:         2026-08-23
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=0
-RISK_PERCENT=0.7500
+RISK_PERCENT=0.0577
 PORTFOLIO_WEIGHT=1.0
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
