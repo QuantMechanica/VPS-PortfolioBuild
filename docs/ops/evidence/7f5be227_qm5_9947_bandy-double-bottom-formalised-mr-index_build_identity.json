@@ -1,0 +1,26 @@
+{
+  "task_id": "7f5be227-52c7-4a57-a68a-a1ca31ffbd01",
+  "ea_id": "QM5_9947",
+  "ea_label": "QM5_9947_bandy-double-bottom-formalised-mr-index",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/QM5_9947_bandy-double-bottom-formalised-mr-index.mq5",
+  "mq5_sha256": "ffad65d9849ba80a6f148a7c30081743d9dccac0919eff0b64e9391104a6bc87",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_AUDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_EURUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_GBPUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_GDAXI.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_NDX.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_NZDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_SP500.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_UK100.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_USDCAD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_USDCHF.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_USDJPY.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_WS30.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/sets\\QM5_9947_bandy-double-bottom-formalised-mr-index_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_9947_bandy-double-bottom-formalised-mr-index/SPEC.md",
+  "guardrails_verdict": "PASS",
+  "symbol_scope_verdict": "SINGLE_SYMBOL_OK"
+}

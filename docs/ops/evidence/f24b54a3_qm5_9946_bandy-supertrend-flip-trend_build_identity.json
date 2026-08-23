@@ -1,0 +1,26 @@
+{
+  "task_id": "f24b54a3-ca2e-4cfd-8ae8-3b23712ff20d",
+  "ea_id": "QM5_9946",
+  "ea_label": "QM5_9946_bandy-supertrend-flip-trend",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/QM5_9946_bandy-supertrend-flip-trend.mq5",
+  "mq5_sha256": "b63de225332711c0c605b863be51ae14222191f29fbc9549f1fd1f55596b798e",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_AUDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_EURUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_GBPUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_GDAXI.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_NDX.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_NZDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_SP500.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_UK100.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_USDCAD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_USDCHF.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_USDJPY.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_WS30.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/sets\\QM5_9946_bandy-supertrend-flip-trend_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_9946_bandy-supertrend-flip-trend/SPEC.md",
+  "guardrails_verdict": "PASS",
+  "symbol_scope_verdict": "SINGLE_SYMBOL_OK"
+}
