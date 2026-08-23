@@ -102,8 +102,13 @@ def test_spec_is_hash_bound_blocked_and_xau_not_xng() -> None:
     assert any("BINDING_MISSING: spec.anchor.deployed_preset_read_only" in error for error in legacy["errors"])
 
     result = subject.validate_spec(AMENDED_SPEC)
-    assert result["status"] == "BLOCKED_OWNER_AND_NEW_EVIDENCE"
-    assert result["error_count"] == 0
+    # This historical amendment is not silently re-sealed when its bound card,
+    # source, presets, or binaries change. The validator must expose the drift.
+    assert result["status"] == "FAIL"
+    assert result["error_count"] == 12
+    assert any("spec.anchor.approved_card_v1" in error for error in result["errors"])
+    assert any("spec.anchor.repo_source" in error for error in result["errors"])
+    assert any("spec.anchor.deployed_ex5_read_only" in error for error in result["errors"])
     assert result["amendment_id"] == "DXZ-12567-BINDINGS-20260730-A1"
     assert set(result["amended_binding_ids"]) == {
         "repo_ex5",

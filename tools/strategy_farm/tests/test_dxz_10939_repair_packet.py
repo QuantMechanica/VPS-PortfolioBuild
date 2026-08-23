@@ -917,7 +917,14 @@ def test_real_spec_hash_bindings_pass() -> None:
     assert any("BINDING_MISSING: spec.baseline.deployed_preset_read_only" in error for error in legacy["errors"])
 
     result = packet.validate_spec(AMENDED_REAL_SPEC)
-    assert result["status"] == "BLOCKED_OWNER_TRUST_UNREGISTERED", result
+    # The amended packet is an immutable historical seal. Later approved-card,
+    # source, preset and binary changes must fail closed until an OWNER-governed
+    # amendment re-seals those exact artifacts.
+    assert result["status"] == "FAIL", result
+    assert result["error_count"] == 14
+    assert any("spec.baseline.approved_card_v1" in error for error in result["errors"])
+    assert any("spec.baseline.repo_source" in error for error in result["errors"])
+    assert any("spec.baseline.deployed_ex5_read_only" in error for error in result["errors"])
     assert result["verified_bindings"] == 16
     assert result["amendment_id"] == "DXZ-10939-BINDINGS-20260730-A1"
     assert set(result["amended_binding_ids"]) == {

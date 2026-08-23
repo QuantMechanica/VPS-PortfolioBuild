@@ -9,7 +9,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 EA_DIR = REPO / "framework" / "EAs" / "QM5_12954_pring-coppock-h4-variant"
 SOURCE = EA_DIR / "QM5_12954_pring-coppock-h4-variant.mq5"
-CARD_COPY = EA_DIR / "docs" / "strategy_card.md"
+CARD_COPY = EA_DIR / "docs" / "approved_card_frontmatter.md"
 SETS = EA_DIR / "sets"
 MAGIC_REGISTRY = REPO / "framework" / "registry" / "magic_numbers.csv"
 

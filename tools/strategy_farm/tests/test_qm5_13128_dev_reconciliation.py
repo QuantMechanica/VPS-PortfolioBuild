@@ -7,6 +7,13 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 EA_DIR = REPO / "framework" / "EAs" / "QM5_13128_pre-fomc-drift-ndx"
 SOURCE = EA_DIR / "QM5_13128_pre-fomc-drift-ndx.mq5"
+CURRENT_BUILD_SOURCE = (
+    REPO
+    / "framework"
+    / "EAs"
+    / "QM5_41129_pre-fomc-drift-ndx-v2"
+    / "QM5_41129_pre-fomc-drift-ndx-v2.mq5"
+)
 SETFILE = (
     EA_DIR
     / "sets"
@@ -57,7 +64,10 @@ def test_source_has_2026_meetings_and_fail_closed_horizon() -> None:
 
 
 def test_source_exposes_minimum_replay_diagnostics_and_current_build_hooks() -> None:
-    source = SOURCE.read_text(encoding="utf-8-sig")
+    # OWNER's 2026-08-23 identity decision restored QM5_13128 to its compiled
+    # vintage and forked the hardened candidate to QM5_41129. Validate the
+    # current-build observability contract on that governed successor.
+    source = CURRENT_BUILD_SOURCE.read_text(encoding="utf-8-sig")
     on_tick = re.search(r"void OnTick\(\)\s*\{(.*?)\n\s*\}", source, re.S)
     assert on_tick is not None
     body = on_tick.group(1)
