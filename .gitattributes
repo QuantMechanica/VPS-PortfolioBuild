@@ -74,3 +74,7 @@ docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimit
 # provenance.  Pin LF so that digest - and the pinned v4 test hash - is
 # identical on autocrlf (VPS) and LF (CI) checkouts (review fix P2 #4).
 tools/strategy_farm/config/gate_manifest.v4.draft.json text eol=lf
+# The ACTIVE v4 manifest (written at activation) is hashed on-disk into the
+# gate_contract_activations ledger; pin LF so the digest is stable across
+# autocrlf (VPS) and LF (CI) checkouts, exactly like the draft above.
+tools/strategy_farm/config/gate_manifest.v4.json text eol=lf

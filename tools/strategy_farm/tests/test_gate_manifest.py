@@ -317,11 +317,20 @@ def test_v4_activation_guard_and_future_final_path_fail_closed(tmp_path: Path) -
         "default_manifest_switch": True,
         "activated_by": "OWNER",
         "activated_at": "2026-08-23T12:00:00Z",
-        "review_refs": ["owner-ratification", "migration-review"],
+        "review_refs": list(gate_manifest.V4_ACTIVATION_REVIEW_REFS),
     }
     final_path = tmp_path / gate_manifest.V4_MANIFEST.name
     final_path.write_text(json.dumps(active), encoding="utf-8")
     assert gate_manifest.load_gate_manifest(final_path).activation_state == "ACTIVE"
+
+    # An ACTIVE record missing one of the two required v4 review refs fails closed.
+    incomplete = json.loads(json.dumps(active))
+    incomplete["extension_topology"]["activation_guard"]["review_refs"] = [
+        gate_manifest.V4_ACTIVATION_REVIEW_REFS[0],
+    ]
+    final_path.write_text(json.dumps(incomplete), encoding="utf-8")
+    with pytest.raises(gate_manifest.GateManifestError, match="both v4 activation"):
+        gate_manifest.load_gate_manifest(final_path)
 
     missing_refs = json.loads(json.dumps(active))
     missing_refs["extension_topology"]["activation_guard"]["review_refs"] = []
