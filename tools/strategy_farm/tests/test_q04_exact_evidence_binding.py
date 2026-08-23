@@ -41,7 +41,15 @@ def _insert_q02_item(
             (
                 item_id,
                 attempt_count,
-                json.dumps({"report_root": str(report_root)}, sort_keys=True),
+                json.dumps({
+                    "report_root": str(report_root),
+                    "artifact_identity": {
+                        "ex5_sha256": "1" * 64,
+                        "setfile_sha256": "2" * 64,
+                        "data_window_start": "2017.01.01",
+                        "data_window_end": "2022.12.31",
+                    },
+                }, sort_keys=True),
                 now,
                 now,
             ),
@@ -152,10 +160,13 @@ def test_q02_completed_strategy_fail_is_not_retried(tmp_path: Path) -> None:
     assert result["verdict"] == "FAIL"
     with farmctl.connect(root) as conn:
         row = conn.execute(
-            "SELECT status, verdict, attempt_count FROM work_items "
+            "SELECT status, verdict, attempt_count, ex5_sha256, setfile_sha256, "
+            "data_window_start, data_window_end FROM work_items "
             "WHERE id='wi-strategy'"
         ).fetchone()
-    assert tuple(row) == ("done", "FAIL", 0)
+    assert tuple(row) == (
+        "done", "FAIL", 0, "1" * 64, "2" * 64, "2017.01.01", "2022.12.31",
+    )
 
 
 def test_q02_cold_summary_retry_cap_exhausts_to_infra(tmp_path: Path) -> None:

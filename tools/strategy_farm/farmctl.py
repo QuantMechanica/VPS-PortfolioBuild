@@ -24,6 +24,15 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from artifact_identity import (
+        IDENTITY_COLUMNS, extract_identity, identity_update_clause, prepare_completion,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.artifact_identity import (
+        IDENTITY_COLUMNS, extract_identity, identity_update_clause, prepare_completion,
+    )
+
+try:
     from cache_audit import has_ea_history_window, has_history_window
 except ModuleNotFoundError:
     from tools.strategy_farm.cache_audit import has_ea_history_window, has_history_window
@@ -1705,6 +1714,61 @@ def ensure_work_item_gate_contract_schema(conn: sqlite3.Connection) -> dict[str,
     return {"column_added": column_added, "rows_backfilled": rows_backfilled}
 
 
+def ensure_work_item_artifact_identity_schema(conn: sqlite3.Connection) -> dict[str, Any]:
+    """Add/index SH-2 columns and copy only identities already present in payloads.
+
+    This function is intentionally not called by ``init_db`` for an existing farm DB.
+    The orchestrator invokes it through ``schema_hardening.py migrate-sh2 --apply``
+    during the authorized Factory_OFF window.  Fresh databases include the columns in
+    their base DDL below.
+    """
+    columns = {
+        str(row[1]) for row in conn.execute("PRAGMA table_info(work_items)").fetchall()
+    }
+    if not columns:
+        raise RuntimeError("work_items table is missing")
+    added: list[str] = []
+    for column in IDENTITY_COLUMNS:
+        if column not in columns:
+            conn.execute(f"ALTER TABLE work_items ADD COLUMN {column} TEXT")
+            columns.add(column)
+            added.append(column)
+        conn.execute(
+            f"CREATE INDEX IF NOT EXISTS idx_work_items_{column} ON work_items({column})"
+        )
+
+    rows_backfilled = 0
+    rows = conn.execute(
+        "SELECT id,payload_json," + ",".join(IDENTITY_COLUMNS) + " FROM work_items"
+    ).fetchall()
+    for row in rows:
+        try:
+            payload = json.loads(row[1] or "{}")
+        except (TypeError, ValueError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        extracted = extract_identity(payload)
+        updates: list[str] = []
+        values: list[Any] = []
+        for offset, column in enumerate(IDENTITY_COLUMNS, start=2):
+            if row[offset] is None and extracted[column] is not None:
+                updates.append(f"{column}=?")
+                values.append(extracted[column])
+        if not updates:
+            continue
+        conn.execute(
+            f"UPDATE work_items SET {','.join(updates)} WHERE id=?",
+            (*values, row[0]),
+        )
+        rows_backfilled += 1
+    return {
+        "columns_added": added,
+        "rows_scanned": len(rows),
+        "rows_backfilled": rows_backfilled,
+    }
+
+
 def init_db(root: Path) -> None:
     init_dirs(root)
     with connect(root) as conn:
@@ -1792,6 +1856,16 @@ def init_db(root: Path) -> None:
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
                 gate_contract_version TEXT,     -- manifest schema stamp: v2/v3/v4/legacy
+                ex5_sha256 TEXT,
+                setfile_sha256 TEXT,
+                mq5_sha256 TEXT,
+                include_closure_sha256 TEXT,
+                build_id TEXT,
+                data_window_start TEXT,
+                data_window_end TEXT,
+                news_calendar_sha256 TEXT,
+                verdict_taxonomy TEXT,
+                sh3_enforced INTEGER NOT NULL DEFAULT 0 CHECK (sh3_enforced IN (0,1)),
                 FOREIGN KEY(parent_task_id) REFERENCES tasks(id)
             );
 
@@ -1808,6 +1882,14 @@ def init_db(root: Path) -> None:
             -- recovery windows (freeze_stack evidence 20260814T010101Z).
             CREATE INDEX IF NOT EXISTS idx_work_items_verdict_ea
                 ON work_items(verdict, ea_id);
+            CREATE INDEX IF NOT EXISTS idx_work_items_ex5_sha256 ON work_items(ex5_sha256);
+            CREATE INDEX IF NOT EXISTS idx_work_items_setfile_sha256 ON work_items(setfile_sha256);
+            CREATE INDEX IF NOT EXISTS idx_work_items_mq5_sha256 ON work_items(mq5_sha256);
+            CREATE INDEX IF NOT EXISTS idx_work_items_include_closure_sha256 ON work_items(include_closure_sha256);
+            CREATE INDEX IF NOT EXISTS idx_work_items_build_id ON work_items(build_id);
+            CREATE INDEX IF NOT EXISTS idx_work_items_data_window_start ON work_items(data_window_start);
+            CREATE INDEX IF NOT EXISTS idx_work_items_data_window_end ON work_items(data_window_end);
+            CREATE INDEX IF NOT EXISTS idx_work_items_news_calendar_sha256 ON work_items(news_calendar_sha256);
 
             CREATE TABLE IF NOT EXISTS poison_pill_quarantine (
                 ea_id TEXT NOT NULL,
@@ -10971,14 +11053,28 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                         "verdict_reason": f"P2_PRESCREEN_{reason}",
                     })
                 with connect(root) as conn2:
-                    conn2.execute(
-                        "UPDATE work_items SET status='done', verdict=?, evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
-                        (verdict, str(summary_path),
-                         json.dumps(updated_payload, sort_keys=True),
-                         started_iso, item["id"]),
+                    taxonomy = str(updated_payload.get("verdict_taxonomy") or "unknown")
+                    verdict, taxonomy, identity, missing_identity = prepare_completion(
+                        phase=str(item["phase"]), kind=str(item["kind"]),
+                        payload=updated_payload, summary=summary, verdict=verdict,
+                        taxonomy=taxonomy,
                     )
-                    promoted = _promote_zero_trade_q02_cohort_to_draft_defect(
-                        conn2, item
+                    updated_payload["verdict_taxonomy"] = taxonomy
+                    identity_sql, identity_values = identity_update_clause(
+                        conn2, identity, taxonomy
+                    )
+                    identity_sql = (", " + identity_sql) if identity_sql else ""
+                    final_status = "failed" if missing_identity else "done"
+                    conn2.execute(
+                        f"UPDATE work_items SET status=?, verdict=?, evidence_path=?, "
+                        f"payload_json=?, updated_at=?{identity_sql} WHERE id=?",
+                        (final_status, verdict, str(summary_path),
+                         json.dumps(updated_payload, sort_keys=True),
+                         started_iso, *identity_values, item["id"]),
+                    )
+                    promoted = (
+                        _promote_zero_trade_q02_cohort_to_draft_defect(conn2, item)
+                        if not missing_identity else []
                     )
                     conn2.commit()
                 if item["id"] in promoted:
@@ -11011,13 +11107,26 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 updated_payload["evidence_provenance"] = "phase_runner"
                 updated_payload["verdict_taxonomy"] = "infra" if verdict == "INFRA_FAIL" else "strategy"
                 with connect(root) as conn2:
+                    taxonomy = str(updated_payload["verdict_taxonomy"])
+                    verdict, taxonomy, identity, missing_identity = prepare_completion(
+                        phase=str(item["phase"]), kind=str(item["kind"]),
+                        payload=updated_payload, summary=summary, verdict=verdict,
+                        taxonomy=taxonomy,
+                    )
+                    updated_payload["verdict_taxonomy"] = taxonomy
+                    identity_sql, identity_values = identity_update_clause(
+                        conn2, identity, taxonomy
+                    )
+                    identity_sql = (", " + identity_sql) if identity_sql else ""
                     conn2.execute(
-                        "UPDATE work_items SET status='done', verdict=?, evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
+                        f"UPDATE work_items SET status=?, verdict=?, evidence_path=?, "
+                        f"payload_json=?, updated_at=?{identity_sql} WHERE id=?",
                         (
-                            verdict,
+                            "failed" if missing_identity else "done", verdict,
                             str(artifact_path),
                             json.dumps(updated_payload, sort_keys=True),
                             started_iso,
+                            *identity_values,
                             item["id"],
                         ),
                     )

@@ -370,6 +370,12 @@ class HistoryLockStormTransientRetryTests(unittest.TestCase):
                     "pid": 123456,
                     "claimed_at_iso": claim_iso,
                     "started_at_iso": claim_iso,
+                    "artifact_identity": {
+                        "ex5_sha256": "1" * 64,
+                        "setfile_sha256": "2" * 64,
+                        "data_window_start": "2017.01.01",
+                        "data_window_end": "2022.12.31",
+                    },
                 },
             )
 

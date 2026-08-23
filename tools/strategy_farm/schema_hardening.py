@@ -1,4 +1,4 @@
-"""Farm-DB schema hardening SH-1 and SH-3.
+"""Farm-DB schema hardening SH-1, SH-2, and the SH-3 successor.
 
 Authority: ``docs/ops/FARM_DB_SCHEMA_HARDENING_2026-08-23.md`` (OWNER-commissioned
 2026-08-23).
@@ -29,11 +29,15 @@ Usage::
     python tools/strategy_farm/schema_hardening.py check          # read-only, both parts
     python tools/strategy_farm/schema_hardening.py migrate --db X # SH-1 on a copy first
     python tools/strategy_farm/schema_hardening.py migrate --apply
+    python tools/strategy_farm/schema_hardening.py migrate-sh2 --dry-run --db COPY
+    python tools/strategy_farm/schema_hardening.py migrate-sh3 --dry-run --db COPY
+    python tools/strategy_farm/schema_hardening.py --validate-sh3 --db COPY
 """
 from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import sqlite3
 import sys
@@ -46,15 +50,30 @@ if str(REPO_ROOT / "tools" / "strategy_farm") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 
 from work_item_clean_view import clean_status, verdict_taxonomy  # noqa: E402
+from artifact_identity import IDENTITY_COLUMNS, SHA256_COLUMNS  # noqa: E402
 
 DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 STORED_TAXONOMY = "verdict_taxonomy_stored"
 STORED_STATUS = "clean_status_stored"
 CHUNK = 5000
+SH3_TAXONOMIES = (
+    "draft_defect", "governance", "infra", "invalid", "measurement",
+    "open", "review", "strategy", "unknown", "artifact", "build",
+    "implementation",
+)
+SH3_MATERIALIZE_INSERT_TRIGGER = "trg_work_items_sh3_materialize_insert"
+SH3_MATERIALIZE_UPDATE_TRIGGER = "trg_work_items_sh3_materialize_update"
 
 
 def _columns(con: sqlite3.Connection, table: str) -> set[str]:
     return {r[1] for r in con.execute(f"PRAGMA table_info({table})")}
+
+
+def open_ro(path: str | Path) -> sqlite3.Connection:
+    norm = str(Path(path)).replace("\\", "/")
+    con = sqlite3.connect(f"file:{norm}?mode=ro", uri=True, timeout=10)
+    con.execute("PRAGMA busy_timeout=3000")
+    return con
 
 
 def add_columns(con: sqlite3.Connection) -> list[str]:
@@ -170,25 +189,309 @@ def reference_integrity(con: sqlite3.Connection) -> dict:
     }
 
 
+# ── SH-2 · typed artifact identity ───────────────────────────────────────────
+
+def identity_coverage(con: sqlite3.Connection) -> dict:
+    have = _columns(con, "work_items")
+    total = int(con.execute("SELECT COUNT(*) FROM work_items").fetchone()[0])
+    if "ex5_sha256" not in have:
+        payload = int(con.execute(
+            "SELECT COUNT(*) FROM work_items WHERE json_valid(payload_json) "
+            "AND COALESCE(json_extract(payload_json,'$.expected_ex5_sha256'),"
+            "json_extract(payload_json,'$.ex5_sha256'),"
+            "json_extract(payload_json,'$.build_hash')) IS NOT NULL"
+        ).fetchone()[0])
+        return {
+            "migrated": False, "rows": total, "rows_with_ex5_identity": payload,
+            "coverage_pct": round(100.0 * payload / total, 3) if total else 0.0,
+            "source": "payload_fallback",
+        }
+    with_ex5 = int(con.execute(
+        "SELECT COUNT(*) FROM work_items WHERE ex5_sha256 IS NOT NULL AND trim(ex5_sha256)<>''"
+    ).fetchone()[0])
+    complete = int(con.execute(
+        "SELECT COUNT(*) FROM work_items WHERE ex5_sha256 IS NOT NULL "
+        "AND setfile_sha256 IS NOT NULL AND data_window_start IS NOT NULL "
+        "AND data_window_end IS NOT NULL"
+    ).fetchone()[0])
+    return {
+        "migrated": True, "rows": total, "rows_with_ex5_identity": with_ex5,
+        "rows_with_core_identity": complete,
+        "coverage_pct": round(100.0 * with_ex5 / total, 3) if total else 0.0,
+        "core_coverage_pct": round(100.0 * complete / total, 3) if total else 0.0,
+        "source": "typed_columns",
+    }
+
+
+def migrate_sh2(con: sqlite3.Connection) -> dict:
+    # Import lazily: read-only validators do not need to load the controller.
+    try:
+        import farmctl
+    except ModuleNotFoundError:
+        from tools.strategy_farm import farmctl
+    result = farmctl.ensure_work_item_artifact_identity_schema(con)
+    result["coverage"] = identity_coverage(con)
+    return result
+
+
+# ── SH-3 successor · enforced new writes, untouched historical contradictions ─
+
+def _row_digest(con: sqlite3.Connection, columns: list[str]) -> str:
+    digest = hashlib.sha256()
+    select = ",".join('"' + col.replace('"', '""') + '"' for col in columns)
+    for row in con.execute(f"SELECT {select} FROM work_items ORDER BY rowid"):
+        encoded = json.dumps(
+            [[type(value).__name__, value] for value in row],
+            ensure_ascii=False, separators=(",", ":"), default=str,
+        ).encode("utf-8")
+        digest.update(len(encoded).to_bytes(8, "big"))
+        digest.update(encoded)
+    return digest.hexdigest()
+
+
+def validate_sh3(con: sqlite3.Connection) -> dict:
+    """List historical status contradictions without changing a single row."""
+    contradictions = []
+    for wid, phase, status, verdict in con.execute(
+        "SELECT id,phase,status,verdict FROM work_items ORDER BY id"
+    ):
+        derived = clean_status(status, verdict)
+        if derived != status:
+            contradictions.append({
+                "id": wid, "phase": phase, "status": status,
+                "verdict": verdict, "derived_status": derived,
+            })
+    have = _columns(con, "work_items")
+    return {
+        "migrated": "sh3_enforced" in have and "verdict_taxonomy" in have,
+        "historical_status_contradiction_count": len(contradictions),
+        "historical_status_contradictions": contradictions,
+        "historical_rows_mutated": 0,
+    }
+
+
+def _quoted(name: str) -> str:
+    return '"' + name.replace('"', '""') + '"'
+
+
+def _work_items_column_definitions(con: sqlite3.Connection) -> tuple[list[str], list[str]]:
+    info = con.execute("PRAGMA table_info(work_items)").fetchall()
+    old_columns = [str(row[1]) for row in info]
+    definitions = []
+    for _cid, name, declared_type, notnull, default, pk in info:
+        parts = [_quoted(str(name)), str(declared_type or "TEXT")]
+        if int(notnull):
+            parts.append("NOT NULL")
+        if default is not None:
+            parts.extend(("DEFAULT", str(default)))
+        if int(pk):
+            parts.append("PRIMARY KEY")
+        definitions.append(" ".join(parts))
+    if "verdict_taxonomy" not in old_columns:
+        definitions.append("verdict_taxonomy TEXT")
+    if "sh3_enforced" not in old_columns:
+        definitions.append("sh3_enforced INTEGER NOT NULL DEFAULT 1")
+    return old_columns, definitions
+
+
+def _sh3_checks() -> list[str]:
+    tax = "COALESCE(NULLIF(verdict_taxonomy,''),NULLIF(json_extract(payload_json,'$.verdict_taxonomy'),''))"
+    allowed = ",".join(repr(value) for value in SH3_TAXONOMIES)
+    checks = [
+        "CHECK (status IN ('pending','active','done','failed'))",
+        "CHECK (sh3_enforced IN (0,1))",
+        "CHECK (sh3_enforced=0 OR (typeof(phase)='text' AND trim(phase)<>''))",
+        "CHECK (sh3_enforced=0 OR verdict IS NULL OR (typeof(verdict)='text' AND trim(verdict)<>''))",
+        "CHECK (sh3_enforced=0 OR status<>'done' OR verdict IS NOT NULL)",
+        f"CHECK (sh3_enforced=0 OR status<>'failed' OR ({tax}) IS NOT NULL)",
+        f"CHECK (sh3_enforced=0 OR ({tax}) IS NULL OR ({tax}) IN ({allowed}))",
+        "CHECK (sh3_enforced=0 OR status NOT IN ('pending','active') OR verdict IS NULL)",
+    ]
+    for column in SHA256_COLUMNS:
+        checks.append(
+            f"CHECK (sh3_enforced=0 OR {column} IS NULL OR "
+            f"(typeof({column})='text' AND length({column})=64 AND {column}=lower({column}) "
+            f"AND {column} NOT GLOB '*[^0-9a-f]*'))"
+        )
+    for column in ("build_id", "data_window_start", "data_window_end"):
+        checks.append(
+            f"CHECK (sh3_enforced=0 OR {column} IS NULL OR "
+            f"(typeof({column})='text' AND trim({column})<>''))"
+        )
+    return checks
+
+
+def _sh3_trigger_sql(name: str, event: str) -> str:
+    identity_sets = []
+    for column in IDENTITY_COLUMNS:
+        payload_key = {
+            "ex5_sha256": "expected_ex5_sha256",
+            "setfile_sha256": "expected_setfile_sha256",
+            "mq5_sha256": "expected_mq5_sha256",
+            "data_window_start": "expected_from_date",
+            "data_window_end": "expected_to_date",
+            "news_calendar_sha256": "qm_news_calendar_expected_sha256",
+        }.get(column, column)
+        identity_sets.append(
+            f"{column}=COALESCE({column},json_extract(payload_json,'$.{payload_key}'))"
+        )
+    assignments = ",".join(identity_sets)
+    required_missing = (
+        "ex5_sha256 IS NULL OR setfile_sha256 IS NULL OR "
+        "data_window_start IS NULL OR data_window_end IS NULL"
+    )
+    return f"""
+    CREATE TRIGGER {name}
+    AFTER {event} ON work_items
+    WHEN NEW.sh3_enforced=1
+    BEGIN
+      UPDATE work_items SET
+        verdict_taxonomy=COALESCE(verdict_taxonomy,json_extract(payload_json,'$.verdict_taxonomy')),
+        {assignments}
+      WHERE id=NEW.id;
+      UPDATE work_items SET
+        status='failed',verdict='INFRA_FAIL',verdict_taxonomy='infra',
+        payload_json=json_set(payload_json,'$.verdict_taxonomy','infra',
+          '$.verdict_reason','ARTIFACT_IDENTITY_MISSING')
+      WHERE id=NEW.id AND status IN ('done','failed')
+        AND verdict_taxonomy='strategy' AND ({required_missing});
+    END
+    """
+
+
+def _backup_database(con: sqlite3.Connection, backup_path: Path) -> None:
+    backup_path = backup_path.resolve()
+    if backup_path.exists():
+        raise FileExistsError(f"refusing to overwrite backup: {backup_path}")
+    backup_path.parent.mkdir(parents=True, exist_ok=True)
+    target = sqlite3.connect(str(backup_path))
+    try:
+        con.backup(target)
+        target.commit()
+    finally:
+        target.close()
+
+
+def migrate_sh3(con: sqlite3.Connection, backup_path: Path) -> dict:
+    """Rebuild ``work_items`` and exempt only copied historical rows from checks."""
+    migrate_sh2(con)
+    con.commit()
+    old_columns, definitions = _work_items_column_definitions(con)
+    before_count = int(con.execute("SELECT COUNT(*) FROM work_items").fetchone()[0])
+    before_digest = _row_digest(con, old_columns)
+    _backup_database(con, backup_path)
+    schema_objects: list[tuple[str, str, str]] = []
+    seen_objects: set[tuple[str, str]] = set()
+    for obj_type, name, sql in con.execute(
+        "SELECT type,name,sql FROM sqlite_master WHERE sql IS NOT NULL AND ("
+        "(type='index' AND tbl_name='work_items') OR "
+        "(type IN ('trigger','view') AND lower(sql) LIKE '%work_items%')) "
+        "ORDER BY CASE type WHEN 'index' THEN 0 WHEN 'view' THEN 1 ELSE 2 END,name"
+    ):
+        key = (str(obj_type), str(name))
+        if key not in seen_objects:
+            schema_objects.append((str(obj_type), str(name), str(sql)))
+            seen_objects.add(key)
+    foreign_keys = []
+    for _id, _seq, table, from_col, to_col, on_update, on_delete, match in con.execute(
+        "PRAGMA foreign_key_list(work_items)"
+    ):
+        foreign_keys.append(
+            f"FOREIGN KEY({_quoted(from_col)}) REFERENCES {_quoted(table)}({_quoted(to_col)}) "
+            f"ON UPDATE {on_update} ON DELETE {on_delete} MATCH {match}"
+        )
+    ddl = ",\n".join(definitions + foreign_keys + _sh3_checks())
+    old_select = ",".join(_quoted(column) for column in old_columns)
+    target_columns = list(old_columns)
+    values = list(old_columns)
+    if "verdict_taxonomy" not in old_columns:
+        target_columns.append("verdict_taxonomy")
+        values.append("verdict_taxonomy_stored" if "verdict_taxonomy_stored" in old_columns else "NULL")
+    if "sh3_enforced" not in old_columns:
+        target_columns.append("sh3_enforced")
+        values.append("0")
+    target_sql = ",".join(_quoted(column) for column in target_columns)
+    values_sql = ",".join(_quoted(value) if value in old_columns else value for value in values)
+    con.execute("PRAGMA foreign_keys=OFF")
+    con.execute("BEGIN IMMEDIATE")
+    try:
+        # SQLite validates all dependent schema text during ALTER TABLE. Remove
+        # dependent views/triggers only inside this transaction and reinstall their
+        # exact SQL after the swap; rollback restores them automatically on failure.
+        for obj_type, name, _sql in reversed(schema_objects):
+            if obj_type in {"trigger", "view"}:
+                con.execute(f"DROP {obj_type.upper()} {_quoted(name)}")
+        con.execute(f"CREATE TABLE work_items_sh3_new ({ddl})")
+        con.execute(
+            f"INSERT INTO work_items_sh3_new ({target_sql}) SELECT {values_sql} FROM work_items"
+        )
+        con.execute("DROP TABLE work_items")
+        con.execute("ALTER TABLE work_items_sh3_new RENAME TO work_items")
+        for obj_type, _name, sql in schema_objects:
+            if SH3_MATERIALIZE_INSERT_TRIGGER in sql or SH3_MATERIALIZE_UPDATE_TRIGGER in sql:
+                continue
+            con.execute(sql)
+        for column in IDENTITY_COLUMNS:
+            con.execute(
+                f"CREATE INDEX IF NOT EXISTS idx_work_items_{column} ON work_items({column})"
+            )
+        con.execute(_sh3_trigger_sql(SH3_MATERIALIZE_INSERT_TRIGGER, "INSERT"))
+        con.execute(_sh3_trigger_sql(
+            SH3_MATERIALIZE_UPDATE_TRIGGER, "UPDATE OF status,verdict,payload_json"
+        ))
+        after_count = int(con.execute("SELECT COUNT(*) FROM work_items").fetchone()[0])
+        after_digest = _row_digest(con, old_columns)
+        if after_count != before_count or after_digest != before_digest:
+            raise RuntimeError("SH-3 rebuild did not preserve historical work_items")
+        con.commit()
+    except Exception:
+        con.rollback()
+        raise
+    return {
+        "backup": str(backup_path.resolve()),
+        "before_count": before_count, "after_count": after_count,
+        "before_digest": before_digest, "after_digest": after_digest,
+        "historical_rows_enforced": 0, "new_row_default_enforced": 1,
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Farm-DB schema hardening SH-1 / SH-3")
-    ap.add_argument("command", choices=("check", "migrate"))
+    ap.add_argument("command", nargs="?", choices=("check", "migrate", "migrate-sh2", "migrate-sh3"))
     ap.add_argument("--db", default=str(DB))
     ap.add_argument("--apply", action="store_true",
                     help="migrate: actually write (default is a plan-only run)")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="print the migration plan and coverage without writing")
+    ap.add_argument("--backup", type=Path,
+                    help="required backup destination for migrate-sh3 --apply")
+    ap.add_argument("--validate-sh3", action="store_true",
+                    help="read-only: enumerate historical status contradictions")
     ap.add_argument("--limit", type=int, default=None)
     args = ap.parse_args()
-
-    con = sqlite3.connect(args.db)
     out: dict = {"db": args.db, "at": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()}
+    if args.apply and args.dry_run:
+        ap.error("--apply and --dry-run are mutually exclusive")
+    if args.validate_sh3:
+        con = open_ro(args.db)
+        out["sh3"] = validate_sh3(con)
+        con.close()
+        print(json.dumps(out, indent=1))
+        return 0
+    if args.command is None:
+        ap.error("a command or --validate-sh3 is required")
 
+    write = bool(args.apply)
+    con = sqlite3.connect(args.db) if write else open_ro(args.db)
     if args.command == "check":
         out["sh1"] = validate(con)
+        out["sh2"] = identity_coverage(con)
         out["sh3"] = reference_integrity(con)
-    else:
+        out["sh3_successor"] = validate_sh3(con)
+    elif args.command == "migrate":
         have = _columns(con, "work_items")
         out["already_migrated"] = STORED_TAXONOMY in have
-        if not args.apply:
+        if not write:
             out["plan"] = "would add columns and backfill; re-run with --apply"
             out["sh1_before"] = validate(con)
         else:
@@ -197,6 +500,32 @@ def main() -> int:
             out["backfill"] = backfill(con, args.limit)
             out["seconds"] = round(time.perf_counter() - t0, 1)
             out["sh1_after"] = validate(con)
+    elif args.command == "migrate-sh2":
+        out["sh2_before"] = identity_coverage(con)
+        if not write:
+            missing = sorted(set(IDENTITY_COLUMNS) - _columns(con, "work_items"))
+            out["dry_run"] = True
+            out["plan"] = {"add_columns": missing, "create_indexes": list(IDENTITY_COLUMNS),
+                           "backfill": "payload keys only; NULL targets only"}
+        else:
+            out["sh2_migration"] = migrate_sh2(con)
+            con.commit()
+            out["sh2_after"] = identity_coverage(con)
+    else:
+        out["sh3_before"] = validate_sh3(con)
+        if not write:
+            out["dry_run"] = True
+            out["plan"] = {
+                "backup": "sqlite backup API (required before rebuild)",
+                "rebuild": "work_items with typed verdict_taxonomy and CHECK constraints",
+                "historical_rows": "copied with sh3_enforced=0; no verdict/status rewrite",
+                "new_rows": "sh3_enforced defaults to 1",
+            }
+        else:
+            if args.backup is None:
+                ap.error("migrate-sh3 --apply requires --backup")
+            out["sh3_migration"] = migrate_sh3(con, args.backup)
+            out["sh3_after"] = validate_sh3(con)
     con.close()
     print(json.dumps(out, indent=1))
     return 0

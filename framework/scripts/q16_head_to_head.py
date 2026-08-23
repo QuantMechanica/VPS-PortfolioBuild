@@ -715,6 +715,15 @@ def evaluate_q16(
                 {"id": row["id"], "kind": row["kind"], "start": row["start"].isoformat(), "end": row["end"].isoformat()}
                 for row in windows
             ],
+            # SH-2 storage hand-off. These are the already-authenticated challenger
+            # bindings and the exact union of sealed comparison windows; no path is
+            # re-hashed by the eventual DB completion writer.
+            "artifact_identity": {
+                "ex5_sha256": challenger["binary"]["sha256"],
+                "setfile_sha256": challenger["setfile"]["sha256"],
+                "data_window_start": min(row["start"] for row in windows).isoformat(),
+                "data_window_end": max(row["end"] for row in windows).isoformat(),
+            },
             "risk_contract": {"RISK_FIXED": RISK_FIXED, "RISK_PERCENT": RISK_PERCENT},
             "real_venue_cost_model": costs.binding,
             "trial_ledger": trial,

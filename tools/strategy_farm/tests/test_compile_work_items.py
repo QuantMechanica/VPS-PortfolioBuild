@@ -624,6 +624,7 @@ def test_compile_profile_stdlib_failure_is_persisted_as_infra_not_compile_fail(
         evidence_path,
         {
             "success": False,
+            "mq5_sha256": "3" * 64,
             "failure_classes": [
                 "COMPILE_PROFILE_STDLIB_MISSING",
                 "BUILD_CHECK_COMPILE_FAILED",
@@ -636,10 +637,12 @@ def test_compile_profile_stdlib_failure_is_persisted_as_infra_not_compile_fail(
 
     with farmctl.connect(root) as conn:
         row = conn.execute(
-            "SELECT status,verdict,payload_json FROM work_items WHERE id='compile-infra'"
+            "SELECT status,verdict,payload_json,mq5_sha256 "
+            "FROM work_items WHERE id='compile-infra'"
         ).fetchone()
     payload = json.loads(row["payload_json"])
     assert (row["status"], row["verdict"]) == ("failed", "INFRA_FAIL")
+    assert row["mq5_sha256"] == "3" * 64
     assert payload["verdict_reason"] == "COMPILE_PROFILE_STDLIB_MISSING"
     assert payload["verdict_taxonomy"] == "infra"
 

@@ -163,6 +163,13 @@ def test_q16_fixture_is_deterministic_and_sealed(tmp_path: Path) -> None:
     # The huge 2022 trade is outside all registered windows and cannot affect the parent.
     assert first["no_change_control"]["parent_stream"]["excluded_trade_count"] == 1
     assert len(first["sealed_windows"]) == 4
+    challenger = json.loads(paths["challenger_lineage_path"].read_text(encoding="utf-8"))
+    assert first["artifact_identity"] == {
+        "ex5_sha256": challenger["binary"]["sha256"],
+        "setfile_sha256": challenger["setfile"]["sha256"],
+        "data_window_start": "2023-01-01",
+        "data_window_end": "2026-01-10",
+    }
     if first["verdict"] == "ADMIT_BOTH":
         checks = first["book_marginal"]["admit_both_checks"]
         assert checks == {"both_contribute": True, "max_abs_pair_regime_corr_below_0p15": True}
