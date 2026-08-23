@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Karsten Schweikert; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; CME Group",
+    "mechanic": "exact synchronized XAUUSD XAGUSD D1 first broker month boundary immediately completed calendar month 17 to 23 chronological gold-minus-silver daily log ratio returns signed mean divided by root mean square absolute coherence at least 0.16 fade net ratio sign opposite equal-notional fixed-risk legs one month hold",
+    "slug": "xauxag-mrms-coherence-rv",
+    "strategy_id": "SCHWEIKERT-MOP-CME-XAUXAG-MRMS-COHERENCE-RV-2026_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-08-23T05:04:54+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4624,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1293,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
