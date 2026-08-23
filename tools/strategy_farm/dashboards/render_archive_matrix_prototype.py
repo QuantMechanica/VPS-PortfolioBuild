@@ -43,9 +43,9 @@ COLUMNS: list[tuple[str, str, str, str]] = [
     ("Q02", "Q02", "eval", ""), ("Q03", "Q03", "eval", ""), ("Q04", "Q04", "eval", ""),
     ("Q05", "Q05", "eval", ""), ("Q06", "Q06", "eval", ""), ("Q07", "Q07", "eval", ""),
     ("Q08", "Q08", "eval", ""), ("Q09", "Q09", "eval", ""), ("Q10", "Q10", "eval", ""),
-    ("Q14", "Q10.1", "opt", "heute Q14"),
-    ("Q15", "Q10.2", "opt", "heute Q15"),
-    ("Q16", "Q10.3", "opt", "heute Q16"),
+    ("Q14", "Q10.1", "opt", "today Q14"),
+    ("Q15", "Q10.2", "opt", "today Q15"),
+    ("Q16", "Q10.3", "opt", "today Q16"),
     ("Q11", "Q11", "port", ""), ("Q12", "Q12", "port", ""), ("Q13", "Q13", "port", ""),
 ]
 GATE_TOKENS = [c[0] for c in COLUMNS]
@@ -54,14 +54,14 @@ GATE_IDX = {g: i for i, g in enumerate(GATE_TOKENS)}
 # erzeugt niemals ein "Loch" (er ist optional, kein ausstehender Schritt).
 ORDINARY = ["Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10", "Q11", "Q12", "Q13"]
 
-GROUP_LABEL = {"eval": "Evaluierung", "opt": "Optimierung", "port": "Portfolio-Build"}
+GROUP_LABEL = {"eval": "Evaluation", "opt": "Optimization", "port": "Portfolio build"}
 
 # Zellzustände (OWNER-Entscheid F3). Reihenfolge = Rangfolge bei der Verdichtung.
 ST_PASS, ST_SOFT, ST_FAIL, ST_VOID, ST_OPEN, ST_HOLE, ST_NONE = range(7)
 ST_CLASS = {ST_PASS: "p", ST_SOFT: "s", ST_FAIL: "f", ST_VOID: "v",
             ST_OPEN: "o", ST_HOLE: "h", ST_NONE: ""}
-ST_NAME = {ST_PASS: "PASS", ST_SOFT: "PASS bedingt", ST_FAIL: "FAIL", ST_VOID: "VOID",
-           ST_OPEN: "läuft/Queue", ST_HOLE: "Loch", ST_NONE: "—"}
+ST_NAME = {ST_PASS: "PASS", ST_SOFT: "PASS (conditional)", ST_FAIL: "FAIL", ST_VOID: "VOID",
+           ST_OPEN: "running/queued", ST_HOLE: "GAP", ST_NONE: "-"}
 
 RETIRE_TOKENS = ("RETIRE", "RETIRED_LOW_FREQ", "OBSOLETE_NON_DWX_SYMBOL",
                  "SUPERSEDED", "SUPERSEDED_BY_LOGICAL_BASKET", "CANCELLED")
@@ -152,9 +152,12 @@ def collect() -> dict:
     rows_seen = 0
     skipped_phase: Counter = Counter()
     dropped_relic: Counter = Counter()
+    # Fuer die Detailseite: ALLE Zeilen je EA, nicht nur die juengste je Zelle.
+    # Superseded Versuche und verbrannte Laeufe gehoeren dort sichtbar dazu.
+    all_items: dict[str, list[dict]] = defaultdict(list)
 
     for wid, ea, sym, phase, verdict, tax, upd, payload in conn.execute(
-        "SELECT id, ea_id, symbol, phase, verdict, verdict_taxonomy, updated_at, setfile_path "
+        "SELECT id, ea_id, symbol, phase, verdict, verdict_taxonomy, updated_at, evidence_path "
         "FROM work_items_clean"
     ):
         rows_seen += 1
@@ -171,6 +174,10 @@ def collect() -> dict:
         v = (verdict or "").upper()
         if any(v.startswith(t) for t in RETIRE_TOKENS):
             retired.add((ea, symbol))
+        all_items[ea].append({
+            "id": wid, "symbol": symbol, "phase": phase, "verdict": v,
+            "tax": tax or "unknown", "upd": upd or "", "evidence": payload or "",
+        })
         key = (ea, symbol, gate)
         cur = latest.get(key)
         u = upd or ""
@@ -281,7 +288,7 @@ def collect() -> dict:
         "cards": cards, "stats": stats, "hole_by_gate": hole_by_gate,
         "rows_seen": rows_seen, "cells": len(latest), "skipped_phase": skipped_phase,
         "untested_targets": untested_targets, "retired_pairs": len(retired),
-        "dropped_relic": dropped_relic,
+        "dropped_relic": dropped_relic, "all_items": all_items, "slugs": slug,
         "held_items": len(held_items), "collect_s": time.perf_counter() - t0,
         "cards_with_targets": len(targets),
     }
@@ -354,6 +361,8 @@ footer{padding:14px 22px 30px;color:var(--tx4);font-size:11px;line-height:1.7;
 border-top:1px solid var(--bd)}
 footer b{color:var(--tx3);font-weight:500}
 .hidden{display:none}
+a.lnk{color:var(--hole);text-decoration:none}
+a.lnk:hover{text-decoration:underline}
 """
 
 JS = """
@@ -420,6 +429,7 @@ function build(tr){
   return out;
 }
 tb.addEventListener('click',function(e){
+  if(e.target.closest('a'))return;
   var tr=e.target.closest('tr.card');if(!tr)return;
   var t0=performance.now();
   if(!pairs[tr.id]){pairs[tr.id]=build(tr);}
@@ -499,7 +509,8 @@ def render(data: dict) -> str:
             f'<tr class="card" id="r{n}" data-i="{n}" data-ea="{esc(c["ea"])}" data-hp="{c["hp"]}" '
             f'data-hole="{c["hole"]}" data-void="{c["void"]}" data-open="{c["open"]}" '
             f'data-pass="{c["pass"]}" data-s="{esc(search)}" data-sym="{esc(symkey)}">' 
-            f'<td class="id"><b>{esc(c["ea"])}</b><span>{esc(c["slug"][:34])}</span></td>'
+            f'<td class="id"><a class="lnk" href="strategy_detail/{esc(c["ea"])}.html">'
+            f'<b>{esc(c["ea"])}</b></a><span>{esc(c["slug"][:34])}</span></td>'
             f'<td class="n">{hp}</td><td class="n">{c["hole"] or ""}</td>'
             f'<td class="n">{c["void"] or ""}</td>'
             + "".join(tds) + "</tr>")
@@ -507,12 +518,12 @@ def render(data: dict) -> str:
     # Kopfgruppen
     g1, g2 = [], []
     g1.append('<th class="blank" colspan="4"></th>')
-    for grp, label in (("eval", "Evaluierung"), ("opt", "Optimierung"), ("port", "Portfolio-Build")):
+    for grp, label in (("eval", "Evaluation"), ("opt", "Optimization"), ("port", "Portfolio build")):
         n = sum(1 for c in COLUMNS if c[2] == grp)
         g1.append(f'<th class="{grp}" colspan="{n}">{label}</th>')
     g2.append('<th data-k="ea">Strategy Card</th>'
-              '<th data-k="hp">höchstes&nbsp;PASS</th>'
-              '<th data-k="hole">Löcher</th><th data-k="void">VOID</th>')
+              '<th data-k="hp">highest&nbsp;PASS</th>'
+              '<th data-k="hole">gaps</th><th data-k="void">VOID</th>')
     for token, label, grp, sub in COLUMNS:
         name = PHASE_NAME.get(token, token)
         sub_html = f"<small>{esc(sub)}</small>" if sub else ""
@@ -531,95 +542,426 @@ def render(data: dict) -> str:
     baskets = sorted((s for s in all_syms if symbol_class(s) == "basket"),
                      key=lambda s: (-use[s], s))
     sym_opts = (
-        '<optgroup label="handelbare DWX-Symbole">'
+        '<optgroup label="tradable DWX symbols">'
         + "".join(f'<option value="{sym_idx[s]}">{esc(s)} · {use[s]}</option>' for s in dwx)
-        + '</optgroup><optgroup label="logische Basket-Symbole">'
+        + '</optgroup><optgroup label="logical basket symbols">'
         + "".join(f'<option value="{sym_idx[s]}">{esc(s)} · {use[s]}</option>' for s in baskets)
         + "</optgroup>")
 
     tot_cells = sum(stats.values())
     legend = (
         f'<span class="lg"><i class="p"></i><b>PASS</b> {fmt(stats[ST_PASS])}</span>'
-        f'<span class="lg"><i class="s"></i><b>PASS bedingt</b> {fmt(stats[ST_SOFT])}</span>'
+        f'<span class="lg"><i class="s"></i><b>PASS conditional</b> {fmt(stats[ST_SOFT])}</span>'
         f'<span class="lg"><i class="f"></i><b>FAIL</b> {fmt(stats[ST_FAIL])}</span>'
-        f'<span class="lg"><i class="v"></i><b>VOID — Lauf verbrannt</b> {fmt(stats[ST_VOID])}</span>'
-        f'<span class="lg"><i class="o"></i><b>läuft / Queue</b> {fmt(stats[ST_OPEN])}</span>'
-        f'<span class="lg"><i class="h"></i><b>erreichbares Loch</b> '
+        f'<span class="lg"><i class="v"></i><b>VOID - run burnt</b> {fmt(stats[ST_VOID])}</span>'
+        f'<span class="lg"><i class="o"></i><b>running / queued</b> {fmt(stats[ST_OPEN])}</span>'
+        f'<span class="lg"><i class="h"></i><b>reachable gap</b> '
         f'{fmt(sum(hbg.values()))}</span>'
-        '<span class="lg" style="color:var(--tx4)">leeres Feld = kein Lauf und keiner fällig</span>'
+        '<span class="lg" style="color:var(--tx4)">empty cell = no run and none due</span>'
     )
 
     holes = " · ".join(f"{g} {fmt(n)}" for g, n in
                        sorted(hbg.items(), key=lambda kv: -kv[1]) if n)
 
     return f"""<!doctype html><html lang="de"><head><meta charset="utf-8">
-<title>Strategy Archive Matrix — Prototyp</title>
+<title>Strategy Archive Matrix - prototype</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>{CSS}{sym_css}</style></head><body>
 <header>
-<h1>Strategy Archive Matrix <span style="color:var(--tx4);font-weight:400">· Prototyp</span></h1>
-<div class="sub">{fmt(len(cards))} Strategy Cards · {fmt(tot_cells)} belegte Zellen ·
-{fmt(sum(hbg.values()))} erreichbare Löcher · Stand {now} · Quelle
-<code>work_items_clean</code> über <code>farm_state.sqlite</code></div>
+<h1>Strategy Archive Matrix <span style="color:var(--tx4);font-weight:400">· prototype</span></h1>
+<div class="sub">{fmt(len(cards))} strategy cards · {fmt(tot_cells)} stored cells ·
+{fmt(sum(hbg.values()))} reachable gaps · as of {now} · source
+<code>work_items_clean</code> over <code>farm_state.sqlite</code></div>
 </header>
 <div class="warn">
-<b>Prototyp, kein abgenommenes Cockpit.</b> Zwei Dinge sind bewusst anders als in der
-Spezifikation: (1) Der <b>Stale-Pass-Chip (F4) fehlt</b> — die Messung ergab, dass die
-Datenbank keine belastbare Build-Identität je Zelle führt (<code>expected_ex5_sha256</code>
-in 0,3 % der Zeilen; der Dateizeitstempel des <code>.ex5</code> würde 73,6 % aller PASS-Zeilen
-als veraltet markieren und ist durch Recompiles verrauscht). Bis dahin gilt der
-vorregistrierte Rückfall: jüngstes Verdikt, sichtbar gewarnt.
-(2) Die Zweigspalten tragen ihren künftigen Namen <b>Q10.1–Q10.3</b>; im Speicher heißen sie
-bis zum Gate-Manifest v4 weiterhin Q14–Q16.
+<b>Prototype, not an accepted cockpit.</b> Two deliberate deviations from the specification.
+(1) The <b>stale-pass chip (F4) is missing</b> - measurement showed the database carries no
+usable build identity per cell (<code>expected_ex5_sha256</code> in 0.3% of rows; the
+<code>.ex5</code> file timestamp would flag 73.6% of all PASS rows as stale and is polluted by
+recompiles that never touch the EA). Until that is fixed the pre-registered fallback applies:
+latest verdict, visibly warned. (2) The branch columns already carry their future names
+<b>Q10.1-Q10.3</b>; in storage they remain Q14-Q16 until gate manifest v4.
 </div>
 <div class="legend">{legend}</div>
 <div class="controls">
-<input id="q" type="search" placeholder="Card oder Slug suchen…" style="width:210px">
-<select id="f"><option value="">alle Karten</option>
-<option value="hole">nur mit Löchern</option>
-<option value="void">nur mit VOID</option>
-<option value="open">nur mit laufenden Zellen</option></select>
-<select id="sym"><option value="">alle Symbole</option>{sym_opts}</select>
-<select id="so"><option value="hp">Sortierung: höchstes bestandenes Gate</option>
-<option value="hole">Sortierung: meiste Löcher</option>
-<option value="void">Sortierung: meiste VOID</option>
-<option value="ea">Sortierung: Card-Nummer</option></select>
-<span class="cnt"><strong id="cn">{fmt(len(cards))}</strong> Karten sichtbar ·
-letzte Operation <strong id="tm">0</strong> ms</span>
+<input id="q" type="search" placeholder="search card or slug..." style="width:210px">
+<select id="f"><option value="">all cards</option>
+<option value="hole">with gaps only</option>
+<option value="void">with VOID only</option>
+<option value="open">with running cells only</option></select>
+<select id="sym"><option value="">all symbols</option>{sym_opts}</select>
+<select id="so"><option value="hp">sort: highest gate passed</option>
+<option value="hole">sort: most gaps</option>
+<option value="void">sort: most VOID</option>
+<option value="ea">sort: card number</option></select>
+<span class="cnt"><strong id="cn">{fmt(len(cards))}</strong> cards visible ·
+last operation <strong id="tm">0</strong> ms</span>
 </div>
 <div class="wrap"><table>
 <thead><tr class="g">{''.join(g1)}</tr><tr class="h">{''.join(g2)}</tr></thead>
 <tbody id="tb">{''.join(body)}</tbody></table></div>
 <footer>
-<b>Löcher je Gate:</b> {holes or '—'}<br>
-<b>Was diese Seite NICHT zeigt:</b> Karten ohne jede Gate-Zeile erscheinen nicht
-(OWNER-Entscheid F8: eine Quelle, eine Frische). Der Stau <i>vor</i> der Fabrik —
-freigegebene Karten, die nie gebaut wurden — ist Sache des Drain-Programms, nicht dieser
-Seite. Abwesenheit hier ist kein Beleg für Vollständigkeit.<br>
-<b>Zweite Quelle, getrennt gehalten:</b> {fmt(data['untested_targets'])} Zielsymbole aus dem
-Karten-Frontmatter haben keinen einzigen Lauf und erscheinen als Loch in Q02
-({fmt(data['cards_with_targets'])} Karten mit <code>target_symbols</code> gelesen).<br>
-<b>Leer statt Loch:</b> {fmt(data['retired_pairs'])} (Card, Symbol)-Paare sind über
-RETIRE/OBSOLETE/SUPERSEDED stillgelegt, {fmt(data['held_items'])} Work Items stehen unter einem
-aktiven Hold — beide erzeugen kein Loch.<br>
-<b>Ausgeschlossene Relikt-Symbole (OWNER 2026-08-23):</b> {fmt(sum(data['dropped_relic'].values()))}
-Zeilen auf {len(data['dropped_relic'])} Symbolwerten ohne <code>.DWX</code>-Endung
-({esc(', '.join(sorted(data['dropped_relic'])))}) — geschlossenes Fenster 12.–21.06.2026, kein
-wirtschaftliches Urteil darunter. Logische Basket-Symbole tragen ebenfalls kein
-<code>.DWX</code>, sind aber <b>kein</b> Relikt und bleiben vollständig enthalten.<br>
-<b>Nicht dargestellte Speicherphasen:</b>
+<b>Gaps per gate:</b> {holes or '—'}<br>
+<b>What this page does NOT show:</b> cards without a single gate row do not appear
+(OWNER decision F8: one source, one freshness). The queue <i>before</i> the factory - approved
+cards that were never built - belongs to the drain programme, not to this page. Absence here is
+never evidence of completeness.<br>
+<b>Second source, kept separate:</b> {fmt(data['untested_targets'])} target symbols from card
+frontmatter have no run at all and appear as a Q02 gap
+({fmt(data['cards_with_targets'])} cards with <code>target_symbols</code> read).<br>
+<b>Empty, not a gap:</b> {fmt(data['retired_pairs'])} (card, symbol) pairs are retired via
+RETIRE/OBSOLETE/SUPERSEDED and {fmt(data['held_items'])} work items sit under an active hold -
+neither produces a gap.<br>
+<b>Excluded relic symbols (OWNER 2026-08-23):</b> {fmt(sum(data['dropped_relic'].values()))}
+rows on {len(data['dropped_relic'])} symbol values without a <code>.DWX</code> suffix
+({esc(', '.join(sorted(data['dropped_relic'])))}) - a closed window 2026-06-12..06-21 carrying no
+economic verdict at all. Logical basket symbols also lack <code>.DWX</code> but are <b>not</b>
+relics and remain fully included.<br>
+<b>Storage phases not shown:</b>
 {esc(', '.join(f'{k} {v}' for k, v in data['skipped_phase'].most_common(6))) or '—'}<br>
-Read-only. Keine Aktionspfade. Erhebung {data['collect_s']:.1f}s über
-{fmt(data['rows_seen'])} Work-Item-Zeilen.
+Read-only. No action paths. Collected in {data['collect_s']:.1f}s over
+{fmt(data['rows_seen'])} work-item rows.
 </footer>
 <script id="mdl" type="application/json">{json.dumps(detail_model, separators=(",", ":"))}</script>
 <script id="syms" type="application/json">{json.dumps(all_syms, separators=(",", ":"), ensure_ascii=False)}</script>
 <script>{JS}</script></body></html>"""
 
 
+# ══════════════════════════════════════════════════════════════════════
+# Detailseite je Strategy Card (OWNER 2026-08-23)
+# ══════════════════════════════════════════════════════════════════════
+
+DETAIL_DIR = FARM_ROOT / "dashboards" / "strategy_detail"
+MISSING_CARDS: set[str] = set()
+REPORT_ROOTS = ("D:/QM/reports/work_items", "D:/QM/reports/pipeline")
+CARD_BUCKETS = ("cards_approved", "cards_review", "cards_draft", "cards_rejected",
+                "cards_recovery", "cards_blocked_r3_data")
+
+# Frontmatter keys worth showing above the fold, in display order.
+FM_KEYS = [
+    ("period", "Timeframe"), ("target_symbols", "Target symbols"),
+    ("expected_trades_per_year_per_symbol", "Expected trades / year / symbol"),
+    ("expected_pf", "Expected profit factor"), ("expected_dd_pct", "Expected max DD %"),
+    ("risk_class", "Risk class"), ("primary_archetype", "Archetype"),
+    ("g0_status", "G0 status"), ("status", "Card status"), ("last_updated", "Card updated"),
+]
+
+
+def build_report_index() -> dict[str, list[str]]:
+    """work_item_id -> native MetaTrader 5 report files on disk.
+
+    One filesystem walk instead of a glob per work item. Coverage is deliberately
+    NOT assumed: reports of purged runs simply do not appear and the detail page
+    says so rather than linking into nothing."""
+    idx: dict[str, list[str]] = {}
+    for base in REPORT_ROOTS:
+        if not os.path.isdir(base):
+            continue
+        for root, _dirs, files in os.walk(base):
+            hits = [f for f in files if f.lower().endswith((".htm", ".html"))]
+            if not hits:
+                continue
+            wid = None
+            for seg in root.replace("\\", "/").split("/"):
+                if len(seg) == 36 and seg.count("-") == 4:
+                    wid = seg
+                    break
+                if "__" in seg and len(seg.split("__")[-1]) == 36:
+                    wid = seg.split("__")[-1]
+                    break
+            if wid:
+                idx.setdefault(wid, []).extend(os.path.join(root, f) for f in hits)
+    return idx
+
+
+def find_card(ea: str) -> tuple[Path | None, str]:
+    for bucket in CARD_BUCKETS:
+        d = FARM_ROOT / "artifacts" / bucket
+        if not d.is_dir():
+            continue
+        for path in d.glob(f"{ea}_*.md"):
+            return path, bucket
+    return None, ""
+
+
+def split_frontmatter(text: str) -> tuple[dict[str, str], str]:
+    """Minimal frontmatter reader: scalar keys and inline lists only.
+
+    Deliberately shallow — the page shows what it can read and prints the raw
+    card underneath, so nothing is silently lost to a parser shortcut."""
+    if not text.startswith("---"):
+        return {}, text
+    end = text.find("\n---", 3)
+    if end < 0:
+        return {}, text
+    head, body = text[3:end], text[end + 4:]
+    fm: dict[str, str] = {}
+    for line in head.split("\n"):
+        if not line or line[0] in " \t-#":
+            continue
+        if ":" not in line:
+            continue
+        k, _, v = line.partition(":")
+        v = v.strip().strip('"').strip("'")
+        if v:
+            fm[k.strip()] = v
+    return fm, body
+
+
+_MD_INLINE = [
+    (re.compile(r"`([^`]+)`"), r"<code>\1</code>"),
+    (re.compile(r"\*\*([^*]+)\*\*"), r"<strong>\1</strong>"),
+]
+
+
+def md_inline(s: str) -> str:
+    out = esc(s)
+    for pat, rep in _MD_INLINE:
+        out = pat.sub(rep, out)
+    return out
+
+
+def md_to_html(md: str) -> str:
+    """Small, predictable Markdown subset: headings, lists, tables, code, rules."""
+    lines = md.split("\n")
+    out: list[str] = []
+    i = 0
+    in_code = False
+    list_tag = None
+
+    def close_list():
+        nonlocal list_tag
+        if list_tag:
+            out.append(f"</{list_tag}>")
+            list_tag = None
+
+    while i < len(lines):
+        ln = lines[i].rstrip()
+        if ln.startswith("```"):
+            close_list()
+            out.append("</pre>" if in_code else "<pre>")
+            in_code = not in_code
+            i += 1
+            continue
+        if in_code:
+            out.append(esc(ln))
+            i += 1
+            continue
+        if not ln.strip():
+            close_list()
+            i += 1
+            continue
+        if ln.startswith("|") and i + 1 < len(lines) and set(lines[i + 1].replace("|", "").strip()) <= set("-: "):
+            close_list()
+            head = [c.strip() for c in ln.strip("|").split("|")]
+            out.append("<table><thead><tr>"
+                       + "".join(f"<th>{md_inline(c)}</th>" for c in head)
+                       + "</tr></thead><tbody>")
+            i += 2
+            while i < len(lines) and lines[i].startswith("|"):
+                cells = [c.strip() for c in lines[i].strip("|").split("|")]
+                out.append("<tr>" + "".join(f"<td>{md_inline(c)}</td>" for c in cells) + "</tr>")
+                i += 1
+            out.append("</tbody></table>")
+            continue
+        m = re.match(r"^(#{1,6})\s+(.*)$", ln)
+        if m:
+            close_list()
+            lvl = min(len(m.group(1)) + 2, 6)
+            out.append(f"<h{lvl}>{md_inline(m.group(2))}</h{lvl}>")
+            i += 1
+            continue
+        if re.match(r"^\s*[-*]\s+", ln):
+            if list_tag != "ul":
+                close_list()
+                out.append("<ul>")
+                list_tag = "ul"
+            out.append("<li>" + md_inline(re.sub(r"^\s*[-*]\s+", "", ln)) + "</li>")
+            i += 1
+            continue
+        if re.match(r"^\s*\d+[.)]\s+", ln):
+            if list_tag != "ol":
+                close_list()
+                out.append("<ol>")
+                list_tag = "ol"
+            out.append("<li>" + md_inline(re.sub(r"^\s*\d+[.)]\s+", "", ln)) + "</li>")
+            i += 1
+            continue
+        if set(ln.strip()) <= set("-") and len(ln.strip()) >= 3:
+            close_list()
+            out.append("<hr>")
+            i += 1
+            continue
+        close_list()
+        para = [ln.strip()]
+        i += 1
+        while i < len(lines):
+            nxt = lines[i].rstrip()
+            if not nxt.strip():
+                break
+            if (nxt.startswith(("#", "|", "```", "- ", "* "))
+                    or re.match(r"^\s*\d+[.)]\s+", nxt)
+                    or (set(nxt.strip()) <= set("-") and len(nxt.strip()) >= 3)):
+                break
+            para.append(nxt.strip())
+            i += 1
+        out.append(f"<p>{md_inline(' '.join(para))}</p>")
+    close_list()
+    if in_code:
+        out.append("</pre>")
+    return "\n".join(out)
+
+
+DETAIL_CSS = """
+:root{--bg:#0c0f16;--s1:#151a23;--s2:#1c2330;--s3:#27303f;--tx:#e8ebf0;--tx2:#b6bdc8;
+--tx3:#868e9c;--tx4:#5b6472;--bd:#222a37;--bd2:#313a49;--pass:#30be69;--fail:#f05a5e;
+--void:#e19a24;--open:#6b7280;--hole:#84a2ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);
+font:14px/1.65 "Inter",-apple-system,Segoe UI,system-ui,sans-serif}
+.page{max-width:1180px;margin:0 auto;padding:22px 26px 60px}
+a{color:var(--hole)}
+h1{font-size:20px;margin:0 0 3px;letter-spacing:-.01em}
+h2{font-size:15px;margin:30px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--bd2);
+font-weight:600;letter-spacing:.01em}
+h3{font-size:13.5px;margin:20px 0 6px;color:var(--tx2)}
+.sub{color:var(--tx3);font-size:12px;margin-bottom:16px}
+.mono,code{font-family:"JetBrains Mono",ui-monospace,Consolas,monospace;font-size:12px}
+code{background:var(--s2);padding:1px 4px}
+pre{background:var(--s1);border-left:2px solid var(--bd2);padding:10px 12px;overflow-x:auto;
+font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--tx2)}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:1px;
+background:var(--bd);border:1px solid var(--bd);margin:14px 0}
+.facts div{background:var(--s1);padding:8px 11px}
+.facts b{display:block;color:var(--tx4);font-size:10px;text-transform:uppercase;
+letter-spacing:.07em;font-weight:500;margin-bottom:2px}
+.facts span{font-size:12.5px;color:var(--tx)}
+table{border-collapse:collapse;width:100%;font-size:12px;margin:10px 0}
+th{text-align:left;color:var(--tx3);font-weight:500;border-bottom:1px solid var(--bd2);
+padding:5px 8px;white-space:nowrap}
+td{border-bottom:1px solid var(--bd);padding:4px 8px;vertical-align:top}
+tr:hover td{background:var(--s1)}
+.v{font-family:"JetBrains Mono",monospace;font-size:11px;padding:1px 5px;white-space:nowrap}
+.v.p{color:var(--pass)}.v.f{color:var(--fail)}.v.v{color:var(--void)}
+.v.o{color:var(--open)}.v.g{color:var(--tx4)}
+.note{border-left:3px solid var(--void);background:rgba(225,154,36,.06);padding:9px 12px;
+color:var(--tx2);font-size:12px;margin:14px 0}
+.back{display:inline-block;margin-bottom:14px;font-size:12px}
+footer{margin-top:36px;padding-top:12px;border-top:1px solid var(--bd);color:var(--tx4);
+font-size:11.5px;line-height:1.75}
+.wrap{overflow-x:auto}
+"""
+
+
+def _vclass(verdict: str, tax: str) -> str:
+    if tax == "open":
+        return "o"
+    if tax in ("infra", "invalid"):
+        return "v"
+    if verdict.startswith("PASS"):
+        return "p"
+    if tax == "strategy":
+        return "f"
+    return "g"
+
+
+def render_detail(ea: str, slug: str, items: list, reports: dict) -> str:
+    card_path, bucket = find_card(ea)
+    fm, body = ({}, "")
+    if card_path:
+        raw = card_path.read_text(encoding="utf-8", errors="replace")
+        fm, body = split_frontmatter(raw)
+
+    title = fm.get("slug") or slug or ea
+    facts = []
+    for key, label in FM_KEYS:
+        if fm.get(key):
+            facts.append(f"<div><b>{esc(label)}</b><span>{esc(fm[key])}</span></div>")
+    n_reports = sum(1 for it in items if reports.get(it["id"]))
+
+    rows = []
+    for it in items:
+        rl = reports.get(it["id"], [])
+        links = " ".join(
+            f'<a href="file:///{esc(pth.replace(chr(92), "/"))}">report {n + 1}</a>'
+            for n, pth in enumerate(rl[:4]))
+        if not links:
+            links = '<span style="color:var(--tx4)">report purged</span>'
+        ev = it["evidence"]
+        ev_link = (f'<a href="file:///{esc(ev.replace(chr(92), "/"))}">evidence</a>'
+                   if ev and os.path.exists(ev) else "")
+        rows.append(
+            f'<tr><td class="mono">{esc((it["upd"] or "")[:16].replace("T", " "))}</td>'
+            f'<td class="mono">{esc(it["phase"])}</td><td class="mono">{esc(it["symbol"])}</td>'
+            f'<td><span class="v {_vclass(it["verdict"], it["tax"])}">{esc(it["verdict"] or "-")}</span></td>'
+            f'<td class="mono" style="color:var(--tx4)">{esc(it["tax"])}</td>'
+            f'<td>{links} {ev_link}</td>'
+            f'<td class="mono" style="color:var(--tx4)">{esc(it["id"][:8])}</td></tr>')
+
+    if not card_path:
+        MISSING_CARDS.add(ea)
+    card_html = md_to_html(body) if body else (
+        '<p style="color:var(--tx4)">No strategy card found on disk for this EA id.</p>')
+
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>{esc(ea)} · {esc(title)}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>{DETAIL_CSS}</style></head><body><div class="page">
+<a class="back" href="../strategy_archive_matrix_prototype.html">&larr; Strategy Archive Matrix</a>
+<h1>{esc(ea)} <span style="color:var(--tx3);font-weight:400">{esc(title)}</span></h1>
+<div class="sub">{len(items)} backtest rows · {n_reports} with a native MetaTrader 5 report on disk
+· card bucket <code>{esc(bucket or 'none')}</code></div>
+<div class="facts">{''.join(facts)}</div>
+{'<div class="note"><b>Source:</b> ' + md_inline(fm['source_citation']) + '</div>' if fm.get('source_citation') else ''}
+<h2>Strategy</h2>
+{card_html}
+<h2>Backtests</h2>
+<div class="note">Every stored run for this EA, newest first — including superseded attempts and
+voided runs. A native MetaTrader 5 report is linked where the file still exists on disk;
+older runs were purged by disk maintenance and say so instead of linking into nothing.</div>
+<div class="wrap"><table><thead><tr><th>updated (UTC)</th><th>gate</th><th>symbol</th>
+<th>verdict</th><th>taxonomy</th><th>artifacts</th><th>work item</th></tr></thead>
+<tbody>{''.join(rows)}</tbody></table></div>
+<footer>QuantMechanica V5 · Strategy Archive detail page (prototype) · read-only ·
+generated from <code>work_items_clean</code> and the approved strategy card ·
+verdict semantics follow the pipeline taxonomy, never a hand-written summary.</footer>
+</div></body></html>"""
+
+
+def emit_detail_pages(conn_rows: dict, reports: dict, slugs: dict) -> dict:
+    DETAIL_DIR.mkdir(parents=True, exist_ok=True)
+    written = 0
+    total_bytes = 0
+    for ea, items in conn_rows.items():
+        items.sort(key=lambda r: r["upd"] or "", reverse=True)
+        doc = render_detail(ea, slugs.get(ea, ""), items, reports)
+        path = DETAIL_DIR / f"{ea}.html"
+        path.write_text(doc, encoding="utf-8")
+        written += 1
+        total_bytes += len(doc.encode("utf-8"))
+    return {"pages": written, "mb": round(total_bytes / 1048576, 1),
+            "pages_without_card": len(MISSING_CARDS)}
+
+
 def main() -> int:
     data = collect()
     t0 = time.perf_counter()
+
+    ti = time.perf_counter()
+    reports = build_report_index()
+    index_s = time.perf_counter() - ti
+    covered = sum(1 for items in data["all_items"].values()
+                  for it in items if reports.get(it["id"]))
+    total_items = sum(len(v) for v in data["all_items"].values())
+
+    td = time.perf_counter()
+    detail = emit_detail_pages(data["all_items"], reports, data["slugs"])
+    detail["seconds"] = round(time.perf_counter() - td, 1)
+    detail["work_items_with_report"] = covered
+    detail["work_items_total"] = total_items
+    detail["report_index_s"] = round(index_s, 1)
+    detail["indexed_work_items"] = len(reports)
+
     doc = render(data)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(doc, encoding="utf-8")
@@ -639,6 +981,7 @@ def main() -> int:
         "skipped_phases": dict(data["skipped_phase"].most_common()),
         "dropped_relic_rows": sum(data["dropped_relic"].values()),
         "dropped_relic_symbols": dict(data["dropped_relic"].most_common()),
+        "detail_pages": detail,
         "collect_s": round(data["collect_s"], 2),
         "render_s": round(time.perf_counter() - t0, 2),
     }, indent=2, ensure_ascii=False))

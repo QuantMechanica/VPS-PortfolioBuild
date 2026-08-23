@@ -117,6 +117,67 @@ Alle drei sind Schreibpfad-Änderungen an der Fabrik und damit **nicht** Teil di
 Visualisierung. Sie gehören als eigener Auftrag auf das Board; keiner davon ist dringend genug,
 den Prototyp aufzuhalten.
 
+## 4 · Nachtrag 2026-08-23 abends — Englisch, Relikt-Symbole, Detailseiten
+
+### 4.1 Oberfläche auf Englisch
+
+Matrix und Detailseiten sind vollständig englisch (OWNER 2026-08-23). Die Gate-Namen kommen
+unverändert aus dem Gate-Manifest, die Verdikt-Token bleiben die gespeicherten.
+
+### 4.2 Relikt-Symbole entfernt — mit korrigiertem Umfang
+
+Auftrag: „Symbole ohne `.DWX` überall raus, das sind Relikte." **Gemessen trifft das 228 von 995
+Nicht-DWX-Zeilen.** Der Rest ist keine Altlast:
+
+| Klasse | Symbolwerte | Zeilen | jüngste Aktivität |
+|---|---:|---:|---|
+| **Relikte** (nackte Ticker) | 9 | **228** | 2026-06-21 (geschlossen) |
+| logische Basket-Symbole | 234 | 767 | **2026-08-23 (heute)** |
+| leeres Symbol (Basket-Host) | 1 | 226 | **2026-08-23 (heute)** |
+
+Die 9 Relikte: GBPUSD 110 · USDJPY 90 · EURJPY 9 · GBPJPY 9 · AUDUSD 4 · EURUSD 3 ·
+NZDUSD/USDCAD/USDCHF je 1. **196 davon tragen bereits `OBSOLETE_NON_DWX_SYMBOL`**, die übrigen 32
+`INFRA_FAIL`/`INVALID` — kein einziges wirtschaftliches Urteil darunter. Ein wörtlich ausgeführtes
+„alles ohne .DWX löschen" hätte **993 Zeilen laufender Basket-Arbeit vernichtet**, davon Zeilen
+von heute.
+
+Umgesetzt ist deshalb die **Verdrängung aus der Darstellung**, nicht die Löschung: der Renderer
+klassifiziert `dwx` / `basket` / `relic` und schließt nur die Relikt-Klasse aus — aus `work_items`
+und aus den Karten-Zielsymbolen gleichermaßen (7 Karten trugen 27 Nicht-DWX-Ziele inklusive
+`TBD_*`-Platzhalter, die Q02-Löcher auf nicht existierenden Symbolen erfunden haben). Die Fußzeile
+nennt jedes ausgeschlossene Symbol samt Zeilenzahl.
+
+**Keine Datenbankzeile wurde gelöscht.** Verdikte zu löschen ist ROT-Zone; für die 228 Zeilen
+liegt eine ausdrückliche OWNER-Freigabe auf den korrigierten Umfang noch nicht vor.
+
+### 4.3 Detailseite je Strategy Card
+
+`strategy_detail/<ea>.html`, verlinkt aus der ersten Spalte der Matrix.
+
+| Größe | Wert |
+|---|---|
+| Seiten | **2.984** (62,3 MB gesamt, ~21 KB je Seite) |
+| Erzeugung | 27,8 s + 21,6 s Report-Index |
+| Work Items dargestellt | 110.077 (**alle** Versuche, auch superseded und verbrannt) |
+| davon mit nativem MT5-Report auf Platte | **17.397 (15,8 %)** |
+| Seiten ohne Strategy Card auf Platte | **391 (13,1 %)** |
+
+Inhalt: Kopfdaten aus dem Karten-Frontmatter (Timeframe, Zielsymbole, erwartete Frequenz,
+erwarteter PF/DD, Risikoklasse, G0-Status), Quellenzitat, die **vollständige Karte gerendert**
+(Source, Edge thesis, Rules, dokumentierte Abweichungen, GAPs, Kosten/Compliance) und darunter
+eine Tabelle **jedes** gespeicherten Laufs mit Datum, Gate, Symbol, Verdikt, Taxonomie und
+Direktlink auf `report.htm` — den nativen MetaTrader-5-Report.
+
+**Report-Abdeckung ehrlich ausgewiesen:** der Index über `D:\QM\reports` findet 46.822
+Reportdateien zu 17.471 Work Items. Ältere Läufe wurden von der Plattenpflege entfernt; die
+Zeile sagt dann „report purged" statt ins Leere zu verlinken. Abdeckung nach Alter gemessen:
+jüngste 500 Zeilen 97 %, letzte 30 Tage 95 %, vor dem 01.06. **0 %**.
+
+**Befund nebenbei:** die 3.191 bestehenden `ea_*.html`-Detailseiten enthalten **keine**
+Strategieerklärung (0 Treffer für Mechanism/Card/Quelle) und verlinken bei QM5_13036 genau
+3 von 21 Läufen. Der Vollausbau sollte die neue Detailseite in `render_dashboards.py`
+übernehmen, statt beide Seiten nebeneinander zu pflegen.
+
 ## 3 · Nächster Schritt
 
 OWNER sieht sich die Seite an. Danach: Abnahme oder Änderungswünsche, dann Vollausbau in
