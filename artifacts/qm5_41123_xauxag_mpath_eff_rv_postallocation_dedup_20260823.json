@@ -1,0 +1,53 @@
+{
+  "candidate": {
+    "author": "Karsten Schweikert; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; CME Group",
+    "mechanic": "exact XAUUSD XAGUSD synchronized D1 first broker month boundary immediately completed calendar month 17 to 23 relative log ratio closes absolute net displacement divided by sum absolute daily ratio returns at least 0.20 fade displacement equal notional opposite legs aggregate fixed risk one month hold",
+    "slug": "xauxag-mpath-eff-rv",
+    "strategy_id": "SCHWEIKERT-MOP-CME-XAUXAG-MPATH-EFF-RV-2026_S01"
+  },
+  "error": null,
+  "exit_code": 2,
+  "generated_at_utc": "2026-08-23T01:56:14+00:00",
+  "matches": [
+    {
+      "ea_id": "41123",
+      "match_type": "slug",
+      "slug": "xauxag-mpath-eff-rv",
+      "source": "ea_id_registry",
+      "strategy_id": "SCHWEIKERT-MOP-CME-XAUXAG-MPATH-EFF-RV-2026_S01"
+    },
+    {
+      "ea_id": "41123",
+      "match_type": "strategy_id",
+      "slug": "xauxag-mpath-eff-rv",
+      "source": "ea_id_registry",
+      "strategy_id": "SCHWEIKERT-MOP-CME-XAUXAG-MPATH-EFF-RV-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4623,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1291,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "DUPLICATE"
+}
