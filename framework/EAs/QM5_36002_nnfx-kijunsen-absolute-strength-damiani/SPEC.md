@@ -2,9 +2,9 @@
 
 **EA ID:** QM5_36002
 **Slug:** `nnfx-kijunsen-absolute-strength-damiani`
-**Source:** `nnfx-kijunsen-absolute-strength-damiani-official-source` (see `strategy-seeds/sources/nnfx-kijunsen-absolute-strength-damiani/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-08-17
+**Source:** `nnfx-kijunsen-absolute-strength-damiani-official-source`
+**Author of this spec:** Codex
+**Last revised:** 2026-08-23
 
 ---
 
@@ -19,11 +19,21 @@ Entry/exit logic is encoded in the five `Strategy_*` hooks in
 `QM5_36002_nnfx-kijunsen-absolute-strength-damiani.mq5`. Framework wiring (risk, magic, news, Friday close)
 is inherited from `QM_Common.mqh` and is not redocumented here.
 
-The NNFX algorithmic framework on D1 combines Kijun-Sen (Baseline), Absolute Strength Oscillator (C1 Trigger), Aroon (C2 Confirmation), and Damiani Volatmeter (Volume/Volatility filter):
+The EA trades D1 trend alignment only after a completed bar. A long requires the
+last close above Kijun-Sen(26), average positive close-to-close movement over
+10 bars above average negative movement, Aroon-Up(25) at least 70, and the
+Damiani volatility ratio above its anti-threshold; a short reverses those
+directional tests. Every entry has a 1.0 ATR(14) stop, half the position closes
+after a favorable 1.0 ATR move, and the remainder exits when the completed-bar
+close returns across Kijun-Sen.
+
+The exact mechanical implementation is:
+
 - Baseline: Ichimoku Kijun-Sen(26) evaluated on completed D1 bars (Shift=1).
-- C1 Trigger: Absolute Strength Oscillator (ASO 10) comparing Bulls Power vs Bears Power.
+- C1 Trigger: ASO(10) is the arithmetic mean of positive D1 close deltas versus
+  the arithmetic mean of absolute negative D1 close deltas.
 - C2 Confirmation: Aroon(25) measuring periods since high/low with confirmation threshold 70.0.
-- Volume Gate: Damiani Volatmeter (viscosity ATR 13 vs sedimentation ATR 40) confirming volatility expansion above anti-threshold.
+- Volume Gate: Damiani uses `ATR(13)/ATR(40) > 1.40 * StdDev(13)/StdDev(40)`.
 - Long Entry: Close[1] > Kijun[1] AND ASO_Bulls[1] > ASO_Bears[1] AND AroonUp[1] >= 70.0 AND Damiani Trade == TRUE.
 - Short Entry: Close[1] < Kijun[1] AND ASO_Bears[1] > ASO_Bulls[1] AND AroonDown[1] >= 70.0 AND Damiani Trade == TRUE.
 - Stop Loss: Placed at 1.0 * ATR(14, D1)[1] from entry.
@@ -58,6 +68,7 @@ The NNFX algorithmic framework on D1 combines Kijun-Sen (Baseline), Absolute Str
 | `strategy_daily_hard_stop_pct` | 2.5 | 0.1 - 5.0 | Restart-safe framework daily equity hard stop |
 | `strategy_total_dd_halt_pct` | 5.0 | 0.1 - 10.0 | Account-level total-drawdown signal threshold |
 | `strategy_per_trade_risk_cap_pct` | 0.5 | 0.1 - 1.0 | Framework per-trade risk cap |
+| `strategy_slippage_ticks` | 3 | 1 - 3 | Maximum market-order deviation, converted from trade ticks to symbol points |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -69,10 +80,10 @@ The NNFX algorithmic framework on D1 combines Kijun-Sen (Baseline), Absolute Str
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — registered in magic_numbers.csv for this EA (slot 0)
-- `GBPJPY.DWX` — registered in magic_numbers.csv for this EA (slot 1)
-- `AUDCAD.DWX` — registered in magic_numbers.csv for this EA (slot 2)
-- `NZDUSD.DWX` — registered in magic_numbers.csv for this EA (slot 3)
+- `EURUSD.DWX` — card-targeted liquid major with canonical DWX D1 history (slot 0).
+- `GBPJPY.DWX` — card-targeted volatile FX cross with canonical DWX D1 history (slot 1).
+- `AUDCAD.DWX` — card-targeted commodity-currency cross with canonical DWX D1 history (slot 2).
+- `NZDUSD.DWX` — card-targeted liquid major with canonical DWX D1 history (slot 3).
 
 **Explicitly NOT for:** any symbol not in the list above (no implicit
 universe expansion at runtime; the `QM_SymbolGuard` framework helper
@@ -86,7 +97,7 @@ rejects foreign symbols).
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_D1)` |
 
 ---
 
@@ -94,12 +105,12 @@ rejects foreign symbols).
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 25 |
-| Cadence note | "80-160 high-conviction trades per year across 4 pairs" |
-| Typical hold time | Daily swing (several D1 bars, up to 1-3 weeks) |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | Multi-indicator trend consensus with confirmed volatility expansion |
-| Win rate target (qualitative) | high |
+| Trades / year / symbol | 25 (`expected_trades_per_year_per_symbol`) |
+| Expected trade frequency | `80-160 high-conviction trades per year` across the four-symbol basket |
+| Typical hold time | Not specified by the card; D1 runner remains open until Kijun re-cross or a framework exit |
+| Expected drawdown profile | Frontmatter prior 18%; card hard-stop contract is 2.5% daily and 5.0% total |
+| Regime preference | Trend-following with volatility expansion (inferred from the stated entry rules) |
+| Expected profit factor | 1.35 frontmatter prior; source performance claims are not relied upon |
 
 ---
 
@@ -108,9 +119,10 @@ rejects foreign symbols).
 This card was mechanised from:
 
 **Source ID:** `nnfx-kijunsen-absolute-strength-damiani-official-source`
-**Pointer:** `strategy-seeds/sources/nnfx-kijunsen-absolute-strength-damiani/`
-**R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_36002_nnfx-kijunsen-absolute-strength-damiani.md`
+**Source type:** verified quantitative model / NNFX indicator-profile source
+**Pointer:** `No Nonsense Forex Advanced Indicator Profile Library, nononsenseforex.com`
+**R1–R4 verdict (Q00):** R1 lineage recorded and R2–R4 PASS per
+`artifacts/cards_approved/QM5_36002_nnfx-kijunsen-absolute-strength-damiani.md`.
 
 ---
 
@@ -125,3 +137,9 @@ This card was mechanised from:
 ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-08-23 | Initial build from card | a48f0404-cbba-4611-9eaa-bbd9e4f82a75 |

@@ -4,7 +4,6 @@
 // Strategy Card: QM5_36002 (nnfx-kijunsen-absolute-strength-damiani), G0 APPROVED 2026-08-15.
 
 #include <QM/QM_Common.mqh>
-#include <Trade/Trade.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA: QM5_36002
@@ -54,6 +53,11 @@ input double strategy_daily_loss_halt_pct = 2.0;    // Daily realized-loss entry
 input double strategy_daily_hard_stop_pct = 2.5;    // Daily equity hard stop percent
 input double strategy_total_dd_halt_pct   = 5.0;    // Account-level total drawdown stop percent
 input double strategy_per_trade_risk_cap_pct = 0.5; // Per-trade risk cap percent
+input int    strategy_slippage_ticks      = 3;      // Market-order slippage tolerance in trade ticks
+
+double g_closed_close_1 = 0.0;
+double g_closed_kijun_1 = 0.0;
+double g_closed_atr_1   = 0.0;
 
 // -----------------------------------------------------------------------------
 // Helpers & Indicator Math
@@ -70,9 +74,12 @@ bool Strategy_ConfigValid()
 {
    if(strategy_kijun_period < 2 || strategy_tenkan_period < 2 || strategy_senkou_period < 2)
       return false;
-   if(strategy_aso_period < 1 || strategy_aroon_period < 2)
+   if(strategy_aso_period < 2 || strategy_aroon_period < 2)
       return false;
-   if(strategy_damiani_vis_period < 2 || strategy_damiani_sed_period < 2)
+   if(strategy_aroon_threshold <= 0.0 || strategy_aroon_threshold > 100.0)
+      return false;
+   if(strategy_damiani_vis_period < 2 || strategy_damiani_sed_period <= strategy_damiani_vis_period ||
+      strategy_damiani_threshold <= 0.0)
       return false;
    if(strategy_atr_period < 2 || strategy_sl_atr_mult <= 0.0 || strategy_tp_atr_mult <= 0.0)
       return false;
@@ -84,6 +91,8 @@ bool Strategy_ConfigValid()
       strategy_daily_loss_halt_pct > strategy_daily_hard_stop_pct || strategy_total_dd_halt_pct <= 0.0)
       return false;
    if(strategy_per_trade_risk_cap_pct <= 0.0 || strategy_per_trade_risk_cap_pct > 1.0)
+      return false;
+   if(strategy_slippage_ticks < 1 || strategy_slippage_ticks > 3)
       return false;
    return true;
 }
@@ -111,17 +120,8 @@ bool Strategy_HasOpenPosition()
 double Strategy_KijunSen(const string sym, const int shift)
 {
    if(shift < 1) return 0.0;
-   const double kijun = QM_Ichimoku_KijunSen(sym, PERIOD_D1, strategy_tenkan_period, strategy_kijun_period, strategy_senkou_period, shift);
-   if(kijun > 0.0) return kijun;
-
-   // Closed-form fallback if handle read is delayed
-   const int high_idx = iHighest(sym, PERIOD_D1, MODE_HIGH, strategy_kijun_period, shift);
-   const int low_idx  = iLowest(sym, PERIOD_D1, MODE_LOW, strategy_kijun_period, shift);
-   if(high_idx < shift || low_idx < shift) return 0.0;
-   const double hi = iHigh(sym, PERIOD_D1, high_idx);
-   const double lo = iLow(sym, PERIOD_D1, low_idx);
-   if(hi <= 0.0 || lo <= 0.0) return 0.0;
-   return (hi + lo) * 0.5;
+   return QM_Ichimoku_KijunSen(sym, PERIOD_D1, strategy_tenkan_period,
+                               strategy_kijun_period, strategy_senkou_period, shift);
 }
 
 bool Strategy_ASO(const string sym, const int period, const int shift, double &aso_bulls, double &aso_bears)
@@ -134,8 +134,8 @@ bool Strategy_ASO(const string sym, const int period, const int shift, double &a
    for(int k = 0; k < period; ++k)
    {
       const int s = shift + k;
-      const double c      = iClose(sym, PERIOD_D1, s);
-      const double c_prev = iClose(sym, PERIOD_D1, s + 1);
+      const double c      = iClose(sym, PERIOD_D1, s);     // perf-allowed: bespoke ASO close-delta math, called only behind the framework D1 new-bar gate.
+      const double c_prev = iClose(sym, PERIOD_D1, s + 1); // perf-allowed: bespoke ASO close-delta math, called only behind the framework D1 new-bar gate.
       if(c <= 0.0 || c_prev <= 0.0) return false;
       if(c > c_prev)
          sum_bulls += (c - c_prev);
@@ -152,8 +152,8 @@ bool Strategy_Aroon(const string sym, const int period, const int shift, double 
    aroon_up = 0.0;
    aroon_down = 0.0;
    if(period <= 1 || shift < 1) return false;
-   const int high_shift = iHighest(sym, PERIOD_D1, MODE_HIGH, period, shift);
-   const int low_shift  = iLowest(sym, PERIOD_D1, MODE_LOW, period, shift);
+   const int high_shift = iHighest(sym, PERIOD_D1, MODE_HIGH, period, shift); // perf-allowed: bespoke Aroon window, called only behind the framework D1 new-bar gate.
+   const int low_shift  = iLowest(sym, PERIOD_D1, MODE_LOW, period, shift);   // perf-allowed: bespoke Aroon window, called only behind the framework D1 new-bar gate.
    if(high_shift < shift || low_shift < shift) return false;
    const int periods_since_high = high_shift - shift;
    const int periods_since_low  = low_shift - shift;
@@ -171,7 +171,7 @@ bool Strategy_DamianiTrade(const string sym, const int shift)
    if(atr_sed <= 0.0 || std_sed <= 0.0) return false;
    const double vol  = atr_vis / atr_sed;
    const double anti = (std_vis / std_sed) * strategy_damiani_threshold;
-   return (vol > anti || vol >= 1.0);
+   return (vol > anti);
 }
 
 // -----------------------------------------------------------------------------
@@ -188,14 +188,13 @@ bool Strategy_NoTradeFilter()
    if(Strategy_DailyRealizedLossHalt())
       return true;
 
-   const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ask > 0.0 && bid > 0.0 && ask > bid && point > 0.0 && atr_1 > 0.0)
+   if(ask > 0.0 && bid > 0.0 && ask > bid && point > 0.0 && g_closed_atr_1 > 0.0)
    {
       const double spread_pts = (ask - bid) / point;
-      const double atr_pts = atr_1 / point;
+      const double atr_pts = g_closed_atr_1 / point;
       if(spread_pts > strategy_spread_atr_mult * atr_pts)
          return true;
    }
@@ -219,12 +218,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasOpenPosition())
       return false;
 
-   const double close_1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed-bar reference behind QM_IsNewBar()
-   if(close_1 <= 0.0)
+   if(g_closed_close_1 <= 0.0)
       return false;
 
-   const double kijun_1 = Strategy_KijunSen(_Symbol, 1);
-   if(kijun_1 <= 0.0)
+   if(g_closed_kijun_1 <= 0.0)
       return false;
 
    double aso_bulls = 0.0, aso_bears = 0.0;
@@ -238,43 +235,35 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_DamianiTrade(_Symbol, 1))
       return false;
 
-   const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(atr_1 <= 0.0)
+   if(g_closed_atr_1 <= 0.0)
       return false;
-
-   const double pip_size = QM_StopRulesPipsToPriceDistance(_Symbol, 1.0);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(pip_size <= 0.0 || point <= 0.0)
-      return false;
-
-   const double sl_dist = MathMax(strategy_sl_atr_mult * atr_1, 10.0 * pip_size);
 
    // Long: Close[1] > Kijun[1] AND ASO_Bulls[1] > ASO_Bears[1] AND AroonUp[1] >= 70.0 AND Damiani Trade == TRUE
-   if(close_1 > kijun_1 && aso_bulls > aso_bears && aroon_up >= strategy_aroon_threshold)
+   if(g_closed_close_1 > g_closed_kijun_1 && aso_bulls > aso_bears && aroon_up >= strategy_aroon_threshold)
    {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double exec_price = (ask > 0.0) ? ask : close_1;
+      const double exec_price = (ask > 0.0) ? ask : g_closed_close_1;
 
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = QM_TM_NormalizePrice(_Symbol, exec_price - sl_dist);
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, exec_price, g_closed_atr_1, strategy_sl_atr_mult);
       req.tp = 0.0; // TP1 is a managed 50% partial close; the remainder is the Kijun runner.
       req.reason = "nnfx_kijun_aso_long";
-      return true;
+      return (req.sl > 0.0);
    }
 
    // Short: Close[1] < Kijun[1] AND ASO_Bears[1] > ASO_Bulls[1] AND AroonDown[1] >= 70.0 AND Damiani Trade == TRUE
-   if(close_1 < kijun_1 && aso_bears > aso_bulls && aroon_down >= strategy_aroon_threshold)
+   if(g_closed_close_1 < g_closed_kijun_1 && aso_bears > aso_bulls && aroon_down >= strategy_aroon_threshold)
    {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double exec_price = (bid > 0.0) ? bid : close_1;
+      const double exec_price = (bid > 0.0) ? bid : g_closed_close_1;
 
       req.type = QM_SELL;
       req.price = 0.0;
-      req.sl = QM_TM_NormalizePrice(_Symbol, exec_price + sl_dist);
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, exec_price, g_closed_atr_1, strategy_sl_atr_mult);
       req.tp = 0.0; // TP1 is a managed 50% partial close; the remainder is the Kijun runner.
       req.reason = "nnfx_kijun_aso_short";
-      return true;
+      return (req.sl > 0.0);
    }
 
    return false;
@@ -282,9 +271,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
 {
+   // This calendar edge is independent of the framework entry new-bar tracker,
+   // so it cannot consume the single QM_IsNewBar event used below in OnTick.
+   if(QM_IsNewCalendarPeriod(PERIOD_D1, _Symbol))
+   {
+      g_closed_close_1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: one closed D1 read per calendar-period edge.
+      g_closed_kijun_1 = Strategy_KijunSen(_Symbol, 1);
+      g_closed_atr_1   = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   }
+
    const int magic = QM_FrameworkMagic();
    if(magic <= 0) return;
-   const double pip_size = QM_StopRulesPipsToPriceDistance(_Symbol, 1.0);
+   const double pip_size = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(pip_size <= 0.0 || point <= 0.0) return;
 
@@ -341,11 +339,7 @@ bool Strategy_ExitSignal()
    const int magic = QM_FrameworkMagic();
    if(magic <= 0) return false;
 
-   const double close_1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed-bar reference behind QM_IsNewBar()
-   if(close_1 <= 0.0) return false;
-
-   const double kijun_1 = Strategy_KijunSen(_Symbol, 1);
-   if(kijun_1 <= 0.0) return false;
+   if(g_closed_close_1 <= 0.0 || g_closed_kijun_1 <= 0.0) return false;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
    {
@@ -358,13 +352,13 @@ bool Strategy_ExitSignal()
       // Long exit: price re-crosses below Kijun-Sen line
       if(pos_type == POSITION_TYPE_BUY)
       {
-         if(close_1 < kijun_1)
+         if(g_closed_close_1 < g_closed_kijun_1)
             return true;
       }
       // Short exit: price re-crosses above Kijun-Sen line
       else if(pos_type == POSITION_TYPE_SELL)
       {
-         if(close_1 > kijun_1)
+         if(g_closed_close_1 > g_closed_kijun_1)
             return true;
       }
    }
@@ -398,11 +392,27 @@ int OnInit()
                          strategy_total_dd_halt_pct,
                          strategy_per_trade_risk_cap_pct))
       return INIT_FAILED;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(point <= 0.0 || tick_size <= 0.0)
+      return INIT_FAILED;
+   const int deviation_points = (int)MathCeil(strategy_slippage_ticks * tick_size / point);
+   QM_EntryConfigure(qm_ea_id,
+                     qm_news_mode_legacy,
+                     deviation_points,
+                     qm_stress_reject_probability,
+                     qm_news_temporal,
+                     qm_news_compliance,
+                     QM_FrameworkMagic());
+
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_36002\"}");
    return INIT_SUCCEEDED;
 }
 
 void OnDeinit(const int reason)
 {
+   QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
    QM_FrameworkShutdown();
 }
 

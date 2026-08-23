@@ -14,7 +14,8 @@
 //   1. Prefer the previous completed D1 high/low; otherwise use the rolling
 //      20-bar H1 high/low ending at shift 2.
 //   2. Record a closed H1 bar that runs at least three pips beyond a level.
-//   3. Require a later closed H1 bar to finish back inside that level.
+//   3. Require the immediately following closed H1 bar to finish back inside
+//      that level.
 //   4. During the five-bar sequence, enter only when market price is within
 //      15 pips of the level.
 //   5. Place the stop one pip beyond the recorded stop-run extreme and target
@@ -249,13 +250,17 @@ bool Strategy_BuildConfirmedEntry(QM_EntryRequest &req)
    const double pullback_window = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_pullback_window_pips);
    const double sl_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
    const double max_stop = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_stop_pips);
-   if(max_spread <= 0.0 || pullback_window <= 0.0 || sl_buffer <= 0.0 || max_stop <= 0.0)
+   if(max_spread <= 0.0 || pullback_window <= 0.0 ||
+      strategy_sl_buffer_pips < 0 || max_stop <= 0.0)
       return false;
    if(spread > max_spread)
       return false;
 
    const double entry = (g_setup_direction > 0) ? ask : bid;
-   if(MathAbs(entry - g_setup_level) > pullback_window)
+   const bool pullback_reached = (g_setup_direction > 0)
+                                 ? (entry <= g_setup_level + pullback_window)
+                                 : (entry >= g_setup_level - pullback_window);
+   if(!pullback_reached)
       return false;
 
    double sl = (g_setup_direction > 0)
@@ -263,10 +268,16 @@ bool Strategy_BuildConfirmedEntry(QM_EntryRequest &req)
                : g_setup_extreme + sl_buffer;
    sl = QM_StopRulesNormalizePrice(_Symbol, sl);
 
+   const double extreme_distance = (g_setup_direction > 0)
+                                   ? entry - g_setup_extreme
+                                   : g_setup_extreme - entry;
    const double stop_distance = (g_setup_direction > 0)
                                 ? entry - sl
                                 : sl - entry;
-   if(stop_distance <= 0.0 || stop_distance > max_stop)
+   // The card's 60-pip cap is measured to the stop-run extreme; the
+   // separately parameterized one-pip safety buffer remains outside it.
+   if(extreme_distance <= 0.0 || extreme_distance > max_stop ||
+      stop_distance <= 0.0)
       return false;
    if(spread >= stop_distance)
       return false;
@@ -299,8 +310,11 @@ bool Strategy_AdvanceSetup(QM_EntryRequest &req)
       return false;
 
    ++g_setup_age_bars;
-   if(strategy_max_sequence_bars < 1 ||
-      g_setup_age_bars > strategy_max_sequence_bars)
+   // The card says "five candles total": stop-run candle is #1, and an
+   // entry placed now belongs to the current candle after the bars counted
+   // in g_setup_age_bars. Thus current sequence candle = age + 2.
+   if(strategy_max_sequence_bars < 3 ||
+      g_setup_age_bars + 2 > strategy_max_sequence_bars)
      {
       Strategy_ResetSetup();
       return false;
@@ -312,11 +326,22 @@ bool Strategy_AdvanceSetup(QM_EntryRequest &req)
 
    if(g_setup_state == SETUP_STOP_RUN_SEEN)
      {
+      // The card's mechanical Entry section requires Close[next_bar] back
+      // inside the level. A later recovery is a different setup.
+      if(g_setup_age_bars != 1)
+        {
+         Strategy_ResetSetup();
+         return false;
+        }
+
       const bool confirmed = (g_setup_direction > 0)
                              ? (closed_bar_close > g_setup_level)
                              : (closed_bar_close < g_setup_level);
       if(!confirmed)
+        {
+         Strategy_ResetSetup();
          return false;
+        }
       g_setup_state = SETUP_CONFIRMED;
      }
 
@@ -329,6 +354,26 @@ bool Strategy_AdvanceSetup(QM_EntryRequest &req)
 
 bool Strategy_NoTradeFilter()
   {
+   // Time filter: the approved sequence is H1-native and must not run on a
+   // chart period that changes the meaning of its five-candle timeout.
+   if(_Period != PERIOD_H1)
+      return true;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask < bid)
+      return true;
+
+   // Spread filter: DWX Model-4 tests legitimately quote ask==bid. Only a
+   // genuinely positive spread wider than the card's cap blocks entry.
+   if(ask > bid)
+     {
+      const double max_spread = QM_StopRulesPipsToPriceDistance(_Symbol,
+                                                                 strategy_max_spread_pips);
+      if(max_spread <= 0.0 || ask - bid > max_spread)
+         return true;
+     }
+
    return false;
   }
 

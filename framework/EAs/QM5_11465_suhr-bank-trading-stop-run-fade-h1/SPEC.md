@@ -4,7 +4,7 @@
 **Slug:** `suhr-bank-trading-stop-run-fade-h1`
 **Source:** `966a64b0-7975-5f93-81f6-ddc316a4e029`
 **Author of this spec:** Codex
-**Last revised:** 2026-08-22
+**Last revised:** 2026-08-23
 
 ---
 
@@ -14,12 +14,13 @@ This H1 FX EA fades structural stop runs. On each new H1 bar it first checks
 the latest closed candle against the previous completed D1 high/low. If neither
 previous-day level was swept, it checks the rolling 20-bar H1 high/low ending
 at shift 2. A setup begins when the candle trades at least three pips through a
-level. A later candle must close back inside that level, and a market entry is
-allowed only while price is within 15 pips of the level and the entire sequence
-is no more than five H1 bars old.
+level. The immediately following candle must close back inside that level, and
+a market entry is allowed only after price reaches the card's one-sided
+15-pip pullback boundary. The stop-run, confirmation, pullback, and entry must
+all fit inside five H1 candles total.
 
 The protective stop is one pip beyond the recorded stop-run candle extreme and
-setups requiring more than 60 pips of stop distance are skipped. The take profit
+setups whose entry is more than 60 pips from that extreme are skipped. The take profit
 is the nearest valid opposing structural level among the recent 10-bar H1
 extreme and the opposite previous-day extreme. An outside candle that sweeps
 both high and low candidates at the same priority is directionally ambiguous
@@ -40,8 +41,8 @@ on the framework's new-bar path.
 | `strategy_swing_lookback_bars` | 20 | fixed baseline | Closed H1 bars used for the rolling swing high/low, starting at shift 2. |
 | `strategy_target_lookback_bars` | 10 | fixed baseline | Closed H1 bars used for the opposing target extreme. |
 | `strategy_stop_run_pips` | 3 | 2 / 3 / 5 | Minimum excursion beyond a manipulation level. |
-| `strategy_pullback_window_pips` | 15 | 10 / 15 / 20 | Maximum absolute entry distance from the manipulation level. |
-| `strategy_max_sequence_bars` | 5 | 3 / 5 / 7 | Maximum bars after the stop-run candle in which confirmation and entry may occur. |
+| `strategy_pullback_window_pips` | 15 | 10 / 15 / 20 | One-sided pullback boundary above support or below resistance. |
+| `strategy_max_sequence_bars` | 5 | 3 / 5 / 7 | Total sequence candles, including the stop-run and entry candles. |
 | `strategy_sl_buffer_pips` | 1 | 0 / 1 / 2 | Stop buffer beyond the stop-run extreme. |
 | `strategy_max_stop_pips` | 60 | fixed baseline | Hard cap on entry-to-stop distance. |
 | `strategy_max_spread_pips` | 20 | fixed baseline | Hard entry spread cap; zero-spread DWX tests remain allowed. |
@@ -91,22 +92,21 @@ The strategy hook also fails closed for entry when the host chart is not H1.
 | Drawdown profile | False-breakout fades can cluster losses during persistent range expansion |
 | Regime preference | Stop-run rejection around obvious prior-day or recent swing liquidity levels |
 
-An unfilled setup expires after five H1 bars. The card's time limit applies to
-the setup sequence (`cancel if not triggered`), not to an already active trade.
+An unfilled setup expires after the fifth sequence candle. The card's time
+limit applies to the setup sequence (`cancel if not triggered`), not to an
+already active trade.
 
 ---
 
 ## 6. Source Citation
 
-The strategy is mechanised from Sterling Suhr, "Bank Trading Stop Run Fade,"
-in TradingPub's *6 Simple Strategies for Trading Forex* (~2015), associated
-with DayTradingForexLive.com. The durable approved card records R1 as
-`TIER_C` / conditional because this is a named but self-published source. Under
-the OWNER R1 policy dated 2026-07-23, R1 is informational; the card is OWNER
-approved with R2, R3, and R4 all `PASS`. No claim of independent performance
-verification is made.
-
-Approved-card copy: `docs/strategy_card.md`.
+**Source ID:** `966a64b0-7975-5f93-81f6-ddc316a4e029`
+**Source type:** book / self-published trading guide
+**Pointer:** Sterling Suhr, *6 Simple Strategies for Trading Forex* (~2015),
+"Bank Trading Stop Run Fade"; local PDF
+`459341651-6-Simple-Strategies-for-Trading-Forex-pdf.pdf`.
+**R1-R4 verdict (Q00):** R1 lineage recorded and R2-R4 PASS per
+`artifacts/cards_approved/QM5_11465_suhr-bank-trading-stop-run-fade-h1.md`.
 
 ---
 
@@ -114,14 +114,11 @@ Approved-card copy: `docs/strategy_card.md`.
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02-Q10) | `RISK_FIXED` | $1,000 per trade |
-| Live burn-in (Q13) | `RISK_PERCENT` | Determined only by the authorized live process |
-| Full live (post-Q13) | `RISK_PERCENT` | Determined only by portfolio allocation |
+| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-The EA source defaults to `RISK_PERCENT=0.0` and `RISK_FIXED=1000.0`.
-Generated Q02 setfiles must retain those fixed-risk values. Sizing is performed
-only by the V5 framework from the structural SL; the strategy never computes
-lots.
+ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -129,4 +126,4 @@ lots.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-22 | Initial mechanical build from OWNER-approved card | Standard build task `4d5f4cc2-d995-45e9-a2ea-9e066b2f17ca` |
+| v1 | 2026-08-23 | Initial build from card | 4d5f4cc2-d995-45e9-a2ea-9e066b2f17ca |

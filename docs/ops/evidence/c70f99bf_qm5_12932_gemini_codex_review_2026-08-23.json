@@ -1,0 +1,26 @@
+{
+  "review_task_id": "c70f99bf-2ad7-46a6-a399-3fa8b0213fa9",
+  "build_task_id": "d9a93eb1-ac7a-489c-bf8d-5e45162142dd",
+  "ea_id": "QM5_12932",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The approved card requires a plus/minus two-H4-bar high-impact-news entry blackout. Source defaults disable all news modes, and current build_gate_hardening reports EA_CARD_NEWS_WINDOW_MISMATCH because the required 480/480-minute window is absent.",
+    "Approved Gate 6 requires the pullback high to be within 0.5 ATR of either broken support L or the most recent significant pullback pivot high. Source lines 285-288 rejects only highs far below L, so highs arbitrarily far above L pass, and it never implements the alternative pivot-high branch.",
+    "The card requires 60% partial close at TP1, breakeven protection for the remainder, and TP2 at 1.5 range amplitudes. Source lines 337-348 instead puts the full broker position's take-profit at TP1; lines 378-389 only attempt a breakeven move at the same threshold, so the broker TP closes the whole position and TP2 is never represented.",
+    "The approved time stop is 50 completed H4 bars, but source lines 402-407 compares wall-clock elapsed seconds with 50 nominal H4 periods. Weekends and market closures advance this timer without producing H4 bars.",
+    "QM5_12932 calls QM_KillSwitchCheck before QM_FrameworkTrackOpenPositionMae at source lines 447-448. When the kill switch returns false, Q08 open-position MAE sampling is skipped, contrary to the V5 skeleton order.",
+    "Source lines 350-353 mark the range and entry time as consumed before QM_TM_OpenPosition runs at lines 479-483. A rejected order therefore consumes the one-range-per-break state even though no Phase-E entry occurred.",
+    "Commit c7e76646 changed the reviewed MQ5 but did not update the EX5. The MQ5 timestamp is 2026-08-23T18:13:57Z while the EX5 predates it at 2026-08-23T09:04:33Z, so compile_succeeded=true does not bind the binary to the reviewed source.",
+    "Build artifact framework/EAs/QM5_12932_wyckoff-phase-e-markdown-continuation-h4/build_result.json records smoke_result=deferred_p2_smoke with blocked_reason=null. This lacks durable tester-fleet saturation evidence, the artifact itself is untracked, and no QM5_12932 smoke report exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T20:11:09Z"
+}

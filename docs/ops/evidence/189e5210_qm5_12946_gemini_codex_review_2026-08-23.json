@@ -1,0 +1,21 @@
+{
+  "review_task_id": "189e5210-e341-47ea-8465-6838bdeeaa83",
+  "build_task_id": "f3254781-8a6f-4d7b-bf99-8183ca5c892a",
+  "ea_id": "QM5_12946",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The card requires early close on opposite confirmed divergence or an adverse MACD zero-line cross. Source lines 277-302 calculate and cache those exits only inside Strategy_EntrySignal, while OnTick lines 465-474 returns on the news gate before the new-bar call to Strategy_EntrySignal at lines 476-482. An exit signal confirmed during a blackout is therefore not evaluated until the blackout ends, even though the apparent exit/management calls run before the news gate.",
+    "Build artifact framework/EAs/QM5_12946_mql5-macd-obv-div-card/build_result.json records smoke_result=deferred_p2_smoke with blocked_reason=null. This lacks the durable tester-fleet saturation evidence required by the deferred-smoke waiver, and no QM5_12946 smoke report exists under D:/QM/reports/smoke.",
+    "The review task points to framework/EAs/QM5_12946_mql5-macd-obv-div-card/build_result.json, but that file remains untracked. The MQ5 and EX5 themselves are committed and their current hashes match the artifact, so this is a build-evidence durability defect rather than a source/binary identity mismatch."
+  ],
+  "reviewed_at": "2026-08-23T20:11:09Z"
+}

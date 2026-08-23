@@ -18015,3 +18015,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10566,mql5-ravi-hist,7,NZDUSD.DWX,105660007,2026-08-23,Codex OWNER-DEC-13036-XAU,active
 10566,mql5-ravi-hist,8,SP500.DWX,105660008,2026-08-23,Codex OWNER-DEC-13036-XAU,active
 10566,mql5-ravi-hist,9,UK100.DWX,105660009,2026-08-23,Codex OWNER-DEC-13036-XAU,active
+41135,xauxag-mdaily-iqrmean-rv,0,XAUUSD.DWX,411350000,2026-08-23,Codex governed allocator,active
+41135,xauxag-mdaily-iqrmean-rv,1,XAGUSD.DWX,411350001,2026-08-23,Codex governed allocator,active

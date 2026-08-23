@@ -1,0 +1,21 @@
+{
+  "review_task_id": "cf69bca5-0d11-498c-acfa-19c602f1b5f6",
+  "build_task_id": "98fb1997-3c5d-4bfa-af26-6f46dd7c8a1b",
+  "ea_id": "QM5_37005",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The approved card requires take profit at the 20-period SMA midline, but source lines 149 and 158 substitute an unauthorized fixed 1R target whenever the midline is not beyond entry. That changes the approved exit rule instead of rejecting an invalid setup.",
+    "A current build_gate_hardening run reports three EA_CARD_LOSS_LIMIT_MISMATCH failures: the approved 2.0% daily entry halt, 2.5% daily hard stop, and 5.0% total drawdown stop have no matching source inputs or implementation.",
+    "Build artifact artifacts/builds/98fb1997-3c5d-4bfa-af26-6f46dd7c8a1b.json records smoke_result=deferred_p2_smoke with blocked_reason=null. This does not contain the durable tester-fleet saturation evidence required by the deferred-smoke waiver, and no QM5_37005 smoke report exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T20:11:09Z"
+}
