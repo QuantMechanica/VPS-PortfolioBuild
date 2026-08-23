@@ -186,7 +186,16 @@ def test_qualified_rows_delegate_to_rebaseline_census(monkeypatch: pytest.Monkey
 
 def test_manifest_accessor_resolves_v3_and_future_v4_without_consumer_literals() -> None:
     active = book_build_guard.gate_manifest.load_gate_manifest()
-    assert active.terminal_requalification_gate == "Q16"
+    expected_active = next(
+        gate.id for gate in active.gates
+        if gate.evidence_role.startswith(
+            "SEALED_BEST_SETTINGS_VS_BASELINE_AND_INCUMBENT"
+        )
+    )
+    assert active.terminal_requalification_gate == expected_active
+    assert book_build_guard.gate_manifest.load_gate_manifest(
+        book_build_guard.gate_manifest.V3_MANIFEST
+    ).terminal_requalification_gate == "Q16"
 
     future = book_build_guard.gate_manifest.GateManifest(
         schema_version="qm.gate-manifest/v4",

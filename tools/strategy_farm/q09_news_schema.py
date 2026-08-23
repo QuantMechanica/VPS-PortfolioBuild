@@ -745,7 +745,8 @@ BEGIN
     ) THEN RAISE(ABORT, 'QUALIFIED q09 identity tuple mismatch') END;
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NOT EXISTS (
         SELECT 1 FROM work_item_dependencies dn
-        WHERE dn.child_work_item_id=NEW.q10_work_item_id AND dn.dependency_role='Q09_NEWS'
+        WHERE dn.child_work_item_id=NEW.q10_work_item_id
+          AND dn.dependency_role IN ('Q09_NEWS','Q10_NEWS')
           AND dn.parent_work_item_id=NEW.q09_news_work_item_id
           AND dn.parent_evidence_sha256=NEW.q09_news_evidence_sha256
     ) THEN RAISE(ABORT, 'QUALIFIED Q10 dependencies missing') END;
@@ -756,7 +757,8 @@ BEGIN
     ) THEN RAISE(ABORT, 'QUALIFIED Q08 convergence missing') END;
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NEW.q09_portfolio_work_item_id IS NOT NULL AND NOT EXISTS (
         SELECT 1 FROM work_item_dependencies dp
-        WHERE dp.child_work_item_id=NEW.q10_work_item_id AND dp.dependency_role='Q09_PORTFOLIO'
+        WHERE dp.child_work_item_id=NEW.q10_work_item_id
+          AND dp.dependency_role IN ('Q09_PORTFOLIO','Q10_PORTFOLIO')
           AND dp.parent_work_item_id=NEW.q09_portfolio_work_item_id
           AND dp.parent_evidence_sha256=NEW.q09_portfolio_evidence_sha256
     ) THEN RAISE(ABORT, 'QUALIFIED optional portfolio Q10 dependency missing') END;

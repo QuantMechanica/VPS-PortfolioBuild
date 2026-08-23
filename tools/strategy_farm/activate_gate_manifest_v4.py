@@ -20,6 +20,11 @@ Modes
     plus the live database, run in a post-flip subprocess so the trigger stamp
     reflects the newly active contract), verification tests, and evidence.
 
+``--apply --no-db``
+    Exercise promotion, the source flip, smoke, and the complete verification
+    suite in the worktree only.  The database and factory state are not read or
+    written, and the source/target manifest files are restored before exit.
+
 ``--rollback-plan``
     Print the exact rollback commands and exit.
 
@@ -38,7 +43,6 @@ import argparse
 import datetime as dt
 import hashlib
 import json
-import shutil
 import sqlite3
 import subprocess
 import sys
@@ -199,7 +203,7 @@ def _open_ro(db_path: Path) -> sqlite3.Connection:
 
 
 def check_no_active_meaning_change_rows(db_path: Path, allow_active: bool) -> StepResult:
-    name = "precondition: no active work_items in meaning-changing phases"
+    name = "precondition: open meaning-changing rows are cutover-eligible"
     if not db_path.exists():
         return StepResult(name, True, [f"database absent (fresh init): {db_path}"])
     try:
@@ -207,14 +211,7 @@ def check_no_active_meaning_change_rows(db_path: Path, allow_active: bool) -> St
     except sqlite3.Error as exc:
         return StepResult(name, False, [f"cannot open db read-only: {exc}"])
     try:
-        placeholders = ",".join("?" for _ in MEANING_CHANGE_PHASES)
-        states = ",".join("?" for _ in ACTIVE_WORK_ITEM_STATES)
-        rows = conn.execute(
-            f"SELECT phase, COUNT(*) AS n FROM work_items "
-            f"WHERE phase IN ({placeholders}) AND status IN ({states}) "
-            f"GROUP BY phase ORDER BY phase",
-            (*MEANING_CHANGE_PHASES, *ACTIVE_WORK_ITEM_STATES),
-        ).fetchall()
+        plan = pending_cutover_plan(conn)
     except sqlite3.Error as exc:
         conn.close()
         return StepResult(name, False, [f"query failed: {exc}"])
@@ -223,25 +220,29 @@ def check_no_active_meaning_change_rows(db_path: Path, allow_active: bool) -> St
             conn.close()
         except sqlite3.Error:
             pass
-    active = {row["phase"]: row["n"] for row in rows}
-    total = sum(active.values())
-    if total == 0:
-        return StepResult(name, True, ["0 active rows in meaning-changing phases"])
-    detail = [f"{phase}: {n}" for phase, n in active.items()]
-    if allow_active:
+    if plan["blocked"]:
         return StepResult(
             name,
-            True,
-            ["--allow-active passed; proceeding despite active rows:", *detail],
+            False,
+            [
+                f"{len(plan['blocked'])} open rows cannot be cut over safely:",
+                *(
+                    f"{row['work_item_id']}: {row['old_phase']} "
+                    f"version={row['old_version']} reason={row['reason']}"
+                    for row in plan["blocked"]
+                ),
+            ],
+            plan,
         )
+    note = " (--allow-active is no longer required)" if allow_active else ""
     return StepResult(
         name,
-        False,
+        True,
         [
-            f"{total} active rows in meaning-changing phases; "
-            "drain or pass --allow-active:",
-            *detail,
+            f"eligible work_items={len(plan['work_items'])}{note}",
+            f"dependency-role rewrites={len(plan['dependencies'])}",
         ],
+        plan,
     )
 
 
@@ -479,6 +480,238 @@ CREATE TABLE IF NOT EXISTS gate_contract_activations (
 )
 """
 
+GATE_CONTRACT_CUTOVER_DDL = """
+CREATE TABLE IF NOT EXISTS gate_contract_cutover_log (
+    work_item_id TEXT NOT NULL,
+    old_phase TEXT NOT NULL,
+    new_phase TEXT NOT NULL,
+    old_version TEXT NOT NULL,
+    new_version TEXT NOT NULL,
+    at TEXT NOT NULL
+);
+CREATE TRIGGER IF NOT EXISTS trg_gate_contract_cutover_log_no_update
+BEFORE UPDATE ON gate_contract_cutover_log
+BEGIN SELECT RAISE(ABORT, 'gate_contract_cutover_log is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS trg_gate_contract_cutover_log_no_delete
+BEFORE DELETE ON gate_contract_cutover_log
+BEGIN SELECT RAISE(ABORT, 'gate_contract_cutover_log is append-only'); END;
+"""
+
+DEPENDENCY_APPEND_ONLY_TRIGGER_DDL = """
+CREATE TRIGGER IF NOT EXISTS trg_wid_no_update
+BEFORE UPDATE ON work_item_dependencies
+BEGIN SELECT RAISE(ABORT, 'work_item_dependencies is append-only'); END
+"""
+
+CUTOVER_SOURCE_VERSIONS = frozenset({"legacy", "v2", "v3"})
+
+
+def _v4_cutover_maps() -> tuple[dict[str, str], dict[str, str]]:
+    import gate_manifest as gm
+
+    manifest_path = gm.V4_MANIFEST if gm.V4_MANIFEST.exists() else gm.V4_DRAFT_MANIFEST
+    manifest = gm.load_gate_manifest(manifest_path)
+    phase_map = {
+        str(old): str(new)
+        for old, new in manifest.contract_equivalence["v3_to_v4"].items()
+        if str(old) != str(new)
+    }
+    dependency_map = {
+        str(old): str(new)
+        for old, new in manifest.contract_equivalence[
+            "dependency_role_v3_to_v4"
+        ].items()
+        if str(old) != str(new)
+    }
+    return phase_map, dependency_map
+
+
+def pending_cutover_plan(conn: sqlite3.Connection) -> dict[str, list[dict]]:
+    """Return the exact open-row and dependency rewrites without mutation."""
+
+    phase_map, dependency_map = _v4_cutover_maps()
+    if not _table_exists(conn, "work_items"):
+        return {"work_items": [], "dependencies": [], "blocked": []}
+    columns = {
+        str(row[1]) for row in conn.execute("PRAGMA table_info(work_items)").fetchall()
+    }
+    version_sql = (
+        "coalesce(nullif(lower(trim(gate_contract_version)),''),'legacy')"
+        if "gate_contract_version" in columns
+        else "'legacy'"
+    )
+    placeholders = ",".join("?" for _ in phase_map)
+    rows = conn.execute(
+        f"SELECT id,phase,status,verdict,{version_sql} AS old_version "
+        f"FROM work_items WHERE status IN ('pending','active') "
+        f"AND phase IN ({placeholders}) ORDER BY id",
+        tuple(phase_map),
+    ).fetchall()
+    work_items: list[dict] = []
+    blocked: list[dict] = []
+    by_id: dict[str, dict] = {}
+    for row in rows:
+        item = {
+            "work_item_id": str(row[0]),
+            "old_phase": str(row[1]),
+            "new_phase": phase_map[str(row[1])],
+            "old_version": str(row[4]),
+            "new_version": "v4",
+            "status": str(row[2]),
+        }
+        verdict = str(row[3] or "").strip()
+        if item["old_version"] == "v4":
+            # The numeric token may also exist on the v3 side of the mapping
+            # (for example v4 Q11), but its explicit v4 stamp proves it is
+            # already in the target contract and must not be translated again.
+            continue
+        if item["old_version"] not in CUTOVER_SOURCE_VERSIONS or verdict:
+            item["reason"] = (
+                "open meaning-changing row has a verdict"
+                if verdict
+                else "unsupported source contract version"
+            )
+            blocked.append(item)
+            continue
+        work_items.append(item)
+        by_id[item["work_item_id"]] = item
+
+    dependencies: list[dict] = []
+    if by_id and _table_exists(conn, "work_item_dependencies"):
+        ids = tuple(by_id)
+        id_placeholders = ",".join("?" for _ in ids)
+        role_placeholders = ",".join("?" for _ in dependency_map)
+        dep_rows = conn.execute(
+            f"SELECT child_work_item_id,dependency_role,parent_work_item_id "
+            f"FROM work_item_dependencies "
+            f"WHERE dependency_role IN ({role_placeholders}) "
+            f"AND (child_work_item_id IN ({id_placeholders}) "
+            f"OR parent_work_item_id IN ({id_placeholders})) "
+            f"ORDER BY child_work_item_id,dependency_role",
+            (*dependency_map, *ids, *ids),
+        ).fetchall()
+        for child, role, parent in dep_rows:
+            associated = by_id.get(str(child)) or by_id[str(parent)]
+            dependencies.append(
+                {
+                    "work_item_id": str(child),
+                    "parent_work_item_id": str(parent),
+                    "old_phase": str(role),
+                    "new_phase": dependency_map[str(role)],
+                    "old_version": associated["old_version"],
+                    "new_version": "v4",
+                }
+            )
+    return {
+        "work_items": work_items,
+        "dependencies": dependencies,
+        "blocked": blocked,
+    }
+
+
+def cutover_pending_rows(conn: sqlite3.Connection, *, apply: bool) -> StepResult:
+    """Renumber only open, unverdictable pre-v4 rows and their live edges."""
+
+    name = "cutover pending rows"
+    try:
+        plan = pending_cutover_plan(conn)
+    except sqlite3.Error as exc:
+        return StepResult(name, False, [f"cutover census failed: {exc}"])
+    if plan["blocked"]:
+        return StepResult(
+            name,
+            False,
+            [
+                f"blocked open rows={len(plan['blocked'])}",
+                *(
+                    f"{row['work_item_id']}: {row['old_phase']} "
+                    f"version={row['old_version']} reason={row['reason']}"
+                    for row in plan["blocked"]
+                ),
+            ],
+            plan,
+        )
+    lines = [
+        f"work_item rewrites={len(plan['work_items'])}",
+        f"dependency-role rewrites={len(plan['dependencies'])}",
+    ]
+    lines.extend(
+        f"{row['work_item_id']}: {row['old_phase']}->{row['new_phase']} "
+        f"{row['old_version']}->v4"
+        for row in plan["work_items"]
+    )
+    lines.extend(
+        f"dependency {row['work_item_id']}: {row['old_phase']}->{row['new_phase']}"
+        for row in plan["dependencies"]
+    )
+    if not apply or (not plan["work_items"] and not plan["dependencies"]):
+        return StepResult(name, True, lines, plan)
+
+    import farmctl
+
+    try:
+        conn.executescript(GATE_CONTRACT_CUTOVER_DDL)
+        conn.commit()
+        conn.execute("BEGIN IMMEDIATE")
+        # Both guards are restored in the same transaction. Their temporary
+        # removal is scoped to this reviewed one-time relabel and every rewrite
+        # is appended to the immutable cutover ledger.
+        conn.execute(
+            f"DROP TRIGGER IF EXISTS {farmctl._WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER}"
+        )
+        conn.execute("DROP TRIGGER IF EXISTS trg_wid_no_update")
+        for dep in plan["dependencies"]:
+            collision = conn.execute(
+                "SELECT 1 FROM work_item_dependencies "
+                "WHERE child_work_item_id=? AND dependency_role=?",
+                (dep["work_item_id"], dep["new_phase"]),
+            ).fetchone()
+            if collision:
+                raise RuntimeError(
+                    f"dependency role collision for {dep['work_item_id']}: "
+                    f"{dep['new_phase']}"
+                )
+            changed = conn.execute(
+                "UPDATE work_item_dependencies SET dependency_role=? "
+                "WHERE child_work_item_id=? AND dependency_role=? "
+                "AND parent_work_item_id=?",
+                (
+                    dep["new_phase"], dep["work_item_id"], dep["old_phase"],
+                    dep["parent_work_item_id"],
+                ),
+            ).rowcount
+            if changed != 1:
+                raise RuntimeError(f"dependency rewrite count was {changed}, expected 1")
+        at = dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")
+        for item in plan["work_items"]:
+            changed = conn.execute(
+                "UPDATE work_items SET phase=?,gate_contract_version='v4' "
+                "WHERE id=? AND phase=? AND status IN ('pending','active') "
+                "AND (verdict IS NULL OR trim(verdict)='')",
+                (item["new_phase"], item["work_item_id"], item["old_phase"]),
+            ).rowcount
+            if changed != 1:
+                raise RuntimeError(f"work-item rewrite count was {changed}, expected 1")
+        for row in (*plan["work_items"], *plan["dependencies"]):
+            conn.execute(
+                "INSERT INTO gate_contract_cutover_log "
+                "(work_item_id,old_phase,new_phase,old_version,new_version,at) "
+                "VALUES (?,?,?,?,?,?)",
+                (
+                    row["work_item_id"], row["old_phase"], row["new_phase"],
+                    row["old_version"], row["new_version"], at,
+                ),
+            )
+        farmctl.ensure_work_item_gate_contract_schema(conn)
+        if _table_exists(conn, "work_item_dependencies"):
+            conn.execute(DEPENDENCY_APPEND_ONLY_TRIGGER_DDL)
+        conn.commit()
+    except Exception as exc:  # noqa: BLE001 - rollback any partial relabel
+        if conn.in_transaction:
+            conn.rollback()
+        return StepResult(name, False, [*lines, f"transaction rolled back: {exc}"], plan)
+    return StepResult(name, True, [*lines, "transaction committed"], plan)
+
 
 def _table_exists(conn: sqlite3.Connection, table: str) -> bool:
     return (
@@ -565,12 +798,21 @@ def migrate_database(
             return StepResult(name, False, ["dry-run requires a scratch_dir"])
         scratch_dir.mkdir(parents=True, exist_ok=True)
         target_db = scratch_dir / "farm_state_copy.sqlite"
-        # Copy the live DB (plus WAL/SHM if present) into the scratch sandbox.
-        shutil.copy2(db_path, target_db)
-        for suffix in ("-wal", "-shm"):
-            side = db_path.with_name(db_path.name + suffix)
-            if side.exists():
-                shutil.copy2(side, target_db.with_name(target_db.name + suffix))
+        # Snapshot through a strictly read-only source connection.  A raw file
+        # copy can split a WAL database across moments, while opening it in the
+        # default read/write mode can checkpoint and change the source file.
+        # SQLite's online backup produces one coherent, worktree-local image.
+        if target_db.exists():
+            target_db.unlink()
+        source = _open_ro(db_path)
+        try:
+            destination = sqlite3.connect(str(target_db))
+            try:
+                source.backup(destination)
+            finally:
+                destination.close()
+        finally:
+            source.close()
         backup_path = scratch_dir / f"farm_state_pre_v4_{ts}.sqlite"
 
     lines: list[str] = []
@@ -604,7 +846,13 @@ def migrate_database(
         # 3. Run the reviewed migrations.
         _run_core_migration(conn)
 
-        # 4. Counts after.
+        # 4. Relabel only open, unverdictable pre-v4 queue rows. Historical
+        # terminal evidence is outside this plan and can never be updated here.
+        cutover = cutover_pending_rows(conn, apply=True)
+        if not cutover.ok:
+            return StepResult(name, False, cutover.lines, {"cutover": cutover.data})
+
+        # 5. Counts after.
         counts_after = _version_counts(conn)
         dep_total_after, dep_roles_after = _dependency_stats(conn)
 
@@ -618,7 +866,7 @@ def migrate_database(
                 ],
             )
 
-        # 5. Stamp the activation ledger.
+        # 6. Stamp the activation ledger.
         conn.execute(GATE_CONTRACT_ACTIVATIONS_DDL)
         conn.execute(
             "INSERT INTO gate_contract_activations"
@@ -643,6 +891,10 @@ def migrate_database(
     lines.append(
         f"dependency rows before={dep_total_before} after={dep_total_after} (equal)"
     )
+    lines.append(
+        f"cutover work_items={len(cutover.data.get('work_items', []))} "
+        f"dependencies={len(cutover.data.get('dependencies', []))}"
+    )
     lines.append(f"activation stamped: contract_version={active_version}")
     if not apply:
         lines.insert(0, f"(dry-run) migration exercised on COPY: {target_db}")
@@ -657,6 +909,7 @@ def migrate_database(
             "dep_total_after": dep_total_after,
             "dep_roles_before": dep_roles_before,
             "dep_roles_after": dep_roles_after,
+            "cutover": cutover.data,
             "backup_path": str(backup_path),
         },
     )
@@ -675,21 +928,40 @@ VERIFICATION_TESTS = (
     "tools/strategy_farm/tests/test_gate_manifest.py",
     "tools/strategy_farm/tests/test_gate_contract_version.py",
     "tools/strategy_farm/tests/test_advancement_centralization.py",
+    "tools/strategy_farm/tests/test_v4_runtime_wiring.py",
     "tools/strategy_farm/tests/test_book_build_guard.py",
+    "tools/strategy_farm/tests/test_backfill_planner.py",
+    "tools/strategy_farm/tests/test_operator_surfaces_rebaseline.py",
+    "tools/strategy_farm/tests/test_activate_gate_manifest_v4.py",
     "tools/strategy_farm/tests/test_q09_news_schema_v2.py",
+    "tools/strategy_farm/tests/test_q09_news_farmctl_integration.py",
+    "tools/strategy_farm/tests/test_farmctl_cascade.py",
+    "tools/strategy_farm/tests/test_render_cockpit_v2.py",
+    "tools/strategy_farm/tests/test_mission_control_v2_data.py",
+    "tools/strategy_farm/tests/test_factory_runtime_activation.py",
+    "tools/strategy_farm/tests/test_include_mirror.py",
 )
 
 
 def run_verification_tests() -> StepResult:
-    name = "verify: pytest gate/contract/advancement/book/q09 suites"
+    name = "verify: pytest activation + orchestrator integration suites"
     proc = subprocess.run(
         [sys.executable, "-m", "pytest", *VERIFICATION_TESTS, "-q"],
         cwd=str(REPO_ROOT),
         capture_output=True,
         text=True,
     )
-    tail = (proc.stdout + proc.stderr).strip().splitlines()[-3:]
-    return StepResult(name, proc.returncode == 0, tail, {"returncode": proc.returncode})
+    output = proc.stdout + proc.stderr
+    log_path = REPO_ROOT / "scratch" / "rb-v4-cutover" / "activation_verify.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log_path.write_text(output, encoding="utf-8")
+    tail = output.strip().splitlines()[-3:]
+    return StepResult(
+        name,
+        proc.returncode == 0,
+        [*tail, f"full output: {log_path}"],
+        {"returncode": proc.returncode, "log_path": str(log_path)},
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -814,9 +1086,22 @@ def main(argv: list[str] | None = None) -> int:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", help="report only (default)")
     mode.add_argument("--apply", action="store_true", help="perform the activation")
+    mode.add_argument(
+        "--cutover-dry-run",
+        action="store_true",
+        help="list pending/active v3-to-v4 row and dependency rewrites read-only",
+    )
     parser.add_argument("--rollback-plan", action="store_true")
     parser.add_argument("--allow-factory-on", action="store_true")
     parser.add_argument("--allow-active", action="store_true")
+    parser.add_argument(
+        "--no-db",
+        action="store_true",
+        help=(
+            "with --apply, verify a temporary worktree-only v4 flip without "
+            "reading or writing runtime DB/factory state; restore files on exit"
+        ),
+    )
     parser.add_argument("--db-root", default=str(DEFAULT_DB_ROOT))
     # internal subprocess entrypoint for the post-flip migration
     parser.add_argument("--_run-migration", action="store_true", help=argparse.SUPPRESS)
@@ -825,6 +1110,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json-out", default="")
     args = parser.parse_args(argv)
 
+    if args.no_db and not args.apply:
+        parser.error("--no-db requires --apply")
+
     db_root = Path(args.db_root)
     db_path = db_root / "state" / "farm_state.sqlite"
     backup_dir = db_root / "backups"
@@ -832,6 +1120,25 @@ def main(argv: list[str] | None = None) -> int:
     if args.rollback_plan:
         print("\n".join(rollback_plan_lines()))
         return 0
+
+    if args.cutover_dry_run:
+        if not db_path.exists():
+            result = StepResult(
+                "cutover pending rows", False, [f"database not found: {db_path}"]
+            )
+        else:
+            try:
+                conn = _open_ro(db_path)
+                try:
+                    result = cutover_pending_rows(conn, apply=False)
+                finally:
+                    conn.close()
+            except sqlite3.Error as exc:
+                result = StepResult(
+                    "cutover pending rows", False, [f"read-only open failed: {exc}"]
+                )
+        _print_framed(result)
+        return 0 if result.ok else 1
 
     if getattr(args, "_run_migration"):
         # Live-safety guard. This SUPPRESSED entrypoint mutates the live DB and
@@ -885,78 +1192,108 @@ def main(argv: list[str] | None = None) -> int:
             return False
         return True
 
-    # Step 1 — preconditions
-    for check in (
-        check_git_clean(),
-        check_factory_off(db_root, args.allow_factory_on),
-        check_no_active_meaning_change_rows(db_path, args.allow_active),
-        check_draft_read_inert(),
-    ):
+    # Worktree-only verification deliberately does not inspect runtime
+    # factory/DB state; that is the safety purpose of --no-db.
+    preconditions = [check_git_clean()]
+    if not args.no_db:
+        preconditions.extend(
+            [
+                check_factory_off(db_root, args.allow_factory_on),
+                check_no_active_meaning_change_rows(db_path, args.allow_active),
+            ]
+        )
+    preconditions.append(check_draft_read_inert())
+    for check in preconditions:
         if not record(check):
             return 1
 
-    # Step 2 — promote
-    promote = promote_manifest(apply=apply)
-    if not record(promote):
-        return 1
-    manifest_sha = promote.data.get("manifest_sha256", "")
-    git_head = _git_head()
+    restore_files: dict[Path, bytes | None] = {}
+    if args.no_db:
+        for path in (GATE_MANIFEST_PY, V4_TARGET_MANIFEST, GITATTRIBUTES):
+            restore_files[path] = path.read_bytes() if path.exists() else None
 
-    # Step 3 — flip + smoke
-    flip = flip_default(apply=apply)
-    if not record(flip):
-        return 1
-
-    if apply:
-        smoke = run_smoke(TOOL_DIR)
-        if not record(smoke):
+    def run_steps() -> int:
+        # Step 2 — promote
+        promote = promote_manifest(apply=apply)
+        if not record(promote):
             return 1
-    else:
-        record(
-            StepResult(
-                "flip smoke: v4 default loads and renders",
-                True,
-                ["(dry-run) smoke runs only after the real flip in --apply"],
-            )
-        )
+        manifest_sha = promote.data.get("manifest_sha256", "")
+        git_head = _git_head()
 
-    # Step 4 — db migration
-    if apply:
-        migration = _run_migration_subprocess(
-            db_root, manifest_sha, git_head, allow_factory_on=args.allow_factory_on
-        )
-    else:
-        scratch = TOOL_DIR.parent.parent / "scratch" / "rb-activate-dryrun"
-        migration = migrate_database(
-            db_path,
-            backup_dir=backup_dir,
-            manifest_sha256=manifest_sha,
-            git_head=git_head,
-            apply=False,
-            scratch_dir=scratch,
-            active_version="v4",
-        )
-    if not record(migration):
-        return 1
-
-    # Step 5 — verification tests (apply only; dry-run leaves the tree unflipped)
-    if apply:
-        verify = run_verification_tests()
-        if not record(verify):
+        # Step 3 — flip + smoke
+        flip = flip_default(apply=apply)
+        if not record(flip):
             return 1
-        _write_evidence(steps, apply=apply, db_root=db_root)
-        print(f"\nEvidence written: {EVIDENCE_PATH}")
-    else:
-        record(
-            StepResult(
-                "verify: pytest suites",
-                True,
-                ["(dry-run) tests run against the flipped tree in --apply"],
-            )
-        )
 
-    print("\n=== DONE ===")
-    return 0
+        if apply:
+            smoke = run_smoke(TOOL_DIR)
+            if not record(smoke):
+                return 1
+        else:
+            record(
+                StepResult(
+                    "flip smoke: v4 default loads and renders",
+                    True,
+                    ["(dry-run) smoke runs only after the real flip in --apply"],
+                )
+            )
+
+        # Step 4 — db migration
+        if args.no_db:
+            migration = StepResult(
+                "db migration: gate_contract_version + q09 schema",
+                True,
+                ["--no-db: skipped; runtime DB and factory state were not inspected"],
+            )
+        elif apply:
+            migration = _run_migration_subprocess(
+                db_root, manifest_sha, git_head,
+                allow_factory_on=args.allow_factory_on,
+            )
+        else:
+            scratch = TOOL_DIR.parent.parent / "scratch" / "rb-activate-dryrun"
+            migration = migrate_database(
+                db_path,
+                backup_dir=backup_dir,
+                manifest_sha256=manifest_sha,
+                git_head=git_head,
+                apply=False,
+                scratch_dir=scratch,
+                active_version="v4",
+            )
+        if not record(migration):
+            return 1
+
+        # Step 5 — verification tests (apply only; dry-run stays unflipped).
+        if apply:
+            verify = run_verification_tests()
+            if not record(verify):
+                return 1
+            if not args.no_db:
+                _write_evidence(steps, apply=apply, db_root=db_root)
+                print(f"\nEvidence written: {EVIDENCE_PATH}")
+        else:
+            record(
+                StepResult(
+                    "verify: pytest suites",
+                    True,
+                    ["(dry-run) tests run against the flipped tree in --apply"],
+                )
+            )
+
+        print("\n=== DONE ===")
+        return 0
+
+    try:
+        return run_steps()
+    finally:
+        if restore_files:
+            for path, original in restore_files.items():
+                if original is None:
+                    path.unlink(missing_ok=True)
+                else:
+                    path.write_bytes(original)
+            print("\n[PASS] --no-db worktree files restored")
 
 
 if __name__ == "__main__":
