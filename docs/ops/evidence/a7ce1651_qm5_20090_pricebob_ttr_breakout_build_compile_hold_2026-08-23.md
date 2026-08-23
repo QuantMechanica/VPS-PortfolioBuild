@@ -54,4 +54,10 @@ setfile and single active magic. Activation is fail-closed under
 `COMPILE_EA_WORKER_ROLLOUT_PENDING`; no current EX5 or strict build PASS exists yet.
 Smoke was not run, and no pipeline verdict is claimed.
 
+The requested `REVIEW` transition was attempted after the package commit and refused
+with `D6_BUILD_IDENTITY_MISSING`. Review dispatch requires a JSON identity binding a
+committed current EX5 and strict build PASS; neither exists while the governed work
+item is activation-held. The router task is therefore dispositioned `BLOCKED` without
+fabricating build evidence.
+
 Short verdict: `SOURCE_READY_COMPILE_HELD: static gates PASS; governed compile d15aa222 pending under worker-rollout activation hold.`
