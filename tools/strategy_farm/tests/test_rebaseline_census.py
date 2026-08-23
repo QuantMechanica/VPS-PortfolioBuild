@@ -75,6 +75,22 @@ def test_reusable_pair_with_frontier_infra():
     assert row["macro_phase"] == "1_STRATEGIEBEWEIS"
 
 
+def test_portfolio_lane_is_informational_and_never_advances_news_frontier():
+    con = _mk_con()
+    for gate in ("Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08"):
+        _ins(con, gate, gate, "QM5_NEWS", "EURUSD.DWX", "done", "PASS")
+    _ins(
+        con, "portfolio", "Q09_PORTFOLIO", "QM5_NEWS", "EURUSD.DWX",
+        "done", "PASS_PORTFOLIO",
+    )
+
+    row = rc.compute(con, None)["pair_rows"][0]
+
+    assert row["highest_contiguous_valid_gate"] == "Q08"
+    assert row["earliest_missing_prerequisite"] == "Q09"
+    assert row["frontier_class"] == "MISSING"
+
+
 def test_economic_fail_pair():
     """Q02 valid, Q03 FAIL on merit -> ECONOMIC_FAIL (dead), separate from infra."""
     con = _mk_con()
