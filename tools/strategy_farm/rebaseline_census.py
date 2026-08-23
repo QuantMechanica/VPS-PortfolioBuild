@@ -21,10 +21,8 @@ The markdown summary is written by --write-md (default on) to the repo docs tree
 Design notes (evidence):
   * work_items columns: id, kind, phase, ea_id, symbol, setfile_path, status,
     verdict, ... payload_json (PRAGMA table_info work_items).
-  * build_hash / setfile_hash are NOT columns; they live in payload_json under a
-    handful of keys (see farmctl.py enqueue-backtest / artifact binding, e.g.
-    expected_ex5_sha256 @ farmctl.py:6128, expected_setfile_sha256 @ 6130,
-    build_hash / setfile_build_hash). Coverage is partial (~11% of rows).
+  * SH-2 materialises build/setfile identity in typed columns. Historical and
+    pre-migration databases retain the payload fallback; values are never inferred.
   * INFRA vs economic split follows the verdict column, which already carries
     'INFRA_FAIL' as its own value (see health.py:2205 chk_phase_infra_graveyard and
     farmctl.py:5144 infra_reasons). Economic FAIL is kept separate from INFRA/INVALID.
@@ -242,12 +240,23 @@ def _iter_hash_rows(con: sqlite3.Connection, limit: int | None):
         "gate_contract_version" if _has_column(con, "work_items", "gate_contract_version")
         else "NULL AS gate_contract_version"
     )
+    ex5_expr = "ex5_sha256" if _has_column(con, "work_items", "ex5_sha256") else "NULL"
+    set_expr = (
+        "setfile_sha256" if _has_column(con, "work_items", "setfile_sha256") else "NULL"
+    )
+    typed_filter = (
+        " OR ex5_sha256 IS NOT NULL OR setfile_sha256 IS NOT NULL"
+        if _has_column(con, "work_items", "ex5_sha256")
+        and _has_column(con, "work_items", "setfile_sha256") else ""
+    )
     base = (
-        f"SELECT ea_id, symbol, phase, status, verdict, payload_json, {contract_expr} FROM work_items "
+        f"SELECT ea_id, symbol, phase, status, verdict, payload_json, {contract_expr}, "
+        f"{ex5_expr} AS typed_ex5_sha256, {set_expr} AS typed_setfile_sha256 FROM work_items "
         "WHERE ea_id IS NOT NULL AND ea_id <> '' "
         "  AND symbol IS NOT NULL AND symbol <> '' "
         "  AND payload_json IS NOT NULL "
-        "  AND (payload_json LIKE '%sha256%' OR payload_json LIKE '%build_hash%')"
+        "  AND (payload_json LIKE '%sha256%' OR payload_json LIKE '%build_hash%'"
+        f"{typed_filter})"
     )
     if limit:
         sql = base + (
@@ -449,15 +458,15 @@ def summarise_pair(rec: dict) -> dict:
 def build_finer(con: sqlite3.Connection, limit: int | None) -> dict:
     finer: dict[tuple, dict] = {}
     for (ea_id, symbol, phase, status, verdict, payload_json,
-         contract_version) in _iter_hash_rows(con, limit):
+         contract_version, typed_ex5, typed_setfile) in _iter_hash_rows(con, limit):
         try:
             payload = json.loads(payload_json)
         except (ValueError, TypeError):
             continue
         if not isinstance(payload, dict):
             continue
-        bh = _extract_hash(payload, BUILD_HASH_KEYS)
-        sh = _extract_hash(payload, SETFILE_HASH_KEYS)
+        bh = str(typed_ex5 or "").strip().lower() or _extract_hash(payload, BUILD_HASH_KEYS)
+        sh = str(typed_setfile or "").strip().lower() or _extract_hash(payload, SETFILE_HASH_KEYS)
         if not bh and not sh:
             continue
         g = canonical_gate(phase, contract_version)
@@ -533,6 +542,24 @@ def compute(con: sqlite3.Connection, limit: int | None) -> dict:
                                    r["setfile_hash"], GATE_ORDINAL.get(r["gate"], 99)))
 
     summary = build_summary(pair_rows, finer_rows)
+    total_rows = int(con.execute("SELECT COUNT(*) FROM work_items").fetchone()[0])
+    if _has_column(con, "work_items", "ex5_sha256"):
+        typed = int(con.execute(
+            "SELECT COUNT(*) FROM work_items WHERE ex5_sha256 IS NOT NULL AND trim(ex5_sha256)<>''"
+        ).fetchone()[0])
+        source = "typed_columns"
+    else:
+        typed = int(con.execute(
+            "SELECT COUNT(*) FROM work_items WHERE json_valid(payload_json) AND "
+            "COALESCE(json_extract(payload_json,'$.expected_ex5_sha256'),"
+            "json_extract(payload_json,'$.ex5_sha256'),"
+            "json_extract(payload_json,'$.build_hash')) IS NOT NULL"
+        ).fetchone()[0])
+        source = "payload_fallback"
+    summary["identity_coverage"] = {
+        "rows": total_rows, "rows_with_ex5_identity": typed, "source": source,
+        "coverage_pct": round(100.0 * typed / total_rows, 3) if total_rows else 0.0,
+    }
     return {"pair_rows": pair_rows, "finer_rows": finer_rows, "summary": summary}
 
 
@@ -627,6 +654,12 @@ def render_markdown(summary: dict, meta: dict) -> str:
     L.append(f"- **Distinct finer keys** (ea_id, symbol, build_hash, setfile_hash) "
              f"with hash evidence: {s['total_finer_keys']} "
              f"({s['total_finer_rows']} hash-key x gate rows)")
+    coverage = s["identity_coverage"]
+    L.append(
+        f"- **Run identity coverage:** {coverage['rows_with_ex5_identity']} / "
+        f"{coverage['rows']} rows = {coverage['coverage_pct']}% "
+        f"(`{coverage['source']}`)"
+    )
     L.append(f"- **Pairs valid >= Q08:** {s['pairs_valid_at_least_Q08']}")
     L.append(f"- **Pairs valid >= Q10:** {s['pairs_valid_at_least_Q10']}")
     L.append(f"- **Pairs valid >= Q16:** {s['pairs_valid_at_least_Q16']}")

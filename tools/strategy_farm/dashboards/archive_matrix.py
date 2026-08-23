@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import html
 import json
 import os
@@ -92,12 +93,16 @@ def build_archive_columns(
     return columns
 
 
-ST_PASS, ST_SOFT, ST_FAIL, ST_VOID, ST_OPEN, ST_HOLE, ST_NONE, ST_CARD_HOLE = range(8)
+# ST_CARD_HOLE (board-advisor: card-target never tested) and ST_STALE (SH-2:
+# identity-backed PASS/SOFT whose EX5 hash differs from the current canonical
+# build) are two distinct states; both occupy their own integer.
+ST_PASS, ST_SOFT, ST_FAIL, ST_VOID, ST_OPEN, ST_HOLE, ST_NONE, ST_CARD_HOLE, ST_STALE = range(9)
 ST_CLASS = {ST_PASS: "p", ST_SOFT: "s", ST_FAIL: "f", ST_VOID: "v",
-            ST_OPEN: "o", ST_HOLE: "h", ST_NONE: "", ST_CARD_HOLE: "ct"}
+            ST_OPEN: "o", ST_HOLE: "h", ST_NONE: "", ST_CARD_HOLE: "ct", ST_STALE: "t"}
 ST_NAME = {ST_PASS: "PASS", ST_SOFT: "PASS (conditional)", ST_FAIL: "FAIL",
            ST_VOID: "VOID", ST_OPEN: "running/queued", ST_HOLE: "GAP", ST_NONE: "-",
-           ST_CARD_HOLE: "nie getestet (Card-Ziel)"}
+           ST_CARD_HOLE: "nie getestet (Card-Ziel)",
+           ST_STALE: "STALE PASS (older build identity)"}
 
 FM_KEYS = [
     ("period", "Timeframe"), ("target_symbols", "Target symbols"),
@@ -161,6 +166,27 @@ def state_of(taxonomy: str, verdict: str) -> int:
     # governance / review / draft_defect / measurement / unknown carry no economic
     # judgement and are not an open run either.
     return ST_VOID
+
+
+def current_ex5_sha256_by_ea() -> dict[str, str]:
+    """Current canonical EX5 identity, using the same rule as the F4 measurement."""
+    out: dict[str, str] = {}
+    ea_root = REPO_ROOT / "framework" / "EAs"
+    if not ea_root.is_dir():
+        return out
+    for ea_dir in ea_root.iterdir():
+        if not ea_dir.is_dir():
+            continue
+        parts = ea_dir.name.split("_", 2)
+        if len(parts) < 2 or parts[0] != "QM5":
+            continue
+        ex5s = sorted(ea_dir.glob("*.ex5"))
+        if not ex5s:
+            continue
+        canonical = ea_dir / f"{ea_dir.name}.ex5"
+        target = canonical if canonical.is_file() else ex5s[0]
+        out["_".join(parts[:2])] = hashlib.sha256(target.read_bytes()).hexdigest()
+    return out
 
 
 # ── strategy cards ────────────────────────────────────────────────────────────
@@ -371,9 +397,13 @@ def collect(db: Path = DB) -> dict:
     dropped_relic: Counter = Counter()
     rows_seen = 0
 
-    for wid, ea, sym, phase, verdict, tax, upd, evidence, contract_version in conn.execute(
+    have_identity = any(
+        str(row[1]) == "ex5_sha256" for row in conn.execute("PRAGMA table_info(work_items)")
+    )
+    identity_expr = "ex5_sha256" if have_identity else "NULL AS ex5_sha256"
+    for wid, ea, sym, phase, verdict, tax, upd, evidence, contract_version, ex5_sha in conn.execute(
         "SELECT id, ea_id, symbol, phase, verdict, verdict_taxonomy, updated_at, "
-        "evidence_path, gate_contract_version FROM work_items_clean"
+        f"evidence_path, gate_contract_version, {identity_expr} FROM work_items_clean"
     ):
         rows_seen += 1
         if not ea:
@@ -395,7 +425,8 @@ def collect(db: Path = DB) -> dict:
             continue
         key = (ea, symbol, gate)
         item = {"upd": upd or "", "verdict": v, "tax": tax or "unknown", "id": wid,
-                "phase_label": display, "gate": gate}
+                "phase_label": display, "gate": gate,
+                "ex5_sha256": str(ex5_sha or "").strip().lower()}
         cur = latest.get(key)
         if cur is None or (item["upd"], wid) > (cur["upd"], cur["id"]):
             latest[key] = item
@@ -444,6 +475,9 @@ def collect(db: Path = DB) -> dict:
     hole_by_gate: Counter = Counter()
     action_counts: Counter = Counter()
     untested_targets = 0
+    current_builds = current_ex5_sha256_by_ea() if have_identity else {}
+    identity_cells = sum(1 for value in latest.values() if value.get("ex5_sha256"))
+    stale_cells = 0
 
     for ea, sym_map in by_card.items():
         synthetic_targets: set[str] = set()
@@ -475,6 +509,16 @@ def collect(db: Path = DB) -> dict:
                     continue
                 st = (ST_OPEN if cell["id"] in held and cell["tax"] == "open"
                       else state_of(cell["tax"], cell["verdict"]))
+                # SH-2 F4: an identity-backed PASS/SOFT whose bound EX5 hash
+                # differs from the current canonical build is a stale pass.
+                run_ex5 = str(cell.get("ex5_sha256") or "")
+                if (
+                    st in (ST_PASS, ST_SOFT) and run_ex5
+                    and current_builds.get(ea) is not None
+                    and current_builds[ea] != run_ex5
+                ):
+                    st = ST_STALE
+                    stale_cells += 1
                 rendered[token] = _cell(si, st, symbol, cell)
                 last_upd = max(last_upd, cell["upd"])
 
@@ -557,6 +601,8 @@ def collect(db: Path = DB) -> dict:
             "dropped_relic": dropped_relic, "untested_targets": untested_targets,
             "held_items": len(held),
             "cards_with_targets": len(targets),
+            "identity_cells": identity_cells, "stale_cells": stale_cells,
+            "identity_coverage_pct": round(100.0 * identity_cells / len(latest), 2) if latest else 0.0,
             "collect_s": round(time.perf_counter() - t0, 2)}
 
 
@@ -1187,6 +1233,7 @@ td.c{padding:3px 4px;min-width:26px}
 i{display:block;width:9px;height:9px;flex:0 0 auto}
 i.p{background:var(--pass)}
 i.s{background:transparent;border:1.5px solid var(--pass)}
+i.t{background:transparent;border:1.5px solid var(--void);box-shadow:inset 0 0 0 1px var(--bg)}
 i.f{background:var(--fail)}
 i.v{background:repeating-linear-gradient(45deg,var(--void) 0 2px,transparent 2px 4px);
 outline:1px solid var(--void)}
@@ -1393,6 +1440,7 @@ def render_matrix_page(data: dict) -> str:
     legend = (
         f'<span class="lg"><i class="p"></i><b>PASS</b> {fmt(stats[ST_PASS])}</span>'
         f'<span class="lg"><i class="s"></i><b>PASS conditional</b> {fmt(stats[ST_SOFT])}</span>'
+        f'<span class="lg"><i class="t"></i><b>stale PASS</b> {fmt(stats[ST_STALE])}</span>'
         f'<span class="lg"><i class="f"></i><b>FAIL</b> {fmt(stats[ST_FAIL])}</span>'
         f'<span class="lg"><i class="v"></i><b>VOID - run burnt</b> {fmt(stats[ST_VOID])}</span>'
         f'<span class="lg"><i class="o"></i><b>running / queued</b> {fmt(stats[ST_OPEN])}</span>'
@@ -1402,6 +1450,21 @@ def render_matrix_page(data: dict) -> str:
         '<span class="lg" style="color:var(--tx4)">empty cell = no run and none due</span>')
     holes = " · ".join(f"{g} {fmt(n)}" for g, n in
                        sorted(hbg.items(), key=lambda kv: -kv[1]) if n) or "-"
+
+    identity_cells = int(data.get("identity_cells", 0))
+    if identity_cells:
+        identity_notice = (
+            f'<div class="warn"><b>F4 stale-pass identity is enabled where evidence exists.</b> '
+            f'{fmt(identity_cells)} cells ({data.get("identity_coverage_pct", 0)}%) carry a typed '
+            f'EX5 identity; {fmt(int(data.get("stale_cells", 0)))} PASS cells differ from the '
+            'current canonical build and are hollow amber. Cells without identity retain '
+            'fallback (a): latest verdict wins.</div>'
+        )
+    else:
+        identity_notice = (
+            '<div class="warn"><b>The stale-pass state (spec F4) is not rendered.</b> '
+            'No typed EX5 identity is present, so fallback (a) applies: latest verdict wins.</div>'
+        )
 
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <title>Strategy Archive Matrix</title>
@@ -1414,12 +1477,9 @@ def render_matrix_page(data: dict) -> str:
 over <code>farm_state.sqlite</code> · <a href="strategies.html">Strategy Archive</a> ·
 <a href="cockpit.html">Mission Control</a></div>
 </header>
-<div class="warn"><b>The stale-pass state (spec F4) is not rendered.</b> The database carries no
-usable build identity per cell (<code>expected_ex5_sha256</code> in 0.3% of rows; the
-<code>.ex5</code> timestamp would flag 73.6% of all PASS rows as stale and is polluted by
-recompiles that never touch the EA). Until schema hardening SH-2 lands, the pre-registered
-fallback applies: latest verdict, visibly warned. Gate columns, order and bands are loaded
-from the active manifest; historical rows retain their contract provenance.</div>
+{identity_notice}
+<div class="warn">Gate columns, order and bands are loaded from the active manifest;
+historical rows retain their contract provenance.</div>
 <div class="legend">{legend}</div>
 <div class="controls">
 <input id="q" type="search" placeholder="search card or slug..." style="width:210px">

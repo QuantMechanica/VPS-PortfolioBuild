@@ -39,6 +39,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 import farmctl
+from artifact_identity import identity_update_clause, prepare_completion
 import custom_history_contract
 import custom_history_copy_on_claim
 import custom_history_gate
@@ -3476,24 +3477,43 @@ def _finish_work_item(
                                 "reason": f"prescreen_pass_requeued_full:{reason}"}
                     payload["verdict_reason"] = f"P2_PRESCREEN_{reason}"
                     reason = payload["verdict_reason"]
+                taxonomy = str(payload.get("verdict_taxonomy") or "unknown")
+                verdict, taxonomy, identity, missing_identity = prepare_completion(
+                    phase=str(item["phase"]), kind=str(item["kind"]), payload=payload,
+                    summary=summary, verdict=verdict, taxonomy=taxonomy,
+                )
+                payload["verdict_taxonomy"] = taxonomy
+                identity_sql, identity_values = identity_update_clause(
+                    conn, identity, taxonomy
+                )
+                identity_sql = (", " + identity_sql) if identity_sql else ""
+                final_status = "failed" if missing_identity else "done"
                 conn.execute(
-                    """
+                    f"""
                     UPDATE work_items
-                    SET status='done', verdict=?, evidence_path=?, claimed_by=NULL,
-                        payload_json=?, updated_at=?
+                    SET status=?, verdict=?, evidence_path=?, claimed_by=NULL,
+                        payload_json=?, updated_at=?{identity_sql}
                     WHERE id=?
                     """,
-                    (verdict, str(summary_path), json.dumps(payload, sort_keys=True), now, item_id),
+                    (
+                        final_status, verdict, str(summary_path),
+                        json.dumps(payload, sort_keys=True), now,
+                        *identity_values, item_id,
+                    ),
                 )
-                promoted = farmctl._promote_zero_trade_q02_cohort_to_draft_defect(
-                    conn, item
+                promoted = (
+                    farmctl._promote_zero_trade_q02_cohort_to_draft_defect(conn, item)
+                    if not missing_identity else []
                 )
                 conn.commit()
                 if item_id in promoted:
                     verdict = "DRAFT_DEFECT"
                     reason = "Q02_ALL_ENQUEUED_SYMBOLS_ZERO_TRADES"
                 aggregate = _aggregate_finished_parent(root, item["parent_task_id"])
-                return {"finished": True, "status": "done", "verdict": verdict, "reason": reason, "aggregate": aggregate}
+                return {"finished": True, "status": final_status, "verdict": verdict,
+                        "reason": payload.get("verdict_reason", reason),
+                        "artifact_identity_missing": list(missing_identity),
+                        "aggregate": aggregate}
 
             payload["run_smoke_exit_code"] = exit_code
             failed_terminal = str(item["claimed_by"] or "").strip().upper()

@@ -16,6 +16,11 @@ from pathlib import Path
 from typing import Any, Iterable
 
 try:
+    from artifact_identity import extract_identity, identity_update_clause
+except ModuleNotFoundError:
+    from tools.strategy_farm.artifact_identity import extract_identity, identity_update_clause
+
+try:
     from include_mirror import running_terminal_names
 except ModuleNotFoundError:
     from tools.strategy_farm.include_mirror import running_terminal_names
@@ -1091,15 +1096,21 @@ def _complete_work_item(
             ),
             "verdict_taxonomy": "infra" if infra_failure else ("build" if not success else "artifact"),
         })
+        taxonomy = str(payload["verdict_taxonomy"])
+        identity = extract_identity(evidence, payload)
+        identity_sql, identity_values = identity_update_clause(conn, identity, taxonomy)
+        identity_sql = ("," + identity_sql) if identity_sql else ""
         cur = conn.execute(
             "UPDATE work_items SET status=?,verdict=?,evidence_path=?,claimed_by=NULL,"
-            "payload_json=?,updated_at=? WHERE id=? AND status='active' AND upper(claimed_by)=upper(?)",
+            f"payload_json=?,updated_at=?{identity_sql} "
+            "WHERE id=? AND status='active' AND upper(claimed_by)=upper(?)",
             (
                 status,
                 verdict,
                 str(evidence_path),
                 json.dumps(payload, sort_keys=True),
                 now,
+                *identity_values,
                 work_item_id,
                 terminal,
             ),
