@@ -1,8 +1,11 @@
 # E4 governed rebuild wave — canary handoff
 
-Date observed: 2026-08-23 UTC  
-Authority: OWNER 2026-08-22 E4 / `OWNER-DEC-MQ5-DRIFT-LIVE`  
-Router task: `1854fc66-7ff8-4138-946e-0b23695309df`  
+Date observed: 2026-08-23 UTC
+
+Authority: OWNER 2026-08-22 E4 / `OWNER-DEC-MQ5-DRIFT-LIVE`
+
+Router task: `1854fc66-7ff8-4138-946e-0b23695309df`
+
 Disposition: **REVIEW — fail-closed partial delivery**
 
 ## Outcome
