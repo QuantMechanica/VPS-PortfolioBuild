@@ -42,7 +42,7 @@
     "spec_validator": "PASS",
     "build_guardrails": "PASS_ZERO_FINDINGS",
     "symbol_scope": "BASKET_OK_ZERO_VIOLATIONS",
-    "whitespace": "PASS",
+    "whitespace": "ONE_NONFUNCTIONAL_BLANK_LINE_AT_MQ5_EOF_PRESERVED_FOR_ENQUEUED_SOURCE_SHA_STABILITY",
     "risk_contract": {
       "environment": "backtest",
       "RISK_FIXED": 1000,

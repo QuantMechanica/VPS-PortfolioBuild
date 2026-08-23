@@ -92,7 +92,9 @@ no compiler output exists.
 - SPEC validator: PASS;
 - build guardrail validator: PASS, zero findings across source and setfile;
 - symbol-scope validator: `BASKET_OK`, zero violations, exactly XAU and XAG;
-- scoped `git diff --check`: PASS;
+- post-commit `git show --check`: one non-functional blank line at MQ5 EOF;
+  preserved byte-for-byte because the governed compile row is already bound
+  to the recorded MQ5 SHA;
 - registry and generated resolver contain both 41128 execution identities.
 
 Reference coverage includes 17/20/23 acceptance and 16/24 rejection, exact
