@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9719
+; ea_slug:      bandy-percentrank-channel-mr-index
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       GBPUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   7
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   d27ac3c1865332d9cb1e9801df58179994d28851f3acb998ae5b272c15dd30f9
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=9719
+qm_magic_slot_offset=7
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9719_bandy-percentrank-channel-mr-index.md
+; card_defaults_status=none_found
+; strategy params backfilled from the EA's own input defaults;
+; behaviour-identical (an omitted param already used this value),
+; required by Q08 sub-gate 8.5 which perturbs named parameters.
+strategy_atr_period=14
+strategy_pr_entry_thresh=5.0
+strategy_pr_exit_thresh=50.0
+strategy_pr_period=100
+strategy_sl_atr_mult=2.5
+strategy_sma_period=200
+strategy_spread_max_atr=0.25
+strategy_time_stop_days=10
+strategy_warmup_bars=200
