@@ -293,6 +293,11 @@ def _new_gate() -> dict:
 
 def build_pairs(con: sqlite3.Connection, limit: int | None) -> dict:
     pairs: dict[tuple[str, str], dict] = {}
+    # Phase/version resolution has only a few dozen distinct inputs but this
+    # loop walks >100k historical rows.  Cache the manifest translation and
+    # display label once per token so heartbeat/cockpit read models do not spend
+    # minutes repeating identical pure work.
+    resolution_cache: dict[tuple[str, str], tuple[str | None, str, str]] = {}
     for ea_id, symbol, phase, status, verdict, contract_version in _iter_pair_rows(con, limit):
         key = (ea_id, symbol)
         rec = pairs.get(key)
@@ -305,7 +310,15 @@ def build_pairs(con: sqlite3.Connection, limit: int | None) -> dict:
             }
         rec["phases_run"][(phase or "")] += 1
         rec["all_verdicts"][(verdict or "")] += 1
-        g = canonical_gate(phase, contract_version)
+        resolution_key = (str(phase or ""), str(contract_version or ""))
+        resolved = resolution_cache.get(resolution_key)
+        if resolved is None:
+            g = canonical_gate(phase, contract_version)
+            label = phase_label(phase, contract_version, include_name=True) if g else ""
+            resolved_phase = phase_qid(phase, contract_version).strip().upper()
+            resolved = resolution_cache[resolution_key] = (g, label, resolved_phase)
+        else:
+            g, label, resolved_phase = resolved
         if g is None:
             rec["offchain_phases"][(phase or "")] += 1
             continue
@@ -313,11 +326,9 @@ def build_pairs(con: sqlite3.Connection, limit: int | None) -> dict:
         gd["rows"] += 1
         gd["statuses"][(status or "")] += 1
         gd["verdicts"][(verdict or "")] += 1
-        label = phase_label(phase, contract_version, include_name=True)
         gd["observed_labels"].add(label)
         cls = vclass(verdict)
         is_done = (status or "").strip().lower() == "done"
-        resolved_phase = phase_qid(phase, contract_version).strip().upper()
         informational_lane = resolved_phase.endswith("_PORTFOLIO")
         if informational_lane:
             # OWNER E1 / v4 contract: the portfolio sibling is informational.
