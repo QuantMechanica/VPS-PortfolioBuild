@@ -20,10 +20,10 @@
   "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41006_man-ahl-multispeed-ewma-trend\\SPEC.md",
   "build_check_passed": false,
   "compile_succeeded": false,
-  "smoke_result": "build_check_failed",
+  "smoke_result": "compile_failed",
   "smoke_report_path": null,
-  "blocked_reason": "Fresh build_check was refused with LIVE_FACTORY_AD_HOC_COMPILE_REFUSED while protected T1-T10 activity was active; governed enqueue-compile then refused EX5_ALREADY_PRESENT and BOUND_SETFILE_HASH_EXISTS with force_rebuild_authorized=false, so no fresh EX5 was emitted.",
+  "blocked_reason": "2026-08-23T18:16:53Z compile_ea verdict=COMPILE_FAILED reason_class=INCLUDE_MIRROR_REFUSED while farm health reported 9 active rows, 20 pwsh workers, and 10/10 T1-T10 workers alive; no process was stopped, so no fresh EX5 or smoke evidence was emitted.",
   "open_questions": [
-    "Fresh strict compilation requires governed force-rebuild authorization after protected factory activity permits it."
+    "Fresh strict compilation requires a governed compile window or authorized force-rebuild path after protected factory activity permits it."
   ]
 }
