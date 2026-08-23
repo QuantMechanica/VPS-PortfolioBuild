@@ -15527,6 +15527,189 @@ def _q09_candidate_lineage_key(ea_id: str, symbol: str, q08_work_item_id: str) -
     return hashlib.sha256(material).hexdigest()
 
 
+def _spawn_q09_replacements_for_regenerated_q08(
+    root: Path, *, limit: int
+) -> list[dict[str, str]]:
+    """Append a Q09 successor when a held row's immutable Q08 edge is stale.
+
+    ``work_item_dependencies`` is append-only, so a held Q09 row cannot be
+    rebound in place.  A completed append-only Q08 regeneration therefore gets
+    a new held Q09 child.  The original child and dependency remain durable and
+    are superseded only after the replacement plan binds successfully.
+    """
+    if limit <= 0:
+        return []
+    spawned: list[dict[str, str]] = []
+    now = utc_now()
+    with connect(root) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        held = conn.execute(
+            """
+            SELECT w.*,d.parent_work_item_id AS prior_q08_id,
+                   p.created_at AS prior_q08_created_at
+            FROM work_items w
+            JOIN work_item_holds h ON h.work_item_id=w.id
+            JOIN work_item_dependencies d
+              ON d.child_work_item_id=w.id AND d.dependency_role='Q08_INPUT'
+            JOIN work_items p ON p.id=d.parent_work_item_id
+            WHERE w.phase=? AND w.status='pending'
+              AND COALESCE(w.claimed_by,'')=''
+              AND h.hold_code=? AND h.active=1
+            ORDER BY w.created_at,w.id
+            LIMIT ?
+            """,
+            (_NEWS_PHASE, Q09_ACTIVATION_HOLD_CODE, int(limit)),
+        ).fetchall()
+        for prior in held:
+            replacement_q08 = conn.execute(
+                """
+                SELECT q.* FROM work_items q
+                WHERE q.ea_id=? AND q.symbol=? AND q.setfile_path=?
+                  AND q.phase='Q08' AND q.status='done'
+                  AND q.verdict IN ('PASS','FAIL_SOFT')
+                  AND q.id<>?
+                  AND q.created_at>?
+                  AND json_valid(q.payload_json)=1
+                  AND json_extract(q.payload_json,'$.append_only_rerun')=1
+                  AND NOT EXISTS (
+                    SELECT 1 FROM work_item_dependencies dx
+                    JOIN work_items cx ON cx.id=dx.child_work_item_id
+                    WHERE dx.dependency_role='Q08_INPUT'
+                      AND dx.parent_work_item_id=q.id
+                      AND cx.phase=?
+                  )
+                ORDER BY q.updated_at DESC,q.id DESC LIMIT 1
+                """,
+                (
+                    prior["ea_id"], prior["symbol"], prior["setfile_path"],
+                    prior["prior_q08_id"], prior["prior_q08_created_at"], _NEWS_PHASE,
+                ),
+            ).fetchone()
+            if replacement_q08 is None:
+                continue
+            evidence_sha256 = _work_item_evidence_sha256(replacement_q08)
+            if not evidence_sha256:
+                continue
+            replacement_id = str(uuid.uuid4())
+            payload = _promotion_payload_with_basket_context(
+                replacement_q08,
+                {
+                    "promoted_from_phase": "Q08",
+                    "promoted_from_work_item": replacement_q08["id"],
+                    "promotion_source": "q09_autoseal_regenerated_q08",
+                    "supersedes_held_q09_work_item": prior["id"],
+                },
+            )
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                  id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
+                  parent_task_id,payload_json,created_at,updated_at,gate_contract_version
+                ) VALUES(?,'backtest',?,?,?,?, 'pending',0,NULL,?,?,?,?)
+                """,
+                (
+                    replacement_id, _NEWS_PHASE, replacement_q08["ea_id"],
+                    replacement_q08["symbol"], replacement_q08["setfile_path"],
+                    json.dumps(payload, sort_keys=True), now, now,
+                    ACTIVE_GATE_CONTRACT_VERSION,
+                ),
+            )
+            _add_q08_input_dependency(
+                conn,
+                child_work_item_id=replacement_id,
+                q08_work_item=replacement_q08,
+                evidence_sha256=evidence_sha256,
+            )
+            _mark_q09_awaiting_sealed_plan(
+                conn, work_item_id=replacement_id, payload=payload, now=now
+            )
+            spawned.append({
+                "prior_q09_work_item_id": str(prior["id"]),
+                "prior_q08_work_item_id": str(prior["prior_q08_id"]),
+                "replacement_q08_work_item_id": str(replacement_q08["id"]),
+                "replacement_q09_work_item_id": replacement_id,
+            })
+        conn.commit()
+    return spawned
+
+
+def _supersede_stale_q09_holds_after_rebind(
+    conn: sqlite3.Connection,
+    *,
+    replacement_q09_id: str,
+    replacement_q08_id: str,
+    now: str,
+) -> list[str]:
+    """Retire older unadjudicated holds only after a replacement binds."""
+    replacement = conn.execute(
+        """
+        SELECT w.ea_id,w.symbol,w.setfile_path,q.created_at AS q08_created_at
+        FROM work_items w
+        JOIN work_item_dependencies d
+          ON d.child_work_item_id=w.id AND d.dependency_role='Q08_INPUT'
+        JOIN work_items q ON q.id=d.parent_work_item_id
+        WHERE w.id=? AND q.id=?
+          AND json_valid(q.payload_json)=1
+          AND json_extract(q.payload_json,'$.append_only_rerun')=1
+        """,
+        (replacement_q09_id, replacement_q08_id),
+    ).fetchone()
+    if replacement is None:
+        return []
+    stale = conn.execute(
+        """
+        SELECT w.id,w.payload_json FROM work_items w
+        JOIN work_item_holds h ON h.work_item_id=w.id
+        JOIN work_item_dependencies d
+          ON d.child_work_item_id=w.id AND d.dependency_role='Q08_INPUT'
+        JOIN work_items prior_q08 ON prior_q08.id=d.parent_work_item_id
+        WHERE w.phase=? AND w.status='pending' AND w.id<>?
+          AND w.ea_id=? AND w.symbol=? AND w.setfile_path=?
+          AND d.parent_work_item_id<>?
+          AND prior_q08.created_at<?
+          AND h.hold_code=? AND h.active=1
+          AND NOT EXISTS (
+            SELECT 1 FROM q09_news_tests t WHERE t.work_item_id=w.id
+          )
+        ORDER BY w.created_at,w.id
+        """,
+        (
+            _NEWS_PHASE, replacement_q09_id, replacement["ea_id"],
+            replacement["symbol"], replacement["setfile_path"],
+            replacement_q08_id, replacement["q08_created_at"],
+            Q09_ACTIVATION_HOLD_CODE,
+        ),
+    ).fetchall()
+    superseded: list[str] = []
+    for row in stale:
+        payload = json.loads(str(row["payload_json"] or "{}"))
+        payload.update({
+            "historical_work_item_preserved": True,
+            "superseded_by_work_item_id": replacement_q09_id,
+            "superseded_by_q08_work_item_id": replacement_q08_id,
+            "superseded_reason": "regenerated_q08_identity_bound_to_replacement_q09",
+        })
+        conn.execute(
+            """
+            UPDATE work_items
+            SET status='done',verdict='SUPERSEDED',payload_json=?,updated_at=?
+            WHERE id=? AND status='pending' AND verdict IS NULL
+            """,
+            (json.dumps(payload, sort_keys=True), now, row["id"]),
+        )
+        conn.execute(
+            """
+            UPDATE work_item_holds
+            SET active=0,updated_at=?,released_at=?,
+                release_note='superseded after regenerated Q08 replacement plan bound'
+            WHERE work_item_id=? AND hold_code=? AND active=1
+            """,
+            (now, now, row["id"], Q09_ACTIVATION_HOLD_CODE),
+        )
+        superseded.append(str(row["id"]))
+    return superseded
+
+
 def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any]:
     """Create and bind approved contract-v3 plans for held Q09 rows.
 
@@ -15536,6 +15719,9 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
     """
 
     init_db(root)
+    predecessor_refresh = _spawn_q09_replacements_for_regenerated_q08(
+        root, limit=max(0, int(limit))
+    )
     with connect(root) as conn:
         candidates = conn.execute(
             """
@@ -15689,6 +15875,12 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                     "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
                     (json.dumps(current_payload, sort_keys=True), utc_now(), work_item_id),
                 )
+                superseded_q09_ids = _supersede_stale_q09_holds_after_rebind(
+                    conn,
+                    replacement_q09_id=work_item_id,
+                    replacement_q08_id=q08_id,
+                    now=utc_now(),
+                )
                 conn.commit()
             results.append({
                 "work_item_id": work_item_id,
@@ -15701,6 +15893,7 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                 "plan_sha256": plan["plan_sha256"],
                 "cell_count": plan["cell_count"],
                 "activation_hold_released": bound["activation_hold_released"],
+                "superseded_q09_work_item_ids": superseded_q09_ids,
             })
         except Exception as exc:  # fail closed per row; continue the cohort
             results.append(
@@ -15712,6 +15905,7 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                 )
             )
     return {
+        "predecessor_refresh": predecessor_refresh,
         "candidate_count": len(candidates),
         "sealed_count": sum(1 for row in results if row.get("sealed") is True),
         "failed_count": sum(1 for row in results if row.get("sealed") is False),

@@ -299,6 +299,50 @@ def test_stdlib_compile_fail_is_infra_only_when_log_reachable(tmp_path: Path) ->
     assert rows["QM5_5"]["action"] == "UNKNOWN"
 
 
+def test_deterministic_oninit_failure_is_never_rerun(tmp_path: Path) -> None:
+    connection = _connection()
+    payload = {"expected_ex5_sha256": "a" * 64, "expected_setfile_sha256": "b" * 64}
+    for gate in planner.GATE_CHAIN[:4]:
+        _insert(connection, f"pass-{gate}", gate, "QM5_PIN", "XAUUSD.DWX", payload=payload)
+    evidence = tmp_path / "q06.json"
+    evidence.write_text(
+        json.dumps({"reason": "invalid_summary:ONINIT_FAILED,INPUTSVALID"}),
+        encoding="utf-8",
+    )
+    _insert(
+        connection, "q06-pin", "Q06", "QM5_PIN", "XAUUSD.DWX",
+        status="done", verdict="INFRA_FAIL", evidence_path=str(evidence), payload=payload,
+    )
+
+    result = planner.build_plan(connection, _census_rows(connection))
+    row = next(item for item in result["rows"] if item["record_type"] == "PAIR")
+
+    assert row["action"] == "STOP_DETERMINISTIC_INFRA"
+    assert row["reason"] == "oninit_failed_inputsvalid_framework_pin_requires_code_fix"
+    assert row["enqueue_eligible"] is False
+    assert row["farmctl_command"] == ""
+
+
+def test_ea_defect_compile_class_is_never_rerun(tmp_path: Path) -> None:
+    connection = _connection()
+    evidence = tmp_path / "compile_evidence.json"
+    evidence.write_text(
+        json.dumps({"compile_result": {"failure_classes": ["EA_Q08_MAE_HOOK_MISSING"]}}),
+        encoding="utf-8",
+    )
+    _insert(
+        connection, "compile-defect", "COMPILE_EA", "QM5_DEFECT", "",
+        status="failed", verdict="COMPILE_FAIL", evidence_path=str(evidence),
+    )
+
+    result = planner.build_plan(connection, [])
+    row = result["rows"][0]
+
+    assert row["action"] == "STOP_DETERMINISTIC_INFRA"
+    assert row["reason"] == "compile_fail_ea_defect_requires_code_fix"
+    assert row["enqueue_eligible"] is False
+
+
 def test_append_only_apply_uses_argv_without_shell(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[list[str]] = []
 

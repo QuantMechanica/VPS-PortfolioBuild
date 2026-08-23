@@ -81,7 +81,6 @@ PASS_ECON = {
     "PASS",
     "PASS_SOFT",
     "PASS_LOWFREQ",
-    "PASS_PORTFOLIO",
     # Terminal requalification outcomes are successful contiguous evidence,
     # not ordinary PASS tokens.  Preserve both the current v3 spelling and the
     # v4 proposal spelling; ADMIT_BOTH remains a valid historical v3 outcome.
@@ -90,6 +89,12 @@ PASS_ECON = {
     "KEEP_INCUMBENT",
     "ADMIT_BOTH",
 }
+
+# Q09_PORTFOLIO is an informational book-input lane.  It is deliberately not
+# part of the economic gate walk: PASS_PORTFOLIO cannot license Q10 and an
+# informational FAIL_PORTFOLIO cannot economically kill the news cohort.
+INFORMATIONAL_PHASES = {"Q09_PORTFOLIO", "Q10_PORTFOLIO"}
+NEWS_PHASES = {"Q09_NEWS", "Q10_NEWS"}
 ECON_FAIL = {
     "FAIL", "FAIL_HARD", "FAIL_SOFT", "ZERO_TRADES", "RETIRE",
     "RETIRED_LOW_FREQ", "FAIL_PORTFOLIO", "FAIL_DD_PORTFOLIO_REVIEW",
@@ -131,11 +136,16 @@ def canonical_gate(
     small lane collapse below is storage normalization only (NEWS/PORTFOLIO are
     both evidence for their parent gate), never an ordinal guess.
     """
+    raw = (phase or "").strip().upper()
+    if raw in INFORMATIONAL_PHASES:
+        return None
     p = phase_qid(phase, gate_contract_version).strip().upper()
+    if p in INFORMATIONAL_PHASES:
+        return None
+    if p in NEWS_PHASES:
+        return "Q09"
     if p in GATE_ORDINAL:
         return p
-    if p.startswith("Q09"):
-        return "Q09"
     if p in NONCHAIN_PHASES:
         return None
     if p in LEGACY_ALIAS:

@@ -37,7 +37,7 @@ def test_canonical_gate_mapping():
     assert rc.canonical_gate("Q02") == "Q02"
     assert rc.canonical_gate("P2") == "Q02"          # legacy alias
     assert rc.canonical_gate("Q09_NEWS") == "Q09"    # Q09 prefix merge
-    assert rc.canonical_gate("Q09_PORTFOLIO") == "Q09"
+    assert rc.canonical_gate("Q09_PORTFOLIO") is None
     assert rc.canonical_gate("COMPILE_EA") is None    # off-chain
     assert rc.canonical_gate("OPT_CENSUS") is None
     assert rc.canonical_gate("Q11") is None
@@ -45,7 +45,7 @@ def test_canonical_gate_mapping():
 
 def test_vclass():
     assert rc.vclass("PASS") == "PASS"
-    assert rc.vclass("PASS_PORTFOLIO") == "PASS"
+    assert rc.vclass("PASS_PORTFOLIO") == "OTHER"
     assert rc.vclass("PROMOTE_CHALLENGER") == "PASS"
     assert rc.vclass("CHALLENGER_PROMOTED") == "PASS"
     assert rc.vclass("KEEP_INCUMBENT") == "PASS"
@@ -86,6 +86,27 @@ def test_economic_fail_pair():
     assert row["earliest_missing_prerequisite"] == "Q03"
     assert row["disposition"] == "ECONOMIC_FAIL"
     assert row["frontier_infra"] is False
+
+
+def test_informational_portfolio_lane_cannot_mask_or_kill_news_frontier():
+    con = _mk_con()
+    for gate in rc.GATE_CHAIN[:7]:
+        _ins(con, f"r{gate}", gate, "QM5_NEWS", "XAUUSD.DWX", "done", "PASS")
+    _ins(
+        con, "portfolio", "Q09_PORTFOLIO", "QM5_NEWS", "XAUUSD.DWX",
+        "done", "FAIL_PORTFOLIO",
+    )
+    _ins(
+        con, "news", "Q09_NEWS", "QM5_NEWS", "XAUUSD.DWX",
+        "done", "REVIEW_REQUIRED",
+    )
+
+    row = rc.compute(con, None)["pair_rows"][0]
+
+    assert row["highest_contiguous_valid_gate"] == "Q08"
+    assert row["earliest_missing_prerequisite"] == "Q09"
+    assert row["frontier_class"] == "INVALID"
+    assert row["disposition"] == "REUSABLE"
 
 
 def test_invalid_pair_no_valid_gate():
