@@ -423,14 +423,15 @@ realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-23 | initial WTI completed-month weekday-balanced median momentum card | G0 | APPROVED |
+| v2 | 2026-08-23 | EA source, reference tests, SPEC, and fixed-risk preset complete; governed compile held at fleet CPU ceiling | Q01 | SOURCE_READY_COMPILE_HELD |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-23 | APPROVED | `decisions/2026-08-23_qm5_41132_wti_monthly_weekday_median_momentum_g0.md` |
-| Q01 Build Validation | 2026-08-23 | PENDING_BUILD | source implementation and strict compile required |
-| Q02 Baseline Screening | 2026-08-23 | NOT_ENQUEUED_Q01_PENDING | strict compile, EX5, final set binding, and Q01 PASS required |
+| Q01 Build Validation | 2026-08-23 | SOURCE_READY_COMPILE_HELD | `docs/ops/evidence/2026-08-23_qm5_41132_wti_weekday_median_build_cpu_ceiling.md`; compile work item `690cf433-d157-49d0-aaa8-57b58431a845` pending |
+| Q02 Baseline Screening | 2026-08-23 | NOT_ENQUEUED_CPU_CEILING | no EX5; measured CPU 98.1% above the 97% claim ceiling, so the OWNER stop condition binds |
 
 ## Safety Boundary
 
