@@ -8543,6 +8543,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
         "phase_runner": cmd[1],
         "effective_min_trades": 5,
         "phase_evidence_path": phase_evidence_path,
+        "expected_ex5_sha256": dispatch_ex5_sha256,
     }
 
 
@@ -11561,7 +11562,11 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 })
                 free_terminals.insert(0, terminal)  # give terminal back
                 continue
-            new_payload = {
+            # Preserve enqueue-time run/plan bindings.  Phase-runner spawn
+            # results omit most expected_* keys; rebuilding this object from
+            # scratch previously discarded the very identity SH-2 consumes.
+            new_payload = dict(item_payload)
+            new_payload.update({
                 "started_at_iso": started_iso,
                 "claimed_at_iso": started_iso,
                 "claimed_by_worker_pid": os.getpid(),
@@ -11583,6 +11588,8 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "smoke_year_count": spawn.get("smoke_year_count"),
                 "effective_min_trades": spawn.get("effective_min_trades"),
                 "phase_runner": spawn.get("phase_runner"),
+            })
+            spawn_bindings = {
                 "from_date": spawn.get("from_date"),
                 "to_date": spawn.get("to_date"),
                 "evidence_binding_required": spawn.get("evidence_binding_required"),
@@ -11595,6 +11602,8 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "expected_setfile_sha256": spawn.get("expected_setfile_sha256"),
                 "expected_mq5_sha256": spawn.get("expected_mq5_sha256"),
             }
+            new_payload.update({key: value for key, value in spawn_bindings.items()
+                                if value is not None})
             if spawn.get("setfile_path_canonicalized_from"):
                 new_payload["setfile_path_canonicalized_from"] = spawn[
                     "setfile_path_canonicalized_from"

@@ -2142,6 +2142,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                     "pid": 123456,
                     "claimed_at_iso": claim_iso,
                     "started_at_iso": claim_iso,
+                    "expected_ex5_sha256": "a" * 64,
                 },
             )
 
@@ -2168,7 +2169,10 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 phase="Q02",
                 status="active",
                 claimed_by="T7",
-                payload={"report_root": str(report_root)},
+                payload={
+                    "report_root": str(report_root),
+                    "expected_ex5_sha256": "a" * 64,
+                },
             )
 
             summary_path = report_root / "QM5_9999" / "20260101_000000" / "summary.json"
@@ -2203,7 +2207,10 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                     {"id": "wi-detached", "phase": "Q02"},
                     "T7",
                     {"pid": 123456, "report_root": str(report_root)},
-                    {"report_root": str(report_root)},
+                    {
+                        "report_root": str(report_root),
+                        "expected_ex5_sha256": "a" * 64,
+                    },
                     timeout_seconds=30,
                 )
             finally:
