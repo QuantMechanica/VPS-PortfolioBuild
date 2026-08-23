@@ -30,9 +30,10 @@
 
 | Punkt | Zustand | Beleg |
 |---|---|---|
-| Strategy Archive Matrix (Card × Gate × Symbol) — Vorentwurf v0.1 | **geliefert** (Spezifikation, nicht gebaut) | `docs/ops/STRATEGY_ARCHIVE_MATRIX_SPEC_2026-08-23.md` |
-| Beauftragung | Router `2ee6427d` (`ops_issue`, Prio 62, **BLOCKED**) | `agent_tasks` |
-| Blockiert durch | OWNER-Antworten F1–F8 (Zeilenmodell, Spaltenreihenfolge, Zellzustände, Stale-Pass, „leer", Sortierung, Symboluniversum, Q00/Q01) | Spec §12 |
+| Strategy Archive Matrix (Card × Gate × Symbol) — Spezifikation **v1.0** | **geliefert**, alle acht Fragen entschieden, noch nicht gebaut | `docs/ops/STRATEGY_ARCHIVE_MATRIX_SPEC_2026-08-23.md` §11a |
+| Beauftragung | Router `2ee6427d` (`ops_issue`, Prio 62, **TODO**, entblockt) | `agent_tasks` |
+| Nächster Schritt | Build-Hash-Abdeckung messen → Prototyp auf echten Daten → OWNER-Abnahme → Vollausbau | Spec §14 |
+| **Neu abgetrennt:** Gate-Nummerierung → Unterstufen `Q10.1–Q10.3` (Q11–Q13 bleiben) | beauftragt, Router `74e72403` (Prio 66, TODO) | Spec §3a |
 | Nebenbefund, messbar | 4.661 Paare mit Q02-PASS und **ohne jede Q03-Zeile**; 2.165 Zellen ohne wirtschaftliches Urteil | Spec §1/§4 |
 
 ---

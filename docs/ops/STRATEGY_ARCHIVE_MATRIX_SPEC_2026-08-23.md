@@ -1,8 +1,9 @@
-# Strategy Archive Matrix — Vorentwurf v0.2 (F1/F3/F4/F7 entschieden · F2/F5/F6/F8 offen)
+# Strategy Archive Matrix — Spezifikation v1.0 (alle acht Entscheidungen getroffen)
 
 **Autor:** Claude (Design/IA-Lane, Orchestrator) · **Datum:** 2026-08-23
-**Status:** VORENTWURF v0.2 — F1, F3, F4 sind vom OWNER entschieden (2026-08-23). F2 wurde vom OWNER
-zur Grundsatzfrage erhoben (Gate-Nummerierung, siehe §3a). F5–F8 offen.
+**Status:** ENTSCHIEDEN — alle acht Fragen vom OWNER beantwortet (2026-08-23). Baureif, sobald der
+Prototyp gemessen ist. Die Gate-Umnummerierung (§3a) ist ein **eigener Auftrag** und blockiert die
+Matrix nicht.
 **Programm:** Vault `12 ToDo/03_Mission_Control_Cockpit` · **Nachbarspec:** `docs/ops/MISSION_CONTROL_V2_RENDER_SPEC.md`
 **Zielfläche:** `D:\QM\strategy_farm\dashboards\strategies.html` (heißt bereits „Strategy Archive") — **erweitern, nicht neu bauen.**
 
@@ -271,31 +272,40 @@ Vertragsarbeit und bleiben in der Claude-Lane.
 **Bis das entschieden ist, ist F2 für die Matrix nicht blockierend:** die Spaltenreihenfolge liest
 sich aus `extension_topology` des Manifests, egal welches Schema dort steht.
 
-## 11a · OWNER-Entscheide vom 2026-08-23
+## 11a · OWNER-Entscheide vom 2026-08-23 — vollständig
 
-- **F1 = A** — Zeile ist die Card (3.279), Gate-Zelle trägt den Symbolstreifen, Klick klappt die
-  (Card, Symbol)-Zeilen auf.
-- **F3 = sieben Zustände, Loch auffällig** — PASS · PASS bedingt · FAIL · VOID · läuft ·
-  **erreichbares Loch (kräftigster Chip der Seite)** · leer. Farbe nie alleiniger Träger.
-- **F4 = (b) hohl markieren** — ein PASS, das älter ist als der aktuelle Build-Hash, rendert als
-  „stale pass" mit Datum im Tooltip. Vorbehalt bleibt: ist die Hash-Abdeckung zu dünn, wird daraus
-  (a) mit sichtbarem Warnhinweis — das ist eine Messung vor dem Prototyp, keine neue Entscheidung.
-- **F7 = entschieden (Claude, Routineurteil):** Chips für die handelbaren DWX-Symbole, alles
-  Obsolete gebündelt als `legacy`, Basket-Zeilen mit leerem Symbol als eigener Chip `BASKET`.
-- **F2 offen** — siehe §3a. **F5, F6, F8 offen.**
+| | Entscheidung | Folge für den Bau |
+|---|---|---|
+| **F1** | **A — Zeile ist die Card**, aufklappbar zu (Card, Symbol) | 3.279 Zeilen; Gate-Zelle trägt Symbolstreifen; Spaltensortierung über abgeleitete Skalare |
+| **F2** | **Unterstufen `Q10.1–Q10.3`** statt Vollumnummerierung | eigener Auftrag (§3a/§14); Matrix liest die Reihenfolge ohnehin aus `extension_topology` |
+| **F3** | **Sieben Zustände, Loch-Chip auffällig** | VOID (2.165) bekommt eigene Darstellung; das erreichbare Loch (4.666) ist der kräftigste Chip der Seite |
+| **F4** | **(b) Stale Pass hohl markieren** | Build-Hash-Verknüpfung je Zelle; **Abdeckung vor dem Prototyp messen** — reicht sie nicht, wird es (a) mit sichtbarem Warnhinweis |
+| **F5** | **abgeleitet aus vier Signalen** (Zieluniversum · RETIRE/OBSOLETE/SUPERSEDED · Card-Bucket · `work_item_holds`) | kein neuer Datenvertrag; **jede leere Zelle nennt ihren Grund im Tooltip**, keine stillschweigende Leere |
+| **F6** | **Default: höchstes bestandenes Gate zuerst** | Seite öffnet als Bestenliste; „meiste Löcher zuerst" bleibt ein Klick im Sortiermenü, der Loch-Filter bleibt prominent |
+| **F7** | **DWX-Chips + `legacy` + `BASKET`** (Claude, Routineurteil) | Basket-EAs mit leerem Symbol verschwinden nicht |
+| **F8** | **Matrix beginnt bei Q02** | eine einzige Quelle (`work_items_clean`), eine Frische, einfacher Test. Die blaue Kopfgruppe heißt weiter „Evaluierung", beginnt aber sichtbar bei Q02 |
 
-## 12 · Fragenliste
+**Bewusst in Kauf genommen (F8):** Karten ohne jede Gate-Zeile erscheinen nicht. Der Stau *vor*
+der Fabrik — freigegebene Karten, die nie gebaut wurden — bleibt damit unsichtbar; er ist über das
+Drain-Programm und `D1` abgedeckt, nicht über diese Seite. Die Seite schreibt das sichtbar in die
+Fußzeile, damit die Abwesenheit nicht als Vollständigkeit gelesen wird.
 
-- ~~**F1**~~ **entschieden: A** (Card-Zeile, aufklappbar).
-- **F2** ~~Spaltenreihenfolge~~ → zur Grundsatzfrage erhoben, siehe §3a: Unterstufen `Q10.1–Q10.3`, Vollumnummerierung oder nur Anzeigereihenfolge? (Nebenpunkt bleibt: Q09 eine oder zwei Spalten?)
-- ~~**F3**~~ **entschieden: sieben Zustände, Loch-Chip auffällig.**
-- ~~**F4**~~ **entschieden: (b) hohl markieren** (Hash-Abdeckung vor dem Prototyp messen).
-- **F5** „Leer" abgeleitet (Universum/Retire/Bucket/Hold) — oder pflegbares Feld „nicht geplant (Grund)"?
-- **F6** Default-Sortierung: meiste Löcher zuerst oder höchstes bestandenes Gate zuerst?
-- ~~**F7**~~ **entschieden (Claude): handelbare DWX-Symbole + `legacy` + `BASKET`.**
-- **F8** Q00/Q01 als Spalten (aus Card-Bucket und Build-Artefakt abgeleitet) oder Matrix erst ab Q02?
+## 14 · Umsetzungsreihenfolge
 
-## 13 · Nächster Schritt nach den Antworten
+1. **Messung vor dem Prototyp:** Build-Hash-Abdeckung je Zelle (entscheidet F4 (b) gegen (a)).
+2. **Prototyp** auf echten Daten, Card-Stichprobe über alle Gates; Seitengröße und Sortierlatenz
+   gemessen (Akzeptanz §11).
+3. **OWNER-Abnahme** am Prototyp.
+4. **Vollausbau** in `render_dashboards.py`, Tests nach §11, Verlinkung aus dem Cockpit-Kopf.
+5. **Unabhängig davon** läuft der Nummerierungsauftrag (§3a): Entscheidungsrecord → Gate-Manifest
+   v4 (READ_INERT → Review → ACTIVE) → mechanische Doku-Passe. Die Matrix übernimmt das Schema
+   automatisch, weil sie die Reihenfolge aus dem Manifest liest.
+
+## 12 · Fragen F1–F8 — geschlossen 2026-08-23
+
+Alle acht Entscheidungen stehen in §11a. Historie der Fragestellung: Git-Historie dieser Datei (v0.1/v0.2).
+
+## 13 · Nächster Schritt
 
 Prototyp auf echten Daten (kein Mock), eine Card-Stichprobe über alle Gates, Seitengröße und
 Sortier-Latenz gemessen — dann Abnahme, dann Vollausbau im Dashboard-Task. Der Prototyp ist
