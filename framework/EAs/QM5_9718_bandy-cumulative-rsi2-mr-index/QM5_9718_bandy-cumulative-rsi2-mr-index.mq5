@@ -203,7 +203,7 @@ void OnTick()
             continue;
          if(PositionGetString(POSITION_SYMBOL) != _Symbol)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_SIGNAL);
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
       }
    }
 
