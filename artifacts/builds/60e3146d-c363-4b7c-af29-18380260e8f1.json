@@ -1,0 +1,22 @@
+{
+  "task_id": "60e3146d-c363-4b7c-af29-18380260e8f1",
+  "ea_id": "QM5_35008",
+  "ea_label": "QM5_35008_short-term-bollinger-reversion-system",
+  "slug": "short-term-bollinger-reversion-system",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_35008_short-term-bollinger-reversion-system",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_35008_short-term-bollinger-reversion-system\\QM5_35008_short-term-bollinger-reversion-system.mq5",
+  "mq5_sha256": "3c9ad2838912aa02099a87e85d98625f7f17579e99101c28b25bbe96210ece22",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_35008_short-term-bollinger-reversion-system\\QM5_35008_short-term-bollinger-reversion-system.ex5",
+  "ex5_sha256": "998a192d8c954cdf671ac6a4628da373ec16c51fd7fb67b3b0a16d563d774f77",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_35008_short-term-bollinger-reversion-system\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_35008_short-term-bollinger-reversion-system.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_35008_short-term-bollinger-reversion-system\\sets\\QM5_35008_short-term-bollinger-reversion-system_EURUSD.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_35008_short-term-bollinger-reversion-system\\sets\\QM5_35008_short-term-bollinger-reversion-system_USDCAD.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_35008_short-term-bollinger-reversion-system\\sets\\QM5_35008_short-term-bollinger-reversion-system_EURCHF.DWX_M15_backtest.set"
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "built_by": "Gemini",
+  "built_at": "2026-08-23T11:30:00Z"
+}

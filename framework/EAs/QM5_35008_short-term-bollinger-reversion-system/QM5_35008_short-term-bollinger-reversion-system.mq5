@@ -16,7 +16,7 @@ input int    qm_magic_slot_offset         = 0;
 input uint   qm_rng_seed                  = 42;
 
 input group "Risk"
-input double RISK_PERCENT                 = 0.5;
+input double RISK_PERCENT                 = 0.0;
 input double RISK_FIXED                   = 1000.0;
 input double PORTFOLIO_WEIGHT             = 1.0;
 
@@ -46,16 +46,39 @@ input int    strategy_entry_start_hhmm    = 1800;   // Session entry window star
 input int    strategy_entry_end_hhmm      = 2200;   // Session entry window end (GMT hhmm)
 input int    strategy_exit_hhmm           = 2300;   // Time exit cutoff before rollover (GMT hhmm)
 input double strategy_spread_atr_mult     = 1.80;   // Spread filter ATR multiplier
+input double strategy_daily_loss_halt_pct = 2.0;    // Daily realized loss entry halt percent
+input double strategy_daily_hard_stop_pct = 2.5;    // Maximum daily drawdown hard stop percent
+input double strategy_total_dd_halt_pct   = 5.0;    // Maximum total drawdown stop percent
+input double strategy_per_trade_risk_cap_pct = 0.5; // Per-trade risk cap percent
 
 // -----------------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------------
 
-int GetBarHhmm(const datetime t)
+int StrategyHhmm(const datetime value)
 {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return (dt.hour * 100 + dt.min);
+   MqlDateTime parts;
+   TimeToStruct(value, parts);
+   return parts.hour * 100 + parts.min;
+}
+
+bool StrategyInRolloverWindow(const datetime utc_time)
+{
+   const int hhmm = StrategyHhmm(utc_time);
+   return (hhmm >= 2355 || hhmm < 5);
+}
+
+bool StrategyDailyEntryHalt()
+{
+   if(g_qm_ks_day_start_equity <= 0.0)
+      return false;
+
+   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(equity_now <= 0.0)
+      return true;
+
+   const double pnl_pct = ((equity_now - g_qm_ks_day_start_equity) / g_qm_ks_day_start_equity) * 100.0;
+   return (pnl_pct <= -strategy_daily_loss_halt_pct);
 }
 
 // -----------------------------------------------------------------------------
@@ -64,11 +87,14 @@ int GetBarHhmm(const datetime t)
 
 bool Strategy_NoTradeFilter()
 {
-   const datetime now = TimeCurrent();
-   const int hhmm = GetBarHhmm(now);
-   if(hhmm >= 2355 || hhmm < 5)
+   const datetime broker_now = TimeCurrent();
+   const datetime utc_now = QM_BrokerToUTC(broker_now);
+
+   // 1. Rollover Blackout in UTC (23:55 to 00:05 GMT)
+   if(StrategyInRolloverWindow(utc_now))
       return true;
 
+   // 2. Spread Filter (> 1.8 * ATR(14, M15)[1])
    const double atr_1 = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -80,6 +106,16 @@ bool Strategy_NoTradeFilter()
       if(spread_pts > strategy_spread_atr_mult * atr_pts)
          return true;
    }
+
+   // 3. Daily Loss Limit (2.0% entry halt)
+   if(StrategyDailyEntryHalt())
+      return true;
+
+   // 4. Max Open Positions (>= 1)
+   const int magic = QM_FrameworkMagic();
+   if(magic > 0 && QM_TM_OpenPositionCount(magic) >= 1)
+      return true;
+
    return false;
 }
 
@@ -100,77 +136,66 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   // 1. Evaluate Time Window: strictly 18:00 to 22:00
-   const datetime bar_time_1 = iTime(_Symbol, PERIOD_M15, 1); // perf-allowed: closed-bar reference behind QM_IsNewBar()
-   if(bar_time_1 <= 0)
-      return false;
-   const int hhmm_1 = GetBarHhmm(bar_time_1);
+   const ENUM_TIMEFRAMES tf = PERIOD_M15;
+   const datetime t_1 = iTime(_Symbol, tf, 1);
+   if(t_1 <= 0) return false;
+
+   const datetime utc_1 = QM_BrokerToUTC(t_1);
+   const int hhmm_1 = StrategyHhmm(utc_1);
    if(hhmm_1 < strategy_entry_start_hhmm || hhmm_1 > strategy_entry_end_hhmm)
       return false;
 
-   // 2. Fetch completed bar data (Shift = 1)
-   const double open_1  = iOpen(_Symbol, PERIOD_M15, 1);  // perf-allowed: closed-bar reference behind QM_IsNewBar()
-   const double high_1  = iHigh(_Symbol, PERIOD_M15, 1);  // perf-allowed: closed-bar reference behind QM_IsNewBar()
-   const double low_1   = iLow(_Symbol, PERIOD_M15, 1);   // perf-allowed: closed-bar reference behind QM_IsNewBar()
-   const double close_1 = iClose(_Symbol, PERIOD_M15, 1); // perf-allowed: closed-bar reference behind QM_IsNewBar()
+   const double low_1   = iLow(_Symbol, tf, 1);   // perf-allowed: closed-bar low behind QM_IsNewBar()
+   const double high_1  = iHigh(_Symbol, tf, 1);  // perf-allowed: closed-bar high behind QM_IsNewBar()
+   const double close_1 = iClose(_Symbol, tf, 1); // perf-allowed: closed-bar close behind QM_IsNewBar()
+   const double open_1  = iOpen(_Symbol, tf, 1);  // perf-allowed: closed-bar open behind QM_IsNewBar()
 
-   if(open_1 <= 0.0 || high_1 <= 0.0 || low_1 <= 0.0 || close_1 <= 0.0)
+   if(low_1 <= 0.0 || high_1 <= 0.0 || close_1 <= 0.0 || open_1 <= 0.0)
       return false;
 
-   const double upper_bb  = QM_BB_Upper(_Symbol, PERIOD_M15, strategy_bb_period, strategy_bb_dev, 1);
-   const double middle_bb = QM_BB_Middle(_Symbol, PERIOD_M15, strategy_bb_period, strategy_bb_dev, 1);
-   const double lower_bb  = QM_BB_Lower(_Symbol, PERIOD_M15, strategy_bb_period, strategy_bb_dev, 1);
-   const double rsi_1     = QM_RSI(_Symbol, PERIOD_M15, strategy_rsi_period, 1);
-   const double atr_1     = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
+   const double bb_mid_1   = QM_SMA(_Symbol, tf, strategy_bb_period, 1);
+   const double bb_upper_1 = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_dev, 1);
+   const double bb_lower_1 = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_dev, 1);
+   const double rsi_1      = QM_RSI(_Symbol, tf, strategy_rsi_period, 1);
+   const double atr_1      = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
 
-   if(upper_bb <= 0.0 || middle_bb <= 0.0 || lower_bb <= 0.0 || rsi_1 <= 0.0 || atr_1 <= 0.0)
+   if(bb_mid_1 <= 0.0 || bb_upper_1 <= 0.0 || bb_lower_1 <= 0.0 || rsi_1 <= 0.0 || atr_1 <= 0.0)
       return false;
 
-   const double pip_size = QM_StopRulesPipsToPriceDistance(_Symbol, 1.0);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(pip_size <= 0.0 || point <= 0.0)
-      return false;
-
-   const double sl_dist = MathMax(strategy_sl_atr_mult * atr_1, 5.0 * pip_size);
-
-   // 3. Evaluate Long Conditions: Low[1] <= LowerBB[1] AND Close[1] > Open[1] AND RSI[1] <= 30.0
-   if(low_1 <= lower_bb && close_1 > open_1 && rsi_1 <= strategy_rsi_oversold)
+   // 1. Long Entry: Low[1] <= LowerBB[1] AND Close[1] > Open[1] AND RSI[1] <= 30.0
+   if((low_1 <= bb_lower_1) && (close_1 > open_1) && (rsi_1 <= strategy_rsi_oversold))
    {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double exec_price = (ask > 0.0) ? ask : close_1;
-      const double sl_price = QM_TM_NormalizePrice(_Symbol, exec_price - sl_dist);
+      const double sl = exec_price - strategy_sl_atr_mult * atr_1;
+      const double tp = bb_mid_1;
 
-      double tp_price = 0.0;
-      if(middle_bb > exec_price + 3.0 * pip_size)
-         tp_price = QM_TM_NormalizePrice(_Symbol, middle_bb);
-      else
-         tp_price = QM_TM_NormalizePrice(_Symbol, exec_price + 1.5 * sl_dist);
+      if(sl <= 0.0 || sl >= exec_price || tp <= exec_price)
+         return false;
 
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = sl_price;
-      req.tp = tp_price;
+      req.sl = sl;
+      req.tp = tp;
       req.reason = "bb_reversion_long";
       return true;
    }
 
-   // 4. Evaluate Short Conditions: High[1] >= UpperBB[1] AND Close[1] < Open[1] AND RSI[1] >= 70.0
-   if(high_1 >= upper_bb && close_1 < open_1 && rsi_1 >= strategy_rsi_overbought)
+   // 2. Short Entry: High[1] >= UpperBB[1] AND Close[1] < Open[1] AND RSI[1] >= 70.0
+   if((high_1 >= bb_upper_1) && (close_1 < open_1) && (rsi_1 >= strategy_rsi_overbought))
    {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double exec_price = (bid > 0.0) ? bid : close_1;
-      const double sl_price = QM_TM_NormalizePrice(_Symbol, exec_price + sl_dist);
+      const double sl = exec_price + strategy_sl_atr_mult * atr_1;
+      const double tp = bb_mid_1;
 
-      double tp_price = 0.0;
-      if(middle_bb < exec_price - 3.0 * pip_size)
-         tp_price = QM_TM_NormalizePrice(_Symbol, middle_bb);
-      else
-         tp_price = QM_TM_NormalizePrice(_Symbol, exec_price - 1.5 * sl_dist);
+      if(sl <= 0.0 || sl <= exec_price || tp >= exec_price)
+         return false;
 
       req.type = QM_SELL;
       req.price = 0.0;
-      req.sl = sl_price;
-      req.tp = tp_price;
+      req.sl = sl;
+      req.tp = tp;
       req.reason = "bb_reversion_short";
       return true;
    }
@@ -180,76 +205,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
 {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0) return;
-   const double pip_size = QM_StopRulesPipsToPriceDistance(_Symbol, 1.0);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(pip_size <= 0.0 || point <= 0.0) return;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-   {
-      ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket)) continue;
-      if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-
-      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      const double current_sl = PositionGetDouble(POSITION_SL);
-      const double current_tp = PositionGetDouble(POSITION_TP);
-
-      if(pos_type == POSITION_TYPE_BUY)
-      {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(bid <= 0.0 || open_price <= 0.0) continue;
-
-         double r_dist = 0.0;
-         if(current_sl > 0.0 && current_sl < open_price)
-            r_dist = open_price - current_sl;
-         else if(current_tp > open_price)
-            r_dist = (current_tp - open_price) / 1.5;
-         else
-            r_dist = 15.0 * pip_size;
-
-         // Break-even trigger at +1.0R open profit
-         if((bid - open_price) >= r_dist)
-         {
-            const double target_sl = QM_TM_NormalizePrice(_Symbol, open_price + 1.0 * pip_size);
-            if(target_sl > current_sl + point * 0.5)
-               QM_TM_MoveSL(ticket, target_sl, "bb_reversion_be_plus_1");
-         }
-      }
-      else if(pos_type == POSITION_TYPE_SELL)
-      {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(ask <= 0.0 || open_price <= 0.0) continue;
-
-         double r_dist = 0.0;
-         if(current_sl > open_price)
-            r_dist = current_sl - open_price;
-         else if(current_tp > 0.0 && current_tp < open_price)
-            r_dist = (open_price - current_tp) / 1.5;
-         else
-            r_dist = 15.0 * pip_size;
-
-         // Break-even trigger at +1.0R open profit
-         if((open_price - ask) >= r_dist)
-         {
-            const double target_sl = QM_TM_NormalizePrice(_Symbol, open_price - 1.0 * pip_size);
-            if(current_sl <= 0.0 || target_sl < current_sl - point * 0.5)
-               QM_TM_MoveSL(ticket, target_sl, "bb_reversion_be_plus_1");
-         }
-      }
-   }
 }
 
 bool Strategy_ExitSignal()
 {
-   // Card §3.4: Time exit at 23:00 GMT before rollover
-   const datetime now = TimeCurrent();
-   const int hhmm = GetBarHhmm(now);
-   if(hhmm >= strategy_exit_hhmm && hhmm < 2355)
+   const datetime broker_now = TimeCurrent();
+   const datetime utc_now = QM_BrokerToUTC(broker_now);
+   const int hhmm_utc = StrategyHhmm(utc_now);
+   if(hhmm_utc >= strategy_exit_hhmm && hhmm_utc < 2355)
       return true;
-
    return false;
 }
 
@@ -269,6 +233,14 @@ int OnInit()
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         strategy_daily_hard_stop_pct,
+                         strategy_total_dd_halt_pct,
+                         strategy_per_trade_risk_cap_pct))
+      return INIT_FAILED;
+
    return INIT_SUCCEEDED;
 }
 
@@ -282,8 +254,8 @@ void OnTick()
    QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
 
+   // 1. Manage open positions and evaluate exit signals before entry filters
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -298,6 +270,7 @@ void OnTick()
       }
    }
 
+   // 2. News filter check
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
    
@@ -308,10 +281,15 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows) return;
 
-   if(!QM_IsNewBar()) return;
+   // 3. Entry-only filter (spread, rollover in UTC, 2% daily loss halt, max open positions)
+   if(Strategy_NoTradeFilter()) return;
+
+   // 4. Bar evaluation for entry
+   if(!QM_IsNewBar(_Symbol, PERIOD_M15)) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;

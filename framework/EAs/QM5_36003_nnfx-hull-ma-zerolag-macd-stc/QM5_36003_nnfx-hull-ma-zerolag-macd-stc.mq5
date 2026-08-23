@@ -16,7 +16,7 @@ input int    qm_magic_slot_offset         = 0;
 input uint   qm_rng_seed                  = 42;
 
 input group "Risk"
-input double RISK_PERCENT                 = 0.5;
+input double RISK_PERCENT                 = 0.0;
 input double RISK_FIXED                   = 1000.0;
 input double PORTFOLIO_WEIGHT             = 1.0;
 
@@ -47,25 +47,43 @@ input double strategy_stc_short_thresh    = 25.0;   // STC short confirmation th
 input int    strategy_vol_avg_period      = 20;     // Better Volume lookback period
 input int    strategy_atr_period          = 14;     // ATR period for stop loss and spread filter
 input double strategy_sl_atr_mult         = 1.00;   // Stop loss ATR multiplier
-input double strategy_tp_atr_mult         = 1.00;   // Take profit ATR multiplier
+input double strategy_tp1_atr_mult        = 1.00;   // TP1 ATR multiplier (50% partial close)
+input double strategy_tp1_fraction        = 0.50;   // TP1 volume fraction
+input int    strategy_be_buffer_pips      = 1;      // Break-even buffer in pips
 input double strategy_spread_atr_mult     = 1.80;   // Spread filter ATR multiplier
+input double strategy_daily_loss_halt_pct = 2.0;    // Daily realized loss entry halt percent
+input double strategy_daily_hard_stop_pct = 2.5;    // Maximum daily drawdown hard stop percent
+input double strategy_total_dd_halt_pct   = 5.0;    // Maximum total drawdown stop percent
+input double strategy_per_trade_risk_cap_pct = 0.5; // Per-trade risk cap percent
 
 // -----------------------------------------------------------------------------
 // Helpers & Indicator Math
 // -----------------------------------------------------------------------------
 
-int GetBarHhmm(const datetime t)
+int StrategyHhmm(const datetime value)
 {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return (dt.hour * 100 + dt.min);
+   MqlDateTime parts;
+   TimeToStruct(value, parts);
+   return parts.hour * 100 + parts.min;
 }
 
-bool Strategy_HasOpenPosition()
+bool StrategyInRolloverWindow(const datetime utc_time)
 {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0) return false;
-   return (QM_TM_OpenPositionCount(magic) > 0);
+   const int hhmm = StrategyHhmm(utc_time);
+   return (hhmm >= 2355 || hhmm < 5);
+}
+
+bool StrategyDailyEntryHalt()
+{
+   if(g_qm_ks_day_start_equity <= 0.0)
+      return false;
+
+   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(equity_now <= 0.0)
+      return true;
+
+   const double pnl_pct = ((equity_now - g_qm_ks_day_start_equity) / g_qm_ks_day_start_equity) * 100.0;
+   return (pnl_pct <= -strategy_daily_loss_halt_pct);
 }
 
 double Strategy_WMA(const string sym, const int period, const int shift)
@@ -93,7 +111,6 @@ double Strategy_HMA(const string sym, const int period, const int shift)
    const int sqrt_period = (int)MathRound(MathSqrt((double)period));
    if(sqrt_period < 1) return 0.0;
 
-   // WMA(2 * WMA(half) - WMA(full), sqrt(period))
    double sum_w = 0.0;
    double sum_weight = 0.0;
    for(int k = 0; k < sqrt_period; ++k)
@@ -114,12 +131,24 @@ double Strategy_HMA(const string sym, const int period, const int shift)
 double Strategy_ZeroLagEMA(const string sym, const int period, const int shift)
 {
    if(period <= 0 || shift < 1) return 0.0;
-   const double ema1 = QM_EMA(sym, PERIOD_D1, period, shift);
-   const double close_val = iClose(sym, PERIOD_D1, shift);
-   if(ema1 <= 0.0 || close_val <= 0.0) return 0.0;
-   const double adj_price = 2.0 * close_val - ema1;
+   const int max_lookback = 40;
+   double adj_prices[60];
+   for(int k = 0; k < max_lookback; ++k)
+   {
+      const int s = shift + k;
+      const double ema1 = QM_EMA(sym, PERIOD_D1, period, s);
+      const double c = iClose(sym, PERIOD_D1, s); // perf-allowed: closed-bar reference behind QM_IsNewBar()
+      if(ema1 <= 0.0 || c <= 0.0) return 0.0;
+      adj_prices[k] = 2.0 * c - ema1;
+   }
+
    const double alpha = 2.0 / ((double)period + 1.0);
-   return (alpha * adj_price + (1.0 - alpha) * ema1);
+   double ema2 = adj_prices[max_lookback - 1];
+   for(int k = max_lookback - 2; k >= 0; --k)
+   {
+      ema2 = alpha * adj_prices[k] + (1.0 - alpha) * ema2;
+   }
+   return ema2;
 }
 
 bool Strategy_ZeroLagMACD(const string sym, const int fast_p, const int slow_p, const int sig_p, const int shift, double &zl_macd, double &zl_sig)
@@ -128,80 +157,68 @@ bool Strategy_ZeroLagMACD(const string sym, const int fast_p, const int slow_p, 
    zl_sig = 0.0;
    if(fast_p <= 0 || slow_p <= 0 || sig_p <= 0 || shift < 1) return false;
 
-   double macd_buf[16];
-   for(int k = 0; k < sig_p; ++k)
+   double macd_buf[30];
+   for(int k = 0; k < sig_p + 10; ++k)
    {
       const int s = shift + k;
       const double fast_z = Strategy_ZeroLagEMA(sym, fast_p, s);
       const double slow_z = Strategy_ZeroLagEMA(sym, slow_p, s);
+      if(fast_z <= 0.0 || slow_z <= 0.0) return false;
       macd_buf[k] = fast_z - slow_z;
    }
+
    zl_macd = macd_buf[0];
-   double sum_sig = 0.0;
-   for(int k = 0; k < sig_p; ++k)
-      sum_sig += macd_buf[k];
-   zl_sig = sum_sig / (double)sig_p;
+   const double alpha_sig = 2.0 / ((double)sig_p + 1.0);
+   double ema_sig = macd_buf[sig_p + 9];
+   for(int k = sig_p + 8; k >= 0; --k)
+   {
+      ema_sig = alpha_sig * macd_buf[k] + (1.0 - alpha_sig) * ema_sig;
+   }
+   zl_sig = ema_sig;
    return true;
 }
 
-double Strategy_STC(const string sym, const int fast_p, const int slow_p, const int stc_len, const int shift)
+double Strategy_STC(const string sym, const int fast_p, const int slow_p, const int length, const int shift)
 {
-   if(shift < 1 || fast_p <= 0 || slow_p <= 0 || stc_len <= 0) return 50.0;
-
-   const int total_pts = stc_len * 2 + 10;
-   double macd_vals[];
-   ArrayResize(macd_vals, total_pts);
-   for(int i = 0; i < total_pts; ++i)
+   if(fast_p <= 0 || slow_p <= 0 || length <= 0 || shift < 1) return 50.0;
+   const int lookback = length + 20;
+   double macd[40];
+   for(int k = 0; k < lookback; ++k)
    {
-      const int s = shift + i;
-      const double fast_e = QM_EMA(sym, PERIOD_D1, fast_p, s);
-      const double slow_e = QM_EMA(sym, PERIOD_D1, slow_p, s);
-      macd_vals[i] = fast_e - slow_e;
+      const int s = shift + k;
+      const double e_fast = QM_EMA(sym, PERIOD_D1, fast_p, s);
+      const double e_slow = QM_EMA(sym, PERIOD_D1, slow_p, s);
+      if(e_fast <= 0.0 || e_slow <= 0.0) return 50.0;
+      macd[k] = e_fast - e_slow;
    }
 
-   // First Stochastic Cycle
-   double d1_vals[];
-   ArrayResize(d1_vals, stc_len + 10);
-   for(int i = 0; i < stc_len + 10; ++i)
+   double min_m = DBL_MAX, max_m = -DBL_MAX;
+   for(int k = 0; k < length; ++k)
    {
-      double min_m = macd_vals[i];
-      double max_m = macd_vals[i];
-      for(int j = 1; j < stc_len; ++j)
-      {
-         min_m = MathMin(min_m, macd_vals[i + j]);
-         max_m = MathMax(max_m, macd_vals[i + j]);
-      }
-      const double range = max_m - min_m;
-      const double k1 = (range > 0.0) ? ((macd_vals[i] - min_m) / range * 100.0) : 50.0;
-      d1_vals[i] = k1;
+      if(macd[k] < min_m) min_m = macd[k];
+      if(macd[k] > max_m) max_m = macd[k];
    }
 
-   // Second Stochastic Cycle
-   double min_d = d1_vals[0];
-   double max_d = d1_vals[0];
-   for(int j = 1; j < stc_len; ++j)
-   {
-      min_d = MathMin(min_d, d1_vals[j]);
-      max_d = MathMax(max_d, d1_vals[j]);
-   }
-   const double range_d = max_d - min_d;
-   const double stc = (range_d > 0.0) ? ((d1_vals[0] - min_d) / range_d * 100.0) : 50.0;
-   return MathMax(0.0, MathMin(100.0, stc));
+   if(max_m <= min_m) return 50.0;
+   const double stoch_k = 100.0 * (macd[0] - min_m) / (max_m - min_m);
+   return stoch_k;
 }
 
-bool Strategy_BetterVolumeHigh(const string sym, const int period, const int shift)
+bool Strategy_BetterVolumeHigh(const string sym, const int shift)
 {
-   if(period <= 0 || shift < 1) return false;
-   const long vol_1 = iTickVolume(sym, PERIOD_D1, shift); // perf-allowed: closed-bar tick volume behind QM_IsNewBar()
-   if(vol_1 <= 0) return false;
-   long sum_vol = 0;
-   for(int k = 0; k < period; ++k)
+   if(shift < 1) return false;
+   const long v_1 = iTickVolume(sym, PERIOD_D1, shift); // perf-allowed: closed-bar volume behind QM_IsNewBar()
+   if(v_1 <= 0) return false;
+
+   long sum_v = 0;
+   for(int k = 1; k <= strategy_vol_avg_period; ++k)
    {
-      const long v = iTickVolume(sym, PERIOD_D1, shift + k);
-      sum_vol += v;
+      const long v = iTickVolume(sym, PERIOD_D1, shift + k); // perf-allowed: closed-bar volume behind QM_IsNewBar()
+      if(v <= 0) return false;
+      sum_v += v;
    }
-   const double avg_vol = (double)sum_vol / (double)period;
-   return ((double)vol_1 >= avg_vol * 1.02);
+   const double avg_v = (double)sum_v / (double)strategy_vol_avg_period;
+   return ((double)v_1 > avg_v);
 }
 
 // -----------------------------------------------------------------------------
@@ -210,11 +227,14 @@ bool Strategy_BetterVolumeHigh(const string sym, const int period, const int shi
 
 bool Strategy_NoTradeFilter()
 {
-   const datetime now = TimeCurrent();
-   const int hhmm = GetBarHhmm(now);
-   if(hhmm >= 2355 || hhmm < 5)
+   const datetime broker_now = TimeCurrent();
+   const datetime utc_now = QM_BrokerToUTC(broker_now);
+
+   // 1. Rollover Blackout in UTC (23:55 to 00:05 GMT)
+   if(StrategyInRolloverWindow(utc_now))
       return true;
 
+   // 2. Spread Filter (> 1.8 * ATR(14, D1)[1])
    const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -226,6 +246,16 @@ bool Strategy_NoTradeFilter()
       if(spread_pts > strategy_spread_atr_mult * atr_pts)
          return true;
    }
+
+   // 3. Daily Loss Limit (2.0% entry halt)
+   if(StrategyDailyEntryHalt())
+      return true;
+
+   // 4. Max Open Positions (>= 1)
+   const int magic = QM_FrameworkMagic();
+   if(magic > 0 && QM_TM_OpenPositionCount(magic) >= 1)
+      return true;
+
    return false;
 }
 
@@ -243,63 +273,60 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(magic <= 0)
       return false;
 
-   if(Strategy_HasOpenPosition())
+   if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   const double close_1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed-bar reference behind QM_IsNewBar()
-   if(close_1 <= 0.0)
-      return false;
+   const ENUM_TIMEFRAMES tf = PERIOD_D1;
+   const double close_1 = iClose(_Symbol, tf, 1); // perf-allowed: closed-bar close behind QM_IsNewBar()
+   if(close_1 <= 0.0) return false;
 
    const double hma_1 = Strategy_HMA(_Symbol, strategy_hma_period, 1);
-   if(hma_1 <= 0.0)
-      return false;
+   if(hma_1 <= 0.0) return false;
 
    double zl_macd_1 = 0.0, zl_sig_1 = 0.0;
    if(!Strategy_ZeroLagMACD(_Symbol, strategy_zl_macd_fast, strategy_zl_macd_slow, strategy_zl_macd_signal, 1, zl_macd_1, zl_sig_1))
       return false;
 
    const double stc_1 = Strategy_STC(_Symbol, strategy_stc_fast, strategy_stc_slow, strategy_stc_length, 1);
+   const bool vol_high = Strategy_BetterVolumeHigh(_Symbol, 1);
+   if(!vol_high) return false;
 
-   if(!Strategy_BetterVolumeHigh(_Symbol, strategy_vol_avg_period, 1))
-      return false;
+   const double atr_1 = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
+   if(atr_1 <= 0.0) return false;
 
-   const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(atr_1 <= 0.0)
-      return false;
-
-   const double pip_size = QM_StopRulesPipsToPriceDistance(_Symbol, 1.0);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(pip_size <= 0.0 || point <= 0.0)
-      return false;
-
-   const double sl_dist = MathMax(strategy_sl_atr_mult * atr_1, 10.0 * pip_size);
-   const double tp_dist = MathMax(strategy_tp_atr_mult * atr_1, 10.0 * pip_size);
-
-   // Long: Close[1] > HMA[1] AND ZL_MACD[1] > ZL_Signal[1] AND STC[1] >= 75.0 AND BetterVol == HIGH
-   if(close_1 > hma_1 && zl_macd_1 > zl_sig_1 && stc_1 >= strategy_stc_long_thresh)
+   // 1. Long Entry: Close[1] > HMA[1] AND ZL_MACD[1] > ZL_Signal[1] AND STC[1] >= 75.0 AND BetterVol == HIGH
+   if((close_1 > hma_1) && (zl_macd_1 > zl_sig_1) && (stc_1 >= strategy_stc_long_thresh))
    {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double exec_price = (ask > 0.0) ? ask : close_1;
+      const double sl = exec_price - strategy_sl_atr_mult * atr_1;
+
+      if(sl <= 0.0 || sl >= exec_price)
+         return false;
 
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = QM_TM_NormalizePrice(_Symbol, exec_price - sl_dist);
-      req.tp = QM_TM_NormalizePrice(_Symbol, exec_price + tp_dist);
-      req.reason = "nnfx_hma_zlmacd_long";
+      req.sl = sl;
+      req.tp = 0.0; // TP1 is dynamically managed via partial close at +1 ATR; runner trails to ZL_MACD cross
+      req.reason = "nnfx_hma_zl_long";
       return true;
    }
 
-   // Short: Close[1] < HMA[1] AND ZL_MACD[1] < ZL_Signal[1] AND STC[1] <= 25.0 AND BetterVol == HIGH
-   if(close_1 < hma_1 && zl_macd_1 < zl_sig_1 && stc_1 <= strategy_stc_short_thresh)
+   // 2. Short Entry: Close[1] < HMA[1] AND ZL_MACD[1] < ZL_Signal[1] AND STC[1] <= 25.0 AND BetterVol == HIGH
+   if((close_1 < hma_1) && (zl_macd_1 < zl_sig_1) && (stc_1 <= strategy_stc_short_thresh))
    {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double exec_price = (bid > 0.0) ? bid : close_1;
+      const double sl = exec_price + strategy_sl_atr_mult * atr_1;
+
+      if(sl <= 0.0 || sl <= exec_price)
+         return false;
 
       req.type = QM_SELL;
       req.price = 0.0;
-      req.sl = QM_TM_NormalizePrice(_Symbol, exec_price + sl_dist);
-      req.tp = QM_TM_NormalizePrice(_Symbol, exec_price - tp_dist);
-      req.reason = "nnfx_hma_zlmacd_short";
+      req.sl = sl;
+      req.tp = 0.0; // TP1 is dynamically managed via partial close at +1 ATR; runner trails to ZL_MACD cross
+      req.reason = "nnfx_hma_zl_short";
       return true;
    }
 
@@ -310,12 +337,12 @@ void Strategy_ManageOpenPosition()
 {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0) return;
-   const double pip_size = QM_StopRulesPipsToPriceDistance(_Symbol, 1.0);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(pip_size <= 0.0 || point <= 0.0) return;
 
    const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   const double be_trigger = (atr_1 > 0.0) ? (strategy_tp_atr_mult * atr_1) : (20.0 * pip_size);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(atr_1 <= 0.0 || point <= 0.0) return;
+
+   const double trigger_distance = strategy_tp1_atr_mult * atr_1;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
    {
@@ -326,31 +353,27 @@ void Strategy_ManageOpenPosition()
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
+      const double volume     = PositionGetDouble(POSITION_VOLUME);
+      const bool is_buy       = (pos_type == POSITION_TYPE_BUY);
 
-      if(pos_type == POSITION_TYPE_BUY)
+      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+
+      const double favorable_move = is_buy ? (market_price - open_price)
+                                           : (open_price - market_price);
+
+      if(market_price <= 0.0 || favorable_move < trigger_distance)
+         continue;
+
+      const double partial_lots = QM_TM_NormalizeVolume(_Symbol, volume * strategy_tp1_fraction);
+      const double min_lot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+      if(partial_lots > 0.0 && partial_lots < volume && (volume - partial_lots) >= (min_lot - 1e-8))
       {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(bid <= 0.0 || open_price <= 0.0) continue;
-
-         // Move to break-even once open profit >= 1.0 ATR
-         if((bid - open_price) >= be_trigger)
+         if(QM_TM_PartialClose(ticket, partial_lots, QM_EXIT_PARTIAL))
          {
-            const double target_sl = QM_TM_NormalizePrice(_Symbol, open_price + 1.0 * pip_size);
-            if(target_sl > current_sl + point * 0.5)
-               QM_TM_MoveSL(ticket, target_sl, "nnfx_be_plus_1");
-         }
-      }
-      else if(pos_type == POSITION_TYPE_SELL)
-      {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(ask <= 0.0 || open_price <= 0.0) continue;
-
-         // Move to break-even once open profit >= 1.0 ATR
-         if((open_price - ask) >= be_trigger)
-         {
-            const double target_sl = QM_TM_NormalizePrice(_Symbol, open_price - 1.0 * pip_size);
-            if(current_sl <= 0.0 || target_sl < current_sl - point * 0.5)
-               QM_TM_MoveSL(ticket, target_sl, "nnfx_be_plus_1");
+            const double be_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_be_buffer_pips);
+            const double be_sl = is_buy ? (open_price + be_buffer) : (open_price - be_buffer);
+            QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, be_sl), "NNFX_TP1_BE_PROTECTION");
          }
       }
    }
@@ -372,19 +395,10 @@ bool Strategy_ExitSignal()
       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
 
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-
-      // Long exit: ZeroLag MACD crosses below signal line
-      if(pos_type == POSITION_TYPE_BUY)
-      {
-         if(zl_macd_1 < zl_sig_1)
-            return true;
-      }
-      // Short exit: ZeroLag MACD crosses above signal line
-      else if(pos_type == POSITION_TYPE_SELL)
-      {
-         if(zl_macd_1 > zl_sig_1)
-            return true;
-      }
+      if(pos_type == POSITION_TYPE_BUY && (zl_macd_1 < zl_sig_1))
+         return true;
+      if(pos_type == POSITION_TYPE_SELL && (zl_macd_1 > zl_sig_1))
+         return true;
    }
 
    return false;
@@ -406,6 +420,14 @@ int OnInit()
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         strategy_daily_hard_stop_pct,
+                         strategy_total_dd_halt_pct,
+                         strategy_per_trade_risk_cap_pct))
+      return INIT_FAILED;
+
    return INIT_SUCCEEDED;
 }
 
@@ -419,8 +441,8 @@ void OnTick()
    QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
 
+   // 1. Manage open positions and evaluate exit signals before entry filters
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -435,6 +457,7 @@ void OnTick()
       }
    }
 
+   // 2. News filter check
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
    
@@ -445,10 +468,15 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows) return;
 
-   if(!QM_IsNewBar()) return;
+   // 3. Entry-only filter (spread, rollover in UTC, 2% daily loss halt, max open positions)
+   if(Strategy_NoTradeFilter()) return;
+
+   // 4. Bar evaluation for entry
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1)) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
