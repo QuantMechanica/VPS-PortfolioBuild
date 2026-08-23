@@ -1,7 +1,8 @@
-# Strategy Archive Matrix — Vorentwurf v0.1 (OWNER-Fragen offen)
+# Strategy Archive Matrix — Vorentwurf v0.2 (F1/F3/F4/F7 entschieden · F2/F5/F6/F8 offen)
 
 **Autor:** Claude (Design/IA-Lane, Orchestrator) · **Datum:** 2026-08-23
-**Status:** VORENTWURF — nicht beauftragt, nicht gebaut. Acht Entscheidungen (F1–F8) liegen beim OWNER.
+**Status:** VORENTWURF v0.2 — F1, F3, F4 sind vom OWNER entschieden (2026-08-23). F2 wurde vom OWNER
+zur Grundsatzfrage erhoben (Gate-Nummerierung, siehe §3a). F5–F8 offen.
 **Programm:** Vault `12 ToDo/03_Mission_Control_Cockpit` · **Nachbarspec:** `docs/ops/MISSION_CONTROL_V2_RENDER_SPEC.md`
 **Zielfläche:** `D:\QM\strategy_farm\dashboards\strategies.html` (heißt bereits „Strategy Archive") — **erweitern, nicht neu bauen.**
 
@@ -225,15 +226,73 @@ verschwinden sie lautlos.
 7. Farbe ist nie alleiniger Informationsträger (Glyphe je Zustand).
 8. Die Seite trägt sichtbar den Zählstand und den Renderzeitpunkt.
 
+## 3a · OWNER-Rückfrage zu F2: „die Gates müssen richtig nummeriert werden" (2026-08-23)
+
+Der OWNER hat F2 nicht als Layoutfrage beantwortet, sondern als Defekt benannt: Nummer und
+Reihenfolge sollen übereinstimmen, überall, damit daraus keine Fehler mehr entstehen.
+
+**Die Ursache ist keine schlampige Nummerierung, sondern eine Verzweigung.** Q14–Q16 sind kein
+Abschnitt, sondern ein Abzweig: `Q10 → Q11` (gewöhnlich) oder `Q10 → Q14 → Q15 → Q16 → Q11`
+(Optimierung). In einer Verzweigung springt bei *jeder* linearen Nummerierung einer der beiden
+Wege. Nummeriert man den Optimierungszweig aufsteigend (Q11=Pattern, Q12=ParamOpt, Q13=H2H,
+Q14=Portfolio, Q15=Ops, Q16=Burn-In), springt stattdessen der **gewöhnliche** Weg (Q10 → Q14) —
+und den geht praktisch jeder EA. Gemessen: `work_items` enthält **15 Zeilen** im Optimierungszweig
+(Q14: 14, Q15: 1, Q16: 0) gegen 111.605 Zeilen im gewöhnlichen Weg. Der geradlinige Umbau würde
+also einen seltenen Sprung gegen einen häufigen tauschen.
+
+**Der Mechanismus für die saubere Lösung existiert bereits.** Das aktive Gate-Manifest
+(`tools/strategy_farm/config/gate_manifest.v3.json`, seit 2026-08-23 aktiv, fail-closed
+Aktivierungsguard) kennt bereits eine Unterstufe mit `top_level: false` — **Q10A „Baseline Full
+Run"**. Damit lässt sich der Abzweig als Abzweig ausdrücken, statt ihn in die Hauptkette zu
+pressen:
+
+| Variante | Hauptkette | Optimierungszweig | historische Dokumente | Aufwand |
+|---|---|---|---|---|
+| **(1) Unterstufen `Q10.1–Q10.3`** *(Empfehlung)* | Q00…Q13 lückenlos aufsteigend, kein Sprung | liest sichtbar als Abzweig von Q10, kehrt nach Q11 zurück | Q11–Q13 bewegen sich **nicht** → keine Doppelbedeutung | klein: Manifest v4 + 15 DB-Zeilen + ~30 Task-Payloads + Doku zu Q14–Q16 |
+| (2) Vollumnummerierung | Q10 → Q14 springt (häufiger Weg) | aufsteigend | **jedes** dokumentierte Q11–Q16 bekommt eine zweite Bedeutung | groß, siehe unten |
+| (3) nur Anzeigereihenfolge | unverändert | unverändert | unverändert | minimal, löst das Problem aber nicht |
+
+**Gemessener Radius einer Vollumnummerierung (Variante 2):** 9.491 Token-Vorkommen `Q11`–`Q16` in
+3.709 Dateien — 2.490 Markdown, 1.121 EA-Quellen (`.mq5`, Kommentarzeilen mit Q13-Bezug), 58 Python,
+29 JSON, 7 `.set`. Laufzeitseitig ist es dagegen fast frei: **15 Work-Item-Zeilen** und rund 30
+`agent_tasks`-Payloads. **Der teure Teil ist die Evidenzspur, nicht der Code.** `decisions/` ist
+nach Datum unveränderlich (Repo-Regel) — eine Vollumnummerierung erzeugt dort dauerhaft zwei
+Bedeutungen desselben Tokens und braucht zwingend eine veröffentlichte Alias-Tabelle plus die
+Regel, dass datierte Dokumente ihre alten Nummern behalten. Variante (1) vermeidet genau das,
+weil Q11–Q13 stehen bleiben und nur Q14–Q16 (15 DB-Zeilen) in `Q10.1–Q10.3` übergehen.
+
+**Weg, falls OWNER umnummeriert:** (a) Entscheidungsrecord `decisions/DL-NNN` mit Zielschema und
+Alias-Tabelle, (b) Gate-Manifest **v4** über den bestehenden Aktivierungsguard (READ_INERT →
+Review → ACTIVE), (c) mechanische Doku-Passe mit Fixture-Test — datierte `decisions/`-Dateien
+werden nicht angefasst, (d) erst danach rendert die Archivmatrix das neue Schema. Schritt (c) ist
+die Stelle, an der eine breit angelegte Agentenwelle sinnvoll ist; die Schritte (a)/(b) sind
+Vertragsarbeit und bleiben in der Claude-Lane.
+
+**Bis das entschieden ist, ist F2 für die Matrix nicht blockierend:** die Spaltenreihenfolge liest
+sich aus `extension_topology` des Manifests, egal welches Schema dort steht.
+
+## 11a · OWNER-Entscheide vom 2026-08-23
+
+- **F1 = A** — Zeile ist die Card (3.279), Gate-Zelle trägt den Symbolstreifen, Klick klappt die
+  (Card, Symbol)-Zeilen auf.
+- **F3 = sieben Zustände, Loch auffällig** — PASS · PASS bedingt · FAIL · VOID · läuft ·
+  **erreichbares Loch (kräftigster Chip der Seite)** · leer. Farbe nie alleiniger Träger.
+- **F4 = (b) hohl markieren** — ein PASS, das älter ist als der aktuelle Build-Hash, rendert als
+  „stale pass" mit Datum im Tooltip. Vorbehalt bleibt: ist die Hash-Abdeckung zu dünn, wird daraus
+  (a) mit sichtbarem Warnhinweis — das ist eine Messung vor dem Prototyp, keine neue Entscheidung.
+- **F7 = entschieden (Claude, Routineurteil):** Chips für die handelbaren DWX-Symbole, alles
+  Obsolete gebündelt als `legacy`, Basket-Zeilen mit leerem Symbol als eigener Chip `BASKET`.
+- **F2 offen** — siehe §3a. **F5, F6, F8 offen.**
+
 ## 12 · Fragenliste
 
-- **F1** Zeilenmodell: A (Card, aufklappbar) / B (Card × Symbol) / C (beides)?
-- **F2** Spaltenreihenfolge: Fluss (Q00–Q10, Q14–Q16, Q11–Q13 = die genannte Farbfolge) oder Zahlenfolge? Q09 eine oder zwei Spalten?
-- **F3** Sieben Zellzustände statt vier — insbesondere eigener VOID-Zustand für 2.165 verbrannte Läufe? Loch-Chip aggressiv oder ruhig?
-- **F4** Stale-Pass nach Rebuild: (a) ignorieren / (b) hohl markieren / (c) als Loch behandeln?
+- ~~**F1**~~ **entschieden: A** (Card-Zeile, aufklappbar).
+- **F2** ~~Spaltenreihenfolge~~ → zur Grundsatzfrage erhoben, siehe §3a: Unterstufen `Q10.1–Q10.3`, Vollumnummerierung oder nur Anzeigereihenfolge? (Nebenpunkt bleibt: Q09 eine oder zwei Spalten?)
+- ~~**F3**~~ **entschieden: sieben Zustände, Loch-Chip auffällig.**
+- ~~**F4**~~ **entschieden: (b) hohl markieren** (Hash-Abdeckung vor dem Prototyp messen).
 - **F5** „Leer" abgeleitet (Universum/Retire/Bucket/Hold) — oder pflegbares Feld „nicht geplant (Grund)"?
 - **F6** Default-Sortierung: meiste Löcher zuerst oder höchstes bestandenes Gate zuerst?
-- **F7** Symbolchips: nur handelbare DWX-Symbole + `legacy` + `BASKET`?
+- ~~**F7**~~ **entschieden (Claude): handelbare DWX-Symbole + `legacy` + `BASKET`.**
 - **F8** Q00/Q01 als Spalten (aus Card-Bucket und Build-Artefakt abgeleitet) oder Matrix erst ab Q02?
 
 ## 13 · Nächster Schritt nach den Antworten
