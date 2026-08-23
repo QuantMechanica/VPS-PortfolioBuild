@@ -26,6 +26,23 @@
 
 ---
 
+## 0e · Ultracode-Sitzung 2026-08-23 abends — v4 AKTIV, Damm gebrochen, Boards leer
+
+| # | Punkt | Stand |
+|---|---|---|
+| 1 | **Gate Manifest v4 AKTIV** (17:55, OFF-Fenster #2): Flip + Migration + Cutover 28 Zeilen, Verify 208 grün; Factory ON mit gebundenem Contract-SHA | erledigt (`2f0777085`) |
+| 2 | Vault: Q00–Q17-Seiten live, 9 Altseiten archiviert, ToDo-Sektion aufgeräumt (40 erledigt archiviert, 15 „nur notiert" markiert), Linter PASS | erledigt |
+| 3 | **News-Gate-Damm gebrochen**: 7×4-Expansion läuft jetzt automatisch (Pump), 4 Expansions-Kinder enqueued, Health `news_gate_service_rate` | gemerged |
+| 4 | Opt-Fork automatisiert (Q11-PASS → Q12 → Q13 → Q14, KEEP_INCUMBENT gültig); 3 Erstlauf-Admissions (10706/11421/11422; v3-Payload-Zeilen als superseded dokumentiert) | gemerged |
+| 5 | Q07/Q08-Regeneration für die News-Holds enqueued (append-only), Planner: STOP_DETERMINISTIC_INFRA | gemerged |
+| 6 | Backfill Tranche 1A (10) + 1B (~107) + **Universum-Erweiterung Tranche 1 (150 Q02, OWNER-DEC-13036-XAU, unterste Priorität)** enqueued | läuft in der Fabrik |
+| 7 | Pump-Zyklus 19 min → budgetiert (<5 min Ziel), SQLite-Lock-Retry statt INFRA-Crash, Backup auf Hourly-Task `QM_StrategyFarm_PumpMaintenance_Hourly` + Health-Check | gemerged + Task installiert |
+| 8 | Testsuite: 4531 pass / 0 fail (UTF-8-Konsole; 1 bekannter cp850-Fail `test_codex_session_supervisor` → Codex/ops) | gemerged |
+| 9 | Claude-Review-Lane 31 → 0 (14 APPROVED, 12 RECYCLE mit konkreten Defekten, 5 BLOCKED-Holds bestätigt) | erledigt |
+| 10 | OWNER-Entscheide Batch 2 ausgeführt: STRANDED-182 (182→INVALID, Health 270→88), Q02-Bypass zu, Public-Archiv Variante (b) + v4-Gates-Block, 411xx-Buffer-Klasse (21 EAs) gefixt | gemerged |
+| 11 | **T_Live-Preset-Deploy**: vorbereitet + verifizierbar; OWNER-`!`-Lauf erfolgte ohne `--apply` → **erneut nötig**: `! cd C:\QMepo && python tools\strategy_farm\deploy_tlive_preset_repair.py --apply`; danach Signatur durch Claude | **wartet auf OWNER** |
+| 12 | SH-2/SH-3 (Artefakt-Identität + typisierte Spalten): Merge-Konfliktauflösung läuft; **OFF-Fenster #3 heute Nacht** (OWNER: „Claude entscheidet") | in Arbeit |
+
 ## 0d · Ultracode-Sitzung 2026-08-23 nachmittags — Pipeline-Rebaseline v4 (OWNER-Auftrag „Fabrik final umbauen")
 
 **Auftrag:** OWNER 2026-08-23 — drei Makrophasen, lineare Gate-Nummerierung, Rebaseline bei null,
