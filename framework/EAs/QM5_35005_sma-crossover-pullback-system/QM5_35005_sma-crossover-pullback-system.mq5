@@ -45,18 +45,41 @@ input int    strategy_tp_pips             = 300;    // Take profit in pips (300 
 input int    strategy_sl_pips             = 150;    // Stop loss in pips (150 pips)
 input int    strategy_trailing_trigger_pips = 150;  // Trailing stop trigger profit in pips
 input int    strategy_trailing_step_pips  = 150;    // Trailing stop step distance in pips
-input int    strategy_atr_period          = 14;     // ATR period for spread/volatility
+input int    strategy_atr_period          = 14;     // ATR period for spread filter
 input double strategy_spread_atr_mult     = 1.8;    // Spread filter ATR multiplier
+input double strategy_daily_loss_halt_pct = 2.0;    // Daily realized loss entry halt percent
+input double strategy_daily_hard_stop_pct = 2.5;    // Maximum daily drawdown hard stop percent
+input double strategy_total_dd_halt_pct   = 5.0;    // Maximum total drawdown stop percent
+input double strategy_per_trade_risk_cap_pct = 0.5; // Per-trade risk cap percent
 
 // -----------------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------------
 
-int GetBarHhmm(const datetime t)
+int StrategyHhmm(const datetime value)
 {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return (dt.hour * 100 + dt.min);
+   MqlDateTime parts;
+   TimeToStruct(value, parts);
+   return parts.hour * 100 + parts.min;
+}
+
+bool StrategyInRolloverWindow(const datetime utc_time)
+{
+   const int hhmm = StrategyHhmm(utc_time);
+   return (hhmm >= 2355 || hhmm < 5);
+}
+
+bool StrategyDailyEntryHalt()
+{
+   if(g_qm_ks_day_start_equity <= 0.0)
+      return false;
+
+   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(equity_now <= 0.0)
+      return true;
+
+   const double pnl_pct = ((equity_now - g_qm_ks_day_start_equity) / g_qm_ks_day_start_equity) * 100.0;
+   return (pnl_pct <= -strategy_daily_loss_halt_pct);
 }
 
 // -----------------------------------------------------------------------------
@@ -65,11 +88,14 @@ int GetBarHhmm(const datetime t)
 
 bool Strategy_NoTradeFilter()
 {
-   const datetime now = TimeCurrent();
-   const int hhmm = GetBarHhmm(now);
-   if(hhmm >= 2355 || hhmm < 5)
+   const datetime broker_now = TimeCurrent();
+   const datetime utc_now = QM_BrokerToUTC(broker_now);
+
+   // 1. Rollover Blackout in UTC (23:55 to 00:05 GMT)
+   if(StrategyInRolloverWindow(utc_now))
       return true;
 
+   // 2. Spread Filter (> 1.8 * ATR(14, H1)[1])
    const double atr_1 = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -81,6 +107,16 @@ bool Strategy_NoTradeFilter()
       if(spread_pts > strategy_spread_atr_mult * atr_pts)
          return true;
    }
+
+   // 3. Daily Loss Limit (2.0% entry halt)
+   if(StrategyDailyEntryHalt())
+      return true;
+
+   // 4. Max Open Positions (>= 1)
+   const int magic = QM_FrameworkMagic();
+   if(magic > 0 && QM_TM_OpenPositionCount(magic) >= 1)
+      return true;
+
    return false;
 }
 
@@ -120,7 +156,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if((sma_fast > sma_slow) && (stoch_k_2 <= strategy_stoch_oversold) && (stoch_k_1 > stoch_d_1))
    {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double exec_price = (ask > 0.0) ? ask : iClose(_Symbol, tf, 1); // perf-allowed: closed-bar reference behind QM_IsNewBar()
+      const double exec_price = (ask > 0.0) ? ask : iClose(_Symbol, tf, 1);
       const double sl = QM_StopFixedPips(_Symbol, QM_BUY, exec_price, strategy_sl_pips);
       const double tp = QM_TakeFixedPips(_Symbol, QM_BUY, exec_price, strategy_tp_pips);
 
@@ -140,7 +176,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if((sma_fast < sma_slow) && (stoch_k_2 >= strategy_stoch_overbought) && (stoch_k_1 < stoch_d_1))
    {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double exec_price = (bid > 0.0) ? bid : iClose(_Symbol, tf, 1); // perf-allowed: closed-bar reference behind QM_IsNewBar()
+      const double exec_price = (bid > 0.0) ? bid : iClose(_Symbol, tf, 1);
       const double sl = QM_StopFixedPips(_Symbol, QM_SELL, exec_price, strategy_sl_pips);
       const double tp = QM_TakeFixedPips(_Symbol, QM_SELL, exec_price, strategy_tp_pips);
 
@@ -194,6 +230,14 @@ int OnInit()
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         strategy_daily_hard_stop_pct,
+                         strategy_total_dd_halt_pct,
+                         strategy_per_trade_risk_cap_pct))
+      return INIT_FAILED;
+
    return INIT_SUCCEEDED;
 }
 
@@ -207,8 +251,8 @@ void OnTick()
    QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
 
+   // 1. Manage open positions (trailing stop) before entry filters
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -223,6 +267,7 @@ void OnTick()
       }
    }
 
+   // 2. News filter check
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
    
@@ -233,10 +278,15 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows) return;
 
-   if(!QM_IsNewBar()) return;
+   // 3. Entry-only filter (spread, rollover in UTC, 2% daily loss halt, max open positions)
+   if(Strategy_NoTradeFilter()) return;
+
+   // 4. Bar evaluation for entry
+   if(!QM_IsNewBar(_Symbol, PERIOD_H1)) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;

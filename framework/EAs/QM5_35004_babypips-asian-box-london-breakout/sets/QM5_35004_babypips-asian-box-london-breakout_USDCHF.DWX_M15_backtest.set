@@ -3,21 +3,24 @@
 ; ea_id:        35004
 ; ea_slug:      babypips-asian-box-london-breakout
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260823-001
 ; symbol:       USDCHF.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
+; build_hash:   pending
 ; author:       Development
-; date:         2026-08-17
+; date:         2026-08-23
 ;==========================================================
 qm_ea_id=35004
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_35004_babypips-asian-box-london-breakout.md
 strategy_box_start_hhmm=0
 strategy_box_end_hhmm=600
 strategy_trade_start_hhmm=700
@@ -28,3 +31,7 @@ strategy_breakout_buffer_pips=2.0
 strategy_tp_range_mult=2.0
 strategy_atr_period=14
 strategy_spread_atr_mult=1.8
+strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
+strategy_total_dd_halt_pct=5.0
+strategy_per_trade_risk_cap_pct=0.5
