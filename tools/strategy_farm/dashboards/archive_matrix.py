@@ -171,6 +171,42 @@ def md_inline(s: str) -> str:
     return out
 
 
+# Card headings are English in the v2 template, but 2.696 of 3.271 approved cards (82%)
+# were authored with German section names — measured 2026-08-23: "Quelle" 2.694,
+# "Mechanik" 2.681, "Pipeline-Verlauf" 2.668, "Verwandte Strategien" 2.176,
+# "R1-R4 Bewertung" 2.660 across both dash variants. The cards themselves are NOT rewritten:
+# strategy_card_v3 is content-addressed (source_sha256 / fingerprint), so editing them would
+# break duplicate detection and the evidence chain. The surface normalises instead, and the
+# root fix belongs at card intake.
+HEADING_DE_EN = {
+    "quelle": "Source",
+    "mechanik": "Mechanics",
+    "pipeline-verlauf": "Pipeline history",
+    "verwandte strategien": "Related strategies",
+    "r1-r4 bewertung": "R1-R4 assessment",
+    "r1–r4 bewertung": "R1-R4 assessment",
+    "kriterium": "Criterion",
+    "begruendung": "Rationale",
+    "begründung": "Rationale",
+    "status": "Status",
+    "handelslogik": "Trading logic",
+    "annahmen": "Assumptions",
+    "einstieg": "Entry",
+    "ausstieg": "Exit",
+    "risiko": "Risk",
+    "kosten": "Costs",
+}
+
+
+def normalise_heading(text: str) -> str:
+    """Translate a known German card heading; leave anything else untouched.
+
+    Exact match only — a heading that merely starts with a German word usually carries an
+    English qualifier after it, and half-translating that reads worse than leaving it.
+    """
+    key = text.strip().lower()
+    return HEADING_DE_EN.get(key, text)
+
 def md_to_html(md: str, base_level: int = 3) -> str:
     """A small, predictable Markdown subset: headings, lists, tables, code, rules.
 
@@ -210,7 +246,7 @@ def md_to_html(md: str, base_level: int = 3) -> str:
             close_list()
             head = [c.strip() for c in ln.strip("|").split("|")]
             out.append("<table><thead><tr>"
-                       + "".join(f"<th>{md_inline(c)}</th>" for c in head)
+                       + "".join(f"<th>{md_inline(normalise_heading(c))}</th>" for c in head)
                        + "</tr></thead><tbody>")
             i += 2
             while i < len(lines) and lines[i].startswith("|"):
@@ -223,7 +259,7 @@ def md_to_html(md: str, base_level: int = 3) -> str:
         if m:
             close_list()
             lvl = min(len(m.group(1)) + base_level - 1, 6)
-            out.append(f"<h{lvl}>{md_inline(m.group(2))}</h{lvl}>")
+            out.append(f"<h{lvl}>{md_inline(normalise_heading(m.group(2)))}</h{lvl}>")
             i += 1
             continue
         if re.match(r"^\s*[-*]\s+", ln):
