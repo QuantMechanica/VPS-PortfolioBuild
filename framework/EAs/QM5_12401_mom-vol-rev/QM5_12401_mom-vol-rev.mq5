@@ -36,7 +36,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.25;   // card override: live 0.25% (not the 0.5% default)
+input double RISK_PERCENT               = 0.0;    // backtest-safe default; live set files may supply 0.25%
 input double RISK_FIXED                 = 1000.0; // backtest $1000 per selected leg
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -407,7 +407,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl                 = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
    req.tp                 = 0.0;
    req.reason             = go_long ? "QM5_12401_MVR_LONG" : "QM5_12401_MVR_SHORT";
-   req.symbol_slot        = 0;
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
    if(req.sl <= 0.0)
       return false;
