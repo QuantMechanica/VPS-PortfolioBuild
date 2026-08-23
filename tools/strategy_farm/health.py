@@ -55,6 +55,10 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm import optimization_fork_driver
 try:
+    import news_gate_service
+except ModuleNotFoundError:
+    from tools.strategy_farm import news_gate_service
+try:
     from gate_manifest import load_gate_manifest
 except ModuleNotFoundError:
     from tools.strategy_farm.gate_manifest import load_gate_manifest
@@ -110,6 +114,12 @@ FACTORY_ON_CEREMONY_INCOMPLETE_PATH = (
 )
 Q09_SEALED_PLAN_HOLD_FAIL_HOURS = 6
 NEWS_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+NEWS_READ_PHASES = tuple(dict.fromkeys((
+    NEWS_PHASE,
+    ACTIVE_GATE_MANIFEST.equivalent_gate(NEWS_PHASE, "v4", "v3")
+    if ACTIVE_GATE_MANIFEST.schema_version.endswith("/v4")
+    else NEWS_PHASE,
+)))
 PENDING_BINDING_DRIFT_DETAIL_LIMIT = 20
 DISK_SCRATCH_WINDOW_MINUTES = 20
 DISK_SCRATCH_RATE_WARN_GB_PER_HOUR = 20.0
@@ -4147,6 +4157,36 @@ def chk_opt_fork_service_rate(con) -> dict:
     )
 
 
+def chk_news_gate_service_rate(con) -> dict:
+    """Expose conclusions/day and every unresolved news-gate dam component."""
+
+    metrics = news_gate_service.service_metrics(
+        con, news_phases=NEWS_READ_PHASES, now=_utc_now()
+    )
+    backlog = int(metrics["expansions_pending"]) + int(
+        metrics["pending_runner_count"]
+    )
+    stalled = backlog > 0 and int(metrics["conclusive_verdicts_per_day"]) == 0
+    status = "WARN" if stalled else "OK"
+    detail = (
+        f"conclusive_verdicts_24h={metrics['conclusive_verdicts_per_day']}; "
+        f"expansions_pending={metrics['expansions_pending']}; "
+        f"PENDING_RUNNER={metrics['pending_runner_count']}"
+    )
+    return _check(
+        "news_gate_service_rate",
+        status,
+        metrics,
+        "visibility SLO: a conclusive 24h verdict while unresolved work exists",
+        detail,
+        (
+            "Inspect expansion child/hold IDs and legacy placeholder lineage; only "
+            "append a governed continuation, never rewrite the historical verdict."
+        )
+        if stalled else "",
+    )
+
+
 def chk_terminal_requalification_verdicts_count(con) -> dict:
     """Expose the lifetime count of terminal per-pair requalification verdict rows."""
     metrics = optimization_fork_driver.service_metrics(
@@ -4217,6 +4257,7 @@ ALL_CHECKS = [
     ("q09_sealed_plan_hold_age", chk_q09_sealed_plan_hold_age, True),
     ("q09_autoseal_hold_census", chk_q09_autoseal_hold_census, True),
     ("pending_artifact_binding_drift", chk_pending_artifact_binding_drift, True),
+    ("news_gate_service_rate", chk_news_gate_service_rate, True),
     ("opt_fork_service_rate", chk_opt_fork_service_rate, True),
     ("terminal_requalification_verdicts_count", chk_terminal_requalification_verdicts_count, True),
 ]

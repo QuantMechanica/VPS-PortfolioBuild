@@ -21,7 +21,7 @@ import sys
 import time
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 try:
     from pump_budget import PumpCycleBudget
@@ -149,6 +149,11 @@ try:
     import news_calendar_gate
 except ModuleNotFoundError:
     from tools.strategy_farm import news_calendar_gate
+
+try:
+    import news_gate_service
+except ModuleNotFoundError:
+    from tools.strategy_farm import news_gate_service
 
 try:
     from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
@@ -15781,11 +15786,265 @@ def _supersede_stale_q09_holds_after_rebind(
     return superseded
 
 
+def _news_read_phases(*, include_historical: bool) -> tuple[str, ...]:
+    """Return manifest-derived storage lanes used for current or UNION reads."""
+
+    phases = [_NEWS_PHASE]
+    if include_historical and ACTIVE_GATE_CONTRACT_VERSION == "v4":
+        historical = ACTIVE_GATE_MANIFEST.equivalent_gate(
+            _NEWS_PHASE, "v4", "v3"
+        )
+        if historical not in phases:
+            phases.append(historical)
+    return tuple(phases)
+
+
+def _news_expansion_pair_allowlist(path: Path | None) -> set[tuple[str, str]] | None:
+    if path is None:
+        return None
+    allowed: set[tuple[str, str]] = set()
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if not reader.fieldnames or not {"ea_id", "symbol"}.issubset(reader.fieldnames):
+            raise ValueError("news expansion allowlist requires ea_id and symbol columns")
+        for row in reader:
+            ea_id = str(row.get("ea_id") or "").strip()
+            symbol = str(row.get("symbol") or "").strip()
+            if ea_id and symbol:
+                allowed.add((ea_id, symbol))
+    return allowed
+
+
+def _force_expanded_news_matrix(work_item: sqlite3.Row | dict[str, Any]) -> bool:
+    try:
+        payload = json.loads(str(work_item["payload_json"] or "{}"))
+    except (KeyError, TypeError, json.JSONDecodeError):
+        return False
+    return bool(
+        isinstance(payload, dict) and payload.get("force_expanded_news_matrix") is True
+    )
+
+
+def author_news_expansion_continuations(
+    root: Path,
+    *,
+    limit: int = 2,
+    include_historical: bool = False,
+    pair_allowlist_path: Path | None = None,
+    apply: bool = True,
+) -> dict[str, Any]:
+    """Append sealed-plan holds for authenticated full-matrix requests.
+
+    The source adjudication and its exact frozen input dependency are preserved.
+    Each child is a new current-contract row; the pump's ordinary autosealer then
+    authors a contract-v3 one-seed, seam-reconstructed full matrix and releases
+    the hold only after the plan is hash-bound.
+    """
+
+    bounded_limit = max(0, int(limit))
+    if apply:
+        init_db(root)
+    allowed_pairs = _news_expansion_pair_allowlist(pair_allowlist_path)
+    phases = _news_read_phases(include_historical=include_historical)
+    connection = connect(root) if apply else sqlite3.connect(
+        f"file:{db_path(root).as_posix()}?mode=ro", uri=True
+    )
+    connection.row_factory = sqlite3.Row
+    created: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    planned: list[dict[str, Any]] = []
+    try:
+        candidates = news_gate_service.expansion_requests(
+            connection, news_phases=phases
+        )
+        for source in candidates:
+            if len(planned) >= bounded_limit:
+                break
+            pair = (str(source["ea_id"]), str(source["symbol"]))
+            if allowed_pairs is not None and pair not in allowed_pairs:
+                continue
+            existing = connection.execute(
+                """
+                SELECT id,status,verdict FROM work_items
+                WHERE json_valid(payload_json)=1
+                  AND json_extract(payload_json,'$.news_expansion_of_work_item')=?
+                ORDER BY created_at DESC,id DESC LIMIT 1
+                """,
+                (str(source["id"]),),
+            ).fetchone()
+            if existing is not None:
+                skipped.append({
+                    "source_work_item_id": source["id"],
+                    "ea_id": source["ea_id"],
+                    "symbol": source["symbol"],
+                    "reason": "expansion_continuation_already_exists",
+                    "existing_work_item_id": existing["id"],
+                    "existing_status": existing["status"],
+                    "existing_verdict": existing["verdict"],
+                })
+                continue
+            dependency = connection.execute(
+                """
+                SELECT d.parent_evidence_sha256,p.*
+                FROM work_item_dependencies d
+                JOIN work_items p ON p.id=d.parent_work_item_id
+                WHERE d.child_work_item_id=? AND d.dependency_role='Q08_INPUT'
+                """,
+                (str(source["id"]),),
+            ).fetchone()
+            if dependency is None:
+                skipped.append({
+                    "source_work_item_id": source["id"],
+                    "ea_id": source["ea_id"],
+                    "symbol": source["symbol"],
+                    "reason": "source_q08_input_dependency_missing",
+                })
+                continue
+            parent_hash = str(dependency["parent_evidence_sha256"] or "").lower()
+            q08_hash = _work_item_evidence_sha256(dependency)
+            if (
+                dependency["phase"] != "Q08"
+                or dependency["status"] != "done"
+                or dependency["verdict"] not in {"PASS", "FAIL_SOFT"}
+                or str(dependency["ea_id"]) != str(source["ea_id"])
+                or str(dependency["symbol"]) != str(source["symbol"])
+                or str(dependency["setfile_path"]) != str(source["setfile_path"])
+                or not q08_hash
+                or q08_hash.lower() != parent_hash
+            ):
+                skipped.append({
+                    "source_work_item_id": source["id"],
+                    "ea_id": source["ea_id"],
+                    "symbol": source["symbol"],
+                    "reason": "source_q08_input_dependency_invalid",
+                })
+                continue
+            plan = {
+                "source_work_item_id": str(source["id"]),
+                "ea_id": str(source["ea_id"]),
+                "symbol": str(source["symbol"]),
+                "setfile_path": str(source["setfile_path"]),
+                "q08_work_item_id": str(dependency["id"]),
+                "q08_evidence_sha256": parent_hash,
+                "source_aggregate_sha256": str(source["aggregate_sha256"]),
+            }
+            planned.append(plan)
+            if not apply:
+                continue
+            now = utc_now()
+            child_id = str(uuid.uuid4())
+            payload = _promotion_payload_with_basket_context(
+                source,
+                {
+                    "append_only_rerun": True,
+                    "append_only_rerun_of_work_item": str(source["id"]),
+                    "historical_work_item_preserved": True,
+                    "news_expansion_of_work_item": str(source["id"]),
+                    "news_expansion_source_aggregate_sha256": str(
+                        source["aggregate_sha256"]
+                    ),
+                    "news_expansion_reason_code": news_gate_service.EXPANSION_REASON,
+                    "force_expanded_news_matrix": True,
+                    "rerun_reason": (
+                        "authenticated news adjudication requires the full compliance matrix"
+                    ),
+                    "promotion_source": "farmctl_news_expansion_continuation",
+                    "promoted_from_phase": str(source["phase"]),
+                    "promoted_from_work_item": str(source["id"]),
+                    "requeued_at": now,
+                },
+            )
+            connection.execute("SAVEPOINT news_expansion_continuation")
+            try:
+                connection.execute(
+                    """
+                    INSERT INTO work_items(
+                      id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
+                      parent_task_id,payload_json,created_at,updated_at,gate_contract_version
+                    ) VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
+                    """,
+                    (
+                        child_id,
+                        _NEWS_PHASE,
+                        source["ea_id"],
+                        source["symbol"],
+                        source["setfile_path"],
+                        json.dumps(payload, sort_keys=True),
+                        now,
+                        now,
+                        ACTIVE_GATE_CONTRACT_VERSION,
+                    ),
+                )
+                _add_q08_input_dependency(
+                    connection,
+                    child_work_item_id=child_id,
+                    q08_work_item=dependency,
+                    evidence_sha256=parent_hash,
+                )
+                _mark_q09_awaiting_sealed_plan(
+                    connection,
+                    work_item_id=child_id,
+                    payload=payload,
+                    now=now,
+                )
+            except Exception:
+                connection.execute("ROLLBACK TO news_expansion_continuation")
+                connection.execute("RELEASE news_expansion_continuation")
+                raise
+            connection.execute("RELEASE news_expansion_continuation")
+            connection.commit()
+            created.append({**plan, "work_item_id": child_id, "phase": _NEWS_PHASE})
+    finally:
+        connection.close()
+    return {
+        "applied": bool(apply),
+        "limit": bounded_limit,
+        "read_phases": list(phases),
+        "allowlist_path": str(pair_allowlist_path) if pair_allowlist_path else None,
+        "candidate_count": len(candidates),
+        "planned_count": len(planned),
+        "created_count": len(created),
+        "planned": planned,
+        "created": created,
+        "skipped": skipped,
+    }
+
+
+def _validated_q09_include_closure(
+    closure_builder: Any,
+    *,
+    ea_id: str,
+    work_item_id: str,
+) -> tuple[Path, dict[str, Any]]:
+    """Return a current immutable closure without replacing an older snapshot."""
+
+    canonical = Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT / f"{ea_id}_include_closure.json"
+    if not canonical.exists():
+        canonical = closure_builder.build_include_closure(
+            ea_id, Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT
+        )
+    try:
+        return canonical, closure_builder.validate_include_closure(ea_id, canonical)
+    except RuntimeError as exc:
+        stale_markers = (
+            "include closure EX5 hash mismatch",
+            "include closure source inventory/hash mismatch",
+        )
+        if not any(marker in str(exc) for marker in stale_markers):
+            raise
+        successor_root = Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT / work_item_id
+        successor = successor_root / f"{ea_id}_include_closure.json"
+        if not successor.exists():
+            successor = closure_builder.build_include_closure(ea_id, successor_root)
+        return successor, closure_builder.validate_include_closure(ea_id, successor)
+
+
 def auto_seal_pending_q09_news(
     root: Path,
     *,
     limit: int = 100,
     deadline_monotonic: float | None = None,
+    work_item_ids: Iterable[str] | None = None,
 ) -> dict[str, Any]:
     """Create and bind approved contract-v3 plans for held Q09 rows.
 
@@ -15798,17 +16057,25 @@ def auto_seal_pending_q09_news(
     predecessor_refresh = _spawn_q09_replacements_for_regenerated_q08(
         root, limit=max(0, int(limit))
     )
+    selected_ids = tuple(dict.fromkeys(str(value) for value in (work_item_ids or ())))
     with connect(root) as conn:
+        selection_sql = ""
+        parameters: list[Any] = [_NEWS_PHASE, Q09_ACTIVATION_HOLD_CODE]
+        if selected_ids:
+            selection_sql = f" AND w.id IN ({','.join('?' for _ in selected_ids)})"
+            parameters.extend(selected_ids)
+        parameters.append(max(0, int(limit)))
         candidates = conn.execute(
-            """
+            f"""
             SELECT w.* FROM work_items w
             JOIN work_item_holds h ON h.work_item_id=w.id
             WHERE w.phase=? AND w.status='pending'
               AND COALESCE(w.claimed_by,'')=''
               AND h.hold_code=? AND h.active=1
+              {selection_sql}
             ORDER BY w.created_at ASC,w.id ASC LIMIT ?
             """,
-            (_NEWS_PHASE, Q09_ACTIVATION_HOLD_CODE, max(0, int(limit))),
+            parameters,
         ).fetchall()
 
     results: list[dict[str, Any]] = []
@@ -15880,12 +16147,11 @@ def auto_seal_pending_q09_news(
                 import build_q09_include_closure as closure_builder
             except ModuleNotFoundError:
                 from tools.strategy_farm import build_q09_include_closure as closure_builder
-            closure = Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT / f"{ea_id}_include_closure.json"
-            if not closure.exists():
-                closure = closure_builder.build_include_closure(
-                    ea_id, Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT
-                )
-            closure_validation = closure_builder.validate_include_closure(ea_id, closure)
+            closure, closure_validation = _validated_q09_include_closure(
+                closure_builder,
+                ea_id=ea_id,
+                work_item_id=work_item_id,
+            )
             generated_closure_drift = list(
                 closure_validation.get("generated_source_drift") or []
             )
@@ -15909,7 +16175,7 @@ def auto_seal_pending_q09_news(
                 cost_profile="DXZ_CANONICAL_REAL_TICKS_V1",
                 output_root=output_root,
                 news_or_event_strategy=False,
-                force_expanded_matrix=False,
+                force_expanded_matrix=_force_expanded_news_matrix(candidate),
                 contract_version=q09_runner.contract.SCHEMA_VERSION_V3,
                 **Q09_AUTOPILOT_WINDOWS,
             )
@@ -16963,6 +17229,7 @@ PUMP_AUTOCOMMIT_BUDGET_SECONDS = 30.0
 PUMP_LATE_AUTOSEAL_BUDGET_SECONDS = 45.0
 PUMP_DISPATCH_AUTOSEAL_LIMIT = 2
 PUMP_LATE_AUTOSEAL_LIMIT = 4
+PUMP_NEWS_EXPANSION_LIMIT = 2
 PUMP_OPT_FORK_BUDGET_SECONDS = 30.0
 
 
@@ -18747,7 +19014,19 @@ def _pump_unlocked(
     cycle_budget.record_elapsed(
         "promotions", promotion_stage_started, budget_seconds=60.0
     )
-    # Newly created and previously parked Q09 rows become runnable in the same
+    # A completed standard-scope adjudication can require the full compliance
+    # matrix.  Materialize an append-only continuation before autoseal so the
+    # same cycle can author, hash-bind, and release its expanded plan.
+    result["news_expansions"] = cycle_budget.run(
+        "news_expansions",
+        lambda: author_news_expansion_continuations(
+            root, limit=PUMP_NEWS_EXPANSION_LIMIT, apply=True
+        ),
+        budget_seconds=10.0,
+        minimum_start_seconds=10.0,
+    )
+
+    # Newly created and previously parked news rows become runnable in the same
     # pump cycle.  Each row is independently fail-closed, so one bad lineage
     # cannot starve the remaining cohort.
     late_autoseal_deadline = cycle_budget.stage_deadline(
@@ -26894,6 +27173,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Validate the exact binding through a read-only SQLite connection",
     )
 
+    news_expansions = sub.add_parser(
+        "enqueue-news-expansions",
+        help=(
+            "Plan or append bounded full-matrix continuations from authenticated "
+            "news adjudications"
+        ),
+    )
+    news_expansions.add_argument("--limit", type=int, default=10)
+    news_expansions.add_argument(
+        "--include-historical",
+        action="store_true",
+        help="UNION-read the explicitly versioned predecessor news storage lane",
+    )
+    news_expansions.add_argument(
+        "--pair-allowlist-csv",
+        type=Path,
+        help="CSV containing ea_id,symbol; used for a bounded frontier backfill",
+    )
+    news_expansions.add_argument(
+        "--apply", action="store_true", help="Create append-only child rows; default is read-only"
+    )
+
     dispatch = sub.add_parser(
         "dispatch-tick",
         help="Advance backtest tasks one step: start one pending, poll active, classify completed",
@@ -27049,6 +27350,8 @@ def _command_mutates_state(args: argparse.Namespace) -> bool:
         return not bool(getattr(args, "dry_run", False))
     if args.command == "enqueue-compile":
         return bool(args.apply or not args.from_file)
+    if args.command == "enqueue-news-expansions":
+        return bool(args.apply)
     if args.command in {"admit-optimization", "enqueue-opt-admission", "advance-optimization-fork"}:
         return bool(args.apply)
     if args.command == "enqueue-head-to-head":
@@ -27364,6 +27667,14 @@ def main(argv: list[str] | None = None) -> int:
             expected_plan_file_sha256=args.plan_file_sha256,
             cell_timeout_sec=args.cell_timeout_sec,
             dry_run=args.dry_run,
+        ))
+    elif args.command == "enqueue-news-expansions":
+        print_json(author_news_expansion_continuations(
+            root,
+            limit=args.limit,
+            include_historical=args.include_historical,
+            pair_allowlist_path=args.pair_allowlist_csv,
+            apply=args.apply,
         ))
     elif args.command == "dispatch-tick":
         print_json(dispatch_tick(root, timeout_hours=args.timeout_hours))

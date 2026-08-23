@@ -737,6 +737,7 @@ def test_q09_autopilot_uses_approved_contract_v3_semantics(tmp_path: Path) -> No
     assert kwargs["tester_model"] == "REAL_TICKS"
     assert kwargs["cost_profile"] == "DXZ_CANONICAL_REAL_TICKS_V1"
     assert kwargs["contract_version"] == q09_news_runner.contract.SCHEMA_VERSION_V3
+    assert kwargs["force_expanded_matrix"] is False
     assert Path(kwargs["output_root"]).name == "q09_contract_v3"
     assert kwargs["calendar_common_relative_path"] == (
         "QM/q09_news/q09cal-20150101-20260809-0bb19b5bb9790b76/events.csv"
@@ -895,6 +896,72 @@ def test_q09_autopilot_derivation_gap_stays_held_with_machine_reason(tmp_path: P
         "Q09_AUTOSEAL_DERIVE_LINEAGE_FAILED"
     )
     assert hold[0] == 1
+
+
+def test_news_autoseal_can_target_exact_work_items(tmp_path: Path) -> None:
+    connection = mock.MagicMock()
+    connection.execute.return_value.fetchall.return_value = []
+    connection_context = mock.MagicMock()
+    connection_context.__enter__.return_value = connection
+    connection_context.__exit__.return_value = False
+    with (
+        mock.patch.object(farmctl, "init_db"),
+        mock.patch.object(
+            farmctl,
+            "_spawn_q09_replacements_for_regenerated_q08",
+            return_value={},
+        ),
+        mock.patch.object(farmctl, "connect", return_value=connection_context),
+    ):
+        result = farmctl.auto_seal_pending_q09_news(
+            tmp_path,
+            work_item_ids=["child-b", "child-a", "child-b"],
+        )
+
+    sql, parameters = connection.execute.call_args.args
+    assert "w.id IN (?,?)" in sql
+    assert parameters == [
+        NEWS_PHASE,
+        farmctl.Q09_ACTIVATION_HOLD_CODE,
+        "child-b",
+        "child-a",
+        100,
+    ]
+    assert result["attempted_count"] == 0
+
+
+def test_news_autoseal_preserves_stale_closure_and_builds_scoped_successor(
+    tmp_path: Path,
+) -> None:
+    canonical = tmp_path / "QM5_1_include_closure.json"
+    canonical.write_text("{}", encoding="utf-8")
+    successor = tmp_path / "child-1" / canonical.name
+    builder = mock.MagicMock()
+    builder.validate_include_closure.side_effect = [
+        RuntimeError("include closure source inventory/hash mismatch"),
+        {"generated_source_drift": []},
+    ]
+    builder.build_include_closure.return_value = successor
+
+    with mock.patch.object(
+        farmctl, "Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT", tmp_path
+    ):
+        path, validation = farmctl._validated_q09_include_closure(
+            builder,
+            ea_id="QM5_1",
+            work_item_id="child-1",
+        )
+
+    assert path == successor
+    assert validation == {"generated_source_drift": []}
+    assert canonical.read_text(encoding="utf-8") == "{}"
+    builder.build_include_closure.assert_called_once_with(
+        "QM5_1", tmp_path / "child-1"
+    )
+    assert builder.validate_include_closure.call_args_list == [
+        mock.call("QM5_1", canonical),
+        mock.call("QM5_1", successor),
+    ]
 
 
 def test_bind_q09_dry_run_does_not_initialize_or_write_database(tmp_path: Path) -> None:
