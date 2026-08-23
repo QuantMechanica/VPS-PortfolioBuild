@@ -1,0 +1,22 @@
+{
+  "task_id": "da39e160-b043-4528-8592-4a23f672fc55",
+  "ea_id": "QM5_35005",
+  "ea_label": "QM5_35005_sma-crossover-pullback-system",
+  "slug": "sma-crossover-pullback-system",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\QM5_35005_sma-crossover-pullback-system.mq5",
+  "mq5_sha256": "758b0021667e9354415331c20dbee6389934813db590e3f837c242f4bac5be90",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\QM5_35005_sma-crossover-pullback-system.ex5",
+  "ex5_sha256": "28ef9a97341ab09666f4b8ac6a817bbdabe806c968fbc96279a0e1be0b2fbd59",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_35005_sma-crossover-pullback-system.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\sets\\QM5_35005_sma-crossover-pullback-system_EURUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\sets\\QM5_35005_sma-crossover-pullback-system_GBPUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\sets\\QM5_35005_sma-crossover-pullback-system_EURJPY.DWX_H1_backtest.set"
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "built_by": "Gemini",
+  "built_at": "2026-08-23T11:24:55Z"
+}

@@ -1,0 +1,22 @@
+{
+  "task_id": "c2e1b160-70bb-49bf-afd2-6dc52e784ad5",
+  "ea_id": "QM5_35004",
+  "ea_label": "QM5_35004_babypips-asian-box-london-breakout",
+  "slug": "babypips-asian-box-london-breakout",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\QM5_35004_babypips-asian-box-london-breakout.mq5",
+  "mq5_sha256": "4513f1f1a192c5c040015a90f5fecfdac35d9d214b615e5552968f5d26870fc5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\QM5_35004_babypips-asian-box-london-breakout.ex5",
+  "ex5_sha256": "d90ab915cd2642632fc122a381cf3aabc85d77a4118a7ce70f7880a3e62b6e70",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_35004_babypips-asian-box-london-breakout.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\sets\\QM5_35004_babypips-asian-box-london-breakout_GBPUSD.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\sets\\QM5_35004_babypips-asian-box-london-breakout_EURUSD.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\sets\\QM5_35004_babypips-asian-box-london-breakout_USDCHF.DWX_M15_backtest.set"
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "built_by": "Gemini",
+  "built_at": "2026-08-23T11:24:55Z"
+}
