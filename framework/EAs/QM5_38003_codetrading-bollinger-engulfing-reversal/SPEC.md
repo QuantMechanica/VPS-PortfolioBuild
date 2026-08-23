@@ -3,8 +3,8 @@
 **EA ID:** QM5_38003
 **Slug:** codetrading-bollinger-engulfing-reversal
 **Source:** codetrading-bollinger-engulfing-reversal-official-source (see `strategy-seeds/sources/codetrading-bollinger-engulfing-reversal/`)
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-18
+**Author of this spec:** Codex
+**Last revised:** 2026-08-23
 
 ---
 
@@ -14,7 +14,9 @@ The strategy is a systematic price action mean-reversion model on the H1 timefra
 
 A Long entry is triggered when Bar 1 forms a Bullish Engulfing pattern over Bar 2 (Bar 2 is bearish, Bar 1 is bullish and engulfs Bar 2's body), the Low of Bar 1 penetrates or touches the Lower Bollinger Band, and RSI(14) is oversold (<= 35.0). A Short entry is triggered when Bar 1 forms a Bearish Engulfing pattern over Bar 2 (Bar 2 is bullish, Bar 1 is bearish and engulfs Bar 2's body), the High of Bar 1 penetrates or touches the Upper Bollinger Band, and RSI(14) is overbought (>= 65.0).
 
-Stop Loss is placed beyond the extreme of the engulfing candle (Low - 2.0 pips for Long, High + 2.0 pips for Short). Take Profit is set at 2.0× Risk-to-Reward (1:2.0 R:R). Floating positions protect profits by moving Stop Loss to Break-Even when price reaches the 20 SMA Middle Bollinger Band.
+Stop Loss is placed beyond the extreme of the engulfing candle (Low - 2.0 pips for Long, High + 2.0 pips for Short). Take Profit is set at 2.0× Risk-to-Reward (1:2.0 R:R). When price first reaches the 20 SMA middle Bollinger Band, exactly 50% of the position is closed and the remaining half continues under the original broker-side SL and TP. The EA reconstructs this one-time partial-exit state from the position's deal history after restart; it never substitutes a break-even stop move for the card exit.
+
+An entry fails closed when its risk-sized volume cannot be divided into two equal, broker-valid half volumes. This preserves the card's exact 50% exit instead of silently rounding it.
 
 ---
 
@@ -22,19 +24,25 @@ Stop Loss is placed beyond the extreme of the engulfing candle (Low - 2.0 pips f
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_signal_tf` | `PERIOD_H1` | `M30-H4` | Base execution and indicator timeframe |
+| `strategy_signal_tf` | `PERIOD_H1` | `H1` | Base execution and indicator timeframe |
 | `strategy_bb_period` | `20` | `14-30` | Bollinger Bands period |
 | `strategy_bb_dev` | `2.00` | `1.5-2.5` | Bollinger Bands standard deviation multiplier |
 | `strategy_rsi_period` | `14` | `7-21` | RSI oscillator period |
 | `strategy_rsi_long_max` | `35.0` | `20.0-40.0` | RSI threshold for Long entries |
 | `strategy_rsi_short_min` | `65.0` | `60.0-80.0` | RSI threshold for Short entries |
-| `strategy_atr_period` | `14` | `10-20` | ATR period for spread filtering and fallbacks |
+| `strategy_atr_period` | `14` | `10-20` | ATR period for the spread filter |
 | `strategy_sl_buffer_pips` | `2.0` | `1.0-5.0` | Pip buffer beyond engulfing candle extreme for SL |
 | `strategy_tp_rr` | `2.0` | `1.0-3.0` | Risk-to-Reward multiplier for Take Profit |
-| `strategy_mid_exit_enabled` | `true` | `true/false` | Move SL to Break-Even when price touches middle band |
+| `strategy_mid_exit_enabled` | `true` | `true` | Enable the mandatory middle-band partial exit |
+| `strategy_mid_exit_fraction` | `0.50` | `0.50` | Exact fraction closed once at the middle band |
 | `strategy_rollover_start_hhmm` | `2355` | `0-2359` | Start time for daily rollover blackout window |
 | `strategy_rollover_end_hhmm` | `5` | `0-2359` | End time for daily rollover blackout window |
 | `strategy_spread_filter_mult` | `1.8` | `1.0-3.0` | Max allowable spread as a multiple of ATR |
+| `strategy_max_slippage_ticks` | `3` | `1-3` | Maximum market-order deviation in trade ticks |
+| `strategy_daily_loss_halt_pct` | `2.0` | `(0, 2.0]` | Realized daily-loss entry halt |
+| `strategy_daily_hard_stop_pct` | `2.5` | `(0, 2.5]` | Framework daily hard-stop ceiling |
+| `strategy_total_dd_halt_pct` | `5.0` | `(0, 5.0]` | Framework total-drawdown hard-stop ceiling |
+| `strategy_per_trade_risk_cap_pct` | `0.5` | `(0, 0.5]` | Framework per-trade account-risk ceiling |
 
 ---
 
@@ -56,7 +64,7 @@ Stop Loss is placed beyond the extreme of the engulfing candle (Low - 2.0 pips f
 |---|---|
 | Base timeframe | `PERIOD_H1` |
 | Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, strategy_signal_tf)` |
 
 ---
 
@@ -100,3 +108,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Task 5fa16349-5252-448a-8f5d-8a7d77306f9b |
+| v2 | 2026-08-23 | Card-conformance remediation | Exact engulfing boundaries, exact restart-safe 50% middle-band close, current-bar admission state, UTC rollover, three-tick deviation, and explicit risk rails |
