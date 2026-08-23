@@ -1,0 +1,67 @@
+{
+ "deployed_at_utc": "20260823T213535Z",
+ "backup_dir": "D:/QM/strategy_farm/backups\\tlive_presets_pre_repair_20260823T213535Z",
+ "manifest": "docs/ops/evidence/2026-08-23_tlive_preset_repair_manifest.json",
+ "presets": [
+  {
+   "ea_label": "QM5_10440_mql5-ohlc-mtf",
+   "target": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\15_NDX_H1_QM5_10440_mql5-ohlc-mtf.set",
+   "sha256": "af2678b4446e10741f68444cb457a16da33059b0150658857f400aa575cea717",
+   "backup": "D:/QM/strategy_farm/backups\\tlive_presets_pre_repair_20260823T213535Z\\15_NDX_H1_QM5_10440_mql5-ohlc-mtf.set"
+  },
+  {
+   "ea_label": "QM5_10513_mql5-ichimoku",
+   "target": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\19_XAUUSD_D1_QM5_10513_mql5-ichimoku.set",
+   "sha256": "722e1344a4fa6bd60a43be79d1d1920730b7a5d62f8236c0b812f8764f596dde",
+   "backup": "D:/QM/strategy_farm/backups\\tlive_presets_pre_repair_20260823T213535Z\\19_XAUUSD_D1_QM5_10513_mql5-ichimoku.set"
+  },
+  {
+   "ea_label": "QM5_10706_tv-mon-ls",
+   "target": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\11_GBPUSD_H1_QM5_10706_tv-mon-ls.set",
+   "sha256": "d9d432347648a41b5dfefeb98f1aedf1c26b4d19f0a9db07ea3e1d0bc900f26f",
+   "backup": "D:/QM/strategy_farm/backups\\tlive_presets_pre_repair_20260823T213535Z\\11_GBPUSD_H1_QM5_10706_tv-mon-ls.set"
+  },
+  {
+   "ea_label": "QM5_10911_grimes-complex-pb",
+   "target": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\13_GDAXI_H1_QM5_10911_grimes-complex-pb.set",
+   "sha256": "daf0f2143955d3bc052f5bce5b6b8510e7a55354839139f587e11d6ef13f6e1c",
+   "backup": "D:/QM/strategy_farm/backups\\tlive_presets_pre_repair_20260823T213535Z\\13_GDAXI_H1_QM5_10911_grimes-complex-pb.set"
+  },
+  {
+   "ea_label": "QM5_10919_grimes-overshoot",
+   "target": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\04_XTIUSD_H4_QM5_10919_grimes-overshoot.set",
+   "sha256": "af3f2a4a2aa656ec1f9f5f247c55b2331a3c2c842d633afb48f849b98da735fc",
+   "backup": "D:/QM/strategy_farm/backups\\tlive_presets_pre_repair_20260823T213535Z\\04_XTIUSD_H4_QM5_10919_grimes-overshoot.set"
+  },
+  {
+   "ea_label": "QM5_10939_grimes-context-pb",
+   "target": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\12_GBPUSD_H4_QM5_10939_grimes-context-pb.set",
+   "sha256": "298bcd6a7867a967c1b491953fecad83e631b3dc5c001af70462be9e11e4c60e",
+   "backup": "D:/QM/strategy_farm/backups\\tlive_presets_pre_repair_20260823T213535Z\\12_GBPUSD_H4_QM5_10939_grimes-context-pb.set"
+  },
+  {
+   "ea_label": "QM5_11132_tm-cum-rsi2",
+   "target": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\16_SP500_D1_QM5_11132_tm-cum-rsi2.set",
+   "sha256": "87fc8288070ab8bf56356ec9ab6a89f0216004df03dd2766e49e3aef3bdd5694",
+   "backup": "D:/QM/strategy_farm/backups\\tlive_presets_pre_repair_20260823T213535Z\\16_SP500_D1_QM5_11132_tm-cum-rsi2.set"
+  },
+  {
+   "ea_label": "QM5_12567_cum-rsi2-commodity",
+   "target": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\23_XNGUSD_D1_QM5_12567_cum-rsi2-commodity.set",
+   "sha256": "26537d011b553ba6acb668d99945584be3c0ab0991dc4459fc84de8278cc4e79",
+   "backup": "D:/QM/strategy_farm/backups\\tlive_presets_pre_repair_20260823T213535Z\\23_XNGUSD_D1_QM5_12567_cum-rsi2-commodity.set"
+  },
+  {
+   "ea_label": "QM5_12989_grimes-nested-pb-v2",
+   "target": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\21_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2.set",
+   "sha256": "9fb2c0f85ad92a1b6de7afeb58988c7fe3fbe56ac9be5f6025af6a5d18d2a5f4",
+   "backup": "D:/QM/strategy_farm/backups\\tlive_presets_pre_repair_20260823T213535Z\\21_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2.set"
+  },
+  {
+   "ea_label": "QM5_13128_pre-fomc-drift-ndx",
+   "target": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\14_NDX_H1_QM5_13128_pre-fomc-drift-ndx.set",
+   "sha256": "743326c316de6c2ccdab6080dab6dfff2d010afc9843a75798701f39e981be4e",
+   "backup": "D:/QM/strategy_farm/backups\\tlive_presets_pre_repair_20260823T213535Z\\14_NDX_H1_QM5_13128_pre-fomc-drift-ndx.set"
+  }
+ ]
+}
