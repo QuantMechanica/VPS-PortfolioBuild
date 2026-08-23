@@ -1,0 +1,28 @@
+{
+  "task_id": "f3b6bf03-fa59-4d17-8336-bb440cf90a0d",
+  "ea_id": "QM5_9972",
+  "slug": "bandy-heikin-ashi-color-flip-trend",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\QM5_9972_bandy-heikin-ashi-color-flip-trend.mq5",
+  "mq5_sha256": "ee65efe4cb93520863ebe83811de25b3e29fa01713537e5aba0ee38c16a0f47a",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\QM5_9972_bandy-heikin-ashi-color-flip-trend.ex5",
+  "ex5_sha256": "8b2f568d0d2d1a9ac7341f9a4310c5c96d2310d3b69fe934cab5ddf989a99cea",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_AUDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_GDAXI.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_NZDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_UK100.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_USDCAD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_USDCHF.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_USDJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_WS30.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\sets\\QM5_9972_bandy-heikin-ashi-color-flip-trend_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9972_bandy-heikin-ashi-color-flip-trend\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true
+}
