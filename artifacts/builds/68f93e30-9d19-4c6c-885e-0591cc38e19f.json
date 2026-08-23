@@ -29,9 +29,9 @@
   "ex5_sha256": "17244bbe9f0bbd1807dec6961742f8e8a63091bea468b85993c3e9750673c20e",
   "ex5_bytes": 401872,
   "setfile_sha256": {
-    "QM5_39006_forexfactory-spudfyre-stochastic-ribbon_EURUSD.DWX_H1_backtest.set": "6f62ce0042d348ab394c05b880fce8cfbfa8c56ac1cbad8fa235520ca9977ea2",
-    "QM5_39006_forexfactory-spudfyre-stochastic-ribbon_GBPUSD.DWX_H1_backtest.set": "8affbb44e3cef2a470ea07e4e5196e88d7fae2d58c2219484b21140b0eacc9d8",
-    "QM5_39006_forexfactory-spudfyre-stochastic-ribbon_AUDUSD.DWX_H1_backtest.set": "fc7a6641200e87a95358aacd3a0e8ce4117138863fcfc011191680f986c5f94e"
+    "QM5_39006_forexfactory-spudfyre-stochastic-ribbon_EURUSD.DWX_H1_backtest.set": "60f96e42e066df55146f1c73925015c0476bce9a0ec8f45c5966c67508776982",
+    "QM5_39006_forexfactory-spudfyre-stochastic-ribbon_GBPUSD.DWX_H1_backtest.set": "976d9608c33f1d1db16fa8dd7ad919a406ffbe44f26287573b43662a6829541d",
+    "QM5_39006_forexfactory-spudfyre-stochastic-ribbon_AUDUSD.DWX_H1_backtest.set": "dd6944f22d5e7a5e9e1c84bd3263829a31535e757ae4ea2baa3bf0dd3018b1a8"
   },
   "risk_mode": {
     "RISK_FIXED": 1000,
@@ -72,5 +72,5 @@
     "risk_mode": "RISK_FIXED"
   },
   "built_by": "gemini",
-  "built_at": "2026-08-23T13:56:37.968923+00:00"
+  "built_at": "2026-08-23T13:57:03.492334+00:00"
 }

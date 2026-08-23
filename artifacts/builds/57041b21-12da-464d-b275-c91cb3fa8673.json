@@ -26,8 +26,8 @@
   "ex5_sha256": "9d692b666751c48aae2eafbd73fa6ed109c9a66211dd67e77082943f269bfea3",
   "ex5_bytes": 408894,
   "setfile_sha256": {
-    "QM5_39005_forexfactory-genesis-matrix-scalper_EURUSD.DWX_M5_backtest.set": "c663da6dcb62fd7ac8021a9fe680437e31c315258425253ece4ad9aeba85d882",
-    "QM5_39005_forexfactory-genesis-matrix-scalper_GBPUSD.DWX_M5_backtest.set": "1a8131cc1a5ae2ea0f34d1d5c29e97d99dcfb240b1b2f251fb9ef975ceb43077"
+    "QM5_39005_forexfactory-genesis-matrix-scalper_EURUSD.DWX_M5_backtest.set": "a00ee6c6fc1a798c44cbd63e770afaa71f25f5b40ed83b8715b260ff44c7b0fb",
+    "QM5_39005_forexfactory-genesis-matrix-scalper_GBPUSD.DWX_M5_backtest.set": "bbed96fc91d8e3c6abfc5dfaadd0373f2d371c6f63dbc0fa1b571fa843702529"
   },
   "risk_mode": {
     "RISK_FIXED": 1000,
@@ -62,5 +62,5 @@
     "risk_mode": "RISK_FIXED"
   },
   "built_by": "gemini",
-  "built_at": "2026-08-23T13:56:37.968923+00:00"
+  "built_at": "2026-08-23T13:57:03.466667+00:00"
 }
