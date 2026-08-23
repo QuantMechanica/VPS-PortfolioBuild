@@ -56,6 +56,15 @@
     "prior_review_close_state": "RECYCLE",
     "prior_review_close_verdict": "Only .mq5 present; no .ex5, no SPEC.md, no registry row for 2190."
   },
+  "router_disposition": {
+    "review_requested": true,
+    "review_allowed": false,
+    "review_gate_code": "D6_BUILD_IDENTITY_MISSING",
+    "review_gate_reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
+    "final_state": "BLOCKED",
+    "final_verdict": "PRECONDITION_HOLD_REGISTRY_AND_MAGIC_REQUIRED; REVIEW refused D6_BUILD_IDENTITY_MISSING",
+    "rationale": "Canonical REVIEW dispatch requires truthful strict-build PASS evidence binding committed MQ5, EX5, and setfiles. Those artifacts cannot be produced before governed identity and magic allocation, so no build identity was fabricated."
+  },
   "verdict": "BUILD_NOT_STARTED_REGISTRY_GATE_FAIL",
   "blocked_reason": "Requested ea_id 2190 has no deterministic EA registry row and no magic rows. The only slug-related registry identity is different ea_id 12301 and is OWNER-retired, so build or compile under 2190 is forbidden by qm-build-ea-from-card.",
   "required_next_action": "Keep the build out of implementation until the governed registry/card writer supplies the exact active identity and all required magic rows. Any reroute must also preserve the mandatory news-blackout and current V5 risk contracts.",
