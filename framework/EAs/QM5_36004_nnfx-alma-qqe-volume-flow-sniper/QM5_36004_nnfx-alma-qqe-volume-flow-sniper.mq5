@@ -107,17 +107,17 @@ bool Strategy_QQEValue(const string sym, const int shift, double &out_rsi_ma, do
    double rsi_ma[];
    ArrayResize(rsi_ma, n);
 
-   const double k = 2.0 / ((double)sf + 1.0);
+   const double k_factor = 2.0 / ((double)sf + 1.0);
    double ema = QM_RSI(sym, PERIOD_D1, rsi_p, shift + n - 1, PRICE_CLOSE);
    if(ema <= 0.0 && ema != 0.0) return false;
-   rsi_ma[n - 1] = ema;
+   rsi_ma[0] = ema;
 
-   for(int i = n - 2; i >= 0; --i)
+   for(int idx = 1; idx < n; ++idx)
    {
-      const int s = shift + i;
+      const int s = shift + n - 1 - idx;
       const double rsi = QM_RSI(sym, PERIOD_D1, rsi_p, s, PRICE_CLOSE);
-      ema = k * rsi + (1.0 - k) * ema;
-      rsi_ma[i] = ema;
+      ema = k_factor * rsi + (1.0 - k_factor) * ema;
+      rsi_ma[idx] = ema;
    }
 
    const double wk = 1.0 / (double)wilder;
@@ -125,10 +125,10 @@ bool Strategy_QQEValue(const string sym, const int shift, double &out_rsi_ma, do
    double dar = 0.0;
    double trail = 50.0;
 
-   for(int i = n - 2; i >= 0; --i)
+   for(int idx = 1; idx < n; ++idx)
    {
-      const double diff = MathAbs(rsi_ma[i] - rsi_ma[i + 1]);
-      if(i == n - 2)
+      const double diff = MathAbs(rsi_ma[idx] - rsi_ma[idx - 1]);
+      if(idx == 1)
       {
          atr_rsi = diff;
          dar = diff;
@@ -140,8 +140,8 @@ bool Strategy_QQEValue(const string sym, const int shift, double &out_rsi_ma, do
       }
 
       const double band = dar * factor;
-      const double rma = rsi_ma[i];
-      const double rma_prev = rsi_ma[i + 1];
+      const double rma = rsi_ma[idx];
+      const double rma_prev = rsi_ma[idx - 1];
 
       if(rma > trail)
       {
@@ -161,7 +161,7 @@ bool Strategy_QQEValue(const string sym, const int shift, double &out_rsi_ma, do
       }
    }
 
-   out_rsi_ma = rsi_ma[0];
+   out_rsi_ma = rsi_ma[n - 1];
    out_trail = trail;
    return true;
 }
