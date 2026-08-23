@@ -64,7 +64,8 @@ $QM_ALWAYSON_TASKS = @(
     'QM_FTMO_TrialPulse',                     # FTMO read-only live telemetry
     'QM_StrategyFarm_LsmHealthProbe',          # session-manager health evidence
     'QM_StrategyFarm_SilentFailureMonitor',    # alarm-sidecar producer
-    'QM_StrategyFarm_UnbuiltCardsDisposition_Hourly'  # READY/NEEDS_SOURCE/DATA_BLOCKED backlog snapshot (MNT-013)
+    'QM_StrategyFarm_UnbuiltCardsDisposition_Hourly',  # READY/NEEDS_SOURCE/DATA_BLOCKED backlog snapshot (MNT-013)
+    'QM_StrategyFarm_PumpMaintenance_Hourly'  # hourly ea_metrics/census + farm_state.sqlite backup moved off the 5-min pump (rebaseline 2026-08-23)
 )
 
 # --- must stay disabled: unsafe paths + explicit OWNER opt-outs -----

@@ -1,4 +1,5 @@
 import hashlib
+import inspect
 import json
 import sqlite3
 import sys
@@ -755,6 +756,113 @@ def test_q09_autopilot_uses_approved_contract_v3_semantics(tmp_path: Path) -> No
         ).fetchone()[0])
     assert "q09_autoseal_failure" not in payload
     assert "q09_activation_next_action" not in payload
+
+
+def test_pump_retries_autoseal_after_regenerated_q08_promotion() -> None:
+    """A fresh Q08 identity must be promoted before the same-cycle seal retry."""
+    source = inspect.getsource(farmctl._pump_unlocked)
+
+    promotion = source.index("_promote_paired_q09_portfolio_passes_to_news")
+    # The late autoseal retry is now wrapped in the pump cycle budget (latency
+    # rebaseline 2026-08-23) but must still run AFTER the paired-Q09 promotion so
+    # a freshly promoted Q08 identity is sealable in the same cycle.
+    post_cascade_retry = source.index('result["q09_autoseal"] = cycle_budget.run(')
+
+    assert promotion < post_cascade_retry
+
+
+def test_autoseal_replaces_immutable_predecessor_after_append_only_q08(
+    tmp_path: Path,
+) -> None:
+    farmctl.init_db(tmp_path)
+    setfile = tmp_path / "baseline.set"
+    old_evidence = tmp_path / "q08-old.json"
+    new_evidence = tmp_path / "q08-new.json"
+    setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+    old_evidence.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
+    new_evidence.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
+    with farmctl.connect(tmp_path) as conn:
+        for row_id, evidence, created, payload in (
+            ("q08-old", old_evidence, "2026-08-01T00:00:00Z", {}),
+            (
+                "q08-new", new_evidence, "2026-08-02T00:00:00Z",
+                {"append_only_rerun": True, "append_only_rerun_of_work_item": "q08-old"},
+            ),
+        ):
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                  id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                  attempt_count,evidence_path,payload_json,created_at,updated_at
+                ) VALUES(?,'backtest','Q08','QM5_1','EURUSD.DWX',?,'done','PASS',
+                         0,?,?,?,?)
+                """,
+                (
+                    row_id, str(setfile), str(evidence), json.dumps(payload),
+                    created, created,
+                ),
+            )
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
+              payload_json,created_at,updated_at
+            ) VALUES('q09-old','backtest',?,'QM5_1','EURUSD.DWX',?,
+                     'pending',0,'{}','2026-08-01T01:00:00Z','2026-08-01T01:00:00Z')
+            """,
+            (NEWS_PHASE, str(setfile)),
+        )
+        schema.add_dependency(
+            conn, child_work_item_id="q09-old", dependency_role="Q08_INPUT",
+            parent_work_item_id="q08-old", parent_evidence_sha256=_sha(old_evidence),
+            required_verdicts=["PASS"],
+        )
+        schema.hold_until_plan_bound(conn, "q09-old", now="2026-08-01T01:00:00Z")
+        conn.commit()
+
+    spawned = farmctl._spawn_q09_replacements_for_regenerated_q08(tmp_path, limit=10)
+
+    assert len(spawned) == 1
+    replacement_id = spawned[0]["replacement_q09_work_item_id"]
+    assert spawned[0]["replacement_q08_work_item_id"] == "q08-new"
+    with farmctl.connect(tmp_path) as conn:
+        dependency = conn.execute(
+            """
+            SELECT parent_work_item_id FROM work_item_dependencies
+            WHERE child_work_item_id=? AND dependency_role='Q08_INPUT'
+            """,
+            (replacement_id,),
+        ).fetchone()
+        replacement_hold = conn.execute(
+            "SELECT active FROM work_item_holds WHERE work_item_id=?",
+            (replacement_id,),
+        ).fetchone()
+        assert farmctl._supersede_stale_q09_holds_after_rebind(
+            conn,
+            replacement_q09_id="q09-old",
+            replacement_q08_id="q08-old",
+            now="2026-08-02T00:30:00Z",
+        ) == []
+        superseded = farmctl._supersede_stale_q09_holds_after_rebind(
+            conn,
+            replacement_q09_id=replacement_id,
+            replacement_q08_id="q08-new",
+            now="2026-08-02T01:00:00Z",
+        )
+        conn.commit()
+        old = conn.execute(
+            "SELECT status,verdict FROM work_items WHERE id='q09-old'"
+        ).fetchone()
+        old_hold = conn.execute(
+            "SELECT active,release_note FROM work_item_holds WHERE work_item_id='q09-old'"
+        ).fetchone()
+
+    assert dependency[0] == "q08-new"
+    assert replacement_hold[0] == 1
+    assert superseded == ["q09-old"]
+    assert tuple(old) == ("done", "SUPERSEDED")
+    assert old_hold[0] == 0
+    assert "regenerated Q08" in old_hold[1]
 
 
 def test_q09_autopilot_derivation_gap_stays_held_with_machine_reason(tmp_path: Path) -> None:

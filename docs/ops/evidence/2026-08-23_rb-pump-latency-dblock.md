@@ -106,3 +106,101 @@ Revert the ticket commit. That restores the former inline pump maintenance and w
 - Schedule `farmctl pump-maintenance` at a lower frequency (hourly is intended). This ticket adds the command but deliberately does not mutate Windows scheduled tasks or live factory state.
 - The 270-second budget prevents new optional stages from starting and bounds promotion/autoseal loops, but Python cannot forcibly preempt a single legacy stage already executing. Stage telemetry will identify any remaining non-cooperative overrun.
 - The new health check will remain FAIL while the two historical lock-crash rows are inside its 24-hour window; this is intentional evidence, not a request to overwrite them.
+
+## Review fixes (2026-08-23, FIXER verdict FIX_REQUIRED)
+
+The branch did not merge cleanly onto `agents/board-advisor` (the factory branch,
+17 commits ahead). Resolved deliberately and re-tested on the merged tree.
+
+### P1 — deliberate merge conflict resolution in `farmctl.py`
+
+Two content conflicts, both semantic:
+
+1. **Q09 autoseal signature vs board-advisor's new spawn function.** Kept BOTH
+   board-advisor's `_spawn_q09_replacements_for_regenerated_q08` /
+   `_supersede_stale_q09_holds_after_rebind` AND this branch's
+   `auto_seal_pending_q09_news(..., deadline_monotonic=...)` signature. The
+   merged function body (auto-merged by git) references both additions
+   (`predecessor_refresh = _spawn_q09_replacements_for_regenerated_q08(...)` and
+   the `deadline_monotonic` budget break), so dropping either would have caused a
+   `NameError`. Verified no conflict markers remain and the module parses.
+
+2. **Late Q09 autoseal / budget-return block vs the mandatory optimization
+   fork.** This branch inserts `if cycle_budget.remaining_seconds <= 15.0:
+   return result` right after the late autoseal; board-advisor inserts
+   `advance_opt_fork(root, apply=True)` there as a MANDATORY promotion-class
+   stage that "runs on every cycle after autoseal". Naive resolutions either
+   starve the fork permanently (placed after the return) or blow the 270s
+   ceiling (placed unbudgeted). Resolved by wrapping the fork as a budgeted
+   `cycle_budget.run("optimization_fork", ..., budget_seconds=30.0,
+   minimum_start_seconds=10.0)` placed BEFORE the post-promotion early return.
+   It is append-only/idempotent, so a tight cycle DEFERS it (self-skips via its
+   own minimum_start guard and resumes next cycle) instead of starving or
+   overrunning. New constant `PUMP_OPT_FORK_BUDGET_SECONDS = 30.0`. The fork's
+   own try/except (one analytic routing defect must not stop the pump) is
+   preserved inside the stage closure.
+
+`test_q09_news_farmctl_integration.py::test_pump_retries_autoseal_after_regenerated_q08_promotion`
+was a board-advisor source-inspection test asserting the pre-budget call form
+`result["q09_autoseal"] = auto_seal_pending_q09_news(root)`. Updated its anchor
+to the merged budgeted form `result["q09_autoseal"] = cycle_budget.run(` while
+preserving its intent (late autoseal still ordered AFTER
+`_promote_paired_q09_portfolio_passes_to_news`).
+
+### P1 — restore hourly DB backups + make the outage observable
+
+`_hourly_db_backup` now runs only from `pump-maintenance`; the 5-min pump leaves
+a `{"deferred": true}` marker. Without a schedule, `farm_state.sqlite` backups
+silently stop. Fix ships the replacement schedule and an alarm:
+
+- `run_pump_maintenance_task.py` — scheduled-task wrapper (per-run log,
+  stale-tolerant lock, honors `FACTORY_OFF.flag`), mirrors `run_pump_task.py`.
+- `install_pump_maintenance_scheduled_task.ps1` — registers
+  `QM_StrategyFarm_PumpMaintenance_Hourly` (SYSTEM, hourly, 30-min limit,
+  IgnoreNew), mirrors `install_pump_scheduled_task.ps1`.
+- `qm_tasks.manifest.ps1` — added the task to the ALWAYS_ON managed set so
+  `Factory_ON`/`Factory_OFF` keep it enabled.
+- `health.py::chk_db_backup_fresh` — new no-con check registered in
+  `ALL_CHECKS`. FAILs when the newest `state/backups/farm_state_*.sqlite` is
+  older than 150 min (hourly cadence + 50-min guard) or absent; returns OK when
+  `FACTORY_OFF.flag` is set (maintenance writer intentionally quiesced).
+  Smoke-run against the live runtime: `OK — 7 snapshots, newest 67m ago`.
+
+Operator activation step (must accompany the merge/activation window, like the
+other scheduled tasks): run
+`tools/strategy_farm/install_pump_maintenance_scheduled_task.ps1`.
+
+### P2 — accepted residuals (no code change)
+
+- **terminal_worker.py post-spawn completion-lock re-run.** The run_loop
+  `except sqlite3.OperationalError` deferral does not distinguish pre-spawn from
+  post-spawn: if a completion write (`_finish_work_item` / `_record_log_bomb` /
+  `_defer_launch_fault`) exhausts the 8-attempt retry after the MT5 child already
+  ran, the item is reset to pending and re-claimed → a rare wasted re-run.
+  Verified NOT a double-completion (each completion writer is a single atomic
+  transaction under `_with_sqlite_retry`; a committed write raises nothing, so
+  only one verdict is ever written) and backtests are cost-free. Threading a
+  spawn-boundary signal through `_run_claimed_item` is not a cheap/low-risk
+  change to the worker hot path; shipped as-is per the fixer, residual documented
+  here.
+- **Q09 autoseal (6 rows/cycle) + cascade (50/phase) throughput.** Deliberate
+  latency-vs-throughput trade; both remain bounded and resumable
+  (`ORDER BY updated_at ASC`), gate semantics unchanged. If the Q09_NEWS dam
+  drains too slowly, raise `PUMP_LATE_AUTOSEAL_LIMIT` or add a dedicated
+  higher-throughput drain pass in `pump-maintenance`. No change required now.
+
+### Tests on the merged tree
+
+```
+python -m pytest tools/strategy_farm/tests/test_pump_stage_budget.py \
+  tools/strategy_farm/tests/test_farmctl_cascade.py \
+  tools/strategy_farm/tests/test_cascade_chain_p2_to_p8.py \
+  tools/strategy_farm/tests/test_optimization_fork_driver.py \
+  tools/strategy_farm/tests/test_q09_news_farmctl_integration.py
+-> 60 passed, 6 subtests passed (after the test-anchor update above)
+
+python -m pytest tools/strategy_farm/tests/test_q09_news_farmctl_integration.py \
+  tools/strategy_farm/tests/test_pump_stage_budget.py \
+  tools/strategy_farm/tests/test_health_sqlite_lock_crash.py
+-> 24 passed
+```

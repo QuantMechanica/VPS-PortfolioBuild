@@ -280,6 +280,7 @@ def _extract_hash(payload: dict, keys: list[str]) -> str:
 def _new_gate() -> dict:
     return {
         "rows": 0,
+        "informational_rows": 0,
         "valid_canonical": False,  # done + PASS via canonical Qxx phase
         "valid_legacy": False,     # done + PASS via legacy P* phase
         "classes": Counter(),      # non-pass class -> count (for frontier)
@@ -316,14 +317,27 @@ def build_pairs(con: sqlite3.Connection, limit: int | None) -> dict:
         gd["observed_labels"].add(label)
         cls = vclass(verdict)
         is_done = (status or "").strip().lower() == "done"
-        if cls == "PASS" and is_done:
+        resolved_phase = phase_qid(phase, contract_version).strip().upper()
+        informational_lane = resolved_phase.endswith("_PORTFOLIO")
+        if informational_lane:
+            # OWNER E1 / v4 contract: the portfolio sibling is informational.
+            # It feeds the later book assessment but never proves the NEWS gate
+            # and therefore cannot advance the contiguous-valid frontier.
+            gd["informational_rows"] += 1
+        elif cls == "PASS" and is_done:
             gd["valid_labels"].add(label)
             raw = (phase or "").strip().upper()
-            if raw in GATE_ORDINAL or raw.startswith("Q09"):
-                gd["valid_canonical"] = True
-            else:
+            # Canonical vs legacy is a provenance split: only a legacy P*/G0
+            # alias counts as legacy.  Any Qxx-form phase that resolved onto the
+            # chain — an ordinary gate OR a native NEWS storage lane in EITHER
+            # contract (v3 Q09_NEWS, v4 Q10_NEWS) — is canonical.  The prior
+            # ``startswith("Q09")`` test mislabelled a current v4 Q10_NEWS pass
+            # as legacy-only.
+            if raw in LEGACY_ALIAS:
                 gd["valid_legacy"] = True
-        else:
+            else:
+                gd["valid_canonical"] = True
+        elif not informational_lane:
             gd["classes"][cls] += 1
     return pairs
 
@@ -363,7 +377,7 @@ def summarise_pair(rec: dict) -> dict:
         frontier_class = "COMPLETE"
     else:
         gd = gates.get(frontier)
-        if not gd or gd["rows"] == 0:
+        if not gd or gd["rows"] == 0 or gd["rows"] == gd["informational_rows"]:
             frontier_class = "MISSING"
         else:
             frontier_class = "OTHER"
