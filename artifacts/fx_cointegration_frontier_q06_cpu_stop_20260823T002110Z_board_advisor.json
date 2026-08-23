@@ -1,0 +1,169 @@
+{
+  "artifact_type": "fx_cointegration_frontier_q06_hard_cpu_stop",
+  "generated_at_utc": "2026-08-23T00:21:10Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "6c5c827c8bc93913df853199030752fd1f0c178f",
+  "mission_outcome": "EXISTING_PAIR_Q06_ALREADY_PENDING_STOPPED_AT_BACKTEST_CPU_CEILING",
+  "frontier": {
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "reconciliation_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "new_card_or_ea_created": false,
+    "reason": "Every sign-aware scan relationship already has a governed implementation identity; another scan-derived sleeve would duplicate existing work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_20208",
+    "ea_slug": "nzdusd-euraud",
+    "scan_rank": 27,
+    "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+    "traded_legs": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "source_contract": {
+      "approved_card": "strategy-seeds/cards/approved/QM5_20208_nzdusd-euraud_card.md",
+      "approved_card_sha256": "bf233695c7321fcf38372b27a9c8ec5224887f2c7bd23c4becf237aae373b32c",
+      "g0_status": "APPROVED",
+      "primary_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+      "primary_source_sha256": "183a1624ae3eb4432dde9ba8883e3f5b16e0107a191e468864ca9600d8d45d64",
+      "quality_tier": "A",
+      "structural_only": true,
+      "ml_or_banned_indicator": false
+    },
+    "build_contract": {
+      "ex5_sha256": "31d4460df6cd3e9ef579d8ed4e3849e62b3423ef0e942f6703122e2245988bc4",
+      "basket_manifest_sha256": "ed2fac5d413a6a4665388f73d22606408e51a7e317136e4ac8ed0a8369aa8796",
+      "backtest_setfile_sha256": "f6ae2633e6ec4e54a7e14835c16c50c231c4135495abf7f3cdb00eaf5346ae04",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    },
+    "q02": {
+      "work_item_id": "1935fc01-6eaa-4db1-8397-660d22ebdfbb",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "3703d3fd-6e3a-4fc2-bc4a-20b2984479b2",
+      "status": "done",
+      "verdict": "PASS_LOWFREQ"
+    },
+    "q05": {
+      "work_item_id": "1a53b4bd-abbd-4c6e-a13a-5f1a1542bf8d",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q06": {
+      "work_item_id": "776e6310-7ad6-41ba-8a08-4d63e045d4e5",
+      "row_count": 1,
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0,
+      "verdict": null,
+      "enqueue_or_requeue_performed": false
+    }
+  },
+  "capacity_sample": {
+    "slot_scan_at_utc": "2026-08-23T00:19:05Z",
+    "cpu_sample_completed_before_utc": "2026-08-23T00:21:10Z",
+    "cpu_sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      99.95,
+      100.0
+    ],
+    "cpu_average_percent": 99.99,
+    "cpu_max_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "active_work_item_count": 10,
+    "active_phase_counts": {
+      "Q09_NEWS": 10
+    },
+    "active_claims": {
+      "T1": "db92d69a-c86f-4a48-a31b-e68f1034e006",
+      "T2": "c665c1aa-9b3f-410e-bcde-048ef187652d",
+      "T3": "cfa98980-c534-415f-946f-d9a2f5e00b15",
+      "T4": "4263d6b3-1418-47c4-afe1-de7cb6bf61d4",
+      "T5": "aff7d366-2ee6-4dda-ab1a-21f59921effc",
+      "T6": "5ae08016-5566-4e01-a249-161463e6d957",
+      "T7": "ba24e7a3-4edf-4dc1-b74d-5854a6b5ecf2",
+      "T8": "12bf0454-f00f-4512-b38c-92abeda13f5d",
+      "T9": "29fe5106-c812-443a-bad4-96cb8467845a",
+      "T10": "317b916e-f93f-43ce-9b40-1c43d1639a49"
+    },
+    "running_factory_terminal_count": 8,
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "claimed_without_visible_terminal_process": [
+      "T6",
+      "T9"
+    ],
+    "claim_process_mismatch_interpretation": "instantaneous observation only; no verdict, orphan, or repair conclusion inferred",
+    "enabled_terminal_worker_count": 10,
+    "launch_gate_max": 1,
+    "free_disk_gib_d": 123.9,
+    "excluded_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "non_duplicate_delta": {
+    "previous_evidence": "artifacts/fx_cointegration_frontier_q06_cpu_stop_20260822T221801Z_board_advisor.json",
+    "previous_running_factory_terminal_count": 5,
+    "current_running_factory_terminal_count": 8,
+    "current_active_work_item_count": 10,
+    "current_active_phase": "Q09_NEWS",
+    "selected_q06_row_changed": false,
+    "reason_for_fresh_evidence": "The governed fleet roster and active queue composition materially changed while the singular QM5_20208 Q06 successor remained pending."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "queue_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "The scan frontier is fully covered, the correct QM5_20208 Q06 row already exists exactly once, and the five-sample CPU preflight hit the hard ceiling."
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false,
+    "preexisting_untracked_q05_stress_setfile_preserved": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
