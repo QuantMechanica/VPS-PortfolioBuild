@@ -1,0 +1,25 @@
+{
+  "review_task_id": "09c5ed91-8203-45ba-b2f3-03431f022946",
+  "build_task_id": "7f5be227-52c7-4a57-a68a-a1ca31ffbd01",
+  "ea_id": "QM5_9947",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The card requires today's close to be the neckline-break confirmation, but source line 194 only tests close>neckline and never requires the prior close to be at/below the neckline; stale post-breakout bars can therefore generate entries.",
+    "The stale-breakout guard is a function-static p2 timestamp (lines 103/172/232): it resets on EA restart and is set before QM_TM_OpenPosition reports success, enabling restart re-entry while suppressing a legitimate retry after broker rejection.",
+    "The approved target exit is evaluated from a completed bar and closed at the next bar's open, but source line 227 installs req.tp as an intrabar broker target, changing exit timing and realized price.",
+    "The card requires a 20-trading-bar time stop, but source line 258 compares wall-clock seconds (TimeCurrent-opened >= 20*PeriodSeconds(D1)); weekends make it close before 20 completed D1 bars.",
+    "Source artifact is not the canonical build_result.json schema: required fields ea_dir, magic_base, symbols_registered, compile_succeeded, smoke_result, and smoke_report_path are absent; no smoke report is bound.",
+    "All 13 generated setfiles contain card_defaults_status=none_found and zero strategy_* values, so they were not regenerated against the twelve built strategy inputs.",
+    "SPEC.md contains a malformed slug (\\bandy-double-bottom-formalised-mr-index) and a corrupted backtest risk value (,000), despite passing the section-header validator."
+  ],
+  "reviewed_at": "2026-08-23T08:46:34Z"
+}
