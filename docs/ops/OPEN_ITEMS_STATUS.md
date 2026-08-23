@@ -26,6 +26,37 @@
 
 ---
 
+## 0d · Ultracode-Sitzung 2026-08-23 nachmittags — Pipeline-Rebaseline v4 (OWNER-Auftrag „Fabrik final umbauen")
+
+**Auftrag:** OWNER 2026-08-23 — drei Makrophasen, lineare Gate-Nummerierung, Rebaseline bei null,
+Backfill frontier-first, kein Buch <25 + OWNER-Order, Vault aktuell/archiviert, Skripte angepasst,
+Backtests überwacht, Codex-Tokens verbrennen. Router `0257da30` (Claude.md `QM-TODO-20260822-402`).
+Decision record: `decisions/2026-08-23_owner_gate_manifest_v4_linear.md` (Auffangregel A1–A4 markiert).
+
+| # | Punkt | Stand | Evidenz |
+|---|---|---|---|
+| 1 | Gate Manifest v3 aktiviert + committet (vorher uncommittet, blockierte Build-Lane) | **geliefert** `d4e4dcfcb` | `docs/ops/evidence/2026-08-23_gate_manifest_v3_activation.md` |
+| 2 | Inventur: Gate-Namen-Zensus (5 127 Fundstellen/329 Dateien), DB-Test-Census (14 513 Paare: 0 buchfähig, 3 lückenlos bis Q10, Q09_NEWS = Damm), Factory-Automation, Backtest-Monitor, Vault-Doku | **geliefert** | `docs/ops/rebaseline/*_2026-08-23.md`, `tools/strategy_farm/rebaseline_census.py` |
+| 3 | **P0 Fabrikbug**: MetaEditor-Roaming-Profile T6/T7/T9/DEV1 ohne MT5-Stdlib → 80/91 COMPILE_FAIL (88 %) | **gefixt + live** (Profile repariert, Backup, Preflight → INFRA statt COMPILE_FAIL; T9 kompiliert wieder OK) | `docs/ops/evidence/2026-08-23_rb-compile-profiles.md` |
+| 4 | Q09-Autoseal: 9 Holds root-caused (alle echte Q07/Q08-Vintage-Defekte), Contract v3 (1 Seed + Seam) jetzt **ausführbar**, bind-q09-plan --dry-run echt read-only | **geliefert** | `docs/ops/evidence/2026-08-23_rb-q09-autoseal.md` |
+| 5 | Gate-Advancement zentralisiert (phase_ids.advancement_table) — Review fand versteckte Dispatch-Aktivierung, gefixt | **geliefert** | `…_rb-advancement.md` |
+| 6 | Gate Manifest v4 linear Q00–Q17 (Loader, Schema, contract_equivalence, Kriterien-Drift-Check alle Gates) | **geliefert**, READ_INERT bis Flip | `…_rb-v4-loader.md`, `config/gate_manifest.v4.draft.json` |
+| 7 | `gate_contract_version`-Spalte + versionsbewusste Labels mit Provenienz + dependency_role-CHECK (v3∪v4) | **geliefert** (Live-Migration beim Flip) | `…_rb-contract-version.md` |
+| 8 | Book-Guard fail-closed ≥25 + OWNER-Order-Artefakt; Q11-Auto-Trigger (≥5) entfernt | **geliefert** | `…_rb-book-guard.md`, `book_build_guard.py --status` |
+| 9 | Backfill-Planner (frontier-first/earliest-gap-first, append-only, Dry-Run: 14 607 Zeilen, 1 472 sofort enqueue-fähig ≈ 8 300 Fabrikstunden) | **geliefert** (kein Apply) | `docs/ops/rebaseline/BACKFILL_PLAN_2026-08-23.md` |
+| 10 | Factory_ON/OFF + Activation-Decision binden Gate-Contract-SHA (Mismatch = Refuse) | **geliefert** | `…_rb-factory-contract-bind.md` |
+| 11 | Runtime unter v4 (Promotions/Head-to-Head/Admission manifest-getrieben, Q16→Q11-Rückkante + Auto-Portfolio entfernt, Q10→Pattern statt Q11 = A2), `v4_readiness_check.py` = 0 Verstöße | **geliefert** | `…_rb-v4-runtime.md` |
+| 12 | Operator-Surfaces: highest_contiguous_valid_gate, 3 Phasenbänder, Provenienz-Labels, Book-Guard-Kachel, Public-Snapshot v4-Block additiv | **geliefert** | `…_rb-surfaces.md` |
+| 13 | `activate_gate_manifest_v4.py` (Flip + DB-Migration mit Backup, dry-run PASS) | **geliefert**; **Apply offen** (Factory_OFF = OFF_INCOMPLETE wegen SYSTEM-Codex-Worker, warte auf Lease-Ende) | `…_gate_manifest_v4_activation.md` |
+| 14 | Vault: Linter PASS (Schienenplan P0→Prio-0), v4-Seiten Q00–Q17 + Overview/Workflow/Diff gestaged, Archivplan (9 Seiten → _ARCHIV), APPLY.py dry-run PASS | **gestaged**; Apply nach Flip | `docs/ops/rebaseline/vault_v4_staging/` |
+| 15 | Backtest-Überwachung: Monitor alle 3 min; nach Profil-Fix nur noch echte EA-Defekte (`EA_INDICATOR_BUFFER_UNBOUNDED` QM5_41109–41111, `CANDIDATE_RECHECK_REFUSED` QM5_9913), Q09_NEWS INFRA transient | **laufend** | `docs/ops/rebaseline/BACKTEST_MONITOR_2026-08-23.md` |
+
+**Entscheidungsschlange (OWNER, ≤5):** (1) A1 Zähleinheit ≥25 = (EA,Symbol) — Auffangregel läuft;
+(2) A2 Optimierung verpflichtend, KEEP_INCUMBENT gültig — Auffangregel läuft; (3) Backfill-Apply
+(--max-rows) freigeben: Empfehlung erste Tranche 200 Zeilen Frontier Q08+; (4) 9 Q09-Holds: Q07/Q08-Regeneration
+via Planner (REBIND_STALE) statt manueller Release; (5) Testsuite-Baseline 22 vorbestehende Fails
+(FTMO-Fixtures/Registry-Hashes/cp1252) — Codex-Ticket anlegen.
+
 ## 0 · Neu 2026-08-23 — Strategy Archive Matrix (OWNER-Auftrag, Vorentwurf)
 
 | Punkt | Zustand | Beleg |
