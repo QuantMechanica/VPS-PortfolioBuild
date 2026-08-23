@@ -1,0 +1,26 @@
+{
+  "task_id": "c10c1e2c-6932-4db8-afdd-40907ea34246",
+  "ea_id": "QM5_9933",
+  "ea_label": "QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index.mq5",
+  "mq5_sha256": "1136450b351d39bb4b7e432483d4244e23a0b6e88e3ad77bf4e70770acd4dcf8",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index.ex5",
+  "ex5_sha256": "64c5c66072944ed76e7846ea24630af3134df1ff3709d36b751724035a489e71",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_AUDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_EURUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_GBPUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_GDAXI.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_NDX.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_NZDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_SP500.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_UK100.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_USDCAD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_USDCHF.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_USDJPY.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_WS30.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/sets\\QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_9933_bandy-choppiness-index-sideways-rsi2-mr-index/SPEC.md"
+}
