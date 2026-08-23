@@ -51,4 +51,11 @@ the current source hash above and observed all four active magic rows. A fresh g
 compile must supersede or reconcile those prior rows before strict compile evidence can
 exist. Smoke was not run, and no pipeline verdict is claimed.
 
+The requested router transition to `REVIEW` was attempted after the source package was
+committed. The router refused it with `D6_BUILD_IDENTITY_MISSING` because review dispatch
+requires a JSON packet binding a committed current MQ5, a committed current EX5, all
+setfiles, and `build_check_passed=true`. No such packet can truthfully exist while the
+governed compile is held. The task is therefore dispositioned `BLOCKED`, not left with a
+fabricated build identity or a stale binary.
+
 Short verdict: `SOURCE_READY_COMPILE_HELD: implementation and static gates PASS; strict compile held by live-factory guard and prior work items.`
