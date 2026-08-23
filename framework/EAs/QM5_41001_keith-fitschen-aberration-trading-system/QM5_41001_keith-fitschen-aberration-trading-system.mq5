@@ -18,6 +18,11 @@ input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
+input group "Loss Limits"
+input double strategy_daily_loss_halt_pct = 2.0; // Card: Account daily realized loss >= 2.0%
+input double strategy_daily_hard_stop_pct = 2.5; // Card: Maximum daily drawdown hard stop 2.5%
+input double strategy_total_dd_stop_pct   = 5.0; // Card: Maximum total drawdown stop 5.0%
+
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
@@ -38,7 +43,6 @@ input int             strategy_sma_period          = 30;
 input double          strategy_dev_multiplier      = 3.00;
 input int             strategy_atr_period          = 14;
 input double          strategy_atr_sl_mult         = 2.5;
-input double          strategy_tp_rr_mult          = 8.0;
 input bool            strategy_use_mid_exit        = true;
 input int             strategy_rollover_start_hhmm = 2355;
 input int             strategy_rollover_end_hhmm   = 5;
@@ -59,8 +63,9 @@ int    g_last_signal   = 0;
 
 int StrategyHhmm(const datetime t)
 {
+   const datetime utc = QM_BrokerToUTC(t);
    MqlDateTime dt;
-   TimeToStruct(t, dt);
+   TimeToStruct((utc > 0) ? utc : t, dt);
    return dt.hour * 100 + dt.min;
 }
 
@@ -72,8 +77,45 @@ bool StrategyInRolloverWindow(const datetime t)
    return (hhmm >= strategy_rollover_start_hhmm && hhmm < strategy_rollover_end_hhmm);
 }
 
+bool Strategy_ValidateInputs()
+{
+   if(strategy_daily_loss_halt_pct <= 0.0 || strategy_daily_hard_stop_pct <= 0.0 ||
+      strategy_daily_loss_halt_pct > strategy_daily_hard_stop_pct || strategy_total_dd_stop_pct <= 0.0)
+      return false;
+   if(strategy_sma_period < 2 || strategy_dev_multiplier <= 0.0 || strategy_atr_period < 1 || strategy_atr_sl_mult <= 0.0)
+      return false;
+   return true;
+}
+
+bool Strategy_DailyRealizedLossHalt()
+{
+   int closed_trades = 0;
+   const double realized_pnl = QM_ChartUITodayPnL(0, closed_trades);
+   const double balance_now = AccountInfoDouble(ACCOUNT_BALANCE);
+   const double day_start_balance = balance_now - realized_pnl;
+   if(balance_now <= 0.0 || day_start_balance <= 0.0)
+      return true;
+   if(realized_pnl < 0.0)
+   {
+      const double loss_pct = (-realized_pnl / day_start_balance) * 100.0;
+      if(loss_pct >= strategy_daily_loss_halt_pct)
+         return true;
+   }
+   return false;
+}
+
 void AdvanceState_OnNewBar()
 {
+   g_last_signal = 0;
+   g_bb_upper1   = 0.0;
+   g_bb_lower1   = 0.0;
+   g_bb_upper2   = 0.0;
+   g_bb_lower2   = 0.0;
+   g_bb_middle1  = 0.0;
+   g_last_atr    = 0.0;
+   g_last_close1 = 0.0;
+   g_last_close2 = 0.0;
+
    const double close1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: closed-bar calculation
    const double close2 = iClose(_Symbol, strategy_signal_tf, 2); // perf-allowed: closed-bar calculation
 
@@ -88,8 +130,6 @@ void AdvanceState_OnNewBar()
    g_last_atr    = QM_ATR(_Symbol, strategy_signal_tf, MathMax(1, strategy_atr_period), 1);
    g_last_close1 = close1;
    g_last_close2 = close2;
-
-   g_last_signal = 0;
 
    if(g_bb_upper1 > 0.0 && g_bb_lower1 > 0.0 && g_bb_upper2 > 0.0 && g_bb_lower2 > 0.0 && g_last_atr > 0.0)
    {
@@ -111,8 +151,7 @@ bool Strategy_NoTradeFilter()
    if(StrategyInRolloverWindow(TimeCurrent()))
       return true;
 
-   const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) >= 1)
+   if(Strategy_DailyRealizedLossHalt())
       return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -140,6 +179,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
+   const int magic = QM_FrameworkMagic();
+   if(QM_TM_OpenPositionCount(magic) >= 1)
+      return false;
+
    if(g_last_signal == 0 || g_last_atr <= 0.0)
       return false;
 
@@ -154,25 +197,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    double sl = 0.0;
-   double tp = 0.0;
-
    if(side == QM_BUY)
    {
       sl = QM_StopRulesNormalizePrice(_Symbol, entry - sl_dist);
-      tp = QM_StopRulesNormalizePrice(_Symbol, entry + sl_dist * strategy_tp_rr_mult);
    }
    else
    {
       sl = QM_StopRulesNormalizePrice(_Symbol, entry + sl_dist);
-      tp = QM_StopRulesNormalizePrice(_Symbol, entry - sl_dist * strategy_tp_rr_mult);
    }
 
    req.type = side;
    req.sl = sl;
-   req.tp = tp;
+   req.tp = 0.0;
    req.reason = (side == QM_BUY) ? "ABERRATION_LONG" : "ABERRATION_SHORT";
 
-   return (req.sl > 0.0 && req.tp > 0.0);
+   return (req.sl > 0.0);
 }
 
 void Strategy_ManageOpenPosition()
@@ -228,6 +267,9 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
 {
+   if(!Strategy_ValidateInputs())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -245,6 +287,13 @@ int OnInit()
                         qm_news_temporal,
                         qm_news_compliance))
       return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(strategy_signal_tf,
+                                            QM_FRIDAY_CLOSE_CARD_RULE,
+                                            "QM5_41001 Keith Fitschen Aberration Commodity Trend System D1"))
+      return INIT_FAILED;
+
+   QM_KillSwitchInit(qm_ea_id, QM_FrameworkMagic(), strategy_daily_hard_stop_pct, strategy_total_dd_stop_pct, 1.0);
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
@@ -269,9 +318,6 @@ void OnTick()
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
-
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -287,6 +333,9 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
       }
    }
+
+   if(Strategy_NoTradeFilter())
+      return;
 
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)

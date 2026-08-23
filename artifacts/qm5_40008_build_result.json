@@ -1,0 +1,31 @@
+{
+  "task_id": "3e8438fe-884f-4337-974d-7c8c2a1dd459",
+  "ea_id": "QM5_40008",
+  "slug": "aqr-value-and-momentum-everywhere",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_40008_aqr-value-and-momentum-everywhere",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_40008_aqr-value-and-momentum-everywhere\\QM5_40008_aqr-value-and-momentum-everywhere.mq5",
+  "mq5_sha256": "0d91c717347a8a7ee537ac0850b7fa91cbb1b090983d8fea47b3955ee6f131d7",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_40008_aqr-value-and-momentum-everywhere\\QM5_40008_aqr-value-and-momentum-everywhere.ex5",
+  "ex5_sha256": "1e1cbe5582c9f2b3cf523e0c9350ca44cd5762dbf87424797326c5f63db2b66f",
+  "magic_base": 400080000,
+  "symbols_registered": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "XTIUSD.DWX",
+    "EURUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_40008_aqr-value-and-momentum-everywhere\\sets\\QM5_40008_aqr-value-and-momentum-everywhere_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_40008_aqr-value-and-momentum-everywhere\\sets\\QM5_40008_aqr-value-and-momentum-everywhere_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_40008_aqr-value-and-momentum-everywhere\\sets\\QM5_40008_aqr-value-and-momentum-everywhere_XTIUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_40008_aqr-value-and-momentum-everywhere\\sets\\QM5_40008_aqr-value-and-momentum-everywhere_EURUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_40008_aqr-value-and-momentum-everywhere\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "backtest_cpu_ceiling: live MT5 terminals active; Q02 will provide runtime evidence",
+  "blocked_reason": null,
+  "open_questions": []
+}
