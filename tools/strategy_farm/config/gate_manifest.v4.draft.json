@@ -1,0 +1,116 @@
+{
+  "schema_version": "qm.gate-manifest/v4",
+  "pipeline_version": "V5-LINEAR-3PHASE-DRAFT-2026-08-23",
+  "status": "DRAFT_PROPOSAL_NOT_ACTIVATED",
+  "draft_note": "PROPOSAL ONLY. This file is NOT loadable as the active contract: the current loader (gate_manifest.py, SUPPORTED_SCHEMA_VERSIONS = {v1,v2,v3}) does not know qm.gate-manifest/v4. Activation requires OWNER ratification of IDs/windows (ROT) plus the loader/schema/migration tickets in GATE_MANIFEST_V4_LINEAR_PROPOSAL_2026-08-23.md. Until then DEFAULT_MANIFEST stays gate_manifest.v3.json.",
+  "canonical_id_pattern": "^Q(?:0[0-9]|1[0-7])$",
+  "write_policy": "CANONICAL_ONLY",
+  "legacy_policy": "READ_AND_MIGRATION_ONLY",
+  "gate_contract_version": "v4",
+  "verdict_dimensions": [
+    "execution_status",
+    "evidence_strength",
+    "economic_merit",
+    "target_eligibility",
+    "promotion_decision"
+  ],
+  "macro_phases": [
+    {"id": "1_STRATEGIEBEWEIS", "name": "Strategie beweist sich", "gates": ["Q00","Q01","Q02","Q03","Q04","Q05","Q06","Q07","Q08"]},
+    {"id": "2_OPTIMIERUNG",     "name": "Strategie wird optimiert / requalifiziert", "gates": ["Q09","Q10","Q11","Q12","Q13","Q14"]},
+    {"id": "3_BUCHBEWERTUNG",   "name": "Strategie wird zum Buch bewertet", "gates": ["Q15","Q16","Q17"]}
+  ],
+  "gates": [
+    {"id":"Q00","ordinal":0,"macro_phase":"1_STRATEGIEBEWEIS","name":"Research Intake","authority":"OWNER","runner":"MANUAL","evidence_role":"HYPOTHESIS_AND_AUTHORIZATION","next":"Q01","v3_source":"Q00","reuse_rule":"REUSE_ID_UNCHANGED"},
+    {"id":"Q01","ordinal":1,"macro_phase":"1_STRATEGIEBEWEIS","name":"Build & Spec","authority":"DEVELOPMENT","runner":"MANUAL_OR_ROUTED","evidence_role":"BUILD_CONFORMANCE","next":"Q02","v3_source":"Q01","reuse_rule":"REUSE_ID_UNCHANGED"},
+    {"id":"Q02","ordinal":2,"macro_phase":"1_STRATEGIEBEWEIS","name":"Baseline Screening","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"CHEAP_PROMOTION_SCREEN","next":"Q03","v3_source":"Q02","reuse_rule":"REUSE_ID_UNCHANGED_HASH_BOUND"},
+    {"id":"Q03","ordinal":3,"macro_phase":"1_STRATEGIEBEWEIS","name":"Parameter Sweep","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"PREREGISTERED_PARAMETER_STABILITY","next":"Q04","v3_source":"Q03","reuse_rule":"REUSE_ID_UNCHANGED_HASH_BOUND"},
+    {"id":"Q04","ordinal":4,"macro_phase":"1_STRATEGIEBEWEIS","name":"Walk-Forward + Commission","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"LOCKED_PARAMETER_SEQUENTIAL_OOS","next":"Q05","v3_source":"Q04","reuse_rule":"REUSE_ID_UNCHANGED_HASH_BOUND"},
+    {"id":"Q05","ordinal":5,"macro_phase":"1_STRATEGIEBEWEIS","name":"Gross Full-History Robustness","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"FULL_HISTORY_REPRODUCIBILITY","next":"Q06","v3_source":"Q05","reuse_rule":"REUSE_ID_UNCHANGED_HASH_BOUND"},
+    {"id":"Q06","ordinal":6,"macro_phase":"1_STRATEGIEBEWEIS","name":"Stress HARSH","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"EXECUTION_STRESS","next":"Q07","v3_source":"Q06","reuse_rule":"REUSE_ID_UNCHANGED_HASH_BOUND"},
+    {"id":"Q07","ordinal":7,"macro_phase":"1_STRATEGIEBEWEIS","name":"Multi-Seed","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"DISTRIBUTIONAL_ROBUSTNESS","next":"Q08","v3_source":"Q07","reuse_rule":"REUSE_ID_UNCHANGED_HASH_BOUND"},
+    {"id":"Q08","ordinal":8,"macro_phase":"1_STRATEGIEBEWEIS","name":"Davey Statistical Validation","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"TARGET_NEUTRAL_EVIDENCE_DOSSIER","next":"Q09","v3_source":"Q08","reuse_rule":"REUSE_ID_UNCHANGED_HASH_BOUND"},
+
+    {"id":"Q09","ordinal":9,"macro_phase":"2_OPTIMIERUNG","name":"Baseline Full Run","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"PRE_NEWS_FULL_HISTORY_BASELINE","next":"Q10","v3_source":"Q10A","reuse_rule":"REUSE_ONLY_HASH_BOUND_FULL_HISTORY_Q08_BASELINE","note":"Was v3 non-top-level evidence stage Q10A (source_phase Q08). Promoted to a real linear gate; the Q10A-before-Q09 ordering the directive rejects is eliminated."},
+    {"id":"Q10","ordinal":10,"macro_phase":"2_OPTIMIERUNG","name":"News Impact + FTMO Recommendation","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"NEWS_MODE_SELECTION_AND_FTMO_RECOMMENDATION","next":"Q11","v3_source":"Q09","reuse_rule":"REUSE_HASH_AND_CONTRACT_EQUAL","storage_lanes":["Q10_NEWS","Q10_PORTFOLIO"],"note":"v3 Q09. Storage split Q09_NEWS/Q09_PORTFOLIO renumbers to Q10_NEWS/Q10_PORTFOLIO. Q10_PORTFOLIO is informational only (feeds Q15), never a pre-Q11 abort (OWNER E1 2026-08-22)."},
+    {"id":"Q11","ordinal":11,"macro_phase":"2_OPTIMIERUNG","name":"Incumbent Full-History Confirmation","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"LOCKED_CONFIGURATION_REPRODUCIBILITY","next":"Q12","v3_source":"Q10","reuse_rule":"REUSE_HASH_AND_CONTRACT_EQUAL"},
+    {"id":"Q12","ordinal":12,"macro_phase":"2_OPTIMIERUNG","name":"Pattern Filter Selection","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"DL089_PREREGISTERED_PATTERN_FILTER_SELECTION","next":"Q13","v3_source":"Q14","reuse_rule":"REUSE_HASH_AND_CONTRACT_EQUAL","selection_contract":"DL-089","pattern_filter_cap_per_direction":3,"note":"Mandatory linear step. Zero filters selected / no eligible filter is a valid pass-through outcome; not an EXPLICIT_Q14_ADMISSION gate anymore."},
+    {"id":"Q13","ordinal":13,"macro_phase":"2_OPTIMIERUNG","name":"Parameter Optimization & Freeze","authority":"DEVELOPMENT","runner":"MANUAL_OR_ROUTED","evidence_role":"DEV_ONLY_PARAMETER_SWEEP_AND_FREEZE","next":"Q14","v3_source":"Q15","reuse_rule":"REUSE_HASH_AND_CONTRACT_EQUAL"},
+    {"id":"Q14","ordinal":14,"macro_phase":"2_OPTIMIERUNG","name":"Best-Settings Head-to-Head + Holdout","authority":"PIPELINE","runner":"AUTOMATED","evidence_role":"SEALED_BEST_SETTINGS_VS_BASELINE_AND_INCUMBENT","next":null,"v3_source":"Q16","reuse_rule":"REUSE_HASH_AND_CONTRACT_EQUAL","terminal_optimization_gate":true,"valid_outcomes":["CHALLENGER_PROMOTED","KEEP_INCUMBENT"],"note":"TERMINAL Phase-2 gate. next=null: no per-EA edge into Phase 3. Reference baseline = Q09 (pre-news full run). KEEP_INCUMBENT (no improvement) is a valid requalification verdict."},
+
+    {"id":"Q15","ordinal":15,"macro_phase":"3_BUCHBEWERTUNG","name":"Final Portfolio Construction","authority":"OWNER","runner":"MANUAL_OR_ANALYTIC","evidence_role":"TARGET_SPECIFIC_PORTFOLIO_ADMISSION","next":"Q16","v3_source":"Q11","reuse_rule":"RECOMPUTE_PORTFOLIO_LEVEL","entry_policy":"BOOK_TRIGGER_ONLY","note":"Reachable ONLY via the fail-closed book trigger (>=25 qualified + OWNER order artifact). No automatic per-EA next-edge from Q14."},
+    {"id":"Q16","ordinal":16,"macro_phase":"3_BUCHBEWERTUNG","name":"Operational Readiness","authority":"OWNER","runner":"MANUAL","evidence_role":"DEPLOYMENT_READINESS","next":"Q17","v3_source":"Q12","reuse_rule":"RECOMPUTE_OPERATIONAL"},
+    {"id":"Q17","ordinal":17,"macro_phase":"3_BUCHBEWERTUNG","name":"Live Burn-In DXZ","authority":"OWNER","runner":"MANUAL","evidence_role":"PROSPECTIVE_BURN_IN","next":null,"v3_source":"Q13","reuse_rule":"RECOMPUTE_PROSPECTIVE"}
+  ],
+  "ordinary_chain": ["Q00","Q01","Q02","Q03","Q04","Q05","Q06","Q07","Q08","Q09","Q10","Q11","Q12","Q13","Q14","Q15","Q16","Q17"],
+  "linearity_invariant": "STRICTLY_MONOTONE: every gate.next is null or the immediate ordinal successor; no gate.next points to a lower ordinal; no display stage precedes its numeric position.",
+  "legacy_aliases": {
+    "G0":"Q00","P1":"Q01","P2":"Q02","P3":"Q03","P3.5":"Q03",
+    "P4":"Q04","P5":"Q05","P5B":"Q05","P5C":"Q05","P6":"Q07",
+    "P7":"Q08","P8":"Q08","P9":"Q15","P9B":"Q16","P10":"Q17"
+  },
+  "contract_equivalence": {
+    "note": "Explicit, version-aware translation between the v3 active contract and this v4 proposal. Used for (a) rendering historical rows under current numbering WITHOUT silently reinterpreting an old id, and (b) evidence reuse: a v3 row is reusable as its v4 gate ONLY when criteria are contract-equal (ROT: thresholds unchanged) AND build/setfile/window hashes match.",
+    "v3_to_v4": {
+      "Q00":"Q00","Q01":"Q01","Q02":"Q02","Q03":"Q03","Q04":"Q04","Q05":"Q05","Q06":"Q06","Q07":"Q07","Q08":"Q08",
+      "Q10A":"Q09",
+      "Q09":"Q10","Q09_NEWS":"Q10_NEWS","Q09_PORTFOLIO":"Q10_PORTFOLIO",
+      "Q10":"Q11",
+      "Q14":"Q12","Q15":"Q13","Q16":"Q14",
+      "Q11":"Q15","Q11_DXZ":"Q15_DXZ","Q11_FTMO":"Q15_FTMO","Q12":"Q16","Q13":"Q17"
+    },
+    "dependency_role_v3_to_v4": {
+      "Q08_INPUT":"Q08_INPUT",
+      "Q09_NEWS":"Q10_NEWS",
+      "Q09_PORTFOLIO":"Q10_PORTFOLIO",
+      "PARENT_LINEAGE":"PARENT_LINEAGE",
+      "CHALLENGER_Q10":"CHALLENGER_Q11",
+      "Q14_ADMISSION":"Q12_ADMISSION"
+    }
+  },
+  "storage_strategy": {
+    "policy": "STAMP_DONT_RENAME",
+    "work_items_phase": "TEXT, no CHECK (verified census farmctl.py:1589) -> new v4 ids may be written without a table migration.",
+    "discriminator_column": "gate_contract_version (NEW, add to work_items). Every row is read only under its own contract version; a v3 'Q10' is NEVER read as v4 'Q10'. Backfill: rows written on/after 2026-08-23 = 'v3'; earlier per pipeline_version, else 'legacy'.",
+    "dependency_role_check": "work_item_dependencies.dependency_role CHECK is enforced (q09_news_schema.py:191-196). v4 activation requires a table-rebuild migration widening the CHECK to the UNION of v3 and v4 tokens (append-only, old tokens retained for historical reads). SQLite cannot ALTER a CHECK.",
+    "reuse_equivalence": "Q00-Q08 ids unchanged -> historical rows reuse directly. Phase-2/3 gates reuse via contract_equivalence.v3_to_v4 only when contract-equal + hash-bound."
+  },
+  "book_trigger": {
+    "policy": "FAIL_CLOSED",
+    "entry_gate": "Q15",
+    "requires_all": [
+      {"condition":"qualified_candidates_ge_25","detail":"COUNT(candidates whose highest_contiguous_valid_gate == Q14 with terminal requalification verdict) >= 25. Canonical unit = (EA, Symbol); ALSO report distinct EAs and distinct strategy families."},
+      {"condition":"owner_order_artifact_present","detail":"A verified OWNER book-build order at decisions/YYYY-MM-DD_owner_book_order_<venue>.md, venue in {dxz, ftmo}."}
+    ],
+    "on_unmet":"REFUSE (raise), never skip; under 25 only measure/complete the pool, never construct a probe book.",
+    "supersedes":"The old Q11 auto-trigger at 5 Q10 pairs is void (already absent in code; now explicitly forbidden)."
+  },
+  "backfill_planner_contract": {
+    "ordering_global":"FRONTIER_FIRST (rank pairs by highest_contiguous_valid_gate descending so shortest-remaining candidates complete first)",
+    "ordering_per_pair":"EARLIEST_MISSING_PREREQUISITE_FIRST (walk the shallowest missing/invalid gate; never enqueue a gate above an unfilled hole)",
+    "append_only":true,
+    "dedup":"Skip exact build+setfile+window+contract-hash-equal evidence; globally dedup identical economic runs.",
+    "terminal_economic_fail":"No backfill behind a terminal economic FAIL unless a separately authorized rebuild/new experiment changes the tested identity.",
+    "repairable":"INFRA / STALE / contract-gap rows may be repaired and rerun.",
+    "enqueue_binding":"Every enqueue binds gate_contract_version + build hash + setfile hash + data window + parent evidence sha256.",
+    "progress_metric":"highest_contiguous_valid_gate (NOT the largest observed Qxx string)."
+  },
+  "extension_topology": {
+    "removed_from_v3": [
+      "baseline_stage Q10A (promoted to top-level Q09; Q10A-before-Q09 ordering eliminated)",
+      "optimization_fork back-edge Q16->Q11 (terminal opt gate Q14.next=null)",
+      "portfolio_routes auto to:Q11 (book entry is trigger-only, not a per-EA edge)",
+      "target_sequence Q10A,Q09,Q10,Q14,Q15,Q16,Q11 (replaced by the strictly-monotone ordinary_chain)"
+    ],
+    "storage_lanes": [
+      {"id":"Q15_DXZ","parent":"Q15","authority":"OWNER","runner":"MANUAL_OR_ANALYTIC","evidence_role":"HASH_BOUND_DXZ_BOOK_MANIFEST","top_level":false},
+      {"id":"Q15_FTMO","parent":"Q15","authority":"OWNER","runner":"MANUAL_OR_ANALYTIC","evidence_role":"HASH_BOUND_FTMO_BOOK_MANIFEST","top_level":false}
+    ],
+    "activation_guard": {
+      "state": "READ_INERT",
+      "requires_completed_review": "OWNER-RATIFY-GATE-MANIFEST-V4",
+      "requires_approver": "OWNER",
+      "default_manifest_switch": false,
+      "note": "READ_INERT + default_manifest_switch=false: this draft can NEVER become the active default via load_gate_manifest. Renumbering IDs/windows is ROT and requires the OWNER template in GATE_MANIFEST_V4_LINEAR_PROPOSAL_2026-08-23.md section 8."
+    }
+  }
+}
