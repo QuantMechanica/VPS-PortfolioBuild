@@ -864,6 +864,32 @@ expected_trades_per_year_per_symbol: 12
             self.assertFalse(result["updated"])
             self.assertEqual(result["reason"], "strategy_card_schema_failed")
 
+    def test_research_review_card_rejects_non_english_heading_at_intake(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            review = root / "artifacts" / "cards_review"
+            review.mkdir(parents=True)
+            card = review / "QM5_900005_german-heading.md"
+            self._write_ready_card(card, "QM5_900005", "german-heading")
+            card.write_text(
+                card.read_text(encoding="utf-8") + "\n## Mechanik\nExact rules.\n",
+                encoding="utf-8",
+            )
+            created = agent_router.enqueue_task(root, "research_strategy", priority=10)
+
+            result = agent_router.update_task(
+                root,
+                created["task_id"],
+                state="REVIEW",
+                artifact_path=str(card),
+                verdict="RESEARCH_DRAFT_READY",
+            )
+
+            self.assertFalse(result["updated"])
+            self.assertEqual(result["reason"], "strategy_card_non_english_headings")
+            self.assertEqual(result["errors"][0]["heading"], "Mechanik")
+            self.assertFalse(result["errors"][0]["normalization_map_update_required"])
+
     def test_research_review_card_accepts_relaxed_optional_sections(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)

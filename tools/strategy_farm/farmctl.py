@@ -94,6 +94,11 @@ except ModuleNotFoundError:
     )
 
 try:
+    from card_heading_language import check_card_heading_language
+except ModuleNotFoundError:
+    from tools.strategy_farm.card_heading_language import check_card_heading_language
+
+try:
     from defect_block_taint_view import taint_record as defect_block_taint_record
 except ModuleNotFoundError:
     from tools.strategy_farm.defect_block_taint_view import (
@@ -23232,6 +23237,22 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
             "issues": contract_issues,
             "card_path": str(card_path),
         }
+
+    approved_dir = (root / "artifacts" / "cards_approved").resolve()
+    is_historical_approved = (
+        card_path == approved_dir or approved_dir in card_path.parents
+    )
+    if not is_historical_approved:
+        heading_language = check_card_heading_language(card_path)
+        if not heading_language.get("ok"):
+            return {
+                "approved": False,
+                "reason": "strategy_card_non_english_headings",
+                "issues": (heading_language.get("findings") or [])[:12],
+                "unmapped_headings": heading_language.get("unmapped_headings") or [],
+                "heading_language": heading_language,
+                "card_path": str(card_path),
+            }
 
     coverage = _verify_card_body_coverage(card_path)
     if not coverage["ok"]:

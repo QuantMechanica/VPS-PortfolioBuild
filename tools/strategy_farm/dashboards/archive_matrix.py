@@ -33,6 +33,7 @@ if str(REPO_ROOT / "tools" / "strategy_farm") not in sys.path:
 
 from phase_ids import PHASE_NAME  # noqa: E402
 from work_item_clean_view import open_clean_view_connection  # noqa: E402
+from card_heading_language import HEADING_DE_EN, normalise_heading  # noqa: E402
 
 FARM_ROOT = Path("D:/QM/strategy_farm")
 DB = FARM_ROOT / "state" / "farm_state.sqlite"
@@ -170,57 +171,6 @@ def md_inline(s: str) -> str:
         out = pat.sub(rep, out)
     return out
 
-
-# Card headings are English in the v2 template, but 2.696 of 3.271 approved cards (82%)
-# were authored with German section names — measured 2026-08-23: "Quelle" 2.694,
-# "Mechanik" 2.681, "Pipeline-Verlauf" 2.668, "Verwandte Strategien" 2.176,
-# "R1-R4 Bewertung" 2.660 across both dash variants. The cards themselves are NOT rewritten:
-# strategy_card_v3 is content-addressed (source_sha256 / fingerprint), so editing them would
-# break duplicate detection and the evidence chain. The surface normalises instead, and the
-# root fix belongs at card intake.
-HEADING_DE_EN = {
-    "quelle": "Source",
-    "mechanik": "Mechanics",
-    "pipeline-verlauf": "Pipeline history",
-    "verwandte strategien": "Related strategies",
-    "r1-r4 bewertung": "R1-R4 assessment",
-    "r1–r4 bewertung": "R1-R4 assessment",
-    "kriterium": "Criterion",
-    "begruendung": "Rationale",
-    "begründung": "Rationale",
-    "status": "Status",
-    "handelslogik": "Trading logic",
-    "annahmen": "Assumptions",
-    "einstieg": "Entry",
-    "ausstieg": "Exit",
-    "risiko": "Risk",
-    "kosten": "Costs",
-    "zusaetzliche filter": "Additional filters",
-    "zusätzliche filter": "Additional filters",
-    "weitere filter": "Additional filters",
-    "filter": "Filters",
-    "positionsgroesse": "Position sizing",
-    "positionsgröße": "Position sizing",
-    "positionsgrösse": "Position sizing",
-    "stopp": "Stop loss",
-    "handelszeiten": "Trading hours",
-    "zeitfenster": "Time window",
-    "signal": "Signal",
-    "beschreibung": "Description",
-    "umsetzung": "Implementation",
-    "hinweise": "Notes",
-    "lehren": "Lessons learned",
-}
-
-
-def normalise_heading(text: str) -> str:
-    """Translate a known German card heading; leave anything else untouched.
-
-    Exact match only — a heading that merely starts with a German word usually carries an
-    English qualifier after it, and half-translating that reads worse than leaving it.
-    """
-    key = text.strip().lower()
-    return HEADING_DE_EN.get(key, text)
 
 def md_to_html(md: str, base_level: int = 3) -> str:
     """A small, predictable Markdown subset: headings, lists, tables, code, rules.

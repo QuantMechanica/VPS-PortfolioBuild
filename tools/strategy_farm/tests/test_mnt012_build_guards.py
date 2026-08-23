@@ -173,6 +173,31 @@ def test_approve_rejects_r3_conflict_without_mutating_card(tmp_path: Path) -> No
     assert not (root / "artifacts" / "cards_approved" / card.name).exists()
 
 
+def test_approve_rejects_new_non_english_heading_without_mutating_card(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "farm"
+    draft_dir = root / "artifacts" / "cards_draft"
+    draft_dir.mkdir(parents=True)
+    card = draft_dir / "QM5_99001_mnt012-guard.md"
+    card.write_text(
+        _card_text(g0="PENDING").replace(
+            "## Entry",
+            "## Mechanik\nDeterministic rules.\n\n## Entry",
+        ),
+        encoding="utf-8",
+    )
+    before = card.read_bytes()
+
+    result = farmctl.approve_card(root, str(card), "test approval")
+
+    assert result["approved"] is False
+    assert result["reason"] == "strategy_card_non_english_headings"
+    assert result["issues"][0]["heading"] == "Mechanik"
+    assert card.read_bytes() == before
+    assert not (root / "artifacts" / "cards_approved" / card.name).exists()
+
+
 def test_claude_selector_excludes_active_block_marker(tmp_path: Path) -> None:
     root = tmp_path / "farm"
     card = _write_approved_card(root)

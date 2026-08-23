@@ -1927,6 +1927,16 @@ def update_task(
                             "reason": "strategy_card_schema_failed",
                             "errors": schema_issues[:12],
                         }
+                    heading_language = farmctl.check_card_heading_language(resolved_artifact)
+                    if not heading_language.get("ok"):
+                        return {
+                            "updated": False,
+                            "task_id": task_id,
+                            "reason": "strategy_card_non_english_headings",
+                            "errors": (heading_language.get("findings") or [])[:12],
+                            "unmapped_headings": heading_language.get("unmapped_headings") or [],
+                            "heading_language": heading_language,
+                        }
                     ea_id_key = _normalize_card_ea_id(fm.get("ea_id"))
                     duplicate_ea_id_cards: list[str] = []
                     if ea_id_key:
