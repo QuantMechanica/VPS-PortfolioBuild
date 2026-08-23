@@ -1,0 +1,26 @@
+{
+  "task_id": "39477905-5cfe-43eb-bebf-3ad5ba8d10b3",
+  "ea_id": "QM5_9922",
+  "ea_label": "QM5_9922_bandy-vortex-crossover-trend",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/QM5_9922_bandy-vortex-crossover-trend.mq5",
+  "mq5_sha256": "77d234edd9c1234d169972858ba489a5453ddecfecf47762e91aaade5c132ced",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/QM5_9922_bandy-vortex-crossover-trend.ex5",
+  "ex5_sha256": "7509b7bb413c9cf367e404886788533d4ff866044d70dbde53a126ffa7677ea7",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_AUDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_EURUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_GBPUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_GDAXI.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_NDX.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_NZDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_SP500.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_UK100.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_USDCAD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_USDCHF.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_USDJPY.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_WS30.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/sets/QM5_9922_bandy-vortex-crossover-trend_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_9922_bandy-vortex-crossover-trend/SPEC.md"
+}
