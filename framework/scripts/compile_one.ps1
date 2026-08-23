@@ -172,6 +172,24 @@ function Resolve-TerminalIncludeTargets {
     return @($unique)
 }
 
+function Get-CompileProfileStdlibMissing {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$IncludeRoots
+    )
+
+    $missing = New-Object System.Collections.Generic.List[string]
+    foreach ($includeRoot in @($IncludeRoots)) {
+        foreach ($relative in @("Object.mqh", "Trade\Trade.mqh")) {
+            $candidate = Join-Path $includeRoot $relative
+            if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) {
+                [void]$missing.Add("$includeRoot::$relative")
+            }
+        }
+    }
+    return @($missing)
+}
+
 function Test-IncludeTargetOwnedByTerminalRoot {
     param(
         [Parameter(Mandatory = $true)]
@@ -391,9 +409,13 @@ $includeSyncRoot = ""
 $includeSyncTargets = @()
 $includeDeferredTargets = @()
 $includeMirrorEvidence = $null
+$compileProfileStdlibSource = ""
+$compileProfileStdlibMissing = @()
 
 try {
     $sourceIncludeRoot = Join-Path $repoRoot "framework\include"
+    $metaEditorRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $MetaEditorPath)).Path.TrimEnd("\")
+    $compileProfileStdlibSource = Join-Path $metaEditorRoot "MQL5\Include"
     $allIncludeTargets = @(Resolve-TerminalIncludeTargets -MetaEditorPath $MetaEditorPath)
     if ($claimedTerminalRoot) {
         $includeTargets = @(
@@ -419,7 +441,8 @@ try {
     $mirrorArgs = @(
         $mirrorHelper,
         "mirror",
-        "--source", $sourceIncludeRoot
+        "--source", $sourceIncludeRoot,
+        "--stdlib-source", $compileProfileStdlibSource
     )
     foreach ($includeTarget in $includeTargets) {
         $mirrorArgs += @("--target", $includeTarget)
@@ -443,6 +466,15 @@ try {
     }
     if ($mirrorExit -ne 0) {
         $reasonClass = "INCLUDE_MIRROR_REFUSED"
+        try {
+            $mirrorFailure = $mirrorOutput[-1] | ConvertFrom-Json -ErrorAction Stop
+            if ($mirrorFailure.failure_class -eq "COMPILE_PROFILE_STDLIB_MISSING") {
+                $reasonClass = "COMPILE_PROFILE_STDLIB_MISSING"
+            }
+        }
+        catch {
+            # Preserve the generic structured refusal when stderr was not JSON.
+        }
         throw "Include mirror refused without retry: $($mirrorOutput -join ' ')"
     }
     try {
@@ -453,6 +485,17 @@ try {
         throw "Include mirror returned invalid evidence: $($mirrorOutput -join ' ')"
     }
     $includeSyncTargets = $includeTargets
+
+    # Final fail-closed check against the exact Include roots resolved for this
+    # MetaEditor.  A missing stdlib never reaches Start-Process and therefore
+    # cannot be mistaken for an EA source compile failure.
+    $compileProfileStdlibMissing = @(
+        Get-CompileProfileStdlibMissing -IncludeRoots $includeTargets
+    )
+    if ($compileProfileStdlibMissing.Count -gt 0) {
+        $reasonClass = "COMPILE_PROFILE_STDLIB_MISSING"
+        throw "Resolved MetaEditor Include root is missing stdlib: $($compileProfileStdlibMissing -join ';')"
+    }
 
     while ($true) {
         # FORCE-REBUILD (2026-07-12): MetaEditor /compile skips the build silently when the
@@ -543,6 +586,9 @@ try {
         include_sync_deferred_targets = ($includeDeferredTargets -join ";")
         include_mirror_mutex = "D:\QM\strategy_farm\state\locks\include_mirror.lock"
         include_mirror_atomic_replace = if ($includeMirrorEvidence) { [bool]$includeMirrorEvidence.atomic_replace } else { $false }
+        compile_profile_stdlib_source = $compileProfileStdlibSource
+        compile_profile_stdlib_missing = ($compileProfileStdlibMissing -join ";")
+        compile_profile_stdlib_repair = if ($includeMirrorEvidence) { ($includeMirrorEvidence.stdlib_repair | ConvertTo-Json -Compress -Depth 8) } else { "" }
         compile_work_item_id = $CompileWorkItemId
         claimed_terminal = $ClaimedTerminal
         result = $result
@@ -560,6 +606,9 @@ try {
     Write-Output ("compile_one.include_sync_deferred_targets=" + ($includeDeferredTargets -join ";"))
     Write-Output "compile_one.include_mirror_mutex=D:\QM\strategy_farm\state\locks\include_mirror.lock"
     Write-Output ("compile_one.include_mirror_atomic_replace=" + $(if ($includeMirrorEvidence) { [bool]$includeMirrorEvidence.atomic_replace } else { $false }))
+    Write-Output "compile_one.compile_profile_stdlib_source=$compileProfileStdlibSource"
+    Write-Output ("compile_one.compile_profile_stdlib_missing=" + ($compileProfileStdlibMissing -join ";"))
+    Write-Output ("compile_one.compile_profile_stdlib_repair=" + $(if ($includeMirrorEvidence) { ($includeMirrorEvidence.stdlib_repair | ConvertTo-Json -Compress -Depth 8) } else { "" }))
     Write-Output "compile_one.compile_work_item_id=$CompileWorkItemId"
     Write-Output "compile_one.claimed_terminal=$ClaimedTerminal"
     Write-Output "compile_one.log=$compileLogPath"

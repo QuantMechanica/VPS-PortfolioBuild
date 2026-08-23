@@ -83,3 +83,96 @@ def test_mid_mirror_failure_leaves_every_destination_fully_old_or_new(
     assert (target / "b.mqh").read_bytes() == old_b
     assert not list(target.glob("*.tmp"))
 
+
+def test_repair_stdlib_targets_installs_full_same_build_set_without_overwriting_project_headers(
+    tmp_path: Path,
+) -> None:
+    project = tmp_path / "framework_include"
+    stdlib = tmp_path / "terminal_install" / "MQL5" / "Include"
+    target = tmp_path / "roaming_profile" / "MQL5" / "Include"
+    (project / "QM").mkdir(parents=True)
+    (project / "QM" / "QM_Common.mqh").write_bytes(b"governed-project-header")
+    (stdlib / "Trade").mkdir(parents=True)
+    (stdlib / "QM").mkdir(parents=True)
+    (stdlib / "Object.mqh").write_bytes(b"same-build-object")
+    (stdlib / "StdLibErr.mqh").write_bytes(b"same-build-errors")
+    (stdlib / "Trade" / "Trade.mqh").write_bytes(b"same-build-trade")
+    # Install trees receive governed headers too.  They are not MT5 stdlib and
+    # must never become the source of truth for project-header provisioning.
+    (stdlib / "QM" / "QM_Common.mqh").write_bytes(b"stale-install-project-header")
+    (stdlib / "QM" / "retired_project_header.mqh").write_bytes(b"also-not-stdlib")
+    (target / "QM").mkdir(parents=True)
+    (target / "QM" / "QM_Common.mqh").write_bytes(b"governed-project-header")
+
+    with include_mirror.IncludeMirrorMutex(
+        tmp_path / "include_mirror.lock", timeout_seconds=0
+    ) as mutex:
+        result = include_mirror.repair_stdlib_targets(
+            stdlib,
+            project,
+            [target],
+            mutex=mutex,
+        )
+
+    assert result["required_relative_paths"] == ["Object.mqh", "Trade/Trade.mqh"]
+    assert result["files_per_target"][str(target.resolve())] == 3
+    assert result["missing_before"][str(target.resolve())] == [
+        "Object.mqh",
+        "StdLibErr.mqh",
+        "Trade/Trade.mqh",
+    ]
+    assert (target / "Object.mqh").read_bytes() == b"same-build-object"
+    assert (target / "StdLibErr.mqh").read_bytes() == b"same-build-errors"
+    assert (target / "Trade" / "Trade.mqh").read_bytes() == b"same-build-trade"
+    assert (target / "QM" / "QM_Common.mqh").read_bytes() == b"governed-project-header"
+    assert not (target / "QM" / "retired_project_header.mqh").exists()
+
+
+def test_compile_one_checks_resolved_stdlib_before_starting_metaeditor() -> None:
+    script = (
+        Path(__file__).resolve().parents[3] / "framework" / "scripts" / "compile_one.ps1"
+    ).read_text(encoding="utf-8")
+
+    preflight = script.index("Get-CompileProfileStdlibMissing -IncludeRoots $includeTargets")
+    launch = script.index("Start-Process -FilePath $MetaEditorPath")
+    assert preflight < launch
+    assert '"--stdlib-source", $compileProfileStdlibSource' in script
+    assert '$reasonClass = "COMPILE_PROFILE_STDLIB_MISSING"' in script
+
+
+def test_repair_stdlib_targets_refuses_source_without_required_contract(
+    tmp_path: Path,
+) -> None:
+    project = tmp_path / "framework_include"
+    stdlib = tmp_path / "terminal_install" / "MQL5" / "Include"
+    target = tmp_path / "roaming_profile" / "MQL5" / "Include"
+    project.mkdir()
+    stdlib.mkdir(parents=True)
+    (stdlib / "Object.mqh").write_bytes(b"object-only")
+
+    with include_mirror.IncludeMirrorMutex(
+        tmp_path / "include_mirror.lock", timeout_seconds=0
+    ) as mutex:
+        with pytest.raises(include_mirror.IncludeMirrorRefusal) as raised:
+            include_mirror.repair_stdlib_targets(
+                stdlib,
+                project,
+                [target],
+                mutex=mutex,
+            )
+
+    assert raised.value.failure_class == "COMPILE_PROFILE_STDLIB_MISSING"
+    assert "Trade/Trade.mqh" in str(raised.value)
+
+
+def test_verify_compile_profile_stdlib_reports_missing_required_file(tmp_path: Path) -> None:
+    include_root = tmp_path / "profile" / "MQL5" / "Include"
+    include_root.mkdir(parents=True)
+    (include_root / "Object.mqh").write_bytes(b"object")
+
+    with pytest.raises(include_mirror.IncludeMirrorRefusal) as raised:
+        include_mirror.verify_compile_profile_stdlib(include_root)
+
+    assert raised.value.failure_class == "COMPILE_PROFILE_STDLIB_MISSING"
+    assert "Trade/Trade.mqh" in str(raised.value)
+

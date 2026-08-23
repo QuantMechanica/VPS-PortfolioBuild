@@ -599,6 +599,51 @@ def test_compile_output_boolean_receipt_is_strict() -> None:
     assert compile_work_items._output_bool(output, "compile_one.missing") is None
 
 
+def test_compile_profile_stdlib_failure_is_persisted_as_infra_not_compile_fail(
+    tmp_path: Path,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    del repo
+    now = farmctl.utc_now()
+    evidence_path = tmp_path / "compile_evidence.json"
+    evidence_path.write_text("{}", encoding="utf-8")
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,claimed_by,payload_json,created_at,updated_at) "
+            "VALUES ('compile-infra','compile','COMPILE_EA','QM5_1001','','','active',0,'T6','{}',?,?)",
+            (now, now),
+        )
+        conn.commit()
+
+    compile_work_items._complete_work_item(
+        root,
+        "compile-infra",
+        "T6",
+        evidence_path,
+        {
+            "success": False,
+            "failure_classes": [
+                "COMPILE_PROFILE_STDLIB_MISSING",
+                "BUILD_CHECK_COMPILE_FAILED",
+            ],
+            "compile_result": "FAIL",
+            "build_check_result": "FAIL",
+            "setfile_count": 1,
+        },
+    )
+
+    with farmctl.connect(root) as conn:
+        row = conn.execute(
+            "SELECT status,verdict,payload_json FROM work_items WHERE id='compile-infra'"
+        ).fetchone()
+    payload = json.loads(row["payload_json"])
+    assert (row["status"], row["verdict"]) == ("failed", "INFRA_FAIL")
+    assert payload["verdict_reason"] == "COMPILE_PROFILE_STDLIB_MISSING"
+    assert payload["verdict_taxonomy"] == "infra"
+
+
 def test_terminal_worker_routes_compile_before_generic_ex5_preflight(
     tmp_path: Path, monkeypatch
 ) -> None:

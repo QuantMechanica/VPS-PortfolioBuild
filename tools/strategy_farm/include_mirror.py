@@ -12,6 +12,7 @@ partially written destination file.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -28,6 +29,7 @@ DEFAULT_LOCK_PATH = Path(r"D:\QM\strategy_farm\state\locks\include_mirror.lock")
 PIPELINE_HINT = (
     "python tools/strategy_farm/farmctl.py enqueue-compile <EA label>"
 )
+REQUIRED_STDLIB_RELATIVE_PATHS = ("Object.mqh", "Trade/Trade.mqh")
 
 
 class IncludeMirrorRefusal(RuntimeError):
@@ -261,6 +263,142 @@ def _atomic_copy(source: Path, destination: Path) -> None:
             pass
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def verify_compile_profile_stdlib(include_root: Path) -> dict[str, Any]:
+    """Verify the minimum MT5 stdlib contract for one resolved Include root."""
+    root = Path(include_root).resolve()
+    missing = [
+        relative
+        for relative in REQUIRED_STDLIB_RELATIVE_PATHS
+        if not (root / Path(relative)).is_file()
+    ]
+    if missing:
+        raise IncludeMirrorRefusal(
+            "COMPILE_PROFILE_STDLIB_MISSING",
+            f"resolved compile Include root is missing MT5 stdlib files: "
+            f"root={root} missing={','.join(missing)}",
+        )
+    return {
+        "include_root": str(root),
+        "required_relative_paths": list(REQUIRED_STDLIB_RELATIVE_PATHS),
+        "missing": [],
+        "ok": True,
+    }
+
+
+def repair_stdlib_targets(
+    stdlib_source_root: Path,
+    project_source_root: Path,
+    target_roots: Iterable[Path],
+    *,
+    mutex: IncludeMirrorMutex,
+) -> dict[str, Any]:
+    """Make targets byte-equal to the same-install MT5 standard library.
+
+    MetaEditor installation Include trees also receive QuantMechanica headers.
+    Project-owned paths and namespaces from ``project_source_root`` are
+    excluded from the stdlib source set, leaving the complete
+    terminal-build-owned library.
+    """
+    if not mutex.held:
+        raise IncludeMirrorRefusal(
+            "INCLUDE_MIRROR_MUTEX_REQUIRED",
+            "stdlib repair called without the held global mutex",
+        )
+    source = Path(stdlib_source_root).resolve()
+    project = Path(project_source_root).resolve()
+    if not source.is_dir():
+        raise IncludeMirrorRefusal(
+            "COMPILE_PROFILE_STDLIB_MISSING",
+            f"same-build stdlib source Include root does not exist: {source}",
+        )
+    if not project.is_dir():
+        raise IncludeMirrorRefusal(
+            "INCLUDE_SOURCE_MISSING",
+            f"framework include source does not exist: {project}",
+        )
+
+    project_relatives = {
+        path.relative_to(project).as_posix()
+        for path in project.rglob("*")
+        if path.is_file()
+    }
+    project_owned_directories = {
+        path.name for path in project.iterdir() if path.is_dir()
+    }
+    stdlib_files = {
+        path.relative_to(source).as_posix(): path
+        for path in source.rglob("*")
+        if path.is_file()
+        and path.relative_to(source).as_posix() not in project_relatives
+        and path.relative_to(source).parts[0] not in project_owned_directories
+    }
+    missing_source_contract = [
+        relative
+        for relative in REQUIRED_STDLIB_RELATIVE_PATHS
+        if relative not in stdlib_files
+    ]
+    if missing_source_contract:
+        raise IncludeMirrorRefusal(
+            "COMPILE_PROFILE_STDLIB_MISSING",
+            f"same-build stdlib source is incomplete: root={source} "
+            f"missing={','.join(missing_source_contract)}",
+        )
+
+    targets = [Path(target).resolve() for target in target_roots]
+    if not targets:
+        raise IncludeMirrorRefusal(
+            "INCLUDE_TARGETS_EMPTY",
+            "no Include target was supplied for stdlib repair",
+        )
+
+    missing_before: dict[str, list[str]] = {}
+    mismatched_before: dict[str, list[str]] = {}
+    files_per_target: dict[str, int] = {}
+    for target in targets:
+        target.mkdir(parents=True, exist_ok=True)
+        missing = sorted(
+            relative
+            for relative in stdlib_files
+            if not (target / Path(relative)).is_file()
+        )
+        mismatched = sorted(
+            relative
+            for relative, source_file in stdlib_files.items()
+            if (target / Path(relative)).is_file()
+            and _sha256_file(target / Path(relative)) != _sha256_file(source_file)
+        )
+        target_key = str(target)
+        missing_before[target_key] = missing
+        mismatched_before[target_key] = mismatched
+        copied = 0
+        for relative in sorted(set(missing) | set(mismatched)):
+            _atomic_copy(stdlib_files[relative], target / Path(relative))
+            copied += 1
+        files_per_target[target_key] = copied
+        verify_compile_profile_stdlib(target)
+
+    return {
+        "atomic_replace": True,
+        "source_root": str(source),
+        "project_source_root": str(project),
+        "stdlib_file_count": len(stdlib_files),
+        "required_relative_paths": list(REQUIRED_STDLIB_RELATIVE_PATHS),
+        "target_roots": [str(target) for target in targets],
+        "missing_before": missing_before,
+        "mismatched_before": mismatched_before,
+        "files_per_target": files_per_target,
+        "verified_after": True,
+    }
+
+
 def mirror_targets(
     source_root: Path,
     target_roots: Iterable[Path],
@@ -312,6 +450,7 @@ def run_mirror(
     *,
     source_root: Path,
     target_roots: Iterable[Path],
+    stdlib_source_root: Path,
     pipeline_work_item_id: str | None,
     claimed_terminal: str | None,
     lock_path: Path = DEFAULT_LOCK_PATH,
@@ -333,7 +472,14 @@ def run_mirror(
             claimed_terminal=claimed_terminal,
             lock_held=True,
         )
-        mirrored = mirror_targets(source_root, target_roots, mutex=mutex)
+        target_list = list(target_roots)
+        mirrored = mirror_targets(source_root, target_list, mutex=mutex)
+        stdlib_repair = repair_stdlib_targets(
+            stdlib_source_root,
+            source_root,
+            target_list,
+            mutex=mutex,
+        )
     return {
         "ok": True,
         "schema_version": "qm.include-mirror/v1",
@@ -342,6 +488,7 @@ def run_mirror(
         "pipeline_work_item_id": pipeline_work_item_id,
         "claimed_terminal": str(claimed_terminal or "").upper() or None,
         "retry_attempted": False,
+        "stdlib_repair": stdlib_repair,
         **mirrored,
     }
 
@@ -355,6 +502,7 @@ def _parser() -> argparse.ArgumentParser:
         command.add_argument("--pipeline-work-item-id")
         command.add_argument("--claimed-terminal")
     mirror.add_argument("--source", type=Path, required=True)
+    mirror.add_argument("--stdlib-source", type=Path, required=True)
     mirror.add_argument("--target", type=Path, action="append", required=True)
     mirror.add_argument("--lock-timeout-seconds", type=float, default=300.0)
     return parser
@@ -385,6 +533,7 @@ def main(argv: list[str] | None = None) -> int:
             result = run_mirror(
                 source_root=args.source,
                 target_roots=args.target,
+                stdlib_source_root=args.stdlib_source,
                 pipeline_work_item_id=args.pipeline_work_item_id,
                 claimed_terminal=args.claimed_terminal,
                 lock_path=DEFAULT_LOCK_PATH,
