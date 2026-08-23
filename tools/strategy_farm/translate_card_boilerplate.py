@@ -48,7 +48,12 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT / "tools" / "strategy_farm") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 
-CARDS = Path(r"D:\QM\strategy_farm\artifacts\cards_approved")
+ARTIFACTS = Path("D:/QM/strategy_farm/artifacts")
+# render_card_section() resolves a card from six buckets, so all six are translated.
+# Translating only cards_approved left German on pages whose card sits elsewhere:
+# measured, cards_rejected alone holds 681 cards with German boilerplate.
+CARD_BUCKETS = ("cards_approved", "cards_review", "cards_draft", "cards_rejected",
+                "cards_recovery", "cards_blocked_r3_data")
 BACKUP_ROOT = Path(r"D:\QM\backups")
 EVIDENCE = REPO_ROOT / "docs" / "ops" / "evidence" / "2026-08-23_card_translation_report.json"
 
@@ -234,6 +239,84 @@ SENTENCES: list[tuple[str, str]] = [
      " - same author, different entry mechanics (opening range instead of today's open +/- YR)"),
     (" — same author, FX, andere Cadence (weekly instead of H1)",
      " - same author, FX, a different cadence (weekly instead of H1)"),
+    ("| R4 ML Forbidden | UNKNOWN | Keine ML, fixe Parameter, hard ATR-Stop, Zeit-Cap, 1 Position pro Magic. PASS-Kandidat. |",
+     "| R4 ML Forbidden | UNKNOWN | No ML, fixed parameters, a hard ATR stop, a time cap, 1 position per magic. PASS candidate. |"),
+    ("| R4 ML Forbidden | UNKNOWN | Keine ML, fixe Parameter, hard ATR-Stop, 1-Wochen-Zeit-Cap, 1 Position pro Magic. PASS-Kandidat. |",
+     "| R4 ML Forbidden | UNKNOWN | No ML, fixed parameters, a hard ATR stop, a one-week time cap, 1 position per magic. PASS candidate. |"),
+    ("| R4 ML Forbidden | UNKNOWN | Fixe Koeffizienten (HP_period=48, SS_period=10 — beide hard-coded). Kein ML, kein Adaptive Lookback. 1-Pos-per-Magic. PASS. |",
+     "| R4 ML Forbidden | UNKNOWN | Fixed coefficients (HP_period=48, SS_period=10 - both hard-coded). No ML, no adaptive lookback. One position per magic. PASS. |"),
+    ("| R4 ML Forbidden | UNKNOWN | Fixe Parameter (N=22, BB=20/2.0, ATR=14, Time-Stop=5). Kein ML, kein Adaptive-Lookback. 1-Pos-per-Magic. PASS. |",
+     "| R4 ML Forbidden | UNKNOWN | Fixed parameters (N=22, BB=20/2.0, ATR=14, time stop=5). No ML, no adaptive lookback. One position per magic. PASS. |"),
+    ("| R4 ML Forbidden | UNKNOWN | Fixe Parameter (WMA-Längen 7/14, Smoother-Länge 4 — alle Ehlers-Original-Werte aus dem Buch). Kein ML. 1-Pos-per-Magic. PASS. |",
+     "| R4 ML Forbidden | UNKNOWN | Fixed parameters (WMA lengths 7/14, smoother length 4 - all the original Ehlers values from the book). No ML. One position per magic. PASS. |"),
+    ("| R4 ML Forbidden | UNKNOWN | Fixe Parameter: K=8/D=3 (Bressert-Original-Stoch), ZigZag-Deviation=2.5%, SMA(50), Toleranz=20%, Lookback=8-Cycles. Mean-Cycle wird historisch berechnet (deterministische Statistik, keine Online-Learning-Adaption). 1-Pos-per-Magic. PASS. |",
+     "| R4 ML Forbidden | UNKNOWN | Fixed parameters: K=8/D=3 (the original Bressert stoch), ZigZag deviation=2.5%, SMA(50), tolerance=20%, lookback=8 cycles. The mean cycle is computed historically (deterministic statistics, no online-learning adaptation). One position per magic. PASS. |"),
+    ("**R4-Reviewer-Note**: Das \"Mean-Cycle wird aus historischen Cycle-Längen berechnet\" ist deterministische rolling-Statistik (wie ATR, SMA), NICHT adaptive parameter learning. HR14 prohibitiert PnL-driven oder online-learning Adaption — historische deskriptive Statistiken sind PASS (vergleichbar mit ATR-basierten SL-Stops, die ebenfalls historisch berechnet werden). Reviewer-Attention bei P3, ob Cycle-Length-Drift über das Sample zu starkem look-ahead-bias führt.",
+     "**R4 reviewer note**: the \"mean cycle is computed from historical cycle lengths\" is deterministic rolling statistics (like ATR or SMA), NOT adaptive parameter learning. HR14 prohibits PnL-driven or online-learning adaptation - historical descriptive statistics are a PASS (comparable to ATR-based SL stops, which are also computed historically). Reviewer attention at P3: whether cycle-length drift across the sample introduces strong look-ahead bias."),
+    ("- [[strategies/QM5_1498_ehlers-it-instantaneous-trendline-h4]] — adaptive-period Ehlers-Filter (Hilbert-Phase-Rate-Adaption).",
+     "- [[strategies/QM5_1498_ehlers-it-instantaneous-trendline-h4]] - an adaptive-period Ehlers filter (Hilbert phase-rate adaptation)."),
+    ("- **HighPass(x, p)**: 2-pole High-Pass-Filter mit Ehlers-Koeffizienten:",
+     "- **HighPass(x, p)**: a 2-pole high-pass filter with Ehlers coefficients:"),
+    ("| R2 Mechanical | UNKNOWN | Fully closed-form: zwei kaskadierte 2-pole-Filter, deterministische coefficients, Zero-Cross-Trigger. Codex kann das ohne Lücken bauen. PASS. |",
+     "| R2 Mechanical | UNKNOWN | Fully closed-form: two cascaded 2-pole filters, deterministic coefficients, a zero-cross trigger. Codex can build this without gaps. PASS. |"),
+    ('| R3 Data Available | UNKNOWN | GER40.DWX, NDX.DWX, WS30.DWX D1 all live-tradable DWX. Keine SP500.DWX → kein T6-Caveat. |',
+     '| R3 Data Available | UNKNOWN | GER40.DWX, NDX.DWX and WS30.DWX D1 are all live-tradable on DWX. No SP500.DWX, hence no T6 caveat. |'),
+    ('| R2 Mechanical | UNKNOWN | Closed-form: RSI-Berechnung deterministic (Wilder), Williams %R auf RSI deterministic, Trigger Inequalities. Codex kann das ohne Lücken bauen. PASS. |',
+     '| R2 Mechanical | UNKNOWN | Closed-form: the RSI computation is deterministic (Wilder), Williams %R on RSI is deterministic, triggers are inequalities. Codex can build this without gaps. PASS. |'),
+    ('| R3 Data Available | UNKNOWN | Reine Close-Price-Verarbeitung — testbar auf allen DWX-Symbolen (FX, Indizes, XAUUSD, XTIUSD). PASS. |',
+     '| R3 Data Available | UNKNOWN | Pure close-price processing - testable on every DWX symbol (FX, indices, XAUUSD, XTIUSD). PASS. |'),
+    ("| R2 Mechanical | UNKNOWN | Closed-form: WVF ist Inequality-Filter, BB-Trigger, Time/ATR-Exit. Codex kann das ohne Lücken bauen. Long-Only ist Williams' Original-Topologie — keine fehlende Short-Mechanics, sondern intentionale Asymmetrie. PASS. |",
+     "| R2 Mechanical | UNKNOWN | Closed-form: the WVF is an inequality filter, with a BB trigger and a time/ATR exit. Codex can build this without gaps. Long-only is Williams' original topology - not missing short mechanics but deliberate asymmetry. PASS. |"),
+    ('| R3 Data Available | UNKNOWN | High/Low/Close — testbar auf allen DWX-Symbolen (FX-Majors, NDX.DWX, GDAXI.DWX, UK100.DWX, WS30.DWX, SP500.DWX-backtest, XAUUSD, XTIUSD). PASS. |',
+     '| R3 Data Available | UNKNOWN | High/low/close only - testable on every DWX symbol (FX majors, NDX.DWX, GDAXI.DWX, UK100.DWX, WS30.DWX, SP500.DWX backtest, XAUUSD, XTIUSD). PASS. |'),
+    ('| R2 Mechanical | UNKNOWN | Fully closed-form: zwei WMAs + Linearkombination + Cross-Trigger. Codex kann das ohne Lücken bauen. PASS. |',
+     '| R2 Mechanical | UNKNOWN | Fully closed-form: two WMAs + a linear combination + a cross trigger. Codex can build this without gaps. PASS. |'),
+    ('| R2 Mechanical | UNKNOWN | Closed-form trotz Cycle-Detection-Komplexität: ZigZag ist deterministisch, Mean-Cycle ist arithmetisch, Window + Double-Stoch + Bullish-Bar sind Inequalities. Codex kann das ohne Lücken bauen. PASS. |',
+     '| R2 Mechanical | UNKNOWN | Closed-form despite the cycle-detection complexity: ZigZag is deterministic, the mean cycle is arithmetic, and window + double-stoch + bullish-bar are inequalities. Codex can build this without gaps. PASS. |'),
+    ('## Lessons Learned (während Pipeline-Lauf)',
+     '## Lessons learned (during the pipeline run)'),
+    ('Universe (DWX-Instrumente, all auf D1 Bars): EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, WTI (oil CFD if vorhanden), NDX.DWX, WS30.DWX, DAX (GER40.DWX).',
+     'Universe (DWX instruments, all on D1 bars): EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, WTI (oil CFD if available), NDX.DWX, WS30.DWX, DAX (GER40.DWX).'),
+    ('- Magic: 1 Slot pro Instrument (10 Instrumente = 10 Magic-Nummern, HR-konform).',
+     '- Magic: one slot per instrument (10 instruments = 10 magic numbers, HR compliant).'),
+    ('- Keine intraday-Exits ausser Stop-Loss.',
+     '- No intraday exits other than the stop loss.'),
+    ('- Korrelations-Gate: nur OPEN wenn rollende 60-Bar-Korrelation der Returns > 0.6 (sonst Pair zerfallen).',
+     '- Correlation gate: open only when the rolling 60-bar correlation of returns is above 0.6 (otherwise the pair has decayed).'),
+    ('| R3 Data Available | UNKNOWN | EURUSD/GBPUSD/AUDUSD/NZDUSD im DWX-Feed live-tradable. USDNOK vs USDCAD — USDNOK-Verfügbarkeit prüfen, sonst nur 2 Pairs. |',
+     '| R3 Data Available | UNKNOWN | EURUSD/GBPUSD/AUDUSD/NZDUSD are live-tradable on the DWX feed. USDNOK vs USDCAD - check USDNOK availability, otherwise only 2 pairs. |'),
+    ('(GER40.DWX, NDX.DWX, WS30.DWX, XAUUSD). Keine SP500.DWX-Verwendung, kein',
+     '(GER40.DWX, NDX.DWX, WS30.DWX, XAUUSD). No SP500.DWX use, no'),
+    ('SP500.DWX-Verwendung.',
+     'SP500.DWX use.'),
+    ('- **Zeit-Filter**: Keine Trades 30 min vor / nach Daily-Rollover (broker time 23:30-00:30 GMT+2/+3 DST-aware). Verhindert Spread-Spike-Signale.',
+     '- **Time filter**: no trades 30 min before or after the daily rollover (broker time 23:30-00:30 GMT+2/+3, DST aware). Prevents spread-spike signals.'),
+    ('- **Zeit-Filter**: Keine Trades 30 min vor / nach Daily-Rollover (broker time 23:30-00:30 GMT+2/+3 DST-aware).',
+     '- **Time filter**: no trades 30 min before or after the daily rollover (broker time 23:30-00:30 GMT+2/+3, DST aware).'),
+    ('- **Zeit-Filter**: Keine Trades 30 min vor / nach Daily-Rollover.',
+     '- **Time filter**: no trades 30 min before or after the daily rollover.'),
+    ('- **News-Filter**: D:\\QM\\data\\news_calendar — Trades nicht öffnen 15 min vor / nach High-Impact-Events.',
+     '- **News filter**: D:\\QM\\data\\news_calendar - do not open trades 15 min before or after high-impact events.'),
+    ('- [[strategies/QM5_1499_ehlers-decycler-low-pass-h4]] — Decycler verwendet einzelnen HP, kein SS-Stage.',
+     '- [[strategies/QM5_1499_ehlers-decycler-low-pass-h4]] - the Decycler uses a single HP and no SS stage.'),
+    ('- [[strategies/QM5_1507_ehlers-mama-fama-cross-h4]] — adaptive Periode (Hilbert-Phase-driven), nicht fix.',
+     '- [[strategies/QM5_1507_ehlers-mama-fama-cross-h4]] - an adaptive period (Hilbert-phase driven), not fixed.'),
+    ('**Schritt 2 — Mean-Cycle-Length-Berechnung**:',
+     '**Step 2 - mean-cycle-length computation**:'),
+    ("- Distinkt von [[strategies/QM5_1492_as-mtp-simple]]: dort wird Connors' ATR-Stretch als VIX-Proxy verwendet (ATR-basiert), hier Williams' originale High-Close-",
+     "- Distinct from [[strategies/QM5_1492_as-mtp-simple]]: there Connors' ATR stretch is used as the VIX proxy (ATR based), here Williams' original high-close-"),
+    ("- Williams' Konstruktion approximiert VIX-Verhalten auf jedem Instrument ohne Optionsdaten — Port auf FX/CFD ist die Original-Anwendung des Konzepts (Williams s",
+     "- Williams' construction approximates VIX behaviour on any instrument without options data - porting it to FX/CFD is the concept's original application (Williams s"),
+    ("Short-Variante: Williams' Original ist Long-Only (Panik-Tief-Kauf-Signal). Short-Side wird hier NICHT mechanisiert — bleibt für P3 als optionale Erweiterung off",
+     "Short variant: Williams' original is long-only (a panic-low buy signal). The short side is NOT mechanized here - it stays open for P3 as an optional extension off"),
+    ('- **Zeit-Filter**: Daily-Rollover ±30 min Skip.',
+     '- **Time filter**: skip the daily rollover +/- 30 min.'),
+    ('**Schritt 1 — Cycle-Low-Detection via ZigZag**:',
+     '**Step 1 - cycle-low detection via ZigZag**:'),
+    ('**Schritt 3 — Projection-Window**:',
+     '**Step 3 - projection window**:'),
+    ('**Schritt 4 — Bressert Double-Stochastic-Konfirmation**:',
+     '**Step 4 - Bressert double-stochastic confirmation**:'),
     # misc references
     ("mechanizes \"Entry nur bei exakter Konvergenz\" (OWNER spec).",
      "mechanizes \"entry only on exact convergence\" (OWNER spec)."),
@@ -253,6 +336,8 @@ TERMS: list[tuple[str, str]] = [
     (r"Verwandte Strategien", "Related strategies"),
     (r"Zusätzliche Filter", "Additional filters"),
     (r"Zusaetzliche Filter", "Additional filters"),
+    (r"Zusätzliche", "Additional"),
+    (r"Zusaetzliche", "Additional"),
     (r"Pipeline-Verlauf", "Pipeline history"),
     (r"R1[-–]R4 Bewertung", "R1-R4 assessment"),
     (r"\bMechanik\b", "Mechanics"),
@@ -265,6 +350,28 @@ TERMS: list[tuple[str, str]] = [
     (r"\*Knoten-Pflege:.*?(?:\*|$)",
      "*Node maintenance: update `pipeline_phase` + `last_updated` on every pipeline-phase "
      "change. On FAIL: `pipeline_phase: DEAD` + a lessons-learned entry.*"),
+    # residual R1-R4 cell vocabulary. These words occur only in German, so a term
+    # rule is safe here and cheaper than chasing one cell at a time.
+    (r"\bFixe\b", "Fixed"),
+    (r"\bfixe\b", "fixed"),
+    (r"\bKoeffizienten\b", "coefficients"),
+    (r"\bKeine? ML\b", "No ML"),
+    (r"\bkeine? Adaptive[- ]Lookback\b", "no adaptive lookback"),
+    (r"\bkeine? Adaption\b", "no adaptation"),
+    (r"\bkeine adaptiven Parameter\b", "no adaptive parameters"),
+    (r"\bLängen\b", "lengths"),
+    (r"\bLänge\b", "length"),
+    (r"\bbeide hard-coded\b", "both hard-coded"),
+    (r"\balle\b", "all"),
+    (r"\bAlle\b", "All"),
+    (r"\baus dem Buch\b", "from the book"),
+    (r"\bWerte\b", "values"),
+    (r"\bVollmechanisch\b", "Fully mechanical"),
+    (r"\bVollständig closed-form\b", "Fully closed-form"),
+    (r"\bReines Ranking\b", "Pure ranking"),
+    (r"\bPASS-Kandidat\b", "PASS candidate"),
+    (r"\bPosition pro Magic\b", "position per magic"),
+    (r"\bSchwellen\b", "thresholds"),
     (r"\bgleicher Author\b", "same author"),
     (r"\bverwandter?\b", "related"),
     (r"\bstatt\b", "instead of"),
@@ -327,16 +434,19 @@ def main() -> int:
     import farmctl  # noqa: E402  - only needed for the fingerprint guard
 
     stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
-    files = sorted(CARDS.glob("QM5_*.md"))
+    buckets = [ARTIFACTS / b for b in CARD_BUCKETS if (ARTIFACTS / b).is_dir()]
+    files = sorted(f for d in buckets for f in d.glob("QM5_*.md"))
     totals: Counter = Counter()
     changed: list[str] = []
     fp_moved: list[str] = []
     lines_before = lines_after = 0
 
     if apply:
-        backup = BACKUP_ROOT / f"cards_approved_{stamp}_pre_translation"
-        shutil.copytree(CARDS, backup)
-        print(f"backup: {backup}")
+        backup = BACKUP_ROOT / f"cards_{stamp}_pre_translation"
+        backup.mkdir(parents=True, exist_ok=True)
+        for d in buckets:
+            shutil.copytree(d, backup / d.name)
+        print(f"backup: {backup} ({len(buckets)} buckets)")
 
     for path in files:
         raw = path.read_text(encoding="utf-8", errors="replace")
