@@ -17860,3 +17860,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41128,xauxag-mdaily-persist-rv,0,XAUUSD.DWX,411280000,2026-08-23,Codex governed allocator,active
 41128,xauxag-mdaily-persist-rv,1,XAGUSD.DWX,411280001,2026-08-23,Codex governed allocator,active
 41129,pre-fomc-drift-ndx-v2,0,NDX.DWX,411290000,2026-08-23,claude,active
+41130,wti-mopen-residence-mom,0,XTIUSD.DWX,411300000,2026-08-23,Codex governed allocator,active
