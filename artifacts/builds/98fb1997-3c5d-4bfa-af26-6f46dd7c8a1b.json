@@ -1,9 +1,11 @@
 {
   "task_id": "98fb1997-3c5d-4bfa-af26-6f46dd7c8a1b",
   "ea_id": "QM5_37005",
-  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_37005_chan-bollinger-adx-mean-reversion",
+  "ea_dir": "framework/EAs/QM5_37005_chan-bollinger-adx-mean-reversion",
   "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_37005_chan-bollinger-adx-mean-reversion\\QM5_37005_chan-bollinger-adx-mean-reversion.mq5",
+  "mq5_sha256": "12dd519d1493d732d093e7d613dde5c6c63c5ff7fe0102037e4a61f1aa754e1f",
   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_37005_chan-bollinger-adx-mean-reversion\\QM5_37005_chan-bollinger-adx-mean-reversion.ex5",
+  "ex5_sha256": "24552679e230ad968363a8afd13972d880a422ea74eb279869f8fdbc31ab7709",
   "magic_base": 370050000,
   "symbols_registered": [
     "EURUSD.DWX",
@@ -20,7 +22,8 @@
   "compile_succeeded": true,
   "smoke_result": "deferred_p2_smoke",
   "smoke_report_path": null,
-  "smoke_skipped_reason": "Paced Q02 enqueue; manual backtest not authorized.",
-  "blocked_reason": "",
-  "open_questions": []
+  "blocked_reason": null,
+  "open_questions": [
+    "Smoke execution deferred to P2 baseline per standard sanctioned pipeline path (deferred_p2_smoke)."
+  ]
 }
