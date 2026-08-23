@@ -6,10 +6,9 @@ it never writes to the database, never enqueues, never touches verdict rows.
 
 For every ``(ea_id, symbol)`` pair (and the finer key
 ``(ea_id, symbol, build_hash, setfile_hash)``) it summarises every phase ever run
-against the strictly-linear v3 gate chain
-(``tools/strategy_farm/config/gate_manifest.v3.json``) and assigns a rebaseline
-disposition. Thresholds/criteria are NOT redefined here -- this is a classification
-of *existing* evidence, not a new gate.
+against the active gate contract and assigns a rebaseline disposition.
+Thresholds/criteria are NOT redefined here -- this is a classification of
+*existing* evidence, not a new gate.
 
 Outputs:
   * D:/QM/reports/rebaseline/census_<date>.csv    (one row per (ea_id, symbol) pair)
@@ -45,20 +44,43 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from tools.strategy_farm.phase_ids import phase_label, phase_qid
+from tools.strategy_farm.phase_ids import (
+    ACTIVE_GATE_CONTRACT_VERSION,
+    ACTIVE_GATE_MANIFEST,
+    phase_label,
+    phase_qid,
+)
 
 DEFAULT_DB = "D:/QM/strategy_farm/state/farm_state.sqlite"
 DEFAULT_OUT_DIR = "D:/QM/reports/rebaseline"
 DEFAULT_MD_PATH = "docs/ops/rebaseline"
 
 # ---------------------------------------------------------------------------
-# v3 gate chain (strict linear ordering). Q02..Q10 main chain, then the
-# optimization fork Q14,Q15,Q16 (which rejoins Q11). Q00/Q01 (research/build)
-# and Q11-Q13 (OWNER/manual) are NOT part of the automated contiguity walk.
+# Automated contiguity chain. v3 retains its main chain plus optimization fork;
+# v4 is strictly linear from Q02 through its declared terminal requalification
+# gate. Q00/Q01 and post-qualification OWNER/book gates are not part of it.
 # ---------------------------------------------------------------------------
-GATE_CHAIN = ["Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10",
-              "Q14", "Q15", "Q16"]
+if ACTIVE_GATE_CONTRACT_VERSION == "v4":
+    terminal = ACTIVE_GATE_MANIFEST.terminal_requalification_gate
+    terminal_ordinal = next(
+        gate.ordinal for gate in ACTIVE_GATE_MANIFEST.gates if gate.id == terminal
+    )
+    GATE_CHAIN = [
+        gate.id
+        for gate in ACTIVE_GATE_MANIFEST.gates
+        if 2 <= gate.ordinal <= terminal_ordinal
+    ]
+else:
+    GATE_CHAIN = [
+        "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10",
+        "Q14", "Q15", "Q16",
+    ]
 GATE_ORDINAL = {g: i for i, g in enumerate(GATE_CHAIN)}
+NEWS_GATE = ACTIVE_GATE_MANIFEST.gate_for_role("NEWS")
+NEWS_STORAGE_PHASES = {
+    ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS"),
+    ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "PORTFOLIO"),
+}
 
 # Legacy P* aliases mapped to canonical Qxx (gate_manifest.v3 legacy_aliases,
 # in-chain subset only). Out-of-chain legacy keys map to None.
@@ -81,6 +103,7 @@ PASS_ECON = {
     "PASS",
     "PASS_SOFT",
     "PASS_LOWFREQ",
+    "PASS_PORTFOLIO",
     # Terminal requalification outcomes are successful contiguous evidence,
     # not ordinary PASS tokens.  Preserve both the current v3 spelling and the
     # v4 proposal spelling; ADMIT_BOTH remains a valid historical v3 outcome.
@@ -89,12 +112,6 @@ PASS_ECON = {
     "KEEP_INCUMBENT",
     "ADMIT_BOTH",
 }
-
-# Q09_PORTFOLIO is an informational book-input lane.  It is deliberately not
-# part of the economic gate walk: PASS_PORTFOLIO cannot license Q10 and an
-# informational FAIL_PORTFOLIO cannot economically kill the news cohort.
-INFORMATIONAL_PHASES = {"Q09_PORTFOLIO", "Q10_PORTFOLIO"}
-NEWS_PHASES = {"Q09_NEWS", "Q10_NEWS"}
 ECON_FAIL = {
     "FAIL", "FAIL_HARD", "FAIL_SOFT", "ZERO_TRADES", "RETIRE",
     "RETIRED_LOW_FREQ", "FAIL_PORTFOLIO", "FAIL_DD_PORTFOLIO_REVIEW",
@@ -136,16 +153,11 @@ def canonical_gate(
     small lane collapse below is storage normalization only (NEWS/PORTFOLIO are
     both evidence for their parent gate), never an ordinal guess.
     """
-    raw = (phase or "").strip().upper()
-    if raw in INFORMATIONAL_PHASES:
-        return None
     p = phase_qid(phase, gate_contract_version).strip().upper()
-    if p in INFORMATIONAL_PHASES:
-        return None
-    if p in NEWS_PHASES:
-        return "Q09"
     if p in GATE_ORDINAL:
         return p
+    if p in NEWS_STORAGE_PHASES:
+        return NEWS_GATE
     if p in NONCHAIN_PHASES:
         return None
     if p in LEGACY_ALIAS:
@@ -268,6 +280,7 @@ def _extract_hash(payload: dict, keys: list[str]) -> str:
 def _new_gate() -> dict:
     return {
         "rows": 0,
+        "informational_rows": 0,
         "valid_canonical": False,  # done + PASS via canonical Qxx phase
         "valid_legacy": False,     # done + PASS via legacy P* phase
         "classes": Counter(),      # non-pass class -> count (for frontier)
@@ -304,14 +317,27 @@ def build_pairs(con: sqlite3.Connection, limit: int | None) -> dict:
         gd["observed_labels"].add(label)
         cls = vclass(verdict)
         is_done = (status or "").strip().lower() == "done"
-        if cls == "PASS" and is_done:
+        resolved_phase = phase_qid(phase, contract_version).strip().upper()
+        informational_lane = resolved_phase.endswith("_PORTFOLIO")
+        if informational_lane:
+            # OWNER E1 / v4 contract: the portfolio sibling is informational.
+            # It feeds the later book assessment but never proves the NEWS gate
+            # and therefore cannot advance the contiguous-valid frontier.
+            gd["informational_rows"] += 1
+        elif cls == "PASS" and is_done:
             gd["valid_labels"].add(label)
             raw = (phase or "").strip().upper()
-            if raw in GATE_ORDINAL or raw.startswith("Q09"):
-                gd["valid_canonical"] = True
-            else:
+            # Canonical vs legacy is a provenance split: only a legacy P*/G0
+            # alias counts as legacy.  Any Qxx-form phase that resolved onto the
+            # chain — an ordinary gate OR a native NEWS storage lane in EITHER
+            # contract (v3 Q09_NEWS, v4 Q10_NEWS) — is canonical.  The prior
+            # ``startswith("Q09")`` test mislabelled a current v4 Q10_NEWS pass
+            # as legacy-only.
+            if raw in LEGACY_ALIAS:
                 gd["valid_legacy"] = True
-        else:
+            else:
+                gd["valid_canonical"] = True
+        elif not informational_lane:
             gd["classes"][cls] += 1
     return pairs
 
@@ -351,7 +377,7 @@ def summarise_pair(rec: dict) -> dict:
         frontier_class = "COMPLETE"
     else:
         gd = gates.get(frontier)
-        if not gd or gd["rows"] == 0:
+        if not gd or gd["rows"] == 0 or gd["rows"] == gd["informational_rows"]:
             frontier_class = "MISSING"
         else:
             frontier_class = "OTHER"
@@ -542,8 +568,11 @@ def build_summary(pair_rows: list[dict], finer_rows: list[dict]) -> dict:
         "by_earliest_missing_prerequisite": dict(by_frontier),
         "by_frontier_class": dict(by_frontier_class),
         "pairs_valid_at_least_Q08": valid_at("Q08"),
-        "pairs_valid_at_least_Q10": valid_at("Q10"),
-        "pairs_valid_at_least_Q16": valid_at("Q16"),
+        # These public keys predate v4.  Preserve their names while resolving
+        # the v3 semantic gates into the active contract (Q10->Q11 and
+        # Q16->Q14 after the flip).
+        "pairs_valid_at_least_Q10": valid_at(phase_qid("Q10", "v3")),
+        "pairs_valid_at_least_Q16": valid_at(phase_qid("Q16", "v3")),
         "infra_vs_economic": {
             "infra_blocked_frontier_pairs": infra_blocked,
             "economic_fail_pairs": econ_fail_pairs,

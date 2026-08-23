@@ -108,10 +108,11 @@ def test_mixed_version_rows_are_rendered_with_their_own_contract_semantics() -> 
         )
     }
     assert rendered == {
-        "unstamped-legacy": "Q11",
-        "v3-incumbent": "Q10",
-        "v4-news": "Q09 (v4:Q10)",
+        "unstamped-legacy": phase_ids.LEGACY_P_TO_Q["P9"],
+        "v3-incumbent": phase_ids.display_phase("Q10", "v3"),
+        "v4-news": phase_ids.display_phase("Q10", "v4"),
     }
+    assert rendered["v3-incumbent"] != rendered["v4-news"]
 
 
 def test_backfill_cutoff_is_the_true_v3_activation_instant() -> None:

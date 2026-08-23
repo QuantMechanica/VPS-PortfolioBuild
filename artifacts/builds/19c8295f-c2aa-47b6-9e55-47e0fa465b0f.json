@@ -1,20 +1,24 @@
 {
   "task_id": "19c8295f-c2aa-47b6-9e55-47e0fa465b0f",
   "ea_id": "QM5_12920",
-  "slug": "qp-pre-election-sp500",
-  "card_path": "framework/EAs/QM5_12920_qp-pre-election-sp500/docs/strategy_card.md",
-  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12920_qp-pre-election-sp500",
-  "build_check_passed": true,
-  "compile_succeeded": true,
-  "compile_errors": 0,
-  "compile_warnings": 0,
+  "ea_dir": "framework/EAs/QM5_12920_qp-pre-election-sp500",
   "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12920_qp-pre-election-sp500\\QM5_12920_qp-pre-election-sp500.mq5",
-  "mq5_sha256": "f3c0161126e123ed18be09769a5ad5587da74a1015e7e1dc27b9747b19a75175",
+  "mq5_sha256": "eee53ccff7af6df92af4f0d2ebbbcaf008aa74d8b5238d2f13a1a4f885520263",
   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12920_qp-pre-election-sp500\\QM5_12920_qp-pre-election-sp500.ex5",
   "ex5_sha256": "784a937ef523bfff52bad0c03405842d0afbccc2e3b2c845e2c0893a156def03",
+  "magic_base": 129200000,
+  "symbols_registered": [
+    "SP500.DWX"
+  ],
   "setfiles_generated": [
     "C:\\QM\\repo\\framework\\EAs\\QM5_12920_qp-pre-election-sp500\\sets\\QM5_12920_qp-pre-election-sp500_SP500.DWX_D1_backtest.set"
   ],
-  "built_by": "Gemini",
-  "built_at": "2026-08-21T14:53:00Z"
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12920_qp-pre-election-sp500\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Active Custom-history isolation requires a worker-bound work item; deferred to Q02 dispatch.",
+  "blocked_reason": "",
+  "open_questions": []
 }

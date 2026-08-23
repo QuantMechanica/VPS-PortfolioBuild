@@ -1,0 +1,27 @@
+{
+  "task_id": "8de78517-0995-43b1-9c4e-30e0a0f1b1df",
+  "ea_id": "QM5_41003",
+  "ea_dir": "framework/EAs/QM5_41003_kaufman-ready-set-go-momentum",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41003_kaufman-ready-set-go-momentum\\QM5_41003_kaufman-ready-set-go-momentum.mq5",
+  "ex5_path": null,
+  "magic_base": 410030000,
+  "symbols_registered": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "GDAXI.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41003_kaufman-ready-set-go-momentum\\sets\\QM5_41003_kaufman-ready-set-go-momentum_SP500.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41003_kaufman-ready-set-go-momentum\\sets\\QM5_41003_kaufman-ready-set-go-momentum_NDX.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41003_kaufman-ready-set-go-momentum\\sets\\QM5_41003_kaufman-ready-set-go-momentum_GDAXI.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41003_kaufman-ready-set-go-momentum\\SPEC.md",
+  "build_check_passed": false,
+  "compile_succeeded": false,
+  "smoke_result": "build_check_failed",
+  "smoke_report_path": null,
+  "blocked_reason": "Fresh build_check was refused with LIVE_FACTORY_AD_HOC_COMPILE_REFUSED while protected T1-T10 activity was active; governed enqueue-compile then refused EX5_ALREADY_PRESENT and BOUND_SETFILE_HASH_EXISTS with force_rebuild_authorized=false, so no fresh EX5 was emitted.",
+  "open_questions": [
+    "Fresh strict compilation requires governed force-rebuild authorization after protected factory activity permits it."
+  ]
+}

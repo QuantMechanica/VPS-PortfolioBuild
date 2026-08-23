@@ -15,7 +15,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -35,20 +35,120 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input double InpForecastThreshold       = 0.35;   // Minimum composite score threshold to enter
-input int    InpVolWindow               = 60;     // Realized volatility normalizer ATR window
+input int    InpVolWindow               = 60;     // Realized close-change volatility window
 input int    InpAtrSlPeriod             = 14;     // Stop loss ATR period
 input double InpAtrSlMult               = 2.5;    // Stop loss ATR multiplier
 input double InpSpreadAtrMult           = 1.8;    // Max spread as multiple of D1 ATR(14)
+
+const double STRATEGY_DAILY_ENTRY_HALT_PCT = 2.0;
+const double STRATEGY_DAILY_HARD_STOP_PCT  = 2.5;
+const double STRATEGY_TOTAL_DD_STOP_PCT    = 5.0;
+
+double g_forecast1         = 0.0;
+double g_forecast2         = 0.0;
+double g_stop_atr          = 0.0;
+double g_spread_atr        = 0.0;
+bool   g_forecast_ready    = false;
+bool   g_rebalance_due     = false;
+bool   g_rebalance_reopen  = false;
+int    g_daily_loss_day    = -1;
+bool   g_daily_entry_halt  = true;
 
 // -----------------------------------------------------------------------------
 // Helper math
 // -----------------------------------------------------------------------------
 
-double CalculateForecast(const int shift)
+int StrategyDayKey(const datetime t)
 {
-   const double sigma = QM_ATR(_Symbol, PERIOD_D1, InpVolWindow, shift);
-   if(sigma <= 0.0)
-      return 0.0;
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return dt.year * 1000 + dt.day_of_year;
+}
+
+datetime StrategyDayStart(const datetime t)
+{
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   dt.hour = 0;
+   dt.min = 0;
+   dt.sec = 0;
+   return StructToTime(dt);
+}
+
+void StrategyRefreshDailyEntryHalt(const bool force_refresh)
+{
+   const datetime now = TimeCurrent();
+   const int day_key = StrategyDayKey(now);
+   if(!force_refresh && day_key == g_daily_loss_day)
+      return;
+
+   g_daily_loss_day = day_key;
+   g_daily_entry_halt = true;
+   const datetime day_start = StrategyDayStart(now);
+   if(day_start <= 0 || !HistorySelect(day_start, now))
+      return;
+
+   double realised = 0.0;
+   const int deals = HistoryDealsTotal();
+   for(int i = 0; i < deals; ++i)
+   {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         continue;
+      const ENUM_DEAL_TYPE deal_type = (ENUM_DEAL_TYPE)HistoryDealGetInteger(deal, DEAL_TYPE);
+      if(deal_type != DEAL_TYPE_BUY && deal_type != DEAL_TYPE_SELL)
+         continue;
+      realised += HistoryDealGetDouble(deal, DEAL_PROFIT);
+      realised += HistoryDealGetDouble(deal, DEAL_SWAP);
+      realised += HistoryDealGetDouble(deal, DEAL_COMMISSION);
+      realised += HistoryDealGetDouble(deal, DEAL_FEE);
+   }
+
+   const double day_start_balance = AccountInfoDouble(ACCOUNT_BALANCE) - realised;
+   if(day_start_balance <= 0.0)
+      return;
+   g_daily_entry_halt = (realised <= -(STRATEGY_DAILY_ENTRY_HALT_PCT / 100.0) * day_start_balance);
+}
+
+// Sample standard deviation of D1 close-to-close changes, in price units.
+// The bounded scan runs only from AdvanceState_OnNewBar, never per tick.
+bool CalculateRealizedVolatility(const int shift, double &sigma)
+{
+   sigma = 0.0;
+   if(InpVolWindow < 2 || shift < 1)
+      return false;
+
+   double sum = 0.0;
+   double sum_sq = 0.0;
+   for(int i = 0; i < InpVolWindow; ++i)
+   {
+      const int bar_shift = shift + i;
+      const double c0 = iClose(_Symbol, PERIOD_D1, bar_shift);     // perf-allowed: bounded realised-volatility scan inside the framework new-bar gate
+      const double c1 = iClose(_Symbol, PERIOD_D1, bar_shift + 1); // perf-allowed: bounded realised-volatility scan inside the framework new-bar gate
+      if(c0 <= 0.0 || c1 <= 0.0)
+         return false;
+      const double change = c0 - c1;
+      sum += change;
+      sum_sq += change * change;
+   }
+
+   const double n = (double)InpVolWindow;
+   double variance = (sum_sq - (sum * sum) / n) / (n - 1.0);
+   if(variance < 0.0 && variance > -1e-12)
+      variance = 0.0;
+   if(variance <= 0.0 || !MathIsValidNumber(variance))
+      return false;
+
+   sigma = MathSqrt(variance);
+   return (sigma > 0.0 && MathIsValidNumber(sigma));
+}
+
+bool CalculateForecast(const int shift, double &forecast)
+{
+   forecast = 0.0;
+   double sigma = 0.0;
+   if(!CalculateRealizedVolatility(shift, sigma))
+      return false;
 
    const int pairs_fast[6] = {2, 4, 8, 16, 32, 64};
    const int pairs_slow[6] = {8, 16, 32, 64, 128, 256};
@@ -58,10 +158,41 @@ double CalculateForecast(const int shift)
    {
       const double ema_f = QM_EMA(_Symbol, PERIOD_D1, pairs_fast[k], shift);
       const double ema_s = QM_EMA(_Symbol, PERIOD_D1, pairs_slow[k], shift);
+      if(ema_f <= 0.0 || ema_s <= 0.0)
+         return false;
       sum += (ema_f - ema_s) / sigma;
    }
 
-   return (sum / 6.0);
+   forecast = sum / 6.0;
+   forecast = MathMax(-1.0, MathMin(1.0, forecast));
+   return MathIsValidNumber(forecast);
+}
+
+void AdvanceState_OnNewBar()
+{
+   g_forecast1 = 0.0;
+   g_forecast2 = 0.0;
+   g_stop_atr = 0.0;
+   g_spread_atr = 0.0;
+   g_forecast_ready = false;
+   g_rebalance_due = true;
+   g_rebalance_reopen = false;
+
+   double forecast1 = 0.0;
+   double forecast2 = 0.0;
+   if(!CalculateForecast(1, forecast1) || !CalculateForecast(2, forecast2))
+      return;
+
+   const double stop_atr = QM_ATR(_Symbol, PERIOD_D1, InpAtrSlPeriod, 1);
+   const double spread_atr = QM_ATR(_Symbol, PERIOD_D1, 14, 1);
+   if(stop_atr <= 0.0 || spread_atr <= 0.0)
+      return;
+
+   g_forecast1 = forecast1;
+   g_forecast2 = forecast2;
+   g_stop_atr = stop_atr;
+   g_spread_atr = spread_atr;
+   g_forecast_ready = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -70,12 +201,15 @@ double CalculateForecast(const int shift)
 
 bool Strategy_NoTradeFilter()
 {
+   StrategyRefreshDailyEntryHalt(false);
+   if(g_daily_entry_halt)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask > 0.0 && bid > 0.0 && ask > bid)
    {
-      const double atr = QM_ATR(_Symbol, PERIOD_D1, 14, 1);
-      if(atr > 0.0 && (ask - bid) > InpSpreadAtrMult * atr)
+      if(g_spread_atr > 0.0 && (ask - bid) > InpSpreadAtrMult * g_spread_atr)
          return true;
    }
 
@@ -92,15 +226,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const double s1 = CalculateForecast(1);
-   const double s2 = CalculateForecast(2);
-
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, InpAtrSlPeriod, 1);
-   if(atr <= 0.0)
+   if(!g_forecast_ready || g_stop_atr <= 0.0)
       return false;
 
+   const double s1 = g_forecast1;
+   const double s2 = g_forecast2;
+   const bool rebalance_reopen = g_rebalance_reopen;
+   g_rebalance_reopen = false;
+
    // Long: S_t crosses above +InpForecastThreshold
-   if(s1 >= InpForecastThreshold && s2 < InpForecastThreshold)
+   if((s1 >= InpForecastThreshold && s2 < InpForecastThreshold) ||
+      (rebalance_reopen && s1 > 0.0))
    {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(ask <= 0.0)
@@ -108,7 +244,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = ask - InpAtrSlMult * atr;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, ask - InpAtrSlMult * g_stop_atr);
       req.tp = 0.0;
       req.reason = "MAN_AHL_EWMA_BUY";
       req.symbol_slot = qm_magic_slot_offset;
@@ -117,7 +253,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    }
 
    // Short: S_t crosses below -InpForecastThreshold
-   if(s1 <= -InpForecastThreshold && s2 > -InpForecastThreshold)
+   if((s1 <= -InpForecastThreshold && s2 > -InpForecastThreshold) ||
+      (rebalance_reopen && s1 < 0.0))
    {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(bid <= 0.0)
@@ -125,7 +262,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       req.type = QM_SELL;
       req.price = 0.0;
-      req.sl = bid + InpAtrSlMult * atr;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, bid + InpAtrSlMult * g_stop_atr);
       req.tp = 0.0;
       req.reason = "MAN_AHL_EWMA_SELL";
       req.symbol_slot = qm_magic_slot_offset;
@@ -136,18 +273,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
 }
 
-void Strategy_ManageOpenPosition() {}
-
-bool Strategy_ExitSignal()
+void Strategy_ManageOpenPosition()
 {
+   if(!g_rebalance_due)
+      return;
+   g_rebalance_due = false;
+
+   if(!g_forecast_ready)
+      return;
+
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
-      return false;
+      return;
 
-   const double s1 = CalculateForecast(1);
-
-   const int total = PositionsTotal();
-   for(int i = 0; i < total; ++i)
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
    {
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket))
@@ -158,13 +297,43 @@ bool Strategy_ExitSignal()
          continue;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY && s1 <= 0.0)
-         return true;
-      if(ptype == POSITION_TYPE_SELL && s1 >= 0.0)
-         return true;
+      const bool same_direction = (ptype == POSITION_TYPE_BUY && g_forecast1 > 0.0) ||
+                                  (ptype == POSITION_TYPE_SELL && g_forecast1 < 0.0);
+      if(QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY) && same_direction)
+         g_rebalance_reopen = true;
    }
+}
 
+bool Strategy_ExitSignal()
+{
+   // Forecast-driven close/reopen sizing is handled once per D1 bar in the
+   // management hook, so no separate fixed liquidation rule is added here.
    return false;
+}
+
+bool Strategy_OpenAtForecastRisk(const QM_EntryRequest &req)
+{
+   const double exposure = MathMin(1.0, MathAbs(g_forecast1));
+   if(exposure <= 0.0)
+      return false;
+
+   QM_RiskMode risk_mode = QM_RISK_MODE_UNSET;
+   double risk_value = 0.0;
+   if(RISK_FIXED > 0.0 && RISK_PERCENT == 0.0)
+   {
+      risk_mode = QM_RISK_MODE_FIXED;
+      risk_value = RISK_FIXED * exposure;
+   }
+   else if(RISK_PERCENT > 0.0 && RISK_FIXED == 0.0)
+   {
+      risk_mode = QM_RISK_MODE_PERCENT;
+      risk_value = RISK_PERCENT * exposure;
+   }
+   else
+      return false;
+
+   ulong out_ticket = 0;
+   return QM_TM_OpenPosition(req, out_ticket, 0, risk_mode, risk_value);
 }
 
 bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
@@ -175,11 +344,30 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 int OnInit()
 {
+   if(InpForecastThreshold <= 0.0 || InpForecastThreshold > 1.0 ||
+      InpVolWindow < 2 || InpAtrSlPeriod < 1 || InpAtrSlMult <= 0.0 ||
+      InpSpreadAtrMult <= 0.0)
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"))
+      return INIT_FAILED;
+
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         STRATEGY_DAILY_HARD_STOP_PCT,
+                         STRATEGY_TOTAL_DD_STOP_PCT,
+                         1.0))
+      return INIT_FAILED;
+
+   StrategyRefreshDailyEntryHalt(true);
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_41006\",\"ea\":\"man-ahl-multispeed-ewma-trend\"}");
    return INIT_SUCCEEDED;
@@ -197,9 +385,12 @@ void OnTick()
 
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
+
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
+      AdvanceState_OnNewBar();
 
    Strategy_ManageOpenPosition();
 
@@ -215,29 +406,37 @@ void OnTick()
       }
    }
 
+   if(Strategy_NewsFilterHook(broker_now))
+   {
+      g_rebalance_reopen = false;
+      return;
+   }
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
+   if(!news_allows)
+   {
+      g_rebalance_reopen = false;
+      return;
+   }
 
-   if(!QM_IsNewBar()) return;
+   if(!is_new_bar) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    ZeroMemory(req);
    if(Strategy_EntrySignal(req))
-   {
-      ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
-   }
+      Strategy_OpenAtForecastRisk(req);
 }
 
 void OnTimer() { QM_FrameworkOnTimer(); }
 void OnTradeTransaction(const MqlTradeTransaction &t, const MqlTradeRequest &r, const MqlTradeResult &res)
 {
    QM_FrameworkOnTradeTransaction(t, r, res);
+   StrategyRefreshDailyEntryHalt(true);
 }
 
 double OnTester()

@@ -3,7 +3,7 @@
   "ea_id": "QM5_41005",
   "ea_dir": "framework/EAs/QM5_41005_richard-donchian-50day-cta-benchmark",
   "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41005_richard-donchian-50day-cta-benchmark\\QM5_41005_richard-donchian-50day-cta-benchmark.mq5",
-  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41005_richard-donchian-50day-cta-benchmark\\QM5_41005_richard-donchian-50day-cta-benchmark.ex5",
+  "ex5_path": null,
   "magic_base": 410050000,
   "symbols_registered": [
     "XTIUSD.DWX",
@@ -18,11 +18,12 @@
     "C:\\QM\\repo\\framework\\EAs\\QM5_41005_richard-donchian-50day-cta-benchmark\\sets\\QM5_41005_richard-donchian-50day-cta-benchmark_EURUSD.DWX_D1_backtest.set"
   ],
   "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41005_richard-donchian-50day-cta-benchmark\\SPEC.md",
-  "build_check_passed": true,
-  "compile_succeeded": true,
-  "smoke_result": "deferred_p2_smoke",
+  "build_check_passed": false,
+  "compile_succeeded": false,
+  "smoke_result": "build_check_failed",
   "smoke_report_path": null,
-  "smoke_skipped_reason": "Active Custom-history isolation requires a worker-bound work item; deferred to Q02 dispatch.",
-  "blocked_reason": "",
-  "open_questions": []
+  "blocked_reason": "Fresh build_check was refused with LIVE_FACTORY_AD_HOC_COMPILE_REFUSED while protected T1-T10 activity was active; governed enqueue-compile then refused EX5_ALREADY_PRESENT and BOUND_SETFILE_HASH_EXISTS with force_rebuild_authorized=false, so no fresh EX5 was emitted.",
+  "open_questions": [
+    "Fresh strict compilation requires governed force-rebuild authorization after protected factory activity permits it."
+  ]
 }

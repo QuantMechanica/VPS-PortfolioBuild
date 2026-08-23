@@ -1,0 +1,30 @@
+{
+  "task_id": "e3a2083b-eeb7-40e0-b865-0cc7d001997e",
+  "ea_id": "QM5_12943",
+  "slug": "robopip-hlhb-trend-catcher-h1",
+  "ea_dir": "framework/EAs/QM5_12943_robopip-hlhb-trend-catcher-h1",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12943_robopip-hlhb-trend-catcher-h1/QM5_12943_robopip-hlhb-trend-catcher-h1.mq5",
+  "mq5_sha256": "a25c0afabedaab450e91e38039b19ee6479c3d67c8967025bc12081feaaf9e16",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12943_robopip-hlhb-trend-catcher-h1/QM5_12943_robopip-hlhb-trend-catcher-h1.ex5",
+  "ex5_sha256": "e8566960b6f6e3ad3af0238fdf7868855e17a6aa51033b85886785b6b5470acb",
+  "magic_base": 129430000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "XAUUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12943_robopip-hlhb-trend-catcher-h1/sets/QM5_12943_robopip-hlhb-trend-catcher-h1_EURUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12943_robopip-hlhb-trend-catcher-h1/sets/QM5_12943_robopip-hlhb-trend-catcher-h1_GBPUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12943_robopip-hlhb-trend-catcher-h1/sets/QM5_12943_robopip-hlhb-trend-catcher-h1_USDJPY.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12943_robopip-hlhb-trend-catcher-h1/sets/QM5_12943_robopip-hlhb-trend-catcher-h1_XAUUSD.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12943_robopip-hlhb-trend-catcher-h1/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "deferred_p2_smoke per fleet capacity ceiling",
+  "open_questions": []
+}

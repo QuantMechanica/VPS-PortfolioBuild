@@ -3,9 +3,9 @@
 Authority: ``docs/ops/STRATEGY_ARCHIVE_MATRIX_SPEC_2026-08-23.md`` v1.0 (OWNER decisions
 F1-F8, 2026-08-23).
 
-The point of the matrix is not to show successes but **gaps**: a cell whose predecessor
-gate passed and that still carries no row at all. Everything else on the page exists to
-make that one signal readable.
+The point of the matrix is not to show successes but **gaps**: the governed planner's
+``FILL_MISSING`` / ``RERUN_INFRA`` / ``REBIND_STALE`` action at the earliest prerequisite.
+Card-frontmatter targets that never ran are shown as a separately labelled second source.
 
 Read-only. No write path, no action elements, no verdict interpretation beyond the
 existing ``work_items_clean`` taxonomy.
@@ -17,6 +17,7 @@ Consumed by ``render_dashboards.py``:
 """
 from __future__ import annotations
 
+import argparse
 import datetime as dt
 import html
 import json
@@ -25,48 +26,78 @@ import re
 import sys
 import time
 from collections import Counter, defaultdict
+from dataclasses import dataclass
+from functools import lru_cache
+from itertools import groupby
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT / "tools" / "strategy_farm") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 
-from phase_ids import PHASE_NAME  # noqa: E402
+import gate_manifest  # noqa: E402
+import operator_surfaces  # noqa: E402
+import rebaseline_census  # noqa: E402
+from phase_ids import advancement_table, phase_label, phase_qid  # noqa: E402
 from work_item_clean_view import open_clean_view_connection  # noqa: E402
-from card_heading_language import HEADING_DE_EN, normalise_heading  # noqa: E402
+from card_heading_language import normalise_heading  # noqa: E402
 
 FARM_ROOT = Path("D:/QM/strategy_farm")
 DB = FARM_ROOT / "state" / "farm_state.sqlite"
 CARD_BUCKETS = ("cards_approved", "cards_review", "cards_draft", "cards_rejected",
                 "cards_recovery", "cards_blocked_r3_data")
 REPORT_ROOTS = ("D:/QM/reports/work_items", "D:/QM/reports/pipeline")
+BACKFILL_PLAN = Path("D:/QM/reports/rebaseline/backfill_plan_2026-08-23.csv")
 
-# Column order follows the FLOW (OWNER decision F2): the optimization fork sits where it
-# is walked, between Q10 and Q11, and already carries its future name Q10.1-Q10.3. In
-# storage those stages remain Q14-Q16 until gate manifest v4 (DL pending).
-COLUMNS: list[tuple[str, str, str, str]] = [
-    ("Q02", "Q02", "eval", ""), ("Q03", "Q03", "eval", ""), ("Q04", "Q04", "eval", ""),
-    ("Q05", "Q05", "eval", ""), ("Q06", "Q06", "eval", ""), ("Q07", "Q07", "eval", ""),
-    ("Q08", "Q08", "eval", ""), ("Q09", "Q09", "eval", ""), ("Q10", "Q10", "eval", ""),
-    ("Q14", "Q10.1", "opt", "today Q14"),
-    ("Q15", "Q10.2", "opt", "today Q15"),
-    ("Q16", "Q10.3", "opt", "today Q16"),
-    ("Q11", "Q11", "port", ""), ("Q12", "Q12", "port", ""), ("Q13", "Q13", "port", ""),
-]
-GATE_IDX = {c[0]: i for i, c in enumerate(COLUMNS)}
-# The ordinary chain drives the gap test. The optimization fork is optional and can
-# therefore never be "missing".
-ORDINARY = ["Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10",
-            "Q11", "Q12", "Q13"]
 
-ST_PASS, ST_SOFT, ST_FAIL, ST_VOID, ST_OPEN, ST_HOLE, ST_NONE = range(7)
+@dataclass(frozen=True)
+class ArchiveColumn:
+    gate_id: str
+    name: str
+    band_id: str
+    band_name: str
+    css_class: str
+    owner_manual: bool
+
+
+def build_archive_columns(
+    manifest: gate_manifest.GateManifest | None = None,
+) -> list[ArchiveColumn]:
+    """Build the Q02+ archive topology from the shared manifest surface model."""
+
+    active = manifest or gate_manifest.load_gate_manifest()
+    gates = {gate.id: gate for gate in active.gates}
+    bands = operator_surfaces.macro_phase_bands(active)
+    columns: list[ArchiveColumn] = []
+    for band_index, band in enumerate(bands):
+        owner_manual = band_index == len(bands) - 1
+        band_name = str(band["name"])
+        if owner_manual:
+            band_name = f"{band_name} · Buch/Betrieb (OWNER)"
+        for row in band["gates"]:
+            gate_id = str(row["gate_id"])
+            gate = gates.get(gate_id)
+            # F8 begins at the third top-level gate. Display-only evidence stages
+            # (v3 Q10A) are deliberately excluded from the matrix columns.
+            if gate is None or gate.ordinal < 2:
+                continue
+            columns.append(ArchiveColumn(
+                gate_id=gate_id,
+                name=gate.name,
+                band_id=str(band["id"]),
+                band_name=band_name,
+                css_class=f"m{band_index + 1}",
+                owner_manual=owner_manual,
+            ))
+    return columns
+
+
+ST_PASS, ST_SOFT, ST_FAIL, ST_VOID, ST_OPEN, ST_HOLE, ST_NONE, ST_CARD_HOLE = range(8)
 ST_CLASS = {ST_PASS: "p", ST_SOFT: "s", ST_FAIL: "f", ST_VOID: "v",
-            ST_OPEN: "o", ST_HOLE: "h", ST_NONE: ""}
+            ST_OPEN: "o", ST_HOLE: "h", ST_NONE: "", ST_CARD_HOLE: "ct"}
 ST_NAME = {ST_PASS: "PASS", ST_SOFT: "PASS (conditional)", ST_FAIL: "FAIL",
-           ST_VOID: "VOID", ST_OPEN: "running/queued", ST_HOLE: "GAP", ST_NONE: "-"}
-
-RETIRE_TOKENS = ("RETIRE", "RETIRED_LOW_FREQ", "OBSOLETE_NON_DWX_SYMBOL",
-                 "SUPERSEDED", "SUPERSEDED_BY_LOGICAL_BASKET", "CANCELLED")
+           ST_VOID: "VOID", ST_OPEN: "running/queued", ST_HOLE: "GAP", ST_NONE: "-",
+           ST_CARD_HOLE: "nie getestet (Card-Ziel)"}
 
 FM_KEYS = [
     ("period", "Timeframe"), ("target_symbols", "Target symbols"),
@@ -105,25 +136,28 @@ def symbol_class(symbol: str) -> str:
     return "relic"
 
 
-def gate_of(phase: str | None) -> str | None:
-    if not phase:
-        return None
-    if phase.startswith("Q09"):
-        return "Q09"
-    if phase == "P2":                       # legacy alias of Q02
-        return "Q02"
-    return phase if phase in GATE_IDX else None
+@lru_cache(maxsize=256)
+def resolved_gate(phase: str | None, contract_version: str | None) -> str | None:
+    """Resolve a stored token into the active manifest's top-level gate."""
+
+    resolved = phase_qid(phase, contract_version)
+    table = advancement_table()
+    row = next((item for key, item in table.items() if key.upper() == resolved.upper()), None)
+    return row.canonical_phase if row is not None else resolved or None
 
 
 def state_of(taxonomy: str, verdict: str) -> int:
     if taxonomy == "open":
         return ST_OPEN
-    if taxonomy in ("infra", "invalid"):
-        return ST_VOID
-    if taxonomy == "strategy":
+    verdict_class = rebaseline_census.vclass(verdict)
+    if verdict_class == "PASS":
         if verdict in ("PASS_SOFT", "PASS_LOWFREQ"):
             return ST_SOFT
-        return ST_PASS if verdict.startswith("PASS") else ST_FAIL
+        return ST_PASS
+    if verdict_class == "ECON_FAIL":
+        return ST_FAIL
+    if verdict_class in ("INFRA", "INVALID", "STALE", "NA"):
+        return ST_VOID
     # governance / review / draft_defect / measurement / unknown carry no economic
     # judgement and are not an open run either.
     return ST_VOID
@@ -321,21 +355,25 @@ def reports_for(work_item_id: str) -> list[str]:
 # ── data collection ───────────────────────────────────────────────────────────
 
 def collect(db: Path = DB) -> dict:
-    """One pass over work_items_clean -> matrix cells, gaps, and per-EA run lists."""
+    """Collect manifest-resolved cells plus shared census/planner frontiers."""
     t0 = time.perf_counter()
+    columns = build_archive_columns()
+    column_index = {column.gate_id: index for index, column in enumerate(columns)}
+    column_ids = set(column_index)
     conn = open_clean_view_connection(db)
 
-    latest: dict[tuple[str, str, str], tuple[str, str, str, str]] = {}
+    latest: dict[tuple[str, str, str], dict] = {}
+    economic_latest: dict[tuple[str, str, str], dict] = {}
     all_items: dict[str, list[dict]] = defaultdict(list)
-    retired: set[tuple[str, str]] = set()
     held: set[str] = set()
+    pair_for_work_item: dict[str, tuple[str, str]] = {}
     skipped_phase: Counter = Counter()
     dropped_relic: Counter = Counter()
     rows_seen = 0
 
-    for wid, ea, sym, phase, verdict, tax, upd, evidence in conn.execute(
+    for wid, ea, sym, phase, verdict, tax, upd, evidence, contract_version in conn.execute(
         "SELECT id, ea_id, symbol, phase, verdict, verdict_taxonomy, updated_at, "
-        "evidence_path FROM work_items_clean"
+        "evidence_path, gate_contract_version FROM work_items_clean"
     ):
         rows_seen += 1
         if not ea:
@@ -345,23 +383,43 @@ def collect(db: Path = DB) -> dict:
             dropped_relic[symbol] += 1
             continue
         v = (verdict or "").upper()
+        display = phase_label(phase, contract_version, include_name=True)
         all_items[ea].append({"id": wid, "symbol": symbol, "phase": phase, "verdict": v,
                               "tax": tax or "unknown", "upd": upd or "",
-                              "evidence": evidence or ""})
-        gate = gate_of(phase)
-        if gate is None:
-            skipped_phase[phase or "<null>"] += 1
+                              "evidence": evidence or "", "contract_version": contract_version,
+                              "phase_label": display})
+        pair_for_work_item[wid] = (ea, symbol)
+        gate = resolved_gate(phase, contract_version)
+        if gate not in column_ids:
+            skipped_phase[gate or "non-gate"] += 1
             continue
-        if any(v.startswith(t) for t in RETIRE_TOKENS):
-            retired.add((ea, symbol))
         key = (ea, symbol, gate)
+        item = {"upd": upd or "", "verdict": v, "tax": tax or "unknown", "id": wid,
+                "phase_label": display, "gate": gate}
         cur = latest.get(key)
-        if cur is None or (upd or "") > cur[0]:
-            latest[key] = ((upd or ""), v, (tax or "unknown"), wid)
+        if cur is None or (item["upd"], wid) > (cur["upd"], cur["id"]):
+            latest[key] = item
+        if v in rebaseline_census.ECON_FAIL:
+            cur_fail = economic_latest.get(key)
+            if cur_fail is None or (item["upd"], wid) > (cur_fail["upd"], cur_fail["id"]):
+                economic_latest[key] = item
 
-    for (wid,) in conn.execute("SELECT work_item_id FROM work_item_holds WHERE active = 1"):
-        held.add(wid)
+    tables = {row[0] for row in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+    )}
+    if "work_item_holds" in tables:
+        for (wid,) in conn.execute("SELECT work_item_id FROM work_item_holds WHERE active = 1"):
+            held.add(wid)
     conn.close()
+    held_pairs = {pair_for_work_item[wid] for wid in held if wid in pair_for_work_item}
+
+    plan_path = BACKFILL_PLAN if Path(db).resolve() == DB.resolve() else None
+    frontiers = {
+        (str(row["ea_id"]), str(row["symbol"]).strip()): row
+        for row in operator_surfaces.build_pair_frontier_rows(
+            db, backfill_plan_path=plan_path
+        )
+    }
 
     slugs: dict[str, str] = {}
     ea_dir = REPO_ROOT / "framework" / "EAs"
@@ -372,110 +430,224 @@ def collect(db: Path = DB) -> dict:
                 if len(parts) == 3:
                     slugs[f"{parts[0]}_{parts[1]}"] = parts[2]
 
-    targets = _card_targets()
+    card_meta = _card_metadata()
+    targets = card_meta["targets"]
+    universes = card_meta["universes"]
+    buckets = card_meta["buckets"]
 
-    by_card: dict[str, dict[str, dict[str, tuple]]] = defaultdict(lambda: defaultdict(dict))
+    by_card: dict[str, dict[str, dict[str, dict]]] = defaultdict(lambda: defaultdict(dict))
     for (ea, symbol, gate), val in latest.items():
         by_card[ea][symbol][gate] = val
 
     cards: list[dict] = []
     stats: Counter = Counter()
     hole_by_gate: Counter = Counter()
+    action_counts: Counter = Counter()
     untested_targets = 0
 
     for ea, sym_map in by_card.items():
+        synthetic_targets: set[str] = set()
         for tsym in targets.get(ea, []):
             if tsym not in sym_map:
                 sym_map[tsym] = {}
+                synthetic_targets.add(tsym)
                 untested_targets += 1
         symbols = sorted(sym_map)
-        cells: dict[str, list[int]] = {}
-        n_pass = n_fail = n_void = n_open = n_hole = 0
+        cells: dict[str, list[dict]] = {}
+        empty_reasons: dict[str, list[dict]] = {}
+        n_pass = n_fail = n_void = n_open = n_hole = n_card_hole = 0
         hp_idx = -1
         last_upd = ""
 
         for si, symbol in enumerate(symbols):
             gates = sym_map[symbol]
-            # (1) draw everything stored. An early chain break must never swallow a
-            # measured cell on a page that claims to show the whole database.
-            for token, _l, _g, _s in COLUMNS:
+            frontier = frontiers.get((ea, symbol), {})
+            action = str(frontier.get("backfill_action") or "")
+            action_reason = str(frontier.get("backfill_action_reason") or "")
+            target_gate = str(frontier.get("earliest_missing_prerequisite") or "")
+            rendered: dict[str, dict] = {}
+
+            # Draw the latest stored evidence at every manifest gate first.
+            for column in columns:
+                token = column.gate_id
                 cell = gates.get(token)
                 if cell is None:
                     continue
-                upd, verdict, tax, wid = cell
-                st = ST_OPEN if (wid in held and tax == "open") else state_of(tax, verdict)
-                cells.setdefault(token, []).append((si << 3) | st)
-                stats[st] += 1
-                if st in (ST_PASS, ST_SOFT):
-                    n_pass += 1
-                    hp_idx = max(hp_idx, GATE_IDX[token])
-                elif st == ST_FAIL:
-                    n_fail += 1
-                elif st == ST_VOID:
-                    n_void += 1
-                elif st == ST_OPEN:
-                    n_open += 1
-                last_upd = max(last_upd, upd)
-            # (2) separately: the gap. Retired pairs never produce one (F5).
-            if (ea, symbol) in retired:
-                continue
-            for gi, gate in enumerate(ORDINARY):
-                if gates.get(gate) is not None:
+                st = (ST_OPEN if cell["id"] in held and cell["tax"] == "open"
+                      else state_of(cell["tax"], cell["verdict"]))
+                rendered[token] = _cell(si, st, symbol, cell)
+                last_upd = max(last_upd, cell["upd"])
+
+            # Work-item gap semantics are exactly the governed planner actions.
+            # Infra/stale rows become actionable gap chips; economic stops remain FAIL.
+            if target_gate in column_ids and action in {
+                "FILL_MISSING", "RERUN_INFRA", "REBIND_STALE"
+            }:
+                source = gates.get(target_gate)
+                rendered[target_gate] = _cell(
+                    si, ST_HOLE, symbol, source,
+                    gate=target_gate, action=action, action_reason=action_reason,
+                )
+                action_counts[action] += 1
+                hole_by_gate[target_gate] += 1
+            elif target_gate in column_ids and action == "STOP_ECONOMIC_FAIL":
+                source = economic_latest.get((ea, symbol, target_gate)) or gates.get(target_gate)
+                rendered[target_gate] = _cell(
+                    si, ST_FAIL, symbol, source,
+                    gate=target_gate, action=action, action_reason=action_reason,
+                )
+            elif target_gate in column_ids and action == "STOP_NOT_APPLICABLE":
+                rendered.pop(target_gate, None)
+
+            # Card-frontmatter targets are explicitly a second source, never
+            # represented as planner work.
+            if symbol in synthetic_targets:
+                first_gate = columns[0].gate_id
+                rendered[first_gate] = _cell(
+                    si, ST_CARD_HOLE, symbol, None, gate=first_gate,
+                    action="CARD_TARGET_UNTESTED",
+                    action_reason="nie getestet (Card-Ziel)",
+                )
+
+            contiguous = str(frontier.get("highest_contiguous_valid_gate") or "")
+            hp_idx = max(hp_idx, column_index.get(contiguous, -1))
+            universe = set(universes.get(ea, []))
+            bucket = buckets.get(ea, "")
+
+            for column in columns:
+                token = column.gate_id
+                cell = rendered.get(token)
+                if cell is not None:
+                    cells.setdefault(token, []).append(cell)
+                    st = cell["state"]
+                    stats[st] += 1
+                    if st in (ST_PASS, ST_SOFT):
+                        n_pass += 1
+                    elif st == ST_FAIL:
+                        n_fail += 1
+                    elif st == ST_VOID:
+                        n_void += 1
+                    elif st == ST_OPEN:
+                        n_open += 1
+                    elif st == ST_HOLE:
+                        n_hole += 1
+                    elif st == ST_CARD_HOLE:
+                        n_card_hole += 1
                     continue
-                prev_ok = True
-                if gi > 0:
-                    pc = gates.get(ORDINARY[gi - 1])
-                    prev_ok = pc is not None and pc[1].startswith("PASS")
-                if prev_ok:
-                    cells.setdefault(gate, []).append((si << 3) | ST_HOLE)
-                    n_hole += 1
-                    hole_by_gate[gate] += 1
-                break
+
+                reason = _empty_reason(
+                    column=column, symbol=symbol, synthetic=symbol in synthetic_targets,
+                    universe=universe, bucket=bucket, held=(ea, symbol) in held_pairs,
+                    action=action, target_gate=target_gate,
+                )
+                empty_reasons.setdefault(token, []).append({"symbol_index": si, "reason": reason})
 
         cards.append({"ea": ea, "slug": slugs.get(ea, ""), "symbols": symbols,
-                      "cells": cells, "hp": hp_idx, "pass": n_pass, "fail": n_fail,
-                      "void": n_void, "open": n_open, "hole": n_hole, "upd": last_upd})
+                      "cells": cells, "empty_reasons": empty_reasons,
+                      "hp": hp_idx, "pass": n_pass, "fail": n_fail,
+                      "void": n_void, "open": n_open, "hole": n_hole,
+                      "card_hole": n_card_hole, "upd": last_upd})
 
-    # F6: highest gate passed first, gaps as the tiebreak.
+    # F6/T4: highest contiguous-valid frontier first, gaps as the tiebreak.
     cards.sort(key=lambda c: (-c["hp"], -c["hole"], c["ea"]))
-    return {"cards": cards, "stats": stats, "hole_by_gate": hole_by_gate,
+    return {"cards": cards, "columns": columns, "stats": stats,
+            "hole_by_gate": hole_by_gate, "action_counts": action_counts,
             "all_items": all_items, "slugs": slugs, "cells": len(latest),
             "rows_seen": rows_seen, "skipped_phase": skipped_phase,
             "dropped_relic": dropped_relic, "untested_targets": untested_targets,
-            "retired_pairs": len(retired), "held_items": len(held),
+            "held_items": len(held),
             "cards_with_targets": len(targets),
             "collect_s": round(time.perf_counter() - t0, 2)}
 
 
-def _card_targets() -> dict[str, list[str]]:
-    """Target symbols from approved-card frontmatter.
+def _cell(
+    symbol_index: int,
+    state: int,
+    symbol: str,
+    item: dict | None,
+    *,
+    gate: str | None = None,
+    action: str = "",
+    action_reason: str = "",
+) -> dict:
+    resolved = gate or str((item or {}).get("gate") or "")
+    phase_display = str((item or {}).get("phase_label") or phase_label(
+        resolved, include_name=True
+    ))
+    verdict = str((item or {}).get("verdict") or "NO_ROW")
+    updated = str((item or {}).get("upd") or "-")
+    work_item_id = str((item or {}).get("id") or "-")
+    parts = [
+        symbol, phase_display, ST_NAME[state],
+        f"verdict={verdict}", f"date={updated[:10] if updated != '-' else '-'}",
+        f"work_item_id={work_item_id}",
+    ]
+    if action:
+        parts.append(f"action={action}")
+    if action_reason:
+        parts.append(action_reason)
+    return {"symbol_index": symbol_index, "state": state, "title": " · ".join(parts),
+            "action": action, "gate": resolved}
+
+
+def _empty_reason(
+    *, column: ArchiveColumn, symbol: str, synthetic: bool, universe: set[str],
+    bucket: str, held: bool, action: str, target_gate: str,
+) -> str:
+    if column.owner_manual:
+        return "Buch/Betrieb (OWNER): manual gate; no reachable-gap chip"
+    if synthetic:
+        return "nie getestet (Card-Ziel): no work_items row"
+    if bucket in {"cards_rejected", "cards_blocked_r3_data"}:
+        return f"card bucket {bucket}: no automatic work planned"
+    if action == "STOP_ECONOMIC_FAIL":
+        return f"stopped after economic FAIL at {target_gate}; no backfill"
+    if action == "STOP_NOT_APPLICABLE":
+        return "not applicable under the planner contract"
+    if held:
+        return "active work-item hold: no automatic gap"
+    if universe and symbol not in universe:
+        return "outside the card target universe"
+    if action:
+        return f"planner action {action} at {target_gate or 'none'}; no action at this gate"
+    return "no run; no planner action due at this gate"
+
+
+def _card_metadata() -> dict[str, dict[str, list[str]] | dict[str, str]]:
+    """Card targets/buckets, with approved targets kept as the second gap source.
 
     SECOND SOURCE, deliberately kept separate and labelled as such on the page: the
     matrix itself stands on work_items alone (F8). This only adds the "target symbol
     that never ran at all" gap.
     """
-    out: dict[str, list[str]] = {}
-    d = FARM_ROOT / "artifacts" / "cards_approved"
-    if not d.is_dir():
-        return out
+    targets: dict[str, list[str]] = {}
+    universes: dict[str, list[str]] = {}
+    buckets: dict[str, str] = {}
     pat = re.compile(r"^target_symbols:\s*\[([^\]]*)\]", re.M)
-    for path in d.glob("QM5_*.md"):
-        parts = path.name.split("_", 2)
-        if len(parts) < 3:
+    for bucket in CARD_BUCKETS:
+        directory = FARM_ROOT / "artifacts" / bucket
+        if not directory.is_dir():
             continue
-        ea = f"{parts[0]}_{parts[1]}"
-        try:
-            head = path.read_text(encoding="utf-8", errors="replace")[:4000]
-        except OSError:
-            continue
-        m = pat.search(head)
-        if not m:
-            continue
-        syms = [s.strip().strip('"\'') for s in m.group(1).split(",") if s.strip()]
-        syms = [s for s in syms if symbol_class(s) != "relic"]
-        if syms:
-            out[ea] = syms
-    return out
+        for path in directory.glob("QM5_*.md"):
+            parts = path.name.split("_", 2)
+            if len(parts) < 3:
+                continue
+            ea = f"{parts[0]}_{parts[1]}"
+            buckets.setdefault(ea, bucket)
+            try:
+                head = path.read_text(encoding="utf-8", errors="replace")[:4000]
+            except OSError:
+                continue
+            match = pat.search(head)
+            if not match:
+                continue
+            syms = [s.strip().strip('"\'') for s in match.group(1).split(",") if s.strip()]
+            syms = [s for s in syms if symbol_class(s) != "relic"]
+            if syms:
+                universes[ea] = syms
+                if bucket == "cards_approved":
+                    targets[ea] = syms
+    return {"targets": targets, "universes": universes, "buckets": buckets}
 
 
 _REASON_KEYS = ("verdict_reason", "invalidated_reason", "reason", "failure_class",
@@ -510,7 +682,7 @@ def _reason_of(payload_json: str | None) -> str:
     return ""
 
 
-_RUNS_BY_EA: dict[str, list[dict]] | None = None
+_RUNS_BY_DB: dict[str, dict[str, list[dict]]] = {}
 
 
 def runs_for_ea(ea_id: str, db: Path = DB) -> list[dict]:
@@ -520,13 +692,15 @@ def runs_for_ea(ea_id: str, db: Path = DB) -> list[dict]:
     for ~3,000 EAs, and a query (plus TEMP-view install) per EA would dominate the render.
     Relic symbols are excluded here exactly as they are in the matrix.
     """
-    global _RUNS_BY_EA
-    if _RUNS_BY_EA is None:
+    cache_key = str(Path(db).resolve())
+    if cache_key not in _RUNS_BY_DB:
         acc: dict[str, list[dict]] = defaultdict(list)
         conn = open_clean_view_connection(db)
-        for wid, ea, sym, phase, verdict, tax, upd, evidence, payload in conn.execute(
+        for (wid, ea, sym, phase, verdict, tax, upd, evidence, payload,
+             contract_version) in conn.execute(
             "SELECT id, ea_id, symbol, phase, verdict, verdict_taxonomy, updated_at, "
-            "evidence_path, payload_json FROM work_items_clean WHERE ea_id IS NOT NULL"
+            "evidence_path, payload_json, gate_contract_version FROM work_items_clean "
+            "WHERE ea_id IS NOT NULL"
         ):
             symbol = (sym or "").strip() or "BASKET"
             if symbol_class(symbol) == "relic":
@@ -534,12 +708,16 @@ def runs_for_ea(ea_id: str, db: Path = DB) -> list[dict]:
             acc[ea].append({"id": wid, "symbol": symbol, "phase": phase or "",
                             "verdict": (verdict or "").upper(), "tax": tax or "unknown",
                             "upd": upd or "", "evidence": evidence or "",
-                            "reason": _reason_of(payload)})
+                            "reason": _reason_of(payload),
+                            "contract_version": contract_version,
+                            "phase_label": phase_label(
+                                phase, contract_version, include_name=True
+                            )})
         conn.close()
         for v in acc.values():
             v.sort(key=lambda r: r["upd"], reverse=True)
-        _RUNS_BY_EA = acc
-    return _RUNS_BY_EA.get(ea_id, [])
+        _RUNS_BY_DB[cache_key] = acc
+    return _RUNS_BY_DB[cache_key].get(ea_id, [])
 
 
 # ── sections embedded into ea_<id>.html ───────────────────────────────────────
@@ -925,9 +1103,12 @@ def render_backtests_section(items: list[dict]) -> str:
         ev = it.get("evidence") or ""
         ev_link = (f'<a href="file:///{e(ev.replace(chr(92), "/"))}">evidence</a>'
                    if ev and os.path.exists(ev) else "")
+        gate_display = it.get("phase_label") or phase_label(
+            it.get("phase"), it.get("contract_version"), include_name=True
+        )
         rows.append(
             f'<tr><td class="bt-v">{e((it.get("upd") or "")[:16].replace("T", " "))}</td>'
-            f'<td class="bt-v">{e(it.get("phase") or "")}</td>'
+            f'<td class="bt-v">{e(gate_display)}</td>'
             f'<td class="bt-v">{e(it.get("symbol") or "")}</td>'
             f'<td><span class="bt-v {_vclass(it.get("verdict") or "", it.get("tax") or "")}">'
             f'{e(it.get("verdict") or "-")}</span></td>'
@@ -952,7 +1133,7 @@ def render_backtests_section(items: list[dict]) -> str:
 MATRIX_CSS = """
 :root{--bg:#0c0f16;--s1:#151a23;--s2:#1c2330;--s3:#27303f;--tx:#e8ebf0;--tx2:#b6bdc8;
 --tx3:#868e9c;--tx4:#5b6472;--bd:#222a37;--bd2:#313a49;--pass:#30be69;--fail:#f05a5e;
---void:#e19a24;--open:#6b7280;--hole:#84a2ff;--eval:#3455a8;--opt:#a86a20;--port:#6b4ba8}
+--void:#e19a24;--open:#6b7280;--hole:#84a2ff;--m1:#3455a8;--m2:#a86a20;--m3:#6b4ba8}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);
 font:13px/1.5 "Inter",-apple-system,Segoe UI,system-ui,sans-serif}
@@ -979,16 +1160,16 @@ thead th{position:sticky;background:var(--s2);z-index:3;font-weight:500;color:va
 border-bottom:1px solid var(--bd2);text-align:left;white-space:nowrap}
 thead tr.g th{top:0;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
 padding:5px 8px;color:#fff;text-align:center}
-thead tr.g th.eval{background:var(--eval)}
-thead tr.g th.opt{background:var(--opt)}
-thead tr.g th.port{background:var(--port)}
+thead tr.g th.m1{background:var(--m1)}
+thead tr.g th.m2{background:var(--m2)}
+thead tr.g th.m3{background:var(--m3)}
 thead tr.g th.blank{background:var(--s2)}
 thead tr.h th{top:24px;padding:6px 8px;cursor:pointer;user-select:none}
 thead tr.h th:hover{color:var(--tx);background:var(--s3)}
 thead tr.h th small{display:block;font-size:9px;color:var(--tx4);font-weight:400}
-thead tr.h th.eval{border-bottom:2px solid var(--eval)}
-thead tr.h th.opt{border-bottom:2px solid var(--opt)}
-thead tr.h th.port{border-bottom:2px solid var(--port)}
+thead tr.h th.m1{border-bottom:2px solid var(--m1)}
+thead tr.h th.m2{border-bottom:2px solid var(--m2)}
+thead tr.h th.m3{border-bottom:2px solid var(--m3)}
 tbody td{border-bottom:1px solid var(--bd);padding:3px 8px;vertical-align:middle}
 tbody tr:hover{background:var(--s1)}
 tr.card{cursor:pointer}
@@ -1012,6 +1193,7 @@ outline:1px solid var(--void)}
 i.o{background:transparent;border:1.5px solid var(--open)}
 i.h{background:var(--hole);box-shadow:0 0 0 2px rgba(132,162,255,.30);position:relative}
 i.h::after{content:"";position:absolute;inset:3px;background:var(--bg)}
+i.ct{background:transparent;border:1.5px dashed var(--hole);transform:rotate(45deg)}
 .lg i{display:inline-block;vertical-align:-1px;margin-right:5px}
 footer{padding:14px 22px 30px;color:var(--tx4);font-size:11px;line-height:1.7;
 border-top:1px solid var(--bd)}
@@ -1026,8 +1208,9 @@ MATRIX_JS = """
 var tb=document.getElementById('tb'),rows=[],pairs={};
 var MDL=JSON.parse(document.getElementById('mdl').textContent);
 var SYM=JSON.parse(document.getElementById('syms').textContent);
-var NCOL=15,SC=['p','s','f','v','o','h',''],
-    SN=['PASS','PASS conditional','FAIL','VOID','running/queued','GAP','-'];
+var RSN=JSON.parse(document.getElementById('rsn').textContent);
+var NCOL=__NCOL__,SC=['p','s','f','v','o','h','','ct'];
+function esc(s){return String(s).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 Array.prototype.forEach.call(tb.rows,function(r){if(r.className==='card')rows.push(r);});
 var fq=document.getElementById('q'),ff=document.getElementById('f'),
     fs=document.getElementById('sym'),fo=document.getElementById('so'),
@@ -1072,12 +1255,12 @@ function build(tr){
   var idx=parseInt(tr.getAttribute('data-i'),10),model=MDL[idx],out=[],ref=tr.nextSibling;
   model.forEach(function(row){
     var si=row[0],by={};
-    row[1].forEach(function(c){by[c[0]]=c[1];});
+    row[1].forEach(function(c){by[c[0]]=c;});
     var h='<td class="id">'+SYM[si]+'</td><td class="n"></td><td class="n"></td><td class="n"></td>';
     for(var i=0;i<NCOL;i++){
-      if(by[i]===undefined){h+='<td class="c"></td>';}
-      else{h+='<td class="c"><div class="strip"><i class="'+SC[by[i]]+' y'+si+
-              '" title="'+SYM[si]+' '+SN[by[i]]+'"></i></div></td>';}
+      if(by[i]===undefined){h+='<td class="c" title="'+esc(RSN[row[2][i]])+'"></td>';}
+      else{h+='<td class="c"><div class="strip"><i class="'+SC[by[i][1]]+' y'+si+
+              '" title="'+esc(by[i][2])+'"></i></div></td>';}
     }
     var el=document.createElement('tr');el.className='pair';el.innerHTML=h;
     tb.insertBefore(el,ref);out.push(el);
@@ -1109,40 +1292,64 @@ fo.addEventListener('change',function(){var v=fo.value;sort(v,v==='ea'?1:-1);});
 
 def render_matrix_page(data: dict) -> str:
     cards = data["cards"]
+    columns: list[ArchiveColumn] = data["columns"]
     stats = data["stats"]
     hbg = data["hole_by_gate"]
     all_syms = sorted({s for c in cards for s in c["symbols"]})
     sym_idx = {s: i for i, s in enumerate(all_syms)}
     now = dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()
 
-    def strip(packed_list: list[int], symbols: list[str], gate: str) -> str:
-        if not packed_list:
+    def strip(cell_list: list[dict], symbols: list[str]) -> str:
+        if not cell_list:
             return ""
-        out = []
-        for packed in packed_list:
-            si, st = packed >> 3, packed & 7
-            sym = symbols[si]
-            out.append(f'<i class="{ST_CLASS[st]} y{sym_idx[sym]}" '
-                       f'title="{e(sym)} {gate} {ST_NAME[st]}"></i>')
+        out = [
+            f'<i class="{ST_CLASS[cell["state"]]} y{sym_idx[symbols[cell["symbol_index"]]]}" '
+            f'title="{e(cell["title"])}"></i>'
+            for cell in cell_list
+        ]
         return '<div class="strip">' + "".join(out) + "</div>"
+
+    reasons: list[str] = []
+    reason_ids: dict[str, int] = {}
+
+    def reason_id(reason: str) -> int:
+        if reason not in reason_ids:
+            reason_ids[reason] = len(reasons)
+            reasons.append(reason)
+        return reason_ids[reason]
 
     body, model = [], []
     for n, c in enumerate(cards):
         symbols = c["symbols"]
-        tds = "".join(f'<td class="c">{strip(c["cells"].get(tok, []), symbols, tok)}</td>'
-                      for tok, _l, _g, _s in COLUMNS)
+        tds_parts = []
+        for column in columns:
+            cell_list = c["cells"].get(column.gate_id, [])
+            title = ("" if cell_list else
+                     ' title="No rendered chip; expand the card for the per-symbol reason."')
+            tds_parts.append(f'<td class="c"{title}>{strip(cell_list, symbols)}</td>')
+        tds = "".join(tds_parts)
         rowmodel = []
         for si, sym in enumerate(symbols):
             gcells = []
-            for ci, (tok, _l, _g, _s) in enumerate(COLUMNS):
-                for packed in c["cells"].get(tok, []):
-                    if (packed >> 3) == si:
-                        gcells.append([ci, packed & 7])
+            row_reasons = []
+            for ci, column in enumerate(columns):
+                token = column.gate_id
+                for cell in c["cells"].get(token, []):
+                    if cell["symbol_index"] == si:
+                        gcells.append([ci, cell["state"], cell["title"]])
                         break
-            rowmodel.append([sym_idx[sym], gcells])
+                else:
+                    reason = next(
+                        entry["reason"] for entry in c["empty_reasons"].get(token, [])
+                        if entry["symbol_index"] == si
+                    )
+                    row_reasons.append(reason_id(reason))
+                    continue
+                row_reasons.append(reason_id("cell has rendered evidence"))
+            rowmodel.append([sym_idx[sym], gcells, row_reasons])
         model.append(rowmodel)
         symkey = "|" + "|".join(str(sym_idx[s]) for s in symbols) + "|"
-        hp = COLUMNS[c["hp"]][1] if c["hp"] >= 0 else "—"
+        hp = columns[c["hp"]].gate_id if c["hp"] >= 0 else "—"
         body.append(
             f'<tr class="card" id="r{n}" data-i="{n}" data-ea="{e(c["ea"])}" '
             f'data-hp="{c["hp"]}" data-hole="{c["hole"]}" data-void="{c["void"]}" '
@@ -1154,16 +1361,18 @@ def render_matrix_page(data: dict) -> str:
             f'<td class="n">{c["void"] or ""}</td>{tds}</tr>')
 
     g1 = ['<th class="blank" colspan="4"></th>']
-    for grp, label in (("eval", "Evaluation"), ("opt", "Optimization"),
-                       ("port", "Portfolio build")):
-        g1.append(f'<th class="{grp}" colspan="{sum(1 for c in COLUMNS if c[2] == grp)}">'
-                  f'{label}</th>')
-    g2 = ['<th data-k="ea">Strategy Card</th><th data-k="hp">highest&nbsp;PASS</th>'
+    for (_band_id, band_name, css_class), grouped in groupby(
+        columns, key=lambda column: (column.band_id, column.band_name, column.css_class)
+    ):
+        grouped_columns = list(grouped)
+        g1.append(f'<th class="{css_class}" colspan="{len(grouped_columns)}">'
+                  f'{e(band_name)}</th>')
+    g2 = ['<th data-k="ea">Strategy Card</th><th data-k="hp">contiguous&nbsp;frontier</th>'
           '<th data-k="hole">gaps</th><th data-k="void">VOID</th>']
-    for tok, label, grp, sub in COLUMNS:
-        sub_html = f"<small>{e(sub)}</small>" if sub else ""
-        g2.append(f'<th class="{grp}" data-k="hp" title="{e(PHASE_NAME.get(tok, tok))}">'
-                  f'{e(label)}{sub_html}</th>')
+    for column in columns:
+        sub_html = '<small>OWNER/manual · no gap chips</small>' if column.owner_manual else ""
+        g2.append(f'<th class="{column.css_class}" data-k="hp" title="{e(column.name)}">'
+                  f'{e(column.gate_id)}{sub_html}</th>')
 
     sym_css = "".join(f"body.symf.s{i} i:not(.y{i}){{opacity:.10}}"
                       for i in range(len(all_syms)))
@@ -1188,6 +1397,8 @@ def render_matrix_page(data: dict) -> str:
         f'<span class="lg"><i class="v"></i><b>VOID - run burnt</b> {fmt(stats[ST_VOID])}</span>'
         f'<span class="lg"><i class="o"></i><b>running / queued</b> {fmt(stats[ST_OPEN])}</span>'
         f'<span class="lg"><i class="h"></i><b>reachable gap</b> {fmt(sum(hbg.values()))}</span>'
+        f'<span class="lg"><i class="ct"></i><b>nie getestet (Card-Ziel)</b> '
+        f'{fmt(stats[ST_CARD_HOLE])}</span>'
         '<span class="lg" style="color:var(--tx4)">empty cell = no run and none due</span>')
     holes = " · ".join(f"{g} {fmt(n)}" for g, n in
                        sorted(hbg.items(), key=lambda kv: -kv[1]) if n) or "-"
@@ -1198,7 +1409,7 @@ def render_matrix_page(data: dict) -> str:
 <style>{MATRIX_CSS}{sym_css}</style></head><body>
 <header>
 <h1>Strategy Archive Matrix</h1>
-<div class="sub">{fmt(len(cards))} strategy cards · {fmt(tot_cells)} stored cells ·
+<div class="sub">{fmt(len(cards))} strategy cards · {fmt(tot_cells)} rendered chips ·
 {fmt(sum(hbg.values()))} reachable gaps · as of {now} · source <code>work_items_clean</code>
 over <code>farm_state.sqlite</code> · <a href="strategies.html">Strategy Archive</a> ·
 <a href="cockpit.html">Mission Control</a></div>
@@ -1207,8 +1418,8 @@ over <code>farm_state.sqlite</code> · <a href="strategies.html">Strategy Archiv
 usable build identity per cell (<code>expected_ex5_sha256</code> in 0.3% of rows; the
 <code>.ex5</code> timestamp would flag 73.6% of all PASS rows as stale and is polluted by
 recompiles that never touch the EA). Until schema hardening SH-2 lands, the pre-registered
-fallback applies: latest verdict, visibly warned. Branch columns already carry their future
-names <b>Q10.1-Q10.3</b>; in storage they remain Q14-Q16 until gate manifest v4.</div>
+fallback applies: latest verdict, visibly warned. Gate columns, order and bands are loaded
+from the active manifest; historical rows retain their contract provenance.</div>
 <div class="legend">{legend}</div>
 <div class="controls">
 <input id="q" type="search" placeholder="search card or slug..." style="width:210px">
@@ -1233,9 +1444,14 @@ cards never built — belongs to the drain programme. Absence here is never evid
 completeness.<br>
 <b>Second source, kept separate:</b> {fmt(data['untested_targets'])} target symbols from card
 frontmatter have no run at all and appear as a Q02 gap
+labelled <b>nie getestet (Card-Ziel)</b>
 ({fmt(data['cards_with_targets'])} cards read).<br>
-<b>Empty, not a gap:</b> {fmt(data['retired_pairs'])} (card, symbol) pairs are retired via
-RETIRE/OBSOLETE/SUPERSEDED and {fmt(data['held_items'])} work items sit under an active hold.<br>
+<b>Work-item gap contract:</b>
+{e(' · '.join(f'{k} {v}' for k, v in sorted(data['action_counts'].items())) or '-')}.
+Actions are read from the governed 2026-08-23 backfill plan when rendering the farm DB;
+economic STOP cells remain FAIL; OWNER/manual gates never receive gap chips.<br>
+<b>Empty, not a gap:</b> {fmt(data['held_items'])} work items sit under an active hold;
+every empty pair cell exposes its derived reason on hover.<br>
 <b>Storage phases not shown:</b>
 {e(', '.join(f'{k} {v}' for k, v in data['skipped_phase'].most_common(6))) or '-'}<br>
 Read-only. No action paths. Collected in {data['collect_s']}s over
@@ -1243,13 +1459,21 @@ Read-only. No action paths. Collected in {data['collect_s']}s over
 </footer>
 <script id="mdl" type="application/json">{json.dumps(model, separators=(",", ":"))}</script>
 <script id="syms" type="application/json">{json.dumps(all_syms, separators=(",", ":"))}</script>
-<script>{MATRIX_JS}</script></body></html>"""
+<script id="rsn" type="application/json">{json.dumps(reasons, separators=(",", ":"))}</script>
+<script>{MATRIX_JS.replace('__NCOL__', str(len(columns)))}</script></body></html>"""
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     """Standalone render, for iteration outside the hourly dashboard task."""
-    data = collect()
-    out = FARM_ROOT / "dashboards" / "strategy_archive.html"
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--db", type=Path, default=DB)
+    parser.add_argument(
+        "--output", type=Path,
+        default=FARM_ROOT / "dashboards" / "strategy_archive.html",
+    )
+    args = parser.parse_args(argv)
+    data = collect(args.db)
+    out = args.output
     out.parent.mkdir(parents=True, exist_ok=True)
     doc = render_matrix_page(data)
     out.write_text(doc, encoding="utf-8")
