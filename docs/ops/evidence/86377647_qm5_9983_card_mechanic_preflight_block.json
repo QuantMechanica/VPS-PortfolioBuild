@@ -1,0 +1,49 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "86377647-2659-4308-a435-727c070515c4",
+  "task_type": "build_ea",
+  "checked_at_utc": "2026-08-23T08:49:13.9895125Z",
+  "git_head": "9cd35fca17cc9f2b88d8c6cfed1cd895ca6f77bc",
+  "requested_identity": {
+    "ea_id": "QM5_9983",
+    "slug": "bandy-wide-range-bar-fade-mr-index",
+    "ea_dir": "C:/QM/repo/framework/EAs/QM5_9983_bandy-wide-range-bar-fade-mr-index"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_9983_bandy-wide-range-bar-fade-mr-index.md",
+    "sha256": "3d8cd8b97d036434b863fc479296dd200df17934581d7dcf6b7ef5d970e50094",
+    "source_id": "9ef19e06-5ca6-5b35-aa06-b8187aa0e016",
+    "g0_status": "APPROVED"
+  },
+  "identity_preflight": {
+    "ea_registry_row": "9983,bandy-wide-range-bar-fade-mr-index,active",
+    "ea_registry_sha256": "8ea60f1d78d5821445189dd88de543b103ae51dd43ea8fcb5548f28de91cfc88",
+    "active_magic_rows": 13,
+    "magic_registry_sha256": "5c7a98100c2db84f5b930817c1a763cdf9074fa183d782e66ee1fac6167fad6d",
+    "identity_verdict": "PASS"
+  },
+  "mechanic_contradiction": {
+    "long_rule": "down_bar AND close in upper quartile; enter long; target the signal-bar midpoint",
+    "long_proof": "close in upper quartile implies close >= low + 0.75*(high-low), while midpoint = low + 0.50*(high-low), so midpoint is at least 0.25 bar-range below the signal close and normally below next-bar long entry",
+    "short_rule": "up_bar AND close in lower quartile; enter short; target the signal-bar midpoint",
+    "short_proof": "close in lower quartile implies close <= low + 0.25*(high-low), while midpoint = low + 0.50*(high-low), so midpoint is at least 0.25 bar-range above the signal close and normally above next-bar short entry",
+    "unresolved_choices": [
+      "Reverse the close-quartile conditions while retaining trade directions",
+      "Reverse the trade directions while retaining close-quartile conditions",
+      "Replace the midpoint target with a favorable-side projection"
+    ]
+  },
+  "secondary_scope_issue": "The card's exact Target Symbols section names SP500.DWX, NDX.DWX, and WS30.DWX, while the deterministic registry currently has 13 active rows; any repaired card/build must state whether the ten additional rows are inactive scope or require registry cleanup.",
+  "verdict": "BLOCKED_CARD_MECHANIC_CONTRADICTION",
+  "blocked_reason": "The approved entry direction and midpoint profit-target geometry are mutually adverse for both long and short setups; implementing any interpretation would change strategy mechanics without OWNER/card authority.",
+  "required_next_action": "Research plus OWNER must correct the entry-quartile/direction/target relationship, resolve the three-symbol versus 13-row scope, and re-approve G0 before Development builds the EA.",
+  "actions_taken": {
+    "source_modified": false,
+    "source_sha256": "d6136d1cbc52caac97976722613462d354dd8776c373ee2f1cb986a9e154eedd",
+    "registry_modified": false,
+    "compile_attempted": false,
+    "smoke_attempted": false,
+    "pipeline_phase_run": false,
+    "live_or_autotrading_changed": false
+  }
+}
