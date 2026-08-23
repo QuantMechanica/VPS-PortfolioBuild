@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9925
+; ea_slug:      bandy-cci-momentum-breakout-trend
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       USDCAD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   11
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   11d865ab7cb37ddfe81860d6201b9d0fe03b281d292614f9948918ece651912e
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=9925
+qm_magic_slot_offset=11
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9925_bandy-cci-momentum-breakout-trend.md
+; card_defaults_status=none_found
+; strategy params backfilled from the EA's own input defaults;
+; behaviour-identical (an omitted param already used this value),
+; required by Q08 sub-gate 8.5 which perturbs named parameters.
+strategy_atr_period=14
+strategy_atr_stop_mult=3.0
+strategy_cci_entry_threshold=100.0
+strategy_cci_exit_threshold=0.0
+strategy_cci_period=20
+strategy_doji_threshold=0.1
+strategy_regime_sma_period=200
+strategy_time_stop_bars=45
+strategy_warmup_bars=250
