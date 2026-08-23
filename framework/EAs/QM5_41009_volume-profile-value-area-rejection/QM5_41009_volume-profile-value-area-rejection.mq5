@@ -161,6 +161,7 @@ bool BuildPriorProfile(const datetime today_start,
       const double share = tv / (double)span;
       for(int b = b_lo; b <= b_hi; ++b)
       {
+         if(b >= ArraySize(vol)) continue;
          vol[b] += share;
          total_vol += share;
       }
@@ -181,14 +182,16 @@ bool BuildPriorProfile(const datetime today_start,
    }
 
    const double target_vol = total_vol * (InpValueAreaPct / 100.0);
+   if(poc_idx < 0 || poc_idx >= ArraySize(vol))
+      return false;
    double captured = vol[poc_idx];
    int lo_idx = poc_idx;
    int hi_idx = poc_idx;
 
    for(int iter = 0; iter < n_buckets && captured < target_vol; ++iter)
    {
-      const bool can_down = (lo_idx > 0);
-      const bool can_up   = (hi_idx < n_buckets - 1);
+      const bool can_down = (lo_idx > 0 && lo_idx - 1 < ArraySize(vol));
+      const bool can_up   = (hi_idx < n_buckets - 1 && hi_idx + 1 < ArraySize(vol));
       if(!can_down && !can_up)
          break;
 
@@ -198,16 +201,19 @@ bool BuildPriorProfile(const datetime today_start,
       if(vol_up >= vol_down && can_up)
       {
          hi_idx++;
+         if(hi_idx < 0 || hi_idx >= ArraySize(vol)) break;
          captured += vol[hi_idx];
       }
       else if(can_down)
       {
          lo_idx--;
+         if(lo_idx < 0 || lo_idx >= ArraySize(vol)) break;
          captured += vol[lo_idx];
       }
       else if(can_up)
       {
          hi_idx++;
+         if(hi_idx < 0 || hi_idx >= ArraySize(vol)) break;
          captured += vol[hi_idx];
       }
    }

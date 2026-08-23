@@ -3,7 +3,9 @@
   "ea_id": "QM5_41009",
   "ea_dir": "framework/EAs/QM5_41009_volume-profile-value-area-rejection",
   "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41009_volume-profile-value-area-rejection\\QM5_41009_volume-profile-value-area-rejection.mq5",
+  "mq5_sha256": "6778562109d41de0519b208f9b944ff1540c9865d64b0a62741d4b47c7407c8d",
   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41009_volume-profile-value-area-rejection\\QM5_41009_volume-profile-value-area-rejection.ex5",
+  "ex5_sha256": "da2ad0e1343ffaf9b466e0de4bbbbc09871214754b5e4d07b549de174b7266c8",
   "magic_base": 410090000,
   "symbols_registered": [
     "SP500.DWX",
