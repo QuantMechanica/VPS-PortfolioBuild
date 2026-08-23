@@ -117,6 +117,45 @@ setfile diff. No Q02 append-only rerun (requires a successfully compiled EX5 fir
 exists). Registry/magic files unchanged for both EAs. Factory was not toggled; no EA was
 recompiled outside the governed queue; no verdict row was mutated.
 
+## Correction — `EA_FRAMEWORK_RAW_SERIES_CALL` was reproduced by the authoritative checker
+
+The verification above ran `build_gate_hardening.py` directly. That Python module does **not**
+implement the `EA_FRAMEWORK_RAW_SERIES_CALL` check — that check (`Invoke-PerfStaticCheck`,
+`rawSeriesPattern` over `iOpen|iHigh|iLow|iClose|iTime|iVolume|Bars`) lives only in
+`framework/scripts/build_check.ps1`, runs unconditionally unless `-SkipPerfStaticCheck` is
+passed, and **is** exactly what the governed `COMPILE_EA` worker invokes
+(`compile_work_items.py:1098-1106` calls `build_check.ps1 -EALabel <label> -Strict
+-CompileWorkItemId <id> -ClaimedTerminal <terminal>` with no skip flags). Running the pattern
+directly against the pre-correction `QM5_1567` source confirmed 11 unannotated matches
+(`SetupChain` / `CountdownTrigger` / `Strategy_EntrySignal` — lines 89, 90, 118, 119, 126, 127,
+138, 146, 149, 227, 236, all `iClose`/`iHigh`/`iLow`/`iTime`). The "not reproduced" conclusion
+above was an artifact of checking with the narrower tool, not evidence the defect was absent;
+the compile row `24e3a252` would have failed `EA_FRAMEWORK_RAW_SERIES_CALL` once the
+`COMPILE_EA_WORKER_ROLLOUT_PENDING` hold releases and the worker actually ran `build_check.ps1
+-Strict`.
+
+Fix: `// perf-allowed: <reason>` trailing comments on all 11 flagged lines (the sanctioned
+exception path the check itself documents — "use QM_* helpers or add `// perf-allowed` with
+reviewer sign-off for bespoke structural logic"). This is the DeMark TD Sequential/Combo
+setup+countdown bar-counting core — bounded, index-shift comparisons against a fixed lookback
+(`strategy_setup_bars`, `strategy_countdown_timeout`), not a per-tick unbounded scan; exactly
+the "bespoke structural logic" class the exception exists for, matching the existing convention
+in e.g. `QM5_10030_rw-fx-eur-basket.mq5`. No comparison, index, or branch logic was touched —
+comment-only diff (`git diff --stat`: `1 file changed, 11 insertions(+), 11 deletions(-)`, every
+hunk a same-line trailing-comment append).
+
+`QM5_1567_demark-td-reverse-sequential-h4.mq5` sha256 after this correction:
+`a9531d333dbbe067270811e696e235483d12d2604e86c974feea411066649f8c` (supersedes the "after" hash
+in the table above, which reflected only the MAE-hook fix).
+
+`QM5_12989` is unaffected by this correction — its only flagged class was
+`EA_INDICATOR_BUFFER_UNBOUNDED`, already closed by the earlier fix in this doc; confirmed no
+`iOpen|iHigh|iLow|iClose|iTime|iVolume|Bars` matches in that file.
+
+Compile work item `24e3a252-7c15-418c-b614-3a525e32c9f7` remains the correct pending row
+(`farmctl.py enqueue-compile` re-run confirms `idempotent_open` against the same id — compile
+work items bind to the EA label/dir, not a frozen source snapshot, so no new row was needed).
+
 ## Next step for the reviewer
 
 After the `COMPILE_EA_WORKER_ROLLOUT_PENDING` hold releases (governed release-on-restart

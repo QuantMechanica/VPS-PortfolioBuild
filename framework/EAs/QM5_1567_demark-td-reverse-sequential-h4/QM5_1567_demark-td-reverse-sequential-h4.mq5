@@ -86,8 +86,8 @@ bool SetupChain(const bool is_buy, const int setup_end_shift)
    for(int k = 0; k < strategy_setup_bars; ++k)
      {
       const int shift = setup_end_shift + k;
-      const double c = iClose(_Symbol, PERIOD_H4, shift);
-      const double c4 = iClose(_Symbol, PERIOD_H4, shift + 4);
+      const double c = iClose(_Symbol, PERIOD_H4, shift);   // perf-allowed: bespoke DeMark TD setup-chain bar compare, bounded by strategy_setup_bars, no per-bar loop over history.
+      const double c4 = iClose(_Symbol, PERIOD_H4, shift + 4);   // perf-allowed: bespoke DeMark TD setup-chain bar compare, bounded by strategy_setup_bars.
       if(c <= 0.0 || c4 <= 0.0)
          return false;
       if(is_buy)
@@ -115,16 +115,16 @@ bool CountdownTrigger(const bool is_buy, const int setup_end_shift, double &bar1
       bool qualifies = false;
       if(is_buy)
         {
-         const double low_now = iLow(_Symbol, PERIOD_H4, shift);
-         const double low_ref = iLow(_Symbol, PERIOD_H4, shift + 2);
+         const double low_now = iLow(_Symbol, PERIOD_H4, shift);   // perf-allowed: bespoke DeMark TD countdown bar compare, bounded by strategy_countdown_timeout.
+         const double low_ref = iLow(_Symbol, PERIOD_H4, shift + 2);   // perf-allowed: bespoke DeMark TD countdown bar compare, bounded by strategy_countdown_timeout.
          if(low_now <= 0.0 || low_ref <= 0.0)
             return false;
          qualifies = (low_now < low_ref);
         }
       else
         {
-         const double high_now = iHigh(_Symbol, PERIOD_H4, shift);
-         const double high_ref = iHigh(_Symbol, PERIOD_H4, shift + 2);
+         const double high_now = iHigh(_Symbol, PERIOD_H4, shift);   // perf-allowed: bespoke DeMark TD countdown bar compare, bounded by strategy_countdown_timeout.
+         const double high_ref = iHigh(_Symbol, PERIOD_H4, shift + 2);   // perf-allowed: bespoke DeMark TD countdown bar compare, bounded by strategy_countdown_timeout.
          if(high_now <= 0.0 || high_ref <= 0.0)
             return false;
          qualifies = (high_now > high_ref);
@@ -135,7 +135,7 @@ bool CountdownTrigger(const bool is_buy, const int setup_end_shift, double &bar1
 
       count++;
       if(count == 8)
-         close_bar8 = iClose(_Symbol, PERIOD_H4, shift);
+         close_bar8 = iClose(_Symbol, PERIOD_H4, shift);   // perf-allowed: bespoke DeMark TD countdown bar-8 close capture, bounded loop.
 
       if(count == strategy_countdown_bars)
         {
@@ -143,10 +143,10 @@ bool CountdownTrigger(const bool is_buy, const int setup_end_shift, double &bar1
             return false;
          if(is_buy)
            {
-            bar13_extreme = iLow(_Symbol, PERIOD_H4, 1);
+            bar13_extreme = iLow(_Symbol, PERIOD_H4, 1);   // perf-allowed: bespoke DeMark TD bar-13 extreme read, single bar, terminal countdown check.
             return (bar13_extreme > 0.0 && bar13_extreme < close_bar8);
            }
-         bar13_extreme = iHigh(_Symbol, PERIOD_H4, 1);
+         bar13_extreme = iHigh(_Symbol, PERIOD_H4, 1);   // perf-allowed: bespoke DeMark TD bar-13 extreme read, single bar, terminal countdown check.
          return (bar13_extreme > 0.0 && bar13_extreme > close_bar8);
         }
      }
@@ -224,7 +224,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(HasOpenPositionForMagic())
       return false;
 
-   const datetime signal_bar_time = iTime(_Symbol, PERIOD_H4, 1);
+   const datetime signal_bar_time = iTime(_Symbol, PERIOD_H4, 1);   // perf-allowed: signal-bar dedup timestamp, called only from framework QM_IsNewBar-gated OnTick.
    if(signal_bar_time <= 0 || signal_bar_time == g_last_signal_bar_time)
       return false;
 
@@ -233,7 +233,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!FindReverseSequentialSignal(is_buy, bar13_extreme))
       return false;
 
-   const double d1_close = iClose(_Symbol, PERIOD_D1, 1);
+   const double d1_close = iClose(_Symbol, PERIOD_D1, 1);   // perf-allowed: D1 regime-filter close, single bounded read alongside QM_SMA regime check.
    const double d1_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_regime_sma_period, 1, PRICE_CLOSE);
    if(d1_close <= 0.0 || d1_sma <= 0.0)
       return false;
