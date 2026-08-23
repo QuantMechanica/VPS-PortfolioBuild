@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "qm.gate-manifest/v4",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "pipeline_version", "status", "draft_note",
+    "canonical_id_pattern", "write_policy", "legacy_policy",
+    "gate_contract_version", "verdict_dimensions", "macro_phases", "gates",
+    "ordinary_chain", "linearity_invariant", "legacy_aliases",
+    "contract_equivalence", "storage_strategy", "book_trigger",
+    "backfill_planner_contract", "extension_topology"
+  ],
+  "properties": {
+    "schema_version": {"const": "qm.gate-manifest/v4"},
+    "pipeline_version": {"type": "string", "minLength": 1},
+    "status": {"enum": ["DRAFT_PROPOSAL_NOT_ACTIVATED", "ACTIVE"]},
+    "draft_note": {"type": "string", "minLength": 1},
+    "canonical_id_pattern": {"const": "^Q(?:0[0-9]|1[0-7])$"},
+    "write_policy": {"const": "CANONICAL_ONLY"},
+    "legacy_policy": {"const": "READ_AND_MIGRATION_ONLY"},
+    "gate_contract_version": {"const": "v4"},
+    "verdict_dimensions": {
+      "const": [
+        "execution_status", "evidence_strength", "economic_merit",
+        "target_eligibility", "promotion_decision"
+      ]
+    },
+    "macro_phases": {
+      "const": [
+        {"id":"1_STRATEGIEBEWEIS","name":"Strategie beweist sich","gates":["Q00","Q01","Q02","Q03","Q04","Q05","Q06","Q07","Q08"]},
+        {"id":"2_OPTIMIERUNG","name":"Strategie wird optimiert / requalifiziert","gates":["Q09","Q10","Q11","Q12","Q13","Q14"]},
+        {"id":"3_BUCHBEWERTUNG","name":"Strategie wird zum Buch bewertet","gates":["Q15","Q16","Q17"]}
+      ]
+    },
+    "gates": {
+      "type": "array",
+      "minItems": 18,
+      "maxItems": 18,
+      "items": {"$ref": "#/$defs/gate"}
+    },
+    "ordinary_chain": {
+      "const": ["Q00","Q01","Q02","Q03","Q04","Q05","Q06","Q07","Q08","Q09","Q10","Q11","Q12","Q13","Q14","Q15","Q16","Q17"]
+    },
+    "linearity_invariant": {"type": "string", "pattern": "^STRICTLY_MONOTONE"},
+    "legacy_aliases": {
+      "const": {
+        "G0":"Q00","P1":"Q01","P2":"Q02","P3":"Q03","P3.5":"Q03",
+        "P4":"Q04","P5":"Q05","P5B":"Q05","P5C":"Q05","P6":"Q07",
+        "P7":"Q08","P8":"Q08","P9":"Q15","P9B":"Q16","P10":"Q17"
+      }
+    },
+    "contract_equivalence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["note", "v3_to_v4", "dependency_role_v3_to_v4"],
+      "properties": {
+        "note": {"type": "string", "minLength": 1},
+        "v3_to_v4": {
+          "const": {
+            "Q00":"Q00","Q01":"Q01","Q02":"Q02","Q03":"Q03","Q04":"Q04","Q05":"Q05","Q06":"Q06","Q07":"Q07","Q08":"Q08",
+            "Q10A":"Q09","Q09":"Q10","Q09_NEWS":"Q10_NEWS","Q09_PORTFOLIO":"Q10_PORTFOLIO","Q10":"Q11",
+            "Q14":"Q12","Q15":"Q13","Q16":"Q14","Q11":"Q15","Q11_DXZ":"Q15_DXZ","Q11_FTMO":"Q15_FTMO","Q12":"Q16","Q13":"Q17"
+          }
+        },
+        "dependency_role_v3_to_v4": {
+          "const": {
+            "Q08_INPUT":"Q08_INPUT","Q09_NEWS":"Q10_NEWS","Q09_PORTFOLIO":"Q10_PORTFOLIO",
+            "PARENT_LINEAGE":"PARENT_LINEAGE","CHALLENGER_Q10":"CHALLENGER_Q11","Q14_ADMISSION":"Q12_ADMISSION"
+          }
+        }
+      }
+    },
+    "storage_strategy": {"$ref": "#/$defs/storageStrategy"},
+    "book_trigger": {"$ref": "#/$defs/bookTrigger"},
+    "backfill_planner_contract": {"$ref": "#/$defs/backfillPlanner"},
+    "extension_topology": {"$ref": "#/$defs/extensionTopology"}
+  },
+  "$defs": {
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "ordinal", "macro_phase", "name", "authority", "runner",
+        "evidence_role", "next", "v3_source", "reuse_rule"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^Q(?:0[0-9]|1[0-7])$"},
+        "ordinal": {"type": "integer", "minimum": 0, "maximum": 17},
+        "macro_phase": {"enum": ["1_STRATEGIEBEWEIS", "2_OPTIMIERUNG", "3_BUCHBEWERTUNG"]},
+        "name": {"type": "string", "minLength": 1},
+        "authority": {"enum": ["OWNER", "DEVELOPMENT", "PIPELINE"]},
+        "runner": {"enum": ["MANUAL", "MANUAL_OR_ROUTED", "AUTOMATED", "MANUAL_OR_ANALYTIC"]},
+        "evidence_role": {"type": "string", "minLength": 1},
+        "next": {
+          "anyOf": [
+            {"type": "string", "pattern": "^Q(?:0[0-9]|1[0-7])$"},
+            {"type": "null"}
+          ]
+        },
+        "v3_source": {"type": "string", "pattern": "^Q(?:0[0-9]|1[0-6]|10A)$"},
+        "reuse_rule": {"type": "string", "minLength": 1},
+        "note": {"type": "string", "minLength": 1},
+        "storage_lanes": {
+          "type": "array", "minItems": 2, "maxItems": 2,
+          "items": {"enum": ["Q10_NEWS", "Q10_PORTFOLIO"]},
+          "uniqueItems": true
+        },
+        "selection_contract": {"const": "DL-089"},
+        "pattern_filter_cap_per_direction": {"const": 3},
+        "terminal_optimization_gate": {"const": true},
+        "valid_outcomes": {"const": ["CHALLENGER_PROMOTED", "KEEP_INCUMBENT"]},
+        "entry_policy": {"const": "BOOK_TRIGGER_ONLY"}
+      }
+    },
+    "storageStrategy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy", "work_items_phase", "discriminator_column", "dependency_role_check", "reuse_equivalence"],
+      "properties": {
+        "policy": {"const": "STAMP_DONT_RENAME"},
+        "work_items_phase": {"type": "string", "minLength": 1},
+        "discriminator_column": {"type": "string", "minLength": 1},
+        "dependency_role_check": {"type": "string", "minLength": 1},
+        "reuse_equivalence": {"type": "string", "minLength": 1}
+      }
+    },
+    "bookTrigger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy", "entry_gate", "requires_all", "on_unmet", "supersedes"],
+      "properties": {
+        "policy": {"const": "FAIL_CLOSED"},
+        "entry_gate": {"const": "Q15"},
+        "requires_all": {
+          "type": "array", "minItems": 2, "maxItems": 2,
+          "prefixItems": [
+            {"$ref": "#/$defs/qualifiedCondition"},
+            {"$ref": "#/$defs/ownerOrderCondition"}
+          ],
+          "items": false
+        },
+        "on_unmet": {"type": "string", "minLength": 1},
+        "supersedes": {"type": "string", "minLength": 1}
+      }
+    },
+    "qualifiedCondition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["condition", "detail"],
+      "properties": {
+        "condition": {"const": "qualified_candidates_ge_25"},
+        "detail": {"type": "string", "minLength": 1}
+      }
+    },
+    "ownerOrderCondition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["condition", "detail"],
+      "properties": {
+        "condition": {"const": "owner_order_artifact_present"},
+        "detail": {"type": "string", "minLength": 1}
+      }
+    },
+    "backfillPlanner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ordering_global", "ordering_per_pair", "append_only", "dedup", "terminal_economic_fail", "repairable", "enqueue_binding", "progress_metric"],
+      "properties": {
+        "ordering_global": {"type": "string", "minLength": 1},
+        "ordering_per_pair": {"type": "string", "minLength": 1},
+        "append_only": {"const": true},
+        "dedup": {"type": "string", "minLength": 1},
+        "terminal_economic_fail": {"type": "string", "minLength": 1},
+        "repairable": {"type": "string", "minLength": 1},
+        "enqueue_binding": {"type": "string", "minLength": 1},
+        "progress_metric": {"type": "string", "minLength": 1}
+      }
+    },
+    "extensionTopology": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["removed_from_v3", "storage_lanes", "activation_guard"],
+      "properties": {
+        "removed_from_v3": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "storage_lanes": {
+          "type": "array", "minItems": 2, "maxItems": 2,
+          "prefixItems": [
+            {"$ref": "#/$defs/dxzLane"},
+            {"$ref": "#/$defs/ftmoLane"}
+          ],
+          "items": false
+        },
+        "activation_guard": {
+          "oneOf": [
+            {"$ref": "#/$defs/inertGuard"},
+            {"$ref": "#/$defs/activeGuard"}
+          ]
+        }
+      }
+    },
+    "dxzLane": {"$ref": "#/$defs/storageLane", "properties": {"id": {"const": "Q15_DXZ"}}},
+    "ftmoLane": {"$ref": "#/$defs/storageLane", "properties": {"id": {"const": "Q15_FTMO"}}},
+    "storageLane": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "parent", "authority", "runner", "evidence_role", "top_level"],
+      "properties": {
+        "id": {"enum": ["Q15_DXZ", "Q15_FTMO"]},
+        "parent": {"const": "Q15"},
+        "authority": {"const": "OWNER"},
+        "runner": {"const": "MANUAL_OR_ANALYTIC"},
+        "evidence_role": {"type": "string", "minLength": 1},
+        "top_level": {"const": false}
+      }
+    },
+    "inertGuard": {
+      "type": "object", "additionalProperties": false,
+      "required": ["state", "requires_completed_review", "requires_approver", "default_manifest_switch"],
+      "properties": {
+        "state": {"const": "READ_INERT"},
+        "requires_completed_review": {"const": "OWNER-RATIFY-GATE-MANIFEST-V4"},
+        "requires_approver": {"type": "string", "minLength": 1},
+        "default_manifest_switch": {"const": false}
+      }
+    },
+    "activeGuard": {
+      "type": "object", "additionalProperties": false,
+      "required": ["state", "requires_completed_review", "requires_approver", "default_manifest_switch", "activated_by", "activated_at", "review_refs"],
+      "properties": {
+        "state": {"const": "ACTIVE"},
+        "requires_completed_review": {"const": "OWNER-RATIFY-GATE-MANIFEST-V4"},
+        "requires_approver": {"type": "string", "minLength": 1},
+        "default_manifest_switch": {"const": true},
+        "activated_by": {"type": "string", "minLength": 1},
+        "activated_at": {"type": "string", "minLength": 1},
+        "review_refs": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
