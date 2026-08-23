@@ -1,0 +1,76 @@
+{
+  "task_id": "68f93e30-9d19-4c6c-885e-0591cc38e19f",
+  "ea_id": "QM5_39006",
+  "slug": "forexfactory-spudfyre-stochastic-ribbon",
+  "strategy": "Spudfyre Multi-Timeframe Stochastic Ribbon",
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "host_timeframe": "H1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon.md",
+  "approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon\\sets\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon_EURUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon\\sets\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon_GBPUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon\\sets\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon_AUDUSD.DWX_H1_backtest.set"
+  ],
+  "mq5_sha256": "f7ec98114527597bced2617db64567f6087b4eb177ec1c517d414a570f8dcf08",
+  "ex5_sha256": "17244bbe9f0bbd1807dec6961742f8e8a63091bea468b85993c3e9750673c20e",
+  "ex5_bytes": 401872,
+  "setfile_sha256": {
+    "QM5_39006_forexfactory-spudfyre-stochastic-ribbon_EURUSD.DWX_H1_backtest.set": "6f62ce0042d348ab394c05b880fce8cfbfa8c56ac1cbad8fa235520ca9977ea2",
+    "QM5_39006_forexfactory-spudfyre-stochastic-ribbon_GBPUSD.DWX_H1_backtest.set": "8affbb44e3cef2a470ea07e4e5196e88d7fae2d58c2219484b21140b0eacc9d8",
+    "QM5_39006_forexfactory-spudfyre-stochastic-ribbon_AUDUSD.DWX_H1_backtest.set": "fc7a6641200e87a95358aacd3a0e8ce4117138863fcfc011191680f986c5f94e"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 390060000,
+  "magic": {
+    "target_magic_count": 3,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "EURUSD.DWX",
+        "magic": 390060000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "GBPUSD.DWX",
+        "magic": 390060001,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 2,
+        "symbol": "AUDUSD.DWX",
+        "magic": 390060002,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "validations": {
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "registry_rows_added": true,
+    "magic_resolver_regenerated": true,
+    "risk_mode": "RISK_FIXED"
+  },
+  "built_by": "gemini",
+  "built_at": "2026-08-23T13:56:37.968923+00:00"
+}

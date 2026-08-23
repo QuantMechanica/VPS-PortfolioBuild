@@ -1,0 +1,66 @@
+{
+  "task_id": "57041b21-12da-464d-b275-c91cb3fa8673",
+  "ea_id": "QM5_39005",
+  "slug": "forexfactory-genesis-matrix-scalper",
+  "strategy": "Genesis Matrix 4-Bar Scalping System",
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX"
+  ],
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX"
+  ],
+  "host_timeframe": "M5",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_39005_forexfactory-genesis-matrix-scalper",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_39005_forexfactory-genesis-matrix-scalper\\QM5_39005_forexfactory-genesis-matrix-scalper.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_39005_forexfactory-genesis-matrix-scalper\\QM5_39005_forexfactory-genesis-matrix-scalper.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_39005_forexfactory-genesis-matrix-scalper\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_39005_forexfactory-genesis-matrix-scalper.md",
+  "approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_39005_forexfactory-genesis-matrix-scalper.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_39005_forexfactory-genesis-matrix-scalper\\sets\\QM5_39005_forexfactory-genesis-matrix-scalper_EURUSD.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_39005_forexfactory-genesis-matrix-scalper\\sets\\QM5_39005_forexfactory-genesis-matrix-scalper_GBPUSD.DWX_M5_backtest.set"
+  ],
+  "mq5_sha256": "089fc4275f0049bdc62bab245311b26d6f80fe0121d253814aece6faf28ba99f",
+  "ex5_sha256": "9d692b666751c48aae2eafbd73fa6ed109c9a66211dd67e77082943f269bfea3",
+  "ex5_bytes": 408894,
+  "setfile_sha256": {
+    "QM5_39005_forexfactory-genesis-matrix-scalper_EURUSD.DWX_M5_backtest.set": "c663da6dcb62fd7ac8021a9fe680437e31c315258425253ece4ad9aeba85d882",
+    "QM5_39005_forexfactory-genesis-matrix-scalper_GBPUSD.DWX_M5_backtest.set": "1a8131cc1a5ae2ea0f34d1d5c29e97d99dcfb240b1b2f251fb9ef975ceb43077"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 390050000,
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "EURUSD.DWX",
+        "magic": 390050000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "GBPUSD.DWX",
+        "magic": 390050001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "validations": {
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "registry_rows_added": true,
+    "magic_resolver_regenerated": true,
+    "risk_mode": "RISK_FIXED"
+  },
+  "built_by": "gemini",
+  "built_at": "2026-08-23T13:56:37.968923+00:00"
+}
