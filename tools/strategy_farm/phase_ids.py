@@ -76,6 +76,7 @@ def build_phase_tables(
 # Load and validate the versioned contract once at import time.  Runtime helpers
 # below use these in-memory tables; hot paths never re-parse the JSON manifest.
 _GATE_MANIFEST = load_gate_manifest()
+ACTIVE_GATE_MANIFEST = _GATE_MANIFEST
 
 
 def _short_contract_version(schema_version: str) -> str:
@@ -92,9 +93,14 @@ ACTIVE_GATE_CONTRACT_VERSION = _short_contract_version(_GATE_MANIFEST.schema_ver
 PHASE_ORDER, PHASE_NAME, PHASE_NEXT = build_phase_tables(_GATE_MANIFEST)
 # Includes display-only evidence stages when the active manifest defines them.
 # Such stages (v3 Q10A) are not in PHASE_ORDER and remain invalid for writes.
-if _GATE_MANIFEST.extension_topology is None:
+if not _GATE_MANIFEST.extension_topology or "ordinary_chain" not in _GATE_MANIFEST.extension_topology:
     ORDINARY_PHASE_ORDER = list(_GATE_MANIFEST.phase_ids)
-    OPTIMIZATION_PHASE_ORDER: list[str] = []
+    try:
+        _pattern_index = ORDINARY_PHASE_ORDER.index(_GATE_MANIFEST.gate_for_role("PATTERN"))
+        _head_index = ORDINARY_PHASE_ORDER.index(_GATE_MANIFEST.gate_for_role("HEAD_TO_HEAD"))
+        OPTIMIZATION_PHASE_ORDER = ORDINARY_PHASE_ORDER[_pattern_index:_head_index + 1]
+    except (GateManifestError, ValueError):
+        OPTIMIZATION_PHASE_ORDER = []
 else:
     ORDINARY_PHASE_ORDER = list(_GATE_MANIFEST.extension_topology["ordinary_chain"])
     OPTIMIZATION_PHASE_ORDER = list(
@@ -146,128 +152,131 @@ class PhaseAdvancement:
     storage_lane: bool = False
 
 
-_PHASE_RANK = {phase: index for index, phase in enumerate(PHASE_ORDER)}
-
-# Q09 is a contract gate but not a writable work_items token.  NEWS is the
-# mandatory lane and PORTFOLIO is a sibling informational lane.  The latter has
-# the same predecessor and rank, but deliberately no successor: Q10 requires a
-# CONFIG_LOCKED NEWS result and must never be licensed by portfolio evidence.
-_CANONICAL_TO_PRIMARY_STORAGE = {"Q09": "Q09_NEWS"}
-_STORAGE_LANE_CANONICAL = {
-    "Q09_NEWS": "Q09",
-    "Q09_PORTFOLIO": "Q09",
+# The NEWS contract gate writes through a mandatory NEWS lane and an optional
+# informational PORTFOLIO lane.  The latter has the same predecessor/rank but
+# deliberately no successor: incumbent confirmation requires CONFIG_LOCKED
+# NEWS evidence and must never be licensed by portfolio evidence.
+_NEWS_GATE = _GATE_MANIFEST.gate_for_role("NEWS")
+_CANONICAL_TO_PRIMARY_STORAGE = {
+    _NEWS_GATE: _GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
 }
+def build_advancement_table(manifest: GateManifest) -> Mapping[str, PhaseAdvancement]:
+    """Build the runtime routing table for an explicit manifest object.
 
-# Historical rows used mixed-case B/C suffixes.  Manifest aliases are compared
-# case-insensitively, while returned tokens retain the bytes used in storage and
-# in the legacy UNION reads.
-_LEGACY_STORAGE_TOKEN = {
-    alias: {"P5B": "P5b", "P5C": "P5c", "P9B": "P9b"}.get(alias, alias)
-    for alias in LEGACY_P_TO_Q
-}
-
-# Alias collapse is not invertible: P3/P3.5 and P5/P5b/P5c map to the same
-# canonical gates.  This is the one explicit historical storage topology.  It
-# preserves the old dispatcher/cascade semantics without inventing aliases for
-# gates (Q06/Q09/Q10) that never had one.
-_LEGACY_STORAGE_ORDER = tuple(
-    _LEGACY_STORAGE_TOKEN[alias]
-    for alias in LEGACY_P_TO_Q
-)
-_LEGACY_PRIMARY_PATH = tuple(
-    phase for phase in _LEGACY_STORAGE_ORDER if phase != "P5c"
-)
-
-
-def _build_advancement_table() -> Mapping[str, PhaseAdvancement]:
+    The manifest records historical/display topology. Runtime policy additionally
+    enforces OWNER A2: incumbent confirmation always enters the mandatory
+    pattern/parameter/head-to-head segment, and the terminal per-EA comparison
+    never enters the portfolio gate automatically.
+    """
     table: dict[str, PhaseAdvancement] = {}
-    ordinary_set = set(ORDINARY_PHASE_ORDER)
+    phase_order = list(manifest.phase_ids)
+    phase_rank_by_id = {phase: index for index, phase in enumerate(phase_order)}
+    extension = manifest.extension_topology or {}
+    ordinary_order = list(extension.get("ordinary_chain") or phase_order)
+    ordinary_set = set(ordinary_order)
     ordinary_previous = {
-        phase: (ORDINARY_PHASE_ORDER[index - 1] if index else None)
-        for index, phase in enumerate(ORDINARY_PHASE_ORDER)
+        phase: (ordinary_order[index - 1] if index else None)
+        for index, phase in enumerate(ordinary_order)
     }
+    try:
+        pattern_gate = manifest.gate_for_role("PATTERN")
+        parameter_gate = manifest.gate_for_role("PARAM_OPT")
+        head_gate = manifest.gate_for_role("HEAD_TO_HEAD")
+        incumbent_gate = manifest.gate_for_role("INCUMBENT")
+        optimization_order = [pattern_gate, parameter_gate, head_gate]
+    except GateManifestError:
+        optimization_order = []
+        incumbent_gate = ""
     optimization_previous = {
         phase: (
-            OPTIMIZATION_PHASE_ORDER[index - 1]
+            optimization_order[index - 1]
             if index
-            else str(_GATE_MANIFEST.extension_topology["optimization_fork"]["from"])
+            else incumbent_gate
         )
-        for index, phase in enumerate(OPTIMIZATION_PHASE_ORDER)
+        for index, phase in enumerate(optimization_order)
     }
+    runtime_next = dict(manifest.next_by_phase)
+    if optimization_order:
+        runtime_next[incumbent_gate] = optimization_order[0]
+        runtime_next[optimization_order[-1]] = None
+    news_gate = manifest.gate_for_role("NEWS")
+    news_storage = manifest.storage_phase_for_role("NEWS", "NEWS")
+    portfolio_storage = manifest.storage_phase_for_role("NEWS", "PORTFOLIO")
+    canonical_to_primary_storage = {news_gate: news_storage}
 
     # Canonical gates come directly from PHASE_NEXT.  Ordinary predecessors use
     # the declared ordinary chain so Q11 remains Q10's predecessor even though
     # the optimization fork also rejoins Q11 from Q16.
-    for phase in PHASE_ORDER:
+    for phase in phase_order:
         previous = ordinary_previous.get(phase, optimization_previous.get(phase))
         if phase not in ordinary_set and phase not in optimization_previous:
-            candidates = [source for source, target in PHASE_NEXT.items() if target == phase]
+            candidates = [source for source, target in runtime_next.items() if target == phase]
             previous = candidates[0] if len(candidates) == 1 else None
-        previous = _CANONICAL_TO_PRIMARY_STORAGE.get(previous, previous)
-        successor = PHASE_NEXT.get(phase)
-        successor = _CANONICAL_TO_PRIMARY_STORAGE.get(successor, successor)
+        previous = canonical_to_primary_storage.get(previous, previous)
+        successor = runtime_next.get(phase)
+        successor = canonical_to_primary_storage.get(successor, successor)
         table[phase] = PhaseAdvancement(
             phase=phase,
             canonical_phase=phase,
             previous=previous,
             next=successor,
-            rank=_PHASE_RANK[phase],
+            rank=phase_rank_by_id[phase],
             ordinary=phase in ordinary_set,
         )
 
-    q09_canonical = _STORAGE_LANE_CANONICAL["Q09_NEWS"]
-    q09_rank = _PHASE_RANK[q09_canonical]
-    q09_next = PHASE_NEXT[q09_canonical]
-    table["Q09_NEWS"] = PhaseAdvancement(
-        phase="Q09_NEWS",
-        canonical_phase=q09_canonical,
-        previous=ordinary_previous[q09_canonical],
-        next=q09_next,
-        rank=q09_rank,
+    news_rank = phase_rank_by_id[news_gate]
+    news_next = runtime_next[news_gate]
+    table[news_storage] = PhaseAdvancement(
+        phase=news_storage,
+        canonical_phase=news_gate,
+        previous=ordinary_previous[news_gate],
+        next=news_next,
+        rank=news_rank,
         ordinary=True,
         storage_lane=True,
     )
-    table["Q09_PORTFOLIO"] = PhaseAdvancement(
-        phase="Q09_PORTFOLIO",
-        canonical_phase=_STORAGE_LANE_CANONICAL["Q09_PORTFOLIO"],
-        previous=ordinary_previous[q09_canonical],
+    table[portfolio_storage] = PhaseAdvancement(
+        phase=portfolio_storage,
+        canonical_phase=news_gate,
+        previous=ordinary_previous[news_gate],
         next=None,
-        rank=q09_rank,
+        rank=news_rank,
         ordinary=True,
         storage_lane=True,
     )
 
+    legacy_to_q = dict(manifest.legacy_aliases)
+    legacy_storage_token = {
+        alias: {"P5B": "P5b", "P5C": "P5c", "P9B": "P9b"}.get(alias, alias)
+        for alias in legacy_to_q
+    }
+    legacy_storage_order = tuple(legacy_storage_token[alias] for alias in legacy_to_q)
+    legacy_primary_path = tuple(phase for phase in legacy_storage_order if phase != "P5c")
     legacy_previous = {
-        phase: (_LEGACY_PRIMARY_PATH[index - 1] if index else None)
-        for index, phase in enumerate(_LEGACY_PRIMARY_PATH)
+        phase: (legacy_primary_path[index - 1] if index else None)
+        for index, phase in enumerate(legacy_primary_path)
     }
     legacy_next = {
-        phase: (
-            _LEGACY_PRIMARY_PATH[index + 1]
-            if index + 1 < len(_LEGACY_PRIMARY_PATH)
-            else None
-        )
-        for index, phase in enumerate(_LEGACY_PRIMARY_PATH)
+        phase: (legacy_primary_path[index + 1] if index + 1 < len(legacy_primary_path) else None)
+        for index, phase in enumerate(legacy_primary_path)
     }
-    # P5c was a sibling evidence lane sourced from P5. It never licensed P6;
-    # the required predecessor for P6 was P5b.
     legacy_previous["P5c"] = "P5"
     legacy_next["P5c"] = None
-    for alias, canonical in LEGACY_P_TO_Q.items():
-        phase = _LEGACY_STORAGE_TOKEN[alias]
+    for alias, canonical in legacy_to_q.items():
+        phase = legacy_storage_token[alias]
         table[phase] = PhaseAdvancement(
             phase=phase,
             canonical_phase=canonical,
             previous=legacy_previous[phase],
             next=legacy_next[phase],
-            rank=_PHASE_RANK[canonical],
+            rank=phase_rank_by_id[canonical],
             ordinary=canonical in ordinary_set,
             legacy_alias=True,
         )
     return MappingProxyType(table)
 
 
-_ADVANCEMENT_TABLE = _build_advancement_table()
+_ADVANCEMENT_TABLE = build_advancement_table(_GATE_MANIFEST)
 _ADVANCEMENT_KEY_BY_UPPER = {phase.upper(): phase for phase in _ADVANCEMENT_TABLE}
 
 # Mandatory writable ordinary chain.  The informational Q09_PORTFOLIO sibling
@@ -291,34 +300,40 @@ ORDINARY_RUNTIME_PHASES = tuple(
 )
 
 
-def advancement_table() -> Mapping[str, PhaseAdvancement]:
+def advancement_table(manifest: GateManifest | None = None) -> Mapping[str, PhaseAdvancement]:
     """Return the immutable manifest-derived runtime advancement table."""
-    return _ADVANCEMENT_TABLE
+    return _ADVANCEMENT_TABLE if manifest is None else build_advancement_table(manifest)
 
 
-def _advancement(phase: str | None) -> PhaseAdvancement | None:
+def _advancement(
+    phase: str | None, manifest: GateManifest | None = None
+) -> PhaseAdvancement | None:
     if phase is None:
         return None
     key = str(phase).strip().upper()
-    storage_key = _ADVANCEMENT_KEY_BY_UPPER.get(key)
-    return None if storage_key is None else _ADVANCEMENT_TABLE[storage_key]
+    table = advancement_table(manifest)
+    key_by_upper = _ADVANCEMENT_KEY_BY_UPPER if manifest is None else {
+        candidate.upper(): candidate for candidate in table
+    }
+    storage_key = key_by_upper.get(key)
+    return None if storage_key is None else table[storage_key]
 
 
-def next_phase(phase: str | None) -> str | None:
+def next_phase(phase: str | None, manifest: GateManifest | None = None) -> str | None:
     """Return the runtime storage successor for a canonical/lane/legacy token."""
-    row = _advancement(phase)
+    row = _advancement(phase, manifest)
     return None if row is None else row.next
 
 
-def prev_phase(phase: str | None) -> str | None:
+def prev_phase(phase: str | None, manifest: GateManifest | None = None) -> str | None:
     """Return the runtime storage predecessor for a canonical/lane/legacy token."""
-    row = _advancement(phase)
+    row = _advancement(phase, manifest)
     return None if row is None else row.previous
 
 
-def phase_rank(phase: str | None) -> int:
+def phase_rank(phase: str | None, manifest: GateManifest | None = None) -> int:
     """Return the manifest ordinal for a canonical/lane/legacy token, else -1."""
-    row = _advancement(phase)
+    row = _advancement(phase, manifest)
     return -1 if row is None else row.rank
 
 

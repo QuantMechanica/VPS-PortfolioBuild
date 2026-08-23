@@ -78,9 +78,9 @@ from pathlib import Path
 
 import farmctl
 try:
-    from phase_ids import advancement_table
+    from phase_ids import ACTIVE_GATE_MANIFEST, advancement_table
 except ModuleNotFoundError:
-    from tools.strategy_farm.phase_ids import advancement_table
+    from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST, advancement_table
 
 # Basket q08 streams are keyed by the resolved HOST symbol, not the logical
 # basket work-item name. Resolve through the shared portfolio choke point so
@@ -119,6 +119,7 @@ _ACTIVE_REPAIR_RUN_ID: str | None = None
 # _pending_work_item_artifact_failure for what happened when they were not.
 _UTILITY_PHASES = frozenset({"COMPILE_EA", "HARNESS_PP_FIXTURE"})
 _ADVANCEMENT = advancement_table()
+_NEWS_PORTFOLIO_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "PORTFOLIO")
 _Q02_READ_PHASES = tuple(
     row.phase
     for row in _ADVANCEMENT.values()
@@ -1389,10 +1390,11 @@ def repair_sparse_q09_portfolio_overlap_fails(con) -> list[dict]:
         """
         SELECT id, ea_id, symbol, payload_json, evidence_path
         FROM work_items
-        WHERE phase='Q09_PORTFOLIO'
+        WHERE phase=?
           AND status='done'
           AND verdict='FAIL_PORTFOLIO'
-        """
+        """,
+        (_NEWS_PORTFOLIO_PHASE,),
     ).fetchall()
     now = _utc_now()
     for r in rows:

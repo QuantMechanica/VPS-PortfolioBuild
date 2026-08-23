@@ -37,6 +37,13 @@ except ModuleNotFoundError:
     from tools.strategy_farm import q09_news_schema as news_schema
     from tools.strategy_farm import q09_news_seam as seam_reconstruction
 
+try:
+    from phase_ids import ACTIVE_GATE_MANIFEST
+except ModuleNotFoundError:
+    from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+
+NEWS_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+
 
 PLAN_SCHEMA = "q09-news-run-plan/v2"
 CELL_RECEIPT_SCHEMA = "q09-news-cell-receipt/v2"
@@ -1107,8 +1114,8 @@ def bind_plan_to_work_item(
         ).fetchone()
         if item is None:
             raise RunnerError("Q09 work item does not exist")
-        if item["phase"] != "Q09_NEWS":
-            raise RunnerError("plan binding requires canonical phase Q09_NEWS")
+        if item["phase"] != NEWS_PHASE:
+            raise RunnerError(f"plan binding requires canonical phase {NEWS_PHASE}")
         if item["status"] != "pending" or str(item["claimed_by"] or "").strip():
             raise RunnerError("Q09 plan can only bind to an unclaimed pending work item")
         if connection.execute(
@@ -1349,7 +1356,7 @@ def bind_diagnostic_plan_to_work_item(
         ).fetchone()
         if item is None:
             raise RunnerError("Q09 diagnostic work item does not exist")
-        if item["phase"] != "Q09_NEWS" or item["status"] != "pending" or str(item["claimed_by"] or "").strip():
+        if item["phase"] != NEWS_PHASE or item["status"] != "pending" or str(item["claimed_by"] or "").strip():
             raise RunnerError("Q09 diagnostic plan requires an unclaimed pending Q09_NEWS row")
         try:
             payload = json.loads(str(item["payload_json"] or "{}"))
@@ -2322,7 +2329,7 @@ def assert_factory_capacity(
         connection.close()
     if row is None:
         raise CapacityError("Q09 factory capacity refused: work item missing")
-    if row["phase"] != "Q09_NEWS":
+    if row["phase"] != NEWS_PHASE:
         raise CapacityError("Q09 factory capacity refused: non-canonical phase")
     execution_terminal = str(terminal).strip().upper()
     claim_terminal = str(primary_terminal or terminal).strip().upper()
@@ -2357,7 +2364,7 @@ def assert_factory_capacity(
         if (
             str(reservation.get("reserved_by") or "") != reserved_by
             or str(reservation.get("reason") or "")
-            != f"Q09_NEWS helper for {work_item_id}"
+            != f"{NEWS_PHASE} helper for {work_item_id}"
             or until.astimezone(timezone.utc) <= datetime.now(timezone.utc)
         ):
             raise CapacityError(
@@ -3100,7 +3107,7 @@ def _production_dispatch_cell(
             "-Runs", "1", "-MinTrades", "0", "-SmokeMode", "-Model", "4",
             "-TimeoutSeconds", str(context["cell_timeout_sec"]),
             "-SetFile", str(spec["setfile_path"]), "-ReportRoot", str(run_root),
-            "-DispatchPhase", "Q09_NEWS", "-DispatchVersion", "q09_news_executor_v1",
+            "-DispatchPhase", NEWS_PHASE, "-DispatchVersion", "q09_news_executor_v1",
             "-DispatchSubGateHash", f"{str(spec['run_identity_sha256'])[:16]}_{window_name}",
             "-ExpectedExpertSha256", str(context["expected_expert_sha256"]),
             "-RequireFreshLoggerSample",
@@ -3302,7 +3309,7 @@ def _persist_q09_result(
         summary_path = Path(str(result["aggregate_path"])).resolve().parent / "summary.json"
         diagnostic_summary = {
             "schema_version": DIAGNOSTIC_SUMMARY_SCHEMA,
-            "phase": "Q09_NEWS",
+            "phase": NEWS_PHASE,
             "verdict": "REVIEW_REQUIRED",
             "reason": "diagnostic_non_admission",
             "reason_codes": ["diagnostic_non_admission", "owner_review_required"],

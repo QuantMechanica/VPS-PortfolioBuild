@@ -54,8 +54,8 @@ _EARLY_RUN_SMOKE_PHASES = frozenset(
     for phase in (canonical, farmctl.Q_TO_LEGACY_P[canonical])
 )
 _Q04_PHASE = farmctl.SUPPORTED_BACKTEST_PHASES[-1]
-_Q09_NEWS_PHASE = farmctl.prev_phase("Q10")
-_Q08_PHASE = farmctl.prev_phase(_Q09_NEWS_PHASE)
+_Q09_NEWS_PHASE = farmctl.ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+_Q08_PHASE = "Q08"
 
 
 def _is_early_run_smoke_phase(phase: object) -> bool:
@@ -3114,7 +3114,7 @@ def _reserve_q09_helper_terminals(
             }
         reserved_by = f"q09_cell_shard:{os.getpid()}:{uuid.uuid4().hex}"
         minutes = _q09_helper_reservation_minutes(payload, len(helpers) + 1)
-        reason = f"Q09_NEWS helper for {row['id']}"
+        reason = f"{_Q09_NEWS_PHASE} helper for {row['id']}"
         rows = [
             farmctl.set_terminal_reservation(
                 root,

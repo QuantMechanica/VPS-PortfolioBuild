@@ -32,6 +32,7 @@ from tools.strategy_farm.portfolio.book_builder_common import (
     write_json,
     write_text,
 )
+from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -239,6 +240,7 @@ def load_lineage(path: Path, expected_role: str) -> dict[str, Any]:
         raise Q16Error(f"{expected_role} stream lacks risk scale") from exc
     if stream_risk_fixed != RISK_FIXED or stream_risk_percent != RISK_PERCENT:
         raise Q16Error(f"{expected_role} stream is not RISK_FIXED=1000/RISK_PERCENT=0")
+    incumbent_phase = ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
     q10 = payload.get("q10")
     if not isinstance(q10, Mapping) or str(q10.get("verdict") or "").upper() != "PASS":
         raise Q16Error(f"{expected_role} lineage does not hold Q10 PASS")
@@ -246,7 +248,7 @@ def load_lineage(path: Path, expected_role: str) -> dict[str, Any]:
     q10_payload = _load_json(q10_path, f"{expected_role} Q10 evidence")
     if (
         not isinstance(q10_payload, Mapping)
-        or str(q10_payload.get("phase") or "").upper() != "Q10"
+        or str(q10_payload.get("phase") or "").upper() != incumbent_phase
         or str(q10_payload.get("verdict") or "").upper() != "PASS"
     ):
         raise Q16Error(f"{expected_role} bound Q10 evidence is not a Q10 PASS artifact")

@@ -28,11 +28,24 @@ from pathlib import Path
 from statistics import mean, median
 from typing import Any
 
+try:
+    from phase_ids import ACTIVE_GATE_MANIFEST, PHASE_ORDER as MANIFEST_PHASE_ORDER, phase_rank
+except ModuleNotFoundError:
+    from tools.strategy_farm.phase_ids import (
+        ACTIVE_GATE_MANIFEST,
+        PHASE_ORDER as MANIFEST_PHASE_ORDER,
+        phase_rank,
+    )
+
 
 FARM_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 OUT_DIR = Path(r"D:\QM\reports\analysis")
 
-PHASE_ORDER = ["Q04", "Q05", "Q06", "Q07", "Q08", "Q09_PORTFOLIO"]
+NEWS_PORTFOLIO_PHASE = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "PORTFOLIO")
+PHASE_ORDER = [
+    phase for phase in MANIFEST_PHASE_ORDER
+    if phase_rank("Q04") <= phase_rank(phase) <= phase_rank("Q08")
+] + [NEWS_PORTFOLIO_PHASE]
 PASSISH = {"PASS", "PASS_SOFT", "PASS_LOWFREQ", "PASS_PORTFOLIO"}
 Q04_PASSISH = {"PASS", "PASS_SOFT", "PASS_LOWFREQ"}
 
@@ -106,9 +119,10 @@ def load_work_items(db_path: Path) -> list[WorkItem]:
         SELECT id, ea_id, symbol, phase, verdict, updated_at, evidence_path, payload_json
         FROM work_items
         WHERE status='done'
-          AND phase IN ('Q04','Q05','Q06','Q07','Q08','Q09_PORTFOLIO')
+          AND phase IN (?,?,?,?,?,?)
         ORDER BY updated_at ASC
-        """
+        """,
+        tuple(PHASE_ORDER),
     ).fetchall()
     out: list[WorkItem] = []
     for row in rows:
@@ -225,7 +239,7 @@ def phase_metrics(item: WorkItem) -> dict[str, Any]:
         )
         return metrics
 
-    if item.phase == "Q09_PORTFOLIO":
+    if item.phase == NEWS_PORTFOLIO_PHASE:
         equity_curve = data.get("equity_curve") or []
         net_profit = None
         if equity_curve and isinstance(equity_curve[-1], dict):

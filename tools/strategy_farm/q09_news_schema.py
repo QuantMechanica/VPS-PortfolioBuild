@@ -23,6 +23,11 @@ from pathlib import Path
 from typing import Any, Iterator, Mapping, Sequence
 
 try:
+    from phase_ids import ACTIVE_GATE_MANIFEST
+except ModuleNotFoundError:
+    from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+
+try:
     from q09_news_contract import (
         ADJUDICATION_SCHEMA_VERSION,
         ADJUDICATION_SCHEMA_VERSION_V3,
@@ -99,8 +104,9 @@ def hold_until_plan_bound(
         "SELECT phase,status,claimed_by FROM work_items WHERE id=?",
         (str(work_item_id),),
     ).fetchone()
-    if item is None or item[0] != "Q09_NEWS":
-        raise SchemaError("Q09 activation hold requires a canonical Q09_NEWS row")
+    news_phase = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+    if item is None or item[0] != news_phase:
+        raise SchemaError(f"news activation hold requires a canonical {news_phase} row")
     if item[1] != "pending" or str(item[2] or "").strip():
         raise SchemaError("Q09 activation hold requires an unclaimed pending row")
     existing = conn.execute(
@@ -517,7 +523,8 @@ BEGIN
     SELECT CASE WHEN NEW.dependency_role='Q08_INPUT' AND NOT EXISTS (
         SELECT 1 FROM work_items c, work_items p
         WHERE c.id=NEW.child_work_item_id AND p.id=NEW.parent_work_item_id
-          AND c.phase IN ('Q09_NEWS','Q09_PORTFOLIO') AND p.phase='Q08'
+          AND c.phase IN ('Q09','Q09_NEWS','Q09_PORTFOLIO','Q10_NEWS','Q10_PORTFOLIO')
+          AND p.phase='Q08'
     ) THEN RAISE(ABORT, 'Q08_INPUT phase mismatch') END;
     SELECT CASE WHEN NEW.dependency_role='Q09_NEWS' AND NOT EXISTS (
         SELECT 1 FROM work_items c, work_items p
@@ -547,6 +554,40 @@ BEGIN
           AND p.phase='Q14' AND p.status='done' AND p.verdict='OPT_ELIGIBLE'
           AND c.symbol=p.symbol
     ) THEN RAISE(ABORT, 'Q14_ADMISSION dependency phase/symbol mismatch') END;
+    SELECT CASE WHEN NEW.dependency_role='Q10_NEWS' AND NOT EXISTS (
+        SELECT 1 FROM work_items c, work_items p
+        WHERE c.id=NEW.child_work_item_id AND p.id=NEW.parent_work_item_id
+          AND c.phase='Q11' AND p.phase='Q10_NEWS'
+    ) THEN RAISE(ABORT, 'Q10_NEWS dependency phase mismatch') END;
+    SELECT CASE WHEN NEW.dependency_role='Q10_PORTFOLIO' AND NOT EXISTS (
+        SELECT 1 FROM work_items c, work_items p
+        WHERE c.id=NEW.child_work_item_id AND p.id=NEW.parent_work_item_id
+          AND c.phase='Q11' AND p.phase='Q10_PORTFOLIO'
+    ) THEN RAISE(ABORT, 'Q10_PORTFOLIO dependency phase mismatch') END;
+    SELECT CASE WHEN NEW.dependency_role='BASELINE_Q09' AND NOT EXISTS (
+        SELECT 1 FROM work_items c, work_items p
+        WHERE c.id=NEW.child_work_item_id AND p.id=NEW.parent_work_item_id
+          AND c.phase='Q14' AND p.phase IN ('Q08','Q09')
+          AND p.status='done' AND p.verdict IN ('PASS','FAIL_SOFT')
+    ) THEN RAISE(ABORT, 'BASELINE_Q09 dependency phase mismatch') END;
+    SELECT CASE WHEN NEW.dependency_role='INCUMBENT_Q11' AND NOT EXISTS (
+        SELECT 1 FROM work_items c, work_items p
+        WHERE c.id=NEW.child_work_item_id AND p.id=NEW.parent_work_item_id
+          AND c.phase='Q14' AND p.phase='Q11' AND p.status='done' AND p.verdict='PASS'
+    ) THEN RAISE(ABORT, 'INCUMBENT_Q11 dependency phase mismatch') END;
+    SELECT CASE WHEN NEW.dependency_role='CHALLENGER_Q11' AND NOT EXISTS (
+        SELECT 1 FROM work_items c, work_items p
+        WHERE c.id=NEW.child_work_item_id AND p.id=NEW.parent_work_item_id
+          AND c.phase='Q14' AND p.phase='Q11' AND p.status='done' AND p.verdict='PASS'
+          AND c.ea_id=p.ea_id AND c.symbol=p.symbol
+    ) THEN RAISE(ABORT, 'CHALLENGER_Q11 dependency phase/identity mismatch') END;
+    SELECT CASE WHEN NEW.dependency_role='Q12_ADMISSION' AND NOT EXISTS (
+        SELECT 1 FROM work_items c, work_items p
+        WHERE c.id=NEW.child_work_item_id AND p.id=NEW.parent_work_item_id
+          AND c.phase='Q13' AND c.status='done' AND c.verdict='CHALLENGER_SPAWNED'
+          AND p.phase='Q12' AND p.status='done' AND p.verdict='OPT_ELIGIBLE'
+          AND c.symbol=p.symbol
+    ) THEN RAISE(ABORT, 'Q12_ADMISSION dependency phase/symbol mismatch') END;
 END;
 
 CREATE TRIGGER IF NOT EXISTS trg_ncbf_validate_insert
@@ -563,7 +604,8 @@ CREATE TRIGGER IF NOT EXISTS trg_q09_test_validate_insert
 BEFORE INSERT ON q09_news_tests
 BEGIN
     SELECT CASE WHEN NOT EXISTS (
-        SELECT 1 FROM work_items w WHERE w.id=NEW.work_item_id AND w.phase='Q09_NEWS'
+        SELECT 1 FROM work_items w WHERE w.id=NEW.work_item_id
+          AND w.phase IN ('Q09_NEWS','Q10_NEWS')
     ) THEN RAISE(ABORT, 'q09 test work item missing or non-canonical phase') END;
     SELECT CASE WHEN NOT EXISTS (
         SELECT 1 FROM news_calendar_bundles b WHERE b.bundle_id=NEW.calendar_bundle_id
@@ -649,13 +691,14 @@ BEGIN
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NOT EXISTS (
         SELECT 1 FROM work_items q08, work_items q09n, work_items q10
         WHERE q08.id=NEW.q08_work_item_id AND q08.phase='Q08'
-          AND q09n.id=NEW.q09_news_work_item_id AND q09n.phase='Q09_NEWS' AND q09n.verdict='CONFIG_LOCKED'
-          AND q10.id=NEW.q10_work_item_id AND q10.phase='Q10' AND q10.verdict='PASS'
+          AND q09n.id=NEW.q09_news_work_item_id
+          AND q09n.phase IN ('Q09_NEWS','Q10_NEWS') AND q09n.verdict='CONFIG_LOCKED'
+          AND q10.id=NEW.q10_work_item_id AND q10.phase IN ('Q10','Q11') AND q10.verdict='PASS'
     ) THEN RAISE(ABORT, 'QUALIFIED work-item verdict chain invalid') END;
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NEW.q09_portfolio_work_item_id IS NOT NULL AND NOT EXISTS (
         SELECT 1 FROM work_items q09p
         WHERE q09p.id=NEW.q09_portfolio_work_item_id
-          AND q09p.phase='Q09_PORTFOLIO' AND q09p.status='done'
+          AND q09p.phase IN ('Q09_PORTFOLIO','Q10_PORTFOLIO') AND q09p.status='done'
           AND q09p.verdict IN ('PASS_PORTFOLIO','FAIL_PORTFOLIO','FAIL_SYSTEM')
     ) THEN RAISE(ABORT, 'QUALIFIED optional portfolio verdict invalid') END;
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NOT EXISTS (
@@ -810,7 +853,7 @@ JOIN latest q
   ON q.ea_id=p.ea_id
  AND q.symbol=p.symbol
  AND q.legacy_source_work_item_id=p.q11_work_item_id
-JOIN work_items q10 ON q10.id=q.q10_work_item_id AND q10.phase='Q10' AND q10.verdict='PASS'
+JOIN work_items q10 ON q10.id=q.q10_work_item_id AND q10.phase IN ('Q10','Q11') AND q10.verdict='PASS'
 JOIN q09_news_tests nt ON nt.work_item_id=q.q09_news_work_item_id AND nt.verdict='CONFIG_LOCKED'
 WHERE q.state='QUALIFIED';
 """
@@ -1368,28 +1411,33 @@ class Q10DependencyGate:
 
 
 def assert_q10_dependency_gate(conn: sqlite3.Connection, q10_work_item_id: str) -> Q10DependencyGate:
+    incumbent_phase = ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT")
+    news_phase = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+    portfolio_phase = ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "PORTFOLIO")
+    news_role = ACTIVE_GATE_MANIFEST.dependency_role("Q09_NEWS")
+    portfolio_role = ACTIVE_GATE_MANIFEST.dependency_role("Q09_PORTFOLIO")
     q10 = conn.execute("SELECT phase FROM work_items WHERE id=?", (q10_work_item_id,)).fetchone()
-    if q10 is None or q10[0] != "Q10":
-        raise SchemaError("Q10 work item missing or wrong phase")
+    if q10 is None or q10[0] != incumbent_phase:
+        raise SchemaError(f"{incumbent_phase} work item missing or wrong phase")
     rows = conn.execute(
         """
         SELECT dependency_role,parent_work_item_id,parent_evidence_sha256,required_verdicts_json
         FROM work_item_dependencies
-        WHERE child_work_item_id=? AND dependency_role IN ('Q09_NEWS','Q09_PORTFOLIO')
+        WHERE child_work_item_id=? AND dependency_role IN (?,?)
         """,
-        (q10_work_item_id,),
+        (q10_work_item_id, news_role, portfolio_role),
     ).fetchall()
     dependencies = {row[0]: row for row in rows}
-    if "Q09_NEWS" not in dependencies:
-        raise SchemaError("Q10 requires a bound Q09_NEWS dependency")
+    if news_role not in dependencies:
+        raise SchemaError(f"{incumbent_phase} requires a bound {news_phase} dependency")
     try:
-        news_required_verdicts = set(json.loads(str(dependencies["Q09_NEWS"][3])))
+        news_required_verdicts = set(json.loads(str(dependencies[news_role][3])))
     except (TypeError, json.JSONDecodeError) as exc:
         raise SchemaError("Q09_NEWS dependency verdict contract is invalid") from exc
     if news_required_verdicts != {"CONFIG_LOCKED"}:
         raise SchemaError("Q09_NEWS dependency must require only CONFIG_LOCKED")
-    news_id = dependencies["Q09_NEWS"][1]
-    portfolio_dependency = dependencies.get("Q09_PORTFOLIO")
+    news_id = dependencies[news_role][1]
+    portfolio_dependency = dependencies.get(portfolio_role)
     portfolio_id = portfolio_dependency[1] if portfolio_dependency is not None else None
     news = conn.execute(
         """
@@ -1401,7 +1449,7 @@ def assert_q10_dependency_gate(conn: sqlite3.Connection, q10_work_item_id: str) 
     ).fetchone()
     if news is None or news[0] != "CONFIG_LOCKED":
         raise SchemaError("Q09_NEWS dependency is not CONFIG_LOCKED")
-    if news[4] != dependencies["Q09_NEWS"][2]:
+    if news[4] != dependencies[news_role][2]:
         raise SchemaError("Q09_NEWS dependency evidence hash mismatch")
     if portfolio_dependency is not None:
         try:
@@ -1412,8 +1460,8 @@ def assert_q10_dependency_gate(conn: sqlite3.Connection, q10_work_item_id: str) 
         if portfolio_required_verdicts != terminal_portfolio_verdicts:
             raise SchemaError("Q09_PORTFOLIO dependency must be informational for all terminal verdicts")
         portfolio = conn.execute(
-            "SELECT status,verdict FROM work_items WHERE id=? AND phase='Q09_PORTFOLIO'",
-            (portfolio_id,),
+            "SELECT status,verdict FROM work_items WHERE id=? AND phase=?",
+            (portfolio_id, portfolio_phase),
         ).fetchone()
         if (
             portfolio is None
@@ -1481,7 +1529,7 @@ def assert_q10_dependency_gate(conn: sqlite3.Connection, q10_work_item_id: str) 
         q10_work_item_id=q10_work_item_id,
         q09_news_work_item_id=news_id,
         q09_portfolio_work_item_id=portfolio_id,
-        q09_news_evidence_sha256=dependencies["Q09_NEWS"][2],
+        q09_news_evidence_sha256=dependencies[news_role][2],
         q09_portfolio_evidence_sha256=(
             portfolio_dependency[2] if portfolio_dependency is not None else None
         ),

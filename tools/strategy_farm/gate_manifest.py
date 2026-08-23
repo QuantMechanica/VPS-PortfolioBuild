@@ -113,6 +113,20 @@ V4_SOURCE_BY_GATE = {
     if target in V4_PHASE_IDS
 }
 
+# Stable runtime vocabulary.  Numeric gate ids are presentation/storage details
+# owned by each manifest; dispatch code asks for the evidence responsibility.
+EVIDENCE_ROLE_PREFIXES = MappingProxyType({
+    "BASELINE_FULL_RUN": "PRE_NEWS_FULL_HISTORY_BASELINE",
+    "NEWS": "NEWS_MODE_SELECTION_AND_FTMO_RECOMMENDATION",
+    "INCUMBENT": "LOCKED_CONFIGURATION_REPRODUCIBILITY",
+    "PATTERN": "DL089_PREREGISTERED_PATTERN_FILTER_SELECTION",
+    "PARAM_OPT": "DEV_ONLY_PARAMETER_SWEEP_AND_FREEZE",
+    "HEAD_TO_HEAD": "SEALED_BEST_SETTINGS_VS_BASELINE_AND_INCUMBENT",
+    "PORTFOLIO": "TARGET_SPECIFIC_PORTFOLIO_ADMISSION",
+    "OPS": "DEPLOYMENT_READINESS",
+    "LIVE": "PROSPECTIVE_BURN_IN",
+})
+
 
 def _v3_role_to_v4(role: str) -> str:
     """Renumber a trailing embedded v3 gate reference in an ``evidence_role``.
@@ -208,6 +222,64 @@ class GateManifest:
             )
         return matches[0]
 
+    def gate_for_role(self, role: str) -> str:
+        """Resolve one stable runtime evidence role to this contract's gate id.
+
+        V3's baseline-full-run is the sole display-only exception: ``Q10A`` is
+        returned because that contract binds Q08 full-history evidence instead
+        of writing a top-level work item.  V4 returns its real ``Q09`` gate.
+        """
+
+        logical_role = str(role or "").strip().upper()
+        try:
+            prefix = EVIDENCE_ROLE_PREFIXES[logical_role]
+        except KeyError as exc:
+            raise GateManifestError(f"unknown evidence role: {role!r}") from exc
+        matches = [gate.id for gate in self.gates if gate.evidence_role.startswith(prefix)]
+        if logical_role == "BASELINE_FULL_RUN" and not matches:
+            stage = self.baseline_stage
+            if stage and str(stage.get("name")) == "Baseline Full Run":
+                return str(stage["id"])
+        if len(matches) != 1:
+            raise GateManifestError(
+                f"gate manifest must define exactly one {logical_role} gate; found {matches}"
+            )
+        return matches[0]
+
+    def storage_phase_for_role(self, role: str, lane: str | None = None) -> str:
+        """Resolve a role to its writable phase, including the split news lane."""
+
+        gate_id = self.gate_for_role(role)
+        if str(role).strip().upper() != "NEWS":
+            if lane is not None:
+                raise GateManifestError(f"storage lane is only valid for NEWS, got {role!r}")
+            return gate_id
+        lane_id = str(lane or "NEWS").strip().upper()
+        if lane_id not in {"NEWS", "PORTFOLIO"}:
+            raise GateManifestError(f"unknown NEWS storage lane: {lane!r}")
+        return f"{gate_id}_{lane_id}"
+
+    def dependency_role(self, v3_role: str) -> str:
+        """Return the dependency token owned by this manifest version."""
+
+        token = str(v3_role or "").strip().upper()
+        if self.schema_version != SCHEMA_VERSION_V4:
+            return token
+        if self.contract_equivalence is None:
+            raise GateManifestError("v4 manifest has no dependency-role equivalence")
+        try:
+            return str(self.contract_equivalence["dependency_role_v3_to_v4"][token])
+        except KeyError as exc:
+            raise GateManifestError(f"dependency role has no v4 equivalence: {token!r}") from exc
+
+    @property
+    def head_to_head_dependency_roles(self) -> tuple[str, ...]:
+        """Ordered dependency tokens for the sealed comparison work item."""
+
+        if self.schema_version == SCHEMA_VERSION_V4:
+            return ("BASELINE_Q09", "INCUMBENT_Q11", "CHALLENGER_Q11")
+        return ("PARENT_LINEAGE", "CHALLENGER_Q10")
+
     @property
     def baseline_stage(self) -> Mapping[str, Any] | None:
         """The v3 Q10A baseline evidence-binding stage (None before v3)."""
@@ -251,15 +323,13 @@ class GateManifest:
         return tuple(self.extension_topology.get("portfolio_routes", ()))
 
     def portfolio_route(self, *, optimized: bool) -> str | None:
-        """Return the Q11 predecessor for an (optimized|non-optimized) lineage.
+        """Return no automatic portfolio predecessor.
 
-        Non-optimized lineages reach Q11 from Q10; optimized lineages reach it
-        from Q16.  Returns None if the active manifest has no routing contract.
+        The v3 JSON retains its historical topology as contract evidence, but
+        OWNER decision A2 makes optimization mandatory and the book guard is
+        now the only Phase-3 entry authority under both v3 and v4.
         """
-        condition = "OPTIMIZED" if optimized else "NOT_OPTIMIZED"
-        for route in self.portfolio_routes:
-            if str(route.get("condition")) == condition and str(route.get("to")) == "Q11":
-                return str(route.get("from"))
+        del optimized
         return None
 
     @property

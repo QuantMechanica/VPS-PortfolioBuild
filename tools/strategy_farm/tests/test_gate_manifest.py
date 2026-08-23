@@ -119,9 +119,9 @@ def test_v3_is_now_the_active_default_and_v2_remains_loadable() -> None:
 def test_v3_loader_exposes_q11_routing_and_q16_dependencies() -> None:
     contract = gate_manifest.load_gate_manifest()
 
-    # Q11 routing rule: Q10 is the non-optimized predecessor, Q16 the optimized.
-    assert contract.portfolio_route(optimized=False) == "Q10"
-    assert contract.portfolio_route(optimized=True) == "Q16"
+    # OWNER A2: neither optimized nor unchanged lineages auto-enter the book.
+    assert contract.portfolio_route(optimized=False) is None
+    assert contract.portfolio_route(optimized=True) is None
 
     roles = [(dep["role"], dep["phase"]) for dep in contract.q16_dependencies]
     assert roles == [("BASELINE_FULL_RUN", "Q10A"), ("INCUMBENT_Q10", "Q10")]
