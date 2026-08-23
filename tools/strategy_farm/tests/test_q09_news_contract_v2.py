@@ -239,6 +239,37 @@ class Q09NewsContractV2Tests(unittest.TestCase):
         result = contract.adjudicate(payload)
         self.assertEqual(result["chosen_config"]["temporal_mode"], "PRE30")
 
+    def test_v3_one_seed_fans_into_unchanged_selector(self) -> None:
+        payload = evidence()
+        payload["schema_version"] = contract.SCHEMA_VERSION_V3
+        payload["cells"] = [
+            cell for cell in payload["cells"] if cell["seed"] == contract.V3_SEED
+        ]
+
+        result = contract.adjudicate(payload)
+
+        self.assertEqual(result["verdict"], "CONFIG_LOCKED")
+        self.assertEqual(result["schema_version"], contract.ADJUDICATION_SCHEMA_VERSION_V3)
+        self.assertEqual(result["chosen_config"]["temporal_mode"], "PRE60")
+        self.assertEqual(result["seed_provenance"]["executed_seed_set"], [17])
+        self.assertEqual(result["seed_provenance"]["selector_seed_set"], list(contract.SEEDS))
+        self.assertTrue(result["seed_provenance"]["inert_seed_fanout"])
+
+    def test_v3_still_requires_7x4_when_material_effect_is_observed(self) -> None:
+        payload = evidence()
+        payload["schema_version"] = contract.SCHEMA_VERSION_V3
+        payload["cells"] = [
+            cell for cell in payload["cells"] if cell["seed"] == contract.V3_SEED
+        ]
+        for cell in payload["cells"]:
+            if cell["arm"] == "POLICY_ON" and cell["temporal_mode"] == "PRE60":
+                cell["full"]["affected_entries"] = 10
+
+        result = contract.adjudicate(payload)
+
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(result["reason_codes"], ["expanded_7x4_matrix_required"])
+
 
 if __name__ == "__main__":
     unittest.main()

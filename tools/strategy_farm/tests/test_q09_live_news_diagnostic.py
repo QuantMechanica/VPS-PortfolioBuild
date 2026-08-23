@@ -381,7 +381,10 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
                 (self.work_item_id,),
             ).fetchone()
         self.assertEqual(finished["verdict"], "REVIEW_REQUIRED")
-        self.assertEqual(Path(finished["evidence_path"]), output / "summary.json")
+        self.assertEqual(
+            Path(finished["evidence_path"]).resolve(),
+            (output / "summary.json").resolve(),
+        )
         finished_payload = json.loads(finished["payload_json"])
         self.assertEqual(
             finished_payload["q09_sidecar_verification"],

@@ -86,6 +86,7 @@ def add_q09_final(
     conn: sqlite3.Connection,
     *,
     seeds: tuple[int, ...] = (42, 17, 99, 7, 2026),
+    contract_version: str = schema.CONTRACT_VERSION,
 ) -> None:
     conn.execute(
         """
@@ -98,7 +99,7 @@ def add_q09_final(
         ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """,
         (
-            "q09n", schema.CONTRACT_VERSION, "DXZ", "DXZ", "q08", "bundle-v2", _hash("base"),
+            "q09n", contract_version, "DXZ", "DXZ", "q08", "bundle-v2", _hash("base"),
             _hash("baseline"), _hash("ex5"), _hash("include"), "2020-01-01T00:00:00Z",
             "2022-12-31T23:59:59Z", "2023-01-01T00:00:00Z", "2025-01-01T00:00:00Z",
             60, 24, "7x1_target_compliance", "CONFIG_LOCKED", "PRE30", "DXZ",
@@ -436,6 +437,39 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
         )
         with self.assertRaisesRegex(schema.SchemaError, "five-seed evidence is incomplete"):
             schema.assert_q10_dependency_gate(self.conn, "q10-seeds")
+
+    def test_q10_gate_accepts_contract_v3_single_physical_seed(self) -> None:
+        add_work_item(self.conn, "q08", "Q08", "PASS", evidence="q08.json")
+        add_work_item(self.conn, "q09n", "Q09_NEWS", "CONFIG_LOCKED", evidence="q09.json")
+        add_work_item(self.conn, "q10", "Q10", None, evidence="q10.json")
+        self.conn.commit()
+        schema.ensure_schema(self.conn)
+        add_bundle(self.conn)
+        schema.add_dependency(
+            self.conn,
+            child_work_item_id="q09n",
+            dependency_role="Q08_INPUT",
+            parent_work_item_id="q08",
+            parent_evidence_sha256=_hash("q08"),
+            required_verdicts=["PASS"],
+        )
+        add_q09_final(
+            self.conn,
+            seeds=(17,),
+            contract_version=schema.CONTRACT_VERSION_V3,
+        )
+        schema.add_dependency(
+            self.conn,
+            child_work_item_id="q10",
+            dependency_role="Q09_NEWS",
+            parent_work_item_id="q09n",
+            parent_evidence_sha256=_hash("q09-evidence"),
+            required_verdicts=["CONFIG_LOCKED"],
+        )
+
+        gate = schema.assert_q10_dependency_gate(self.conn, "q10")
+
+        self.assertEqual(gate.q09_news_work_item_id, "q09n")
 
 
 if __name__ == "__main__":

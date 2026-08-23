@@ -608,7 +608,7 @@ def test_q08_pass_and_fail_soft_create_held_news_arms_without_portfolio(tmp_path
         ] == [(news["id"], q08_id)]
 
 
-def test_q09_autopilot_uses_oracle_standard_v2_semantics(tmp_path: Path) -> None:
+def test_q09_autopilot_uses_approved_contract_v3_semantics(tmp_path: Path) -> None:
     farmctl.init_db(tmp_path)
     ea_id = "QM5_20266"
     symbol = "XTIUSD.DWX"
@@ -679,9 +679,10 @@ def test_q09_autopilot_uses_oracle_standard_v2_semantics(tmp_path: Path) -> None
             "validate_include_closure",
             return_value={"generated_source_drift": []},
         ),
+        mock.patch.object(q09_news_runner, "validate_q08_source_vintage") as validate_vintage,
         mock.patch.object(q09_news_runner, "build_run_plan", return_value={
             "plan_path": str(plan_path), "plan_sha256": "p" * 64,
-            "candidate_lineage_key": expected_lineage, "cell_count": 40,
+            "candidate_lineage_key": expected_lineage, "cell_count": 8,
         }) as build_plan,
         mock.patch.object(q09_news_runner, "bind_plan_to_work_item", return_value={
             "activation_hold_released": True,
@@ -695,6 +696,8 @@ def test_q09_autopilot_uses_oracle_standard_v2_semantics(tmp_path: Path) -> None
     assert kwargs["deployment_target"] == "DXZ"
     assert kwargs["tester_model"] == "REAL_TICKS"
     assert kwargs["cost_profile"] == "DXZ_CANONICAL_REAL_TICKS_V1"
+    assert kwargs["contract_version"] == q09_news_runner.contract.SCHEMA_VERSION_V3
+    assert Path(kwargs["output_root"]).name == "q09_contract_v3"
     assert kwargs["calendar_common_relative_path"] == (
         "QM/q09_news/q09cal-20150101-20260809-0bb19b5bb9790b76/events.csv"
     )
@@ -702,6 +705,11 @@ def test_q09_autopilot_uses_oracle_standard_v2_semantics(tmp_path: Path) -> None
         farmctl.Q09_AUTOPILOT_WINDOWS
     )
     assert bind_plan.call_args.kwargs["cell_timeout_sec"] == 10800
+    validate_vintage.assert_called_once_with(
+        q08_path,
+        baseline_setfile_path=setfile.resolve(),
+        ex5_path=ex5,
+    )
     with farmctl.connect(tmp_path) as conn:
         payload = json.loads(conn.execute(
             "SELECT payload_json FROM work_items WHERE id=?", (q09_id,)
@@ -740,6 +748,32 @@ def test_q09_autopilot_derivation_gap_stays_held_with_machine_reason(tmp_path: P
         "Q09_AUTOSEAL_DERIVE_LINEAGE_FAILED"
     )
     assert hold[0] == 1
+
+
+def test_bind_q09_dry_run_does_not_initialize_or_write_database(tmp_path: Path) -> None:
+    dry_args = mock.Mock(command="bind-q09-plan", dry_run=True)
+    apply_args = mock.Mock(command="bind-q09-plan", dry_run=False)
+    assert farmctl._command_mutates_state(dry_args) is False
+    assert farmctl._command_mutates_state(apply_args) is True
+    with (
+        mock.patch.object(farmctl, "init_db") as init_db,
+        mock.patch.object(
+            q09_news_runner,
+            "bind_plan_to_work_item",
+            return_value={"dry_run": True},
+        ) as binder,
+    ):
+        result = farmctl.bind_q09_run_plan(
+            tmp_path,
+            work_item_id="q09",
+            plan_path=tmp_path / "plan.json",
+            expected_plan_file_sha256="a" * 64,
+            dry_run=True,
+        )
+
+    init_db.assert_not_called()
+    assert result == {"dry_run": True}
+    assert binder.call_args.kwargs["dry_run"] is True
 
 
 def test_q09_config_locked_auto_cascade_is_exact_predecessor_bound(tmp_path: Path) -> None:

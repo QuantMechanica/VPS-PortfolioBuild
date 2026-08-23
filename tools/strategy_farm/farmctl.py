@@ -15293,7 +15293,7 @@ def _q09_candidate_lineage_key(ea_id: str, symbol: str, q08_work_item_id: str) -
 
 
 def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any]:
-    """Create and bind standard-v2 plans for held Q09 rows.
+    """Create and bind approved contract-v3 plans for held Q09 rows.
 
     Every identity comes from the exact work-item/dependency lineage.  Missing
     or contradictory inputs leave the row held with a structured payload
@@ -15362,6 +15362,18 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
             if not ex5.is_file():
                 raise FileNotFoundError(f"compiled EX5 missing: {ex5}")
 
+            stage = "validate_q08_vintage"
+            q09_runner = None
+            try:
+                import q09_news_runner as q09_runner
+            except ModuleNotFoundError:
+                from tools.strategy_farm import q09_news_runner as q09_runner
+            q09_runner.validate_q08_source_vintage(
+                q08_path,
+                baseline_setfile_path=setfile,
+                ex5_path=ex5,
+            )
+
             stage = "include_closure"
             try:
                 import build_q09_include_closure as closure_builder
@@ -15378,11 +15390,9 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
             )
 
             stage = "build_plan"
-            try:
-                import q09_news_runner as q09_runner
-            except ModuleNotFoundError:
-                from tools.strategy_farm import q09_news_runner as q09_runner
-            output_root = Q09_AUTOPILOT_REPORT_ROOT / work_item_id
+            output_root = (
+                Q09_AUTOPILOT_REPORT_ROOT / work_item_id / "q09_contract_v3"
+            )
             plan = q09_runner.build_run_plan(
                 work_item_id=work_item_id,
                 candidate_lineage_key=_q09_candidate_lineage_key(ea_id, symbol, q08_id),
@@ -15399,6 +15409,7 @@ def auto_seal_pending_q09_news(root: Path, *, limit: int = 100) -> dict[str, Any
                 output_root=output_root,
                 news_or_event_strategy=False,
                 force_expanded_matrix=False,
+                contract_version=q09_runner.contract.SCHEMA_VERSION_V3,
                 **Q09_AUTOPILOT_WINDOWS,
             )
             plan_path = Path(str(plan["plan_path"])).resolve()
@@ -22180,10 +22191,12 @@ def bind_q09_run_plan(
     plan_path: str | os.PathLike[str],
     expected_plan_file_sha256: str,
     cell_timeout_sec: int = 3600,
+    dry_run: bool = False,
 ) -> dict[str, Any]:
     """Bind an authenticated Q09 plan without creating or requeueing work."""
 
-    init_db(root)
+    if not dry_run:
+        init_db(root)
     try:
         import q09_news_runner as q09_runner
     except ModuleNotFoundError:
@@ -22194,6 +22207,7 @@ def bind_q09_run_plan(
         plan_path=Path(plan_path),
         expected_plan_file_sha256=str(expected_plan_file_sha256),
         cell_timeout_sec=int(cell_timeout_sec),
+        dry_run=bool(dry_run),
     )
 
 
@@ -26006,6 +26020,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=3600,
     )
+    bind_q09.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate the exact binding through a read-only SQLite connection",
+    )
 
     dispatch = sub.add_parser(
         "dispatch-tick",
@@ -26147,6 +26166,8 @@ _STATE_MUTATING_COMMANDS = frozenset({
 
 
 def _command_mutates_state(args: argparse.Namespace) -> bool:
+    if args.command == "bind-q09-plan":
+        return not bool(getattr(args, "dry_run", False))
     if args.command == "enqueue-compile":
         return bool(args.apply or not args.from_file)
     if args.command in {"admit-optimization", "enqueue-opt-admission"}:
@@ -26440,6 +26461,7 @@ def main(argv: list[str] | None = None) -> int:
             plan_path=args.plan,
             expected_plan_file_sha256=args.plan_file_sha256,
             cell_timeout_sec=args.cell_timeout_sec,
+            dry_run=args.dry_run,
         ))
     elif args.command == "dispatch-tick":
         print_json(dispatch_tick(root, timeout_hours=args.timeout_hours))

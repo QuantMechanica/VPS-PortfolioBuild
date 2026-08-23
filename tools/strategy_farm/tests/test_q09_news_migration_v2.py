@@ -72,7 +72,7 @@ def legacy_rows(path: Path) -> tuple[list[tuple], list[tuple]]:
 
 
 class Q09NewsMigrationV2Tests(unittest.TestCase):
-    def test_schema_v5_to_v6_rebuilds_optional_portfolio_trigger_without_legacy_writes(self) -> None:
+    def test_schema_v5_to_current_rebuilds_optional_portfolio_trigger_without_legacy_writes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             database = Path(temporary) / "farm.sqlite"
             create_legacy_database(database)
@@ -118,7 +118,7 @@ class Q09NewsMigrationV2Tests(unittest.TestCase):
             finally:
                 migrated.close()
 
-            self.assertEqual(version, 6)
+            self.assertEqual(version, schema.SCHEMA_VERSION)
             self.assertIn("optional portfolio lineage is incomplete", trigger_sql)
             self.assertNotIn("v5 requires portfolio lineage", trigger_sql)
             self.assertEqual(protected_after, protected_before)
