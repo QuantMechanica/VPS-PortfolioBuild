@@ -170,3 +170,71 @@ After this commit reaches the canonical checkout and a governed compile slot is
 available, the queued rows must produce `COMPILE_OK` evidence. Until then, there
 is no honest standalone `COMPILE_OK` claim for the repaired source. The block is
 the active live-factory compile interlock, not D10 or an MQL compiler error.
+
+## Review fixes (2026-08-23, FIX_REQUIRED remediation)
+
+Review verdict `FIX_REQUIRED` raised two findings against the pre-merge branch.
+Disposition:
+
+### P0 — merged tree fails the branch's own QM5_411* census test
+
+Root cause confirmed by trial merge: `agents/board-advisor` carries the sibling
+EA `QM5_41133_wti-mdaily-median-mom` (absent from this branch pre-merge, held at
+CPU ceiling / never compiled) whose source contained the identical
+`EA_INDICATOR_BUFFER_UNBOUNDED` defect class the branch's
+`test_qm5_411xx_sources_have_no_unbounded_numeric_buffers` census guards. Because
+that test globs the whole `QM5_411*` family, the merged factory tree was red on a
+touched suite even though the pre-merge branch was green.
+
+Resolution (fix, not test-narrowing): `agents/board-advisor` was merged into this
+branch (`merge(board-advisor): pull sibling 411xx EA QM5_41133 into build-gate
+branch`; auto-merged cleanly, no textual conflicts) and the same mechanical
+`ArraySize(...)` guard class was extended to `QM5_41133`. Three plain-identifier
+dynamic-buffer accesses were bounded (the checker's combined-`||`-with-nested-
+`ArraySize` form is not recognized because its `[^)]*` cannot cross the inner
+`)`; the guards were split / added as standalone fail-fast checks, logically
+identical to the prior combined conditions):
+
+- `month_closes[index]` (loop `Strategy_LoadDailyMedianSignal`) — split the
+  combined guard into two standalone `if(... >= ArraySize(...)) return false;`.
+- `daily_returns[return_count]` — same split.
+- `daily_returns[index]` (post-`ArraySort` validation loop) — added
+  `if(index >= ArraySize(daily_returns)) return false;` at loop top.
+- `daily_returns[center]` (median center block) — added
+  `if(center >= ArraySize(daily_returns)) return false;` after the existing
+  `return_count` guard.
+
+`daily_returns[index-1]` / `daily_returns[center-1]` are non-identifier indices
+and outside this narrow check; no change. The census now covers 21 EAs.
+
+Verification on the merged tree:
+- `python -m pytest tools/strategy_farm/tests/test_build_gate_hardening.py::test_qm5_411xx_sources_have_no_unbounded_numeric_buffers`
+  — `1 passed` (was `1 failed` immediately post-merge, reporting
+  `QM5_41133_...:526` and `:535`).
+- `python -m pytest tools/strategy_farm/tests/test_build_gate_hardening.py tools/strategy_farm/tests/test_compile_work_items.py`
+  — `45 passed`.
+
+### P1 — no standalone COMPILE_OK artifact for the repaired EAs
+
+Unchanged at fix time and NOT actionable inside this FIXER's authority: this seat
+is read-only on `D:/QM`, must never enqueue, never toggle the factory, and never
+compile ad-hoc (the live-factory interlock `LIVE_FACTORY_AD_HOC_COMPILE_REFUSED`
+refuses every `build_check` / `compile_one.ps1`). COMPILE_OK therefore remains
+deferred to the governed compile lane, exactly as the "Remaining operational
+proof" section already discloses. The D10 static gate passes for all 20 original
+EAs and now for `QM5_41133` (buffer-bound census green). Two consequences to
+surface for the governed lane / OWNER:
+
+- The 20 append-only `COMPILE_EA` rows (authority
+  `router_ops_issue:50467e7e`) stay source-hash-bound and must produce
+  COMPILE_OK when a governed slot opens.
+- `QM5_41133`'s source hash changed with this repair; it has NO governed
+  COMPILE_EA row of its own (it was previously held at CPU ceiling, never
+  compiled). It needs a separately authorized governed COMPILE_EA enqueue with
+  its new repaired hash before it can claim COMPILE_OK. This FIXER cannot enqueue
+  it; it is surfaced as the P1 residual and belongs to the governed compile lane.
+
+Net: P0 fixed (merged tree green on the touched suite); P1 is the pre-existing,
+honestly-disclosed COMPILE_OK deferral, now extended to include QM5_41133, and
+requires the governed compile lane plus explicit OWNER acceptance of the deferral
+before this merge lands in the factory.
