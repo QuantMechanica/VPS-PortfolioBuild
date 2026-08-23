@@ -1,0 +1,121 @@
+{
+  "schema": "qm.ftmo-official-rules-snapshot/v2",
+  "retrieved_at_utc": "2026-08-23T07:46:57Z",
+  "retrieval_method": "Raw HTTPS GET (curl, direct from this VPS) for byte-length/sha256/status/Last-Modified capture on every source below; markdown extraction of the exact rendered claims performed against the same URLs via a secondary fetch pass in the same session (same-day, matching retrieval window).",
+  "supersedes": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json (schema v1, retrieved 2026-07-29T19:25:39Z, 25 days before this refresh -- past its own 7-day freshness_max_age_days ceiling)",
+  "profile": "FTMO Challenge 2-Step / USD 100000 / Swing (Standard-account-only clauses noted explicitly where they diverge)",
+  "freshness_max_age_days": 7,
+  "raw_response_note": "FTMO pages contain dynamic bytes: repeated responses can differ while URL, status, byte length and Last-Modified remain unchanged. Raw-response hashes below are retrieval observations, not stable semantic identities. The repository file hash is the durable normalized snapshot identity. (Carried forward verbatim from the v1 methodology note this snapshot supersedes.)",
+  "sources": [
+    {
+      "source_id": "ftmo_trading_objectives_official",
+      "url": "https://ftmo.com/en/trading-objectives/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 276025,
+      "response_sha256_observation": "f93c9442da6b2aaf8018b8eb6896416e85663837617c1b5d93bb09de57c558f3",
+      "last_modified_utc_observation": "2026-08-23T07:39:45Z"
+    },
+    {
+      "source_id": "ftmo_2_step_challenge_official",
+      "url": "https://ftmo.com/en/2-step-challenge/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 303269,
+      "response_sha256_observation": "60ddce39bcd1d38caadd572d15d60944e83c3db5935d06969649f0a65b29ff02",
+      "last_modified_utc_observation": "2026-08-23T07:46:08Z"
+    },
+    {
+      "source_id": "ftmo_news_official",
+      "url": "https://ftmo.com/faq/can-i-trade-news/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 344271,
+      "response_sha256_observation": "feb3d24ca2f7925258e8f9935ced0e0d6b8ca56f94d323b28680cae724ce79a4",
+      "last_modified_utc_observation": "2026-08-23T07:46:44Z"
+    },
+    {
+      "source_id": "ftmo_weekend_official",
+      "url": "https://ftmo.com/en/faq/do-i-have-to-close-my-positions-overnight-or-before-the-weekend/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 339372,
+      "response_sha256_observation": "95918f0d886e274523e66bb7c9a0defea7b97627dcad00116ff651e07b6ca60c",
+      "last_modified_utc_observation": "2026-08-23T07:46:47Z"
+    },
+    {
+      "source_id": "ftmo_ea_official",
+      "url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 340388,
+      "response_sha256_observation": "1abad5dba767f187e0f3e494026e1ff6519eafd428665dee8f2bb79cfef6b877",
+      "last_modified_utc_observation": "2026-08-23T07:46:53Z"
+    },
+    {
+      "source_id": "ftmo_forbidden_practices_official",
+      "url": "https://ftmo.com/en/forbidden-trading-practices/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 234787,
+      "response_sha256_observation": "2cd80553c038286ef7fabb3fb886662f5e71704dbd13bf489f1048ec90316421",
+      "last_modified_utc_observation": "2026-08-23T07:46:51Z"
+    },
+    {
+      "source_id": "ftmo_fees_refund_official",
+      "url": "https://ftmo.com/en/faq/are-the-fees-recurrent/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 337641,
+      "response_sha256_observation": "005a560b4a49adf2496b6455f226801db9d5b4e8805c61199fe034b61169f832",
+      "last_modified_utc_observation": "2026-08-23T07:46:57Z"
+    }
+  ],
+  "normalized_claims": {
+    "phase1_profit_target_percent": "10",
+    "verification_profit_target_percent": "5",
+    "one_step_profit_target_percent": "10",
+    "one_step_maximum_daily_loss_percent_of_initial": "3",
+    "two_step_maximum_daily_loss_percent_of_initial": "5",
+    "profit_target_operator": "STRICTLY_GREATER_THAN_TARGET_WHILE_FLAT",
+    "maximum_daily_loss_percent_of_initial": "5",
+    "maximum_daily_loss_reset_timezone": "Europe/Prague",
+    "maximum_daily_loss_reset_local_time": "00:00:00 CE(S)T",
+    "maximum_daily_loss_basis": "MIDNIGHT_BALANCE_MINUS_FIXED_INITIAL_CAPITAL_AMOUNT",
+    "maximum_daily_loss_breach_operator": "EQUITY_STRICTLY_BELOW_LIMIT",
+    "maximum_loss_percent_of_initial": "10",
+    "maximum_loss_model": "STATIC_INITIAL_CAPITAL",
+    "maximum_loss_breach_operator": "EQUITY_STRICTLY_BELOW_LIMIT",
+    "minimum_trading_days_two_step": 4,
+    "minimum_trading_days_one_step": null,
+    "trading_day_qualifier": "AT_LEAST_ONE_POSITION_OPENED_DURING_PRAGUE_LOCAL_DAY",
+    "maximum_trading_period_days": null,
+    "news_restriction_during_evaluation_any_account_type": false,
+    "news_restriction_funded_standard_account": "no open/close (incl. pending SL/TP execution) within 2 minutes before and 2 minutes after selected news releases; violation may terminate the FTMO Account",
+    "news_restriction_funded_swing_account": false,
+    "overnight_weekend_restriction_during_evaluation_any_account_type": false,
+    "overnight_weekend_restriction_funded_standard_account": "must close positions shortly before weekend market close, or if a rollover/market break exceeds 2 hours",
+    "overnight_weekend_restriction_funded_swing_account": false,
+    "expert_advisors_allowed_subject_to_rules": true,
+    "ea_replicability_required_on_live_accounts": true,
+    "simultaneous_order_limit": 200,
+    "position_limit_per_day": 2000,
+    "hyperactive_server_request_threshold_per_day": 2000,
+    "real_market_replicability_required": true,
+    "forbidden_practice_gap_trading_before_major_news_or_earnings": true,
+    "forbidden_practice_gap_trading_within_2h_of_a_2h_plus_market_close": true,
+    "forbidden_practice_hedging_same_or_highly_correlated_instruments": true,
+    "forbidden_practice_manipulative_simultaneous_opposite_positions": true,
+    "forbidden_practice_third_party_account_access": true,
+    "fee_recurring": false,
+    "fee_model": "ONE_TIME_ENTRY_FEE_BY_ACCOUNT_SIZE_AND_CHALLENGE_TYPE",
+    "fee_hidden_or_additional_fees": false,
+    "fee_refund_two_step": "refunded with first FTMO Account Reward withdrawal, contingent on passing",
+    "fee_refund_one_step": "not refunded after passing",
+    "fee_exact_amount_by_account_size_tier": null
+  },
+  "unretrievable_by_automated_fetch": [
+    "The exact fee amount per account-size tier (10k/25k/50k/100k/200k) renders through a JS-driven pricing widget on the pricing/challenge pages and did not appear in the fetched HTML for either the 2-step-challenge page or a dedicated pricing endpoint queried this session. Recorded as null above rather than invented -- required per this task's own hard_constraint. Re-attempt with a JS-rendering fetch path (or manual OWNER check) if the exact fee table becomes load-bearing for a cost model."
+  ],
+  "scope_limit": "This snapshot supports research and Free-Trial/shadow gates only. It is not a purchase authorization and must be refreshed before any paid Challenge decision if older than seven days."
+}

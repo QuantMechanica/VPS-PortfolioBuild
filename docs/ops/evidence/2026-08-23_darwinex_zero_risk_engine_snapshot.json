@@ -1,0 +1,61 @@
+{
+  "schema": "qm.darwinex-zero-risk-engine-snapshot/v1",
+  "retrieved_at_utc": "2026-08-23T07:47:00Z",
+  "retrieval_method": "Primary source (help.darwinex.com/risk-manager): raw HTTPS GET (curl, direct from this VPS) for byte-length/sha256/status/Last-Modified capture. Secondary source (darwinexzero.document360.io/docs/risk-engine): direct curl looped in an infinite redirect (bot/JS-challenge protection on that CDN) and could not be captured with raw byte/hash evidence this session; its claims below were extracted via the WebFetch tool's rendered-content pass instead and are labelled with a weaker evidentiary tier accordingly.",
+  "profile": "Darwinex Zero DARWIN Risk Engine (applies to all live DARWIN-tracked strategies, independent of FTMO/prop-firm rules)",
+  "freshness_max_age_days": 7,
+  "sources": [
+    {
+      "source_id": "darwinex_risk_manager_help_official",
+      "url": "https://help.darwinex.com/risk-manager",
+      "evidentiary_tier": "PRIMARY_RAW_CAPTURE",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 143474,
+      "response_sha256_observation": "6d074b6026ec9f0172df7aa2cea0fc4b18c73062c8ff03e3d909e6f7f9e714b6",
+      "last_modified_utc_observation": "2026-08-16T20:32:03Z"
+    },
+    {
+      "source_id": "darwinex_risk_engine_docs_official",
+      "url": "https://darwinexzero.document360.io/docs/risk-engine",
+      "evidentiary_tier": "SECONDARY_RENDERED_FETCH_ONLY",
+      "http_status": null,
+      "content_type": null,
+      "response_bytes": null,
+      "response_sha256_observation": null,
+      "last_modified_utc_observation": null,
+      "capture_note": "curl -L against this URL looped past 50 redirects this session (document360's CDN likely gates on a JS/cookie challenge that curl cannot satisfy); raw response evidence unavailable. Claims below came from a same-session WebFetch tool call against the identical URL, which renders JS and returned readable content -- but WebFetch does not expose the underlying HTTP status/bytes/hash, so this source cannot be verified byte-for-byte the way the primary source above can."
+    }
+  ],
+  "normalized_claims": {
+    "target_monthly_var_min_percent": "3.25",
+    "target_monthly_var_max_percent": "6.5",
+    "target_var_selection_rule": "target VaR moves within [3.25%, 6.5%] based on a historical volatility ratio computed over up to a 6-month lookback, with the engine tolerating up to a 2x (up or down) change in VaR before adjusting the target",
+    "d_leverage_max_short_hold_bucket": 16.25,
+    "d_leverage_max_short_hold_bucket_boundary_minutes": "DISPUTED_BETWEEN_SOURCES -- see d_leverage_bucket_boundary_discrepancy below",
+    "d_leverage_max_mid_hold_bucket": 13,
+    "d_leverage_mid_hold_bucket_range_minutes": [30, 60],
+    "d_leverage_max_long_hold_bucket": 9.75,
+    "d_leverage_long_hold_bucket_boundary_minutes": 60,
+    "d_leverage_long_hold_bucket_operator": "GREATER_THAN_60_MINUTES",
+    "leverage_formula": "Lev(investor) = Lev(trader) x (target_VaR / strategy_VaR) x f",
+    "strategy_var_lookback_days": 45,
+    "strategy_var_lookback_qualifier": "last 45 days in which the trader remained exposed to the market (not 45 calendar days)",
+    "risk_adjustment_trigger_points": [
+      "at trade initiation: position size calculated to meet the target monthly VaR",
+      "during an open position: a second-level risk adjustment may be applied if a D-Leverage threshold is approached, independent of the initiation-time sizing"
+    ],
+    "no_fixed_drawdown_or_trading_restriction_rules": true,
+    "no_fixed_drawdown_or_trading_restriction_rules_note": "Darwinex Zero states there is no fixed trading-rule set (no max daily loss %, no max total loss %, no minimum trading days) the way FTMO has -- risk is governed entirely through the VaR-targeting Risk Engine and D-Leverage caps above, not through static drawdown gates. This is a structural difference from the FTMO rulepack in this same evidence set and must not be conflated with it in any shared cost/risk model."
+  },
+  "d_leverage_bucket_boundary_discrepancy": {
+    "finding": "The two official sources for the same short-hold D-Leverage=16.25 bucket disagree on its upper time boundary.",
+    "help_darwinex_com_risk_manager_says": "less than 15 minutes",
+    "darwinexzero_document360_io_docs_risk_engine_says": "less than 30 minutes",
+    "both_sources_agree_on": "the mid bucket is exactly [30, 60) minutes at D-Leverage 13, and the long-hold bucket is more than 60 minutes at D-Leverage 9.75",
+    "resolution": "NOT_RESOLVED_BY_THIS_SNAPSHOT -- recorded verbatim from both sources per the hard_constraint against inventing/reconciling values without a documented source. Since QM's own >60-minute D-Leverage figure already in use (see project memory reference_venue_cost_model / 9.75% leverage) is unaffected by this discrepancy (both sources agree on 9.75 for the long-hold bucket QM actually operates in), this does not block current usage, but the exact <15min-vs-<30min boundary should not be relied on for any sub-30-minute strategy without a fresh, disambiguating check.",
+    "owner_attention_needed": "Only if QM ever designs a strategy intended to hold positions between 15 and 30 minutes, where the two sources would classify the D-Leverage cap differently (16.25 vs the 13 mid-bucket)."
+  },
+  "cross_reference": "docs/ops/evidence/2026-08-23_ftmo_official_rules_snapshot.json (FTMO rulepack, same retrieval session) -- the two rulepacks are independent regulatory/venue regimes and must be applied per-venue, never merged into one shared threshold set.",
+  "scope_limit": "This snapshot supports research, cost-model, and risk-model design only. It is not a substitute for re-checking the live Darwinex Zero account terms before any live capital or leverage decision, and must be refreshed before such a decision if older than seven days."
+}
