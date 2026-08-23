@@ -150,7 +150,7 @@ def split_frontmatter(text: str) -> tuple[dict[str, str], str]:
         return {}, text
     head, body = text[3:end], text[end + 4:]
     fm: dict[str, str] = {}
-    for line in head.split("\n"):
+    for line in head.split(chr(10)):
         if not line or line[0] in " \t-#" or ":" not in line:
             continue
         k, _, v = line.partition(":")
@@ -571,31 +571,83 @@ def runs_for_ea(ea_id: str, db: Path = DB) -> list[dict]:
 # ── sections embedded into ea_<id>.html ───────────────────────────────────────
 
 CARD_SECTION_CSS = """
-.sc-wrap{padding:22px 24px;background:var(--surface-1);border:1px solid var(--border);
-margin-bottom:24px}
-.sc-kicker{font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--text-3);
-text-transform:uppercase;letter-spacing:.2em;margin-bottom:14px}
-.sc-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:1px;
-background:var(--border);border:1px solid var(--border);margin:0 0 16px}
-.sc-facts div{background:var(--surface-2);padding:8px 11px}
-.sc-facts b{display:block;color:var(--text-4);font-size:10px;text-transform:uppercase;
-letter-spacing:.07em;font-weight:500;margin-bottom:2px}
-.sc-facts span{font-size:12.5px;color:var(--text)}
-.sc-src{border-left:3px solid var(--border-3);padding:8px 12px;margin:0 0 16px;
-color:var(--text-3);font-size:11.5px;line-height:1.6}
-.sc-body{font-size:13px;line-height:1.7;color:var(--text-2)}
-.sc-body h3{font-size:14px;color:var(--text);margin:20px 0 6px}
-.sc-body h4{font-size:12.5px;color:var(--text-2);margin:16px 0 4px;
-text-transform:uppercase;letter-spacing:.06em}
-.sc-body p{margin:0 0 9px}
-.sc-body ul,.sc-body ol{margin:0 0 10px 20px;padding:0}
-.sc-body li{margin:0 0 4px}
-.sc-body table{border-collapse:collapse;width:100%;font-size:11.5px;margin:8px 0}
-.sc-body th{text-align:left;color:var(--text-3);border-bottom:1px solid var(--border-2);
-padding:4px 7px}
-.sc-body td{border-bottom:1px solid var(--border);padding:3px 7px;vertical-align:top}
-.sc-body pre{background:var(--surface-2);padding:9px 11px;overflow-x:auto;font-size:11px}
-.sc-none{color:var(--text-4);font-size:12px}
+/* ── strategy card ─────────────────────────────────────────────────── */
+.sc{border:1px solid var(--border);background:var(--surface-1);margin-bottom:26px}
+.sc-head{padding:16px 22px 14px;border-bottom:1px solid var(--border)}
+.sc-kicker{font-family:var(--font-mono);font-size:9.5px;font-weight:700;color:var(--text-4);
+text-transform:uppercase;letter-spacing:.22em;margin-bottom:9px;display:flex;gap:10px;
+align-items:center;flex-wrap:wrap}
+.sc-bucket{border:1px solid var(--border-2);padding:1px 7px;letter-spacing:.1em;
+color:var(--text-3)}
+.sc-bucket.warn{border-color:var(--warn);color:var(--warn)}
+.sc-title{font-size:17px;line-height:1.35;font-weight:600;color:var(--text);
+letter-spacing:-.01em;max-width:80ch}
+.sc-lede{margin-top:8px;font-size:12.5px;line-height:1.6;color:var(--text-3);max-width:88ch}
+
+.sc-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.chip{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;padding:2px 8px;
+border:1px solid var(--border-2);color:var(--text-2);white-space:nowrap}
+.chip.sym{border-color:var(--signal-dim);color:var(--signal-bright)}
+.chip.tf{border-color:var(--border-3);color:var(--text)}
+.chip.flag{border-style:dashed;color:var(--text-3)}
+.chip.r{padding-left:6px}
+.chip.r b{font-weight:500;color:var(--text-4);margin-right:5px}
+.chip.r.pass{border-color:var(--pass)}
+.chip.r.pass span{color:var(--pass)}
+.chip.r.fail{border-color:var(--fail)}
+.chip.r.fail span{color:var(--fail)}
+.chip.r.other span{color:var(--text-3)}
+
+.sc-stats{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--border);
+border-bottom:1px solid var(--border);background:var(--surface-2)}
+.sc-stat{padding:9px 18px 8px;border-right:1px solid var(--border);min-width:132px}
+.sc-stat b{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.11em;
+color:var(--text-4);font-weight:500;margin-bottom:3px}
+.sc-stat span{font-family:var(--font-mono);font-size:14px;color:var(--text)}
+.sc-stat span.txt{font-family:inherit;font-size:12.5px;color:var(--text-2)}
+
+.sc-src{padding:11px 22px;border-bottom:1px solid var(--border);color:var(--text-3);
+font-size:11.5px;line-height:1.6;background:var(--surface-2)}
+.sc-src b{color:var(--text-4);font-weight:500;text-transform:uppercase;font-size:9.5px;
+letter-spacing:.12em;display:block;margin-bottom:3px}
+.sc-src a{color:var(--signal)}
+
+.sc-body{padding:18px 22px 20px;font-size:13px;line-height:1.72;color:var(--text-2);
+max-width:96ch}
+.sc-body h3{font-size:13px;color:var(--text);margin:22px 0 8px;padding-left:10px;
+border-left:2px solid var(--signal-dim);text-transform:uppercase;letter-spacing:.1em;
+font-weight:600}
+.sc-body h3:first-child{margin-top:0}
+.sc-body h4{font-size:12px;color:var(--text-2);margin:16px 0 5px;font-weight:600;
+letter-spacing:.03em}
+.sc-body h5{font-size:11.5px;color:var(--text-3);margin:12px 0 4px;font-weight:600}
+.sc-body p{margin:0 0 10px}
+.sc-body ul,.sc-body ol{margin:0 0 11px 18px;padding:0}
+.sc-body li{margin:0 0 5px}
+.sc-body li::marker{color:var(--text-4)}
+.sc-body code{background:var(--surface-2);padding:1px 4px;font-size:11.5px;
+color:var(--text)}
+.sc-body pre{background:var(--surface-2);border-left:2px solid var(--border-2);
+padding:10px 12px;overflow-x:auto;font-size:11px;color:var(--text-3)}
+.sc-body hr{border:0;border-top:1px solid var(--border);margin:16px 0}
+.sc-body table{border-collapse:collapse;width:100%;font-size:11.5px;margin:9px 0}
+.sc-body th{text-align:left;color:var(--text-4);font-weight:500;font-size:9.5px;
+text-transform:uppercase;letter-spacing:.09em;border-bottom:1px solid var(--border-2);
+padding:5px 8px}
+.sc-body td{border-bottom:1px solid var(--border);padding:4px 8px;vertical-align:top}
+.sc-body tr:hover td{background:var(--surface-2)}
+.sc-body details{border:1px solid var(--border);margin:12px 0;background:var(--surface-2)}
+.sc-body details>summary{cursor:pointer;padding:8px 12px;font-size:11.5px;
+color:var(--text-3);list-style:none;user-select:none}
+.sc-body details>summary::-webkit-details-marker{display:none}
+.sc-body details>summary::before{content:"+ ";color:var(--text-4);font-family:var(--font-mono)}
+.sc-body details[open]>summary::before{content:"- "}
+.sc-body details[open]>summary{border-bottom:1px solid var(--border);color:var(--text-2)}
+.sc-body details>div{padding:12px 14px 2px}
+.sc-body details h3{margin-top:0}
+.sc-none{padding:18px 22px;color:var(--text-4);font-size:12px}
+
+/* ── all backtests table ───────────────────────────────────────────── */
 .bt-wrap{margin:26px 0}
 .bt-note{border-left:3px solid var(--warn);background:rgba(184,114,10,.06);padding:8px 12px;
 color:var(--text-3);font-size:11.5px;line-height:1.55;margin-bottom:10px}
@@ -611,28 +663,152 @@ border-bottom:1px solid var(--border-2);white-space:nowrap}
 .bt-reason{color:var(--text-3);font-size:11px;line-height:1.45;max-width:420px}
 """
 
+# Sections that are reference material rather than the strategy itself. They stay on the
+# page — nothing is dropped — but collapsed, so the mechanism is what the eye lands on.
+COLLAPSE_HEADINGS = (
+    "source", "related strategies", "pipeline history", "gaps", "gap register",
+    "documented deviations", "documented deviations from source",
+    "unverified claims", "r1-r4 assessment", "concepts", "indicators",
+    "cost & compliance notes", "cost and compliance notes",
+)
+
+_LIST_KEYS = ("concepts", "indicators", "strategy_type_flags", "target_symbols",
+              "timeframes", "markets", "sources")
+
+
+def _block_lists(head: str) -> dict[str, list[str]]:
+    """YAML block lists (``key:`` then ``  - value`` lines) that the scalar reader skips.
+
+    ``concepts`` and ``indicators`` are present on 599 of 600 sampled cards and were simply
+    not being shown.
+    """
+    out: dict[str, list[str]] = {}
+    key = None
+    for line in head.split(chr(10)):
+        if re.match(r"^[a-z0-9_]+:\s*$", line):
+            key = line.split(":")[0]
+            out[key] = []
+            continue
+        m = re.match(r"^\s+-\s+(.*)$", line)
+        if m and key:
+            val = m.group(1).strip().strip('"').strip("'")
+            val = re.sub(r"^\[\[|\]\]$", "", val)
+            if "/" in val:
+                val = val.split("/")[-1]
+            if val:
+                out[key].append(val)
+            continue
+        if line and not line[0].isspace():
+            key = None
+    return {k: v for k, v in out.items() if v}
+
+
+def _inline_list(value: str) -> list[str]:
+    return [x.strip().strip('"').strip("'") for x in
+            value.strip().lstrip("[").rstrip("]").split(",") if x.strip()]
+
+
+_R_KEYS = (("r1_track_record", "R1 source"), ("r2_mechanical", "R2 mechanical"),
+           ("r3_data_available", "R3 data"), ("r4_ml_forbidden", "R4 no-ML"))
+_STATS = (("expected_trades_per_year_per_symbol", "Trades / year / symbol", False),
+          ("expected_pf", "Expected PF", False), ("expected_dd_pct", "Expected max DD %", False),
+          ("risk_class", "Risk class", True), ("period", "Timeframe", True),
+          ("pipeline_phase", "Card phase", True))
+
+
+def _collapse_reference_sections(doc: str) -> str:
+    """Wrap reference sections in <details> without dropping a single line."""
+    parts = re.split(r"(<h3>.*?</h3>)", doc)
+    out = [parts[0]] if parts else []
+    i = 1
+    while i < len(parts):
+        head, chunk = parts[i], parts[i + 1] if i + 1 < len(parts) else ""
+        title = re.sub(r"<.*?>", "", head).strip().lower().replace("&amp;", "&")
+        if any(title.startswith(c) for c in COLLAPSE_HEADINGS):
+            # the heading text is already HTML-escaped; unescape before re-escaping
+            label = html.unescape(re.sub(r"<.*?>", "", head).strip())
+            out.append(f"<details><summary>{e(label)}</summary><div>{chunk}</div></details>")
+        else:
+            out.append(head + chunk)
+        i += 2
+    return "".join(out)
+
 
 def render_card_section(ea_id: str) -> str:
-    """The full strategy card, rendered. Replaces the three-paragraph teaser."""
+    """The strategy card as a readable document: identity, universe, expectations,
+    provenance, mechanism. Reference material is collapsed, never removed."""
     path, bucket = find_card(ea_id)
     if not path:
-        return ('<div class="sc-wrap"><div class="sc-kicker">Strategy</div>'
-                '<div class="sc-none">No strategy card on disk for this EA id. '
+        return ('<div class="sc"><div class="sc-head"><div class="sc-kicker">Strategy</div>'
+                '</div><div class="sc-none">No strategy card on disk for this EA id. '
                 'The pipeline evidence below is unaffected.</div></div>')
     try:
         raw = path.read_text(encoding="utf-8", errors="replace")
     except OSError as exc:
-        return ('<div class="sc-wrap"><div class="sc-kicker">Strategy</div>'
-                f'<div class="sc-none">Card unreadable: {e(exc)}</div></div>')
+        return ('<div class="sc"><div class="sc-head"><div class="sc-kicker">Strategy</div>'
+                f'</div><div class="sc-none">Card unreadable: {e(exc)}</div></div>')
+
     fm, body = split_frontmatter(raw)
-    facts = "".join(f"<div><b>{e(lbl)}</b><span>{e(fm[k])}</span></div>"
-                    for k, lbl in FM_KEYS if fm.get(k))
-    src = (f'<div class="sc-src"><strong>Source:</strong> {md_inline(fm["source_citation"])}</div>'
-           if fm.get("source_citation") else "")
-    return (f'<div class="sc-wrap"><div class="sc-kicker">Strategy · card bucket '
-            f'{e(bucket)}</div>'
-            f'<div class="sc-facts">{facts}</div>{src}'
-            f'<div class="sc-body">{md_to_html(body, base_level=3)}</div></div>')
+    head_raw = raw[3:raw.find(chr(10) + "---", 3)] if raw.startswith("---") else ""
+    lists = _block_lists(head_raw)
+
+    # title: the card's own H1, else the slug
+    m = re.search(r"^#\s+(.*)$", body, re.M)
+    title = m.group(1).strip() if m else (fm.get("slug") or ea_id)
+    if m:
+        body = body[:m.start()] + body[m.end():]
+
+    incomplete = fm.get("card_body_incomplete") or fm.get("card_body_missing")
+    bucket_cls = "sc-bucket warn" if bucket != "cards_approved" else "sc-bucket"
+    kicker = (f'<span>Strategy card</span><span class="{bucket_cls}">{e(bucket)}</span>'
+              + (f'<span class="sc-bucket warn">body {e(incomplete)}</span>' if incomplete else ""))
+
+    chips = []
+    syms = _inline_list(fm["target_symbols"]) if fm.get("target_symbols") else lists.get("target_symbols", [])
+    chips += [f'<span class="chip sym">{e(s)}</span>' for s in syms[:14]]
+    for tf in ([fm["period"]] if fm.get("period") else []) + lists.get("timeframes", [])[:3]:
+        chips.append(f'<span class="chip tf">{e(tf)}</span>')
+    for flag in (_inline_list(fm["strategy_type_flags"]) if fm.get("strategy_type_flags")
+                 else lists.get("strategy_type_flags", []))[:8]:
+        chips.append(f'<span class="chip flag">{e(flag)}</span>')
+    for kind in ("concepts", "indicators"):
+        for val in lists.get(kind, [])[:8]:
+            chips.append(f'<span class="chip">{e(val)}</span>')
+    for key, label in _R_KEYS:
+        val = (fm.get(key) or "").strip()
+        if not val:
+            continue
+        cls = "pass" if val.upper() == "PASS" else ("fail" if val.upper().startswith("FAIL") else "other")
+        why = fm.get(key.split("_")[0] + "_reasoning") or ""
+        chips.append(f'<span class="chip r {cls}" title="{e(why[:300])}">'
+                     f'<b>{e(label)}</b><span>{e(val)}</span></span>')
+
+    stats = []
+    for key, label, is_text in _STATS:
+        if not fm.get(key):
+            continue
+        cls = ' class="txt"' if is_text else ""
+        stats.append(f'<div class="sc-stat"><b>{e(label)}</b><span{cls}>{e(fm[key])}</span></div>')
+
+    lede = fm.get("expected_trade_frequency") or fm.get("g0_approval_reasoning") or ""
+    src = ""
+    if fm.get("source_citation"):
+        cite = md_inline(fm["source_citation"])
+        cite = re.sub(r"(https?://[^\s,;)\]]+)", r'<a href="\1">\1</a>', cite)
+        src = f'<div class="sc-src"><b>Source</b>{cite}</div>'
+
+    # base_level 2: the card title was lifted into the header, so its "##" sections
+    # become h3 and carry the accent rule; sub-sections drop to h4/h5.
+    body_html = _collapse_reference_sections(md_to_html(body, base_level=2))
+
+    return (f'<div class="sc"><div class="sc-head"><div class="sc-kicker">{kicker}</div>'
+            f'<div class="sc-title">{e(title)}</div>'
+            + (f'<div class="sc-lede">{md_inline(lede[:400])}</div>' if lede else "")
+            + (f'<div class="sc-chips">{"".join(chips)}</div>' if chips else "")
+            + "</div>"
+            + (f'<div class="sc-stats">{"".join(stats)}</div>' if stats else "")
+            + src
+            + f'<div class="sc-body">{body_html}</div></div>')
 
 
 def _vclass(verdict: str, tax: str) -> str:
