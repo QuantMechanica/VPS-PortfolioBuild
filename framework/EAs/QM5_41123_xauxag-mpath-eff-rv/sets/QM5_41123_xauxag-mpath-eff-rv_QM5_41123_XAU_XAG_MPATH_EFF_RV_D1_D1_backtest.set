@@ -48,4 +48,3 @@ strategy_max_hold_days=40
 strategy_xau_max_spread_points=1500
 strategy_xag_max_spread_points=500
 strategy_deviation_points=20
-

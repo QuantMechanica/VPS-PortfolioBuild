@@ -154,4 +154,3 @@ correlation waiver, or portfolio-gate change is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-23 | approved build identity | source, G0 card, EA-ID, two magic rows, fixed-risk basket contract, and Q01 validation |
-
