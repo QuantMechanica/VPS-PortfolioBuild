@@ -1,0 +1,23 @@
+{
+  "review_task_id": "ccf889d6-6684-49e1-b831-38fbe6e8e5b9",
+  "build_task_id": "2a3580e3-ddbf-4853-b012-0cab4471109e",
+  "ea_id": "QM5_12939",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_12939 replaces the card's ZigZag(12,5,3) or equivalent iHighest/iLowest pivot contract with a two-wing local-fractal scan at source lines 92-159 and 197-204; the depth, deviation, and backstep mechanics are not equivalent or implemented.",
+    "QM5_12939 source lines 327 and 339 reset the directional 18-bar cooldown inside Strategy_EntrySignal before QM_TM_OpenPosition runs at line 554, so an order rejection consumes the signal and suppresses retry.",
+    "QM5_12939 source lines 394-399 and 425-430 set g_trade_state.t1_hit=true even when normalized half-volume is invalid or QM_TM_PartialClose returns false; the required 50% T1 close can be skipped while post-T1 trailing is activated.",
+    "QM5_12939 OnInit zeroes g_trade_state at line 482, while restart reconstruction at lines 358-372 derives T1/T2 from current signal globals rather than the open trade's original pattern and resets t1_hit=false; an attached or restarted EA cannot deterministically resume the card's partial-close and trail state.",
+    "Build artifact artifacts/qm5_12939_build_result.json marks smoke_result as deferred_p2_smoke with blocked_reason=null; this lacks the saturation evidence required by the deferred-smoke waiver, and no QM5_12939 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:31:33Z"
+}
