@@ -203,7 +203,7 @@ contributes exactly once. No current-month price enters the formula.
 The entry, exit, filter, and management contracts below are the complete
 authorized baseline. Anything not stated here is out of scope.
 
-### Entry Rules
+## 4. Entry Rules
 
 1. Repair malformed or partial owned exposure before entry-only filters.
 2. Require exact symbols, D1, EA ID, slots, risk mode, news modes, Friday-close
@@ -244,7 +244,7 @@ closed guards. An order rejection, atomic repair, stop-out, news block, spread
 failure, restart, invalid ATR, or invalid history cannot create a same-month
 retry.
 
-### Exit Rules
+## 5. Exit Rules
 
 1. Broker hard stops and framework kill switch remain authoritative.
 2. Orphaned, duplicated, same-side, wrong-magic, stopless, or notional-invalid
@@ -257,7 +257,7 @@ There is no convergence target, take-profit, opposite-signal exit, trailing
 stop, break-even move, partial close, Friday flattening, scale-in, pyramid,
 grid, martingale, hedge adjustment, or discretionary close.
 
-### Filters (No-Trade Module)
+## 6. Filters (No-Trade Module)
 
 - Require exact host `XAUUSD.DWX`, exact companion `XAGUSD.DWX`, D1, EA ID
   `41125`, and slots 0/1.
@@ -272,7 +272,7 @@ grid, martingale, hedge adjustment, or discretionary close.
   open interest, event calendar, futures curve, external file, API, or manual
   runtime input is used.
 
-### Trade Management Rules
+## 7. Trade Management Rules
 
 - Own either zero exposure or exactly one valid opposite-side two-leg package
   on registered magics and symbols.
