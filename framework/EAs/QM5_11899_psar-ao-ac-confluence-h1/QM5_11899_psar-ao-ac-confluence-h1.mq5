@@ -14,13 +14,13 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -33,14 +33,50 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input double strategy_psar_step         = 0.02;
-input double strategy_psar_max          = 0.2;
-input int    strategy_ao_fast_period    = 5;
-input int    strategy_ao_slow_period    = 34;
-input int    strategy_ac_period         = 5;
-input double strategy_target_rr         = 1.0;
-input bool   strategy_alt_exit          = true;
-input int    strategy_time_stop_bars    = 96;
+input ENUM_TIMEFRAMES strategy_signal_tf         = PERIOD_H1;
+input double strategy_psar_step                 = 0.02;
+input double strategy_psar_max                  = 0.2;
+input int    strategy_ao_fast_period            = 5;
+input int    strategy_ao_slow_period            = 34;
+input int    strategy_ac_period                 = 5;
+input double strategy_target_rr                 = 1.0;
+input double strategy_sl_buffer_pips            = 2.0;
+input bool   strategy_alt_exit                  = true;
+input int    strategy_time_stop_bars            = 96;
+
+// -----------------------------------------------------------------------------
+// Helper routines
+// -----------------------------------------------------------------------------
+
+double Strategy_PipSize()
+{
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   if(digits == 3 || digits == 5)
+      return point * 10.0;
+   return point;
+}
+
+double Strategy_AO(const int shift)
+{
+   const double fast = QM_SMA(_Symbol, strategy_signal_tf, strategy_ao_fast_period, shift, PRICE_MEDIAN);
+   const double slow = QM_SMA(_Symbol, strategy_signal_tf, strategy_ao_slow_period, shift, PRICE_MEDIAN);
+   if(fast == 0.0 || slow == 0.0) return 0.0;
+   return fast - slow;
+}
+
+double Strategy_AC(const int shift)
+{
+   if(strategy_ac_period <= 0) return 0.0;
+   double sum_ao = 0.0;
+   for(int i = 0; i < strategy_ac_period; ++i)
+   {
+      sum_ao += Strategy_AO(shift + i);
+   }
+   const double sma_ao = sum_ao / (double)strategy_ac_period;
+   const double current_ao = Strategy_AO(shift);
+   return current_ao - sma_ao;
+}
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -53,63 +89,83 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   if(PositionsTotal() > 0) return false;
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
-   const double low1   = iLow(_Symbol, PERIOD_H1, 1);
-   const double high1  = iHigh(_Symbol, PERIOD_H1, 1);
-   
-   if(close1 <= 0.0 || low1 <= 0.0 || high1 <= 0.0) return false;
+   if(_Period != strategy_signal_tf) return false;
 
-   const double psar1 = QM_SAR(_Symbol, PERIOD_H1, strategy_psar_step, strategy_psar_max, 1);
-   const double ao1   = QM_AO(_Symbol, PERIOD_H1, 1);
-   const double ao2   = QM_AO(_Symbol, PERIOD_H1, 2);
-   const double ac1   = QM_AC(_Symbol, PERIOD_H1, 1);
-   const double ac2   = QM_AC(_Symbol, PERIOD_H1, 2);
-   
-   if(psar1 <= 0.0 || ao1 == 0.0 || ao2 == 0.0 || ac1 == 0.0 || ac2 == 0.0) return false;
+   MqlRates bar1;
+   if(!QM_ReadBar(_Symbol, strategy_signal_tf, 1, bar1))
+      return false;
 
-   bool is_psar_long = (psar1 < low1);
-   bool is_psar_short = (psar1 > high1);
-   
-   bool is_ao_bullish = (ao1 > ao2);
-   bool is_ao_bearish = (ao1 < ao2);
-   
-   bool is_ac_bullish = (ac1 > ac2);
-   bool is_ac_bearish = (ac1 < ac2);
+   if(bar1.close <= 0.0 || bar1.low <= 0.0 || bar1.high <= 0.0) return false;
 
-   bool signal_long  = (is_psar_long && is_ao_bullish && is_ac_bullish);
-   bool signal_short = (is_psar_short && is_ao_bearish && is_ac_bearish);
+   const double psar1 = QM_SAR(_Symbol, strategy_signal_tf, strategy_psar_step, strategy_psar_max, 1);
+   const double ao1   = Strategy_AO(1);
+   const double ao2   = Strategy_AO(2);
+   const double ac1   = Strategy_AC(1);
+   const double ac2   = Strategy_AC(2);
+
+   if(psar1 <= 0.0) return false;
+
+   const bool is_psar_long  = (psar1 < bar1.low);
+   const bool is_psar_short = (psar1 > bar1.high);
+
+   const bool is_ao_bullish = (ao1 > ao2);
+   const bool is_ao_bearish = (ao1 < ao2);
+
+   const bool is_ac_bullish = (ac1 > ac2);
+   const bool is_ac_bearish = (ac1 < ac2);
+
+   const bool signal_long  = (is_psar_long && is_ao_bullish && is_ac_bullish);
+   const bool signal_short = (is_psar_short && is_ao_bearish && is_ac_bearish);
 
    if(!signal_long && !signal_short) return false;
 
-   QM_OrderType side = signal_long ? QM_BUY : QM_SELL;
-   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK) : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0) return false;
+   const double pip_size = Strategy_PipSize();
+   const double buffer = strategy_sl_buffer_pips * pip_size;
 
-   double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   double sl = 0.0;
-   
-   if(side == QM_BUY)
+   if(signal_long)
    {
-      sl = low1 - (2.0 * 10 * point);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(ask <= 0.0) return false;
+      const double sl = QM_StopRulesNormalizePrice(_Symbol, bar1.low - buffer);
+      if(sl <= 0.0 || sl >= ask) return false;
+      const double risk_dist = ask - sl;
+      const double tp = QM_StopRulesNormalizePrice(_Symbol, ask + (risk_dist * strategy_target_rr));
+      if(tp <= ask) return false;
+
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = tp;
+      req.reason = "PSAR_AO_AC_LONG";
+      return true;
    }
-   else
+   else if(signal_short)
    {
-      sl = high1 + (2.0 * 10 * point);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(bid <= 0.0) return false;
+      const double sl = QM_StopRulesNormalizePrice(_Symbol, bar1.high + buffer);
+      if(sl <= bid) return false;
+      const double risk_dist = sl - bid;
+      const double tp = QM_StopRulesNormalizePrice(_Symbol, bid - (risk_dist * strategy_target_rr));
+      if(tp <= 0.0 || tp >= bid) return false;
+
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = tp;
+      req.reason = "PSAR_AO_AC_SHORT";
+      return true;
    }
 
-   double risk_dist = MathAbs(entry - sl);
-   double tp = (side == QM_BUY) ? entry + (risk_dist * strategy_target_rr) : entry - (risk_dist * strategy_target_rr);
-
-   req.type = side;
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = tp;
-   req.reason = (side == QM_BUY) ? "PSAR_AO_AC_LONG" : "PSAR_AO_AC_SHORT";
-   req.symbol_slot = qm_magic_slot_offset;
-
-   return true;
+   return false;
 }
 
 void Strategy_ManageOpenPosition() {}
@@ -117,36 +173,37 @@ void Strategy_ManageOpenPosition() {}
 bool Strategy_ExitSignal()
 {
    const int magic = QM_FrameworkMagic();
-   
+   if(magic <= 0) return false;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
    {
-      if(!PositionSelectByTicket(PositionGetTicket(i))) continue;
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket)) continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
 
-      if(strategy_time_stop_bars > 0)
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      const int tf_seconds = PeriodSeconds(strategy_signal_tf);
+      if(strategy_time_stop_bars > 0 && opened > 0 && tf_seconds > 0)
       {
-         datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-         int bars = iBarShift(_Symbol, PERIOD_H1, opened);
-         if(bars >= strategy_time_stop_bars) return true;
+         if(TimeCurrent() - opened >= strategy_time_stop_bars * tf_seconds)
+            return true;
       }
-      
-      if(strategy_alt_exit)
+
+      if(strategy_alt_exit && QM_IsNewBar(_Symbol, strategy_signal_tf))
       {
-         const double ao1   = QM_AO(_Symbol, PERIOD_H1, 1);
-         const double ao2   = QM_AO(_Symbol, PERIOD_H1, 2);
-         const double ac1   = QM_AC(_Symbol, PERIOD_H1, 1);
-         const double ac2   = QM_AC(_Symbol, PERIOD_H1, 2);
-         
-         if(ao1 == 0.0 || ao2 == 0.0 || ac1 == 0.0 || ac2 == 0.0) continue;
-         
-         bool is_ao_bullish = (ao1 > ao2);
-         bool is_ao_bearish = (ao1 < ao2);
-         bool is_ac_bullish = (ac1 > ac2);
-         bool is_ac_bearish = (ac1 < ac2);
-         
-         ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-         
+         const double ao1   = Strategy_AO(1);
+         const double ao2   = Strategy_AO(2);
+         const double ac1   = Strategy_AC(1);
+         const double ac2   = Strategy_AC(2);
+
+         const bool is_ao_bullish = (ao1 > ao2);
+         const bool is_ao_bearish = (ao1 < ao2);
+         const bool is_ac_bullish = (ac1 > ac2);
+         const bool is_ac_bearish = (ac1 < ac2);
+
+         const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+
          if(ptype == POSITION_TYPE_BUY && is_ao_bearish && is_ac_bearish) return true;
          if(ptype == POSITION_TYPE_SELL && is_ao_bullish && is_ac_bullish) return true;
       }
@@ -176,16 +233,17 @@ void OnDeinit(const int reason) { QM_FrameworkShutdown(); }
 void OnTick()
 {
    if(!QM_KillSwitchCheck()) return;
+   QM_FrameworkTrackOpenPositionMae();
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
-   
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows) return;
-   
+
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
@@ -203,7 +261,7 @@ void OnTick()
       }
    }
 
-   if(!QM_IsNewBar()) return;
+   if(!QM_IsNewBar(_Symbol, strategy_signal_tf)) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;

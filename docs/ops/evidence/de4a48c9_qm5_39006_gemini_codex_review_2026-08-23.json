@@ -1,0 +1,22 @@
+{
+  "review_task_id": "de4a48c9-a73c-4169-9102-ee45b17029d2",
+  "build_task_id": "68f93e30-9d19-4c6c-885e-0591cc38e19f",
+  "ea_id": "QM5_39006",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_39006 source lines 28-29 default RISK_PERCENT=0.5 and RISK_FIXED=1000.0 simultaneously; QM_FrameworkValidateRiskInputs rejects both-positive inputs, so default OnInit fails unless a setfile overrides the source contract.",
+    "QM5_39006 source lines 127-130 evaluate the card's 23:55-00:05 GMT rollover blackout with TimeCurrent broker time and never convert through QM_BrokerToUTC.",
+    "QM5_39006's approved card caps market-order slippage at three symbol ticks, but the source never calls QM_EntryConfigure and therefore retains the framework's 20-point default deviation.",
+    "Build artifact 68f93e30-9d19-4c6c-885e-0591cc38e19f.json omits required smoke_result and smoke_report_path fields, and no QM5_39006 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T18:32:06Z"
+}

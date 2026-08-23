@@ -763,9 +763,10 @@ def test_pump_retries_autoseal_after_regenerated_q08_promotion() -> None:
     source = inspect.getsource(farmctl._pump_unlocked)
 
     promotion = source.index("_promote_paired_q09_portfolio_passes_to_news")
-    post_cascade_retry = source.index(
-        'result["q09_autoseal"] = auto_seal_pending_q09_news(root)'
-    )
+    # The late autoseal retry is now wrapped in the pump cycle budget (latency
+    # rebaseline 2026-08-23) but must still run AFTER the paired-Q09 promotion so
+    # a freshly promoted Q08 identity is sealable in the same cycle.
+    post_cascade_retry = source.index('result["q09_autoseal"] = cycle_budget.run(')
 
     assert promotion < post_cascade_retry
 
