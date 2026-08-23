@@ -179,11 +179,11 @@ void Strategy_ManageOpenPosition()
          const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
          if(pos_type == POSITION_TYPE_BUY && close1 < zlema)
          {
-            QM_TM_ClosePosition(ticket, QM_EXIT_SIGNAL_REVERSAL);
+            QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
          }
          else if(pos_type == POSITION_TYPE_SELL && close1 > zlema)
          {
-            QM_TM_ClosePosition(ticket, QM_EXIT_SIGNAL_REVERSAL);
+            QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
          }
       }
    }
