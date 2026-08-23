@@ -420,6 +420,296 @@ def test_d11_missing_matrix_fails_closed(tmp_path: Path) -> None:
     assert "EA_DWX_SYMBOL_MATRIX_MISSING" in failure_codes(result)
 
 
+def test_d13_pending_order_type_pass_and_market_substitution_fail(
+    tmp_path: Path,
+) -> None:
+    pending_card = CARD + """
+
+### Entry
+Place a BUY-STOP above structure and a SELL-STOP below structure.
+"""
+    pending_source = PASSING_SOURCE + r"""
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY_STOP;
+   if(req.price < 0.0)
+      req.type = QM_SELL_STOP;
+   return false;
+  }
+"""
+    source, card = write_fixture(tmp_path, pending_source, pending_card)
+    passing = gate.analyze_file(source, card)
+    assert "EA_CARD_PENDING_ORDER_TYPE_MISMATCH" not in failure_codes(passing)
+    assert passing["checks"]["D13_pending_entry_type"]["implemented"] == [
+        "BUY_STOP",
+        "SELL_STOP",
+    ]
+
+    source.write_text(
+        pending_source.replace("QM_BUY_STOP", "QM_BUY").replace(
+            "QM_SELL_STOP", "QM_SELL"
+        ),
+        encoding="utf-8",
+    )
+    failing = gate.analyze_file(source, card)
+    assert failure_codes(failing).count("EA_CARD_PENDING_ORDER_TYPE_MISMATCH") == 2
+
+
+def test_d14_copybuffer_direction_pass_and_inversion_fail(tmp_path: Path) -> None:
+    direction_card = CARD + """
+
+- Macro-bias gate: SMA(200,H4) must be rising for long and falling for short.
+"""
+    direction_source = PASSING_SOURCE + r"""
+bool Strategy_MacroBias(const int direction)
+  {
+   double sma_values[2];
+   if(CopyBuffer(g_sma, 0, 1, 2, sma_values) < 2) return false;
+   if(direction > 0) return sma_values[1] >= sma_values[0];
+   if(direction < 0) return sma_values[1] <= sma_values[0];
+   return false;
+  }
+"""
+    source, card = write_fixture(tmp_path, direction_source, direction_card)
+    passing = gate.analyze_file(source, card)
+    assert "EA_CARD_SMA_DIRECTION_INVERTED" not in failure_codes(passing)
+    assert {
+        item["direction"]
+        for item in passing["checks"]["D14_directional_series_order"][
+            "satisfied_evidence"
+        ]
+    } == {"RISING", "FALLING"}
+
+    source.write_text(
+        direction_source.replace("sma_values[1] >= sma_values[0]", "sma_values[0] >= sma_values[1]")
+        .replace("sma_values[1] <= sma_values[0]", "sma_values[0] <= sma_values[1]"),
+        encoding="utf-8",
+    )
+    failing = gate.analyze_file(source, card)
+    assert failure_codes(failing).count("EA_CARD_SMA_DIRECTION_INVERTED") == 2
+
+
+def test_d15_news_duration_and_entry_only_placement_fixtures(tmp_path: Path) -> None:
+    news_card = CARD + """
+
+- **News filter**: skip entry within ±3 H1 bars of high-impact news.
+"""
+    passing_source = r"""
+input QM_NewsTemporalMode qm_news_temporal = QM_NEWS_TEMPORAL_OFF;
+void Strategy_ManageOpenPosition() { }
+bool Strategy_ExitSignal() { return false; }
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   return !QM_NewsInWindow(TimeGMT(), _Symbol, 180, 180, "HIGH");
+  }
+void OnTick()
+  {
+   Strategy_ManageOpenPosition();
+   if(Strategy_ExitSignal()) return;
+   QM_EntryRequest req = {};
+   Strategy_EntrySignal(req);
+  }
+"""
+    source, card = write_fixture(tmp_path, passing_source, news_card)
+    passing = gate.analyze_file(source, card)
+    assert "EA_CARD_NEWS_WINDOW_MISMATCH" not in failure_codes(passing)
+    assert "EA_CARD_NEWS_BLOCKS_MANAGEMENT" not in failure_codes(passing)
+
+    failing_source = r"""
+input QM_NewsTemporalMode qm_news_temporal = QM_NEWS_TEMPORAL_PRE30_POST30;
+void Strategy_ManageOpenPosition() { }
+bool Strategy_ExitSignal() { return false; }
+void OnTick()
+  {
+   bool news_allows = QM_NewsAllowsTrade2(_Symbol, TimeCurrent(), qm_news_temporal, QM_NEWS_COMPLIANCE_DXZ);
+   if(!news_allows) return;
+   Strategy_ManageOpenPosition();
+   if(Strategy_ExitSignal()) return;
+  }
+"""
+    source.write_text(failing_source, encoding="utf-8")
+    failing = gate.analyze_file(source, card)
+    assert "EA_CARD_NEWS_WINDOW_MISMATCH" in failure_codes(failing)
+    assert "EA_CARD_NEWS_BLOCKS_MANAGEMENT" in failure_codes(failing)
+
+
+def test_d17_explicit_card_universe_pass_and_extra_symbol_fail(tmp_path: Path) -> None:
+    universe_card = CARD + "\n- Target symbols: EURUSD.DWX.\n"
+    write_fixture(tmp_path, PASSING_SOURCE, universe_card)
+    passing = gate.analyze(tmp_path, LABEL)
+    assert "EA_SYMBOL_NOT_IN_CARD_UNIVERSE" not in failure_codes(passing)
+
+    (tmp_path / "framework" / "registry" / "dwx_symbol_matrix.csv").write_text(
+        "symbol,canonical_name_verified\nEURUSD.DWX,true\nUSDJPY.DWX,true\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "framework" / "registry" / "magic_numbers.csv").write_text(
+        "ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status\n"
+        "99001,gate-fixture,0,USDJPY.DWX,990010000,2026-08-22,pytest,active\n",
+        encoding="utf-8",
+    )
+    failing = gate.analyze(tmp_path, LABEL)
+    assert "EA_SYMBOL_NOT_IN_CARD_UNIVERSE" in failure_codes(failing)
+    assert "EA_SYMBOL_NOT_IN_DWX_MATRIX" not in failure_codes(failing)
+
+
+def test_d18_descending_append_ordering_pass_and_impossible_guard_fail(
+    tmp_path: Path,
+) -> None:
+    ordering_source = r"""
+struct Pivot { int shift; };
+void FillPivots(Pivot &low_pivots[])
+  {
+   for(int s = 20; s >= 1; --s)
+     {
+      const int size = ArraySize(low_pivots);
+      ArrayResize(low_pivots, size + 1);
+      low_pivots[size].shift = s;
+     }
+  }
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   Pivot lows[];
+   FillPivots(lows);
+   const int count = ArraySize(lows);
+   for(int i3 = 0; i3 < count - 1; ++i3)
+     {
+      const int s_t3 = lows[i3].shift;
+      for(int i2 = i3 + 1; i2 < count; ++i2)
+        {
+         const int s_t2 = lows[i2].shift;
+         if(s_t2 >= s_t3) continue;
+         return true;
+        }
+     }
+   return false;
+  }
+"""
+    source, card = write_fixture(tmp_path, ordering_source)
+    passing = gate.analyze_file(source, card)
+    assert "EA_DETERMINISTIC_ZERO_TRADE_ORDERING" not in failure_codes(passing)
+
+    source.write_text(
+        ordering_source.replace("if(s_t2 >= s_t3)", "if(s_t2 <= s_t3)"),
+        encoding="utf-8",
+    )
+    failing = gate.analyze_file(source, card)
+    assert "EA_DETERMINISTIC_ZERO_TRADE_ORDERING" in failure_codes(failing)
+
+
+def test_semantic_predicates_have_real_satisfying_sources() -> None:
+    london_label = "QM5_20045_london-box"
+    london_source = next((REPO_ROOT / "framework" / "EAs" / london_label).glob("*.mq5"))
+    london_card = gate.find_card(REPO_ROOT, london_label)
+    london = gate.analyze_file(london_source, london_card)
+    assert london["failures"] == []
+    assert london["checks"]["D13_pending_entry_type"]["implemented"] == [
+        "BUY_STOP",
+        "SELL_STOP",
+    ]
+    assert "EA_CARD_PENDING_ORDER_TYPE_MISMATCH" not in failure_codes(london)
+
+    news_label = "QM5_10000_ff-tasayc-cci-breakout"
+    news_source = next((REPO_ROOT / "framework" / "EAs" / news_label).glob("*.mq5"))
+    news = gate.analyze_file(news_source, gate.find_card(REPO_ROOT, news_label))
+    assert news["checks"]["D15_news_entry_contract"]["literal_windows"] == [
+        {
+            "source": "entry_call",
+            "before_minutes": 120,
+            "after_minutes": 120,
+            "line": 71,
+        }
+    ]
+    assert "EA_CARD_NEWS_WINDOW_MISMATCH" not in failure_codes(news)
+
+    direction_label = "QM5_10418_et-sma5-trend"
+    direction_source = next(
+        (REPO_ROOT / "framework" / "EAs" / direction_label).glob("*.mq5")
+    )
+    direction = gate.analyze_file(
+        direction_source, gate.find_card(REPO_ROOT, direction_label)
+    )
+    assert {
+        item["direction"]
+        for item in direction["checks"]["D14_directional_series_order"][
+            "satisfied_evidence"
+        ]
+    } == {"RISING", "FALLING"}
+    assert "EA_CARD_SMA_DIRECTION_INVERTED" not in failure_codes(direction)
+
+    ordering_label = "QM5_1417_classical-pennant-continuation-h1"
+    ordering_path = next(
+        (REPO_ROOT / "framework" / "EAs" / ordering_label).glob("*.mq5")
+    )
+    raw = gate.read_text_compatible(ordering_path)
+    ordering_source = gate.SourceFile(
+        ordering_path.resolve(), raw, gate.strip_comments_preserve_lines(raw)
+    )
+    ordering_failures, ordering_detail = gate.check_deterministic_zero_trade_ordering(
+        ordering_source
+    )
+    assert ordering_failures == []
+    assert {row["array"] for row in ordering_detail["descending_shift_arrays"]} >= {
+        "highs",
+        "lows",
+    }
+
+
+def test_nonmechanizable_semantic_classes_name_required_card_declarations() -> None:
+    scope = gate.SEMANTIC_AUTOMATION_SCOPE
+    for key in (
+        "D12_invented_inputs_or_proxies",
+        "D16_restart_safe_management",
+    ):
+        assert scope[key]["mechanizable"] is False
+        assert scope[key]["missing_card_declaration"]
+
+
+def test_semantic_regression_catches_previously_invisible_1417_and_1425() -> None:
+    expected = {
+        "QM5_1417_classical-pennant-continuation-h1": {
+            "EA_CARD_PENDING_ORDER_TYPE_MISMATCH",
+            "EA_CARD_SMA_DIRECTION_INVERTED",
+            "EA_CARD_NEWS_WINDOW_MISMATCH",
+            "EA_CARD_NEWS_BLOCKS_MANAGEMENT",
+        },
+        "QM5_1425_classical-triple-bottom-reversal-h4": {
+            "EA_CARD_PENDING_ORDER_TYPE_MISMATCH",
+            "EA_CARD_SMA_DIRECTION_INVERTED",
+            "EA_CARD_NEWS_WINDOW_MISMATCH",
+            "EA_CARD_NEWS_BLOCKS_MANAGEMENT",
+            "EA_DETERMINISTIC_ZERO_TRADE_ORDERING",
+        },
+    }
+    for label, expected_codes in expected.items():
+        source = next((REPO_ROOT / "framework" / "EAs" / label).glob("*.mq5"))
+        result = gate.analyze_file(source, gate.find_card(REPO_ROOT, label))
+        actual_codes = {failure.split(":", 1)[0] for failure in result["failures"]}
+        assert expected_codes <= actual_codes
+
+
+def test_d17_real_clean_card_and_build_universe_satisfy() -> None:
+    label = "QM5_20045_london-box"
+    matrix, matrix_failures, _ = gate.load_dwx_symbol_matrix(
+        REPO_ROOT / "framework" / "registry" / "dwx_symbol_matrix.csv"
+    )
+    magic, magic_failures, _ = gate.load_magic_build_symbols(
+        REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+    )
+    assert matrix_failures == []
+    assert magic_failures == []
+    result = gate.check_build_symbols(
+        REPO_ROOT,
+        REPO_ROOT / "framework" / "EAs" / label,
+        matrix,
+        True,
+        magic,
+        gate.find_card(REPO_ROOT, label),
+    )
+    assert result["card_target_symbols"] == ["EURGBP.DWX", "GBPUSD.DWX"]
+    assert "EA_SYMBOL_NOT_IN_CARD_UNIVERSE" not in failure_codes(result)
+
+
 def run_build_check(tmp_path: Path) -> subprocess.CompletedProcess[str]:
     report = tmp_path / "reports"
     command = [

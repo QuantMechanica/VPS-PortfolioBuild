@@ -14,6 +14,7 @@ import csv
 import json
 import re
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Iterable
 
@@ -27,6 +28,66 @@ SYMBOL_TOKEN = re.compile(
     r"(?i)(?<![A-Z0-9])([A-Z0-9]+\.DWX)(?![A-Z0-9.])"
 )
 CURRENT_MAGIC_STATUSES = {"active", "reserved"}
+TIMEFRAME_MINUTES = {
+    "M1": 1,
+    "M5": 5,
+    "M15": 15,
+    "M30": 30,
+    "H1": 60,
+    "H4": 240,
+    "D1": 1440,
+}
+NEWS_TEMPORAL_WINDOWS: dict[str, tuple[int | None, int | None]] = {
+    "QM_NEWS_TEMPORAL_OFF": (0, 0),
+    "QM_NEWS_TEMPORAL_PRE30": (30, 0),
+    "QM_NEWS_TEMPORAL_PRE60": (60, 0),
+    "QM_NEWS_TEMPORAL_PRE30_POST30": (30, 30),
+    "QM_NEWS_TEMPORAL_PRE60_POST60": (60, 60),
+    "QM_NEWS_TEMPORAL_SKIP_DAY": (None, None),
+    "QM_NEWS_TEMPORAL_CLOSE_ALL_PRE": (30, 0),
+}
+
+# These decisions are deliberately part of the machine-readable report.  A
+# static checker must not pretend that prose similarity proves data lineage or
+# restart recovery.  The other five classes below have narrow, auditable source
+# shapes and therefore admit fail-only-on-proof predicates.
+SEMANTIC_AUTOMATION_SCOPE = {
+    "D12_invented_inputs_or_proxies": {
+        "mechanizable": False,
+        "missing_card_declaration": (
+            "required_data_inputs[] with canonical identifier, source kind, "
+            "point-in-time/as-of lag, allowed transforms, and proxy policy"
+        ),
+    },
+    "D13_pending_entry_type": {
+        "mechanizable": True,
+        "predicate": "explicit card BUY/SELL stop contract versus executable order-type assignments",
+    },
+    "D14_directional_series_order": {
+        "mechanizable": True,
+        "predicate": "explicit SMA rising/falling contract versus proven shift-1/shift-2 ordering",
+    },
+    "D15_news_entry_contract": {
+        "mechanizable": True,
+        "predicate": "explicit bar-based news window and entry-only placement versus literal source configuration",
+    },
+    "D16_restart_safe_management": {
+        "mechanizable": False,
+        "missing_card_declaration": (
+            "restart_state_contract[] with required state, durable source, reconstruction trigger, "
+            "idempotency invariant, and fail-closed fallback"
+        ),
+    },
+    "D17_authorized_universe": {
+        "mechanizable": True,
+        "predicate": "explicit card target_symbols versus exact current magic/setfile observations",
+    },
+    "D18_deterministic_zero_trade_ordering": {
+        "mechanizable": True,
+        "predicate": "proven descending shift append followed by an impossible later-index ordering guard",
+        "scope": "narrow proof only; general zero-trade reachability remains review-only",
+    },
+}
 
 
 @dataclass(frozen=True)
@@ -839,6 +900,597 @@ def find_card(repo_root: Path, ea_label: str) -> Path | None:
     return unique[0] if len(unique) == 1 else None
 
 
+@lru_cache(maxsize=4096)
+def _card_text(card_path: Path | None) -> tuple[str | None, str | None]:
+    if card_path is None or not card_path.is_file():
+        return None, "card missing"
+    try:
+        return read_text_compatible(card_path), None
+    except (OSError, UnicodeError) as exc:
+        return None, f"card unreadable: {exc}"
+
+
+def markdown_section(text: str, heading: str) -> str:
+    match = re.search(rf"(?im)^###\s+{re.escape(heading)}\s*$", text)
+    if match is None:
+        return ""
+    end = re.search(r"(?m)^#{1,3}\s+", text[match.end() :])
+    stop = match.end() + end.start() if end else len(text)
+    return text[match.end() : stop]
+
+
+def card_entry_contract_text(card_text: str) -> str:
+    """Return only card prose that explicitly owns entry semantics."""
+    pieces = [markdown_section(card_text, "Entry")]
+    pieces.extend(
+        match.group(0)
+        for match in re.finditer(
+            r"(?ims)^\s*-\s+\*\*[^*\r\n]*entry[^*\r\n]*\*\*.*?"
+            r"(?=^\s*-\s+\*\*|^#{1,3}\s+|\Z)",
+            card_text,
+        )
+    )
+    return "\n".join(piece for piece in pieces if piece)
+
+
+def parse_card_pending_order_types(card_text: str) -> set[str]:
+    entry = card_entry_contract_text(card_text)
+    normalized = entry.replace("‑", "-").replace("–", "-").replace("—", "-")
+    expected: set[str] = set()
+    if re.search(r"(?i)\bbuy[ -]?stop\b", normalized):
+        expected.add("BUY_STOP")
+    if re.search(r"(?i)\bsell[ -]?stop\b", normalized):
+        expected.add("SELL_STOP")
+    if re.search(r"(?i)\boco\b", normalized) and re.search(
+        r"(?i)\bstop\s+entr(?:y|ies)\b", normalized
+    ):
+        expected.update({"BUY_STOP", "SELL_STOP"})
+    return expected
+
+
+def check_card_pending_order_type(
+    source: SourceFile, card_path: Path | None
+) -> tuple[list[str], list[str], dict]:
+    """D13: compare literal card stop-order types to executable assignments."""
+    card_text, card_error = _card_text(card_path)
+    if card_text is None:
+        warning = (
+            f"EA_CARD_PENDING_ORDER_UNDECIDABLE: {source.path.name} {card_error}; "
+            "no pending-order contract was inferred."
+        )
+        return [], [warning], {"card_error": card_error, "expected": []}
+
+    expected = parse_card_pending_order_types(card_text)
+    lexical = strip_literals_preserve_lines(source.code)
+    implemented: set[str] = set()
+    evidence: list[dict[str, object]] = []
+    for order_type in sorted(expected):
+        assignment = re.search(
+            rf"(?i)\.[ \t]*type\s*=\s*(?:QM_|ORDER_TYPE_){order_type}\b",
+            lexical,
+        )
+        method = re.search(
+            rf"(?i)\b{'BuyStop' if order_type == 'BUY_STOP' else 'SellStop'}\s*\(",
+            lexical,
+        )
+        match = assignment or method
+        if match is not None:
+            implemented.add(order_type)
+            evidence.append(
+                {
+                    "type": order_type,
+                    "line": line_number(lexical, match.start()),
+                }
+            )
+
+    failures = [
+        "EA_CARD_PENDING_ORDER_TYPE_MISMATCH: "
+        f"{source.path.name} card explicitly requires {order_type}, but no executable "
+        f"{order_type} assignment/call is present; a market request is not equivalent."
+        for order_type in sorted(expected - implemented)
+    ]
+    return failures, [], {
+        "card_path": str(card_path),
+        "expected": sorted(expected),
+        "implemented": sorted(implemented),
+        "evidence": evidence,
+    }
+
+
+def parse_card_sma_directions(card_text: str) -> set[str]:
+    requirements: set[str] = set()
+    for paragraph in re.split(r"\r?\n\s*\r?\n", card_text):
+        if not re.search(r"(?i)\bSMA\b", paragraph):
+            continue
+        if re.search(r"(?i)\brising\b", paragraph):
+            requirements.add("RISING")
+        if re.search(r"(?i)\bfalling\b", paragraph):
+            requirements.add("FALLING")
+    return requirements
+
+
+def _scalar_sma_shift_evidence(code: str) -> list[dict[str, object]]:
+    """Recognize real shift-1/shift-2 QM_SMA pairs without guessing aliases."""
+    calls: dict[tuple[str, ...], dict[int, tuple[str, int]]] = {}
+    for _, offset, arguments in iter_calls(code, ("QM_SMA",)):
+        if len(arguments) < 2 or arguments[-1].strip() not in {"1", "2"}:
+            continue
+        prefix = code[max(0, offset - 100) : offset]
+        assignment = re.search(
+            r"(?:const\s+)?double\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*$", prefix
+        )
+        if assignment is None:
+            continue
+        key = tuple(normalize_expression(argument) for argument in arguments[:-1])
+        calls.setdefault(key, {})[int(arguments[-1].strip())] = (
+            assignment.group(1),
+            offset,
+        )
+
+    evidence: list[dict[str, object]] = []
+    for pair in calls.values():
+        if 1 not in pair or 2 not in pair:
+            continue
+        newer, newer_offset = pair[1]
+        older, _ = pair[2]
+        for direction, operator in (("RISING", r">=?"), ("FALLING", r"<=?")):
+            comparison = re.search(
+                rf"\b{re.escape(newer)}\s*{operator}\s*{re.escape(older)}\b", code
+            )
+            if comparison is not None:
+                evidence.append(
+                    {
+                        "direction": direction,
+                        "newer": newer,
+                        "older": older,
+                        "line": line_number(code, comparison.start()),
+                        "reader_line": line_number(code, newer_offset),
+                    }
+                )
+    return evidence
+
+
+def check_card_sma_direction(
+    source: SourceFile, card_path: Path | None
+) -> tuple[list[str], list[str], dict]:
+    """D14: reject only a proven oldest-first CopyBuffer sign inversion."""
+    card_text, card_error = _card_text(card_path)
+    if card_text is None:
+        return [], [], {"card_error": card_error, "requirements": []}
+    requirements = parse_card_sma_directions(card_text)
+    if not requirements:
+        return [], [], {"card_path": str(card_path), "requirements": []}
+
+    lexical = strip_literals_preserve_lines(source.code)
+    raw_pairs: list[dict[str, object]] = []
+    failures: list[str] = []
+    satisfied = _scalar_sma_shift_evidence(lexical)
+    copy_pattern = re.compile(
+        r"\bCopyBuffer\s*\(\s*[^,;]+,\s*[^,;]+,\s*1\s*,\s*2\s*,\s*"
+        r"(?P<buffer>[A-Za-z_][A-Za-z0-9_]*)\s*\)",
+        re.DOTALL,
+    )
+    for copied in copy_pattern.finditer(lexical):
+        buffer = copied.group("buffer")
+        if re.search(
+            rf"\bArraySetAsSeries\s*\(\s*{re.escape(buffer)}\s*,\s*true\s*\)",
+            lexical,
+        ):
+            # Logical indexing of an explicitly series-marked dynamic array is
+            # outside this oldest-first proof.  Leave it to review.
+            continue
+        row: dict[str, object] = {
+            "buffer": buffer,
+            "copy_line": line_number(lexical, copied.start()),
+        }
+        for direction, operator, inverse_operator in (
+            ("RISING", r">=?", r">=?"),
+            ("FALLING", r"<=?", r"<=?"),
+        ):
+            correct = re.search(
+                rf"\b{re.escape(buffer)}\s*\[\s*1\s*\]\s*{operator}\s*"
+                rf"{re.escape(buffer)}\s*\[\s*0\s*\]",
+                lexical,
+            )
+            inverted = re.search(
+                rf"\b{re.escape(buffer)}\s*\[\s*0\s*\]\s*{inverse_operator}\s*"
+                rf"{re.escape(buffer)}\s*\[\s*1\s*\]",
+                lexical,
+            )
+            if direction in requirements and correct is not None:
+                satisfied.append(
+                    {
+                        "direction": direction,
+                        "buffer": buffer,
+                        "line": line_number(lexical, correct.start()),
+                    }
+                )
+            if direction in requirements and inverted is not None:
+                failure_line = line_number(lexical, inverted.start())
+                failures.append(
+                    "EA_CARD_SMA_DIRECTION_INVERTED: "
+                    f"{source.path.name}:{failure_line} tests {buffer}[0] against "
+                    f"{buffer}[1] for card-declared {direction.lower()} SMA, but "
+                    "CopyBuffer(start=1,count=2) stores older shift 2 at index 0 and "
+                    "newer shift 1 at index 1."
+                )
+            row[direction.lower()] = {
+                "correct_line": line_number(lexical, correct.start()) if correct else None,
+                "inverted_line": line_number(lexical, inverted.start()) if inverted else None,
+            }
+        raw_pairs.append(row)
+
+    satisfied_directions = {
+        str(item["direction"]) for item in satisfied if "direction" in item
+    }
+    inverted_directions = {
+        "RISING" if "rising" in failure else "FALLING"
+        for failure in failures
+    }
+    undecidable = sorted(requirements - satisfied_directions - inverted_directions)
+    warnings = (
+        [
+            "EA_CARD_SMA_DIRECTION_UNDECIDABLE: "
+            f"{source.path.name} card declares {','.join(undecidable)}, but the checker "
+            "found neither a proven shift-ordered comparison nor a proven inversion."
+        ]
+        if undecidable
+        else []
+    )
+    return failures, warnings, {
+        "card_path": str(card_path),
+        "requirements": sorted(requirements),
+        "raw_copy_pairs": raw_pairs,
+        "satisfied_evidence": satisfied,
+        "undecidable": undecidable,
+    }
+
+
+def parse_card_news_contract(card_text: str) -> dict[str, object] | None:
+    for paragraph in re.split(r"\r?\n\s*\r?\n", card_text):
+        if not re.search(r"(?i)high[- ]impact\s+news", paragraph):
+            continue
+        if not re.search(r"(?i)\bentr(?:y|ies)\b", paragraph):
+            continue
+        window = re.search(
+            r"(?i)(?:\bwithin\s+(?:±|\+/-)?\s*|(?:±|\+/-)\s*)"
+            r"(?P<count>\d+)\s*(?P<timeframe>M1|M5|M15|M30|H1|H4|D1)\s*bars?",
+            paragraph,
+        )
+        if window is None:
+            continue
+        count = int(window.group("count"))
+        timeframe = window.group("timeframe").upper()
+        return {
+            "count": count,
+            "timeframe": timeframe,
+            "before_minutes": count * TIMEFRAME_MINUTES[timeframe],
+            "after_minutes": count * TIMEFRAME_MINUTES[timeframe],
+            "entry_only": bool(
+                re.search(r"(?i)\b(?:skip\s+entry|no\s+new\s+entr(?:y|ies))\b", paragraph)
+            ),
+            "excerpt": " ".join(paragraph.split()),
+        }
+    return None
+
+
+def _literal_nonnegative_int(expression: str) -> int | None:
+    normalized = re.sub(r"\([A-Za-z_][A-Za-z0-9_]*\)", "", expression).strip()
+    match = re.fullmatch(r"\+?(\d+)(?:\.0+)?", normalized)
+    return int(match.group(1)) if match else None
+
+
+def _news_temporal_default(code: str) -> tuple[str | None, int | None]:
+    match = re.search(
+        r"\binput\s+QM_NewsTemporalMode\s+[A-Za-z_][A-Za-z0-9_]*\s*=\s*"
+        r"(?P<mode>QM_NEWS_TEMPORAL_[A-Z0-9_]+)\s*;",
+        code,
+    )
+    if match is None:
+        return None, None
+    return match.group("mode"), match.start("mode")
+
+
+def check_card_news_contract(
+    source: SourceFile, card_path: Path | None
+) -> tuple[list[str], list[str], dict]:
+    """D15: prove literal duration and entry-only placement when declared."""
+    card_text, card_error = _card_text(card_path)
+    if card_text is None:
+        return [], [], {"card_error": card_error, "contract": None}
+    contract = parse_card_news_contract(card_text)
+    if contract is None:
+        return [], [], {"card_path": str(card_path), "contract": None}
+
+    lexical = strip_literals_preserve_lines(source.code)
+    functions = function_bodies(lexical)
+    entry_ranges = [
+        (start, end)
+        for name, (start, end, _) in functions.items()
+        if name.startswith("Strategy_Entry")
+    ]
+    windows: list[dict[str, object]] = []
+    for _, offset, arguments in iter_calls(lexical, ("QM_NewsInWindow",)):
+        if len(arguments) < 4 or not any(start <= offset <= end for start, end in entry_ranges):
+            continue
+        before = _literal_nonnegative_int(arguments[2])
+        after = _literal_nonnegative_int(arguments[3])
+        if before is None or after is None:
+            continue
+        windows.append(
+            {
+                "source": "entry_call",
+                "before_minutes": before,
+                "after_minutes": after,
+                "line": line_number(lexical, offset),
+            }
+        )
+
+    mode, mode_offset = _news_temporal_default(lexical)
+    mode_window = NEWS_TEMPORAL_WINDOWS.get(mode) if mode else None
+    if mode_window and mode_window != (0, 0):
+        windows.append(
+            {
+                "source": "temporal_default",
+                "mode": mode,
+                "before_minutes": mode_window[0],
+                "after_minutes": mode_window[1],
+                "line": line_number(lexical, mode_offset or 0),
+            }
+        )
+
+    failures: list[str] = []
+    warnings: list[str] = []
+    expected_before = int(contract["before_minutes"])
+    expected_after = int(contract["after_minutes"])
+    if any(item["before_minutes"] is None for item in windows):
+        failures.append(
+            "EA_CARD_NEWS_WINDOW_MISMATCH: "
+            f"{source.path.name} card requires ±{expected_before} minutes, but the "
+            "source default is whole-day blocking rather than that literal window."
+        )
+    elif windows:
+        effective_before = max(int(item["before_minutes"]) for item in windows)
+        effective_after = max(int(item["after_minutes"]) for item in windows)
+        if (effective_before, effective_after) != (expected_before, expected_after):
+            failures.append(
+                "EA_CARD_NEWS_WINDOW_MISMATCH: "
+                f"{source.path.name} card requires {expected_before}/{expected_after} "
+                f"minutes pre/post, but literal source configuration proves "
+                f"{effective_before}/{effective_after}."
+            )
+    elif mode == "QM_NEWS_TEMPORAL_OFF":
+        failures.append(
+            "EA_CARD_NEWS_WINDOW_MISMATCH: "
+            f"{source.path.name} card requires {expected_before}/{expected_after} minutes "
+            "pre/post, but the temporal default is OFF and no literal entry-side "
+            "QM_NewsInWindow contract is present."
+        )
+    else:
+        warnings.append(
+            "EA_CARD_NEWS_WINDOW_UNDECIDABLE: "
+            f"{source.path.name} card requires {expected_before}/{expected_after} minutes "
+            "pre/post, but source configuration is not a literal supported shape."
+        )
+
+    placement: dict[str, object] = {"checked": False}
+    on_tick = functions.get("OnTick")
+    temporal_active = bool(mode and mode != "QM_NEWS_TEMPORAL_OFF")
+    if contract["entry_only"] and on_tick:
+        body_start, _, body = on_tick
+        anchors = list(
+            re.finditer(
+                r"\b(?:Strategy_[A-Za-z0-9_]*Manage[A-Za-z0-9_]*|"
+                r"Strategy_[A-Za-z0-9_]*Exit[A-Za-z0-9_]*)\s*\(",
+                body,
+            )
+        )
+        if anchors:
+            management_start = min(anchor.start() for anchor in anchors)
+            placement = {
+                "checked": True,
+                "management_line": line_number(lexical, body_start + management_start),
+                "temporal_active": temporal_active,
+            }
+            blocking_offset: int | None = None
+            for offset, condition in iter_early_return_conditions(body, management_start):
+                if "QM_NewsInWindow" in condition:
+                    blocking_offset = offset
+                    break
+            if blocking_offset is None and temporal_active:
+                for call in re.finditer(r"\bQM_NewsAllowsTrade2?\s*\(", body[:management_start]):
+                    prefix = body[max(0, call.start() - 100) : call.start()]
+                    assigned = re.search(
+                        r"([A-Za-z_][A-Za-z0-9_]*)\s*=\s*$", prefix
+                    )
+                    if assigned is None:
+                        continue
+                    variable = assigned.group(1)
+                    guard = re.search(
+                        rf"\bif\s*\(\s*!\s*{re.escape(variable)}\s*\)\s*"
+                        r"(?:\{\s*)?return\s*;",
+                        body[call.end() : management_start],
+                    )
+                    if guard is not None:
+                        blocking_offset = call.end() + guard.start()
+                        break
+            if blocking_offset is not None:
+                failure_line = line_number(lexical, body_start + blocking_offset)
+                failures.append(
+                    "EA_CARD_NEWS_BLOCKS_MANAGEMENT: "
+                    f"{source.path.name}:{failure_line} enforces an entry-only card "
+                    "news blackout before position management/exit; protective handling "
+                    "must remain reachable during the blackout."
+                )
+                placement["blocking_line"] = failure_line
+
+    return failures, warnings, {
+        "card_path": str(card_path),
+        "contract": contract,
+        "temporal_default": mode,
+        "literal_windows": windows,
+        "placement": placement,
+    }
+
+
+def check_deterministic_zero_trade_ordering(source: SourceFile) -> tuple[list[str], dict]:
+    """D18: prove one recurrent descending-append/impossible-guard shape."""
+    lexical = strip_literals_preserve_lines(source.code)
+    descending_arrays: dict[str, int] = {}
+    producer_functions: dict[str, str] = {}
+    for function_name, (body_start, _, body) in function_bodies(lexical).items():
+        for loop in re.finditer(
+            r"\bfor\s*\(\s*int\s+(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*"
+            r"(?P<initial>[^;]+);\s*(?P<condition>[^;]+);\s*(?P<step>[^)]+)\)",
+            body,
+        ):
+            variable = loop.group("var")
+            condition = normalize_expression(loop.group("condition"))
+            step = normalize_expression(loop.group("step"))
+            if not condition.startswith(f"{variable}>=") or step not in {
+                f"--{variable}",
+                f"{variable}--",
+            }:
+                continue
+            brace = body.find("{", loop.end())
+            if brace < 0:
+                continue
+            end = matching_delimiter(body, brace, "{", "}")
+            if end is None:
+                continue
+            loop_body = body[brace + 1 : end]
+            for assignment in re.finditer(
+                rf"\b(?P<array>[A-Za-z_][A-Za-z0-9_]*)\s*\[\s*"
+                r"[A-Za-z_][A-Za-z0-9_]*\s*\]\s*\.\s*shift\s*=\s*"
+                rf"{re.escape(variable)}\s*;",
+                loop_body,
+            ):
+                array = assignment.group("array")
+                preceding = loop_body[: assignment.start()]
+                if not re.search(
+                    rf"\bArrayResize\s*\(\s*{re.escape(array)}\s*,[^;]+\+\s*1\s*\)",
+                    preceding,
+                ):
+                    continue
+                if re.search(
+                    rf"\bArrayReverse\s*\(\s*{re.escape(array)}\s*\)", lexical
+                ):
+                    continue
+                descending_arrays[array] = line_number(
+                    lexical, body_start + loop.start()
+                )
+                producer_functions[array] = function_name
+
+    # Propagate a proven by-reference output parameter to simple identifier
+    # arguments at its call sites (for example low_pivots[] -> lows[]).  Do not
+    # infer through expressions, returned objects, copies, or helper aliases.
+    for parameter, function_name in list(producer_functions.items()):
+        signature = re.search(
+            rf"\b{re.escape(function_name)}\s*\((?P<parameters>[^)]*)\)\s*\{{",
+            lexical,
+        )
+        if signature is None:
+            continue
+        parameters = split_arguments(signature.group("parameters"))
+        parameter_index = next(
+            (
+                index
+                for index, declaration in enumerate(parameters)
+                if re.search(
+                    rf"&\s*{re.escape(parameter)}\s*\[\s*\]", declaration
+                )
+            ),
+            None,
+        )
+        if parameter_index is None:
+            continue
+        for _, _, arguments in iter_calls(lexical, (function_name,)):
+            if parameter_index >= len(arguments):
+                continue
+            alias = arguments[parameter_index].strip()
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", alias):
+                continue
+            descending_arrays.setdefault(alias, descending_arrays[parameter])
+
+    failures: list[str] = []
+    contradictions: list[dict[str, object]] = []
+    for array, producer_line in sorted(descending_arrays.items()):
+        consumer = re.compile(
+            rf"\b(?:const\s+)?int\s+(?P<first_shift>[A-Za-z_]\w*)\s*=\s*"
+            rf"{re.escape(array)}\s*\[\s*(?P<first_index>[A-Za-z_]\w*)\s*\]"
+            r"\s*\.\s*shift\s*;.{0,1600}?"
+            r"\bfor\s*\(\s*int\s+(?P<second_index>[A-Za-z_]\w*)\s*=\s*"
+            r"(?P=first_index)\s*\+\s*1\s*;.{0,500}?"
+            rf"\b(?:const\s+)?int\s+(?P<second_shift>[A-Za-z_]\w*)\s*=\s*"
+            rf"{re.escape(array)}\s*\[\s*(?P=second_index)\s*\]\s*\.\s*shift\s*;"
+            r".{0,500}?\bif\s*\(\s*(?P=second_shift)\s*<=\s*"
+            r"(?P=first_shift)\s*\)\s*(?:\{\s*)?continue\s*;",
+            re.DOTALL,
+        ).search(lexical)
+        if consumer is None:
+            continue
+        failure_line = line_number(lexical, consumer.start())
+        contradictions.append(
+            {
+                "array": array,
+                "producer_line": producer_line,
+                "consumer_line": failure_line,
+            }
+        )
+        failures.append(
+            "EA_DETERMINISTIC_ZERO_TRADE_ORDERING: "
+            f"{source.path.name}:{failure_line} consumes {array} as if later indices "
+            "had larger shifts, but line "
+            f"{producer_line} appends strictly descending shifts; the <= guard is "
+            "therefore true for every later candidate and makes the nested entry path unreachable."
+        )
+    return failures, {
+        "descending_shift_arrays": [
+            {"array": array, "producer_line": line}
+            for array, line in sorted(descending_arrays.items())
+        ],
+        "contradictions": contradictions,
+    }
+
+
+def parse_card_target_symbols(card_text: str) -> set[str]:
+    """Extract only explicit front-matter or labeled target-symbol contracts."""
+    def extract_card_symbols(text: str) -> set[str]:
+        # A prose list commonly ends ``EURUSD.DWX.``; the terminal sentence
+        # period is punctuation, not part of the broker symbol.
+        return {
+            match.group(1)
+            for match in re.finditer(
+                r"(?i)(?<![A-Z0-9])([A-Z0-9]+\.DWX)\b", text
+            )
+        }
+
+    symbols: set[str] = set()
+    front_matter = re.match(r"\A---\s*\r?\n(?P<body>.*?)\r?\n---", card_text, re.DOTALL)
+    if front_matter:
+        target = re.search(
+            r"(?im)^target_symbols\s*:\s*\[(?P<symbols>[^\]]*)\]",
+            front_matter.group("body"),
+        )
+        if target:
+            symbols.update(extract_card_symbols(target.group("symbols")))
+
+    lines = card_text.splitlines()
+    for index, line in enumerate(lines):
+        if not re.search(r"(?i)^\s*-?\s*(?:\*\*)?target symbols(?:\*\*)?\s*:", line):
+            continue
+        paragraph = [line]
+        for continuation in lines[index + 1 :]:
+            if not continuation.strip() or re.match(r"^\s*(?:-|#)", continuation):
+                break
+            if continuation[:1].isspace():
+                paragraph.append(continuation)
+                continue
+            break
+        symbols.update(extract_card_symbols("\n".join(paragraph)))
+    return symbols
+
+
 def load_dwx_symbol_matrix(path: Path) -> tuple[set[str], list[str], dict]:
     """Load the exact buildable-symbol namespace, failing closed on ambiguity."""
     failures: list[str] = []
@@ -975,8 +1627,9 @@ def check_build_symbols(
     matrix_symbols: set[str],
     matrix_valid: bool,
     magic_by_build: dict[tuple[str, str], list[dict[str, str]]],
+    card_path: Path | None = None,
 ) -> dict:
-    """D11: prove every setfile/magic symbol is an exact matrix member."""
+    """D11/D17: prove registry validity and an explicit card universe."""
     failures: list[str] = []
     observations: dict[str, set[str]] = {}
 
@@ -1045,6 +1698,19 @@ def check_build_symbols(
                 f"an exact row in framework/registry/dwx_symbol_matrix.csv.{case_hint}"
             )
 
+    card_symbols: set[str] = set()
+    card_error: str | None = None
+    card_text, card_error = _card_text(card_path)
+    if card_text is not None:
+        card_symbols = parse_card_target_symbols(card_text)
+    for symbol in sorted(set(observations) - card_symbols if card_symbols else set()):
+        origins = sorted(observations[symbol])
+        failures.append(
+            "EA_SYMBOL_NOT_IN_CARD_UNIVERSE: "
+            f"{ea_dir.name} uses {symbol} from {', '.join(origins)}, but the explicit "
+            f"card target_symbols contract contains only {', '.join(sorted(card_symbols))}."
+        )
+
     return {
         "ea_label": ea_dir.name,
         "ea_id": ea_id,
@@ -1052,6 +1718,9 @@ def check_build_symbols(
         "matrix_valid": matrix_valid,
         "symbols_observed": len(rows),
         "symbols": rows,
+        "card_path": str(card_path) if card_path else None,
+        "card_target_symbols": sorted(card_symbols),
+        "card_error": card_error,
         "failures": failures,
     }
 
@@ -1116,6 +1785,53 @@ def analyze_file(source_path: Path, card_path: Path | None) -> dict:
         "warnings": len(time_warnings),
         **time_detail,
     }
+
+    pending_failures, pending_warnings, pending_detail = check_card_pending_order_type(
+        source, card_path
+    )
+    failures.extend(pending_failures)
+    warnings.extend(pending_warnings)
+    check_details["D13_pending_entry_type"] = {
+        "failures": len(pending_failures),
+        "warnings": len(pending_warnings),
+        **pending_detail,
+    }
+
+    direction_failures, direction_warnings, direction_detail = check_card_sma_direction(
+        source, card_path
+    )
+    failures.extend(direction_failures)
+    warnings.extend(direction_warnings)
+    check_details["D14_directional_series_order"] = {
+        "failures": len(direction_failures),
+        "warnings": len(direction_warnings),
+        **direction_detail,
+    }
+
+    news_failures, news_warnings, news_detail = check_card_news_contract(
+        source, card_path
+    )
+    failures.extend(news_failures)
+    warnings.extend(news_warnings)
+    check_details["D15_news_entry_contract"] = {
+        "failures": len(news_failures),
+        "warnings": len(news_warnings),
+        **news_detail,
+    }
+
+    ordering_failures, ordering_detail = check_deterministic_zero_trade_ordering(source)
+    failures.extend(ordering_failures)
+    check_details["D18_deterministic_zero_trade_ordering"] = {
+        "failures": len(ordering_failures),
+        **ordering_detail,
+    }
+
+    check_details["D12_invented_inputs_or_proxies"] = SEMANTIC_AUTOMATION_SCOPE[
+        "D12_invented_inputs_or_proxies"
+    ]
+    check_details["D16_restart_safe_management"] = SEMANTIC_AUTOMATION_SCOPE[
+        "D16_restart_safe_management"
+    ]
     return {
         "source_path": str(source.path),
         "card_path": str(card_path) if card_path else None,
@@ -1154,6 +1870,7 @@ def analyze(repo_root: Path, ea_label: str | None = None) -> dict:
             matrix_symbols,
             not matrix_failures,
             magic_by_build,
+            card,
         )
         build_symbol_checks.append(symbol_check)
         failures.extend(symbol_check["failures"])
@@ -1170,6 +1887,7 @@ def analyze(repo_root: Path, ea_label: str | None = None) -> dict:
             "magic_numbers": magic_detail,
         },
         "build_symbol_checks": build_symbol_checks,
+        "semantic_automation_scope": SEMANTIC_AUTOMATION_SCOPE,
         "false_positive_policy": {
             "D2": "FAIL only for explicit labeled card percentages; missing/ambiguous card is WARN",
             "D3": "FAIL only for literal x10 inside known pip-native helper arguments",
@@ -1181,6 +1899,13 @@ def analyze(repo_root: Path, ea_label: str | None = None) -> dict:
             "D9": "FAIL only when a bare MqlTradeRequest reaches OrderSend without zero-init, or a bare QM_EntryRequest reaches entry with neither zero-init nor a mechanically complete seven-field initializer",
             "D10": "FAIL only when a dynamic numeric/CopyBuffer target is indexed without a syntactically tied loop, CopyBuffer-result, resize-count, or ArraySize proof",
             "D11": "FAIL closed when either symbol registry is missing/malformed, a setfile cannot be read, the EA label is invalid, or any exact .DWX token observed in setfile names/content or current magic rows is absent from the exact dwx_symbol_matrix.csv namespace",
+            "D12": "NOT AUTOMATED until cards declare canonical point-in-time data lineage, lag, transforms, and proxy policy",
+            "D13": "FAIL only when an explicit Entry contract names BUY/SELL stop orders and the corresponding executable order-type assignment/call is absent",
+            "D14": "FAIL only for an explicit card SMA direction and a proven CopyBuffer(start=1,count=2) oldest/newest comparison with the inverse sign; unclassified aliases WARN",
+            "D15": "FAIL only for an explicit bar-based high-impact-news entry window with a literal mismatching source window, or a proven active news return before management/exit",
+            "D16": "NOT AUTOMATED until cards declare required restart state, durable reconstruction sources, idempotency, and fail-closed fallback",
+            "D17": "FAIL only when an exact current setfile/magic symbol is outside an explicit target_symbols/Target symbols card contract",
+            "D18": "FAIL only for a proven strictly descending shift append followed by a later-index <= earlier-index continue guard; general reachability remains review-only",
         },
     }
 
