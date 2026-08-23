@@ -1,0 +1,26 @@
+{
+  "task_id": "d0f1e256-7e79-48ed-ac9b-ecdde5128a35",
+  "ea_id": "QM5_11518",
+  "slug": "carter-t-ema5-100-mtf-m15-h1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_11518_carter-t-ema5-100-mtf-m15-h1",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11518_carter-t-ema5-100-mtf-m15-h1\\QM5_11518_carter-t-ema5-100-mtf-m15-h1.mq5",
+  "mq5_sha256": "c940168bb8d46c8f5ffcbec9b420ed64c65f2308e1a6ca47e999836679f52583",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11518_carter-t-ema5-100-mtf-m15-h1\\QM5_11518_carter-t-ema5-100-mtf-m15-h1.ex5",
+  "ex5_sha256": "491913367a51f5a27ada61d016cf27d6f6471a5650822705d7f2b6bc5342369d",
+  "magic_base": 115180000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11518_carter-t-ema5-100-mtf-m15-h1\\sets\\QM5_11518_carter-t-ema5-100-mtf-m15-h1_EURUSD.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11518_carter-t-ema5-100-mtf-m15-h1\\sets\\QM5_11518_carter-t-ema5-100-mtf-m15-h1_GBPUSD.DWX_M15_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11518_carter-t-ema5-100-mtf-m15-h1\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "passed",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": []
+}

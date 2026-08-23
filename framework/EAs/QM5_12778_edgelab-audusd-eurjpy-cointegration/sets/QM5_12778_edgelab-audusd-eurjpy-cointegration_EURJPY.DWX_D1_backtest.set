@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12778
+; ea_slug:      edgelab-audusd-eurjpy-cointegration
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       EURJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   1c513dc860cb39644666066a2fd61ac7cb04024b3fe7a1ce4b7106791cd14969
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=12778
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\edgelab-audusd-eurjpy-cointegration_card.md
+strategy_z_lookback_d1=60
+strategy_beta=0.279193
+strategy_entry_z=2.0
+strategy_exit_z=0.5
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=20

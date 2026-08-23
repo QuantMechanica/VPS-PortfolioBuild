@@ -1,0 +1,29 @@
+{
+  "task_id": "c0b1b0f0-9945-4aa2-8dc0-43d67c1b1070",
+  "ea_id": "QM5_37002",
+  "ea_dir": "framework/EAs/QM5_37002_dual-thrust-asymmetric-range-breakout",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_37002_dual-thrust-asymmetric-range-breakout\\QM5_37002_dual-thrust-asymmetric-range-breakout.mq5",
+  "mq5_sha256": "ff087004c4d299738890bf65d0c8db94f74109656233a64e3b2fdcbba62661a4",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_37002_dual-thrust-asymmetric-range-breakout\\QM5_37002_dual-thrust-asymmetric-range-breakout.ex5",
+  "ex5_sha256": "2948aaf1c16e41fbb055cc4bc2f75951c7b4a339613d1d151ae2293403297647",
+  "magic_base": 370020000,
+  "symbols_registered": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_37002_dual-thrust-asymmetric-range-breakout\\sets\\QM5_37002_dual-thrust-asymmetric-range-breakout_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_37002_dual-thrust-asymmetric-range-breakout\\sets\\QM5_37002_dual-thrust-asymmetric-range-breakout_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_37002_dual-thrust-asymmetric-range-breakout\\sets\\QM5_37002_dual-thrust-asymmetric-range-breakout_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_37002_dual-thrust-asymmetric-range-breakout\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "Smoke execution deferred to P2 baseline per standard sanctioned pipeline path (deferred_p2_smoke)."
+  ]
+}

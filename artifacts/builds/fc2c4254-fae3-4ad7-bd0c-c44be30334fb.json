@@ -1,9 +1,11 @@
 {
   "task_id": "fc2c4254-fae3-4ad7-bd0c-c44be30334fb",
   "ea_id": "QM5_37006",
-  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_37006_cusum-filter-structural-breakout",
+  "ea_dir": "framework/EAs/QM5_37006_cusum-filter-structural-breakout",
   "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_37006_cusum-filter-structural-breakout\\QM5_37006_cusum-filter-structural-breakout.mq5",
+  "mq5_sha256": "7b7555846abefad5e6ada02a092aaf1b3985befded294f5c9633caab094cfd8e",
   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_37006_cusum-filter-structural-breakout\\QM5_37006_cusum-filter-structural-breakout.ex5",
+  "ex5_sha256": "37aab81b8139805e9d48e227cd9830a990ac450ed00da7db0a28db3fe4518332",
   "magic_base": 370060000,
   "symbols_registered": [
     "NDX.DWX",
@@ -20,7 +22,8 @@
   "compile_succeeded": true,
   "smoke_result": "deferred_p2_smoke",
   "smoke_report_path": null,
-  "smoke_skipped_reason": "Paced Q02 enqueue; manual backtest not authorized.",
-  "blocked_reason": "",
-  "open_questions": []
+  "blocked_reason": null,
+  "open_questions": [
+    "Smoke execution deferred to P2 baseline per standard sanctioned pipeline path (deferred_p2_smoke)."
+  ]
 }

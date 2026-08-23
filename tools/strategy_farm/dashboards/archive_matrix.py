@@ -227,21 +227,30 @@ def md_to_html(md: str, base_level: int = 3) -> str:
             out.append(f"<h{lvl}>{md_inline(normalise_heading(m.group(2)))}</h{lvl}>")
             i += 1
             continue
-        if re.match(r"^\s*[-*]\s+", ln):
-            if list_tag != "ul":
+        m_ul = re.match(r"^\s*[-*]\s+", ln)
+        m_ol = re.match(r"^\s*\d+[.)]\s+", ln)
+        if m_ul or m_ol:
+            want = "ul" if m_ul else "ol"
+            if list_tag != want:
                 close_list()
-                out.append("<ul>")
-                list_tag = "ul"
-            out.append("<li>" + md_inline(re.sub(r"^\s*[-*]\s+", "", ln)) + "</li>")
+                out.append(f"<{want}>")
+                list_tag = want
+            first = re.sub(r"^\s*(?:[-*]|\d+[.)])\s+", "", ln)
+            item = [first.strip()]
             i += 1
-            continue
-        if re.match(r"^\s*\d+[.)]\s+", ln):
-            if list_tag != "ol":
-                close_list()
-                out.append("<ol>")
-                list_tag = "ol"
-            out.append("<li>" + md_inline(re.sub(r"^\s*\d+[.)]\s+", "", ln)) + "</li>")
-            i += 1
+            # A hard-wrapped item continues on the following lines. Treating those as
+            # separate paragraphs is what tore bullets apart and restarted <ol> at 1.
+            while i < len(lines):
+                nxt = lines[i].rstrip()
+                if not nxt.strip():
+                    break
+                if (re.match(r"^\s*(?:[-*]|\d+[.)])\s+", nxt)
+                        or nxt.startswith(("#", "|", "```"))
+                        or (set(nxt.strip()) <= set("-") and len(nxt.strip()) >= 3)):
+                    break
+                item.append(nxt.strip())
+                i += 1
+            out.append("<li>" + md_inline(" ".join(item)) + "</li>")
             continue
         if set(ln.strip()) <= set("-") and len(ln.strip()) >= 3:
             close_list()
@@ -549,7 +558,10 @@ color:var(--text-3)}
 letter-spacing:-.01em;max-width:80ch}
 .sc-lede{margin-top:8px;font-size:12.5px;line-height:1.6;color:var(--text-3);max-width:88ch}
 
-.sc-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.sc-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;align-items:center}
+.sc-chips+.sc-chips{margin-top:7px}
+.sc-chiplabel{font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;
+text-transform:uppercase;color:var(--text-4);margin-right:3px;min-width:74px}
 .chip{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;padding:2px 8px;
 border:1px solid var(--border-2);color:var(--text-2);white-space:nowrap}
 .chip.sym{border-color:var(--signal-dim);color:var(--signal-bright)}
@@ -577,8 +589,9 @@ font-size:11.5px;line-height:1.6;background:var(--surface-2)}
 letter-spacing:.12em;display:block;margin-bottom:3px}
 .sc-src a{color:var(--signal)}
 
-.sc-body{padding:18px 22px 20px;font-size:13px;line-height:1.72;color:var(--text-2);
-max-width:96ch}
+.sc-body{padding:18px 22px 22px;font-size:13px;line-height:1.72;color:var(--text-2)}
+/* prose stays readable at a measure; the clause grid gets the whole width */
+.sc-body>p,.sc-body>ul,.sc-body>ol,.sc-body>table{max-width:82ch}
 .sc-body h3{font-size:13px;color:var(--text);margin:22px 0 8px;padding-left:10px;
 border-left:2px solid var(--signal-dim);text-transform:uppercase;letter-spacing:.1em;
 font-weight:600}
@@ -622,12 +635,17 @@ max-width:86ch}
 
 /* mechanization rules read as a set of parallel clauses, not a scroll */
 .rules-intro{margin:0 0 12px;color:var(--text-3);font-size:12px}
-.rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(288px,1fr));
-gap:1px;background:var(--border);border:1px solid var(--border);margin:0 0 14px}
-.rule{background:var(--surface-2);padding:12px 15px 13px;min-width:0}
+/* multi-column flow, not a grid: grid rows align to the tallest cell, which opened a
+   void whenever a short clause sat beside a long one */
+.rules-grid{columns:3 300px;column-gap:14px;margin:2px 0 16px}
+@media(max-width:1100px){.rules-grid{columns:2 300px}}
+@media(max-width:720px){.rules-grid{columns:1}}
+.rule{break-inside:avoid;-webkit-column-break-inside:avoid;page-break-inside:avoid;
+background:var(--surface-2);border:1px solid var(--border);padding:12px 15px 13px;
+margin:0 0 14px;min-width:0}
 .rule-h{font-family:var(--font-mono);font-size:9.5px;font-weight:700;letter-spacing:.13em;
-text-transform:uppercase;color:var(--signal-bright);margin-bottom:8px;
-padding-bottom:6px;border-bottom:1px solid var(--border)}
+text-transform:uppercase;color:var(--signal-bright);margin-bottom:9px;
+padding-bottom:7px;border-bottom:1px solid var(--border-2)}
 .rule-note{display:block;margin-top:3px;font-weight:400;letter-spacing:.04em;
 text-transform:none;color:var(--text-4);font-size:9.5px;line-height:1.4}
 .rule ul,.rule ol{margin:0 0 0 16px;padding:0}
@@ -812,25 +830,37 @@ def render_card_section(ea_id: str) -> str:
     kicker = (f'<span>Strategy card</span><span class="{bucket_cls}">{e(bucket)}</span>'
               + (f'<span class="sc-bucket warn">body {e(incomplete)}</span>' if incomplete else ""))
 
-    chips = []
-    syms = _inline_list(fm["target_symbols"]) if fm.get("target_symbols") else lists.get("target_symbols", [])
-    chips += [f'<span class="chip sym">{e(s)}</span>' for s in syms[:14]]
+    # Three labelled rows instead of one undifferentiated run of twenty chips:
+    # what it trades, what kind of thing it is, and whether it cleared G0.
+    syms = (_inline_list(fm["target_symbols"]) if fm.get("target_symbols")
+            else lists.get("target_symbols", []))
+    row_universe = [f'<span class="chip sym">{e(x)}</span>' for x in syms[:14]]
     for tf in ([fm["period"]] if fm.get("period") else []) + lists.get("timeframes", [])[:3]:
-        chips.append(f'<span class="chip tf">{e(tf)}</span>')
+        row_universe.append(f'<span class="chip tf">{e(tf)}</span>')
+
+    row_kind = []
     for flag in (_inline_list(fm["strategy_type_flags"]) if fm.get("strategy_type_flags")
                  else lists.get("strategy_type_flags", []))[:8]:
-        chips.append(f'<span class="chip flag">{e(flag)}</span>')
+        row_kind.append(f'<span class="chip flag">{e(flag)}</span>')
     for kind in ("concepts", "indicators"):
         for val in lists.get(kind, [])[:8]:
-            chips.append(f'<span class="chip">{e(val)}</span>')
+            row_kind.append(f'<span class="chip">{e(val)}</span>')
+
+    row_g0 = []
     for key, label in _R_KEYS:
         val = (fm.get(key) or "").strip()
         if not val:
             continue
-        cls = "pass" if val.upper() == "PASS" else ("fail" if val.upper().startswith("FAIL") else "other")
+        cls = ("pass" if val.upper() == "PASS"
+               else "fail" if val.upper().startswith("FAIL") else "other")
         why = fm.get(key.split("_")[0] + "_reasoning") or ""
-        chips.append(f'<span class="chip r {cls}" title="{e(why[:300])}">'
-                     f'<b>{e(label)}</b><span>{e(val)}</span></span>')
+        row_g0.append(f'<span class="chip r {cls}" title="{e(why[:300])}">'
+                      f'<b>{e(label)}</b><span>{e(val)}</span></span>')
+
+    chip_rows = "".join(
+        f'<div class="sc-chips"><span class="sc-chiplabel">{lbl}</span>{"".join(row)}</div>'
+        for lbl, row in (("Universe", row_universe), ("Character", row_kind),
+                         ("G0 checks", row_g0)) if row)
 
     stats = []
     for key, label, is_text in _STATS:
@@ -854,7 +884,7 @@ def render_card_section(ea_id: str) -> str:
     return (f'<div class="sc"><div class="sc-head"><div class="sc-kicker">{kicker}</div>'
             f'<div class="sc-title">{e(title)}</div>'
             + (f'<div class="sc-lede">{md_inline(lede[:400])}</div>' if lede else "")
-            + (f'<div class="sc-chips">{"".join(chips)}</div>' if chips else "")
+            + chip_rows
             + "</div>"
             + (f'<div class="sc-stats">{"".join(stats)}</div>' if stats else "")
             + src

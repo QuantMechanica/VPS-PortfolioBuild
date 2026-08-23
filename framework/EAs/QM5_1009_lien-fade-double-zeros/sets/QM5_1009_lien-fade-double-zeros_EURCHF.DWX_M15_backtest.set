@@ -1,0 +1,27 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1009
+; ea_slug:      lien-fade-double-zeros
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       EURCHF.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   10
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=1009
+qm_magic_slot_offset=10
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\lien-fade-double-zeros_card.md
+trend_ma_period=20
+entry_offset_pips=12
+stop_offset_pips=20
+max_spread_points=20

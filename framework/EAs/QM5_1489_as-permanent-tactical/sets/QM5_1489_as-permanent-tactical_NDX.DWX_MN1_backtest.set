@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1489
+; ea_slug:      as-permanent-tactical
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       NDX.DWX
+; timeframe:    MN1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   80433d9484765cd2b586665d0a263e40389d110f0f35730c66d875f4045ec114
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=1489
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1489_as-permanent-tactical.md
+; card_defaults_status=none_found

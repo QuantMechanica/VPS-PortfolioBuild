@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9983
+; ea_slug:      bandy-wide-range-bar-fade-mr-index
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   5
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3ca3967af53c79767034747f663bd168607426dfd8379d94b1c0476de8172a15
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=9983
+qm_magic_slot_offset=5
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9983_bandy-wide-range-bar-fade-mr-index.md
+; card_defaults_status=none_found

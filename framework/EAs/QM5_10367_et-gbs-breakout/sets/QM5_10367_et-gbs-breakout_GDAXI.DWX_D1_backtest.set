@@ -1,0 +1,40 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10367
+; ea_slug:      et-gbs-breakout
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       GDAXI.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   6115851459c04973d5af69902a1335883af7d911f92425039452910ddb72069c
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=10367
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10367_et-gbs-breakout.md
+strategy_congestion_bars=20
+strategy_atr_period=20
+strategy_congestion_atr_mult=1.5
+strategy_breakout_atr_mult=0.5
+strategy_use_volume_filter=true
+strategy_volume_sma_bars=50
+strategy_long_volume_mult=1.5
+strategy_short_volume_mult=2.0
+strategy_use_atr_exits=true
+strategy_target_atr_mult=2.0
+strategy_stop_atr_mult=2.5
+strategy_target_pct=5.0
+strategy_stop_pct=6.0
+strategy_max_breakout_pct=6.0
+strategy_max_hold_bars=20
+strategy_spread_lookback_bars=20
+strategy_spread_median_mult=2.5

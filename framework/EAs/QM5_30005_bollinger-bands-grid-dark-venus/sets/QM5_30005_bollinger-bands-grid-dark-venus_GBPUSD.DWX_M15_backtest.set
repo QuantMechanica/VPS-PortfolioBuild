@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        30005
+; ea_slug:      bollinger-bands-grid-dark-venus
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       GBPUSD.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   f506e267a8e2737275221fa6b508c4e3afadd67697d97bf1ba8b3b6c8c6b55c9
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=30005
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_30005_bollinger-bands-grid-dark-venus.md
+; card_defaults_status=none_found

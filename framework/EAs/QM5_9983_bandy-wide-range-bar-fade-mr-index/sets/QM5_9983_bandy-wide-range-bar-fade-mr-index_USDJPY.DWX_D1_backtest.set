@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9983
+; ea_slug:      bandy-wide-range-bar-fade-mr-index
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       USDJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   8
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b387ba228dbfd9288075416f5f4816ec4fd806defae4eab4b7207143e1ed7b2e
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=9983
+qm_magic_slot_offset=8
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9983_bandy-wide-range-bar-fade-mr-index.md
+; card_defaults_status=none_found
