@@ -1,0 +1,155 @@
+{
+  "schema": "qm.qm5-41127.source-build-q02-cpu-ceiling-handoff/v1",
+  "generated_at_utc": "2026-08-23T07:32:00.2647947Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41127",
+  "ea_label": "QM5_41127_wti-mdaily-persist-mom",
+  "strategy_id": "MEHLITZ-MOP-WTI-MDAILY-PERSIST-MOM-2026_S01",
+  "source_id": "MEHLITZ-MOP-WTI-MDAILY-PERSIST-MOM-2026",
+  "outcome": "SOURCE_BUILD_COMMITTED_CPU_CEILING_BEFORE_GOVERNED_COMPILE_Q01_PENDING_Q02_NOT_ENQUEUED",
+  "commits": {
+    "source_approval_and_preallocation_dedup": "4a9af0a2452b1f9bb3909b30987c068d07ab1c6b",
+    "bounded_source_extraction": "75f0006ccc1db22f44c9214fbaa9fcce4c8be951",
+    "ea_id_reservation": "11a2fc76be79aacc5ba0ea8cf72ceaeb6e196958",
+    "g0_card_and_postallocation_dedup": "1930703f74e99114d73cdf59265b2986eeada2a7",
+    "magic_allocation_resolver_and_local_card": "777c911a150e0d1d7c8205d591437f95904e9722",
+    "source_build": "713ff394c3b0d05693181e1bdaf55bc1859c2a93"
+  },
+  "identity": {
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "symbol_slot": 0,
+    "magic": 411270000
+  },
+  "mechanic": {
+    "formation": "immediately completed broker month with 17-23 D1 closes plus the adjacent older boundary close",
+    "returns": "every chronological daily log return ending on a completed-month session",
+    "statistic": "N=sum(r), mu=N/n, S=sum((r-mu)^2), A=sum((r[j]-mu)*(r[j-1]-mu)), rho=A/S, J=rho+1/(n-1)",
+    "entry": "require finite S>0, bounded rho, strict J>0, and nonzero N; positive N buys WTI and negative N sells WTI",
+    "attempt_cadence": "one durable attempt per broker month, persisted before all fallible gates",
+    "exit": "first executable D1 boundary in a later broker month with forty-calendar-day stale repair",
+    "q02_frequency_floor": "at least five completed positions in every full post-warm-up year"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "atr_period_d1": 20,
+    "atr_stop_multiple": 3.5,
+    "profit_target": false,
+    "maximum_spread_points": 1500,
+    "deviation_points": 20,
+    "friday_close": false,
+    "news_temporal": "OFF",
+    "news_compliance": "NONE"
+  },
+  "dedup": {
+    "preallocation_verdict": "CLEAN",
+    "registry_identities_scanned": 4626,
+    "cards_scanned": 1295,
+    "strategy_wiki_nodes_scanned": 45,
+    "postallocation_registry_identities_scanned": 4627,
+    "postallocation_cards_scanned": 1296,
+    "postallocation_verdict": "EXPECTED_SELF_HITS_ONLY",
+    "postallocation_self_hits": 2
+  },
+  "allocation": {
+    "directory_first": true,
+    "strict_default_used": true,
+    "transient_preservation_for_preexisting_missing_legacy_ids": [1001, 1015, 1016],
+    "allow_dropped_used": false,
+    "allocated_eas": 1,
+    "allocated_rows": 1,
+    "registry_rows_before": 17857,
+    "registry_rows_after": 17858,
+    "resolver_rows_before": 17826,
+    "resolver_rows_after": 17827,
+    "retired_rows_deleted": 0,
+    "status_aware_magic_collisions_after": 0
+  },
+  "validations": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "g0_card_status": "APPROVED",
+    "build_skill_preflight": "PASS",
+    "registry_identity": "PASS",
+    "magic_row_and_resolver": "PASS",
+    "reference_tests": {
+      "verdict": "PASS",
+      "tests_passed": 9
+    },
+    "spec_validator": "PASS",
+    "build_guardrails": {
+      "verdict": "PASS",
+      "findings": 0,
+      "files_checked": 2
+    },
+    "symbol_scope": {
+      "verdict": "SINGLE_SYMBOL_OK",
+      "violations": 0,
+      "symbols": ["XTIUSD.DWX"]
+    },
+    "card_copy_sha256_equal": true,
+    "global_registry_validator": "PREEXISTING_LEGACY_BASELINE_FAIL_CANDIDATE_SCOPED_ALLOCATION_PASS",
+    "strict_compile": "NOT_RUN_CPU_CEILING",
+    "q01": "PENDING"
+  },
+  "compile": {
+    "direct_attempted": false,
+    "governed_compile_enqueued": false,
+    "compile_status_at_handoff": "NOT_ENQUEUED",
+    "work_items_at_handoff": 0,
+    "work_item_id": null,
+    "ex5_exists": false,
+    "setfile_build_hash": "pending",
+    "build_check_result": null
+  },
+  "capacity": {
+    "sample_completed_at_utc": "2026-08-23T07:32:00.2647947Z",
+    "counter": "Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 2,
+    "whole_host_cpu_pct": [100.0, 100.0, 100.0, 100.0, 100.0],
+    "average_cpu_pct": 100.0,
+    "maximum_cpu_pct": 100.0,
+    "terminal64_process_count_at_sample_end": 10,
+    "metatester64_process_count_at_sample_end": 6,
+    "ceiling_pct": 97,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_hit": true,
+    "binding_stop": true
+  },
+  "q02": {
+    "requested": true,
+    "preview_run": false,
+    "enqueued": false,
+    "work_item_id": null,
+    "blocking_gates": [
+      "BACKTEST_CPU_CEILING_HIT",
+      "GOVERNED_COMPILE_NOT_ENQUEUED",
+      "STRICT_COMPILE_EX5_FINAL_SET_BINDING_AND_Q01_PASS_ABSENT"
+    ]
+  },
+  "hashes_sha256": {
+    "bounded_source": "62FB3C500F4176047667F5194A446BFA7C53B0D1F4D3E523F226449416D398F4",
+    "approved_and_build_card": "4FF13548996449A6A875200768FDE69BCBBB4F5BE531F3223019E88D60CEAD96",
+    "mq5": "52EBC7991AA92BA880FB500437E569F3626B46420E06AADC8E25E736E1223558",
+    "spec": "65115A8590ECD163936AF6E17B4B782628CF54D3656785236A201FEE5EE83B8F",
+    "reference_suite": "88EFA6C0E71AAE1ED7A74351C3D99A855753230801859B934977DDA549C6004C",
+    "unbound_backtest_set": "C1007FD0612856C378129BFF6DB90DF513BF2C2B96F5C8EC1188AE9D00A2202D",
+    "magic_allocation_receipt": "C09AEF8F4AAC60E639EBF194DE58D72C05F557D11621BE00BB076762619E2E8B"
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_reservation_or_control": false,
+    "compile_queue_mutated": false,
+    "backtest_queue_mutated": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
