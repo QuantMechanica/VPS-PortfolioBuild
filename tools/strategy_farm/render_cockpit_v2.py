@@ -44,8 +44,10 @@ from typing import Any
 
 try:  # package import (tests, module consumers)
     from tools.strategy_farm.mission_control_v2_data import build_contract
+    from tools.strategy_farm.operator_surfaces import render_operator_surface_html
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit_v2.py``
     from mission_control_v2_data import build_contract
+    from operator_surfaces import render_operator_surface_html
 
 
 # Primary cockpit since OWNER approval 2026-08-21; cockpit_v2.html stays as an
@@ -863,6 +865,7 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
         _render_risk_freeze(contract),
         _render_q09_ftmo_recommendation(contract),
         _render_owner_decisions(contract),
+        render_operator_surface_html(contract.get("operator_surface") or {}),
         _render_progress(contract),
         _render_terminals(contract, ea_page_exists=ea_page_exists),
         _render_queue(contract),

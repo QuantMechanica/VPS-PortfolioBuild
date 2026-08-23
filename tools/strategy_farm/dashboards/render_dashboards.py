@@ -35,8 +35,13 @@ from tools.strategy_farm.phase_ids import (
     LEGACY_P_TO_Q as PHASE_QID,
     next_phase_id,
     phase_label,
+    phase_qid,
 )
 from tools.strategy_farm import q09_ftmo_recommendation
+from tools.strategy_farm.operator_surfaces import (
+    build_operator_snapshot,
+    render_operator_surface_html,
+)
 from tools.strategy_farm.work_item_clean_view import open_clean_view_connection
 
 PHASE_DISPLAY = PHASE_QID
@@ -1771,7 +1776,7 @@ ARCHIVE2_CSS = """
 .achip{padding:12px 18px;background:var(--surface-1);border:1px solid var(--border);min-width:108px;text-align:center}
 .achip-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:22px;font-weight:500;line-height:1;letter-spacing:-0.02em;color:var(--text)}
 .achip-label{font-family:var(--font-mono);font-size:9px;font-weight:600;color:var(--text-3);margin-top:6px;text-transform:uppercase;letter-spacing:0.18em}
-.achip.c-p8 .achip-num{color:var(--signal)}
+.achip.c-portfolio .achip-num{color:var(--signal)}
 .achip.c-surv .achip-num{color:var(--live)}
 .achip.c-dead .achip-num{color:var(--fail)}
 .presets{max-width:1400px;margin:8px auto 0;padding:0 36px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -2340,18 +2345,18 @@ _QBASE_RE = re.compile(r"^(Q\d{2})")
 _PRESET_RE = re.compile(r"^(\d+)_([A-Z0-9]+)_([A-Za-z0-9]+)_QM5_(\d+)_(.+)\.set$")
 
 
-def _phase_base(phase: Any) -> str:
+def _phase_base(phase: Any, gate_contract_version: Any = None) -> str:
     """Collapse a stored phase key to its canonical base Qxx (never a raw P*).
 
     'Q09_PORTFOLIO' -> 'Q09'; 'P2' -> 'Q02'; 'Q05' -> 'Q05'.
     """
     if not phase:
         return ""
-    s = str(phase)
+    s = phase_qid(str(phase), gate_contract_version)
     m = _QBASE_RE.match(s)
     if m:
         return m.group(1)
-    return phase_label(s)
+    return phase_qid(s)
 
 
 def _archive_verdict_text(phase: Any, verdict: Any) -> str:
@@ -2479,14 +2484,24 @@ def collect_archive_v2(root: Path, slug_map: dict[str, str]) -> dict[str, Any]:
     pass_map: dict[tuple, dict] = {}
 
     with _connect_readonly(db) as conn:
+        columns = {
+            str(row[1]).lower() for row in conn.execute("PRAGMA table_info(work_items)")
+        }
+        contract_expr = (
+            "w.gate_contract_version" if "gate_contract_version" in columns else "NULL"
+        )
         cur = conn.execute(
-            "SELECT ea_id, phase, symbol, status, verdict, updated_at FROM work_items_clean")
-        for ea_id, phase, symbol, status, verdict, updated_at in cur:
+            f"SELECT c.ea_id, c.phase, c.symbol, c.status, c.verdict, c.updated_at, "
+            f"{contract_expr} AS gate_contract_version FROM work_items_clean c "
+            "LEFT JOIN work_items w ON w.id=c.id")
+        for (ea_id, phase, symbol, status, verdict, updated_at,
+             contract_version) in cur:
             if not ea_id:
                 continue
             upd = updated_at or ""
             future = upd >= win_end
-            base = _phase_base(phase)
+            base = _phase_base(phase, contract_version)
+            display = phase_label(phase, contract_version, include_name=True)
             bidx = PHASE_ORDER.index(base) if base in PHASE_ORDER else -1
             v = (verdict or "").upper()
             st = (status or "").lower()
@@ -2517,7 +2532,8 @@ def collect_archive_v2(root: Path, slug_map: dict[str, str]) -> dict[str, Any]:
                 cl = cell_latest.get(ck)
                 if cl is None or upd > cl["upd"]:
                     cell_latest[ck] = {"upd": upd, "verdict": (v or None),
-                                       "phase": base, "status": st}
+                                       "phase": base, "phase_display": display,
+                                       "status": st}
 
             if win_start <= upd < win_end and st in ("done", "failed"):
                 rb = recent.setdefault(
@@ -2538,14 +2554,16 @@ def collect_archive_v2(root: Path, slug_map: dict[str, str]) -> dict[str, Any]:
                 cur_o = open_map.get(ok)
                 if cur_o is None or upd > cur_o["upd"]:
                     open_map[ok] = {"ea_id": ea_id, "symbol": symbol or "",
-                                    "phase": base, "status": st, "upd": upd}
+                                    "phase": base, "phase_display": display,
+                                    "status": st, "upd": upd}
 
             if fam == "pass" and bidx >= q07_idx and (_BOOK_DATE <= upd < win_end):
                 pk = (ea_id, symbol or "", base)
                 cur_p = pass_map.get(pk)
                 if cur_p is None or upd > cur_p["upd"]:
                     pass_map[pk] = {"ea_id": ea_id, "symbol": symbol or "",
-                                    "phase": base, "verdict": v, "upd": upd}
+                                    "phase": base, "phase_display": display,
+                                    "verdict": v, "upd": upd}
 
     out["ea"] = ea_agg
     out["cell_latest"] = cell_latest
@@ -2991,7 +3009,9 @@ ARCHIVE_V2_JS = """<script>
 </script>"""
 
 
-def render_strategies(state: dict, root: Path) -> str:
+def render_strategies(
+    state: dict, root: Path, *, include_live_presets: bool = True
+) -> str:
     slug_map = _build_slug_map(REPO_ROOT)
     data = collect_archive_v2(root, slug_map)
     ea_agg = data["ea"]
@@ -2999,9 +3019,12 @@ def render_strategies(state: dict, root: Path) -> str:
     programme_html = render_pipeline_books_program_status(
         collect_pipeline_books_program_status(REPO_ROOT)
     )
+    operator_html = render_operator_surface_html(
+        build_operator_snapshot(root / "state" / "farm_state.sqlite")
+    )
 
     # ── LIVE BOOK — 24 deployed sleeves ──────────────────────────
-    presets = _parse_live_presets(LIVE_PRESETS_DIR)
+    presets = _parse_live_presets(LIVE_PRESETS_DIR) if include_live_presets else []
     manifest, mani_path = _load_book_manifest(root)
     wmap: dict[tuple, dict] = {}
     kpis_book: dict[str, Any] = {}
@@ -3062,7 +3085,10 @@ def render_strategies(state: dict, root: Path) -> str:
                    ) if (cl and cl.get("ea_level")) else ''
         if cl and cl.get("verdict"):
             vf = _verdict_family(cl["verdict"])
-            phase_txt = f'{e(phase_label(cl["phase"]))} · ' if cl.get("phase") else ''
+            phase_txt = (
+                f'{e(cl.get("phase_display") or phase_label(cl["phase"]))} · '
+                if cl.get("phase") else ''
+            )
             vhtml = (f'<span class="{_VCLS[vf]}">{phase_txt}'
                      f'{e(_archive_verdict_text(cl.get("phase"), cl["verdict"]))}</span>{ea_note}')
         elif cl and cl.get("status") in _OPEN_STATUSES:
@@ -3108,7 +3134,7 @@ def render_strategies(state: dict, root: Path) -> str:
             f'<td class="td-ea"><code>{e(ea)}</code></td>'
             f'<td class="td-slug">{e(slug_map.get(ea, ""))}</td>'
             f'<td>{e(r["symbol"])}</td>'
-            f'<td>{e(phase_label(r["phase"]))}</td>'
+            f'<td>{e(r.get("phase_display") or phase_label(r["phase"]))}</td>'
             f'<td><span class="v-pending">{e(r["status"])}</span></td>'
             f'<td>{e((r["upd"] or "")[:19].replace("T", " "))}</td>'
             f'</tr>'
@@ -3124,7 +3150,7 @@ def render_strategies(state: dict, root: Path) -> str:
             f'<td class="td-ea"><code>{e(ea)}</code></td>'
             f'<td class="td-slug">{e(slug_map.get(ea, ""))}</td>'
             f'<td>{e(r["symbol"])}</td>'
-            f'<td>{e(phase_label(r["phase"]))}</td>'
+            f'<td>{e(r.get("phase_display") or phase_label(r["phase"]))}</td>'
             f'<td><span class="v-pass">{e(_archive_verdict_text(r["phase"], r["verdict"]))}</span></td>'
             f'<td>{e((r["upd"] or "")[:19].replace("T", " "))}</td>'
             f'</tr>'
@@ -3230,6 +3256,8 @@ def render_strategies(state: dict, root: Path) -> str:
 </div>
 
 {programme_html}
+
+{operator_html}
 
 <section class="arch2-sec">
   <div class="sec-head"><span class="sec-kicker">Live Book</span><h2><a class="jrnl-link" href="dxz_journal.html">DXZ · deployed sleeves</a></h2><span class="sec-meta">{book_meta}</span></div>
@@ -5109,6 +5137,7 @@ def render_portfolio(root: Path) -> str:
 
 
 def main() -> int:
+    global LIVE_PRESETS_DIR
     parser = argparse.ArgumentParser(description="Render strategy_farm dashboards")
     parser.add_argument("--root", default=str(DEFAULT_ROOT))
     parser.add_argument("--full", action="store_true",
@@ -5121,13 +5150,29 @@ def main() -> int:
             "portfolio artifacts, journal pages, detail pages, CSS or watermarks"
         ),
     )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        help="write dashboard artifacts to this directory instead of ROOT/dashboards",
+    )
+    parser.add_argument(
+        "--read-only",
+        action="store_true",
+        help="skip derived DB/cache/state refreshes (required for scratch renders)",
+    )
     args = parser.parse_args()
 
     set_render_stamp()  # one RENDERED-badge timestamp for the whole run
 
     root = Path(args.root).resolve()
-    dashboards_dir = root / "dashboards"
+    dashboards_dir = (
+        args.output_dir.resolve() if args.output_dir is not None else root / "dashboards"
+    )
     dashboards_dir.mkdir(parents=True, exist_ok=True)
+    if args.read_only:
+        # Scratch renders must not inspect the live-terminal tree. Point the
+        # optional preset reader at a known-absent path inside scratch.
+        LIVE_PRESETS_DIR = dashboards_dir / "_live_presets_disabled"
 
     # Explicit narrow regeneration path for maintenance/source releases. The
     # regular hourly renderer performs several intentional cache/DB writes;
@@ -5151,15 +5196,17 @@ def main() -> int:
     # hourly renderer is intentionally ALWAYS_ON, so performing DB upserts here
     # while FACTORY_OFF is asserted would violate quiescence even though HTML
     # publication itself remains safe. An unreadable OFF state is treated as OFF.
-    _refresh_ea_metrics_for_render(root)
+    if not args.read_only:
+        _refresh_ea_metrics_for_render(root)
 
     # FUND_SCORE is historical screening metadata only. Refreshing its cache here
     # gives every dashboard cycle automatic coverage without changing a gate row.
-    try:
-        from tools.strategy_farm.portfolio import fund_score as _fund_score
-        _fund_score.refresh_cache(root / "artifacts" / "portfolio" / "fund_scores.json")
-    except Exception as _exc:  # noqa: BLE001 — never block the render
-        print(f"WARN: FUND_SCORE refresh skipped: {_exc!r}", file=sys.stderr)
+    if not args.read_only:
+        try:
+            from tools.strategy_farm.portfolio import fund_score as _fund_score
+            _fund_score.refresh_cache(root / "artifacts" / "portfolio" / "fund_scores.json")
+        except Exception as _exc:  # noqa: BLE001 — never block the render
+            print(f"WARN: FUND_SCORE refresh skipped: {_exc!r}", file=sys.stderr)
 
     # Sync style.css from repo template into output dir if newer
     src_css = Path(__file__).parent / "style.css"
@@ -5219,7 +5266,10 @@ def main() -> int:
         except sqlite3.Error:
             wi_eas = set()
 
-    state_path = root / "state" / "dashboard_render_state.json"
+    state_path = (
+        dashboards_dir / "dashboard_render_state.json"
+        if args.read_only else root / "state" / "dashboard_render_state.json"
+    )
     prev_state: dict[str, Any] = {}
     try:
         if state_path.exists():

@@ -74,6 +74,14 @@ try:  # package import in tests and module consumers
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
     from work_item_clean_view import install_clean_view
 
+try:
+    from tools.strategy_farm.operator_surfaces import (
+        build_operator_snapshot,
+        render_operator_surface_html,
+    )
+except ModuleNotFoundError:
+    from operator_surfaces import build_operator_snapshot, render_operator_surface_html
+
 ROOT = Path(r"D:\QM\strategy_farm")
 REPO = Path(r"C:\QM\repo")
 DB = ROOT / "state" / "farm_state.sqlite"
@@ -127,7 +135,10 @@ FTMO_MONITOR_DIR = Path(
 FTMO_DEALS_CSV = FTMO_MONITOR_DIR / "live_deals_normalized.csv"
 LIVE_BOOK_SLEEVES = 24  # current live book size (label denominator only)
 
-LIFETIME_PASS_CHIP_LABEL = "Q00-Q16 // PIPELINE OCCUPANCY (LIFETIME, MIXED ERAS)"
+LIFETIME_PASS_CHIP_LABEL = (
+    f"{Q_DISPLAY_ORDER[0]}-{Q_DISPLAY_ORDER[-1]} // "
+    "PIPELINE OCCUPANCY (LIFETIME, MIXED ERAS)"
+)
 PIPELINE_COHORT_SCHEMA_VERSION = "qm.cockpit-adjacent-cohort/v1"
 PIPELINE_COHORT_BUCKETS = ("NO_ROW", "OPEN", "INFRA", "SOFT", "HARD", "PASS")
 PIPELINE_COHORT_TRANSITIONS = (
@@ -2127,6 +2138,7 @@ def main() -> int:
     cohort_html = render_pipeline_cohorts(pipeline_cohort_snapshot())
     optimization_snapshot = optimization_track_snapshot(DB, PORTFOLIO_REPORT_ROOT)
     optimization_html = render_optimization_track(optimization_snapshot)
+    operator_html = render_operator_surface_html(build_operator_snapshot(DB))
 
     # Pipeline health (written by `farmctl health`, scheduled every 15 min)
     health_file = ROOT / "state" / "health.json"
@@ -4045,6 +4057,8 @@ a.frontier-tile:hover { background: var(--surface-2); }
   {cohort_html}
 
   {optimization_html}
+
+  {operator_html}
 
   <!-- 5. PIPELINE FUNNEL -->
   <div class="section">

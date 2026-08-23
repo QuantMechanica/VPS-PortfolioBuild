@@ -36,13 +36,14 @@
     },
     "pipeline": {
       "type": "object",
-      "required": ["strategy_cards", "eas_built", "by_phase"],
+      "required": ["strategy_cards", "eas_built", "by_phase", "by_gate_v4"],
       "properties": {
         "strategy_cards": { "type": "integer", "minimum": 0 },
         "eas_built": { "type": "integer", "minimum": 0 },
         "by_phase": {
           "type": "object",
           "required": [
+            "gate_contract_version",
             "G0",
             "P1",
             "P2",
@@ -60,6 +61,7 @@
             "P10"
           ],
           "properties": {
+            "gate_contract_version": { "type": "string", "const": "legacy-p-frozen/v1" },
             "G0": { "type": "integer", "minimum": 0 },
             "P1": { "type": "integer", "minimum": 0 },
             "P2": { "type": "integer", "minimum": 0 },
@@ -75,6 +77,36 @@
             "P9": { "type": "integer", "minimum": 0 },
             "P9b": { "type": "integer", "minimum": 0 },
             "P10": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "by_gate_v4": {
+          "type": "object",
+          "required": [
+            "gate_contract_version",
+            "Q00", "Q01", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08",
+            "Q09", "Q10", "Q11", "Q12", "Q13", "Q14", "Q15", "Q16", "Q17"
+          ],
+          "properties": {
+            "gate_contract_version": { "type": "string", "const": "v4" },
+            "Q00": { "type": "integer", "minimum": 0 },
+            "Q01": { "type": "integer", "minimum": 0 },
+            "Q02": { "type": "integer", "minimum": 0 },
+            "Q03": { "type": "integer", "minimum": 0 },
+            "Q04": { "type": "integer", "minimum": 0 },
+            "Q05": { "type": "integer", "minimum": 0 },
+            "Q06": { "type": "integer", "minimum": 0 },
+            "Q07": { "type": "integer", "minimum": 0 },
+            "Q08": { "type": "integer", "minimum": 0 },
+            "Q09": { "type": "integer", "minimum": 0 },
+            "Q10": { "type": "integer", "minimum": 0 },
+            "Q11": { "type": "integer", "minimum": 0 },
+            "Q12": { "type": "integer", "minimum": 0 },
+            "Q13": { "type": "integer", "minimum": 0 },
+            "Q14": { "type": "integer", "minimum": 0 },
+            "Q15": { "type": "integer", "minimum": 0 },
+            "Q16": { "type": "integer", "minimum": 0 },
+            "Q17": { "type": "integer", "minimum": 0 }
           },
           "additionalProperties": false
         }

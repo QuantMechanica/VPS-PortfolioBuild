@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
     "generated_at":  "2026-07-28T23:07:15.1128698Z",
-    "phase":  "Endausbaustufe-Modus - highest EA at P9",
+    "phase":  "Endausbaustufe-Modus - highest EA at Q15",
     "agents":  {
                    "offline":  1,
                    "online":  4,
@@ -10,6 +10,7 @@
     "pipeline":  {
                      "eas_built":  4239,
                      "by_phase":  {
+                                      "gate_contract_version":  "legacy-p-frozen/v1",
                                       "P5b":  0,
                                       "P6":  176,
                                       "P2":  1485,
@@ -26,6 +27,27 @@
                                       "P1":  0,
                                       "P5c":  0
                                   },
+                     "by_gate_v4":  {
+                                         "gate_contract_version":  "v4",
+                                         "Q00":  0,
+                                         "Q01":  0,
+                                         "Q02":  1485,
+                                         "Q03":  743,
+                                         "Q04":  350,
+                                         "Q05":  187,
+                                         "Q06":  176,
+                                         "Q07":  137,
+                                         "Q08":  16,
+                                         "Q09":  0,
+                                         "Q10":  0,
+                                         "Q11":  0,
+                                         "Q12":  0,
+                                         "Q13":  0,
+                                         "Q14":  0,
+                                         "Q15":  28,
+                                         "Q16":  0,
+                                         "Q17":  0
+                                     },
                      "strategy_cards":  3557
                  },
     "t6":  {

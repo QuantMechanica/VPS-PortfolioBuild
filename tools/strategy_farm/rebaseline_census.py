@@ -40,6 +40,12 @@ import os
 import sqlite3
 import sys
 from collections import Counter, defaultdict
+from pathlib import Path
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from tools.strategy_farm.phase_ids import phase_label, phase_qid
 
 DEFAULT_DB = "D:/QM/strategy_farm/state/farm_state.sqlite"
 DEFAULT_OUT_DIR = "D:/QM/reports/rebaseline"
@@ -116,9 +122,16 @@ SETFILE_HASH_KEYS = [
 ]
 
 
-def canonical_gate(phase: str | None) -> str | None:
-    """Map a storage phase key to its canonical v3 gate, or None if off-chain."""
-    p = (phase or "").strip().upper()
+def canonical_gate(
+    phase: str | None, gate_contract_version: str | None = None
+) -> str | None:
+    """Map a versioned storage phase to the active v3 census gate.
+
+    ``phase_qid`` performs the explicit v3/v4 contract translation first.  The
+    small lane collapse below is storage normalization only (NEWS/PORTFOLIO are
+    both evidence for their parent gate), never an ordinal guess.
+    """
+    p = phase_qid(phase, gate_contract_version).strip().upper()
     if p in GATE_ORDINAL:
         return p
     if p.startswith("Q09"):
@@ -162,15 +175,25 @@ def open_ro(db_path: str) -> sqlite3.Connection:
     return con
 
 
+def _has_column(con: sqlite3.Connection, table: str, column: str) -> bool:
+    return any(str(row[1]).lower() == column.lower() for row in con.execute(
+        f"PRAGMA table_info({table})"
+    ))
+
+
 def _iter_pair_rows(con: sqlite3.Connection, limit: int | None):
     """Yield (ea_id, symbol, phase, status, verdict) rows.
 
     When ``limit`` is set, restrict to the first ``limit`` distinct pairs (smoke).
     Set-based: pair-level census needs no payload parse at all.
     """
+    contract_expr = (
+        "gate_contract_version" if _has_column(con, "work_items", "gate_contract_version")
+        else "NULL AS gate_contract_version"
+    )
     if limit:
         sql = (
-            "SELECT ea_id, symbol, phase, status, verdict FROM work_items "
+            f"SELECT ea_id, symbol, phase, status, verdict, {contract_expr} FROM work_items "
             "WHERE (ea_id, symbol) IN ("
             "  SELECT ea_id, symbol FROM ("
             "    SELECT DISTINCT ea_id, symbol FROM work_items "
@@ -181,7 +204,7 @@ def _iter_pair_rows(con: sqlite3.Connection, limit: int | None):
         cur = con.execute(sql, (limit,))
     else:
         sql = (
-            "SELECT ea_id, symbol, phase, status, verdict FROM work_items "
+            f"SELECT ea_id, symbol, phase, status, verdict, {contract_expr} FROM work_items "
             "WHERE ea_id IS NOT NULL AND ea_id <> '' "
             "  AND symbol IS NOT NULL AND symbol <> ''"
         )
@@ -193,8 +216,12 @@ def _iter_hash_rows(con: sqlite3.Connection, limit: int | None):
     """Yield (ea_id, symbol, phase, status, verdict, payload_json) for the subset
     of rows whose payload plausibly carries a build/setfile hash. Substring
     pre-filter keeps this far below the full 111k-row table."""
+    contract_expr = (
+        "gate_contract_version" if _has_column(con, "work_items", "gate_contract_version")
+        else "NULL AS gate_contract_version"
+    )
     base = (
-        "SELECT ea_id, symbol, phase, status, verdict, payload_json FROM work_items "
+        f"SELECT ea_id, symbol, phase, status, verdict, payload_json, {contract_expr} FROM work_items "
         "WHERE ea_id IS NOT NULL AND ea_id <> '' "
         "  AND symbol IS NOT NULL AND symbol <> '' "
         "  AND payload_json IS NOT NULL "
@@ -236,12 +263,14 @@ def _new_gate() -> dict:
         "classes": Counter(),      # non-pass class -> count (for frontier)
         "verdicts": Counter(),     # raw verdict -> count
         "statuses": Counter(),
+        "observed_labels": set(),
+        "valid_labels": set(),
     }
 
 
 def build_pairs(con: sqlite3.Connection, limit: int | None) -> dict:
     pairs: dict[tuple[str, str], dict] = {}
-    for ea_id, symbol, phase, status, verdict in _iter_pair_rows(con, limit):
+    for ea_id, symbol, phase, status, verdict, contract_version in _iter_pair_rows(con, limit):
         key = (ea_id, symbol)
         rec = pairs.get(key)
         if rec is None:
@@ -253,7 +282,7 @@ def build_pairs(con: sqlite3.Connection, limit: int | None) -> dict:
             }
         rec["phases_run"][(phase or "")] += 1
         rec["all_verdicts"][(verdict or "")] += 1
-        g = canonical_gate(phase)
+        g = canonical_gate(phase, contract_version)
         if g is None:
             rec["offchain_phases"][(phase or "")] += 1
             continue
@@ -261,9 +290,12 @@ def build_pairs(con: sqlite3.Connection, limit: int | None) -> dict:
         gd["rows"] += 1
         gd["statuses"][(status or "")] += 1
         gd["verdicts"][(verdict or "")] += 1
+        label = phase_label(phase, contract_version, include_name=True)
+        gd["observed_labels"].add(label)
         cls = vclass(verdict)
         is_done = (status or "").strip().lower() == "done"
         if cls == "PASS" and is_done:
+            gd["valid_labels"].add(label)
             raw = (phase or "").strip().upper()
             if raw in GATE_ORDINAL or raw.startswith("Q09"):
                 gd["valid_canonical"] = True
@@ -280,6 +312,12 @@ def summarise_pair(rec: dict) -> dict:
     # highest observed gate (any row)
     observed = [g for g in gates if gates[g]["rows"] > 0]
     highest_observed = max(observed, key=lambda g: GATE_ORDINAL[g]) if observed else ""
+
+    def preferred_label(gate: str, key: str) -> str:
+        labels = list((gates.get(gate) or {}).get(key) or [])
+        # Prefer a provenance-bearing form when a mixed-contract fixture has
+        # more than one representation of the same active gate.
+        return max(labels, key=lambda value: ("(" in value, value)) if labels else ""
 
     # contiguous validity walk
     hcvg = ""
@@ -341,7 +379,9 @@ def summarise_pair(rec: dict) -> dict:
 
     return {
         "highest_observed_gate": highest_observed,
+        "highest_observed_label": preferred_label(highest_observed, "observed_labels") if highest_observed else "",
         "highest_contiguous_valid_gate": hcvg,
+        "highest_contiguous_valid_label": preferred_label(hcvg, "valid_labels") if hcvg else "",
         "earliest_missing_prerequisite": frontier or "",
         "frontier_class": frontier_class,
         "frontier_infra": frontier_infra,
@@ -361,7 +401,8 @@ def summarise_pair(rec: dict) -> dict:
 
 def build_finer(con: sqlite3.Connection, limit: int | None) -> dict:
     finer: dict[tuple, dict] = {}
-    for ea_id, symbol, phase, status, verdict, payload_json in _iter_hash_rows(con, limit):
+    for (ea_id, symbol, phase, status, verdict, payload_json,
+         contract_version) in _iter_hash_rows(con, limit):
         try:
             payload = json.loads(payload_json)
         except (ValueError, TypeError):
@@ -372,7 +413,7 @@ def build_finer(con: sqlite3.Connection, limit: int | None) -> dict:
         sh = _extract_hash(payload, SETFILE_HASH_KEYS)
         if not bh and not sh:
             continue
-        g = canonical_gate(phase)
+        g = canonical_gate(phase, contract_version)
         if g is None:
             continue
         key = (ea_id, symbol, bh, sh, g)
@@ -408,7 +449,8 @@ def build_finer(con: sqlite3.Connection, limit: int | None) -> dict:
 
 PAIR_CSV_COLUMNS = [
     "ea_id", "symbol", "macro_phase", "disposition",
-    "highest_observed_gate", "highest_contiguous_valid_gate",
+    "highest_observed_gate", "highest_observed_label",
+    "highest_contiguous_valid_gate", "highest_contiguous_valid_label",
     "earliest_missing_prerequisite", "frontier_class", "frontier_infra",
     "n_rows", "phases_run", "verdicts_seen",
 ]
