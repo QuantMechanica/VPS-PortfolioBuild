@@ -178,6 +178,57 @@ Strategieerklärung (0 Treffer für Mechanism/Card/Quelle) und verlinken bei QM5
 3 von 21 Läufen. Der Vollausbau sollte die neue Detailseite in `render_dashboards.py`
 übernehmen, statt beide Seiten nebeneinander zu pflegen.
 
+## 5 · Ausgeführt 2026-08-23 abends — Relikt-Löschung und Aufbewahrungsbefund
+
+### 5.1 Die 228 Relikt-Zeilen sind gelöscht (OWNER-Freigabe auf den korrigierten Umfang)
+
+| Schritt | Ergebnis |
+|---|---|
+| Vollständige Zeilen als Evidenz gesichert | `docs/ops/evidence/2026-08-23_relic_symbol_purge_rows.json` (498 KB, 228 Work Items + 199 `ea_metrics`) |
+| Datenbanksicherung vor dem Eingriff | `D:\QM\backups\farm_state_20260823T114644Z_pre_relic_purge.sqlite` (366 MB, `VACUUM INTO`) |
+| Gelöscht | **228** `work_items` + **199** `ea_metrics` |
+| `work_items` gesamt | 111.624 → 111.396 (Delta exakt 228) |
+| Relikt-Zeilen übrig | **0** |
+| Nicht-DWX-Zeilen übrig (Basket + leeres Symbol) | **996 — unangetastet** |
+
+Vorabprüfungen im Skript, die den Lauf sonst abgebrochen hätten: Umfang exakt 228, alle Zeilen
+terminal (`failed`), kein wirtschaftliches Verdikt in der Menge (196 `OBSOLETE_NON_DWX_SYMBOL`,
+26 `INFRA_FAIL`, 6 `INVALID`). Keine Waisen erzeugt: die Zeilen hatten keine Holds, keine
+Transitions, keine Kinder, keine Qualifikationseinträge.
+
+### 5.2 Werden alte Backtests automatisch gelöscht? — nein, und genau das ist das Problem
+
+Die dokumentierten Aufräumjobs löschen **ausschließlich MT5-Journale** (`*.log`) und halten
+`report.htm`, `summary.json` und `.set` ausdrücklich fest:
+
+| Job | Auslöser | löscht |
+|---|---|---|
+| `reports_log_purge.ps1` (`QM_StrategyFarm_ReportsLogPurge_12h`) | alle 12 h | `*.log` älter als 12 h, plus Größenbudget |
+| `prune_workitem_logs.py` (`QM_WorkItemLogPruner_Daily_0310`) | täglich 03:10 | `*.log` terminaler Work Items |
+| `tester_cache_purge.ps1` | alle 10 min, unter 150 GB frei | nur MT5-Tester-Caches, **nie** `D:\QM\reports` |
+
+**Gemessen sieht es trotzdem anders aus.** Es existiert **kein einziges Report-Verzeichnis von
+vor dem 07.07.2026**: 20.057 Verzeichnisse, 69 GB, ältestes 2026-07-07. Stichprobe nach
+Work-Item-ID: Mai 0/300, Juni 0/300, Juli 87/300, August 240/300.
+
+**Ursache sind die einmaligen manuellen Plattenaufräumungen der D:-Krisen** (10.06.: 405 GB,
+22.07.: 153,7 GB reklamiert) — ganze Bäume, nicht die dokumentierte Aufbewahrungsregel.
+
+Aktuelles Volumen: **51.638 `report.htm`/`.html` = 16,78 GB** für rund 6,7 Wochen, also etwa
+2,5 GB/Woche. Die Journale, die die Krisen ausgelöst hatten, liegen dank Purge bei nur 1,80 GB.
+
+**Der eigentliche Defekt ist, dass es für `report.htm` gar keine Aufbewahrungs-ENTSCHEIDUNG
+gibt.** Die Artefakte überleben zufällig und verschwinden zufällig. Eine Archivseite kann damit
+keine Evidenzspur versprechen, die sie nicht kontrolliert. Beauftragt als `b24d7875`
+(`QM-TODO-20260823-506`) mit vier Optionen; Empfehlung: Meritzeilen (PASS / Buchkandidaten)
+dauerhaft halten, gewöhnliche FAIL-Läufe altern lassen, den behaltenen Bestand komprimieren.
+
+### 5.3 Detailseite ersetzt `ea_*.html`
+
+OWNER-Entscheid 2026-08-23. Beauftragt als `0b6f3039` (`QM-TODO-20260823-505`): der Prototyp-Code
+(`render_detail`, `build_report_index`, `md_to_html`) wandert nach `render_dashboards.py`, die
+`ea_<id>.html`-URL bleibt erhalten oder wird umgeleitet, weil andere Oberflächen darauf zeigen.
+
 ## 3 · Nächster Schritt
 
 OWNER sieht sich die Seite an. Danach: Abnahme oder Änderungswünsche, dann Vollausbau in
