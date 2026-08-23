@@ -1,11 +1,13 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_9921 Unknown Strategy"
+#property description "QM5_9921 Bandy CMO Extreme Fade Long-Only Index MR"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA: QM5_9921
+// Strategy Card: D:/QM/strategy_farm/artifacts/cards_approved/QM5_9921_bandy-cmo-extreme-fade-mr-index.md
+// Source: Howard Bandy, Quantitative Technical Analysis 2015 (9ef19e06-5ca6-5b35-aa06-b8187aa0e016)
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -14,7 +16,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -33,28 +35,153 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+input int    strategy_cmo_period        = 20;
+input double strategy_cmo_entry_thresh  = -50.0;
+input double strategy_cmo_exit_thresh   = 0.0;
+input int    strategy_regime_sma_period = 200;
+input int    strategy_atr_period        = 14;
+input double strategy_sl_atr_mult       = 2.5;
+input int    strategy_time_stop_days    = 8;
+input int    strategy_warmup_bars       = 250;
 
+// -----------------------------------------------------------------------------
+// Strategy calculation helpers
+// -----------------------------------------------------------------------------
+
+double CalculateCMO(const string symbol, const ENUM_TIMEFRAMES tf, const int period, const int shift)
+{
+   if(period <= 1 || shift < 1)
+      return 0.0;
+
+   double sum_up = 0.0;
+   double sum_down = 0.0;
+   for(int i = shift; i < shift + period; ++i)
+   {
+      const double close_now = iClose(symbol, tf, i);
+      const double close_prev = iClose(symbol, tf, i + 1);
+      if(close_now <= 0.0 || close_prev <= 0.0)
+         return 0.0;
+
+      const double diff = close_now - close_prev;
+      if(diff > 0.0)
+         sum_up += diff;
+      else if(diff < 0.0)
+         sum_down += -diff;
+   }
+
+   const double denom = sum_up + sum_down;
+   if(denom <= 0.0)
+      return 0.0;
+
+   return 100.0 * (sum_up - sum_down) / denom;
+}
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-bool Strategy_NoTradeFilter() { return false; }
-
-bool Strategy_EntrySignal(QM_EntryRequest &req)
+bool Strategy_NoTradeFilter()
 {
-   // TODO: Auto-generated skeleton. Specific entry logic requires manual implementation.
+   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+      return true;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return true;
+
    return false;
 }
 
-void Strategy_ManageOpenPosition() {}
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+{
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic > 0 && QM_TM_OpenPositionCount(magic) > 0)
+      return false;
+
+   const double cmo = CalculateCMO(_Symbol, PERIOD_D1, strategy_cmo_period, 1);
+   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double regime = QM_SMA(_Symbol, PERIOD_D1, strategy_regime_sma_period, 1, PRICE_CLOSE);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+
+   if(close1 <= 0.0 || regime <= 0.0 || atr <= 0.0)
+      return false;
+
+   if(cmo <= strategy_cmo_entry_thresh && close1 > regime)
+   {
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(ask <= 0.0)
+         return false;
+
+      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, atr, strategy_sl_atr_mult);
+      if(sl <= 0.0 || sl >= ask)
+         return false;
+
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = 0.0;
+      req.reason = "BANDY_CMO_EXTREME_FADE_BUY";
+      return true;
+   }
+
+   return false;
+}
+
+void Strategy_ManageOpenPosition()
+{
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   const double cmo = CalculateCMO(_Symbol, PERIOD_D1, strategy_cmo_period, 1);
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      const int bars_held = iBarShift(_Symbol, PERIOD_D1, open_time, false);
+
+      if(bars_held >= strategy_time_stop_days)
+      {
+         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
+         continue;
+      }
+
+      if(cmo >= strategy_cmo_exit_thresh)
+      {
+         QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
+      }
+   }
+}
 
 bool Strategy_ExitSignal()
 {
    return false;
 }
 
-bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
+bool Strategy_NewsFilterHook(const datetime broker_time)
+{
+   return false;
+}
 
 // -----------------------------------------------------------------------------
 // Framework wiring
@@ -74,6 +201,7 @@ void OnDeinit(const int reason) { QM_FrameworkShutdown(); }
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
