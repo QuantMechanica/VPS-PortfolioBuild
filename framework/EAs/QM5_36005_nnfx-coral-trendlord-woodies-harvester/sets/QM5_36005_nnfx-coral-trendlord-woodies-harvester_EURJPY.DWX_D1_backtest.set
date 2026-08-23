@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e06707ee5a8fa74d24d0972b6c8908eba47d92a8c185646851873577aa378177
+; build_hash:   6c247a3802f6237c71c29770ebd172b95f55f715d587c1d43152a9eb60cc29a4
 ; author:       Development
 ; date:         2026-08-17
 ;==========================================================
@@ -22,8 +22,6 @@ PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_36005_nnfx-coral-trendlord-woodies-harvester.md
 strategy_coral_period=20
-strategy_coral_coeff=0.40
-strategy_coral_warmup_bars=100
 strategy_trendlord_period=50
 strategy_woodies_cci_period=14
 strategy_wae_fast=12
@@ -32,8 +30,13 @@ strategy_wae_signal=9
 strategy_wae_bb_period=20
 strategy_wae_bb_deviation=2.0
 strategy_wae_sensitivity=150
-strategy_wae_deadzone_pts=150
 strategy_atr_period=14
 strategy_sl_atr_mult=1.00
-strategy_tp_atr_mult=1.00
+strategy_tp1_atr_mult=1.00
+strategy_tp1_fraction=0.50
+strategy_be_buffer_pips=1
 strategy_spread_atr_mult=1.80
+strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
+strategy_total_dd_halt_pct=5.0
+strategy_per_trade_risk_cap_pct=0.5

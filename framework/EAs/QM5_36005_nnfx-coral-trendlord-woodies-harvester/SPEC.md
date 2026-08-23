@@ -33,9 +33,10 @@ On each completed D1 bar, the EA buys when price is above the 20-period Coral SM
 | `strategy_tp1_fraction` | 0.50 | fixed | Fraction of position volume closed at TP1. |
 | `strategy_be_buffer_pips` | 1 | fixed | Runner stop buffer beyond entry after TP1. |
 | `strategy_spread_atr_mult` | 1.8 | fixed | Blocks entry when positive modeled spread exceeds this ATR multiple. |
-| `strategy_daily_entry_halt_pct` | 2.0 | fixed | Blocks new entries after this daily realized loss. |
+| `strategy_daily_loss_halt_pct` | 2.0 | fixed | Blocks new entries after this account realized loss; reconstructed from closed-deal history across restarts. |
 | `strategy_daily_hard_stop_pct` | 2.5 | fixed | Closes exposure and blocks entries at this daily equity loss from starting balance. |
-| `strategy_total_hard_stop_pct` | 5.0 | fixed | Closes exposure and blocks entries at this equity loss from the first attach equity. |
+| `strategy_total_dd_halt_pct` | 5.0 | fixed | Account-level total-drawdown threshold consumed by the framework kill-switch signal. |
+| `strategy_per_trade_risk_cap_pct` | 0.5 | fixed | Framework per-trade risk cap. |
 
 Framework inputs, including `RISK_PERCENT`, `RISK_FIXED`, `PORTFOLIO_WEIGHT`, news controls, stress seed, and Friday close, are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
 
