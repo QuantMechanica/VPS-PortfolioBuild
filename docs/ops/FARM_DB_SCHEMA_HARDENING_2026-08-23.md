@@ -84,3 +84,54 @@ Datenbank heute hergibt, und weist die Lücken sichtbar aus.
 Kein Verdikt wird gelöscht oder überschrieben (ROT-Zone). Keine Gate-Kriterien, keine Schwellen,
 keine Kandidatenmengen werden berührt. Jede Migration ist additiv und im OFF-Fenster
 rückrollbar; die TEMP-Sicht bleibt als unabhängiger Prüfer erhalten.
+
+## Umsetzungsstand 2026-08-23 abends
+
+Werkzeug: `tools/strategy_farm/schema_hardening.py` (`check` = read-only, `migrate --apply`).
+
+### SH-1 — **erledigt und aktiv**
+
+Zwei additive Spalten auf `work_items` (`verdict_taxonomy_stored`, `clean_status_stored`),
+befüllt aus denselben Funktionen, die die Sicht benutzt.
+
+- Zuerst auf einer **Kopie** der Datenbank getestet (`_sh1_test.sqlite`, aus der Sicherung von
+  11:46 Uhr): 111.624 Zeilen in 6,1 s, **0 Drift**, Validator `valid: true`.
+- Danach live: **111.399 Zeilen in 5,2 s, 0 Drift**, `unfilled: 0`, `mismatch: {}`.
+- Blast Radius benannt und geprüft: `ALTER TABLE … ADD COLUMN` ist in SQLite reine Metadaten,
+  die Spalten hängen hinten an, und **jeder Lesezugriff im Code erfolgt namentlich**
+  (`_work_item_value(row, key)`, `row_factory`, `dict(r)`) — kein positionsbasiertes Entpacken.
+  Rückrollung: Spalten ignorieren oder `DROP COLUMN`; keine bestehende Spalte wurde verändert.
+- **Die Sicht bleibt Prüfer, nicht Quelle:** der Validator vergleicht gespeichert gegen
+  abgeleitet und meldet jede Abweichung. Ein bereits abweichender gespeicherter Wert wird
+  **gemeldet, nicht stillschweigend überschrieben**.
+- Nachlauf für neu geschriebene Zeilen: Task `QM_StrategyFarm_TaxonomyMaterialize_Hourly`
+  (SYSTEM, stündlich) füllt nur `NULL`-Werte. Der Schreibpfad selbst bleibt unangetastet —
+  das ist SH-2-Arbeit.
+
+### SH-3 — **Annahme widerlegt, als Monitor ausgeliefert**
+
+Die Auflage lautete „Fremdschlüssel einschalten und die 99 Waisen bereinigen". **Gemessen ist
+das falsch:** die deklarierten Schlüssel beschreiben nicht, wie die Spalten benutzt werden.
+
+| Spalte | deklariert | tatsächlich |
+|---|---|---|
+| `work_items.parent_task_id` | `REFERENCES tasks(id)` | **polymorph** — von 71 hängenden Werten zeigen **39 auf `work_items`** (Eltern/Kind-Linie), **14 auf `agent_tasks`**, 18 ins Leere |
+| `tasks.source_id` | `REFERENCES sources(id)` | hält **EA-IDs** wie `QM5_12108` (10 der 28 Fälle eindeutig EA-förmig) |
+
+`PRAGMA foreign_keys=ON` würde die Fabrik beim nächsten Schreibvorgang dieser Formen
+**fail-closed stellen** — und die Waisen entstehen weiter (jüngste 2026-08-14, 38 der 71 aus
+August). Eine Bereinigung der 99 Zeilen wäre zudem sinnlos, solange das Ziel der Referenz
+polymorph ist.
+
+Ausgeliefert ist deshalb `schema_hardening.py check`: es zählt die Verletzungen, **klassifiziert
+sie nach tatsächlichem Ziel** und sagt ausdrücklich `safe_to_enforce: false` mit Begründung.
+
+**Was SH-3 jetzt wirklich braucht** (eigener Auftrag, eigenes OFF-Fenster): getrennte Spalten
+`parent_work_item_id` / `parent_agent_task_id` statt einer polymorphen, und für `tasks.source_id`
+entweder eine Umbenennung auf das, was drinsteht, oder die Streichung der irreführenden
+Deklaration. Erst danach ist Durchsetzung überhaupt eine sinnvolle Frage.
+
+### SH-2 — unverändert offen
+
+Braucht den Schreibpfad jedes Gate-Runners und damit ein Factory-OFF-Fenster plus Review vor
+der Aktivierung. Nichts daran hat sich durch SH-1/SH-3 verschoben.

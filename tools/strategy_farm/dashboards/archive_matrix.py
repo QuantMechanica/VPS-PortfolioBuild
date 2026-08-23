@@ -269,6 +269,7 @@ def md_to_html(md: str, base_level: int = 3) -> str:
 
 # ── native MT5 reports ────────────────────────────────────────────────────────
 
+_UUID_RE = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
 _REPORT_INDEX: dict[str, list[str]] | None = None
 
 
@@ -287,16 +288,15 @@ def build_report_index(force: bool = False) -> dict[str, list[str]]:
         if not os.path.isdir(base):
             continue
         for root, _dirs, files in os.walk(base):
-            hits = [f for f in files if f.lower().endswith((".htm", ".html"))]
+            hits = [f for f in files
+                    if f.lower().endswith((".htm", ".html", ".htm.gz", ".html.gz"))]
             if not hits:
                 continue
             wid = None
             for seg in root.replace("\\", "/").split("/"):
-                if len(seg) == 36 and seg.count("-") == 4:
-                    wid = seg
-                    break
-                if "__" in seg and len(seg.split("__")[-1]) == 36:
-                    wid = seg.split("__")[-1]
+                mm = _UUID_RE.search(seg)
+                if mm:
+                    wid = mm.group(0)
                     break
             if wid:
                 idx.setdefault(wid, []).extend(os.path.join(root, f) for f in hits)
@@ -468,6 +468,38 @@ def _card_targets() -> dict[str, list[str]]:
     return out
 
 
+_REASON_KEYS = ("verdict_reason", "invalidated_reason", "reason", "failure_class",
+                "prior_failure", "promotion_reason")
+
+
+def _reason_of(payload_json: str | None) -> str:
+    """The first durable human-readable reason a run carries.
+
+    Without this a cell like ``QM5_13213 | XAUUSD.DWX`` shows a bare ``RETIRE`` and reads
+    as unexplained, when the payload in fact records an OWNER-approved exclusion with its
+    evidence path. An unexplained terminal verdict is what makes people re-run a
+    documented negative.
+    """
+    if not payload_json:
+        return ""
+    try:
+        d = json.loads(payload_json)
+    except (ValueError, TypeError):
+        return ""
+    if not isinstance(d, dict):
+        return ""
+    for key in _REASON_KEYS:
+        v = d.get(key)
+        if isinstance(v, str) and v.strip():
+            return v.strip()
+    disp = d.get("mnt009_legacy_disposition")
+    if isinstance(disp, dict):
+        cat = disp.get("category")
+        if isinstance(cat, str) and cat:
+            return f"disposition: {cat}"
+    return ""
+
+
 _RUNS_BY_EA: dict[str, list[dict]] | None = None
 
 
@@ -482,16 +514,17 @@ def runs_for_ea(ea_id: str, db: Path = DB) -> list[dict]:
     if _RUNS_BY_EA is None:
         acc: dict[str, list[dict]] = defaultdict(list)
         conn = open_clean_view_connection(db)
-        for wid, ea, sym, phase, verdict, tax, upd, evidence in conn.execute(
+        for wid, ea, sym, phase, verdict, tax, upd, evidence, payload in conn.execute(
             "SELECT id, ea_id, symbol, phase, verdict, verdict_taxonomy, updated_at, "
-            "evidence_path FROM work_items_clean WHERE ea_id IS NOT NULL"
+            "evidence_path, payload_json FROM work_items_clean WHERE ea_id IS NOT NULL"
         ):
             symbol = (sym or "").strip() or "BASKET"
             if symbol_class(symbol) == "relic":
                 continue
             acc[ea].append({"id": wid, "symbol": symbol, "phase": phase or "",
                             "verdict": (verdict or "").upper(), "tax": tax or "unknown",
-                            "upd": upd or "", "evidence": evidence or ""})
+                            "upd": upd or "", "evidence": evidence or "",
+                            "reason": _reason_of(payload)})
         conn.close()
         for v in acc.values():
             v.sort(key=lambda r: r["upd"], reverse=True)
@@ -539,6 +572,7 @@ border-bottom:1px solid var(--border-2);white-space:nowrap}
 .bt-v.p{color:var(--pass)}.bt-v.f{color:var(--fail)}.bt-v.v{color:var(--warn)}
 .bt-v.o{color:var(--dead)}.bt-v.g{color:var(--text-4)}
 .bt-gone{color:var(--text-4)}
+.bt-reason{color:var(--text-3);font-size:11px;line-height:1.45;max-width:420px}
 """
 
 
@@ -586,7 +620,8 @@ def render_backtests_section(items: list[dict]) -> str:
         if rl:
             have += 1
             links = " ".join(
-                f'<a href="file:///{e(p.replace(chr(92), "/"))}">report {n + 1}</a>'
+                f'<a href="file:///{e(p.replace(chr(92), "/"))}">report {n + 1}'
+                f'{" (gzip)" if p.lower().endswith(".gz") else ""}</a>'
                 for n, p in enumerate(rl[:4]))
         else:
             links = '<span class="bt-gone">report purged</span>'
@@ -601,7 +636,8 @@ def render_backtests_section(items: list[dict]) -> str:
             f'{e(it.get("verdict") or "-")}</span></td>'
             f'<td class="bt-v" style="color:var(--text-4)">{e(it.get("tax") or "")}</td>'
             f'<td>{links} {ev_link}</td>'
-            f'<td class="bt-v" style="color:var(--text-4)">{e(it["id"][:8])}</td></tr>')
+            f'<td class="bt-v" style="color:var(--text-4)">{e(it["id"][:8])}</td>'
+            f'<td class="bt-reason">{e((it.get("reason") or "")[:220])}</td></tr>')
     return (f'<div class="bt-wrap"><h2 class="acc-title">All backtests · {fmt(len(items))} '
             f'stored runs, {fmt(have)} with a native MT5 report</h2>'
             '<div class="bt-note">Every stored run for this EA, newest first — superseded '
@@ -610,7 +646,7 @@ def render_backtests_section(items: list[dict]) -> str:
             'instead of linking into nothing.</div>'
             '<table class="bt-table"><thead><tr><th>updated (UTC)</th><th>gate</th>'
             '<th>symbol</th><th>verdict</th><th>taxonomy</th><th>artifacts</th>'
-            '<th>work item</th></tr></thead>'
+            '<th>work item</th><th>reason</th></tr></thead>'
             f'<tbody>{"".join(rows)}</tbody></table></div>')
 
 
