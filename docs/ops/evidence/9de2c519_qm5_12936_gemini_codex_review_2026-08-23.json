@@ -1,0 +1,25 @@
+{
+  "review_task_id": "9de2c519-2ca6-480b-a568-ac5f90611962",
+  "build_task_id": "c4f759a4-6be6-4465-aa92-a691fbbf5c68",
+  "ea_id": "QM5_12936",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_12936 disables every news mode by default at source lines 22-26, and none of its 13 setfiles overrides those inputs. This contradicts the approved card's standard QM news-calendar pause and the active Edge Lab charter's mandatory news blackout.",
+    "QM5_12936 calls QM_KillSwitchCheck before QM_FrameworkTrackOpenPositionMae at source lines 346-347; when the kill switch returns false, the Q08 open-position MAE sample is skipped, contrary to the V5 skeleton requirement that MAE tracking precede every per-tick return guard.",
+    "The approved time stop is eight H4 bars, but source lines 303-307 compares TimeCurrent minus POSITION_TIME with eight nominal period lengths; weekends and market closures advance this wall-clock timer without producing H4 bars.",
+    "QM5_12936 calls the stateful QM_IsNewBar helper for the same symbol/timeframe inside Strategy_ExitSignal at line 310 and again before entry at line 375. With an open position, the exit check consumes the new-bar edge, so an opposite signal can close the position but the same bar's entry path is deterministically suppressed.",
+    "QM5_12936 source lines 185 and 211 record directional cooldown state inside Strategy_EntrySignal before QM_TM_OpenPosition runs at line 382; an order rejection consumes the signal and enforces a four-bar cooldown despite no trade opening.",
+    "Commit 9ad5fd821 changed the MQ5 by 281 insertions and 11 deletions but did not update the EX5. The EX5 is dated 2026-08-21 while the reviewed MQ5 is dated 2026-08-23, so compile_succeeded=true does not bind a compiled binary to the reviewed source.",
+    "Build artifact framework/EAs/QM5_12936_demark-td-reverse-differential-h4/build_result.json marks smoke_result as deferred_p2_smoke with blocked_reason=null; this lacks the tester-saturation evidence required by the deferred-smoke waiver, and no QM5_12936 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:58:06Z"
+}
