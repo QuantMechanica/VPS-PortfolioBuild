@@ -1,9 +1,9 @@
 {
   "build_check_passed": true,
   "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9908_bandy-psar-flip-trend\\QM5_9908_bandy-psar-flip-trend.mq5",
-  "mq5_sha256": "fb914b7c3fe2d0104db00d57b947f7f384aceb79a8927e3bf56f1b96e621da3b",
+  "mq5_sha256": "fb914b7c3fe2d0104db00d57b947f7f384aceb79a8927e3bf56f1b96e621da13",
   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9908_bandy-psar-flip-trend\\QM5_9908_bandy-psar-flip-trend.ex5",
-  "ex5_sha256": "e22aa23e895d0342763d5c0afeb152090831b80f64b300123c5261af942b2b1b",
+  "ex5_sha256": "e22aa23e895d0342763d5c0afeb152090831b80f64b300123c5261af942b2b8f",
   "setfiles_generated": [
     "C:\\QM\\repo\\framework\\EAs\\QM5_9908_bandy-psar-flip-trend\\sets\\QM5_9908_bandy-psar-flip-trend_AUDUSD.DWX_D1_backtest.set",
     "C:\\QM\\repo\\framework\\EAs\\QM5_9908_bandy-psar-flip-trend\\sets\\QM5_9908_bandy-psar-flip-trend_EURUSD.DWX_D1_backtest.set",
