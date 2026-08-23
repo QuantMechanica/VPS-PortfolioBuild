@@ -26,6 +26,17 @@
 
 ---
 
+## 0 · Neu 2026-08-23 — Strategy Archive Matrix (OWNER-Auftrag, Vorentwurf)
+
+| Punkt | Zustand | Beleg |
+|---|---|---|
+| Strategy Archive Matrix (Card × Gate × Symbol) — Vorentwurf v0.1 | **geliefert** (Spezifikation, nicht gebaut) | `docs/ops/STRATEGY_ARCHIVE_MATRIX_SPEC_2026-08-23.md` |
+| Beauftragung | Router `2ee6427d` (`ops_issue`, Prio 62, **BLOCKED**) | `agent_tasks` |
+| Blockiert durch | OWNER-Antworten F1–F8 (Zeilenmodell, Spaltenreihenfolge, Zellzustände, Stale-Pass, „leer", Sortierung, Symboluniversum, Q00/Q01) | Spec §12 |
+| Nebenbefund, messbar | 4.661 Paare mit Q02-PASS und **ohne jede Q03-Zeile**; 2.165 Zellen ohne wirtschaftliches Urteil | Spec §1/§4 |
+
+---
+
 ## 0a · Ultracode-Sitzung 2026-08-22 spätabends — Q09-Push 12969 + Balke 13213 + OFF/ON
 
 **Geliefert** (Evidenz `docs/ops/evidence/2026-08-22_ultracode_q09_push_12969_13213.md`)
