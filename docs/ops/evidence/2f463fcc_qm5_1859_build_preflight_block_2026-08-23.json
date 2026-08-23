@@ -1,0 +1,65 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "2f463fcc-2053-4cc5-8961-00b54db83ebd",
+  "task_type": "build_ea",
+  "priority": 10,
+  "checked_at_utc": "2026-08-23T21:10:27.6916801Z",
+  "canonical_checkout": "C:/QM/repo",
+  "branch": "agents/board-advisor",
+  "git_head_inspected": "c56a69aa0913128ec1199e8090a6929ccca67a1c",
+  "requested_identity": {
+    "ea_id": "QM5_1859",
+    "slug": "carney-pesavento-ratio-symmetry-h4",
+    "ea_dir": "C:/QM/repo/framework/EAs/QM5_1859_carney-pesavento-ratio-symmetry-h4"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1859_carney-pesavento-ratio-symmetry-h4.md",
+    "sha256": "a4420482fb2e2133645d808a886afa2f3b4cf8f4ffca34b4c705724ed8dc06a0",
+    "ea_id": "QM5_1859",
+    "slug": "carney-pesavento-ratio-symmetry-h4",
+    "g0_status": "APPROVED",
+    "gate_result": "PASS"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "6f35fe80ce868e059a701355c13800bbbb7e0b65613414983be6a43f5f6b0966",
+    "exact_ea_id_1859_rows": [],
+    "exact_identity_gate": "FAIL",
+    "slug_alias_row": {
+      "line": 3165,
+      "ea_id": "12271",
+      "slug": "QM5_1859_carney-pesavento-ratio-symmetry-h4",
+      "status": "retired",
+      "retired_at": "2026-08-21T18:52:35+00:00",
+      "retired_reason": "OWNER-approved D1 disposition; action=RETIRE only"
+    },
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "988e687bd393a0cf619e30dacab44e3734aef3874e0aea0d09dbcd900869bcc4",
+    "exact_ea_id_1859_magic_rows": [],
+    "magic_gate": "FAIL",
+    "owner_disposition_evidence": {
+      "path": "C:/QM/repo/docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv",
+      "sha256": "b3bba0e9ae27124906708c77361bb25f9a8587d9939f1239a28d7af35ce29924",
+      "line": 615
+    }
+  },
+  "existing_source_observation": {
+    "files": [
+      "framework/EAs/QM5_1859_carney-pesavento-ratio-symmetry-h4/QM5_1859_carney-pesavento-ratio-symmetry-h4.mq5"
+    ],
+    "note": "A pre-existing mq5-only folder does not substitute for governed identity and magic allocation."
+  },
+  "verdict": "BLOCKED_REGISTRY_IDENTITY_NOT_ALLOCATED",
+  "blocked_reason": "The requested numeric ea_id 1859 has no deterministic EA registry row and no magic rows. The only matching slug alias belongs to different ea_id 12271 and is OWNER-retired, so implementation or compilation under 1859 is forbidden by qm-build-ea-from-card.",
+  "required_next_action": "Disposition this stale router task. If the strategy is still wanted, the OWNER-governed registry/card writer must allocate a fresh active collision-free identity and all required magic rows, then route a new build task.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "setfile_modified": false,
+    "compile_attempted": false,
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "live_or_autotrading_changed": false
+  }
+}

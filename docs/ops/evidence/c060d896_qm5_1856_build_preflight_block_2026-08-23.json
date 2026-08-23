@@ -1,0 +1,65 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "c060d896-0a00-4427-999f-6dd0df8f921c",
+  "task_type": "build_ea",
+  "priority": 10,
+  "checked_at_utc": "2026-08-23T21:10:27.6916801Z",
+  "canonical_checkout": "C:/QM/repo",
+  "branch": "agents/board-advisor",
+  "git_head_inspected": "c56a69aa0913128ec1199e8090a6929ccca67a1c",
+  "requested_identity": {
+    "ea_id": "QM5_1856",
+    "slug": "elder-force-index-spike-reversal-h4",
+    "ea_dir": "C:/QM/repo/framework/EAs/QM5_1856_elder-force-index-spike-reversal-h4"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1856_elder-force-index-spike-reversal-h4.md",
+    "sha256": "08d224c09a6dd1b6c9114a3043d296b68bf9cd285c01ba0ef3a2b57ba329a30e",
+    "ea_id": "QM5_1856",
+    "slug": "elder-force-index-spike-reversal-h4",
+    "g0_status": "APPROVED",
+    "gate_result": "PASS"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "6f35fe80ce868e059a701355c13800bbbb7e0b65613414983be6a43f5f6b0966",
+    "exact_ea_id_1856_rows": [],
+    "exact_identity_gate": "FAIL",
+    "slug_alias_row": {
+      "line": 3162,
+      "ea_id": "12268",
+      "slug": "QM5_1856_elder-force-index-spike-reversal-h4",
+      "status": "retired",
+      "retired_at": "2026-08-21T18:52:34+00:00",
+      "retired_reason": "OWNER-approved D1 disposition; action=RETIRE only"
+    },
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "988e687bd393a0cf619e30dacab44e3734aef3874e0aea0d09dbcd900869bcc4",
+    "exact_ea_id_1856_magic_rows": [],
+    "magic_gate": "FAIL",
+    "owner_disposition_evidence": {
+      "path": "C:/QM/repo/docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv",
+      "sha256": "b3bba0e9ae27124906708c77361bb25f9a8587d9939f1239a28d7af35ce29924",
+      "line": 612
+    }
+  },
+  "existing_source_observation": {
+    "files": [
+      "framework/EAs/QM5_1856_elder-force-index-spike-reversal-h4/QM5_1856_elder-force-index-spike-reversal-h4.mq5"
+    ],
+    "note": "A pre-existing mq5-only folder does not substitute for governed identity and magic allocation."
+  },
+  "verdict": "BLOCKED_REGISTRY_IDENTITY_NOT_ALLOCATED",
+  "blocked_reason": "The requested numeric ea_id 1856 has no deterministic EA registry row and no magic rows. The only matching slug alias belongs to different ea_id 12268 and is OWNER-retired, so implementation or compilation under 1856 is forbidden by qm-build-ea-from-card.",
+  "required_next_action": "Disposition this stale router task. If the strategy is still wanted, the OWNER-governed registry/card writer must allocate a fresh active collision-free identity and all required magic rows, then route a new build task.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "setfile_modified": false,
+    "compile_attempted": false,
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "live_or_autotrading_changed": false
+  }
+}
