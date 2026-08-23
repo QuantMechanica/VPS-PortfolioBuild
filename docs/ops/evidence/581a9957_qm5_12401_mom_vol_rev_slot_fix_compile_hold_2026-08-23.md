@@ -50,4 +50,12 @@ sets. Activation is held under `COMPILE_EA_WORKER_ROLLOUT_PENDING`; no current E
 or strict build PASS exists yet. Smoke was not run, and no pipeline verdict is
 claimed.
 
+The source, regenerated presets, stale-binary deletion, and this evidence were
+committed on `agents/board-advisor` as `2f2e3c6de`. The requested `REVIEW`
+transition was then attempted and refused by the router with
+`D6_BUILD_IDENTITY_MISSING` / `build_identity_json_missing_review_dispatch_refused`.
+A review packet must bind a committed current EX5 and strict build PASS; neither
+can truthfully be asserted while the governed compile remains activation-held.
+The task is therefore dispositioned `BLOCKED` without fabricating build identity.
+
 Short verdict: `SOURCE_READY_COMPILE_HELD: registry slot wiring and static gates PASS; governed compile e7845c7b pending under worker-rollout activation hold.`
