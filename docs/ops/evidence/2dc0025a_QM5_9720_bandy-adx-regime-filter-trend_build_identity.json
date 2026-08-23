@@ -1,0 +1,26 @@
+{
+  "task_id": "2dc0025a-7b2d-472c-ac65-58c806c5a768",
+  "ea_id": "QM5_9720",
+  "ea_label": "QM5_9720_bandy-adx-regime-filter-trend",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_9720_bandy-adx-regime-filter-trend/QM5_9720_bandy-adx-regime-filter-trend.mq5",
+  "mq5_sha256": "0a432e165805faa1f08eed7e775d3ac0ca16a0429729ac29075b27bbf56d9d3d",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_9720_bandy-adx-regime-filter-trend/QM5_9720_bandy-adx-regime-filter-trend.ex5",
+  "ex5_sha256": "90760f8de52ce58f124b7c265c9373cdc04815d37ba739c4b7730563313a0533",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_AUDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_GDAXI.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_NZDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_UK100.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_USDCAD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_USDCHF.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_USDJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_WS30.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9720_bandy-adx-regime-filter-trend\\sets\\QM5_9720_bandy-adx-regime-filter-trend_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_9720_bandy-adx-regime-filter-trend/SPEC.md"
+}

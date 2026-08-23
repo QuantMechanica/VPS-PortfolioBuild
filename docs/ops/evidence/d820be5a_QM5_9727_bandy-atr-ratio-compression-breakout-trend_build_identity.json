@@ -1,0 +1,26 @@
+{
+  "task_id": "d820be5a-675c-411f-b761-6c09aad2b811",
+  "ea_id": "QM5_9727",
+  "ea_label": "QM5_9727_bandy-atr-ratio-compression-breakout-trend",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_9727_bandy-atr-ratio-compression-breakout-trend/QM5_9727_bandy-atr-ratio-compression-breakout-trend.mq5",
+  "mq5_sha256": "ece192603106d3fbddfdec4d74564cc423f4142c4424fd6b310478146f2e992e",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_9727_bandy-atr-ratio-compression-breakout-trend/QM5_9727_bandy-atr-ratio-compression-breakout-trend.ex5",
+  "ex5_sha256": "82f39a6b06b56b39098dd27266b3a198cca3b55802201fdca411e92b4022e02a",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_AUDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_GDAXI.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_NZDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_UK100.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_USDCAD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_USDCHF.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_USDJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_WS30.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9727_bandy-atr-ratio-compression-breakout-trend\\sets\\QM5_9727_bandy-atr-ratio-compression-breakout-trend_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_9727_bandy-atr-ratio-compression-breakout-trend/SPEC.md"
+}
