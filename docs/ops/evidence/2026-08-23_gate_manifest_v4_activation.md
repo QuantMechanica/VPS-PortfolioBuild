@@ -202,3 +202,45 @@ this list.
   end-to-end (no `--apply`).
 - `--apply` runs the migration in a subprocess so the new-row trigger stamps
   `v4`; existing rows are never reclassified.
+
+## Review fixes (2026-08-23)
+
+Reviewer verdict FIX_REQUIRED. Applied:
+
+- **P1 — `phase_ids.py` merge conflict with `rb-v4-runtime` (resolved).**
+  `rb-activate` had independently made `phase_ids.py` v4-aware via a
+  `contract_equivalence`-driven `_V3_TO_V4` mapping. `rb-v4-runtime` merges into
+  `agents/board-advisor` FIRST and rewrote the same regions role-based
+  (`gate_for_role('NEWS')`, `storage_phase_for_role(...)`,
+  `build_advancement_table(manifest)`), producing 4 conflict hunks. Both
+  implementations are semantically equivalent; the role-based one is canonical.
+  Fix: `rb-activate`'s `phase_ids.py` delta was dropped entirely (file restored
+  to the `board-advisor` base), so this branch no longer touches `phase_ids.py`.
+  The three-way merge in the production order (`v4-runtime -> surfaces ->
+  activate`) now takes `rb-v4-runtime`'s version with zero conflicts. The
+  activation tool only consumes the public `phase_ids` API
+  (`PHASE_ORDER`, `next_phase_id`, `phase_label`, `ACTIVE_GATE_CONTRACT_VERSION`),
+  all present in `rb-v4-runtime`'s version, so no tool change was needed.
+
+- **P2 — hidden `--_run-migration` subprocess entrypoint had no guard of its
+  own (fixed).** The SUPPRESSED entrypoint mutates the live DB and previously
+  trusted its caller for all preconditions. It now re-asserts the one
+  precondition that is invariant across the manifest flip: `check_factory_off`,
+  failing closed (rc=1, no DB mutation) when the factory is ON without an
+  override. `git-clean` is deliberately NOT re-checked here because Step 2
+  already flips `gate_manifest.py`, so the target tree is expected dirty at
+  migration time. The apply flow forwards `--allow-factory-on` so a
+  deliberately-allowed run is not false-failed. Covered by three new tests
+  (`test_run_migration_entrypoint_{refuses_when_factory_on,proceeds_when_factory_off,honors_factory_on_override}`).
+
+- **P2 — end-to-end v4 `--apply` smoke not in CI (declined on this branch, by
+  design).** The real smoke imports `phase_ids` under a v4 default; with the P1
+  resolution the v4-aware `phase_ids` lives in `rb-v4-runtime`, not here, so a
+  real v4 flip + smoke cannot pass on `rb-activate` in isolation (it would
+  fail-closed, which is safe). This guard belongs in the post-merge
+  `board-advisor` tree once `v4-runtime` is present; it remains a documented
+  coverage gap here (see Risks above). `--apply` is still never exercised in
+  this branch's CI.
+
+Touched-test result: `test_activate_gate_manifest_v4.py` + `test_gate_manifest.py`
+= 46 passed, 2 skipped.

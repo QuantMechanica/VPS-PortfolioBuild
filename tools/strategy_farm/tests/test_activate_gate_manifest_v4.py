@@ -256,6 +256,108 @@ def test_dependency_count_change_fails_closed(tmp_path: Path, monkeypatch) -> No
 
 
 # --------------------------------------------------------------------------- #
+# Step 4 — hidden --_run-migration entrypoint re-asserts its own precondition
+# --------------------------------------------------------------------------- #
+def _has_activation_row(db: Path) -> bool:
+    conn = sqlite3.connect(str(db))
+    try:
+        # The migration creates the table; if it never ran, the table is absent,
+        # which is itself proof that no activation row exists.
+        exists = conn.execute(
+            "SELECT name FROM sqlite_master "
+            "WHERE type='table' AND name='gate_contract_activations'"
+        ).fetchone()
+        if not exists:
+            return False
+        return (
+            conn.execute(
+                "SELECT COUNT(*) FROM gate_contract_activations"
+            ).fetchone()[0]
+            > 0
+        )
+    finally:
+        conn.close()
+
+
+def test_run_migration_entrypoint_refuses_when_factory_on(tmp_path: Path) -> None:
+    # The subprocess entrypoint mutates the live DB; with the factory ON and no
+    # override it must fail closed and leave the DB untouched, even though the
+    # in-process apply flow would normally have validated preconditions first.
+    root = tmp_path / "farm"
+    db = _fixture_db(root)
+    assert not (root / "state" / "FACTORY_OFF.flag").exists()
+    out = tmp_path / "result.json"
+
+    rc = act.main(
+        [
+            "--_run-migration",
+            "--db-root",
+            str(root),
+            "--manifest-sha",
+            "sha",
+            "--git-head",
+            "head",
+            "--json-out",
+            str(out),
+        ]
+    )
+    assert rc == 1
+    assert not _has_activation_row(db)
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["ok"] is False
+    assert any("FACTORY_OFF" in line or "factory" in line.lower() for line in payload["lines"])
+
+
+def test_run_migration_entrypoint_proceeds_when_factory_off(tmp_path: Path) -> None:
+    root = tmp_path / "farm"
+    db = _fixture_db(root)
+    (root / "state" / "FACTORY_OFF.flag").write_text("off", encoding="utf-8")
+    out = tmp_path / "result.json"
+
+    rc = act.main(
+        [
+            "--_run-migration",
+            "--db-root",
+            str(root),
+            "--manifest-sha",
+            "sha",
+            "--git-head",
+            "head",
+            "--json-out",
+            str(out),
+        ]
+    )
+    assert rc == 0
+    assert _has_activation_row(db)
+
+
+def test_run_migration_entrypoint_honors_factory_on_override(tmp_path: Path) -> None:
+    # The apply flow forwards --allow-factory-on so a deliberately-allowed run is
+    # not false-failed by the re-check.
+    root = tmp_path / "farm"
+    db = _fixture_db(root)
+    assert not (root / "state" / "FACTORY_OFF.flag").exists()
+    out = tmp_path / "result.json"
+
+    rc = act.main(
+        [
+            "--_run-migration",
+            "--allow-factory-on",
+            "--db-root",
+            str(root),
+            "--manifest-sha",
+            "sha",
+            "--git-head",
+            "head",
+            "--json-out",
+            str(out),
+        ]
+    )
+    assert rc == 0
+    assert _has_activation_row(db)
+
+
+# --------------------------------------------------------------------------- #
 # Step 6 — rollback plan
 # --------------------------------------------------------------------------- #
 def test_rollback_plan_mentions_revert_and_backup() -> None:

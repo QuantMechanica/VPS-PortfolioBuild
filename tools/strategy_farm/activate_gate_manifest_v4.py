@@ -720,24 +720,29 @@ def rollback_plan_lines(backup_path: str = "<backup_path>") -> list[str]:
 # Orchestration
 # --------------------------------------------------------------------------- #
 def _run_migration_subprocess(
-    db_root: Path, manifest_sha256: str, git_head: str
+    db_root: Path, manifest_sha256: str, git_head: str, allow_factory_on: bool = False
 ) -> StepResult:
     """Run step 4 in a fresh interpreter so it imports the post-flip modules."""
     result_path = TOOL_DIR / "_v4_migration_result.json"
+    argv = [
+        sys.executable,
+        str(Path(__file__).resolve()),
+        "--_run-migration",
+        "--db-root",
+        str(db_root),
+        "--manifest-sha",
+        manifest_sha256,
+        "--git-head",
+        git_head,
+        "--json-out",
+        str(result_path),
+    ]
+    # Forward the operator's factory-on override so the subprocess re-check
+    # (below) does not fail closed on a run the caller deliberately allowed.
+    if allow_factory_on:
+        argv.append("--allow-factory-on")
     proc = subprocess.run(
-        [
-            sys.executable,
-            str(Path(__file__).resolve()),
-            "--_run-migration",
-            "--db-root",
-            str(db_root),
-            "--manifest-sha",
-            manifest_sha256,
-            "--git-head",
-            git_head,
-            "--json-out",
-            str(result_path),
-        ],
+        argv,
         cwd=str(TOOL_DIR),
         capture_output=True,
         text=True,
@@ -829,6 +834,30 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if getattr(args, "_run_migration"):
+        # Live-safety guard. This SUPPRESSED entrypoint mutates the live DB and
+        # is reachable only via _run_migration_subprocess in the in-process
+        # apply flow, which already validated preconditions. It must not trust
+        # its caller blindly, so it re-asserts the one precondition that is
+        # invariant across the manifest flip: the factory must be OFF.
+        # (git-clean is deliberately NOT re-checked here — Step 2 already flipped
+        # gate_manifest.py, so the target tree is expected to be dirty at this
+        # point; re-asserting it would false-fail every legitimate apply.)
+        guard = check_factory_off(db_root, args.allow_factory_on)
+        if not guard.ok:
+            blocked = StepResult(
+                "migration precondition re-check (factory off)",
+                False,
+                ["refusing --_run-migration:", *guard.lines],
+            )
+            _print_framed(blocked)
+            if args.json_out:
+                Path(args.json_out).write_text(
+                    json.dumps(
+                        {"name": blocked.name, "ok": False, "lines": blocked.lines, "data": {}}
+                    ),
+                    encoding="utf-8",
+                )
+            return 1
         result = migrate_database(
             db_path,
             backup_dir=backup_dir,
@@ -893,7 +922,9 @@ def main(argv: list[str] | None = None) -> int:
 
     # Step 4 — db migration
     if apply:
-        migration = _run_migration_subprocess(db_root, manifest_sha, git_head)
+        migration = _run_migration_subprocess(
+            db_root, manifest_sha, git_head, allow_factory_on=args.allow_factory_on
+        )
     else:
         scratch = TOOL_DIR.parent.parent / "scratch" / "rb-activate-dryrun"
         migration = migrate_database(
