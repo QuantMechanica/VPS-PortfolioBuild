@@ -52,6 +52,11 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     import build_gate_hardening  # type: ignore
 
+try:
+    from tools.strategy_farm import book_build_guard
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import book_build_guard  # type: ignore
+
 
 DEFAULT_ROOT = farmctl.DEFAULT_ROOT
 CLAUDE_DISABLED_FLAG = Path(r"D:\QM\strategy_farm\CLAUDE_DISABLED.flag")
@@ -2439,7 +2444,14 @@ def _portfolio_admission_key(ea_id: str, symbol: str) -> tuple[int, str] | None:
     return int(m.group(1)), sym
 
 
-def sync_q11_candidates(root: Path = DEFAULT_ROOT, *, apply_admission: bool = True) -> dict[str, Any]:
+def sync_q11_candidates(
+    root: Path = DEFAULT_ROOT,
+    *,
+    apply_admission: bool = True,
+    venue: str = "dxz",
+    order_dir: Path = book_build_guard.DEFAULT_ORDER_DIR,
+    guard: Any = book_build_guard.require_book_build_allowed,
+) -> dict[str, Any]:
     """Promote Q10 PASS work_items into the Q11 portfolio-candidate book.
 
     DL-064 R-064-2: this is the real portfolio gate, not "≥1 symbol passed =
@@ -2450,7 +2462,10 @@ def sync_q11_candidates(root: Path = DEFAULT_ROOT, *, apply_admission: bool = Tr
     silently dropped); evaluation errors (e.g. missing q08 stream) land as
     ADMISSION_DEFERRED and are retried next sync. Pass apply_admission=False
     (CLI --no-admission) to fall back to the legacy mirror-all behaviour.
+    Both modes require the fail-closed venue book guard before opening a write
+    connection; this sync is no longer a Q10-to-Q11 automatic trigger.
     """
+    guard(venue, root / farmctl.DB_REL, order_dir)
     now = farmctl.utc_now()
     created = 0
     existing = 0
@@ -2604,6 +2619,8 @@ def main(argv: list[str] | None = None) -> int:
     sync_q11 = sub.add_parser("sync-q11-candidates")
     sync_q11.add_argument("--no-admission", action="store_true",
                           help="legacy mirror-all (skip the DL-064 R-064-2 diversification gate)")
+    sync_q11.add_argument("--venue", choices=("dxz", "ftmo"), default="dxz")
+    sync_q11.add_argument("--order-dir", type=Path, default=book_build_guard.DEFAULT_ORDER_DIR)
     update = sub.add_parser("update-task")
     update.add_argument("task_id")
     update.add_argument("--state", required=True, choices=sorted(TASK_STATES))
@@ -2671,7 +2688,12 @@ def main(argv: list[str] | None = None) -> int:
             task_ids=args.task_id,
         )
     elif args.command == "sync-q11-candidates":
-        result = sync_q11_candidates(args.root, apply_admission=not args.no_admission)
+        result = sync_q11_candidates(
+            args.root,
+            apply_admission=not args.no_admission,
+            venue=args.venue,
+            order_dir=args.order_dir,
+        )
     elif args.command == "update-task":
         result = update_task(
             args.root,

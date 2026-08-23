@@ -4,6 +4,8 @@ import os
 import sqlite3
 import sys
 
+import pytest
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import rebaseline_census as rc  # noqa: E402
@@ -44,6 +46,10 @@ def test_canonical_gate_mapping():
 def test_vclass():
     assert rc.vclass("PASS") == "PASS"
     assert rc.vclass("PASS_PORTFOLIO") == "PASS"
+    assert rc.vclass("PROMOTE_CHALLENGER") == "PASS"
+    assert rc.vclass("CHALLENGER_PROMOTED") == "PASS"
+    assert rc.vclass("KEEP_INCUMBENT") == "PASS"
+    assert rc.vclass("ADMIT_BOTH") == "PASS"
     assert rc.vclass("FAIL") == "ECON_FAIL"
     assert rc.vclass("ZERO_TRADES") == "ECON_FAIL"
     assert rc.vclass("INFRA_FAIL") == "INFRA"
@@ -139,6 +145,21 @@ def test_full_chain_reusable_and_valid_at_gates():
     assert s["pairs_valid_at_least_Q08"] == 1
     assert s["pairs_valid_at_least_Q10"] == 1
     assert s["pairs_valid_at_least_Q16"] == 1
+
+
+@pytest.mark.parametrize(
+    "terminal_verdict",
+    ("PROMOTE_CHALLENGER", "CHALLENGER_PROMOTED", "KEEP_INCUMBENT", "ADMIT_BOTH"),
+)
+def test_terminal_requalification_outcomes_complete_contiguous_chain(terminal_verdict):
+    con = _mk_con()
+    for gate in rc.GATE_CHAIN[:-1]:
+        _ins(con, f"r{gate}", gate, "QM5_9", "EURUSD.DWX", "done", "PASS")
+    _ins(con, "rQ16", "Q16", "QM5_9", "EURUSD.DWX", "done", terminal_verdict)
+
+    row = rc.compute(con, None)["pair_rows"][0]
+
+    assert row["highest_contiguous_valid_gate"] == "Q16"
 
 
 def test_finer_key_hash_extraction_and_validity():

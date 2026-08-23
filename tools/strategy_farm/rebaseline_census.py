@@ -71,7 +71,19 @@ NONCHAIN_PHASES = {
 # Verdict classification. The verdict column is authoritative for the
 # INFRA/economic split. PASS-class = economic pass used for gate validity.
 # ---------------------------------------------------------------------------
-PASS_ECON = {"PASS", "PASS_SOFT", "PASS_LOWFREQ", "PASS_PORTFOLIO"}
+PASS_ECON = {
+    "PASS",
+    "PASS_SOFT",
+    "PASS_LOWFREQ",
+    "PASS_PORTFOLIO",
+    # Terminal requalification outcomes are successful contiguous evidence,
+    # not ordinary PASS tokens.  Preserve both the current v3 spelling and the
+    # v4 proposal spelling; ADMIT_BOTH remains a valid historical v3 outcome.
+    "PROMOTE_CHALLENGER",
+    "CHALLENGER_PROMOTED",
+    "KEEP_INCUMBENT",
+    "ADMIT_BOTH",
+}
 ECON_FAIL = {
     "FAIL", "FAIL_HARD", "FAIL_SOFT", "ZERO_TRADES", "RETIRE",
     "RETIRED_LOW_FREQ", "FAIL_PORTFOLIO", "FAIL_DD_PORTFOLIO_REVIEW",
