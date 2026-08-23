@@ -4573,6 +4573,10 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         # FINAL Q02 PASSes on ~6 months of evidence (intraday H1/H4/M*
         # primaries; D1/W1/MN1 skip prescreen and were unaffected).
         "p2_run_stage": spawn.get("p2_run_stage"),
+    })
+    # Real phase-runner spawn metadata intentionally omits most enqueue-time
+    # bindings.  Never replace those authenticated values with ``None``.
+    spawn_bindings = {
         "from_date": spawn.get("from_date"),
         "to_date": spawn.get("to_date"),
         "evidence_binding_required": spawn.get("evidence_binding_required"),
@@ -4584,7 +4588,9 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         "expected_ex5_sha256": spawn.get("expected_ex5_sha256"),
         "expected_setfile_sha256": spawn.get("expected_setfile_sha256"),
         "expected_mq5_sha256": spawn.get("expected_mq5_sha256"),
-    })
+    }
+    payload.update({key: value for key, value in spawn_bindings.items()
+                    if value is not None})
     # Bind the runner's actual inner budget before monitoring starts.  The
     # active-age reaper deliberately derives its outer ceiling from this field;
     # omitting it collapsed long but healthy Q02 full runs back to the generic

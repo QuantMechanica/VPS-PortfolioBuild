@@ -336,9 +336,8 @@ def _sh3_trigger_sql(name: str, event: str) -> str:
             f"{column}=COALESCE({column},json_extract(payload_json,'$.{payload_key}'))"
         )
     assignments = ",".join(identity_sets)
-    required_missing = (
-        "ex5_sha256 IS NULL OR setfile_sha256 IS NULL OR "
-        "data_window_start IS NULL OR data_window_end IS NULL"
+    zero_identity = " AND ".join(
+        f"{column} IS NULL" for column in IDENTITY_COLUMNS
     )
     return f"""
     CREATE TRIGGER {name}
@@ -354,7 +353,7 @@ def _sh3_trigger_sql(name: str, event: str) -> str:
         payload_json=json_set(payload_json,'$.verdict_taxonomy','infra',
           '$.verdict_reason','ARTIFACT_IDENTITY_MISSING')
       WHERE id=NEW.id AND status IN ('done','failed')
-        AND verdict_taxonomy='strategy' AND ({required_missing});
+        AND verdict_taxonomy='strategy' AND ({zero_identity});
     END
     """
 

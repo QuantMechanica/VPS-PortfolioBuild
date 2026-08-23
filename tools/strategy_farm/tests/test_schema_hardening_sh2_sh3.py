@@ -64,6 +64,19 @@ def test_prepare_completion_fails_closed_without_bound_identity() -> None:
     assert payload["verdict_reason"] == "ARTIFACT_IDENTITY_MISSING"
 
 
+def test_prepare_completion_keeps_partial_identity() -> None:
+    payload = {"verdict_taxonomy": "strategy", "expected_ex5_sha256": HASH_A}
+    verdict, taxonomy, identity, missing = prepare_completion(
+        phase="Q02", kind="backtest", payload=payload, summary={},
+        verdict="FAIL", taxonomy="strategy",
+    )
+    assert (verdict, taxonomy, missing) == ("FAIL", "strategy", ())
+    assert identity["ex5_sha256"] == HASH_A
+    assert set(payload["artifact_identity_partial_missing_fields"]) == {
+        "setfile_sha256", "data_window_start", "data_window_end",
+    }
+
+
 def test_sh2_backfill_is_typed_indexed_and_idempotent(tmp_path: Path) -> None:
     con = _legacy_db(tmp_path / "farm.sqlite")
     _insert(con, "bound", "done", "PASS", {
@@ -145,6 +158,17 @@ def test_sh3_rebuild_preserves_history_and_constrains_new_writes(tmp_path: Path)
     assert bound == (
         "done", "PASS", "strategy", HASH_A, HASH_B, "2017.01.01", "2022.12.31",
     )
+
+    _insert(con, "new-partial", "pending", None, {})
+    con.execute(
+        "UPDATE work_items SET status='done',verdict='FAIL',payload_json=? WHERE id='new-partial'",
+        (json.dumps({"verdict_taxonomy": "strategy", "expected_ex5_sha256": HASH_A}),),
+    )
+    partial = con.execute(
+        "SELECT status,verdict,verdict_taxonomy,ex5_sha256,setfile_sha256 "
+        "FROM work_items WHERE id='new-partial'"
+    ).fetchone()
+    assert partial == ("done", "FAIL", "strategy", HASH_A, None)
 
     with pytest.raises(sqlite3.IntegrityError):
         _insert(con, "done-without-verdict", "done", None, {})
