@@ -1,16 +1,20 @@
 {
- "at_utc": "20260823T135416Z",
+ "at_utc": "20260823T135342Z",
  "mode": "apply",
  "cards_scanned": 4435,
- "cards_changed": 1,
+ "cards_changed": 2,
  "fingerprint_moved": [],
  "fingerprint_change_allowed": true,
  "line_count_delta": 0,
- "replacements_total": 1,
+ "replacements_total": 5,
  "replacements_by_rule": {
-  "Zus\u00e4tzliche": 1
+  "- **Zeit-Filter**: Daily-Rollover \u00b130 min Skip.": 2,
+  "**Schritt 1 \u2014 Cycle-Low-Detection via ZigZag**:": 1,
+  "**Schritt 3 \u2014 Projection-Window**:": 1,
+  "**Schritt 4 \u2014 Bressert Double-Stochastic-Konfirm": 1
  },
  "changed_cards": [
-  "QM5_1519_demark-td-range-expansion-breakout-h4.md"
+  "QM5_1524_williams-r-of-rsi-composite-h4.md",
+  "QM5_1523_bressert-time-cycle-projection-h4.md"
  ]
 }

@@ -4,15 +4,15 @@
 **Slug:** `forexfactory-genesis-matrix-scalper`
 **Source:** `forexfactory-genesis-matrix-scalper-official-source`
 **Author of this spec:** Gemini
-**Last revised:** 2026-08-18
+**Last revised:** 2026-08-23
 
 ---
 
 ## 1. Strategy Logic
 
-The strategy implements Realtrader's Genesis Matrix 4-Bar Scalping System on the 5-minute (M5) timeframe. It calculates a 4-layer multi-indicator confluence score evaluating TVI (Tick Volume Indicator), CCI (20), T3-filtered CCI, and Gann High-Low Activator (GHL).
+The strategy implements Realtrader's Genesis Matrix 4-Bar Scalping System on the 5-minute (M5) timeframe. It calculates a 4-layer multi-indicator confluence score evaluating TVI (Tick Volume Indicator, Blau directional volume EMA 12), CCI (20), T3-filtered CCI (T3 smoothing period 5, b=0.618), and Gann High-Low Activator (GHL period 10) on closed bars.
 
-Long entry executes on a closed M5 bar when the Matrix confluence score rises to 4 (all 4 indicators bullish/green) from a previous score below 4 and Close is above the 5-period EMA. Short entry executes when the Matrix score drops to 0 (all 4 indicators bearish/red) from a previous score above 0 and Close is below the 5-period EMA. Stop loss is placed beyond recent swing structure with a 2.0-pip buffer, clamped between 0.5 and 3.5 ATR, and take profit is targeted at 2.0 times the stop distance (1:2.0 R:R). Open trades are closed when any Matrix indicator changes color (Matrix score drops below 4 for longs or rises above 0 for shorts).
+Long entry executes on a closed M5 bar when the Matrix confluence score rises to 4 (all 4 indicators bullish/green) from a previous score below 4 and Close is above the 5-period EMA. Short entry executes when the Matrix score drops to 0 (all 4 indicators bearish/red) from a previous score above 0 and Close is below the 5-period EMA. Stop loss is placed beyond recent swing structure (lookback 10 bars) with a 2.0-pip buffer, and take profit is targeted at 2.0 times the stop distance (1:2.0 R:R). Open trades are closed when any Matrix indicator changes color (Matrix score drops below 4 for longs or rises above 0 for shorts). Open trades move to break-even after advancing 15 pips into profit (to Entry + 1 pip).
 
 ---
 
@@ -30,6 +30,10 @@ Long entry executes on a closed M5 bar when the Matrix confluence score rises to
 | `strategy_tp_rr` | 2.0 | 1.5-3.5 | Take profit risk-to-reward multiple |
 | `strategy_swing_lookback` | 10 | 5-20 | Swing structure lookback bars |
 | `strategy_be_trigger_pips` | 15.0 | 10.0-25.0 | Break-even trigger distance in pips |
+| `strategy_daily_loss_halt_pct` | 2.0 | 1.0-3.0 | Daily realized loss entry halt percent |
+| `strategy_daily_hard_stop_pct` | 2.5 | 1.5-4.0 | Daily hard stop percent |
+| `strategy_total_dd_halt_pct` | 5.0 | 3.0-10.0 | Total drawdown halt percent |
+| `strategy_per_trade_risk_cap_pct` | 1.0 | 0.5-2.0 | Per-trade risk cap percent |
 
 ---
 
@@ -92,3 +96,4 @@ This card was mechanised from:
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Gemini build pass |
+| v2 | 2026-08-23 | Fix Codex findings | Correct timeframe contract to M5, pip scaling, stateful GHL, loss limit wiring |

@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_39006 forexfactory-spudfyre-stochastic-ribbon — Spudfyre Stochastic Ribbon (H1)"
+#property description "QM5_39006 forexfactory-spudfyre-stochastic-ribbon - Spudfyre Stochastic Ribbon (H1)"
 
 #include <QM/QM_Common.mqh>
 
@@ -14,7 +14,7 @@
 //   - Harmonic Stochastic Ribbon bundle: %K periods (6, 9, 12, 14, 18, 24, 30), %D=3, slowing=3.
 //   - Long Setup: Compression in oversold at [2] (min <= 20, max <= 25) AND Stoch(6)[1] unhooks > 20 and > Stoch(30)[1].
 //   - Short Setup: Compression in overbought at [2] (max >= 80, min >= 75) AND Stoch(6)[1] unhooks < 80 and < Stoch(30)[1].
-//   - SL: Placed beyond recent swing low/high +/- 3.0 pips buffer, clamped between 0.5*ATR and 3.5*ATR.
+//   - SL: Placed beyond recent swing low/high +/- 3.0 pips buffer.
 //   - TP: 1:2.0 R:R target.
 //   - Management: Move to Break-Even at +1.0R.
 // =============================================================================
@@ -50,11 +50,16 @@ input int    strategy_atr_period        = 14;     // ATR period (H1)
 input double strategy_sl_buffer_pips    = 3.0;    // SL buffer beyond swing structure in pips
 input double strategy_tp_rr             = 2.0;    // Take profit R:R multiple
 input int    strategy_swing_lookback    = 10;     // Swing structure lookback bars
-input double strategy_be_trigger_pips   = 20.0;   // Break-even trigger distance in pips
+input double strategy_be_trigger_r      = 1.0;    // Break-even trigger multiple of initial risk (R)
+input double strategy_daily_loss_halt_pct = 2.0;    // Daily realized loss entry halt percent
+input double strategy_daily_hard_stop_pct = 2.5;    // Daily hard stop percent
+input double strategy_total_dd_halt_pct   = 5.0;    // Total drawdown halt percent
+input double strategy_per_trade_risk_cap_pct = 1.0; // Per-trade risk cap percent
 
 // -----------------------------------------------------------------------------
 // File-scope cached state (updated once per new closed bar)
 // -----------------------------------------------------------------------------
+bool   g_state_valid        = false;
 double g_cached_min_stoch_2 = 50.0;
 double g_cached_max_stoch_2 = 50.0;
 double g_cached_stoch_6_1   = 50.0;
@@ -63,30 +68,54 @@ double g_cached_atr_1       = 0.0;
 
 void AdvanceState_OnNewBar()
 {
+   g_state_valid = false;
    const int stoch_periods[7] = {6, 9, 12, 14, 18, 24, 30};
-   double min_val = 100.0;
-   double max_val = 0.0;
+   double min_val = 1000.0;
+   double max_val = -1000.0;
 
    for(int i = 0; i < 7; ++i)
    {
       const double k_val = QM_Stoch_K(_Symbol, PERIOD_H1, stoch_periods[i], 3, 3, 2);
+      if(k_val < 0.0 || k_val > 100.0) return;
       if(k_val < min_val) min_val = k_val;
       if(k_val > max_val) max_val = k_val;
    }
 
+   const double stoch_6_1  = QM_Stoch_K(_Symbol, PERIOD_H1, 6, 3, 3, 1);
+   const double stoch_30_1 = QM_Stoch_K(_Symbol, PERIOD_H1, 30, 3, 3, 1);
+   const double atr_1      = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+
+   if(stoch_6_1 < 0.0 || stoch_6_1 > 100.0 || stoch_30_1 < 0.0 || stoch_30_1 > 100.0 || atr_1 <= 0.0)
+      return;
+
    g_cached_min_stoch_2 = min_val;
    g_cached_max_stoch_2 = max_val;
-   g_cached_stoch_6_1   = QM_Stoch_K(_Symbol, PERIOD_H1, 6, 3, 3, 1);
-   g_cached_stoch_30_1  = QM_Stoch_K(_Symbol, PERIOD_H1, 30, 3, 3, 1);
-   g_cached_atr_1       = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   g_cached_stoch_6_1   = stoch_6_1;
+   g_cached_stoch_30_1  = stoch_30_1;
+   g_cached_atr_1       = atr_1;
+   g_state_valid        = true;
 }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
+bool Strategy_DailyRealizedLossHalt()
+{
+   int closed_trades = 0;
+   const double realized_pnl = QM_ChartUITodayPnL(0, closed_trades);
+   const double balance_now = AccountInfoDouble(ACCOUNT_BALANCE);
+   const double day_start_balance = balance_now - realized_pnl;
+   if(balance_now <= 0.0 || day_start_balance <= 0.0)
+      return true;
+   return (realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0));
+}
+
 bool Strategy_NoTradeFilter()
 {
+   if(Strategy_DailyRealizedLossHalt())
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask > 0.0 && bid > 0.0 && ask > bid && g_cached_atr_1 > 0.0)
@@ -106,13 +135,16 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
+   if(!g_state_valid)
+      return false;
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
    if(g_cached_atr_1 <= 0.0)
       return false;
 
-   const double buf = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(strategy_sl_buffer_pips * 10.0));
+   const double buf = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(strategy_sl_buffer_pips));
 
    // Long Condition: Oversold compression at bar 2 + unhook at bar 1
    if(g_cached_min_stoch_2 <= InpOversold && g_cached_max_stoch_2 <= (InpOversold + 5.0) &&
@@ -122,10 +154,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(ask <= 0.0) return false;
 
       const double swing_low = QM_StopStructure(_Symbol, QM_BUY, ask, strategy_swing_lookback);
-      double sl = (swing_low > 0.0) ? (swing_low - buf) : (ask - 1.5 * g_cached_atr_1);
+      if(swing_low <= 0.0) return false;
 
-      if(ask - sl < 0.5 * g_cached_atr_1) sl = ask - 0.5 * g_cached_atr_1;
-      if(ask - sl > 3.5 * g_cached_atr_1) sl = ask - 3.5 * g_cached_atr_1;
+      const double sl = swing_low - buf;
       if(sl <= 0.0 || sl >= ask) return false;
 
       const double tp = QM_TakeRR(_Symbol, QM_BUY, ask, sl, strategy_tp_rr);
@@ -149,10 +180,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(bid <= 0.0) return false;
 
       const double swing_high = QM_StopStructure(_Symbol, QM_SELL, bid, strategy_swing_lookback);
-      double sl = (swing_high > 0.0) ? (swing_high + buf) : (bid + 1.5 * g_cached_atr_1);
+      if(swing_high <= 0.0) return false;
 
-      if(sl - bid < 0.5 * g_cached_atr_1) sl = bid + 0.5 * g_cached_atr_1;
-      if(sl - bid > 3.5 * g_cached_atr_1) sl = bid + 3.5 * g_cached_atr_1;
+      const double sl = swing_high + buf;
       if(sl <= 0.0 || sl <= bid) return false;
 
       const double tp = QM_TakeRR(_Symbol, QM_SELL, bid, sl, strategy_tp_rr);
@@ -179,7 +209,36 @@ void Strategy_ManageOpenPosition()
       const ulong ticket = PositionGetTicket(i);
       if(!PositionSelectByTicket(ticket)) continue;
       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-      QM_TM_MoveToBreakEven(ticket, (int)MathRound(strategy_be_trigger_pips * 10.0), 10);
+
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      if(open_price <= 0.0 || current_sl <= 0.0) continue;
+
+      if(pos_type == POSITION_TYPE_BUY)
+      {
+         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         if(current_sl < open_price)
+         {
+            const double initial_risk = open_price - current_sl;
+            if(initial_risk > 0.0 && (bid - open_price) >= initial_risk * strategy_be_trigger_r)
+            {
+               QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, open_price), "BE_AT_1R");
+            }
+         }
+      }
+      else if(pos_type == POSITION_TYPE_SELL)
+      {
+         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         if(current_sl > open_price)
+         {
+            const double initial_risk = current_sl - open_price;
+            if(initial_risk > 0.0 && (open_price - ask) >= initial_risk * strategy_be_trigger_r)
+            {
+               QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, open_price), "BE_AT_1R");
+            }
+         }
+      }
    }
 }
 
@@ -217,10 +276,19 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H1,
                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
                                             "V5_WEEKEND_RISK_POLICY"))
       return INIT_FAILED;
+
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         strategy_daily_hard_stop_pct,
+                         strategy_total_dd_halt_pct,
+                         strategy_per_trade_risk_cap_pct))
+      return INIT_FAILED;
+
+   AdvanceState_OnNewBar();
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_39006_forexfactory-spudfyre-stochastic-ribbon\"}");
    return INIT_SUCCEEDED;

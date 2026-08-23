@@ -3,24 +3,21 @@
 ; ea_id:        39005
 ; ea_slug:      forexfactory-genesis-matrix-scalper
 ; ea_version:   v5.0
-; set_version:  s20260818-001
+; set_version:  s20260823-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2b0b1b383324de3c24e596350b56119b5875f971250ff53cd3a27eb6a346cbe5
 ; author:       Development
-; date:         2026-08-18
+; date:         2026-08-23
 ;==========================================================
 qm_ea_id=39005
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_39005_forexfactory-genesis-matrix-scalper.md
 InpCCIPeriod=20
 InpT3Period=5
 InpT3Hot=0.618
@@ -31,3 +28,7 @@ strategy_sl_buffer_pips=2.0
 strategy_tp_rr=2.0
 strategy_swing_lookback=10
 strategy_be_trigger_pips=15.0
+strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
+strategy_total_dd_halt_pct=5.0
+strategy_per_trade_risk_cap_pct=1.0

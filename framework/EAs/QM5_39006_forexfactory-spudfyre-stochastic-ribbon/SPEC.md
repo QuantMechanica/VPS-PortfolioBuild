@@ -4,7 +4,7 @@
 **Slug:** `forexfactory-spudfyre-stochastic-ribbon`
 **Source:** `forexfactory-spudfyre-stochastic-ribbon-official-source`
 **Author of this spec:** Gemini
-**Last revised:** 2026-08-18
+**Last revised:** 2026-08-23
 
 ---
 
@@ -12,7 +12,7 @@
 
 The strategy implements Spudfyre's Multi-Timeframe Stochastic Ribbon system on the 1-hour (H1) timeframe. It constructs a harmonic ribbon bundle of 7 Stochastics (%K periods 6, 9, 12, 14, 18, 24, 30 with %D 3 and slowing 3) evaluated on closed bars.
 
-Long entries trigger when the stochastic ribbon compresses deeply into oversold territory at shift 2 (minimum Stoch <= 20.0 and maximum Stoch <= 25.0) followed by an unhook expansion at shift 1 where the fastest Stoch (6) rises above 20.0 and crosses above the anchor Stoch (30). Short entries trigger when the ribbon compresses in overbought territory at shift 2 (maximum Stoch >= 80.0 and minimum Stoch >= 75.0) followed by an unhook at shift 1 where Stoch (6) drops below 80.0 and falls below Stoch (30). Stop loss is placed beyond the swing structure with a 3.0-pip buffer, clamped between 0.5 and 3.5 ATR, and take profit is targeted at 2.0 times the stop distance (1:2.0 R:R). Open trades move to break-even after advancing 20 pips into profit.
+Long entries trigger when the stochastic ribbon compresses deeply into oversold territory at shift 2 (minimum Stoch <= 20.0 and maximum Stoch <= 25.0) followed by an unhook expansion at shift 1 where the fastest Stoch (6) rises above 20.0 and crosses above the anchor Stoch (30). Short entries trigger when the ribbon compresses in overbought territory at shift 2 (maximum Stoch >= 80.0 and minimum Stoch >= 75.0) followed by an unhook at shift 1 where Stoch (6) drops below 80.0 and falls below Stoch (30). Stop loss is placed beyond recent swing structure with a 3.0-pip buffer, and take profit is targeted at 2.0 times the stop distance (1:2.0 R:R). Open trades move to break-even after achieving +1.0R in open profit.
 
 ---
 
@@ -26,7 +26,11 @@ Long entries trigger when the stochastic ribbon compresses deeply into oversold 
 | `strategy_sl_buffer_pips` | 3.0 | 1.0-5.0 | Stop loss buffer beyond swing structure in pips |
 | `strategy_tp_rr` | 2.0 | 1.5-3.5 | Take profit risk-to-reward multiple |
 | `strategy_swing_lookback` | 10 | 5-20 | Swing structure lookback bars |
-| `strategy_be_trigger_pips` | 20.0 | 10.0-30.0 | Break-even trigger distance in pips |
+| `strategy_be_trigger_r` | 1.0 | 0.5-2.0 | Break-even trigger multiple of initial risk (R) |
+| `strategy_daily_loss_halt_pct` | 2.0 | 1.0-3.0 | Daily realized loss entry halt percent |
+| `strategy_daily_hard_stop_pct` | 2.5 | 1.5-4.0 | Daily hard stop percent |
+| `strategy_total_dd_halt_pct` | 5.0 | 3.0-10.0 | Total drawdown halt percent |
+| `strategy_per_trade_risk_cap_pct` | 1.0 | 0.5-2.0 | Per-trade risk cap percent |
 
 ---
 
@@ -90,3 +94,4 @@ This card was mechanised from:
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Gemini build pass |
+| v2 | 2026-08-23 | Fix Codex findings | Correct timeframe contract to H1, pip scaling, +1R break-even, loss limit wiring |
