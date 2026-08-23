@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9932
+; ea_slug:      bandy-roc-zscore-normalised-mr-index
+; ea_version:   v5.0
+; set_version:  s20260822-001
+; symbol:       NZDUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   12
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   ee78b3ec18f80dbc208ef57285624e0cc309df14f26c4e41c4e5bdc7106f8ed6
+; author:       Development
+; date:         2026-08-22
+;==========================================================
+qm_ea_id=9932
+qm_magic_slot_offset=12
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9932_bandy-roc-zscore-normalised-mr-index.md
+; card_defaults_status=none_found
+; strategy params backfilled from the EA's own input defaults;
+; behaviour-identical (an omitted param already used this value),
+; required by Q08 sub-gate 8.5 which perturbs named parameters.
+strategy_atr_period=14
+strategy_atr_stop_mult=2.5
+strategy_entry_z=-2.0
+strategy_exit_z=0.0
+strategy_min_stdev=0.20
+strategy_regime_sma_period=200
+strategy_roc_period=10
+strategy_time_stop_bars=8
+strategy_warmup_bars=270
+strategy_zscore_lookback=60
