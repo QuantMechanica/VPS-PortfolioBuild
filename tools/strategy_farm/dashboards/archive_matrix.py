@@ -795,6 +795,10 @@ def _collapse_reference_sections(doc: str) -> str:
         if any(title.startswith(c) for c in COLLAPSE_HEADINGS):
             # the heading text is already HTML-escaped; unescape before re-escaping
             label = html.unescape(re.sub(r"<.*?>", "", head).strip())
+            # the header already carries the citation, so a bare "Source" summary
+            # right underneath reads as a duplicate rather than as the detail it is
+            if label.strip().lower() == "source":
+                label = "Source detail & citations"
             out.append(f"<details><summary>{e(label)}</summary><div>{chunk}</div></details>")
         else:
             out.append(head + chunk)
