@@ -1,0 +1,28 @@
+{
+  "task_id": "528d9db8-5f15-4c26-81bf-887a4b6deb17",
+  "ea_id": "QM5_9949",
+  "ea_label": "QM5_9949_bandy-bbwidth-contraction-breakout-trend",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\QM5_9949_bandy-bbwidth-contraction-breakout-trend.mq5",
+  "mq5_sha256": "a05654921ff354fe942b3a78f13fde3869a56890638d366a72a18118acfc2b60",
+  "ex5_path": "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\QM5_9949_bandy-bbwidth-contraction-breakout-trend.ex5",
+  "ex5_sha256": "f1df93ea951eac54d6ab3997b9cb75919220bd6c2089807cc993b4338fe551de",
+  "setfiles_generated": [
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_AUDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_EURUSD.DWX_D1_backtest.set",
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_GBPUSD.DWX_D1_backtest.set",
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_GDAXI.DWX_D1_backtest.set",
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_NDX.DWX_D1_backtest.set",
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_NZDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_SP500.DWX_D1_backtest.set",
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_UK100.DWX_D1_backtest.set",
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_USDCAD.DWX_D1_backtest.set",
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_USDCHF.DWX_D1_backtest.set",
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_USDJPY.DWX_D1_backtest.set",
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_WS30.DWX_D1_backtest.set",
+    "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\sets\\QM5_9949_bandy-bbwidth-contraction-breakout-trend_XAUUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo\\framework/EAs\\QM5_9949_bandy-bbwidth-contraction-breakout-trend\\SPEC.md",
+  "guardrails_verdict": "PASS",
+  "symbol_scope_verdict": "SINGLE_SYMBOL_OK"
+}
