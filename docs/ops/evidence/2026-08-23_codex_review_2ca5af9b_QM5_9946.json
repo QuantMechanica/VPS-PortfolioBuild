@@ -1,0 +1,24 @@
+{
+  "review_task_id": "2ca5af9b-f84e-40e3-a4bd-2c0d784f65f5",
+  "build_task_id": "f24b54a3-ca2e-4cfd-8ae8-3b23712ff20d",
+  "ea_id": "QM5_9946",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The approved mechanic and its Build-EA Notes specify ATR(14) for the Supertrend bands, but Strategy_GetSupertrendStates calls QM_ATR with strategy_supertrend_period (default 10) at source line 120; strategy_atr_period=14 is used only for the catastrophic stop.",
+    "The card requires a 60-trading-bar time stop, but source line 261 compares wall-clock seconds (TimeCurrent-opened >= 60*PeriodSeconds(D1)); weekends make it close materially before 60 completed D1 bars.",
+    "The card's 0.2*ATR razor-thin-flip noise filter is absent from the source and inputs, so entries do not implement the approved additional filter.",
+    "Source artifact is not the canonical build_result.json schema: required fields ea_dir, magic_base, symbols_registered, compile_succeeded, smoke_result, and smoke_report_path are absent; no smoke report is bound.",
+    "[PERF-ADVISORY] Strategy_ExitSignal reconstructs up to 200 bars of Supertrend state on every tick via CopyRates plus pooled ATR reads; cache the closed-D1-bar state without hand-rolling the framework entry bar gate.",
+    "SPEC.md contains a malformed slug (\\bandy-supertrend-flip-trend) and a corrupted backtest risk value (,000), despite passing the section-header validator."
+  ],
+  "reviewed_at": "2026-08-23T08:44:23Z"
+}
