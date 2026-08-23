@@ -51,6 +51,14 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm import q09_autoseal_hold_census
 try:
+    import optimization_fork_driver
+except ModuleNotFoundError:
+    from tools.strategy_farm import optimization_fork_driver
+try:
+    from gate_manifest import load_gate_manifest
+except ModuleNotFoundError:
+    from tools.strategy_farm.gate_manifest import load_gate_manifest
+try:
     from phase_ids import ACTIVE_GATE_MANIFEST, ORDINARY_RUNTIME_PHASES, advancement_table, phase_rank
 except ModuleNotFoundError:
     from tools.strategy_farm.phase_ids import (
@@ -4009,6 +4017,68 @@ def chk_pending_artifact_binding_drift(con) -> dict:
     return _check("pending_artifact_binding_drift", "FAIL", len(findings), 0, detail, hint)
 
 
+def _optimization_manifests() -> tuple:
+    """Active contract plus the v4 fixture, deduplicated by manifest hash."""
+    manifests = [ACTIVE_GATE_MANIFEST]
+    v4_path = (
+        REPO_ROOT / "tools" / "strategy_farm" / "config" /
+        "gate_manifest.v4.draft.json"
+    )
+    if v4_path.is_file():
+        try:
+            manifests.append(load_gate_manifest(v4_path))
+        except Exception:
+            pass
+    return tuple({manifest.sha256: manifest for manifest in manifests}.values())
+
+
+def chk_opt_fork_service_rate(con) -> dict:
+    """Expose completed rows/day for pattern, parameter, and head-to-head gates."""
+    manifests = _optimization_manifests()
+    metrics = optimization_fork_driver.service_metrics(con, manifests=manifests)
+    phases = sorted({
+        manifest.gate_for_role(role)
+        for manifest in manifests
+        for role in ("PATTERN", "PARAM_OPT", "HEAD_TO_HEAD")
+    })
+    placeholders = ",".join("?" for _ in phases)
+    backlog = int(con.execute(
+        f"SELECT count(*) FROM work_items WHERE upper(phase) IN ({placeholders}) "
+        "AND lower(status) IN ('pending','active')",
+        tuple(phases),
+    ).fetchone()[0])
+    rates = metrics["completed_per_day_by_gate"]
+    completed = sum(int(value) for value in rates.values())
+    status = "WARN" if backlog and completed == 0 else "OK"
+    return _check(
+        "opt_fork_service_rate",
+        status,
+        rates,
+        "visibility SLO: nonzero 24h completion when backlog exists",
+        f"24h completed by contract/gate={json.dumps(rates, sort_keys=True)}; "
+        f"pending_or_active={backlog}",
+        "Inspect the earliest held optimization row and its machine_reason; do not bypass prerequisites."
+        if status == "WARN" else "",
+    )
+
+
+def chk_terminal_requalification_verdicts_count(con) -> dict:
+    """Expose the lifetime count of terminal per-pair requalification verdict rows."""
+    metrics = optimization_fork_driver.service_metrics(
+        con, manifests=_optimization_manifests()
+    )
+    count = int(metrics["terminal_requalification_verdicts_count"])
+    return _check(
+        "terminal_requalification_verdicts_count",
+        "WARN" if count == 0 else "OK",
+        count,
+        ">=1 proves the optimization fork has completed at least once",
+        f"terminal requalification verdict rows across versioned v3/v4 roles: {count}",
+        "Follow the opt-fork pending IDs through pattern, parameter freeze, and sealed head-to-head."
+        if count == 0 else "",
+    )
+
+
 ALL_CHECKS = [
     ("ea_id_slug_uniqueness", chk_ea_id_slug_uniqueness, False),
     ("card_registry_identity_integrity", chk_card_registry_identity_integrity, False),
@@ -4060,6 +4130,8 @@ ALL_CHECKS = [
     ("q09_sealed_plan_hold_age", chk_q09_sealed_plan_hold_age, True),
     ("q09_autoseal_hold_census", chk_q09_autoseal_hold_census, True),
     ("pending_artifact_binding_drift", chk_pending_artifact_binding_drift, True),
+    ("opt_fork_service_rate", chk_opt_fork_service_rate, True),
+    ("terminal_requalification_verdicts_count", chk_terminal_requalification_verdicts_count, True),
 ]
 
 
