@@ -1,0 +1,24 @@
+{
+  "review_task_id": "74f741c5-8414-49f3-8565-3adaf818da50",
+  "build_task_id": "0fd1b0a8-c415-4309-9778-4ebefa05a1cf",
+  "ea_id": "QM5_41009",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_41009 source lines 18-19 default RISK_PERCENT=0.5 and RISK_FIXED=1000.0 simultaneously; QM_FrameworkValidateRiskInputs rejects both-positive inputs, so default OnInit fails unless a setfile overrides the source contract.",
+    "The current build_gate_hardening check fails QM5_41009 with three EA_CARD_LOSS_LIMIT_MISMATCH findings: the card's 2.0% daily realized-loss halt, 2.5% daily hard stop, and 5.0% total drawdown stop have no matching source inputs or implementation.",
+    "The current build_gate_hardening check fails QM5_41009 with EA_BROKER_TIME_USED_FOR_GMT_WINDOW: source lines 262-265 apply the card's 23:55-00:05 GMT blackout to raw TimeCurrent without QM_BrokerToUTC.",
+    "QM5_41009 source lines 301 and 318 replace the card's previous-day POC take-profit with an unauthorized 1.8R target whenever POC is on the wrong side of entry instead of declining the trade.",
+    "QM5_41009 does not configure the approved card's three-tick market-order slippage limit; QM_FrameworkInit leaves QM_EntryConfigure at the framework's 20-point deviation default.",
+    "Build artifact artifacts/builds/0fd1b0a8-c415-4309-9778-4ebefa05a1cf.json claims build_check_passed despite the current semantic gate failures and marks smoke_result as deferred_p2_smoke with an empty blocked_reason and only a generic custom-history explanation; no QM5_41009 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-23T19:13:28Z"
+}
