@@ -57,7 +57,7 @@ def _insert(
         "INSERT INTO work_items VALUES (?,?,?,?,?,?,?)",
         (
             row_id,
-            "Q09_NEWS",
+            census.NEWS_PHASE,
             "QM5_12989",
             "XAUUSD.DWX",
             "pending",
