@@ -1,0 +1,42 @@
+{
+  "schema": "qm.cpu-ceiling-observation/v1",
+  "recorded_at_utc": "2026-08-23T23:18:31.5971189Z",
+  "scope": "QM5_41136 governed compile and Q02 admission",
+  "command": "Get-Counter '\\\\Processor(_Total)\\\\% Processor Time' -SampleInterval 4 -MaxSamples 5",
+  "sample_interval_seconds": 4,
+  "samples_percent": [
+    98.12,
+    98.0,
+    98.19,
+    98.46,
+    96.46
+  ],
+  "average_percent": 97.85,
+  "max_percent": 98.46,
+  "claim_ceiling_percent": 97.0,
+  "resume_ceiling_percent": 90.0,
+  "policy_source": "tools/strategy_farm/terminal_worker.py",
+  "ceiling_breached": true,
+  "free_ram_gb": 32.5,
+  "total_ram_gb": 63.1,
+  "running_factory_terminals_observed": [
+    "T10",
+    "T2",
+    "T3",
+    "T4",
+    "T6"
+  ],
+  "terminal_inventory_recorded_at_utc": "2026-08-23T23:12:59+00:00",
+  "source_commit": "ac8257f05",
+  "mq5_sha256": "45DDE0AB39D8E9C1B7D6EE1F69BCBB96FA0EED7A2816DDC38844E38EE0792DB5",
+  "unbound_setfile_sha256": "7CE254B403B43FD446745EECD8767193711D8A478A471900AC15F003A8F24834",
+  "ex5_exists": false,
+  "direct_compile_result": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+  "compile_work_item_id": "77d52009-3434-4c70-a93b-29471832c3cd",
+  "compile_status": "pending",
+  "compile_activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+  "q01_pass": false,
+  "q02_preview_enqueued": 0,
+  "q02_enqueued": false,
+  "stop_reason": "OWNER mission says to stop and summarize when the backtest CPU ceiling is reached"
+}
