@@ -39,6 +39,7 @@ COMPILE_RECHECK_RETRY_AUTHORITY_TASK_ID = "1fb9943f-1b87-4515-b2b4-f5ca3ffb56f8"
 COMPILE_RECHECK_FAILURE_CLASS = "CANDIDATE_RECHECK_REFUSED"
 COMPILE_BINDING_RETRY_CONTRACT_VERSION = "qm.compile-ea-build-binding-retry/v1"
 COMPILE_BINDING_FAILURE_CLASS = "BUILD_CHECK_FAILED"
+COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
     # must be generatable, not merely a valid MetaTrader period literal.
@@ -930,8 +931,10 @@ def _complete_work_item(
     evidence: dict[str, Any],
 ) -> None:
     success = bool(evidence.get("success"))
+    failure_classes = list(evidence.get("failure_classes") or [])
+    infra_failure = COMPILE_PROFILE_STDLIB_FAILURE_CLASS in failure_classes
     status = "done" if success else "failed"
-    verdict = "COMPILE_OK" if success else "COMPILE_FAIL"
+    verdict = "COMPILE_OK" if success else ("INFRA_FAIL" if infra_failure else "COMPILE_FAIL")
     now = utc_now()
     with _connect(root) as conn:
         row = conn.execute(
@@ -947,7 +950,7 @@ def _complete_work_item(
             "compile_completed_at": now,
             "compile_result": {
                 "success": success,
-                "failure_classes": evidence.get("failure_classes", []),
+                "failure_classes": failure_classes,
                 "compile_result": evidence.get("compile_result"),
                 "build_check_result": evidence.get("build_check_result"),
                 "ex5_sha256": evidence.get("ex5_sha256"),
@@ -958,8 +961,13 @@ def _complete_work_item(
             "verdict_reason": (
                 "COMPILE_ARTIFACT_READY"
                 if success
-                else ";".join(evidence.get("failure_classes") or ["COMPILE_FAILED"])
+                else (
+                    COMPILE_PROFILE_STDLIB_FAILURE_CLASS
+                    if infra_failure
+                    else ";".join(failure_classes or ["COMPILE_FAILED"])
+                )
             ),
+            "verdict_taxonomy": "infra" if infra_failure else ("build" if not success else "artifact"),
         })
         cur = conn.execute(
             "UPDATE work_items SET status=?,verdict=?,evidence_path=?,claimed_by=NULL,"
@@ -1132,6 +1140,15 @@ def run_compile_work_item(
                 build_output,
                 "compile_one.include_mirror_atomic_replace",
             ),
+            "compile_profile_stdlib_source": _output_value(
+                build_output, "compile_one.compile_profile_stdlib_source"
+            ),
+            "compile_profile_stdlib_missing": _output_value(
+                build_output, "compile_one.compile_profile_stdlib_missing"
+            ),
+            "compile_profile_stdlib_repair": _output_value(
+                build_output, "compile_one.compile_profile_stdlib_repair"
+            ),
             "build_check_output_tail": build_output[-20000:],
         })
         ex5 = ea_dir / f"{label}.ex5"
@@ -1164,6 +1181,11 @@ def run_compile_work_item(
             "exception": repr(exc),
         })
     evidence["completed_at"] = utc_now()
+    evidence["verdict_taxonomy"] = (
+        "infra"
+        if COMPILE_PROFILE_STDLIB_FAILURE_CLASS in evidence.get("failure_classes", [])
+        else ("artifact" if evidence.get("success") else "build")
+    )
     _atomic_write_json(evidence_path, evidence)
     _complete_work_item(root, work_item_id, terminal, evidence_path, evidence)
     return {
