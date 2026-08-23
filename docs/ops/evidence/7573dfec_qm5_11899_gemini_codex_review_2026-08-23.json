@@ -1,0 +1,24 @@
+{
+  "review_task_id": "7573dfec-4c4e-4bde-840a-12ea6b8d89f1",
+  "build_task_id": "1f400c88-a2b7-4c48-acd4-37a139b772fe",
+  "ea_id": "QM5_11899",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The approved card requires every position to close 15 minutes before scheduled high-impact EUR, USD, or GBP news. Source lines 22-26 disable every news mode, Strategy_NewsFilterHook is a no-op, and the generic news call at lines 241-245 is only an entry-admission return; the required pre-news position close is not implemented.",
+    "The approved rule and R2 rationale require a PSAR flip. Source lines 108-126 reads only PSAR at shift 1 and tests whether that dot is currently below/above the signal candle; it never reads shift 2 or proves the transition, so it can re-enter on later same-mode bars without a fresh PSAR flip.",
+    "The approved hard timeout is 96 completed H1 bars, but source lines 187-190 compares wall-clock elapsed seconds with 96 nominal H1 periods. Weekends and market closures advance this timer without producing H1 bars.",
+    "Strategy_ExitSignal consumes the stateful H1 QM_IsNewBar edge at line 193 while a position is open, and OnTick calls the same helper again at line 264 before entry. If an AO/AC reversal closes a trade on a bar that also satisfies the opposite entry, the second call is false and the approved mirror entry cannot be evaluated on that bar.",
+    "QM5_11899 calls QM_KillSwitchCheck before QM_FrameworkTrackOpenPositionMae at source lines 235-236. When the kill switch returns false, Q08 open-position MAE sampling is skipped, contrary to the V5 skeleton order.",
+    "Build artifact framework/EAs/QM5_11899_psar-ao-ac-confluence-h1/build_result.json records smoke_result=deferred_p2_smoke with blocked_reason=null. This lacks durable tester-fleet saturation evidence, the artifact itself is untracked, and no QM5_11899 smoke report exists under D:/QM/reports/smoke. The reviewed MQ5 and EX5 are otherwise committed together and match the artifact hashes."
+  ],
+  "reviewed_at": "2026-08-23T20:15:59Z"
+}
