@@ -130,6 +130,8 @@ try {
         -File (Join-Path $RepoRoot "scripts\export_public_snapshot.ps1") `
         -RepoRoot $RepoRoot `
         -PublicDataDir (Join-Path $RepoRoot "public-data") `
+        -FarmDbPath $FarmDbPath `
+        -PythonExe $PythonExe `
         -NoGit 2>&1 |
         ForEach-Object { Write-TaskLog $_ }
     if ($LASTEXITCODE -ne 0) {
