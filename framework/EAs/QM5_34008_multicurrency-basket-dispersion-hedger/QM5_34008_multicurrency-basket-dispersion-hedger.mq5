@@ -4,7 +4,7 @@
 // Strategy Card: QM5_34008 (multicurrency-basket-dispersion-hedger), G0 APPROVED 2026-08-15.
 
 #include <QM/QM_Common.mqh>
-#include <Trade/Trade.mqh>
+#include <QM/QM_BasketOrder.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA: QM5_34008
@@ -16,7 +16,7 @@ input int    qm_magic_slot_offset         = 0;
 input uint   qm_rng_seed                  = 42;
 
 input group "Risk"
-input double RISK_PERCENT                 = 0.5;
+input double RISK_PERCENT                 = 0.0;
 input double RISK_FIXED                   = 1000.0;
 input double PORTFOLIO_WEIGHT             = 1.0;
 
@@ -37,7 +37,8 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 input int    strategy_lookback_hours      = 24;     // Basket mean rate-of-change lookback in hours
 input double strategy_dispersion_dev      = 1.20;   // Standard deviation threshold for extreme pairs
-input double strategy_tp_rr_mult          = 2.0;    // 1:2.0 Risk:Reward multiplier for TP
+input double strategy_target_profit_pct   = 1.5;    // Basket take-profit target in % of account balance
+input double strategy_hard_stop_loss_pct  = 1.5;    // Basket hard stop-loss cutoff in % of account balance
 input int    strategy_atr_period          = 14;     // ATR lookback period for SL/spread
 input double strategy_spread_atr_mult     = 1.8;    // Spread filter ATR multiplier
 
@@ -70,6 +71,51 @@ int GetBarHhmm(const datetime t)
 bool IsDirectUSDPair(const string sym)
 {
    return (StringFind(sym, "USD") == 0);
+}
+
+int OpenPackageCount()
+{
+   int count = 0;
+   const int total = PositionsTotal();
+   for(int i = 0; i < total; ++i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      const long magic = PositionGetInteger(POSITION_MAGIC);
+      if((int)(magic / 10000) == qm_ea_id)
+         count++;
+   }
+   return count;
+}
+
+double OpenPackagePnL()
+{
+   double total_pnl = 0.0;
+   const int total = PositionsTotal();
+   for(int i = 0; i < total; ++i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      const long magic = PositionGetInteger(POSITION_MAGIC);
+      if((int)(magic / 10000) == qm_ea_id)
+         total_pnl += (PositionGetDouble(POSITION_PROFIT) + PositionGetDouble(POSITION_SWAP));
+   }
+   return total_pnl;
+}
+
+void CloseAllPackagePositions(const QM_ExitReason reason)
+{
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      const long magic = PositionGetInteger(POSITION_MAGIC);
+      if((int)(magic / 10000) == qm_ea_id)
+         QM_TM_ClosePosition(ticket, reason);
+   }
 }
 
 // -----------------------------------------------------------------------------
@@ -107,23 +153,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   if(QM_TM_OpenPositionCount(magic) > 0)
+   if(OpenPackageCount() > 0)
       return false;
 
    const int lb = MathMax(5, strategy_lookback_hours);
    double usd_returns[BASKET_SIZE];
-   int my_index = -1;
 
    for(int k = 0; k < BASKET_SIZE; ++k)
    {
       const string sym = g_basket_symbols[k];
-      if(sym == _Symbol)
-         my_index = k;
-
       const double c1 = iClose(sym, PERIOD_H1, 1); // perf-allowed: closed-bar basket read behind QM_IsNewBar()
       const double c0 = iClose(sym, PERIOD_H1, 1 + lb); // perf-allowed: closed-bar basket read behind QM_IsNewBar()
       if(c1 <= 0.0 || c0 <= 0.0)
@@ -136,20 +174,32 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          usd_returns[k] = -roc;
    }
 
-   if(my_index < 0)
-      return false;
-
    double sum_usd = 0.0;
    for(int k = 0; k < BASKET_SIZE; ++k)
       sum_usd += usd_returns[k];
    const double mean_usd = sum_usd / (double)BASKET_SIZE;
 
-   double dev[BASKET_SIZE];
+   double delta[BASKET_SIZE];
    double sum_sq_dev = 0.0;
+   int min_idx = 0;
+   int max_idx = 0;
+   double min_delta = DBL_MAX;
+   double max_delta = -DBL_MAX;
+
    for(int k = 0; k < BASKET_SIZE; ++k)
    {
-      dev[k] = usd_returns[k] - mean_usd;
-      sum_sq_dev += (dev[k] * dev[k]);
+      delta[k] = usd_returns[k] - mean_usd;
+      sum_sq_dev += (delta[k] * delta[k]);
+      if(delta[k] < min_delta)
+      {
+         min_delta = delta[k];
+         min_idx = k;
+      }
+      if(delta[k] > max_delta)
+      {
+         max_delta = delta[k];
+         max_idx = k;
+      }
    }
 
    const double variance = sum_sq_dev / (double)BASKET_SIZE;
@@ -160,77 +210,64 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sigma <= 1e-6)
       return false;
 
-   const double my_z = dev[my_index] / sigma;
-   const double threshold = MathMax(0.5, strategy_dispersion_dev);
+   const double threshold = MathMax(0.5, strategy_dispersion_dev) * sigma;
 
-   const double atr_1 = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double min_sl_dist = (atr_1 > 0.0) ? (1.5 * atr_1) : (30.0 * point);
-   const double sl_dist = min_sl_dist;
-   const double tp_dist = strategy_tp_rr_mult * sl_dist;
+   // Condition: min extremum <= -threshold AND max extremum >= +threshold
+   if(min_delta > -threshold || max_delta < threshold || min_idx == max_idx)
+      return false;
 
-   const bool is_direct = IsDirectUSDPair(_Symbol);
+   const string sym_a = g_basket_symbols[min_idx];
+   const int slot_a = min_idx;
+   const QM_OrderType type_a = IsDirectUSDPair(sym_a) ? QM_BUY : QM_SELL;
 
-   // If my_z <= -threshold (USD lagged heavily vs this currency):
-   // For direct pair (USD base): Buy pair to expect USD mean-reversion recovery
-   // For inverted pair (USD quote): Sell pair to expect pair mean-reversion decline
-   if(my_z <= -threshold)
+   const string sym_b = g_basket_symbols[max_idx];
+   const int slot_b = max_idx;
+   const QM_OrderType type_b = IsDirectUSDPair(sym_b) ? QM_SELL : QM_BUY;
+
+   const double atr_a = QM_ATR(sym_a, PERIOD_H1, strategy_atr_period, 1);
+   const double point_a = SymbolInfoDouble(sym_a, SYMBOL_POINT);
+   const double sl_pts_a = (atr_a > 0.0 && point_a > 0.0) ? (1.5 * atr_a / point_a) : 100.0;
+   const double lots_a = QM_LotsForRisk(sym_a, sl_pts_a) * 0.5;
+
+   const double atr_b = QM_ATR(sym_b, PERIOD_H1, strategy_atr_period, 1);
+   const double point_b = SymbolInfoDouble(sym_b, SYMBOL_POINT);
+   const double sl_pts_b = (atr_b > 0.0 && point_b > 0.0) ? (1.5 * atr_b / point_b) : 100.0;
+   const double lots_b = QM_LotsForRisk(sym_b, sl_pts_b) * 0.5;
+
+   if(lots_a <= 0.0 || lots_b <= 0.0)
+      return false;
+
+   QM_BasketOrderRequest req_a;
+   req_a.symbol = sym_a;
+   req_a.type = type_a;
+   req_a.price = 0.0;
+   req_a.sl = 0.0;
+   req_a.tp = 0.0;
+   req_a.lots = lots_a;
+   req_a.reason = "Basket Dispersion Min-Delta Buy USD";
+   req_a.symbol_slot = slot_a;
+   req_a.expiration_seconds = 0;
+
+   QM_BasketOrderRequest req_b;
+   req_b.symbol = sym_b;
+   req_b.type = type_b;
+   req_b.price = 0.0;
+   req_b.sl = 0.0;
+   req_b.tp = 0.0;
+   req_b.lots = lots_b;
+   req_b.reason = "Basket Dispersion Max-Delta Sell USD";
+   req_b.symbol_slot = slot_b;
+   req_b.expiration_seconds = 0;
+
+   ulong ticket_a = 0;
+   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req_a, ticket_a))
+      return false;
+
+   ulong ticket_b = 0;
+   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req_b, ticket_b))
    {
-      if(is_direct)
-      {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         const double close_1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: closed-bar read behind QM_IsNewBar()
-         const double exec_price = (ask > 0.0) ? ask : close_1;
-         req.type = QM_BUY;
-         req.price = exec_price;
-         req.sl = exec_price - sl_dist;
-         req.tp = exec_price + tp_dist;
-         req.reason = "Basket Dispersion USD Lag Long";
-         return true;
-      }
-      else
-      {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         const double close_1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: closed-bar read behind QM_IsNewBar()
-         const double exec_price = (bid > 0.0) ? bid : close_1;
-         req.type = QM_SELL;
-         req.price = exec_price;
-         req.sl = exec_price + sl_dist;
-         req.tp = exec_price - tp_dist;
-         req.reason = "Basket Dispersion USD Lag Short";
-         return true;
-      }
-   }
-
-   // If my_z >= +threshold (USD gained excessively vs this currency):
-   // For direct pair: Sell pair (expect USD to revert lower)
-   // For inverted pair: Buy pair (expect pair to revert higher)
-   if(my_z >= threshold)
-   {
-      if(is_direct)
-      {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         const double close_1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: closed-bar read behind QM_IsNewBar()
-         const double exec_price = (bid > 0.0) ? bid : close_1;
-         req.type = QM_SELL;
-         req.price = exec_price;
-         req.sl = exec_price + sl_dist;
-         req.tp = exec_price - tp_dist;
-         req.reason = "Basket Dispersion USD Lead Short";
-         return true;
-      }
-      else
-      {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         const double close_1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: closed-bar read behind QM_IsNewBar()
-         const double exec_price = (ask > 0.0) ? ask : close_1;
-         req.type = QM_BUY;
-         req.price = exec_price;
-         req.sl = exec_price - sl_dist;
-         req.tp = exec_price + tp_dist;
-         req.reason = "Basket Dispersion USD Lead Long";
-         return true;
-      }
+      CloseAllPackagePositions(QM_EXIT_STRATEGY);
+      return false;
    }
 
    return false;
@@ -238,10 +275,31 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
 {
+   // If package becomes unhedged / single orphan leg, close it out
+   if(OpenPackageCount() == 1)
+   {
+      CloseAllPackagePositions(QM_EXIT_STRATEGY);
+   }
 }
 
 bool Strategy_ExitSignal()
 {
+   if(OpenPackageCount() > 0)
+   {
+      const double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+      if(balance > 0.0)
+      {
+         const double pnl = OpenPackagePnL();
+         const double tp_val = balance * (strategy_target_profit_pct / 100.0);
+         const double sl_val = balance * (strategy_hard_stop_loss_pct / 100.0);
+
+         if(pnl >= tp_val || pnl <= -sl_val)
+         {
+            CloseAllPackagePositions(QM_EXIT_STRATEGY);
+            return false;
+         }
+      }
+   }
    return false;
 }
 
@@ -291,18 +349,7 @@ void OnTick()
 
    if(Strategy_ExitSignal())
    {
-      const int magic = QM_FrameworkMagic();
-      for(int i = PositionsTotal() - 1; i >= 0; --i)
-      {
-         const ulong ticket = PositionGetTicket(i);
-         if(ticket == 0 || !PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-            continue;
-         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-      }
+      CloseAllPackagePositions(QM_EXIT_STRATEGY);
    }
 
    bool news_allows = true;
@@ -318,11 +365,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
-   if(Strategy_EntrySignal(req))
-   {
-      ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
-   }
+   Strategy_EntrySignal(req);
 }
 
 void OnTimer()
