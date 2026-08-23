@@ -51,3 +51,9 @@ all_expected_refusals=true
 The `qm-build-ea-from-card` preflight requires an allocated active EA ID, exact slug identity, and governed magic rows before implementation. Those conditions are absent, and the only related identities are explicitly OWNER-retired. The build therefore stopped at preflight.
 
 No EA source, setfile, registry, resolver, terminal, live setting, or pipeline state was changed. Compile and backtests were intentionally not run. A future build requires the governed registry/card writer to supply a new active exact identity and every required magic row; Codex cannot manufacture that authority.
+
+## Router disposition
+
+The required `update-task ... --state REVIEW` command was submitted for each task with this committed artifact. Every request was refused by the canonical router with `D6_BUILD_IDENTITY_MISSING` / `build_identity_json_missing_review_dispatch_refused`, correctly preventing code review without truthful committed MQ5, EX5, setfile, and strict-build evidence.
+
+All five tasks were then updated to `BLOCKED` with verdict `PRECONDITION_HOLD` and this artifact path, releasing their spawn leases without bypassing D6. No review task was spawned and no task was moved to `PIPELINE`.
