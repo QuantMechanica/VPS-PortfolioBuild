@@ -119,15 +119,13 @@ double DSS_ComputeAtShift(const int end_shift)
    const int p3 = strategy_dss_stoch_period;
    const int p4 = strategy_dss_outer_ema;
 
-   const int rawk_len = p2 + 10;
-   const int rawk2_len = p4 + 10;
-   const int k1_count = rawk2_len + p3 + 10;
+   double k1[128];
+   double rawk[64];
+   double rawk2[64];
 
-   double k1[];
-   ArrayResize(k1, k1_count);
-
-   double rawk[];
-   ArrayResize(rawk, rawk_len);
+   const int rawk_len = MathMin(64, p2 + 10);
+   const int rawk2_len = MathMin(64, p4 + 10);
+   const int k1_count = MathMin(128, rawk2_len + p3 + 10);
 
    for(int j = 0; j < k1_count; ++j)
    {
@@ -137,14 +135,11 @@ double DSS_ComputeAtShift(const int end_shift)
       k1[j] = DSS_EMAofSeries(rawk, rawk_len, p2);
    }
 
-   double rawk2[];
-   ArrayResize(rawk2, rawk2_len);
-
    for(int m = 0; m < rawk2_len; ++m)
    {
       double hh = -DBL_MAX;
       double ll =  DBL_MAX;
-      for(int s = m; s < m + p3; ++s)
+      for(int s = m; s < m + p3 && s < 128; ++s)
       {
          const double v = k1[s];
          if(v > hh) hh = v;
