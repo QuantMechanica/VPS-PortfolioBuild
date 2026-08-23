@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   94f077693b87e7261e2800114859f2300b913e55148253bf38ba4064899a9609
+; build_hash:   846b72f2273b32da2974088246c89c7373582bd74de3dc19dc37c1db54d9ae66
 ; author:       Development
 ; date:         2026-08-17
 ;==========================================================
@@ -31,4 +31,7 @@ strategy_atr_period=14
 strategy_sl_atr_mult=1.50
 strategy_trend_tp_rr=2.00
 strategy_spread_atr_mult=1.80
-strategy_max_spread_points=100
+strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
+strategy_total_dd_halt_pct=5.0
+strategy_per_trade_risk_cap_pct=0.5

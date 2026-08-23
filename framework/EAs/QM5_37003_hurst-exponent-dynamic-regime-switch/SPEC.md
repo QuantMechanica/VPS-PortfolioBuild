@@ -12,6 +12,8 @@
 
 Calculates the rolling Rescaled Range (R/S) Hurst Exponent H on closed H1 bars over a lookback window of 100 bars. When H > 0.55, the market is classified as persistent/trending, activating a 20-bar Donchian channel momentum breakout with 1.5x ATR initial stop and 2.0x R:R take profit. When H < 0.45, the market is classified as anti-persistent/mean-reverting, activating a 20-bar, 2.0-deviation Bollinger Band mean-reversion engine targeting the midline SMA(20) with 1.5x ATR initial stop.
 
+Mean-reversion entries fail closed when the current Bollinger midline is not a valid favorable-side target; no fixed-R substitute is authorized. Open-position midline management runs before entry-only rollover/spread/loss filters. Account risk rails are a 2.0% closed-PnL entry halt, restart-safe 2.5% daily equity hard stop, and 5.0% account-level total-DD signal threshold.
+
 Entry/exit logic is encoded in the five `Strategy_*` hooks in `QM5_37003_hurst-exponent-dynamic-regime-switch.mq5`. Framework wiring (risk, magic, news, Friday close) is inherited from `QM_Common.mqh` and is not redocumented here.
 
 ---
@@ -30,7 +32,10 @@ Entry/exit logic is encoded in the five `Strategy_*` hooks in `QM5_37003_hurst-e
 | `strategy_sl_atr_mult` | 1.50 | 1.0 - 3.0 | Stop loss ATR multiplier |
 | `strategy_trend_tp_rr` | 2.00 | 1.0 - 4.0 | Take profit R:R multiplier in trend mode |
 | `strategy_spread_atr_mult` | 1.80 | 1.0 - 3.0 | Spread filter ATR multiplier |
-| `strategy_max_spread_points` | 100 | 50 - 300 | Absolute spread cap in points |
+| `strategy_daily_loss_halt_pct` | 2.0 | fixed | Account realized-loss entry halt |
+| `strategy_daily_hard_stop_pct` | 2.5 | fixed | Framework daily equity hard stop |
+| `strategy_total_dd_halt_pct` | 5.0 | fixed | Account-level total-DD signal threshold |
+| `strategy_per_trade_risk_cap_pct` | 0.5 | fixed | Framework per-trade risk cap |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,

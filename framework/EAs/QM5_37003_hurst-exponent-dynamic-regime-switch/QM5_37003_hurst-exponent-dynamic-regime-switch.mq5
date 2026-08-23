@@ -54,7 +54,10 @@ input int    strategy_atr_period          = 14;     // ATR period for stop loss 
 input double strategy_sl_atr_mult         = 1.50;   // Stop loss ATR multiplier
 input double strategy_trend_tp_rr         = 2.00;   // Take profit R:R multiplier in trend mode
 input double strategy_spread_atr_mult     = 1.80;   // Spread filter ATR multiplier
-input int    strategy_max_spread_points   = 100;    // Absolute spread cap in points
+input double strategy_daily_loss_halt_pct = 2.0;    // Account realized-loss entry halt
+input double strategy_daily_hard_stop_pct = 2.5;    // Restart-safe daily equity stop
+input double strategy_total_dd_halt_pct   = 5.0;    // Account-level total-DD signal threshold
+input double strategy_per_trade_risk_cap_pct = 0.5; // Framework per-trade risk cap
 
 // -----------------------------------------------------------------------------
 // Cached State
@@ -66,6 +69,22 @@ double g_cached_bb_upper          = 0.0;
 double g_cached_bb_lower          = 0.0;
 double g_cached_bb_middle         = 0.0;
 int    g_cached_donchian_breakout = 0;
+
+bool Strategy_ConfigValid()
+{
+   if(strategy_hurst_lookback < 10 || strategy_trend_hurst <= strategy_revert_hurst)
+      return false;
+   if(strategy_donchian_period < 2 || strategy_bb_period < 2 || strategy_bb_dev <= 0.0)
+      return false;
+   if(strategy_atr_period < 2 || strategy_sl_atr_mult <= 0.0 ||
+      strategy_trend_tp_rr <= 0.0 || strategy_spread_atr_mult <= 0.0)
+      return false;
+   if(strategy_daily_loss_halt_pct <= 0.0 || strategy_daily_hard_stop_pct <= 0.0 ||
+      strategy_daily_loss_halt_pct > strategy_daily_hard_stop_pct ||
+      strategy_total_dd_halt_pct <= 0.0)
+      return false;
+   return (strategy_per_trade_risk_cap_pct > 0.0 && strategy_per_trade_risk_cap_pct <= 1.0);
+}
 
 //+------------------------------------------------------------------+
 //| Rescaled Range (R/S) Hurst Exponent Calculator                   |
@@ -127,11 +146,22 @@ void AdvanceState_OnNewBar()
 bool IsRolloverBlackout()
 {
    MqlDateTime dt;
-   TimeToStruct(TimeGMT(), dt);
+   TimeToStruct(QM_BrokerToUTC(TimeCurrent()), dt);
    int minute_of_day = dt.hour * 60 + dt.min;
    if(minute_of_day >= 1435 || minute_of_day <= 5)
       return true;
    return false;
+}
+
+bool Strategy_DailyRealizedLossHalt()
+{
+   int closed_trades = 0;
+   const double realized_pnl = QM_ChartUITodayPnL(0, closed_trades);
+   const double balance_now = AccountInfoDouble(ACCOUNT_BALANCE);
+   const double day_start_balance = balance_now - realized_pnl;
+   if(balance_now <= 0.0 || day_start_balance <= 0.0)
+      return true;
+   return (realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0));
 }
 
 // -----------------------------------------------------------------------------
@@ -140,19 +170,22 @@ bool IsRolloverBlackout()
 
 bool Strategy_NoTradeFilter()
 {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
+      return true;
+
+   if(Strategy_DailyRealizedLossHalt())
+      return true;
+
    if(IsRolloverBlackout())
       return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ask > 0.0 && bid > 0.0 && ask > bid)
-   {
-      if(g_cached_atr1 > 0.0 && (ask - bid) > (strategy_spread_atr_mult * g_cached_atr1))
-         return true;
-      if(point > 0.0 && strategy_max_spread_points > 0 && (ask - bid) > (strategy_max_spread_points * point))
-         return true;
-   }
+   if(ask <= 0.0 || bid <= 0.0 || g_cached_atr1 <= 0.0)
+      return true;
+   if(ask > bid && (ask - bid) > (strategy_spread_atr_mult * g_cached_atr1))
+      return true;
    return false;
 }
 
@@ -206,22 +239,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(g_cached_bb_lower > 0.0 && close1 <= g_cached_bb_lower)
       {
          req.type   = QM_BUY;
-         req.reason = "QM5_37003_REVERT_BUY";
-         req.sl     = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_sl_atr_mult);
-         if(g_cached_bb_middle > ask)
-            req.tp  = g_cached_bb_middle;
-         else
-            req.tp  = QM_TakeRR(_Symbol, QM_BUY, ask, req.sl, 1.5);
+          req.reason = "QM5_37003_REVERT_BUY";
+          req.sl     = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_sl_atr_mult);
+          if(g_cached_bb_middle <= ask)
+             return false;
+          req.tp = g_cached_bb_middle;
       }
       else if(g_cached_bb_upper > 0.0 && close1 >= g_cached_bb_upper)
       {
          req.type   = QM_SELL;
-         req.reason = "QM5_37003_REVERT_SELL";
-         req.sl     = QM_StopATR(_Symbol, QM_SELL, bid, strategy_atr_period, strategy_sl_atr_mult);
-         if(g_cached_bb_middle > 0.0 && g_cached_bb_middle < bid)
-            req.tp  = g_cached_bb_middle;
-         else
-            req.tp  = QM_TakeRR(_Symbol, QM_SELL, bid, req.sl, 1.5);
+          req.reason = "QM5_37003_REVERT_SELL";
+          req.sl     = QM_StopATR(_Symbol, QM_SELL, bid, strategy_atr_period, strategy_sl_atr_mult);
+          if(g_cached_bb_middle <= 0.0 || g_cached_bb_middle >= bid)
+             return false;
+          req.tp = g_cached_bb_middle;
       }
       else
       {
@@ -292,6 +323,9 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
 {
+   if(!Strategy_ConfigValid())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -307,7 +341,14 @@ int OnInit()
                         qm_rng_seed,
                         qm_stress_reject_probability,
                         qm_news_temporal,
-                        qm_news_compliance))
+                         qm_news_compliance))
+      return INIT_FAILED;
+
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         strategy_daily_hard_stop_pct,
+                         strategy_total_dd_halt_pct,
+                         strategy_per_trade_risk_cap_pct))
       return INIT_FAILED;
 
    AdvanceState_OnNewBar();
@@ -335,9 +376,6 @@ void OnTick()
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
-
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -362,10 +400,13 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_H1))
       return;
 
    AdvanceState_OnNewBar();
+
+   if(Strategy_NoTradeFilter())
+      return;
 
    QM_EquityStreamOnNewBar();
 
