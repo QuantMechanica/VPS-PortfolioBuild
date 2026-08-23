@@ -1,0 +1,53 @@
+{
+  "candidate": {
+    "author": "Karsten Schweikert; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; CME Group",
+    "mechanic": "exact synchronized XAUUSD XAGUSD D1 completed month 17 to 23 relative returns mean RMS coherence 0.16 contrarian equal notional basket",
+    "slug": "xauxag-mrms-coherence-rv",
+    "strategy_id": "SCHWEIKERT-MOP-CME-XAUXAG-MRMS-COHERENCE-RV-2026_S01"
+  },
+  "error": null,
+  "exit_code": 2,
+  "generated_at_utc": "2026-08-23T05:10:25+00:00",
+  "matches": [
+    {
+      "ea_id": "41125",
+      "match_type": "slug",
+      "slug": "xauxag-mrms-coherence-rv",
+      "source": "ea_id_registry",
+      "strategy_id": "SCHWEIKERT-MOP-CME-XAUXAG-MRMS-COHERENCE-RV-2026_S01"
+    },
+    {
+      "ea_id": "41125",
+      "match_type": "strategy_id",
+      "slug": "xauxag-mrms-coherence-rv",
+      "source": "ea_id_registry",
+      "strategy_id": "SCHWEIKERT-MOP-CME-XAUXAG-MRMS-COHERENCE-RV-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4625,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1293,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "DUPLICATE"
+}
