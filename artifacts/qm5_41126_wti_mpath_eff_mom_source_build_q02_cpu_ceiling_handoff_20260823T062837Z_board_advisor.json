@@ -1,0 +1,153 @@
+{
+  "schema": "qm.qm5-41126.source-build-q02-cpu-ceiling-handoff/v1",
+  "generated_at_utc": "2026-08-23T06:28:37.7921410Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41126",
+  "ea_label": "QM5_41126_wti-mpath-eff-mom",
+  "strategy_id": "MOP-WTI-MPATH-EFF-MOM-2026_S01",
+  "source_id": "MOP-WTI-MPATH-EFF-MOM-2026",
+  "outcome": "SOURCE_BUILD_COMMITTED_CPU_CEILING_BEFORE_GOVERNED_COMPILE_Q01_PENDING_Q02_NOT_ENQUEUED",
+  "commits": {
+    "source_approval_and_preallocation_dedup": "5d6f31cd203e5aacab8a7fea993abb4eaff3008a",
+    "bounded_source_extraction": "92feace6722fbf0183d9b35641c5c69f1daa5124",
+    "ea_id_reservation": "423a2fb48c1cffe64894a2b966df77cdb3fcca4d",
+    "g0_card_and_postallocation_dedup": "839fa13c7d90226db8a392ac0807340e59117257",
+    "magic_allocation_resolver_and_local_card": "689f1dd0af2b0d2e27855fc10a36b27dd8766193",
+    "source_build": "468b570df0bef85ad1143afd8f4a89da3682ee34"
+  },
+  "identity": {
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "symbol_slot": 0,
+    "magic": 411260000
+  },
+  "mechanic": {
+    "formation": "immediately completed broker month with 17-23 D1 closes plus the adjacent older boundary close",
+    "returns": "every chronological daily log return ending on a completed-month session",
+    "statistic": "N=sum(r), P=sum(abs(r)), E=abs(N)/P; require finite P>0, bounded E, inclusive E>=0.20, nonzero N, and endpoint identity",
+    "entry": "positive N buys WTI; negative N sells WTI",
+    "attempt_cadence": "one durable attempt per broker month, persisted before all fallible gates",
+    "exit": "first executable D1 boundary in a later broker month with forty-calendar-day stale repair",
+    "q02_frequency_floor": "at least five completed positions in every full post-warm-up year"
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "atr_period_d1": 20,
+    "atr_stop_multiple": 3.5,
+    "profit_target": false,
+    "maximum_spread_points": 1500,
+    "deviation_points": 20,
+    "friday_close": false,
+    "news_temporal": "OFF",
+    "news_compliance": "NONE"
+  },
+  "dedup": {
+    "preallocation_verdict": "CLEAN",
+    "registry_identities_scanned": 4625,
+    "cards_scanned": 1294,
+    "strategy_wiki_nodes_scanned": 45,
+    "postallocation_registry_identities_scanned": 4626,
+    "postallocation_cards_scanned": 1295,
+    "postallocation_verdict": "EXPECTED_SELF_HITS_ONLY",
+    "postallocation_self_hits": 2
+  },
+  "allocation": {
+    "directory_first": true,
+    "strict_default_used": true,
+    "transient_preservation_for_preexisting_missing_legacy_ids": [1001, 1015, 1016],
+    "allow_dropped_used": false,
+    "allocated_eas": 1,
+    "allocated_rows": 1,
+    "registry_rows_before": 17856,
+    "registry_rows_after": 17857,
+    "resolver_rows_before": 17825,
+    "resolver_rows_after": 17826,
+    "retired_rows_deleted": 0,
+    "status_aware_magic_collisions_after": 0
+  },
+  "validations": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "g0_card_status": "APPROVED",
+    "registry_identity": "PASS",
+    "magic_row_and_resolver": "PASS",
+    "reference_tests": {
+      "verdict": "PASS",
+      "tests_passed": 9
+    },
+    "spec_validator": "PASS",
+    "build_guardrails": {
+      "verdict": "PASS",
+      "findings": 0,
+      "files_checked": 2
+    },
+    "symbol_scope": {
+      "verdict": "SINGLE_SYMBOL_OK",
+      "violations": 0,
+      "symbols": ["XTIUSD.DWX"]
+    },
+    "card_copy_sha256_equal": true,
+    "strict_compile": "NOT_RUN_CPU_CEILING",
+    "q01": "PENDING"
+  },
+  "compile": {
+    "direct_attempt_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "retry_or_bypass_attempted": false,
+    "governed_compile_enqueued": false,
+    "compile_status_at_handoff": "NOT_ENQUEUED",
+    "work_items_at_handoff": 0,
+    "work_item_id": null,
+    "ex5_exists": false,
+    "setfile_build_hash": "pending",
+    "build_check_result": null
+  },
+  "capacity": {
+    "sample_completed_at_utc": "2026-08-23T06:28:37.7921410Z",
+    "counter": "Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 2,
+    "whole_host_cpu_pct": [98.98, 98.93, 99.28, 95.90, 98.99],
+    "average_cpu_pct": 98.42,
+    "maximum_cpu_pct": 99.28,
+    "terminal64_process_count_at_sample_end": 6,
+    "metatester64_process_count_at_sample_end": 4,
+    "ceiling_pct": 97,
+    "ceiling_hit": true,
+    "binding_stop": true
+  },
+  "q02": {
+    "requested": true,
+    "preview_run": false,
+    "enqueued": false,
+    "work_item_id": null,
+    "blocking_gates": [
+      "BACKTEST_CPU_CEILING_HIT",
+      "GOVERNED_COMPILE_NOT_ENQUEUED",
+      "STRICT_COMPILE_EX5_FINAL_SET_BINDING_AND_Q01_PASS_ABSENT"
+    ]
+  },
+  "hashes_sha256": {
+    "bounded_source": "C3323E6E5A1BB60DC37B87C27F628F39DF71B7E9F661C90407994A8849AE4312",
+    "approved_and_build_card": "6AFE8FE6CF4287D0CF914DDF641C6782812CE3D73DCD585FEAA88AEE2E01DDFB",
+    "mq5": "A7306622A61B7CFB90595A4C2A954B1FD08450FE02D9725CDC5D1CE82EC61C06",
+    "spec": "A5C30D61300AF3ACB700A8B0A88C1E998A811E9F4CD265C22DBA81A43ADCEFB1",
+    "reference_suite": "EE2CD80839ECA337FB715C5463F3DE4042D4F0C87B7C7BA61B6E29AD9419370F",
+    "unbound_backtest_set": "CCFE418309110B9F30AE7513CB366A58B83B90BAA89FA1ADC0174E51306EFC5A",
+    "magic_allocation_receipt": "BE152AFE51529AC8A1A2159922ED045AF5C2402ABFA356934C56F4E190A24EA6"
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "dispatcher_tick_run": false,
+    "terminal_reservation_or_control": false,
+    "compile_queue_mutated": false,
+    "backtest_queue_mutated": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_admission_claimed": false,
+    "neutrality_or_decorrelation_claimed": false
+  }
+}
