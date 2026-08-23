@@ -229,6 +229,49 @@ OWNER-Entscheid 2026-08-23. Beauftragt als `0b6f3039` (`QM-TODO-20260823-505`): 
 (`render_detail`, `build_report_index`, `md_to_html`) wandert nach `render_dashboards.py`, die
 `ea_<id>.html`-URL bleibt erhalten oder wird umgeleitet, weil andere Oberflächen darauf zeigen.
 
+## 6 · Nachtrag: Sprache und Website (OWNER 2026-08-23, spät)
+
+### 6.1 „Nicht durchgängig englisch" — der Renderer war nicht schuld
+
+Gemessen über die freigegebenen Karten: **2.696 von 3.271 (82 %)** tragen deutsche
+Abschnittsüberschriften.
+
+| Überschrift | Karten |
+|---|---:|
+| `Quelle` | 2.694 |
+| `Mechanik` | 2.681 |
+| `Pipeline-Verlauf` | 2.668 |
+| `Verwandte Strategien` | 2.176 |
+| `R1-R4 Bewertung` (beide Strich-Varianten) | 2.660 |
+
+Das **v2-Template ist englisch** (`framework/templates/strategy_card_v2.md`: Source-defined
+rules, QM interpretations, Framework execution overrides …). Die deutschen Überschriften
+entstehen also beim **Schreiben** der Karten, nicht beim Rendern und nicht durch das Template.
+
+**Sofort behoben:** `archive_matrix.normalise_heading()` übersetzt den bekannten Satz auf
+Überschriften und Tabellenköpfen, exakte Treffer, Unbekanntes bleibt unangetastet.
+
+**Bewusst nicht getan:** die Karten umschreiben. `strategy_card_v3` ist inhaltsadressiert
+(`source_sha256`, Fingerprint) — 2.696 Evidenzdokumente zu editieren würde Duplikaterkennung und
+Evidenzkette für einen kosmetischen Gewinn zerreißen. Die dauerhafte Reparatur gehört an den
+Karteneingang (`fe6e8a54`).
+
+### 6.2 Weg auf die Website
+
+`public-data/strategy-archive.json` existiert bereits — **Schema v1, 3.557 Einträge, aber nur
+`slug`, `source`, `visibility`, `last_updated_utc`**. Eine Namensliste ohne Gate-Daten, exportiert
+von `scripts/export_public_snapshot.ps1` (Task `QM_Public_Snapshot_Hourly`), geprüft von
+`validate_public_snapshot.ps1`.
+
+Der Ausbau braucht Schema v2 plus eine **öffentliche Projektion** aus `archive_matrix.collect()`.
+Harte Auflagen stehen im Auftrag `2b95f500`: keine `file://`-Links (die interne Detailseite ist
+voll davon), keine VPS-Pfade, keine Work-Item-UUIDs, `visibility` respektiert, Snapshot-Guard
+bleibt fail-closed — die Website-Redaktion hat am 21.08. 2.334 Pfade und Mailadressen geleakt,
+weil die Fixtures nur Backslashes kannten.
+
+**Offen beim OWNER:** wie viel Verdikt-Detail überhaupt öffentlich wird — (a) nur Abdeckung,
+(b) PASS/FAIL ohne Zahlen, (c) volles Detail. Empfehlung (a).
+
 ## 3 · Nächster Schritt
 
 OWNER sieht sich die Seite an. Danach: Abnahme oder Änderungswünsche, dann Vollausbau in
