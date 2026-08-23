@@ -1,0 +1,63 @@
+{
+  "artifact_type": "diversity_wti_candidate_hard_cpu_stop",
+  "generated_at_utc": "2026-08-23T06:18:22Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "689f1dd0af2b0d2e27855fc10a36b27dd8766193",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "candidate_observation": {
+    "ea_id": "QM5_41126",
+    "slug": "wti-mpath-eff-mom",
+    "diversity_class": "energy_beyond_XNG",
+    "approved_card_path": "strategy-seeds/cards/approved/QM5_41126_wti-mpath-eff-mom_card.md",
+    "g0_decision_path": "decisions/2026-08-23_qm5_41126_wti_monthly_path_efficiency_momentum_g0.md",
+    "ea_registry_row": "41126,wti-mpath-eff-mom,MOP-WTI-MPATH-EFF-MOM-2026_S01,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-23),2026-08-23,,",
+    "magic_registry_row": "41126,wti-mpath-eff-mom,0,XTIUSD.DWX,411260000,2026-08-23,Codex governed allocator,active",
+    "ea_directory_existed_at_post_sample_collision_check": true,
+    "claim_outcome": "NOT_CLAIMED",
+    "claim_reason": "The CPU ceiling bound before a farm claim; the EA directory appeared during the preflight window, independently requiring collision avoidance."
+  },
+  "capacity_sample": {
+    "observed_at_utc": "2026-08-23T06:18:22.5256906Z",
+    "sampling_method": "Windows Get-Counter Processor(_Total) percent Processor Time",
+    "cpu_sample_count": 5,
+    "cpu_sample_interval_seconds": 1,
+    "cpu_samples_percent": [
+      96.2,
+      100.0,
+      99.9,
+      99.8,
+      90.63
+    ],
+    "cpu_average_percent": 97.306,
+    "cpu_maximum_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "relative_to": "artifacts/diversity_recovery_lineage_cpu_stop_20260823T054204Z_board_advisor.json",
+    "new_evidence": "QM5_41126 was allocated after the preceding receipt as a governed XTIUSD.DWX diversity identity, and its EA directory appeared during this run's capacity preflight.",
+    "operational_value": "The receipt prevents a duplicate paced-agent claim while preserving the newly available diversity build for its current worker."
+  },
+  "actions_this_run": {
+    "farm_db_write": false,
+    "farm_claim": false,
+    "ea_or_card_mutation": false,
+    "registry_or_magic_mutation": false,
+    "compile_or_build_check": false,
+    "smoke_or_backtest_run": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_tick": false,
+    "terminal_control": false,
+    "evidence_commit_only": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_changes_staged_or_committed": false
+  }
+}
