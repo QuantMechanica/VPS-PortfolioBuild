@@ -40,6 +40,10 @@ The `phase_label()` and `phase_qid()` helpers stay backwards-compatible:
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from types import MappingProxyType
+from typing import Mapping
+
 try:  # direct ``python tools/strategy_farm/<script>.py`` imports
     from gate_manifest import load_gate_manifest
 except ModuleNotFoundError:  # package imports in tests and module consumers
@@ -87,6 +91,202 @@ Q_TO_LEGACY_P = {
     for qid, aliases in Q_TO_LEGACY_ALIASES.items()
     if aliases
 }
+
+
+@dataclass(frozen=True)
+class PhaseAdvancement:
+    """One storage token's position in the active gate topology.
+
+    ``canonical_phase`` and ``rank`` always refer to the manifest gate.  The
+    predecessor/successor fields retain storage compatibility where the runtime
+    cannot write the top-level token directly (Q09) or is reading historical
+    legacy-P rows.
+    """
+
+    phase: str
+    canonical_phase: str
+    previous: str | None
+    next: str | None
+    rank: int
+    ordinary: bool
+    legacy_alias: bool = False
+    storage_lane: bool = False
+
+
+_PHASE_RANK = {phase: index for index, phase in enumerate(PHASE_ORDER)}
+
+# Q09 is a contract gate but not a writable work_items token.  NEWS is the
+# mandatory lane and PORTFOLIO is a sibling informational lane.  The latter has
+# the same predecessor and rank, but deliberately no successor: Q10 requires a
+# CONFIG_LOCKED NEWS result and must never be licensed by portfolio evidence.
+_CANONICAL_TO_PRIMARY_STORAGE = {"Q09": "Q09_NEWS"}
+_STORAGE_LANE_CANONICAL = {
+    "Q09_NEWS": "Q09",
+    "Q09_PORTFOLIO": "Q09",
+}
+
+# Historical rows used mixed-case B/C suffixes.  Manifest aliases are compared
+# case-insensitively, while returned tokens retain the bytes used in storage and
+# in the legacy UNION reads.
+_LEGACY_STORAGE_TOKEN = {
+    alias: {"P5B": "P5b", "P5C": "P5c", "P9B": "P9b"}.get(alias, alias)
+    for alias in LEGACY_P_TO_Q
+}
+
+# Alias collapse is not invertible: P3/P3.5 and P5/P5b/P5c map to the same
+# canonical gates.  This is the one explicit historical storage topology.  It
+# preserves the old dispatcher/cascade semantics without inventing aliases for
+# gates (Q06/Q09/Q10) that never had one.
+_LEGACY_STORAGE_ORDER = tuple(
+    _LEGACY_STORAGE_TOKEN[alias]
+    for alias in LEGACY_P_TO_Q
+)
+_LEGACY_PRIMARY_PATH = tuple(
+    phase for phase in _LEGACY_STORAGE_ORDER if phase != "P5c"
+)
+
+
+def _build_advancement_table() -> Mapping[str, PhaseAdvancement]:
+    table: dict[str, PhaseAdvancement] = {}
+    ordinary_set = set(ORDINARY_PHASE_ORDER)
+    ordinary_previous = {
+        phase: (ORDINARY_PHASE_ORDER[index - 1] if index else None)
+        for index, phase in enumerate(ORDINARY_PHASE_ORDER)
+    }
+    optimization_previous = {
+        phase: (
+            OPTIMIZATION_PHASE_ORDER[index - 1]
+            if index
+            else str(_GATE_MANIFEST.extension_topology["optimization_fork"]["from"])
+        )
+        for index, phase in enumerate(OPTIMIZATION_PHASE_ORDER)
+    }
+
+    # Canonical gates come directly from PHASE_NEXT.  Ordinary predecessors use
+    # the declared ordinary chain so Q11 remains Q10's predecessor even though
+    # the optimization fork also rejoins Q11 from Q16.
+    for phase in PHASE_ORDER:
+        previous = ordinary_previous.get(phase, optimization_previous.get(phase))
+        if phase not in ordinary_set and phase not in optimization_previous:
+            candidates = [source for source, target in PHASE_NEXT.items() if target == phase]
+            previous = candidates[0] if len(candidates) == 1 else None
+        previous = _CANONICAL_TO_PRIMARY_STORAGE.get(previous, previous)
+        successor = PHASE_NEXT.get(phase)
+        successor = _CANONICAL_TO_PRIMARY_STORAGE.get(successor, successor)
+        table[phase] = PhaseAdvancement(
+            phase=phase,
+            canonical_phase=phase,
+            previous=previous,
+            next=successor,
+            rank=_PHASE_RANK[phase],
+            ordinary=phase in ordinary_set,
+        )
+
+    q09_canonical = _STORAGE_LANE_CANONICAL["Q09_NEWS"]
+    q09_rank = _PHASE_RANK[q09_canonical]
+    q09_next = PHASE_NEXT[q09_canonical]
+    table["Q09_NEWS"] = PhaseAdvancement(
+        phase="Q09_NEWS",
+        canonical_phase=q09_canonical,
+        previous=ordinary_previous[q09_canonical],
+        next=q09_next,
+        rank=q09_rank,
+        ordinary=True,
+        storage_lane=True,
+    )
+    table["Q09_PORTFOLIO"] = PhaseAdvancement(
+        phase="Q09_PORTFOLIO",
+        canonical_phase=_STORAGE_LANE_CANONICAL["Q09_PORTFOLIO"],
+        previous=ordinary_previous[q09_canonical],
+        next=None,
+        rank=q09_rank,
+        ordinary=True,
+        storage_lane=True,
+    )
+
+    legacy_previous = {
+        phase: (_LEGACY_PRIMARY_PATH[index - 1] if index else None)
+        for index, phase in enumerate(_LEGACY_PRIMARY_PATH)
+    }
+    legacy_next = {
+        phase: (
+            _LEGACY_PRIMARY_PATH[index + 1]
+            if index + 1 < len(_LEGACY_PRIMARY_PATH)
+            else None
+        )
+        for index, phase in enumerate(_LEGACY_PRIMARY_PATH)
+    }
+    # P5c was a sibling evidence lane sourced from P5. It never licensed P6;
+    # the required predecessor for P6 was P5b.
+    legacy_previous["P5c"] = "P5"
+    legacy_next["P5c"] = None
+    for alias, canonical in LEGACY_P_TO_Q.items():
+        phase = _LEGACY_STORAGE_TOKEN[alias]
+        table[phase] = PhaseAdvancement(
+            phase=phase,
+            canonical_phase=canonical,
+            previous=legacy_previous[phase],
+            next=legacy_next[phase],
+            rank=_PHASE_RANK[canonical],
+            ordinary=canonical in ordinary_set,
+            legacy_alias=True,
+        )
+    return MappingProxyType(table)
+
+
+_ADVANCEMENT_TABLE = _build_advancement_table()
+_ADVANCEMENT_KEY_BY_UPPER = {phase.upper(): phase for phase in _ADVANCEMENT_TABLE}
+
+# Mandatory writable ordinary chain.  The informational Q09_PORTFOLIO sibling
+# is intentionally excluded; consumers that accept it add it by selecting the
+# storage_lane row from advancement_table().
+ORDINARY_STORAGE_PHASE_ORDER = tuple(
+    _CANONICAL_TO_PRIMARY_STORAGE.get(phase, phase)
+    for phase in ORDINARY_PHASE_ORDER
+)
+ORDINARY_RUNTIME_PHASES = tuple(
+    storage_phase
+    for canonical_phase in ORDINARY_PHASE_ORDER
+    for storage_phase in (
+        tuple(
+            row.phase
+            for row in _ADVANCEMENT_TABLE.values()
+            if row.storage_lane and row.canonical_phase == canonical_phase
+        )
+        or (canonical_phase,)
+    )
+)
+
+
+def advancement_table() -> Mapping[str, PhaseAdvancement]:
+    """Return the immutable manifest-derived runtime advancement table."""
+    return _ADVANCEMENT_TABLE
+
+
+def _advancement(phase: str | None) -> PhaseAdvancement | None:
+    if phase is None:
+        return None
+    key = str(phase).strip().upper()
+    storage_key = _ADVANCEMENT_KEY_BY_UPPER.get(key)
+    return None if storage_key is None else _ADVANCEMENT_TABLE[storage_key]
+
+
+def next_phase(phase: str | None) -> str | None:
+    """Return the runtime storage successor for a canonical/lane/legacy token."""
+    row = _advancement(phase)
+    return None if row is None else row.next
+
+
+def prev_phase(phase: str | None) -> str | None:
+    """Return the runtime storage predecessor for a canonical/lane/legacy token."""
+    row = _advancement(phase)
+    return None if row is None else row.previous
+
+
+def phase_rank(phase: str | None) -> int:
+    """Return the manifest ordinal for a canonical/lane/legacy token, else -1."""
+    row = _advancement(phase)
+    return -1 if row is None else row.rank
 
 
 def phase_qid(phase: str | None) -> str:

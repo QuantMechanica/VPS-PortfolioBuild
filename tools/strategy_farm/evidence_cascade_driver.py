@@ -35,10 +35,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+try:
+    from phase_ids import ORDINARY_STORAGE_PHASE_ORDER, phase_rank
+except ModuleNotFoundError:
+    from tools.strategy_farm.phase_ids import ORDINARY_STORAGE_PHASE_ORDER, phase_rank
+
 DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 EAS = Path(r"C:\QM\repo\framework\EAs")
 SNAPSHOT = Path(r"D:\QM\reports\state\evidence_cascade_driver.json")
-PHASES = ("Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q10")
+PHASES = tuple(
+    phase
+    for phase in ORDINARY_STORAGE_PHASE_ORDER
+    if phase_rank("Q02") <= phase_rank(phase) <= phase_rank("Q10")
+)
 RUNTIME_KEYS = (
     "pid", "started_at_iso", "log_path", "claimed_at_iso", "claimed_by_worker_pid",
     "commit_reservation_gb", "commit_reservation_until_utc", "terminal",

@@ -48,6 +48,20 @@ from framework.scripts._phase_utils import cold_cache_summary_signature
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
 
 
+_EARLY_RUN_SMOKE_PHASES = frozenset(
+    phase.upper()
+    for canonical in farmctl.SUPPORTED_BACKTEST_PHASES[:2]
+    for phase in (canonical, farmctl.Q_TO_LEGACY_P[canonical])
+)
+_Q04_PHASE = farmctl.SUPPORTED_BACKTEST_PHASES[-1]
+_Q09_NEWS_PHASE = farmctl.prev_phase("Q10")
+_Q08_PHASE = farmctl.prev_phase(_Q09_NEWS_PHASE)
+
+
+def _is_early_run_smoke_phase(phase: object) -> bool:
+    return str(phase or "").strip().upper() in _EARLY_RUN_SMOKE_PHASES
+
+
 POLL_SLEEP_SECONDS = 2.0
 CUSTOM_HISTORY_GUARD_SLEEP_SECONDS = 30.0
 CUSTOM_HISTORY_GATE_PASS_STATUSES = frozenset(
@@ -498,7 +512,7 @@ def _p2_history_claimable(
     registry = farmctl._dwx_symbol_history_registry() if registry is None else registry
 
     window: dict[str, Any] | None = None
-    if phase in {"P2", "Q02"}:
+    if farmctl.phase_qid(phase) == farmctl.SUPPORTED_BACKTEST_PHASES[0]:
         setfile_path = str(_work_item_value(item, "setfile_path", "") or "")
         is_exploration = any(token in setfile_path for token in ("_ablation_", "_grid_", "_synth_"))
         default_from_year = 2020 if is_exploration else farmctl.P2_DEFAULT_FROM_YEAR
@@ -1932,7 +1946,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             continue
                         if active_symbol_counts.get(symbol_key, 0) >= farmctl.CLAIM_SYMBOL_ACTIVE_CAP:
                             continue
-                    if str(item["phase"]).upper() == "Q04" and str(item["ea_id"]) in active_q04_eas:
+                    if str(item["phase"]).upper() == _Q04_PHASE and str(item["ea_id"]) in active_q04_eas:
                         continue
                     # Skip a multi-symbol item while another multi-symbol backtest
                     # is already running anywhere in the farm (serialize the heavy
@@ -2211,7 +2225,7 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                     conn.commit()
                     return {"claimed": False, "reason": "symbol_busy", "item_id": item_id}
 
-                if str(item["phase"]).upper() == "Q04":
+                if str(item["phase"]).upper() == _Q04_PHASE:
                     active_q04 = conn.execute(
                         "SELECT id FROM work_items WHERE status='active' AND phase='Q04' AND ea_id=? LIMIT 1",
                         (item["ea_id"],),
@@ -2441,7 +2455,7 @@ def _find_bound_persisted_pass_summary_data(
     run.
     """
     phase = str(item["phase"] or "").upper()
-    if phase not in {"P2", "P3", "Q02", "Q03"}:
+    if not _is_early_run_smoke_phase(phase):
         return None
     if not payload.get("evidence_binding_required"):
         return None
@@ -2734,7 +2748,7 @@ def _q09_sidecar_matches(
 ) -> bool:
     """Require the appropriate sealed Q09 sidecar before accepting an aggregate."""
 
-    if str(item["phase"] or "").upper() != "Q09_NEWS":
+    if str(item["phase"] or "").upper() != _Q09_NEWS_PHASE:
         return True
     try:
         aggregate_sha256 = _sha256_file(aggregate_path)
@@ -2890,7 +2904,7 @@ def _smoke_terminal_exit_stall_grace_seconds(
     queue.  A valid-report latch receives a longer bounded grace because report
     parsing and logger-sample publication continue after terminal_exit.
     """
-    if str(item.get("phase") or "").upper() not in {"Q02", "Q03", "P2", "P3"}:
+    if not _is_early_run_smoke_phase(item.get("phase")):
         return None
     if _find_summary(payload.get("report_root"), payload):
         return None
@@ -2987,7 +3001,7 @@ def _reserve_q09_helper_terminals(
     payload = _json_loads(row["payload_json"])
     if (
         not q09_cell_sharding_enabled()
-        or str(row["phase"] or "").upper() != "Q09_NEWS"
+        or str(row["phase"] or "").upper() != _Q09_NEWS_PHASE
         or payload.get("diagnostic_non_admission") is True
         or _q09_max_terminals() <= 1
     ):
@@ -3280,7 +3294,7 @@ def _finish_work_item(
                 summary_path, summary = summary_data
                 cold_signature = (
                     cold_cache_summary_signature(summary)
-                    if str(item["phase"]).upper() in {"P2", "P3", "Q02", "Q03"}
+                    if _is_early_run_smoke_phase(item["phase"])
                     else None
                 )
                 if cold_signature:
@@ -3418,7 +3432,7 @@ def _finish_work_item(
                 # prescreen FAIL is final by P2-prescreen design (cheap kill)
                 # and gets the explicit P2_PRESCREEN_ reason prefix. An
                 # INFRA_FAIL falls through to normal infra handling untouched.
-                if (item["phase"] in ("P2", "Q02")
+                if (farmctl.phase_qid(item["phase"]) == farmctl.SUPPORTED_BACKTEST_PHASES[0]
                         and payload.get("p2_run_stage") == "prescreen"
                         and verdict in ("PASS", "FAIL")):
                     payload.update({
@@ -3911,9 +3925,9 @@ def _monitor_timeout_seconds(
             timeout_seconds = max(timeout_seconds, payload_timeout_min * 60)
     except (TypeError, ValueError):
         pass
-    if str(phase or "").upper() == "Q08":
+    if str(phase or "").upper() == _Q08_PHASE:
         phase_timeout_min = farmctl._active_timeout_min_for_work_item(
-            "Q08", json.dumps(payload, sort_keys=True)
+            _Q08_PHASE, json.dumps(payload, sort_keys=True)
         )
         if phase_timeout_min is not None:
             timeout_seconds = max(timeout_seconds, int(phase_timeout_min) * 60)

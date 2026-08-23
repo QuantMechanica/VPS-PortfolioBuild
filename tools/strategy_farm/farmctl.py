@@ -29,9 +29,33 @@ except ModuleNotFoundError:
     from tools.strategy_farm.cache_audit import has_ea_history_window, has_history_window
 
 try:
-    from phase_ids import LEGACY_P_TO_Q, PHASE_ORDER, phase_label, phase_qid
+    from phase_ids import (
+        LEGACY_P_TO_Q,
+        ORDINARY_RUNTIME_PHASES,
+        ORDINARY_STORAGE_PHASE_ORDER,
+        PHASE_ORDER,
+        Q_TO_LEGACY_P,
+        advancement_table,
+        next_phase,
+        phase_label,
+        phase_qid,
+        phase_rank,
+        prev_phase,
+    )
 except ModuleNotFoundError:
-    from tools.strategy_farm.phase_ids import LEGACY_P_TO_Q, PHASE_ORDER, phase_label, phase_qid
+    from tools.strategy_farm.phase_ids import (
+        LEGACY_P_TO_Q,
+        ORDINARY_RUNTIME_PHASES,
+        ORDINARY_STORAGE_PHASE_ORDER,
+        PHASE_ORDER,
+        Q_TO_LEGACY_P,
+        advancement_table,
+        next_phase,
+        phase_label,
+        phase_qid,
+        phase_rank,
+        prev_phase,
+    )
 
 try:
     from q08_recovery_lineage import validate_q08_recovery_lineage
@@ -277,16 +301,43 @@ def _is_fx_currency_pair(symbol: str) -> bool:
 # Wipe (DL-063 + PIPELINE_REWRITE_PROPOSAL_2026-05-23) cleared all legacy
 # work_items, so the storage layer now writes Qxx directly. Legacy P-key
 # references in classify_* / report-csv paths remain inert (no rows to read).
-SUPPORTED_BACKTEST_PHASES = ("Q02", "Q03", "Q04")
-CASCADE_BACKTEST_PHASES = (
-    "Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS", "Q09_PORTFOLIO", "Q10",
-    # Back-compat for pre-rewrite P-key work_items/test fixtures.
-    "P5", "P5b", "P5c", "P6", "P7", "P8",
+_ADVANCEMENT = advancement_table()
+_SUPPORTED_MIN_RANK = phase_rank("Q02")
+_SUPPORTED_MAX_RANK = phase_rank("Q04")
+SUPPORTED_BACKTEST_PHASES = tuple(
+    phase
+    for phase in ORDINARY_STORAGE_PHASE_ORDER
+    if _SUPPORTED_MIN_RANK <= phase_rank(phase) <= _SUPPORTED_MAX_RANK
 )
-REAL_PHASE_RUNNER_PHASES = (
-    "Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS", "Q09_PORTFOLIO", "Q10",
-    "P5", "P5b", "P5c", "P6", "P7", "P8",
+# dispatch_tick PASS auto-cascade domain. The pre-centralization branch used a
+# legacy P-name map ({"P2":"P3","P3":"P3.5","P3.5":"P4"}) guarded by
+# `in SUPPORTED_BACKTEST_PHASES` (Q02/Q03/Q04): no legacy successor is a Qxx
+# storage phase, so the branch was DEAD and dispatch_tick never auto-enqueued a
+# successor (verified empirically 2026-08-23; see evidence doc). dispatch_tick
+# runs inside the live ~5-min pump (_pump_unlocked), so replacing the dead map
+# with the centralized next_phase() lookup would silently activate a
+# Q02->Q03->Q04 auto-cascade — a forward throughput change, not the "no
+# semantics change" this refactor claims. Keep the effective domain EMPTY so
+# dispatch_tick behavior stays byte-identical to pre-ticket. Activating the
+# cascade is a deliberate GELB decision (Stehende Vollmacht) requiring an
+# evidence before/after update, a fixture test, and operational sign-off — done
+# by adding phases to this set, never as a refactor side effect.
+_DISPATCH_TICK_AUTO_CASCADE_PHASES: frozenset[str] = frozenset()
+_CASCADE_MIN_RANK = phase_rank("Q04")
+_CASCADE_MAX_RANK = phase_rank("Q10")
+_CANONICAL_CASCADE_PHASES = tuple(
+    phase
+    for phase in ORDINARY_RUNTIME_PHASES
+    if _CASCADE_MIN_RANK <= phase_rank(phase) <= _CASCADE_MAX_RANK
 )
+_LEGACY_CASCADE_PHASES = tuple(
+    row.phase
+    for row in _ADVANCEMENT.values()
+    if row.legacy_alias
+    and phase_rank("Q05") <= row.rank <= phase_rank("Q08")
+)
+CASCADE_BACKTEST_PHASES = _CANONICAL_CASCADE_PHASES + _LEGACY_CASCADE_PHASES
+REAL_PHASE_RUNNER_PHASES = CASCADE_BACKTEST_PHASES
 # 2026-08-14 — MQL5 test-harness work-item class (task 50d5752c-daf2). A
 # 'harness' work_item never trades: it runs a history-free test EA (e.g. the
 # pattern-permission fixture runner) through the SAME claim -> Custom-history
@@ -1232,6 +1283,29 @@ def is_recovery_payload(payload: "dict[str, Any] | None") -> bool:
     return bool(payload.get(RECOVERY_CLASS_PAYLOAD_KEY))
 
 
+def _gate_priority_rank_sql() -> str:
+    """Build the gate-only CASE arms from the centralized advancement table."""
+    canonical = list(dict.fromkeys(SUPPORTED_BACKTEST_PHASES + _CANONICAL_CASCADE_PHASES))
+    # Historical canonical Q09 rows remain inspection-only, but retain the same
+    # queue rank if surfaced by a diagnostic query.
+    canonical.append(_ADVANCEMENT["Q09"].phase)
+    canonical_lines = [
+        f"            WHEN '{phase}' THEN {phase_rank('Q10') - phase_rank(phase)}"
+        for phase in canonical
+    ]
+    legacy = [
+        row.phase
+        for row in _ADVANCEMENT.values()
+        if row.legacy_alias
+        and phase_rank("Q02") <= row.rank <= phase_rank("Q08")
+    ]
+    legacy_lines = [
+        f"            WHEN '{phase}' THEN {len(legacy) - index - 1}"
+        for index, phase in enumerate(legacy)
+    ]
+    return "\n".join(canonical_lines + legacy_lines)
+
+
 def pending_claim_order_sql() -> str:
     """Canonical pending-work ordering — the ONE selector every claimant uses.
 
@@ -1242,7 +1316,7 @@ def pending_claim_order_sql() -> str:
     ``julianday`` returns NULL for malformed dates; COALESCE makes those rows
     receive zero age credit (fail open, preserving their normal priority).
     """
-    return """
+    return f"""
         SELECT w.*,
           CASE
             -- Recovery-class rows (classify_recovery_pending.py marker) sort LAST so
@@ -1275,15 +1349,7 @@ def pending_claim_order_sql() -> str:
             -- rows are rare and terminal, so a head-of-queue rank cannot starve
             -- production throughput.
             WHEN 'HARNESS_PP_FIXTURE' THEN 0
-            WHEN 'Q10'  THEN 0
-            WHEN 'Q09_PORTFOLIO' THEN 1
-            WHEN 'Q09_NEWS' THEN 1
-            WHEN 'Q09'  THEN 1
-            WHEN 'Q08'  THEN 2
-            WHEN 'Q07'  THEN 3
-            WHEN 'Q06'  THEN 4
-            WHEN 'Q05'  THEN 5
-            WHEN 'Q04'  THEN 6
+{_gate_priority_rank_sql()}
             -- OPT_CENSUS (DL-089 §3) shares Q04's tier-6 rank on purpose: the
             -- optimization measurement pool must INTERLEAVE with the funnel, not
             -- run ahead of it and not starve it. OPT_CENSUS rows are never
@@ -1301,18 +1367,6 @@ def pending_claim_order_sql() -> str:
             -- rare, terminal, seconds-cheap) lets any freed slot clear compile
             -- work first without measurably starving backtest throughput.
             WHEN 'COMPILE_EA' THEN 1
-            WHEN 'Q03'  THEN 7
-            WHEN 'Q02'  THEN 8
-            WHEN 'P8'   THEN 0
-            WHEN 'P7'   THEN 1
-            WHEN 'P6'   THEN 2
-            WHEN 'P5c'  THEN 3
-            WHEN 'P5b'  THEN 4
-            WHEN 'P5'   THEN 5
-            WHEN 'P4'   THEN 6
-            WHEN 'P3.5' THEN 7
-            WHEN 'P3'   THEN 8
-            WHEN 'P2'   THEN 9
             ELSE 9 END AS _phase_rank,
           CASE
             WHEN w.phase='Q02'
@@ -4400,7 +4454,6 @@ def pipeline_view(root: Path) -> dict[str, Any]:
         entry["per_ea_source"] = "work_items"
         grouped.setdefault((ea_id, phase), []).append(row)
 
-    phase_rank = {phase: index for index, phase in enumerate(PHASE_ORDER)}
     for (ea_id, phase), rows in grouped.items():
         entry = eas[ea_id]
         status_counts: dict[str, int] = {}
@@ -4495,7 +4548,10 @@ def pipeline_view(root: Path) -> dict[str, Any]:
                 )
             ordered_phases = sorted(
                 entry["phases"],
-                key=lambda phase: (phase_rank.get(phase, len(PHASE_ORDER)), phase),
+                key=lambda phase: (
+                    phase_rank(phase) if phase_rank(phase) >= 0 else len(PHASE_ORDER),
+                    phase,
+                ),
             )
             entry["phases"] = {
                 phase: {
@@ -4509,7 +4565,10 @@ def pipeline_view(root: Path) -> dict[str, Any]:
             entry["phases"] = entry["_legacy_phases"]
             ordered_phases = sorted(
                 entry["phases"],
-                key=lambda phase: (phase_rank.get(phase, len(PHASE_ORDER)), phase),
+                key=lambda phase: (
+                    phase_rank(phase) if phase_rank(phase) >= 0 else len(PHASE_ORDER),
+                    phase,
+                ),
             )
             decisive = max(
                 ordered_phases,
@@ -10032,11 +10091,37 @@ CANONICAL_PARENT_CHILD_VERDICTS = frozenset({
 })
 PHYSICALLY_TERMINAL_WORK_ITEM_STATUSES = frozenset({"done", "failed"})
 PARENT_PROGRESSION_MAP = {
-    "P2": "P3",
-    "P3": "P3.5",
-    "P3.5": "P4",
-    "Q02": "Q03",
-    "Q03": "Q04",
+    row.phase: row.next
+    for row in _ADVANCEMENT.values()
+    if row.next is not None
+    and _SUPPORTED_MIN_RANK <= row.rank < _SUPPORTED_MAX_RANK
+}
+
+# Verdict policy remains a gate criterion (and therefore ROT).  Advancement
+# topology is no longer duplicated here: both pump promotion and exact cascade
+# enqueue look up the predecessor/successor through phase_ids.
+_CASCADE_PASS_VERDICTS_BY_PREDECESSOR = {
+    "Q02": {"PASS"},
+    "Q03": {"PASS"},
+    "Q04": {"PASS", "PASS_SOFT", "PASS_LOWFREQ"},
+    "Q05": {"PASS"},
+    "Q06": {"PASS", "PASS_SOFT"},
+    "Q07": {"PASS", "MULTI_SEED_PASS"},
+    "Q08": {"PASS", "FAIL_SOFT"},
+    "Q09_NEWS": Q09_NEWS_SUCCESS_VERDICTS,
+    "P2": {"PASS"},
+    "P3": {"PASS"},
+    "P3.5": {"PASS"},
+    "P4": {"PASS"},
+    "P5": {"PASS"},
+    "P5b": {"PASS"},
+    "P5c": {"PASS"},
+    # Effective predecessor of the (inert, post-wipe) P7 cascade target. The
+    # pre-ticket policy admitted P7 on a P6 {PASS} only; keep it {PASS} so this
+    # dict is the single applied source of truth and no P7 special-case is
+    # needed to override a wrong value here.
+    "P6": {"PASS"},
+    "P7": {"PASS"},
 }
 
 
@@ -17823,13 +17908,9 @@ def _pump_unlocked(
     # Q09_NEWS is a canonical, evidence-producing phase. Q10 requires its
     # CONFIG_LOCKED result; portfolio output is optional information.
     cascade_phase_map = {
-        "Q03": "Q04",
-        "Q04": "Q05",
-        "Q05": "Q06",
-        "Q06": "Q07",
-        "Q07": "Q08",
-        "Q08": "Q09_NEWS",
-        "Q09_NEWS": "Q10",
+        phase: next_phase(phase)
+        for phase in ORDINARY_STORAGE_PHASE_ORDER
+        if phase_rank("Q03") <= phase_rank(phase) < phase_rank("Q10")
     }
     cascade_pass_verdicts = {
         "Q03": {"PASS"},
@@ -17859,7 +17940,7 @@ def _pump_unlocked(
     with connect(root) as conn:
         conn.execute("BEGIN IMMEDIATE")
         reopened_parents: set[str] = set()
-        for prev_phase, next_phase in cascade_phase_map.items():
+        for prev_phase, successor_phase in cascade_phase_map.items():
             verdicts = sorted(cascade_pass_verdicts[prev_phase])
             placeholders = ",".join("?" for _ in verdicts)
             promotable = conn.execute(
@@ -17893,7 +17974,7 @@ def _pump_unlocked(
                 (
                     prev_phase,
                     *verdicts,
-                    next_phase,
+                    successor_phase,
                 ),
             ).fetchall()
             for wi in promotable:
@@ -17903,38 +17984,38 @@ def _pump_unlocked(
                         "symbol": wi["symbol"],
                         "setfile_path": wi["setfile_path"],
                         "from_phase": prev_phase,
-                        "to_phase": next_phase,
+                        "to_phase": successor_phase,
                         "from_work_item_id": wi["id"],
                         "reason": "missing_setfile",
                     })
                     continue
                 q08_evidence_sha256: str | None = None
                 q10_dependency_context: dict[str, Any] | None = None
-                if next_phase == "Q09_NEWS":
+                if successor_phase == "Q09_NEWS":
                     q08_evidence_sha256 = _work_item_evidence_sha256(wi)
                     if not q08_evidence_sha256:
                         result["cascade_promotions_skipped"].append({
                             "ea_id": wi["ea_id"],
                             "symbol": wi["symbol"],
                             "from_phase": prev_phase,
-                            "to_phase": next_phase,
+                            "to_phase": successor_phase,
                             "from_work_item_id": wi["id"],
                             "reason": "q08_evidence_missing_or_unreadable",
                         })
                         continue
-                elif next_phase == "Q10":
+                elif successor_phase == "Q10":
                     q10_dependency_context, dependency_reason = _q10_dependency_context(conn, wi)
                     if q10_dependency_context is None:
                         result["cascade_promotions_skipped"].append({
                             "ea_id": wi["ea_id"],
                             "symbol": wi["symbol"],
                             "from_phase": prev_phase,
-                            "to_phase": next_phase,
+                            "to_phase": successor_phase,
                             "from_work_item_id": wi["id"],
                             "reason": dependency_reason,
                         })
                         continue
-                next_kind = next_phase.lower().replace(".", "")
+                next_kind = successor_phase.lower().replace(".", "")
                 parent = conn.execute(
                     "SELECT id, status FROM tasks WHERE kind=? "
                     "AND payload_json LIKE ? ORDER BY created_at ASC LIMIT 1",
@@ -17951,15 +18032,15 @@ def _pump_unlocked(
                         "promotion_source": "pump_cascade",
                     },
                 )
-                if next_phase in {"Q04", "Q05"}:
+                if successor_phase in {"Q04", "Q05"}:
                     _apply_q04_latest_full_year_from_history(wi, payload)
-                if next_phase == "Q04":
+                if successor_phase == "Q04":
                     _apply_q04_timeout_budget(conn, wi, payload)
-                if next_phase in {"Q05", "Q06", "Q08"}:
-                    _apply_phase_timeout_min(payload, next_phase)
-                if next_phase in {"Q05", "Q06", "Q07", "Q10"}:
-                    _apply_q_phase_full_history_from(payload, next_phase)
-                contract_phase = next_phase in {"Q09_NEWS", "Q10"}
+                if successor_phase in {"Q05", "Q06", "Q08"}:
+                    _apply_phase_timeout_min(payload, successor_phase)
+                if successor_phase in {"Q05", "Q06", "Q07", "Q10"}:
+                    _apply_q_phase_full_history_from(payload, successor_phase)
+                contract_phase = successor_phase in {"Q09_NEWS", "Q10"}
                 insert_sql = """
                     INSERT INTO work_items
                       (id, kind, phase, ea_id, symbol, setfile_path, status,
@@ -17967,7 +18048,7 @@ def _pump_unlocked(
                     VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
                 """
                 insert_args = (
-                    new_id, next_phase, wi["ea_id"], wi["symbol"], wi["setfile_path"],
+                    new_id, successor_phase, wi["ea_id"], wi["symbol"], wi["setfile_path"],
                     parent_id, json.dumps(payload, sort_keys=True), now, now,
                 )
                 if not contract_phase:
@@ -17976,7 +18057,7 @@ def _pump_unlocked(
                     conn.execute("SAVEPOINT q09_contract_promotion")
                     try:
                         conn.execute(insert_sql, insert_args)
-                        if next_phase == "Q09_NEWS":
+                        if successor_phase == "Q09_NEWS":
                             _add_q08_input_dependency(
                                 conn,
                                 child_work_item_id=new_id,
@@ -18003,7 +18084,7 @@ def _pump_unlocked(
                             "ea_id": wi["ea_id"],
                             "symbol": wi["symbol"],
                             "from_phase": prev_phase,
-                            "to_phase": next_phase,
+                            "to_phase": successor_phase,
                             "from_work_item_id": wi["id"],
                             "reason": f"dependency_contract_rejected:{exc}",
                         })
@@ -18023,7 +18104,7 @@ def _pump_unlocked(
                     "ea_id": wi["ea_id"],
                     "symbol": wi["symbol"],
                     "from_phase": prev_phase,
-                    "to_phase": next_phase,
+                    "to_phase": successor_phase,
                     "from_work_item_id": wi["id"],
                     "parent_task_id": parent_id,
                     "reopened_parent": reopened_parent,
@@ -21694,50 +21775,33 @@ def enqueue_cascade_backtest_for_ea(
             "ea_id": ea_id,
             "phase": phase,
         }
-    # Q-native cascade map (post-2026-05-23 rewrite). Pipeline order:
-    # Q02 baseline -> Q04 WF default probe -> Q05 Stress MED -> Q06 Stress HARSH
-    # -> Q07 Multi-Seed -> Q08 Davey -> Q09 News -> Q10 Full-History.
-    # (Was legacy P-keys; KeyError'd on Q-input.)
-    prev_phase_map = {
-        "Q04": "Q02",
-        "Q05": "Q04",
-        "Q06": "Q05",
-        "Q07": "Q06",
-        "Q08": "Q07",
-        "Q09_NEWS": "Q08",
-        "Q09_PORTFOLIO": "Q08",
-        "Q10": "Q09_NEWS",
-        "P5": "P4",
-        "P5b": "P5",
-        "P5c": "P5",
-        "P6": "P5b",
-        "P7": "P6",
-        "P8": "P7",
-    }
-    phase_prev_verdicts = {
-        "Q04": {"PASS"},
-        "Q05": {"PASS", "PASS_SOFT", "PASS_LOWFREQ"},
-        "Q06": {"PASS"},
-        # OWNER Option A 2026-08-21: creating Q07 accepts a Q06 PASS_SOFT predecessor.
-        "Q07": {"PASS", "PASS_SOFT"},
-        "Q08": {"PASS", "MULTI_SEED_PASS"},  # Q07 = multi-seed phase
-        "Q09_NEWS": {"PASS", "FAIL_SOFT"},
-        "Q09_PORTFOLIO": {"PASS", "FAIL_SOFT"},
-        "Q10": Q09_NEWS_SUCCESS_VERDICTS,
-        "P5": {"PASS"},
-        "P5b": {"PASS"},
-        "P5c": {"PASS"},
-        "P6": {"PASS"},
-        "P7": {"PASS"},
-        "P8": {"PASS"},
-    }
-    prev_phase = prev_phase_map[phase]
-    prev_phases = (
-        ("Q02", "Q03")
-        if phase == "Q04" and predecessor_work_item_id
-        else (prev_phase,)
+    # Q04's ordinary manifest predecessor is Q03. The default-probe enqueue is
+    # the established two-hop Q02 path; an exact repair may cite either Q02 or
+    # Q03. Derive both from the centralized chain instead of shadowing it.
+    manifest_prev_phase = prev_phase(phase)
+    if manifest_prev_phase is None:
+        return {
+            "enqueued": False,
+            "reason": f"Phase {phase} has no runtime predecessor",
+        }
+    is_q04_default_probe = phase == SUPPORTED_BACKTEST_PHASES[-1]
+    effective_prev_phase = (
+        prev_phase(manifest_prev_phase) if is_q04_default_probe else manifest_prev_phase
     )
-    verdicts = sorted(phase_prev_verdicts[phase])
+    if effective_prev_phase is None:
+        return {
+            "enqueued": False,
+            "reason": f"Phase {phase} has no cascade predecessor",
+        }
+    prev_phases = (
+        (effective_prev_phase, manifest_prev_phase)
+        if is_q04_default_probe and predecessor_work_item_id
+        else (effective_prev_phase,)
+    )
+    # Verdict policy is ROT: it comes solely from the predecessor-keyed dict,
+    # which is self-consistent with the pre-ticket per-target policy (e.g. P7
+    # admits on P6 {PASS}). No per-target special-case shadows the dict.
+    verdicts = sorted(_CASCADE_PASS_VERDICTS_BY_PREDECESSOR[effective_prev_phase])
     placeholders = ",".join("?" for _ in verdicts)
     phase_placeholders = ",".join("?" for _ in prev_phases)
     init_db(root)
@@ -22620,10 +22684,18 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                             "override_field": "allow_defect_blocked_auto_cascade",
                         }
                     elif verdict == "PASS":
-                        next_phase_map = {"P2": "P3", "P3": "P3.5", "P3.5": "P4"}  # extend as adapters come online
-                        next_phase = next_phase_map.get(phase)
-                        if next_phase and next_phase in SUPPORTED_BACKTEST_PHASES:
-                            next_phase_kind = next_phase.lower().replace(".", "")  # P3.5 → 'p35'
+                        successor = next_phase(phase)
+                        # Domain gate keeps this convenience inert (empty set)
+                        # so the centralization refactor does not silently turn
+                        # on a live Q02->Q03->Q04 auto-cascade. See
+                        # _DISPATCH_TICK_AUTO_CASCADE_PHASES for the rationale
+                        # and the GELB activation path.
+                        if (
+                            successor
+                            and successor in SUPPORTED_BACKTEST_PHASES
+                            and phase in _DISPATCH_TICK_AUTO_CASCADE_PHASES
+                        ):
+                            next_phase_kind = successor.lower().replace(".", "")  # P3.5 → 'p35'
                             existing_next = conn.execute(
                                 "SELECT id FROM tasks WHERE kind = ? AND payload_json LIKE ?",
                                 (f"backtest_{next_phase_kind}", f"%\"ea_id\": \"{ea_id}\"%"),
@@ -22631,10 +22703,10 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                             if not existing_next:
                                 # Need to commit current update first so enqueue sees it
                                 conn.commit()
-                                enq_result = enqueue_backtest(root, row["id"], next_phase)
+                                enq_result = enqueue_backtest(root, row["id"], successor)
                                 if enq_result.get("enqueued"):
                                     auto_enqueued = {
-                                        "next_phase": next_phase,
+                                        "next_phase": successor,
                                         "next_task_id": enq_result.get("task_id"),
                                     }
                     actions.append({

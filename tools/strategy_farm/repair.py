@@ -77,6 +77,10 @@ import uuid
 from pathlib import Path
 
 import farmctl
+try:
+    from phase_ids import advancement_table
+except ModuleNotFoundError:
+    from tools.strategy_farm.phase_ids import advancement_table
 
 # Basket q08 streams are keyed by the resolved HOST symbol, not the logical
 # basket work-item name. Resolve through the shared portfolio choke point so
@@ -114,6 +118,16 @@ _ACTIVE_REPAIR_RUN_ID: str | None = None
 # They are exempt from the R11 backtest preflight; see
 # _pending_work_item_artifact_failure for what happened when they were not.
 _UTILITY_PHASES = frozenset({"COMPILE_EA", "HARNESS_PP_FIXTURE"})
+_ADVANCEMENT = advancement_table()
+_Q02_READ_PHASES = tuple(
+    row.phase
+    for row in _ADVANCEMENT.values()
+    if row.canonical_phase == "Q02" and (row.phase == "Q02" or row.legacy_alias)
+)
+_LEGACY_Q02_PHASE = next(
+    row.phase for row in _ADVANCEMENT.values()
+    if row.canonical_phase == "Q02" and row.legacy_alias
+)
 
 
 def _utc_now() -> str:
@@ -1012,7 +1026,7 @@ def _pending_duplicate_survivor(con, rows: list[sqlite3.Row]) -> sqlite3.Row:
 
 def repair_duplicate_pending_q02_work_items(con, ea_id_filter: str | None = None) -> list[dict]:
     """R18: collapse duplicate pending Q02/P2 rows to one runnable row per setfile."""
-    params: list[str] = []
+    params: list[str] = list(_Q02_READ_PHASES)
     ea_clause = ""
     if ea_id_filter:
         ea_clause = "AND ea_id=?"
@@ -1022,7 +1036,7 @@ def repair_duplicate_pending_q02_work_items(con, ea_id_filter: str | None = None
         SELECT ea_id, phase, symbol, setfile_path, COUNT(*) AS row_count
         FROM work_items
         WHERE status='pending'
-          AND phase IN ('Q02', 'P2')
+          AND phase IN ({",".join("?" for _ in _Q02_READ_PHASES)})
           {ea_clause}
         GROUP BY ea_id, phase, symbol, setfile_path
         HAVING COUNT(*) > 1
@@ -1161,10 +1175,11 @@ def repair_incomplete_p2_parent_fanout(con) -> list[dict]:
         """
         SELECT parent_task_id, ea_id, COUNT(*) row_count, COUNT(DISTINCT symbol) symbol_count
         FROM work_items
-        WHERE status='pending' AND phase='P2' AND parent_task_id IS NOT NULL
+        WHERE status='pending' AND phase=? AND parent_task_id IS NOT NULL
         GROUP BY parent_task_id, ea_id
         HAVING symbol_count=1
-        """
+        """,
+        (_LEGACY_Q02_PHASE,),
     ).fetchall()
     now = _utc_now()
     for parent in parents:
@@ -1180,13 +1195,13 @@ def repair_incomplete_p2_parent_fanout(con) -> list[dict]:
         existing_symbols = {
             row["symbol"]
             for row in con.execute(
-                "SELECT symbol FROM work_items WHERE parent_task_id=? AND phase='P2'",
-                (parent_task_id,),
+                "SELECT symbol FROM work_items WHERE parent_task_id=? AND phase=?",
+                (parent_task_id, _LEGACY_Q02_PHASE),
             ).fetchall()
         }
         sample = con.execute(
-            "SELECT payload_json FROM work_items WHERE parent_task_id=? AND phase='P2' LIMIT 1",
-            (parent_task_id,),
+            "SELECT payload_json FROM work_items WHERE parent_task_id=? AND phase=? LIMIT 1",
+            (parent_task_id, _LEGACY_Q02_PHASE),
         ).fetchone()
         payload = sample["payload_json"] if sample else "{}"
         created = 0
@@ -1200,10 +1215,13 @@ def repair_incomplete_p2_parent_fanout(con) -> list[dict]:
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
                    attempt_count, parent_task_id, payload_json, created_at, updated_at)
                 VALUES
-                  (?, 'backtest', 'P2', ?, ?, ?, 'pending',
+                  (?, 'backtest', ?, ?, ?, ?, 'pending',
                    0, ?, ?, ?, ?)
                 """,
-                (wid, ea_id, symbol, setfile_path, parent_task_id, payload, now, now),
+                (
+                    wid, _LEGACY_Q02_PHASE, ea_id, symbol, setfile_path,
+                    parent_task_id, payload, now, now,
+                ),
             )
             created += 1
         if created:

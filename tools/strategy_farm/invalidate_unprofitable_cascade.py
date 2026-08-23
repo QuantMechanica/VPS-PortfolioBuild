@@ -17,9 +17,21 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 import farmctl  # noqa: E402
+from phase_ids import advancement_table, phase_rank  # noqa: E402
 
 
-CASCADE_PHASES = ("P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8")
+_ADVANCEMENT = advancement_table()
+_LEGACY_Q02_PHASE = next(
+    row.phase
+    for row in _ADVANCEMENT.values()
+    if row.legacy_alias and row.canonical_phase == "Q02"
+)
+CASCADE_PHASES = tuple(
+    row.phase
+    for row in _ADVANCEMENT.values()
+    if row.legacy_alias
+    and phase_rank(_LEGACY_Q02_PHASE) < row.rank <= phase_rank("P8")
+)
 
 
 def audit(root: Path, ea_id: str | None = None) -> dict[str, Any]:
@@ -42,10 +54,10 @@ def audit(root: Path, ea_id: str | None = None) -> dict[str, Any]:
         p2_rows = conn.execute(
             f"""
             SELECT * FROM work_items
-            WHERE phase='P2' AND status='done' AND verdict='PASS'{ea_filter}
+            WHERE phase=? AND status='done' AND verdict='PASS'{ea_filter}
             ORDER BY ea_id, symbol, updated_at
             """,
-            params,
+            [_LEGACY_Q02_PHASE, *params],
         ).fetchall()
 
         findings: list[dict[str, Any]] = []

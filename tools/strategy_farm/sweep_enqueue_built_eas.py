@@ -39,6 +39,15 @@ try:
     from factory_mutation_lock import FactoryMutationLock
 except ModuleNotFoundError:
     from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+try:
+    from phase_ids import PHASE_ORDER, advancement_table, phase_qid, phase_rank
+except ModuleNotFoundError:
+    from tools.strategy_farm.phase_ids import (
+        PHASE_ORDER,
+        advancement_table,
+        phase_qid,
+        phase_rank,
+    )
 
 FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
@@ -111,7 +120,19 @@ if "--max-part2-per-run" in sys.argv:
 # Q04 and Q07 can be reclassified to INFRA_FAIL after their phase-specific
 # operators finish.  Keep those rows on the same bounded hourly recovery path
 # as Q02/Q03/Q08; Q05/Q06 remain with the separately governed deep-phase tool.
-STRANDED_INFRA_PHASES = ("Q02", "Q03", "Q04", "Q07", "Q08")
+STRANDED_INFRA_PHASES = tuple(
+    phase
+    for phase in PHASE_ORDER
+    if (
+        phase_rank("Q02") <= phase_rank(phase) <= phase_rank("Q04")
+        or phase_rank("Q07") <= phase_rank(phase) <= phase_rank("Q08")
+    )
+)
+Q02_READ_PHASES = tuple(
+    row.phase
+    for row in advancement_table().values()
+    if row.canonical_phase == "Q02" and (row.phase == "Q02" or row.legacy_alias)
+)
 TARGET_EAS = set()
 if "--ea" in sys.argv:
     for raw in sys.argv[sys.argv.index("--ea") + 1].split(","):
@@ -235,11 +256,12 @@ def deeper_phase_work_item(ea_id, symbol, phase):
     Re-enqueueing the earlier phase would spend tester capacity on a lineage
     that the farm has already advanced, even when that deeper row later failed.
     """
-    phase_rank = {name: index for index, name in enumerate(farmctl.PHASE_ORDER)}
-    current_rank = phase_rank.get(phase)
-    if current_rank is None:
+    current_rank = phase_rank(phase)
+    if current_rank < 0:
         return None
-    deeper_phases = farmctl.PHASE_ORDER[current_rank + 1:]
+    deeper_phases = tuple(
+        candidate for candidate in PHASE_ORDER if phase_rank(candidate) > current_rank
+    )
     if not deeper_phases:
         return None
     placeholders = ",".join("?" for _ in deeper_phases)
@@ -259,7 +281,7 @@ def insert_wi(
     *,
     allow_logical_basket=False,
 ):
-    if phase in {"Q02", "P2"} and farmctl.is_q02_requeue_excluded(ea_id, REQUEUE_EXCLUDED_EAS):
+    if phase_qid(phase) == "Q02" and farmctl.is_q02_requeue_excluded(ea_id, REQUEUE_EXCLUDED_EAS):
         report.setdefault("requeue_excluded_refused", []).append({
             "ea_id": ea_id,
             "phase": phase,
@@ -544,8 +566,10 @@ for phase in STRANDED_INFRA_PHASES:
     if TARGET_EAS:
         target_filter = "AND x.ea_id IN (%s)" % ",".join("?" for _ in TARGET_EAS)
         params.extend(sorted(TARGET_EAS))
-    phase_rank = {name: index for index, name in enumerate(farmctl.PHASE_ORDER)}
-    deeper_phases = farmctl.PHASE_ORDER[phase_rank[phase] + 1:]
+    current_rank = phase_rank(phase)
+    deeper_phases = tuple(
+        candidate for candidate in PHASE_ORDER if phase_rank(candidate) > current_rank
+    )
     deeper_filter = ""
     if deeper_phases:
         deeper_filter = (
@@ -895,9 +919,11 @@ if deferred_state:
         deferred_setfiles = list(entry.get("setfiles") or [])
 
         all_rows = cur.execute(
-            "SELECT * FROM work_items WHERE ea_id=? AND phase IN ('Q02','P2') "
+            "SELECT * FROM work_items WHERE ea_id=? AND phase IN ("
+            + ",".join("?" for _ in Q02_READ_PHASES)
+            + ") "
             "ORDER BY updated_at,id",
-            (ea_id,),
+            (ea_id, *Q02_READ_PHASES),
         ).fetchall()
         build_task_id = str(entry.get("build_task_id") or "").strip()
         if build_task_id:
