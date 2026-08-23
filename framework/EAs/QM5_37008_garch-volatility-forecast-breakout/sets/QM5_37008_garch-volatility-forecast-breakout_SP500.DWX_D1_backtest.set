@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   94e0f1ea793c88c63d276f143d292f170a5f4892398c548210d68ad17e624d1b
 ; author:       Development
 ; date:         2026-08-17
 ;==========================================================
@@ -30,4 +30,8 @@ strategy_atr_period=14
 strategy_sl_sigma_mult=1.00
 strategy_tp_rr_mult=2.00
 strategy_spread_atr_mult=1.80
-strategy_max_spread_points=100
+strategy_max_slippage_ticks=3
+strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
+strategy_total_dd_halt_pct=5.0
+strategy_per_trade_risk_cap_pct=0.5
