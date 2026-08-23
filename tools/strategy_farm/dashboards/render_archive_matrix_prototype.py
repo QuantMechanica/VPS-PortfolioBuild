@@ -67,6 +67,25 @@ RETIRE_TOKENS = ("RETIRE", "RETIRED_LOW_FREQ", "OBSOLETE_NON_DWX_SYMBOL",
                  "SUPERSEDED", "SUPERSEDED_BY_LOGICAL_BASKET", "CANCELLED")
 
 
+def symbol_class(symbol: str) -> str:
+    """Handelbar / Basket / Relikt.
+
+    OWNER 2026-08-23: Symbole ohne ``.DWX`` sind Relikte und gehören nicht auf die
+    Seite. Gemessen sind das aber nur **9 nackte Ticker mit 228 Zeilen** aus dem
+    geschlossenen Fenster 12.-21.06.2026 (196 davon tragen bereits das Verdikt
+    ``OBSOLETE_NON_DWX_SYMBOL``, der Rest INFRA_FAIL/INVALID — kein einziges
+    wirtschaftliches Urteil). Die übrigen 767 Nicht-DWX-Zeilen sind **logische
+    Basket-Symbole** (``QM5_20206_XAU_XAG_MOMIVOL_D1`` …), zuletzt heute
+    aktualisiert — die sind kein Relikt und bleiben."""
+    if symbol.endswith(".DWX"):
+        return "dwx"
+    if symbol.startswith("TBD_"):
+        return "relic"
+    if symbol == "BASKET" or "_" in symbol:
+        return "basket"
+    return "relic"
+
+
 def _gate_of(phase: str | None) -> str | None:
     """Speicherphase → Matrixspalte. P2 ist ein Legacy-Alias von Q02."""
     if not phase:
@@ -115,6 +134,8 @@ def load_card_targets() -> dict[str, list[str]]:
         if not m:
             continue
         syms = [s.strip().strip('"\'') for s in m.group(1).split(",") if s.strip()]
+        # Relikte auch aus der zweiten Quelle (OWNER 2026-08-23).
+        syms = [s for s in syms if symbol_class(s) != "relic"]
         if syms:
             out[ea] = syms
     return out
@@ -130,6 +151,7 @@ def collect() -> dict:
     held_items: set[str] = set()
     rows_seen = 0
     skipped_phase: Counter = Counter()
+    dropped_relic: Counter = Counter()
 
     for wid, ea, sym, phase, verdict, tax, upd, payload in conn.execute(
         "SELECT id, ea_id, symbol, phase, verdict, verdict_taxonomy, updated_at, setfile_path "
@@ -143,6 +165,9 @@ def collect() -> dict:
             skipped_phase[phase or "<null>"] += 1
             continue
         symbol = (sym or "").strip() or "BASKET"
+        if symbol_class(symbol) == "relic":
+            dropped_relic[symbol] += 1
+            continue
         v = (verdict or "").upper()
         if any(v.startswith(t) for t in RETIRE_TOKENS):
             retired.add((ea, symbol))
@@ -256,6 +281,7 @@ def collect() -> dict:
         "cards": cards, "stats": stats, "hole_by_gate": hole_by_gate,
         "rows_seen": rows_seen, "cells": len(latest), "skipped_phase": skipped_phase,
         "untested_targets": untested_targets, "retired_pairs": len(retired),
+        "dropped_relic": dropped_relic,
         "held_items": len(held_items), "collect_s": time.perf_counter() - t0,
         "cards_with_targets": len(targets),
     }
@@ -500,14 +526,15 @@ def render(data: dict) -> str:
     for c in cards:
         for s in c["symbols"]:
             use[s] += 1
-    dwx = sorted((s for s in all_syms if s.endswith(".DWX") or s == "BASKET"),
+    dwx = sorted((s for s in all_syms if symbol_class(s) == "dwx"),
                  key=lambda s: (-use[s], s))
-    legacy = sorted(s for s in all_syms if not (s.endswith(".DWX") or s == "BASKET"))
+    baskets = sorted((s for s in all_syms if symbol_class(s) == "basket"),
+                     key=lambda s: (-use[s], s))
     sym_opts = (
-        '<optgroup label="handelbar (DWX) + Basket">'
+        '<optgroup label="handelbare DWX-Symbole">'
         + "".join(f'<option value="{sym_idx[s]}">{esc(s)} · {use[s]}</option>' for s in dwx)
-        + '</optgroup><optgroup label="legacy / obsolet">'
-        + "".join(f'<option value="{sym_idx[s]}">{esc(s)} · {use[s]}</option>' for s in legacy)
+        + '</optgroup><optgroup label="logische Basket-Symbole">'
+        + "".join(f'<option value="{sym_idx[s]}">{esc(s)} · {use[s]}</option>' for s in baskets)
         + "</optgroup>")
 
     tot_cells = sum(stats.values())
@@ -575,6 +602,11 @@ Karten-Frontmatter haben keinen einzigen Lauf und erscheinen als Loch in Q02
 <b>Leer statt Loch:</b> {fmt(data['retired_pairs'])} (Card, Symbol)-Paare sind über
 RETIRE/OBSOLETE/SUPERSEDED stillgelegt, {fmt(data['held_items'])} Work Items stehen unter einem
 aktiven Hold — beide erzeugen kein Loch.<br>
+<b>Ausgeschlossene Relikt-Symbole (OWNER 2026-08-23):</b> {fmt(sum(data['dropped_relic'].values()))}
+Zeilen auf {len(data['dropped_relic'])} Symbolwerten ohne <code>.DWX</code>-Endung
+({esc(', '.join(sorted(data['dropped_relic'])))}) — geschlossenes Fenster 12.–21.06.2026, kein
+wirtschaftliches Urteil darunter. Logische Basket-Symbole tragen ebenfalls kein
+<code>.DWX</code>, sind aber <b>kein</b> Relikt und bleiben vollständig enthalten.<br>
 <b>Nicht dargestellte Speicherphasen:</b>
 {esc(', '.join(f'{k} {v}' for k, v in data['skipped_phase'].most_common(6))) or '—'}<br>
 Read-only. Keine Aktionspfade. Erhebung {data['collect_s']:.1f}s über
@@ -605,6 +637,8 @@ def main() -> int:
         "retired_pairs": data["retired_pairs"],
         "active_holds": data["held_items"],
         "skipped_phases": dict(data["skipped_phase"].most_common()),
+        "dropped_relic_rows": sum(data["dropped_relic"].values()),
+        "dropped_relic_symbols": dict(data["dropped_relic"].most_common()),
         "collect_s": round(data["collect_s"], 2),
         "render_s": round(time.perf_counter() - t0, 2),
     }, indent=2, ensure_ascii=False))
