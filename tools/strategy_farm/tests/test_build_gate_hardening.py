@@ -376,6 +376,34 @@ bool ReadIndicator(const int handle)
     assert "EA_INDICATOR_BUFFER_UNBOUNDED" in failure_codes(failing)
 
 
+def test_build_prompt_requires_runtime_array_and_copybuffer_bounds() -> None:
+    prompt = (
+        REPO_ROOT / "tools" / "strategy_farm" / "prompts" / "codex_build_ea.md"
+    ).read_text(encoding="utf-8")
+    normalized_prompt = " ".join(prompt.split())
+
+    assert "index >= ArraySize(buffer)" in prompt
+    assert "guard against the requested/configured" in normalized_prompt
+    assert "capture its return value" in normalized_prompt
+
+
+def test_qm5_411xx_sources_have_no_unbounded_numeric_buffers() -> None:
+    failures: list[str] = []
+    sources = sorted((REPO_ROOT / "framework" / "EAs").glob("QM5_411*/*.mq5"))
+
+    assert sources
+    for source_path in sources:
+        raw = gate.read_text_compatible(source_path)
+        source = gate.SourceFile(
+            path=source_path,
+            raw=raw,
+            code=gate.strip_comments_preserve_lines(raw),
+        )
+        failures.extend(gate.check_indicator_buffer_bounds(source))
+
+    assert failures == []
+
+
 def test_d11_canonical_setfile_and_magic_symbol_pass(tmp_path: Path) -> None:
     write_fixture(tmp_path, PASSING_SOURCE)
 

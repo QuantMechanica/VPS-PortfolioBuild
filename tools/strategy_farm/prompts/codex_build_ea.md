@@ -253,6 +253,15 @@ Forbidden patterns (Claude review will `REJECT_REWORK` on any):
   only for bespoke structural logic (NEVER for calendar-period keys — those use
   `QM_CalendarPeriodKey`).
 - `CopyBuffer` on raw handles — no `perf-allowed` exception; the readers do it for you
+- Dynamic numeric buffers must carry a local mechanical bounds proof at every
+  indexed access. After `ArrayResize(buffer, count)`, guard the actual index
+  directly against `ArraySize(buffer)` (for example,
+  `if(index < 0 || index >= ArraySize(buffer)) return false;`) or use a loop
+  bounded directly by `ArraySize(buffer)`. A guard against the requested/configured
+  `count` alone is not sufficient because it does not prove the destination's
+  runtime size. If legacy/custom-indicator code must consume `CopyBuffer`, capture
+  its return value and prove the required copied count before the first indexed
+  read; never assume the requested count was filled.
 - Learned / adaptive `weights[]` arrays updated at runtime from data — forbidden
   under HR14 (no ML). A STATIC/const hedge- or portfolio-weight array of literal
   constants (e.g. `double g_weights[3]={1.0,-1.0,-1.0};` for a cointegration

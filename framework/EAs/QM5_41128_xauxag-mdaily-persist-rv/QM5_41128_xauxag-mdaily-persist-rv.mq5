@@ -746,6 +746,9 @@ bool Strategy_LoadMonthlyDailyPersistence(
    while(index < strategy_history_bars_d1 &&
          Strategy_MonthKey(xau_bars[index].time) == completed_month_key)
      {
+      if(completed_month_sessions < 0 ||
+         completed_month_sessions >= ArraySize(series_ratios))
+         return false;
       if(completed_month_sessions >= strategy_max_month_sessions ||
          !Strategy_SynchronizedPairValid(xau_bars, xag_bars, index) ||
          Strategy_MonthKey(xag_bars[index].time) != completed_month_key ||
@@ -789,6 +792,8 @@ bool Strategy_LoadMonthlyDailyPersistence(
    return_count = completed_month_sessions;
    for(int i = 1; i <= completed_month_sessions; ++i)
      {
+      if(i <= 0 || i >= ArraySize(chronological_ratios))
+         return false;
       const double relative_return =
          chronological_ratios[i] - chronological_ratios[i - 1];
       if(!MathIsValidNumber(relative_return))
@@ -799,6 +804,9 @@ bool Strategy_LoadMonthlyDailyPersistence(
          return false;
      }
 
+   if(completed_month_sessions < 0 ||
+      completed_month_sessions >= ArraySize(chronological_ratios))
+      return false;
    endpoint_displacement =
       chronological_ratios[completed_month_sessions] -
       chronological_ratios[0];
@@ -814,6 +822,8 @@ bool Strategy_LoadMonthlyDailyPersistence(
       return false;
    for(int i = 0; i < return_count; ++i)
      {
+      if(i < 0 || i >= ArraySize(daily_returns))
+         return false;
       const double centered = daily_returns[i] - return_mean;
       const double squared = centered * centered;
       if(!MathIsValidNumber(centered) || !MathIsValidNumber(squared))
