@@ -1,0 +1,32 @@
+{
+  "task_id": "9afcf2a0-2f75-46d5-9707-8a42834eda67",
+  "ea_id": "QM5_9971",
+  "slug": "bandy-dpo-zero-cross-mr-index",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9971_bandy-dpo-zero-cross-mr-index.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_9971_bandy-dpo-zero-cross-mr-index",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9971_bandy-dpo-zero-cross-mr-index\\QM5_9971_bandy-dpo-zero-cross-mr-index.mq5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9971_bandy-dpo-zero-cross-mr-index\\SPEC.md",
+  "build_guardrails_passed": true,
+  "spec_doc_passed": true,
+  "magic_base": 99710000,
+  "symbols": [
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "SP500.DWX",
+    "UK100.DWX",
+    "WS30.DWX",
+    "XAUUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "USDCHF.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "risk_mode": "FIXED",
+  "built_by": "Gemini",
+  "built_at": "2026-08-23T08:06:00Z",
+  "status": "DRAFT_BUILT_PENDING_CODEX_REVIEW",
+  "notes": "MQL5 strategy implemented per Bandy QTA card; SPEC.md generated; backtest setfiles updated with strategy defaults; build guardrails PASS. Code left in REVIEW for mandatory Codex review."
+}
