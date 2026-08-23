@@ -1,0 +1,66 @@
+{
+  "schema": "qm.paced_fleet.commodity_energy_cpu_ceiling_stop/v1",
+  "recorded_at_utc": "2026-08-23T13:45:59Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "0e57298dcc91a630bb098fb18be067d19555b513",
+  "outcome": "NO_CARD_NO_BUILD_NO_ENQUEUE_CPU_CEILING",
+  "mission": "build one new low-frequency structural commodity or energy sleeve and enqueue Q02",
+  "namespace_preflight": {
+    "gold_silver_ratio_disposition": "REJECT_ALREADY_BUILT",
+    "duplicate_examples": [
+      "QM5_12577_cme-xauxag-ratio",
+      "QM5_12862_xauxag-rspread",
+      "QM5_20157_xau-xag-ratio",
+      "QM5_20161_xauxag-ols-rv",
+      "QM5_21526_xau-xag-cadf"
+    ],
+    "replacement_family": "WTI calendar-structural edge",
+    "candidate_selected": false,
+    "selection_stop_reason": "Capacity bound while the existing WTI calendar, seasonality, trend, flow, and recent monthly-path namespaces were being deduplicated."
+  },
+  "capacity": {
+    "sampling_method": "Windows Get-Counter Processor(_Total) percent Processor Time",
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 100.0,
+    "maximum_percent": 100.0,
+    "hard_cpu_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "relative_to": "artifacts/diversity_wti_candidate_cpu_stop_20260823T061822Z_board_advisor.json",
+    "new_evidence": "At 2026-08-23T13:45:59Z, all five capacity samples were exactly 100.0 percent; the canonical registries had also advanced through WTI identity QM5_41131, so stale candidate allocation would collide.",
+    "operational_value": "Prevents duplicate gold/silver work and prevents an unsafe or colliding WTI allocation while the tester fleet is saturated."
+  },
+  "actions_this_run": {
+    "source_intake_or_approval": false,
+    "card_creation_or_approval": false,
+    "ea_id_or_magic_allocation": false,
+    "ea_source_or_binary_creation": false,
+    "resolver_regeneration": false,
+    "compile_or_build_check": false,
+    "q02_enqueue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "tester_or_backtest_run": false,
+    "terminal_control": false,
+    "evidence_commit_only": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_changes_staged_or_committed": false
+  },
+  "next_safe_action": "After sustained whole-host CPU is below 97 percent, rerun canonical dedup from the then-current registry, select one structurally distinct WTI mechanic with durable reputable-source approval, build it with RISK_FIXED backtest setfiles, and enqueue exactly one Q02 task."
+}
