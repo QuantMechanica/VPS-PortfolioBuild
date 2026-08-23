@@ -96,18 +96,18 @@ def _insert_q10(
         INSERT INTO work_items(
           id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
           parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at
-        ) VALUES(?, 'backtest','Q10',?,?,?,'done','PASS',0,NULL,?,NULL,'{}',?,?)
+        ) VALUES(?, 'backtest',?,?,?,?,'done','PASS',0,NULL,?,NULL,'{}',?,?)
         """,
-        (item_id, f"QM5_{ea_number}", f"{symbol}.DWX", str(setfile), str(evidence), updated_at, updated_at),
+        (item_id, q14.INCUMBENT_PHASE, f"QM5_{ea_number}", f"{symbol}.DWX", str(setfile), str(evidence), updated_at, updated_at),
     )
     conn.execute(
         """
         INSERT INTO ea_metrics(
           work_item_id,ea_id,phase,symbol,verdict,status,trades,drawdown_pct,
           detail_json,is_ablation
-        ) VALUES(?,?,'Q10',?,'PASS','done',?,?,'{}',0)
+        ) VALUES(?,?,?,?,'PASS','done',?,?,'{}',0)
         """,
-        (item_id, f"QM5_{ea_number}", f"{symbol}.DWX", trades, drawdown),
+        (item_id, f"QM5_{ea_number}", q14.INCUMBENT_PHASE, f"{symbol}.DWX", trades, drawdown),
     )
     conn.commit()
     conn.close()
@@ -382,7 +382,7 @@ def test_apply_writes_valid_immutable_card_open_ledger_and_idempotent_q14_row(tm
     conn = sqlite3.connect(db)
     row = conn.execute("SELECT phase,status,verdict,kind,payload_json FROM work_items WHERE id=?", (decision["work_item_id"],)).fetchone()
     conn.close()
-    assert row[:4] == ("Q14", "done", "OPT_ELIGIBLE", "analytic")
+    assert row[:4] == (q14.ADMISSION_PHASE, "done", "OPT_ELIGIBLE", "analytic")
     assert json.loads(row[4])["card_id"] == decision["card_id"]
 
     second = q14.run_admission(db_path=db, config_path=config, repo_root=repo, report_root=reports, apply=True)
@@ -466,9 +466,9 @@ def test_existing_card_state_never_shares_a_counter_across_programs(tmp_path: Pa
             INSERT INTO work_items(
               id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
               parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at
-            ) VALUES(?, 'analytic','Q14',?,?, 'x','done','OPT_ELIGIBLE',0,NULL,NULL,NULL,?,?,?)
+            ) VALUES(?, 'analytic',?,?,?, 'x','done','OPT_ELIGIBLE',0,NULL,NULL,NULL,?,?,?)
             """,
-            (item_id, ea_id, symbol, json.dumps(payload), now, now),
+            (item_id, q14.ADMISSION_PHASE, ea_id, symbol, json.dumps(payload), now, now),
         )
     conn.commit()
 

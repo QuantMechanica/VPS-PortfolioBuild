@@ -116,9 +116,24 @@ class Q10ConfirmationContractV2Tests(unittest.TestCase):
         ).hexdigest()
         self.q09_evidence.write_bytes(canonical_json_bytes(q09_aggregate))
         self._add_work_item("q08", "Q08", "PASS", self.root / "q08.json")
-        self._add_work_item("q09n", "Q09_NEWS", "CONFIG_LOCKED", self.q09_evidence)
-        self._add_work_item("q09p", "Q09_PORTFOLIO", "PASS_PORTFOLIO", self.portfolio_evidence)
-        self._add_work_item("q10", "Q10", None, self.root / "q10.json")
+        self._add_work_item(
+            "q09n",
+            schema.ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS"),
+            "CONFIG_LOCKED",
+            self.q09_evidence,
+        )
+        self._add_work_item(
+            "q09p",
+            schema.ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "PORTFOLIO"),
+            "PASS_PORTFOLIO",
+            self.portfolio_evidence,
+        )
+        self._add_work_item(
+            "q10",
+            schema.ACTIVE_GATE_MANIFEST.gate_for_role("INCUMBENT"),
+            None,
+            self.root / "q10.json",
+        )
         schema.record_calendar_bundle(self.conn, published_calendar, str(self.calendar_manifest))
         schema.add_dependency(
             self.conn, child_work_item_id="q09n", dependency_role="Q08_INPUT", parent_work_item_id="q08",
@@ -175,7 +190,7 @@ class Q10ConfirmationContractV2Tests(unittest.TestCase):
                 ("q09n", arm, mode, compliance, "[42,17,99,7,2026]", "{}", "{}", "2026-01-01T00:00:03Z"),
             )
         schema.add_dependency(
-            self.conn, child_work_item_id="q10", dependency_role="Q09_NEWS", parent_work_item_id="q09n",
+            self.conn, child_work_item_id="q10", dependency_role=schema.ACTIVE_GATE_MANIFEST.dependency_role("Q09_NEWS"), parent_work_item_id="q09n",
             parent_evidence_sha256=sha256_file(self.q09_evidence), required_verdicts=["CONFIG_LOCKED"],
         )
         self.conn.commit()
@@ -193,7 +208,7 @@ class Q10ConfirmationContractV2Tests(unittest.TestCase):
 
     def _add_portfolio_dependency(self) -> None:
         schema.add_dependency(
-            self.conn, child_work_item_id="q10", dependency_role="Q09_PORTFOLIO", parent_work_item_id="q09p",
+            self.conn, child_work_item_id="q10", dependency_role=schema.ACTIVE_GATE_MANIFEST.dependency_role("Q09_PORTFOLIO"), parent_work_item_id="q09p",
             parent_evidence_sha256=sha256_file(self.portfolio_evidence),
             required_verdicts=["PASS_PORTFOLIO", "FAIL_PORTFOLIO", "FAIL_SYSTEM"],
         )
@@ -239,9 +254,16 @@ class Q10ConfirmationContractV2Tests(unittest.TestCase):
             text,
         )
         manifest = json.loads(Path(result["manifest_path"]).read_text(encoding="utf-8"))
-        self.assertEqual(set(manifest["dependencies"]), {"Q09_NEWS", "Q09_PORTFOLIO"})
+        portfolio_role = schema.ACTIVE_GATE_MANIFEST.dependency_role("Q09_PORTFOLIO")
         self.assertEqual(
-            manifest["dependencies"]["Q09_PORTFOLIO"],
+            set(manifest["dependencies"]),
+            {
+                schema.ACTIVE_GATE_MANIFEST.dependency_role("Q09_NEWS"),
+                portfolio_role,
+            },
+        )
+        self.assertEqual(
+            manifest["dependencies"][portfolio_role],
             {"work_item_id": None, "evidence_path": None, "evidence_sha256": None},
         )
         self.assertEqual(manifest["inputs"]["baseline_source_setfile_sha256"], sha256_file(self.source_set))

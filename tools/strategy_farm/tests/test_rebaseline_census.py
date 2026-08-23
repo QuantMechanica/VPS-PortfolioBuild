@@ -36,11 +36,14 @@ def _ins(con, rid, phase, ea, sym, status, verdict, payload=None):
 def test_canonical_gate_mapping():
     assert rc.canonical_gate("Q02") == "Q02"
     assert rc.canonical_gate("P2") == "Q02"          # legacy alias
-    assert rc.canonical_gate("Q09_NEWS") == "Q09"    # Q09 prefix merge
-    assert rc.canonical_gate("Q09_PORTFOLIO") == "Q09"
+    assert rc.canonical_gate("Q10_NEWS") == "Q10"    # active v4 lane collapse
+    assert rc.canonical_gate("Q10_PORTFOLIO") == "Q10"
+    assert rc.canonical_gate("Q09_NEWS", "v3") == "Q10"
+    assert rc.canonical_gate("Q09_PORTFOLIO", "v3") == "Q10"
     assert rc.canonical_gate("COMPILE_EA") is None    # off-chain
     assert rc.canonical_gate("OPT_CENSUS") is None
-    assert rc.canonical_gate("Q11") is None
+    assert rc.canonical_gate("Q11") == "Q11"
+    assert rc.canonical_gate("Q15") is None
 
 
 def test_vclass():
@@ -131,13 +134,13 @@ def test_missing_pair_no_chain_rows():
 
 
 def test_full_chain_reusable_and_valid_at_gates():
-    """Contiguous PASS through Q16 -> REUSABLE, counts at Q08/Q10/Q16."""
+    """Contiguous PASS through the active terminal gate is reusable."""
     con = _mk_con()
     for g in rc.GATE_CHAIN:
         _ins(con, f"r{g}", g, "QM5_7", "EURJPY.DWX", "done", "PASS")
     res = rc.compute(con, None)
     row = res["pair_rows"][0]
-    assert row["highest_contiguous_valid_gate"] == "Q16"
+    assert row["highest_contiguous_valid_gate"] == rc.GATE_CHAIN[-1]
     assert row["earliest_missing_prerequisite"] == ""
     assert row["disposition"] == "REUSABLE"
     assert row["macro_phase"] == "2_OPTIMIERUNG"
@@ -155,11 +158,12 @@ def test_terminal_requalification_outcomes_complete_contiguous_chain(terminal_ve
     con = _mk_con()
     for gate in rc.GATE_CHAIN[:-1]:
         _ins(con, f"r{gate}", gate, "QM5_9", "EURUSD.DWX", "done", "PASS")
-    _ins(con, "rQ16", "Q16", "QM5_9", "EURUSD.DWX", "done", terminal_verdict)
+    terminal_gate = rc.GATE_CHAIN[-1]
+    _ins(con, f"r{terminal_gate}", terminal_gate, "QM5_9", "EURUSD.DWX", "done", terminal_verdict)
 
     row = rc.compute(con, None)["pair_rows"][0]
 
-    assert row["highest_contiguous_valid_gate"] == "Q16"
+    assert row["highest_contiguous_valid_gate"] == terminal_gate
 
 
 def test_finer_key_hash_extraction_and_validity():
