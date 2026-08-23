@@ -1,0 +1,81 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_type": "build_ea",
+  "priority": 10,
+  "checked_at_utc": "2026-08-23T23:08:00.0000000Z",
+  "canonical_checkout": "C:/QM/repo",
+  "branch": "agents/board-advisor",
+  "git_head_inspected": "b94afb143e0427f9d5c170a723ce6854c319ea05",
+  "task_id": "b5905d19-0976-41e0-9b5d-9b170993c8db",
+  "requested_identity": {
+    "ea_id": "QM5_2296",
+    "slug": "demark-td-diff-alt-h4",
+    "ea_dir": "C:/QM/repo/framework/EAs/QM5_2296_demark-td-diff-alt-h4"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_2296_demark-td-diff-alt-h4.md",
+    "sha256": "8933c7f9cbf189107e39c053fdde4da5a5287f90a8b77e3b1055f650359c49ad",
+    "length_bytes": 10101,
+    "ea_id": "QM5_2296",
+    "slug": "demark-td-diff-alt-h4",
+    "g0_status": "APPROVED",
+    "gate_result": "PASS"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "a64791abae37b15fff228ce64af4d5974fcb959f7393ec63fe91f1e3cdfd4c1f",
+    "exact_ea_id_2296_rows": [],
+    "exact_identity_gate": "FAIL",
+    "slug_alias_row": {
+      "ea_id": "12306",
+      "slug": "QM5_2296_demark-td-diff-alt-h4",
+      "status": "retired",
+      "retired_at": "2026-08-21T18:52:35+00:00",
+      "retired_reason": "OWNER-approved D1 disposition; action=RETIRE only",
+      "retired_evidence": "docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv",
+      "disposition_line": 3200
+    },
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "e5072447fe5c7ef31e8f64807285d59fa973fe466e4aa9dfa0cbef8b756a6911",
+    "exact_ea_id_2296_magic_rows": [],
+    "magic_gate": "FAIL"
+  },
+  "existing_source_observation": {
+    "files": [
+      {
+        "path": "framework/EAs/QM5_2296_demark-td-diff-alt-h4/QM5_2296_demark-td-diff-alt-h4.mq5",
+        "sha256": "6eb94b29ef92bdc8ed1b01138b550c8a658088b6bd512e20d8c061c02ad35de5",
+        "length_bytes": 4082
+      }
+    ],
+    "note": "A pre-existing mq5-only folder does not substitute for governed identity and magic allocation."
+  },
+  "router_context": {
+    "routed_at": "2026-08-23T22:53:59+00:00",
+    "tracking_task": "8d1d903f-39cc-461f-ab90-7b932ce62fee",
+    "prior_review_close_state": "RECYCLE",
+    "prior_review_close_verdict": "batch adjudication 2026-07-19 (Claude, wf_11f17900 verified): Only .mq5 in QM5_2296 dir; no .ex5, no SPEC.md, no registry row for 2296."
+  },
+  "router_disposition": {
+    "review_requested": true,
+    "review_allowed": false,
+    "review_gate_code": "D6_BUILD_IDENTITY_MISSING",
+    "review_gate_reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
+    "final_state": "REVIEW",
+    "final_verdict": "PRECONDITION_HOLD_REGISTRY_AND_MAGIC_REQUIRED; REVIEW parked pending governed registry allocation",
+    "rationale": "Canonical REVIEW dispatch requires truthful strict-build PASS evidence binding committed MQ5, EX5, and setfiles. Those artifacts cannot be produced before governed identity and magic allocation, so no build identity was fabricated."
+  },
+  "verdict": "BUILD_NOT_STARTED_REGISTRY_GATE_FAIL",
+  "blocked_reason": "Requested ea_id 2296 has no deterministic EA registry row and no magic rows. The only slug-related registry identity is different ea_id 12306 and is OWNER-retired, so build or compile under 2296 is forbidden by qm-build-ea-from-card.",
+  "required_next_action": "Keep the build out of implementation until the governed registry/card writer supplies the exact active identity and all required magic rows. Any reroute must also preserve the mandatory news-blackout and current V5 risk contracts.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "setfile_modified": false,
+    "compile_attempted": false,
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "live_or_autotrading_changed": false
+  }
+}
