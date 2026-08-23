@@ -1,0 +1,21 @@
+{
+  "schema": "qm.cpu-ceiling-observation/v1",
+  "recorded_at_utc": "2026-08-23T18:14:34.8775681Z",
+  "scope": "QM5_41133 governed compile and Q02 handoff",
+  "command": "Get-Counter '\\Processor(_Total)\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+  "sample_interval_seconds": 1,
+  "samples_percent": [99.8, 100.0, 99.5, 93.6, 98.3],
+  "average_percent": 98.2,
+  "claim_ceiling_percent": 97.0,
+  "resume_ceiling_percent": 90.0,
+  "policy_source": "tools/strategy_farm/terminal_worker.py",
+  "ceiling_breached": true,
+  "free_ram_gb": 42.3,
+  "total_ram_gb": 63.1,
+  "running_factory_terminals_observed": ["T10", "T4"],
+  "compile_work_item_id": "1fb58c79-e46f-4d72-9af1-26eb4656e0d5",
+  "compile_activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+  "mq5_sha256": "7C8AEB3382BF3D8B84325661DFB699458BD115C84455E04C9A0C5A34F08DED04",
+  "q02_enqueued": false,
+  "stop_reason": "OWNER mission says to stop and summarize when the backtest CPU ceiling is reached"
+}

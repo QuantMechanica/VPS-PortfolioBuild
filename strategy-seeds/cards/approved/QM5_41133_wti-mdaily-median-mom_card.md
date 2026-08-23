@@ -388,5 +388,5 @@ stale, duplicated, nonfinite, mislabelled, or inconsistent state.
 |---|---|---|---|
 | Source Approval | 2026-08-23 | APPROVED_SOURCE | `decisions/2026-08-23_wti_monthly_daily_median_momentum_source_approval.md` |
 | G0 Research Intake | 2026-08-23 | APPROVED | `decisions/2026-08-23_qm5_41133_wti_monthly_daily_median_momentum_g0.md` |
-| Q01 Build | 2026-08-23 | PENDING | deterministic registry allocation and strict build required |
-| Q02 Baseline | 2026-08-23 | NOT_ENQUEUED | requires Q01 PASS and paced CPU capacity |
+| Q01 Build | 2026-08-23 | IN_PROGRESS | source committed; governed compile `1fb58c79-e46f-4d72-9af1-26eb4656e0d5` is rollout-held at the CPU ceiling |
+| Q02 Baseline | 2026-08-23 | NOT_ENQUEUED | no strict EX5; bounded CPU average 98.2% exceeds the 97.0% claim ceiling |
