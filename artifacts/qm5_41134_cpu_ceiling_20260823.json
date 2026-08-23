@@ -1,0 +1,22 @@
+{
+  "schema": "qm.cpu-ceiling-observation/v1",
+  "recorded_at_utc": "2026-08-23T20:30:33.0048816Z",
+  "scope": "QM5_41134 governed compile and Q02 admission",
+  "command": "Get-Counter '\\Processor(_Total)\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+  "sample_interval_seconds": 1,
+  "samples_percent": [100.0, 100.0, 100.0, 100.0, 100.0],
+  "average_percent": 100.0,
+  "claim_ceiling_percent": 97.0,
+  "resume_ceiling_percent": 90.0,
+  "policy_source": "tools/strategy_farm/terminal_worker.py",
+  "ceiling_breached": true,
+  "free_ram_gb": 38.6,
+  "total_ram_gb": 63.1,
+  "running_factory_terminals_observed": ["T10", "T2", "T4"],
+  "compile_status": "NOT_ENQUEUED",
+  "target_work_item_count": 0,
+  "mq5_sha256": "3908940184944650DE63998266772D9B4728D32D07D08E3B7FB767FBE610DCF9",
+  "q01_enqueued": false,
+  "q02_enqueued": false,
+  "stop_reason": "OWNER mission says to stop and summarize when the backtest CPU ceiling is reached"
+}

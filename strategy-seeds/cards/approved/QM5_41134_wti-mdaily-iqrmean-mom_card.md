@@ -63,8 +63,8 @@ r2_mechanical: PASS
 r3_data_available: PASS_WITH_ENERGY_LABEL_AND_CONTINUOUS_CFD_BASIS_RISK
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED_Q01_PENDING
+q01_status: BLOCKED_CPU_CEILING
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a direct-WTI completed-month interquartile-mean continuation sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact month boundary, 17-23 returns ending in the month, older boundary inclusion, endpoint identity, full ascending sort, floor(n/4) removal from each tail, exact retained membership, central arithmetic mean direction independent of the raw endpoint, one attempt, fixed risk, and next-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -331,4 +331,13 @@ correlation waiver, or decorrelation claim. Q09 alone owns portfolio overlap.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-08-23 | approved source extraction | G0-approved card; numeric identity fixed pending governed registry allocation |
+| v1 | 2026-08-23 | source package complete | deterministic reference and static validation PASS; governed compile and Q02 withheld at the binding host CPU ceiling |
 
+## Phase log
+
+| Phase | Date | Verdict | Evidence |
+|---|---|---|---|
+| Source Approval | 2026-08-23 | APPROVED_SOURCE | decisions/2026-08-23_wti_monthly_daily_iqr_mean_momentum_source_approval.md |
+| G0 Research Intake | 2026-08-23 | APPROVED | decisions/2026-08-23_qm5_41134_wti_monthly_daily_iqr_mean_momentum_g0.md |
+| Q01 Build | 2026-08-23 | BLOCKED_CPU_CEILING | source committed; no governed compile row; five host samples were each 100.0% against the 97.0% claim ceiling |
+| Q02 Baseline | 2026-08-23 | NOT_ENQUEUED_CPU_CEILING | no strict EX5 and zero target work items; artifacts/qm5_41134_cpu_ceiling_20260823.json |
