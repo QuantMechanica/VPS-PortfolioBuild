@@ -114,10 +114,6 @@ bool Strategy_NoTradeFilter()
    if(StrategyInRolloverWindow(TimeCurrent()))
       return true;
 
-   const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) >= 1)
-      return true;
-
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
@@ -142,6 +138,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
+      return false;
 
    if(g_last_signal == 0 || g_last_atr <= 0.0 || g_ema_slow <= 0.0)
       return false;
