@@ -1,11 +1,11 @@
 {
   "schema_version": "qm.factory-runtime-activation-owner-decision/v1",
-  "decision_id": "2026-08-23_factory_on_after_v4_activation_r1",
-  "activation_nonce": "0925a8accf342f41198528d53107bbfe",
+  "decision_id": "2026-08-23_factory_on_after_sh2_sh3_r1",
+  "activation_nonce": "aeb594c9a363c9cecc9e204a667d8b97",
   "authority": "OWNER",
   "status": "APPROVED",
-  "authorized_at_utc": "2026-08-23T15:54:17Z",
-  "expires_at_utc": "2026-08-24T15:54:17Z",
+  "authorized_at_utc": "2026-08-23T21:18:03Z",
+  "expires_at_utc": "2026-08-24T21:18:03Z",
   "preparation_decision": {
     "relative_path": "docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimited.json",
     "sha256": "9d77f78ffb9ba5b263cf2e29ade0cf79b938ad34ab14ad2ab4ad5efd5153c4e4",
@@ -38,7 +38,7 @@
     ]
   },
   "restore_intent": {
-    "factory_off_flag_sha256": "c958bdfd826ba8cf2df6bcbd2cf0d50634440d508bec27f82248fd9cd3df66a0",
+    "factory_off_flag_sha256": "8bc1df870a245c7e7ccf81cb86a377ddff4ab1dd9c6c5f6171e3685894141527",
     "factory_off_schema_version": 2,
     "factory_off_state": "OFF",
     "task_enabled_before_sha256": "ccfb16110aa5722fdbc72bec361c180a485ae14afe2f3c1c99a9949301e0297f"
@@ -47,73 +47,73 @@
     "factory_on": {
       "relative_path": "tools/strategy_farm/Factory_ON.ps1",
       "sha256": "2d158f3d16062604ca55d27ce7b56fd704ef616255769cd9a98627da499cc7df",
-      "git_commit": "44e5828249df3b4000d881d611ccc7cfc140188d",
+      "git_commit": "204b9f8606c2b344220f12174dffbafd053acc6a",
       "git_blob": "f3584a590588bda2b0230b1d0efb8e694d4995f4"
     },
     "factory_off": {
       "relative_path": "tools/strategy_farm/Factory_OFF.ps1",
       "sha256": "629beb1714c7a0628b2f425cb338b3f995681ce8e0d781eaa171e56cb08bc94d",
-      "git_commit": "44e5828249df3b4000d881d611ccc7cfc140188d",
+      "git_commit": "204b9f8606c2b344220f12174dffbafd053acc6a",
       "git_blob": "54d01ad92542ca847e3fe4c921a4025240ee0c99"
     },
     "maintenance_control": {
       "relative_path": "tools/strategy_farm/maintenance_control.py",
-      "sha256": "9a908ff254471630a01046449d0dfd6e1b520627a9275035295a8753b5077435",
-      "git_commit": "44e5828249df3b4000d881d611ccc7cfc140188d",
-      "git_blob": "d20b9b9c4a658778e9b3f0c9bb5bcfa4ffa94db6"
+      "sha256": "9819aa79fa3ef1e8d2309d83d619db589e8ea1b9cfdb6f602bb6f514ae0bf21c",
+      "git_commit": "204b9f8606c2b344220f12174dffbafd053acc6a",
+      "git_blob": "f1e6b22d1f1c980f1bb8846832e3eb75e9bf0737"
     },
     "runtime_activation_validator": {
       "relative_path": "tools/strategy_farm/factory_runtime_activation.py",
       "sha256": "db6629dd187aaa6446936f1c3ba75303b06d1142d36c7bd802aa8760bfbca3ca",
-      "git_commit": "44e5828249df3b4000d881d611ccc7cfc140188d",
+      "git_commit": "204b9f8606c2b344220f12174dffbafd053acc6a",
       "git_blob": "93cc08cf84e9b553216bafc3e446134ff811bfac"
     },
     "restart_health": {
       "relative_path": "tools/strategy_farm/factory_restart_health.ps1",
       "sha256": "bc1906314773db6f5132ab867add7c396b10753efc94ed32e856112798ce63e4",
-      "git_commit": "44e5828249df3b4000d881d611ccc7cfc140188d",
+      "git_commit": "204b9f8606c2b344220f12174dffbafd053acc6a",
       "git_blob": "62b9cb4eb93448033a0337403aeb98c97737e49c"
     },
     "process_scope": {
       "relative_path": "tools/strategy_farm/factory_process_scope.ps1",
       "sha256": "47b0c70893c7f8baaa3a75493f8ee081ab404188128e0ed4a1feb2793e5e3d44",
-      "git_commit": "44e5828249df3b4000d881d611ccc7cfc140188d",
+      "git_commit": "204b9f8606c2b344220f12174dffbafd053acc6a",
       "git_blob": "e38157457262dbc79fa5f2a4b27de1cdc7101e42"
     },
     "mutation_lock_protocol": {
       "relative_path": "tools/strategy_farm/factory_mutation_lock.ps1",
       "sha256": "ee2614b966aac95a15ec923df3380a808bd2de0873f6cf9cf6cb65cbc2308a54",
-      "git_commit": "44e5828249df3b4000d881d611ccc7cfc140188d",
+      "git_commit": "204b9f8606c2b344220f12174dffbafd053acc6a",
       "git_blob": "681fd6f8e13bb933aa57624f9f7b0194ae76d6c7"
     },
     "task_manifest": {
       "relative_path": "tools/strategy_farm/qm_tasks.manifest.ps1",
-      "sha256": "be82af856a1652e336ca9054fea51491773bee451ad3d00f917ec650343bc482",
-      "git_commit": "44e5828249df3b4000d881d611ccc7cfc140188d",
-      "git_blob": "fc20aafa02f014fd9604160aa2d74af29ab0aa15"
+      "sha256": "b8bdfc6dfa7cd1f6e3870f08238668e9bbdb94cd1884005f9ad70d706269d44d",
+      "git_commit": "204b9f8606c2b344220f12174dffbafd053acc6a",
+      "git_blob": "4ea62e5e19ab3482a482074700169af0e03295ca"
     },
     "worker_launcher": {
       "relative_path": "tools/strategy_farm/start_terminal_workers.py",
       "sha256": "12247f709e38612f93c86688d433e49f4c2cf7d82177610604adebe557238928",
-      "git_commit": "44e5828249df3b4000d881d611ccc7cfc140188d",
+      "git_commit": "204b9f8606c2b344220f12174dffbafd053acc6a",
       "git_blob": "198a4f3822c35d5c347fcba1ba6508a9f7f2ca30"
     },
     "farmctl": {
       "relative_path": "tools/strategy_farm/farmctl.py",
-      "sha256": "a83da7ff5d2457a98d3e576180112944c8bae0d4a4ff7b6e8b145dc01d872e60",
-      "git_commit": "44e5828249df3b4000d881d611ccc7cfc140188d",
-      "git_blob": "d9501e82ee411c9eed7eb5d71b21bb032d8d9e09"
+      "sha256": "3985b13533c93d9867119e7548813db5f262a4ca2be523127289e400743bf8f7",
+      "git_commit": "204b9f8606c2b344220f12174dffbafd053acc6a",
+      "git_blob": "f9a726a5fd66b71d80912ef0debb14196798bf44"
     },
     "public_snapshot_task_wrapper": {
       "relative_path": "scripts/run_public_snapshot_task.ps1",
-      "sha256": "83bf1668efb9d4b678f5533074c6c38c6762971cdcd2db62dc77a1c9e7a0b0f1",
-      "git_commit": "44e5828249df3b4000d881d611ccc7cfc140188d",
-      "git_blob": "f209303814b70d56983ab8d51881a1e849b70d15"
+      "sha256": "03a57fbc130f1b00fa6b107aa4a506776d89d749eb4fc1e0e005c53fee043dea",
+      "git_commit": "204b9f8606c2b344220f12174dffbafd053acc6a",
+      "git_blob": "e04ccff34ba1688bafade7bed75abfaa18f69658"
     },
     "public_snapshot_incident_guard": {
       "relative_path": "tools/strategy_farm/public_snapshot_incident_guard.py",
       "sha256": "28be1d553e5ead0c670bce9730770882166d8e0e40c060c767b91f36b8cbaef6",
-      "git_commit": "44e5828249df3b4000d881d611ccc7cfc140188d",
+      "git_commit": "204b9f8606c2b344220f12174dffbafd053acc6a",
       "git_blob": "76785695aa5dab57c32a7a6e2cfe7a077a800b04"
     }
   },
