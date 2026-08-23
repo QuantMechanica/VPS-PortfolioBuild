@@ -107,11 +107,29 @@
           }
         },
         "activation_guard": {
-          "const": {
-            "state": "READ_INERT",
-            "requires_completed_review": "OPS-Q10-REALIGN-E1-E2",
-            "requires_approver": "CLAUDE",
-            "default_manifest_switch": false
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state", "requires_completed_review", "requires_approver",
+            "default_manifest_switch", "activated_by", "activated_at", "review_refs"
+          ],
+          "properties": {
+            "state": {"const": "ACTIVE"},
+            "requires_completed_review": {"const": "OPS-Q10-REALIGN-E1-E2"},
+            "requires_approver": {"const": "CLAUDE"},
+            "default_manifest_switch": {"const": true},
+            "activated_by": {"const": "CLAUDE"},
+            "activated_at": {"const": "2026-08-23"},
+            "review_refs": {
+              "type": "array",
+              "minItems": 2,
+              "uniqueItems": true,
+              "items": {"type": "string"},
+              "allOf": [
+                {"contains": {"const": "9b40ff25"}},
+                {"contains": {"const": "d5c13a08"}}
+              ]
+            }
           }
         }
       }

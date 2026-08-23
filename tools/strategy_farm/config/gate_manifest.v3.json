@@ -87,10 +87,13 @@
       }
     ],
     "activation_guard": {
-      "state": "READ_INERT",
+      "state": "ACTIVE",
       "requires_completed_review": "OPS-Q10-REALIGN-E1-E2",
       "requires_approver": "CLAUDE",
-      "default_manifest_switch": false
+      "default_manifest_switch": true,
+      "activated_by": "CLAUDE",
+      "activated_at": "2026-08-23",
+      "review_refs": ["9b40ff25", "d5c13a08"]
     }
   }
 }

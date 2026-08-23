@@ -25,16 +25,25 @@ from typing import Any, Mapping
 SCHEMA_VERSION_V1 = "qm.gate-manifest/v1"
 SCHEMA_VERSION_V2 = "qm.gate-manifest/v2"
 SCHEMA_VERSION_V3 = "qm.gate-manifest/v3"
-SCHEMA_VERSION = SCHEMA_VERSION_V2
+SCHEMA_VERSION = SCHEMA_VERSION_V3
 SUPPORTED_SCHEMA_VERSIONS = frozenset(
     {SCHEMA_VERSION_V1, SCHEMA_VERSION_V2, SCHEMA_VERSION_V3}
 )
 CONFIG_DIR = Path(__file__).resolve().parent / "config"
 V1_MANIFEST = CONFIG_DIR / "gate_manifest.v1.json"
-# Deliberately keep v2 active.  Switching DEFAULT_MANIFEST is an activation act
-# that requires Claude review after OPS-Q10-REALIGN-E1-E2 is closed.
-DEFAULT_MANIFEST = CONFIG_DIR / "gate_manifest.v2.json"
+V2_MANIFEST = CONFIG_DIR / "gate_manifest.v2.json"
 V3_MANIFEST = CONFIG_DIR / "gate_manifest.v3.json"
+# Gate Manifest v3 activated 2026-08-23 by CLAUDE under OWNER chat
+# authorization, after Claude-Review d5c13a08 (APPROVED) whose prerequisite
+# OPS-Q10-REALIGN-E1-E2 review 9b40ff25 was APPROVED.  The activation guard is
+# fail-closed (see _validate_v3_activation_guard): a READ_INERT manifest can
+# never become the default, and an ACTIVE manifest must carry both review refs.
+DEFAULT_MANIFEST = V3_MANIFEST
+# The two review references that must be recorded before a v3 manifest may be
+# ACTIVE: OPS-Q10-REALIGN-E1-E2 closure (9b40ff25) and the v3 Claude review
+# (d5c13a08).
+ACTIVATION_REVIEW_REFS = ("9b40ff25", "d5c13a08")
+ACTIVATION_STATES = frozenset({"READ_INERT", "ACTIVE"})
 REQUIRED_VERDICT_DIMENSIONS = (
     "execution_status",
     "evidence_strength",
@@ -115,6 +124,68 @@ class GateManifest:
     @property
     def next_by_phase(self) -> dict[str, str | None]:
         return {gate.id: gate.next for gate in self.gates}
+
+    @property
+    def baseline_stage(self) -> Mapping[str, Any] | None:
+        """The v3 Q10A baseline evidence-binding stage (None before v3)."""
+        if not self.extension_topology:
+            return None
+        return self.extension_topology.get("baseline_stage")
+
+    @property
+    def baseline_reuse_policy(self) -> str | None:
+        """How Q10A reuses a Q08 baseline, else None.
+
+        ``REUSE_ONLY_HASH_BOUND_FULL_HISTORY_Q08_BASELINE`` in v3.
+        """
+        stage = self.baseline_stage
+        return None if stage is None else str(stage.get("reuse_policy"))
+
+    @property
+    def baseline_missing_binding_action(self) -> str | None:
+        """Fail-closed action when no reusable Q08 baseline exists.
+
+        ``REQUIRE_Q10A_BASELINE_RUN`` in v3, else None.
+        """
+        stage = self.baseline_stage
+        return None if stage is None else str(stage.get("missing_binding_action"))
+
+    @property
+    def q16_dependencies(self) -> tuple[Mapping[str, Any], ...]:
+        """Ordered Q16 evidence dependencies (baseline full run + incumbent Q10).
+
+        Empty for manifests without the v3 optimization contract.
+        """
+        if not self.extension_topology:
+            return ()
+        return tuple(self.extension_topology.get("q16_dependencies", ()))
+
+    @property
+    def portfolio_routes(self) -> tuple[Mapping[str, Any], ...]:
+        """The Q11 entry routes (Q10 non-optimized, Q16 optimized)."""
+        if not self.extension_topology:
+            return ()
+        return tuple(self.extension_topology.get("portfolio_routes", ()))
+
+    def portfolio_route(self, *, optimized: bool) -> str | None:
+        """Return the Q11 predecessor for an (optimized|non-optimized) lineage.
+
+        Non-optimized lineages reach Q11 from Q10; optimized lineages reach it
+        from Q16.  Returns None if the active manifest has no routing contract.
+        """
+        condition = "OPTIMIZED" if optimized else "NOT_OPTIMIZED"
+        for route in self.portfolio_routes:
+            if str(route.get("condition")) == condition and str(route.get("to")) == "Q11":
+                return str(route.get("from"))
+        return None
+
+    @property
+    def activation_state(self) -> str | None:
+        """The v3 activation-guard state (READ_INERT/ACTIVE), else None."""
+        if not self.extension_topology:
+            return None
+        guard = self.extension_topology.get("activation_guard")
+        return None if guard is None else str(guard.get("state"))
 
 
 def _duplicate_key_guard(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -200,7 +271,72 @@ def _validate_v2_topology(raw: Any) -> Mapping[str, Any]:
     return _freeze(raw)
 
 
-def _validate_v3_topology(raw: Any) -> Mapping[str, Any]:
+def _validate_v3_activation_guard(guard: Any, *, is_default: bool) -> None:
+    """Fail-closed gate on the v3 activation record.
+
+    Two invariants, enforced in both directions:
+
+    * a ``READ_INERT`` manifest can never become the default — its
+      ``default_manifest_switch`` must be ``false`` and it may not be loaded via
+      :data:`DEFAULT_MANIFEST`;
+    * an ``ACTIVE`` manifest must set ``default_manifest_switch=true``, record
+      the approver that also appears in ``requires_approver``, carry an
+      ``activated_at`` stamp, and list **both** :data:`ACTIVATION_REVIEW_REFS`.
+    """
+    if not isinstance(guard, dict):
+        raise GateManifestError("v3 activation_guard must be an object")
+    base_keys = {
+        "state",
+        "requires_completed_review",
+        "requires_approver",
+        "default_manifest_switch",
+    }
+    state = guard.get("state")
+    if state not in ACTIVATION_STATES:
+        raise GateManifestError(f"v3 activation_guard state invalid: {state!r}")
+    if guard.get("requires_completed_review") != "OPS-Q10-REALIGN-E1-E2":
+        raise GateManifestError(
+            "v3 activation_guard requires_completed_review mismatch"
+        )
+    approver_required = guard.get("requires_approver")
+    if approver_required != "CLAUDE":
+        raise GateManifestError("v3 activation_guard requires_approver mismatch")
+    switch = guard.get("default_manifest_switch")
+    if not isinstance(switch, bool):
+        raise GateManifestError(
+            "v3 activation_guard default_manifest_switch must be boolean"
+        )
+    if state == "READ_INERT":
+        if set(guard) != base_keys:
+            raise GateManifestError("v3 READ_INERT activation_guard key set mismatch")
+        if switch is not False:
+            raise GateManifestError("v3 READ_INERT manifest cannot switch the default")
+        if is_default:
+            raise GateManifestError(
+                "v3 READ_INERT manifest cannot be loaded as the default manifest"
+            )
+        return
+    # state == "ACTIVE"
+    if set(guard) != base_keys | {"activated_by", "activated_at", "review_refs"}:
+        raise GateManifestError("v3 ACTIVE activation_guard key set mismatch")
+    if switch is not True:
+        raise GateManifestError("v3 ACTIVE manifest must switch the default")
+    if str(guard.get("activated_by") or "").strip() != approver_required:
+        raise GateManifestError(
+            "v3 ACTIVE manifest must record activated_by equal to requires_approver"
+        )
+    if not str(guard.get("activated_at") or "").strip():
+        raise GateManifestError("v3 ACTIVE manifest must record activated_at")
+    refs = guard.get("review_refs")
+    if not isinstance(refs, list) or not set(ACTIVATION_REVIEW_REFS).issubset(
+        {str(item) for item in refs}
+    ):
+        raise GateManifestError(
+            "v3 ACTIVE manifest must record both activation review refs"
+        )
+
+
+def _validate_v3_topology(raw: Any, *, is_default: bool) -> Mapping[str, Any]:
     expected_keys = {
         "ordinary_chain",
         "baseline_stage",
@@ -269,18 +405,17 @@ def _validate_v3_topology(raw: Any) -> Mapping[str, Any]:
             or not str(lane.get("evidence_role") or "").strip()
         ):
             raise GateManifestError(f"invalid v3 Q11 storage lane: {lane_id}")
-    if raw["activation_guard"] != {
-        "state": "READ_INERT",
-        "requires_completed_review": "OPS-Q10-REALIGN-E1-E2",
-        "requires_approver": "CLAUDE",
-        "default_manifest_switch": False,
-    }:
-        raise GateManifestError("v3 activation guard mismatch")
+    _validate_v3_activation_guard(raw["activation_guard"], is_default=is_default)
     return _freeze(raw)
 
 
 def load_gate_manifest(path: Path = DEFAULT_MANIFEST) -> GateManifest:
-    value, raw = _load_json(Path(path))
+    resolved_path = Path(path)
+    value, raw = _load_json(resolved_path)
+    try:
+        is_default = resolved_path.resolve() == DEFAULT_MANIFEST.resolve()
+    except OSError:
+        is_default = False
     schema_version = str(value.get("schema_version") or "")
     if schema_version not in SUPPORTED_SCHEMA_VERSIONS:
         raise GateManifestError(f"unsupported schema_version: {schema_version!r}")
@@ -364,7 +499,9 @@ def load_gate_manifest(path: Path = DEFAULT_MANIFEST) -> GateManifest:
     if schema_version == SCHEMA_VERSION_V2:
         extension_topology = _validate_v2_topology(value["extension_topology"])
     elif schema_version == SCHEMA_VERSION_V3:
-        extension_topology = _validate_v3_topology(value["extension_topology"])
+        extension_topology = _validate_v3_topology(
+            value["extension_topology"], is_default=is_default
+        )
     else:
         extension_topology = None
 

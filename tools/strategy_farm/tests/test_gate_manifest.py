@@ -15,14 +15,18 @@ import gate_manifest  # noqa: E402
 import phase_ids  # noqa: E402
 
 
-def test_manifest_v2_matches_current_phase_contract_and_fork() -> None:
+def test_default_manifest_matches_phase_ids_and_is_active_v3() -> None:
+    # Gate Manifest v3 is the active default after the 2026-08-23 activation.
     contract = gate_manifest.load_gate_manifest()
 
     assert list(contract.phase_ids) == phase_ids.PHASE_ORDER
-    assert contract.names == phase_ids.PHASE_NAME
+    assert contract.display_names == phase_ids.PHASE_NAME
     assert dict(contract.legacy_aliases) == phase_ids.LEGACY_P_TO_Q
     assert contract.verdict_dimensions == gate_manifest.REQUIRED_VERDICT_DIMENSIONS
-    assert contract.schema_version == "qm.gate-manifest/v2"
+    assert contract.schema_version == "qm.gate-manifest/v3"
+    assert gate_manifest.SCHEMA_VERSION == "qm.gate-manifest/v3"
+    assert gate_manifest.DEFAULT_MANIFEST.name == "gate_manifest.v3.json"
+    assert contract.activation_state == "ACTIVE"
     assert contract.phase_ids == tuple(f"Q{i:02d}" for i in range(17))
     assert contract.next_by_phase["Q13"] is None
     assert contract.next_by_phase["Q16"] == "Q11"
@@ -36,7 +40,10 @@ def test_manifest_v2_matches_current_phase_contract_and_fork() -> None:
 
 def test_v1_manifest_remains_a_valid_closed_fixture() -> None:
     contract = gate_manifest.load_gate_manifest(gate_manifest.V1_MANIFEST)
-    current = gate_manifest.load_gate_manifest()
+    # v2 is the reference for the frozen Q00-Q13 topology + enumerated rename
+    # exemption.  v3 additionally relabels Q09/Q10 (validated by the v3 tests);
+    # its authority/runner/next freeze is covered separately below.
+    current = gate_manifest.load_gate_manifest(gate_manifest.V2_MANIFEST)
 
     assert contract.schema_version == "qm.gate-manifest/v1"
     assert contract.phase_ids == tuple(f"Q{i:02d}" for i in range(14))
@@ -63,13 +70,17 @@ def test_v1_manifest_remains_a_valid_closed_fixture() -> None:
         gate_manifest.write_phase_id("Q14", contract)
 
 
-def test_v3_candidate_encodes_owner_sequence_but_default_remains_v2() -> None:
+def test_v3_is_now_the_active_default_and_v2_remains_loadable() -> None:
     active = gate_manifest.load_gate_manifest()
     candidate = gate_manifest.load_gate_manifest(gate_manifest.V3_MANIFEST)
+    legacy = gate_manifest.load_gate_manifest(gate_manifest.V2_MANIFEST)
 
-    assert active.schema_version == "qm.gate-manifest/v2"
-    assert gate_manifest.DEFAULT_MANIFEST.name == "gate_manifest.v2.json"
+    assert active.schema_version == "qm.gate-manifest/v3"
+    assert gate_manifest.DEFAULT_MANIFEST.name == "gate_manifest.v3.json"
     assert candidate.schema_version == "qm.gate-manifest/v3"
+    # v2 stays a valid, loadable fixture after the switch.
+    assert legacy.schema_version == "qm.gate-manifest/v2"
+    assert legacy.names["Q09"] == "News Impact Mode"
     assert candidate.phase_ids == tuple(f"Q{i:02d}" for i in range(17))
     assert "Q10A" not in candidate.phase_ids
     assert candidate.display_names["Q10A"] == "Baseline Full Run"
@@ -94,15 +105,41 @@ def test_v3_candidate_encodes_owner_sequence_but_default_remains_v2() -> None:
     assert topology["portfolio_routes"][0]["from"] == "Q10"
     assert topology["portfolio_routes"][1]["from"] == "Q16"
     assert topology["activation_guard"] == {
-        "state": "READ_INERT",
+        "state": "ACTIVE",
         "requires_completed_review": "OPS-Q10-REALIGN-E1-E2",
         "requires_approver": "CLAUDE",
-        "default_manifest_switch": False,
+        "default_manifest_switch": True,
+        "activated_by": "CLAUDE",
+        "activated_at": "2026-08-23",
+        "review_refs": ("9b40ff25", "d5c13a08"),
     }
 
 
+def test_v3_loader_exposes_q11_routing_and_q16_dependencies() -> None:
+    contract = gate_manifest.load_gate_manifest()
+
+    # Q11 routing rule: Q10 is the non-optimized predecessor, Q16 the optimized.
+    assert contract.portfolio_route(optimized=False) == "Q10"
+    assert contract.portfolio_route(optimized=True) == "Q16"
+
+    roles = [(dep["role"], dep["phase"]) for dep in contract.q16_dependencies]
+    assert roles == [("BASELINE_FULL_RUN", "Q10A"), ("INCUMBENT_Q10", "Q10")]
+
+    # Q10A conditional-reuse contract is queryable through the loader.
+    assert contract.baseline_reuse_policy == (
+        "REUSE_ONLY_HASH_BOUND_FULL_HISTORY_Q08_BASELINE"
+    )
+    assert contract.baseline_missing_binding_action == "REQUIRE_Q10A_BASELINE_RUN"
+
+    # v2 has no v3 optimization contract; accessors degrade to empty/None.
+    v2 = gate_manifest.load_gate_manifest(gate_manifest.V2_MANIFEST)
+    assert v2.q16_dependencies == ()
+    assert v2.portfolio_route(optimized=True) is None
+    assert v2.baseline_reuse_policy is None
+
+
 def test_v3_changes_no_authority_runner_next_or_verdict_dimension() -> None:
-    v2 = gate_manifest.load_gate_manifest()
+    v2 = gate_manifest.load_gate_manifest(gate_manifest.V2_MANIFEST)
     v3 = gate_manifest.load_gate_manifest(gate_manifest.V3_MANIFEST)
 
     def frozen_fields(gate: gate_manifest.Gate) -> tuple[object, ...]:
@@ -161,8 +198,8 @@ def test_read_contract_accepts_only_explicit_aliases() -> None:
 def test_duplicate_json_keys_and_non_contiguous_gates_fail_closed(tmp_path: Path) -> None:
     raw = gate_manifest.DEFAULT_MANIFEST.read_text(encoding="utf-8")
     duplicate = raw.replace(
-        '"pipeline_version": "V5-Q00-Q16-OPT-2026-08-12",',
-        '"pipeline_version": "V5-Q00-Q16-OPT-2026-08-12", "pipeline_version": "bad",',
+        '"pipeline_version": "V5-Q10A-Q16-TARGET-2026-08-22",',
+        '"pipeline_version": "V5-Q10A-Q16-TARGET-2026-08-22", "pipeline_version": "bad",',
     )
     duplicate_path = tmp_path / "duplicate.json"
     duplicate_path.write_text(duplicate, encoding="utf-8")
@@ -216,7 +253,7 @@ def test_v3_fail_closed_on_baseline_cap_dependency_or_activation_drift(tmp_path:
         ("baseline", lambda value: value["extension_topology"]["baseline_stage"].update({"reuse_policy": "REUSE_ANY_Q08"})),
         ("cap", lambda value: value["extension_topology"]["optimization_fork"].update({"pattern_filter_cap_per_direction": 4})),
         ("dependency", lambda value: value["extension_topology"]["q16_dependencies"][0].update({"source_phase": "Q10"})),
-        ("activation", lambda value: value["extension_topology"]["activation_guard"].update({"default_manifest_switch": True})),
+        ("activation", lambda value: value["extension_topology"]["activation_guard"].update({"review_refs": ["9b40ff25"]})),
     ]
     for name, mutate in mutations:
         value = json.loads(json.dumps(original))
@@ -227,15 +264,68 @@ def test_v3_fail_closed_on_baseline_cap_dependency_or_activation_drift(tmp_path:
             gate_manifest.load_gate_manifest(path)
 
 
+def test_v3_activation_guard_fail_closed_invariants(tmp_path: Path) -> None:
+    original = json.loads(gate_manifest.V3_MANIFEST.read_text(encoding="utf-8"))
+
+    def _write(value: dict[str, object], name: str) -> Path:
+        path = tmp_path / f"guard_{name}.json"
+        path.write_text(json.dumps(value), encoding="utf-8")
+        return path
+
+    # ACTIVE requires BOTH review refs.
+    for bad_refs in ([], ["9b40ff25"], ["d5c13a08"], ["other"]):
+        value = json.loads(json.dumps(original))
+        value["extension_topology"]["activation_guard"]["review_refs"] = bad_refs
+        with pytest.raises(gate_manifest.GateManifestError, match="review refs"):
+            gate_manifest.load_gate_manifest(_write(value, "refs"))
+
+    # ACTIVE must switch the default.
+    value = json.loads(json.dumps(original))
+    value["extension_topology"]["activation_guard"]["default_manifest_switch"] = False
+    with pytest.raises(gate_manifest.GateManifestError, match="must switch the default"):
+        gate_manifest.load_gate_manifest(_write(value, "switch"))
+
+    # A READ_INERT manifest can never become the default.
+    inert_guard = {
+        "state": "READ_INERT",
+        "requires_completed_review": "OPS-Q10-REALIGN-E1-E2",
+        "requires_approver": "CLAUDE",
+        "default_manifest_switch": False,
+    }
+    value = json.loads(json.dumps(original))
+    value["extension_topology"]["activation_guard"] = dict(inert_guard)
+    inert_path = _write(value, "inert")
+    # Loaded off the default path a READ_INERT manifest is a valid fixture ...
+    assert gate_manifest.load_gate_manifest(inert_path).activation_state == "READ_INERT"
+    # ... but it may never be loaded as the active default.
+    saved = gate_manifest.DEFAULT_MANIFEST
+    gate_manifest.DEFAULT_MANIFEST = inert_path
+    try:
+        with pytest.raises(
+            gate_manifest.GateManifestError, match="cannot be loaded as the default"
+        ):
+            gate_manifest.load_gate_manifest(inert_path)
+    finally:
+        gate_manifest.DEFAULT_MANIFEST = saved
+
+    # A READ_INERT guard that tries to set the switch is rejected outright.
+    value = json.loads(json.dumps(original))
+    value["extension_topology"]["activation_guard"] = {
+        **inert_guard, "default_manifest_switch": True,
+    }
+    with pytest.raises(gate_manifest.GateManifestError, match="v3"):
+        gate_manifest.load_gate_manifest(_write(value, "inert_switch"))
+
+
 def test_v2_topology_and_legacy_aliases_fail_closed(tmp_path: Path) -> None:
-    raw = json.loads(gate_manifest.DEFAULT_MANIFEST.read_text(encoding="utf-8"))
+    raw = json.loads(gate_manifest.V2_MANIFEST.read_text(encoding="utf-8"))
     raw["extension_topology"]["optimization_fork"]["rejoins"] = "Q12"
     broken_fork = tmp_path / "broken_fork.json"
     broken_fork.write_text(json.dumps(raw), encoding="utf-8")
     with pytest.raises(gate_manifest.GateManifestError, match="optimization fork"):
         gate_manifest.load_gate_manifest(broken_fork)
 
-    raw = json.loads(gate_manifest.DEFAULT_MANIFEST.read_text(encoding="utf-8"))
+    raw = json.loads(gate_manifest.V2_MANIFEST.read_text(encoding="utf-8"))
     raw["legacy_aliases"]["P10"] = "Q16"
     broken_alias = tmp_path / "broken_alias.json"
     broken_alias.write_text(json.dumps(raw), encoding="utf-8")
