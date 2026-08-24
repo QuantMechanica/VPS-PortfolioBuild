@@ -1,0 +1,140 @@
+{
+  "artifact_type": "diversity_funnel_cpu_stop",
+  "generated_at_utc": "2026-08-24T06:42:36Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "17dcf7fcd",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "selection_preflight": {
+    "farm_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access_mode": "read_only",
+    "legacy_pending_build_rows": 43,
+    "active_build_claims": [
+      {
+        "ea_id": "QM5_20065",
+        "agent_task_id": "7e8c9eaa-1af5-40ca-9f49-4c785b5ae07d",
+        "assigned_agent": "gemini",
+        "state": "IN_PROGRESS"
+      },
+      {
+        "ea_id": "QM5_20077",
+        "agent_task_id": "6c35c3ec-b576-4919-a321-796b7c813350",
+        "assigned_agent": "gemini",
+        "state": "IN_PROGRESS"
+      }
+    ],
+    "fresh_row_dispositions": [
+      {
+        "ea_id": "QM5_11735",
+        "slug": "rfs-psar-cci-ema-m5",
+        "disposition": "NOT_ELIGIBLE_FOR_THIS_MISSION",
+        "reason": "M5 card declares 400 trades/year/symbol; the mission requires low-frequency structural work"
+      },
+      {
+        "ea_id": "QM5_32007",
+        "slug": "london-fix-wm-reuters-currency-drift",
+        "disposition": "ALREADY_PROGRESSED",
+        "reason": "two Q02 PASS verdicts and two Q04 FAIL verdicts already exist"
+      },
+      {
+        "ea_id": "QM5_37003",
+        "slug": "hurst-exponent-dynamic-regime-switch",
+        "disposition": "COLLISION_AVOIDED",
+        "reason": "existing agent-task/review lineage and concurrent dirty EA files"
+      },
+      {
+        "ea_id": "QM5_39003",
+        "slug": "forexfactory-james16-price-action-ppz",
+        "disposition": "COLLISION_AVOIDED",
+        "reason": "existing agent-task/review lineage and concurrent dirty EA files"
+      }
+    ],
+    "infra_rows_not_claimed": [
+      {
+        "ea_id": "QM5_11619",
+        "instrument_class": "forex",
+        "blocker": "Q02 NO_HISTORY/ONINIT lineage on a stale binary",
+        "reason": "existing q02_infra_repair tasks already own this EA"
+      },
+      {
+        "ea_id": "QM5_20062",
+        "instrument_class": "forex",
+        "blocker": "Q03 NO_HISTORY",
+        "reason": "existing build_ea task is already in PIPELINE"
+      }
+    ],
+    "claim_or_queue_mutation_performed": false
+  },
+  "capacity_sample": {
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      100.0,
+      100.0,
+      99.90352062287442,
+      99.61001005150348,
+      100.0
+    ],
+    "average_cpu_percent": 99.9,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "mt5_scan_at_utc": "2026-08-24T06:42:36+00:00",
+    "running_factory_terminals": [
+      "T2",
+      "T4",
+      "T9"
+    ],
+    "running_factory_work_items": [
+      {
+        "terminal": "T2",
+        "work_item_id": "3f0ad7ef-eb79-4cb1-ae38-3a7970ecea28",
+        "ea_id": "QM5_20010",
+        "phase": "Q09",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "a7c3f1dc-9203-4423-830e-7b23e60af18a",
+        "ea_id": "QM5_20291",
+        "phase": "Q02",
+        "symbol": "QM5_20291_XAU_XAG_HKURT_D1"
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": "9416f0ce-ede3-457e-bf9a-5ed9f892e177",
+        "ea_id": "QM5_20266",
+        "phase": "Q10_NEWS",
+        "symbol": "XTIUSD.DWX"
+      }
+    ],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": [],
+    "excluded_and_untouched_processes": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_evidence_commit": "ea9c56229",
+    "prior_scan_at_utc": "2026-08-24T06:16:00Z",
+    "prior_running_factory_terminal_count": 9,
+    "current_running_factory_terminal_count": 3,
+    "observation": "The governed tester roster contracted from nine terminals to three, but three heavy Q02/Q09/Q10 jobs still saturated whole-host CPU. Terminal count alone therefore did not clear the explicit CPU admission gate."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "source_or_binary_changed": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The explicit backtest CPU ceiling bound before any mutating or CPU-consuming action."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
