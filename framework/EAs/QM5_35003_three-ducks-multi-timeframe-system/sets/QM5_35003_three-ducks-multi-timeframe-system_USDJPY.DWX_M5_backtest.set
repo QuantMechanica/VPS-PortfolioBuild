@@ -10,6 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
+; build_hash:   76c984656713c7f6dbc70f42d3cde8bf2bec64e73e5f9b508cea816627b3eef2
 ; author:       Development
 ; date:         2026-08-17
 ;==========================================================
@@ -24,3 +25,6 @@ strategy_sl_buffer_pips=3.0
 strategy_tp_rr_mult=2.5
 strategy_atr_period=14
 strategy_spread_atr_mult=1.8
+strategy_daily_loss_limit_pct=2.0
+strategy_daily_dd_hard_stop_pct=2.5
+strategy_total_drawdown_stop_pct=5.0

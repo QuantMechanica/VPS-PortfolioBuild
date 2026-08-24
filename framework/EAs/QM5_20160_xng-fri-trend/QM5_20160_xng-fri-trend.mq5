@@ -26,11 +26,11 @@ input double RISK_FIXED                   = 1000.0;
 input double PORTFOLIO_WEIGHT             = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
-input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_PAUSE;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled       = true;
@@ -42,14 +42,23 @@ input double qm_stress_reject_probability  = 0.0;
 input group "Strategy"
 input int    strategy_momentum_lookback_d1 = 252;
 input double strategy_min_abs_return_pct   = 0.0;
-input int    strategy_entry_grace_minutes  = 5;
+input double strategy_session_offset_min   = 61.6;
+input int    strategy_entry_grace_minutes  = 10;
+input int    strategy_min_stub_ticks       = 20;
+input int    strategy_min_attach_ticks     = 20;
 input int    strategy_atr_period           = 20;
 input double strategy_atr_sl_mult          = 3.0;
 input int    strategy_max_hold_days        = 2;
 input int    strategy_max_spread_points    = 2500;
 
-int    g_last_attempt_week_key = 0;
-string g_attempt_state_key     = "";
+int      g_last_attempt_week_key   = 0;
+string   g_attempt_state_key       = "";
+int      g_active_attempt_week_key = 0;
+datetime g_active_attach_start     = 0;
+datetime g_active_attach_deadline  = 0;
+datetime g_observed_d1_bar         = 0;
+int      g_observed_bar_ticks      = 0;
+int      g_active_attach_ticks     = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implemented mechanically from the approved card.
@@ -117,17 +126,56 @@ bool Strategy_IsGenuineFridayBoundary(const datetime current_bar)
    return Strategy_IsThursdayBar(prior_bar);
   }
 
-bool Strategy_EntryWithinGrace(const datetime current_bar)
+datetime Strategy_SessionAnchor(const datetime current_bar)
   {
    if(current_bar <= 0)
-      return false;
+      return 0;
+   const long offset_seconds =
+      (long)MathRound(strategy_session_offset_min * 60.0);
+   if(offset_seconds < 0)
+      return 0;
+   return (datetime)(current_bar + offset_seconds);
+  }
+
+void Strategy_ObserveTick(const datetime current_bar)
+  {
+   if(current_bar <= 0)
+      return;
+   if(current_bar != g_observed_d1_bar)
+     {
+      g_observed_d1_bar = current_bar;
+      g_observed_bar_ticks = 0;
+      g_active_attempt_week_key = 0;
+      g_active_attach_start = 0;
+      g_active_attach_deadline = 0;
+      g_active_attach_ticks = 0;
+     }
+
+   ++g_observed_bar_ticks;
    const datetime now = TimeCurrent();
-   if(now < current_bar)
-      return false;
-   const long elapsed_seconds =
-      (long)(now - current_bar);
-   return elapsed_seconds <=
-          (long)strategy_entry_grace_minutes * 60;
+   if(g_active_attempt_week_key > 0 &&
+      now >= g_active_attach_start &&
+      now <= g_active_attach_deadline)
+      ++g_active_attach_ticks;
+  }
+
+bool Strategy_RejectAttempt(const int week_key,
+                            const string reason)
+  {
+   QM_LogEvent(QM_INFO,
+               "ENTRY_REJECT",
+               StringFormat("{\"week_key\":%d,\"reason\":\"%s\"}",
+                            week_key,
+                            reason));
+   return false;
+  }
+
+void Strategy_ClearActiveAttempt()
+  {
+   g_active_attempt_week_key = 0;
+   g_active_attach_start = 0;
+   g_active_attach_deadline = 0;
+   g_active_attach_ticks = 0;
   }
 
 bool Strategy_IsManagedPosition()
@@ -253,7 +301,7 @@ bool Strategy_LoadMomentum(double &momentum,
                 1,
                 required,
                 closes);
-   if(copied < required)
+   if(copied < required || ArraySize(closes) < required)
       return false;
 
    const double close_recent = closes[0];
@@ -323,7 +371,10 @@ bool Strategy_NoTradeFilter()
    if(strategy_momentum_lookback_d1 != 252 ||
       MathAbs(strategy_min_abs_return_pct) > 1.0e-12)
       return true;
-   if(strategy_entry_grace_minutes != 5 ||
+   if(MathAbs(strategy_session_offset_min - 61.6) > 1.0e-12 ||
+      strategy_entry_grace_minutes != 10 ||
+      strategy_min_stub_ticks != 20 ||
+      strategy_min_attach_ticks != 20 ||
       strategy_atr_period != 20 ||
       MathAbs(strategy_atr_sl_mult - 3.0) > 1.0e-12)
       return true;
@@ -333,9 +384,9 @@ bool Strategy_NoTradeFilter()
    if(!qm_friday_close_enabled ||
       qm_friday_close_hour_broker != 21)
       return true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
-      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE ||
-      qm_news_mode_legacy != QM_NEWS_OFF)
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_PRE30_POST30 ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_DXZ ||
+      qm_news_mode_legacy != QM_NEWS_PAUSE)
       return true;
    return false;
   }
@@ -352,35 +403,93 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const datetime current_bar =
       iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: Friday D1 entry calendar.
-   if(!Strategy_IsGenuineFridayBoundary(current_bar) ||
-      !Strategy_EntryWithinGrace(current_bar))
+   if(!Strategy_IsGenuineFridayBoundary(current_bar))
       return false;
 
    const int week_key =
       Strategy_WeekKey(current_bar);
-   if(week_key <= 0 ||
-      week_key == g_last_attempt_week_key)
+   if(week_key <= 0)
       return false;
 
-   // Consume before history, trend, spread, quote, news, stop, or order gates.
-   if(!Strategy_RecordWeekAttempt(week_key))
+   const datetime session_anchor =
+      Strategy_SessionAnchor(current_bar);
+   const datetime now = TimeCurrent();
+   if(session_anchor <= 0 || now < session_anchor)
       return false;
+
+   const datetime session_deadline =
+      (datetime)(session_anchor +
+                 (long)strategy_entry_grace_minutes * 60);
+
+   if(g_active_attempt_week_key != week_key)
+     {
+      if(week_key == g_last_attempt_week_key)
+         return false;
+
+      // Consume before history, signal, spread, quote, news, stop, or order gates.
+      if(!Strategy_RecordWeekAttempt(week_key))
+         return Strategy_RejectAttempt(week_key,
+                                       "ATTEMPT_STATE_PERSIST_FAILED");
+
+      g_active_attempt_week_key = week_key;
+      g_active_attach_start = now;
+      g_active_attach_deadline =
+         (datetime)MathMin((long)session_deadline,
+                           (long)(now + 5 * 60));
+      g_active_attach_ticks = 1;
+      QM_LogEvent(QM_INFO,
+                  "FRIDAY_ENTRY_ATTEMPT",
+                  StringFormat("{\"week_key\":%d,\"bar\":%I64d,\"anchor\":%I64d}",
+                               week_key,
+                               (long)current_bar,
+                               (long)session_anchor));
+
+      if(now > session_deadline)
+        {
+         Strategy_ClearActiveAttempt();
+         return Strategy_RejectAttempt(week_key,
+                                       "SESSION_ATTACH_LATE");
+        }
+     }
+
+   if(g_observed_bar_ticks < strategy_min_stub_ticks ||
+      g_active_attach_ticks < strategy_min_attach_ticks)
+     {
+      if(now >= g_active_attach_deadline)
+        {
+         const string reason =
+            (g_observed_bar_ticks < strategy_min_stub_ticks)
+            ? "THIN_D1_STUB"
+            : "ATTACH_TICK_DENSITY";
+         Strategy_ClearActiveAttempt();
+         return Strategy_RejectAttempt(week_key, reason);
+        }
+      return false;
+     }
+
+   // The qualifying decision fires once; all remaining failures consume the week.
+   Strategy_ClearActiveAttempt();
 
    if(Strategy_HasOpenPosition() ||
       Strategy_WeekAlreadyEntered(week_key, current_bar))
-      return false;
+      return Strategy_RejectAttempt(week_key,
+                                    "POSITION_OR_DEAL_EXISTS");
 
    double momentum = 0.0;
    int direction = 0;
-   if(!Strategy_LoadMomentum(momentum, direction) ||
-      direction != -1)
-      return false;
+   if(!Strategy_LoadMomentum(momentum, direction))
+      return Strategy_RejectAttempt(week_key,
+                                    "MOMENTUM_HISTORY_INVALID");
+   if(direction != -1)
+      return Strategy_RejectAttempt(week_key,
+                                    "MOMENTUM_NOT_NEGATIVE");
 
    const long spread_points =
       SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    if(spread_points < 0 ||
       spread_points > strategy_max_spread_points)
-      return false;
+      return Strategy_RejectAttempt(week_key,
+                                    "SPREAD_INVALID_OR_EXCESS");
 
    const double atr_last =
       QM_ATR(_Symbol,
@@ -389,13 +498,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
              1);
    if(atr_last <= 0.0 ||
       !MathIsValidNumber(atr_last))
-      return false;
+      return Strategy_RejectAttempt(week_key,
+                                    "ATR_INVALID");
 
    const double entry_price =
       QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0 ||
       !MathIsValidNumber(entry_price))
-      return false;
+      return Strategy_RejectAttempt(week_key,
+                                    "ENTRY_QUOTE_INVALID");
 
    req.sl = QM_StopATRFromValue(_Symbol,
                                 req.type,
@@ -405,9 +516,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl = QM_StopRulesNormalizePrice(_Symbol, req.sl);
    if(req.sl <= entry_price ||
       !MathIsValidNumber(req.sl))
-      return false;
+      return Strategy_RejectAttempt(week_key,
+                                    "STOP_GEOMETRY_INVALID");
 
    req.reason = "XNG_FRI_NEG252_SHORT";
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"week_key\":%d,\"momentum\":%.8f,\"sl\":%.8f}",
+                            week_key,
+                            momentum,
+                            req.sl));
    return true;
   }
 
@@ -481,24 +599,31 @@ void OnTick()
 
    if(!Strategy_IsXngD1())
       return;
-   if(!QM_IsNewBar())
+   const datetime current_bar =
+      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: bounded D1 lifecycle/entry clock.
+   if(current_bar <= 0)
       return;
+   Strategy_ObserveTick(current_bar);
 
-   QM_EquityStreamOnNewBar();
-
-   // Lifecycle exits precede all entry-only gates.
-   Strategy_ManageOpenPosition();
-   if(Strategy_ExitSignal())
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
      {
-      const int magic = QM_FrameworkMagic();
-      for(int index = PositionsTotal() - 1; index >= 0; --index)
+      QM_EquityStreamOnNewBar();
+
+      // Lifecycle exits precede all entry-only gates.
+      Strategy_ManageOpenPosition();
+      if(Strategy_ExitSignal())
         {
-         const ulong ticket = PositionGetTicket(index);
-         if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         const int magic = QM_FrameworkMagic();
+         for(int index = PositionsTotal() - 1; index >= 0; --index)
+           {
+            const ulong ticket = PositionGetTicket(index);
+            if(!PositionSelectByTicket(ticket))
+               continue;
+            if(PositionGetInteger(POSITION_MAGIC) != magic)
+               continue;
+            QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+           }
         }
      }
 
@@ -528,10 +653,16 @@ void OnTick()
                                        broker_now,
                                        qm_news_mode_legacy);
    if(!news_allows)
+     {
+      Strategy_RejectAttempt(g_last_attempt_week_key,
+                             "NEWS_BLACKOUT_OR_STALE_DATA");
       return;
+     }
 
    ulong out_ticket = 0;
-   QM_TM_OpenPosition(req, out_ticket);
+   if(!QM_TM_OpenPosition(req, out_ticket))
+      Strategy_RejectAttempt(g_last_attempt_week_key,
+                             "FRAMEWORK_ORDER_REJECTED");
   }
 
 void OnTimer()

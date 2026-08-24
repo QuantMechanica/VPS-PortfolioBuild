@@ -10,9 +10,11 @@
 
 ## 1. Strategy Logic
 
-On the first observed tick of each genuine Friday D1 bar immediately following
-a completed Thursday D1 bar, the EA computes XNG's strictly completed 252-D1 log
-return. It opens one short `XNGUSD.DWX` position only when that return is
+On the first qualifying session tick of each genuine Friday D1 bar immediately
+following a completed Thursday D1 bar, the EA computes XNG's strictly completed
+252-D1 log return. The qualifying window is anchored 61.6 minutes after the D1
+label, requires 20 bar and attachment ticks, and remains open for at most ten
+minutes. It opens one short `XNGUSD.DWX` position only when that return is
 strictly negative.
 
 The package has a frozen `3.0 * ATR(20)` hard stop, no profit target, and a
@@ -28,14 +30,19 @@ rejection, blocked gate, stop, or restart cannot retry the week.
 |---|---:|---|---|
 | `strategy_momentum_lookback_d1` | 252 | locked | Completed XNG return horizon |
 | `strategy_min_abs_return_pct` | 0.0 | locked | Strict negative sign; no deadband |
-| `strategy_entry_grace_minutes` | 5 | locked | Maximum Friday-bar attachment delay |
+| `strategy_session_offset_min` | 61.6 | locked | OWNER-approved XNG session-tick anchor |
+| `strategy_entry_grace_minutes` | 10 | locked | Maximum delay after the session anchor |
+| `strategy_min_stub_ticks` | 20 | locked | Reject a thin D1 weekend/holiday stub |
+| `strategy_min_attach_ticks` | 20 | locked | Minimum ticks in the five-minute attach sample |
 | `strategy_atr_period` | 20 | locked | Completed D1 ATR estimator |
 | `strategy_atr_sl_mult` | 3.0 | locked | Frozen hard-stop distance |
 | `strategy_max_hold_days` | 2 | locked | Missed-next-bar stale repair |
 | `strategy_max_spread_points` | 2500 | locked | Maximum entry spread |
 
-Framework risk, news, stress, magic, and Friday-close inputs are documented in
-`framework/V5_FRAMEWORK_DESIGN.md`.
+Framework risk, stress, magic, and Friday-close inputs are documented in
+`framework/V5_FRAMEWORK_DESIGN.md`. The review-required Edge Lab news contract
+locks the 30-minute pre/post temporal blackout and DXZ compliance profile; a
+stale calendar remains fail-closed with the 336-hour ceiling unchanged.
 
 ---
 
@@ -63,6 +70,8 @@ Framework risk, news, stress, magic, and Friday-close inputs are documented in
 | Multi-timeframe refs | none |
 | Bar gating | framework `QM_IsNewBar()` |
 | Calendar gate | current bar Friday and prior completed bar Thursday |
+| Entry clock | D1 label + 61.6 minutes, then a ten-minute grace window |
+| Tick density | at least 20 D1-bar ticks and 20 attach-window ticks |
 | Attempt key | Monday-anchored broker week derived from D1 bar time |
 
 Only completed D1 history enters the trend state. The current Friday bar's

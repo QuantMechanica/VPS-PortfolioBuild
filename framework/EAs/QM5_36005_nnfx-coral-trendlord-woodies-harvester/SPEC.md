@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-On each completed D1 bar, the EA buys when price is above the 20-period Coral SMMA, the Trend Lord proxy is green, Woodies CCI is positive, and Waddah Attar momentum exceeds its Bollinger explosion line; it sells on the inverse state. Every order receives a hard one-ATR stop and no full-volume take-profit. At plus one ATR the EA closes 50% and moves the remaining stop to entry plus or minus one pip, leaving the runner open until Trend Lord changes color. New entries are blocked during the GMT rollover window, genuinely excessive spreads, the card's daily loss limits, or the framework news blackout.
+On each completed D1 bar, the EA buys when price is above the 20-period Coral SMMA, the Trend Lord proxy is green, Woodies CCI is positive, and Waddah Attar momentum exceeds its Bollinger explosion line; it sells on the inverse state. Every order receives a hard one-ATR stop and no full-volume take-profit. At plus one ATR the EA closes 50% once, records that scale-out durably, and moves the remaining stop to entry plus or minus one pip, leaving the runner open until Trend Lord changes color. New entries are blocked during the GMT rollover window, genuinely excessive spreads, the card's daily loss limits, or the framework news blackout. Entry deviation is capped at three symbol ticks.
 
 ---
 
@@ -35,8 +35,8 @@ On each completed D1 bar, the EA buys when price is above the 20-period Coral SM
 | `strategy_spread_atr_mult` | 1.8 | fixed | Blocks entry when positive modeled spread exceeds this ATR multiple. |
 | `strategy_daily_loss_halt_pct` | 2.0 | fixed | Blocks new entries after this account realized loss; reconstructed from closed-deal history across restarts. |
 | `strategy_daily_hard_stop_pct` | 2.5 | fixed | Closes exposure and blocks entries at this daily equity loss from starting balance. |
-| `strategy_total_dd_halt_pct` | 5.0 | fixed | Account-level total-drawdown threshold consumed by the framework kill-switch signal. |
-| `strategy_per_trade_risk_cap_pct` | 0.5 | fixed | Framework per-trade risk cap. |
+| `strategy_total_dd_halt_pct` | 5.0 | fixed | Closes owned exposure and latches a restart-safe halt at this loss from initial equity; also configures the framework portfolio-DD signal threshold. |
+| `strategy_max_slippage_ticks` | 3 | 1–3 | Converts the card's tick limit to the framework entry deviation in symbol points. |
 
 Framework inputs, including `RISK_PERCENT`, `RISK_FIXED`, `PORTFOLIO_WEIGHT`, news controls, stress seed, and Friday close, are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
 
@@ -98,7 +98,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit`; an unconfigured sizing contract is reported as `EA_RISK_SIZER_UNCONFIGURED` by the build tooling.
 
 ---
 
@@ -107,3 +107,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-21 | Initial build from card | 0d80f4b9-bd2e-4719-a877-b015aea4cd23 |
+| v2 | 2026-08-24 | Review rework | Card-faithful runner, SMMA, loss controls, GMT rollover, and three-tick execution cap. |

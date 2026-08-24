@@ -1,0 +1,28 @@
+{
+  "schema": "qm.review-rework-build-result/v1",
+  "router_task_id": "1099e860-4dcd-4d82-acc1-c65a9b995335",
+  "ea_id": "QM5_20160",
+  "ea_label": "QM5_20160_xng-fri-trend",
+  "mq5_path": "framework/EAs/QM5_20160_xng-fri-trend/QM5_20160_xng-fri-trend.mq5",
+  "mq5_sha256": "ede9a59a1feb80e5a2ed92a57ba9268f899be5d86a5cc304057f670602be3990",
+  "ex5_path": "framework/EAs/QM5_20160_xng-fri-trend/QM5_20160_xng-fri-trend.ex5",
+  "ex5_sha256": "8796b1fb235f47eb2864da252ec543f2235e876bb5fd0c9dae404b4c037f2acb",
+  "ex5_status": "STALE_PRE_REWORK_BINARY",
+  "compile_succeeded": false,
+  "build_check_passed": false,
+  "smoke_result": "NOT_RUN_STALE_BINARY",
+  "smoke_report_path": null,
+  "blocked_reason": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED; governed COMPILE_EA enqueue also refused because this repair has existing work-item/setfile bindings and no source-repair authority allowlist entry",
+  "compile_refusal_log": "framework/build/compile/20260824_122553/QM5_20160_xng-fri-trend.compile.log",
+  "compile_refusal_summary": "D:/QM/reports/compile/20260824_122553/summary.csv",
+  "source_validation": {
+    "skill_build_ea_guard": "PASS",
+    "validate_spec_doc": "PASS",
+    "validate_build_guardrails": "PASS",
+    "build_gate_hardening_scoped_failures": 0,
+    "pytest_focused": "39 passed"
+  },
+  "false_success_claim_removed": true,
+  "pipeline_verdict": null,
+  "live_authorization": false
+}
