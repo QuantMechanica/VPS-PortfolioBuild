@@ -1,0 +1,25 @@
+{
+  "review_task_id": "6aef6969-3431-4325-aea0-7371031f95a2",
+  "build_task_id": "19c8295f-c2aa-47b6-9e55-47e0fa465b0f",
+  "ea_id": "QM5_12920",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_12920 source lines 143 and 195 use raw iTime D1 calendar keys for seasonal entry and exit cadence; codex_review_ea.md requires QM_CalendarPeriodKey, QM_IsNewCalendarPeriod, or the allowed higher-timeframe QM_IsNewBar helper, and a perf-allowed comment does not waive that corset rule.",
+    "Source lines 157-163 allow the first entry on any D1 bar after D-5 through D0, while g_last_traded_election_year is process-local and has no OnInit reconstruction; a restart can therefore create a later-than-card entry or repeat the election-cycle opportunity.",
+    "Source line 183 records the election year before QM_TM_OpenPosition runs at line 299, so an order rejection consumes the only election opportunity for the remainder of that process.",
+    "qm_friday_close_enabled defaults true at lines 36-38 and OnTick executes QM_FrameworkHandleFridayClose at lines 266-267, closing a D-5 Tuesday entry on Friday instead of the card-mandated D0 election-day close.",
+    "[ONTICK-ORDER-ADVISORY] OnTick returns on the news blackout at lines 254-264 before the mandatory election-time exit at lines 274-288; every entry carries a server-side ATR stop, so this is advisory under the review contract.",
+    "The current MQ5 (sha256 eee53ccff7af6df92af4f0d2ebbbcaf008aa74d8b5238d2f13a1a4f885520263, mtime 2026-08-23T15:37:42Z) postdates the EX5 (sha256 784a937ef523bfff52bad0c03405842d0afbccc2e3b2c845e2c0893a156def03, mtime 2026-08-21T14:51:46Z); the artifact's matching hash fields do not bind that pre-fix binary to the reviewed source.",
+    "artifacts/builds/19c8295f-c2aa-47b6-9e55-47e0fa465b0f.json records smoke_result=deferred_p2_smoke with an empty blocked_reason and only a generic custom-history explanation; this is not durable tester-saturation evidence, and no QM5_12920 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-24T08:20:52Z"
+}

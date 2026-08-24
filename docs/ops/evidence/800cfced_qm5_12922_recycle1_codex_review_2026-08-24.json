@@ -1,0 +1,25 @@
+{
+  "review_task_id": "800cfced-22aa-49e9-83d0-2ef5356ef2a4",
+  "build_task_id": "11468a5a-89fc-4872-b6ec-2a78250ae792",
+  "ea_id": "QM5_12922",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_12922 source lines 78-90 use raw iTime(_Symbol, PERIOD_D1, 0) plus hand-rolled day and month keys for seasonal cadence; codex_review_ea.md requires QM_CalendarPeriodKey, QM_IsNewCalendarPeriod, or the allowed higher-timeframe QM_IsNewBar helper.",
+    "The approved card requires deferral when FOMC, NFP, or ECB falls on T+1, but lines 270-285 only test the instantaneous PRE30_POST30 gate on the first D1 tick; they do not scan the T+1 event day or implement the named-event predicate, so later same-day events do not trigger the required T+2 deferral.",
+    "g_strategy_last_traded_month_key and g_strategy_entry_deferred are process-local at lines 45-46 with no OnInit reconstruction; a restart can lose a T+1 deferral or forget a completed monthly entry and manufacture another opportunity after the prior position closes.",
+    "Strategy_EntrySignal clears g_strategy_entry_due at line 155 before price, stop, and position validation and before QM_TM_OpenPosition at line 293; a transient validation or order failure permanently consumes that month's authorized entry.",
+    "qm_friday_close_enabled defaults true at lines 29-31 and OnTick executes QM_FrameworkHandleFridayClose at lines 242-243, closing the position several trading days before the card-mandated T+9 close.",
+    "The current MQ5 (sha256 02bdd8bd0fccd4701e641031ab16e847a30a43909a49dc87617ed02534c8aa90, mtime 2026-08-23T16:36:04Z) postdates the EX5 (sha256 49ab4db2d889eff07eb7441388b6222bf253f16cb52446704991c3581204e274, mtime 2026-08-21T15:06:34Z); the artifact's matching hash fields do not prove a compile of the reviewed source.",
+    "artifacts/qm5_12922_build_result.json records smoke_result=deferred_p2_smoke with blocked_reason=null; this lacks the saturation-only waiver evidence, and no QM5_12922 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-24T08:20:52Z"
+}
