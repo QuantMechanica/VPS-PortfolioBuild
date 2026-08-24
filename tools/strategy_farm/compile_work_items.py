@@ -118,6 +118,21 @@ REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES = {
 REVIEW_REWORK_SOURCE_REPAIR_EA_LABELS = frozenset(
     REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES
 )
+# Exact remediation authority for the 2026-08-24 ROT-violation revert
+# (router task b63eaead-7890-4be4-b8e7-0edea3fe6a85). Both EAs had ad-hoc
+# EX5 binaries committed after an explicit LIVE_FACTORY_AD_HOC_COMPILE_REFUSED
+# interlock refusal; the ad-hoc binaries were removed/reverted in the same
+# remediation commit that adds this authority. This permits exactly one
+# append-only, source-hash-bound COMPILE_EA successor per label through the
+# governed compiler; it grants no backtest, gate, or overwrite authority for
+# any other EA.
+ROT_REMEDIATION_39001_38001_AUTHORITY = (
+    "router_ops_issue:b63eaead-7890-4be4-b8e7-0edea3fe6a85"
+)
+ROT_REMEDIATION_39001_38001_EA_LABELS = frozenset({
+    "QM5_39001_forexfactory-trading-made-simple-tms",
+    "QM5_38001_codetrading-vwap-bollinger-rsi-scalper",
+})
 COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
@@ -262,6 +277,10 @@ def _source_repair_authorized(ea_label: str, authority: str | None) -> bool:
         )
         or (
             authority == REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES.get(ea_label)
+        )
+        or (
+            authority == ROT_REMEDIATION_39001_38001_AUTHORITY
+            and ea_label in ROT_REMEDIATION_39001_38001_EA_LABELS
         )
     )
 
