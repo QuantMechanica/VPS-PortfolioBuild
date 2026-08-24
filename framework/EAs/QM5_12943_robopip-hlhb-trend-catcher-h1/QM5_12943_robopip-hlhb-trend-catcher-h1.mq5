@@ -165,11 +165,29 @@ void Strategy_ManageOpenPosition()
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
       const int bars_open = iBarShift(_Symbol, PERIOD_H1, open_time); // perf-allowed
 
-      // Time stop exit after 96 closed H1 bars
+      // The card's time stop is conditional: after 96 completed H1 bars,
+      // close only when the executable side has recovered to break-even.
+      // If it is still below break-even, TP, SL, and the opposite-signal exit
+      // remain active; the time stop must not crystallize a card-forbidden loss.
       if(strategy_time_stop_bars > 0 && bars_open >= strategy_time_stop_bars)
       {
-         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
-         continue;
+         const ENUM_POSITION_TYPE position_type =
+            (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+         const double entry_price = PositionGetDouble(POSITION_PRICE_OPEN);
+         const double close_price =
+            (position_type == POSITION_TYPE_BUY)
+            ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+            : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         const bool at_or_beyond_break_even =
+            (entry_price > 0.0 && close_price > 0.0 &&
+             ((position_type == POSITION_TYPE_BUY && close_price >= entry_price) ||
+              (position_type == POSITION_TYPE_SELL && close_price <= entry_price)));
+
+         if(at_or_beyond_break_even)
+         {
+            QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
+            continue;
+         }
       }
    }
 }
