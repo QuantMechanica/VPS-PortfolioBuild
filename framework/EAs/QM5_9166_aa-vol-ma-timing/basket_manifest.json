@@ -1,0 +1,36 @@
+{
+  "schema_version": "qm.basket_manifest.v1",
+  "ea_id": 9166,
+  "ea_label": "QM5_9166_aa-vol-ma-timing",
+  "logical_symbol": "QM5_9166_AA_VOL_MA_TIMING_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "selection": {
+    "cadence": "monthly",
+    "lookback_completed_d1_returns": 252,
+    "rank_order": "realized_volatility_descending",
+    "tie_break": "magic_slot_ascending",
+    "primary_rule": "ceil(valid_count * 0.20)",
+    "fallback_rule": "top_3_when_3_to_9_available",
+    "minimum_available": 3
+  },
+  "basket_symbols": [
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "SP500.DWX",
+    "UK100.DWX",
+    "WS30.DWX",
+    "XAUUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "USDCHF.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "notes": [
+    "Each chart instance trades only its registered host symbol.",
+    "Foreign D1 history reads are guarded and bounded to the monthly volatility snapshot."
+  ]
+}
