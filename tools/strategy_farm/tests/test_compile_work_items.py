@@ -193,6 +193,23 @@ def test_source_repair_refuses_current_compile_ok(
     assert repair["refused"][0]["reason"] == "USABLE_CURRENT_COMPILE_VERDICT_EXISTS"
 
 
+def test_q02_infra_source_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_11900_kobasfx-4ema-macd-sentiment-h1"
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.Q02_INFRA_SOURCE_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_11901_unrelated-h1",
+        compile_work_items.Q02_INFRA_SOURCE_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_q02_infra_repair:wrong-task",
+    )
+
+
 def test_batch_from_file_is_dry_run_until_apply(tmp_path: Path) -> None:
     labels = [
         "QM5_1001_compile-fixture-h1",

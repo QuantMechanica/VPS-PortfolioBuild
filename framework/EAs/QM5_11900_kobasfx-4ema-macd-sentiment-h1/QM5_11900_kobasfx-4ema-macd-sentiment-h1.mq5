@@ -14,7 +14,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -90,7 +90,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
    if(PositionsTotal() > 0) return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: card-authorized closed H1 value behind the framework new-bar gate.
    const double atr1 = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
    
    const double ema5 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_fast1, 1);
@@ -133,11 +133,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    
    if(side == QM_BUY)
    {
-      sl = iLow(_Symbol, PERIOD_H1, iLowest(_Symbol, PERIOD_H1, MODE_LOW, 10, 1)) - (2.0 * 10 * point);
+      sl = iLow(_Symbol, PERIOD_H1, iLowest(_Symbol, PERIOD_H1, MODE_LOW, 10, 1)) - (2.0 * 10 * point); // perf-allowed: card-authorized 10-bar structural stop, evaluated once per closed H1 bar.
    }
    else
    {
-      sl = iHigh(_Symbol, PERIOD_H1, iHighest(_Symbol, PERIOD_H1, MODE_HIGH, 10, 1)) + (2.0 * 10 * point);
+      sl = iHigh(_Symbol, PERIOD_H1, iHighest(_Symbol, PERIOD_H1, MODE_HIGH, 10, 1)) + (2.0 * 10 * point); // perf-allowed: card-authorized 10-bar structural stop, evaluated once per closed H1 bar.
    }
 
    double risk_dist = MathAbs(entry - sl);
@@ -149,6 +149,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp = tp;
    req.reason = (side == QM_BUY) ? "KOBASFX_LONG" : "KOBASFX_SHORT";
    req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
    return true;
 }
@@ -211,24 +212,23 @@ int OnInit()
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
 
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
 }
 
-void OnDeinit(const int reason) { QM_FrameworkShutdown(); }
+void OnDeinit(const int reason)
+{
+   QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
+   QM_FrameworkShutdown();
+}
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
@@ -246,10 +246,20 @@ void OnTick()
       }
    }
 
+   // News gates new entries only; management and exits above remain active
+   // throughout blackout windows.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
+
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;

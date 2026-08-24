@@ -68,6 +68,17 @@ SOURCE_REPAIR_EA_LABELS = frozenset({
     "QM5_41131_wti-mdaily-tailtrim-mom",
     "QM5_41132_wti-mweekday-med-mom",
 })
+# Exact paced-fleet authority for the pre-existing QM5_11900 Q02
+# infrastructure-repair task.  The June binary predates its governed magic
+# allocation, so the ordinary no-overwrite classifier correctly refuses it;
+# this single label/task binding authorizes an append-only, source-hash-bound
+# compile successor without weakening the default guard for any other EA.
+Q02_INFRA_SOURCE_REPAIR_AUTHORITY = (
+    "router_q02_infra_repair:46e34047-c661-462c-96d5-b4f9d76914db"
+)
+Q02_INFRA_SOURCE_REPAIR_EA_LABELS = frozenset({
+    "QM5_11900_kobasfx-4ema-macd-sentiment-h1",
+})
 COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
@@ -186,6 +197,19 @@ def _numeric_ea_reference(value: Any) -> str | None:
     if not match or int(match.group(1)) <= 0:
         return None
     return str(int(match.group(1)))
+
+
+def _source_repair_authorized(ea_label: str, authority: str | None) -> bool:
+    return bool(
+        (
+            authority == SOURCE_REPAIR_AUTHORITY
+            and ea_label in SOURCE_REPAIR_EA_LABELS
+        )
+        or (
+            authority == Q02_INFRA_SOURCE_REPAIR_AUTHORITY
+            and ea_label in Q02_INFRA_SOURCE_REPAIR_EA_LABELS
+        )
+    )
 
 
 def _label_parts(label: str) -> tuple[str, str, str] | None:
@@ -387,9 +411,8 @@ def classify_candidate(
         return {"ea_label": label, "eligible": False, "reason": "EA_LABEL_INVALID"}
     canonical_label, ea_id, _slug = parts
     repair_requested = source_repair_authority is not None
-    repair_authorized = (
-        source_repair_authority == SOURCE_REPAIR_AUTHORITY
-        and canonical_label in SOURCE_REPAIR_EA_LABELS
+    repair_authorized = _source_repair_authorized(
+        canonical_label, source_repair_authority
     )
     sanctioned_ids = {
         str(value) for value in sanctioned_predecessor_ids if str(value or "")
