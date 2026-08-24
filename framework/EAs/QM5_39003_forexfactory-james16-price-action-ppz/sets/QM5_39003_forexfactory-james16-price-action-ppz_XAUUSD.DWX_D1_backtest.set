@@ -3,16 +3,16 @@
 ; ea_id:        39003
 ; ea_slug:      forexfactory-james16-price-action-ppz
 ; ea_version:   v5.0
-; set_version:  s20260818-001
+; set_version:  s20260824-002
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   fad7c5184ab18ce808871864f1bbb85b89a526c6742211f2495f439d7052dcfa
+; build_hash:   42a6391da5347151479e6eca3b31dce2e9d6e684c27a659f4c9a1a750cdf20ad
 ; author:       Development
-; date:         2026-08-18
+; date:         2026-08-24
 ;==========================================================
 qm_ea_id=39003
 qm_magic_slot_offset=2
@@ -20,14 +20,18 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_39003_forexfactory-james16-price-action-ppz.md
+; card_defaults_source=strategy-seeds/cards/approved/QM5_39003_forexfactory-james16-price-action-ppz.md
 InpPPZLookback=20
 InpTrendEMA=21
 strategy_atr_period=14
-strategy_zone_atr_mult=0.50
-strategy_min_pin_atr_mult=0.50
-strategy_max_pin_atr_mult=3.50
-strategy_wick_frac=0.65
-strategy_body_frac=0.25
-strategy_sl_buffer_pips=2.0
-strategy_tp_rr=2.5
+strategy_ppz_zone_atr_fraction=0.50
+strategy_pinbar_wick_fraction=0.65
+strategy_pinbar_body_fraction=0.25
+strategy_spread_atr_multiplier=1.80
+strategy_sl_buffer_pips=2
+strategy_reward_risk=2.50
+strategy_slippage_tolerance_ticks=3.00
+strategy_max_open_positions=1
+strategy_daily_entry_loss_limit_pct=2.00
+strategy_daily_drawdown_stop_pct=2.50
+strategy_total_drawdown_stop_pct=5.00

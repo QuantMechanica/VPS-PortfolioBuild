@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_39003 James16 D1 pinbar rejection at Price Pivot Zones"
 
 #include <QM/QM_Common.mqh>
 
@@ -90,48 +90,214 @@ input double strategy_daily_drawdown_stop_pct       = 2.50;
 input double strategy_total_drawdown_stop_pct       = 5.00;
 
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// Card-specific state and bounded D1 structure helpers.
+// -----------------------------------------------------------------------------
+
+double g_initial_equity          = 0.0;
+int    g_daily_loss_day_key      = -1;
+double g_daily_loss_balance      = 0.0;
+bool   g_daily_entry_loss_halted = true;
+
+int StrategyDayKey(const datetime broker_time)
+  {
+   MqlDateTime parts;
+   TimeToStruct(broker_time, parts);
+   return parts.year * 10000 + parts.mon * 100 + parts.day;
+  }
+
+void StrategyRefreshDailyEntryLossHalt(const bool force)
+  {
+   const int day_key = StrategyDayKey(TimeCurrent());
+   const double balance_now = AccountInfoDouble(ACCOUNT_BALANCE);
+   if(!force && day_key == g_daily_loss_day_key &&
+      MathAbs(balance_now - g_daily_loss_balance) < 0.005)
+      return;
+
+   g_daily_loss_day_key = day_key;
+   g_daily_loss_balance = balance_now;
+   g_daily_entry_loss_halted = true;
+
+   int closed_trades_today = 0;
+   const double realized_today = QM_ChartUITodayPnL(0, closed_trades_today);
+   const double day_start_balance = balance_now - realized_today;
+   if(balance_now <= 0.0 || day_start_balance <= 0.0)
+      return;
+
+   g_daily_entry_loss_halted =
+      (realized_today <= -(day_start_balance * strategy_daily_entry_loss_limit_pct / 100.0));
+  }
+
+bool StrategyTotalDrawdownBreached()
+  {
+   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
+   return (g_initial_equity > 0.0 && equity_now > 0.0 &&
+           equity_now <= g_initial_equity *
+                         (1.0 - strategy_total_drawdown_stop_pct / 100.0));
+  }
+
+bool StrategyLoadClosedD1Rates(MqlRates &rates[])
+  {
+   const int required = InpPPZLookback + 2;
+   if(required < 5)
+      return false;
+
+   ArrayResize(rates, required);
+   ArraySetAsSeries(rates, true);
+   // perf-allowed: one bounded D1 structure buffer, called only for an open
+   // position's daily trail or after the framework's single new-bar entry gate.
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, required, rates);
+   return (copied == required && ArraySize(rates) >= required);
+  }
+
+bool StrategyIsSwingLow(const MqlRates &rates[], const int index)
+  {
+   const int strength = 2;
+   const int count = ArraySize(rates);
+   if(index - strength < 0 || index + strength >= count)
+      return false;
+
+   const double level = rates[index].low;
+   if(level <= 0.0)
+      return false;
+   for(int offset = 1; offset <= strength; ++offset)
+     {
+      if(rates[index - offset].low <= level || rates[index + offset].low <= level)
+         return false;
+     }
+   return true;
+  }
+
+bool StrategyIsSwingHigh(const MqlRates &rates[], const int index)
+  {
+   const int strength = 2;
+   const int count = ArraySize(rates);
+   if(index - strength < 0 || index + strength >= count)
+      return false;
+
+   const double level = rates[index].high;
+   if(level <= 0.0)
+      return false;
+   for(int offset = 1; offset <= strength; ++offset)
+     {
+      if(rates[index - offset].high >= level || rates[index + offset].high >= level)
+         return false;
+     }
+   return true;
+  }
+
+bool StrategyFindPpzLevels(const MqlRates &rates[],
+                           const double signal_low,
+                           const double signal_high,
+                           const double buy_price,
+                           const double sell_price,
+                           const double tolerance,
+                           double &support,
+                           double &resistance,
+                           double &next_resistance,
+                           double &next_support)
+  {
+   support = 0.0;
+   resistance = 0.0;
+   next_resistance = 0.0;
+   next_support = 0.0;
+   double support_distance = DBL_MAX;
+   double resistance_distance = DBL_MAX;
+
+   const int count = ArraySize(rates);
+   if(count < InpPPZLookback + 2 || tolerance <= 0.0)
+      return false;
+
+   // Logical index 0 is shift 1. Indices 2..lookback-1 are shifts 3..lookback;
+   // the two extra older bars provide the confirmation wing for a strength-2 pivot.
+   for(int index = 2; index <= InpPPZLookback - 1; ++index)
+     {
+      if(index + 2 >= count)
+         return false;
+
+      if(StrategyIsSwingLow(rates, index))
+        {
+         const double level = rates[index].low;
+         const double distance = MathAbs(signal_low - level);
+         if(distance <= tolerance && distance < support_distance)
+           {
+            support = level;
+            support_distance = distance;
+           }
+         if(level < sell_price && (next_support <= 0.0 || level > next_support))
+            next_support = level;
+        }
+
+      if(StrategyIsSwingHigh(rates, index))
+        {
+         const double level = rates[index].high;
+         const double distance = MathAbs(signal_high - level);
+         if(distance <= tolerance && distance < resistance_distance)
+           {
+            resistance = level;
+            resistance_distance = distance;
+           }
+         if(level > buy_price && (next_resistance <= 0.0 || level < next_resistance))
+            next_resistance = level;
+        }
+     }
+
+   return true;
+  }
+
+bool StrategyFindLatestSwing(const MqlRates &rates[],
+                             const bool for_buy,
+                             double &level)
+  {
+   level = 0.0;
+   const int count = ArraySize(rates);
+   if(count < InpPPZLookback + 2)
+      return false;
+
+   for(int index = 2; index <= InpPPZLookback - 1; ++index)
+     {
+      if(index + 2 >= count)
+         return false;
+      if(for_buy && StrategyIsSwingLow(rates, index))
+        {
+         level = rates[index].low;
+         return (level > 0.0);
+        }
+      if(!for_buy && StrategyIsSwingHigh(rates, index))
+        {
+         level = rates[index].high;
+         return (level > 0.0);
+        }
+     }
+   return false;
+  }
+
+// -----------------------------------------------------------------------------
+// Strategy hooks — implemented mechanically from the approved card.
 // -----------------------------------------------------------------------------
 
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   static double initial_equity = 0.0;
-   static int balance_day_key = 0;
-   static double day_start_balance = 0.0;
    static int atr_day_key = 0;
    static double cached_atr = 0.0;
    const datetime broker_now = TimeCurrent();
-   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
-   const double balance_now = AccountInfoDouble(ACCOUNT_BALANCE);
-   if(initial_equity <= 0.0 && equity_now > 0.0)
-      initial_equity = equity_now;
-
-   MqlDateTime broker_parts;
-   TimeToStruct(broker_now, broker_parts);
-   const int current_balance_day_key =
-      broker_parts.year * 10000 + broker_parts.mon * 100 + broker_parts.day;
-   if(current_balance_day_key != balance_day_key)
-     {
-      balance_day_key = current_balance_day_key;
-      day_start_balance = balance_now;
-     }
 
    const int current_atr_day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 0);
-   if(current_atr_day_key > 0 && current_atr_day_key != atr_day_key)
+   if(current_atr_day_key > 0 &&
+      (current_atr_day_key != atr_day_key || cached_atr <= 0.0))
      {
       atr_day_key = current_atr_day_key;
       cached_atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
      }
 
    const int magic = QM_FrameworkMagic();
-   const int open_count = QM_TM_OpenPositionCount(magic);
-   // The skeleton invokes this hook before management. Existing exposure must
-   // reach its protective trail and hard-stop exit; entry admission is checked
-   // again in Strategy_EntrySignal.
-   if(open_count > 0)
-      return false;
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) >= strategy_max_open_positions)
+      return true;
+
+   StrategyRefreshDailyEntryLossHalt(false);
+   if(g_daily_entry_loss_halted || StrategyTotalDrawdownBreached())
+      return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -143,17 +309,6 @@ bool Strategy_NoTradeFilter()
    TimeToStruct(utc_now, utc_parts);
    if((utc_parts.hour == 23 && utc_parts.min >= 55) ||
       (utc_parts.hour == 0 && utc_parts.min <= 5))
-      return true;
-
-   const double realized_today = balance_now - day_start_balance;
-   if(day_start_balance > 0.0 &&
-      realized_today <= -(day_start_balance * strategy_daily_entry_loss_limit_pct / 100.0))
-      return true;
-   if(day_start_balance > 0.0 && equity_now > 0.0 &&
-      equity_now <= day_start_balance * (1.0 - strategy_daily_drawdown_stop_pct / 100.0))
-      return true;
-   if(initial_equity > 0.0 && equity_now > 0.0 &&
-      equity_now <= initial_equity * (1.0 - strategy_total_drawdown_stop_pct / 100.0))
       return true;
 
    if(cached_atr <= 0.0)
@@ -171,27 +326,8 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   if(InpPPZLookback < 1 || InpTrendEMA < 1 || strategy_atr_period < 1 ||
-      strategy_ppz_zone_atr_fraction <= 0.0 ||
-      strategy_pinbar_wick_fraction <= 0.0 || strategy_pinbar_wick_fraction > 1.0 ||
-      strategy_pinbar_body_fraction < 0.0 || strategy_pinbar_body_fraction > 1.0 ||
-      strategy_sl_buffer_pips < 1 || strategy_reward_risk <= 0.0 ||
-      strategy_slippage_tolerance_ticks <= 0.0 ||
-      strategy_max_open_positions < 1)
-      return false;
-
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) >= strategy_max_open_positions)
-      return false;
-
-   // Re-check the card's account-level entry halt after any same-tick close.
-   int closed_trades_today = 0;
-   const double realized_today = QM_ChartUITodayPnL(0, closed_trades_today);
-   const double day_start_balance = AccountInfoDouble(ACCOUNT_BALANCE) - realized_today;
-   if(day_start_balance > 0.0 &&
-      realized_today <= -(day_start_balance * strategy_daily_entry_loss_limit_pct / 100.0))
-      return false;
-   if(Strategy_ExitSignal())
       return false;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
@@ -215,28 +351,36 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr <= 0.0 || ema <= 0.0)
       return false;
 
-   const double open_1 = iOpen(_Symbol, PERIOD_D1, 1);    // perf-allowed: bespoke PPZ/pinbar structure, once per closed D1 bar.
-   const double high_1 = iHigh(_Symbol, PERIOD_D1, 1);    // perf-allowed: bespoke PPZ/pinbar structure, once per closed D1 bar.
-   const double low_1 = iLow(_Symbol, PERIOD_D1, 1);      // perf-allowed: bespoke PPZ/pinbar structure, once per closed D1 bar.
-   const double close_1 = iClose(_Symbol, PERIOD_D1, 1);  // perf-allowed: bespoke PPZ/pinbar structure, once per closed D1 bar.
+   MqlRates rates[];
+   if(!StrategyLoadClosedD1Rates(rates))
+      return false;
+   const double open_1 = rates[0].open;
+   const double high_1 = rates[0].high;
+   const double low_1 = rates[0].low;
+   const double close_1 = rates[0].close;
    if(open_1 <= 0.0 || high_1 <= low_1 || low_1 <= 0.0 || close_1 <= 0.0)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
    double ppz_support = 0.0;
    double ppz_resistance = 0.0;
-   for(int shift = 2; shift <= InpPPZLookback + 1; ++shift)
-     {
-      const double prior_low = iLow(_Symbol, PERIOD_D1, shift);    // perf-allowed: bounded card-authorized PPZ window behind the framework new-bar gate.
-      const double prior_high = iHigh(_Symbol, PERIOD_D1, shift);  // perf-allowed: bounded card-authorized PPZ window behind the framework new-bar gate.
-      if(prior_low <= 0.0 || prior_high <= prior_low)
-         return false;
-      if(ppz_support <= 0.0 || prior_low < ppz_support)
-         ppz_support = prior_low;
-      if(ppz_resistance <= 0.0 || prior_high > ppz_resistance)
-         ppz_resistance = prior_high;
-     }
-
-   if(ppz_support <= 0.0 || ppz_resistance <= 0.0)
+   double next_resistance = 0.0;
+   double next_support = 0.0;
+   const double ppz_tolerance = strategy_ppz_zone_atr_fraction * atr;
+   if(!StrategyFindPpzLevels(rates,
+                             low_1,
+                             high_1,
+                             ask,
+                             bid,
+                             ppz_tolerance,
+                             ppz_support,
+                             ppz_resistance,
+                             next_resistance,
+                             next_support))
       return false;
 
    const double total_range = high_1 - low_1;
@@ -246,9 +390,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(total_range <= 0.0 || body > strategy_pinbar_body_fraction * total_range)
       return false;
 
-   const double ppz_tolerance = strategy_ppz_zone_atr_fraction * atr;
    const bool bullish_pinbar = (close_1 > open_1 &&
-                                lower_wick >= strategy_pinbar_wick_fraction * total_range);
+                                 lower_wick >= strategy_pinbar_wick_fraction * total_range);
    const bool bearish_pinbar = (close_1 < open_1 &&
                                 upper_wick >= strategy_pinbar_wick_fraction * total_range);
    const bool at_support = (MathAbs(low_1 - ppz_support) <= ppz_tolerance);
@@ -259,12 +402,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(bullish_pinbar && at_support && close_1 > ema)
      {
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double sl = QM_StopRulesNormalizePrice(_Symbol, low_1 - sl_buffer);
       if(ask <= 0.0 || sl <= 0.0 || sl >= ask)
          return false;
-      const double tp = QM_TakeRR(_Symbol, QM_BUY, ask, sl, strategy_reward_risk);
-      if(tp <= ask)
+      const double minimum_target = ask + strategy_reward_risk * (ask - sl);
+      const double tp = QM_StopRulesNormalizePrice(_Symbol, next_resistance);
+      if(tp <= ask || tp < minimum_target)
          return false;
 
       req.type = QM_BUY;
@@ -279,12 +422,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(bearish_pinbar && at_resistance && close_1 < ema)
      {
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double sl = QM_StopRulesNormalizePrice(_Symbol, high_1 + sl_buffer);
       if(bid <= 0.0 || sl <= bid)
          return false;
-      const double tp = QM_TakeRR(_Symbol, QM_SELL, bid, sl, strategy_reward_risk);
-      if(tp <= 0.0 || tp >= bid)
+      const double minimum_target = bid - strategy_reward_risk * (sl - bid);
+      const double tp = QM_StopRulesNormalizePrice(_Symbol, next_support);
+      if(tp <= 0.0 || tp >= bid || tp > minimum_target)
          return false;
 
       req.type = QM_SELL;
@@ -316,9 +459,13 @@ void Strategy_ManageOpenPosition()
       return;
    last_trailing_day_key = trailing_day_key;
 
+   MqlRates rates[];
+   if(!StrategyLoadClosedD1Rates(rates))
+      return;
+
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double sl_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
-   if(point <= 0.0 || sl_buffer <= 0.0 || InpPPZLookback < 1)
+   if(point <= 0.0 || sl_buffer <= 0.0)
       return;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -333,15 +480,13 @@ void Strategy_ManageOpenPosition()
       const ENUM_POSITION_TYPE position_type =
          (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const bool is_buy = (position_type == POSITION_TYPE_BUY);
-      const QM_OrderType side = is_buy ? QM_BUY : QM_SELL;
-      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
-      const double structure = QM_StopStructure(_Symbol, side, open_price, InpPPZLookback);
-      if(structure <= 0.0)
+      double swing_level = 0.0;
+      if(!StrategyFindLatestSwing(rates, is_buy, swing_level))
          continue;
 
       const double target_sl = QM_StopRulesNormalizePrice(
-         _Symbol, is_buy ? structure - sl_buffer : structure + sl_buffer);
+         _Symbol, is_buy ? swing_level - sl_buffer : swing_level + sl_buffer);
       const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
                                          : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(target_sl <= 0.0 || market_price <= 0.0)
@@ -363,33 +508,10 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   static double initial_equity = 0.0;
-   static int balance_day_key = 0;
-   static double day_start_balance = 0.0;
-   const datetime broker_now = TimeCurrent();
-   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
-   const double balance_now = AccountInfoDouble(ACCOUNT_BALANCE);
-   if(initial_equity <= 0.0 && equity_now > 0.0)
-      initial_equity = equity_now;
-
-   MqlDateTime broker_parts;
-   TimeToStruct(broker_now, broker_parts);
-   const int current_balance_day_key =
-      broker_parts.year * 10000 + broker_parts.mon * 100 + broker_parts.day;
-   if(current_balance_day_key != balance_day_key)
-     {
-      balance_day_key = current_balance_day_key;
-      day_start_balance = balance_now;
-     }
-
-   if(day_start_balance > 0.0 && equity_now > 0.0 &&
-      equity_now <= day_start_balance * (1.0 - strategy_daily_drawdown_stop_pct / 100.0))
-      return true;
-   if(initial_equity > 0.0 && equity_now > 0.0 &&
-      equity_now <= initial_equity * (1.0 - strategy_total_drawdown_stop_pct / 100.0))
-      return true;
-
-   return false;
+   // The framework kill switch owns the persistent 2.5% daily hard stop and
+   // external 5% portfolio channel. This session-equity check makes the card's
+   // 5% total-drawdown stop deterministic in the strategy tester as well.
+   return StrategyTotalDrawdownBreached();
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
@@ -406,6 +528,22 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   if(InpPPZLookback < 10 || InpPPZLookback > 50 ||
+      InpTrendEMA < 14 || InpTrendEMA > 34 ||
+      strategy_atr_period < 1 ||
+      strategy_ppz_zone_atr_fraction <= 0.0 ||
+      strategy_pinbar_wick_fraction <= 0.0 || strategy_pinbar_wick_fraction > 1.0 ||
+      strategy_pinbar_body_fraction < 0.0 || strategy_pinbar_body_fraction > 1.0 ||
+      strategy_spread_atr_multiplier <= 0.0 ||
+      strategy_sl_buffer_pips < 1 || strategy_reward_risk < 1.0 ||
+      strategy_slippage_tolerance_ticks <= 0.0 ||
+      strategy_max_open_positions < 1 ||
+      strategy_daily_entry_loss_limit_pct <= 0.0 ||
+      strategy_daily_drawdown_stop_pct <= strategy_daily_entry_loss_limit_pct ||
+      strategy_total_drawdown_stop_pct <= strategy_daily_drawdown_stop_pct ||
+      strategy_total_drawdown_stop_pct > 100.0)
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -421,10 +559,31 @@ int OnInit()
                         qm_rng_seed,
                         qm_stress_reject_probability,
                         qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "V5_WEEKEND_RISK_POLICY"))
+      return INIT_FAILED;
+
+   // Override the generic framework 3%/0% defaults with the approved card's
+   // 2.5% daily hard stop and 5% portfolio/total-drawdown channel.
+   if(!QM_KillSwitchInit(qm_ea_id,
+                          QM_FrameworkMagic(),
+                          strategy_daily_drawdown_stop_pct,
+                          strategy_total_drawdown_stop_pct,
+                          1.0))
+      return INIT_FAILED;
+
+   g_initial_equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(g_initial_equity <= 0.0)
+      return INIT_FAILED;
+   StrategyRefreshDailyEntryLossHalt(true);
+
+   QM_LogEvent(QM_INFO,
+               "INIT_OK",
+               "{\"card\":\"QM5_39003\",\"ea\":\"forexfactory-james16-price-action-ppz\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -444,13 +603,7 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
    if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
       return;
 
    // Per-tick: trade management can adjust SL/TP on open positions.
@@ -473,7 +626,13 @@ void OnTick()
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
-     }
+      }
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   if(Strategy_NoTradeFilter())
+      return;
 
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
