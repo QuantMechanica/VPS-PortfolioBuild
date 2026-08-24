@@ -3,16 +3,16 @@
 ; ea_id:        37008
 ; ea_slug:      garch-volatility-forecast-breakout
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260824-001
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   af38c6703b135fc4a92797df00c5ed6a3cd1aae43ccd6ba43e6bc41100382dd1
+; build_hash:   ce0f6c55d8f6d4576a214bb73d17e35b24186080d3a9192aa2dd4613e5fcdae6
 ; author:       Development
-; date:         2026-08-17
+; date:         2026-08-24
 ;==========================================================
 qm_ea_id=37008
 qm_magic_slot_offset=1
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_37008_garch-volatility-forecast-breakout.md
+; card_defaults_source=C:\QM\worktrees\rework-slot-16\strategy-seeds\cards\QM5_37008_garch-volatility-forecast-breakout.md
 strategy_omega=0.00001
 strategy_alpha=0.08
 strategy_beta=0.90
