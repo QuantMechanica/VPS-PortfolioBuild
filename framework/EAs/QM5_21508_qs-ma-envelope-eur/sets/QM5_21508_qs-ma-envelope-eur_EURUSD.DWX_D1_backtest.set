@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        21508
+; ea_slug:      qs-ma-envelope-eur
+; ea_version:   v5.0
+; set_version:  s20260824-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-24
+;==========================================================
+qm_ea_id=21508
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_21508_qs-ma-envelope-eur.md
+strategy_ma_period=20
+strategy_envelope_pct=0.015
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_max_hold_bars=20
+strategy_max_spread_points=20.0
