@@ -55,8 +55,10 @@ input double strategy_spread_max_atr_mult = 0.3;    // Maximum spread threshold 
 struct StrategyTradeState
 {
    ulong    ticket;
+   ulong    position_id;
    bool     t1_hit;
    double   t1_price;
+   double   initial_volume;
 };
 
 // -----------------------------------------------------------------------------
@@ -81,11 +83,96 @@ int                g_bars_since_last_short = 100;
 StrategyTradeState g_trade_state;
 
 // -----------------------------------------------------------------------------
+// Durable entry/management state
+// -----------------------------------------------------------------------------
+
+void Strategy_ResetTradeState()
+{
+   ZeroMemory(g_trade_state);
+}
+
+string Strategy_EntryComment(const bool is_long, const double t1_price)
+{
+   const string prefix = is_long ? "BCTL|T1=" : "BCTS|T1=";
+   return prefix + DoubleToString(t1_price, _Digits);
+}
+
+bool Strategy_ParseT1Comment(const string comment,
+                             const bool is_long,
+                             double &t1_price)
+{
+   t1_price = 0.0;
+   const string prefix = is_long ? "BCTL|T1=" : "BCTS|T1=";
+   if(StringFind(comment, prefix) != 0)
+      return false;
+
+   const double parsed = StringToDouble(StringSubstr(comment, StringLen(prefix)));
+   if(parsed <= 0.0 || !MathIsValidNumber(parsed))
+      return false;
+
+   t1_price = NormalizeDouble(parsed, _Digits);
+   return true;
+}
+
+int Strategy_BarsSinceEntry(const datetime entry_time)
+{
+   if(entry_time <= 0)
+      return 1000000;
+   const int shift = iBarShift(_Symbol, _Period, entry_time); // perf-allowed
+   return (shift >= 0) ? shift : 0;
+}
+
+void Strategy_RestoreCooldownState()
+{
+   g_bars_since_last_long = 1000000;
+   g_bars_since_last_short = 1000000;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 || !HistorySelect(0, TimeCurrent()))
+   {
+      // History uncertainty must not bypass the card's directional cooldown.
+      g_bars_since_last_long = 0;
+      g_bars_since_last_short = 0;
+      return;
+   }
+
+   datetime last_long_entry = 0;
+   datetime last_short_entry = 0;
+   for(int i = HistoryDealsTotal() - 1; i >= 0; --i)
+   {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0 || HistoryDealGetString(deal, DEAL_SYMBOL) != _Symbol)
+         continue;
+      if((int)HistoryDealGetInteger(deal, DEAL_MAGIC) != magic)
+         continue;
+
+      const ENUM_DEAL_ENTRY entry =
+         (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal, DEAL_ENTRY);
+      if(entry != DEAL_ENTRY_IN && entry != DEAL_ENTRY_INOUT)
+         continue;
+
+      const datetime deal_time = (datetime)HistoryDealGetInteger(deal, DEAL_TIME);
+      const ENUM_DEAL_TYPE deal_type =
+         (ENUM_DEAL_TYPE)HistoryDealGetInteger(deal, DEAL_TYPE);
+      if(deal_type == DEAL_TYPE_BUY && deal_time > last_long_entry)
+         last_long_entry = deal_time;
+      if(deal_type == DEAL_TYPE_SELL && deal_time > last_short_entry)
+         last_short_entry = deal_time;
+   }
+
+   g_bars_since_last_long = Strategy_BarsSinceEntry(last_long_entry);
+   g_bars_since_last_short = Strategy_BarsSinceEntry(last_short_entry);
+}
+
+// -----------------------------------------------------------------------------
 // DSS computation helpers (closed-bar, bounded)
 // -----------------------------------------------------------------------------
 
 double DSS_RawStochAtShift(const int period, const int end_shift)
 {
+   if(period <= 0 || end_shift < 0)
+      return 0.0;
+
    double hh = -DBL_MAX;
    double ll =  DBL_MAX;
    for(int s = end_shift; s < end_shift + period; ++s)
@@ -104,7 +191,8 @@ double DSS_RawStochAtShift(const int period, const int end_shift)
 
 double DSS_EMAofSeries(const double &arr[], const int count, const int period)
 {
-   if(count <= 0) return 0.0;
+   if(count <= 0 || period <= 0 || count > ArraySize(arr))
+      return 0.0;
    const double k = 2.0 / (period + 1.0);
    double ema = arr[count - 1];
    for(int i = count - 2; i >= 0; --i)
@@ -123,24 +211,41 @@ double DSS_ComputeAtShift(const int end_shift)
    double rawk[64];
    double rawk2[64];
 
-   const int rawk_len = MathMin(64, p2 + 10);
-   const int rawk2_len = MathMin(64, p4 + 10);
-   const int k1_count = MathMin(128, rawk2_len + p3 + 10);
+   if(end_shift < 0 || p1 <= 0 || p2 <= 0 || p3 <= 0 || p4 <= 0)
+      return 0.0;
+
+   const int rawk_len = p2 + 10;
+   const int rawk2_len = p4 + 10;
+   const int k1_count = rawk2_len + p3 + 10;
+   if(rawk_len > ArraySize(rawk) ||
+      rawk2_len > ArraySize(rawk2) ||
+      k1_count > ArraySize(k1))
+      return 0.0;
 
    for(int j = 0; j < k1_count; ++j)
    {
+      if(j < 0 || j >= ArraySize(k1))
+         return 0.0;
       const int base = end_shift + j;
       for(int r = 0; r < rawk_len; ++r)
+      {
+         if(r < 0 || r >= ArraySize(rawk))
+            return 0.0;
          rawk[r] = DSS_RawStochAtShift(p1, base + r);
+      }
       k1[j] = DSS_EMAofSeries(rawk, rawk_len, p2);
    }
 
    for(int m = 0; m < rawk2_len; ++m)
    {
+      if(m < 0 || m >= ArraySize(rawk2) || m >= k1_count || m >= ArraySize(k1))
+         return 0.0;
       double hh = -DBL_MAX;
       double ll =  DBL_MAX;
-      for(int s = m; s < m + p3 && s < 128; ++s)
+      for(int s = m; s < m + p3; ++s)
       {
+         if(s < 0 || s >= k1_count || s >= ArraySize(k1))
+            return 0.0;
          const double v = k1[s];
          if(v > hh) hh = v;
          if(v < ll) ll = v;
@@ -273,28 +378,149 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_long_signal)
    {
       req.type = QM_BUY;
-      req.reason = "QM5_12940_BUY";
+      req.reason = Strategy_EntryComment(true, g_long_t1);
       req.price = 0.0;
       req.sl = NormalizeDouble(g_long_sl, _Digits);
       req.tp = 0.0;
-
-      g_bars_since_last_long = 0;
       return true;
    }
 
    if(g_short_signal)
    {
       req.type = QM_SELL;
-      req.reason = "QM5_12940_SELL";
+      req.reason = Strategy_EntryComment(false, g_short_t1);
       req.price = 0.0;
       req.sl = NormalizeDouble(g_short_sl, _Digits);
       req.tp = 0.0;
-
-      g_bars_since_last_short = 0;
       return true;
    }
 
    return false;
+}
+
+bool Strategy_RebuildTradeState(const ulong ticket)
+{
+   if(ticket == 0 || !PositionSelectByTicket(ticket))
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 ||
+      PositionGetString(POSITION_SYMBOL) != _Symbol ||
+      (int)PositionGetInteger(POSITION_MAGIC) != magic)
+      return false;
+
+   const ulong position_id = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
+   const ENUM_POSITION_TYPE position_type =
+      (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+   const bool is_long = (position_type == POSITION_TYPE_BUY);
+   double t1_price = 0.0;
+   bool t1_found = Strategy_ParseT1Comment(PositionGetString(POSITION_COMMENT),
+                                           is_long,
+                                           t1_price);
+
+   if(position_id == 0 || !HistorySelectByPosition(position_id))
+      return false;
+
+   double opening_volume = 0.0;
+   double closing_volume = 0.0;
+   const int deal_total = HistoryDealsTotal();
+   for(int i = 0; i < deal_total; ++i)
+   {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0 || HistoryDealGetString(deal, DEAL_SYMBOL) != _Symbol)
+         continue;
+      if((int)HistoryDealGetInteger(deal, DEAL_MAGIC) != magic)
+         continue;
+
+      const double deal_volume = HistoryDealGetDouble(deal, DEAL_VOLUME);
+      const ENUM_DEAL_ENTRY entry =
+         (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal, DEAL_ENTRY);
+      if(entry == DEAL_ENTRY_IN || entry == DEAL_ENTRY_INOUT)
+      {
+         opening_volume += deal_volume;
+         if(!t1_found)
+            t1_found = Strategy_ParseT1Comment(HistoryDealGetString(deal, DEAL_COMMENT),
+                                              is_long,
+                                              t1_price);
+         if(!t1_found)
+         {
+            const ulong order = (ulong)HistoryDealGetInteger(deal, DEAL_ORDER);
+            if(order > 0)
+               t1_found = Strategy_ParseT1Comment(HistoryOrderGetString(order, ORDER_COMMENT),
+                                                 is_long,
+                                                 t1_price);
+         }
+      }
+      if(entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_OUT_BY || entry == DEAL_ENTRY_INOUT)
+         closing_volume += deal_volume;
+   }
+
+   // Some venues omit the entry comment from the live position and deal.
+   // The accepted order remains a deterministic third reconstruction source.
+   if(!t1_found)
+   {
+      for(int i = HistoryOrdersTotal() - 1; i >= 0; --i)
+      {
+         const ulong order = HistoryOrderGetTicket(i);
+         if(order == 0 || HistoryOrderGetString(order, ORDER_SYMBOL) != _Symbol)
+            continue;
+         if((int)HistoryOrderGetInteger(order, ORDER_MAGIC) != magic)
+            continue;
+         if(Strategy_ParseT1Comment(HistoryOrderGetString(order, ORDER_COMMENT),
+                                    is_long,
+                                    t1_price))
+         {
+            t1_found = true;
+            break;
+         }
+      }
+   }
+
+   // History selection must not leave stale live-position properties behind.
+   if(!PositionSelectByTicket(ticket) ||
+      (ulong)PositionGetInteger(POSITION_IDENTIFIER) != position_id)
+      return false;
+
+   const double current_volume = PositionGetDouble(POSITION_VOLUME);
+   const double volume_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+   const double volume_tolerance = MathMax(1e-8, volume_step * 0.25);
+   if(opening_volume <= volume_tolerance)
+      opening_volume = current_volume + closing_volume;
+
+   if(!t1_found || t1_price <= 0.0 || !MathIsValidNumber(t1_price) ||
+      current_volume <= 0.0 || opening_volume + volume_tolerance < current_volume)
+      return false;
+
+   g_trade_state.ticket = ticket;
+   g_trade_state.position_id = position_id;
+   g_trade_state.t1_price = t1_price;
+   g_trade_state.initial_volume = opening_volume;
+   g_trade_state.t1_hit = (closing_volume > volume_tolerance ||
+                           current_volume + volume_tolerance < opening_volume);
+   return true;
+}
+
+bool Strategy_EnsureTradeState(const ulong ticket)
+{
+   if(ticket == 0 || !PositionSelectByTicket(ticket))
+      return false;
+
+   const ulong position_id = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
+   const double current_volume = PositionGetDouble(POSITION_VOLUME);
+   if(g_trade_state.position_id == position_id &&
+      g_trade_state.ticket == ticket &&
+      g_trade_state.t1_price > 0.0 &&
+      g_trade_state.initial_volume > 0.0)
+   {
+      const double volume_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+      const double volume_tolerance = MathMax(1e-8, volume_step * 0.25);
+      if(current_volume + volume_tolerance < g_trade_state.initial_volume)
+         g_trade_state.t1_hit = true;
+      return true;
+   }
+
+   Strategy_ResetTradeState();
+   return Strategy_RebuildTradeState(ticket);
 }
 
 void Strategy_ManageOpenPosition()
@@ -308,17 +534,6 @@ void Strategy_ManageOpenPosition()
       if(!PositionSelectByTicket(ticket)) continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
-
-      if(g_trade_state.ticket != ticket)
-      {
-         g_trade_state.ticket = ticket;
-         g_trade_state.t1_hit = false;
-         const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-         if(ptype == POSITION_TYPE_BUY)
-            g_trade_state.t1_price = g_long_t1;
-         else
-            g_trade_state.t1_price = g_short_t1;
-      }
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
       const int bars_open = iBarShift(_Symbol, _Period, open_time); // perf-allowed
@@ -343,6 +558,12 @@ void Strategy_ManageOpenPosition()
          continue;
       }
 
+      // T1/partial state must be recoverable from the accepted trade record.
+      // If history/comment evidence is unavailable, partial management stays
+      // fail-closed while the server-side initial stop remains active.
+      if(!Strategy_EnsureTradeState(ticket))
+         continue;
+
       const double current_vol = PositionGetDouble(POSITION_VOLUME);
 
       if(pos_type == POSITION_TYPE_BUY)
@@ -354,9 +575,9 @@ void Strategy_ManageOpenPosition()
             const double half_vol = QM_TM_NormalizeVolume(_Symbol, current_vol * 0.5);
             if(half_vol > 0.0 && half_vol < current_vol)
             {
-               QM_TM_PartialClose(ticket, half_vol, QM_EXIT_STRATEGY);
+               if(QM_TM_PartialClose(ticket, half_vol, QM_EXIT_PARTIAL))
+                  g_trade_state.t1_hit = true;
             }
-            g_trade_state.t1_hit = true;
          }
 
          // Post-T1 ATR trail: trail SL at ATR(14) * 1.0 below bar 1 low
@@ -385,9 +606,9 @@ void Strategy_ManageOpenPosition()
             const double half_vol = QM_TM_NormalizeVolume(_Symbol, current_vol * 0.5);
             if(half_vol > 0.0 && half_vol < current_vol)
             {
-               QM_TM_PartialClose(ticket, half_vol, QM_EXIT_STRATEGY);
+               if(QM_TM_PartialClose(ticket, half_vol, QM_EXIT_PARTIAL))
+                  g_trade_state.t1_hit = true;
             }
-            g_trade_state.t1_hit = true;
          }
 
          // Post-T1 ATR trail: trail SL at ATR(14) * 1.0 above bar 1 high
@@ -438,13 +659,14 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 int OnInit()
 {
-   ZeroMemory(g_trade_state);
+   Strategy_ResetTradeState();
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
 
+   Strategy_RestoreCooldownState();
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12940_bressert-cycle-trigger-line-h4-card\"}");
    return INIT_SUCCEEDED;
 }
@@ -471,8 +693,6 @@ void OnTick()
       QM_EquityStreamOnNewBar();
    }
 
-   if(Strategy_NoTradeFilter()) return;
-
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -495,6 +715,7 @@ void OnTick()
    }
 
    if(!is_new_bar) return;
+   if(Strategy_NoTradeFilter()) return;
 
    if(Strategy_NewsFilterHook(broker_now)) return;
    bool news_allows = true;
@@ -511,7 +732,14 @@ void OnTick()
       if(Strategy_EntrySignal(req))
       {
          ulong ticket = 0;
-         QM_TM_OpenPosition(req, ticket);
+         if(QM_TM_OpenPosition(req, ticket))
+         {
+            if(req.type == QM_BUY)
+               g_bars_since_last_long = 0;
+            else if(req.type == QM_SELL)
+               g_bars_since_last_short = 0;
+            Strategy_ResetTradeState();
+         }
       }
    }
 }
