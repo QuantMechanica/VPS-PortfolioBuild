@@ -36,6 +36,7 @@ Entry/exit logic is encoded in the five `Strategy_*` hooks in `QM5_37003_hurst-e
 | `strategy_daily_hard_stop_pct` | 2.5 | fixed | Framework daily equity hard stop |
 | `strategy_total_dd_halt_pct` | 5.0 | fixed | Account-level total-DD signal threshold |
 | `strategy_per_trade_risk_cap_pct` | 0.5 | fixed | Framework per-trade risk cap |
+| `strategy_max_slippage_ticks` | 3.0 | 0 - 3.0 | Maximum market-order slippage in symbol ticks |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -97,7 +98,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit`; the static build gate reports an unconfigured risk path as `EA_RISK_SIZER_UNCONFIGURED`.
 
 ---
 
