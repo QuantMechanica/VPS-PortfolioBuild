@@ -3,16 +3,16 @@
 ; ea_id:        38001
 ; ea_slug:      codetrading-vwap-bollinger-rsi-scalper
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260824-002
 ; symbol:       USDJPY.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b7b2b565c0d297a64416bc3b51e25413329b857fc2d55a0c11076cb6eb3b3699
+; build_hash:   107c6c9b9bd609c0e3bbdde37e31db6c5a18be508d66f3467e022c687281115a
 ; author:       Development
-; date:         2026-08-17
+; date:         2026-08-24
 ;==========================================================
 qm_ea_id=38001
 qm_magic_slot_offset=2
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_38001_codetrading-vwap-bollinger-rsi-scalper.md
+; card_defaults_source=strategy-seeds/cards/approved/QM5_38001_codetrading-vwap-bollinger-rsi-scalper.md
 strategy_signal_tf=5
 strategy_bb_period=20
 strategy_bb_dev=2.00

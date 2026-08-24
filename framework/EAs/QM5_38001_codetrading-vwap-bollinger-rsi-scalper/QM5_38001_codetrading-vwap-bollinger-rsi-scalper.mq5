@@ -162,12 +162,13 @@ bool StrategyRebuildSessionVwap(const int target_day_key)
                                 1,
                                 session_rebuild_bars,
                                 history); // perf-allowed: new-bar/restart session rebuild
-   if(copied < 1)
+   const int history_size = ArraySize(history);
+   if(copied < 1 || history_size < copied)
       return false;
 
    StrategyResetVwap(target_day_key);
    int same_day_bars = 0;
-   for(int i = copied - 1; i >= 0; --i)
+   for(int i = MathMin(copied, history_size) - 1; i >= 0; --i)
    {
       const int bar_day_key = StrategyDateKey(QM_BrokerToUTC(history[i].time));
       if(bar_day_key != target_day_key)
@@ -192,7 +193,8 @@ void AdvanceState_OnNewBar()
 
    MqlRates latest[];
    ArraySetAsSeries(latest, true);
-   if(CopyRates(_Symbol, strategy_signal_tf, 1, 1, latest) < 1) // perf-allowed: new-bar state read
+   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, 1, latest); // perf-allowed: new-bar state read
+   if(copied < 1 || ArraySize(latest) < 1)
       return;
 
    const datetime bar_time = latest[0].time;
@@ -254,6 +256,16 @@ bool StrategyDailyRealizedLossHalt()
    return (realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0));
 }
 
+bool StrategyCurrentQuoteAndSpreadAllowed(double &ask, double &bid)
+{
+   ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask < bid || g_last_atr <= 0.0)
+      return false;
+
+   return ((ask - bid) <= g_last_atr * strategy_spread_filter_mult);
+}
+
 bool Strategy_NoTradeFilter()
 {
    if(StrategyInRolloverWindow(QM_BrokerToUTC(TimeCurrent())))
@@ -266,17 +278,10 @@ bool Strategy_NoTradeFilter()
    if(StrategyDailyRealizedLossHalt())
       return true;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || g_last_atr <= 0.0)
+   double ask = 0.0;
+   double bid = 0.0;
+   if(!StrategyCurrentQuoteAndSpreadAllowed(ask, bid))
       return true;
-
-   if(ask > bid)
-   {
-      const double spread = ask - bid;
-      if(spread > g_last_atr * strategy_spread_filter_mult)
-         return true;
-   }
 
    return false;
 }
@@ -294,9 +299,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_last_signal == 0 || g_last_atr <= 0.0)
       return false;
 
+   // Recheck the spread at the execution boundary and use the same quote for
+   // the request. Calendar/news evaluation may have elapsed since admission.
+   double ask = 0.0;
+   double bid = 0.0;
+   if(!StrategyCurrentQuoteAndSpreadAllowed(ask, bid))
+      return false;
+
    const QM_OrderType side = (g_last_signal > 0) ? QM_BUY : QM_SELL;
-   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double entry = (side == QM_BUY) ? ask : bid;
    if(entry <= 0.0)
       return false;
 
