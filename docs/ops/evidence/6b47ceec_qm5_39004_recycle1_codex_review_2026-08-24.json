@@ -1,0 +1,20 @@
+{
+  "review_task_id": "6b47ceec-cb94-46e4-80a4-c3ab93de07a2",
+  "build_task_id": "d6e07850-a05d-4aa7-ad8b-5f7895fd2b36",
+  "ea_id": "QM5_39004",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The remediated source (SHA-256 94c163077bb645ea2b25a85901904f5c3304bad979d8374930c493b0313958ef) passes the focused hardening, guardrail, SPEC, symbol, registry, set-risk, and forbidden-code checks, but no EX5 exists for QM5_39004. The reviewed implementation therefore has no runnable binary identity.",
+    "The only producer JSON, D:/QM/strategy_farm/artifacts/builds/d6e07850-a05d-4aa7-ad8b-5f7895fd2b36.json, still names the now-missing EX5 and reports deferred_p2_smoke with smoke_report_path=null and blocked_reason=null. No canonical build JSON or D:/QM/reports/smoke/QM5_39004 summary exists, so both build and smoke evidence fail closed."
+  ],
+  "reviewed_at": "2026-08-24T09:21:02Z"
+}
