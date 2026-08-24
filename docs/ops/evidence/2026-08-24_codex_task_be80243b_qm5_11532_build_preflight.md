@@ -33,6 +33,10 @@ This is build-preflight evidence only. It is not a compile PASS and not a pipeli
 
 Focused verification used `Import-Csv` against both deterministic registries, exact card front-matter reads, `Get-FileHash -Algorithm SHA256`, on-disk source/binary/set counts, and `git status --porcelain=v1 -- <EA directory>`. The EA path had no uncommitted changes before this evidence was authored.
 
+## Router disposition
+
+The required `update-task ... --state REVIEW` dispatch was attempted with this evidence path. The canonical router refused it with `D6_BUILD_IDENTITY_MISSING` / `build_identity_json_missing_review_dispatch_refused`. A prose preflight report cannot impersonate the required strict-PASS, hash-bound `build_identity.json`, so no build identity was fabricated. This task is returned to `BLOCKED` with this artifact and verdict until the governed prerequisite is repaired.
+
 ## Governed next action
 
 The registry-writer lane must make the already allocated EA identity active and verify its identity remains unique. The task payload names tracking task `8d1d903f-39cc-461f-ab90-7b932ce62fee`. Only after that gate passes should a routed build task author the required backtest sets (`RISK_FIXED > 0`, `RISK_PERCENT = 0`), run strict compile/build checks, and submit the resulting build artifact for review.
