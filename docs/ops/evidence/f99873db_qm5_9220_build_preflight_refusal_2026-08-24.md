@@ -19,4 +19,6 @@
 
 The governed `qm-build-ea-from-card` contract requires a matching active EA registry row and active magic rows before the build step; it forbids the builder from allocating either. No EA source, registry, resolver, setfile, or pipeline artifact was changed, and no compile or pipeline phase was run.
 
+The required `REVIEW` transition was attempted during this cycle and the canonical router refused it with `D6_BUILD_IDENTITY_MISSING` / `build_identity_json_missing_review_dispatch_refused`. A truthful review identity would require strict-build PASS evidence binding committed MQ5, EX5, and setfiles; those artifacts cannot exist before the upstream allocation gates pass. No build identity was fabricated. The terminal disposition for this cycle is therefore `BLOCKED`.
+
 Required upstream action: register EA 9220 with slug `mql5-alligator-trend`, allocate active magic rows for every card symbol, regenerate `QM_MagicResolver.mqh`, and verify that regeneration retains the rows. Then recycle the build task.
