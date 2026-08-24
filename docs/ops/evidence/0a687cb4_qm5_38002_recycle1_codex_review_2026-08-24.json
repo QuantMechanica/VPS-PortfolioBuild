@@ -1,0 +1,23 @@
+{
+  "review_task_id": "0a687cb4-31fa-418f-8866-5d12c3c45b75",
+  "build_task_id": "f0823eb2-3859-45a3-9fa4-a83cc44207ef",
+  "ea_id": "QM5_38002",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The approved entry stop is the recent five-bar swing low/high minus/plus 2.0 pips. The source instead sets SL from 1.5 times ATR, changing both the exit geometry and risk-sized volume; documenting that substitution in SPEC.md does not amend the OWNER-approved card.",
+    "Fresh build-gate hardening fails because the approved 2.0% realized-daily entry halt, 2.5% daily hard stop, and 5.0% total-drawdown stop are all absent. The source never reconfigures the framework kill switch, leaving incompatible defaults.",
+    "The GMT rollover rule uses raw TimeCurrent, the first post-start admission can bypass the ATR spread ceiling because ATR is populated only after the filter, and entry-only rollover/spread filtering returns before Strategy_ManageOpenPosition, suspending the approved ATR trail while risk is open.",
+    "OnInit declares neither the mandatory M15 execution contract nor the card's maximum three-tick order deviation. The runtime therefore does not fail closed on a wrong chart timeframe and retains the framework's default 20-point deviation.",
+    "The current MQ5 and EX5 hashes match the task-specific producer packet, but that packet reports deferred_p2_smoke with smoke_report_path=null and blocked_reason=null. The alternate qm5_38002_build_result.json reports framework_error with no report. Neither satisfies the mandatory build/smoke schema, so build_result fails and smoke_sanity remains unknown."
+  ],
+  "reviewed_at": "2026-08-24T10:01:34Z"
+}
