@@ -1,0 +1,23 @@
+{
+  "review_task_id": "a21615ea-2d27-4bd9-9e72-c217d3e5de72",
+  "build_task_id": "e3a2083b-eeb7-40e0-b865-0cc7d001997e",
+  "ea_id": "QM5_12943",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "FAIL",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The remediated source and four setfiles match the four-symbol card, but nine out-of-card magic rows remain active; current hardening reports AUDUSD, GDAXI, NDX, NZDUSD, SP500, UK100, USDCAD, USDCHF, and WS30.",
+    "Commit 978f9dc86 materially changed the MQ5, but the EX5 is still the exact pre-fix binary e8566960b6f6e3ad3af0238fdf7868855e17a6aa51033b85886785b6b5470acb dated two days earlier; compile_succeeded does not bind the reviewed source to that binary.",
+    "The approved 96-H1-bar time stop requires a break-even close, but the remediated source closes at market after 96 bars without a break-even condition.",
+    "The deferred_p2_smoke reason says only 'per fleet capacity ceiling' and supplies no status=no_capacity or measured occupancy evidence; no governed smoke summary was supplied.",
+    "Broad guardrails and SPEC validation pass at the 336-hour ceiling, all four setfiles satisfy RISK_FIXED > 0 and RISK_PERCENT = 0, and forbidden-code grep is clean; these checks do not cure registry, semantic, or provenance failures."
+  ],
+  "reviewed_at": "2026-08-24T07:46:00Z"
+}

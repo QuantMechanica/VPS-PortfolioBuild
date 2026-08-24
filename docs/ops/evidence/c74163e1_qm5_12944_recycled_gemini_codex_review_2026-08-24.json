@@ -1,0 +1,24 @@
+{
+  "review_task_id": "c74163e1-fd20-413d-a42f-e2f3eb432f4f",
+  "build_task_id": "01bd8a9d-bd3f-4da5-a275-be9192a763ed",
+  "ea_id": "QM5_12944",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The live MQ5 hash a83623b3b5946bb593fd7a9a7a2e819b6ccbdbf60d5020809f20b8952d050d31 does not match producer hash 18ece1138bf8394700421bedd273ff2fc5315640c613ead72f110249fe786a79; the EX5 is still the exact pre-rework binary and predates the rewritten source.",
+    "Source defaults set RISK_PERCENT=0.5 and RISK_FIXED=1000 simultaneously, so a default framework attach fails risk-input validation even though backtest setfiles override RISK_PERCENT to zero.",
+    "The approved high-impact-news window is 15/15 minutes, while source configuration and QM_FrameworkInit arguments use 30/30 minutes.",
+    "strategy_min_pivots remains an exposed but unused input while both fault-line searches hard-code three pivots; the runtime contract does not match the advertised parameter surface.",
+    "The generic deferred_p2_smoke capacity text contains no durable resolver status or measured occupancy evidence, and no governed smoke summary was supplied.",
+    "Current hardening, broad guardrails, SPEC validation, registry checks, forbidden-code grep, and all 13 setfile risk checks pass; they do not establish a valid default attach or a source-bound compiled artifact."
+  ],
+  "reviewed_at": "2026-08-24T07:46:00Z"
+}
