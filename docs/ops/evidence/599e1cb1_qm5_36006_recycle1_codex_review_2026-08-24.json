@@ -1,0 +1,24 @@
+{
+  "review_task_id": "599e1cb1-ab22-4d53-88f1-c39cd9e51dcb",
+  "build_task_id": "0d34c3bd-8853-499b-b357-aa59d82fb534",
+  "ea_id": "QM5_36006",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "PASS",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The 2026-08-23 remediation replaces the HalfTrend and TEMA surrogates, implements the 50% TP1/runner, moves indicator work behind an explicit D1 new-bar gate, uses UTC rollover conversion, and wires the card loss rails. Those substantive repairs were independently confirmed in the current source.",
+    "OnInit still never calls QM_FrameworkDeclareExecutionContract for the approved D1 host and Friday-close contract. Explicit QM_IsNewBar(_Symbol, PERIOD_D1) fixes signal cadence but does not provide the required fail-closed host/execution declaration.",
+    "Strategy_ConfigValid allows strategy_daily_loss_halt_pct, strategy_daily_hard_stop_pct, and strategy_total_dd_halt_pct to be raised above the card's 2.0%, 2.5%, and 5.0% ceilings. It likewise permits the fixed one-ATR stop/TP and 50% partial fraction to drift, leaving approved risk and payoff mechanics weakenable through inputs.",
+    "TP1 completion is inferred only from the stop being at or beyond entry. After a successful partial close, QM_TM_MoveSL is called without checking success or recording a TP1 latch. If the break-even modification is rejected, the next tick can partial-close 50% of the remaining position again; unsplittable volume receives no fail-closed alternative.",
+    "The remediation evidence explicitly records a governed compile hold. The current MQ5 hashes to 016d8b5ba15352b04c9e81190724ef120aa0e2e764b7a128407de394c09189a8, but the EX5 is absent and no canonical current compile/build-check receipt or smoke report exists. build_result therefore fails and smoke_sanity remains UNKNOWN.",
+    "Focused guardrail and SPEC validation pass; the three presets use RISK_FIXED=1000 and RISK_PERCENT=0; active magic rows are unique, formula-correct, and resolver-backed; the raw-series bypass scan is clean. These checks do not cure the contract, lifecycle, and build-evidence failures."
+  ],
+  "reviewed_at": "2026-08-24T10:51:02Z"
+}
