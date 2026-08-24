@@ -1,0 +1,24 @@
+{
+  "review_task_id": "f2b8b86c-717d-4081-87c6-4a60ab093c09",
+  "build_task_id": "bd923098-ff94-4451-b3c5-a1f2724613fa",
+  "ea_id": "QM5_1405",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "FAIL",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "Current MQ5/EX5 hashes match the producer and are unchanged from the 2026-08-22 RECYCLE review; no remediation artifact exists.",
+    "Label-scoped hardening reports ten out-of-card symbols: the build emits 13 symbols although the explicit card universe contains only NDX.DWX, SP500.DWX, and WS30.DWX.",
+    "Required point-in-time Treasury, corporate-yield, and four-month-lagged earnings inputs are still replaced by invented chart-price proxies; the lag input is unused, so this is a different strategy from the approved card.",
+    "The full Treasury/corporate/equity winning-sleeve rule is reduced to equity-or-cash, expanding normalization is capped at 120 chart observations, and the advertised median-spread filter computes a mean.",
+    "The producer record omits compile_succeeded, smoke_result, and smoke_report_path; no governed smoke summary was supplied.",
+    "The broad guardrail and SPEC validators pass at the 336-hour ceiling, all 13 setfiles satisfy RISK_FIXED > 0 and RISK_PERCENT = 0, and forbidden-code grep is clean; these safe checks do not cure the card substitution."
+  ],
+  "reviewed_at": "2026-08-24T07:41:00Z"
+}
