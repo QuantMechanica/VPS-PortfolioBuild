@@ -1,0 +1,22 @@
+{
+  "review_task_id": "8406a8c0-a126-46ed-858b-6515bb6a5528",
+  "build_task_id": "6b9b31bd-8511-4f7b-8400-9e42162b0bd1",
+  "ea_id": "QM5_37003",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "PASS",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The card-specific repair is otherwise static-clean: invalid mean-reversion midline targets reject instead of falling back to fixed R, open-position midline management precedes entry-only gates, and the 2.0%/2.5%/5.0% limits, 0.5% cap, UTC rollover, and ATR-relative spread filter are wired. Focused guardrail/spec/hardening checks pass.",
+    "OnInit declares neither the mandatory H1 execution contract nor the card's maximum three-tick order deviation. The runtime therefore does not fail closed on a wrong chart timeframe and retains the framework's default 20-point deviation.",
+    "The latest MQ5 is SHA-256 efbee20b3e8fbb033cad6ec7f2dd57731d2801916060ff9df2138ff8d7f5e258 after a 2026-08-24 bounds repair, while all three setfiles remain bound to the prior 846b72f2273b32da2974088246c89c7373582bd74de3dc19dc37c1db54d9ae66 source hash. Preset/source identity is stale.",
+    "No EX5 exists for the latest source. The only build JSON reports smoke_result=framework_error with smoke_report_path=null and contains no current source/binary identity, so it cannot prove a governed compile or smoke run; build_result fails and smoke_sanity remains unknown."
+  ],
+  "reviewed_at": "2026-08-24T10:08:08Z"
+}
