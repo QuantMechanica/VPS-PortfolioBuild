@@ -3,7 +3,7 @@
 ; ea_id:        12612
 ; ea_slug:      tsmom-12m-vol-scaled-ndx
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260824-001
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  backtest
@@ -11,14 +11,23 @@
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   d1395e74301d98cd86ad1afa4b05ee64e3bae954806530e41619944e70749960
-; author:       Gemini
-; date:         2026-08-23
+; author:       Codex
+; date:         2026-08-24
 ;==========================================================
 qm_ea_id=12612
 qm_magic_slot_offset=1
+qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
 strategy_lookback_d1_bars=252
 strategy_vol_window=63
 strategy_target_vol=0.10

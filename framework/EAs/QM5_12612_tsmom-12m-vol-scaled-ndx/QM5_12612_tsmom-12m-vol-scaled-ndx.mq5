@@ -52,6 +52,8 @@ input double strategy_atr_sl_mult        = 3.0;
 input int    strategy_spread_days        = 20;
 input double strategy_spread_mult        = 3.0;
 
+const int STRATEGY_MAX_D1_BUFFER_BARS = 512;
+
 int    g_last_entry_rebalance_key = 0;
 double g_last_pos_vol_scalar      = 1.0;
 
@@ -60,30 +62,17 @@ bool Strategy_IsNdxD1()
    return (_Symbol == "NDX.DWX" && _Period == PERIOD_D1 && qm_magic_slot_offset == 1);
 }
 
-int Strategy_MonthKey(const datetime t)
+bool Strategy_MonthlyRebalanceKey(int &rebalance_key)
 {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 100 + dt.mon;
+   rebalance_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int prior_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
+   return (rebalance_key > 0 && prior_key > 0 && rebalance_key != prior_key);
 }
 
-bool Strategy_IsMonthlyRebalanceBar()
-{
-   if(_Period != PERIOD_D1)
-      return false;
-
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: monthly rebalance check
-   const datetime prior_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: monthly rebalance check
-   if(current_bar <= 0 || prior_bar <= 0)
-      return false;
-   return Strategy_MonthKey(current_bar) != Strategy_MonthKey(prior_bar);
-}
-
-bool Strategy_CurrentPosition(ulong &ticket, int &direction, double &volume)
+bool Strategy_CurrentPosition(ulong &ticket, int &direction)
 {
    ticket = 0;
    direction = 0;
-   volume = 0.0;
    const int magic = QM_FrameworkMagic();
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -99,23 +88,44 @@ bool Strategy_CurrentPosition(ulong &ticket, int &direction, double &volume)
       ticket = pos_ticket;
       const long pos_type = PositionGetInteger(POSITION_TYPE);
       direction = (pos_type == POSITION_TYPE_BUY) ? 1 : -1;
-      volume = PositionGetDouble(POSITION_VOLUME);
       return true;
    }
    return false;
 }
 
-double Strategy_MedianDailySpreadPoints()
+bool Strategy_LoadClosedD1Rates(MqlRates &rates[])
+{
+   const int required = MathMax(strategy_min_d1_bars,
+                                MathMax(strategy_lookback_d1_bars + 1,
+                                        MathMax(strategy_vol_window + 1,
+                                                strategy_spread_days)));
+   if(required <= 0 || required > STRATEGY_MAX_D1_BUFFER_BARS)
+      return false;
+
+   if(ArrayResize(rates, required) != required || ArraySize(rates) < required)
+      return false;
+   ArraySetAsSeries(rates, true);
+
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, required, rates); // perf-allowed: one bounded closed-D1 batch after QM_IsNewBar
+   if(copied != required || ArraySize(rates) < required)
+      return false;
+   return (rates[0].time > 0 && rates[required - 1].time > 0);
+}
+
+double Strategy_MedianDailySpreadPoints(const MqlRates &rates[])
 {
    const int n = strategy_spread_days;
-   if(n <= 0 || n > 64)
+   const int rate_count = ArraySize(rates);
+   if(n <= 0 || n > 64 || rate_count < n)
       return 0.0;
 
    double values[64];
    int count = 0;
-   for(int shift = 1; shift <= n; ++shift)
+   for(int i = 0; i < n; ++i)
    {
-      const long spread = iSpread(_Symbol, PERIOD_D1, shift); // perf-allowed: median spread calculation
+      if(i >= rate_count)
+         return 0.0;
+      const long spread = rates[i].spread;
       if(spread > 0)
       {
          values[count] = (double)spread;
@@ -140,9 +150,9 @@ double Strategy_MedianDailySpreadPoints()
    return 0.5 * (values[(count / 2) - 1] + values[count / 2]);
 }
 
-bool Strategy_SpreadAllowsEntry()
+bool Strategy_SpreadAllowsEntry(const MqlRates &rates[])
 {
-   const double median_spread = Strategy_MedianDailySpreadPoints();
+   const double median_spread = Strategy_MedianDailySpreadPoints(rates);
    if(median_spread <= 0.0 || strategy_spread_mult <= 0.0)
       return true;
 
@@ -152,17 +162,17 @@ bool Strategy_SpreadAllowsEntry()
    return true;
 }
 
-int Strategy_TsmomDirection()
+int Strategy_TsmomDirection(const MqlRates &rates[])
 {
    if(strategy_lookback_d1_bars <= 0)
       return 0;
 
-   const int min_bars = MathMax(strategy_min_d1_bars, strategy_lookback_d1_bars + 5);
-   if(Bars(_Symbol, PERIOD_D1) < min_bars) // perf-allowed: minimum history bars check
+   const int rate_count = ArraySize(rates);
+   if(rate_count <= strategy_lookback_d1_bars)
       return 0;
 
-   const double recent_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: tsmom recent close
-   const double lookback_close = iClose(_Symbol, PERIOD_D1, 1 + strategy_lookback_d1_bars); // perf-allowed: tsmom lookback close
+   const double recent_close = rates[0].close;
+   const double lookback_close = rates[strategy_lookback_d1_bars].close;
    if(recent_close <= 0.0 || lookback_close <= 0.0)
       return 0;
 
@@ -173,47 +183,42 @@ int Strategy_TsmomDirection()
    return 0;
 }
 
-double Strategy_RealizedAnnualizedVol()
+double Strategy_RealizedAnnualizedVol(const MqlRates &rates[])
 {
    const int n = strategy_vol_window;
    if(n <= 1)
       return strategy_target_vol;
 
-   if(Bars(_Symbol, PERIOD_D1) < n + 2) // perf-allowed: realized vol bars check
+   const int rate_count = ArraySize(rates);
+   if(rate_count <= n)
       return strategy_target_vol;
 
-   double log_returns[];
-   ArrayResize(log_returns, n);
    double sum = 0.0;
+   double sum_sq = 0.0;
 
-   for(int i = 1; i <= n; ++i)
+   for(int i = 0; i < n; ++i)
    {
-      const double c0 = iClose(_Symbol, PERIOD_D1, i); // perf-allowed: realized vol log-return calculation
-      const double c1 = iClose(_Symbol, PERIOD_D1, i + 1); // perf-allowed: realized vol log-return calculation
+      if(i + 1 >= rate_count)
+         return strategy_target_vol;
+      const double c0 = rates[i].close;
+      const double c1 = rates[i + 1].close;
       if(c0 <= 0.0 || c1 <= 0.0)
          return strategy_target_vol;
       const double r = MathLog(c0 / c1);
-      log_returns[i - 1] = r;
       sum += r;
+      sum_sq += r * r;
    }
 
    const double mean = sum / (double)n;
-   double sum_sq_diff = 0.0;
-   for(int i = 0; i < n; ++i)
-   {
-      const double diff = log_returns[i] - mean;
-      sum_sq_diff += diff * diff;
-   }
-
-   const double variance = sum_sq_diff / (double)(n - 1);
+   const double variance = MathMax((sum_sq - (double)n * mean * mean) / (double)(n - 1), 0.0);
    const double stddev = MathSqrt(variance);
    const double realized_vol = stddev * MathSqrt(252.0);
    return realized_vol;
 }
 
-double Strategy_VolScalar()
+double Strategy_VolScalar(const MqlRates &rates[])
 {
-   const double realized_vol = Strategy_RealizedAnnualizedVol();
+   const double realized_vol = Strategy_RealizedAnnualizedVol(rates);
    const double safe_vol = MathMax(realized_vol, 0.01);
    double scalar = strategy_target_vol / safe_vol;
    scalar = MathMin(scalar, 2.0);
@@ -229,15 +234,20 @@ bool Strategy_NoTradeFilter()
 {
    if(!Strategy_IsNdxD1())
       return true;
-   if(strategy_lookback_d1_bars < 21)
+   if(strategy_lookback_d1_bars < 21 || strategy_lookback_d1_bars >= STRATEGY_MAX_D1_BUFFER_BARS)
       return true;
-   if(strategy_vol_window < 5)
+   if(strategy_vol_window < 5 || strategy_vol_window >= STRATEGY_MAX_D1_BUFFER_BARS)
+      return true;
+   if(strategy_min_d1_bars < strategy_lookback_d1_bars + 1 ||
+      strategy_min_d1_bars > STRATEGY_MAX_D1_BUFFER_BARS)
       return true;
    if(strategy_target_vol <= 0.0)
       return true;
+   if(strategy_vol_resize_threshold < 0.0)
+      return true;
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;
-   if(strategy_spread_days < 0 || strategy_spread_mult < 0.0)
+   if(strategy_spread_days < 0 || strategy_spread_days > 64 || strategy_spread_mult < 0.0)
       return true;
    return false;
 }
@@ -252,27 +262,27 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_IsMonthlyRebalanceBar())
+   int rebalance_key = 0;
+   if(!Strategy_MonthlyRebalanceKey(rebalance_key) ||
+      rebalance_key == g_last_entry_rebalance_key)
       return false;
 
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: monthly rebalance check
-   const int rebalance_key = Strategy_MonthKey(current_bar);
-   if(rebalance_key <= 0 || rebalance_key == g_last_entry_rebalance_key)
+   MqlRates rates[];
+   if(!Strategy_LoadClosedD1Rates(rates))
       return false;
 
-   if(!Strategy_SpreadAllowsEntry())
+   if(!Strategy_SpreadAllowsEntry(rates))
       return false;
 
-   const int direction = Strategy_TsmomDirection();
+   const int direction = Strategy_TsmomDirection(rates);
    if(direction == 0)
       return false;
 
-   const double vol_scalar = Strategy_VolScalar();
+   const double vol_scalar = Strategy_VolScalar(rates);
 
    ulong existing_ticket = 0;
    int existing_direction = 0;
-   double existing_volume = 0.0;
-   const bool has_pos = Strategy_CurrentPosition(existing_ticket, existing_direction, existing_volume);
+   const bool has_pos = Strategy_CurrentPosition(existing_ticket, existing_direction);
 
    if(has_pos)
    {
@@ -317,15 +327,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.type == QM_SELL && req.sl <= req.price)
       return false;
 
-   g_last_entry_rebalance_key = rebalance_key;
-   g_last_pos_vol_scalar = vol_scalar;
-
    const QM_RiskMode rmode = (RISK_FIXED > 0.0) ? QM_RISK_MODE_FIXED : QM_RISK_MODE_PERCENT;
    const double base_val = (RISK_FIXED > 0.0) ? RISK_FIXED : RISK_PERCENT;
    const double scaled_val = base_val * vol_scalar;
 
    ulong out_ticket = 0;
-   QM_TM_OpenPosition(req, out_ticket, QM_FrameworkMagic(), rmode, scaled_val);
+   if(!QM_TM_OpenPosition(req, out_ticket, QM_FrameworkMagic(), rmode, scaled_val))
+      return false;
+
+   g_last_entry_rebalance_key = rebalance_key;
+   g_last_pos_vol_scalar = vol_scalar;
 
    return false;
 }
@@ -383,22 +394,11 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
+      QM_EquityStreamOnNewBar();
 
    if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
       return;
 
    Strategy_ManageOpenPosition();
@@ -419,12 +419,25 @@ void OnTick()
       }
    }
 
-   if(!QM_IsNewBar())
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
       return;
 
-   QM_EquityStreamOnNewBar();
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
-   QM_EntryRequest req;
+   if(Strategy_NoTradeFilter())
+      return;
+
+   if(!is_new_bar)
+      return;
+
+   QM_EntryRequest req = {};
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
