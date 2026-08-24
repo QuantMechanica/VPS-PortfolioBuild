@@ -1,0 +1,25 @@
+{
+  "review_task_id": "ddb87b6b-a6db-4f8d-be8f-337341238a8c",
+  "build_task_id": "cf9b27fd-11f6-465b-9731-8e551bb9c671",
+  "ea_id": "QM5_36005",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "PASS",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The 2026-08-23 remediation removes the T3 and Woodies-exit substitutions, implements managed TP1/runner behavior, uses UTC rollover, wires the card loss rails, and keeps management/exits reachable. Those repairs were independently confirmed.",
+    "The card's explicit Coral equation is SMMA(P,20, coefficient 0.4). The source calls QM_SMMA with period 20 and exposes no coefficient input or use site, so the declared 0.4 term is discarded and the exact baseline mechanism is still unproven.",
+    "OnInit never calls QM_FrameworkDeclareExecutionContract for the approved D1 host and Friday-close contract. Explicit QM_IsNewBar(_Symbol, PERIOD_D1) fixes cadence but does not provide the mandatory fail-closed execution declaration.",
+    "Strategy_ConfigValid allows card periods, the one-ATR stop/TP, 50% partial, and 2.0%/2.5%/5.0% loss thresholds to drift or weaken through inputs instead of enforcing the approved ranges and ceilings.",
+    "After a successful partial close, QM_TM_MoveSL is unchecked and no durable TP1 latch is recorded. A rejected break-even modification can trigger repeated 50%-of-remainder closes; unsplittable volume receives no fail-closed alternative.",
+    "The current MQ5 hashes to 6c247a3802f6237c71c29770ebd172b95f55f715d587c1d43152a9eb60cc29a4, but no EX5 exists. The old producer receipt predates remediation, has no source/binary hashes, and its Custom-history blocked_reason is not durable measured tester-fleet saturation. No current strict receipt or smoke report exists, so build_result fails and smoke_sanity remains UNKNOWN.",
+    "Guardrail and SPEC validation pass; all three sets use RISK_FIXED=1000 and RISK_PERCENT=0; active magic rows are unique, formula-correct, and resolver-backed. These checks do not cure the mechanism, contract, lifecycle, and evidence failures."
+  ],
+  "reviewed_at": "2026-08-24T11:05:21Z"
+}
