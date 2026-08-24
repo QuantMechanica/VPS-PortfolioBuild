@@ -101,8 +101,13 @@ double CalculateHurst(const string sym, const ENUM_TIMEFRAMES tf, const int look
    double mean_ret = 0.0;
    double rets[];
    ArrayResize(rets, lookback);
-   for(int i = 0; i < lookback; ++i)
+   if(ArraySize(rets) != lookback || ArraySize(rates) < lookback + 1)
+      return 0.5;
+
+   for(int i = 0; i < ArraySize(rets); ++i)
    {
+      if(i < 0 || i >= ArraySize(rets) || i + 1 >= ArraySize(rates))
+         return 0.5;
       double p1 = rates[i].close;
       double p0 = rates[i+1].close;
       if(p0 <= 0.0) return 0.5;
@@ -115,8 +120,10 @@ double CalculateHurst(const string sym, const ENUM_TIMEFRAMES tf, const int look
    double cum = 0.0;
    double max_cum = -1e9;
    double min_cum = 1e9;
-   for(int i = 0; i < lookback; ++i)
+   for(int i = 0; i < ArraySize(rets); ++i)
    {
+      if(i < 0 || i >= ArraySize(rets))
+         return 0.5;
       double dev = rets[i] - mean_ret;
       var += dev * dev;
       cum += dev;

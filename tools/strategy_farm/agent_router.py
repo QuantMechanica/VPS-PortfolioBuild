@@ -481,27 +481,32 @@ def _install_router_writer_contract(conn: sqlite3.Connection) -> None:
         """
     )
     if _registry_writer_authorized():
-        now = farmctl.utc_now()
-        conn.execute(
-            """
-            INSERT INTO router_writer_contract(
-                singleton,generation,canonical_checkout_root,installed_at,installed_by_head
-            ) VALUES (1,?,?,?,?)
-            ON CONFLICT(singleton) DO UPDATE SET
-                generation=excluded.generation,
-                canonical_checkout_root=excluded.canonical_checkout_root,
-                installed_at=excluded.installed_at,
-                installed_by_head=excluded.installed_by_head
-            WHERE router_writer_contract.generation<>excluded.generation
-               OR router_writer_contract.canonical_checkout_root<>excluded.canonical_checkout_root
-            """,
-            (
-                ROUTER_WRITER_GENERATION,
-                str(CANONICAL_ROUTER_ROOT.resolve()),
-                now,
-                _checkout_head(),
-            ),
-        )
+        row = conn.execute(
+            "SELECT generation, canonical_checkout_root FROM router_writer_contract WHERE singleton=1"
+        ).fetchone()
+        canonical_str = str(CANONICAL_ROUTER_ROOT.resolve())
+        if row is None or row[0] != ROUTER_WRITER_GENERATION or row[1] != canonical_str:
+            now = farmctl.utc_now()
+            conn.execute(
+                """
+                INSERT INTO router_writer_contract(
+                    singleton,generation,canonical_checkout_root,installed_at,installed_by_head
+                ) VALUES (1,?,?,?,?)
+                ON CONFLICT(singleton) DO UPDATE SET
+                    generation=excluded.generation,
+                    canonical_checkout_root=excluded.canonical_checkout_root,
+                    installed_at=excluded.installed_at,
+                    installed_by_head=excluded.installed_by_head
+                WHERE router_writer_contract.generation<>excluded.generation
+                   OR router_writer_contract.canonical_checkout_root<>excluded.canonical_checkout_root
+                """,
+                (
+                    ROUTER_WRITER_GENERATION,
+                    canonical_str,
+                    now,
+                    _checkout_head(),
+                ),
+            )
     # These triggers are durable shared-DB policy. An old router connection has
     # no qm_router_writer_generation() function, and therefore cannot write the
     # registry, enqueue replenishment tasks, or change task ownership.

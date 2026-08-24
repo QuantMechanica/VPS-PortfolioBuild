@@ -41,11 +41,11 @@ expected_dd_pct: 18.0
 
 # QM5_11465 Suhr — Bank Trading Stop Run Fade (H1)
 
-## Quelle
+## Source
 - Source: Sterling Suhr, "Bank Trading Stop Run Fade" in TradingPub 6 Simple Strategies (~2015)
 - R1: CONDITIONAL — named Co-Founder/Head Trader of DayTradingForexLive; self-published/website source.
 
-## Mechanik
+## Mechanics
 
 **Concept**: Institutional traders ("banks") hunt stop-loss clusters around obvious reference levels — yesterday's High/Low and recent swing H/L. When price breaks one of these levels by ≥3 pips (triggering retail stops), but the candle that caused the break is then immediately rejected (next candle closes back inside the level), it signals that the break was a manipulation maneuver rather than a genuine breakout. The trade fades the direction of the stop run: buy after a false break below a support level, sell after a false break above a resistance level.
 
@@ -91,15 +91,15 @@ expected_dd_pct: 18.0
 - `RISK_FIXED = $1000` for P2.
 - `RISK_PERCENT = 0.5%` for live.
 
-### Zusätzliche Filter
+### Additional filters
 - Timeframe: H1 (entry and sequence tracking)
 - Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX
 - Spread cap: 20 pips
 - Max 5-candle sequence from stop run to entry
 - Do not trade if spread ≥ SL distance
 
-## R1–R4 Bewertung
-| Kriterium | Status | Begründung |
+## R1-R4 assessment
+| Criterion | Status | Rationale |
 |-----------|--------|------------|
 | R1 Track Record | CONDITIONAL | Sterling Suhr, named Co-Founder of DayTradingForexLive; self-published website source, no independent verification. |
 | R2 Mechanical | PASS | Manipulation level = yesterday H/L (OHLC) or rolling iLowest/iHighest. Stop run = Low < level - 3pips (arithmetic). Confirmation = Close > level (OHLC). Pullback = Ask ≤ level + 15pips (arithmetic). All MT5-native. |
@@ -108,7 +108,7 @@ expected_dd_pct: 18.0
 
 G0 APPROVE eligible with CONDITIONAL R1 note.
 
-## Pipeline-Verlauf
+## Pipeline history
 - G0: 2026-05-23 — drafted from Suhr, TradingPub 6 Simple Strategies (Strategy 3)
 
 ## Implementation Notes for Codex (P1)
@@ -120,7 +120,7 @@ G0 APPROVE eligible with CONDITIONAL R1 note.
 - TP: detect next swing opposite extreme — use `iHighest(PERIOD_H1, MODE_HIGH, 10, 1)` for long TP target
 - P3 sweeps: level type (yesterday-only/swing-only/both), stop run threshold (2/3/5 pips), pullback entry window (10/15/20 pips), max sequence bars (3/5/7), SL buffer (0/1/2 pips)
 
-## Verwandte Strategien
+## Related strategies
 - Related: QM5_11452 (big-ben-fade-asian-range-m5) — also a fade of a false break; Asian range vs. manipulation level; M5 vs. H1
 - Related: QM5_11446 (burke-3day-rectangle-breakout-m5) — false break of a D1 consolidation range; similar rejection logic on different timeframe
 

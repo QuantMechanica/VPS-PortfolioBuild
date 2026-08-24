@@ -180,6 +180,9 @@ bool Strategy_DamianiTrade(const string sym, const int shift)
 
 bool Strategy_NoTradeFilter()
 {
+   if(Strategy_HasOpenPosition())
+      return true;
+
    const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
    const int hhmm = GetBarHhmm(utc_now);
    if(hhmm >= 2355 || hhmm < 5)
