@@ -1,0 +1,23 @@
+{
+  "review_task_id": "91b5a55b-0eca-44ab-834a-1e0da4042bef",
+  "build_task_id": "952a07fb-63c7-4fc3-9582-83096a13c9e0",
+  "ea_id": "QM5_38004",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The card's maximum three-tick market-order deviation is never configured. QM_FrameworkInit installs the framework default of 20 points, and the EA has no later QM_EntryConfigure call to replace it with a symbol-aware three-tick ceiling.",
+    "The first eligible post-start bar can still bypass the card's spread ceiling. Strategy_NoTradeFilter tests g_strategy_cached_atr only when it is already positive at lines 135-139, but that cache is populated later inside Strategy_EntrySignal at line 177; entry then proceeds without recomputing the admission decision against the newly available ATR.",
+    "The declared 2.5% daily and 5.0% total drawdown controls do not configure the framework kill switch. QM_FrameworkInit leaves QM_KillSwitchInit at framework defaults of 3.0% daily and 0.0% total, while the EA's manual initial-equity/day-start state is process-local and resets on restart. This can erase accumulated drawdown and does not enforce the approved fail-closed capital-preservation contract.",
+    "The current MQ5 was changed on 2026-08-24 (SHA-256 e554dfdf1b44b8da27a258ac149f1453eb1dcf5423b30dedb0f08eb289cdd334), while the delivered EX5 is still the 2026-08-18 binary (SHA-256 eb1da058b0b708e897bb2de639a5bd50e1cc4e2bbc46be70699d4b51fb4f2e22). The runnable binary does not contain the reviewed source.",
+    "artifacts/qm5_38004_build_result.json names an older MQ5 hash, reports smoke_result=passed with smoke_report_path=null, and cannot bind the current source to a governed compile or smoke report. Current build and smoke identity therefore fails closed."
+  ],
+  "reviewed_at": "2026-08-24T09:37:18Z"
+}
