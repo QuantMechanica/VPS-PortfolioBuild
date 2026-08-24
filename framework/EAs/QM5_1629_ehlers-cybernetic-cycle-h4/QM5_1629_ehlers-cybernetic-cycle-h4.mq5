@@ -58,30 +58,32 @@ int           g_last_trade_dir        = 0;
 // -----------------------------------------------------------------------------
 bool LoadRates(const ENUM_TIMEFRAMES tf, const int bars_needed, MqlRates &rates[])
 {
-   if(bars_needed <= 0)
+   if(bars_needed <= 0 || bars_needed > 200)
       return false;
    ArraySetAsSeries(rates, true);
    const int copied = CopyRates(_Symbol, tf, 0, bars_needed, rates); // perf-allowed: bounded bespoke cycle filter arithmetic
    ArraySetAsSeries(rates, true);
-   return (copied >= bars_needed);
+   return (copied >= bars_needed && ArraySize(rates) >= bars_needed);
 }
 
 bool ComputeCyberneticCycle(MqlRates &rates[], const int count, double &cycle_curr, double &cycle_prev, double &amp_out)
 {
-   if(count < 20 || count > 200)
+   if(count < 20 || count > 200 || ArraySize(rates) < count)
       return false;
 
    double smooth[256];
    double cycle[256];
+   if(ArraySize(smooth) < count || ArraySize(cycle) < count)
+      return false;
    ArrayInitialize(smooth, 0.0);
    ArrayInitialize(cycle, 0.0);
 
    for(int i = count - 4; i >= 0; --i)
    {
-      const double p0 = (rates[i].high + rates[i].low) * 0.5;
-      const double p1 = (rates[i + 1].high + rates[i + 1].low) * 0.5;
-      const double p2 = (rates[i + 2].high + rates[i + 2].low) * 0.5;
-      const double p3 = (rates[i + 3].high + rates[i + 3].low) * 0.5;
+      const double p0 = rates[i].close;
+      const double p1 = rates[i + 1].close;
+      const double p2 = rates[i + 2].close;
+      const double p3 = rates[i + 3].close;
       smooth[i] = (p0 + 2.0 * p1 + 2.0 * p2 + p3) / 6.0;
    }
 
@@ -125,6 +127,65 @@ bool SpreadAllows(const double atr_value)
    if(atr_value <= 0.0)
       return true;
    return (spread <= strategy_spread_atr_mult * atr_value);
+}
+
+bool CooldownAllows(const int direction)
+{
+   if(strategy_cooldown_bars <= 0 || g_last_trade_dir != direction || g_last_trade_time <= 0)
+      return true;
+
+   const int bars_since_entry = iBarShift(_Symbol, PERIOD_H4, g_last_trade_time, false); // perf-allowed: one bounded H4 history lookup per closed-bar entry evaluation
+   if(bars_since_entry < 0)
+      return false;
+   return (bars_since_entry >= strategy_cooldown_bars);
+}
+
+bool TimeStopReached(const datetime opened)
+{
+   if(opened <= 0 || strategy_time_stop_bars < 1)
+      return false;
+
+   const int opened_bar_shift = iBarShift(_Symbol, PERIOD_H4, opened, false); // perf-allowed: one bounded H4 history lookup while managing one open position
+   if(opened_bar_shift < 0)
+      return false;
+   return (opened_bar_shift >= strategy_time_stop_bars);
+}
+
+bool BreakEvenPlusSpreadTarget(const ENUM_POSITION_TYPE position_type,
+                               const double open_price,
+                               const double current_sl,
+                               double &target_sl)
+{
+   target_sl = 0.0;
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(open_price <= 0.0 || bid <= 0.0 || ask <= bid || point <= 0.0)
+      return false;
+
+   const bool is_buy = (position_type == POSITION_TYPE_BUY);
+   const double spread = ask - bid;
+   const double raw_target = is_buy ? (open_price + spread) : (open_price - spread);
+   target_sl = QM_TM_NormalizePrice(_Symbol, raw_target);
+   if(target_sl <= 0.0)
+      return false;
+
+   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const int freeze_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_FREEZE_LEVEL);
+   const double broker_distance = MathMax(stops_level, freeze_level) * point;
+   if(is_buy && target_sl > bid - broker_distance)
+      return false;
+   if(!is_buy && target_sl < ask + broker_distance)
+      return false;
+
+   if(current_sl > 0.0)
+   {
+      const bool improves = is_buy ? (target_sl > current_sl + point * 0.5)
+                                   : (target_sl < current_sl - point * 0.5);
+      if(!improves)
+         return false;
+   }
+   return true;
 }
 
 bool SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &position_type)
@@ -191,7 +252,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(amp <= strategy_amplitude_threshold * h4[1].close)
       return false;
 
-   const double d1_close = iClose(_Symbol, PERIOD_D1, 1);
+   const double d1_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: one closed D1 regime read per H4 entry evaluation
    const double d1_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_d1_sma_period, 1, PRICE_CLOSE);
    if(d1_close <= 0.0 || d1_sma <= 0.0)
       return false;
@@ -202,9 +263,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const int dir = cross_up ? 1 : -1;
-   const datetime current_h4_bar = (datetime)SeriesInfoInteger(_Symbol, PERIOD_H4, SERIES_LASTBAR_DATE);
-   if(g_last_trade_dir == dir && current_h4_bar > 0 && g_last_trade_time > 0 &&
-      current_h4_bar - g_last_trade_time < strategy_cooldown_bars * PeriodSeconds(PERIOD_H4))
+   if(!CooldownAllows(dir))
       return false;
 
    const double atr_value = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
@@ -226,9 +285,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.sl <= 0.0)
       return false;
 
-   g_last_trade_time = current_h4_bar;
-   g_last_trade_dir = dir;
-   g_be_done = false;
    return true;
 }
 
@@ -265,7 +321,9 @@ void Strategy_ManageOpenPosition()
    const bool hit_trigger = is_buy ? (market_price >= trigger_price) : (market_price <= trigger_price);
    if(hit_trigger)
    {
-      if(QM_TM_MoveSL(ticket, open_price, "MOVE_TO_BE"))
+      double target_sl = 0.0;
+      if(BreakEvenPlusSpreadTarget(position_type, open_price, sl_price, target_sl) &&
+         QM_TM_MoveSL(ticket, target_sl, "MOVE_TO_BE_PLUS_SPREAD"))
          g_be_done = true;
    }
 }
@@ -280,9 +338,7 @@ bool Strategy_ExitSignal()
       return false;
 
    const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-   const int h4_seconds = PeriodSeconds(PERIOD_H4);
-   if(opened > 0 && h4_seconds > 0 &&
-      TimeCurrent() - opened >= strategy_time_stop_bars * h4_seconds)
+   if(TimeStopReached(opened))
    {
       g_strategy_exit_reason = QM_EXIT_TIME_STOP;
       return true;
@@ -343,7 +399,12 @@ int OnInit()
                         qm_rng_seed,
                         qm_stress_reject_probability,
                         qm_news_temporal,
-                        qm_news_compliance))
+                         qm_news_compliance))
+      return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H4,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "FRAMEWORK_WEEKEND_RISK_OVERLAY"))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1629_ehlers-cybernetic-cycle-h4\"}");
@@ -399,7 +460,7 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_H4))
       return;
 
    QM_EquityStreamOnNewBar();
@@ -409,7 +470,12 @@ void OnTick()
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if(QM_TM_OpenPosition(req, out_ticket))
+      {
+         g_last_trade_time = iTime(_Symbol, PERIOD_H4, 0); // perf-allowed: confirmed-entry cooldown bookkeeping
+         g_last_trade_dir = (req.type == QM_BUY) ? 1 : -1;
+         g_be_done = false;
+      }
    }
 }
 

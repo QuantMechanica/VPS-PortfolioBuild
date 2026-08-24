@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA mechanizes the approved Ehlers Cybernetic Cycle strategy on H4 bars. It computes a 4-bar weighted smoothing of median price, then runs a 2-pole IIR high-pass cycle filter with a fixed smoothing constant alpha=0.07. Long trades enter on a closed-bar zero line upward crossover of the cycle waveform, confirmed by recent cycle amplitude exceeding 0.5% of price and a D1 SMA(200) macro trend filter. Short trades mirror this logic on downward zero crossings below the D1 SMA(200). Trades use a 2.0 ATR hard stop and take profit, break-even trailing at 1.0 ATR favorable excursion, exit on opposite strong cycle crosses, and close after a 20-bar time stop.
+This EA mechanizes the approved Ehlers Cybernetic Cycle strategy on H4 bars. It computes a 4-bar weighted smoothing of completed H4 close prices, then runs a 2-pole IIR high-pass cycle filter with a fixed smoothing constant alpha=0.07. Long trades enter on a closed-bar zero line upward crossover of the cycle waveform, confirmed by recent cycle amplitude exceeding 0.5% of price and a D1 SMA(200) macro trend filter. Short trades mirror this logic on downward zero crossings below the D1 SMA(200). Trades use a 2.0 ATR hard stop and take profit, move the stop to direction-correct break-even plus spread at 1.0 ATR favorable excursion, exit on opposite strong cycle crosses, and close after 20 completed H4 bars.
 
 ---
 
@@ -66,7 +66,7 @@ This EA mechanizes the approved Ehlers Cybernetic Cycle strategy on H4 bars. It 
 |---|---|
 | Base timeframe | `H4` |
 | Multi-timeframe refs | `D1` close vs SMA(200) |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_H4)` with fail-closed H4 execution-contract declaration |
 
 ---
 
@@ -110,3 +110,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-22 | Initial build from card | 810145d0-5aeb-4a8f-9830-b0bdaadac57f |
+| v2 | 2026-08-24 | Review rework | Close-price smoother; actual-H4-bar time stop/cooldown; spread-aware break-even; H4 contract; cooldown after confirmed open. |
