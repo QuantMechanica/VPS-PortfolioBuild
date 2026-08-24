@@ -1,0 +1,24 @@
+{
+  "review_task_id": "1f4ea58d-721b-4093-bea0-50a4558c1e9a",
+  "build_task_id": "43dce7e4-3d61-4362-ad12-a4504e3e5137",
+  "ea_id": "QM5_37007",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The later source removes the fixed TP and adds a framework-derived weekly exit, but it still does not enforce the approved seven-symbol cross-section. Any two available symbols are sufficient to form a rank, and when fewer are available the source explicitly falls back to ranking the host's return against its own history. Missing cohort data must fail closed rather than become a partial-cohort or time-series momentum strategy.",
+    "Strategy_NoTradeFilter executes before Strategy_ExitSignal, so rollover, spread, or realized-daily entry halts can suppress the mandatory weekly rebalance exit. The in-memory last-entry-week latch also resets on restart and can admit another entry in the same week.",
+    "The 2.0%/2.5%/5.0% controls are implemented in process-local equity/day state that resets on restart, and OnInit never reconfigures QM_KillSwitchInit from its incompatible defaults. Strategy_RiskInputsValid checks only positivity, so all three limits can also be weakened above the approved values.",
+    "OnInit never calls QM_FrameworkDeclareExecutionContract and OnTick uses parameterless QM_IsNewBar, so the approved H4 chart cadence and Friday-close mode are not declared or checked fail-closed.",
+    "The current MQ5 and EX5 are SHA-256 6049d4d63416f5c45586bb3b7fc512d7e64830a6c4a1b5a79f6e2f8e58c8468e and fd0736595503b6bae2c2123eaf00bec34728d8bdbcb49e5ac0e14644941277e9, but both available build receipts omit those hashes. The seven setfile build hashes are mutually different and none equals the MQ5 hash, so preset/source/binary identity is not proven.",
+    "Both the assigned producer packet and the later rebuild receipt report deferred_p2_smoke with no smoke report and an empty blocked_reason. The later receipt separately records a framework error, not durable measured tester-fleet saturation. The sanctioned deferral exception is not met, so build_result fails and smoke_sanity remains unknown."
+  ],
+  "reviewed_at": "2026-08-24T10:17:19Z"
+}
