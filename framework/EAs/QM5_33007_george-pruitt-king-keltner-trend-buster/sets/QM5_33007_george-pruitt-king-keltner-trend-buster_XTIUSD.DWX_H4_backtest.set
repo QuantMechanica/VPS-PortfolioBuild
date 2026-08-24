@@ -3,16 +3,16 @@
 ; ea_id:        33007
 ; ea_slug:      george-pruitt-king-keltner-trend-buster
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260824-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b17546fe03a6372ba9e43b6cee700341f77aa2771c5e9d28d4c597f0ad18af29
+; build_hash:   77a2685de0423a331f070b8c3b6110b5a708275102ff2b77c141dcb16b6f4f6e
 ; author:       Development
-; date:         2026-08-17
+; date:         2026-08-24
 ;==========================================================
 qm_ea_id=33007
 qm_magic_slot_offset=1
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_33007_george-pruitt-king-keltner-trend-buster.md
+; card_defaults_source=C:\QM\worktrees\rework-slot-12\strategy-seeds\cards\QM5_33007_george-pruitt-king-keltner-trend-buster.md
 strategy_ma_period=20
 strategy_atr_period=10
 strategy_atr_multiplier=1.50
@@ -28,3 +28,7 @@ strategy_sl_atr_multiplier=2.0
 strategy_tp_sl_multiplier=2.0
 strategy_spread_atr_period=14
 strategy_spread_atr_mult=1.8
+strategy_daily_realized_loss_halt_pct=2.0
+strategy_daily_drawdown_hard_stop_pct=2.5
+strategy_total_drawdown_stop_pct=5.0
+strategy_max_slippage_ticks=3.0
