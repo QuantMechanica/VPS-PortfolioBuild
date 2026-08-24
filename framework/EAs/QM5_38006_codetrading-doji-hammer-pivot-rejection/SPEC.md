@@ -4,7 +4,7 @@
 **Slug:** codetrading-doji-hammer-pivot-rejection
 **Source:** codetrading-doji-hammer-pivot-rejection-official-source (see `strategy-seeds/sources/codetrading-doji-hammer-pivot-rejection/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-08-23
+**Last revised:** 2026-08-24
 
 ---
 
@@ -17,6 +17,8 @@ A Long entry is triggered when a Hammer candle is identified (Body <= 0.25 × Ra
 A Short entry is triggered when a Shooting Star candle is identified (Body <= 0.25 × Range, Upper Rejection Wick >= 0.60 × Range, bearish close: Close < Open), and the candle's High is within dynamic proximity to EMA(50) (|High - EMA(50)| <= 0.50 × ATR(14)).
 
 Stop Loss is set exactly 2.0 pips beyond the candle extreme (below Hammer Low for Long, above Shooting Star High for Short). Take Profit is set at 1.8× the Stop Loss distance (1:1.8 Risk-to-Reward ratio). Open positions move their stop to the exact entry price once favorable movement reaches the original broker-side stop distance (+1.0R). No ATR fallback replaces an invalid structural stop.
+
+Closed-bar EMA/ATR/pattern state is refreshed before entry admission. The live spread ceiling is evaluated during entry admission and re-read immediately before `QM_TM_OpenPosition`, so startup state or time spent in intervening news checks cannot bypass the card's spread rule. Open-position management and exits run before these entry-only filters.
 
 ---
 
@@ -98,7 +100,8 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+Risk-mode and sizer validation is enforced by `QM_FrameworkInit`
+(`EA_RISK_SIZER_UNCONFIGURED`).
 
 ---
 
@@ -108,3 +111,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Task 9b992eb5-9773-40ff-b4f3-ef03719e373e |
 | v2 | 2026-08-23 | Card-conformance remediation | Reachable +1R management, current-bar ATR admission, UTC rollover, exact structural stops, three-tick deviation, and explicit risk rails |
+| v3 | 2026-08-24 | Review rework | Recheck current spread at the broker-open boundary, name the current risk-sizer gate, and add regression coverage for both rejected code paths |
