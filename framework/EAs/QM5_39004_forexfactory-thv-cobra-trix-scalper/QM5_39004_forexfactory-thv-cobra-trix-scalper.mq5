@@ -128,7 +128,8 @@ bool CalculateTrix(const int period, const int shift, double &trix_val)
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
    const int copied = CopyRates(_Symbol, PERIOD_M5, shift, warmup, rates); // perf-allowed: exact TRIX triple-EMA close window
-   if(copied < period * 3 + 2) return false;
+   const int available = ArraySize(rates);
+   if(copied < period * 3 + 2 || available < copied) return false;
 
    const double alpha = 2.0 / ((double)period + 1.0);
    const double one_minus_alpha = 1.0 - alpha;
@@ -195,6 +196,10 @@ bool StrategyDailyRealizedLossHalt()
 
 bool Strategy_NoTradeFilter()
 {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) >= 1)
+      return true;
+
    if(StrategyInRolloverWindow(QM_BrokerToUTC(TimeCurrent())))
       return true;
 
