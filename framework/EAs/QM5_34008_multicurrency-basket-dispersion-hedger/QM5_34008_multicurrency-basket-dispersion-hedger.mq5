@@ -20,6 +20,11 @@ input double RISK_PERCENT                 = 0.0;
 input double RISK_FIXED                   = 1000.0;
 input double PORTFOLIO_WEIGHT             = 1.0;
 
+input group "Loss Limits"
+input double strategy_daily_loss_halt_pct = 2.0;    // Account realized-loss entry halt
+input double strategy_daily_hard_stop_pct = 2.5;    // Restart-safe daily equity hard stop
+input double strategy_total_dd_stop_pct   = 5.0;    // Total account drawdown stop
+
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
@@ -41,12 +46,14 @@ input double strategy_target_profit_pct   = 1.5;    // Basket take-profit target
 input double strategy_hard_stop_loss_pct  = 1.5;    // Basket hard stop-loss cutoff in % of account balance
 input int    strategy_atr_period          = 14;     // ATR lookback period for SL/spread
 input double strategy_spread_atr_mult     = 1.8;    // Spread filter ATR multiplier
+input double strategy_max_slippage_ticks  = 3.0;    // Card maximum market-order slippage in trade ticks
 
 // -----------------------------------------------------------------------------
 // Constants & Basket Universe
 // -----------------------------------------------------------------------------
 
 #define BASKET_SIZE 7
+#define STRATEGY_PRIMARY_SLOT 0
 string g_basket_symbols[BASKET_SIZE] = {
    "EURUSD.DWX",
    "GBPUSD.DWX",
@@ -56,6 +63,7 @@ string g_basket_symbols[BASKET_SIZE] = {
    "USDCHF.DWX",
    "USDJPY.DWX"
 };
+double g_strategy_initial_balance = 0.0;
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -63,14 +71,24 @@ string g_basket_symbols[BASKET_SIZE] = {
 
 int GetBarHhmm(const datetime t)
 {
+   const datetime utc = QM_BrokerToUTC(t);
    MqlDateTime dt;
-   TimeToStruct(t, dt);
+   TimeToStruct((utc > 0) ? utc : t, dt);
    return (dt.hour * 100 + dt.min);
 }
 
 bool IsDirectUSDPair(const string sym)
 {
    return (StringFind(sym, "USD") == 0);
+}
+
+int StrategyMaxDeviationPoints(const string sym)
+{
+   const double point = SymbolInfoDouble(sym, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(sym, SYMBOL_TRADE_TICK_SIZE);
+   if(point <= 0.0 || tick_size <= 0.0 || strategy_max_slippage_ticks <= 0.0)
+      return 0;
+   return (int)MathFloor((strategy_max_slippage_ticks * tick_size / point) + 1e-9);
 }
 
 int OpenPackageCount()
@@ -118,15 +136,63 @@ void CloseAllPackagePositions(const QM_ExitReason reason)
    }
 }
 
+bool Strategy_ValidateInputs()
+{
+   if(MathAbs(strategy_daily_loss_halt_pct - 2.0) > 1e-9 ||
+      MathAbs(strategy_daily_hard_stop_pct - 2.5) > 1e-9 ||
+      MathAbs(strategy_total_dd_stop_pct - 5.0) > 1e-9)
+      return false;
+   if(strategy_lookback_hours < 12 || strategy_lookback_hours > 48 ||
+      strategy_dispersion_dev < 0.8 || strategy_dispersion_dev > 2.0 ||
+      strategy_target_profit_pct <= 0.0 || strategy_hard_stop_loss_pct <= 0.0 ||
+      strategy_atr_period < 1 || strategy_spread_atr_mult <= 0.0 ||
+      MathAbs(strategy_max_slippage_ticks - 3.0) > 1e-9)
+      return false;
+   return true;
+}
+
+bool Strategy_DailyRealizedLossHalt()
+{
+   int closed_trades = 0;
+   const double realized_pnl = QM_ChartUITodayPnL(0, closed_trades);
+   const double balance_now = AccountInfoDouble(ACCOUNT_BALANCE);
+   const double day_start_balance = balance_now - realized_pnl;
+   if(balance_now <= 0.0 || day_start_balance <= 0.0)
+      return true;
+   return (realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0));
+}
+
+bool Strategy_TotalDrawdownStopHit()
+{
+   if(g_strategy_initial_balance <= 0.0)
+      return true;
+   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(equity_now <= 0.0)
+      return true;
+   const double drawdown_pct =
+      ((g_strategy_initial_balance - equity_now) / g_strategy_initial_balance) * 100.0;
+   return (drawdown_pct >= strategy_total_dd_stop_pct);
+}
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
 bool Strategy_NoTradeFilter()
 {
+   // One EURUSD/slot-0 chart owns the fixed seven-symbol basket. The other
+   // registered Q02 hosts are evidence lanes only and must remain no-signal.
+   if(_Period != PERIOD_H1 ||
+      _Symbol != g_basket_symbols[STRATEGY_PRIMARY_SLOT] ||
+      qm_magic_slot_offset != STRATEGY_PRIMARY_SLOT)
+      return true;
+
    const datetime now = TimeCurrent();
    const int hhmm = GetBarHhmm(now);
    if(hhmm >= 2355 || hhmm < 5)
+      return true;
+
+   if(Strategy_DailyRealizedLossHalt() || Strategy_TotalDrawdownStopHit())
       return true;
 
    const double atr_1 = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
@@ -237,6 +303,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(lots_a <= 0.0 || lots_b <= 0.0)
       return false;
 
+   const int deviation_a = StrategyMaxDeviationPoints(sym_a);
+   const int deviation_b = StrategyMaxDeviationPoints(sym_b);
+   if(deviation_a < 1 || deviation_b < 1)
+      return false;
+
    QM_BasketOrderRequest req_a;
    req_a.symbol = sym_a;
    req_a.type = type_a;
@@ -260,11 +331,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req_b.expiration_seconds = 0;
 
    ulong ticket_a = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req_a, ticket_a))
+   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, deviation_a, req_a, ticket_a))
       return false;
 
    ulong ticket_b = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req_b, ticket_b))
+   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, deviation_b, req_b, ticket_b))
    {
       CloseAllPackagePositions(QM_EXIT_STRATEGY);
       return false;
@@ -314,11 +385,46 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
 {
+   if(!Strategy_ValidateInputs())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(
+         PERIOD_H1,
+         QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+         "CARD_SILENT_FRIDAY_CLOSE_V5_FRAMEWORK_POLICY"))
+      return INIT_FAILED;
+
+   g_strategy_initial_balance = AccountInfoDouble(ACCOUNT_BALANCE);
+   if(g_strategy_initial_balance <= 0.0)
+      return INIT_FAILED;
+
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         strategy_daily_hard_stop_pct,
+                         strategy_total_dd_stop_pct,
+                         1.0))
+      return INIT_FAILED;
+
+   for(int slot = 0; slot < BASKET_SIZE; ++slot)
+   {
+      const int magic =
+         QM_FrameworkRegisterMagicSymbol(qm_ea_id, slot, g_basket_symbols[slot]);
+      if(magic <= 0)
+      {
+         QM_LogEvent(QM_ERROR,
+                     "BASKET_MAGIC_REGISTRATION_FAILED",
+                     StringFormat("{\"symbol\":\"%s\",\"slot\":%d}",
+                                  QM_LoggerEscapeJson(g_basket_symbols[slot]),
+                                  slot));
+         return INIT_FAILED;
+      }
+   }
 
    QM_SymbolGuardInit(g_basket_symbols);
    QM_BasketWarmupHistory(g_basket_symbols, PERIOD_H1, MathMax(60, strategy_lookback_hours + 10));
@@ -337,20 +443,26 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
-   if(QM_FrameworkHandleFridayClose())
-      return;
-   if(Strategy_NoTradeFilter())
-      return;
 
    Strategy_ManageOpenPosition();
+   Strategy_ExitSignal();
 
-   if(Strategy_ExitSignal())
+   if(Strategy_TotalDrawdownStopHit())
    {
       CloseAllPackagePositions(QM_EXIT_STRATEGY);
+      return;
    }
+
+   // Framework ownership includes every registered basket magic. Run this
+   // only after package management, so the Friday override cannot suspend an
+   // orphan cleanup or an already-triggered aggregate package exit.
+   if(QM_FrameworkHandleFridayClose())
+      return;
+
+   if(Strategy_NoTradeFilter())
+      return;
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
 
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
@@ -360,7 +472,7 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_H1))
       return;
    QM_EquityStreamOnNewBar();
 
