@@ -1,0 +1,25 @@
+{
+  "review_task_id": "c7f41f38-507d-4b36-921b-2aefb42b206c",
+  "build_task_id": "c2e1b160-70bb-49bf-afd2-6dc52e784ad5",
+  "ea_id": "QM5_35004",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The current source correctly converts the Asian box, London entry, rollover, and force-close clocks to UTC; requires all 24 closed M15 box bars; uses the exact box-midpoint stop and 2x-box-range target; configures the card's 2.5%/5.0%/0.5% kill switch; and performs management and exits before entry-only filters. Those headline remediation claims were independently confirmed.",
+    "StrategyDailyEntryHalt compares current ACCOUNT_EQUITY with g_qm_ks_day_start_equity. Floating P&L is therefore counted in what the code labels the approved 2.0% daily realized-loss halt, collapsing a realized-loss control into an equity-drawdown test.",
+    "Strategy_ExitSignal is true only from the configured 16:00 UTC close through 23:54. If a quote gap or close failure leaves exposure open, the mandatory London-close exit deasserts at 23:55 and stays false through midnight instead of remaining asserted until closure.",
+    "The exact card rules define midpoint SL, 2x-box-range TP, and the 16:00 time exit, but no numeric break-even rule. Strategy_ManageOpenPosition invents a 1R trigger, a 20-pip fallback, and a plus/minus one-pip stop, materially changing the approved payoff distribution without an OWNER-authorized formula.",
+    "OnInit declares no QM_FrameworkDeclareExecutionContract for the M15 host cadence, and the EA adds unused Trade/Trade.mqh outside the QM_Common include chain. Explicit QM_IsNewBar arguments do not make initialization fail closed on a wrong host chart.",
+    "The reviewed MQ5 hashes to 4513f1f1a192c5c040015a90f5fecfdac35d9d214b615e5552968f5d26870fc5 and was modified 2026-08-23; the EX5 hashes to d90ab915cd2642632fc122a381cf3aabc85d77a4118a7ce70f7880a3e62b6e70 and was last modified 2026-08-17. The producer JSON asserts compile/build-check success for those hashes, but farmctl reports NOT_ENQUEUED and no smoke report or measured saturation-backed deferred-smoke reason exists. The artifact does not prove that the old EX5 was compiled from the remediated source, so build_result fails and smoke_sanity remains UNKNOWN.",
+    "Guardrail and SPEC validation pass; all three governed set headers contain build_hash and use RISK_FIXED=1000 and RISK_PERCENT=0; active magic rows are unique, formula-correct, and resolver-backed; and no direct OrderSend or unwrapped trading method is present. These checks do not cure the realized-loss, mandatory-exit, invented-management, execution-contract, and build-evidence failures."
+  ],
+  "reviewed_at": "2026-08-24T11:32:30Z"
+}
