@@ -1422,14 +1422,18 @@ def pending_claim_order_sql() -> str:
             -- production throughput.
             WHEN 'HARNESS_PP_FIXTURE' THEN 0
 {_gate_priority_rank_sql()}
-            -- OPT_CENSUS (DL-089 §3) shares Q04's tier-6 rank on purpose: the
+            -- OPT_CENSUS (DL-089 §3) shares Q04's tier rank on purpose: the
             -- optimization measurement pool must INTERLEAVE with the funnel, not
             -- run ahead of it and not starve it. OPT_CENSUS rows are never
-            -- priority_track, so their effective term is 10+6-age = a plain Q04
-            -- row's rank; every downstream funnel phase (Q05..Q10 at ranks 5..0)
-            -- and every priority_track row still drains first, while measurement
-            -- interleaves with ordinary Q04 admissions and out-ages Q02.
-            WHEN 'OPT_CENSUS' THEN 6
+            -- priority_track, so their effective term is 10+tier-age = a plain
+            -- Q04 row's rank; every downstream funnel phase and every
+            -- priority_track row still drains first, while measurement
+            -- interleaves with ordinary Q04 admissions and out-ages Q02. Tied
+            -- to Q04's rank via the same formula _gate_priority_rank_sql() uses
+            -- (not a hardcoded literal) so a future incumbent-phase move (e.g.
+            -- 2026-08-23 v4: Q10->Q11 incumbent shifted Q04's tier 6->7) keeps
+            -- this arm in lockstep instead of silently drifting stale.
+            WHEN 'OPT_CENSUS' THEN {phase_rank(_INCUMBENT_PHASE) - phase_rank('Q04')}
             -- COMPILE_EA (ordering decision 2026-08-22, Systemanalyse §4.2/§9.3):
             -- a compile takes seconds and unblocks a whole EA's funnel entry,
             -- while every backtest holds a terminal for hours. In the ELSE-9
