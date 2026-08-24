@@ -14,6 +14,7 @@ import glob
 import hashlib
 import json
 import os
+import random
 import re
 import sqlite3
 import subprocess
@@ -670,6 +671,30 @@ def available_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
 DISABLED_TERMINALS_FILE = Path(r"D:\QM\strategy_farm\state\disabled_terminals.txt")
 TERMINAL_RESERVATIONS_REL = Path("state") / "terminal_reservations.json"
 DEFAULT_TERMINAL_RESERVATION_MINUTES = 60
+# Windows-only race: MoveFileExW (Path.replace) onto a shared, frequently-rewritten
+# state file transiently raises WinError 5 (access denied) / WinError 32 (sharing
+# violation) when another process's replace or a scanner briefly holds the
+# destination open. Short retry + jitter clears it in practice (same pattern as
+# the SQLite busy_timeout retry above); a real failure after this budget is
+# still a real failure and propagates.
+_RESERVATION_REPLACE_RETRY_ATTEMPTS = 8
+_RESERVATION_REPLACE_RETRY_BASE_SECONDS = 0.05
+
+
+def _replace_reservation_file(tmp: Path, path: Path) -> None:
+    last_error: OSError | None = None
+    for attempt in range(_RESERVATION_REPLACE_RETRY_ATTEMPTS):
+        try:
+            tmp.replace(path)
+            return
+        except OSError as exc:
+            if getattr(exc, "winerror", None) not in (5, 32):
+                raise
+            last_error = exc
+            if attempt < _RESERVATION_REPLACE_RETRY_ATTEMPTS - 1:
+                time.sleep(_RESERVATION_REPLACE_RETRY_BASE_SECONDS * (2 ** attempt) * (1 + random.random()))
+    assert last_error is not None
+    raise last_error
 
 
 def disabled_mt5_terminals() -> set[str]:
@@ -823,7 +848,7 @@ def set_terminal_reservation(
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + f".{os.getpid()}.tmp")
     tmp.write_text(json.dumps({"reservations": reservations}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    tmp.replace(path)
+    _replace_reservation_file(tmp, path)
     return reservation
 
 
@@ -835,7 +860,7 @@ def release_terminal_reservation(root: Path, terminal: str) -> dict[str, Any]:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + f".{os.getpid()}.tmp")
     tmp.write_text(json.dumps({"reservations": reservations}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    tmp.replace(path)
+    _replace_reservation_file(tmp, path)
     return {"released": removed is not None, "terminal": terminal, "reservation": removed}
 
 
