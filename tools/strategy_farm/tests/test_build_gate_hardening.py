@@ -693,27 +693,25 @@ def test_nonmechanizable_semantic_classes_name_required_card_declarations() -> N
         assert scope[key]["missing_card_declaration"]
 
 
-def test_semantic_regression_catches_previously_invisible_1417_and_1425() -> None:
-    expected = {
-        "QM5_1417_classical-pennant-continuation-h1": {
-            "EA_CARD_PENDING_ORDER_TYPE_MISMATCH",
-            "EA_CARD_SMA_DIRECTION_INVERTED",
-            "EA_CARD_NEWS_WINDOW_MISMATCH",
-            "EA_CARD_NEWS_BLOCKS_MANAGEMENT",
-        },
-        "QM5_1425_classical-triple-bottom-reversal-h4": {
-            "EA_CARD_PENDING_ORDER_TYPE_MISMATCH",
-            "EA_CARD_SMA_DIRECTION_INVERTED",
-            "EA_CARD_NEWS_WINDOW_MISMATCH",
-            "EA_CARD_NEWS_BLOCKS_MANAGEMENT",
-            "EA_DETERMINISTIC_ZERO_TRADE_ORDERING",
-        },
+def test_semantic_regression_catches_unrepaired_1417() -> None:
+    label = "QM5_1417_classical-pennant-continuation-h1"
+    expected_codes = {
+        "EA_CARD_PENDING_ORDER_TYPE_MISMATCH",
+        "EA_CARD_SMA_DIRECTION_INVERTED",
+        "EA_CARD_NEWS_WINDOW_MISMATCH",
+        "EA_CARD_NEWS_BLOCKS_MANAGEMENT",
     }
-    for label, expected_codes in expected.items():
-        source = next((REPO_ROOT / "framework" / "EAs" / label).glob("*.mq5"))
-        result = gate.analyze_file(source, gate.find_card(REPO_ROOT, label))
-        actual_codes = {failure.split(":", 1)[0] for failure in result["failures"]}
-        assert expected_codes <= actual_codes
+    source = next((REPO_ROOT / "framework" / "EAs" / label).glob("*.mq5"))
+    result = gate.analyze_file(source, gate.find_card(REPO_ROOT, label))
+    actual_codes = {failure.split(":", 1)[0] for failure in result["failures"]}
+    assert expected_codes <= actual_codes
+
+
+def test_semantic_regression_accepts_repaired_1425() -> None:
+    label = "QM5_1425_classical-triple-bottom-reversal-h4"
+    source = next((REPO_ROOT / "framework" / "EAs" / label).glob("*.mq5"))
+    result = gate.analyze_file(source, gate.find_card(REPO_ROOT, label))
+    assert result["failures"] == []
 
 
 def test_d17_real_clean_card_and_build_universe_satisfy() -> None:
