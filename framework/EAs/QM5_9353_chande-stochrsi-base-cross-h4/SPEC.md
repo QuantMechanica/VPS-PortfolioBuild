@@ -4,7 +4,7 @@
 **Slug:** chande-stochrsi-base-cross-h4
 **Source:** 6e967762-b26d-59a3-b076-35c17f2e7c36
 **Author of this spec:** Gemini
-**Last revised:** 2026-08-22
+**Last revised:** 2026-08-24
 
 ---
 
@@ -57,7 +57,7 @@ A protective ATR stop loss at 1.8 * ATR(14) is applied at entry.
 |---|---|
 | Base timeframe | `PERIOD_H4` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_H4)` with a fail-closed `PERIOD_H4` execution contract |
 
 ---
 
@@ -92,7 +92,13 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_RISK_SIZER_UNCONFIGURED`).
+
+## 8. Execution Filters
+
+- New entries use the card-approved HIGH-impact news blackout from 60 minutes before through 60 minutes after the event (`QM_NEWS_TEMPORAL_PRE60_POST60`).
+- News, spread, quote-readiness, ATR, and warm-up filters are entry-only; Friday close, open-position management, the 25-H4-bar time stop, and strategy exits remain reachable independently.
+- `OnInit` rejects chart periods other than H4 and rejects strategy inputs outside the documented parameter ranges.
 
 ---
 
@@ -101,3 +107,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-22 | Initial build from approved card | Task 7bc95960-7134-4d02-88c2-87ce2cb8761c |
+| v2 | 2026-08-24 | Mandatory review rework | Bounded StochRSI evaluation, H4 execution contract, 60/60 news window, and entry-only filters |
