@@ -4,10 +4,10 @@
 ; ea_slug:      aa-dsp-hplwma10
 ; ea_version:   v5.0
 ; set_version:  s20260824-001
-; symbol:       NDX.DWX
+; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   13
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   02ac5bc08d9caaa6b22079c3da10e88872758502b534836369101caa1409b477
@@ -15,7 +15,7 @@
 ; date:         2026-08-24
 ;==========================================================
 qm_ea_id=1612
-qm_magic_slot_offset=1
+qm_magic_slot_offset=13
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

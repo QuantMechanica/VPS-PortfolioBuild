@@ -56,7 +56,8 @@ input group "Strategy"
 input int    strategy_min_daily_bars     = 20;
 input int    strategy_atr_period         = 20;
 input double strategy_atr_sl_mult        = 2.5;
-input int    strategy_max_spread_points  = 0;
+input int    strategy_spread_median_days = 20;
+input double strategy_spread_median_mult = 2.5;
 
 // -----------------------------------------------------------------------------
 // Helper functions
@@ -66,9 +67,11 @@ bool ReadD1Close(const int shift, double &value)
 {
    value = 0.0;
    double buf[];
+   if(ArrayResize(buf, 1) != 1)
+      return false;
    ArraySetAsSeries(buf, true);
-   const int got = CopyClose(_Symbol, PERIOD_D1, shift, 1, buf);
-   if(got != 1 || buf[0] <= 0.0)
+   const int got = CopyClose(_Symbol, PERIOD_D1, shift, 1, buf); // perf-allowed: bounded close read; caller is behind the D1 QM_IsNewBar gate.
+   if(got != 1 || ArraySize(buf) < 1 || buf[0] <= 0.0)
       return false;
    value = buf[0];
    return true;
@@ -78,6 +81,8 @@ bool ComputeHPLWMA10(const int shift, double &val)
 {
    val = 0.0;
    double closes[10];
+   if(ArraySize(closes) != 10)
+      return false;
    for(int i = 0; i < 10; ++i)
    {
       double c = 0.0;
@@ -96,6 +101,43 @@ bool ComputeHPLWMA10(const int shift, double &val)
        - 0.0364 * closes[8]
        - 0.0182 * closes[9];
    return true;
+}
+
+bool Strategy_SpreadAllowsEntry()
+{
+   if(strategy_spread_median_days < 2 || strategy_spread_median_mult <= 0.0)
+      return false;
+
+   int spreads[];
+   if(ArrayResize(spreads, strategy_spread_median_days) != strategy_spread_median_days)
+      return false;
+
+   const int copied = CopySpread(_Symbol,
+                                 PERIOD_D1,
+                                 1,
+                                 strategy_spread_median_days,
+                                 spreads); // perf-allowed: bounded 20-day D1 sample; EntrySignal runs only after QM_IsNewBar.
+   if(copied != strategy_spread_median_days || ArraySize(spreads) < strategy_spread_median_days)
+      return false;
+
+   for(int i = 0; i < ArraySize(spreads); ++i)
+   {
+      if(spreads[i] <= 0)
+         return false;
+   }
+   ArraySort(spreads);
+
+   const int upper = copied / 2;
+   if(upper <= 0 || upper >= ArraySize(spreads))
+      return false;
+   const double median_spread = ((copied % 2) == 0)
+                                ? ((double)spreads[upper - 1] + (double)spreads[upper]) * 0.5
+                                : (double)spreads[upper];
+   const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   if(median_spread <= 0.0 || current_spread <= 0)
+      return false;
+
+   return ((double)current_spread <= strategy_spread_median_mult * median_spread);
 }
 
 bool Strategy_HasOpenPosition()
@@ -127,13 +169,6 @@ bool Strategy_NoTradeFilter()
    if(_Period != PERIOD_D1)
       return true;
 
-   if(strategy_max_spread_points > 0)
-   {
-      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points > strategy_max_spread_points)
-         return true;
-   }
-
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
    if(qm_friday_close_enabled && dt.day_of_week == 5 && dt.hour >= qm_friday_close_hour_broker)
@@ -159,7 +194,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return false;
 
-   if(Bars(_Symbol, PERIOD_D1) < strategy_min_daily_bars + 2)
+   const int required_history = (strategy_min_daily_bars > strategy_spread_median_days)
+                                ? strategy_min_daily_bars
+                                : strategy_spread_median_days;
+   if(Bars(_Symbol, PERIOD_D1) < required_history + 2)
+      return false;
+
+   if(!Strategy_SpreadAllowsEntry())
       return false;
 
    double hplwma1 = 0.0;
@@ -284,6 +325,37 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
+   if(QM_FrameworkHandleFridayClose())
+      return;
+
+   // Protective management remains tick-responsive. Card-defined signal work
+   // below runs exactly once for each newly completed D1 bar.
+   Strategy_ManageOpenPosition();
+
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
+      return;
+
+   QM_EquityStreamOnNewBar();
+
+   if(Strategy_ExitSignal())
+   {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+      {
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+      }
+   }
+
+   if(Strategy_NoTradeFilter())
+      return;
+
    if(Strategy_NewsFilterHook(broker_now))
       return;
 
@@ -295,34 +367,8 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
-      return;
-
-   Strategy_ManageOpenPosition();
-
-   if(Strategy_ExitSignal())
-   {
-      const int magic = QM_FrameworkMagic();
-      for(int i = PositionsTotal() - 1; i >= 0; --i)
-      {
-         const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-      }
-   }
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
-
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
