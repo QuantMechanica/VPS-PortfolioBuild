@@ -4,7 +4,7 @@
 **Slug:** `suhr-bank-trading-stop-run-fade-h1`
 **Source:** `966a64b0-7975-5f93-81f6-ddc316a4e029`
 **Author of this spec:** Codex
-**Last revised:** 2026-08-23
+**Last revised:** 2026-08-24
 
 ---
 
@@ -126,4 +126,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-23 | Initial build from card | 4d5f4cc2-d995-45e9-a2ea-9e066b2f17ca |
+| v1 | 2026-08-24 | Initial build from card | 4d5f4cc2-d995-45e9-a2ea-9e066b2f17ca |

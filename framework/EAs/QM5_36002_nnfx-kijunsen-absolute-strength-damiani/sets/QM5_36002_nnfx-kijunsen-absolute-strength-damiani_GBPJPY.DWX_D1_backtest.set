@@ -3,22 +3,24 @@
 ; ea_id:        36002
 ; ea_slug:      nnfx-kijunsen-absolute-strength-damiani
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260824-001
 ; symbol:       GBPJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3cb46b43a01a9a578cceedc3b6fe6980bef4bf38a962a37772ca79780d414671
-; author:       Gemini
-; date:         2026-08-17
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-24
 ;==========================================================
 qm_ea_id=36002
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_36002_nnfx-kijunsen-absolute-strength-damiani.md
 strategy_kijun_period=26
 strategy_tenkan_period=9
 strategy_senkou_period=52
@@ -38,3 +40,4 @@ strategy_daily_loss_halt_pct=2.0
 strategy_daily_hard_stop_pct=2.5
 strategy_total_dd_halt_pct=5.0
 strategy_per_trade_risk_cap_pct=0.5
+strategy_slippage_ticks=3

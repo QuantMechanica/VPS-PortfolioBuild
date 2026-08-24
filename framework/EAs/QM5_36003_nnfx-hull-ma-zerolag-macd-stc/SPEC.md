@@ -4,7 +4,7 @@
 **Slug:** `nnfx-hull-ma-zerolag-macd-stc`
 **Source:** `nnfx-hull-ma-zerolag-macd-stc-official-source` (approved card copy in `docs/strategy_card.md`)
 **Author of this spec:** Codex
-**Last revised:** 2026-08-23
+**Last revised:** 2026-08-24
 
 ---
 
@@ -112,4 +112,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-23 | Initial build from card | b3b7bf51-a5fa-406b-bfeb-0283ca68ba81 |
+| v1 | 2026-08-24 | Initial build from card | b3b7bf51-a5fa-406b-bfeb-0283ca68ba81 |

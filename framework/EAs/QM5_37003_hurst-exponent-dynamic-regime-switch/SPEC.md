@@ -3,14 +3,14 @@
 **EA ID:** QM5_37003
 **Slug:** `hurst-exponent-dynamic-regime-switch`
 **Source:** `hurst-exponent-dynamic-regime-switch-official-source` (see `strategy-seeds/sources/hurst-exponent-dynamic-regime-switch-official-source/`)
-**Author of this spec:** Research+Development
-**Last revised:** 2026-08-17
+**Author of this spec:** Codex
+**Last revised:** 2026-08-24
 
 ---
 
 ## 1. Strategy Logic
 
-Calculates the rolling Rescaled Range (R/S) Hurst Exponent H on closed H1 bars over a lookback window of 100 bars. When H > 0.55, the market is classified as persistent/trending, activating a 20-bar Donchian channel momentum breakout with 1.5x ATR initial stop and 2.0x R:R take profit. When H < 0.45, the market is classified as anti-persistent/mean-reverting, activating a 20-bar, 2.0-deviation Bollinger Band mean-reversion engine targeting the midline SMA(20) with 1.5x ATR initial stop.
+Calculates the rolling Rescaled Range Hurst exponent as `H = ln(R/S) / ln(n)` from closed H1 log returns over 100 bars. When H > 0.55, a close beyond the preceding 20-bar high or low opens a trend trade with a 1.5x ATR initial stop and a 2.0R take profit. When H < 0.45, a close at or beyond the 20-bar, 2.0-deviation Bollinger Band opens a mean-reversion trade with the same ATR stop and the Bollinger midline as its target.
 
 Mean-reversion entries fail closed when the current Bollinger midline is not a valid favorable-side target; no fixed-R substitute is authorized. Open-position midline management runs before entry-only rollover/spread/loss filters. Account risk rails are a 2.0% closed-PnL entry halt, restart-safe 2.5% daily equity hard stop, and 5.0% account-level total-DD signal threshold.
 
@@ -61,7 +61,7 @@ Entry/exit logic is encoded in the five `Strategy_*` hooks in `QM5_37003_hurst-e
 |---|---|
 | Base timeframe | `H1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_H1)` |
 
 ---
 
@@ -69,12 +69,12 @@ Entry/exit logic is encoded in the five `Strategy_*` hooks in `QM5_37003_hurst-e
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 70 |
-| Cadence note | "80-160 high-conviction trades per year" |
-| Typical hold time | Intraday to multi-day (4-48 hours) |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | dual-regime: trend-following in high-Hurst periods, mean-reverting in low-Hurst periods |
-| Win rate target (qualitative) | high (65-75%) |
+| Trades / year / symbol | 70 (`expected_trades_per_year_per_symbol`) |
+| Expected trade frequency | 80-160 high-conviction trades per year (`expected_trade_frequency`) |
+| Typical hold time | Not specified in the approved card |
+| Expected drawdown profile | 15% ordering prior (`expected_dd_pct`); runtime hard stops remain 2.5% daily and 5.0% total |
+| Regime preference | Dual regime: trend-following above the high-Hurst threshold and mean-reverting below the low-Hurst threshold |
+| Win rate target (qualitative) | Not accepted as a gate target; the source claim is ignored per the G0 reasoning |
 
 ---
 
@@ -83,8 +83,9 @@ Entry/exit logic is encoded in the five `Strategy_*` hooks in `QM5_37003_hurst-e
 This card was mechanised from:
 
 **Source ID:** `hurst-exponent-dynamic-regime-switch-official-source`
-**Pointer:** `strategy-seeds/sources/hurst-exponent-dynamic-regime-switch-official-source/`
-**R1–R4 verdict (Q00):** all PASS — see `artifacts/cards_approved/QM5_37003_hurst-exponent-dynamic-regime-switch.md`
+**Source type:** verified quantitative model / book lineage
+**Pointer:** `D:/QM/strategy_farm/artifacts/cards_approved/QM5_37003_hurst-exponent-dynamic-regime-switch.md`
+**R1–R4 verdict (Q00):** R1 lineage recorded and R2–R4 PASS per `artifacts/cards_approved/QM5_37003_hurst-exponent-dynamic-regime-switch.md`
 
 ---
 
@@ -104,4 +105,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-17 | Initial build from approved card | 6b9b31bd-8511-4f7b-8400-9e42162b0bd1 |
+| v1 | 2026-08-24 | Initial build from card | 10fc0415-d492-4f6d-aec3-744819207eb9 |
