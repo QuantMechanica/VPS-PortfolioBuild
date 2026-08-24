@@ -39,7 +39,7 @@ input double          strategy_max_body_ratio      = 0.25;
 input double          strategy_min_wick_ratio      = 0.60;
 input double          strategy_zone_atr_mult       = 0.50;
 input int             strategy_atr_period          = 14;
-input double          strategy_sl_buffer_pips      = 2.0;
+input int             strategy_sl_buffer_pips      = 2;
 input double          strategy_tp_rr_mult          = 1.8;
 input bool            strategy_be_enabled          = true;
 input double          strategy_be_trigger_r        = 1.0;
@@ -50,7 +50,6 @@ input int             strategy_max_slippage_ticks  = 3;
 input double          strategy_daily_loss_halt_pct = 2.0;
 input double          strategy_daily_hard_stop_pct = 2.5;
 input double          strategy_total_dd_halt_pct   = 5.0;
-input double          strategy_per_trade_risk_cap_pct = 0.5;
 
 // -----------------------------------------------------------------------------
 // State Cache & Indicators
@@ -78,16 +77,21 @@ bool StrategyInRolloverWindow(const datetime t)
 
 bool StrategyConfigValid()
 {
-   if(strategy_signal_tf != PERIOD_H1 || strategy_ema_period < 2 ||
-      strategy_atr_period < 2 || strategy_spread_filter_mult <= 0.0)
+   if(strategy_signal_tf != PERIOD_H1 ||
+      strategy_ema_period < 20 || strategy_ema_period > 100 ||
+      strategy_atr_period != 14 || strategy_spread_filter_mult != 1.8)
       return false;
-   if(strategy_max_body_ratio <= 0.0 || strategy_max_body_ratio > 1.0 ||
-      strategy_min_wick_ratio <= 0.0 || strategy_min_wick_ratio > 1.0 ||
-      strategy_zone_atr_mult <= 0.0)
+   if(strategy_max_body_ratio < 0.15 || strategy_max_body_ratio > 0.35 ||
+      strategy_min_wick_ratio < 0.50 || strategy_min_wick_ratio > 0.75 ||
+      strategy_zone_atr_mult != 0.50)
       return false;
-   if(strategy_sl_buffer_pips != 2.0 || strategy_tp_rr_mult != 1.8 ||
+   if(strategy_sl_buffer_pips != 2 || strategy_tp_rr_mult != 1.8 ||
       !strategy_be_enabled || strategy_be_trigger_r != 1.0 ||
-      strategy_max_slippage_ticks <= 0 || strategy_max_slippage_ticks > 3)
+      strategy_max_slippage_ticks != 3)
+      return false;
+   // Card InpRiskPercent maps to the canonical framework RISK_PERCENT input.
+   // Zero is required for backtests; live values must stay inside 0.20-1.00%.
+   if(RISK_PERCENT != 0.0 && (RISK_PERCENT < 0.20 || RISK_PERCENT > 1.00))
       return false;
    if(strategy_rollover_start_hhmm < 0 || strategy_rollover_start_hhmm > 2359 ||
       strategy_rollover_end_hhmm < 0 || strategy_rollover_end_hhmm > 2359 ||
@@ -99,8 +103,7 @@ bool StrategyConfigValid()
       strategy_daily_loss_halt_pct > 2.0 || strategy_daily_hard_stop_pct > 2.5 ||
       strategy_total_dd_halt_pct <= 0.0 || strategy_total_dd_halt_pct > 5.0)
       return false;
-   return (strategy_per_trade_risk_cap_pct > 0.0 &&
-           strategy_per_trade_risk_cap_pct <= 0.5);
+   return true;
 }
 
 int StrategyDeviationPoints()
@@ -355,7 +358,7 @@ int OnInit()
                          QM_FrameworkMagic(),
                          strategy_daily_hard_stop_pct,
                          strategy_total_dd_halt_pct,
-                         strategy_per_trade_risk_cap_pct))
+                         1.0)) // Framework cap: preserves canonical $1,000 risk on $100k backtests.
       return INIT_FAILED;
 
    AdvanceState_OnNewBar();
