@@ -280,9 +280,10 @@ Source order mirrors `render_cockpit.owner_decision_rows` (agent work queues are
 |---|---|---|
 | `count` / `alert_count` | int | total items / items with `alert=true` |
 | `q12_review_ready` | int | `portfolio_candidates` Q12 count |
-| `items[]` | array | `{source,id,status,category,title,question,recommendation,yes_effect,no_effect,cost_of_wait,detail,evidence,due,severity,alert,execution_plan}` |
-| `executions[]` | array | terminal entschiedene Karten mit Receipt-/Task-ID, Router-State, Agent, Artefakt, Verdict und normalisiertem Status `HANDOFF_PENDING/QUEUED/RUNNING/AWAITING_REVIEW/COMPLETE/...` |
+| `items[]` | array | `{source,id,status,category,title,question,recommendation,yes_effect,no_effect,cost_of_wait,detail,evidence,depends_on,decision_card_sha256,due,severity,alert,execution_plan}`; der Execution-Plan enthält beide Choice-Previews und `plan_sha256` |
+| `executions[]` | array | terminal entschiedene Karten mit Receipt-/Task-ID, Router-State, Agent, Artefakt, Verdict, normalisiertem Status `HANDOFF_PENDING/QUEUED/RUNNING/AWAITING_REVIEW/COMPLETE/...` und Stage-SLA |
 | `execution_counts` / `execution_open_count` | object / int | Statusverteilung und noch nicht `PASSED` geschlossene Umsetzungen |
+| `router_health` | object | letzter erfolgreicher Receipt-Reconcile, Alter, allgemeine Router-Fehlerfolge und `HEALTHY/DEGRADED/STALE/UNKNOWN`; 10 Minuten Warn- und 30 Minuten Breach-Schwelle |
 | `intake` | object | `{enabled,endpoint,token,mode:"ROUTER_HANDOFF",degraded_reason}`; Token kommt aus der lokalen State-Datei, Endpunkt ist ausschließlich Loopback |
 
 `source ∈ {curated_feed, q12_review_ready, blocked_agent_task}`. `alert` is true
@@ -295,9 +296,18 @@ materialisiert. Ein terminales Receipt (`YES`/`NO`) trägt eine deterministische
 `DECISION_SCOPED_ROUTER_TASK`. Der Intake legt genau diese eine `agent_tasks`-
 Zeile an; der 5-Minuten-Router reconciliert verpasste Handoffs idempotent.
 `DEFERRED` trägt `DEFERRED_NO_HANDOFF` und erzeugt keinen Auftrag.
-`decision_card_sha256` und `selected_effect` binden dabei Frage, Empfehlung und
-beide sichtbaren Folgen an den Entscheidungszeitpunkt; spätere Feed-Drift wird
-beim Handoff fail-closed abgewiesen.
+`decision_card_sha256` bindet Frage, Empfehlung, beide sichtbaren Folgen und
+Abhängigkeiten. `execution_plan.plan_sha256` bindet für JA und NEIN jeweils
+Modus, Impact, erlaubte Schritte, Prüfkriterien und Containment sowie die
+globale Ausführungsgrenze. Der Browser sendet beide im gerenderten HTML
+sichtbaren Hashes; der Intake vergleicht sie mit dem aktuellen Feed/Manifest,
+bevor er ein Receipt schreibt. Eine veraltete Seite oder spätere Drift wird
+damit fail-closed abgewiesen. Der Handoff prüft beide Bindungen erneut.
+
+Die Stage-SLA markiert einen fehlenden Handoff nach 10 Minuten als `BREACH` und
+eine noch nicht zugewiesene Claude-Task nach 10 Minuten als `WARN`, nach 30
+Minuten als `BREACH`. Diese Anzeige beobachtet nur; sie pausiert weder Factory
+noch Router und erzeugt keine zusätzliche Executor-Lane.
 
 Die Ausführungsautorität endet immer an der auf der Karte ausgewiesenen Folge.
 Jedes Receipt setzt `live_execution_authorized=false`,

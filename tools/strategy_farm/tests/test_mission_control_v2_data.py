@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import os
 import sqlite3
 from pathlib import Path
 
@@ -300,6 +301,7 @@ def test_owner_decisions_v2_exposes_prepared_open_items_and_router_handoff(
     assert [row["id"] for row in curated] == ["OWNER-DEC-OPEN-TEST"]
     assert curated[0]["recommendation"] == "JA."
     assert curated[0]["yes_effect"] == "Dokumentiert."
+    assert len(curated[0]["decision_card_sha256"]) == 64
     assert curated[0]["execution_plan"]["ready"] is False
     assert owner["executions"] == []
     assert owner["execution_open_count"] == 0
@@ -310,6 +312,55 @@ def test_owner_decisions_v2_exposes_prepared_open_items_and_router_handoff(
         "mode": "ROUTER_HANDOFF",
         "degraded_reason": None,
     }
+
+
+def test_owner_router_health_distinguishes_reconcile_success_from_router_failure(
+    monkeypatch, tmp_path
+):
+    logs = tmp_path / "logs"
+    logs.mkdir()
+    success = logs / "agent_router_task_success.json"
+    success.write_text(json.dumps({
+        "ok": True,
+        "owner_decision_handoffs": {"ok": True, "receipt_count": 0},
+    }), encoding="utf-8")
+    failure = logs / "agent_router_task_failure.json"
+    failure.write_text(json.dumps({
+        "ok": False,
+        "error": "OperationalError('database is locked')",
+        "owner_decision_handoffs": {"ok": True, "receipt_count": 0},
+    }), encoding="utf-8")
+    os.utime(success, (NOW.timestamp() - 300, NOW.timestamp() - 300))
+    os.utime(failure, (NOW.timestamp() - 60, NOW.timestamp() - 60))
+    monkeypatch.setattr(mc, "AGENT_ROUTER_LOG_DIR", logs)
+
+    health = mc._owner_router_health(now=NOW)
+
+    assert health["state"] == "DEGRADED"
+    assert health["last_reconcile_age_seconds"] == 60
+    assert health["consecutive_router_failures"] == 1
+    assert health["assignment_may_be_delayed"] is True
+    assert "database is locked" in health["latest_error"]
+
+
+def test_execution_sla_breaches_missing_handoff_and_warns_slow_routing():
+    missing = mc._execution_sla({
+        "status": "HANDOFF_PENDING",
+        "decided_at_utc": (NOW - dt.timedelta(seconds=601)).isoformat(),
+        "complete": False,
+    }, now=NOW)
+    queued = mc._execution_sla({
+        "status": "QUEUED",
+        "assigned_agent": None,
+        "decided_at_utc": (NOW - dt.timedelta(seconds=601)).isoformat(),
+        "complete": False,
+    }, now=NOW)
+
+    assert missing == {
+        "stage": "HANDOFF", "state": "BREACH", "age_seconds": 601,
+        "target_seconds": mc.OWNER_HANDOFF_SLA_SEC,
+    }
+    assert queued["stage"] == "ROUTING" and queued["state"] == "WARN"
 
 
 # ---------------------------------------------------------------------------

@@ -33,7 +33,7 @@ WALL_CLOCK_TIMEOUT_SECONDS = 600
 STALE_ROUTER_TAKEOVER_SECONDS = 900
 CREATE_NO_WINDOW = 0x08000000
 
-if str(REPO_ROOT) not in sys.path:
+if __package__ in (None, "") and str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from tools.strategy_farm import agent_router  # noqa: E402
@@ -157,6 +157,10 @@ def main() -> int:
     for row in concurrent:
         takeovers.append({"pid": row["pid"], "killed": _kill_process_tree(row["pid"])})
 
+    decision_handoffs: dict = {
+        "ok": False,
+        "errors": [{"error": "reconcile_not_attempted"}],
+    }
     try:
         try:
             decision_handoffs = owner_decision_execution.reconcile_receipts(apply=True)
@@ -175,7 +179,11 @@ def main() -> int:
         }
         rc = 0
     except Exception as exc:
-        payload = {"ok": False, "error": repr(exc)}
+        payload = {
+            "ok": False,
+            "error": repr(exc),
+            "owner_decision_handoffs": decision_handoffs,
+        }
         rc = 1
     if takeovers:
         payload["stale_router_takeovers"] = takeovers

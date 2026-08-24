@@ -63,10 +63,17 @@ Alles andere ist Drill-down-Link, kein zweiter Zahlenblock.
 `owner_decisions.items` — nur wenn `count > 0`, **ohne künstliche Obergrenze**.
 Jede Karte zeigt stabile ID, Status, Kategorie, genaue Frage, Empfehlung,
 JA-Folge, NEIN-Folge, Cost-of-Wait, Kontext und Evidenz. Danach OWNER-Notiz und
-die drei Aktionen `JA`, `NEIN`, `VERTAGT`. Jede terminale Aktion zeigt vor dem
-POST eine Bestätigung mit der ausgewählten Folge. Unter der Queue zeigt
+die drei Aktionen `JA`, `NEIN`, `VERTAGT`. Suche sowie Kategorie-, Status- und
+Prioritätsfilter wirken ausschließlich auf die Anzeige; Bulk-Entscheidungen gibt
+es bewusst nicht. Abhängigkeiten stehen direkt auf der Karte. Ein aufklappbarer
+JA/NEIN-Plan zeigt vor dem Klick Modus, Impact, erlaubte Schritte,
+Prüfbedingungen und Containment. Jede terminale Aktion wiederholt diese Wirkung
+in der Bestätigung. Karten- und Plan-Hash werden gemeinsam an den Intake
+gesendet; geänderte Quellen erzwingen Reload statt Receipt. Unter der Queue zeigt
 `Entscheidung → Umsetzung` den zugehörigen Auftrag von `HANDOFF_PENDING` über
-`RUNNING`/`AWAITING_REVIEW` bis `COMPLETE`. Der sichtbare Grenztext sagt
+`RUNNING`/`AWAITING_REVIEW` bis `COMPLETE`, einschließlich Stage-SLA. Ein
+separater Router-Health-Streifen macht einen verzögerten 5-Minuten-Reconcile
+sichtbar, ohne Intake-Erreichbarkeit und Claude-Zuweisung gleichzusetzen. Der sichtbare Grenztext sagt
 ausdrücklich: kein direkter Klick-Executor; Folgearbeit läuft nur durch den
 gebundenen Router-Auftrag und seine Abnahme.
 Reine Agent-Queues erscheinen hier nie; ein automatisch entdeckter OWNER-Blocker
@@ -129,6 +136,8 @@ Scheduled-Task-Heartbeats, Live-/FTMO-Narrative, agentische Aktivitätszähler.
 7. Queue-Summen: angezeigte Teilmengen addieren zur Gesamtsumme.
 8. Frontier ist letzter Top-Level-Block, Hauptseite enthält höchstens 30 Paare,
    Drill-down enthält den vollständigen Census.
+9. Veraltete Karten- oder Execution-Plan-Hashes werden vor dem Receipt
+   fail-closed abgewiesen; Router-Reconcile und Umsetzungs-SLA sind sichtbar.
 
 ## Abnahme (aus dem Programm, hier verbindlich)
 Owner sieht jede offene/vertagte Entscheidung samt Empfehlung und Folgen ohne

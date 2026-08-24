@@ -104,6 +104,8 @@ def _receipt(tmp_path: Path, decision: str = "YES") -> tuple[dict, Path, Path, P
     contract = tmp_path / "execution.json"
     _feed(feed)
     _contract(contract)
+    plan_hash = execution.decision_plan_sha256("OWNER-DEC-EXEC-TEST", contract)
+    card_hash = store.decision_card_sha256(store.load_feed(feed)["items"][0])
     vault.write_text(store.render_vault_queue(store.load_feed(feed)), encoding="utf-8")
     receipt = store.record_decision(
         decision_id="OWNER-DEC-EXEC-TEST",
@@ -114,6 +116,8 @@ def _receipt(tmp_path: Path, decision: str = "YES") -> tuple[dict, Path, Path, P
         receipts_path=receipts,
         vault_owner_path=vault,
         decided_at_utc="2026-08-24T09:00:00+00:00",
+        expected_decision_card_sha256=card_hash,
+        execution_plan_sha256=plan_hash,
     )
     return receipt, feed, receipts, contract
 
@@ -141,6 +145,7 @@ def test_terminal_receipt_creates_exactly_one_claude_task(tmp_path: Path) -> Non
     payload = json.loads(row["payload_json"])
     assert payload["operation"] == execution.TASK_OPERATION
     assert payload["target_agent_profile"] == "claude"
+    assert payload["containment"] == execution.MODE_CONTAINMENT["APPLY_AND_VERIFY"]
     assert payload["owner_decision"]["selected_effect"] == receipt["selected_effect"]
     assert payload["authority"] == {
         "scope": "selected_effect_only",
@@ -191,6 +196,26 @@ def test_feed_card_drift_after_receipt_is_refused(tmp_path: Path) -> None:
             root=tmp_path / "farm",
             feed_path=feed_path,
             contract_path=contract,
+            apply=True,
+        )
+    assert not (tmp_path / "farm").exists()
+
+
+def test_execution_plan_drift_after_receipt_is_refused(tmp_path: Path) -> None:
+    receipt, feed_path, _receipts, contract_path = _receipt(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["decisions"][0]["choices"]["YES"]["allowed_actions"] = [
+        "fixture apply",
+        "new authority not shown to OWNER",
+    ]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    with pytest.raises(execution.ExecutionContractError, match="execution plan changed"):
+        execution.handoff_receipt(
+            receipt,
+            root=tmp_path / "farm",
+            feed_path=feed_path,
+            contract_path=contract_path,
             apply=True,
         )
     assert not (tmp_path / "farm").exists()

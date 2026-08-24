@@ -325,6 +325,22 @@ _SEV_COLOR = {
 }
 
 
+def _render_execution_plan_choice(label: str, plan: dict) -> str:
+    if not plan:
+        return '<div class="mc-plan-choice mc-plan-missing">Plan nicht verfuegbar</div>'
+    actions = "".join(f"<li>{e(value)}</li>" for value in (plan.get("allowed_actions") or []))
+    acceptance = "".join(f"<li>{e(value)}</li>" for value in (plan.get("acceptance") or []))
+    return f'''
+          <div class="mc-plan-choice" data-plan-choice="{e(label)}">
+            <div class="mc-plan-head"><b>{e(label)}</b><code>{e(plan.get('mode'))}</code></div>
+            <div class="mc-plan-impact"><b>Impact</b><span>{e(plan.get('impact'))}</span></div>
+            <div><b>Erlaubte Schritte</b><ul>{actions}</ul></div>
+            <div><b>Pruefbedingungen</b><ul>{acceptance}</ul></div>
+            <div class="mc-plan-containment"><b>Rueckweg / Containment</b>
+              <span>{e(plan.get('containment'))}</span></div>
+          </div>'''
+
+
 def _render_owner_decisions(contract: dict) -> str:
     od = contract.get("owner_decisions", {}) or {}
     items = od.get("items") or []
@@ -335,6 +351,11 @@ def _render_owner_decisions(contract: dict) -> str:
     intake = od.get("intake", {}) or {}
     enabled = bool(intake.get("enabled") and intake.get("token"))
     service_disabled = "" if enabled else " disabled"
+    categories = sorted({str(item.get("category") or "DECISION") for item in items})
+    category_options = "".join(
+        f'<option value="{e(category.lower())}">{e(category)}</option>'
+        for category in categories
+    )
     rows = []
     for index, it in enumerate(items):
         sev = str(it.get("severity") or "info").lower()
@@ -352,6 +373,11 @@ def _render_owner_decisions(contract: dict) -> str:
         status = str(it.get("status") or "OPEN").upper()
         execution_plan = it.get("execution_plan") or {}
         execution_ready = bool(execution_plan.get("ready"))
+        plan_hash = str(execution_plan.get("plan_sha256") or "")
+        card_hash = str(it.get("decision_card_sha256") or "")
+        choices = execution_plan.get("choices") or {}
+        yes_plan = choices.get("YES") or {}
+        no_plan = choices.get("NO") or {}
         terminal_disabled = "" if enabled and execution_ready else " disabled"
         plan_badge = (
             '<span class="mc-badge mc-badge-ok">CLAUDE READY</span>'
@@ -363,8 +389,38 @@ def _render_owner_decisions(contract: dict) -> str:
             f'<div class="mc-dec-evidence"><b>Evidenz:</b> {e(evidence)}</div>'
             if evidence else ""
         )
+        dependencies = [str(value) for value in (it.get("depends_on") or [])]
+        dependency_html = (
+            '<div class="mc-dec-deps"><b>Abhaengigkeiten:</b> '
+            + " · ".join(f"<code>{e(value)}</code>" for value in dependencies)
+            + "</div>"
+            if dependencies else
+            '<div class="mc-dec-deps"><b>Abhaengigkeiten:</b> keine</div>'
+        )
+        plan_html = ""
+        if execution_ready:
+            plan_html = f'''
+        <details class="mc-dec-plan">
+          <summary>Claude-Ausfuehrungsplan, Pruefbedingungen und Rueckweg</summary>
+          <div class="mc-plan-grid">
+            {_render_execution_plan_choice('JA', yes_plan)}
+            {_render_execution_plan_choice('NEIN', no_plan)}
+          </div>
+          <div class="mc-plan-hash">Planbindung <code>{e(plan_hash)}</code></div>
+        </details>'''
+        search_text = " ".join(
+            str(value or "") for value in (
+                decision_id, it.get("category"), status, question, recommendation, detail
+            )
+        ).lower()
         rows.append(f'''
-      <article class="mc-dec-row" data-decision-id="{e(decision_id)}">
+      <article class="mc-dec-row" data-decision-id="{e(decision_id)}"
+        data-decision-category="{e(str(it.get('category') or '').lower())}"
+        data-decision-status="{e(status.lower())}"
+        data-decision-severity="{e(sev)}"
+        data-decision-search="{e(search_text)}"
+        data-decision-card-sha256="{e(card_hash)}"
+        data-execution-plan-sha256="{e(plan_hash)}">
         <div class="mc-dec-head">
           <span class="mc-chip" style="color:{col};border-color:{col}">{e(sev.upper())}</span>
           <span class="mc-dec-status">{e(status)}</span>
@@ -382,15 +438,23 @@ def _render_owner_decisions(contract: dict) -> str:
         </div>
         <div class="mc-dec-detail">{e(detail)}</div>
         {evidence_html}
+        {dependency_html}
+        {plan_html}
         <div class="mc-dec-controls">
           <label for="mc-note-{index}">OWNER-Notiz</label>
           <textarea id="mc-note-{index}" maxlength="4000" rows="2"
             placeholder="Optional: Begründung, Bedingung oder Wiedervorlage"{service_disabled}></textarea>
           <div class="mc-dec-buttons">
             <button type="button" data-decision-choice="YES"
-              data-decision-effect="{e(yes_effect)}"{terminal_disabled}>JA</button>
+              data-decision-effect="{e(yes_effect)}"
+              data-plan-mode="{e(yes_plan.get('mode'))}"
+              data-plan-impact="{e(yes_plan.get('impact'))}"
+              data-plan-containment="{e(yes_plan.get('containment'))}"{terminal_disabled}>JA</button>
             <button type="button" data-decision-choice="NO"
-              data-decision-effect="{e(no_effect)}"{terminal_disabled}>NEIN</button>
+              data-decision-effect="{e(no_effect)}"
+              data-plan-mode="{e(no_plan.get('mode'))}"
+              data-plan-impact="{e(no_plan.get('impact'))}"
+              data-plan-containment="{e(no_plan.get('containment'))}"{terminal_disabled}>NEIN</button>
             <button type="button" data-decision-choice="DEFERRED"
               data-decision-effect="Keine Umsetzung; Entscheidung bleibt offen."{service_disabled}>VERTAGT</button>
           </div>
@@ -400,6 +464,13 @@ def _render_owner_decisions(contract: dict) -> str:
     execution_rows = []
     for execution in executions:
         ex_status = str(execution.get("status") or "UNKNOWN")
+        sla = execution.get("sla") or {}
+        sla_state = str(sla.get("state") or "UNKNOWN")
+        sla_colour = (
+            "var(--fail)" if sla_state == "BREACH" else
+            "var(--warn)" if sla_state in {"WARN", "PENDING"} else
+            "var(--pass)" if sla_state == "MET" else "var(--signal)"
+        )
         if execution.get("complete"):
             colour = "var(--pass)"
         elif ex_status in {"FAILED", "BLOCKED", "OPS_FIX_REQUIRED"}:
@@ -413,13 +484,16 @@ def _render_owner_decisions(contract: dict) -> str:
       <article class="mc-exec-row">
         <div class="mc-exec-head">
           <span class="mc-chip" style="color:{colour};border-color:{colour}">{e(ex_status)}</span>
+          <span class="mc-chip" style="color:{sla_colour};border-color:{sla_colour}">
+            SLA {e(sla_state)}</span>
           <code>{e(execution.get('decision_id'))}</code>
           <b>{e(execution.get('decision'))}</b>
           <span>{e(execution.get('assigned_agent') or 'noch nicht geroutet')}</span>
         </div>
         <div class="mc-exec-question">{e(execution.get('question') or '')}</div>
         <div class="mc-exec-meta">Task <code>{e(execution.get('task_id'))}</code> ·
-          State {e(execution.get('task_state') or 'PENDING')} · {e(artifact)}</div>
+          State {e(execution.get('task_state') or 'PENDING')} · Stage {e(sla.get('stage'))} ·
+          Alter {_reltime_from_seconds(sla.get('age_seconds'))} · {e(artifact)}</div>
         <div class="mc-exec-verdict">{e(execution.get('verdict') or '')}</div>
       </article>''')
     execution_html = ""
@@ -441,6 +515,21 @@ def _render_owner_decisions(contract: dict) -> str:
         f'<div class="mc-exbox">Entscheidungsdienst: {e(degraded)}</div>'
         if degraded else ""
     )
+    router = od.get("router_health") or {}
+    router_state = str(router.get("state") or "UNKNOWN")
+    router_colour = (
+        "var(--pass)" if router_state == "HEALTHY" else
+        "var(--warn)" if router_state == "DEGRADED" else "var(--fail)"
+    )
+    router_age = _reltime_from_seconds(router.get("last_reconcile_age_seconds"))
+    router_html = f'''
+    <div class="mc-router-health" style="border-color:{router_colour}">
+      <span class="mc-chip" style="color:{router_colour};border-color:{router_colour}">
+        ROUTER {e(router_state)}</span>
+      <span>Letzter bestaetigter Receipt-Reconcile: {e(router_age)} ·
+        {_int(router.get('consecutive_router_failures'))} allgemeine Router-Fehler in Folge.</span>
+      <span>{"Claude-Zuweisung kann verzoegert sein." if router.get('assignment_may_be_delayed') else "Zuweisungs-SLA im Soll."}</span>
+    </div>'''
     return f'''
   <section class="mc-section mc-decisions" id="owner-decisions"
     data-intake-enabled="{str(enabled).lower()}"
@@ -453,7 +542,25 @@ def _render_owner_decisions(contract: dict) -> str:
       unveränderlichen Receipt genau einen begrenzten Claude-Router-Auftrag. VERTAGT erzeugt
       keinen Auftrag. Der Klick selbst führt nichts an Factory oder Live-Systemen aus; T_Live,
       AutoTrading und Deployments bleiben separat gesperrt.</div>
+    {router_html}
     {degraded_html}
+    <div class="mc-dec-tools" aria-label="Entscheidungen filtern">
+      <input type="search" data-decision-filter-search placeholder="Entscheidungen durchsuchen">
+      <select data-decision-filter-category>
+        <option value="">Alle Kategorien</option>{category_options}
+      </select>
+      <select data-decision-filter-status>
+        <option value="">Alle Status</option>
+        <option value="open">OPEN</option>
+        <option value="deferred">DEFERRED</option>
+      </select>
+      <select data-decision-filter-severity>
+        <option value="">Alle Prioritaeten</option>
+        <option value="alert">ALERT</option><option value="action">ACTION</option>
+        <option value="warn">WARN</option><option value="info">INFO</option>
+      </select>
+      <span data-decision-filter-count>{_int(count)} sichtbar</span>
+    </div>
     <div class="mc-dec-list">
       {''.join(rows)}
     </div>
@@ -963,6 +1070,32 @@ _PAGE_CSS = """
   .mc-dec-boundary{padding:var(--space-3);margin-bottom:var(--space-2);
     border:1px solid var(--warn);font-size:var(--fs-xs);color:var(--text-2)}
   .mc-dec-boundary b{color:var(--warn)}
+  .mc-router-health{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;
+    border:1px solid var(--border);padding:var(--space-3);margin-bottom:var(--space-2);
+    font-size:var(--fs-xs);color:var(--text-2)}
+  .mc-dec-tools{display:grid;grid-template-columns:minmax(220px,1fr) repeat(3,auto) auto;
+    gap:var(--space-2);align-items:center;margin:var(--space-3) 0}
+  .mc-dec-tools input,.mc-dec-tools select{border:1px solid var(--border-2);
+    background:var(--surface-2);color:var(--text);padding:var(--space-2);font:inherit}
+  .mc-dec-tools span{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-3)}
+  .mc-dec-deps{font-size:var(--fs-xs);color:var(--text-3);margin-top:var(--space-2)}
+  .mc-dec-deps b{color:var(--text-2)}
+  .mc-dec-plan{border:1px solid var(--border);margin-top:var(--space-3);padding:var(--space-2)}
+  .mc-dec-plan summary{cursor:pointer;font-family:var(--font-mono);font-size:var(--fs-xs);
+    color:var(--signal);font-weight:700}
+  .mc-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);
+    margin-top:var(--space-3)}
+  .mc-plan-choice{border:1px solid var(--border-2);padding:var(--space-3);
+    font-size:var(--fs-xs);color:var(--text-2)}
+  .mc-plan-head{display:flex;justify-content:space-between;gap:var(--space-2);
+    margin-bottom:var(--space-2)}
+  .mc-plan-choice b{display:block;color:var(--text);margin-bottom:var(--space-1)}
+  .mc-plan-choice ul{margin:var(--space-1) 0 var(--space-2) var(--space-4)}
+  .mc-plan-choice li{margin-bottom:var(--space-1)}
+  .mc-plan-impact,.mc-plan-containment{padding:var(--space-2);background:var(--surface-1);
+    margin-bottom:var(--space-2)}
+  .mc-plan-hash{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-4);
+    margin-top:var(--space-2);overflow-wrap:anywhere}
   .mc-dec-controls{display:grid;grid-template-columns:1fr auto;gap:var(--space-2);
     margin-top:var(--space-3);align-items:end}
   .mc-dec-controls label{grid-column:1/-1;font-family:var(--font-mono);
@@ -982,6 +1115,7 @@ _PAGE_CSS = """
   .mc-dec-result{grid-column:1/-1;font-family:var(--font-mono);font-size:var(--fs-xs);
     color:var(--text-3);min-height:1.2em}
   .mc-dec-row.mc-dec-recorded{border-left:3px solid var(--pass);padding-left:var(--space-3)}
+  .mc-dec-row[hidden]{display:none}
   .mc-exec-block{margin-top:var(--space-5);padding-top:var(--space-4);border-top:1px solid var(--border)}
   .mc-h3{display:flex;justify-content:space-between;gap:var(--space-3);font-weight:700;
     margin-bottom:var(--space-2)}
@@ -1046,6 +1180,8 @@ _PAGE_CSS = """
     .mc-cell{border-right:none}
     .mc-t-grid{grid-template-columns:1fr}
     .mc-dec-effects{grid-template-columns:1fr}
+    .mc-plan-grid{grid-template-columns:1fr}
+    .mc-dec-tools{grid-template-columns:1fr}
     .mc-dec-controls{grid-template-columns:1fr}
     .mc-dec-buttons{flex-wrap:wrap}
     .mc-exec-list{grid-template-columns:1fr}
@@ -1084,6 +1220,11 @@ _DECISION_SCRIPT = """
   var endpoint=root.getAttribute('data-intake-endpoint')||'';
   var token=root.getAttribute('data-intake-token')||'';
   var serviceState=root.querySelector('[data-decision-service-state]');
+  var filterSearch=root.querySelector('[data-decision-filter-search]');
+  var filterCategory=root.querySelector('[data-decision-filter-category]');
+  var filterStatus=root.querySelector('[data-decision-filter-status]');
+  var filterSeverity=root.querySelector('[data-decision-filter-severity]');
+  var filterCount=root.querySelector('[data-decision-filter-count]');
   function requestId(){
     if(window.crypto&&typeof window.crypto.randomUUID==='function')return window.crypto.randomUUID();
     return 'mc-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
@@ -1092,6 +1233,28 @@ _DECISION_SCRIPT = """
     var controls=row.querySelectorAll('button,textarea');
     for(var i=0;i<controls.length;i++)controls[i].disabled=value;
   }
+  function applyDecisionFilters(){
+    var query=(filterSearch&&filterSearch.value||'').trim().toLowerCase();
+    var category=(filterCategory&&filterCategory.value||'').toLowerCase();
+    var status=(filterStatus&&filterStatus.value||'').toLowerCase();
+    var severity=(filterSeverity&&filterSeverity.value||'').toLowerCase();
+    var rows=root.querySelectorAll('.mc-dec-row');
+    var visible=0;
+    for(var i=0;i<rows.length;i++){
+      var row=rows[i];
+      var show=(!query||(row.getAttribute('data-decision-search')||'').indexOf(query)>=0)&&
+        (!category||row.getAttribute('data-decision-category')===category)&&
+        (!status||row.getAttribute('data-decision-status')===status)&&
+        (!severity||row.getAttribute('data-decision-severity')===severity);
+      row.hidden=!show;
+      if(show)visible++;
+    }
+    if(filterCount)filterCount.textContent=visible+' sichtbar';
+  }
+  [filterSearch,filterCategory,filterStatus,filterSeverity].forEach(function(control){
+    if(!control)return;
+    control.addEventListener(control===filterSearch?'input':'change',applyDecisionFilters);
+  });
   if(enabled&&endpoint){
     try{
       var health=new URL('/health',endpoint).toString();
@@ -1116,22 +1279,38 @@ _DECISION_SCRIPT = """
     var note=row.querySelector('textarea');
     var decision=button.getAttribute('data-decision-choice');
     var effect=button.getAttribute('data-decision-effect')||'';
+    var planMode=button.getAttribute('data-plan-mode')||'';
+    var planImpact=button.getAttribute('data-plan-impact')||'';
+    var planContainment=button.getAttribute('data-plan-containment')||'';
+    var cardHash=row.getAttribute('data-decision-card-sha256')||'';
+    var planHash=row.getAttribute('data-execution-plan-sha256')||'';
     var id=row.getAttribute('data-decision-id');
     if(!enabled||!endpoint||!token){
       result.textContent='Dokumentationsdienst ist nicht verbunden.';
       return;
     }
+    if(!/^[0-9a-f]{64}$/.test(cardHash)){
+      result.textContent='Entscheidungskarte ist nicht gebunden; Mission Control neu laden.';
+      return;
+    }
+    if(decision!=='DEFERRED'&&!/^[0-9a-f]{64}$/.test(planHash)){
+      result.textContent='Ausfuehrungsplan ist nicht gebunden; Mission Control neu laden.';
+      return;
+    }
     var handoff=(decision==='DEFERRED')
       ? 'Es wird kein Agent-Auftrag erzeugt.'
       : 'Danach wird genau ein begrenzter Claude-Auftrag erzeugt.';
-    if(!window.confirm(id+' = '+decision+'\n\nFolge: '+effect+'\n\n'+handoff))return;
+    var preview=(decision==='DEFERRED')?'':
+      '\n\nModus: '+planMode+'\nImpact: '+planImpact+'\nRueckweg/Containment: '+planContainment;
+    if(!window.confirm(id+' = '+decision+'\n\nFolge: '+effect+preview+'\n\n'+handoff))return;
     setDisabled(row,true);
     result.textContent='Entscheidung wird receiptiert ...';
     fetch(endpoint+'/'+encodeURIComponent(id),{
       method:'POST',
       cache:'no-store',
       headers:{'Content-Type':'application/json','X-QM-Decision-Token':token},
-      body:JSON.stringify({decision:decision,notes:note?note.value:'',request_id:requestId()})
+      body:JSON.stringify({decision:decision,notes:note?note.value:'',request_id:requestId(),
+        decision_card_sha256:cardHash,execution_plan_sha256:planHash})
     }).then(function(response){
       return response.json().catch(function(){return {};}).then(function(payload){
         if(!response.ok)throw new Error(payload.detail||payload.error||('HTTP '+response.status));

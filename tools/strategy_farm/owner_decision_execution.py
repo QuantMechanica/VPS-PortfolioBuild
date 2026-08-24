@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -29,6 +30,21 @@ DEFAULT_CONTRACT = Path(__file__).resolve().parent / "config" / "owner_decision_
 DEFAULT_ROOT = farmctl.DEFAULT_ROOT
 CANONICAL_REPO = Path(r"C:\QM\repo")
 TERMINAL_CHOICES = frozenset({"YES", "NO"})
+MODE_CONTAINMENT = {
+    "DOCUMENT_AND_VERIFY": (
+        "Nur Dokumentation und Verifikation: Git-Aenderungen koennen per neuem "
+        "Review-Commit korrigiert werden; Runtime, Gates und Live bleiben unveraendert."
+    ),
+    "PREPARE_FOLLOWUP_ONLY": (
+        "Keine operative Mutation: der Entwurf kann verworfen oder durch einen neuen "
+        "OWNER-Entscheid ersetzt werden."
+    ),
+    "APPLY_AND_VERIFY": (
+        "Nicht pauschal reversibel: bei Abweichung sofort abbrechen und nur die im "
+        "Plan erlaubte Wirkung begrenzen; keine bestehende Evidenz loeschen oder "
+        "ueberschreiben. Ein Rueckbau braucht einen neuen evidenzgebundenen Auftrag."
+    ),
+}
 
 
 class ExecutionContractError(RuntimeError):
@@ -78,6 +94,10 @@ def load_contract(path: Path = DEFAULT_CONTRACT) -> dict[str, Any]:
             for key in ("mode", "objective", "allowed_actions", "acceptance"):
                 if not plan.get(key):
                     raise ExecutionContractError(f"{decision_id}/{choice} missing {key}")
+            if plan["mode"] not in MODE_CONTAINMENT:
+                raise ExecutionContractError(
+                    f"{decision_id}/{choice} has unsupported mode {plan['mode']}"
+                )
     return payload
 
 
@@ -98,6 +118,56 @@ def _decision_plan(contract: Mapping[str, Any], decision_id: str, choice: str) -
     return dict(row), dict(plan)
 
 
+def _plan_preview(plan: Mapping[str, Any]) -> dict[str, Any]:
+    mode = str(plan["mode"])
+    return {
+        "mode": mode,
+        "impact": str(plan["objective"]),
+        "allowed_actions": list(plan["allowed_actions"]),
+        "acceptance": list(plan["acceptance"]),
+        "containment": MODE_CONTAINMENT[mode],
+    }
+
+
+def _decision_plan_binding_from_contract(
+    contract: Mapping[str, Any], decision_id: str,
+) -> dict[str, Any]:
+    row = next(
+        (item for item in contract.get("decisions") or [] if item.get("id") == decision_id),
+        None,
+    )
+    if row is None:
+        raise ExecutionContractError(f"no execution plan for {decision_id}")
+    return {
+        "schema": contract["schema"],
+        "agent": contract["agent"],
+        "task_type": contract["task_type"],
+        "budget_class": contract["budget_class"],
+        "required_capabilities": list(contract["required_capabilities"]),
+        "required_skills": list(contract.get("required_skills") or []),
+        "global_forbidden_actions": list(contract["global_forbidden_actions"]),
+        "decision_id": row["id"],
+        "todo_id": row["todo_id"],
+        "priority": int(row.get("priority") or contract["default_priority"]),
+        "choices": {
+            choice: _plan_preview(row["choices"][choice])
+            for choice in sorted(TERMINAL_CHOICES)
+        },
+    }
+
+
+def decision_plan_binding(
+    decision_id: str, contract_path: Path = DEFAULT_CONTRACT,
+) -> dict[str, Any]:
+    return _decision_plan_binding_from_contract(load_contract(contract_path), decision_id)
+
+
+def decision_plan_sha256(
+    decision_id: str, contract_path: Path = DEFAULT_CONTRACT,
+) -> str:
+    return store.sha256_bytes(store.canonical_bytes(decision_plan_binding(decision_id, contract_path)))
+
+
 def plan_summary(decision_id: str, contract_path: Path = DEFAULT_CONTRACT) -> dict[str, Any]:
     try:
         contract = load_contract(contract_path)
@@ -107,6 +177,7 @@ def plan_summary(decision_id: str, contract_path: Path = DEFAULT_CONTRACT) -> di
         )
         if row is None:
             return {"ready": False, "agent": "claude", "reason": "execution_plan_missing"}
+        binding = _decision_plan_binding_from_contract(contract, decision_id)
         return {
             "ready": True,
             "agent": "claude",
@@ -114,6 +185,8 @@ def plan_summary(decision_id: str, contract_path: Path = DEFAULT_CONTRACT) -> di
             "todo_id": row["todo_id"],
             "yes_mode": row["choices"]["YES"]["mode"],
             "no_mode": row["choices"]["NO"]["mode"],
+            "plan_sha256": store.sha256_bytes(store.canonical_bytes(binding)),
+            "choices": binding["choices"],
             "boundary": "DECISION_SCOPED_ROUTER_TASK",
         }
     except ExecutionContractError as exc:
@@ -139,6 +212,8 @@ def _validate_receipt(receipt: Mapping[str, Any]) -> None:
         raise ExecutionContractError("receipt does not authorize an agent handoff")
     if receipt.get("execution_boundary") != "DECISION_SCOPED_ROUTER_TASK":
         raise ExecutionContractError("receipt execution boundary is not router-scoped")
+    if not re.fullmatch(r"[0-9a-f]{64}", str(receipt.get("execution_plan_sha256") or "")):
+        raise ExecutionContractError("receipt has no valid execution-plan binding")
     if receipt.get("live_execution_authorized") is not False:
         raise ExecutionContractError("receipt must explicitly deny live execution")
     expected_task = store.execution_task_id(str(receipt.get("receipt_id") or ""))
@@ -188,6 +263,11 @@ def build_task(
     choice = str(receipt["decision"])
     item = _feed_item(feed, decision_id)
     contract_row, plan = _decision_plan(contract, decision_id, choice)
+    expected_plan_hash = store.sha256_bytes(
+        store.canonical_bytes(_decision_plan_binding_from_contract(contract, decision_id))
+    )
+    if receipt.get("execution_plan_sha256") != expected_plan_hash:
+        raise ExecutionContractError("OWNER-visible execution plan changed after receipt")
     selected_effect = _validate_card_binding(receipt, item)
     expected_artifact = _artifact_path(receipt)
     payload = {
@@ -208,6 +288,7 @@ def build_task(
         },
         "implementation_mode": plan["mode"],
         "objective": plan["objective"],
+        "containment": MODE_CONTAINMENT[plan["mode"]],
         "allowed_actions": list(plan["allowed_actions"]),
         "forbidden_actions": list(contract["global_forbidden_actions"]),
         "acceptance": list(plan["acceptance"]),

@@ -69,6 +69,7 @@ def make_handler(
     receipts_path: Path = store.DEFAULT_RECEIPTS,
     vault_owner_path: Path = store.DEFAULT_VAULT_OWNER,
     handoff_fn: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+    plan_hash_fn: Callable[[str], str] = execution.decision_plan_sha256,
 ) -> type[BaseHTTPRequestHandler]:
     service_mode = "ROUTER_HANDOFF" if handoff_fn is not None else "DOCUMENT_ONLY"
 
@@ -161,14 +162,35 @@ def make_handler(
                 body = json.loads(self.rfile.read(length).decode("utf-8"))
                 if not isinstance(body, dict):
                     raise ValueError("body must be an object")
+                decision = str(body.get("decision") or "").strip().upper()
+                supplied_card_hash = str(
+                    body.get("decision_card_sha256") or ""
+                ).strip()
+                supplied_plan_hash = str(body.get("execution_plan_sha256") or "").strip()
+                if decision in {"YES", "NO"}:
+                    current_plan_hash = plan_hash_fn(match.group(1))
+                    if not hmac.compare_digest(supplied_plan_hash, current_plan_hash):
+                        self._json(
+                            HTTPStatus.CONFLICT,
+                            {
+                                "ok": False,
+                                "error": "execution_plan_changed",
+                                "detail": "Mission Control neu laden; der sichtbare Ausfuehrungsplan hat sich geaendert.",
+                            },
+                        )
+                        return
                 receipt = store.record_decision(
                     decision_id=match.group(1),
-                    decision=str(body.get("decision") or ""),
+                    decision=decision,
                     notes=str(body.get("notes") or ""),
                     request_id=str(body.get("request_id") or ""),
                     feed_path=feed_path,
                     receipts_path=receipts_path,
                     vault_owner_path=vault_owner_path,
+                    expected_decision_card_sha256=supplied_card_hash,
+                    execution_plan_sha256=(
+                        supplied_plan_hash if decision in {"YES", "NO"} else None
+                    ),
                 )
             except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
                 self._json(
@@ -180,6 +202,12 @@ def make_handler(
                 self._json(
                     HTTPStatus.CONFLICT,
                     {"ok": False, "error": "decision_conflict", "detail": str(exc)},
+                )
+                return
+            except execution.ExecutionContractError as exc:
+                self._json(
+                    HTTPStatus.CONFLICT,
+                    {"ok": False, "error": "execution_plan_unavailable", "detail": str(exc)},
                 )
                 return
             except store.DecisionStoreError as exc:
@@ -225,6 +253,7 @@ def make_handler(
                     "execution_authorized": receipt["execution_authorized"],
                     "execution_boundary": receipt["execution_boundary"],
                     "execution_task_id": receipt.get("execution_task_id"),
+                    "execution_plan_sha256": receipt.get("execution_plan_sha256"),
                     "handoff_state": handoff["state"],
                     "handoff_created": bool(handoff.get("created")),
                 },
@@ -242,6 +271,7 @@ def build_server(
     receipts_path: Path = store.DEFAULT_RECEIPTS,
     vault_owner_path: Path = store.DEFAULT_VAULT_OWNER,
     handoff_fn: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+    plan_hash_fn: Callable[[str], str] = execution.decision_plan_sha256,
 ) -> ThreadingHTTPServer:
     if host not in {"127.0.0.1", "::1", "localhost"}:
         raise store.DecisionStoreError("decision service may bind only to loopback")
@@ -251,6 +281,7 @@ def build_server(
         receipts_path=receipts_path,
         vault_owner_path=vault_owner_path,
         handoff_fn=handoff_fn,
+        plan_hash_fn=plan_hash_fn,
     )
     server = ThreadingHTTPServer((host, port), handler)
     server.daemon_threads = True

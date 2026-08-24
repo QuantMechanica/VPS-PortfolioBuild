@@ -13,6 +13,7 @@ import argparse
 import contextlib
 import datetime as dt
 import hashlib
+import hmac
 import json
 import os
 import re
@@ -78,7 +79,7 @@ def execution_task_id(receipt_id: str) -> str:
     return str(uuid.uuid5(uuid.NAMESPACE_URL, f"qm.owner-decision-execution:{token}"))
 
 
-def decision_card_binding(item: Mapping[str, Any]) -> dict[str, str]:
+def decision_card_binding(item: Mapping[str, Any]) -> dict[str, Any]:
     """Return the immutable OWNER-visible fields that authorize a follow-up."""
 
     return {
@@ -87,6 +88,7 @@ def decision_card_binding(item: Mapping[str, Any]) -> dict[str, str]:
         "recommendation": str(item.get("recommendation") or ""),
         "yes_effect": str(item.get("yes_effect") or ""),
         "no_effect": str(item.get("no_effect") or ""),
+        "depends_on": sorted(str(value) for value in (item.get("depends_on") or [])),
     }
 
 
@@ -117,6 +119,11 @@ def _validate_item(item: Mapping[str, Any]) -> None:
     evidence = item.get("evidence") or []
     if not isinstance(evidence, list) or not all(isinstance(value, str) for value in evidence):
         raise DecisionStoreError(f"invalid evidence list for {item_id}")
+    dependencies = item.get("depends_on") or []
+    if not isinstance(dependencies, list) or not all(
+        isinstance(value, str) for value in dependencies
+    ):
+        raise DecisionStoreError(f"invalid dependency list for {item_id}")
 
 
 def validate_feed(feed: Mapping[str, Any]) -> None:
@@ -138,6 +145,16 @@ def validate_feed(feed: Mapping[str, Any]) -> None:
         if item_id in seen:
             raise DecisionStoreError(f"duplicate decision id: {item_id}")
         seen.add(item_id)
+    for item in items:
+        item_id = str(item["id"])
+        dependencies = list(item.get("depends_on") or [])
+        if item_id in dependencies:
+            raise DecisionStoreError(f"decision cannot depend on itself: {item_id}")
+        unknown = sorted(set(dependencies) - seen)
+        if unknown:
+            raise DecisionStoreError(
+                f"decision {item_id} has unknown dependencies: {', '.join(unknown)}"
+            )
 
 
 def load_feed(path: Path = DEFAULT_FEED) -> dict[str, Any]:
@@ -242,6 +259,12 @@ def render_vault_queue(feed: Mapping[str, Any]) -> str:
         evidence = item.get("evidence") or []
         if evidence:
             rows.append("  - Evidenz: " + " · ".join(f"`{_markdown_text(x)}`" for x in evidence))
+        dependencies = item.get("depends_on") or []
+        if dependencies:
+            rows.append(
+                "  - Abhaengig von: "
+                + " · ".join(f"`{_markdown_text(x)}`" for x in dependencies)
+            )
         rows.append("")
     rows.append(VAULT_QUEUE_END)
     return "\n".join(rows)
@@ -372,6 +395,7 @@ def _archive_receipt(vault_owner_path: Path, receipt: Mapping[str, Any]) -> None
         f"- OWNER-Entscheidung: **{choice}**",
         f"- Ausgewaehlte Folge: {_markdown_text(receipt.get('selected_effect')) or 'keine'}",
         f"- Kartenbindung SHA-256: `{receipt.get('decision_card_sha256') or 'legacy'}`",
+        f"- Ausfuehrungsplan SHA-256: `{receipt.get('execution_plan_sha256') or 'keiner'}`",
         f"- Notiz: {_markdown_text(receipt['notes']) or '—'}",
         followup,
         "- Ausfuehrungsgrenze: nur die ausgewaehlte Kartenfolge; kein T_Live, "
@@ -391,6 +415,8 @@ def record_decision(
     receipts_path: Path = DEFAULT_RECEIPTS,
     vault_owner_path: Path = DEFAULT_VAULT_OWNER,
     decided_at_utc: str | None = None,
+    expected_decision_card_sha256: str | None = None,
+    execution_plan_sha256: str | None = None,
 ) -> dict[str, Any]:
     decision_id = str(decision_id).strip().upper()
     decision = str(decision).strip().upper()
@@ -402,6 +428,12 @@ def record_decision(
         raise DecisionStoreError("request_id must be 8-128 safe characters")
     if len(notes) > 4000:
         raise DecisionStoreError("notes exceed 4000 characters")
+    card_hash = str(expected_decision_card_sha256 or "").strip()
+    if not re.fullmatch(r"[0-9a-f]{64}", card_hash):
+        raise DecisionStoreError("decision requires the displayed card binding")
+    plan_hash = str(execution_plan_sha256 or "").strip()
+    if decision in {"YES", "NO"} and not re.fullmatch(r"[0-9a-f]{64}", plan_hash):
+        raise DecisionStoreError("terminal decision requires a bound execution plan")
 
     with exclusive_store_lock(feed_path):
         receipts = load_receipts(receipts_path)
@@ -421,6 +453,10 @@ def record_decision(
         item = next((row for row in feed["items"] if row["id"] == decision_id), None)
         if item is None:
             raise DecisionStoreError(f"unknown decision id: {decision_id}")
+        if not hmac.compare_digest(card_hash, decision_card_sha256(item)):
+            raise DecisionConflict(
+                "OWNER-visible decision card changed; reload Mission Control"
+            )
         if str(item["status"]).upper() == "DECIDED":
             raise DecisionConflict(f"decision is already terminal: {decision_id}")
         at = decided_at_utc or utc_now()
@@ -443,7 +479,8 @@ def record_decision(
             "question": str(item["question"]),
             "recommendation": str(item["recommendation"]),
             "selected_effect": selected_effect,
-            "decision_card_sha256": decision_card_sha256(item),
+            "decision_card_sha256": card_hash,
+            "execution_plan_sha256": plan_hash if terminal else None,
             "execution_authorized": terminal,
             "execution_handoff_authorized": terminal,
             "execution_task_id": execution_task_id(receipt_id) if terminal else None,

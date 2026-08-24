@@ -91,9 +91,22 @@ def make_contract(*, factory_state="NOMINAL", n_decisions=3,
          "yes_effect": f"yes {i}", "no_effect": f"no {i}",
          "cost_of_wait": f"wait {i}", "evidence": [f"evidence-{i}.md"],
          "detail": f"detail {i}", "due": "2026-08-25",
+         "depends_on": (["OWNER-DEC-TEST-00"] if i == 2 else []),
+         "decision_card_sha256": f"{i + 100:064x}",
          "execution_plan": {"ready": True, "agent": "claude",
+                            "plan_sha256": f"{i:064x}",
                             "yes_mode": "APPLY_AND_VERIFY",
-                            "no_mode": "DOCUMENT_AND_VERIFY"},
+                            "no_mode": "DOCUMENT_AND_VERIFY",
+                            "choices": {
+                                "YES": {"mode": "APPLY_AND_VERIFY", "impact": f"impact yes {i}",
+                                        "allowed_actions": [f"action yes {i}"],
+                                        "acceptance": [f"check yes {i}"],
+                                        "containment": f"contain yes {i}"},
+                                "NO": {"mode": "DOCUMENT_AND_VERIFY", "impact": f"impact no {i}",
+                                       "allowed_actions": [f"action no {i}"],
+                                       "acceptance": [f"check no {i}"],
+                                       "containment": f"contain no {i}"},
+                            }},
          "severity": ("alert" if i % 2 == 0 else "info"),
          "alert": (i % 2 == 0)}
         for i in range(n_decisions)
@@ -206,6 +219,14 @@ def make_contract(*, factory_state="NOMINAL", n_decisions=3,
             "executions": [],
             "execution_counts": {},
             "execution_open_count": 0,
+            "router_health": {
+                "state": "DEGRADED", "latest_log_at_utc": "2026-08-21T13:55:00+00:00",
+                "latest_log_ok": False, "latest_error": "database is locked",
+                "last_reconcile_ok_at_utc": "2026-08-21T13:50:00+00:00",
+                "last_reconcile_age_seconds": 600, "consecutive_router_failures": 2,
+                "assignment_may_be_delayed": True, "warn_after_seconds": 600,
+                "breach_after_seconds": 1800, "source": "fixture",
+            },
             "intake": {
                 "enabled": True,
                 "endpoint": "http://127.0.0.1:8765/v1/decisions",
@@ -291,6 +312,29 @@ def test_decision_queue_renders_all_items_without_five_cap():
         assert f"OWNER-DEC-TEST-{i:02d}" in html
 
 
+def test_decision_filters_and_bound_impact_containment_preview_are_rendered():
+    html = r.render(make_contract(n_decisions=4))
+    assert "data-decision-filter-search" in html
+    assert "data-decision-filter-category" in html
+    assert "data-decision-filter-status" in html
+    assert "data-decision-filter-severity" in html
+    assert "Claude-Ausfuehrungsplan, Pruefbedingungen und Rueckweg" in html
+    assert "Impact" in html and "Rueckweg / Containment" in html
+    assert 'data-decision-card-sha256="' in html
+    assert 'data-execution-plan-sha256="' in html
+    assert "decision_card_sha256:cardHash" in html
+    assert "execution_plan_sha256:planHash" in html
+    assert "Abhaengigkeiten:" in html and "OWNER-DEC-TEST-00" in html
+    assert "bulk" not in html.lower()
+
+
+def test_router_reconcile_health_is_visible_without_claiming_intake_outage():
+    html = r.render(make_contract())
+    assert "ROUTER DEGRADED" in html
+    assert "Letzter bestaetigter Receipt-Reconcile" in html
+    assert "Claude-Zuweisung kann verzoegert sein" in html
+
+
 # ---------------------------------------------------------------------------
 # 5. STALE badge for staleness=STALE and for --from-json
 # ---------------------------------------------------------------------------
@@ -339,6 +383,8 @@ def test_decision_execution_tracker_is_visible():
         "verdict": None,
         "updated_at": "2026-08-24T09:01:00+00:00",
         "complete": False,
+        "sla": {"stage": "EXECUTION", "state": "ACTIVE",
+                "age_seconds": 3600, "target_seconds": None},
     }]
     contract["owner_decisions"]["execution_counts"] = {"RUNNING": 1}
     contract["owner_decisions"]["execution_open_count"] = 1
@@ -347,6 +393,7 @@ def test_decision_execution_tracker_is_visible():
     assert "Entscheidung → Umsetzung" in html
     assert "OWNER-DEC-DONE-01" in html
     assert "task-1" in html and "IN_PROGRESS" in html
+    assert "SLA ACTIVE" in html and "Stage EXECUTION" in html
 
 
 def test_active_risk_freeze_is_visible_with_baseline_current_and_lift_conditions():

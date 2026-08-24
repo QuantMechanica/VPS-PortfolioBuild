@@ -7,6 +7,8 @@ import pytest
 
 from tools.strategy_farm import owner_decision_store as store
 
+PLAN_HASH = "b" * 64
+
 
 def _seed(path: Path) -> None:
     path.write_text(
@@ -43,6 +45,7 @@ def _seed(path: Path) -> None:
                         "cost_of_wait": "Keiner.",
                         "detail": "Kontext",
                         "evidence": [],
+                        "depends_on": ["OWNER-DEC-TEST-ONE"],
                         "due": "EVENT:READY",
                         "severity": "info",
                         "created_at_utc": "2026-08-24T00:00:00Z",
@@ -53,6 +56,11 @@ def _seed(path: Path) -> None:
         ),
         encoding="utf-8",
     )
+
+
+def _card_hash(path: Path, decision_id: str) -> str:
+    item = next(row for row in store.load_feed(path)["items"] if row["id"] == decision_id)
+    return store.decision_card_sha256(item)
 
 
 def _legacy_feed(path: Path) -> None:
@@ -178,6 +186,8 @@ def test_record_decision_is_receipted_idempotent_and_router_scoped(tmp_path: Pat
         "# OWNER\n\n" + store.render_vault_queue(store.load_feed(feed)) + "\n",
         encoding="utf-8",
     )
+    one_card_hash = _card_hash(feed, "OWNER-DEC-TEST-ONE")
+    two_card_hash = _card_hash(feed, "OWNER-DEC-TEST-TWO")
 
     receipt = store.record_decision(
         decision_id="OWNER-DEC-TEST-ONE",
@@ -188,6 +198,8 @@ def test_record_decision_is_receipted_idempotent_and_router_scoped(tmp_path: Pat
         receipts_path=receipts,
         vault_owner_path=vault,
         decided_at_utc="2026-08-24T08:00:00+00:00",
+        expected_decision_card_sha256=one_card_hash,
+        execution_plan_sha256=PLAN_HASH,
     )
     assert receipt["execution_authorized"] is True
     assert receipt["execution_handoff_authorized"] is True
@@ -195,12 +207,13 @@ def test_record_decision_is_receipted_idempotent_and_router_scoped(tmp_path: Pat
     assert receipt["execution_task_id"] == store.execution_task_id(receipt["receipt_id"])
     assert receipt["selected_effect"] == "Freigabe dokumentiert."
     assert receipt["decision_card_sha256"]
+    assert receipt["execution_plan_sha256"] == PLAN_HASH
     assert receipt["live_execution_authorized"] is False
     decided = next(item for item in store.load_feed(feed)["items"] if item["id"].endswith("ONE"))
     assert decided["status"] == "DECIDED"
-    assert "OWNER-DEC-TEST-ONE" not in vault.read_text(encoding="utf-8").split(
-        store.VAULT_QUEUE_END
-    )[0]
+    open_vault_queue = vault.read_text(encoding="utf-8").split(store.VAULT_QUEUE_END)[0]
+    assert "- [ ] @OWNER `OWNER-DEC-TEST-ONE`" not in open_vault_queue
+    assert "Abhaengig von: `OWNER-DEC-TEST-ONE`" in open_vault_queue
     archive = vault.parent / "Archive" / "Entscheidungen 2026-08-24.md"
     assert receipt["receipt_id"] in archive.read_text(encoding="utf-8")
     assert len(receipts.read_text(encoding="utf-8").splitlines()) == 1
@@ -213,6 +226,8 @@ def test_record_decision_is_receipted_idempotent_and_router_scoped(tmp_path: Pat
         feed_path=feed,
         receipts_path=receipts,
         vault_owner_path=vault,
+        expected_decision_card_sha256=one_card_hash,
+        execution_plan_sha256=PLAN_HASH,
     )
     assert repeated["receipt_id"] == receipt["receipt_id"]
     assert len(receipts.read_text(encoding="utf-8").splitlines()) == 1
@@ -225,6 +240,8 @@ def test_record_decision_is_receipted_idempotent_and_router_scoped(tmp_path: Pat
         feed_path=feed,
         receipts_path=receipts,
         vault_owner_path=vault,
+        expected_decision_card_sha256=two_card_hash,
+        execution_plan_sha256=PLAN_HASH,
         decided_at_utc="2026-08-24T08:01:00+00:00",
     )
     assert deferred["decision"] == "DEFERRED"
@@ -242,6 +259,7 @@ def test_terminal_decision_cannot_be_overwritten(tmp_path: Path) -> None:
     vault = tmp_path / "OWNER.md"
     _seed(feed)
     vault.write_text(store.render_vault_queue(store.load_feed(feed)), encoding="utf-8")
+    card_hash = _card_hash(feed, "OWNER-DEC-TEST-ONE")
     store.record_decision(
         decision_id="OWNER-DEC-TEST-ONE",
         decision="NO",
@@ -250,6 +268,8 @@ def test_terminal_decision_cannot_be_overwritten(tmp_path: Path) -> None:
         feed_path=feed,
         receipts_path=receipts,
         vault_owner_path=vault,
+        expected_decision_card_sha256=card_hash,
+        execution_plan_sha256=PLAN_HASH,
     )
     with pytest.raises(store.DecisionConflict, match="already terminal"):
         store.record_decision(
@@ -260,4 +280,53 @@ def test_terminal_decision_cannot_be_overwritten(tmp_path: Path) -> None:
             feed_path=feed,
             receipts_path=receipts,
             vault_owner_path=vault,
+            expected_decision_card_sha256=card_hash,
+            execution_plan_sha256=PLAN_HASH,
         )
+
+
+def test_terminal_decision_requires_execution_plan_binding(tmp_path: Path) -> None:
+    feed = tmp_path / "owner_decisions.json"
+    receipts = tmp_path / "receipts.jsonl"
+    vault = tmp_path / "OWNER.md"
+    _seed(feed)
+    vault.write_text(store.render_vault_queue(store.load_feed(feed)), encoding="utf-8")
+    card_hash = _card_hash(feed, "OWNER-DEC-TEST-ONE")
+
+    with pytest.raises(store.DecisionStoreError, match="bound execution plan"):
+        store.record_decision(
+            decision_id="OWNER-DEC-TEST-ONE",
+            decision="YES",
+            notes="",
+            request_id="request-2001",
+            feed_path=feed,
+            receipts_path=receipts,
+            vault_owner_path=vault,
+            expected_decision_card_sha256=card_hash,
+        )
+
+
+def test_changed_displayed_card_is_refused(tmp_path: Path) -> None:
+    feed = tmp_path / "owner_decisions.json"
+    receipts = tmp_path / "receipts.jsonl"
+    vault = tmp_path / "OWNER.md"
+    _seed(feed)
+    vault.write_text(store.render_vault_queue(store.load_feed(feed)), encoding="utf-8")
+    stale_hash = _card_hash(feed, "OWNER-DEC-TEST-ONE")
+    payload = store.load_feed(feed)
+    payload["items"][0]["yes_effect"] = "Changed after the dashboard was rendered."
+    feed.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(store.DecisionConflict, match="decision card changed"):
+        store.record_decision(
+            decision_id="OWNER-DEC-TEST-ONE",
+            decision="YES",
+            notes="",
+            request_id="request-3001",
+            feed_path=feed,
+            receipts_path=receipts,
+            vault_owner_path=vault,
+            expected_decision_card_sha256=stale_hash,
+            execution_plan_sha256=PLAN_HASH,
+        )
+    assert not receipts.exists()

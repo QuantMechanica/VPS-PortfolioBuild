@@ -83,3 +83,23 @@ Factory workers.
 No live OWNER answer was fabricated for rollout. Consequently no production
 execution task exists yet; the first real `YES`/`NO` click will create it.
 Factory workers, T1-T10, T_Live and AutoTrading were not changed or interrupted.
+
+## Lean control-surface follow-up
+
+OWNER authorized a narrow continuation without a second executor or bulk
+approval surface. Mission Control now adds:
+
+- search plus category/status/severity filters and explicit decision dependencies;
+- a collapsed JA/NEIN preview of mode, impact, allowed actions, acceptance and
+  containment;
+- browser-to-intake compare-and-swap bindings for both the displayed decision
+  card and execution plan, with a second validation at handoff;
+- per-execution handoff/routing SLA and router-reconcile health sourced read-only
+  from the existing five-minute router logs.
+
+The wrapper retains a successful OWNER receipt reconcile in its log even when
+the broader router tick later loses SQLite contention. This changes telemetry,
+not scheduling or Factory concurrency. Focused verification before canonical
+rollout: `38 passed, 1 skipped`; generated production-shaped preview: six open
+cards, six bound Claude plans, 30 frontier preview rows, full census only in the
+existing drill-down. No production decision was submitted during verification.

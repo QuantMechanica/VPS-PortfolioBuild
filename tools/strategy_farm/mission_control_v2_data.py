@@ -86,6 +86,7 @@ FACTORY_ON_CEREMONY_INCOMPLETE = ROOT / "state" / "FACTORY_ON_CEREMONY_INCOMPLET
 OWNER_DECISIONS_FILE = REPORTS_STATE / "owner_decisions.json"
 OWNER_DECISION_TOKEN_FILE = ROOT / "state" / "owner_decision_intake_token.txt"
 OWNER_DECISION_INTAKE_ENDPOINT = "http://127.0.0.1:8765/v1/decisions"
+AGENT_ROUTER_LOG_DIR = ROOT / "logs"
 EA_REGISTRY = REPO / "framework" / "registry" / "ea_id_registry.csv"
 
 # Terminal fleet is fixed at T1..T10 (T_Live is C:\ and never a factory slot).
@@ -110,6 +111,9 @@ MT5_TESTER_PHASES = frozenset(
 SLA_HEALTH_SEC = 20 * 60          # health.json: farmctl health runs /15 min
 SLA_OWNER_DECISIONS_SEC = 48 * 3600  # curated feed, hand-maintained; lenient
 SLA_RESERVATIONS_SEC = 30 * 60    # reservation file rewritten on each claim cycle
+OWNER_HANDOFF_SLA_SEC = 10 * 60   # direct handoff + one five-minute recovery tick
+OWNER_ROUTING_WARN_SEC = 10 * 60
+OWNER_ROUTING_BREACH_SEC = 30 * 60
 
 # Throughput sampling window for the ETA-to-empty forecast.
 ETA_THROUGHPUT_WINDOW_HOURS = 24
@@ -153,6 +157,107 @@ def _file_mtime_iso(path: Path) -> str | None:
     except OSError:
         return None
     return None
+
+
+def _owner_router_health(*, now: dt.datetime) -> dict[str, Any]:
+    """Read-only health of the OWNER reconciler embedded in router logs."""
+
+    observations: list[dict[str, Any]] = []
+    try:
+        paths = sorted(
+            AGENT_ROUTER_LOG_DIR.glob("agent_router_task_*.json"),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )[:96]
+    except OSError:
+        paths = []
+    for path in paths:
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8-sig"))
+            observed_at = dt.datetime.fromtimestamp(path.stat().st_mtime, dt.timezone.utc)
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        reconcile = payload.get("owner_decision_handoffs")
+        observations.append({
+            "observed_at": observed_at,
+            "router_ok": payload.get("ok") is True,
+            "reconcile_ok": bool(
+                isinstance(reconcile, dict) and reconcile.get("ok") is True
+            ),
+            "error": str(payload.get("error") or "") or None,
+        })
+
+    latest = observations[0] if observations else None
+    last_reconcile = next((row for row in observations if row["reconcile_ok"]), None)
+    reconcile_age = (
+        max(0, int((now - last_reconcile["observed_at"]).total_seconds()))
+        if last_reconcile else None
+    )
+    consecutive_failures = 0
+    for row in observations:
+        if row["router_ok"]:
+            break
+        consecutive_failures += 1
+
+    if last_reconcile is None:
+        state = "UNKNOWN"
+    elif reconcile_age is not None and reconcile_age > OWNER_ROUTING_BREACH_SEC:
+        state = "STALE"
+    elif latest and (not latest["router_ok"] or not latest["reconcile_ok"]):
+        state = "DEGRADED"
+    elif reconcile_age is not None and reconcile_age > OWNER_ROUTING_WARN_SEC:
+        state = "DEGRADED"
+    else:
+        state = "HEALTHY"
+    return {
+        "state": state,
+        "latest_log_at_utc": _iso(latest["observed_at"]) if latest else None,
+        "latest_log_ok": latest["router_ok"] if latest else None,
+        "latest_error": latest["error"] if latest else "no router log found",
+        "last_reconcile_ok_at_utc": (
+            _iso(last_reconcile["observed_at"]) if last_reconcile else None
+        ),
+        "last_reconcile_age_seconds": reconcile_age,
+        "consecutive_router_failures": consecutive_failures,
+        "assignment_may_be_delayed": state != "HEALTHY",
+        "warn_after_seconds": OWNER_ROUTING_WARN_SEC,
+        "breach_after_seconds": OWNER_ROUTING_BREACH_SEC,
+        "source": str(AGENT_ROUTER_LOG_DIR / "agent_router_task_*.json"),
+    }
+
+
+def _execution_sla(row: dict[str, Any], *, now: dt.datetime) -> dict[str, Any]:
+    decided_at = _parse_iso(str(row.get("decided_at_utc") or ""))
+    age = max(0, int((now - decided_at).total_seconds())) if decided_at else None
+    status = str(row.get("status") or "UNKNOWN")
+    assigned = bool(row.get("assigned_agent"))
+    if row.get("complete"):
+        stage, state, target = "COMPLETE", "MET", None
+    elif status == "HANDOFF_PENDING":
+        stage, target = "HANDOFF", OWNER_HANDOFF_SLA_SEC
+        state = "BREACH" if age is None or age > target else "PENDING"
+    elif status == "QUEUED" and not assigned:
+        stage, target = "ROUTING", OWNER_ROUTING_BREACH_SEC
+        if age is None or age > target:
+            state = "BREACH"
+        elif age > OWNER_ROUTING_WARN_SEC:
+            state = "WARN"
+        else:
+            state = "PENDING"
+    elif status in {"FAILED", "BLOCKED", "OPS_FIX_REQUIRED"}:
+        stage, state, target = "EXCEPTION", "BREACH", None
+    elif status == "AWAITING_REVIEW":
+        stage, state, target = "REVIEW", "ACTIVE", None
+    else:
+        stage, state, target = "EXECUTION", "ACTIVE", None
+    return {
+        "stage": stage,
+        "state": state,
+        "age_seconds": age,
+        "target_seconds": target,
+    }
 
 
 def _staleness(age_sec: int | None, sla_sec: int) -> str:
@@ -711,6 +816,7 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
                     "cost_of_wait": str(item.get("cost_of_wait") or ""),
                     "detail": str(item.get("detail") or ""),
                     "evidence": list(item.get("evidence") or []),
+                    "depends_on": list(item.get("depends_on") or []),
                     "due": str(item.get("due") or "") or None,
                     "severity": sev,
                     "alert": sev in ("alert", "action"),
@@ -745,6 +851,7 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
                     "cost_of_wait": "Im Legacy-Vertrag nicht belastbar angegeben.",
                     "detail": detail,
                     "evidence": [],
+                    "depends_on": [],
                     "due": str(item.get("due") or "") or None,
                     "severity": sev or "info",
                     "alert": sev in ("alert", "action"),
@@ -776,6 +883,7 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
             "cost_of_wait": "Buchaufnahme wartet; die Factory läuft weiter.",
             "detail": "portfolio admission is an OWNER gate",
             "evidence": [],
+            "depends_on": [],
             "due": None,
             "severity": "info",
             "alert": False,
@@ -818,12 +926,16 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
             "cost_of_wait": "Der einzelne Auftrag bleibt blockiert; die Factory läuft weiter.",
             "detail": v[:200],
             "evidence": [],
+            "depends_on": [],
             "due": None,
             "severity": "action",
             "alert": True,
         })
         if sum(1 for i in items if i["source"] == "blocked_agent_task") >= 3:
             break
+
+    for item in items:
+        item["decision_card_sha256"] = owner_decision_store.decision_card_sha256(item)
 
     alert_count = sum(1 for i in items if i.get("alert"))
     execution_degraded = None
@@ -833,6 +945,8 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
             executions = owner_decision_execution.project_feed_executions(con, feed_data)
         except (sqlite3.Error, owner_decision_execution.ExecutionContractError) as exc:
             execution_degraded = f"execution projection unavailable: {exc}"
+    for row in executions:
+        row["sla"] = _execution_sla(row, now=now)
     execution_counts: dict[str, int] = {}
     for row in executions:
         key = str(row.get("status") or "UNKNOWN")
@@ -864,6 +978,7 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
         "executions": executions,
         "execution_counts": execution_counts,
         "execution_open_count": sum(1 for row in executions if not row.get("complete")),
+        "router_health": _owner_router_health(now=now),
         "intake": {
             "enabled": intake_token is not None,
             "endpoint": OWNER_DECISION_INTAKE_ENDPOINT,
@@ -1343,7 +1458,7 @@ CONTRACT_SCHEMA: dict[str, Any] = {
         },
         "owner_decisions": {
             "type": "object",
-            "required": ["meta", "count", "items", "intake"],
+            "required": ["meta", "count", "items", "intake", "router_health"],
             "properties": {
                 "meta": _section_meta_schema(),
                 "count": {"type": "integer"},
@@ -1355,7 +1470,7 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                         "required": [
                             "id", "status", "category", "title", "question",
                             "recommendation", "yes_effect", "no_effect",
-                            "cost_of_wait", "severity",
+                            "cost_of_wait", "severity", "decision_card_sha256",
                         ],
                         "properties": {
                             "id": {"type": "string"},
@@ -1369,6 +1484,11 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                             "cost_of_wait": {"type": "string"},
                             "detail": {"type": ["string", "null"]},
                             "evidence": {"type": "array"},
+                            "depends_on": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                            },
+                            "decision_card_sha256": {"type": "string"},
                             "due": {"type": ["string", "null"]},
                             "severity": {"type": "string"},
                             "alert": {"type": "boolean"},
@@ -1396,11 +1516,38 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                             "verdict": {"type": ["string", "null"]},
                             "updated_at": {"type": ["string", "null"]},
                             "complete": {"type": "boolean"},
+                            "sla": {
+                                "type": "object",
+                                "required": ["stage", "state", "age_seconds", "target_seconds"],
+                                "properties": {
+                                    "stage": {"type": "string"},
+                                    "state": {"type": "string"},
+                                    "age_seconds": {"type": ["integer", "null"]},
+                                    "target_seconds": {"type": ["integer", "null"]},
+                                },
+                            },
                         },
                     },
                 },
                 "execution_counts": {"type": "object"},
                 "execution_open_count": {"type": "integer"},
+                "router_health": {
+                    "type": "object",
+                    "required": [
+                        "state", "last_reconcile_age_seconds",
+                        "consecutive_router_failures", "assignment_may_be_delayed",
+                    ],
+                    "properties": {
+                        "state": {"enum": ["HEALTHY", "DEGRADED", "STALE", "UNKNOWN"]},
+                        "latest_log_at_utc": {"type": ["string", "null"]},
+                        "latest_log_ok": {"type": ["boolean", "null"]},
+                        "latest_error": {"type": ["string", "null"]},
+                        "last_reconcile_ok_at_utc": {"type": ["string", "null"]},
+                        "last_reconcile_age_seconds": {"type": ["integer", "null"]},
+                        "consecutive_router_failures": {"type": "integer"},
+                        "assignment_may_be_delayed": {"type": "boolean"},
+                    },
+                },
                 "intake": {
                     "type": "object",
                     "required": ["enabled", "endpoint", "token", "mode"],

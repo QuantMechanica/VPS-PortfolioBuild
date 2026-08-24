@@ -9,6 +9,9 @@ from tools.strategy_farm import owner_decision_service as service
 from tools.strategy_farm import owner_decision_store as store
 
 
+PLAN_HASH = "c" * 64
+
+
 def _feed(path: Path) -> None:
     path.write_text(
         json.dumps(
@@ -67,6 +70,7 @@ def test_loopback_service_records_receipt_and_one_router_handoff(tmp_path: Path)
     receipts = tmp_path / "receipts.jsonl"
     vault = tmp_path / "OWNER.md"
     _feed(feed)
+    card_hash = store.decision_card_sha256(store.load_feed(feed)["items"][0])
     vault.write_text(store.render_vault_queue(store.load_feed(feed)), encoding="utf-8")
     token = "a" * 64
     handed_off = []
@@ -86,6 +90,7 @@ def test_loopback_service_records_receipt_and_one_router_handoff(tmp_path: Path)
         receipts_path=receipts,
         vault_owner_path=vault,
         handoff_fn=_handoff,
+        plan_hash_fn=lambda _decision_id: PLAN_HASH,
     )
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -111,6 +116,38 @@ def test_loopback_service_records_receipt_and_one_router_handoff(tmp_path: Path)
         assert status == 403 and denied["error"] == "invalid_token"
         assert not receipts.exists()
 
+        status, stale = _request(
+            port,
+            "POST",
+            "/v1/decisions/OWNER-DEC-SERVICE-TEST",
+            token=token,
+            body={
+                "decision": "YES",
+                "notes": "ok",
+                "request_id": "request-stale-plan",
+                "decision_card_sha256": card_hash,
+                "execution_plan_sha256": "d" * 64,
+            },
+        )
+        assert status == 409 and stale["error"] == "execution_plan_changed"
+        assert not receipts.exists()
+
+        status, stale_card = _request(
+            port,
+            "POST",
+            "/v1/decisions/OWNER-DEC-SERVICE-TEST",
+            token=token,
+            body={
+                "decision": "YES",
+                "notes": "ok",
+                "request_id": "request-stale-card",
+                "decision_card_sha256": "e" * 64,
+                "execution_plan_sha256": PLAN_HASH,
+            },
+        )
+        assert status == 409 and stale_card["error"] == "decision_conflict"
+        assert not receipts.exists()
+
         status, accepted = _request(
             port,
             "POST",
@@ -120,6 +157,8 @@ def test_loopback_service_records_receipt_and_one_router_handoff(tmp_path: Path)
                 "decision": "YES",
                 "notes": "Nur dokumentieren.",
                 "request_id": "request-2001",
+                "decision_card_sha256": card_hash,
+                "execution_plan_sha256": PLAN_HASH,
             },
         )
         assert status == 201
@@ -129,8 +168,10 @@ def test_loopback_service_records_receipt_and_one_router_handoff(tmp_path: Path)
         assert accepted["handoff_state"] == "QUEUED"
         assert accepted["handoff_created"] is True
         assert accepted["execution_task_id"] == handed_off[0]["execution_task_id"]
+        assert accepted["execution_plan_sha256"] == PLAN_HASH
         receipt = json.loads(receipts.read_text(encoding="utf-8").strip())
         assert receipt["execution_authorized"] is True
+        assert receipt["execution_plan_sha256"] == PLAN_HASH
         assert len(handed_off) == 1
         assert store.load_feed(feed)["items"][0]["status"] == "DECIDED"
 
