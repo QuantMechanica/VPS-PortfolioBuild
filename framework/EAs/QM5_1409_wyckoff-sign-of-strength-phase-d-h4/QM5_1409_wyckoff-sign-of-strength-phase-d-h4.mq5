@@ -22,7 +22,10 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+// The card owns a literal +/-2 H4 bar (480 minute) entry blackout below.
+// Keep the framework temporal axis OFF so a second, narrower window is not
+// silently substituted for that card contract.  DXZ compliance remains on.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
@@ -78,49 +81,95 @@ input int    strategy_reuse_guard_bars               = 80;
 input bool   strategy_spread_filter_enabled          = true;
 input double strategy_spread_max_atr                 = 0.25;
 
-int      g_h_atr_h4 = INVALID_HANDLE;
-int      g_h_sma_d1 = INVALID_HANDLE;
-int      g_h_atr_d1 = INVALID_HANDLE;
-
-bool     g_new_bar = false;
-double   g_active_tp1_price = 0.0;
-bool     g_tp1_done = false;
-double   g_active_high_band = 0.0;
-double   g_active_measured_move = 0.0;
-datetime g_active_entry_bar_time = 0;
-datetime g_pattern_block_until = 0;
+bool     g_pending_setup_valid = false;
+double   g_pending_tp1_price = 0.0;
+double   g_pending_high_band = 0.0;
+double   g_pending_measured_move = 0.0;
+datetime g_pending_signal_time = 0;
 
 double Strategy_NormalizePrice(const double price)
 {
    return QM_StopRulesNormalizePrice(_Symbol, price);
 }
 
-bool Strategy_InitIndicators()
+string Strategy_BaseSymbol()
 {
-   g_h_atr_h4 = iATR(_Symbol, strategy_tf, strategy_atr_period);
-   if(g_h_atr_h4 == INVALID_HANDLE)
-   {
-      PrintFormat("QM5_%d: failed to create H4 ATR handle", qm_ea_id);
-      return false;
-   }
-   if(strategy_macro_bias_enabled)
-   {
-      g_h_sma_d1 = iMA(_Symbol, PERIOD_D1, strategy_macro_sma_period, 0, MODE_SMA, PRICE_CLOSE);
-      g_h_atr_d1 = iATR(_Symbol, PERIOD_D1, strategy_atr_period);
-      if(g_h_sma_d1 == INVALID_HANDLE || g_h_atr_d1 == INVALID_HANDLE)
-      {
-         PrintFormat("QM5_%d: failed to create D1 macro handles", qm_ea_id);
-         return false;
-      }
-   }
-   return true;
+   string symbol = _Symbol;
+   StringToUpper(symbol);
+   const int suffix = StringFind(symbol, ".DWX");
+   if(suffix > 0)
+      symbol = StringSubstr(symbol, 0, suffix);
+   return symbol;
 }
 
-void Strategy_ReleaseIndicators()
+bool Strategy_ResolveApprovedSlot(int &out_slot)
 {
-   if(g_h_atr_h4 != INVALID_HANDLE) { IndicatorRelease(g_h_atr_h4); g_h_atr_h4 = INVALID_HANDLE; }
-   if(g_h_sma_d1 != INVALID_HANDLE) { IndicatorRelease(g_h_sma_d1); g_h_sma_d1 = INVALID_HANDLE; }
-   if(g_h_atr_d1 != INVALID_HANDLE) { IndicatorRelease(g_h_atr_d1); g_h_atr_d1 = INVALID_HANDLE; }
+   out_slot = -1;
+   const string symbol = Strategy_BaseSymbol();
+   if(symbol == "EURUSD") { out_slot = 0; return true; }
+   if(symbol == "GBPUSD") { out_slot = 1; return true; }
+   if(symbol == "USDJPY") { out_slot = 2; return true; }
+   if(symbol == "NDX")    { out_slot = 7; return true; }
+   if(symbol == "WS30")   { out_slot = 8; return true; }
+   // Card token GER40.DWX is reconciled to the canonical DWX house symbol
+   // GDAXI.DWX.  GER40 is not present in dwx_symbol_matrix.csv.
+   if(symbol == "GDAXI")  { out_slot = 9; return true; }
+   if(symbol == "XAUUSD") { out_slot = 12; return true; }
+   if(symbol == "XTIUSD") { out_slot = 13; return true; }
+   return false;
+}
+
+bool Strategy_VolumeReliableForSymbol()
+{
+   int approved_slot = -1;
+   // Every approved host is a major FX pair, XAUUSD, index CFD, or oil CFD,
+   // exactly the card's reliable-volume classes.  Any non-approved/cross host
+   // fails OnInit and would receive the documented gate-8 bypass here.
+   return Strategy_ResolveApprovedSlot(approved_slot);
+}
+
+bool Strategy_ValidateInputs()
+{
+   int approved_slot = -1;
+   if(!Strategy_ResolveApprovedSlot(approved_slot) || approved_slot != qm_magic_slot_offset)
+   {
+      PrintFormat("QM5_%d: unauthorized host/slot symbol=%s slot=%d expected=%d",
+                  qm_ea_id, _Symbol, qm_magic_slot_offset, approved_slot);
+      return false;
+   }
+   if(strategy_tf != PERIOD_H4 || strategy_atr_period < 1 || strategy_fractal_wing_bars < 1)
+      return false;
+   if(strategy_tr_min_bars < 2 || strategy_tr_max_bars < strategy_tr_min_bars || strategy_tr_step_bars < 1)
+      return false;
+   if(strategy_tr_containment_pct <= 0.0 || strategy_tr_containment_pct > 1.0)
+      return false;
+   if(strategy_tr_min_amplitude_atr <= 0.0 || strategy_tr_max_amplitude_atr < strategy_tr_min_amplitude_atr)
+      return false;
+   if(strategy_prior_trend_bars < 2 || strategy_tr_stability_slope_atr < 0.0)
+      return false;
+   if(strategy_spring_lookback_bars < 1 || strategy_spring_atr_buffer < 0.0)
+      return false;
+   if(strategy_sos_breakout_atr < 0.0 || strategy_sos_body_atr <= 0.0 ||
+      strategy_sos_close_upper_third <= 0.0 || strategy_sos_close_upper_third > 1.0)
+      return false;
+   if(strategy_sos_volume_mean_bars < 1 || strategy_sos_volume_mult <= 0.0 || strategy_sos_spread_atr <= 0.0)
+      return false;
+   if(strategy_lps_min_bars < 1 || strategy_lps_max_bars < strategy_lps_min_bars)
+      return false;
+   if(strategy_lps_low_band_max_atr < strategy_lps_low_band_min_atr || strategy_lps_shallowness_ratio <= 0.0)
+      return false;
+   if(strategy_lps_no_close_back_atr < 0.0 || strategy_lps_reversal_ratio <= 0.0 || strategy_lps_reversal_ratio > 1.0)
+      return false;
+   if(strategy_tp_measured_move_mult <= 0.0 || strategy_tp1_measured_move_pct <= 0.0 ||
+      strategy_tp1_close_fraction <= 0.0 || strategy_tp1_close_fraction >= 1.0)
+      return false;
+   if(strategy_failure_exit_atr < 0.0 || strategy_time_stop_bars < 1 ||
+      strategy_sl_atr_buffer < 0.0 || strategy_sl_cap_atr <= 0.0)
+      return false;
+   if(strategy_macro_sma_period < 2 || strategy_macro_atr_buffer < 0.0 ||
+      strategy_reuse_guard_bars < 0 || strategy_spread_max_atr < 0.0)
+      return false;
+   return true;
 }
 
 bool Strategy_SelectOurPosition(ulong &ticket)
@@ -138,9 +187,115 @@ bool Strategy_SelectOurPosition(ulong &ticket)
    return false;
 }
 
+string Strategy_StateKey(const string scope, const string field)
+{
+   return StringFormat("QM5_1409_%d_%s_%s", QM_FrameworkMagic(), scope, field);
+}
+
+string Strategy_PositionScope(const ulong ticket)
+{
+   return StringFormat("%I64u", ticket);
+}
+
+bool Strategy_StateSet(const string scope, const string field, const double value)
+{
+   return (GlobalVariableSet(Strategy_StateKey(scope, field), value) != 0);
+}
+
+double Strategy_StateGet(const string scope, const string field, const double fallback)
+{
+   const string key = Strategy_StateKey(scope, field);
+   return GlobalVariableCheck(key) ? GlobalVariableGet(key) : fallback;
+}
+
+void Strategy_StateDelete(const string scope, const string field)
+{
+   const string key = Strategy_StateKey(scope, field);
+   if(GlobalVariableCheck(key))
+      GlobalVariableDel(key);
+}
+
+void Strategy_ClearPendingState()
+{
+   Strategy_StateDelete("pending", "ready");
+   Strategy_StateDelete("pending", "tp1");
+   Strategy_StateDelete("pending", "high");
+   Strategy_StateDelete("pending", "move");
+   Strategy_StateDelete("pending", "signal");
+   g_pending_setup_valid = false;
+}
+
+bool Strategy_PersistPendingState()
+{
+   if(!g_pending_setup_valid)
+      return false;
+   Strategy_StateDelete("pending", "ready");
+   if(!Strategy_StateSet("pending", "tp1", g_pending_tp1_price) ||
+      !Strategy_StateSet("pending", "high", g_pending_high_band) ||
+      !Strategy_StateSet("pending", "move", g_pending_measured_move) ||
+      !Strategy_StateSet("pending", "signal", (double)g_pending_signal_time) ||
+      !Strategy_StateSet("pending", "ready", 1.0))
+   {
+      Strategy_ClearPendingState();
+      return false;
+   }
+   GlobalVariablesFlush();
+   return true;
+}
+
+bool Strategy_PersistPositionState(const ulong ticket)
+{
+   if(ticket == 0 || Strategy_StateGet("pending", "ready", 0.0) < 0.5)
+      return false;
+
+   const string scope = Strategy_PositionScope(ticket);
+   Strategy_StateDelete(scope, "ready");
+   if(!Strategy_StateSet(scope, "tp1", Strategy_StateGet("pending", "tp1", 0.0)) ||
+      !Strategy_StateSet(scope, "high", Strategy_StateGet("pending", "high", 0.0)) ||
+      !Strategy_StateSet(scope, "move", Strategy_StateGet("pending", "move", 0.0)) ||
+      !Strategy_StateSet(scope, "signal", Strategy_StateGet("pending", "signal", 0.0)) ||
+      !Strategy_StateSet(scope, "partial", 0.0) ||
+      !Strategy_StateSet(scope, "ready", 1.0))
+      return false;
+
+   GlobalVariablesFlush();
+   Strategy_ClearPendingState();
+   return true;
+}
+
+bool Strategy_EnsurePositionState(const ulong ticket)
+{
+   const string scope = Strategy_PositionScope(ticket);
+   if(Strategy_StateGet(scope, "ready", 0.0) > 0.5)
+      return true;
+   if(Strategy_PersistPositionState(ticket))
+      return true;
+
+   // Fail closed when durable state is absent: the caller closes the position
+   // instead of silently disabling TP1 and the range-failure exit.
+   QM_LogEvent(QM_ERROR, "WYCKOFF_STATE_MISSING",
+               StringFormat("{\"ticket\":%I64u,\"symbol\":\"%s\"}", ticket, _Symbol));
+   return false;
+}
+
+void Strategy_BlockPatternReuse(const datetime event_time)
+{
+   if(strategy_reuse_guard_bars <= 0)
+      return;
+   const int seconds = PeriodSeconds(strategy_tf);
+   if(seconds <= 0)
+      return;
+   datetime base_time = event_time;
+   if(base_time <= 0)
+      base_time = TimeCurrent();
+   Strategy_StateSet("reuse", "until", (double)(base_time + strategy_reuse_guard_bars * seconds));
+   GlobalVariablesFlush();
+}
+
 bool Strategy_ReuseGuardActive()
 {
-   if(g_pattern_block_until > 0 && TimeCurrent() < g_pattern_block_until)
+   const datetime block_until = (datetime)Strategy_StateGet("reuse", "until", 0.0);
+   if(block_until > 0 && TimeCurrent() < block_until)
       return true;
 
    if(strategy_reuse_guard_bars <= 0) return false;
@@ -167,7 +322,7 @@ bool Strategy_ReuseGuardActive()
    }
    if(last_deal_time > 0)
    {
-      const int bars_since = iBarShift(_Symbol, strategy_tf, last_deal_time, false);
+      const int bars_since = iBarShift(_Symbol, strategy_tf, last_deal_time, false); // perf-allowed: one bounded history lookup per closed entry-evaluation bar.
       if(bars_since >= 0 && bars_since < strategy_reuse_guard_bars)
          return true;
    }
@@ -182,22 +337,17 @@ bool Strategy_SpreadAcceptable(const double atr)
    return (spread <= strategy_spread_max_atr * atr);
 }
 
-bool Strategy_MacroBias(const double atr_h4)
+bool Strategy_MacroBias()
 {
    if(!strategy_macro_bias_enabled) return true;
-   if(g_h_sma_d1 == INVALID_HANDLE || g_h_atr_d1 == INVALID_HANDLE) return true;
-
-   double ma_val[1];
-   double atr_d1[1];
-   if(CopyBuffer(g_h_sma_d1, 0, 1, 1, ma_val) < 1) return false;
-   if(CopyBuffer(g_h_atr_d1, 0, 1, 1, atr_d1) < 1) return false;
-
-   MqlRates d1_rates[];
-   ArraySetAsSeries(d1_rates, true);
-   if(CopyRates(_Symbol, PERIOD_D1, 1, 1, d1_rates) < 1) return false;
+   const double ma_value = QM_SMA(_Symbol, PERIOD_D1, strategy_macro_sma_period, 1, PRICE_CLOSE);
+   const double atr_d1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   const double close_d1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
+   if(ma_value <= 0.0 || atr_d1 <= 0.0 || close_d1 <= 0.0)
+      return false;
 
    // close > SMA(200, D1) - 2.0 * ATR(14, D1)
-   return (d1_rates[0].close > (ma_val[0] - strategy_macro_atr_buffer * atr_d1[0]));
+   return (close_d1 > (ma_value - strategy_macro_atr_buffer * atr_d1));
 }
 
 bool Strategy_FitLinearRegression(const MqlRates &rates[], const int start_shift, const int count, double &out_slope)
@@ -220,6 +370,20 @@ bool Strategy_FitLinearRegression(const MqlRates &rates[], const int start_shift
    const double denom = (double)count * sum_xx - sum_x * sum_x;
    if(MathAbs(denom) < 1e-12) return false;
    out_slope = ((double)count * sum_xy - sum_x * sum_y) / denom;
+   return true;
+}
+
+bool Strategy_IsSwingLow(const MqlRates &rates[], const int center, const int wing_bars)
+{
+   const int total = ArraySize(rates);
+   if(wing_bars < 1 || center - wing_bars < 0 || center + wing_bars >= total)
+      return false;
+   const double candidate = rates[center].low;
+   for(int wing = 1; wing <= wing_bars; ++wing)
+   {
+      if(candidate >= rates[center - wing].low || candidate >= rates[center + wing].low)
+         return false;
+   }
    return true;
 }
 
@@ -256,10 +420,25 @@ bool Strategy_AnalyzeTradingRange(const MqlRates &rates[],
    ArraySort(highs);
    ArraySort(lows);
 
-   // Drop highest 5% and lowest 5% wicks to form robust quantile bounds
+   // Literal card construction: first discard the extreme 5% at BOTH ends,
+   // then calculate the lower/upper 20% band quantiles inside the retained
+   // sample.  The previous build calculated trim_cnt but indexed the original
+   // untrimmed sample, so extreme wicks still influenced every downstream gate.
    const int trim_cnt = (int)MathFloor(0.05 * tr_len);
-   const int high_top20_idx = (int)MathFloor(0.80 * (tr_len - 1));
-   const int low_bot20_idx = (int)MathFloor(0.20 * (tr_len - 1));
+   const int retained_count = tr_len - 2 * trim_cnt;
+   const int high_top20_idx = trim_cnt + (int)MathFloor(0.80 * (retained_count - 1));
+   const int low_bot20_idx = trim_cnt + (int)MathFloor(0.20 * (retained_count - 1));
+   const int high_count = ArraySize(highs);
+   const int low_count = ArraySize(lows);
+   if(trim_cnt < 1 || retained_count < 5 || high_count != tr_len || low_count != tr_len)
+      return false;
+   if(high_top20_idx < trim_cnt || high_top20_idx >= high_count - trim_cnt ||
+      low_bot20_idx < trim_cnt || low_bot20_idx >= low_count - trim_cnt)
+      return false;
+   if(high_top20_idx < 0 || high_top20_idx >= ArraySize(highs))
+      return false;
+   if(low_bot20_idx < 0 || low_bot20_idx >= ArraySize(lows))
+      return false;
 
    const double high_band = highs[high_top20_idx];
    const double low_band = lows[low_bot20_idx];
@@ -298,10 +477,12 @@ bool Strategy_AnalyzeTradingRange(const MqlRates &rates[],
    // 5. Spring or test occurred inside trading range
    // At some point inside TR, close <= low_band - 0.5 * ATR, followed by close back inside range within 4 bars
    const double spring_thresh = low_band - strategy_spring_atr_buffer * atr;
-   for(int i = tr_len - 1; i >= strategy_spring_lookback_bars; --i)
+   const int oldest_candidate = tr_len - 1 - strategy_fractal_wing_bars;
+   const int newest_candidate = MathMax(strategy_spring_lookback_bars, strategy_fractal_wing_bars);
+   for(int i = oldest_candidate; i >= newest_candidate; --i)
    {
       const int idx = tr_end_shift + i;
-      if(rates[idx].close <= spring_thresh)
+      if(rates[idx].close <= spring_thresh && Strategy_IsSwingLow(rates, idx, strategy_fractal_wing_bars))
       {
          // check if closed back inside range within 4 bars
          bool recovered = false;
@@ -336,7 +517,9 @@ bool Strategy_CheckSOS(const MqlRates &rates[],
                       const double high_band,
                       const double atr)
 {
-   if(sos_shift < 0 || sos_shift + strategy_sos_volume_mean_bars >= ArraySize(rates))
+   const int total = ArraySize(rates);
+   if(atr <= 0.0 || sos_shift < 0 || sos_shift >= total ||
+      sos_shift + strategy_sos_volume_mean_bars >= total)
       return false;
 
    const MqlRates bar = rates[sos_shift];
@@ -353,7 +536,7 @@ bool Strategy_CheckSOS(const MqlRates &rates[],
       return false;
 
    // 8. Volume expansion: tick_volume >= 1.50 * mean(20 prior bars)
-   if(strategy_volume_filter_enabled)
+   if(strategy_volume_filter_enabled && Strategy_VolumeReliableForSymbol())
    {
       long vol_sum = 0;
       for(int i = 1; i <= strategy_sos_volume_mean_bars; ++i)
@@ -376,7 +559,9 @@ bool Strategy_CheckLPS(const MqlRates &rates[],
                       const double high_band,
                       const double atr)
 {
-   if(lps_shift < 1 || sos_shift <= lps_shift) return false;
+   const int total = ArraySize(rates);
+   if(atr <= 0.0 || lps_shift < 1 || lps_shift >= total || sos_shift <= lps_shift || sos_shift >= total)
+      return false;
    const int separation = sos_shift - lps_shift;
    if(separation < strategy_lps_min_bars || separation > strategy_lps_max_bars)
       return false;
@@ -413,6 +598,35 @@ bool Strategy_CheckLPS(const MqlRates &rates[],
    return true;
 }
 
+bool Strategy_LPSInvalidated(const MqlRates &rates[],
+                             const int lps_shift,
+                             const int sos_shift,
+                             const double high_band,
+                             const double atr)
+{
+   const int total = ArraySize(rates);
+   if(atr <= 0.0 || lps_shift < 1 || lps_shift >= total || sos_shift <= lps_shift || sos_shift >= total)
+      return false;
+
+   const double no_close_threshold = high_band - strategy_lps_no_close_back_atr * atr;
+   for(int shift = sos_shift - 1; shift >= lps_shift; --shift)
+   {
+      if(shift < 0 || shift >= total)
+         return false;
+      if(rates[shift].close < no_close_threshold)
+         return true;
+   }
+
+   const double breakout_height = rates[sos_shift].close - high_band;
+   if(breakout_height > 0.0 &&
+      (rates[sos_shift].close - rates[lps_shift].low) / breakout_height > strategy_lps_shallowness_ratio)
+      return true;
+
+   // Once the full LPS window elapsed without a valid reversal bar, this SOS
+   // pattern identity is invalid and receives the same durable 80-bar guard.
+   return (sos_shift - lps_shift >= strategy_lps_max_bars);
+}
+
 bool Strategy_NoTradeFilter()
 {
    return false;
@@ -420,6 +634,14 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "SOS_LPS";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    ulong existing_ticket = 0;
    if(Strategy_SelectOurPosition(existing_ticket))
       return false;
@@ -427,28 +649,36 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_ReuseGuardActive())
       return false;
 
-   double atr_val[1];
-   if(CopyBuffer(g_h_atr_h4, 0, 1, 1, atr_val) < 1)
+   // The card requires a literal +/-2 H4 bar high-impact entry blackout.
+   datetime news_time_utc = QM_BrokerToUTC(TimeCurrent());
+   if(news_time_utc <= 0)
+      news_time_utc = TimeGMT();
+   if(QM_NewsInWindow(news_time_utc, _Symbol, 480, 480, qm_news_min_impact))
       return false;
-   const double atr = atr_val[0];
+
+   const double atr = QM_ATR(_Symbol, strategy_tf, strategy_atr_period, 1);
    if(atr <= 0.0) return false;
 
    if(!Strategy_SpreadAcceptable(atr))
       return false;
 
-   if(!Strategy_MacroBias(atr))
+   if(!Strategy_MacroBias())
       return false;
 
-   const int needed_bars = strategy_tr_max_bars + strategy_prior_trend_bars + strategy_lps_max_bars + 20;
+   const int needed_bars = strategy_tr_max_bars + strategy_prior_trend_bars +
+                           strategy_lps_max_bars + strategy_sos_volume_mean_bars +
+                           2 * strategy_fractal_wing_bars + 20;
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, strategy_tf, 0, needed_bars, rates);
-   if(copied < needed_bars) return false;
+   const int copied = CopyRates(_Symbol, strategy_tf, 0, needed_bars, rates); // perf-allowed: bounded bespoke Wyckoff scan runs once per closed H4 bar after QM_IsNewBar.
+   if(copied < needed_bars || ArraySize(rates) < needed_bars) return false;
 
    // The candidate LPS bar just completed at shift 1
    const int lps_shift = 1;
 
    // Search for valid SOS bar at shift in [lps_shift + strategy_lps_min_bars, lps_shift + strategy_lps_max_bars]
+   bool invalidated_pattern = false;
+   datetime invalidation_time = rates[lps_shift].time;
    for(int sos_shift = lps_shift + strategy_lps_min_bars; sos_shift <= lps_shift + strategy_lps_max_bars; ++sos_shift)
    {
       // Test different TR lengths
@@ -465,7 +695,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             continue;
 
          if(!Strategy_CheckLPS(rates, lps_shift, sos_shift, high_band, atr))
+         {
+            if(Strategy_LPSInvalidated(rates, lps_shift, sos_shift, high_band, atr))
+               invalidated_pattern = true;
             continue;
+         }
 
          // All 13 Wyckoff gates PASS!
          const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -484,24 +718,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          const double measured_move = high_band - low_band;
          const double full_tp = ask + strategy_tp_measured_move_mult * measured_move;
 
-         req.type = QM_BUY;
          req.price = Strategy_NormalizePrice(ask);
          req.sl = Strategy_NormalizePrice(initial_sl);
          req.tp = Strategy_NormalizePrice(full_tp);
-         req.reason = "SOS_LPS";
-         req.symbol_slot = qm_magic_slot_offset;
+         req.expiration_seconds = 0;
 
-         g_active_tp1_price = Strategy_NormalizePrice(ask + strategy_tp1_measured_move_pct * measured_move);
-         g_tp1_done = false;
-         g_active_high_band = high_band;
-         g_active_measured_move = measured_move;
-         g_active_entry_bar_time = rates[0].time;
-         g_pattern_block_until = rates[0].time + strategy_reuse_guard_bars * PeriodSeconds(strategy_tf);
+         g_pending_tp1_price = Strategy_NormalizePrice(ask + strategy_tp1_measured_move_pct * measured_move);
+         g_pending_high_band = high_band;
+         g_pending_measured_move = measured_move;
+         g_pending_signal_time = rates[lps_shift].time;
+         g_pending_setup_valid = true;
+         if(!Strategy_PersistPendingState())
+            return false;
 
          return true;
       }
    }
 
+   if(invalidated_pattern)
+      Strategy_BlockPatternReuse(invalidation_time);
    return false;
 }
 
@@ -509,40 +744,53 @@ void Strategy_ManageOpenPosition()
 {
    ulong ticket = 0;
    if(!Strategy_SelectOurPosition(ticket))
-   {
-      g_tp1_done = false;
       return;
-   }
+   if(!Strategy_EnsurePositionState(ticket))
+      return;
 
+   const string scope = Strategy_PositionScope(ticket);
    const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
    const double current_price = PositionGetDouble(POSITION_PRICE_CURRENT);
    const double current_sl = PositionGetDouble(POSITION_SL);
    const double current_volume = PositionGetDouble(POSITION_VOLUME);
+   const double tp1_price = Strategy_StateGet(scope, "tp1", 0.0);
+   bool tp1_done = (Strategy_StateGet(scope, "partial", 0.0) > 0.5);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+
+   // A break-even-or-better SL proves TP1 management already ran, even if a
+   // restart occurred between the broker modification and state publication.
+   if(!tp1_done && point > 0.0 && current_sl >= open_price - point * 0.5)
+   {
+      Strategy_StateSet(scope, "partial", 1.0);
+      tp1_done = true;
+   }
 
    // 1. Partial close at 60% of measured-move (TP1)
-   if(!g_tp1_done && g_active_tp1_price > 0.0 && current_price >= g_active_tp1_price)
+   if(!tp1_done && tp1_price > 0.0 && current_price >= tp1_price)
    {
       const double min_lot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
       const double lot_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+      if(min_lot <= 0.0 || lot_step <= 0.0 || current_volume <= 0.0)
+         return;
       double close_vol = MathFloor((current_volume * strategy_tp1_close_fraction) / lot_step) * lot_step;
       if(close_vol >= min_lot && (current_volume - close_vol) >= min_lot)
       {
-         CTrade trade;
-         trade.SetExpertMagicNumber(QM_FrameworkMagic());
-         if(trade.PositionClosePartial(ticket, close_vol))
+         if(QM_TM_PartialClose(ticket, close_vol, QM_EXIT_PARTIAL))
          {
-            g_tp1_done = true;
+            Strategy_StateSet(scope, "partial", 1.0);
             // Move SL to Break-Even
             const double be_sl = Strategy_NormalizePrice(open_price);
             if(be_sl > current_sl)
-            {
-               trade.PositionModify(ticket, be_sl, PositionGetDouble(POSITION_TP));
-            }
+               QM_TM_MoveSL(ticket, be_sl, "wyckoff_sos_tp1_break_even");
+            GlobalVariablesFlush();
          }
       }
       else
       {
-         g_tp1_done = true;
+         // Broker lot granularity makes the requested 50% scale-out
+         // impossible; mark once so the EA does not hammer the trade server.
+         Strategy_StateSet(scope, "partial", 1.0);
+         GlobalVariablesFlush();
       }
    }
 }
@@ -552,20 +800,22 @@ bool Strategy_ExitSignal()
    ulong ticket = 0;
    if(!Strategy_SelectOurPosition(ticket))
       return false;
+   if(!Strategy_EnsurePositionState(ticket))
+      return true;
 
-   double atr_val[1];
-   if(CopyBuffer(g_h_atr_h4, 0, 1, 1, atr_val) < 1) return false;
-   const double atr = atr_val[0];
-
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   if(CopyRates(_Symbol, strategy_tf, 1, 1, rates) < 1) return false;
+   const string scope = Strategy_PositionScope(ticket);
+   const double atr = QM_ATR(_Symbol, strategy_tf, strategy_atr_period, 1);
+   const double close_h4 = QM_SMA(_Symbol, strategy_tf, 1, 1, PRICE_CLOSE);
+   if(atr <= 0.0 || close_h4 <= 0.0)
+      return false;
+   const double active_high_band = Strategy_StateGet(scope, "high", 0.0);
 
    // 1. Pattern-failure hard exit: if any H4 close after entry goes below high_band - 0.5 * ATR
-   if(g_active_high_band > 0.0 && rates[0].close < (g_active_high_band - strategy_failure_exit_atr * atr))
+   if(active_high_band > 0.0 && close_h4 < (active_high_band - strategy_failure_exit_atr * atr))
    {
       PrintFormat("QM5_%d: Pattern failure exit triggered (close %G < %G)",
-                  qm_ea_id, rates[0].close, g_active_high_band - strategy_failure_exit_atr * atr);
+                  qm_ea_id, close_h4, active_high_band - strategy_failure_exit_atr * atr);
+      Strategy_BlockPatternReuse(TimeCurrent());
       return true;
    }
 
@@ -573,10 +823,11 @@ bool Strategy_ExitSignal()
    const datetime pos_time = (datetime)PositionGetInteger(POSITION_TIME);
    if(pos_time > 0)
    {
-      const int bars_open = iBarShift(_Symbol, strategy_tf, pos_time, false);
+      const int bars_open = iBarShift(_Symbol, strategy_tf, pos_time, false); // perf-allowed: one bounded holding-period lookup for the single open position.
       if(bars_open >= strategy_time_stop_bars)
       {
          PrintFormat("QM5_%d: Time-stop exit triggered after %d bars", qm_ea_id, bars_open);
+         Strategy_BlockPatternReuse(TimeCurrent());
          return true;
       }
    }
@@ -592,40 +843,45 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 int OnInit()
 {
+   if(!Strategy_ValidateInputs())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
-                        30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
+                        480, 480, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
 
-   if(!Strategy_InitIndicators())
-      return INIT_FAILED;
+   ulong existing_ticket = 0;
+   if(Strategy_SelectOurPosition(existing_ticket))
+      Strategy_EnsurePositionState(existing_ticket);
+   else
+      Strategy_ClearPendingState();
 
+   QM_LogEvent(QM_INFO, "INIT_OK",
+               StringFormat("{\"symbol\":\"%s\",\"volume_reliable\":%s}",
+                            _Symbol, Strategy_VolumeReliableForSymbol() ? "true" : "false"));
    return INIT_SUCCEEDED;
 }
 
 void OnDeinit(const int reason)
 {
-   Strategy_ReleaseIndicators();
+   QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
    QM_FrameworkShutdown();
 }
 
 void OnTick()
 {
+   // Q08 evidence lifecycle: sample before every early-return guard.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
+   // News is entry-only: protective scale-out, break-even and strategy exits
+   // remain reachable throughout every blackout.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -641,14 +897,34 @@ void OnTick()
       }
    }
 
-   if(!QM_IsNewBar()) return;
+   if(Strategy_NewsFilterHook(broker_now)) return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
+
+   if(!QM_IsNewBar(_Symbol, strategy_tf)) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if(QM_TM_OpenPosition(req, out_ticket))
+      {
+         ulong position_ticket = 0;
+         if(Strategy_SelectOurPosition(position_ticket) && Strategy_EnsurePositionState(position_ticket))
+            Strategy_BlockPatternReuse(TimeCurrent());
+         else if(position_ticket != 0)
+            QM_TM_ClosePosition(position_ticket, QM_EXIT_STRATEGY);
+      }
+      else
+      {
+         Strategy_ClearPendingState();
+      }
    }
 }
 
@@ -656,6 +932,9 @@ void OnTimer() { QM_FrameworkOnTimer(); }
 void OnTradeTransaction(const MqlTradeTransaction &t, const MqlTradeRequest &r, const MqlTradeResult &res)
 {
    QM_FrameworkOnTradeTransaction(t, r, res);
+   ulong ticket = 0;
+   if(Strategy_SelectOurPosition(ticket))
+      Strategy_EnsurePositionState(ticket);
 }
 
 double OnTester()
