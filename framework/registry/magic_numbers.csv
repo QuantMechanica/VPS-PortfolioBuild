@@ -17459,10 +17459,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 37003,hurst-exponent-dynamic-regime-switch,0,EURUSD.DWX,370030000,2026-08-17,Gemini,active
 37003,hurst-exponent-dynamic-regime-switch,1,GBPJPY.DWX,370030001,2026-08-17,Gemini,active
 37003,hurst-exponent-dynamic-regime-switch,2,SP500.DWX,370030002,2026-08-17,Gemini,active
-37004,volatility-targeted-momentum-kelly,0,SP500.DWX,370040000,2026-08-17,Gemini,active
-37004,volatility-targeted-momentum-kelly,1,NDX.DWX,370040001,2026-08-17,Gemini,active
-37004,volatility-targeted-momentum-kelly,2,XTIUSD.DWX,370040002,2026-08-17,Gemini,active
-37004,volatility-targeted-momentum-kelly,3,XAUUSD.DWX,370040003,2026-08-17,Gemini,active
+37004,volatility-targeted-momentum-kelly,0,SP500.DWX,370040000,2026-08-17,Codex burn-window build,active
+37004,volatility-targeted-momentum-kelly,1,NDX.DWX,370040001,2026-08-17,Codex burn-window build,active
+37004,volatility-targeted-momentum-kelly,2,XTIUSD.DWX,370040002,2026-08-17,Codex burn-window build,active
+37004,volatility-targeted-momentum-kelly,3,XAUUSD.DWX,370040003,2026-08-17,Codex burn-window build,active
 41053,wti-postwed-gap-fade,0,XTIUSD.DWX,410530000,2026-08-18T00:00:00Z,Codex,active
 41054,xng-postthu-gap-fade,0,XNGUSD.DWX,410540000,2026-08-18T00:00:00Z,Codex,active
 41055,wti-medcal,0,XTIUSD.DWX,410550000,2026-08-18T00:00:00Z,Codex,active

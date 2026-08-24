@@ -118,10 +118,12 @@ bool AdvanceState_OnNewBar()
    const int copied = CopyClose(_Symbol, PERIOD_D1, 1, close_count, closes); // perf-allowed: one bounded closed-D1 read per new bar for the card momentum and volatility estimators.
    if(copied != close_count || ArraySize(closes) < close_count)
       return false;
-   for(int i = 0; i < close_count; ++i)
+   for(int i = 0; i < ArraySize(closes); ++i)
       if(closes[i] <= 0.0 || !MathIsValidNumber(closes[i]))
          return false;
 
+   if(ArraySize(closes) <= 0)
+      return false;
    g_cached_close1 = closes[0];
 
    // Standard exponential span weights: the newest closed-bar log return has
@@ -131,37 +133,59 @@ bool AdvanceState_OnNewBar()
    double momentum_weight = 1.0;
    double momentum_weight_sum = 0.0;
    double weighted_log_return = 0.0;
-   for(int i = 0; i < strategy_momentum_days; ++i)
+   int momentum_terms = 0;
+   for(int i = 0;
+       i < strategy_momentum_days && i + 1 < ArraySize(closes);
+       ++i)
    {
       if(i >= ArraySize(closes))
+         return false;
+      if(i + 1 >= ArraySize(closes))
          return false;
       const double log_return = MathLog(closes[i] / closes[i + 1]);
       weighted_log_return += momentum_weight * log_return;
       momentum_weight_sum += momentum_weight;
       momentum_weight *= decay;
+      momentum_terms++;
    }
-   if(momentum_weight_sum <= 0.0)
+   if(momentum_terms != strategy_momentum_days || momentum_weight_sum <= 0.0)
       return false;
    g_cached_momentum = weighted_log_return / momentum_weight_sum;
 
    double mean_return = 0.0;
-   for(int i = 0; i < STRATEGY_VOL_LOOKBACK_DAYS; ++i)
+   int volatility_terms = 0;
+   for(int i = 0;
+       i < STRATEGY_VOL_LOOKBACK_DAYS && i + 1 < ArraySize(closes);
+       ++i)
    {
       if(i >= ArraySize(closes))
          return false;
+      if(i + 1 >= ArraySize(closes))
+         return false;
       mean_return += MathLog(closes[i] / closes[i + 1]);
+      volatility_terms++;
    }
+   if(volatility_terms != STRATEGY_VOL_LOOKBACK_DAYS)
+      return false;
    mean_return /= (double)STRATEGY_VOL_LOOKBACK_DAYS;
 
    double squared_deviation_sum = 0.0;
-   for(int i = 0; i < STRATEGY_VOL_LOOKBACK_DAYS; ++i)
+   int deviation_terms = 0;
+   for(int i = 0;
+       i < STRATEGY_VOL_LOOKBACK_DAYS && i + 1 < ArraySize(closes);
+       ++i)
    {
       if(i >= ArraySize(closes))
+         return false;
+      if(i + 1 >= ArraySize(closes))
          return false;
       const double log_return = MathLog(closes[i] / closes[i + 1]);
       const double deviation = log_return - mean_return;
       squared_deviation_sum += deviation * deviation;
+      deviation_terms++;
    }
+   if(deviation_terms != STRATEGY_VOL_LOOKBACK_DAYS)
+      return false;
    g_cached_annual_vol = MathSqrt(squared_deviation_sum /
                                   (double)(STRATEGY_VOL_LOOKBACK_DAYS - 1)) *
                          MathSqrt(252.0);
