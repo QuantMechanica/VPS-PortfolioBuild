@@ -278,3 +278,33 @@ def test_health_surfaces_service_rate_and_terminal_count(tmp_path: Path, monkeyp
 
     _complete(conn, pattern["work_item_id"], "PASS", files["stage"])
     assert health.chk_opt_fork_service_rate(conn)["status"] == "OK"
+
+
+def test_health_excludes_stale_payload_manifest_from_v4_backlog(
+    tmp_path: Path, monkeypatch
+) -> None:
+    conn = _db(tmp_path / "farm.sqlite")
+    files = _artifacts(tmp_path, "QM5_90002")
+    _insert(
+        conn,
+        wid="stranded-v3-payload",
+        phase=V4.gate_for_role("PATTERN"),
+        ea_id="QM5_90002",
+        status="pending",
+        verdict=None,
+        setfile=files["setfile"],
+        evidence=None,
+        payload={
+            "schema": subject.SCHEMA,
+            "gate_contract_version": "v3",
+            "gate_manifest_sha256": V3.sha256,
+        },
+        version="v4",
+    )
+    conn.commit()
+    monkeypatch.setattr(health, "_optimization_manifests", lambda: (V4,))
+
+    result = health.chk_opt_fork_service_rate(conn)
+
+    assert result["status"] == "OK"
+    assert "pending_or_active=0" in result["detail"]

@@ -15958,6 +15958,76 @@ def _force_expanded_news_matrix(work_item: sqlite3.Row | dict[str, Any]) -> bool
     )
 
 
+def _retryable_stale_worktree_news_expansion(
+    existing: sqlite3.Row,
+    source: sqlite3.Row | dict[str, Any],
+) -> dict[str, str] | None:
+    """Authenticate the one code-defect class eligible for an append-only retry.
+
+    Early expansion plans serialized an EX5 path from the temporary authoring
+    worktree.  Workers execute from the canonical checkout, so once that
+    worktree disappeared the immutable plan failed before ``terminal_start``.
+    A retry is safe only when both immutable plan hashes authenticate, the old
+    path is a missing worktree path, and the exact setfile-owned canonical EX5
+    still has the sealed hash.  Any other failure remains deduplicated.
+    """
+
+    if existing["status"] != "failed" or existing["verdict"] != "INFRA_FAIL":
+        return None
+    try:
+        payload = json.loads(str(existing["payload_json"] or "{}"))
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    if (
+        str(payload.get("failure_subclass") or "") != "launch_fault"
+        or str(payload.get("verdict_reason") or "") != "summary_missing:launch_fault"
+    ):
+        return None
+    plan_path = Path(str(payload.get("q09_run_plan_path") or ""))
+    plan_sha = str(payload.get("q09_run_plan_file_sha256") or "").lower()
+    if not plan_path.is_file() or len(plan_sha) != 64:
+        return None
+    try:
+        if _sha256_file(plan_path).lower() != plan_sha:
+            return None
+        plan = json.loads(plan_path.read_text(encoding="utf-8-sig"))
+        manifest_path = Path(str(plan.get("input_manifest_path") or ""))
+        manifest_sha = str(plan.get("input_manifest_sha256") or "").lower()
+        if (
+            not manifest_path.is_file()
+            or len(manifest_sha) != 64
+            or _sha256_file(manifest_path).lower() != manifest_sha
+            or str(payload.get("q09_input_manifest_sha256") or "").lower()
+            != manifest_sha
+        ):
+            return None
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    stale_ex5 = Path(str((manifest.get("source_paths") or {}).get("ex5") or ""))
+    expected_ex5 = str((manifest.get("identities") or {}).get("ex5_sha256") or "").lower()
+    if (
+        stale_ex5.is_file()
+        or not any(part.lower() == "worktrees" for part in stale_ex5.parts)
+        or len(expected_ex5) != 64
+    ):
+        return None
+    ea_dir = _ea_dir_from_setfile_path(source["setfile_path"], str(source["ea_id"]))
+    if ea_dir is None:
+        return None
+    canonical_ex5 = ea_dir / f"{ea_dir.name}.ex5"
+    if not canonical_ex5.is_file() or _sha256_file(canonical_ex5).lower() != expected_ex5:
+        return None
+    return {
+        "retry_of_work_item_id": str(existing["id"]),
+        "stale_ex5_path": str(stale_ex5),
+        "canonical_ex5_path": str(canonical_ex5),
+        "canonical_ex5_sha256": expected_ex5,
+    }
+
+
 def author_news_expansion_continuations(
     root: Path,
     *,
@@ -15996,16 +16066,21 @@ def author_news_expansion_continuations(
             pair = (str(source["ea_id"]), str(source["symbol"]))
             if allowed_pairs is not None and pair not in allowed_pairs:
                 continue
-            existing = connection.execute(
+            existing_rows = connection.execute(
                 """
-                SELECT id,status,verdict FROM work_items
+                SELECT * FROM work_items
                 WHERE json_valid(payload_json)=1
                   AND json_extract(payload_json,'$.news_expansion_of_work_item')=?
-                ORDER BY created_at DESC,id DESC LIMIT 1
+                ORDER BY created_at DESC,id DESC
                 """,
                 (str(source["id"]),),
-            ).fetchone()
-            if existing is not None:
+            ).fetchall()
+            existing = existing_rows[0] if existing_rows else None
+            expansion_retry = (
+                _retryable_stale_worktree_news_expansion(existing, source)
+                if len(existing_rows) == 1 else None
+            )
+            if existing is not None and expansion_retry is None:
                 skipped.append({
                     "source_work_item_id": source["id"],
                     "ea_id": source["ea_id"],
@@ -16060,6 +16135,10 @@ def author_news_expansion_continuations(
                 "q08_work_item_id": str(dependency["id"]),
                 "q08_evidence_sha256": parent_hash,
                 "source_aggregate_sha256": str(source["aggregate_sha256"]),
+                "retry_of_work_item_id": (
+                    expansion_retry["retry_of_work_item_id"]
+                    if expansion_retry is not None else None
+                ),
             }
             planned.append(plan)
             if not apply:
@@ -16087,6 +16166,26 @@ def author_news_expansion_continuations(
                     "requeued_at": now,
                 },
             )
+            if expansion_retry is not None:
+                payload.update({
+                    "append_only_rerun_of_work_item": expansion_retry[
+                        "retry_of_work_item_id"
+                    ],
+                    "news_expansion_retry_of_work_item": expansion_retry[
+                        "retry_of_work_item_id"
+                    ],
+                    "rerun_reason": (
+                        "immutable expansion plan referenced a missing authoring-worktree "
+                        "EX5; canonical same-hash EX5 authenticated"
+                    ),
+                    "stale_plan_ex5_path": expansion_retry["stale_ex5_path"],
+                    "retry_canonical_ex5_path": expansion_retry[
+                        "canonical_ex5_path"
+                    ],
+                    "retry_canonical_ex5_sha256": expansion_retry[
+                        "canonical_ex5_sha256"
+                    ],
+                })
             connection.execute("SAVEPOINT news_expansion_continuation")
             try:
                 connection.execute(
@@ -16147,6 +16246,7 @@ def _validated_q09_include_closure(
     closure_builder: Any,
     *,
     ea_id: str,
+    ea_dir: Path,
     work_item_id: str,
 ) -> tuple[Path, dict[str, Any]]:
     """Return a current immutable closure without replacing an older snapshot."""
@@ -16154,10 +16254,12 @@ def _validated_q09_include_closure(
     canonical = Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT / f"{ea_id}_include_closure.json"
     if not canonical.exists():
         canonical = closure_builder.build_include_closure(
-            ea_id, Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT
+            ea_id, Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT, ea_dir=ea_dir
         )
     try:
-        return canonical, closure_builder.validate_include_closure(ea_id, canonical)
+        return canonical, closure_builder.validate_include_closure(
+            ea_id, canonical, ea_dir=ea_dir
+        )
     except RuntimeError as exc:
         stale_markers = (
             "include closure EX5 hash mismatch",
@@ -16168,8 +16270,12 @@ def _validated_q09_include_closure(
         successor_root = Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT / work_item_id
         successor = successor_root / f"{ea_id}_include_closure.json"
         if not successor.exists():
-            successor = closure_builder.build_include_closure(ea_id, successor_root)
-        return successor, closure_builder.validate_include_closure(ea_id, successor)
+            successor = closure_builder.build_include_closure(
+                ea_id, successor_root, ea_dir=ea_dir
+            )
+        return successor, closure_builder.validate_include_closure(
+            ea_id, successor, ea_dir=ea_dir
+        )
 
 
 def auto_seal_pending_q09_news(
@@ -16256,7 +16362,7 @@ def auto_seal_pending_q09_news(
             setfile = Path(str(candidate["setfile_path"])).resolve()
             if not setfile.is_file():
                 raise FileNotFoundError(f"baseline setfile missing: {setfile}")
-            ea_dir = _preferred_ea_dir(ea_id)
+            ea_dir = _ea_dir_from_setfile_path(setfile, ea_id) or _preferred_ea_dir(ea_id)
             if ea_dir is None:
                 raise FileNotFoundError(f"exact canonical EA directory missing/ambiguous: {ea_id}")
             ex5 = ea_dir / f"{ea_dir.name}.ex5"
@@ -16283,6 +16389,7 @@ def auto_seal_pending_q09_news(
             closure, closure_validation = _validated_q09_include_closure(
                 closure_builder,
                 ea_id=ea_id,
+                ea_dir=ea_dir,
                 work_item_id=work_item_id,
             )
             generated_closure_drift = list(

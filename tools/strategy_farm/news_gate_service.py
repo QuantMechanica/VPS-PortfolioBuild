@@ -14,6 +14,31 @@ EXPANSION_REASON = "expanded_7x4_matrix_required"
 CONCLUSIVE_VERDICTS = frozenset({"CONFIG_LOCKED"})
 
 
+def _autoseal_hold_cause(payload_json: str | None) -> str:
+    """Map a held row's structured autoseal failure to a stable drain class."""
+
+    try:
+        payload = json.loads(str(payload_json or "{}"))
+    except json.JSONDecodeError:
+        return "OTHER"
+    failure = payload.get("q09_autoseal_failure") if isinstance(payload, dict) else None
+    if not isinstance(failure, dict):
+        return "UNCLASSIFIED"
+    reason = str(failure.get("reason_code") or "")
+    detail = str(failure.get("detail") or "").lower()
+    if "INCLUDE_CLOSURE" in reason:
+        return "INCLUDE_CLOSURE"
+    if "VALIDATE_Q08_VINTAGE" in reason:
+        return "Q08_VINTAGE"
+    if "DERIVE_LINEAGE" in reason:
+        return "Q08_EVIDENCE_MISSING"
+    if "BIND_PLAN" in reason and "seed-stability evidence is missing" in detail:
+        return "Q07_EVIDENCE_MISSING"
+    if "BIND_PLAN" in reason and "no q07 lineage" in detail:
+        return "Q07_LINEAGE_MISSING"
+    return "OTHER"
+
+
 def _sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -133,6 +158,28 @@ def service_metrics(
             phases,
         ).fetchone()[0]
     )
+    held_rows = connection.execute(
+        f"""
+        SELECT w.id,w.ea_id,w.symbol,w.payload_json
+        FROM work_items w
+        JOIN work_item_holds h ON h.work_item_id=w.id
+        WHERE w.phase IN ({placeholders}) AND w.status='pending'
+          AND h.active=1 AND h.hold_code='Q09_AWAITING_SEALED_PLAN'
+        ORDER BY w.ea_id,w.symbol,w.id
+        """,
+        phases,
+    ).fetchall()
+    hold_cause_rows: dict[str, list[dict[str, str]]] = {}
+    for row in held_rows:
+        cause = _autoseal_hold_cause(row["payload_json"])
+        hold_cause_rows.setdefault(cause, []).append({
+            "id": str(row["id"]),
+            "ea_id": str(row["ea_id"]),
+            "symbol": str(row["symbol"]),
+        })
+    hold_cause_counts = {
+        cause: len(rows) for cause, rows in sorted(hold_cause_rows.items())
+    }
     requests = expansion_requests(connection, news_phases=phases)
     pending: list[dict[str, Any]] = []
     for request in requests:
@@ -165,4 +212,7 @@ def service_metrics(
         "expansions_pending": len(pending),
         "expansion_pending_rows": pending,
         "pending_runner_count": placeholder_count,
+        "active_hold_count": len(held_rows),
+        "hold_cause_counts": hold_cause_counts,
+        "hold_cause_rows": hold_cause_rows,
     }

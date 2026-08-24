@@ -95,6 +95,33 @@ def relative_label(path: Path, origin: str) -> str:
     return path.relative_to(STDLIB_TERMINAL).as_posix()
 
 
+def _resolve_ea_dir(ea_id: str, ea_dir: Path | None = None) -> Path:
+    """Resolve one exact canonical EA directory.
+
+    Callers that already authenticated an exact setfile identity may supply its
+    owning EA directory.  This avoids treating an inactive sibling build as an
+    ambiguity while preserving the historical fail-closed glob for callers
+    that do not carry an exact identity.
+    """
+
+    ea_root = (REPO / "framework" / "EAs").resolve()
+    if ea_dir is not None:
+        resolved = Path(ea_dir).resolve()
+        if resolved.parent != ea_root or not resolved.name.startswith(f"{ea_id}_"):
+            raise RuntimeError(
+                f"exact EA directory does not match canonical {ea_id} identity: {resolved}"
+            )
+        if not resolved.is_dir():
+            raise RuntimeError(f"exact EA directory is missing: {resolved}")
+        return resolved
+    matches = sorted(path.resolve() for path in ea_root.glob(f"{ea_id}_*") if path.is_dir())
+    if len(matches) != 1:
+        raise RuntimeError(
+            f"expected exactly one EA directory for {ea_id}, found {len(matches)}"
+        )
+    return matches[0]
+
+
 def walk(root_mq5: Path) -> list[tuple[Path, str]]:
     seen: dict[Path, str] = {}
     stack = [(root_mq5, "repo")]
@@ -123,19 +150,16 @@ def walk(root_mq5: Path) -> list[tuple[Path, str]]:
     return [(p, o) for p, o in seen.items()]
 
 
-def validate_include_closure(ea_id: str, path: Path) -> dict:
+def validate_include_closure(
+    ea_id: str, path: Path, *, ea_dir: Path | None = None
+) -> dict:
     """Re-authenticate an existing closure against the current source tree."""
 
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise RuntimeError(f"invalid include closure {path}: {exc}") from exc
-    matches = sorted((REPO / "framework" / "EAs").glob(f"{ea_id}_*"))
-    if len(matches) != 1:
-        raise RuntimeError(
-            f"expected exactly one EA directory for {ea_id}, found {len(matches)}"
-        )
-    ea_dir = matches[0]
+    ea_dir = _resolve_ea_dir(ea_id, ea_dir)
     root_mq5 = ea_dir / f"{ea_dir.name}.mq5"
     ex5 = ea_dir / f"{ea_dir.name}.ex5"
     if payload.get("schema") != SCHEMA or payload.get("ea_id") != ea_id:
@@ -197,7 +221,9 @@ def validate_include_closure(ea_id: str, path: Path) -> dict:
     return payload
 
 
-def build_include_closure(ea_id: str, out_dir: Path = OUT_DIR) -> Path:
+def build_include_closure(
+    ea_id: str, out_dir: Path = OUT_DIR, *, ea_dir: Path | None = None
+) -> Path:
     """Build one immutable closure and return its path.
 
     This is the programmatic factory entry point.  Deliberately no ``force``
@@ -205,12 +231,7 @@ def build_include_closure(ea_id: str, out_dir: Path = OUT_DIR) -> Path:
     never replace an already-bound source identity.
     """
 
-    matches = sorted((REPO / "framework" / "EAs").glob(f"{ea_id}_*"))
-    if len(matches) != 1:
-        raise RuntimeError(
-            f"expected exactly one EA directory for {ea_id}, found {len(matches)}"
-        )
-    ea_dir = matches[0]
+    ea_dir = _resolve_ea_dir(ea_id, ea_dir)
     root_mq5 = ea_dir / f"{ea_dir.name}.mq5"
     ex5 = ea_dir / f"{ea_dir.name}.ex5"
     for p in (root_mq5, ex5):
@@ -247,7 +268,7 @@ def build_include_closure(ea_id: str, out_dir: Path = OUT_DIR) -> Path:
     }
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    validate_include_closure(ea_id, out_path)
+    validate_include_closure(ea_id, out_path, ea_dir=ea_dir)
     return out_path
 
 
