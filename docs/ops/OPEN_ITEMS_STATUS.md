@@ -26,6 +26,17 @@
 
 ---
 
+## 0f · Orchestrator-Session 2026-08-24 nachmittags — Review-Drain + Durchsatz-Massnahmen
+
+| # | Punkt | Stand |
+|---|---|---|
+| 1 | **Review-Lane 103 → 15** (52 APPROVED / 33 RECYCLE / 2 BLOCKED-ROT); Methode: 8 parallele Sonnet-Verifikationsagents, Closes durch Orchestrator | erledigt (`docs/ops/evidence/2026-08-24_orchestrator_review_batch_close.md`, b7bc98fc4) |
+| 2 | Durchsatz-Forensik (Codex): Kollaps = Long-Run-Q10-Belegung + Codex-CPU-Contention; Pump-Budget widerlegt | geliefert (e88c8e9b0) |
+| 3 | 11 Folge-Tickets kommissioniert (Scheduling-Cap de0f052e P85, ROT-Remediation b63eaead P80, FleetPacer 32c7b01f, Identity-Minting f7d75020, Circuit-Breaker cae3df77, Hash-Kanon 8628cddd, Q02-Stranded 9e23d73f, at_utc cf97e8c3, Schtask-Triage 05035f17, OPT_CENSUS-Rang 6d0c929f, Telemetrie 6e9a724b) | im Router (TODO) |
+| 4 | 5 gestrandete rework-slot-Branches (2/4/5/6/12) gemerged; Resolver regeneriert; Konflikte per Autoritaets-Union | erledigt (ab2b7c9bd..fc93d5515) |
+| 5 | **ROT-Verstoss 39001/38001** (Ad-hoc-Compile nach Interlock-REFUSE, 38001 auch T8-Include-Spiegelung) → OWNER-Board informiert, Remediation b63eaead | offen bis Ticket-Abnahme |
+| 6 | farm_state-WAL 459 MB (Checkpoint-Starvation) + 6 wiederkehrend failende Schtasks | an Ticket 05035f17 |
+
 ## 0e · Ultracode-Sitzung 2026-08-23 abends — v4 AKTIV, Damm gebrochen, Boards leer
 
 | # | Punkt | Stand |
@@ -40,7 +51,8 @@
 | 8 | Testsuite: 4531 pass / 0 fail (UTF-8-Konsole; 1 bekannter cp850-Fail `test_codex_session_supervisor` → Codex/ops) | gemerged |
 | 9 | Claude-Review-Lane 31 → 0 (14 APPROVED, 12 RECYCLE mit konkreten Defekten, 5 BLOCKED-Holds bestätigt) | erledigt |
 | 10 | OWNER-Entscheide Batch 2 ausgeführt: STRANDED-182 (182→INVALID, Health 270→88), Q02-Bypass zu, Public-Archiv Variante (b) + v4-Gates-Block, 411xx-Buffer-Klasse (21 EAs) gefixt | gemerged |
-| 11 | **T_Live-Preset-Deploy**: vorbereitet + verifizierbar; OWNER-`!`-Lauf erfolgte ohne `--apply` → **erneut nötig**: `! cd C:\QMepo && python tools\strategy_farm\deploy_tlive_preset_repair.py --apply`; danach Signatur durch Claude | **wartet auf OWNER** |
+| 11 | **T_Live-Preset-Deploy**: vorbereitet + verifizierbar; OWNER-`!`-Lauf erfolgte ohne `--apply` → **erneut nötig**: `! cd C:\QM
+epo && python tools\strategy_farm\deploy_tlive_preset_repair.py --apply`; danach Signatur durch Claude | **wartet auf OWNER** |
 | 12 | SH-2/SH-3 (Artefakt-Identität + typisierte Spalten): Merge-Konfliktauflösung läuft; **OFF-Fenster #3 heute Nacht** (OWNER: „Claude entscheidet") | in Arbeit |
 
 ## 0d · Ultracode-Sitzung 2026-08-23 nachmittags — Pipeline-Rebaseline v4 (OWNER-Auftrag „Fabrik final umbauen")
