@@ -1,81 +1,88 @@
 # QM5_1613_aa-dsp-atsmom - Strategy Spec
 
 **EA ID:** QM5_1613
-**Slug:** a-dsp-atsmom
-**Source:** de348b4-0fa7-5be1-baa8-09e9089b67b7
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-22
+**Slug:** aa-dsp-atsmom
+**Source:** ede348b4-0fa7-5be1-baa8-09e9089b67b7
+**Author of this spec:** Codex
+**Last revised:** 2026-08-24
 
 ---
 
 ## 1. Strategy Logic
 
-This EA implements the Alpha Architect Digital Signal Processing Averaged Time Series Momentum (ATSMOM 3-6-9-12) strategy on D1 bars.
-Stern describes averaged TSMOM as an average of multiple fixed lookbacks with a gain multiplier:
+On each newly completed D1 bar, the EA calculates the approved fixed averaged
+time-series momentum signal:
 
-ATSMOM = 0.7043 * (Close(1) - 0.25*Close(4) - 0.25*Close(7) - 0.25*Close(10) - 0.25*Close(13))
+`ATSMOM = 0.7043 * (Close(1) - 0.25*Close(4) - 0.25*Close(7) - 0.25*Close(10) - 0.25*Close(13))`
 
-On each closed D1 bar:
-- Long Entry: ATSMOM(1) > 0.0 and ATSMOM(2) <= 0.0 (zero-cross up).
-- Short Entry: ATSMOM(1) < 0.0 and ATSMOM(2) >= 0.0 (zero-cross down).
-- Exit: Long positions exit when ATSMOM(1) <= 0.0; Short positions exit when ATSMOM(1) >= 0.0.
-- Protective Stop: Initial SL placed at 2.5 * ATR(20, D1).
+- Open long while flat when `ATSMOM > 0`.
+- Open short while flat when `ATSMOM < 0`.
+- Close a long when `ATSMOM <= 0`; close a short when `ATSMOM >= 0`.
+- Place an initial stop at `2.5 x ATR(20, D1)`.
+- Reject a new entry when the current D1 spread exceeds 2.5 times the median
+  spread of the preceding 20 completed D1 bars.
 
----
+The state-based entry deliberately permits re-entry after an ATR stop while the
+completed-bar signal retains its sign. News and Friday restrictions block new
+entries but do not suppress the card's risk-reducing exits.
 
 ## 2. Parameters
 
-| Parameter | Default | Range | Meaning |
-|---|---:|---|---|
-| strategy_min_daily_bars | 30 | 20-50 | Warmup bar count requirement |
-| strategy_atr_period | 20 | 10-30 | ATR period for protective stop |
-| strategy_atr_sl_mult | 2.5 | 1.5-3.5 | ATR multiplier for protective stop |
-| strategy_max_spread_points | 0 | 0-5000 | Max spread guard (0 = disabled) |
-
----
+| Parameter | Default | Meaning |
+|---|---:|---|
+| `strategy_min_daily_bars` | 30 | Minimum completed D1 history required before evaluation |
+| `strategy_atr_period` | 20 | D1 ATR lookback for the initial stop |
+| `strategy_atr_sl_mult` | 2.5 | ATR multiplier for the initial stop |
+| `strategy_spread_median_days` | 20 | Completed D1 spread observations used for the median |
+| `strategy_spread_median_mult` | 2.5 | Maximum current-spread multiple of the D1 median |
 
 ## 3. Symbol Universe
 
-**Baseline DWX symbols:**
-- SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX
-- XAUUSD.DWX, EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX, USDCHF.DWX, NZDUSD.DWX, UK100.DWX
+The approved card universe contains exactly nine concepts:
 
----
+- Equity indices: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`.
+- Gold and energy: `XAUUSD.DWX`, `USOIL.DWX`.
+- FX: `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`.
 
-## 4. Timeframe
+The governed execution-symbol registry maps the card's `USOIL.DWX` concept from
+the broker alias `USOIL.cash` to the logical custom symbol `XTIUSD.DWX`. The
+portable build and its setfile therefore use `XTIUSD.DWX`; no unapproved symbol
+is included in the delivered setfile universe.
+
+## 4. Timeframe and Cadence
 
 | Aspect | Value |
 |---|---|
 | Base timeframe | D1 |
-| Multi-timeframe refs | none |
-| Bar gating | QM_IsNewBar() |
-
----
+| Multi-timeframe references | None |
+| Signal cadence | Once per completed D1 bar via `QM_IsNewBar(_Symbol, PERIOD_D1)` |
+| Position policy | One position per symbol and resolved magic |
 
 ## 5. Expected Behaviour
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | ~100 |
+| Trades / year / symbol | Approximately 100 (card estimate; pipeline-measured) |
 | Typical hold time | 2-15 D1 bars |
 | Regime preference | Trending / momentum |
-| Win rate target (qualitative) | medium |
-
----
 
 ## 6. Source Citation
 
-**Source ID:** de348b4-0fa7-5be1-baa8-09e9089b67b7
-**Source type:** blog
-**Pointer:** Henry Stern, 'An Introduction to Digital Signal Processing for Trend Following', Alpha Architect (2020-08-13, updated 2025-03), https://alphaarchitect.com/an-introduction-to-digital-signal-processing-for-trend-following/
-**R1-R4 verdict (Q00):** all PASS; see docs/strategy_card.md
+**Source ID:** ede348b4-0fa7-5be1-baa8-09e9089b67b7
 
----
+Henry Stern, "An Introduction to Digital Signal Processing for Trend Following",
+Alpha Architect, 2020-08-13 (updated 2025-03):
+https://alphaarchitect.com/an-introduction-to-digital-signal-processing-for-trend-following/
+
+R1 lineage and the R2-R4 PASS decisions remain governed by the approved Strategy
+Card at `D:/QM/strategy_farm/artifacts/cards_approved/QM5_1613_aa-dsp-atsmom.md`.
 
 ## 7. Risk Model
 
-| Phase | Risk mode | Value |
+| Environment | Active mode | Other mode |
 |---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | ,000 per trade |
-| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | 0.5% |
+| Backtest | `RISK_FIXED = 1000` ($1,000 per trade) | `RISK_PERCENT = 0` |
+| T6 live, if separately authorized | `RISK_PERCENT = 0.5` | `RISK_FIXED = 0` |
+
+This build and specification do not authorize a backtest, promotion, or live
+deployment.
