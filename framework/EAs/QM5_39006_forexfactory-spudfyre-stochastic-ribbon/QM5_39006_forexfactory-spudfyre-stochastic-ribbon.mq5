@@ -25,7 +25,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -55,6 +55,7 @@ input double strategy_daily_loss_halt_pct = 2.0;    // Daily realized loss entry
 input double strategy_daily_hard_stop_pct = 2.5;    // Daily hard stop percent
 input double strategy_total_dd_halt_pct   = 5.0;    // Total drawdown halt percent
 input double strategy_per_trade_risk_cap_pct = 1.0; // Per-trade risk cap percent
+input double strategy_max_slippage_ticks = 3.0;     // Maximum market-order slippage in symbol ticks
 
 // -----------------------------------------------------------------------------
 // File-scope cached state (updated once per new closed bar)
@@ -125,7 +126,7 @@ bool Strategy_NoTradeFilter()
    }
 
    MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
+   TimeToStruct(QM_BrokerToUTC(TimeCurrent()), dt);
    const int minute_of_day = dt.hour * 60 + dt.min;
    if(minute_of_day >= 1435 || minute_of_day < 5) // 23:55 - 00:05 blackout
       return true;
@@ -258,6 +259,9 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
 {
+   if(strategy_max_slippage_ticks <= 0.0 || strategy_max_slippage_ticks > 3.0)
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -275,6 +279,22 @@ int OnInit()
                         qm_news_temporal,
                         qm_news_compliance))
       return INIT_FAILED;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   const int deviation_points = (point > 0.0 && tick_size > 0.0)
+      ? (int)MathFloor((strategy_max_slippage_ticks * tick_size / point) + 1e-9)
+      : 0;
+   if(deviation_points < 1)
+      return INIT_FAILED;
+
+   QM_EntryConfigure(qm_ea_id,
+                     qm_news_mode_legacy,
+                     deviation_points,
+                     qm_stress_reject_probability,
+                     qm_news_temporal,
+                     qm_news_compliance,
+                     QM_FrameworkMagic());
 
    if(!QM_FrameworkDeclareExecutionContract(PERIOD_H1,
                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,

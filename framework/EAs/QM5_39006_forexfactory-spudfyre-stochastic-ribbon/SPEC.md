@@ -31,6 +31,7 @@ Long entries trigger when the stochastic ribbon compresses deeply into oversold 
 | `strategy_daily_hard_stop_pct` | 2.5 | 1.5-4.0 | Daily hard stop percent |
 | `strategy_total_dd_halt_pct` | 5.0 | 3.0-10.0 | Total drawdown halt percent |
 | `strategy_per_trade_risk_cap_pct` | 1.0 | 0.5-2.0 | Per-trade risk cap percent |
+| `strategy_max_slippage_ticks` | 3.0 | >0.0-3.0 | Maximum market-order slippage in symbol ticks |
 
 ---
 
@@ -95,3 +96,4 @@ This card was mechanised from:
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Gemini build pass |
 | v2 | 2026-08-23 | Fix Codex findings | Correct timeframe contract to H1, pip scaling, +1R break-even, loss limit wiring |
+| v3 | 2026-08-24 | Fix recycle review findings | Backtest-safe risk defaults, UTC rollover, and explicit three-tick entry deviation |
