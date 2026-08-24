@@ -954,11 +954,11 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
         _render_path_to_25(contract),
         _render_q09_ftmo_recommendation(contract),
         _render_owner_decisions(contract),
-        render_operator_surface_html(contract.get("operator_surface") or {}),
         _render_progress(contract),
         _render_terminals(contract, ea_page_exists=ea_page_exists),
         _render_queue(contract),
         _render_exceptions(contract),
+        render_operator_surface_html(contract.get("operator_surface") or {}),
     ])
 
     dur = f"{duration_ms:.0f} ms" if duration_ms is not None else "—"

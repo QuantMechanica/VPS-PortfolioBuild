@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/shadow_null_factory_ledger.v1.schema.json",
+  "title": "Shadow Null Factory frozen experiment ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "returns_sha256",
+    "trial_ids",
+    "selection_rule",
+    "null_model",
+    "annualization",
+    "block_length",
+    "replications",
+    "seed",
+    "alpha",
+    "attestation",
+    "cohort_attestation",
+    "cohort_definition",
+    "frozen_at_utc"
+  ],
+  "properties": {
+    "schema": {"const": "qm.shadow-null-factory-ledger/v1"},
+    "returns_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "trial_ids": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "selection_rule": {"const": "MAX_ANNUALIZED_SHARPE_THEN_TRIAL_ID"},
+    "null_model": {"const": "JOINT_CENTERED_CIRCULAR_MOVING_BLOCK_BOOTSTRAP"},
+    "annualization": {"type": "integer", "minimum": 1},
+    "block_length": {"type": "integer", "minimum": 1},
+    "replications": {"type": "integer", "minimum": 99},
+    "seed": {"type": "integer"},
+    "alpha": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
+    "attestation": {"const": "SPEC_FROZEN_BEFORE_SHADOW_EVALUATION"},
+    "cohort_attestation": {"const": "ALL_DECLARED_SEARCH_TRIALS_INCLUDED"},
+    "cohort_definition": {"type": "string", "minLength": 1},
+    "frozen_at_utc": {"type": "string", "format": "date-time"}
+  }
+}

@@ -220,6 +220,24 @@ def test_no_p_gate_token_in_html():
     assert "Q04" in html and "Q07" in html
 
 
+def test_linear_gate_frontier_is_the_last_dashboard_section(monkeypatch):
+    """Keep the dense diagnostic frontier below the operational overview."""
+    monkeypatch.setattr(
+        r,
+        "render_operator_surface_html",
+        lambda _snapshot: (
+            '<section class="operator-gates" id="operator-gates">'
+            '<h2>Linear gate frontier</h2></section>'
+        ),
+    )
+
+    html = r.render(make_contract())
+
+    frontier = html.index("Linear gate frontier")
+    assert frontier > html.index("Ausnahmen &amp; Datenqualität")
+    assert html.find("<section", frontier) == -1
+
+
 # ---------------------------------------------------------------------------
 # 3. factory traffic-light mapping — the four cases
 # ---------------------------------------------------------------------------
