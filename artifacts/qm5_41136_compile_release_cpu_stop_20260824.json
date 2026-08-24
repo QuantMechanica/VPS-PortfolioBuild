@@ -1,0 +1,30 @@
+{
+  "schema": "qm.cpu-ceiling-observation/v1",
+  "recorded_at_utc": "2026-08-24T00:37:34.3206523Z",
+  "scope": "QM5_41136 governed compile release continuation and Q02 admission",
+  "trigger_point_percent": 99.22,
+  "confirmation_sample_interval_seconds": 4,
+  "confirmation_samples_percent": [
+    72.17,
+    69.61,
+    69.42,
+    65.04,
+    64.87
+  ],
+  "confirmation_average_percent": 68.22,
+  "confirmation_max_percent": 72.17,
+  "claim_ceiling_percent": 97.0,
+  "resume_ceiling_percent": 90.0,
+  "policy_source": "tools/strategy_farm/terminal_worker.py",
+  "ceiling_breached": true,
+  "compile_work_item_id": "77d52009-3434-4c70-a93b-29471832c3cd",
+  "compile_hold_released_at_utc": "2026-08-24T00:10:13+00:00",
+  "compile_status": "pending",
+  "compile_claimed_by": null,
+  "compile_attempt_count": 0,
+  "compile_verdict": null,
+  "ex5_exists": false,
+  "q01_pass": false,
+  "q02_enqueued": false,
+  "stop_reason": "OWNER mission says to stop and summarize when the backtest CPU ceiling is reached"
+}

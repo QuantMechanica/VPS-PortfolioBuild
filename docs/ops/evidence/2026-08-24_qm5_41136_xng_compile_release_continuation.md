@@ -4,7 +4,8 @@ Date: 2026-08-24
 
 Branch: `agents/board-advisor`
 
-Status at this receipt: `COMPILE_RELEASED_PENDING_CLAIM_Q02_NOT_ENQUEUED`
+Status at this receipt:
+`COMPILE_RELEASED_PENDING_CLAIM_Q02_NOT_ENQUEUED_CPU_CEILING`
 
 ## Scope
 
@@ -89,10 +90,26 @@ Consequently there is still no current EX5, sealed setfile, Q01 PASS, or legal
 Q02 enqueue at this point. Q02 must remain absent until the governed worker
 returns `COMPILE_OK` with zero errors/warnings and a current build binding.
 
+## Binding CPU stop
+
+At `2026-08-24T00:36:34Z`, the bounded watcher observed a 99.22% total-CPU
+point sample. The resident worker contract trips at any observation above
+`CPU_MAX_LOAD_PERCENT=97.0`; the mission independently requires stopping when
+that backtest CPU ceiling is hit. The immediately following five-sample
+confirmation was `72.17, 69.61, 69.42, 65.04, 64.87` percent, averaging
+68.22% and peaking at 72.17%. That recovery does not erase the preceding
+99.22% trip or authorize another attempt inside this mission.
+
+Final readback after the trip remained pending, unclaimed, attempt zero, and
+verdict-free. The canonical EX5 path was still absent. No Q02 row was inserted.
+Machine-readable evidence is
+`artifacts/qm5_41136_compile_release_cpu_stop_20260824.json`.
+
 ## Safety boundary
 
 This continuation changes only the exact non-live compile-row hold and records
 its evidence. It does not authorize a backtest bypass, live/demo/shadow/stress
 setfile, T_Live or deploy manifest, AutoTrading, portfolio-gate change,
 portfolio admission, correlation waiver, terminal control, or a second queue
-row.
+row. No compile retry, dispatcher tick, tester action, or queue mutation
+followed the CPU trip.
