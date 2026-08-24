@@ -15,7 +15,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -41,6 +41,12 @@ input double InpAtrSlMult               = 1.5;    // Stop loss ATR multiplier
 input double InpSpreadAtrMult           = 1.8;    // Max spread as multiple of M5 ATR(14)
 input bool   InpEnableBreakEven         = true;   // Move to break-even at +1.0R
 input int    InpBucketTicks             = 10;     // Volume profile bucket granularity in ticks
+input double InpDailyRealizedLossHaltPct = 2.0;  // Halt entries at account daily realized loss
+input double InpDailyHardStopPct        = 2.5;    // Flatten/halt at daily equity drawdown
+input double InpTotalDrawdownStopPct    = 5.0;    // Flatten/halt from initial strategy equity
+input double InpSlippageTicks           = 3.0;    // Maximum market-order deviation in ticks
+
+#define STRATEGY_MAX_PROFILE_BUCKETS 1000000
 
 // -----------------------------------------------------------------------------
 // Cached Profile State
@@ -51,6 +57,139 @@ bool     g_profile_valid = false;
 double   g_prior_vah     = 0.0;
 double   g_prior_val     = 0.0;
 double   g_prior_poc     = 0.0;
+double   g_initial_equity = 0.0;
+datetime g_realized_cache_second = 0;
+double   g_day_start_balance = 0.0;
+double   g_daily_realized_loss_pct = 0.0;
+bool     g_daily_realized_loss_valid = false;
+
+bool Strategy_ValidateInputs()
+{
+   return (InpValueAreaPct >= 68.0 && InpValueAreaPct <= 72.0 &&
+           InpBufferTicks >= 2 && InpBufferTicks <= 8 &&
+           InpAtrPeriod >= 10 && InpAtrPeriod <= 30 &&
+           InpAtrSlMult >= 1.0 && InpAtrSlMult <= 3.0 &&
+           InpSpreadAtrMult >= 1.0 && InpSpreadAtrMult <= 3.0 &&
+           InpBucketTicks >= 5 && InpBucketTicks <= 20 &&
+           InpDailyRealizedLossHaltPct > 0.0 &&
+           InpDailyHardStopPct > InpDailyRealizedLossHaltPct &&
+           InpTotalDrawdownStopPct > InpDailyHardStopPct &&
+           InpSlippageTicks > 0.0);
+}
+
+string Strategy_InitialEquityKey()
+{
+   return StringFormat("QM5_41009_INITIAL_EQUITY_%I64d_%d",
+                       AccountInfoInteger(ACCOUNT_LOGIN), QM_FrameworkMagic());
+}
+
+bool Strategy_InitCapitalPreservation()
+{
+   const double current_equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(current_equity <= 0.0)
+      return false;
+
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+   {
+      g_initial_equity = current_equity;
+      return true;
+   }
+
+   const string key = Strategy_InitialEquityKey();
+   if(GlobalVariableCheck(key))
+      g_initial_equity = GlobalVariableGet(key);
+   else
+   {
+      g_initial_equity = current_equity;
+      if(GlobalVariableSet(key, g_initial_equity) == 0)
+         return false;
+   }
+   return (g_initial_equity > 0.0);
+}
+
+bool Strategy_UpdateDailyRealizedLoss()
+{
+   const datetime broker_now = TimeCurrent();
+   if(g_realized_cache_second == broker_now && g_daily_realized_loss_valid)
+      return true;
+
+   const datetime day_start = BrokerDayStart(broker_now);
+   if(!HistorySelect(day_start, broker_now))
+   {
+      g_daily_realized_loss_valid = false;
+      return false;
+   }
+
+   double realized_net = 0.0;
+   const int deals = HistoryDealsTotal();
+   for(int i = 0; i < deals; ++i)
+   {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         continue;
+      const ENUM_DEAL_TYPE type = (ENUM_DEAL_TYPE)HistoryDealGetInteger(deal, DEAL_TYPE);
+      if(type != DEAL_TYPE_BUY && type != DEAL_TYPE_SELL)
+         continue;
+      realized_net += HistoryDealGetDouble(deal, DEAL_PROFIT);
+      realized_net += HistoryDealGetDouble(deal, DEAL_COMMISSION);
+      realized_net += HistoryDealGetDouble(deal, DEAL_SWAP);
+      realized_net += HistoryDealGetDouble(deal, DEAL_FEE);
+   }
+
+   const double day_start_balance = AccountInfoDouble(ACCOUNT_BALANCE) - realized_net;
+   if(day_start_balance <= 0.0)
+   {
+      g_daily_realized_loss_valid = false;
+      return false;
+   }
+
+   g_day_start_balance = day_start_balance;
+   g_daily_realized_loss_pct = MathMax(0.0, (-realized_net / day_start_balance) * 100.0);
+   g_realized_cache_second = broker_now;
+   g_daily_realized_loss_valid = true;
+   return true;
+}
+
+bool Strategy_CapitalPreservationCheck()
+{
+   if(!QM_KillSwitchCheck())
+      return false;
+   if(!Strategy_UpdateDailyRealizedLoss())
+      return false;
+   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(g_initial_equity <= 0.0 || g_day_start_balance <= 0.0 || equity_now <= 0.0)
+      return false;
+   const double daily_drawdown_pct =
+      MathMax(0.0, ((g_day_start_balance - equity_now) / g_day_start_balance) * 100.0);
+   if(daily_drawdown_pct >= InpDailyHardStopPct)
+   {
+      QM_KillSwitchTrip(KS_DAILY_LOSS,
+                        StringFormat("{\"day_start_balance\":%.2f,\"equity_now\":%.2f,\"drawdown_pct\":%.6f,\"halt_pct\":%.6f}",
+                                     g_day_start_balance, equity_now,
+                                     daily_drawdown_pct, InpDailyHardStopPct));
+      return false;
+   }
+   const double total_drawdown_pct =
+      MathMax(0.0, ((g_initial_equity - equity_now) / g_initial_equity) * 100.0);
+   if(total_drawdown_pct >= InpTotalDrawdownStopPct)
+   {
+      QM_KillSwitchTrip("KS_TOTAL_DRAWDOWN",
+                        StringFormat("{\"initial_equity\":%.2f,\"equity_now\":%.2f,\"drawdown_pct\":%.6f,\"halt_pct\":%.6f}",
+                                     g_initial_equity, equity_now,
+                                     total_drawdown_pct, InpTotalDrawdownStopPct));
+      return false;
+   }
+   return true;
+}
+
+int Strategy_SlippageDeviationPoints()
+{
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(point <= 0.0 || tick_size <= 0.0)
+      return -1;
+   return (int)MathFloor((InpSlippageTicks * tick_size / point) + 1e-9);
+}
 
 datetime BrokerDayStart(const datetime t)
 {
@@ -129,8 +268,13 @@ bool BuildPriorProfile(const datetime today_start,
    if(!have_range || bars_scanned <= 0 || day_high <= day_low)
       return false;
 
-   int n_buckets = (int)((day_high - day_low) / bucket) + 1;
-   if(n_buckets <= 0 || n_buckets > 500)
+   const double raw_bucket_count = (day_high - day_low) / bucket;
+   if(!MathIsValidNumber(raw_bucket_count) ||
+      raw_bucket_count < 0.0 ||
+      raw_bucket_count >= STRATEGY_MAX_PROFILE_BUCKETS)
+      return false;
+   const int n_buckets = (int)raw_bucket_count + 1;
+   if(n_buckets <= 0 || n_buckets > STRATEGY_MAX_PROFILE_BUCKETS)
       return false;
 
    double vol[];
@@ -250,6 +394,11 @@ void AdvanceState_OnNewBar()
 
 bool Strategy_NoTradeFilter()
 {
+   if(!Strategy_UpdateDailyRealizedLoss())
+      return true;
+   if(g_daily_realized_loss_pct >= InpDailyRealizedLossHaltPct)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask > 0.0 && bid > 0.0 && ask > bid)
@@ -259,8 +408,9 @@ bool Strategy_NoTradeFilter()
          return true;
    }
 
+   const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
    MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
+   TimeToStruct(utc_now, dt);
    if((dt.hour == 23 && dt.min >= 55) || (dt.hour == 0 && dt.min < 5))
       return true;
 
@@ -298,7 +448,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_BUY;
       req.price = 0.0;
       req.sl = ask - InpAtrSlMult * atr;
-      req.tp = (g_prior_poc > ask) ? g_prior_poc : (ask + 1.8 * (ask - req.sl));
+      if(g_prior_poc <= ask)
+         return false;
+      req.tp = g_prior_poc;
       req.reason = "VA_REJECTION_BUY";
       req.symbol_slot = qm_magic_slot_offset;
       req.expiration_seconds = 0;
@@ -315,7 +467,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_SELL;
       req.price = 0.0;
       req.sl = bid + InpAtrSlMult * atr;
-      req.tp = (g_prior_poc < bid) ? g_prior_poc : (bid - 1.8 * (req.sl - bid));
+      if(g_prior_poc >= bid)
+         return false;
+      req.tp = g_prior_poc;
       req.reason = "VA_REJECTION_SELL";
       req.symbol_slot = qm_magic_slot_offset;
       req.expiration_seconds = 0;
@@ -385,10 +539,31 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 int OnInit()
 {
+   if(!Strategy_ValidateInputs())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
+      return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(
+         PERIOD_M5,
+         QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+         "V5 framework Friday-close safety override; approved card declares no Friday rule"))
+      return INIT_FAILED;
+
+   const int deviation_points = Strategy_SlippageDeviationPoints();
+   if(deviation_points <= 0)
+      return INIT_FAILED;
+   QM_EntryConfigure(qm_ea_id, qm_news_mode_legacy, deviation_points,
+                     qm_stress_reject_probability, qm_news_temporal,
+                     qm_news_compliance, QM_FrameworkMagic());
+
+   if(!QM_KillSwitchInit(qm_ea_id, QM_FrameworkMagic(), 0.0, 0.0, 1.0))
+      return INIT_FAILED;
+   if(!Strategy_InitCapitalPreservation())
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_41009\",\"ea\":\"volume-profile-value-area-rejection\"}");
@@ -405,11 +580,10 @@ void OnTick()
 {
    QM_FrameworkTrackOpenPositionMae();
 
-   if(!QM_KillSwitchCheck()) return;
+   if(!Strategy_CapitalPreservationCheck()) return;
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
    if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
 
    Strategy_ManageOpenPosition();
 
@@ -424,6 +598,8 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
       }
    }
+
+   if(Strategy_NoTradeFilter()) return;
 
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)

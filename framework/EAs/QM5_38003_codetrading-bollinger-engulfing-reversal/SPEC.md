@@ -18,6 +18,8 @@ Stop Loss is placed beyond the extreme of the engulfing candle (Low - 2.0 pips f
 
 An entry fails closed when its risk-sized volume cannot be divided into two equal, broker-valid half volumes. This preserves the card's exact 50% exit instead of silently rounding it.
 
+The ATR spread ceiling is evaluated after the closed-bar indicator refresh and checked again at the final order-submission boundary, after news admission. Missing or crossed quotes and an unavailable ATR all fail closed.
+
 ---
 
 ## 2. Parameters

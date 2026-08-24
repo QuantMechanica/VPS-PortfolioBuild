@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4bd27ba6647c47359b92d3d02f812500c8fa5e8cf4da798474b551957a64bb80
+; build_hash:   f019bdfe887856f4ae307402ab7488f20cb69b350871b7d2243e46285d90e806
 ; author:       Development
 ; date:         2026-08-18
 ;==========================================================
@@ -28,3 +28,7 @@ InpAtrSlMult=1.5
 InpSpreadAtrMult=1.8
 InpEnableBreakEven=true
 InpBucketTicks=10
+InpDailyRealizedLossHaltPct=2.0
+InpDailyHardStopPct=2.5
+InpTotalDrawdownStopPct=5.0
+InpSlippageTicks=3.0

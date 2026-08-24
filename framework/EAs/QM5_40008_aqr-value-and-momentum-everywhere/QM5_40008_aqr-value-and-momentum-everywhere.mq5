@@ -64,6 +64,7 @@ input double          InpATRMultiplier           = 2.5;    // Stop Loss ATR mult
 input double          InpSpreadATRMult           = 1.8;    // Max spread multiplier vs ATR(14, D1)
 input int             strategy_rollover_start_hhmm = 2355;
 input int             strategy_rollover_end_hhmm   = 5;
+input int             strategy_max_slippage_ticks  = 3;    // Card: max market-order deviation in ticks
 
 // =============================================================================
 // UNIVERSE — mirrors magic_numbers.csv slots 0..3 for QM5_40008
@@ -78,8 +79,6 @@ double g_last_combined_score = 0.5;
 double g_last_sma_200        = 0.0;
 double g_last_close1         = 0.0;
 double g_last_atr1           = 0.0;
-int    g_last_quarter        = -1;
-int    g_last_year           = -1;
 
 int StrategyHhmm(const datetime t)
 {
@@ -100,13 +99,38 @@ bool StrategyInRolloverWindow(const datetime t)
 bool Strategy_ValidateInputs()
 {
    if(strategy_daily_loss_halt_pct <= 0.0 || strategy_daily_hard_stop_pct <= 0.0 ||
-      strategy_daily_loss_halt_pct > strategy_daily_hard_stop_pct || strategy_total_dd_stop_pct <= 0.0)
+       strategy_daily_loss_halt_pct > strategy_daily_hard_stop_pct || strategy_total_dd_stop_pct <= 0.0)
       return false;
-   if(InpMomDays < 10 || InpValDays < 100 || InpSMAPeriod < 10 || InpATRPeriod < 1 || InpATRMultiplier <= 0.0)
+   if(strategy_signal_tf != PERIOD_D1)
       return false;
-   if(InpScoreThresholdLong <= InpScoreThresholdShort)
+   if(InpMomDays < 150 || InpMomDays > 300 ||
+      InpValDays < 750 || InpValDays > 1500 || InpValDays <= InpMomDays ||
+      InpSMAPeriod < 50 || InpSMAPeriod > 300 ||
+      InpATRPeriod < 10 || InpATRPeriod > 30 ||
+      InpATRMultiplier < 1.5 || InpATRMultiplier > 4.0 ||
+      InpSpreadATRMult < 1.0 || InpSpreadATRMult > 3.0)
+      return false;
+   if(InpScoreThresholdLong < 0.60 || InpScoreThresholdLong > 0.85 ||
+      InpScoreThresholdShort < 0.15 || InpScoreThresholdShort > 0.40 ||
+      InpScoreThresholdLong <= InpScoreThresholdShort)
+      return false;
+   if(strategy_rollover_start_hhmm < 0 || strategy_rollover_start_hhmm > 2359 ||
+      strategy_rollover_end_hhmm < 0 || strategy_rollover_end_hhmm > 2359 ||
+      (strategy_rollover_start_hhmm % 100) > 59 ||
+      (strategy_rollover_end_hhmm % 100) > 59 ||
+      strategy_max_slippage_ticks <= 0 || strategy_max_slippage_ticks > 3)
       return false;
    return true;
+}
+
+int Strategy_MaxDeviationPoints()
+{
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(point <= 0.0 || tick_size <= 0.0)
+      return 0;
+   return (int)MathMax(1.0,
+                       MathCeil((double)strategy_max_slippage_ticks * tick_size / point));
 }
 
 bool Strategy_DailyRealizedLossHalt()
@@ -126,24 +150,17 @@ bool Strategy_DailyRealizedLossHalt()
    return false;
 }
 
-bool IsNewQuarter(const datetime broker_time)
+bool Strategy_IsNewQuarter()
 {
-   MqlDateTime dt;
-   TimeToStruct(broker_time, dt);
-   const int current_quarter = (dt.mon - 1) / 3;
-   if(g_last_quarter < 0)
-   {
-      g_last_quarter = current_quarter;
-      g_last_year = dt.year;
+   // The framework calendar helper derives its key from tester-reliable D1
+   // bars. It also owns the once-per-month latch, avoiding a local calendar
+   // implementation and preventing a restart from manufacturing an exit.
+   if(!QM_IsNewCalendarPeriod(PERIOD_MN1, _Symbol))
       return false;
-   }
-   if(dt.year != g_last_year || current_quarter != g_last_quarter)
-   {
-      g_last_quarter = current_quarter;
-      g_last_year = dt.year;
-      return true;
-   }
-   return false;
+
+   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int month = month_key % 100;
+   return (month_key > 0 && (month == 1 || month == 4 || month == 7 || month == 10));
 }
 
 void AdvanceState_OnNewBar()
@@ -199,7 +216,9 @@ void AdvanceState_OnNewBar()
          valid_count++;
    }
 
-   if(valid_count < 2)
+   // Ranks are defined across the complete approved four-asset universe.
+   // Missing any member fails closed instead of silently changing the model.
+   if(valid_count != UNIVERSE_SIZE)
       return;
 
    // Cross-sectional ranking across valid universe assets
@@ -318,7 +337,7 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
 {
-   return IsNewQuarter(TimeCurrent());
+   return Strategy_IsNewQuarter();
 }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -354,9 +373,20 @@ int OnInit()
       return INIT_FAILED;
 
    if(!QM_FrameworkDeclareExecutionContract(strategy_signal_tf,
-                                            QM_FRIDAY_CLOSE_CARD_RULE,
-                                            "QM5_40008 AQR Value and Momentum Everywhere Multi-Asset Engine D1"))
+                                             QM_FRIDAY_CLOSE_CARD_RULE,
+                                             "QM5_40008 AQR Value and Momentum Everywhere Multi-Asset Engine D1"))
       return INIT_FAILED;
+
+   const int deviation_points = Strategy_MaxDeviationPoints();
+   if(deviation_points <= 0)
+      return INIT_FAILED;
+   QM_EntryConfigure(qm_ea_id,
+                     qm_news_mode_legacy,
+                     deviation_points,
+                     qm_stress_reject_probability,
+                     qm_news_temporal,
+                     qm_news_compliance,
+                     QM_FrameworkMagic());
 
    QM_KillSwitchInit(qm_ea_id, QM_FrameworkMagic(), strategy_daily_hard_stop_pct, strategy_total_dd_stop_pct, 1.0);
 
@@ -382,6 +412,14 @@ void OnTick()
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
+
+   // All strategy calculations, management and rebalance decisions consume
+   // the same completed D1 bar. Per-tick safety hooks remain above this gate.
+   if(!QM_IsNewBar(_Symbol, strategy_signal_tf))
+      return;
+
+   AdvanceState_OnNewBar();
+   QM_EquityStreamOnNewBar();
 
    Strategy_ManageOpenPosition();
 
@@ -409,12 +447,6 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
       return;
-
-   if(!QM_IsNewBar())
-      return;
-
-   AdvanceState_OnNewBar();
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

@@ -25,6 +25,10 @@ Auction Market Theory (AMT) value area rejection model operating on M5 bars. On 
 | `InpSpreadAtrMult` | 1.8 | 1.0-3.0 | Maximum allowable spread as multiple of M5 ATR(14) |
 | `InpEnableBreakEven` | true | true/false | Move stop loss to break-even at +1.0R |
 | `InpBucketTicks` | 10 | 5-20 | Volume profile histogram bucket width in ticks |
+| `InpDailyRealizedLossHaltPct` | 2.0 | >0 and < hard stop | Halt new entries at the card's account daily realized-loss limit |
+| `InpDailyHardStopPct` | 2.5 | > entry halt | Flatten and halt at daily equity drawdown versus broker-day starting balance |
+| `InpTotalDrawdownStopPct` | 5.0 | > daily hard stop | Flatten and halt versus the persisted initial strategy equity |
+| `InpSlippageTicks` | 3.0 | >0 | Maximum market-order deviation converted from symbol tick size to points |
 
 ---
 
@@ -80,6 +84,13 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
+The source default is the backtest contract (`RISK_FIXED=1000`,
+`RISK_PERCENT=0`). Live packaging must invert the modes. The EA declares an
+M5 execution contract, converts the card's GMT rollover window with
+`QM_BrokerToUTC`, rejects an entry when the prior-day POC is not a profitable
+target, and keeps the profile histogram bounded at 1,000,000 buckets with
+allocation and `ArraySize` guards.
+
 ---
 
 ## Revision History
@@ -87,3 +98,4 @@ This card was mechanised from:
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Task 0fd1b0a8-c415-4309-9778-4ebefa05a1cf |
+| v2 | 2026-08-24 | Review rework | Task 1bd8fddf-b1b4-4bab-ad15-d0fc10da1e98: execution contract, loss limits, GMT, slippage, POC fail-closed, profile capacity |

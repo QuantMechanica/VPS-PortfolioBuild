@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3d78975b2a055811143959a165fb93da3fee09f73d610c7b947b3bdac23c9ff4
+; build_hash:   be0e6e47664c49f985808df1ac3cd9c9a28ebbc1749d48b2a77d5bc6340c7ea9
 ; author:       Development
 ; date:         2026-08-23
 ;==========================================================
@@ -34,4 +34,6 @@ InpATRPeriod=14
 InpATRMultiplier=2.5
 InpSpreadATRMult=1.8
 strategy_rollover_start_hhmm=2355
-strategy_rollover_end_hhmm=5
+strategy_rollover_end_hhmm=5
+
+strategy_max_slippage_ticks=3
