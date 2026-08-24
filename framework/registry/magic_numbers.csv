@@ -17704,6 +17704,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1407,classical-symmetric-triangle-breakout-h4,10,AUDUSD.DWX,14070010,2026-08-22,Gemini,active
 1407,classical-symmetric-triangle-breakout-h4,11,USDCAD.DWX,14070011,2026-08-22,Gemini,active
 1407,classical-symmetric-triangle-breakout-h4,12,NZDUSD.DWX,14070012,2026-08-22,Gemini,active
+1407,classical-symmetric-triangle-breakout-h4,13,XTIUSD.DWX,14070013,2026-08-24,Codex,active
 1408,classical-bull-flag-continuation-h1,0,EURUSD.DWX,14080000,2026-08-22,Gemini,active
 1408,classical-bull-flag-continuation-h1,1,GBPUSD.DWX,14080001,2026-08-22,Gemini,active
 1408,classical-bull-flag-continuation-h1,2,USDJPY.DWX,14080002,2026-08-22,Gemini,active
