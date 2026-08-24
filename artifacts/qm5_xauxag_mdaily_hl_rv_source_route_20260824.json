@@ -1,0 +1,25 @@
+{
+  "schema": "qm.source-route-evidence.v1",
+  "recorded_at_utc": "2026-08-24T04:05:28.9167056Z",
+  "candidate": "SCHWEIKERT-HL-CME-XAUXAG-MDAILY-HL-RV-2026_S01",
+  "router": "C:/Users/Administrator/.codex/skills/qm/qm-read-trading-source/scripts/read_trading_source.py",
+  "routes": [
+    {
+      "url": "https://www.sciencedirect.com/science/article/pii/S0378426617302807",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter": "generic",
+      "adapter_state": "ROUTER_ONLY",
+      "used_for_candidate": false
+    },
+    {
+      "url": "https://projecteuclid.org/journals/annals-of-mathematical-statistics/volume-34/issue-2/Estimates-of-Location-Based-on-Rank-Tests/10.1214/aoms/1177704172.full",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter": "generic",
+      "adapter_state": "ROUTER_ONLY",
+      "used_for_candidate": false
+    }
+  ],
+  "disposition": "No new public-page content was used or paraphrased. Source approval relies only on completely read governed repository packets with durable hashes."
+}
