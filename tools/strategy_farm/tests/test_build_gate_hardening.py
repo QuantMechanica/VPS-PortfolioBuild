@@ -693,18 +693,14 @@ def test_nonmechanizable_semantic_classes_name_required_card_declarations() -> N
         assert scope[key]["missing_card_declaration"]
 
 
-def test_semantic_regression_catches_unrepaired_1417() -> None:
+def test_semantic_regression_accepts_fixed_1417() -> None:
+    # Both 1417 (rework-slot-2) and 1425 (rework-slot-3) are repaired now; the
+    # per-EA "still catches" expectations from the interim states are obsolete.
     label = "QM5_1417_classical-pennant-continuation-h1"
-    expected_codes = {
-        "EA_CARD_PENDING_ORDER_TYPE_MISMATCH",
-        "EA_CARD_SMA_DIRECTION_INVERTED",
-        "EA_CARD_NEWS_WINDOW_MISMATCH",
-        "EA_CARD_NEWS_BLOCKS_MANAGEMENT",
-    }
     source = next((REPO_ROOT / "framework" / "EAs" / label).glob("*.mq5"))
     result = gate.analyze_file(source, gate.find_card(REPO_ROOT, label))
-    actual_codes = {failure.split(":", 1)[0] for failure in result["failures"]}
-    assert expected_codes <= actual_codes
+    assert result["failures"] == []
+    assert result["warnings"] == []
 
 
 def test_semantic_regression_accepts_repaired_1425() -> None:
