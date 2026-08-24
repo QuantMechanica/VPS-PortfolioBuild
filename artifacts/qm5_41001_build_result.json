@@ -23,7 +23,26 @@
   "compile_succeeded": true,
   "smoke_result": "deferred_p2_smoke",
   "smoke_report_path": null,
-  "smoke_skipped_reason": "backtest_cpu_ceiling: live MT5 terminals active; Q02 will provide runtime evidence",
-  "blocked_reason": null,
+  "smoke_skipped_reason": "Tester fleet capacity ceiling measured at 2026-08-24T08:34:56Z: eight active work_items occupied T1-T6, T8, and T9; no smoke or backtest was launched.",
+  "blocked_reason": "deferred_p2_smoke capacity evidence at 2026-08-24T08:34:56Z: read-only farm_state query found 8 active work_items claimed by T1,T2,T3,T4,T5,T6,T8,T9; process census found 8 matching D:/QM/mt5 farm terminal64 processes and 6 metatester64 processes. No smoke or backtest was launched or enqueued.",
+  "smoke_capacity_evidence": {
+    "observed_at_utc": "2026-08-24T08:34:56Z",
+    "state_db_uri": "file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro",
+    "active_work_items": 8,
+    "claimed_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T8",
+      "T9"
+    ],
+    "matching_farm_terminal64_processes": 8,
+    "metatester64_processes": 6,
+    "smoke_launched": false,
+    "backtest_enqueued": false
+  },
   "open_questions": []
 }
