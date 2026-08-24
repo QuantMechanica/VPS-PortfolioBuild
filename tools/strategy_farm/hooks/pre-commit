@@ -1,0 +1,9 @@
+#!/bin/sh
+# Fail-closed guard: refuse commits that stage framework/EAs/**/*.ex5 changes
+# without a governed COMPILE_EA receipt. See
+# tools/strategy_farm/validate_ex5_commit_guard.py for the check itself and
+# docs/ops/evidence/2026-08-24_ex5_commit_guard.md for the incident this
+# closes. Installed once into the shared .git/hooks/ dir (git worktrees all
+# read hooks from there), so it applies to every worktree checkout.
+repo_root="$(git rev-parse --show-toplevel)"
+python "$repo_root/tools/strategy_farm/validate_ex5_commit_guard.py" --repo-root "$repo_root"
