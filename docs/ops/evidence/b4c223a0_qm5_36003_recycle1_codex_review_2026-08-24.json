@@ -1,0 +1,25 @@
+{
+  "review_task_id": "b4c223a0-818d-444d-bb7d-1336da8abdd2",
+  "build_task_id": "019d50ff-a716-46a4-b097-c5c650dea63b",
+  "ea_id": "QM5_36003",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The current source implements a genuine two-stage ZeroLag EMA, two-pass STC, managed 50% TP1 with a retry latch, exact one-ATR stop, UTC rollover, and a closed-D1 runner crossover. Those headline repairs were independently confirmed.",
+    "The approved card never defines BetterVol == HIGH numerically. The implementation chooses current tick volume greater than the mean of the prior 20 closed bars. Removing the old 1.02 multiplier narrows the invention but does not create an OWNER-approved rule; the entry population remains unprovable from the card alone.",
+    "OnInit declares no QM_FrameworkDeclareExecutionContract and OnTick uses parameterless QM_IsNewBar(), so D1/Friday-close execution is not fail-closed and host cadence is unchecked.",
+    "Card kill-switch thresholds are configured lazily inside Strategy_NoTradeFilter, after OnTick's first QM_KillSwitchCheck. The 2.0% realized-loss baseline is set from current balance on the first observed D1 key, so a restart mid-day forgets losses already realized that day. Inputs can also raise the 2.0%/2.5%/5.0% ceilings; if the lazy reconfiguration fails, the early no-trade return suppresses management and runner exits for existing exposure.",
+    "The in-memory TP1 ticket latch is not restart-durable. A restart after a successful partial but before break-even protection can permit another partial, while an unsplittable position has no fail-closed TP1 alternative.",
+    "The current MQ5 hashes to ce11515348609e6871937250055bfc6cf36feae57734b7466cd36ebb9c10b60d. The newest source artifact and presets refer to 197a2c09..., while the EX5 baffb41f8b8af18990919b622acf8c27d5c98a4543dc2c9160f7b020a1a3be47 is the 2026-08-17 pre-remediation binary. No canonical current compile/build-check receipt or smoke report covers ce115153, so build_result fails and smoke_sanity remains UNKNOWN.",
+    "Guardrail and SPEC validation pass; all three sets use RISK_FIXED=1000 and RISK_PERCENT=0; active magic rows are unique, formula-correct, and resolver-backed; bounded raw reads carry the reviewed performance annotation. These checks do not cure the card, contract, risk-state, and identity failures."
+  ],
+  "reviewed_at": "2026-08-24T11:13:34Z"
+}
