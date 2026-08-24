@@ -1,0 +1,25 @@
+{
+  "review_task_id": "e8869500-9153-47dc-bd5d-4ebc884a0ef9",
+  "build_task_id": "c0b1b0f0-9945-4aa2-8dc0-43d67c1b1070",
+  "ea_id": "QM5_37002",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "CalculateDualThrust copies from D1 shift 1, includes that completed bar in the range, anchors the triggers to that same bar's open, and then compares that bar's close. The card requires today's known open with a range from strictly preceding closed days; the implementation derives a trigger retrospectively with the day's completed high/low and wrong open anchor.",
+    "The card requires paired BUY_STOP and SELL_STOP orders at the daily triggers on the daily open. Strategy_EntrySignal instead leaves req.price at zero and submits a single market order on the following bar after a closed-close comparison, producing a different execution model and trade population.",
+    "The approved stop is the opposite trigger boundary or 0.50 times the range and exposure must flatten before daily settlement. The EA substitutes a 2 ATR stop, an opposite-trigger soft exit, and an undeclared five-D1-bar time stop; it implements no EOD settlement exit.",
+    "The 2.0% realized-daily entry halt, 2.5% daily hard stop, and 5.0% total-drawdown stop are absent, leaving QM_Common.mqh's incompatible 3.0%/0.0% defaults. Strategy_NoTradeFilter also returns before management and exits during rollover or wide-spread blocks.",
+    "OnInit declares no D1 execution contract and OnTick uses parameterless QM_IsNewBar, so the approved host cadence is not checked fail-closed.",
+    "The producer receipt hashes match the current MQ5/EX5 and its compile/build-check booleans are true, but deferred_p2_smoke has a null smoke_report_path and null blocked_reason. The sanctioned measured-saturation deferral exception is not met, so smoke_sanity is UNKNOWN and build_result fails closed.",
+    "Focused guardrail and SPEC validation pass; all three sets use RISK_FIXED=1000 and RISK_PERCENT=0; the active magic rows are unique, formula-correct, and resolver-backed. These checks do not cure the strategy and evidence failures."
+  ],
+  "reviewed_at": "2026-08-24T10:46:31Z"
+}
