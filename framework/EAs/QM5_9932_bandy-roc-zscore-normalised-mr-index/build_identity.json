@@ -1,0 +1,29 @@
+{
+  "task_id": "c71f308a-76be-456f-8ae7-a5d7c3abc4e0",
+  "rework_task_id": "1db5da1a-e87a-486f-a6f6-2224724a09fe",
+  "ea_id": "QM5_9932",
+  "ea_label": "QM5_9932_bandy-roc-zscore-normalised-mr-index",
+  "build_check_passed": false,
+  "build_check_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+  "mq5_path": "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/QM5_9932_bandy-roc-zscore-normalised-mr-index.mq5",
+  "mq5_sha256": "20553e4da0339eb9a8d5a949a230b67c5980cd7957bcdf607f6700613e970a34",
+  "ex5_path": "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/QM5_9932_bandy-roc-zscore-normalised-mr-index.ex5",
+  "ex5_sha256": "feea799e3e46a96c0f6094e76d6d4dfc1f4069c6c800195430be00b99f2d83dc",
+  "compile_log_path": "D:/QM/strategy_farm/temp/rework-9932-slot12-20260824T143000Z/compile.log",
+  "compile_log_sha256": "3eae69375c3ef0eea691b9c735a7e3acd005f1b1ffa4c269a1fd8f413aeba747",
+  "compile_result": "0 errors, 0 warnings",
+  "setfiles_generated": [
+    "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/sets/QM5_9932_bandy-roc-zscore-normalised-mr-index_NDX.DWX_D1_backtest.set",
+    "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/sets/QM5_9932_bandy-roc-zscore-normalised-mr-index_SP500.DWX_D1_backtest.set",
+    "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/sets/QM5_9932_bandy-roc-zscore-normalised-mr-index_WS30.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "NDX.DWX": "89052af96f7f47a7685244ebcd993a43b10801e16063dfa2a4b7f134ec33516c",
+    "SP500.DWX": "8e395edfbb8c87d6f84d5406979a5bee6b259671af31c681af25cf128768fb04",
+    "WS30.DWX": "9497bb8aafb1552771f95bbfb8ec21241541421f1e23790a6a92203340b9f284"
+  },
+  "spec_md_path": "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/SPEC.md",
+  "spec_md_sha256": "ee069db16d2b970bb35203e035e9b3437e764e700c1ddda58abad4cc8d38645c",
+  "strategy_card_path": "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/docs/strategy_card.md",
+  "strategy_card_sha256": "74d46c8affba166f9ff18b02073391a4e61b7758dcb5f121944a64650dbdfcfc"
+}
