@@ -41,6 +41,48 @@ def test_only_authenticated_single_reason_requests_expand(tmp_path: Path) -> Non
     ) is None
 
 
+def test_conclusive_verdicts_exclude_disposition_only_rows() -> None:
+    """A disposition_only CONFIG_LOCKED row must not count as a real conclusion.
+
+    Forensics 2026-08-24 §1: raw verdict rows include OWNER-DEC administrative
+    dispositions; the service rate must publish the execution-only count.
+    """
+    connection = sqlite3.connect(":memory:")
+    connection.row_factory = sqlite3.Row
+    connection.executescript(
+        """
+        CREATE TABLE work_items(
+          id TEXT PRIMARY KEY,phase TEXT,ea_id TEXT,symbol TEXT,setfile_path TEXT,
+          status TEXT,verdict TEXT,payload_json TEXT,created_at TEXT,updated_at TEXT,
+          gate_contract_version TEXT
+        );
+        CREATE TABLE q09_news_tests(
+          work_item_id TEXT,aggregate_path TEXT,aggregate_sha256 TEXT,contract_version TEXT
+        );
+        CREATE TABLE work_item_holds(
+          work_item_id TEXT PRIMARY KEY,hold_code TEXT,active INTEGER
+        );
+        """
+    )
+    now = dt.datetime(2026, 8, 24, 12, tzinfo=dt.timezone.utc)
+    recent = (now - dt.timedelta(hours=2)).isoformat()
+    rows = (
+        ("real", NEWS_PHASE, "QM5_1", "EURUSD.DWX", "a.set", "done",
+         "CONFIG_LOCKED", "{}", recent, recent, "v4"),
+        ("dispo", NEWS_PHASE, "QM5_2", "GBPUSD.DWX", "b.set", "done",
+         "CONFIG_LOCKED",
+         json.dumps({"disposition_only": True, "owner_decision_id": "OWNER-DEC-X"}),
+         recent, recent, "v4"),
+    )
+    connection.executemany(
+        "INSERT INTO work_items VALUES(?,?,?,?,?,?,?,?,?,?,?)", rows
+    )
+    metrics = news_gate_service.service_metrics(
+        connection, news_phases=(NEWS_PHASE,), now=now
+    )
+    assert metrics["conclusive_verdicts_per_day"] == 1
+
+
 def test_service_rate_exposes_conclusions_expansions_and_placeholders(
     tmp_path: Path,
 ) -> None:
