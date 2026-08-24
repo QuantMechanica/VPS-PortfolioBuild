@@ -1,0 +1,56 @@
+{
+  "schema": "qm.governed-magic-allocation-precondition-refusal/v1",
+  "task_id": "64da174a-1302-41b6-a39c-096b53eb33ac",
+  "ea_id": "PENDING_1C937FC6",
+  "slug": "audusd-local-session-inventory-drift",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\PENDING_1C937FC6_audusd-local-session-inventory-drift.md",
+  "target_symbols": [
+    "AUDUSD.DWX"
+  ],
+  "classification": "invalid_ea_id",
+  "diagnosis": {
+    "card_exists": true,
+    "card_ea_id": "PENDING_1C937FC6",
+    "card_status": "DRAFT",
+    "card_g0_status": "APPROVED",
+    "ea_id_is_governed_numeric_identity": false,
+    "ea_directory_exists": false,
+    "identity_registry_rows": 0,
+    "active_magic_rows": 0,
+    "retired_magic_rows": 0,
+    "other_status_magic_rows": 0,
+    "total_magic_rows": 0,
+    "resolver_rows": 0
+  },
+  "root_cause": "The approved draft still carries the placeholder identity PENDING_1C937FC6. It has no numeric QM5 identity, exact EA directory, active identity-registry row, per-symbol magic row, or resolver tuple. The governed allocator therefore fails closed before any write.",
+  "command_run": "python C:/QM/repo/tools/strategy_farm/governed_magic_allocator.py --card D:/QM/strategy_farm/artifacts/cards_approved/PENDING_1C937FC6_audusd-local-session-inventory-drift.md --dry-run --max-eas 1",
+  "command_result": {
+    "status": "aborted",
+    "reason": "exact_card_identity_missing:D:\\QM\\strategy_farm\\artifacts\\cards_approved\\PENDING_1C937FC6_audusd-local-session-inventory-drift.md",
+    "schema": "qm.governed-magic-allocation/v1",
+    "exit_code": 1
+  },
+  "independent_verification": {
+    "ea_directory": "framework/EAs searched for both PENDING_1C937FC6 and audusd-local-session-inventory-drift: 0 matches",
+    "identity_registry_csv": "framework/registry/ea_id_registry.csv searched for both exact placeholder and exact slug: 0 rows",
+    "magic_numbers_csv": "framework/registry/magic_numbers.csv searched for both exact placeholder and exact slug: 0 rows",
+    "magic_resolver": "framework/include/QM/QM_MagicResolver.mqh searched for both exact placeholder and exact slug: 0 rows"
+  },
+  "governed_sequence": {
+    "card_located": true,
+    "exact_active_identity_proven": false,
+    "stopped_at": "exact_active_ea_identity",
+    "per_symbol_magic_allocation_attempted": false,
+    "resolver_regeneration_attempted": false,
+    "registry_mutation_performed": false,
+    "resolver_mutation_performed": false,
+    "retired_row_revived": false,
+    "magic_invented": false,
+    "formula_check": "NOT_APPLICABLE_WITHOUT_NUMERIC_EA_ID"
+  },
+  "action_taken": "REFUSE. No identity, magic number, registry row, resolver row, EA directory, build, queue work, or pipeline work was created or changed.",
+  "required_action_confirmed": "REFUSE",
+  "next_step": "Keep the original build blocked. A governed identity-minting action outside this task must first replace the placeholder with an exact active numeric EA identity. Only then may a fresh precheck allocate and verify every card symbol/slot/magic/resolver tuple.",
+  "generated_by": "codex-orchestration-1 (headless single-pass cycle)",
+  "generated_at": "2026-08-24T14:08:50Z"
+}
