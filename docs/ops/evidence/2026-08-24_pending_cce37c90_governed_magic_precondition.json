@@ -1,0 +1,23 @@
+{
+  "schema": "qm.governed-magic-allocation-precondition-refusal/v1",
+  "task_id": "634e2476-74c8-4d25-879a-823b85bc26a3",
+  "ea_id": "PENDING_CCE37C90",
+  "slug": "eurusd-local-session-inventory-drift",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\PENDING_CCE37C90_eurusd-local-session-inventory-drift.md",
+  "target_symbols": ["EURUSD.DWX"],
+  "classification": "invalid_ea_id",
+  "required_action": "REFUSE",
+  "verification": {
+    "card_frontmatter_ea_id": "PENDING_CCE37C90",
+    "ea_id_regex_check": "farmctl.magic_allocation_precheck requires ea_id to fullmatch (?:QM5_)?(\\d+); PENDING_CCE37C90 does not match -> classification=invalid_ea_id, action=REFUSE (framework precheck, not a claude judgment call)",
+    "ea_id_registry_csv_rows_for_this_id": 0,
+    "magic_numbers_csv_rows_for_this_id": 0,
+    "resolver_rows_for_this_id": 0,
+    "ea_directory_exists": false
+  },
+  "root_cause": "Same systemic gap documented in docs/ops/evidence/2026-08-24_pending_8c049562_governed_magic_precondition.json: generate_orthogonal_wave2_cards.py mints a placeholder ea_id of the form PENDING_<sha256(slug)[:8]> at draft time (pending_id property, tools/strategy_farm/generate_orthogonal_wave2_cards.py:30-33) with g0_status: PENDING_REVIEW. This card landed in cards_approved/ with the placeholder ea_id never resolved to a real sequential QM5_NNNNN identity. No tool performs that resolution step; governed_magic_allocator.py assumes a card already carries a valid numeric ea_id. 17 PENDING_<hash> cards share this shape in cards_approved/ as of 2026-08-24; this is the 6th of that set routed to claude.",
+  "action_taken": "No allocation attempted. No registry or resolver file touched. No magic invented outside the ea_id*10000+slot formula. No retired row revived. Original build precheck correctly remains blocked.",
+  "next_step": "Needs a governed identity-resolution step (mint next sequential QM5_NNNNN id, rename card file + ea_id frontmatter) before governed_magic_allocator.py can act. Flagging for OWNER/Codex to fix the orthogonal-wave2 intake path; not resolving the id myself since identity minting is a governed allocator concern.",
+  "generated_by": "claude-orchestration-2",
+  "generated_at": "2026-08-24T09:42:12Z"
+}
