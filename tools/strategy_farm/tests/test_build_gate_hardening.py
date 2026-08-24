@@ -693,14 +693,14 @@ def test_nonmechanizable_semantic_classes_name_required_card_declarations() -> N
         assert scope[key]["missing_card_declaration"]
 
 
-def test_semantic_regression_catches_previously_invisible_1417_and_1425() -> None:
+def test_semantic_regression_accepts_fixed_1417_and_still_catches_1425() -> None:
+    fixed_label = "QM5_1417_classical-pennant-continuation-h1"
+    fixed_source = next((REPO_ROOT / "framework" / "EAs" / fixed_label).glob("*.mq5"))
+    fixed = gate.analyze_file(fixed_source, gate.find_card(REPO_ROOT, fixed_label))
+    assert fixed["failures"] == []
+    assert fixed["warnings"] == []
+
     expected = {
-        "QM5_1417_classical-pennant-continuation-h1": {
-            "EA_CARD_PENDING_ORDER_TYPE_MISMATCH",
-            "EA_CARD_SMA_DIRECTION_INVERTED",
-            "EA_CARD_NEWS_WINDOW_MISMATCH",
-            "EA_CARD_NEWS_BLOCKS_MANAGEMENT",
-        },
         "QM5_1425_classical-triple-bottom-reversal-h4": {
             "EA_CARD_PENDING_ORDER_TYPE_MISMATCH",
             "EA_CARD_SMA_DIRECTION_INVERTED",

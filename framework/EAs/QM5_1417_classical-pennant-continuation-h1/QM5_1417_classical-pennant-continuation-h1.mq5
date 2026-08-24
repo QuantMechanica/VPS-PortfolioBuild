@@ -22,7 +22,7 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE60_POST60;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
@@ -72,6 +72,8 @@ input double strategy_spread_max_atr                 = 0.25;
 int      g_h_atr_h1 = INVALID_HANDLE;
 int      g_h_sma_h4 = INVALID_HANDLE;
 
+const int STRATEGY_PENDING_VALID_BARS = 6;
+
 bool     g_active_setup_valid = false;
 double   g_active_tp1_price = 0.0;
 bool     g_tp1_done = false;
@@ -79,8 +81,19 @@ double   g_active_upper_slope = 0.0;
 double   g_active_upper_intercept = 0.0;
 double   g_active_lower_slope = 0.0;
 double   g_active_lower_intercept = 0.0;
-int      g_active_ref_shift = 0;
+double   g_active_line_x_at_setup = 0.0;
+datetime g_active_setup_bar_time = 0;
+datetime g_active_entry_time = 0;
 datetime g_pattern_block_until = 0;
+
+bool     g_candidate_setup_valid = false;
+double   g_candidate_tp1_price = 0.0;
+double   g_candidate_upper_slope = 0.0;
+double   g_candidate_upper_intercept = 0.0;
+double   g_candidate_lower_slope = 0.0;
+double   g_candidate_lower_intercept = 0.0;
+double   g_candidate_line_x_at_setup = 0.0;
+datetime g_candidate_setup_bar_time = 0;
 
 struct StrategyPivot
 {
@@ -132,6 +145,109 @@ bool Strategy_SelectOurPosition(ulong &ticket)
       return true;
    }
    return false;
+}
+
+bool Strategy_SelectOurPendingOrder(ulong &ticket)
+{
+   const int magic = QM_FrameworkMagic();
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+   {
+      const ulong cand = OrderGetTicket(i);
+      if(cand == 0) continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol) continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic) continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type != ORDER_TYPE_BUY_STOP && order_type != ORDER_TYPE_SELL_STOP)
+         continue;
+
+      ticket = cand;
+      return true;
+   }
+   return false;
+}
+
+void Strategy_ClearActiveSetup()
+{
+   g_active_setup_valid = false;
+   g_active_tp1_price = 0.0;
+   g_tp1_done = false;
+   g_active_upper_slope = 0.0;
+   g_active_upper_intercept = 0.0;
+   g_active_lower_slope = 0.0;
+   g_active_lower_intercept = 0.0;
+   g_active_line_x_at_setup = 0.0;
+   g_active_setup_bar_time = 0;
+   g_active_entry_time = 0;
+}
+
+void Strategy_StageCandidateSetup(const double tp1_price,
+                                  const double upper_slope,
+                                  const double upper_intercept,
+                                  const double lower_slope,
+                                  const double lower_intercept,
+                                  const double line_x_at_setup,
+                                  const datetime setup_bar_time)
+{
+   g_candidate_setup_valid = true;
+   g_candidate_tp1_price = tp1_price;
+   g_candidate_upper_slope = upper_slope;
+   g_candidate_upper_intercept = upper_intercept;
+   g_candidate_lower_slope = lower_slope;
+   g_candidate_lower_intercept = lower_intercept;
+   g_candidate_line_x_at_setup = line_x_at_setup;
+   g_candidate_setup_bar_time = setup_bar_time;
+}
+
+void Strategy_CommitAcceptedSetup(const ulong pending_ticket)
+{
+   if(!g_candidate_setup_valid || pending_ticket == 0)
+      return;
+
+   g_active_setup_valid = true;
+   g_active_tp1_price = g_candidate_tp1_price;
+   g_tp1_done = false;
+   g_active_upper_slope = g_candidate_upper_slope;
+   g_active_upper_intercept = g_candidate_upper_intercept;
+   g_active_lower_slope = g_candidate_lower_slope;
+   g_active_lower_intercept = g_candidate_lower_intercept;
+   g_active_line_x_at_setup = g_candidate_line_x_at_setup;
+   g_active_setup_bar_time = g_candidate_setup_bar_time;
+   g_active_entry_time = 0;
+   g_candidate_setup_valid = false;
+}
+
+void Strategy_UpdateSetupLifecycle()
+{
+   ulong position_ticket = 0;
+   if(Strategy_SelectOurPosition(position_ticket))
+   {
+      if(g_active_setup_valid && g_active_entry_time == 0)
+      {
+         g_active_entry_time = (datetime)PositionGetInteger(POSITION_TIME);
+         const int tf_seconds = PeriodSeconds(strategy_tf);
+         if(g_active_entry_time > 0 && tf_seconds > 0 && strategy_reuse_guard_bars > 0)
+            g_pattern_block_until = g_active_entry_time + strategy_reuse_guard_bars * tf_seconds;
+      }
+      return;
+   }
+
+   ulong pending_ticket = 0;
+   if(Strategy_SelectOurPendingOrder(pending_ticket))
+      return;
+
+   if(!g_active_setup_valid)
+      return;
+
+   // A setup that never became a position was cancelled or expired: that is
+   // the card's invalidation event and starts the ten-bar reuse guard now.
+   if(g_active_entry_time == 0 && strategy_reuse_guard_bars > 0)
+   {
+      const int tf_seconds = PeriodSeconds(strategy_tf);
+      if(tf_seconds > 0)
+         g_pattern_block_until = TimeCurrent() + strategy_reuse_guard_bars * tf_seconds;
+   }
+   Strategy_ClearActiveSetup();
 }
 
 bool Strategy_ReuseGuardActive()
@@ -195,12 +311,12 @@ bool Strategy_MacroBias(const int direction)
    if(direction > 0)
    {
       // Bullish: H4 SMA(200) rising AND H1 close > H4 SMA(200)
-      return (sma_vals[0] >= sma_vals[1] && h1_rates[0].close > sma_vals[0]);
+      return (sma_vals[1] > sma_vals[0] && h1_rates[0].close > sma_vals[1]);
    }
    else if(direction < 0)
    {
       // Bearish: H4 SMA(200) falling AND H1 close < H4 SMA(200)
-      return (sma_vals[0] <= sma_vals[1] && h1_rates[0].close < sma_vals[0]);
+      return (sma_vals[1] < sma_vals[0] && h1_rates[0].close < sma_vals[1]);
    }
 
    return false;
@@ -310,8 +426,14 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
+   g_candidate_setup_valid = false;
+
    ulong existing_ticket = 0;
    if(Strategy_SelectOurPosition(existing_ticket))
+      return false;
+
+   ulong pending_ticket = 0;
+   if(Strategy_SelectOurPendingOrder(pending_ticket))
       return false;
 
    if(Strategy_ReuseGuardActive())
@@ -452,23 +574,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          double s_lo = 0.0, lo_intercept = 0.0;
          const int ref_shift = penn_end_shift;
 
-         if(ArraySize(highs) >= 2 && ArraySize(lows) >= 2)
-         {
-            if(!Strategy_FitPivotsLine(highs, ref_shift, s_up, up_intercept))
-               continue;
-            if(!Strategy_FitPivotsLine(lows, ref_shift, s_lo, lo_intercept))
-               continue;
-         }
-         else
-         {
-            // Approximate with pennant boundary linear regressions
-            double slope_mid = 0.0;
-            Strategy_FitLinearRegression(rates, penn_start_shift, n_penn, slope_mid);
-            s_up = -0.05 * atr;
-            s_lo = +0.05 * atr;
-            up_intercept = penn_high;
-            lo_intercept = penn_low;
-         }
+         if(ArraySize(highs) < 2 || ArraySize(lows) < 2)
+            continue;
+         if(!Strategy_FitPivotsLine(highs, ref_shift, s_up, up_intercept))
+            continue;
+         if(!Strategy_FitPivotsLine(lows, ref_shift, s_lo, lo_intercept))
+            continue;
 
          // Converging trendlines: s_up < 0 (falling upper) and s_lo > 0 (rising lower)
          if(s_up >= 0.0 || s_lo <= 0.0)
@@ -487,78 +598,69 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(apex_dist_norm < strategy_penn_apex_dist_min || apex_dist_norm > strategy_penn_apex_dist_max)
             continue;
 
-         // Phase 3: Breakout Trigger at shift 1
-         const double x_now = (double)(ref_shift - breakout_shift);
-         const double upper_line_now = up_intercept + s_up * x_now;
-         const double lower_line_now = lo_intercept + s_lo * x_now;
+          // Phase 3: place the card-authorized stop order at the pennant edge.
+          const double x_now = (double)(ref_shift - breakout_shift);
+          const double upper_line_now = up_intercept + s_up * x_now;
+          const double lower_line_now = lo_intercept + s_lo * x_now;
+          const int tf_seconds = PeriodSeconds(strategy_tf);
+          if(tf_seconds <= 0)
+             return false;
 
-         if(direction > 0)
-         {
-            // Long breakout: close > max(upper_TL(t_now), highest_high_penn) + 0.4 * ATR
-            const double trigger_price = MathMax(upper_line_now, penn_high) + strategy_breakout_buffer_atr * atr;
-            if(rates[breakout_shift].close <= trigger_price)
-               continue;
+          if(direction > 0)
+          {
+             // Long breakout: BUY-STOP above the projected upper boundary.
+             const double trigger_price = MathMax(upper_line_now, penn_high) + strategy_breakout_buffer_atr * atr;
+             const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+             if(ask <= 0.0 || trigger_price <= ask)
+                continue;
 
-            const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-            if(ask <= 0.0) return false;
+             double initial_sl = lower_line_now - strategy_sl_buffer_atr * atr;
+             if(trigger_price - initial_sl > strategy_sl_cap_atr * atr)
+                initial_sl = trigger_price - strategy_sl_cap_atr * atr;
 
-            double initial_sl = lower_line_now - strategy_sl_buffer_atr * atr;
-            if(ask - initial_sl > strategy_sl_cap_atr * atr)
-               initial_sl = ask - strategy_sl_cap_atr * atr;
+             const double full_tp = trigger_price + pole_height;
 
-            const double full_tp = ask + pole_height;
+             req.type = QM_BUY_STOP;
+             req.price = Strategy_NormalizePrice(trigger_price);
+             req.sl = Strategy_NormalizePrice(initial_sl);
+             req.tp = Strategy_NormalizePrice(full_tp);
+             req.reason = "PENNANT_BULL_BRK";
+             req.symbol_slot = qm_magic_slot_offset;
+             req.expiration_seconds = STRATEGY_PENDING_VALID_BARS * tf_seconds;
 
-            req.type = QM_BUY;
-            req.price = Strategy_NormalizePrice(ask);
-            req.sl = Strategy_NormalizePrice(initial_sl);
-            req.tp = Strategy_NormalizePrice(full_tp);
-            req.reason = "PENNANT_BULL_BRK";
-            req.symbol_slot = qm_magic_slot_offset;
+             Strategy_StageCandidateSetup(
+                Strategy_NormalizePrice(trigger_price + strategy_tp1_ratio * pole_height),
+                s_up, up_intercept, s_lo, lo_intercept, x_now, rates[0].time);
 
-            g_active_tp1_price = Strategy_NormalizePrice(ask + strategy_tp1_ratio * pole_height);
-            g_tp1_done = false;
-            g_active_upper_slope = s_up;
-            g_active_upper_intercept = up_intercept;
-            g_active_lower_slope = s_lo;
-            g_active_lower_intercept = lo_intercept;
-            g_active_ref_shift = ref_shift;
-            g_pattern_block_until = rates[0].time + strategy_reuse_guard_bars * PeriodSeconds(strategy_tf);
+             return true;
+          }
+          else
+          {
+             // Short breakout: SELL-STOP below the projected lower boundary.
+             const double trigger_price = MathMin(lower_line_now, penn_low) - strategy_breakout_buffer_atr * atr;
+             const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+             if(bid <= 0.0 || trigger_price >= bid)
+                continue;
 
-            return true;
-         }
-         else
-         {
-            // Short breakout: close < min(lower_TL(t_now), lowest_low_penn) - 0.4 * ATR
-            const double trigger_price = MathMin(lower_line_now, penn_low) - strategy_breakout_buffer_atr * atr;
-            if(rates[breakout_shift].close >= trigger_price)
-               continue;
+             double initial_sl = upper_line_now + strategy_sl_buffer_atr * atr;
+             if(initial_sl - trigger_price > strategy_sl_cap_atr * atr)
+                initial_sl = trigger_price + strategy_sl_cap_atr * atr;
 
-            const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-            if(bid <= 0.0) return false;
+             const double full_tp = trigger_price - pole_height;
 
-            double initial_sl = upper_line_now + strategy_sl_buffer_atr * atr;
-            if(initial_sl - bid > strategy_sl_cap_atr * atr)
-               initial_sl = bid + strategy_sl_cap_atr * atr;
+             req.type = QM_SELL_STOP;
+             req.price = Strategy_NormalizePrice(trigger_price);
+             req.sl = Strategy_NormalizePrice(initial_sl);
+             req.tp = Strategy_NormalizePrice(full_tp);
+             req.reason = "PENNANT_BEAR_BRK";
+             req.symbol_slot = qm_magic_slot_offset;
+             req.expiration_seconds = STRATEGY_PENDING_VALID_BARS * tf_seconds;
 
-            const double full_tp = bid - pole_height;
+             Strategy_StageCandidateSetup(
+                Strategy_NormalizePrice(trigger_price - strategy_tp1_ratio * pole_height),
+                s_up, up_intercept, s_lo, lo_intercept, x_now, rates[0].time);
 
-            req.type = QM_SELL;
-            req.price = Strategy_NormalizePrice(bid);
-            req.sl = Strategy_NormalizePrice(initial_sl);
-            req.tp = Strategy_NormalizePrice(full_tp);
-            req.reason = "PENNANT_BEAR_BRK";
-            req.symbol_slot = qm_magic_slot_offset;
-
-            g_active_tp1_price = Strategy_NormalizePrice(bid - strategy_tp1_ratio * pole_height);
-            g_tp1_done = false;
-            g_active_upper_slope = s_up;
-            g_active_upper_intercept = up_intercept;
-            g_active_lower_slope = s_lo;
-            g_active_lower_intercept = lo_intercept;
-            g_active_ref_shift = ref_shift;
-            g_pattern_block_until = rates[0].time + strategy_reuse_guard_bars * PeriodSeconds(strategy_tf);
-
-            return true;
+             return true;
          }
       }
    }
@@ -628,31 +730,35 @@ bool Strategy_ExitSignal()
 
    const int bars_open = iBarShift(_Symbol, strategy_tf, pos_time, false);
 
-   // 1. Pattern-failure hard exit: if H1 close falls back inside the pennant converging lines within first 5 bars
-   if(bars_open >= 1 && bars_open <= strategy_failure_exit_bars && g_active_upper_intercept > 0.0)
-   {
-      MqlRates rates[];
-      ArraySetAsSeries(rates, true);
-      if(CopyRates(_Symbol, strategy_tf, 1, 1, rates) >= 1)
-      {
-         const int curr_shift = 1;
-         const double x = (double)(g_active_ref_shift - curr_shift);
-         const double up_line = g_active_upper_intercept + g_active_upper_slope * x;
-         const double dn_line = g_active_lower_intercept + g_active_lower_slope * x;
-         const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+    // 1. Pattern-failure hard exit: if H1 close re-enters the advancing
+    // converging triangle within the first five bars after entry.
+    if(bars_open >= 1 && bars_open <= strategy_failure_exit_bars &&
+       g_active_setup_valid && g_active_setup_bar_time > 0)
+    {
+       MqlRates rates[];
+       ArraySetAsSeries(rates, true);
+       if(CopyRates(_Symbol, strategy_tf, 1, 1, rates) >= 1)
+       {
+          const int bars_since_setup = iBarShift(_Symbol, strategy_tf, g_active_setup_bar_time, false);
+          if(bars_since_setup < 0)
+             return false;
+          const double x = g_active_line_x_at_setup + (double)bars_since_setup;
+          const double up_line = g_active_upper_intercept + g_active_upper_slope * x;
+          const double dn_line = g_active_lower_intercept + g_active_lower_slope * x;
+          const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
 
-         if(pos_type == POSITION_TYPE_BUY && rates[0].close < up_line)
-         {
-            PrintFormat("QM5_%d: Pattern failure exit triggered (close %G < %G)",
-                        qm_ea_id, rates[0].close, up_line);
-            return true;
-         }
-         else if(pos_type == POSITION_TYPE_SELL && rates[0].close > dn_line)
-         {
-            PrintFormat("QM5_%d: Pattern failure exit triggered (close %G > %G)",
-                        qm_ea_id, rates[0].close, dn_line);
-            return true;
-         }
+          if(pos_type == POSITION_TYPE_BUY && rates[0].close < up_line && rates[0].close > dn_line)
+          {
+             PrintFormat("QM5_%d: Pattern failure exit triggered (close %G inside %G..%G)",
+                         qm_ea_id, rates[0].close, dn_line, up_line);
+             return true;
+          }
+          else if(pos_type == POSITION_TYPE_SELL && rates[0].close > dn_line && rates[0].close < up_line)
+          {
+             PrintFormat("QM5_%d: Pattern failure exit triggered (close %G inside %G..%G)",
+                         qm_ea_id, rates[0].close, dn_line, up_line);
+             return true;
+          }
       }
    }
 
@@ -666,7 +772,27 @@ bool Strategy_ExitSignal()
    return false;
 }
 
-bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
+bool Strategy_EntryNewsBlocked(const datetime broker_time)
+{
+   // Q09 control cells can explicitly disable the strategy temporal axis.
+   if(qm_news_temporal == QM_NEWS_TEMPORAL_OFF)
+      return false;
+
+   if(!MQLInfoInteger(MQL_TESTER))
+   {
+      bool calendar_ok = false;
+      const bool in_window = QM_NewsLiveInWindow(_Symbol, broker_time, 180, 180, calendar_ok);
+      return (!calendar_ok || in_window);
+   }
+
+   if(!g_qm_news_loaded || !g_qm_news_available)
+      return true;
+
+   const datetime utc_time = QM_BrokerToUTC(broker_time);
+   if(utc_time <= 0)
+      return true;
+   return QM_NewsInWindow(utc_time, _Symbol, 180, 180, qm_news_min_impact);
+}
 
 // -----------------------------------------------------------------------------
 // Framework wiring
@@ -675,9 +801,14 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 int OnInit()
 {
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
-                        30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
-                        qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
+                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
+                         180, 180, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
+                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
+      return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "V5_FRAMEWORK_DEFAULT_FRIDAY_CLOSE"))
       return INIT_FAILED;
 
    if(!Strategy_InitIndicators())
@@ -696,19 +827,11 @@ void OnTick()
 {
    QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
 
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
+   Strategy_UpdateSetupLifecycle();
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -727,12 +850,25 @@ void OnTick()
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
 
+   // The card's ±180-minute high-impact blackout is entry-only. Protective
+   // management and exits above remain reachable throughout the blackout.
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_EntryNewsBlocked(broker_now)) return;
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
+
    QM_EntryRequest req = {};
    ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if(QM_TM_OpenPosition(req, out_ticket))
+         Strategy_CommitAcceptedSetup(out_ticket);
    }
 }
 
