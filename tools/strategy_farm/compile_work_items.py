@@ -79,6 +79,16 @@ Q02_INFRA_SOURCE_REPAIR_AUTHORITY = (
 Q02_INFRA_SOURCE_REPAIR_EA_LABELS = frozenset({
     "QM5_11900_kobasfx-4ema-macd-sentiment-h1",
 })
+# Exact review-rework authority for QM5_35005. The accepted source remediation
+# changed the MQ5 after the existing EX5 was produced, so the normal immutable
+# build guards correctly refuse an overwrite. This router-task/label pair
+# permits only an append-only, source-hash-bound COMPILE_EA successor.
+QM5_35005_REVIEW_REPAIR_AUTHORITY = (
+    "router_review_ea:3281881e-4597-4243-9a2b-e8d7c4fa6360"
+)
+QM5_35005_REVIEW_REPAIR_EA_LABELS = frozenset({
+    "QM5_35005_sma-crossover-pullback-system",
+})
 COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
@@ -208,6 +218,10 @@ def _source_repair_authorized(ea_label: str, authority: str | None) -> bool:
         or (
             authority == Q02_INFRA_SOURCE_REPAIR_AUTHORITY
             and ea_label in Q02_INFRA_SOURCE_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_35005_REVIEW_REPAIR_AUTHORITY
+            and ea_label in QM5_35005_REVIEW_REPAIR_EA_LABELS
         )
     )
 

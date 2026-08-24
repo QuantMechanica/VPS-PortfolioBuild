@@ -66,20 +66,20 @@ int StrategyHhmm(const datetime value)
 bool StrategyInRolloverWindow(const datetime utc_time)
 {
    const int hhmm = StrategyHhmm(utc_time);
-   return (hhmm >= 2355 || hhmm < 5);
+   return (hhmm >= 2355 || hhmm <= 5);
 }
 
 bool StrategyDailyEntryHalt()
 {
-   if(g_qm_ks_day_start_equity <= 0.0)
-      return false;
-
-   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
-   if(equity_now <= 0.0)
+   int closed_trades = 0;
+   const double realized_pnl = QM_ChartUITodayPnL(0, closed_trades);
+   const double balance_now = AccountInfoDouble(ACCOUNT_BALANCE);
+   const double day_start_balance = balance_now - realized_pnl;
+   if(balance_now <= 0.0 || day_start_balance <= 0.0)
       return true;
 
-   const double pnl_pct = ((equity_now - g_qm_ks_day_start_equity) / g_qm_ks_day_start_equity) * 100.0;
-   return (pnl_pct <= -strategy_daily_loss_halt_pct);
+   const double loss_limit = day_start_balance * strategy_daily_loss_halt_pct / 100.0;
+   return (realized_pnl <= -loss_limit);
 }
 
 // -----------------------------------------------------------------------------
@@ -156,7 +156,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if((sma_fast > sma_slow) && (stoch_k_2 <= strategy_stoch_oversold) && (stoch_k_1 > stoch_d_1))
    {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double exec_price = (ask > 0.0) ? ask : iClose(_Symbol, tf, 1);
+      if(ask <= 0.0)
+         return false;
+      const double exec_price = ask;
       const double sl = QM_StopFixedPips(_Symbol, QM_BUY, exec_price, strategy_sl_pips);
       const double tp = QM_TakeFixedPips(_Symbol, QM_BUY, exec_price, strategy_tp_pips);
 
@@ -176,7 +178,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if((sma_fast < sma_slow) && (stoch_k_2 >= strategy_stoch_overbought) && (stoch_k_1 < stoch_d_1))
    {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double exec_price = (bid > 0.0) ? bid : iClose(_Symbol, tf, 1);
+      if(bid <= 0.0)
+         return false;
+      const double exec_price = bid;
       const double sl = QM_StopFixedPips(_Symbol, QM_SELL, exec_price, strategy_sl_pips);
       const double tp = QM_TakeFixedPips(_Symbol, QM_SELL, exec_price, strategy_tp_pips);
 

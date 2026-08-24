@@ -210,6 +210,23 @@ def test_q02_infra_source_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_35005_review_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_35005_sma-crossover-pullback-system"
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_35005_REVIEW_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_35006_unrelated",
+        compile_work_items.QM5_35005_REVIEW_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_review_ea:wrong-task",
+    )
+
+
 def test_batch_from_file_is_dry_run_until_apply(tmp_path: Path) -> None:
     labels = [
         "QM5_1001_compile-fixture-h1",
