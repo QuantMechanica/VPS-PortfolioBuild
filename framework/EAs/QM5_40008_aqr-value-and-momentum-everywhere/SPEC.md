@@ -38,6 +38,7 @@ The strategy implements the AQR Value and Momentum Everywhere Multi-Asset Engine
 | `InpSpreadATRMult` | `1.8` | `1.0-3.0` | Max spread multiplier vs ATR(14, D1) |
 | `strategy_rollover_start_hhmm` | `2355` | `0-2359` | Start time for daily rollover blackout window |
 | `strategy_rollover_end_hhmm` | `5` | `0-2359` | End time for daily rollover blackout window |
+| `strategy_max_slippage_ticks` | `3` | `1-3` | Maximum market-order deviation, converted from ticks to broker points |
 | `strategy_daily_loss_halt_pct` | `2.0` | `0.5-5.0` | Daily realized loss entry halt percent |
 | `strategy_daily_hard_stop_pct` | `2.5` | `1.0-5.0` | Maximum daily drawdown hard stop percent |
 | `strategy_total_dd_stop_pct` | `5.0` | `2.0-10.0` | Maximum total drawdown stop percent |
@@ -62,7 +63,7 @@ The strategy implements the AQR Value and Momentum Everywhere Multi-Asset Engine
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` |
+| Bar gating | `QM_IsNewBar(_Symbol, strategy_signal_tf)` |
 
 ---
 
@@ -103,3 +104,4 @@ The strategy implements the AQR Value and Momentum Everywhere Multi-Asset Engine
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build | Task 3e8438fe-884f-4337-974d-7c8c2a1dd459 |
 | v2 | 2026-08-23 | Complete cross-asset rank overhaul & card loss limits | Resolves Codex review findings |
+| v3 | 2026-08-24 | Review rework | Framework calendar cadence, 3-tick execution tolerance, complete-universe fail-closed rank |
