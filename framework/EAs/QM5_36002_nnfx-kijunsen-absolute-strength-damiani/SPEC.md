@@ -38,6 +38,9 @@ The exact mechanical implementation is:
 - Short Entry: Close[1] < Kijun[1] AND ASO_Bears[1] > ASO_Bulls[1] AND AroonDown[1] >= 70.0 AND Damiani Trade == TRUE.
 - Stop Loss: Placed at 1.0 * ATR(14, D1)[1] from entry.
 - TP1: At +1.0R (the entry stop distance, derived from ATR), close 50% once.
+- TP1 exactness: entries fail closed when the risk-sized volume cannot split
+  into two equal, broker-valid halves; outgoing deal history reconstructs the
+  one-time TP1 state after restart.
 - Runner protection: After TP1, move SL to Entry + 1.0 pip for a long or Entry - 1.0 pip for a short.
 - Runner Exit: Close position when price re-crosses Kijun-Sen line (Close[1] < Kijun[1] for Long, Close[1] > Kijun[1] for Short).
 - No-Trade Filter: Dynamic spread filter (Spread > 1.8 * ATR(14, D1)[1]), rollover blackout 23:55–00:05 UTC (broker time converted with `QM_BrokerToUTC`), a 2.0% account realized-loss entry halt, and a one-position maximum for the strategy instance.
@@ -50,25 +53,26 @@ The exact mechanical implementation is:
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
 | `strategy_kijun_period` | 26 | 20 - 35 | Kijun-Sen baseline lookback period |
-| `strategy_tenkan_period` | 9 | 7 - 12 | Tenkan-Sen period |
-| `strategy_senkou_period` | 52 | 40 - 60 | Senkou Span B period |
+| `strategy_tenkan_period` | 9 | fixed | Ichimoku helper parameter; Kijun output uses the card lookback |
+| `strategy_senkou_period` | 52 | fixed | Ichimoku helper parameter; Kijun output uses the card lookback |
 | `strategy_aso_period` | 10 | 7 - 14 | Absolute Strength Oscillator period |
-| `strategy_aroon_period` | 25 | 14 - 30 | Aroon confirmation period |
+| `strategy_aroon_period` | 25 | fixed | Aroon confirmation period |
 | `strategy_aroon_threshold` | 70.0 | 60.0 - 80.0 | Aroon confirmation threshold |
-| `strategy_damiani_vis_period` | 13 | 10 - 20 | Damiani Volatmeter viscosity ATR period |
-| `strategy_damiani_sed_period` | 40 | 30 - 50 | Damiani Volatmeter sedimentation ATR period |
-| `strategy_damiani_threshold` | 1.40 | 1.0 - 2.0 | Damiani Volatmeter threshold multiplier |
-| `strategy_atr_period` | 14 | 10 - 20 | ATR period for stop loss and spread filter |
-| `strategy_sl_atr_mult` | 1.00 | 0.8 - 1.5 | Stop loss distance as ATR multiplier |
-| `strategy_tp_atr_mult` | 1.00 | 0.8 - 1.5 | TP1 trigger as a multiple of the entry ATR risk |
-| `strategy_tp1_fraction` | 0.50 | 0.1 - 0.9 | Volume closed once at TP1 |
-| `strategy_be_buffer_pips` | 1 | 0 - 5 | Runner stop offset beyond entry after TP1 |
-| `strategy_spread_atr_mult` | 1.80 | 1.0 - 2.5 | Spread filter ATR multiplier |
-| `strategy_daily_loss_halt_pct` | 2.0 | 0.1 - 2.5 | Account realized-loss threshold that blocks new entries |
-| `strategy_daily_hard_stop_pct` | 2.5 | 0.1 - 5.0 | Restart-safe framework daily equity hard stop |
-| `strategy_total_dd_halt_pct` | 5.0 | 0.1 - 10.0 | Account-level total-drawdown signal threshold |
-| `strategy_per_trade_risk_cap_pct` | 0.5 | 0.1 - 1.0 | Framework per-trade risk cap |
-| `strategy_slippage_ticks` | 3 | 1 - 3 | Maximum market-order deviation, converted from trade ticks to symbol points |
+| `strategy_damiani_vis_period` | 13 | fixed | Damiani Volatmeter viscosity ATR period |
+| `strategy_damiani_sed_period` | 40 | fixed | Damiani Volatmeter sedimentation ATR period |
+| `strategy_damiani_threshold` | 1.40 | fixed | Damiani Volatmeter anti-threshold multiplier |
+| `strategy_atr_period` | 14 | fixed | ATR period for stop loss and spread filter |
+| `strategy_sl_atr_mult` | 1.00 | fixed | Stop loss distance as ATR multiplier |
+| `strategy_tp_atr_mult` | 1.00 | fixed | TP1 trigger as a multiple of the entry ATR risk |
+| `strategy_tp1_fraction` | 0.50 | fixed | Volume closed once at TP1 |
+| `strategy_be_buffer_pips` | 1 | fixed | Runner stop offset beyond entry after TP1 |
+| `strategy_spread_atr_mult` | 1.80 | fixed | Spread filter ATR multiplier |
+| `strategy_daily_loss_halt_pct` | 2.0 | fixed | Account realized-loss threshold that blocks new entries |
+| `strategy_daily_hard_stop_pct` | 2.5 | fixed | Restart-safe framework daily equity hard stop |
+| `strategy_total_dd_halt_pct` | 5.0 | fixed | Account-level total-drawdown signal threshold |
+| `strategy_risk_percent` | 1.0 | 0.5 - 1.0 | Card live-risk input; V5 caps per-EA risk at 1% |
+| `strategy_per_trade_risk_cap_pct` | 1.0 | fixed | Framework per-trade risk cap |
+| `strategy_slippage_ticks` | 3 | fixed | Maximum market-order deviation, converted from trade ticks to symbol points |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,

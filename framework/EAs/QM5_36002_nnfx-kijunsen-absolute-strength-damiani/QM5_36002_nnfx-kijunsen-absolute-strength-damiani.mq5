@@ -52,12 +52,16 @@ input double strategy_spread_atr_mult     = 1.80;   // Spread filter ATR multipl
 input double strategy_daily_loss_halt_pct = 2.0;    // Daily realized-loss entry halt percent
 input double strategy_daily_hard_stop_pct = 2.5;    // Daily equity hard stop percent
 input double strategy_total_dd_halt_pct   = 5.0;    // Account-level total drawdown stop percent
-input double strategy_per_trade_risk_cap_pct = 0.5; // Per-trade risk cap percent
+input double strategy_risk_percent        = 1.0;    // Card live-risk input (framework-capped at 1%)
+input double strategy_per_trade_risk_cap_pct = 1.0; // Framework per-trade risk cap percent
 input int    strategy_slippage_ticks      = 3;      // Market-order slippage tolerance in trade ticks
 
 double g_closed_close_1 = 0.0;
 double g_closed_kijun_1 = 0.0;
 double g_closed_atr_1   = 0.0;
+long   g_tp1_position_id = 0;
+bool   g_tp1_completed   = false;
+bool   g_tp1_state_known = false;
 
 // -----------------------------------------------------------------------------
 // Helpers & Indicator Math
@@ -72,27 +76,37 @@ int GetBarHhmm(const datetime t)
 
 bool Strategy_ConfigValid()
 {
-   if(strategy_kijun_period < 2 || strategy_tenkan_period < 2 || strategy_senkou_period < 2)
+   // The three card-declared sweep dimensions retain their approved ranges.
+   if(strategy_kijun_period < 20 || strategy_kijun_period > 35)
       return false;
-   if(strategy_aso_period < 2 || strategy_aroon_period < 2)
+   if(strategy_aso_period < 7 || strategy_aso_period > 14)
       return false;
-   if(strategy_aroon_threshold <= 0.0 || strategy_aroon_threshold > 100.0)
+   if(strategy_aroon_threshold < 60.0 || strategy_aroon_threshold > 80.0)
       return false;
-   if(strategy_damiani_vis_period < 2 || strategy_damiani_sed_period <= strategy_damiani_vis_period ||
-      strategy_damiani_threshold <= 0.0)
+
+   // The card does not authorize sweeps for these mechanical constants.
+   if(strategy_tenkan_period != 9 || strategy_senkou_period != 52 ||
+      strategy_aroon_period != 25 || strategy_damiani_vis_period != 13 ||
+      strategy_damiani_sed_period != 40 ||
+      MathAbs(strategy_damiani_threshold - 1.40) > 1e-9)
       return false;
-   if(strategy_atr_period < 2 || strategy_sl_atr_mult <= 0.0 || strategy_tp_atr_mult <= 0.0)
+   if(strategy_atr_period != 14 || MathAbs(strategy_sl_atr_mult - 1.0) > 1e-9 ||
+      MathAbs(strategy_tp_atr_mult - 1.0) > 1e-9)
       return false;
-   if(strategy_tp1_fraction <= 0.0 || strategy_tp1_fraction >= 1.0 || strategy_be_buffer_pips < 0)
+   if(MathAbs(strategy_tp1_fraction - 0.50) > 1e-9 || strategy_be_buffer_pips != 1)
       return false;
-   if(strategy_spread_atr_mult <= 0.0)
+   if(MathAbs(strategy_spread_atr_mult - 1.80) > 1e-9)
       return false;
-   if(strategy_daily_loss_halt_pct <= 0.0 || strategy_daily_hard_stop_pct <= 0.0 ||
-      strategy_daily_loss_halt_pct > strategy_daily_hard_stop_pct || strategy_total_dd_halt_pct <= 0.0)
+   if(MathAbs(strategy_daily_loss_halt_pct - 2.0) > 1e-9 ||
+      MathAbs(strategy_daily_hard_stop_pct - 2.5) > 1e-9 ||
+      MathAbs(strategy_total_dd_halt_pct - 5.0) > 1e-9)
       return false;
-   if(strategy_per_trade_risk_cap_pct <= 0.0 || strategy_per_trade_risk_cap_pct > 1.0)
+   if(strategy_risk_percent < 0.5 || strategy_risk_percent > 1.0 ||
+      MathAbs(strategy_per_trade_risk_cap_pct - 1.0) > 1e-9)
       return false;
-   if(strategy_slippage_ticks < 1 || strategy_slippage_ticks > 3)
+   if(RISK_PERCENT > 0.0 && MathAbs(RISK_PERCENT - strategy_risk_percent) > 1e-9)
+      return false;
+   if(strategy_slippage_ticks != 3)
       return false;
    return true;
 }
@@ -115,6 +129,87 @@ bool Strategy_HasOpenPosition()
    const int magic = QM_FrameworkMagic();
    if(magic <= 0) return false;
    return (QM_TM_OpenPositionCount(magic) > 0);
+}
+
+bool Strategy_VolumeCanSplitTp1(const double volume)
+{
+   const double volume_min = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+   const double volume_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+   if(volume <= 0.0 || volume_min <= 0.0 || volume_step <= 0.0)
+      return false;
+
+   const double close_lots = QM_TM_NormalizeVolume(_Symbol,
+                                                    volume * strategy_tp1_fraction);
+   const double runner_lots = volume - close_lots;
+   const double tolerance = volume_step * 1e-6;
+   return (close_lots >= volume_min - tolerance &&
+           runner_lots >= volume_min - tolerance &&
+           MathAbs(close_lots - runner_lots) <= tolerance);
+}
+
+bool Strategy_EntryVolumeSupportsTp1(const QM_OrderType side,
+                                     const double entry_price,
+                                     const double stop_price)
+{
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0 || entry_price <= 0.0 || stop_price <= 0.0)
+      return false;
+   const double sl_points = MathAbs(entry_price - stop_price) / point;
+   const ENUM_ORDER_TYPE order_type = (side == QM_BUY) ? ORDER_TYPE_BUY
+                                                       : ORDER_TYPE_SELL;
+   const double expected_lots = QM_LotsForRiskAtEntry(_Symbol,
+                                                       sl_points,
+                                                       order_type,
+                                                       entry_price);
+   return Strategy_VolumeCanSplitTp1(expected_lots);
+}
+
+bool Strategy_LoadTp1State(const long position_id, bool &completed)
+{
+   completed = false;
+   if(position_id <= 0 || !HistorySelectByPosition((ulong)position_id))
+      return false;
+
+   const int deals_total = HistoryDealsTotal();
+   for(int i = 0; i < deals_total; ++i)
+   {
+      const ulong deal_ticket = HistoryDealGetTicket(i);
+      if(deal_ticket == 0 ||
+         (long)HistoryDealGetInteger(deal_ticket, DEAL_POSITION_ID) != position_id)
+         continue;
+
+      const ENUM_DEAL_TYPE deal_type =
+         (ENUM_DEAL_TYPE)HistoryDealGetInteger(deal_ticket, DEAL_TYPE);
+      const ENUM_DEAL_ENTRY deal_entry =
+         (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket, DEAL_ENTRY);
+      const bool trade_deal = (deal_type == DEAL_TYPE_BUY || deal_type == DEAL_TYPE_SELL);
+      if(trade_deal &&
+         (deal_entry == DEAL_ENTRY_OUT || deal_entry == DEAL_ENTRY_OUT_BY ||
+          deal_entry == DEAL_ENTRY_INOUT))
+      {
+         completed = true;
+         break;
+      }
+   }
+   return true;
+}
+
+bool Strategy_Tp1State(const long position_id, bool &completed)
+{
+   if(g_tp1_state_known && g_tp1_position_id == position_id)
+   {
+      completed = g_tp1_completed;
+      return true;
+   }
+
+   bool reconstructed = false;
+   if(!Strategy_LoadTp1State(position_id, reconstructed))
+      return false;
+   g_tp1_position_id = position_id;
+   g_tp1_completed = reconstructed;
+   g_tp1_state_known = true;
+   completed = reconstructed;
+   return true;
 }
 
 double Strategy_KijunSen(const string sym, const int shift)
@@ -252,7 +347,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl = QM_StopATRFromValue(_Symbol, req.type, exec_price, g_closed_atr_1, strategy_sl_atr_mult);
       req.tp = 0.0; // TP1 is a managed 50% partial close; the remainder is the Kijun runner.
       req.reason = "nnfx_kijun_aso_long";
-      return (req.sl > 0.0);
+      return (req.sl > 0.0 && Strategy_EntryVolumeSupportsTp1(req.type, exec_price, req.sl));
    }
 
    // Short: Close[1] < Kijun[1] AND ASO_Bears[1] > ASO_Bulls[1] AND AroonDown[1] >= 70.0 AND Damiani Trade == TRUE
@@ -266,7 +361,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl = QM_StopATRFromValue(_Symbol, req.type, exec_price, g_closed_atr_1, strategy_sl_atr_mult);
       req.tp = 0.0; // TP1 is a managed 50% partial close; the remainder is the Kijun runner.
       req.reason = "nnfx_kijun_aso_short";
-      return (req.sl > 0.0);
+      return (req.sl > 0.0 && Strategy_EntryVolumeSupportsTp1(req.type, exec_price, req.sl));
    }
 
    return false;
@@ -296,17 +391,33 @@ void Strategy_ManageOpenPosition()
       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
 
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const long position_id = PositionGetInteger(POSITION_IDENTIFIER);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
       const double volume = PositionGetDouble(POSITION_VOLUME);
-      if(open_price <= 0.0 || current_sl <= 0.0 || volume <= 0.0)
+      if(position_id <= 0 || open_price <= 0.0 || current_sl <= 0.0 || volume <= 0.0)
          continue;
 
       const bool is_buy = (pos_type == POSITION_TYPE_BUY);
+      bool tp1_completed = false;
+      if(!Strategy_Tp1State(position_id, tp1_completed))
+         continue;
+
       const bool unprotected = is_buy ? (current_sl < open_price - point * 0.5)
                                       : (current_sl > open_price + point * 0.5);
-      if(!unprotected)
-         continue; // TP1 already completed; do not repeatedly halve the runner.
+      if(tp1_completed)
+      {
+         if(unprotected)
+         {
+            const double be_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_be_buffer_pips);
+            const double target_sl = is_buy ? (open_price + be_buffer) : (open_price - be_buffer);
+            QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, target_sl), "NNFX_TP1_BE_PROTECTION");
+         }
+         continue;
+      }
+
+      if(!unprotected || !Strategy_VolumeCanSplitTp1(volume))
+         continue;
 
       const double initial_risk = is_buy ? (open_price - current_sl)
                                          : (current_sl - open_price);
@@ -330,6 +441,9 @@ void Strategy_ManageOpenPosition()
 
       if(QM_TM_PartialClose(ticket, partial_lots, QM_EXIT_PARTIAL))
       {
+         g_tp1_position_id = position_id;
+         g_tp1_completed = true;
+         g_tp1_state_known = true;
          const double be_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_be_buffer_pips);
          const double target_sl = is_buy ? (open_price + be_buffer) : (open_price - be_buffer);
          QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, target_sl), "NNFX_TP1_BE_PROTECTION");
@@ -387,6 +501,11 @@ int OnInit()
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
+      return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "V5_WEEKEND_RISK_POLICY"))
       return INIT_FAILED;
 
    if(!QM_KillSwitchInit(qm_ea_id,
@@ -471,6 +590,7 @@ void OnTimer()
 void OnTradeTransaction(const MqlTradeTransaction &t, const MqlTradeRequest &r, const MqlTradeResult &res)
 {
    QM_FrameworkOnTradeTransaction(t, r, res);
+   g_tp1_state_known = false;
 }
 
 double OnTester()
