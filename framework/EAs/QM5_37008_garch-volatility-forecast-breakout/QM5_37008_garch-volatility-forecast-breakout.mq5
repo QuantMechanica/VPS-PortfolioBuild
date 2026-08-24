@@ -114,7 +114,9 @@ int Strategy_DeviationPoints()
 
 double ComputeGarchSigma(const double &closes[], const int total_bars)
 {
-   if(total_bars < 50) return 0.0;
+   const int close_count = ArraySize(closes);
+   if(total_bars < 50 || total_bars > 100 || close_count < total_bars)
+      return 0.0;
 
    // 1. Compute closed-bar daily simple returns
    int ret_count = total_bars - 1;
@@ -164,8 +166,8 @@ void AdvanceState_OnNewBar()
 
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int copied_rates = CopyRates(_Symbol, PERIOD_D1, 1, 1, rates);
-   if(copied_rates < 1)
+   const int copied_rates = CopyRates(_Symbol, PERIOD_D1, 1, 1, rates); // perf-allowed: one closed D1 bar, read once at init and thereafter behind the D1 new-bar gate.
+   if(copied_rates != 1 || ArraySize(rates) < copied_rates)
    {
       g_cached_valid = false;
       return;
@@ -176,8 +178,8 @@ void AdvanceState_OnNewBar()
    double closes[];
    ArraySetAsSeries(closes, true);
    const int lookback = 100;
-   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, lookback, closes);
-   if(copied < 50)
+   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, lookback, closes); // perf-allowed: bounded GARCH warmup, read once at init and thereafter behind the D1 new-bar gate.
+   if(copied < 50 || copied > lookback || ArraySize(closes) < copied)
    {
       g_cached_valid = false;
       return;
@@ -208,6 +210,13 @@ bool Strategy_DailyRealizedLossHalt()
    return (realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0));
 }
 
+bool Strategy_SpreadAllowsEntry(const double ask, const double bid)
+{
+   if(ask <= 0.0 || bid <= 0.0 || ask < bid || g_cached_atr1 <= 0.0)
+      return false;
+   return ((ask - bid) <= (strategy_spread_atr_mult * g_cached_atr1));
+}
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
@@ -226,9 +235,7 @@ bool Strategy_NoTradeFilter()
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || g_cached_atr1 <= 0.0)
-      return true;
-   if(ask > bid && (ask - bid) > (strategy_spread_atr_mult * g_cached_atr1))
+   if(!Strategy_SpreadAllowsEntry(ask, bid))
       return true;
    return false;
 }
@@ -251,7 +258,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   // Recheck immediately before constructing an entry so admission is bound to
+   // the refreshed ATR(14,D1)[1] and the current executable spread.
+   if(!Strategy_SpreadAllowsEntry(ask, bid))
       return false;
 
    const double cone_distance = strategy_cone_multiplier * g_cached_sigma_price;
