@@ -29,3 +29,7 @@ strategy_atr_period=14
 strategy_sl_atr_mult=1.50
 strategy_spread_atr_mult=1.80
 strategy_max_spread_points=100
+strategy_daily_loss_limit_pct=2.00
+strategy_daily_drawdown_hard_stop_pct=2.50
+strategy_total_drawdown_stop_pct=5.00
+strategy_max_slippage_ticks=3.00

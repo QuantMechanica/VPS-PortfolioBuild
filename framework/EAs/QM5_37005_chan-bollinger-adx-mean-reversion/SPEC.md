@@ -4,7 +4,7 @@
 **Slug:** `chan-bollinger-adx-mean-reversion`
 **Source:** `chan-bollinger-adx-mean-reversion-official-source` (see `strategy-seeds/sources/chan-bollinger-adx-mean-reversion-official-source/`)
 **Author of this spec:** Research+Development
-**Last revised:** 2026-08-18
+**Last revised:** 2026-08-24
 
 ---
 
@@ -13,6 +13,10 @@
 Implements Dr. Ernest P. Chan's classic Bollinger Band mean-reversion model conditioned on an ADX regime filter on closed H1 bars. Only executes when $\text{ADX}(14) < 20.0$, mathematically identifying stationary, non-trending market conditions. Enters long when $\text{Low}[1] \le \text{LowerBB}[1]$ and $\text{Close}[1] > \text{Open}[1]$ (bullish rejection from lower band). Enters short when $\text{High}[1] \ge \text{UpperBB}[1]$ and $\text{Close}[1] < \text{Open}[1]$ (bearish rejection from upper band). Initial stop loss is placed at $1.5 \times \text{ATR}(14)$ and take profit is targeted at the 20-period SMA midline.
 
 Entry/exit logic is encoded in the five `Strategy_*` hooks in `QM5_37005_chan-bollinger-adx-mean-reversion.mq5`. Framework wiring (risk, magic, news, Friday close) is inherited from `QM_Common.mqh` and is not redocumented here.
+
+If the 20-period SMA midline is not beyond the current entry quote in the
+trade direction, the setup is rejected. No alternate take-profit target is
+authorized.
 
 ---
 
@@ -28,6 +32,10 @@ Entry/exit logic is encoded in the five `Strategy_*` hooks in `QM5_37005_chan-bo
 | `strategy_sl_atr_mult` | 1.50 | 1.0 - 3.0 | Stop loss ATR multiplier |
 | `strategy_spread_atr_mult` | 1.80 | 1.0 - 3.0 | Spread filter ATR multiplier |
 | `strategy_max_spread_points` | 100 | 50 - 300 | Absolute spread cap in points |
+| `strategy_daily_loss_limit_pct` | 2.00 | fixed | Daily realized-loss entry halt |
+| `strategy_daily_drawdown_hard_stop_pct` | 2.50 | fixed | Daily equity hard stop |
+| `strategy_total_drawdown_stop_pct` | 5.00 | fixed | Total equity drawdown hard stop |
+| `strategy_max_slippage_ticks` | 3.00 | fixed | Maximum market-order slippage |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -97,3 +105,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from approved card | 98fb1997-3c5d-4bfa-af26-6f46dd7c8a1b |
+| v2 | 2026-08-24 | Review repair | Reject invalid midline targets; wire card loss limits and slippage |
