@@ -51,7 +51,9 @@ input int    strategy_warmup_bars        = 200;
 // -----------------------------------------------------------------------------
 bool CalculateTSR(const string symbol, const ENUM_TIMEFRAMES tf, const int sma_period, const int atr_period, double &out_tsr, double &out_close1)
 {
-   out_close1 = iClose(symbol, tf, 1);
+   // A one-period framework SMA is exactly the closed-bar price and keeps
+   // series access inside the pooled indicator layer.
+   out_close1 = QM_SMA(symbol, tf, 1, 1, PRICE_CLOSE);
    if(out_close1 <= 0.0)
       return false;
 
@@ -70,7 +72,7 @@ bool CalculateTSR(const string symbol, const ENUM_TIMEFRAMES tf, const int sma_p
 
 bool Strategy_NoTradeFilter()
 {
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars) // perf-allowed: bounded D1 warm-up readiness check
       return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -95,7 +97,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars) // perf-allowed: bounded D1 warm-up readiness check
       return false;
 
    const int magic = QM_FrameworkMagic();
@@ -146,7 +148,7 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int bars_held = iBarShift(_Symbol, PERIOD_D1, open_time, false);
+      const int bars_held = iBarShift(_Symbol, PERIOD_D1, open_time, false); // perf-allowed: trading-day hold count for the card time stop
       if(bars_held >= strategy_time_stop_days)
       {
          QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
@@ -156,7 +158,7 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
 {
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars) // perf-allowed: bounded D1 warm-up readiness check
       return false;
 
    double tsr = 0.0;
@@ -189,6 +191,12 @@ int OnInit()
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "V5_WEEKEND_RISK_POLICY"))
+      return INIT_FAILED;
+
    return INIT_SUCCEEDED;
 }
 
@@ -198,19 +206,12 @@ void OnTick()
 {
    QM_FrameworkTrackOpenPositionMae();
 
-   if(!QM_KillSwitchCheck())
-      return;
-
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
-
+   // Existing exposure is managed before every entry-admission guard.  Warm-up,
+   // quote, spread, news, and kill-switch conditions may suppress new entries,
+   // but must never suppress the card's time-stop or TSR exit.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -229,6 +230,13 @@ void OnTick()
       }
    }
 
+   if(!QM_KillSwitchCheck())
+      return;
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -241,6 +249,9 @@ void OnTick()
       return;
 
    QM_EquityStreamOnNewBar();
+
+   if(Strategy_NoTradeFilter())
+      return;
 
    QM_EntryRequest req;
    ZeroMemory(req);
