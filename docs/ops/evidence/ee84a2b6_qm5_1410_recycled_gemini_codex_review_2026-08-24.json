@@ -1,0 +1,22 @@
+{
+  "review_task_id": "ee84a2b6-1d7a-4cbf-b7bd-393469e9a8be",
+  "build_task_id": "c1850502-ac54-4fc4-b397-5e54e87d1eb6",
+  "ea_id": "QM5_1410",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "FAIL"
+  },
+  "findings": [
+    "Current MQ5/EX5 hashes are unchanged from the prior RECYCLE review; no remediation artifact exists.",
+    "Label-scoped hardening reports ten failures: missing MAE tracking, incomplete request initialization, six unsafe buffer/index accesses, a 30/30 versus 480/480-minute news window, and news blocking before management.",
+    "Three direct CopyBuffer calls violate the Codex framework corset and forbidden-code contract; restart-safe TP1 state and the card's MAE-adjusted gain cap remain absent.",
+    "The build result omits spec_md_path and uses deferred_p2_smoke with an empty blocked_reason, so the saturation-only exception is not met; no smoke summary was supplied."
+  ],
+  "reviewed_at": "2026-08-24T07:36:00Z"
+}

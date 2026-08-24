@@ -1,0 +1,22 @@
+{
+  "review_task_id": "c789e9ec-4aeb-41c4-acdd-ad8aff760737",
+  "build_task_id": "ea5327f9-2e58-4f02-b542-3861c7432401",
+  "ea_id": "QM5_1407",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "FAIL",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "Label-scoped hardening reports nine failures: missing BUY-STOP and SELL-STOP, a 30/30 versus 480/480-minute news window, and six out-of-card symbols; required XTIUSD.DWX is also absent.",
+    "The required OCO lifecycle is replaced by post-breakout market entry, the 0.25-ATR spread ceiling by a rolling-average-spread rule, and past-apex/invalidation/restart contracts remain unimplemented.",
+    "The producer record omits compile_succeeded, smoke_result, and smoke_report_path; no governed smoke summary was supplied.",
+    "The live producer UUID and hashes differ from the older colliding ea5327f9-* review record, so this verdict uses only the current artifact and current files."
+  ],
+  "reviewed_at": "2026-08-24T07:36:00Z"
+}
