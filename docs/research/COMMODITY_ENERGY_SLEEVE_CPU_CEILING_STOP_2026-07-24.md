@@ -264,3 +264,29 @@ The canonical path-anchored `farmctl.py mt5-slots` scan separately identified
 was reached, this turn stopped before source approval, card or ID/magic
 allocation, EA build, compilation, Q02 enqueue, tester launch, or any
 portfolio/live mutation.
+
+## Recheck on 2026-08-24 at 06:16Z
+
+An eleventh read-only check found nine active factory MT5 terminals, two above
+the documented paced-fleet ceiling of seven:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_12849 | Q10_NEWS | XTIUSD.DWX |
+| T2 | QM5_20010 | Q10_NEWS | XAUUSD.DWX |
+| T4 | QM5_20291 | Q02 | QM5_20291_XAU_XAG_HKURT_D1 |
+| T5 | QM5_21505 | Q10_NEWS | XAGUSD.DWX |
+| T6 | QM5_1328 | Q10_NEWS | EURJPY.DWX |
+| T7 | QM5_10939 | Q08 baseline | tester configuration |
+| T8 | QM5_12567 | Q08 baseline | tester configuration |
+| T9 | QM5_20266 | Q10_NEWS | XTIUSD.DWX |
+| T10 | QM5_9936 | Q10_NEWS | USDJPY.DWX |
+
+`farmctl.py mt5-slots` separately reported `T_Live` and the FTMO terminal as
+non-pipeline processes; neither was touched. A `T3` worker process was present
+without a running MT5 terminal and was not counted as tester load. Because the
+ceiling was exceeded, this recheck stopped before source approval, card or
+ID/magic allocation, EA build, compilation, Q02 enqueue, tester launch, or any
+portfolio/live mutation. The repository-wide duplicate audit also confirmed
+that ordinary XAU/XAG ratio reversion and broad WTI/XNG trend/seasonality
+families are already built, so no speculative duplicate identity was reserved.
