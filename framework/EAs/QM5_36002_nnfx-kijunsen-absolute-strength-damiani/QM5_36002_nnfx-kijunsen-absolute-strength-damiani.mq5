@@ -52,7 +52,8 @@ input double strategy_spread_atr_mult     = 1.80;   // Spread filter ATR multipl
 input double strategy_daily_loss_halt_pct = 2.0;    // Daily realized-loss entry halt percent
 input double strategy_daily_hard_stop_pct = 2.5;    // Daily equity hard stop percent
 input double strategy_total_dd_halt_pct   = 5.0;    // Account-level total drawdown stop percent
-input double strategy_per_trade_risk_cap_pct = 0.5; // Per-trade risk cap percent
+input double strategy_risk_percent        = 1.0;    // Card live-risk input (framework-capped at 1%)
+input double strategy_per_trade_risk_cap_pct = 1.0; // Framework per-trade risk cap percent
 input int    strategy_slippage_ticks      = 3;      // Market-order slippage tolerance in trade ticks
 
 double g_closed_close_1 = 0.0;
@@ -75,27 +76,37 @@ int GetBarHhmm(const datetime t)
 
 bool Strategy_ConfigValid()
 {
-   if(strategy_kijun_period < 2 || strategy_tenkan_period < 2 || strategy_senkou_period < 2)
+   // The three card-declared sweep dimensions retain their approved ranges.
+   if(strategy_kijun_period < 20 || strategy_kijun_period > 35)
       return false;
-   if(strategy_aso_period < 2 || strategy_aroon_period < 2)
+   if(strategy_aso_period < 7 || strategy_aso_period > 14)
       return false;
-   if(strategy_aroon_threshold <= 0.0 || strategy_aroon_threshold > 100.0)
+   if(strategy_aroon_threshold < 60.0 || strategy_aroon_threshold > 80.0)
       return false;
-   if(strategy_damiani_vis_period < 2 || strategy_damiani_sed_period <= strategy_damiani_vis_period ||
-      strategy_damiani_threshold <= 0.0)
+
+   // The card does not authorize sweeps for these mechanical constants.
+   if(strategy_tenkan_period != 9 || strategy_senkou_period != 52 ||
+      strategy_aroon_period != 25 || strategy_damiani_vis_period != 13 ||
+      strategy_damiani_sed_period != 40 ||
+      MathAbs(strategy_damiani_threshold - 1.40) > 1e-9)
       return false;
-   if(strategy_atr_period < 2 || strategy_sl_atr_mult <= 0.0 || strategy_tp_atr_mult <= 0.0)
+   if(strategy_atr_period != 14 || MathAbs(strategy_sl_atr_mult - 1.0) > 1e-9 ||
+      MathAbs(strategy_tp_atr_mult - 1.0) > 1e-9)
       return false;
-   if(strategy_tp1_fraction <= 0.0 || strategy_tp1_fraction >= 1.0 || strategy_be_buffer_pips < 0)
+   if(MathAbs(strategy_tp1_fraction - 0.50) > 1e-9 || strategy_be_buffer_pips != 1)
       return false;
-   if(strategy_spread_atr_mult <= 0.0)
+   if(MathAbs(strategy_spread_atr_mult - 1.80) > 1e-9)
       return false;
-   if(strategy_daily_loss_halt_pct <= 0.0 || strategy_daily_hard_stop_pct <= 0.0 ||
-      strategy_daily_loss_halt_pct > strategy_daily_hard_stop_pct || strategy_total_dd_halt_pct <= 0.0)
+   if(MathAbs(strategy_daily_loss_halt_pct - 2.0) > 1e-9 ||
+      MathAbs(strategy_daily_hard_stop_pct - 2.5) > 1e-9 ||
+      MathAbs(strategy_total_dd_halt_pct - 5.0) > 1e-9)
       return false;
-   if(strategy_per_trade_risk_cap_pct <= 0.0 || strategy_per_trade_risk_cap_pct > 1.0)
+   if(strategy_risk_percent < 0.5 || strategy_risk_percent > 1.0 ||
+      MathAbs(strategy_per_trade_risk_cap_pct - 1.0) > 1e-9)
       return false;
-   if(strategy_slippage_ticks < 1 || strategy_slippage_ticks > 3)
+   if(RISK_PERCENT > 0.0 && MathAbs(RISK_PERCENT - strategy_risk_percent) > 1e-9)
+      return false;
+   if(strategy_slippage_ticks != 3)
       return false;
    return true;
 }
@@ -490,6 +501,11 @@ int OnInit()
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
+      return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "V5_WEEKEND_RISK_POLICY"))
       return INIT_FAILED;
 
    if(!QM_KillSwitchInit(qm_ea_id,

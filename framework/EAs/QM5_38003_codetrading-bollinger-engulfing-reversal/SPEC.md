@@ -1,62 +1,64 @@
 # QM5_38003_codetrading-bollinger-engulfing-reversal — Strategy Spec
 
 **EA ID:** QM5_38003
-**Slug:** codetrading-bollinger-engulfing-reversal
-**Source:** codetrading-bollinger-engulfing-reversal-official-source (see `strategy-seeds/sources/codetrading-bollinger-engulfing-reversal/`)
+**Slug:** `codetrading-bollinger-engulfing-reversal`
+**Source:** `codetrading-bollinger-engulfing-reversal-official-source`
 **Author of this spec:** Codex
-**Last revised:** 2026-08-23
+**Last revised:** 2026-08-24
 
 ---
 
 ## 1. Strategy Logic
 
-The strategy is a systematic price action mean-reversion model on the H1 timeframe combining Bollinger Bands (20, 2.0), RSI(14) momentum filters, and Engulfing candlestick patterns. All evaluations occur strictly on closed bars (Shift = 1).
+On each completed H1 bar, the EA buys when a bullish engulfing candle touches the
+lower 20-period, 2-standard-deviation Bollinger Band and RSI(14) is at or below
+35. It sells on the symmetric bearish engulfing, upper-band touch, and RSI at or
+above 65. The stop is two pips beyond the engulfing candle and the take-profit is
+two times the stop distance; half the position is closed when price reaches the
+Bollinger middle band. Entries are blocked during 23:55–00:05 UTC, for a spread
+above 1.8 × closed-bar ATR(14), after 2% daily realized loss, after 5% total
+drawdown, or while this strategy already has a position; open trades are closed
+at 2.5% daily equity drawdown or 5% total equity drawdown.
 
-A Long entry is triggered when Bar 1 forms a Bullish Engulfing pattern over Bar 2 (Bar 2 is bearish, Bar 1 is bullish and engulfs Bar 2's body), the Low of Bar 1 penetrates or touches the Lower Bollinger Band, and RSI(14) is oversold (<= 35.0). A Short entry is triggered when Bar 1 forms a Bearish Engulfing pattern over Bar 2 (Bar 2 is bullish, Bar 1 is bearish and engulfs Bar 2's body), the High of Bar 1 penetrates or touches the Upper Bollinger Band, and RSI(14) is overbought (>= 65.0).
-
-Stop Loss is placed beyond the extreme of the engulfing candle (Low - 2.0 pips for Long, High + 2.0 pips for Short). Take Profit is set at 2.0× Risk-to-Reward (1:2.0 R:R). When price first reaches the 20 SMA middle Bollinger Band, exactly 50% of the position is closed and the remaining half continues under the original broker-side SL and TP. The EA reconstructs this one-time partial-exit state from the position's deal history after restart; it never substitutes a break-even stop move for the card exit.
-
-An entry fails closed when its risk-sized volume cannot be divided into two equal, broker-valid half volumes. This preserves the card's exact 50% exit instead of silently rounding it.
-
-The ATR spread ceiling is evaluated after the closed-bar indicator refresh and checked again at the final order-submission boundary, after news admission. Missing or crossed quotes and an unavailable ATR all fail closed.
+The card's lifecycle illustration mentions break-even and trailing states but
+does not define their triggers or distances. Those states are intentionally
+inactive so the build does not invent mechanics outside the approved exact exit
+rules.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_signal_tf` | `PERIOD_H1` | `H1` | Base execution and indicator timeframe |
-| `strategy_bb_period` | `20` | `14-30` | Bollinger Bands period |
-| `strategy_bb_dev` | `2.00` | `1.5-2.5` | Bollinger Bands standard deviation multiplier |
-| `strategy_rsi_period` | `14` | `7-21` | RSI oscillator period |
-| `strategy_rsi_long_max` | `35.0` | `20.0-40.0` | RSI threshold for Long entries |
-| `strategy_rsi_short_min` | `65.0` | `60.0-80.0` | RSI threshold for Short entries |
-| `strategy_atr_period` | `14` | `10-20` | ATR period for the spread filter |
-| `strategy_sl_buffer_pips` | `2.0` | `1.0-5.0` | Pip buffer beyond engulfing candle extreme for SL |
-| `strategy_tp_rr` | `2.0` | `1.0-3.0` | Risk-to-Reward multiplier for Take Profit |
-| `strategy_mid_exit_enabled` | `true` | `true` | Enable the mandatory middle-band partial exit |
-| `strategy_mid_exit_fraction` | `0.50` | `0.50` | Exact fraction closed once at the middle band |
-| `strategy_rollover_start_hhmm` | `2355` | `0-2359` | Start time for daily rollover blackout window |
-| `strategy_rollover_end_hhmm` | `5` | `0-2359` | End time for daily rollover blackout window |
-| `strategy_spread_filter_mult` | `1.8` | `1.0-3.0` | Max allowable spread as a multiple of ATR |
-| `strategy_max_slippage_ticks` | `3` | `1-3` | Maximum market-order deviation in trade ticks |
-| `strategy_daily_loss_halt_pct` | `2.0` | `(0, 2.0]` | Realized daily-loss entry halt |
-| `strategy_daily_hard_stop_pct` | `2.5` | `(0, 2.5]` | Framework daily hard-stop ceiling |
-| `strategy_total_dd_halt_pct` | `5.0` | `(0, 5.0]` | Framework total-drawdown hard-stop ceiling |
-| `strategy_per_trade_risk_cap_pct` | `0.5` | `(0, 0.5]` | Framework per-trade account-risk ceiling |
+|---|---:|---:|---|
+| `InpBBPeriod` | 20 | 14–30 | Bollinger Bands SMA period. |
+| `InpBBDev` | 2.00 | 1.5–2.5 | Bollinger Bands standard-deviation multiplier. |
+| `InpRSIPeriod` | 14 | 7–21 | RSI momentum-filter period. |
+| `InpDailyLossHaltPct` | 2.0 | fixed by card | Daily realized-loss threshold that blocks new entries. |
+| `InpDailyDrawdownStopPct` | 2.5 | fixed by card | Daily equity-drawdown hard exit threshold. |
+| `InpTotalDrawdownStopPct` | 5.0 | fixed by card | Total equity-drawdown entry halt and hard exit threshold. |
+
+The card's `InpRiskPercent` is implemented by the governed framework
+`RISK_PERCENT` input rather than duplicated as a strategy input. It remains 0 in
+backtests while `RISK_FIXED=1000`; a future OWNER-approved live setfile may set
+`RISK_PERCENT=0.50` and must set `RISK_FIXED=0`.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — Primary liquid FX major with high mean-reverting quality at H1 Bollinger Band extremes
-- `GBPJPY.DWX` — Volatile FX cross offering strong engulfing momentum follow-through
-- `AUDUSD.DWX` — Major commodity currency pair with well-defined cyclical range extremes
+
+- `EURUSD.DWX` — the card's primary liquid FX target.
+- `GBPJPY.DWX` — the card's higher-volatility FX cross target.
+- `AUDUSD.DWX` — the card's liquid commodity-currency target.
 
 **Explicitly NOT for:**
-- Illiquid exotic pairs or high-spread instruments where spread widening degrades risk-reward efficiency
+
+- Symbols outside the three approved targets — no portability claim or magic
+  allocation is present for them.
+- Symbols absent from `framework/registry/dwx_symbol_matrix.csv` — the governed
+  tester has no canonical data contract for them.
 
 ---
 
@@ -64,9 +66,9 @@ The ATR spread ceiling is evaluated after the closed-bar indicator refresh and c
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `PERIOD_H1` |
-| Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, strategy_signal_tf)` |
+| Base timeframe | `H1` |
+| Multi-timeframe refs | none |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)`; all indicator and candle reads use completed H1 bar `[1]` |
 
 ---
 
@@ -74,22 +76,21 @@ The ATR spread ceiling is evaluated after the closed-bar indicator refresh and c
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 70 |
-| Typical hold time | 4 to 24 hours |
-| Expected drawdown profile | Low, < 4% Max Drawdown with disciplined 1:2 R:R |
-| Regime preference | Ranging / Overextended Extremes Mean Reversion |
-| Win rate target (qualitative) | High (65-75%) |
+| Trades / year / symbol | 70 conservative ordering prior; card also states 80–160 high-conviction trades/year |
+| Typical hold time | Not specified; held until SL/TP, middle-band partial, Friday close, or a capital-preservation exit |
+| Expected drawdown profile | 15% conservative frontmatter expectation; 2.5% daily and 5% total strategy circuit breakers |
+| Regime preference | Mean reversion after outer-band rejection |
+| Win rate target (qualitative) | High source claim; unverified until governed testing |
 
 ---
 
 ## 6. Source Citation
 
-This card was mechanised from:
-
 **Source ID:** `codetrading-bollinger-engulfing-reversal-official-source`
-**Source type:** `video`
-**Pointer:** `CodeTrading (2022). How To Trade Candles Patterns | Strategy Backtest In Python. YouTube.`
-**R1–R4 verdict (Q00):** all PASS / see `strategy-seeds/cards/approved/QM5_38003_codetrading-bollinger-engulfing-reversal.md`
+**Source type:** video
+**Pointer:** `D:/QM/strategy_farm/artifacts/cards_approved/QM5_38003_codetrading-bollinger-engulfing-reversal.md`
+**R1–R4 verdict (Q00):** R1 lineage recorded and R2–R4 PASS per
+`artifacts/cards_approved/QM5_38003_codetrading-bollinger-engulfing-reversal.md`.
 
 ---
 
@@ -99,9 +100,10 @@ This card was mechanised from:
 |---|---|---|
 | Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by the portfolio manifest |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit`. This build does not
+authorize live use.
 
 ---
 
@@ -109,5 +111,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-18 | Initial build from card | Task 5fa16349-5252-448a-8f5d-8a7d77306f9b |
-| v2 | 2026-08-23 | Card-conformance remediation | Exact engulfing boundaries, exact restart-safe 50% middle-band close, current-bar admission state, UTC rollover, three-tick deviation, and explicit risk rails |
+| v1 | 2026-08-24 | Initial build from approved card | build-QM5_38003_codetrading-bollinger-engulfing-reversal |
