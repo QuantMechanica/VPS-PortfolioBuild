@@ -1651,6 +1651,13 @@ _WORK_ITEM_GATE_CONTRACT_TRIGGER = "trg_work_items_stamp_gate_contract_version"
 _WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER = (
     "trg_work_items_gate_contract_version_immutable"
 )
+_WORK_ITEM_PHASE_IMMUTABLE_TRIGGER = "trg_work_items_phase_immutable"
+_WORK_ITEM_PAYLOAD_PROVENANCE_INSERT_TRIGGER = (
+    "trg_work_items_payload_provenance_insert"
+)
+_WORK_ITEM_PAYLOAD_PROVENANCE_UPDATE_TRIGGER = (
+    "trg_work_items_payload_provenance_update"
+)
 
 
 def ensure_work_item_gate_contract_schema(conn: sqlite3.Connection) -> dict[str, int]:
@@ -1711,6 +1718,13 @@ def ensure_work_item_gate_contract_schema(conn: sqlite3.Connection) -> dict[str,
     conn.execute(
         f"DROP TRIGGER IF EXISTS {_WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER}"
     )
+    conn.execute(f"DROP TRIGGER IF EXISTS {_WORK_ITEM_PHASE_IMMUTABLE_TRIGGER}")
+    conn.execute(
+        f"DROP TRIGGER IF EXISTS {_WORK_ITEM_PAYLOAD_PROVENANCE_INSERT_TRIGGER}"
+    )
+    conn.execute(
+        f"DROP TRIGGER IF EXISTS {_WORK_ITEM_PAYLOAD_PROVENANCE_UPDATE_TRIGGER}"
+    )
     conn.execute(
         f"""
         CREATE TRIGGER {_WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER}
@@ -1723,6 +1737,59 @@ def ensure_work_item_gate_contract_schema(conn: sqlite3.Connection) -> dict[str,
         END
         """
     )
+    conn.execute(
+        f"""
+        CREATE TRIGGER {_WORK_ITEM_PHASE_IMMUTABLE_TRIGGER}
+        BEFORE UPDATE OF phase ON work_items
+        WHEN OLD.phase IS NOT NULL
+         AND trim(OLD.phase) <> ''
+         AND NEW.phase IS NOT OLD.phase
+        BEGIN
+            SELECT RAISE(ABORT, 'work_item phase is append-only; append a successor');
+        END
+        """
+    )
+    # A payload which names its own phase or gate contract is provenance, not
+    # mutable routing metadata.  Keep the storage columns and that embedded
+    # provenance inseparable.  Rows without either optional payload field are
+    # unaffected.  The INSERT trigger permits a blank column long enough for
+    # the storage-boundary stamp trigger below to fill it; that UPDATE is then
+    # checked by the UPDATE trigger.
+    payload_phase_mismatch = """
+        json_valid(NEW.payload_json)=1
+        AND json_type(NEW.payload_json, '$.phase')='text'
+        AND trim(CAST(json_extract(NEW.payload_json, '$.phase') AS TEXT))<>''
+        AND upper(trim(CAST(json_extract(NEW.payload_json, '$.phase') AS TEXT)))
+            <> upper(trim(NEW.phase))
+    """
+    payload_version_mismatch = """
+        json_valid(NEW.payload_json)=1
+        AND json_type(NEW.payload_json, '$.gate_contract_version')='text'
+        AND trim(CAST(json_extract(NEW.payload_json, '$.gate_contract_version') AS TEXT))<>''
+        AND NEW.gate_contract_version IS NOT NULL
+        AND trim(NEW.gate_contract_version)<>''
+        AND lower(trim(CAST(json_extract(NEW.payload_json, '$.gate_contract_version') AS TEXT)))
+            <> lower(trim(NEW.gate_contract_version))
+        AND lower(trim(CAST(json_extract(NEW.payload_json, '$.gate_contract_version') AS TEXT)))
+            <> 'qm.gate-manifest/' || lower(trim(NEW.gate_contract_version))
+    """
+    for trigger_name, event in (
+        (_WORK_ITEM_PAYLOAD_PROVENANCE_INSERT_TRIGGER, "INSERT"),
+        (
+            _WORK_ITEM_PAYLOAD_PROVENANCE_UPDATE_TRIGGER,
+            "UPDATE OF phase, gate_contract_version, payload_json",
+        ),
+    ):
+        conn.execute(
+            f"""
+            CREATE TRIGGER {trigger_name}
+            BEFORE {event} ON work_items
+            WHEN ({payload_phase_mismatch}) OR ({payload_version_mismatch})
+            BEGIN
+                SELECT RAISE(ABORT, 'work_item columns contradict bound payload provenance');
+            END
+            """
+        )
     conn.execute(
         f"""
         CREATE TRIGGER {_WORK_ITEM_GATE_CONTRACT_TRIGGER}

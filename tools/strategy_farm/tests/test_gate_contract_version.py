@@ -167,3 +167,62 @@ def test_contract_version_normaliser_strict_mode_still_rejects() -> None:
     assert phase_ids._normalise_contract_version("legacy") is None
     with pytest.raises(ValueError):
         phase_ids._normalise_contract_version("v9", strict=True)
+
+
+def test_phase_and_bound_payload_provenance_are_immutable() -> None:
+    conn = _legacy_connection()
+    farmctl.ensure_work_item_gate_contract_schema(conn)
+    conn.execute(
+        "INSERT INTO work_items(id,phase,payload_json,created_at,gate_contract_version) "
+        "VALUES(?,?,?,?,?)",
+        ("unbound", "Q12", "{}", "2026-08-24T00:00:00Z", "v4"),
+    )
+    payload = json.dumps({"phase": "Q12", "gate_contract_version": "v4"})
+    conn.execute(
+        "INSERT INTO work_items(id,phase,payload_json,created_at,gate_contract_version) "
+        "VALUES(?,?,?,?,?)",
+        ("bound", "Q12", payload, "2026-08-24T00:00:00Z", "v4"),
+    )
+
+    with pytest.raises(sqlite3.IntegrityError, match="phase is append-only"):
+        conn.execute("UPDATE work_items SET phase='Q14' WHERE id='unbound'")
+    with pytest.raises(sqlite3.IntegrityError, match="payload provenance"):
+        conn.execute(
+            "UPDATE work_items SET payload_json=? WHERE id='bound'",
+            (json.dumps({"phase": "Q12", "gate_contract_version": "v3"}),),
+        )
+
+
+@pytest.mark.parametrize(
+    ("phase", "version", "payload"),
+    (
+        ("Q12", "v4", {"phase": "Q14", "gate_contract_version": "v4"}),
+        ("Q12", "v4", {"phase": "Q12", "gate_contract_version": "v3"}),
+    ),
+)
+def test_insert_rejects_column_payload_provenance_mismatch(
+    phase: str, version: str, payload: dict[str, str]
+) -> None:
+    conn = _legacy_connection()
+    farmctl.ensure_work_item_gate_contract_schema(conn)
+    with pytest.raises(sqlite3.IntegrityError, match="payload provenance"):
+        conn.execute(
+            "INSERT INTO work_items(id,phase,payload_json,created_at,gate_contract_version) "
+            "VALUES(?,?,?,?,?)",
+            ("mismatch", phase, json.dumps(payload), "2026-08-24T00:00:00Z", version),
+        )
+
+
+def test_storage_stamp_cannot_relabel_bound_payload() -> None:
+    conn = _legacy_connection()
+    farmctl.ensure_work_item_gate_contract_schema(conn)
+    with pytest.raises(sqlite3.IntegrityError, match="payload provenance"):
+        conn.execute(
+            "INSERT INTO work_items(id,phase,payload_json,created_at) VALUES(?,?,?,?)",
+            (
+                "implicit-mismatch",
+                "Q14",
+                json.dumps({"phase": "Q14", "gate_contract_version": "v3"}),
+                "2026-08-24T00:00:00Z",
+            ),
+        )

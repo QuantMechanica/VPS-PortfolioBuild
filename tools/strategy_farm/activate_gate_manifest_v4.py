@@ -540,9 +540,11 @@ def pending_cutover_plan(conn: sqlite3.Connection) -> dict[str, list[dict]]:
         if "gate_contract_version" in columns
         else "'legacy'"
     )
+    payload_sql = "payload_json" if "payload_json" in columns else "NULL"
     placeholders = ",".join("?" for _ in phase_map)
     rows = conn.execute(
-        f"SELECT id,phase,status,verdict,{version_sql} AS old_version "
+        f"SELECT id,phase,status,verdict,{version_sql} AS old_version,"
+        f"{payload_sql} AS payload_json "
         f"FROM work_items WHERE status IN ('pending','active') "
         f"AND phase IN ({placeholders}) ORDER BY id",
         tuple(phase_map),
@@ -573,6 +575,36 @@ def pending_cutover_plan(conn: sqlite3.Connection) -> dict[str, list[dict]]:
             )
             blocked.append(item)
             continue
+        payload_raw = row[5]
+        if payload_raw not in (None, ""):
+            try:
+                payload = json.loads(str(payload_raw))
+            except (json.JSONDecodeError, TypeError):
+                item["reason"] = "payload provenance is not valid JSON"
+                blocked.append(item)
+                continue
+            if not isinstance(payload, dict):
+                item["reason"] = "payload provenance is not a JSON object"
+                blocked.append(item)
+                continue
+            payload_phase = str(payload.get("phase") or "").strip().upper()
+            payload_version = str(
+                payload.get("gate_contract_version") or ""
+            ).strip().lower()
+            if payload_version.startswith("qm.gate-manifest/"):
+                payload_version = payload_version.rsplit("/", 1)[-1]
+            conflicts = []
+            if payload_phase and payload_phase != item["new_phase"].upper():
+                conflicts.append(f"payload phase={payload_phase}")
+            if payload_version and payload_version != item["new_version"]:
+                conflicts.append(f"payload version={payload_version}")
+            if conflicts:
+                item["reason"] = (
+                    "bound payload provenance requires append-only remint: "
+                    + ", ".join(conflicts)
+                )
+                blocked.append(item)
+                continue
         work_items.append(item)
         by_id[item["work_item_id"]] = item
 
@@ -658,6 +690,9 @@ def cutover_pending_rows(conn: sqlite3.Connection, *, apply: bool) -> StepResult
         # is appended to the immutable cutover ledger.
         conn.execute(
             f"DROP TRIGGER IF EXISTS {farmctl._WORK_ITEM_GATE_CONTRACT_IMMUTABLE_TRIGGER}"
+        )
+        conn.execute(
+            f"DROP TRIGGER IF EXISTS {farmctl._WORK_ITEM_PHASE_IMMUTABLE_TRIGGER}"
         )
         conn.execute("DROP TRIGGER IF EXISTS trg_wid_no_update")
         for dep in plan["dependencies"]:

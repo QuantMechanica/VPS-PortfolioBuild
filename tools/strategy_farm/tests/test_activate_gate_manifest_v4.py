@@ -317,6 +317,47 @@ def test_cutover_plan_covers_all_open_meaning_changes_and_skips_terminal_rows() 
         conn.close()
 
 
+def test_cutover_plan_refuses_to_relabel_bound_payload_provenance() -> None:
+    conn = sqlite3.connect(":memory:")
+    try:
+        conn.execute(
+            "CREATE TABLE work_items ("
+            "id TEXT PRIMARY KEY,phase TEXT,status TEXT,verdict TEXT,"
+            "gate_contract_version TEXT,payload_json TEXT)"
+        )
+        conn.execute(
+            "INSERT INTO work_items VALUES(?,?,?,?,?,?)",
+            (
+                "historic-q14",
+                "Q14",
+                "pending",
+                None,
+                "v3",
+                json.dumps({"phase": "Q14", "gate_contract_version": "v3"}),
+            ),
+        )
+
+        plan = act.pending_cutover_plan(conn)
+
+        assert plan["work_items"] == []
+        assert plan["blocked"] == [
+            {
+                "work_item_id": "historic-q14",
+                "old_phase": "Q14",
+                "new_phase": "Q12",
+                "old_version": "v3",
+                "new_version": "v4",
+                "status": "pending",
+                "reason": (
+                    "bound payload provenance requires append-only remint: "
+                    "payload phase=Q14, payload version=v3"
+                ),
+            }
+        ]
+    finally:
+        conn.close()
+
+
 def test_pending_news_hold_and_dependency_rows_cut_over_append_only(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
