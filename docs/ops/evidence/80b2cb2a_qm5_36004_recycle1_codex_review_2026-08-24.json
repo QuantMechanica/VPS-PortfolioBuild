@@ -1,0 +1,27 @@
+{
+  "review_task_id": "80b2cb2a-07fc-4aa6-9df3-81aab754a622",
+  "build_task_id": "22225e01-3ed6-4a1f-8fca-b55655117d01",
+  "ea_id": "QM5_36004",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The current source now requires a fresh QQE state transition for entry, opens without a full-position TP, attempts a 50% TP1 partial, converts rollover time to UTC, initializes the 2.5%/5.0%/1.0% kill-switch thresholds, and performs management and exits before entry-only filters. Those headline remediation claims were independently confirmed.",
+    "The approved stop is a hard 1.0x ATR(14,D1), but entry uses MathMax(strategy_sl_atr_mult * atr_1, 10 pips). The unapproved 10-pip floor changes the stop and fixed-risk position size whenever D1 ATR is smaller.",
+    "TP1 is not fixed from the entry-bar ATR. Strategy_ManageOpenPosition recomputes ATR(14,D1)[1] on every later tick and uses that changing value as the partial-close threshold, with an invented 20-pip fallback. A multi-day position therefore has a moving TP1 rather than the card's set +1 ATR level.",
+    "The exact card defines the runner exit as a QQE signal cross. Strategy_ExitSignal additionally closes a long below ALMA or a short above ALMA, adding an unapproved exit path that changes runner expectancy.",
+    "The TP1 latch is inferred only from whether SL has reached break-even. If the partial close succeeds but the following QM_TM_MoveSL fails, subsequent ticks can repeatedly halve the remaining volume. If half volume is not tradable or the partial close fails, the else branch moves the full position to break-even without closing the required 50%. The lifecycle is neither atomic nor restart-durable.",
+    "The 2.0% daily realized-loss filter compares current ACCOUNT_EQUITY with day-start equity and therefore includes floating P&L. OnInit also ignores the boolean result of QM_KillSwitchInit, so initialization can succeed without proving the approved risk thresholds were installed.",
+    "OnInit declares no QM_FrameworkDeclareExecutionContract for the D1 host cadence, OnTick uses parameterless QM_IsNewBar, and the EA adds unused Trade/Trade.mqh outside the QM_Common include chain. A wrong host chart is not rejected fail-closed.",
+    "The reviewed MQ5 hashes to dd9bfa5a4574f83da6f45b10e2a77b822f853d7b5d60e6d1f340e10cc51545b8 and was modified 2026-08-23; the EX5 hashes to a83f0c2b2088079e028605e414fae6f98b4e91ad5500bfab22f1b3b7e34896d4 and predates the remediation by six days. The producer JSON claims compile_succeeded, build_check_passed, and smoke_result passed while smoke_report_path is null; its durable remediation note says compilation/smoke was refused by the live-factory guard, and farmctl reports NOT_ENQUEUED. No current binary or runtime evidence covers this source, so build_result fails and smoke_sanity remains UNKNOWN.",
+    "Guardrail and SPEC validation pass; all four governed sets carry build_hash with RISK_FIXED=1000 and RISK_PERCENT=0; active magic rows are unique, formula-correct, and resolver-backed; and no direct OrderSend or unwrapped trade method is present. These checks do not cure the stop, TP1, runner, risk, lifecycle, execution-contract, and build-evidence failures."
+  ],
+  "reviewed_at": "2026-08-24T11:36:00Z"
+}
