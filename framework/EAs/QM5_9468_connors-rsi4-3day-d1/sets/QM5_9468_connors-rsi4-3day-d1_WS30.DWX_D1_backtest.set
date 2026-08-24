@@ -3,16 +3,16 @@
 ; ea_id:        9468
 ; ea_slug:      connors-rsi4-3day-d1
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260824-002
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f34b09783e49b2b84319c15b56ff1d42620bb6ab76a16af21ef9954d5e76b4c7
+; build_hash:   2e741e74a14b3c20be6c807908e08c476641b9b1b9cb31e91b8c9cb9b69e18b9
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-24
 ;==========================================================
 qm_ea_id=9468
 qm_magic_slot_offset=4

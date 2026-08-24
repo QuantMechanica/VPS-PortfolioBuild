@@ -45,8 +45,12 @@ input double strategy_spread_max_atr    = 0.25;
 input int    strategy_cooldown_bars     = 3;
 input int    strategy_warmup_bars       = 200;
 
-// Internal state
-datetime g_last_exit_time = 0;
+// Cooldown state is reconstructed from account deal history on every init and
+// refreshed by OnTradeTransaction for every closing deal owned by this
+// symbol/magic.  When history cannot be authenticated, new entries fail closed
+// while open-position management remains available.
+datetime g_last_exit_time    = 0;
+bool     g_exit_history_ready = false;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -54,7 +58,8 @@ datetime g_last_exit_time = 0;
 
 bool Strategy_NoTradeFilter()
 {
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   MqlRates warmup_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, strategy_warmup_bars, warmup_bar))
       return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -71,7 +76,7 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   if(!g_exit_history_ready)
       return false;
 
    const int magic = QM_FrameworkMagic();
@@ -81,12 +86,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // Cooldown check
    if(g_last_exit_time > 0)
    {
-      const int bars_since_exit = iBarShift(_Symbol, PERIOD_D1, g_last_exit_time, false);
-      if(bars_since_exit < strategy_cooldown_bars)
+      const int bars_since_exit = QM_TM_HeldPeriods(_Symbol, PERIOD_D1, g_last_exit_time);
+      if(bars_since_exit < 0 || bars_since_exit < strategy_cooldown_bars)
          return false;
    }
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, signal_bar))
+      return false;
+
+   const double close1 = signal_bar.close;
    const double rsi4   = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1, PRICE_CLOSE);
 
    if(close1 <= 0.0 || rsi4 <= 0.0)
@@ -137,11 +146,13 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int bars_held = iBarShift(_Symbol, PERIOD_D1, open_time, false);
+      const int bars_held = QM_TM_HeldPeriods(_Symbol, PERIOD_D1, open_time);
       if(bars_held >= strategy_hold_bars)
       {
          if(QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP))
          {
+            // Immediate guard against a same-tick re-entry.  The transaction
+            // callback replaces this with the durable server deal time.
             g_last_exit_time = TimeCurrent();
          }
       }
@@ -158,16 +169,113 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
    return false;
 }
 
+bool Strategy_InputsValid()
+{
+   if(strategy_rsi_period <= 1 ||
+      strategy_rsi_entry_thresh <= 0.0 || strategy_rsi_entry_thresh >= 100.0 ||
+      strategy_sma_period < 0 ||
+      strategy_hold_bars <= 0 ||
+      strategy_atr_period <= 0 ||
+      strategy_sl_atr_mult <= 0.0 ||
+      strategy_spread_max_atr < 0.0 ||
+      strategy_cooldown_bars < 0 ||
+      strategy_warmup_bars <= 0)
+      return false;
+
+   if(strategy_warmup_bars < strategy_rsi_period ||
+      strategy_warmup_bars < strategy_atr_period ||
+      (strategy_sma_period > 0 && strategy_warmup_bars < strategy_sma_period))
+      return false;
+
+   return true;
+}
+
+bool Strategy_RestoreLastExit()
+{
+   g_exit_history_ready = false;
+   g_last_exit_time = 0;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 || !HistorySelect(0, TimeCurrent()))
+      return false;
+
+   for(int i = HistoryDealsTotal() - 1; i >= 0; --i)
+   {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         return false;
+      if((int)HistoryDealGetInteger(deal, DEAL_MAGIC) != magic)
+         continue;
+      if(HistoryDealGetString(deal, DEAL_SYMBOL) != _Symbol)
+         continue;
+
+      const ENUM_DEAL_ENTRY entry =
+         (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal, DEAL_ENTRY);
+      if(entry != DEAL_ENTRY_OUT && entry != DEAL_ENTRY_OUT_BY && entry != DEAL_ENTRY_INOUT)
+         continue;
+
+      const datetime exit_time = (datetime)HistoryDealGetInteger(deal, DEAL_TIME);
+      if(exit_time <= 0)
+         return false;
+      g_last_exit_time = exit_time;
+      break;
+   }
+
+   g_exit_history_ready = true;
+   return true;
+}
+
+void Strategy_RecordExitTransaction(const MqlTradeTransaction &trans)
+{
+   if(trans.type != TRADE_TRANSACTION_DEAL_ADD)
+      return;
+   if(trans.deal == 0 || !HistoryDealSelect(trans.deal))
+   {
+      g_exit_history_ready = false;
+      return;
+   }
+   if((int)HistoryDealGetInteger(trans.deal, DEAL_MAGIC) != QM_FrameworkMagic())
+      return;
+   if(HistoryDealGetString(trans.deal, DEAL_SYMBOL) != _Symbol)
+      return;
+
+   const ENUM_DEAL_ENTRY entry =
+      (ENUM_DEAL_ENTRY)HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
+   if(entry != DEAL_ENTRY_OUT && entry != DEAL_ENTRY_OUT_BY && entry != DEAL_ENTRY_INOUT)
+      return;
+
+   const datetime exit_time = (datetime)HistoryDealGetInteger(trans.deal, DEAL_TIME);
+   if(exit_time <= 0)
+   {
+      g_exit_history_ready = false;
+      return;
+   }
+
+   g_last_exit_time = exit_time;
+   g_exit_history_ready = true;
+}
+
 // -----------------------------------------------------------------------------
 // Framework wiring
 // -----------------------------------------------------------------------------
 
 int OnInit()
 {
+   if(!Strategy_InputsValid())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
+      return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "V5_WEEKEND_RISK_OVERRIDE_ON_D1"))
+      return INIT_FAILED;
+
+   if(!Strategy_RestoreLastExit())
       return INIT_FAILED;
    return INIT_SUCCEEDED;
 }
@@ -182,15 +290,11 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
-
+   // Card exits and open-position management must remain reachable through
+   // every entry-only filter, including spread, warmup and news admission.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -212,6 +316,14 @@ void OnTick()
       }
    }
 
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
+      return;
+
+   QM_EquityStreamOnNewBar();
+
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -220,10 +332,8 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(Strategy_NoTradeFilter())
       return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    ZeroMemory(req);
@@ -238,6 +348,7 @@ void OnTimer() { QM_FrameworkOnTimer(); }
 void OnTradeTransaction(const MqlTradeTransaction &t, const MqlTradeRequest &r, const MqlTradeResult &res)
 {
    QM_FrameworkOnTradeTransaction(t, r, res);
+   Strategy_RecordExitTransaction(t);
 }
 
 double OnTester()

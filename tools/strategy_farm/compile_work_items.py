@@ -79,6 +79,16 @@ Q02_INFRA_SOURCE_REPAIR_AUTHORITY = (
 Q02_INFRA_SOURCE_REPAIR_EA_LABELS = frozenset({
     "QM5_11900_kobasfx-4ema-macd-sentiment-h1",
 })
+# Exact review-rework authority for the RECYCLE task that rejected the stale
+# QM5_9468 binary/source package.  This permits one append-only COMPILE_EA
+# successor bound to the repaired source hash; it grants no backtest or gate
+# authority and cannot be used for another EA.
+REVIEW_REWORK_SOURCE_REPAIR_AUTHORITY = (
+    "router_review_ea:cd6442dd-4ad9-4845-862a-2ef6e3ec0172"
+)
+REVIEW_REWORK_SOURCE_REPAIR_EA_LABELS = frozenset({
+    "QM5_9468_connors-rsi4-3day-d1",
+})
 COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
@@ -208,6 +218,10 @@ def _source_repair_authorized(ea_label: str, authority: str | None) -> bool:
         or (
             authority == Q02_INFRA_SOURCE_REPAIR_AUTHORITY
             and ea_label in Q02_INFRA_SOURCE_REPAIR_EA_LABELS
+        )
+        or (
+            authority == REVIEW_REWORK_SOURCE_REPAIR_AUTHORITY
+            and ea_label in REVIEW_REWORK_SOURCE_REPAIR_EA_LABELS
         )
     )
 
