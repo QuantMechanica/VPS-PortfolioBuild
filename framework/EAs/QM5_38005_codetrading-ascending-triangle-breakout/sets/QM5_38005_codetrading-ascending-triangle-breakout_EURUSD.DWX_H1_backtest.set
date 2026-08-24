@@ -3,7 +3,7 @@
 ; ea_id:        38005
 ; ea_slug:      codetrading-ascending-triangle-breakout
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260824-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-08-17
+; date:         2026-08-24
 ;==========================================================
 qm_ea_id=38005
 qm_magic_slot_offset=2
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_38005_codetrading-ascending-triangle-breakout.md
+; card_defaults_source=C:\QM\worktrees\rework-slot-17\strategy-seeds\cards\QM5_38005_codetrading-ascending-triangle-breakout.md
 strategy_signal_tf=16385
 strategy_pivot_window=5
 strategy_search_bars=30

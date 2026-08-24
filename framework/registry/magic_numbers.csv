@@ -17460,10 +17460,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 37003,hurst-exponent-dynamic-regime-switch,0,EURUSD.DWX,370030000,2026-08-17,Gemini,active
 37003,hurst-exponent-dynamic-regime-switch,1,GBPJPY.DWX,370030001,2026-08-17,Gemini,active
 37003,hurst-exponent-dynamic-regime-switch,2,SP500.DWX,370030002,2026-08-17,Gemini,active
-37004,volatility-targeted-momentum-kelly,0,SP500.DWX,370040000,2026-08-17,Gemini,active
-37004,volatility-targeted-momentum-kelly,1,NDX.DWX,370040001,2026-08-17,Gemini,active
-37004,volatility-targeted-momentum-kelly,2,XTIUSD.DWX,370040002,2026-08-17,Gemini,active
-37004,volatility-targeted-momentum-kelly,3,XAUUSD.DWX,370040003,2026-08-17,Gemini,active
+37004,volatility-targeted-momentum-kelly,0,SP500.DWX,370040000,2026-08-17,Codex burn-window build,active
+37004,volatility-targeted-momentum-kelly,1,NDX.DWX,370040001,2026-08-17,Codex burn-window build,active
+37004,volatility-targeted-momentum-kelly,2,XTIUSD.DWX,370040002,2026-08-17,Codex burn-window build,active
+37004,volatility-targeted-momentum-kelly,3,XAUUSD.DWX,370040003,2026-08-17,Codex burn-window build,active
 41053,wti-postwed-gap-fade,0,XTIUSD.DWX,410530000,2026-08-18T00:00:00Z,Codex,active
 41054,xng-postthu-gap-fade,0,XNGUSD.DWX,410540000,2026-08-18T00:00:00Z,Codex,active
 41055,wti-medcal,0,XTIUSD.DWX,410550000,2026-08-18T00:00:00Z,Codex,active
@@ -17495,9 +17495,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 38004,codetrading-triple-ema-momentum-scalper,0,NDX.DWX,380040000,2026-08-18,Gemini,active
 38004,codetrading-triple-ema-momentum-scalper,1,WS30.DWX,380040001,2026-08-18,Gemini,active
 38004,codetrading-triple-ema-momentum-scalper,2,GDAXI.DWX,380040002,2026-08-18,Gemini,active
-38005,codetrading-ascending-triangle-breakout,0,XAUUSD.DWX,380050000,2026-08-18,Gemini,active
-38005,codetrading-ascending-triangle-breakout,1,SP500.DWX,380050001,2026-08-18,Gemini,active
-38005,codetrading-ascending-triangle-breakout,2,EURUSD.DWX,380050002,2026-08-18,Gemini,active
+38005,codetrading-ascending-triangle-breakout,0,XAUUSD.DWX,380050000,2026-08-18,Codex burn-window build,active
+38005,codetrading-ascending-triangle-breakout,1,SP500.DWX,380050001,2026-08-18,Codex burn-window build,active
+38005,codetrading-ascending-triangle-breakout,2,EURUSD.DWX,380050002,2026-08-18,Codex burn-window build,active
 38006,codetrading-doji-hammer-pivot-rejection,0,EURUSD.DWX,380060000,2026-08-18,Gemini,active
 38006,codetrading-doji-hammer-pivot-rejection,1,GBPUSD.DWX,380060001,2026-08-18,Gemini,active
 38006,codetrading-doji-hammer-pivot-rejection,2,USDJPY.DWX,380060002,2026-08-18,Gemini,active
@@ -18026,3 +18026,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41138,xauxag-mdaily-hl-rv,1,XAGUSD.DWX,411380001,2026-08-24,Codex governed allocator,active
 41139,wti-mdaily-hl-mom,0,XTIUSD.DWX,411390000,2026-08-24,Codex governed allocator,active
 21508,qs-ma-envelope-eur,0,EURUSD.DWX,215080000,2026-08-24,Codex burn-window build,active
+21509,qs-emv-trend-ndx,0,NDX.DWX,215090000,2026-08-24,Codex burn-window build,active

@@ -2,7 +2,7 @@
 
 **EA ID:** QM5_37004
 **Slug:** `volatility-targeted-momentum-kelly`
-**Source:** `volatility-targeted-momentum-kelly-official-source` (see `strategy-seeds/sources/volatility-targeted-momentum-kelly-official-source/`)
+**Source:** `volatility-targeted-momentum-kelly-official-source` (approved mirror: `docs/strategy_card.md`)
 **Author of this spec:** Research+Development
 **Last revised:** 2026-08-24
 
@@ -83,7 +83,7 @@ Entry/exit logic is encoded in the `Strategy_*` hooks in `QM5_37004_volatility-t
 This card was mechanised from:
 
 **Source ID:** `volatility-targeted-momentum-kelly-official-source`
-**Approved card:** `strategy-seeds/cards/approved/QM5_37004_volatility-targeted-momentum-kelly.md`
+**Approved card:** `docs/strategy_card.md` (mirror of the runtime approved-card reservoir)
 **R1–R4 verdict (Q00):** all PASS — see `artifacts/cards_approved/QM5_37004_volatility-targeted-momentum-kelly.md`
 
 ---
@@ -108,3 +108,4 @@ The card-specific capital rails are separate from sizing: a 2.0% account realize
 |---|---|---|---|
 | v1 | 2026-08-17 | Initial build from approved card | 6d2369c0-a412-427e-afab-8c5feed10cc3 |
 | v2 | 2026-08-24 | Review rework | Restored exponential momentum, volatility/half-Kelly sizing, card loss rails, and entry-only filter ordering (`rework-37004`) |
+| v3 | 2026-08-24 | Burn-window build completion | Added the approved-card mirror, tightened dynamic-buffer bounds proofs, and refreshed governed registry/setfile artifacts (`build-QM5_37004_volatility-targeted-momentum-kelly`) |

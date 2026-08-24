@@ -11,6 +11,7 @@ EA_LABEL = "QM5_37004_volatility-targeted-momentum-kelly"
 EA_DIR = REPO_ROOT / "framework" / "EAs" / EA_LABEL
 EA_SOURCE = EA_DIR / f"{EA_LABEL}.mq5"
 SPEC = EA_DIR / "SPEC.md"
+CARD_MIRROR = EA_DIR / "docs" / "strategy_card.md"
 APPROVED_CARD = (
     REPO_ROOT
     / "strategy-seeds"
@@ -50,6 +51,19 @@ def _set_values(path: Path) -> dict[str, str]:
     return values
 
 
+def _canonical_card_text(path: Path) -> str:
+    return "\n".join(
+        line.rstrip()
+        for line in path.read_text(encoding="utf-8-sig").splitlines()
+    ).strip()
+
+
+def test_approved_card_mirror_is_content_equivalent() -> None:
+    mirror = _canonical_card_text(CARD_MIRROR)
+    assert mirror == _canonical_card_text(APPROVED_CARD)
+    assert "g0_status: APPROVED" in mirror
+
+
 def test_current_hardening_passes_against_approved_card() -> None:
     result = build_gate_hardening.analyze_file(EA_SOURCE, APPROVED_CARD)
     assert result["failures"] == []
@@ -64,6 +78,12 @@ def test_exponential_momentum_volatility_target_and_half_kelly_are_wired() -> No
     assert "CopyClose(_Symbol, PERIOD_D1, 1, close_count, closes)" in refresh
     assert "ArrayResize(closes, close_count)" in refresh
     assert "ArraySize(closes) < close_count" in refresh
+    assert "i + 1 < ArraySize(closes)" in refresh
+    assert "if(i >= ArraySize(closes))" in refresh
+    assert "if(i + 1 >= ArraySize(closes))" in refresh
+    assert "momentum_terms != strategy_momentum_days" in refresh
+    assert "volatility_terms != STRATEGY_VOL_LOOKBACK_DAYS" in refresh
+    assert "deviation_terms != STRATEGY_VOL_LOOKBACK_DAYS" in refresh
     assert "alpha = 2.0 / ((double)strategy_momentum_days + 1.0)" in refresh
     assert "momentum_weight *= decay" in refresh
     assert "MathLog(closes[i] / closes[i + 1])" in refresh
