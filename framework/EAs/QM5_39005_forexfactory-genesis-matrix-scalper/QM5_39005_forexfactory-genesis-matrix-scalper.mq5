@@ -31,7 +31,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -87,13 +87,14 @@ bool CalculateTVI(const int shift, const int period, double &tvi_val)
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
    const int copied = CopyRates(_Symbol, PERIOD_M5, shift, warmup, rates); // perf-allowed: TVI directional volume window
-   if(copied < period + 2) return false;
+   const int rates_size = ArraySize(rates);
+   if(copied < period + 2 || rates_size != copied) return false;
 
    const double alpha = 2.0 / ((double)period + 1.0);
    const double one_minus_alpha = 1.0 - alpha;
 
    double ema = 0.0;
-   const int oldest = copied;
+   const int oldest = rates_size;
    for(int s = oldest - 1; s >= 0; --s)
    {
       const double diff = rates[s].close - rates[s].open;
@@ -117,8 +118,10 @@ bool CalculateT3CCI(const int shift, const int cci_period, const int t3_period, 
    const int warmup = t3_period * 6 + 15;
 
    double cci_buf[];
-   ArrayResize(cci_buf, warmup);
-   for(int i = 0; i < warmup; ++i)
+   const int resized = ArrayResize(cci_buf, warmup);
+   if(resized != warmup || ArraySize(cci_buf) != warmup)
+      return false;
+   for(int i = 0; i < ArraySize(cci_buf); ++i)
    {
       const double c = QM_CCI(_Symbol, PERIOD_M5, cci_period, shift + (warmup - 1 - i));
       cci_buf[i] = c;
@@ -137,7 +140,7 @@ bool CalculateT3CCI(const int shift, const int cci_period, const int t3_period, 
    const double c3 = -6.0 * b2 - 3.0 * b - 3.0 * b3;
    const double c4 = 1.0 + 3.0 * b + b3 + 3.0 * b2;
 
-   for(int i = 0; i < warmup; ++i)
+   for(int i = 0; i < ArraySize(cci_buf); ++i)
    {
       const double v = cci_buf[i];
       e1 = alpha * v + one_minus_alpha * e1;
@@ -157,12 +160,12 @@ bool CalculateGHL(const int shift, const int period, bool &ghl_up)
    ghl_up = false;
    if(period <= 0 || shift < 0) return false;
    const int warmup = period * 4 + shift + 10;
-   int trend = 1;
+   int trend = 0;
    for(int s = warmup; s >= shift; --s)
    {
       const double high_sma  = QM_SMA(_Symbol, PERIOD_M5, period, s, PRICE_HIGH);
       const double low_sma   = QM_SMA(_Symbol, PERIOD_M5, period, s, PRICE_LOW);
-      const double close_val = iClose(_Symbol, PERIOD_M5, s); // perf-allowed: closed bar reference
+      const double close_val = QM_SMA(_Symbol, PERIOD_M5, 1, s, PRICE_CLOSE);
       if(close_val <= 0.0 || high_sma <= 0.0 || low_sma <= 0.0)
          return false;
 
@@ -171,6 +174,8 @@ bool CalculateGHL(const int shift, const int period, bool &ghl_up)
       else if(close_val < low_sma)
          trend = -1;
    }
+   if(trend == 0)
+      return false;
    ghl_up = (trend == 1);
    return true;
 }
@@ -196,7 +201,7 @@ void AdvanceState_OnNewBar()
       return;
 
    const double ema5_1  = QM_EMA(_Symbol, PERIOD_M5, 5, 1);
-   const double close_1 = iClose(_Symbol, PERIOD_M5, 1); // perf-allowed: single closed bar
+   const double close_1 = QM_SMA(_Symbol, PERIOD_M5, 1, 1, PRICE_CLOSE);
    const double atr_1   = QM_ATR(_Symbol, PERIOD_M5, strategy_atr_period, 1);
 
    if(ema5_1 <= 0.0 || close_1 <= 0.0 || atr_1 <= 0.0)
@@ -239,8 +244,9 @@ bool Strategy_NoTradeFilter()
          return true;
    }
 
+   const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
    MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
+   TimeToStruct(utc_now, dt);
    const int minute_of_day = dt.hour * 60 + dt.min;
    if(minute_of_day >= 1435 || minute_of_day < 5) // 23:55 - 00:05 blackout
       return true;
@@ -352,12 +358,55 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
    return false;
 }
 
+bool Strategy_InputsValid()
+{
+   return (InpCCIPeriod >= 14 && InpCCIPeriod <= 30 &&
+           InpT3Period >= 3 && InpT3Period <= 8 &&
+           InpT3Hot >= 0.5 && InpT3Hot <= 0.8 &&
+           InpGHLPeriod >= 5 && InpGHLPeriod <= 15 &&
+           InpTVIPeriod >= 8 && InpTVIPeriod <= 20 &&
+           strategy_atr_period >= 7 && strategy_atr_period <= 28 &&
+           strategy_sl_buffer_pips >= 1.0 && strategy_sl_buffer_pips <= 5.0 &&
+           strategy_tp_rr >= 1.5 && strategy_tp_rr <= 3.5 &&
+           strategy_swing_lookback >= 5 && strategy_swing_lookback <= 20 &&
+           strategy_be_trigger_pips >= 10.0 && strategy_be_trigger_pips <= 25.0 &&
+           strategy_daily_loss_halt_pct >= 1.0 && strategy_daily_loss_halt_pct <= 3.0 &&
+           strategy_daily_hard_stop_pct >= 1.5 && strategy_daily_hard_stop_pct <= 4.0 &&
+           strategy_total_dd_halt_pct >= 3.0 && strategy_total_dd_halt_pct <= 10.0 &&
+           strategy_per_trade_risk_cap_pct >= 0.5 && strategy_per_trade_risk_cap_pct <= 2.0);
+}
+
+bool Strategy_ConfigureCardSlippage()
+{
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(point <= 0.0 || tick_size <= 0.0)
+      return false;
+
+   // QM_Entry expects deviation in symbol points; the card caps it at 3 ticks.
+   const int deviation_points = (int)MathFloor((3.0 * tick_size) / point);
+   if(deviation_points <= 0)
+      return false;
+
+   QM_EntryConfigure(qm_ea_id,
+                     qm_news_mode_legacy,
+                     deviation_points,
+                     qm_stress_reject_probability,
+                     qm_news_temporal,
+                     qm_news_compliance,
+                     QM_FrameworkMagic());
+   return true;
+}
+
 // -----------------------------------------------------------------------------
 // Framework wiring
 // -----------------------------------------------------------------------------
 
 int OnInit()
 {
+   if(!Strategy_InputsValid())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -374,6 +423,9 @@ int OnInit()
                         qm_stress_reject_probability,
                         qm_news_temporal,
                         qm_news_compliance))
+      return INIT_FAILED;
+
+   if(!Strategy_ConfigureCardSlippage())
       return INIT_FAILED;
 
    if(!QM_FrameworkDeclareExecutionContract(PERIOD_M5,

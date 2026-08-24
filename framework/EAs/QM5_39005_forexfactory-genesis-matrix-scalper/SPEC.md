@@ -4,7 +4,7 @@
 **Slug:** `forexfactory-genesis-matrix-scalper`
 **Source:** `forexfactory-genesis-matrix-scalper-official-source`
 **Author of this spec:** Gemini
-**Last revised:** 2026-08-23
+**Last revised:** 2026-08-24
 
 ---
 
@@ -13,6 +13,8 @@
 The strategy implements Realtrader's Genesis Matrix 4-Bar Scalping System on the 5-minute (M5) timeframe. It calculates a 4-layer multi-indicator confluence score evaluating TVI (Tick Volume Indicator, Blau directional volume EMA 12), CCI (20), T3-filtered CCI (T3 smoothing period 5, b=0.618), and Gann High-Low Activator (GHL period 10) on closed bars.
 
 Long entry executes on a closed M5 bar when the Matrix confluence score rises to 4 (all 4 indicators bullish/green) from a previous score below 4 and Close is above the 5-period EMA. Short entry executes when the Matrix score drops to 0 (all 4 indicators bearish/red) from a previous score above 0 and Close is below the 5-period EMA. Stop loss is placed beyond recent swing structure (lookback 10 bars) with a 2.0-pip buffer, and take profit is targeted at 2.0 times the stop distance (1:2.0 R:R). Open trades are closed when any Matrix indicator changes color (Matrix score drops below 4 for longs or rises above 0 for shorts). Open trades move to break-even after advancing 15 pips into profit (to Entry + 1 pip).
+
+The 23:55-00:05 rollover blackout is evaluated in UTC after converting the broker clock through `QM_BrokerToUTC`. Market-order deviation is configured through `QM_EntryConfigure` as at most three symbol ticks. Indicator warmups fail closed, and dynamic buffers require successful allocation plus `ArraySize`-bound access before a matrix state becomes valid.
 
 ---
 
@@ -97,3 +99,4 @@ This card was mechanised from:
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Gemini build pass |
 | v2 | 2026-08-23 | Fix Codex findings | Correct timeframe contract to M5, pip scaling, stateful GHL, loss limit wiring |
+| v3 | 2026-08-24 | Rework review findings | Fixed-risk source default, UTC rollover, 3-tick deviation, pooled close reads, bounded buffers, and parameter validation |
