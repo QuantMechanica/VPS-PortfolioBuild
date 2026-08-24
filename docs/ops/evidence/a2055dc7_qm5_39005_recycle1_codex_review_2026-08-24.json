@@ -1,0 +1,24 @@
+{
+  "review_task_id": "a2055dc7-5e44-4ba0-a130-235c9e6a2c75",
+  "build_task_id": "57041b21-12da-464d-b275-c91cb3fa8673",
+  "ea_id": "QM5_39005",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "Source lines 34-35 still default RISK_PERCENT=0.5 and RISK_FIXED=1000.0 simultaneously. QM_FrameworkValidateRiskInputs rejects both-positive inputs, so a default launch fails initialization even though the governed backtest setfiles override the conflict correctly.",
+    "The claimed indicator-readiness repair is incomplete: AdvanceState_OnNewBar accepts QM_CCI results at lines 186-187 without a readiness proof, and CalculateT3CCI consumes an entire QM_CCI series the same way. QM_IndicatorReadBuffer returns 0.0 on invalid handles or CopyBuffer failure, so unavailable data is still converted into a bearish matrix component and can manufacture entries or exits.",
+    "CalculateT3CCI calls ArrayResize(cci_buf, warmup) at line 120 without checking the returned size, then unconditionally indexes cci_buf[0] at line 130. An allocation failure therefore reaches an out-of-range dynamic-array read instead of failing closed.",
+    "The approved 23:55-00:05 GMT rollover blackout is evaluated from raw TimeCurrent broker time at lines 242-246, with no QM_BrokerToUTC conversion. Its effective window shifts whenever broker time differs from GMT.",
+    "The approved card caps market-order slippage at three symbol ticks, but the EA never calls QM_EntryConfigure or otherwise overrides execution deviation. Orders therefore retain the framework's 20-point default instead of the card's hard limit.",
+    "Build artifact 57041b21-12da-464d-b275-c91cb3fa8673.json omits the required smoke_result and smoke_report_path fields, and D:/QM/reports/smoke/QM5_39005 is absent. Smoke is UNKNOWN and the build-result contract fails closed despite matching current MQ5/EX5 hashes and successful static validators."
+  ],
+  "reviewed_at": "2026-08-24T08:52:11Z"
+}
