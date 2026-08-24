@@ -4858,6 +4858,7 @@ def _pause_after_unclaimed(claim: dict[str, Any], terminal: str) -> None:
         _UNCLAIMED_DECLINE_LOG_LAST[reason] = now_mono
         print(json.dumps({
             "event": "claim_declined",
+            "at_utc": datetime.now(timezone.utc).isoformat(),
             "terminal": terminal,
             "reason": reason,
             "lock": claim.get("lock"),
@@ -4973,6 +4974,7 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
         if cpu_load > cpu_ceiling:
             _RESOURCE_LATCH["cpu_high"] = True
             print(json.dumps({"event": "cpu_high_pause", "terminal": terminal,
+                              "at_utc": datetime.now(timezone.utc).isoformat(),
                               "cpu_load_percent": round(cpu_load, 1),
                               "threshold_percent": cpu_ceiling,
                               "hysteresis_latched": True}), flush=True)
