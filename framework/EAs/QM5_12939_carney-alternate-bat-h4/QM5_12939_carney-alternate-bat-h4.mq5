@@ -36,8 +36,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_fractal_wing_bars   = 2;      // Swing pivot wing bars
-input int    strategy_scan_bars           = 96;     // Swing pivot search depth
+input int    strategy_zigzag_depth        = 12;     // Card ZigZag depth
+input int    strategy_zigzag_deviation    = 5;      // Card ZigZag deviation (points)
+input int    strategy_zigzag_backstep     = 3;      // Card ZigZag backstep (bars)
+input int    strategy_scan_bars           = 96;     // Bounded ZigZag pivot search depth
 input double strategy_ratio_tolerance     = 0.05;   // ±5% harmonic ratio tolerance
 input double strategy_ab_xa_ratio         = 0.382;  // Alternate Bat B-pivot constraint (0.382)
 input double strategy_bc_ab_min           = 1.130;  // BC extension min
@@ -61,6 +63,8 @@ struct StrategyPivot
    int      kind;    // +1 = swing high, -1 = swing low
    int      shift;
    double   price;
+   double   bar_high;
+   double   bar_low;
    datetime time;
 };
 
@@ -70,6 +74,7 @@ struct StrategyTradeState
    bool     t1_hit;
    double   t1_price;
    double   t2_price;
+   bool     state_ready;
 };
 
 // -----------------------------------------------------------------------------
@@ -85,75 +90,88 @@ double             g_short_sl = 0.0;
 double             g_short_t1 = 0.0;
 double             g_short_t2 = 0.0;
 bool               g_state_ready = false;
+int                g_zigzag_handle = INVALID_HANDLE;
 int                g_bars_since_last_long = 100;
 int                g_bars_since_last_short = 100;
 StrategyTradeState g_trade_state;
 
-bool Strategy_FractalHigh(const MqlRates &rates[], const int index, const int total, const int wing)
+int Strategy_IndZigZag()
 {
-   if(index < wing || index >= total - wing)
-      return false;
-   const double value = rates[index].high;
-   for(int i = 1; i <= wing; ++i)
-   {
-      if(value <= rates[index - i].high || value <= rates[index + i].high)
-         return false;
-   }
-   return true;
+   const string key = StringFormat("ZIGZAG|%s|%d|%d|%d|%d",
+                                   _Symbol,
+                                   (int)_Period,
+                                   strategy_zigzag_depth,
+                                   strategy_zigzag_deviation,
+                                   strategy_zigzag_backstep);
+   int handle = QM_IndicatorsLookup(key);
+   if(handle != INVALID_HANDLE)
+      return handle;
+
+   handle = iCustom(_Symbol,
+                    _Period,
+                    "Examples\\ZigZag",
+                    strategy_zigzag_depth,
+                    strategy_zigzag_deviation,
+                    strategy_zigzag_backstep); // perf-allowed: one-time card-defined ZigZag(12,5,3) handle creation.
+   return QM_IndicatorsRegister(key, handle);
 }
 
-bool Strategy_FractalLow(const MqlRates &rates[], const int index, const int total, const int wing)
+// Read the actual card-authorized MT5 ZigZag(12,5,3) buffer.  The reads are
+// bounded by strategy_scan_bars and occur only from the framework new-bar gate.
+// Pivots are returned newest-first: D, C, B, A, X.
+int Strategy_CollectPivots(StrategyPivot &pivots[])
 {
-   if(index < wing || index >= total - wing)
-      return false;
-   const double value = rates[index].low;
-   for(int i = 1; i <= wing; ++i)
-   {
-      if(value >= rates[index - i].low || value >= rates[index + i].low)
-         return false;
-   }
-   return true;
-}
+   ArrayResize(pivots, 0);
+   if(g_zigzag_handle == INVALID_HANDLE)
+      return 0;
 
-void Strategy_AddPivot(StrategyPivot &pivots[], int &count, const int kind,
-                       const int shift, const double price, const datetime time)
-{
-   if(count > 0 && pivots[count - 1].kind == kind)
-   {
-      const bool replace = (kind > 0 && price > pivots[count - 1].price) ||
-                           (kind < 0 && price < pivots[count - 1].price);
-      if(replace)
-      {
-         pivots[count - 1].shift = shift;
-         pivots[count - 1].price = price;
-         pivots[count - 1].time = time;
-      }
-      return;
-   }
+   const int requested = MathMax(32, MathMin(strategy_scan_bars, 512));
+   if(!QM_IndicatorWarmupReady(g_zigzag_handle,
+                               0,
+                               1,
+                               requested,
+                               "QM5_12939_zigzag"))
+      return 0;
 
-   if(count >= 128)
-      return;
+   double zigzag[];
+   MqlRates rates[];
+   ArraySetAsSeries(zigzag, true);
+   ArraySetAsSeries(rates, true);
+   const int zz_copied = CopyBuffer(g_zigzag_handle, 0, 1, requested, zigzag); // perf-allowed: bounded ZigZag buffer read after QM_IsNewBar.
+   const int rates_copied = CopyRates(_Symbol, _Period, 1, requested, rates); // perf-allowed: bounded pivot classification read after QM_IsNewBar.
+   if(zz_copied < 5 || rates_copied < 5)
+      return 0;
 
-   pivots[count].kind = kind;
-   pivots[count].shift = shift;
-   pivots[count].price = price;
-   pivots[count].time = time;
-   ++count;
-}
+   const int available = MathMin(zz_copied, rates_copied);
+   if(ArraySize(zigzag) < available || ArraySize(rates) < available)
+      return 0;
 
-int Strategy_CollectPivots(const MqlRates &rates[], const int total, StrategyPivot &pivots[])
-{
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    int count = 0;
-   const int wing = MathMax(1, strategy_fractal_wing_bars);
-
-   for(int i = total - wing - 1; i >= wing; --i)
+   for(int i = 0; i < zz_copied; ++i)
    {
-      const bool high = Strategy_FractalHigh(rates, i, total, wing);
-      const bool low  = Strategy_FractalLow(rates, i, total, wing);
-      if(high && !low)
-         Strategy_AddPivot(pivots, count, +1, i, rates[i].high, rates[i].time);
-      else if(low && !high)
-         Strategy_AddPivot(pivots, count, -1, i, rates[i].low, rates[i].time);
+      if(i >= rates_copied || i >= ArraySize(zigzag) || i >= ArraySize(rates) || count >= 16)
+         break;
+      const double price = zigzag[i];
+      if(price == EMPTY_VALUE || price <= 0.0)
+         continue;
+
+      const double high_distance = MathAbs(price - rates[i].high);
+      const double low_distance = MathAbs(price - rates[i].low);
+      const int kind = (high_distance <= low_distance + point) ? +1 : -1;
+      if(count > 0 && pivots[count - 1].kind == kind)
+         continue;
+
+      const int resized = ArrayResize(pivots, count + 1);
+      if(resized < count + 1 || ArraySize(pivots) < count + 1)
+         return 0;
+      pivots[count].kind = kind;
+      pivots[count].shift = i + 1;
+      pivots[count].price = price;
+      pivots[count].bar_high = rates[i].high;
+      pivots[count].bar_low = rates[i].low;
+      pivots[count].time = rates[i].time;
+      ++count;
    }
 
    return count;
@@ -169,48 +187,134 @@ bool Strategy_RangeMatch(const double val, const double lo, const double hi, con
    return (val >= lo * (1.0 - tol) && val <= hi * (1.0 + tol));
 }
 
+string Strategy_TradeStateKey(const ulong ticket, const string field)
+{
+   return StringFormat("QM5.12939.%d.%I64u.%s", QM_FrameworkMagic(), ticket, field);
+}
+
+void Strategy_ResetLocalTradeState()
+{
+   ZeroMemory(g_trade_state);
+}
+
+bool Strategy_PersistTradeState()
+{
+   if(g_trade_state.ticket == 0 || g_trade_state.t1_price <= 0.0 || g_trade_state.t2_price <= 0.0)
+      return false;
+
+   bool ok = true;
+   ok = (GlobalVariableSet(Strategy_TradeStateKey(g_trade_state.ticket, "t1"), g_trade_state.t1_price) > 0) && ok;
+   ok = (GlobalVariableSet(Strategy_TradeStateKey(g_trade_state.ticket, "t2"), g_trade_state.t2_price) > 0) && ok;
+   ok = (GlobalVariableSet(Strategy_TradeStateKey(g_trade_state.ticket, "t1hit"), g_trade_state.t1_hit ? 1.0 : 0.0) > 0) && ok;
+   GlobalVariablesFlush();
+   g_trade_state.state_ready = ok;
+   return ok;
+}
+
+bool Strategy_RestoreTradeState(const ulong ticket)
+{
+   Strategy_ResetLocalTradeState();
+   g_trade_state.ticket = ticket;
+
+   const string t1_key = Strategy_TradeStateKey(ticket, "t1");
+   const string t2_key = Strategy_TradeStateKey(ticket, "t2");
+   const string hit_key = Strategy_TradeStateKey(ticket, "t1hit");
+   if(!GlobalVariableCheck(t1_key) || !GlobalVariableCheck(t2_key) || !GlobalVariableCheck(hit_key))
+   {
+      QM_LogEvent(QM_ERROR,
+                  "STRATEGY_STATE_MISSING",
+                  StringFormat("{\"ticket\":%I64u,\"action\":\"management_fail_closed\"}", ticket));
+      return false;
+   }
+
+   g_trade_state.t1_price = GlobalVariableGet(t1_key);
+   g_trade_state.t2_price = GlobalVariableGet(t2_key);
+   g_trade_state.t1_hit = (GlobalVariableGet(hit_key) > 0.5);
+   g_trade_state.state_ready = (g_trade_state.t1_price > 0.0 && g_trade_state.t2_price > 0.0);
+   return g_trade_state.state_ready;
+}
+
+void Strategy_ClearTradeState(const ulong ticket)
+{
+   if(ticket > 0)
+   {
+      GlobalVariableDel(Strategy_TradeStateKey(ticket, "t1"));
+      GlobalVariableDel(Strategy_TradeStateKey(ticket, "t2"));
+      GlobalVariableDel(Strategy_TradeStateKey(ticket, "t1hit"));
+      GlobalVariablesFlush();
+   }
+   Strategy_ResetLocalTradeState();
+}
+
+ulong Strategy_CurrentPositionTicket()
+{
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return ticket;
+   }
+   return 0;
+}
+
+bool Strategy_RecordAcceptedEntry(const ulong ticket, const QM_OrderType type)
+{
+   if(ticket == 0)
+      return false;
+
+   Strategy_ResetLocalTradeState();
+   g_trade_state.ticket = ticket;
+   g_trade_state.t1_hit = false;
+   if(type == QM_BUY)
+   {
+      g_trade_state.t1_price = g_long_t1;
+      g_trade_state.t2_price = g_long_t2;
+   }
+   else
+   {
+      g_trade_state.t1_price = g_short_t1;
+      g_trade_state.t2_price = g_short_t2;
+   }
+   return Strategy_PersistTradeState();
+}
+
 void AdvanceState_OnNewBar()
 {
    g_long_signal = false;
    g_short_signal = false;
    g_bars_since_last_long++;
    g_bars_since_last_short++;
-
-   if(iBars(_Symbol, _Period) < strategy_scan_bars + 20 || iBars(_Symbol, PERIOD_D1) < 30) // perf-allowed
-   {
-      g_state_ready = false;
-      return;
-   }
+   g_state_ready = false;
 
    g_atr_1 = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    if(g_atr_1 <= 0.0)
-   {
-      g_state_ready = false;
       return;
-   }
-   g_state_ready = true;
 
    const double d1_rsi = QM_RSI(_Symbol, PERIOD_D1, 14, 1);
    if(d1_rsi < strategy_rsi_d1_min || d1_rsi > strategy_rsi_d1_max)
       return;
 
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, _Period, 1, strategy_scan_bars, rates); // perf-allowed
-   if(copied < 30)
+   MqlRates closed_bar;
+   if(!QM_ReadBar(_Symbol, _Period, 1, closed_bar))
       return;
 
-   StrategyPivot pivots[128];
-   const int pivot_count = Strategy_CollectPivots(rates, copied, pivots);
-   if(pivot_count < 5)
+   StrategyPivot pivots[];
+   const int pivot_count = Strategy_CollectPivots(pivots);
+   if(pivot_count < 5 || ArraySize(pivots) < pivot_count)
       return;
+   g_state_ready = true;
 
-   // Check most recent 5 alternating pivots X, A, B, C, D (where D is newest = pivots[pivot_count-1])
-   const StrategyPivot d_piv = pivots[pivot_count - 1];
-   const StrategyPivot c_piv = pivots[pivot_count - 2];
-   const StrategyPivot b_piv = pivots[pivot_count - 3];
-   const StrategyPivot a_piv = pivots[pivot_count - 4];
-   const StrategyPivot x_piv = pivots[pivot_count - 5];
+   // Strategy_CollectPivots returns newest-first: D, C, B, A, X.
+   const StrategyPivot d_piv = pivots[0];
+   const StrategyPivot c_piv = pivots[1];
+   const StrategyPivot b_piv = pivots[2];
+   const StrategyPivot a_piv = pivots[3];
+   const StrategyPivot x_piv = pivots[4];
 
    const double tol = strategy_ratio_tolerance;
 
@@ -239,9 +343,7 @@ void AdvanceState_OnNewBar()
          const bool d_below_x = (d_piv.price < x_piv.price);
 
          // Confirmation candle: closed bar (shift 1) closes above D-pivot bar high
-         const double d_bar_high = rates[d_piv.shift].high;
-         const double close_1    = iClose(_Symbol, _Period, 1); // perf-allowed
-         const bool confirm      = (close_1 > d_bar_high);
+         const bool confirm = (closed_bar.close > d_piv.bar_high);
 
          if(ab_ok && bc_ok && cd_ok && d_ok && d_below_x && confirm && g_bars_since_last_long >= strategy_cooldown_bars)
          {
@@ -279,9 +381,7 @@ void AdvanceState_OnNewBar()
          const bool d_above_x = (d_piv.price > x_piv.price);
 
          // Confirmation candle: closed bar (shift 1) closes below D-pivot bar low
-         const double d_bar_low = rates[d_piv.shift].low;
-         const double close_1   = iClose(_Symbol, _Period, 1); // perf-allowed
-         const bool confirm     = (close_1 < d_bar_low);
+         const bool confirm = (closed_bar.close < d_piv.bar_low);
 
          if(ab_ok && bc_ok && cd_ok && d_ok && d_above_x && confirm && g_bars_since_last_short >= strategy_cooldown_bars)
          {
@@ -319,24 +419,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_long_signal)
    {
       req.type = QM_BUY;
-      req.reason = "QM5_12939_ALT_BAT_BUY";
+      req.reason = StringFormat("AB1|%.8f", g_long_t1);
       req.price = 0.0;
       req.sl = NormalizeDouble(g_long_sl, _Digits);
       req.tp = NormalizeDouble(g_long_t2, _Digits);
-
-      g_bars_since_last_long = 0;
       return true;
    }
 
    if(g_short_signal)
    {
       req.type = QM_SELL;
-      req.reason = "QM5_12939_ALT_BAT_SELL";
+      req.reason = StringFormat("AB1|%.8f", g_short_t1);
       req.price = 0.0;
       req.sl = NormalizeDouble(g_short_sl, _Digits);
       req.tp = NormalizeDouble(g_short_t2, _Digits);
-
-      g_bars_since_last_short = 0;
       return true;
    }
 
@@ -348,29 +444,18 @@ void Strategy_ManageOpenPosition()
    const int magic = QM_FrameworkMagic();
    if(magic <= 0) return;
 
+   const ulong prior_ticket = g_trade_state.ticket;
+   bool found_position = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
    {
       const ulong ticket = PositionGetTicket(i);
       if(!PositionSelectByTicket(ticket)) continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
+      found_position = true;
 
       if(g_trade_state.ticket != ticket)
-      {
-         g_trade_state.ticket = ticket;
-         g_trade_state.t1_hit = false;
-         const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-         if(ptype == POSITION_TYPE_BUY)
-         {
-            g_trade_state.t1_price = g_long_t1;
-            g_trade_state.t2_price = g_long_t2;
-         }
-         else
-         {
-            g_trade_state.t1_price = g_short_t1;
-            g_trade_state.t2_price = g_short_t2;
-         }
-      }
+         Strategy_RestoreTradeState(ticket);
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
       const int bars_open = iBarShift(_Symbol, _Period, open_time); // perf-allowed
@@ -378,9 +463,13 @@ void Strategy_ManageOpenPosition()
       // Time stop exit: 30 H4 bars
       if(bars_open >= strategy_max_hold_bars)
       {
-         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
+         if(QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP))
+            Strategy_ClearTradeState(ticket);
          continue;
       }
+
+      if(!g_trade_state.state_ready)
+         continue; // fail closed: never guess partial/trailing state after restart.
 
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double current_vol = PositionGetDouble(POSITION_VOLUME);
@@ -392,11 +481,12 @@ void Strategy_ManageOpenPosition()
          if(!g_trade_state.t1_hit && g_trade_state.t1_price > 0.0 && bid >= g_trade_state.t1_price)
          {
             const double half_vol = QM_TM_NormalizeVolume(_Symbol, current_vol * 0.5);
-            if(half_vol > 0.0 && half_vol < current_vol)
+            if(half_vol > 0.0 && half_vol < current_vol &&
+               QM_TM_PartialClose(ticket, half_vol, QM_EXIT_STRATEGY))
             {
-               QM_TM_PartialClose(ticket, half_vol, QM_EXIT_STRATEGY);
+               g_trade_state.t1_hit = true;
+               Strategy_PersistTradeState();
             }
-            g_trade_state.t1_hit = true;
          }
 
          // Post-T1 ATR trail: trail SL at ATR(14) * 1.0 below bar 1 low
@@ -423,11 +513,12 @@ void Strategy_ManageOpenPosition()
          if(!g_trade_state.t1_hit && g_trade_state.t1_price > 0.0 && ask <= g_trade_state.t1_price)
          {
             const double half_vol = QM_TM_NormalizeVolume(_Symbol, current_vol * 0.5);
-            if(half_vol > 0.0 && half_vol < current_vol)
+            if(half_vol > 0.0 && half_vol < current_vol &&
+               QM_TM_PartialClose(ticket, half_vol, QM_EXIT_STRATEGY))
             {
-               QM_TM_PartialClose(ticket, half_vol, QM_EXIT_STRATEGY);
+               g_trade_state.t1_hit = true;
+               Strategy_PersistTradeState();
             }
-            g_trade_state.t1_hit = true;
          }
 
          // Post-T1 ATR trail: trail SL at ATR(14) * 1.0 above bar 1 high
@@ -448,6 +539,9 @@ void Strategy_ManageOpenPosition()
          }
       }
    }
+
+   if(!found_position && prior_ticket > 0)
+      Strategy_ClearTradeState(prior_ticket);
 }
 
 bool Strategy_ExitSignal()
@@ -479,12 +573,20 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 int OnInit()
 {
-   ZeroMemory(g_trade_state);
+   Strategy_ResetLocalTradeState();
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   g_zigzag_handle = Strategy_IndZigZag();
+   if(g_zigzag_handle == INVALID_HANDLE)
+   {
+      QM_LogEvent(QM_ERROR, "SETUP_DATA_MISSING", "{\"component\":\"Examples/ZigZag(12,5,3)\"}");
+      QM_FrameworkShutdown();
+      return INIT_FAILED;
+   }
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12939_carney-alternate-bat-h4\"}");
    return INIT_SUCCEEDED;
@@ -512,8 +614,8 @@ void OnTick()
       QM_EquityStreamOnNewBar();
    }
 
-   if(Strategy_NoTradeFilter()) return;
-
+   // Management and exits remain reachable on every tick, including when the
+   // entry-side state, spread or news filter blocks new risk.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -529,12 +631,14 @@ void OnTick()
          const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
          if((ptype == POSITION_TYPE_BUY && g_short_signal) || (ptype == POSITION_TYPE_SELL && g_long_signal))
          {
-            QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+            if(QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY))
+               Strategy_ClearTradeState(ticket);
          }
       }
    }
 
    if(!is_new_bar) return;
+   if(Strategy_NoTradeFilter()) return;
 
    if(Strategy_NewsFilterHook(broker_now)) return;
    bool news_allows = true;
@@ -551,7 +655,21 @@ void OnTick()
       if(Strategy_EntrySignal(req))
       {
          ulong ticket = 0;
-         QM_TM_OpenPosition(req, ticket);
+         if(QM_TM_OpenPosition(req, ticket))
+         {
+            // Cooldown and geometry are committed only after broker acceptance.
+            if(req.type == QM_BUY)
+               g_bars_since_last_long = 0;
+            else if(req.type == QM_SELL)
+               g_bars_since_last_short = 0;
+
+            const ulong position_ticket = Strategy_CurrentPositionTicket();
+            const ulong state_ticket = (position_ticket > 0) ? position_ticket : ticket;
+            if(!Strategy_RecordAcceptedEntry(state_ticket, req.type))
+               QM_LogEvent(QM_ERROR,
+                           "STRATEGY_STATE_PERSIST_FAILED",
+                           StringFormat("{\"ticket\":%I64u}", state_ticket));
+         }
       }
    }
 }
