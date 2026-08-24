@@ -95,9 +95,9 @@ bool Strategy_InputsValid()
            strategy_sl_atr_mult > 0.0 &&
            strategy_tp1_atr_mult > 0.0 &&
            strategy_spread_atr_mult > 0.0 &&
-           strategy_daily_loss_limit_pct > 0.0 &&
-           strategy_daily_drawdown_hard_stop_pct > 0.0 &&
-           strategy_total_drawdown_stop_pct > 0.0 &&
+           MathAbs(strategy_daily_loss_limit_pct - 2.0) <= 0.000000001 &&
+           MathAbs(strategy_daily_drawdown_hard_stop_pct - 2.5) <= 0.000000001 &&
+           MathAbs(strategy_total_drawdown_stop_pct - 5.0) <= 0.000000001 &&
            strategy_max_slippage_ticks > 0.0);
   }
 
@@ -171,6 +171,12 @@ bool Strategy_ComputeClosedBarSignals()
       if(i > strategy_cmo_period)
         {
          const int remove_index = i - strategy_cmo_period;
+         if(remove_index < 0)
+            return false;
+         if(remove_index >= ArraySize(gains))
+            return false;
+         if(remove_index >= ArraySize(losses))
+            return false;
          gain_sum -= gains[remove_index];
          loss_sum -= losses[remove_index];
         }
@@ -214,6 +220,8 @@ bool Strategy_ComputeClosedBarSignals()
    double highest = -DBL_MAX;
    double lowest = DBL_MAX;
    const int fisher_first = newest - strategy_fisher_period + 1;
+   if(fisher_first < 0 || newest < fisher_first || newest >= ArraySize(rates))
+      return false;
    for(int i = fisher_first; i <= newest; ++i)
      {
       if(rates[i].high <= 0.0 || rates[i].low <= 0.0)
@@ -269,8 +277,111 @@ void Strategy_AdvanceClosedBarState()
      }
   }
 
+bool Strategy_RiskPersistenceEnabled()
+  {
+   return (MQLInfoInteger(MQL_TESTER) == 0);
+  }
+
+string Strategy_RiskStateKey(const string field)
+  {
+   return StringFormat("QM5_%d_%I64d_RISK_%s",
+                       qm_ea_id,
+                       (long)QM_FrameworkMagic(),
+                       field);
+  }
+
+bool Strategy_RiskStateWrite(const string field, const double value)
+  {
+   return (GlobalVariableSet(Strategy_RiskStateKey(field), value) > 0);
+  }
+
+double Strategy_RiskStateRead(const string field, const double fallback)
+  {
+   const string key = Strategy_RiskStateKey(field);
+   if(!GlobalVariableCheck(key))
+      return fallback;
+   const double value = GlobalVariableGet(key);
+   if(!MathIsValidNumber(value))
+      return fallback;
+   return value;
+  }
+
+bool Strategy_PersistRiskState()
+  {
+   if(!Strategy_RiskPersistenceEnabled())
+      return true;
+
+   bool stored = true;
+   if(!Strategy_RiskStateWrite("initial_equity", g_initial_equity))
+      stored = false;
+   if(!Strategy_RiskStateWrite("day_key", (double)g_risk_day_key))
+      stored = false;
+   if(!Strategy_RiskStateWrite("day_start_balance", g_day_start_balance))
+      stored = false;
+   if(!Strategy_RiskStateWrite("daily_realized_halt", g_daily_realized_halt ? 1.0 : 0.0))
+      stored = false;
+   if(!Strategy_RiskStateWrite("daily_drawdown_halt", g_daily_drawdown_halt ? 1.0 : 0.0))
+      stored = false;
+   if(!Strategy_RiskStateWrite("total_drawdown_halt", g_total_drawdown_halt ? 1.0 : 0.0))
+      stored = false;
+   GlobalVariablesFlush();
+   return stored;
+  }
+
+bool Strategy_LoadRiskState()
+  {
+   const double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   const int day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 0);
+   if(balance <= 0.0 || equity <= 0.0 || day_key <= 0 || QM_FrameworkMagic() <= 0)
+      return false;
+
+   if(!Strategy_RiskPersistenceEnabled())
+     {
+      g_initial_equity = equity;
+      g_risk_day_key = day_key;
+      g_day_start_balance = balance;
+      g_daily_realized_halt = false;
+      g_daily_drawdown_halt = false;
+      g_total_drawdown_halt = false;
+      g_strategy_risk_halt = false;
+      return true;
+     }
+
+   g_initial_equity = Strategy_RiskStateRead("initial_equity", equity);
+   const int stored_day_key = (int)MathRound(Strategy_RiskStateRead("day_key", 0.0));
+   if(stored_day_key == day_key)
+     {
+      g_risk_day_key = stored_day_key;
+      g_day_start_balance = Strategy_RiskStateRead("day_start_balance", balance);
+      g_daily_realized_halt =
+         (Strategy_RiskStateRead("daily_realized_halt", 0.0) > 0.5);
+      g_daily_drawdown_halt =
+         (Strategy_RiskStateRead("daily_drawdown_halt", 0.0) > 0.5);
+     }
+   else
+     {
+      g_risk_day_key = day_key;
+      g_day_start_balance = balance;
+      g_daily_realized_halt = false;
+      g_daily_drawdown_halt = false;
+     }
+   if(g_initial_equity <= 0.0 || g_day_start_balance <= 0.0)
+      return false;
+   g_total_drawdown_halt =
+      (Strategy_RiskStateRead("total_drawdown_halt", 0.0) > 0.5);
+   g_strategy_risk_halt = (g_daily_realized_halt ||
+                           g_daily_drawdown_halt ||
+                           g_total_drawdown_halt);
+   return Strategy_PersistRiskState();
+  }
+
 void Strategy_RefreshRiskState()
   {
+   const int previous_day_key = g_risk_day_key;
+   const bool previous_realized_halt = g_daily_realized_halt;
+   const bool previous_daily_halt = g_daily_drawdown_halt;
+   const bool previous_total_halt = g_total_drawdown_halt;
    const double balance = AccountInfoDouble(ACCOUNT_BALANCE);
    const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
    if(g_initial_equity <= 0.0 && equity > 0.0)
@@ -310,6 +421,16 @@ void Strategy_RefreshRiskState()
    g_strategy_risk_halt = (g_daily_realized_halt ||
                            g_daily_drawdown_halt ||
                            g_total_drawdown_halt);
+
+   const bool state_changed = (previous_day_key != g_risk_day_key ||
+                               previous_realized_halt != g_daily_realized_halt ||
+                               previous_daily_halt != g_daily_drawdown_halt ||
+                               previous_total_halt != g_total_drawdown_halt);
+   if(state_changed && !Strategy_PersistRiskState())
+     {
+      g_strategy_risk_halt = true;
+      QM_LogEvent(QM_ERROR, "STRATEGY_RISK_STATE_PERSIST_FAILED", "{}");
+     }
   }
 
 void Strategy_ConfigureEntrySlippage()
@@ -611,6 +732,9 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   if(!Strategy_InputsValid())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -627,6 +751,24 @@ int OnInit()
                         qm_stress_reject_probability,
                         qm_news_temporal,
                         qm_news_compliance))
+      return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "V5_WEEKEND_RISK_POLICY"))
+      return INIT_FAILED;
+
+   // Replace the framework defaults with the card's hard-stop contract.  The
+   // strategy-local state additionally distinguishes the 2.0% realized-loss
+   // entry halt from the 2.5% equity hard stop and enforces local total DD.
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         strategy_daily_drawdown_hard_stop_pct,
+                         strategy_total_drawdown_stop_pct,
+                         1.0))
+      return INIT_FAILED;
+
+   if(!Strategy_LoadRiskState())
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -681,7 +823,7 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
       return;
 
    QM_EquityStreamOnNewBar();
