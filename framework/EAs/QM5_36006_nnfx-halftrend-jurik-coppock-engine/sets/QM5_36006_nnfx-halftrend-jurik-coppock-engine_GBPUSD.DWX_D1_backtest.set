@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   016d8b5ba15352b04c9e81190724ef120aa0e2e764b7a128407de394c09189a8
+; build_hash:   cf6c08d21b17e86c46ff97dfcb8987dd867c3aa80c6076fad1dbcb733943ee50
 ; author:       Gemini
 ; date:         2026-08-17
 ;==========================================================
@@ -37,3 +37,4 @@ strategy_daily_loss_halt_pct=2.0
 strategy_daily_hard_stop_pct=2.5
 strategy_total_dd_halt_pct=5.0
 strategy_per_trade_risk_cap_pct=0.5
+strategy_max_slippage_ticks=3.0
