@@ -1,0 +1,24 @@
+{
+  "review_task_id": "3281881e-4597-4243-9a2b-e8d7c4fa6360",
+  "build_task_id": "da39e160-b043-4528-8592-4a23f672fc55",
+  "ea_id": "QM5_35005",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The current source implements the card's closed-H1 SMA100/SMA200 and stochastic pullback entries, fixed 150-pip stop, fixed 300-pip target, 150-pip trailing trigger/step, UTC rollover blackout, 2.5%/5.0%/0.5% kill-switch configuration, and open-position management before entry-only filters. Those remediation claims were independently confirmed.",
+    "StrategyDailyEntryHalt compares current ACCOUNT_EQUITY with g_qm_ks_day_start_equity. Floating P&L is therefore counted in what the code labels the approved 2.0% daily realized-loss entry halt; the required realized-loss ledger or balance basis is absent.",
+    "OnInit declares no QM_FrameworkDeclareExecutionContract for the H1 host cadence. Passing PERIOD_H1 to QM_IsNewBar controls bar sampling but does not make initialization reject a wrong host chart fail-closed.",
+    "The reviewed MQ5 hashes to 758b0021667e9354415331c20dbee6389934813db590e3f837c242f4bac5be90 and was modified 2026-08-23. The EX5 hashes to 28ef9a97341ab09666f4b8ac6a817bbdabe806c968fbc96279a0e1be0b2fbd59 and was last modified 2026-08-17, before the source remediation. The newest durable compile result, timestamped 2026-08-24T11:35:55Z, is COMPILE_FAILED with reason_class INCLUDE_MIRROR_REFUSED and produced no EX5. The producer JSON's compile_succeeded/build_check_passed claims are therefore not current compile evidence.",
+    "No smoke report or sanctioned, measured saturation-backed deferred-smoke reason covers the reviewed source, so smoke_sanity remains UNKNOWN and build_result fails.",
+    "Guardrail and SPEC validation pass; all three governed sets carry build_hash with RISK_FIXED=1000 and RISK_PERCENT=0; active magic rows are unique, formula-correct, and resolver-backed; the source uses only the QM_Common include chain; and no direct OrderSend or unwrapped trade method is present. These checks do not cure the realized-loss, execution-contract, compile, and runtime-evidence failures."
+  ],
+  "reviewed_at": "2026-08-24T11:39:00Z"
+}
