@@ -1,0 +1,26 @@
+{
+  "review_task_id": "ae389d95-9df7-403d-8a0d-6da62c6e52e7",
+  "build_task_id": "d761b379-3b40-4fd0-b91f-bbef202d5187",
+  "ea_id": "QM5_35003",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "No EA remediation is present after the 2026-08-17 build commit: the reviewed MQ5 still hashes to 4066e32da14be0a164df0b5d99f40a6b9f4b59fa090af66ed6bf76717ec368c5 and the EX5 to 821621a1a6a0ea5746f5f20cc70e2752070c6a96203e4cd6fce43010ee39f852.",
+    "The approved 23:55-00:05 GMT rollover blackout is evaluated from raw TimeCurrent broker time. It is shifted by the broker offset and changes with DST instead of following the card's UTC clock.",
+    "The card requires the initial stop at the M5 SMA60 baseline plus or minus exactly three pips. The EA silently clamps that distance into an invented 0.5-to-3.5 ATR corridor, changing the stop, position size, 2.5R target, and 1R trailing trigger.",
+    "The approved 2.0% daily realized-loss entry halt, 2.5% daily equity hard stop, and 5.0% total drawdown stop are not configured. OnInit calls no QM_KillSwitchInit with the card thresholds, so generic framework defaults cannot prove the approved risk contract.",
+    "OnTick applies spread and rollover entry filters before Strategy_ManageOpenPosition. Existing exposure can therefore lose its approved SMA trailing updates during those entry-only blocks.",
+    "OnInit declares no QM_FrameworkDeclareExecutionContract for the M5 host cadence, parameterless QM_IsNewBar does not make that contract fail-closed, and the EA adds the unused Trade/Trade.mqh include outside the QM_Common include chain.",
+    "A fresh strict build_check attempt was fail-closed with LIVE_FACTORY_AD_HOC_COMPILE_REFUSED because terminal64 factory processes are active; no terminal was altered and no retry was attempted. The four set headers remain incomplete and lack build_hash, and no current strict PASS or smoke report exists, so build_result fails and smoke_sanity remains UNKNOWN.",
+    "Guardrail and SPEC validation pass; all four backtest sets use RISK_FIXED=1000 and RISK_PERCENT=0; the active identity and four magic rows are unique, formula-correct, and resolver-backed; and no direct OrderSend or unwrapped trading method is present. These checks do not cure the card, risk, lifecycle, contract, and strict-build failures."
+  ],
+  "reviewed_at": "2026-08-24T11:27:30Z"
+}
