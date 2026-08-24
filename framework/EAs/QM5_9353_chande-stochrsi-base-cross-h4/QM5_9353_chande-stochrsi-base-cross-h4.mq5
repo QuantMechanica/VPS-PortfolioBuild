@@ -21,7 +21,7 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE60_POST60;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
@@ -53,21 +53,37 @@ input int    strategy_warmup_bars       = 220;
 // StochRSI Helper Functions
 // -----------------------------------------------------------------------------
 
+bool Strategy_InputsValid()
+{
+   return (strategy_rsi_period >= 7 && strategy_rsi_period <= 30 &&
+           strategy_stoch_period >= 7 && strategy_stoch_period <= 30 &&
+           strategy_k_period >= 2 && strategy_k_period <= 10 &&
+           strategy_d_period >= 2 && strategy_d_period <= 10 &&
+           strategy_trend_sma_period >= 50 && strategy_trend_sma_period <= 300 &&
+           strategy_atr_period >= 7 && strategy_atr_period <= 30 &&
+           strategy_sl_atr_mult >= 1.0 && strategy_sl_atr_mult <= 4.0 &&
+           strategy_oversold_threshold >= 0.05 && strategy_oversold_threshold <= 0.35 &&
+           strategy_overbought_threshold >= 0.65 && strategy_overbought_threshold <= 0.95 &&
+           strategy_oversold_threshold < strategy_overbought_threshold &&
+           strategy_profit_exit_atr_mult >= 0.5 && strategy_profit_exit_atr_mult <= 3.0 &&
+           strategy_time_stop_bars >= 10 && strategy_time_stop_bars <= 60 &&
+           strategy_spread_max_atr >= 0.05 && strategy_spread_max_atr <= 0.50 &&
+           strategy_warmup_bars >= 100 && strategy_warmup_bars <= 300);
+}
+
 double ComputeStochRSIRaw(const int shift)
 {
-   double rsi_vals[14];
-   double min_rsi = 100.0;
-   double max_rsi = 0.0;
+   const double current_rsi = QM_RSI(_Symbol, PERIOD_H4, strategy_rsi_period, shift, PRICE_CLOSE);
+   double min_rsi = current_rsi;
+   double max_rsi = current_rsi;
 
-   for(int i = 0; i < strategy_stoch_period; ++i)
+   for(int i = 1; i < strategy_stoch_period; ++i)
    {
       const double r = QM_RSI(_Symbol, PERIOD_H4, strategy_rsi_period, shift + i, PRICE_CLOSE);
-      rsi_vals[i] = r;
       if(r < min_rsi) min_rsi = r;
       if(r > max_rsi) max_rsi = r;
    }
 
-   const double current_rsi = rsi_vals[0];
    const double denom = max_rsi - min_rsi;
    if(denom <= 0.000001)
       return 0.5; // Chande neutral convention
@@ -97,7 +113,7 @@ double ComputePercentD(const int shift)
 
 bool Strategy_NoTradeFilter()
 {
-   if(iBars(_Symbol, PERIOD_H4) < strategy_warmup_bars)
+   if(iBars(_Symbol, PERIOD_H4) < strategy_warmup_bars) // perf-allowed: one H4 readiness check on the entry-only path after the new-bar gate.
       return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -114,7 +130,7 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   if(iBars(_Symbol, PERIOD_H4) < strategy_warmup_bars)
+   if(iBars(_Symbol, PERIOD_H4) < strategy_warmup_bars) // perf-allowed: fail-closed H4 warmup confirmation once per decision bar.
       return false;
 
    const int magic = QM_FrameworkMagic();
@@ -126,7 +142,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double k2 = ComputePercentK(2);
    const double d2 = ComputePercentD(2);
 
-   const double close1 = iClose(_Symbol, PERIOD_H4, 1);
+   const double close1 = iClose(_Symbol, PERIOD_H4, 1); // perf-allowed: one completed H4 close behind the framework H4 new-bar gate.
    const double sma200 = QM_SMA(_Symbol, PERIOD_H4, strategy_trend_sma_period, 1, PRICE_CLOSE);
    if(close1 <= 0.0 || sma200 <= 0.0)
       return false;
@@ -187,7 +203,7 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int bars_held = iBarShift(_Symbol, PERIOD_H4, open_time, false);
+      const int bars_held = iBarShift(_Symbol, PERIOD_H4, open_time, false); // perf-allowed: one bounded position-age lookup for the card's H4 time stop.
       if(bars_held >= strategy_time_stop_bars)
       {
          QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
@@ -268,9 +284,21 @@ int OnInit()
 {
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
-                        30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
+                        60, 60, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H4,
+                                            QM_FRIDAY_CLOSE_CARD_RULE,
+                                            "QM5_9353 Chande StochRSI base cross H4"))
+      return INIT_FAILED;
+
+   if(!Strategy_InputsValid())
+   {
+      QM_LogEvent(QM_ERROR, "SETUP_CONFIG_INVALID", "{\"component\":\"strategy_inputs\"}");
+      return INIT_PARAMETERS_INCORRECT;
+   }
+
    return INIT_SUCCEEDED;
 }
 
@@ -288,13 +316,7 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
    if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
       return;
 
    Strategy_ManageOpenPosition();
@@ -315,6 +337,14 @@ void OnTick()
       }
    }
 
+   if(!QM_IsNewBar(_Symbol, PERIOD_H4))
+      return;
+
+   QM_EquityStreamOnNewBar();
+
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -323,10 +353,8 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(Strategy_NoTradeFilter())
       return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    ZeroMemory(req);

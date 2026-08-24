@@ -102,6 +102,22 @@ QM5_35005_REVIEW_REPAIR_AUTHORITY = (
 QM5_35005_REVIEW_REPAIR_EA_LABELS = frozenset({
     "QM5_35005_sma-crossover-pullback-system",
 })
+# Exact review-rework authorities for RECYCLE tasks that rejected stale
+# binary/source packages.  Each permits one append-only COMPILE_EA successor
+# bound to the repaired source hash; it grants no backtest or gate authority
+# and cannot be used for another EA.
+REVIEW_REWORK_SOURCE_REPAIR_AUTHORITY = (
+    "router_review_ea:cd6442dd-4ad9-4845-862a-2ef6e3ec0172"
+)
+REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES = {
+    "QM5_9468_connors-rsi4-3day-d1": REVIEW_REWORK_SOURCE_REPAIR_AUTHORITY,
+    "QM5_9909_bandy-lrchannel-breakout-trend": (
+        "router_review_ea:d6ea3abe-d44b-4861-b466-475a28899eaa"
+    ),
+}
+REVIEW_REWORK_SOURCE_REPAIR_EA_LABELS = frozenset(
+    REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES
+)
 COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
@@ -243,6 +259,9 @@ def _source_repair_authorized(ea_label: str, authority: str | None) -> bool:
         or (
             authority == QM5_35005_REVIEW_REPAIR_AUTHORITY
             and ea_label in QM5_35005_REVIEW_REPAIR_EA_LABELS
+        )
+        or (
+            authority == REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES.get(ea_label)
         )
     )
 
