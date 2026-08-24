@@ -1,0 +1,20 @@
+{
+  "review_task_id": "7c616d3f-20ef-449f-820b-3819beb800cc",
+  "build_task_id": "8de78517-0995-43b1-9c4e-30e0a0f1b1df",
+  "ea_id": "QM5_41003",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The reviewed MQ5 contains the prior card-fidelity and framework repairs and was last written on 2026-08-23 (SHA-256 fe1f6a43df83fdce4db23504eeceda7662b86a1b6aae1b619277396fea8e48f6), but the delivered EX5 predates them at 2026-08-18 (SHA-256 615fd73e0fd6c6aac9e4667e3fe94749d31316a78447df3abf6b3648d3709acb). The runnable binary is stale relative to the reviewed source.",
+    "Build artifact 8de78517-0995-43b1-9c4e-30e0a0f1b1df.json records ex5_path=null, build_check_passed=false, compile_succeeded=false, smoke_result=compile_failed, and smoke_report_path=null; D:/QM/reports/smoke/QM5_41003 is absent. Build and smoke evidence fail closed even though guardrails, SPEC, symbol scope, registry/magic, fixed-risk sets, and forbidden-code checks pass."
+  ],
+  "reviewed_at": "2026-08-24T09:05:29Z"
+}
