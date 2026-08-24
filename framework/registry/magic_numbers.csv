@@ -17494,9 +17494,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 38004,codetrading-triple-ema-momentum-scalper,0,NDX.DWX,380040000,2026-08-18,Gemini,active
 38004,codetrading-triple-ema-momentum-scalper,1,WS30.DWX,380040001,2026-08-18,Gemini,active
 38004,codetrading-triple-ema-momentum-scalper,2,GDAXI.DWX,380040002,2026-08-18,Gemini,active
-38005,codetrading-ascending-triangle-breakout,0,XAUUSD.DWX,380050000,2026-08-18,Gemini,active
-38005,codetrading-ascending-triangle-breakout,1,SP500.DWX,380050001,2026-08-18,Gemini,active
-38005,codetrading-ascending-triangle-breakout,2,EURUSD.DWX,380050002,2026-08-18,Gemini,active
+38005,codetrading-ascending-triangle-breakout,0,XAUUSD.DWX,380050000,2026-08-18,Codex burn-window build,active
+38005,codetrading-ascending-triangle-breakout,1,SP500.DWX,380050001,2026-08-18,Codex burn-window build,active
+38005,codetrading-ascending-triangle-breakout,2,EURUSD.DWX,380050002,2026-08-18,Codex burn-window build,active
 38006,codetrading-doji-hammer-pivot-rejection,0,EURUSD.DWX,380060000,2026-08-18,Gemini,active
 38006,codetrading-doji-hammer-pivot-rejection,1,GBPUSD.DWX,380060001,2026-08-18,Gemini,active
 38006,codetrading-doji-hammer-pivot-rejection,2,USDJPY.DWX,380060002,2026-08-18,Gemini,active
