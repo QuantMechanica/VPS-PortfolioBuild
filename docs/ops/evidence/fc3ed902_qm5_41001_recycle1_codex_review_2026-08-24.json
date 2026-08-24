@@ -1,0 +1,22 @@
+{
+  "review_task_id": "fc3ed902-4615-4349-ad96-634e1a20710a",
+  "build_task_id": "9fbca489-f822-4412-8066-a819bc100eb7",
+  "ea_id": "QM5_41001",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The approved card requires a maximum three-tick slippage tolerance for market orders, but the EA exposes and wires no slippage/deviation override; execution therefore falls back to the framework default rather than the card's hard limit.",
+    "SPEC.md line 32 still declares strategy_tp_rr_mult=8.0 even though the repaired source has no such input and both entry branches set req.tp=0.0 for the card's open-ended midline exit. The specification and executable contract therefore disagree.",
+    "The MQ5 was repaired on 2026-08-23 (SHA-256 747716971ecca1805addc8646d8da24cd30e9af35a429fc66eee1208fb736c92), but the delivered EX5 predates it at 2026-08-18 (SHA-256 910258ee5c88d0428c08109e66301d2849ce9aed4f01848429a8f0aeb846f44b). The build-result hash inventory cannot establish that this stale binary contains the reviewed source fixes.",
+    "The build result reports deferred_p2_smoke with smoke_report_path=null and blocked_reason=null, and D:/QM/reports/smoke/QM5_41001 is absent. Under the review schema, a generic skipped-reason string is not admissible durable capacity-block evidence, so smoke remains UNKNOWN and build_result fails closed."
+  ],
+  "reviewed_at": "2026-08-24T08:40:39Z"
+}
