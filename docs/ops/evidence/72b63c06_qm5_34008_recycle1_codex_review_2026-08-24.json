@@ -1,0 +1,26 @@
+{
+  "review_task_id": "72b63c06-7749-4ac4-8276-fcf7bdc02dc4",
+  "build_task_id": "fa7ca587-77f8-4cea-b71b-7bb1b746b33d",
+  "ea_id": "QM5_34008",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The current source now calculates basket extrema from one seven-symbol snapshot, opens two opposing USD-exposure legs with rollback on second-leg failure, flattens an observed single orphan, and closes aggregate package P&L at plus or minus 1.5% of balance. Those headline remediation claims were independently confirmed.",
+    "There is no primary-host or primary-slot guard. All seven registered H1 setfiles can independently evaluate the same fixed basket and open the same cross-symbol package, driven by different host tick streams and host-spread filters. Q02 fanout would record seven correlated re-derivations rather than one owned basket plus six architectural no-trade hosts.",
+    "The approved 23:55-00:05 GMT blackout still evaluates raw TimeCurrent broker time. The required 2.0% daily realized-loss entry halt is absent, and OnInit never configures the card's 2.5% daily and 5.0% total drawdown limits with QM_KillSwitchInit.",
+    "Strategy_NoTradeFilter and QM_FrameworkHandleFridayClose run before orphan cleanup and package exits. Spread expansion or rollover can suspend the hard plus/minus 1.5% package close and orphan flattening. Framework Friday close is bound to the host magic, so it can close only one basket leg and return before the package-level cleanup runs.",
+    "Each leg is sized from an invented hypothetical 1.5-ATR stop and then submitted with req.sl=0.0. The approved card defines a combined package-risk budget and aggregate basket cutoff, not a 1.5-ATR per-leg surrogate. The resulting volume is not linked to an actually placed stop or a card-authorized closed-form package-risk calculation.",
+    "OnInit declares no QM_FrameworkDeclareExecutionContract for H1, OnTick uses parameterless QM_IsNewBar, and no primary host symbol is enforced. The basket's execution cadence and ownership are therefore not fail-closed.",
+    "The reviewed MQ5 hashes to 541f9302440fb815314d61f2e47cb1d3823388dace1fc40cffa0ff824815dcb6 and was modified 2026-08-23. The EX5 hashes to 85962ade2c7c4251a188bd38d8f269df57d8cff0f1f534035db60dc541661186 and was last modified 2026-08-17, before the two-leg remediation. The build JSON asserts compile/build-check/smoke success while smoke_report_path is null, the remediation note records no compile, and farmctl reports NOT_ENQUEUED. No current binary or runtime evidence covers this source, so build_result fails and smoke_sanity remains UNKNOWN.",
+    "Guardrail and SPEC validation pass; all seven governed sets carry build_hash with RISK_FIXED=1000 and RISK_PERCENT=0; the active identity and seven magic rows are unique, formula-correct, slot-aligned, and resolver-backed; and the source uses the QM include chain without direct OrderSend. These checks do not cure the host, time, risk, lifecycle, execution-contract, and build-evidence failures."
+  ],
+  "reviewed_at": "2026-08-24T11:44:00Z"
+}
