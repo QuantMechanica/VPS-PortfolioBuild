@@ -1,0 +1,22 @@
+{
+  "review_task_id": "64fb0c90-8022-45f3-b413-7f404fa3a82c",
+  "build_task_id": "30ceeacd-0647-485a-9886-725af2139d61",
+  "ea_id": "QM5_41005",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The approved 23:55-00:05 GMT rollover blackout is evaluated from raw TimeCurrent broker time at source lines 155-158, with no QM_BrokerToUTC conversion. Its effective window therefore shifts whenever broker time differs from GMT.",
+    "The approved card caps market-order slippage at three symbol ticks, but the EA never calls QM_EntryConfigure or otherwise overrides execution deviation. Orders retain the framework's 20-point default rather than the card's hard limit.",
+    "The reviewed MQ5 was reworked on 2026-08-23 (SHA-256 7be25a6c0d0eeff3f45f4c2f0728dd22270e8abb4a17aab90ce4f6fab00f1ba6), while the delivered EX5 predates those fixes at 2026-08-18 (SHA-256 12e35b8185adb912bc6023947a5cea20c5c7a540e16542669c924d1aa0b585d6). The runnable binary is stale relative to the reviewed source.",
+    "Build artifact 30ceeacd-0647-485a-9886-725af2139d61.json records ex5_path=null, build_check_passed=false, compile_succeeded=false, smoke_result=compile_failed, and smoke_report_path=null; D:/QM/reports/smoke/QM5_41005 is absent. Build and smoke evidence therefore fail closed even though the focused static guardrail, SPEC, symbol, registry, and fixed-risk set checks pass."
+  ],
+  "reviewed_at": "2026-08-24T09:02:24Z"
+}
