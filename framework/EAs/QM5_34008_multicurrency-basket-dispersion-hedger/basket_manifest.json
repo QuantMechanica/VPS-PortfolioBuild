@@ -1,6 +1,6 @@
 {
   "logical_symbol": "QM5_34008_MULTICURRENCY_BASKET_DISPERSION_HEDGER_H1",
-  "host_symbol": "_per_instance",
+  "host_symbol": "EURUSD.DWX",
   "host_timeframe": "H1",
   "basket_symbols": [
     "EURUSD.DWX",
@@ -12,6 +12,6 @@
     "USDJPY.DWX"
   ],
   "notes": [
-    "Multi-Currency Basket Correlation Dispersion Hedger. EA runs one instance per registered host symbol; each instance reads the 7-pair USD basket on H1 to compute USD basket rate-of-change and cross-sectional dispersion, trading the host symbol when it reaches extreme dispersion. Foreign reads are bound at call site via QM_SymbolGuardInit + QM_BasketWarmupHistory; one position per magic on the host symbol. All 7 pairs verified present in dwx_symbol_matrix.csv."
+    "Multi-Currency Basket Correlation Dispersion Hedger. EURUSD.DWX at registry slot 0 is the sole package owner and reads the fixed 7-pair USD basket on H1. The other six registered hosts are deliberate architectural no-signal Q02 lanes, preventing duplicate derivations of the same basket package. Foreign reads are bound via QM_SymbolGuardInit + QM_BasketWarmupHistory, and all leg magics are registered through QM_FrameworkRegisterMagicSymbol. All 7 pairs are present in dwx_symbol_matrix.csv."
   ]
 }

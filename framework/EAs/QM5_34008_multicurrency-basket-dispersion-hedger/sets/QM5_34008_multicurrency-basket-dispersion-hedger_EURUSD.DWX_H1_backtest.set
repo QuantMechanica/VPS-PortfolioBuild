@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6729e35ee654669cb0002dd9bee76d5dd2b89680455d528472fc2736fcef713d
+; build_hash:   7d9bf12a6f8fc1e55f24a361b22b7f0f196eac8b66082f22c948c5d845bde4cf
 ; author:       Gemini
 ; date:         2026-08-23
 ;==========================================================
@@ -19,9 +19,13 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
+strategy_total_dd_stop_pct=5.0
 strategy_lookback_hours=24
 strategy_dispersion_dev=1.20
 strategy_target_profit_pct=1.5
 strategy_hard_stop_loss_pct=1.5
 strategy_atr_period=14
 strategy_spread_atr_mult=1.8
+strategy_max_slippage_ticks=3.0

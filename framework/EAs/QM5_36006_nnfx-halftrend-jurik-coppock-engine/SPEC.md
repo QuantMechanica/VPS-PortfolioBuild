@@ -32,6 +32,7 @@ The high-speed NNFX algorithmic framework on D1 combines HalfTrend (Baseline), J
 - Runner Exit: Close position when HalfTrend direction flips (HalfTrend flips to downtrend for Long, HalfTrend flips to uptrend for Short).
 - No-Trade Filter: Dynamic spread filter, UTC-normalized rollover blackout 23:55–00:05, and 2.0% account realized-loss entry halt.
 - Hard stops: Restart-safe framework daily equity stop at 2.5% and account-level total-DD signal threshold at 5.0%.
+- Execution: market-order deviation is capped at the card's 3.0 ticks through `QM_EntryConfigure`; all custom D1 series are loaded in one bounded, size-guarded cache refresh after the new-bar gate.
 
 ---
 
@@ -57,6 +58,7 @@ The high-speed NNFX algorithmic framework on D1 combines HalfTrend (Baseline), J
 | `strategy_daily_hard_stop_pct` | 2.5 | fixed | Framework daily equity hard stop |
 | `strategy_total_dd_halt_pct` | 5.0 | fixed | Account-level total-DD signal threshold |
 | `strategy_per_trade_risk_cap_pct` | 0.5 | fixed | Framework per-trade risk cap |
+| `strategy_max_slippage_ticks` | 3.0 | fixed | Maximum market-order deviation in symbol ticks |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -84,7 +86,7 @@ rejects foreign symbols).
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_D1)` |
 
 ---
 
@@ -120,6 +122,6 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit`; an unconfigured sizing mode is reported as `EA_RISK_SIZER_UNCONFIGURED`.
 
 ---
