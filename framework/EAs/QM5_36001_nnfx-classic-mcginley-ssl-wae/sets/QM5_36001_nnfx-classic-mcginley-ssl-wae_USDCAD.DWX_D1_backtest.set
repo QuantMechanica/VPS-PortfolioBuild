@@ -1,39 +1,46 @@
-;==========================================================
-; QM5 Set File
-; ea_id:        36001
-; ea_slug:      nnfx-classic-mcginley-ssl-wae
-; ea_version:   v5.0
-; set_version:  s20260823-001
-; symbol:       USDCAD.DWX
-; timeframe:    D1
-; environment:  backtest
-; magic_slot:   4
-; risk_mode:    FIXED
-; portfolio_weight: 1
-; build_hash:   c146d27308e2bff8759780a8da6b80cb0fcd34657a9753dc39cfaec8ae5393ca
-; author:       Development
-; date:         2026-08-23
-;==========================================================
-qm_ea_id=36001
-qm_magic_slot_offset=4
-RISK_FIXED=1000
-RISK_PERCENT=0
-PORTFOLIO_WEIGHT=1
-; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_36001_nnfx-classic-mcginley-ssl-wae.md
-strategy_mcginley_period=14
-strategy_ssl_period=10
-strategy_vortex_period=14
-strategy_wae_fast=12
-strategy_wae_slow=26
-strategy_wae_signal=9
-strategy_wae_bb_period=20
-strategy_wae_bb_deviation=2.0
-strategy_wae_sensitivity=150
-strategy_wae_deadzone_pts=150
-strategy_demarker_period=14
-strategy_atr_period=14
-strategy_sl_atr_mult=1.00
-strategy_tp_atr_mult=1.00
-strategy_spread_atr_mult=1.80
-strategy_warmup_bars=150
+;==========================================================
+; QM5 Set File
+; ea_id:        36001
+; ea_slug:      nnfx-classic-mcginley-ssl-wae
+; ea_version:   v5.0
+; set_version:  s20260824-001
+; symbol:       USDCAD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   5fcb073cb64985844475000997e9980da8e42947de4971ba3161e61ecf31981d
+; author:       Development
+; date:         2026-08-24
+;==========================================================
+qm_ea_id=36001
+qm_magic_slot_offset=4
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\worktrees\rework-slot-5\strategy-seeds\cards\QM5_36001_nnfx-classic-mcginley-ssl-wae.md
+strategy_mcginley_period=14
+strategy_ssl_period=10
+strategy_vortex_period=14
+strategy_wae_fast=12
+strategy_wae_slow=26
+strategy_wae_signal=9
+strategy_wae_bb_period=20
+strategy_wae_bb_deviation=2.0
+strategy_wae_sensitivity=150
+strategy_wae_deadzone_pts=150
+strategy_demarker_period=14
+strategy_atr_period=14
+strategy_sl_atr_mult=1.00
+strategy_tp_atr_mult=1.00
+strategy_tp1_fraction=0.50
+strategy_be_buffer_pips=1
+strategy_spread_atr_mult=1.80
+strategy_warmup_bars=150
+strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
+strategy_total_dd_halt_pct=5.0
+strategy_per_trade_risk_cap_pct=1.0
+strategy_max_slippage_ticks=3.0
