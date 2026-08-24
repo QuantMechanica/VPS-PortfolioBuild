@@ -4,20 +4,25 @@
 **Slug:** `aa-indmom-12-0`
 **Source:** `ede348b4-0fa7-5be1-baa8-09e9089b67b7` (see `strategy-seeds/sources/ede348b4-0fa7-5be1-baa8-09e9089b67b7/`)
 **Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-08-22
+**Last revised:** 2026-08-24
 
 ---
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_1640_aa-indmom-12-0.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
+Each D1 host reconstructs one deterministic monthly cross-sectional snapshot
+for the complete available index-proxy basket. The score is exactly
+`Close(MN1,1) / Close(MN1,13) - 1`; the positive top five are eligible, and a
+position exits when its host leaves that monthly set. A snapshot is invalid if
+any governed constituent lacks the required 14 completed monthly bars.
 
-Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_1640_aa-indmom-12-0.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
+Entry is limited to the first D1 bar of the month. Current-month deal history
+is checked before admission, so a stop-out or EA restart cannot cause a second
+entry in the same rebalance period. The entry path also counts all five
+MagicResolver slots and rejects admission at the five-position portfolio cap.
+The initial stop is `3.0 * ATR(20,D1)`. New entries fail closed when the current
+spread exceeds `2.5 *` the median of the prior 20 completed D1 spreads, or when
+that sample is incomplete/invalid.
 
 ---
 
@@ -25,11 +30,12 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_lookback_bars` | 252 | (see source) | (see strategy logic) |
-| `strategy_min_daily_bars` | 260 | (see source) | (see strategy logic) |
-| `strategy_atr_period` | 20 | (see source) | (see strategy logic) |
-| `strategy_sl_atr_mult` | 3.0 | (see source) | (see strategy logic) |
-| `strategy_spread_atr_mult` | 0.3 | (see source) | (see strategy logic) |
+| `strategy_min_monthly_bars` | 14 | 14..120 | Minimum completed MN1 history for every ranked proxy |
+| `strategy_top_slots` | 5 | 1..5 | Positive-ranked portfolio capacity |
+| `strategy_atr_period_d1` | 20 | >0 | D1 ATR period for the initial stop |
+| `strategy_sl_atr_mult` | 3.0 | >0 | Initial stop distance in D1 ATR units |
+| `strategy_spread_median_days` | 20 | 1..64 | Completed D1 spread observations |
+| `strategy_spread_median_mult` | 2.5 | >0 | Maximum current/median spread ratio |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -40,24 +46,18 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 ## 3. Symbol Universe
 
-**Designed for:**
-- `GDAXI.DWX` — registered in magic_numbers.csv for this EA
-- `NDX.DWX` — registered in magic_numbers.csv for this EA
-- `SP500.DWX` — registered in magic_numbers.csv for this EA
-- `UK100.DWX` — registered in magic_numbers.csv for this EA
-- `WS30.DWX` — registered in magic_numbers.csv for this EA
-- `XAUUSD.DWX` — registered in magic_numbers.csv for this EA
-- `EURUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPUSD.DWX` — registered in magic_numbers.csv for this EA
-- `USDJPY.DWX` — registered in magic_numbers.csv for this EA
-- `USDCHF.DWX` — registered in magic_numbers.csv for this EA
-- `AUDUSD.DWX` — registered in magic_numbers.csv for this EA
-- `USDCAD.DWX` — registered in magic_numbers.csv for this EA
-- `NZDUSD.DWX` — registered in magic_numbers.csv for this EA
+**Final available/rankable basket:**
+- `GDAXI.DWX` — MagicResolver slot 0
+- `NDX.DWX` — MagicResolver slot 1
+- `SP500.DWX` — MagicResolver slot 2
+- `UK100.DWX` — MagicResolver slot 3
+- `WS30.DWX` — MagicResolver slot 4
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the `QM_SymbolGuard` framework helper
-rejects foreign symbols).
+The card's additional candidates `FCHI.DWX`, `SPA35.DWX`, `NETH25.DWX`, and
+`STOXX50E.DWX` are not present in the governed active DWX symbol matrix and are
+therefore unavailable. This decision is also sealed in `basket_manifest.json`.
+Pre-existing off-thesis magic rows were not edited or repurposed; those symbols
+have no setfiles and are not part of the runtime symbol guard or ranking.
 
 ---
 
@@ -66,8 +66,8 @@ rejects foreign symbols).
 | Aspect | Value |
 |---|---|
 | Base timeframe | `D1` |
-| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Multi-timeframe refs | Completed MN1 closes; D1 ATR and spread sample |
+| Bar gating | D1 `QM_IsNewBar()` plus first-D1-bar-of-month admission |
 
 ---
 
@@ -103,7 +103,21 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit`; build validation reports
+the framework's canonical `EA_RISK_SIZER_UNCONFIGURED` finding when applicable.
+
+## 8. Framework Alignment
+
+| Contract | Implementation |
+|---|---|
+| Umbrella chain | `#include <QM/QM_Common.mqh>` |
+| Magic | `QM_Magic` / `QM_MagicChecked`; no arithmetic magic |
+| Risk | `RISK_FIXED=1000` backtest sets; `RISK_PERCENT` retained for live packaging |
+| MAE | `QM_FrameworkTrackOpenPositionMae()` is the first OnTick lifecycle hook |
+| News | Central two-axis news decision gates entries only, after management/exits |
+| Friday close | Disabled by default so the card's monthly holding period is not truncated weekly |
+| Raw series | Bounded `CopyClose`/`CopyRates`/`CopyTime`, explicit perf annotations and `ArraySize` guards |
+| ML | None |
 
 ---
 
@@ -112,3 +126,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-22 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
+| v2 | 2026-08-24 | Review rework | Restored card-faithful cross-sectional MN1 ranking, universe, spread, restart, cap, and exit behavior |

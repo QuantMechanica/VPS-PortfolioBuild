@@ -8,6 +8,7 @@ Checks:
 2. All 7 mandatory section headers are present.
 3. No `<ANGLE_BRACKETED_PLACEHOLDER>` strings remain (copy-paste leftovers).
 4. The EA ID line matches the directory name.
+5. The file is valid UTF-8 and contains no disallowed control characters.
 
 Exit codes:
   0  PASS — SPEC is complete.
@@ -24,6 +25,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -54,7 +56,24 @@ def check_one(ea_dir: Path) -> tuple[bool, list[str]]:
     if not spec.exists():
         return False, [f"SPEC.md missing at {spec}"]
 
-    text = spec.read_text(encoding="utf-8", errors="replace")
+    try:
+        text = spec.read_text(encoding="utf-8")
+    except UnicodeDecodeError as exc:
+        return False, [f"SPEC.md is not valid UTF-8: {exc}"]
+
+    controls = [
+        (offset, ord(char))
+        for offset, char in enumerate(text)
+        if unicodedata.category(char) == "Cc" and char not in "\t\n\r"
+    ]
+    if controls:
+        rendered = ", ".join(
+            f"U+{codepoint:04X} at character offset {offset}"
+            for offset, codepoint in controls[:8]
+        )
+        if len(controls) > 8:
+            rendered += f", plus {len(controls) - 8} more"
+        failures.append(f"disallowed control character(s): {rendered}")
 
     for section in REQUIRED_SECTIONS:
         if f"## {section}" not in text:
