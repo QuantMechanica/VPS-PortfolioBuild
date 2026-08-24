@@ -108,9 +108,9 @@ int StrategyDeviationPoints()
 
 void AdvanceState_OnNewBar()
 {
-   const double close1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const double low1   = iLow(_Symbol, strategy_signal_tf, 1);
-   const double high1  = iHigh(_Symbol, strategy_signal_tf, 1);
+   const double close1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: one closed M15 signal close, cached once per new bar (and once at init).
+   const double low1   = iLow(_Symbol, strategy_signal_tf, 1);   // perf-allowed: one closed M15 signal low, cached once per new bar (and once at init).
+   const double high1  = iHigh(_Symbol, strategy_signal_tf, 1);  // perf-allowed: one closed M15 signal high, cached once per new bar (and once at init).
    if(close1 <= 0.0 || low1 <= 0.0 || high1 <= 0.0)
       return;
 
