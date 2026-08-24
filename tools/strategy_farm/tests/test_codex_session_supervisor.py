@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ctypes
 import os
 import subprocess
 from pathlib import Path
@@ -10,6 +11,12 @@ SUPERVISOR = REPO / "tools" / "strategy_farm" / "codex_session_supervisor.ps1"
 FAKE_CODEX = (
     REPO / "tools" / "strategy_farm" / "tests" / "fixtures" / "fake_codex_supervisor.cmd"
 )
+
+
+def _console_output_encoding() -> str:
+    code_page = int(ctypes.windll.kernel32.GetConsoleOutputCP())
+    assert code_page > 0
+    return f"cp{code_page}"
 
 
 def test_supervisor_resumes_after_unexpected_child_exit(tmp_path) -> None:
@@ -47,7 +54,7 @@ def test_supervisor_resumes_after_unexpected_child_exit(tmp_path) -> None:
     )
 
     assert result.returncode == 130, result.stderr
-    resumed_args = args_path.read_text(encoding="utf-8").strip()
+    resumed_args = args_path.read_text(encoding=_console_output_encoding()).strip()
     assert resumed_args.startswith("resume --last ")
     assert "automatisch" in resumed_args
 

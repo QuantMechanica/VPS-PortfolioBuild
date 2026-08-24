@@ -571,14 +571,17 @@ bool Strategy_LoadDailyPseudomedianSignal(const int current_month_key,
    int pair_index = 0;
    for(int left = 0; left < return_count; ++left)
      {
-      if(left >= ArraySize(daily_returns) ||
-         !MathIsValidNumber(daily_returns[left]))
+      if(left >= ArraySize(daily_returns))
+         return false;
+      if(!MathIsValidNumber(daily_returns[left]))
          return false;
       for(int right = left; right < return_count; ++right)
         {
-         if(right >= ArraySize(daily_returns) ||
-            pair_index >= ArraySize(pairwise_values) ||
-            !MathIsValidNumber(daily_returns[right]))
+         if(right >= ArraySize(daily_returns))
+            return false;
+         if(pair_index >= ArraySize(pairwise_values))
+            return false;
+         if(!MathIsValidNumber(daily_returns[right]))
             return false;
          const double pair_average =
             (daily_returns[left] + daily_returns[right]) / 2.0;

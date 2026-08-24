@@ -238,3 +238,40 @@ Net: P0 fixed (merged tree green on the touched suite); P1 is the pre-existing,
 honestly-disclosed COMPILE_OK deferral, now extended to include QM5_41133, and
 requires the governed compile lane plus explicit OWNER acceptance of the deferral
 before this merge lands in the factory.
+
+## Governed-lane follow-up — 2026-08-24
+
+The blanket statement above that there was no standalone `COMPILE_OK` is now
+closed. A read-only URI query of the exact 20 source-repair work-item IDs plus
+the `QM5_41133` row returned `rows=21`, `COMPILE_OK=1`, `pending=20`,
+`active=0`, and `active_holds=20`. No pending row was changed or released.
+
+The successful row is `cc09145c-a6d6-4cb0-88a4-e10ef58cc58d` for
+`QM5_41109_xauxag-mmean-median-rv`, completed
+`2026-08-23T22:17:28+00:00`. Its durable artifact chain is:
+
+- evidence: `D:\QM\reports\work_items\cc09145c-a6d6-4cb0-88a4-e10ef58cc58d\QM5_41109\COMPILE_EA\compile_evidence.json`;
+- build-check report: `D:\QM\reports\framework\21\build_check_20260823_221618.json`;
+- MetaEditor log: `C:\QM\repo\framework\build\compile\20260823_221622\QM5_41109_xauxag-mmean-median-rv.compile.log`;
+- compile summary: `D:\QM\reports\compile\20260823_221622\summary.csv`;
+- recorded result: compile `PASS`, build-check `PASS`, zero errors, zero
+  warnings, recorded EX5 SHA-256
+  `269058afe6b11abab89286ee9a8d3efe535c5298b2eee0001e0fe27da867d16c`.
+
+The source binding remains current: all 20 original source-repair rows match
+their worktree MQ5 hashes. `QM5_41133` is the exception in the 20+1 cohort:
+its held row `1fb58c79-e46f-4d72-9af1-26eb4656e0d5` is bound to pre-repair MQ5
+SHA-256 `7c8aeb3382bf3d8b84325661dfb699458bd115c84455e04c9a0c5a34f08ded04`,
+while the repaired source is
+`9d7f41c8db3991e626c9577512be267699574ce6df08fd95f327c3013e761ff5`.
+It was left pending as directed; it is not current-hash compile proof.
+
+There is also binary-path drift to preserve explicitly: the current canonical
+EX5 at the path named by the successful evidence hashes to
+`e6acd7a248f836fd2b916dcd211c8393975d22dc3da24645df52bb0bed420a00`
+(the earlier compile's hash), not the successful row's recorded EX5 hash. The
+immutable DB row, evidence JSON, report, log, and summary prove the governed
+compile occurred, but the exact successful EX5 bytes are no longer present at
+that mutable canonical path. Therefore the prior **zero-COMPILE_OK** deferral is
+closed for `QM5_41109`; complete wave proof remains deferred for the 20 rows
+still pending, and artifact retention drift remains open.

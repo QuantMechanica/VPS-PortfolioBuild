@@ -210,6 +210,23 @@ def test_q02_infra_source_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_hygiene_burn_source_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_41136_xng-mdaily-iqrmean-mom"
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.HYGIENE_BURN_SOURCE_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41135_xauxag-mdaily-iqrmean-rv",
+        compile_work_items.HYGIENE_BURN_SOURCE_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "ticket:rb-hygiene-burn-typo",
+    )
+
+
 def test_batch_from_file_is_dry_run_until_apply(tmp_path: Path) -> None:
     labels = [
         "QM5_1001_compile-fixture-h1",
