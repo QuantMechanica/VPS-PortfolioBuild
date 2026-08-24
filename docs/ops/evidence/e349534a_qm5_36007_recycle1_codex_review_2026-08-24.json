@@ -1,0 +1,24 @@
+{
+  "review_task_id": "e349534a-89d0-4640-b7d5-48761fd3b5f3",
+  "build_task_id": "a7acf60d-9f28-4cfc-a080-061eb3aaedb9",
+  "ea_id": "QM5_36007",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "OnInit never calls QM_FrameworkDeclareExecutionContract for the approved D1 cadence, while OnTick gates entries with parameterless QM_IsNewBar(). On a non-D1 host chart the cached D1 signal can therefore be acted on at the chart cadence and re-entered after an exit within the same D1 signal period.",
+    "The card's 2.0% realized-daily, 2.5% daily-drawdown, and 5.0% total-drawdown limits are implemented only in process-local state. Restart resets the daily baseline and initial-equity baseline, and Strategy_InputsValid accepts any positive replacement value. QM_FrameworkInit still installs QM_Common.mqh's incompatible 3.0%/0.0% kill-switch defaults because the EA never reinitializes the framework kill switch with the card limits.",
+    "The repaired MQ5 is newer than the checked-in EX5 (2026-08-22 versus 2026-08-21) and hashes to 7324347779b2bbcb9b9b19e6b0e0e3d122de2a9aaa77e26459f21a553719cf7a, while the EX5 hashes to 1697c53bb1be220da295e39a8854095e0cd3128b9dcd3cf6402327d2e0e9464a. The assigned producer artifact is prose from 2026-08-17 and supplies neither those hashes nor the required canonical compile/build-check booleans, so source-to-binary identity is unproven.",
+    "A fresh strict validation-only build_check was correctly refused by the live-factory interlock because terminal64 processes are active. No terminal was interrupted and no compile was queued; this refusal cannot be converted into a build PASS.",
+    "No smoke report or durable measured tester-fleet saturation reason was supplied. smoke_sanity remains UNKNOWN and the sanctioned deferred-smoke exception is not met.",
+    "Focused source review confirms the earlier full-position TP defect is repaired with QM_TM_PartialClose and the TRIX/VIDYA history walk is now bounded to one closed-D1 cache refresh; these repairs do not clear the independent execution, risk, binary-identity, and evidence failures above."
+  ],
+  "reviewed_at": "2026-08-24T10:38:06Z"
+}
