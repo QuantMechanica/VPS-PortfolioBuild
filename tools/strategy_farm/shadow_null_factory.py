@@ -11,7 +11,11 @@ serial structure while imposing zero in-sample alpha.  The selected winner is
 compared with the distribution of the maximum Sharpe across the entire cohort;
 trial-level empirical p-values also receive Benjamini-Hochberg q-values.
 
-This is SHADOW_ONLY evidence.  It neither changes Q08 nor produces a gate verdict.
+An optional SHA-bound Factory census expands the multiplicity analysis from the
+supplied return template to the complete observed EA/symbol search world.  The
+tool remains fail-closed when loser returns or Monte Carlo resolution are
+incomplete.  This is SHADOW_ONLY evidence: it neither changes Q08 nor produces
+a gate verdict.
 """
 from __future__ import annotations
 
@@ -24,12 +28,14 @@ import json
 import math
 import sys
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 
 import numpy as np
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from tools.strategy_farm import shadow_search_world_census  # noqa: E402
 
 
 SCHEMA = "qm.shadow-null-factory/v1"
@@ -240,6 +246,113 @@ def _quantile(values: np.ndarray, probability: float) -> float:
     return float(np.quantile(values, probability, method="linear"))
 
 
+def _at_least_one_probability(single_probability: float, trials: int) -> float:
+    """Stable ``1 - (1-p)^n`` for an IID null-search sensitivity model."""
+
+    p = float(single_probability)
+    if not 0.0 <= p <= 1.0:
+        raise NullFactoryError(f"probability outside [0,1]: {p}")
+    if trials < 1:
+        raise NullFactoryError("search-world trial count must be positive")
+    if p == 0.0:
+        return 0.0
+    if p == 1.0:
+        return 1.0
+    return min(1.0, max(0.0, -math.expm1(trials * math.log1p(-p))))
+
+
+def _search_world_adjustment(
+    *,
+    census: Mapping[str, Any],
+    observed_trials: int,
+    marginal_p: float,
+    template_max_p: float,
+    experiment: Experiment,
+) -> dict[str, Any]:
+    declared_trials = int(census["pair_count"])
+    if declared_trials < observed_trials:
+        raise NullFactoryError(
+            "declared search world is smaller than the observed return panel"
+        )
+    template_groups = math.ceil(declared_trials / observed_trials)
+    resolution_floor = 1.0 / (experiment.replications + 1.0)
+    critical_marginal_p = experiment.alpha / declared_trials
+    min_replications = math.ceil(declared_trials / experiment.alpha) - 1
+    marginal_iid_fwer = _at_least_one_probability(marginal_p, declared_trials)
+    template_iid_fwer = _at_least_one_probability(template_max_p, template_groups)
+    resolution_sufficient = resolution_floor <= critical_marginal_p
+    iid_sensitivity_passes = (
+        marginal_iid_fwer <= experiment.alpha
+        and template_iid_fwer <= experiment.alpha
+        and resolution_sufficient
+    )
+    return_panel_complete = observed_trials == declared_trials
+    global_null_rejected = iid_sensitivity_passes and return_panel_complete
+    failure_reasons: list[str] = []
+    if not return_panel_complete:
+        failure_reasons.append(
+            "The supplied return panel is not the complete declared Factory search world."
+        )
+    if not resolution_sufficient:
+        failure_reasons.append(
+            "The current Monte Carlo resolution cannot reach the Bonferroni "
+            "threshold for the declared pair count."
+        )
+    if not iid_sensitivity_passes:
+        failure_reasons.append(
+            "Under IID marginal and repeated-template sensitivity expansions, "
+            "the selected result is compatible with search luck."
+        )
+    return {
+        "schema": "qm.shadow-null-search-world-adjustment/v1",
+        "mode": "POST_HOC_SHADOW_ONLY_NON_GATE",
+        "decision": (
+            "SELECTION_SURVIVES_DECLARED_SEARCH_WORLD_SHADOW"
+            if global_null_rejected else
+            "SELECTION_NOT_PROVEN_ACROSS_DECLARED_SEARCH_WORLD"
+        ),
+        "iid_sensitivity_decision": (
+            "SELECTION_SURVIVES_IID_FULL_SEARCH_WORLD"
+            if iid_sensitivity_passes
+            else "SELECTION_NOT_DISTINGUISHABLE_FROM_IID_FULL_SEARCH_LUCK"
+        ),
+        "declared_search_trials": declared_trials,
+        "declared_trial_unit": census["primary_trial_unit"],
+        "observed_return_trials": observed_trials,
+        "return_panel_coverage": round(observed_trials / declared_trials, 8),
+        "return_panel_complete": return_panel_complete,
+        "template_group_count_ceiling": template_groups,
+        "selected_marginal_empirical_p": round(float(marginal_p), 8),
+        "observed_template_maxT_p": round(float(template_max_p), 8),
+        "iid_marginal_full_world_fwer_p": round(marginal_iid_fwer, 8),
+        "iid_template_group_full_world_fwer_p": round(template_iid_fwer, 8),
+        "bonferroni_full_world_fwer_bound_from_empirical_p": round(
+            min(1.0, declared_trials * marginal_p), 8
+        ),
+        "perfect_dependence_template_sensitivity_p": round(float(template_max_p), 8),
+        "critical_marginal_p_for_bonferroni_alpha": round(critical_marginal_p, 12),
+        "monte_carlo_resolution_floor": round(resolution_floor, 12),
+        "monte_carlo_resolution_sufficient": resolution_sufficient,
+        "minimum_replications_for_resolution": min_replications,
+        "additional_replications_needed": max(0, min_replications - experiment.replications),
+        "global_null_rejected": global_null_rejected,
+        "failure_reasons": failure_reasons,
+        "assumptions": [
+            "The EA/symbol census is a lower bound; phase, rerun, and parameter trials increase multiplicity.",
+            "IID expansion is a sensitivity model, not a claim that Factory trials are independent.",
+            "Perfect-dependence and IID endpoints expose dependence sensitivity but are not sharp bounds.",
+        ],
+        "census": {
+            "path": census.get("census_path"),
+            "sha256": census.get("census_sha256"),
+            "pairs_sha256": census["pairs_sha256"],
+            "generated_at_utc": census["generated_at_utc"],
+            "definition": census["definition"],
+            "database_observation": census.get("database_observation"),
+        },
+    }
+
+
 def _ledger_expected(panel: Panel, experiment: Experiment) -> dict[str, Any]:
     return {
         "schema": LEDGER_SCHEMA,
@@ -320,6 +433,7 @@ def analyze_panel(
     experiment: Experiment = Experiment(),
     *,
     ledger_path: str | Path | None = None,
+    search_world: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run the joint moving-block null and return a deterministic JSON model."""
     if panel.returns.ndim != 2 or panel.returns.shape != (
@@ -398,6 +512,26 @@ def analyze_panel(
     rows.sort(key=lambda row: (-row["annualized_sharpe"], row["trial_id"]))
     selected = next(row for row in rows if row["selected"])
     ledger = validate_ledger(ledger_path, panel, experiment)
+    template_decision = (
+        "SELECTION_SURVIVES_JOINT_NULL"
+        if selected["maxT_fwer_p"] <= experiment.alpha
+        else "SELECTION_NOT_DISTINGUISHABLE_FROM_SEARCH_LUCK"
+    )
+    search_world_result = None
+    if search_world is not None:
+        census = shadow_search_world_census.validate_payload(search_world)
+        search_world_result = _search_world_adjustment(
+            census=census,
+            observed_trials=trial_count,
+            marginal_p=float(marginal_p[selected_index]),
+            template_max_p=float(fwer_p[selected_index]),
+            experiment=experiment,
+        )
+        if ledger["status"] == "VERIFIED" and int(census["pair_count"]) != trial_count:
+            raise NullFactoryError(
+                "return-cohort ledger falsely attests all declared trials while the "
+                "search-world census has a different count"
+            )
     fwer_discoveries = sum(row["fwer_discovery"] for row in rows)
     bh_discoveries = sum(row["bh_discovery"] for row in rows)
     return {
@@ -405,10 +539,10 @@ def analyze_panel(
         "mode": "SHADOW_ONLY_NON_GATE",
         "gate_eligible": False,
         "decision": (
-            "SELECTION_SURVIVES_JOINT_NULL"
-            if selected["maxT_fwer_p"] <= experiment.alpha
-            else "SELECTION_NOT_DISTINGUISHABLE_FROM_SEARCH_LUCK"
+            search_world_result["decision"] if search_world_result is not None
+            else template_decision
         ),
+        "template_cohort_decision": template_decision,
         "input": {
             "path": panel.source_path,
             "sha256": panel.source_sha256,
@@ -450,6 +584,7 @@ def analyze_panel(
                 selected["annualized_sharpe"] - _quantile(null_max, 0.5), 8
             ),
         },
+        "search_world": search_world_result,
         "trials": rows,
         "limitations": [
             "This audits selection across the supplied return cohort, not every upstream Factory gate.",
@@ -460,6 +595,11 @@ def analyze_panel(
             ),
             "The circular moving-block model preserves dependence only up to the supplied block length.",
             "No Q08 threshold, verdict, queue row, candidate pool, or book is changed.",
+            (
+                "A full-world census binds identities and multiplicity, not missing loser return streams."
+                if search_world_result is not None else
+                "No full Factory search-world census was supplied."
+            ),
         ],
     }
 
@@ -470,6 +610,7 @@ def build_report(
     *,
     ledger_path: str | Path | None = None,
     booklab_package: str | Path | None = None,
+    search_world_census_path: str | Path | None = None,
 ) -> dict[str, Any]:
     if (returns_path is None) == (booklab_package is None):
         raise NullFactoryError(
@@ -480,8 +621,12 @@ def build_report(
         if returns_path is not None
         else panel_from_booklab_package(booklab_package)  # type: ignore[arg-type]
     )
+    search_world = (
+        shadow_search_world_census.load_census(search_world_census_path)
+        if search_world_census_path is not None else None
+    )
     report = analyze_panel(
-        panel, experiment, ledger_path=ledger_path
+        panel, experiment, ledger_path=ledger_path, search_world=search_world
     )
     return {"generated_at_utc": _utc_now(), **report}
 
@@ -492,6 +637,10 @@ def main(argv: list[str] | None = None) -> int:
     inputs.add_argument("--returns", type=Path)
     inputs.add_argument("--booklab-package", type=Path)
     parser.add_argument("--ledger", type=Path)
+    parser.add_argument(
+        "--search-world-census", type=Path,
+        help="SHA-bound full Factory EA/symbol census for post-hoc FWER sensitivity",
+    )
     parser.add_argument("--annualization", type=int, default=252)
     parser.add_argument("--block-length", type=int, default=20)
     parser.add_argument("--replications", type=int, default=1999)
@@ -514,6 +663,7 @@ def main(argv: list[str] | None = None) -> int:
             experiment,
             ledger_path=args.ledger,
             booklab_package=args.booklab_package,
+            search_world_census_path=args.search_world_census,
         )
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"NULL_FACTORY_REFUSED: {type(exc).__name__}: {exc}", file=sys.stderr)

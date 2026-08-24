@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/shadow_null_search_world_census.v1.schema.json",
+  "title": "Shadow Null Factory full search-world census",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "mode",
+    "generated_at_utc",
+    "primary_trial_unit",
+    "definition",
+    "pair_count",
+    "pairs_sha256",
+    "pairs",
+    "database_observation",
+    "census_code",
+    "authority"
+  ],
+  "properties": {
+    "schema": {"const": "qm.shadow-null-search-world-census/v1"},
+    "mode": {"const": "POST_HOC_SHADOW_ONLY_NON_GATE"},
+    "generated_at_utc": {"type": "string", "format": "date-time"},
+    "primary_trial_unit": {"const": "EA_SYMBOL_PAIR_LOWER_BOUND"},
+    "definition": {"type": "string", "minLength": 1},
+    "pair_count": {"type": "integer", "minimum": 2},
+    "pairs_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "pairs": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ea_id", "symbol"],
+        "properties": {
+          "ea_id": {"type": "string", "minLength": 1},
+          "symbol": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "database_observation": {
+      "type": "object",
+      "required": ["path", "query_only", "snapshot_transaction"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "query_only": {"const": true},
+        "snapshot_transaction": {"const": true}
+      }
+    },
+    "census_code": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["factory_write", "gate_change", "candidate_change", "book_or_live_use"],
+      "properties": {
+        "factory_write": {"const": false},
+        "gate_change": {"const": false},
+        "candidate_change": {"const": false},
+        "book_or_live_use": {"const": false}
+      }
+    }
+  }
+}

@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 
 from tools.strategy_farm import shadow_null_factory as nf
+from tools.strategy_farm import shadow_search_world_census as swc
 
 
 def _write_panel(
@@ -56,6 +57,79 @@ def test_strong_signal_survives_joint_max_null_and_is_reproducible(tmp_path: Pat
     assert first["selected"]["maxT_fwer_p"] <= 0.05
     assert first["decision"] == "SELECTION_SURVIVES_JOINT_NULL"
     assert first["gate_eligible"] is False
+
+
+def test_full_search_world_expansion_overrides_survivor_only_pass(tmp_path: Path) -> None:
+    rng = np.random.default_rng(1234)
+    matrix = rng.normal(0.0, 0.01, size=(360, 20))
+    matrix[:, 7] += 0.004
+    panel = nf.load_panel(_write_panel(tmp_path / "returns.csv", matrix))
+    pairs = [
+        {"ea_id": f"QM5_{index:05d}", "symbol": "XAUUSD.DWX"}
+        for index in range(1000)
+    ]
+    search_world = swc.build_payload(
+        pairs,
+        generated_at_utc="2026-08-24T10:00:00+00:00",
+        database_path="fixture.sqlite",
+        database_observation={
+            "work_item_count": 1000,
+            "query_only": True,
+            "snapshot_transaction": True,
+        },
+    )
+
+    report = nf.analyze_panel(panel, _experiment(), search_world=search_world)
+
+    assert report["template_cohort_decision"] == "SELECTION_SURVIVES_JOINT_NULL"
+    assert report["decision"] == "SELECTION_NOT_PROVEN_ACROSS_DECLARED_SEARCH_WORLD"
+    world = report["search_world"]
+    assert world["declared_search_trials"] == 1000
+    assert world["observed_return_trials"] == 20
+    assert world["return_panel_coverage"] == 0.02
+    assert world["return_panel_complete"] is False
+    assert world["monte_carlo_resolution_sufficient"] is False
+    assert world["minimum_replications_for_resolution"] == 19999
+    assert world["global_null_rejected"] is False
+    assert report["gate_eligible"] is False
+
+
+def test_full_world_refuses_false_all_trials_attestation(tmp_path: Path) -> None:
+    rng = np.random.default_rng(91)
+    panel = nf.load_panel(
+        _write_panel(tmp_path / "returns.csv", rng.normal(size=(120, 4)))
+    )
+    experiment = _experiment()
+    ledger = {
+        **nf._ledger_expected(panel, experiment),
+        "attestation": "SPEC_FROZEN_BEFORE_SHADOW_EVALUATION",
+        "cohort_attestation": "ALL_DECLARED_SEARCH_TRIALS_INCLUDED",
+        "cohort_definition": "the four supplied fixture trials",
+        "frozen_at_utc": "2026-08-24T10:00:00+00:00",
+    }
+    ledger_path = tmp_path / "ledger.json"
+    ledger_path.write_text(json.dumps(ledger), encoding="utf-8")
+    search_world = swc.build_payload(
+        [
+            {"ea_id": f"QM5_{index:05d}", "symbol": "EURUSD.DWX"}
+            for index in range(10)
+        ],
+        generated_at_utc="2026-08-24T10:00:00+00:00",
+        database_path="fixture.sqlite",
+        database_observation={
+            "work_item_count": 10,
+            "query_only": True,
+            "snapshot_transaction": True,
+        },
+    )
+
+    with pytest.raises(nf.NullFactoryError, match="falsely attests"):
+        nf.analyze_panel(
+            panel,
+            experiment,
+            ledger_path=ledger_path,
+            search_world=search_world,
+        )
 
 
 def test_rectangular_panel_is_mandatory(tmp_path: Path) -> None:

@@ -1,5 +1,12 @@
 # Path-to-25 Shadow Research Suite — 2026-08-24
 
+> **Follow-up 2026-08-24:** The 23-sleeve Null Factory below is preserved as
+> the first cohort-local result. It is now supplemented by the SHA-bound full
+> 14,639-pair search-world sensitivity in
+> `docs/ops/evidence/2026-08-24_shadow_null_full_search_world.md`; that wider
+> test is fail-closed and does **not** accept the cohort-local p-value as a
+> Factory-wide result.
+
 Status: **COMPLETE WITH ONE FAIL-CLOSED RED-TEAM FINDING**
 
 Authority: OWNER chat instruction on 2026-08-24
