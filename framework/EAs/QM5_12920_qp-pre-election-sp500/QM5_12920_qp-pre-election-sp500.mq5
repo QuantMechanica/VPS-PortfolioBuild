@@ -27,14 +27,14 @@ input double RISK_FIXED                  = 1000.0;
 input double PORTFOLIO_WEIGHT            = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours     = 336;
 input string qm_news_min_impact          = "high";
 input QM_NewsMode qm_news_mode_legacy    = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled     = false;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
@@ -45,11 +45,19 @@ input int    strategy_atr_period         = 20;
 input double strategy_atr_sl_mult        = 2.0;
 input int    strategy_min_d1_bars        = 60;
 
-int g_last_traded_election_year = 0;
-
 // -----------------------------------------------------------------------------
 // Calendar helpers
 // -----------------------------------------------------------------------------
+
+int Strategy_DateKey(const datetime value)
+{
+   if(value <= 0)
+      return 0;
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(value, dt);
+   return dt.year * 10000 + dt.mon * 100 + dt.day;
+}
 
 datetime Strategy_GetElectionDate(const int year)
 {
@@ -57,6 +65,7 @@ datetime Strategy_GetElectionDate(const int year)
       return 0; // US Federal elections occur in even years only
 
    MqlDateTime dt;
+   ZeroMemory(dt);
    dt.year = year;
    dt.mon = 11;
    dt.day = 1;
@@ -115,6 +124,38 @@ bool Strategy_HasOpenPosition(ulong &ticket)
    return false;
 }
 
+// The deal ledger is the durable one-entry-per-election mask. Unlike a
+// file-scope year variable it survives an EA restart, and a rejected request
+// creates no entry deal, so it does not consume the election opportunity.
+bool Strategy_HasElectionEntryHistory(const int year, bool &history_ready)
+{
+   history_ready = false;
+   const int magic = QM_FrameworkMagic();
+   const datetime d5_date = Strategy_GetD5Date(year);
+   if(magic <= 0 || d5_date <= 0)
+      return false;
+   if(!HistorySelect(d5_date, TimeCurrent()))
+      return false;
+
+   history_ready = true;
+   const int deals = HistoryDealsTotal();
+   for(int i = deals - 1; i >= 0; --i)
+   {
+      const ulong deal_ticket = HistoryDealGetTicket(i);
+      if(deal_ticket == 0)
+         continue;
+      if(HistoryDealGetString(deal_ticket, DEAL_SYMBOL) != _Symbol)
+         continue;
+      if((int)HistoryDealGetInteger(deal_ticket, DEAL_MAGIC) != magic)
+         continue;
+      const ENUM_DEAL_ENTRY entry =
+         (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket, DEAL_ENTRY);
+      if(entry == DEAL_ENTRY_IN || entry == DEAL_ENTRY_INOUT)
+         return true;
+   }
+   return false;
+}
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
@@ -123,9 +164,11 @@ bool Strategy_NoTradeFilter()
 {
    if(!Strategy_IsSp500D1())
       return true;
-   if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
+   if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0 || strategy_min_d1_bars <= 0)
       return true;
-   if(Bars(_Symbol, PERIOD_D1) < strategy_min_d1_bars) // perf-allowed: minimum history bars check
+   // A valid key at this completed-bar shift proves the card-required bounded
+   // D1 warm-up without bypassing the framework series corset with Bars().
+   if(QM_CalendarPeriodKey(PERIOD_D1, _Symbol, strategy_min_d1_bars) <= 0)
       return true;
    return false;
 }
@@ -140,26 +183,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime current_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: pre-election date check
-   if(current_bar_time <= 0)
+   // Evaluate once when the D1 calendar rolls. shift=1 is the bar whose close
+   // can authorize an entry; exact equality prevents a D-4..D0 entry window.
+   if(!QM_IsNewCalendarPeriod(PERIOD_D1, _Symbol))
+      return false;
+   const int closed_day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 1);
+   if(closed_day_key <= 0)
+      return false;
+   const int election_year = closed_day_key / 10000;
+   if((election_year % 2) != 0)
       return false;
 
-   MqlDateTime dt;
-   TimeToStruct(current_bar_time, dt);
-   if((dt.year % 2) != 0)
-      return false;
-
-   const datetime election_date = Strategy_GetElectionDate(dt.year);
-   const datetime d5_date = Strategy_GetD5Date(dt.year);
+   const datetime election_date = Strategy_GetElectionDate(election_year);
+   const datetime d5_date = Strategy_GetD5Date(election_year);
    if(election_date <= 0 || d5_date <= 0)
       return false;
-
-   // Entry window: open on or after D-5 close through election day
-   // When D-5 closes, current_bar_time is > d5_date up to election day
-   if(current_bar_time <= d5_date || current_bar_time > election_date)
+   if(closed_day_key != Strategy_DateKey(d5_date))
       return false;
 
-   if(g_last_traded_election_year == dt.year)
+   bool history_ready = false;
+   if(Strategy_HasElectionEntryHistory(election_year, history_ready) || !history_ready)
       return false;
 
    ulong existing_ticket = 0;
@@ -175,12 +218,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_atr_sl_mult);
    req.tp = 0.0;
    req.symbol_slot = qm_magic_slot_offset;
-   req.reason = StringFormat("SP500_PRE_ELECTION_%d", dt.year);
+   req.reason = StringFormat("SP500_PRE_ELECTION_%d", election_year);
 
    if(req.sl <= 0.0 || req.sl >= req.price)
       return false;
 
-   g_last_traded_election_year = dt.year;
    return true;
 }
 
@@ -192,14 +234,13 @@ bool Strategy_ExitSignal()
    if(!Strategy_HasOpenPosition(ticket))
       return false;
 
-   const datetime current_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: pre-election exit date check
-   if(current_bar_time <= 0)
+   const int current_day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 0);
+   if(current_day_key <= 0)
       return false;
 
-   MqlDateTime dt;
-   TimeToStruct(current_bar_time, dt);
-   const datetime election_date = Strategy_GetElectionDate(dt.year);
-   if(election_date > 0 && current_bar_time > election_date)
+   const int election_year = current_day_key / 10000;
+   const datetime election_date = Strategy_GetElectionDate(election_year);
+   if(election_date > 0 && current_day_key > Strategy_DateKey(election_date))
    {
       // Election day has closed -> exit position
       return true;
@@ -251,6 +292,25 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
+   // The card's D0 time stop is mandatory. Evaluate it before entry-only news,
+   // Friday-close and no-trade filters so those gates cannot delay the exit.
+   if(Strategy_ExitSignal())
+   {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+      {
+         const ulong ticket = PositionGetTicket(i);
+         if(ticket == 0 || !PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+      }
+      return;
+   }
+
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
@@ -271,28 +331,12 @@ void OnTick()
 
    Strategy_ManageOpenPosition();
 
-   if(Strategy_ExitSignal())
-   {
-      const int magic = QM_FrameworkMagic();
-      for(int i = PositionsTotal() - 1; i >= 0; --i)
-      {
-         ulong ticket = PositionGetTicket(i);
-         if(ticket == 0 || !PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-            continue;
-         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-      }
-   }
-
-   if(!QM_IsNewBar())
-      return;
-
+   // The equity helper has its own D1 latch. EntrySignal owns the sole strategy
+   // cadence gate via QM_IsNewCalendarPeriod; do not stack a second new-bar gate.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;

@@ -3,8 +3,8 @@
 **EA ID:** QM5_41001
 **Slug:** keith-fitschen-aberration-trading-system
 **Source:** keith-fitschen-aberration-trading-system-official-source (see `D:/QM/strategy_farm/artifacts/cards_approved/QM5_41001_keith-fitschen-aberration-trading-system.md`)
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-18
+**Author of this spec:** Gemini; rework by Codex
+**Last revised:** 2026-08-24
 
 ---
 
@@ -16,7 +16,9 @@ A Long entry is triggered when the previous closed bar's Close crosses above the
 
 A Short entry is triggered when the previous closed bar's Close crosses below the 3.0 standard deviation Lower Bollinger Band (Close[1] < LowerBand[1] and Close[2] >= LowerBand[2]).
 
-Stop Loss is initialized at 2.5× ATR(14, D1)[1] from the entry price. Position exit is dynamically governed by a trailing midline rule: open Long positions are closed when daily Close[1] falls below the 30-period SMA midline; open Short positions are closed when daily Close[1] rises above the 30-period SMA midline.
+Stop Loss is initialized at 2.5× ATR(14, D1)[1] from the entry price. There is no fixed take-profit: position exit is dynamically governed by a trailing midline rule. Open Long positions are closed when daily Close[1] falls below the 30-period SMA midline; open Short positions are closed when daily Close[1] rises above the 30-period SMA midline.
+
+Market-entry deviation is fixed to at most three symbol trade ticks. At initialization the EA converts `3 × SYMBOL_TRADE_TICK_SIZE` to the framework's point-based order-deviation setting and fails closed if symbol tick metadata is unavailable.
 
 ---
 
@@ -29,7 +31,6 @@ Stop Loss is initialized at 2.5× ATR(14, D1)[1] from the entry price. Position 
 | `strategy_dev_multiplier` | `3.00` | `2.5-3.5` | Standard deviation expansion multiplier |
 | `strategy_atr_period` | `14` | `10-20` | ATR period for volatility distance & spread filter |
 | `strategy_atr_sl_mult` | `2.5` | `1.5-3.5` | Multiplier on ATR for stop loss placement |
-| `strategy_tp_rr_mult` | `8.0` | `4.0-12.0` | Cap take profit multiplier for trend riding |
 | `strategy_use_mid_exit` | `true` | `true/false` | Close position on 30 SMA midline cross |
 | `strategy_rollover_start_hhmm` | `2355` | `0-2359` | Start time for daily rollover blackout window |
 | `strategy_rollover_end_hhmm` | `5` | `0-2359` | End time for daily rollover blackout window |
@@ -55,7 +56,7 @@ Stop Loss is initialized at 2.5× ATR(14, D1)[1] from the entry price. Position 
 |---|---|
 | Base timeframe | `PERIOD_D1` |
 | Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar()` under the declared D1 execution contract |
 
 ---
 
@@ -90,7 +91,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+Risk-mode initialization is enforced by `QM_FrameworkInit`; the static build guard reports an unconfigured sizing path as `EA_RISK_SIZER_UNCONFIGURED`.
 
 ---
 
@@ -99,3 +100,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Task 9fbca489-f822-4412-8066-a819bc100eb7 |
+| v2 | 2026-08-24 | Review rework | Removed stale 8R TP parameter documentation; documented open-ended exit and fixed three-tick entry deviation. |

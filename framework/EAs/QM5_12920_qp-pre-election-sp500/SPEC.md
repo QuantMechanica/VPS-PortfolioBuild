@@ -3,8 +3,8 @@
 **EA ID:** QM5_12920
 **Slug:** `qp-pre-election-sp500`
 **Source:** `7ede58dd-d184-5099-9d48-7a65de230853`
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-21
+**Author of this spec:** Gemini; rework by Codex
+**Last revised:** 2026-08-24
 
 ---
 
@@ -12,7 +12,7 @@
 
 This EA implements the Quantpedia Pre-Election Drift strategy on the S&P 500 (`SP500.DWX`). US Federal Elections (presidential and midterm) occur on the Tuesday after the first Monday in November of every even-numbered year.
 
-On the close of D-5 trading days (the Tuesday exactly 7 calendar days before Election Day), the EA opens a LONG position in SP500.DWX. The position is held through the election window and closed on the close of Election Day (D0, Tuesday).
+On the close of D-5 trading days (the Tuesday exactly 7 calendar days before Election Day), the EA opens a LONG position in SP500.DWX. The signal is restricted to the exact closed D-5 bar; it is not an entry window through D0. Successful entry deals for the EA magic are read from MT5 history to make the one-entry-per-election rule restart-safe without treating rejected orders as fills. The position is held through the election window and closed on the first available close at or after Election Day (D0, Tuesday).
 
 A 2.0x D1 ATR(20) hard stop provides catastrophic protection. Time-based exit is enforced at Election Day close.
 
@@ -49,7 +49,7 @@ The EA uses only Darwinex MT5 price history and calendar computation. It does no
 |---|---|
 | Base timeframe | D1 |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar()`; entry/exit logic evaluates once per D1 bar |
+| Bar gating | Entry uses `QM_IsNewCalendarPeriod(PERIOD_D1)` and the framework D1 calendar key for the exact closed D-5 bar; the mandatory exit is checked before entry-only no-trade gates. |
 
 ---
 
@@ -84,6 +84,8 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio |
 
+News temporal/compliance filtering and framework Friday close default to OFF for this EA because neither is authorized as a strategy filter and Friday liquidation would contradict the mandatory D0 exit.
+
 ---
 
 ## Revision History
@@ -91,3 +93,4 @@ This card was mechanised from:
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-21 | Initial build from approved card | Built during single-pass orchestration cycle |
+| v2 | 2026-08-24 | Review rework | Framework calendar cadence, exact D-5 signal, restart-safe deal-history deduplication, mandatory-exit ordering, MAE/set identity binding, and Friday/news defaults corrected. |

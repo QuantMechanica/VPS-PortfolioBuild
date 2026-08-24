@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a10ba26594751268c0c71d424d1a2ef28965d8b19b172151d456a4ff75915332
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-08-17
 ;==========================================================
@@ -20,11 +20,17 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_37004_volatility-targeted-momentum-kelly.md
+; card_defaults_source=strategy-seeds/cards/approved/QM5_37004_volatility-targeted-momentum-kelly.md
+strategy_vol_target_pct=10.0
 strategy_momentum_days=252
+strategy_kelly_fraction=0.50
+strategy_base_risk_percent=0.50
 strategy_sma_period=200
 strategy_atr_period=14
 strategy_sl_atr_mult=2.00
 strategy_trail_atr_mult=3.00
 strategy_spread_atr_mult=1.80
-strategy_max_spread_points=300
+strategy_daily_loss_halt_pct=2.00
+strategy_daily_hard_stop_pct=2.50
+strategy_total_dd_halt_pct=5.00
+strategy_max_slippage_ticks=3.00

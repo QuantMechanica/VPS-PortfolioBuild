@@ -61,6 +61,20 @@ double g_last_close1   = 0.0;
 double g_last_close2   = 0.0;
 int    g_last_signal   = 0;
 
+// The approved execution contract fixes market-order slippage at three trade
+// ticks.  QM_Entry expects deviation in points, so translate the symbol's
+// trade-tick size without permitting a wider rounded-up tolerance.
+int StrategyEntryDeviationPoints()
+{
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(point <= 0.0 || tick_size <= 0.0)
+      return 0;
+
+   const double max_price_deviation = 3.0 * tick_size;
+   return (int)MathFloor((max_price_deviation / point) + 1.0e-9);
+}
+
 int StrategyHhmm(const datetime t)
 {
    const datetime utc = QM_BrokerToUTC(t);
@@ -292,6 +306,17 @@ int OnInit()
                                             QM_FRIDAY_CLOSE_CARD_RULE,
                                             "QM5_41001 Keith Fitschen Aberration Commodity Trend System D1"))
       return INIT_FAILED;
+
+   const int entry_deviation_points = StrategyEntryDeviationPoints();
+   if(entry_deviation_points <= 0)
+      return INIT_FAILED;
+   QM_EntryConfigure(qm_ea_id,
+                     qm_news_mode_legacy,
+                     entry_deviation_points,
+                     qm_stress_reject_probability,
+                     qm_news_temporal,
+                     qm_news_compliance,
+                     QM_FrameworkMagic());
 
    QM_KillSwitchInit(qm_ea_id, QM_FrameworkMagic(), strategy_daily_hard_stop_pct, strategy_total_dd_stop_pct, 1.0);
 
