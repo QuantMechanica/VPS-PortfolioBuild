@@ -3,16 +3,16 @@
 ; ea_id:        39007
 ; ea_slug:      forexfactory-100-pips-early-bird-breakout
 ; ea_version:   v5.0
-; set_version:  s20260818-001
+; set_version:  s20260824-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4bea9ae376e03575bb1067725983f3f3a64513d5af09abfb1b083cda65830354
+; build_hash:   a69c394ea48907b02ab8fd98fe4c4b653213d53ce4536fd45d3cc723f65c5fb0
 ; author:       Development
-; date:         2026-08-18
+; date:         2026-08-24
 ;==========================================================
 qm_ea_id=39007
 qm_magic_slot_offset=0
@@ -27,5 +27,12 @@ InpSessionEndHourUTC=12
 InpBufferPips=3.0
 InpStopLossPips=25.0
 InpTakeProfitPips=50.0
+InpTakeProfit2Pips=100.0
 strategy_atr_period=14
-strategy_be_trigger_pips=20.0
+strategy_be_trigger_pips=20
+strategy_tp1_close_fraction=0.50
+strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
+strategy_total_dd_halt_pct=5.0
+strategy_per_trade_risk_cap_pct=1.0
+strategy_slippage_ticks=3.0
