@@ -3,8 +3,8 @@
 **EA ID:** QM5_1408  
 **Slug:** `classical-bull-flag-continuation-h1`  
 **Source:** `6e967762-b26d-59a3-b076-35c17f2e7c36` (see `D:/QM/strategy_farm/artifacts/cards_approved/QM5_1408_classical-bull-flag-continuation-h1.md`)  
-**Author of this spec:** Gemini  
-**Last revised:** 2026-08-22  
+**Author of this spec:** Gemini; lifecycle correction by Codex
+**Last revised:** 2026-08-24
 
 ---
 
@@ -27,7 +27,7 @@ The EA detects classical Edwards-Magee bull flag continuation patterns on closed
   - Volume contraction: $mean(tick\_volume, flag) \le 0.80 \cdot mean(tick\_volume, pole)$.
 
 ### Phase 3: Breakout Trigger & Exits
-- **Breakout Entry**: Triggered when closed H1 bar closes above $upper\_TL(t) + 0.4 \cdot ATR(14, H1)$.
+- **Breakout Entry**: Place a BUY-STOP at $upper\_TL(t) + 0.4 \cdot ATR(14, H1)$ after gates 1-8 pass. The order has one absolute eight-H1-bar lifetime, is cancelled/repriced from the same pole geometry on each new bar, and is invalidated when the geometry fails or the flag exceeds 18 bars. It is never converted to a market entry.
 - **Stop Loss (SL)**: Initial stop placed at $lower\_TL(t_{break}) - 0.3 \cdot ATR(14, H1)$, capped at $2.5 \cdot ATR(14, H1)$.
 - **Take Profit (TP)**: Measured move equal to flagpole length projected from entry: $entry + (highest\_high_{pole} - lowest\_low_{pole})$.
 - **Partial TP (TP1)**: Half-position (50%) exit at 50% of measured move, moving stop loss to Break-Even.
@@ -114,3 +114,18 @@ The EA detects classical Edwards-Magee bull flag continuation patterns on closed
 | Typical hold time | `1-2 days` (up to 24 H1 bars time stop) |
 | Expected drawdown profile | Well within 5% daily / 10% total DD constraints |
 | Regime preference | Fast momentum continuation following steep impulse |
+
+---
+
+## 6. Source Citation
+
+- Approved card: `D:/QM/strategy_farm/artifacts/cards_approved/QM5_1408_classical-bull-flag-continuation-h1.md`
+- Source ID: `6e967762-b26d-59a3-b076-35c17f2e7c36`
+- Robert D. Edwards and John Magee, *Technical Analysis of Stock Trends*, 10th edition, CRC Press (2018), ISBN 978-1-138-06416-5, chapter 9, pp. 221-243.
+
+## 7. Risk Model
+
+- Backtest contract: `RISK_FIXED=1000`, `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`.
+- Live contract: `RISK_PERCENT` is OWNER-configured and `RISK_FIXED=0`; both sizing modes remain routed through the V5 risk sizer.
+- Initial risk is bounded by the pivot-channel stop at the projected lower trendline minus 0.3 ATR, capped at 2.5 ATR from the BUY-STOP entry.
+- The V5 trade-manager path owns pending placement/removal, partial close, break-even modification, strategy close, magic resolution, and logging.
