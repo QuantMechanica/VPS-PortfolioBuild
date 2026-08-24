@@ -210,37 +210,20 @@ def test_q02_infra_source_repair_authority_is_exact_label_bound() -> None:
     )
 
 
-def test_hygiene_burn_source_repair_authority_is_exact_label_bound() -> None:
-    label = "QM5_41136_xng-mdaily-iqrmean-mom"
+def test_qm5_35005_review_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_35005_sma-crossover-pullback-system"
 
     assert compile_work_items._source_repair_authorized(
         label,
-        compile_work_items.HYGIENE_BURN_SOURCE_REPAIR_AUTHORITY,
+        compile_work_items.QM5_35005_REVIEW_REPAIR_AUTHORITY,
     )
     assert not compile_work_items._source_repair_authorized(
-        "QM5_41135_xauxag-mdaily-iqrmean-rv",
-        compile_work_items.HYGIENE_BURN_SOURCE_REPAIR_AUTHORITY,
-    )
-    assert not compile_work_items._source_repair_authorized(
-        label,
-        "ticket:rb-hygiene-burn-typo",
-    )
-
-
-def test_rework_33007_source_repair_authority_is_exact_task_and_label_bound() -> None:
-    label = "QM5_33007_george-pruitt-king-keltner-trend-buster"
-
-    assert compile_work_items._source_repair_authorized(
-        label,
-        compile_work_items.REWORK_33007_SOURCE_REPAIR_AUTHORITY,
-    )
-    assert not compile_work_items._source_repair_authorized(
-        "QM5_33008_unrelated",
-        compile_work_items.REWORK_33007_SOURCE_REPAIR_AUTHORITY,
+        "QM5_35006_unrelated",
+        compile_work_items.QM5_35005_REVIEW_REPAIR_AUTHORITY,
     )
     assert not compile_work_items._source_repair_authorized(
         label,
-        "router_review_rework:wrong-task",
+        "router_review_ea:wrong-task",
     )
 
 

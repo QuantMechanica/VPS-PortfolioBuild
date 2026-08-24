@@ -225,6 +225,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    ArrayResize(stc_macd, copied);
    ArrayResize(stc_first, copied);
    ArrayResize(stc_value, copied);
+   if(ArraySize(rates) < copied ||
+      ArraySize(zl_macd) < copied || ArraySize(zl_signal) < copied ||
+      ArraySize(stc_macd) < copied || ArraySize(stc_first) < copied ||
+      ArraySize(stc_value) < copied)
+      return false;
 
    const double zl_fast_alpha = 2.0 / ((double)strategy_zl_macd_fast + 1.0);
    const double zl_slow_alpha = 2.0 / ((double)strategy_zl_macd_slow + 1.0);
@@ -284,6 +289,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    int max_queue[];
    ArrayResize(min_queue, copied);
    ArrayResize(max_queue, copied);
+   if(ArraySize(min_queue) < copied || ArraySize(max_queue) < copied)
+      return false;
    int min_head = 0;
    int min_tail = 0;
    int max_head = 0;
@@ -301,10 +308,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       int window_start = i - strategy_stc_cycle + 1;
       if(window_start < 0)
          window_start = 0;
+      if(min_head < 0 || min_head >= ArraySize(min_queue))
+         return false;
+      if(max_head < 0 || max_head >= ArraySize(max_queue))
+         return false;
       while(min_head < min_tail && min_queue[min_head] < window_start)
          ++min_head;
       while(max_head < max_tail && max_queue[max_head] < window_start)
          ++max_head;
+      if(min_head < 0 || min_head >= ArraySize(min_queue))
+         return false;
+      if(max_head < 0 || max_head >= ArraySize(max_queue))
+         return false;
 
       const double low_macd = stc_macd[min_queue[min_head]];
       const double high_macd = stc_macd[max_queue[max_head]];
@@ -333,10 +348,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       int window_start = i - strategy_stc_cycle + 1;
       if(window_start < 0)
          window_start = 0;
+      if(min_head < 0 || min_head >= ArraySize(min_queue))
+         return false;
+      if(max_head < 0 || max_head >= ArraySize(max_queue))
+         return false;
       while(min_head < min_tail && min_queue[min_head] < window_start)
          ++min_head;
       while(max_head < max_tail && max_queue[max_head] < window_start)
          ++max_head;
+      if(min_head < 0 || min_head >= ArraySize(min_queue))
+         return false;
+      if(max_head < 0 || max_head >= ArraySize(max_queue))
+         return false;
 
       const double low_first = stc_first[min_queue[min_head]];
       const double high_first = stc_first[max_queue[max_head]];
@@ -350,6 +373,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    const int latest = copied - 1;
+   if(latest < 0 || latest >= ArraySize(rates))
+      return false;
+   if(latest >= ArraySize(zl_macd))
+      return false;
+   if(latest >= ArraySize(zl_signal))
+      return false;
+   if(latest >= ArraySize(stc_value))
+      return false;
    const double close_1 = rates[latest].close;
    const double hma_1 = QM_HMA(_Symbol, PERIOD_D1, strategy_hma_period, 1);
    const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
@@ -528,6 +559,9 @@ bool Strategy_ExitSignal()
    double zl_signal[];
    ArrayResize(zl_macd, copied);
    ArrayResize(zl_signal, copied);
+   if(ArraySize(rates) < copied ||
+      ArraySize(zl_macd) < copied || ArraySize(zl_signal) < copied)
+      return false;
 
    const double fast_alpha = 2.0 / ((double)strategy_zl_macd_fast + 1.0);
    const double slow_alpha = 2.0 / ((double)strategy_zl_macd_slow + 1.0);
@@ -568,6 +602,14 @@ bool Strategy_ExitSignal()
 
    const int latest = copied - 1;
    const int previous = copied - 2;
+   if(previous < 0 || previous >= ArraySize(zl_macd))
+      return false;
+   if(previous >= ArraySize(zl_signal))
+      return false;
+   if(latest < 0 || latest >= ArraySize(zl_macd))
+      return false;
+   if(latest >= ArraySize(zl_signal))
+      return false;
    const bool crossed_down = (zl_macd[previous] >= zl_signal[previous] &&
                               zl_macd[latest] < zl_signal[latest]);
    const bool crossed_up = (zl_macd[previous] <= zl_signal[previous] &&

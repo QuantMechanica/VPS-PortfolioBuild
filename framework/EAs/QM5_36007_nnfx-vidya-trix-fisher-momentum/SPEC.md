@@ -4,7 +4,7 @@
 **Slug:** `nnfx-vidya-trix-fisher-momentum`
 **Source:** `nnfx-vidya-trix-fisher-momentum-official-source`
 **Author of this spec:** Codex
-**Last revised:** 2026-08-21
+**Last revised:** 2026-08-24
 
 ---
 
@@ -62,7 +62,7 @@ All three symbols are present in `framework/registry/dwx_symbol_matrix.csv` and 
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` for entry; `QM_CalendarPeriodKey(PERIOD_D1)` advances the closed-bar cache without consuming the entry gate. |
+| Bar gating | `QM_FrameworkDeclareExecutionContract(PERIOD_D1, ...)` plus `QM_IsNewBar(_Symbol, PERIOD_D1)` for entry; `QM_CalendarPeriodKey(PERIOD_D1)` advances the closed-bar cache without consuming the entry gate. |
 
 ---
 
@@ -98,7 +98,8 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit`; the scoped build gate
+reports an unconfigured sizing contract as `EA_RISK_SIZER_UNCONFIGURED`.
 
 ---
 
@@ -107,3 +108,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-21 | Initial build from card | de0f1ea4-6465-4ba0-836d-483d4fd8dbeb |
+| v2 | 2026-08-24 | Review rework closure | TP1 runner, explicit D1 execution contract, restart-safe GMT/risk halts, framework kill-switch, MAE, and bounded buffers verified by focused tests. |
