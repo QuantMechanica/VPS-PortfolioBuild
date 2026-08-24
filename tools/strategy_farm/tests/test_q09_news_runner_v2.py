@@ -18,6 +18,7 @@ import q09_news_runner as runner  # noqa: E402
 import q09_news_schema as schema  # noqa: E402
 import farmctl  # noqa: E402
 import terminal_worker  # noqa: E402
+import build_q09_include_closure  # noqa: E402
 
 
 def metrics(sharpe: float) -> dict:
@@ -104,6 +105,27 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             self.assertNotIn(report[field], (None, "", 0))
         self.assertEqual(report["mapping_version"], runner.PRE_V2_MAPPING_VERSION)
         self.assertEqual(report["evidence_authority"], "NON_AUTHORITATIVE_PRE_V2")
+
+    def test_include_closure_revalidation_uses_manifest_ex5_directory(self) -> None:
+        closure = self.root / "closure.json"
+        closure.write_text(
+            json.dumps({"schema": "qm-q09-include-closure/v1"}), encoding="utf-8"
+        )
+        manifest = {
+            "source_paths": {
+                "include_closure": str(closure),
+                "ex5": str(self.ex5),
+            }
+        }
+        with patch.object(
+            build_q09_include_closure, "validate_include_closure"
+        ) as validate:
+            runner._validate_include_closure_source("QM5_1", manifest)
+        validate.assert_called_once()
+        self.assertEqual(validate.call_args.args, ("QM5_1", closure))
+        self.assertTrue(
+            os.path.samefile(validate.call_args.kwargs["ea_dir"], self.ex5.parent)
+        )
 
     def test_single_ok_run_accepts_invalid_startup_attempt_then_success(self) -> None:
         invalid = {"run": "run_01", "status": "INVALID", "failure": "BARS_ZERO"}

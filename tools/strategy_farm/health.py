@@ -4131,16 +4131,23 @@ def chk_opt_fork_service_rate(con) -> dict:
     """Expose completed rows/day for pattern, parameter, and head-to-head gates."""
     manifests = _optimization_manifests()
     metrics = optimization_fork_driver.service_metrics(con, manifests=manifests)
-    phases = sorted({
-        manifest.gate_for_role(role)
+    active_bindings = sorted({
+        (manifest.gate_for_role(role), manifest.sha256)
         for manifest in manifests
         for role in ("PATTERN", "PARAM_OPT", "HEAD_TO_HEAD")
     })
-    placeholders = ",".join("?" for _ in phases)
+    binding_sql = " OR ".join(
+        "(upper(phase)=? AND json_extract(payload_json,'$.gate_manifest_sha256')=?)"
+        for _ in active_bindings
+    )
+    binding_params = tuple(value for binding in active_bindings for value in binding)
     backlog = int(con.execute(
-        f"SELECT count(*) FROM work_items WHERE upper(phase) IN ({placeholders}) "
-        "AND lower(status) IN ('pending','active')",
-        tuple(phases),
+        f"""
+        SELECT count(*) FROM work_items
+        WHERE lower(status) IN ('pending','active') AND json_valid(payload_json)=1
+          AND json_extract(payload_json,'$.schema')=? AND ({binding_sql})
+        """,
+        (optimization_fork_driver.SCHEMA, *binding_params),
     ).fetchone()[0])
     rates = metrics["completed_per_day_by_gate"]
     completed = sum(int(value) for value in rates.values())
@@ -4151,7 +4158,8 @@ def chk_opt_fork_service_rate(con) -> dict:
         rates,
         "visibility SLO: nonzero 24h completion when backlog exists",
         f"24h completed by contract/gate={json.dumps(rates, sort_keys=True)}; "
-        f"pending_or_active={backlog}",
+        f"pending_or_active={backlog}; "
+        "backlog_scope=optimization_fork_schema+active_manifest_sha256",
         "Inspect the earliest held optimization row and its machine_reason; do not bypass prerequisites."
         if status == "WARN" else "",
     )
@@ -4171,7 +4179,9 @@ def chk_news_gate_service_rate(con) -> dict:
     detail = (
         f"conclusive_verdicts_24h={metrics['conclusive_verdicts_per_day']}; "
         f"expansions_pending={metrics['expansions_pending']}; "
-        f"PENDING_RUNNER={metrics['pending_runner_count']}"
+        f"PENDING_RUNNER={metrics['pending_runner_count']}; "
+        f"active_holds={metrics['active_hold_count']}; "
+        f"hold_causes={json.dumps(metrics['hold_cause_counts'], sort_keys=True)}"
     )
     return _check(
         "news_gate_service_rate",

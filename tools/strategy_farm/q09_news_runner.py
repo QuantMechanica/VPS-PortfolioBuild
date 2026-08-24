@@ -852,7 +852,9 @@ def validate_q08_source_vintage(
 
 
 def _validate_include_closure_source(ea_id: str, manifest: Mapping[str, Any]) -> None:
-    closure_path = Path(str((manifest.get("source_paths") or {}).get("include_closure", "")))
+    source_paths = manifest.get("source_paths") or {}
+    closure_path = Path(str(source_paths.get("include_closure", "")))
+    ex5_path = Path(str(source_paths.get("ex5", ""))).resolve()
     closure = _load_json(closure_path, "Q09 include closure")
     if closure.get("schema") != "qm-q09-include-closure/v1":
         return
@@ -861,7 +863,9 @@ def _validate_include_closure_source(ea_id: str, manifest: Mapping[str, Any]) ->
     except ModuleNotFoundError:
         from tools.strategy_farm import build_q09_include_closure as closure_builder
     try:
-        closure_builder.validate_include_closure(str(ea_id), closure_path)
+        closure_builder.validate_include_closure(
+            str(ea_id), closure_path, ea_dir=ex5_path.parent
+        )
     except RuntimeError as exc:
         raise RunnerError(f"Q09 include closure source vintage mismatch: {exc}") from exc
 

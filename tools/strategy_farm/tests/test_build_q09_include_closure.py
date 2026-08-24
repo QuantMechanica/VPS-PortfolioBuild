@@ -36,6 +36,35 @@ def test_programmatic_closure_is_immutable_and_reauthenticates_sources(
         closure.validate_include_closure(ea_id, path)
 
 
+def test_exact_ea_dir_disambiguates_inactive_sibling(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "repo"
+    ea_id = "QM5_9997"
+    active = repo / "framework" / "EAs" / "QM5_9997_active"
+    inactive = repo / "framework" / "EAs" / "QM5_9997_inactive"
+    include_root = repo / "framework" / "include"
+    active.mkdir(parents=True)
+    inactive.mkdir(parents=True)
+    include_root.mkdir(parents=True)
+    (active / "QM5_9997_active.mq5").write_text("void OnTick() {}\n", encoding="utf-8")
+    (active / "QM5_9997_active.ex5").write_bytes(b"compiled-active")
+    (inactive / "QM5_9997_inactive.mq5").write_text("void OnTick() {}\n", encoding="utf-8")
+    (inactive / "QM5_9997_inactive.ex5").write_bytes(b"compiled-inactive")
+    monkeypatch.setattr(closure, "REPO", repo)
+    monkeypatch.setattr(closure, "INCLUDE_ROOT", include_root)
+
+    with pytest.raises(RuntimeError, match="found 2"):
+        closure.build_include_closure(ea_id, tmp_path / "ambiguous")
+
+    path = closure.build_include_closure(
+        ea_id, tmp_path / "exact", ea_dir=active
+    )
+    payload = closure.validate_include_closure(ea_id, path, ea_dir=active)
+    assert payload["root_source"].endswith("QM5_9997_active/QM5_9997_active.mq5")
+    assert payload["ex5_sha256"] == closure.sha256_file(active / "QM5_9997_active.ex5")
+
+
 def _make_ea(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> tuple[str, Path, Path, Path]:

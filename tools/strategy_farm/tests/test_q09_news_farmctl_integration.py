@@ -653,16 +653,21 @@ def test_q09_autopilot_uses_approved_contract_v3_semantics(tmp_path: Path) -> No
     symbol = "XTIUSD.DWX"
     q08_id = "87731bac-29cc-4846-ac26-b348b13af59b"
     q09_id = "4263d6b3-1418-47c4-afe1-de7cb6bf61d4"
-    setfile = tmp_path / "baseline.set"
     q08_path = tmp_path / "q08.json"
     ea_dir = tmp_path / "QM5_20266_collins-66mom"
+    setfile = ea_dir / "sets" / "baseline.set"
     ex5 = ea_dir / "QM5_20266_collins-66mom.ex5"
+    decoy_dir = tmp_path / "worktree" / "QM5_20266_collins-66mom"
+    decoy_ex5 = decoy_dir / "QM5_20266_collins-66mom.ex5"
     closure = tmp_path / "closures" / f"{ea_id}_include_closure.json"
     plan_path = tmp_path / "reports" / q09_id / "run_plan.json"
-    setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
     q08_path.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
     ea_dir.mkdir()
+    setfile.parent.mkdir()
+    setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
     ex5.write_bytes(b"compiled")
+    decoy_dir.mkdir(parents=True)
+    decoy_ex5.write_bytes(b"wrong-worktree-binary")
     closure.parent.mkdir()
     closure.write_text("{}\n", encoding="utf-8")
     plan_path.parent.mkdir(parents=True)
@@ -711,7 +716,7 @@ def test_q09_autopilot_uses_approved_contract_v3_semantics(tmp_path: Path) -> No
 
     expected_lineage = "581415e9911f21ed2aae70f95c0d0c0d3a150f2de70235c8588deb0b601c239d"
     with (
-        mock.patch.object(farmctl, "_preferred_ea_dir", return_value=ea_dir),
+        mock.patch.object(farmctl, "_preferred_ea_dir", return_value=decoy_dir),
         mock.patch.object(farmctl, "Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT", closure.parent),
         mock.patch.object(farmctl, "Q09_AUTOPILOT_REPORT_ROOT", plan_path.parents[1]),
         mock.patch.object(
@@ -738,6 +743,7 @@ def test_q09_autopilot_uses_approved_contract_v3_semantics(tmp_path: Path) -> No
     assert kwargs["cost_profile"] == "DXZ_CANONICAL_REAL_TICKS_V1"
     assert kwargs["contract_version"] == q09_news_runner.contract.SCHEMA_VERSION_V3
     assert kwargs["force_expanded_matrix"] is False
+    assert kwargs["ex5_path"] == ex5
     assert Path(kwargs["output_root"]).name == "q09_contract_v3"
     assert kwargs["calendar_common_relative_path"] == (
         "QM/q09_news/q09cal-20150101-20260809-0bb19b5bb9790b76/events.csv"
@@ -949,6 +955,7 @@ def test_news_autoseal_preserves_stale_closure_and_builds_scoped_successor(
         path, validation = farmctl._validated_q09_include_closure(
             builder,
             ea_id="QM5_1",
+            ea_dir=tmp_path / "QM5_1_demo",
             work_item_id="child-1",
         )
 
@@ -956,11 +963,11 @@ def test_news_autoseal_preserves_stale_closure_and_builds_scoped_successor(
     assert validation == {"generated_source_drift": []}
     assert canonical.read_text(encoding="utf-8") == "{}"
     builder.build_include_closure.assert_called_once_with(
-        "QM5_1", tmp_path / "child-1"
+        "QM5_1", tmp_path / "child-1", ea_dir=tmp_path / "QM5_1_demo"
     )
     assert builder.validate_include_closure.call_args_list == [
-        mock.call("QM5_1", canonical),
-        mock.call("QM5_1", successor),
+        mock.call("QM5_1", canonical, ea_dir=tmp_path / "QM5_1_demo"),
+        mock.call("QM5_1", successor, ea_dir=tmp_path / "QM5_1_demo"),
     ]
 
 
