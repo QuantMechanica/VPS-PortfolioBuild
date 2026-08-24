@@ -15,10 +15,9 @@
 //   - Confirmation 2 (C2 Filter): True Strength Index (TSI 25, 13)
 //   - Volume Filter: Waddah Attar Explosion (WAE)
 //
-// Long Entry:  Close[1] > KAMA[1] AND VI+[1] > VI-[1] AND TSI[1] > 0 AND WAE_Long
-// Short Entry: Close[1] < KAMA[1] AND VI-[1] > VI+[1] AND TSI[1] < 0 AND WAE_Short
-// Exit Signal: Long exits on Close[1] < KAMA[1] or VI-[1] > VI+[1]
-//              Short exits on Close[1] > KAMA[1] or VI+[1] > VI-[1]
+// Long Entry:  Close[1] > KAMA[1] AND VI+[1] > VI-[1] AND TSI[1] > 0 AND WAE > ExplosionLine
+// Short Entry: Close[1] < KAMA[1] AND VI-[1] > VI+[1] AND TSI[1] < 0 AND WAE > ExplosionLine
+// Runner Exit: Long exits on Close[1] < KAMA[1]; short exits on Close[1] > KAMA[1]
 // Initial Stop: Fixed ATR(14) stop at 1.0 * ATR(14)
 // =============================================================================
 
@@ -62,9 +61,21 @@ input int    strategy_wae_sensitivity     = 150;    // WAE sensitivity multiplie
 input int    strategy_wae_deadzone_pts    = 150;    // WAE deadzone in points
 input int    strategy_atr_period          = 14;     // ATR period for stop loss and spread filter
 input double strategy_sl_atr_mult         = 1.00;   // Stop loss ATR multiplier
+input double strategy_tp1_atr_mult        = 1.00;   // TP1 trigger ATR multiplier
+input double strategy_tp1_fraction        = 0.50;   // Fraction closed at TP1
+input int    strategy_be_buffer_pips      = 1;      // Runner protection at entry +/- one pip
 input double strategy_spread_atr_mult     = 1.80;   // Spread filter ATR multiplier
 input int    strategy_warmup_bars         = 150;    // Warmup lookback bars for indicator vectors
 input int    strategy_max_spread_points   = 300;    // Absolute spread cap in points
+input double strategy_daily_loss_halt_pct = 2.0;    // Account realized-loss entry halt
+input double strategy_daily_hard_stop_pct = 2.5;    // Restart-safe daily equity hard stop
+input double strategy_total_dd_halt_pct   = 5.0;    // Account total-drawdown hard stop
+input double strategy_per_trade_risk_cap_pct = 1.0; // Card risk ceiling per trade
+input double strategy_max_slippage_ticks  = 3.0;    // Card market-order slippage ceiling
+
+double g_strategy_close_1 = 0.0;
+double g_strategy_kama_1  = 0.0;
+bool   g_strategy_closed_bar_state_valid = false;
 
 // -----------------------------------------------------------------------------
 // Indicator Calculation Helpers
@@ -179,7 +190,7 @@ double Strategy_TSI(const string sym, const int r, const int s, const int shift)
    return (100.0 * (e2_m / e2_a));
 }
 
-int Strategy_WAESignal()
+bool Strategy_WAEPass()
 {
    const double macd_now  = QM_MACD_Main(_Symbol, PERIOD_D1, strategy_wae_fast, strategy_wae_slow, strategy_wae_signal, 1, PRICE_CLOSE);
    const double macd_prev = QM_MACD_Main(_Symbol, PERIOD_D1, strategy_wae_fast, strategy_wae_slow, strategy_wae_signal, 2, PRICE_CLOSE);
@@ -187,18 +198,75 @@ int Strategy_WAESignal()
    const double bb_lower  = QM_BB_Lower(_Symbol, PERIOD_D1, strategy_wae_bb_period, strategy_wae_bb_deviation, 1, PRICE_CLOSE);
    const double point     = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(bb_upper <= 0.0 || bb_lower <= 0.0 || point <= 0.0)
-      return 0;
+      return false;
 
    const double momentum = (macd_now - macd_prev) * (double)strategy_wae_sensitivity;
    const double explosion = MathAbs(bb_upper - bb_lower);
    const double deadzone = (double)strategy_wae_deadzone_pts * point;
    const double threshold = MathMax(explosion, deadzone);
 
-   if(momentum > threshold)
-      return 1;
-   if(-momentum > threshold)
-      return -1;
-   return 0;
+   // The approved card uses WAE only as a magnitude/volume expansion filter
+   // for both directions. Direction comes from KAMA, Vortex, and TSI.
+   return (MathAbs(momentum) > threshold);
+}
+
+bool Strategy_ConfigValid()
+{
+   if(strategy_kama_period < 2 || strategy_kama_fast < 1 ||
+      strategy_kama_slow <= strategy_kama_fast || strategy_vortex_period < 2 ||
+      strategy_tsi_r < 1 || strategy_tsi_s < 1 || strategy_wae_fast < 1 ||
+      strategy_wae_slow <= strategy_wae_fast || strategy_wae_signal < 1 ||
+      strategy_wae_bb_period < 2 || strategy_wae_bb_deviation <= 0.0 ||
+      strategy_wae_sensitivity <= 0 || strategy_wae_deadzone_pts < 0 ||
+      strategy_atr_period < 2 || strategy_warmup_bars < strategy_kama_period ||
+      strategy_max_spread_points <= 0)
+      return false;
+   if(strategy_sl_atr_mult <= 0.0 || strategy_tp1_atr_mult <= 0.0 ||
+      strategy_tp1_fraction <= 0.0 || strategy_tp1_fraction >= 1.0 ||
+      strategy_be_buffer_pips < 0 || strategy_spread_atr_mult <= 0.0)
+      return false;
+   if(strategy_daily_loss_halt_pct <= 0.0 || strategy_daily_hard_stop_pct <= 0.0 ||
+      strategy_daily_loss_halt_pct > strategy_daily_hard_stop_pct ||
+      strategy_total_dd_halt_pct <= 0.0 || strategy_per_trade_risk_cap_pct <= 0.0 ||
+      strategy_per_trade_risk_cap_pct > 1.0 || strategy_max_slippage_ticks <= 0.0)
+      return false;
+   return true;
+}
+
+bool AdvanceState_OnNewBar()
+{
+   g_strategy_closed_bar_state_valid = false;
+   g_strategy_close_1 = 0.0;
+   g_strategy_kama_1 = 0.0;
+
+   MqlRates closed_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, closed_bar) || closed_bar.close <= 0.0)
+      return false;
+
+   const double kama_1 = Strategy_CalculateKAMA(_Symbol,
+                                                 strategy_kama_period,
+                                                 strategy_kama_fast,
+                                                 strategy_kama_slow,
+                                                 1);
+   if(kama_1 <= 0.0)
+      return false;
+
+   g_strategy_close_1 = closed_bar.close;
+   g_strategy_kama_1 = kama_1;
+   g_strategy_closed_bar_state_valid = true;
+   return true;
+}
+
+bool Strategy_DailyRealizedLossHalt()
+{
+   // Account-wide closed P&L is the card's entry-only daily circuit breaker.
+   int closed_trades = 0;
+   const double realized_pnl = QM_ChartUITodayPnL(0, closed_trades);
+   const double balance_now = AccountInfoDouble(ACCOUNT_BALANCE);
+   const double day_start_balance = balance_now - realized_pnl;
+   if(balance_now <= 0.0 || day_start_balance <= 0.0)
+      return true;
+   return (realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0));
 }
 
 bool IsRolloverBlackout()
@@ -217,6 +285,9 @@ bool IsRolloverBlackout()
 
 bool Strategy_NoTradeFilter()
 {
+   if(Strategy_DailyRealizedLossHalt())
+      return true;
+
    if(IsRolloverBlackout())
       return true;
 
@@ -247,12 +318,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed D1 bar close reference
-   if(close1 <= 0.0)
-      return false;
-
-   const double kama1 = Strategy_CalculateKAMA(_Symbol, strategy_kama_period, strategy_kama_fast, strategy_kama_slow, 1);
-   if(kama1 <= 0.0)
+   if(!g_strategy_closed_bar_state_valid || g_strategy_close_1 <= 0.0 || g_strategy_kama_1 <= 0.0)
       return false;
 
    double vi_plus = 0.0, vi_minus = 0.0;
@@ -260,15 +326,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double tsi = Strategy_TSI(_Symbol, strategy_tsi_r, strategy_tsi_s, 1);
-   const int wae = Strategy_WAESignal();
+   const bool wae_pass = Strategy_WAEPass();
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   const bool go_long  = (close1 > kama1) && (vi_plus > vi_minus) && (tsi > 0.0) && (wae == 1);
-   const bool go_short = (close1 < kama1) && (vi_minus > vi_plus) && (tsi < 0.0) && (wae == -1);
+   const bool go_long  = (g_strategy_close_1 > g_strategy_kama_1) &&
+                         (vi_plus > vi_minus) && (tsi > 0.0) && wae_pass;
+   const bool go_short = (g_strategy_close_1 < g_strategy_kama_1) &&
+                         (vi_minus > vi_plus) && (tsi < 0.0) && wae_pass;
 
    if(go_long)
    {
@@ -295,6 +363,66 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
 {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE position_type =
+         (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool is_buy = (position_type == POSITION_TYPE_BUY);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      const double volume = PositionGetDouble(POSITION_VOLUME);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(open_price <= 0.0 || current_sl <= 0.0 || volume <= 0.0 || point <= 0.0)
+         continue;
+
+      // Once protected, the SL itself is the restart-safe proof that TP1 ran.
+      const bool unprotected = is_buy ? (current_sl < open_price - point * 0.5)
+                                      : (current_sl > open_price + point * 0.5);
+      if(!unprotected)
+         continue;
+
+      const double initial_risk = is_buy ? (open_price - current_sl)
+                                         : (current_sl - open_price);
+      if(initial_risk <= 0.0)
+         continue;
+
+      const double atr_at_entry = initial_risk / strategy_sl_atr_mult;
+      const double trigger_distance = atr_at_entry * strategy_tp1_atr_mult;
+      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double favorable_move = is_buy ? (market_price - open_price)
+                                           : (open_price - market_price);
+      if(market_price <= 0.0 || favorable_move < trigger_distance)
+         continue;
+
+      const double partial_lots = QM_TM_NormalizeVolume(_Symbol,
+                                                        volume * strategy_tp1_fraction);
+      const double min_lot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+      if(partial_lots <= 0.0 || partial_lots >= volume ||
+         volume - partial_lots < min_lot - 1e-8)
+         continue;
+
+      if(QM_TM_PartialClose(ticket, partial_lots, QM_EXIT_PARTIAL))
+      {
+         const double be_buffer = QM_StopRulesPipsToPriceDistance(_Symbol,
+                                                                  strategy_be_buffer_pips);
+         const double be_sl = is_buy ? (open_price + be_buffer)
+                                     : (open_price - be_buffer);
+         QM_TM_MoveSL(ticket,
+                      QM_TM_NormalizePrice(_Symbol, be_sl),
+                      "NNFX_TP1_BE_PROTECTION");
+      }
+   }
 }
 
 bool Strategy_ExitSignal()
@@ -321,25 +449,17 @@ bool Strategy_ExitSignal()
    if(open_dir == 0)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed D1 bar close reference
-   const double kama1 = Strategy_CalculateKAMA(_Symbol, strategy_kama_period, strategy_kama_fast, strategy_kama_slow, 1);
-   if(close1 <= 0.0 || kama1 <= 0.0)
-      return false;
-
-   double vi_plus = 0.0, vi_minus = 0.0;
-   if(!Strategy_Vortex(_Symbol, strategy_vortex_period, 1, vi_plus, vi_minus))
+   if(!g_strategy_closed_bar_state_valid || g_strategy_close_1 <= 0.0 || g_strategy_kama_1 <= 0.0)
       return false;
 
    if(open_dir > 0)
    {
-      // Long exit on KAMA breakdown or Vortex cross
-      if(close1 < kama1 || vi_minus > vi_plus)
+      if(g_strategy_close_1 < g_strategy_kama_1)
          return true;
    }
    else if(open_dir < 0)
    {
-      // Short exit on KAMA breakout or Vortex cross
-      if(close1 > kama1 || vi_plus > vi_minus)
+      if(g_strategy_close_1 > g_strategy_kama_1)
          return true;
    }
 
@@ -357,6 +477,9 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
 {
+   if(!Strategy_ConfigValid())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -375,6 +498,29 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         strategy_daily_hard_stop_pct,
+                         strategy_total_dd_halt_pct,
+                         strategy_per_trade_risk_cap_pct))
+      return INIT_FAILED;
+
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(tick_size <= 0.0 || point <= 0.0)
+      return INIT_FAILED;
+   const int deviation_points =
+      (int)MathCeil(strategy_max_slippage_ticks * tick_size / point);
+   if(deviation_points <= 0)
+      return INIT_FAILED;
+   QM_EntryConfigure(qm_ea_id,
+                     qm_news_mode_legacy,
+                     deviation_points,
+                     qm_stress_reject_probability,
+                     qm_news_temporal,
+                     qm_news_compliance,
+                     QM_FrameworkMagic());
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"ea\":\"QM5_36008_nnfx_gold_kama_vortex_supertrend\"}");
    return INIT_SUCCEEDED;
 }
@@ -392,18 +538,16 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
    if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
       return;
 
    Strategy_ManageOpenPosition();
 
-   if(Strategy_ExitSignal())
+   const bool is_new_bar = QM_IsNewBar(_Symbol, PERIOD_D1);
+   if(is_new_bar)
+      QM_EquityStreamOnNewBar();
+
+   if(is_new_bar && AdvanceState_OnNewBar() && Strategy_ExitSignal())
    {
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -417,6 +561,10 @@ void OnTick()
       }
    }
 
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -425,10 +573,11 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!is_new_bar || !g_strategy_closed_bar_state_valid)
       return;
 
-   QM_EquityStreamOnNewBar();
+   if(Strategy_NoTradeFilter())
+      return;
 
    QM_EntryRequest req;
    ZeroMemory(req);

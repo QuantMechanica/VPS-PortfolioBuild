@@ -40,9 +40,17 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 | `strategy_wae_deadzone_pts` | 150 | (see source) | (see strategy logic) |
 | `strategy_atr_period` | 14 | (see source) | (see strategy logic) |
 | `strategy_sl_atr_mult` | 1.00 | (see source) | (see strategy logic) |
+| `strategy_tp1_atr_mult` | 1.00 | (see source) | TP1 trigger in entry ATRs |
+| `strategy_tp1_fraction` | 0.50 | (see source) | Volume banked at TP1 |
+| `strategy_be_buffer_pips` | 1 | (see source) | Runner break-even buffer |
 | `strategy_spread_atr_mult` | 1.80 | (see source) | (see strategy logic) |
 | `strategy_warmup_bars` | 150 | (see source) | (see strategy logic) |
 | `strategy_max_spread_points` | 300 | (see source) | (see strategy logic) |
+| `strategy_daily_loss_halt_pct` | 2.0 | (see source) | Account realized-loss entry halt |
+| `strategy_daily_hard_stop_pct` | 2.5 | (see source) | Framework daily equity hard stop |
+| `strategy_total_dd_halt_pct` | 5.0 | (see source) | Framework total-drawdown hard stop |
+| `strategy_per_trade_risk_cap_pct` | 1.0 | (see source) | Per-trade risk ceiling |
+| `strategy_max_slippage_ticks` | 3.0 | (see source) | Market-order slippage ceiling |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -105,7 +113,8 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit`; the build guard reports
+`EA_RISK_SIZER_UNCONFIGURED` when neither governed sizing mode is configured.
 
 ---
 
