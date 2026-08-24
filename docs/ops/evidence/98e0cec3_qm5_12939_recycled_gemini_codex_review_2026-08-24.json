@@ -1,0 +1,24 @@
+{
+  "review_task_id": "98e0cec3-d7a2-46f7-b8ad-f09146151f78",
+  "build_task_id": "2a3580e3-ddbf-4853-b012-0cab4471109e",
+  "ea_id": "QM5_12939",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The remediated MQ5 hash matches the producer, but the EX5 is still the exact pre-remediation binary 6fb96e5765d999f831928c89955e89393371d17bcb5e8ac667d01b73e72735a2 and predates the changed source by two days; compile_succeeded does not bind this source to that binary.",
+    "The card's ZigZag(12,5,3) or equivalent pivot contract is replaced by a two-wing local-fractal scan without equivalent depth, deviation, or backstep mechanics.",
+    "Directional cooldown is committed before QM_TM_OpenPosition succeeds, and T1 state is marked complete even when half-volume normalization or QM_TM_PartialClose fails.",
+    "Restart reconstruction derives T1/T2 from current signal globals instead of the open trade's original pattern and resets t1_hit=false, so partial/trailing state cannot resume deterministically.",
+    "deferred_p2_smoke has blocked_reason=null and no governed smoke summary, so the saturation-only deferral exception is not satisfied.",
+    "Current hardening, guardrails, SPEC, registry, forbidden-code, and 13 setfile risk checks pass; those checks do not cure the semantic, restart, binary-provenance, or smoke-evidence failures."
+  ],
+  "reviewed_at": "2026-08-24T07:52:00Z"
+}

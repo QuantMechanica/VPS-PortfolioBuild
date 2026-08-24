@@ -1,0 +1,24 @@
+{
+  "review_task_id": "395e4a56-b7a5-4c07-9187-253b4d2d6dd0",
+  "build_task_id": "f2e0fa39-1871-43b8-a282-e0f2ea55e1cf",
+  "ea_id": "QM5_12940",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The remediated MQ5 hash matches the producer, but the EX5 is still the exact pre-remediation binary a0e09832809f652fd62fb674208bf4b49f6775a173fa9a655e17b1f1ee292c28 and predates the changed source by two days; compile_succeeded does not bind this source to that binary.",
+    "Directional cooldown is committed inside Strategy_EntrySignal before QM_TM_OpenPosition succeeds, so rejection consumes the setup.",
+    "T1 state is marked complete even when half-volume normalization or QM_TM_PartialClose fails, which can activate post-T1 trailing without the required 50% close.",
+    "Restart reconstruction forces t1_hit=false and derives T1 from current signal globals rather than durable original-entry state, so partial/trailing state cannot resume deterministically.",
+    "deferred_p2_smoke has blocked_reason=null and no governed smoke summary, so the saturation-only deferral exception is not satisfied.",
+    "Current hardening, guardrails, SPEC, registry, forbidden-code, and 13 setfile risk checks pass; those checks do not cure the state, binary-provenance, or smoke-evidence failures."
+  ],
+  "reviewed_at": "2026-08-24T07:52:00Z"
+}
