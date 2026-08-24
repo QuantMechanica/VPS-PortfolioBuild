@@ -17501,6 +17501,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 38006,codetrading-doji-hammer-pivot-rejection,0,EURUSD.DWX,380060000,2026-08-18,Gemini,active
 38006,codetrading-doji-hammer-pivot-rejection,1,GBPUSD.DWX,380060001,2026-08-18,Gemini,active
 38006,codetrading-doji-hammer-pivot-rejection,2,USDJPY.DWX,380060002,2026-08-18,Gemini,active
+38005,codetrading-ascending-triangle-breakout,0,XAUUSD.DWX,380050000,2026-08-18,Gemini,active
+38005,codetrading-ascending-triangle-breakout,1,SP500.DWX,380050001,2026-08-18,Gemini,active
+38005,codetrading-ascending-triangle-breakout,2,EURUSD.DWX,380050002,2026-08-18,Gemini,active
+38006,codetrading-doji-hammer-pivot-rejection,0,EURUSD.DWX,380060000,2026-08-18,Codex burn-window build,active
+38006,codetrading-doji-hammer-pivot-rejection,1,GBPUSD.DWX,380060001,2026-08-18,Codex burn-window build,active
+38006,codetrading-doji-hammer-pivot-rejection,2,USDJPY.DWX,380060002,2026-08-18,Codex burn-window build,active
 38008,codetrading-optimized-bollinger-trend-breakout,0,SP500.DWX,380080000,2026-08-18,Gemini,active
 38008,codetrading-optimized-bollinger-trend-breakout,1,NDX.DWX,380080001,2026-08-18,Gemini,active
 38008,codetrading-optimized-bollinger-trend-breakout,2,XTIUSD.DWX,380080002,2026-08-18,Gemini,active

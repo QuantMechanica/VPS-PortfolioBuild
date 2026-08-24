@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The strategy is an hourly candlestick reversal system that trades Hammer, Shooting Star, and Dragonfly Doji candlestick rejections occurring near a 50-period Exponential Moving Average (EMA 50) support/resistance zone. All pattern and indicator evaluations are performed strictly on the close of bar [1] (Shift = 1).
+The strategy is an hourly candlestick reversal system that trades the card's two executable patterns: bullish Hammers and bearish Shooting Stars near an exponential-moving-average support/resistance zone. The source thesis names Dragonfly Doji, but the approved card does not define a separate doji entry; its exact long rule additionally requires `Close[1] > Open[1]`, so no independent doji rule is invented. All pattern and indicator evaluations are performed strictly on the close of bar [1] (Shift = 1).
 
 A Long entry is triggered when a Hammer candle is identified (Body <= 0.25 × Range, Lower Rejection Wick >= 0.60 × Range, bullish close: Close > Open), and the candle's Low is within dynamic proximity to EMA(50) (|Low - EMA(50)| <= 0.50 × ATR(14)).
 
@@ -32,7 +32,7 @@ Closed-bar EMA/ATR/pattern state is refreshed before entry admission. The live s
 | `strategy_min_wick_ratio` | `0.60` | `0.50-0.75` | Minimum rejection wick to range ratio |
 | `strategy_zone_atr_mult` | `0.50` | `0.25-1.00` | Maximum distance from extreme to EMA(50) in ATR units |
 | `strategy_atr_period` | `14` | `10-20` | ATR period for volatility distance & spread filter |
-| `strategy_sl_buffer_pips` | `2.0` | `1.0-5.0` | Buffer in pips beyond candlestick extreme for SL |
+| `strategy_sl_buffer_pips` | `2` | `2` | Card-fixed buffer in pips beyond the candlestick extreme for SL |
 | `strategy_tp_rr_mult` | `1.8` | `1.0-3.0` | Risk:Reward multiplier for take profit |
 | `strategy_be_enabled` | `true` | `true` | Enable the mandatory break-even transition |
 | `strategy_be_trigger_r` | `1.0` | `1.0` | Original-risk multiple that triggers exact break-even |
@@ -43,7 +43,12 @@ Closed-bar EMA/ATR/pattern state is refreshed before entry admission. The live s
 | `strategy_daily_loss_halt_pct` | `2.0` | `(0, 2.0]` | Realized daily-loss entry halt |
 | `strategy_daily_hard_stop_pct` | `2.5` | `(0, 2.5]` | Framework daily hard-stop ceiling |
 | `strategy_total_dd_halt_pct` | `5.0` | `(0, 5.0]` | Framework total-drawdown hard-stop ceiling |
-| `strategy_per_trade_risk_cap_pct` | `0.5` | `(0, 0.5]` | Framework per-trade account-risk ceiling |
+
+The card's `InpRiskPercent` is implemented by the canonical framework input
+`RISK_PERCENT`: it remains `0` in backtests and accepts `0.20-1.00` only in a
+governed live setfile. The framework's separate per-trade safety ceiling remains
+at `1.0%`, preserving the required `$1,000` fixed risk on the `$100,000` tester
+account instead of silently clamping it to `$500`.
 
 ---
 
@@ -88,7 +93,7 @@ This card was mechanised from:
 **Source ID:** `codetrading-doji-hammer-pivot-rejection-official-source`
 **Source type:** `video`
 **Pointer:** `CodeTrading (2022). A Simple Beginner Friendly Candle Pattern Backtested On Stocks and FX. YouTube.`
-**R1–R4 verdict (Q00):** all PASS / see `strategy-seeds/cards/approved/QM5_38006_codetrading-doji-hammer-pivot-rejection.md`
+**R1–R4 verdict (Q00):** R1 lineage recorded and R2–R4 PASS per `D:/QM/strategy_farm/artifacts/cards_approved/QM5_38006_codetrading-doji-hammer-pivot-rejection.md`
 
 ---
 
@@ -112,3 +117,4 @@ Risk-mode and sizer validation is enforced by `QM_FrameworkInit`
 | v1 | 2026-08-18 | Initial build from card | Task 9b992eb5-9773-40ff-b4f3-ef03719e373e |
 | v2 | 2026-08-23 | Card-conformance remediation | Reachable +1R management, current-bar ATR admission, UTC rollover, exact structural stops, three-tick deviation, and explicit risk rails |
 | v3 | 2026-08-24 | Review rework | Recheck current spread at the broker-open boundary, name the current risk-sizer gate, and add regression coverage for both rejected code paths |
+| v4 | 2026-08-24 | Burn-window build completion | Add the approved-card mirror, enforce card parameter ranges, and keep the canonical 1% framework cap distinct from live `RISK_PERCENT` |
