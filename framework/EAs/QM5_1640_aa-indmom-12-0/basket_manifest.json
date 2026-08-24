@@ -1,0 +1,31 @@
+{
+  "ea_id": "QM5_1640",
+  "slug": "aa-indmom-12-0",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "snapshot_timeframe": "MN1",
+  "basket_symbols": [
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "SP500.DWX",
+    "UK100.DWX",
+    "WS30.DWX"
+  ],
+  "symbol_slots": {
+    "GDAXI.DWX": 0,
+    "NDX.DWX": 1,
+    "SP500.DWX": 2,
+    "UK100.DWX": 3,
+    "WS30.DWX": 4
+  },
+  "card_candidates_unavailable_in_active_matrix": [
+    "FCHI.DWX",
+    "SPA35.DWX",
+    "NETH25.DWX",
+    "STOXX50E.DWX"
+  ],
+  "notes": [
+    "The final rankable universe is the intersection of the card's initial proxy list and framework/registry/dwx_symbol_matrix.csv as of the 2026-08-24 rework.",
+    "Each D1 host instance reconstructs the same completed-MN1 Close(1)/Close(13)-1 snapshot for all five symbols and uses its existing MagicResolver slot. Existing off-thesis magic allocations remain untouched but have no setfiles and are not read by the EA."
+  ]
+}
