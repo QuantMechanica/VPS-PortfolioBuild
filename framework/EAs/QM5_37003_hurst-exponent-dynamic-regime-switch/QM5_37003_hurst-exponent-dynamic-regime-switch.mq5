@@ -58,6 +58,7 @@ input double strategy_daily_loss_halt_pct = 2.0;    // Account realized-loss ent
 input double strategy_daily_hard_stop_pct = 2.5;    // Restart-safe daily equity stop
 input double strategy_total_dd_halt_pct   = 5.0;    // Account-level total-DD signal threshold
 input double strategy_per_trade_risk_cap_pct = 0.5; // Framework per-trade risk cap
+input double strategy_max_slippage_ticks  = 3.0;    // Maximum market-order slippage in symbol ticks
 
 // -----------------------------------------------------------------------------
 // Cached State
@@ -83,7 +84,8 @@ bool Strategy_ConfigValid()
       strategy_daily_loss_halt_pct > strategy_daily_hard_stop_pct ||
       strategy_total_dd_halt_pct <= 0.0)
       return false;
-   return (strategy_per_trade_risk_cap_pct > 0.0 && strategy_per_trade_risk_cap_pct <= 1.0);
+   return (strategy_per_trade_risk_cap_pct > 0.0 && strategy_per_trade_risk_cap_pct <= 1.0 &&
+           strategy_max_slippage_ticks > 0.0 && strategy_max_slippage_ticks <= 3.0);
 }
 
 //+------------------------------------------------------------------+
@@ -349,6 +351,27 @@ int OnInit()
                         qm_stress_reject_probability,
                         qm_news_temporal,
                          qm_news_compliance))
+      return INIT_FAILED;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   const int deviation_points = (point > 0.0 && tick_size > 0.0)
+      ? (int)MathFloor((strategy_max_slippage_ticks * tick_size / point) + 1e-9)
+      : 0;
+   if(deviation_points < 1)
+      return INIT_FAILED;
+
+   QM_EntryConfigure(qm_ea_id,
+                     qm_news_mode_legacy,
+                     deviation_points,
+                     qm_stress_reject_probability,
+                     qm_news_temporal,
+                     qm_news_compliance,
+                     QM_FrameworkMagic());
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "V5_WEEKEND_RISK_POLICY"))
       return INIT_FAILED;
 
    if(!QM_KillSwitchInit(qm_ea_id,

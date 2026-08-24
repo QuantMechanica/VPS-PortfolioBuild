@@ -30,3 +30,4 @@ strategy_daily_loss_halt_pct=2.0
 strategy_daily_hard_stop_pct=2.5
 strategy_total_dd_halt_pct=5.0
 strategy_per_trade_risk_cap_pct=1.0
+strategy_max_slippage_ticks=3.0

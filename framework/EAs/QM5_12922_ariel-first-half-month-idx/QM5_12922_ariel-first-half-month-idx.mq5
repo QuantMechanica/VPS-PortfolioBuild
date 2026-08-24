@@ -27,7 +27,7 @@ input string qm_news_min_impact          = "high";
 input QM_NewsMode qm_news_mode_legacy    = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled     = false;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
@@ -39,91 +39,367 @@ input double strategy_atr_stop_mult      = 3.0;
 input int    strategy_hold_trading_days  = 9;
 input bool   strategy_require_d1         = true;
 
-int  g_strategy_last_day_key             = 0;
+const int STRATEGY_D1_LOOKBACK_LIMIT = 32;
+const int STRATEGY_MACRO_DAY_LIMIT   = 4096;
+
+enum StrategyMacroDayState
+  {
+   STRATEGY_MACRO_DATA_ERROR = -1,
+   STRATEGY_MACRO_CLEAR      = 0,
+   STRATEGY_MACRO_BLOCK      = 1
+  };
+
 int  g_strategy_last_month_key           = 0;
 int  g_strategy_trading_day_index        = 0;
 int  g_strategy_last_traded_month_key    = 0;
 bool g_strategy_entry_deferred           = false;
 bool g_strategy_entry_due                = false;
 bool g_strategy_exit_due                 = false;
+int  g_strategy_macro_day_keys[];
+int  g_strategy_calendar_first_day_key   = 0;
+int  g_strategy_calendar_last_day_key    = 0;
+bool g_strategy_calendar_loaded          = false;
 
-int Strategy_GetTradingDayOfMonth(const datetime current_d1_time)
+int Strategy_DayKey(const datetime value)
   {
-   if(current_d1_time <= 0)
+   if(value <= 0)
       return 0;
-
-   MqlDateTime dt_curr;
-   TimeToStruct(current_d1_time, dt_curr);
-
-   MqlDateTime dt_start = dt_curr;
-   dt_start.day = 1;
-   dt_start.hour = 0;
-   dt_start.min = 0;
-   dt_start.sec = 0;
-   const datetime month_start_time = StructToTime(dt_start);
-   if(month_start_time <= 0)
+   MqlDateTime parts;
+   ZeroMemory(parts);
+   if(!TimeToStruct(value, parts))
       return 0;
-
-   datetime d1_times[];
-   ArraySetAsSeries(d1_times, false);
-   const int count = CopyTime(_Symbol, PERIOD_D1, month_start_time, current_d1_time, d1_times);
-   if(count <= 0)
-      return 0;
-
-   return count;
+   return parts.year * 10000 + parts.mon * 100 + parts.day;
   }
 
-void Strategy_AdvanceCalendarState()
+datetime Strategy_MonthStart(const int month_key)
   {
-   const datetime d1_time = iTime(_Symbol, PERIOD_D1, 0);
-   if(d1_time <= 0)
+   if(month_key < 190001 || month_key > 299912)
+      return 0;
+   MqlDateTime parts;
+   ZeroMemory(parts);
+   parts.year = month_key / 100;
+   parts.mon = month_key % 100;
+   parts.day = 1;
+   if(parts.mon < 1 || parts.mon > 12)
+      return 0;
+   return StructToTime(parts);
+  }
+
+datetime Strategy_DayStart(const int day_key)
+  {
+   if(day_key < 19000101 || day_key > 29991231)
+      return 0;
+   MqlDateTime parts;
+   ZeroMemory(parts);
+   parts.year = day_key / 10000;
+   parts.mon = (day_key / 100) % 100;
+   parts.day = day_key % 100;
+   if(parts.mon < 1 || parts.mon > 12 || parts.day < 1 || parts.day > 31)
+      return 0;
+   return StructToTime(parts);
+  }
+
+// Count current-month D1 sessions through the framework calendar helper only.
+// The fixed 32-bar cap exceeds every possible monthly trading-session count.
+int Strategy_GetTradingDayOfMonth()
+  {
+   const int current_month = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   if(current_month <= 0)
+      return 0;
+
+   for(int shift = 0; shift < STRATEGY_D1_LOOKBACK_LIMIT; ++shift)
      {
-      g_strategy_trading_day_index = 0;
-      g_strategy_entry_due = false;
-      g_strategy_exit_due = false;
-      return;
+      const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, shift);
+      if(month_key <= 0)
+         return 0;
+      if(month_key != current_month)
+         return shift;
+     }
+   return 0;
+  }
+
+bool Strategy_IsNamedMacroEvent(const string raw_currency,
+                                const string raw_event_name)
+  {
+   const string currency = QM_NewsUpper(QM_NewsStripQuotes(raw_currency));
+   const string event_name = QM_NewsUpper(QM_NewsStripQuotes(raw_event_name));
+   if(currency == "USD")
+     {
+      if(event_name == "NON-FARM EMPLOYMENT CHANGE" ||
+         event_name == "NONFARM PAYROLLS")
+         return true;
+      if(event_name == "FEDERAL FUNDS RATE" ||
+         event_name == "FOMC STATEMENT" ||
+         event_name == "FOMC ECONOMIC PROJECTIONS")
+         return true;
+     }
+   if(currency == "EUR")
+     {
+      if(event_name == "MAIN REFINANCING RATE" ||
+         event_name == "ECB PRESS CONFERENCE" ||
+         StringFind(event_name, "ECB MONETARY POLICY") >= 0)
+         return true;
+     }
+   return false;
+  }
+
+bool Strategy_OpenCalendarFile(const string path, int &handle)
+  {
+   handle = FileOpen(path, FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ);
+   if(handle == INVALID_HANDLE)
+      handle = FileOpen(path,
+                        FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON);
+   if(handle == INVALID_HANDLE)
+     {
+      const string base = QM_NewsBasename(path);
+      if(StringLen(base) > 0)
+         handle = FileOpen(base,
+                           FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON);
+     }
+   return (handle != INVALID_HANDLE);
+  }
+
+bool Strategy_PushMacroDay(const int day_key)
+  {
+   if(day_key <= 0)
+      return false;
+   const int count = ArraySize(g_strategy_macro_day_keys);
+   if(count < 0 || count >= STRATEGY_MACRO_DAY_LIMIT)
+      return false;
+   if(count > 0 && g_strategy_macro_day_keys[count - 1] == day_key)
+      return true;
+   for(int index = 0; index < count; ++index)
+      if(g_strategy_macro_day_keys[index] == day_key)
+         return true;
+   if(ArrayResize(g_strategy_macro_day_keys, count + 1) != count + 1)
+      return false;
+   g_strategy_macro_day_keys[count] = day_key;
+   return true;
+  }
+
+bool Strategy_LoadTesterMacroCalendar()
+  {
+   ArrayResize(g_strategy_macro_day_keys, 0);
+   g_strategy_calendar_first_day_key = 0;
+   g_strategy_calendar_last_day_key = 0;
+   g_strategy_calendar_loaded = false;
+
+   string calendar_path = g_qm_news_calendar_path_primary;
+   if(StringLen(QM_NewsTrim(calendar_path)) == 0)
+      calendar_path = g_qm_news_base_dir + "\\news_calendar_2015_2025.csv";
+
+   int handle = INVALID_HANDLE;
+   if(!Strategy_OpenCalendarFile(calendar_path, handle))
+      return false;
+
+   bool first_line = true;
+   int datetime_index = -1;
+   int currency_index = -1;
+   int event_index = -1;
+   int impact_index = -1;
+   int parsed_rows = 0;
+   while(!FileIsEnding(handle))
+     {
+      const string line = FileReadString(handle);
+      if(StringLen(line) == 0)
+         continue;
+      string fields[];
+      if(!QM_NewsSplitCsvLine(line, fields))
+         continue;
+      const int field_count = ArraySize(fields);
+      if(field_count <= 0)
+         continue;
+
+      if(first_line)
+        {
+         first_line = false;
+         for(int index = 0; index < field_count; ++index)
+           {
+            const string header = QM_NewsUpper(QM_NewsStripQuotes(fields[index]));
+            if(header == "DATETIME" || header == "DATETIME_UTC" || header == "UTC_DATETIME")
+               datetime_index = index;
+            else if(header == "CURRENCY")
+               currency_index = index;
+            else if(header == "EVENT" || header == "EVENT_NAME" || header == "NAME")
+               event_index = index;
+            else if(header == "IMPACT")
+               impact_index = index;
+           }
+         if(datetime_index < 0 || currency_index < 0 || event_index < 0 || impact_index < 0)
+           {
+            FileClose(handle);
+            return false;
+           }
+         continue;
+        }
+
+      if(datetime_index >= field_count || currency_index >= field_count ||
+         event_index >= field_count || impact_index >= field_count)
+         continue;
+      datetime event_utc = 0;
+      if(!QM_NewsParseDateTimeUTC(fields[datetime_index], event_utc))
+         continue;
+      const datetime event_broker = QM_UTCToBroker(event_utc);
+      const int day_key = Strategy_DayKey(event_broker);
+      if(day_key <= 0)
+         continue;
+      parsed_rows++;
+      if(g_strategy_calendar_first_day_key == 0 || day_key < g_strategy_calendar_first_day_key)
+         g_strategy_calendar_first_day_key = day_key;
+      if(day_key > g_strategy_calendar_last_day_key)
+         g_strategy_calendar_last_day_key = day_key;
+
+      if(QM_NewsImpactUpper(fields[impact_index]) != "HIGH" ||
+         !Strategy_IsNamedMacroEvent(fields[currency_index], fields[event_index]))
+         continue;
+      if(!Strategy_PushMacroDay(day_key))
+        {
+         FileClose(handle);
+         return false;
+        }
+     }
+   FileClose(handle);
+   g_strategy_calendar_loaded = (parsed_rows > 0 &&
+                                 g_strategy_calendar_first_day_key > 0 &&
+                                 g_strategy_calendar_last_day_key >= g_strategy_calendar_first_day_key &&
+                                 ArraySize(g_strategy_macro_day_keys) > 0);
+   return g_strategy_calendar_loaded;
+  }
+
+StrategyMacroDayState Strategy_TesterMacroDayState(const int day_key)
+  {
+   if(!g_strategy_calendar_loaded || day_key < g_strategy_calendar_first_day_key ||
+      day_key > g_strategy_calendar_last_day_key)
+      return STRATEGY_MACRO_DATA_ERROR;
+   const int count = ArraySize(g_strategy_macro_day_keys);
+   if(count <= 0 || count > STRATEGY_MACRO_DAY_LIMIT)
+      return STRATEGY_MACRO_DATA_ERROR;
+   for(int index = 0; index < count; ++index)
+      if(g_strategy_macro_day_keys[index] == day_key)
+         return STRATEGY_MACRO_BLOCK;
+   return STRATEGY_MACRO_CLEAR;
+  }
+
+StrategyMacroDayState Strategy_LiveMacroDayState(const int day_key)
+  {
+   const datetime day_start = Strategy_DayStart(day_key);
+   if(day_start <= 0)
+      return STRATEGY_MACRO_DATA_ERROR;
+
+   MqlCalendarValue values[];
+   const int count = CalendarValueHistory(values, day_start, day_start + 86399);
+   if(count < 0 || count > ArraySize(values))
+      return STRATEGY_MACRO_DATA_ERROR;
+   if(count == 0)
+      return QM_NewsLiveCalendarHealthy() ? STRATEGY_MACRO_CLEAR : STRATEGY_MACRO_DATA_ERROR;
+
+   for(int index = 0; index < count; ++index)
+     {
+      MqlCalendarEvent event;
+      if(!CalendarEventById(values[index].event_id, event))
+         return STRATEGY_MACRO_DATA_ERROR;
+      if(event.importance != CALENDAR_IMPORTANCE_HIGH)
+         continue;
+      MqlCalendarCountry country;
+      if(!CalendarCountryById(event.country_id, country))
+         return STRATEGY_MACRO_DATA_ERROR;
+      if(Strategy_IsNamedMacroEvent(country.currency, event.name))
+         return STRATEGY_MACRO_BLOCK;
+     }
+   return STRATEGY_MACRO_CLEAR;
+  }
+
+StrategyMacroDayState Strategy_MacroDayState(const int day_key)
+  {
+   if(day_key <= 0)
+      return STRATEGY_MACRO_DATA_ERROR;
+   if(MQLInfoInteger(MQL_TESTER))
+      return Strategy_TesterMacroDayState(day_key);
+   return Strategy_LiveMacroDayState(day_key);
+  }
+
+bool Strategy_AlreadyTradedThisMonth(const int month_key, bool &known)
+  {
+   known = false;
+   if(g_strategy_last_traded_month_key == month_key)
+     {
+      known = true;
+      return true;
+     }
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+     {
+      known = true;
+      return true;
      }
 
-   MqlDateTime dt;
-   TimeToStruct(d1_time, dt);
-   const int day_key = dt.year * 10000 + dt.mon * 100 + dt.day;
-   const int month_key = dt.year * 100 + dt.mon;
-
-   if(day_key == g_strategy_last_day_key)
-      return;
-
-   const int trading_day = Strategy_GetTradingDayOfMonth(d1_time);
-   if(trading_day <= 0)
+   const datetime month_start = Strategy_MonthStart(month_key);
+   const datetime now = TimeCurrent();
+   if(month_start <= 0 || now < month_start || !HistorySelect(month_start, now))
+      return false;
+   const int deals = HistoryDealsTotal();
+   if(deals < 0)
+      return false;
+   for(int index = deals - 1; index >= 0; --index)
      {
-      g_strategy_trading_day_index = 0;
-      g_strategy_entry_due = false;
-      g_strategy_exit_due = false;
-      return;
+      const ulong ticket = HistoryDealGetTicket(index);
+      if(ticket == 0)
+         continue;
+      if((int)HistoryDealGetInteger(ticket, DEAL_MAGIC) != QM_FrameworkMagic())
+         continue;
+      if(HistoryDealGetString(ticket, DEAL_SYMBOL) != _Symbol)
+         continue;
+      const ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(ticket, DEAL_ENTRY);
+      if(entry == DEAL_ENTRY_IN || entry == DEAL_ENTRY_INOUT)
+        {
+         known = true;
+         return true;
+        }
      }
+   known = true;
+   return false;
+  }
 
-   g_strategy_trading_day_index = trading_day;
-   g_strategy_last_day_key = day_key;
+bool Strategy_ReconstructCalendarState()
+  {
+   g_strategy_entry_due = false;
+   g_strategy_entry_deferred = false;
+   g_strategy_exit_due = false;
+
+   const int day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 0);
+   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int trading_day = Strategy_GetTradingDayOfMonth();
+   if(day_key <= 0 || month_key <= 0 || trading_day <= 0)
+      return false;
+
    g_strategy_last_month_key = month_key;
+   g_strategy_trading_day_index = trading_day;
+   g_strategy_exit_due = (trading_day > MathMax(1, strategy_hold_trading_days));
 
-   const bool already_traded_this_month = (g_strategy_last_traded_month_key == month_key);
+   bool history_known = false;
+   const bool already_traded = Strategy_AlreadyTradedThisMonth(month_key, history_known);
+   if(!history_known)
+      return false;
+   if(already_traded)
+      return true;
 
-   if(g_strategy_trading_day_index == 1 && !already_traded_this_month)
+   if(trading_day == 1)
      {
-      g_strategy_entry_due = true;
+      const StrategyMacroDayState macro_state = Strategy_MacroDayState(day_key);
+      if(macro_state == STRATEGY_MACRO_DATA_ERROR)
+         return false;
+      g_strategy_entry_deferred = (macro_state == STRATEGY_MACRO_BLOCK);
+      g_strategy_entry_due = !g_strategy_entry_deferred;
      }
-   else if(g_strategy_trading_day_index == 2 && g_strategy_entry_deferred && !already_traded_this_month)
+   else if(trading_day == 2)
      {
-      g_strategy_entry_due = true;
+      const int prior_day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 1);
+      const StrategyMacroDayState macro_state = Strategy_MacroDayState(prior_day_key);
+      if(macro_state == STRATEGY_MACRO_DATA_ERROR)
+         return false;
+      g_strategy_entry_deferred = (macro_state == STRATEGY_MACRO_BLOCK);
+      g_strategy_entry_due = g_strategy_entry_deferred;
      }
-   else
-     {
-      g_strategy_entry_due = false;
-      if(g_strategy_trading_day_index > 2)
-         g_strategy_entry_deferred = false;
-     }
-
-   const int hold_days = MathMax(1, strategy_hold_trading_days);
-   g_strategy_exit_due = (g_strategy_trading_day_index > hold_days);
+   return true;
   }
 
 // -----------------------------------------------------------------------------
@@ -152,7 +428,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(!g_strategy_entry_due)
       return false;
-   g_strategy_entry_due = false;
 
    if(strategy_require_d1 && _Period != PERIOD_D1)
       return false;
@@ -201,6 +476,11 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   if(qm_friday_close_enabled)
+     {
+      Print("QM5_12922: Friday close must remain disabled for the card-mandated T+1 through T+9 hold");
+      return INIT_PARAMETERS_INCORRECT;
+     }
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -218,6 +498,21 @@ int OnInit()
                         qm_news_temporal,
                         qm_news_compliance))
       return INIT_FAILED;
+
+   if(MQLInfoInteger(MQL_TESTER) && !Strategy_LoadTesterMacroCalendar())
+     {
+      QM_LogEvent(QM_ERROR, SETUP_DATA_MISSING,
+                  "{\"component\":\"ariel_named_macro_calendar\",\"reason\":\"load_failed\"}");
+      QM_FrameworkShutdown();
+      return INIT_FAILED;
+     }
+   if(!Strategy_ReconstructCalendarState())
+     {
+      QM_LogEvent(QM_ERROR, SETUP_DATA_MISSING,
+                  "{\"component\":\"ariel_calendar_state\",\"reason\":\"restart_reconstruction_failed\"}");
+      QM_FrameworkShutdown();
+      return INIT_FAILED;
+     }
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12922\",\"ea\":\"ariel-first-half-month-idx\"}");
    return INIT_SUCCEEDED;
@@ -247,11 +542,16 @@ void OnTick()
 
    Strategy_ManageOpenPosition();
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
-   Strategy_AdvanceCalendarState();
+   if(QM_IsNewBar(_Symbol, PERIOD_D1))
+     {
+      QM_EquityStreamOnNewBar();
+      if(!Strategy_ReconstructCalendarState())
+        {
+         QM_LogEvent(QM_ERROR, SETUP_DATA_MISSING,
+                     "{\"component\":\"ariel_calendar_state\",\"reason\":\"d1_reconstruction_failed\"}");
+         return;
+        }
+     }
 
    if(Strategy_ExitSignal())
      {
@@ -276,14 +576,7 @@ void OnTick()
          news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
 
       if(!news_allows)
-        {
-         if(g_strategy_trading_day_index == 1)
-           {
-            g_strategy_entry_deferred = true;
-           }
-         g_strategy_entry_due = false;
          return;
-        }
 
       QM_EntryRequest req;
       ZeroMemory(req);
@@ -294,6 +587,7 @@ void OnTick()
            {
             g_strategy_last_traded_month_key = g_strategy_last_month_key;
             g_strategy_entry_deferred = false;
+            g_strategy_entry_due = false;
            }
         }
      }

@@ -3,25 +3,31 @@
 ; ea_id:        41011
 ; ea_slug:      tokyo-london-bank-flow-handover
 ; ea_version:   v5.0
-; set_version:  s20260818-001
+; set_version:  s20260824-002
 ; symbol:       GBPJPY.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2dc2505c4db765deb1d1e4912938927684c4d23a11135b7a1083000e414dd962
-; author:       Gemini
-; date:         2026-08-18
+; build_hash:   dec08588857ec3e1ffdd42c65a06a62ee2154f94d190254ed6512f1dde132e6a
+; author:       Codex review rework
+; date:         2026-08-24
 ;==========================================================
 qm_ea_id=41011
 qm_magic_slot_offset=1
+qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
 qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
 qm_friday_close_enabled=true
 qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
 InpRangeStartHourUTC=6
 InpRangeStartMinUTC=0
 InpRangeEndHourUTC=6
@@ -32,7 +38,11 @@ InpEntryEndHourUTC=7
 InpEntryEndMinUTC=30
 InpTimeStopHourUTC=12
 InpBufferPips=2.0
-InpMinAtrPips=10.0
+InpMinAtrPips=15.0
 InpAtrPeriod=14
 InpSpreadAtrMult=1.8
 InpRrMultiplier=2.0
+InpDailyLossLimitPct=2.0
+InpDailyDrawdownHardStopPct=2.5
+InpTotalDrawdownStopPct=5.0
+InpMaxSlippageTicks=3.0

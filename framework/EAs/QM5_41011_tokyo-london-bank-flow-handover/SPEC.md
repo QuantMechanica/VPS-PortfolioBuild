@@ -3,14 +3,14 @@
 **EA ID:** QM5_41011
 **Slug:** tokyo-london-bank-flow-handover
 **Source:** tokyo-london-bank-flow-handover-official-source
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-18
+**Author of this spec:** Gemini; Codex review rework
+**Last revised:** 2026-08-24
 
 ---
 
 ## 1. Strategy Logic
 
-Quantitative interbank liquidity handover breakout model on JPY crosses (EURJPY, GBPJPY, USDJPY) operating on M15 bars. The EA quantifies the pre-London fixing range between 06:00 and 06:45 GMT (UTC). During the London opening liquidity injection window (07:00 to 07:30 GMT), if price breaks out beyond the pre-range high/low by a buffer distance with minimum volatility confirmation (ATR >= 10 pips), the EA enters in the direction of the London morning institutional flow. Stop loss is set at the range midpoint (with bounds check), and take profit is placed at 2.0x SL distance (1:2.0 R:R). Any remaining position is closed at 12:00 GMT via a deterministic daily time-stop.
+Quantitative interbank liquidity handover breakout model on JPY crosses (EURJPY, GBPJPY, USDJPY) operating on M15 bars. The EA quantifies exactly the three completed bars opening at 06:00, 06:15, and 06:30 UTC; the 06:45 boundary and every breakout bar are excluded from that range. During the London opening liquidity injection window (closed bars timestamped 07:00 through 07:15 UTC), if price closes beyond the pre-range high/low by 2 whole pips with ATR(14) >= 15 whole pips, the EA enters in the direction of the London morning institutional flow. Stop loss is the range midpoint and take profit is 2.0 times the complete range width from entry. Any remaining position is closed at or after 12:00 UTC via a deterministic daily time stop.
 
 ---
 
@@ -28,10 +28,14 @@ Quantitative interbank liquidity handover breakout model on JPY crosses (EURJPY,
 | `InpEntryEndMinUTC` | 30 | 0-59 | Entry window end minute UTC |
 | `InpTimeStopHourUTC` | 12 | 11-15 | Daily time stop exit hour UTC |
 | `InpBufferPips` | 2.0 | 1.0-5.0 | Breakout entry buffer in pips |
-| `InpMinAtrPips` | 10.0 | 5.0-25.0 | Minimum ATR in pips for volatility filter |
+| `InpMinAtrPips` | 15.0 | 5.0-25.0 | Minimum ATR in whole pips for volatility filter |
 | `InpAtrPeriod` | 14 | 10-30 | ATR period for spread & volatility filter |
 | `InpSpreadAtrMult` | 1.8 | 1.0-3.0 | Maximum allowable spread as multiple of M15 ATR |
-| `InpRrMultiplier` | 2.0 | 1.5-3.0 | Take profit risk-reward multiplier |
+| `InpRrMultiplier` | 2.0 | 1.5-3.0 | Take profit multiple of complete handover range width |
+| `InpDailyLossLimitPct` | 2.0 | fixed by card | Account-wide realized-loss entry halt |
+| `InpDailyDrawdownHardStopPct` | 2.5 | fixed by card | Daily equity hard stop through framework kill switch |
+| `InpTotalDrawdownStopPct` | 5.0 | fixed by card | Account/portfolio total drawdown stop through framework kill switch |
+| `InpMaxSlippageTicks` | 3.0 | fixed by card | Maximum market-order deviation converted from ticks to points |
 
 ---
 
@@ -83,6 +87,13 @@ Quantitative interbank liquidity handover breakout model on JPY crosses (EURJPY,
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio |
 
+The source default is fail-closed for build/backtest use: `RISK_FIXED=1000` and
+`RISK_PERCENT=0`. A governed live setfile must invert those modes. In addition,
+the card's 2.0% realized daily entry halt, 2.5% daily equity hard stop, 5.0%
+total drawdown stop, and three-tick execution cap are explicitly wired. The
+framework execution contract binds the EA to M15 and declares the framework
+Friday-close override.
+
 ---
 
 ## Revision History
@@ -90,3 +101,4 @@ Quantitative interbank liquidity handover breakout model on JPY crosses (EURJPY,
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from approved card | Task fdaac67c-12cf-4c0f-a203-c19618076972 |
+| v1.1 | 2026-08-24 | Review rework | Exact range, whole-pip scaling, card exits/loss limits, M15 execution declaration, MAE and entry-only news/no-trade ordering |
