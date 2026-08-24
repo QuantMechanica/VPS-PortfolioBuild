@@ -211,19 +211,24 @@ def test_q02_infra_source_repair_authority_is_exact_label_bound() -> None:
 
 
 def test_review_rework_source_repair_authority_is_exact_label_bound() -> None:
-    label = "QM5_9468_connors-rsi4-3day-d1"
+    authorities = compile_work_items.REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES
 
-    assert compile_work_items._source_repair_authorized(
-        label,
-        compile_work_items.REVIEW_REWORK_SOURCE_REPAIR_AUTHORITY,
-    )
+    assert authorities == {
+        "QM5_9468_connors-rsi4-3day-d1": (
+            "router_review_ea:cd6442dd-4ad9-4845-862a-2ef6e3ec0172"
+        ),
+        "QM5_9909_bandy-lrchannel-breakout-trend": (
+            "router_review_ea:d6ea3abe-d44b-4861-b466-475a28899eaa"
+        ),
+    }
+    for label, authority in authorities.items():
+        assert compile_work_items._source_repair_authorized(label, authority)
+        assert not compile_work_items._source_repair_authorized(
+            label, "router_review_ea:wrong-task"
+        )
     assert not compile_work_items._source_repair_authorized(
         "QM5_9469_unrelated-d1",
         compile_work_items.REVIEW_REWORK_SOURCE_REPAIR_AUTHORITY,
-    )
-    assert not compile_work_items._source_repair_authorized(
-        label,
-        "router_review_ea:wrong-task",
     )
 
 

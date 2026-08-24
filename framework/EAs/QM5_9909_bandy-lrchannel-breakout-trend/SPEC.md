@@ -3,8 +3,8 @@
 **EA ID:** QM5_9909
 **Slug:** bandy-lrchannel-breakout-trend
 **Source:** 9ef19e06-5ca6-5b35-aa06-b8187aa0e016
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-23
+**Author of this spec:** Gemini; Codex review rework
+**Last revised:** 2026-08-24
 
 ---
 
@@ -15,7 +15,7 @@ On each closed D1 bar, it computes an Ordinary Least Squares (OLS) linear regres
 A long entry is triggered on the next bar open when the closed bar price closes above the upper regression channel.
 A short entry is triggered on the next bar open when the closed bar price closes below the lower regression channel.
 Open positions are trailed via a Chandelier ATR stop (2.5 * ATR(14)), with a maximum holding time of 40 trading days.
-A protective catastrophic stop loss is placed at entry.
+The entry is sized from an initial 2.5 * ATR primary stop. After the order is accepted, that primary trail is persisted independently and the broker-side SL is widened to the separate 5.0 * ATR catastrophic backstop. The primary Chandelier ratchets on closed D1 bars and its touch is enforced every tick; if arming the wider broker stop fails, the original tighter 2.5 * ATR SL remains in place.
 
 ---
 
@@ -29,7 +29,6 @@ A protective catastrophic stop loss is placed at entry.
 | `strategy_trail_atr_mult` | 2.5 | 1.5-4.0 | ATR multiplier for Chandelier trailing stop |
 | `strategy_sl_atr_mult` | 5.0 | 3.0-8.0 | ATR multiplier for catastrophic protective stop loss |
 | `strategy_time_stop_bars` | 40 | 20-80 | Maximum holding period in trading days |
-| `strategy_spread_max_atr` | 0.30 | 0.10-0.50 | Maximum allowed spread as a fraction of ATR(14) |
 | `strategy_warmup_bars` | 60 | 50-120 | Minimum required closed bars before trading |
 
 ---
@@ -40,10 +39,9 @@ A protective catastrophic stop loss is placed at entry.
 - `SP500.DWX` — S&P 500 benchmark index (backtest baseline)
 - `NDX.DWX` — Nasdaq 100 index CFD
 - `WS30.DWX` — Dow Jones Industrial Average CFD
-- `GDAXI.DWX` — DAX 40 index CFD
-- `UK100.DWX` — FTSE 100 index CFD
 - `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `USDCHF.DWX`, `AUDUSD.DWX`, `USDCAD.DWX`, `NZDUSD.DWX` — Major FX currency pairs
 - `XAUUSD.DWX` — Gold commodity CFD
+- `XTIUSD.DWX` — Oil CFD
 
 **Explicitly NOT for:**
 - Choppy or mean-reverting range-bound symbols with no trend persistence.
@@ -56,7 +54,7 @@ A protective catastrophic stop loss is placed at entry.
 |---|---|
 | Base timeframe | `PERIOD_D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_D1)` after `QM_FrameworkDeclareExecutionContract(PERIOD_D1, ...)` |
 
 ---
 
@@ -91,7 +89,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit`; build validation reports `EA_RISK_SIZER_UNCONFIGURED` when neither governed risk mode is configured.
 
 ---
 
@@ -100,3 +98,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-23 | Initial build from approved card | Task a944cf09-4a86-43b5-90b5-1d6fc5108ae6 |
+| v2 | 2026-08-24 | Mandatory review rework | Explicit D1 contract/gate, management reachability, two-layer stop wiring, approved universe, and evidence contract for task d6ea3abe-d44b-4861-b466-475a28899eaa |

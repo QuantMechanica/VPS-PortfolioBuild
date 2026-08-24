@@ -17016,6 +17016,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9909,bandy-lrchannel-breakout-trend,10,AUDUSD.DWX,99090010,2026-08-17,Codex governed allocator,active
 9909,bandy-lrchannel-breakout-trend,11,USDCAD.DWX,99090011,2026-08-17,Codex governed allocator,active
 9909,bandy-lrchannel-breakout-trend,12,NZDUSD.DWX,99090012,2026-08-17,Codex governed allocator,active
+9909,bandy-lrchannel-breakout-trend,13,XTIUSD.DWX,99090013,2026-08-24,Codex governed allocator,active
 9910,bandy-tema-adx-crossover-trend,0,GDAXI.DWX,99100000,2026-08-17,Codex governed allocator,active
 9910,bandy-tema-adx-crossover-trend,1,NDX.DWX,99100001,2026-08-17,Codex governed allocator,active
 9910,bandy-tema-adx-crossover-trend,2,SP500.DWX,99100002,2026-08-17,Codex governed allocator,active
