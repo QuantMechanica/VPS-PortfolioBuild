@@ -15489,6 +15489,69 @@ def _auto_stub_p5_calibration(root: Path, con: sqlite3.Connection, limit: int = 
     return added
 
 
+def _wal_file_size(src: Path) -> int:
+    wal = src.with_name(src.name + "-wal")
+    try:
+        return wal.stat().st_size
+    except OSError:
+        return 0
+
+
+def _wal_checkpoint(root: Path) -> dict[str, Any]:
+    """Explicit periodic WAL checkpoint (router task 05035f17, 2026-08-24).
+
+    ``pump_maintenance`` previously relied entirely on SQLite's implicit
+    PASSIVE auto-checkpoint (default ~1000-page threshold). With ~10
+    terminal_worker daemons plus assorted readers holding overlapping
+    snapshots against this one farm DB nearly continuously, the passive
+    checkpoint rarely gets a window to fully truncate, and the WAL grows
+    unbounded -- observed at 459MB on 2026-08-24, plausibly the cause of
+    QM_StrategyFarm_PlausibilityScan's occasional 15-minute
+    ExecutionTimeLimit kill (a large WAL slows every reader that has to
+    reconstruct current state through it, even though the scan itself
+    completes in ~2.5 minutes against a healthy WAL).
+
+    ``PRAGMA wal_checkpoint`` never blocks writers and is safe to call
+    opportunistically: TRUNCATE only fully succeeds when no other connection
+    holds an open read snapshot, but a partial/blocked attempt still makes
+    incremental progress and reports ``busy`` rather than raising. Uses the
+    same short busy_timeout as every other farm connection (no long blocking
+    stall doctrine) and never touches ``work_items``/verdicts.
+
+    Rollback: this call is additive and self-contained; deleting it restores
+    the exact prior (implicit-only) checkpoint behavior.
+    """
+    src = root / DB_REL
+    if not src.exists():
+        return {"skipped": "db_missing"}
+    before = _wal_file_size(src)
+    conn = sqlite3.connect(str(src), timeout=BUSY_TIMEOUT_MS / 1000.0)
+    try:
+        modes: dict[str, Any] = {}
+        for mode in ("PASSIVE", "TRUNCATE"):
+            try:
+                busy, log_pages, checkpointed_pages = conn.execute(
+                    f"PRAGMA wal_checkpoint({mode})"
+                ).fetchone()
+            except sqlite3.OperationalError as exc:
+                modes[mode.lower()] = {"error": str(exc)}
+                continue
+            modes[mode.lower()] = {
+                "busy": bool(busy),
+                "log_pages": log_pages,
+                "checkpointed_pages": checkpointed_pages,
+            }
+    finally:
+        conn.close()
+    after = _wal_file_size(src)
+    return {
+        "before_wal_bytes": before,
+        "after_wal_bytes": after,
+        "reclaimed_bytes": max(0, before - after),
+        **modes,
+    }
+
+
 def _hourly_db_backup(root: Path) -> str | None:
     """Snapshot farm_state.sqlite to state/backups once per hour; keep 24h."""
     src = root / DB_REL
@@ -19495,11 +19558,13 @@ def pump_maintenance(root: Path) -> dict[str, Any]:
             rolling_hours=DEAD_ZERO_TRADE_EVENT_DEDUPE_HOURS,
         )
     backup_result = _hourly_db_backup(root)
+    wal_checkpoint_result = _wal_checkpoint(root)
     return {
         "maintained_at": utc_now(),
         "elapsed_seconds": round(time.monotonic() - started, 6),
         "ea_metrics": metrics_result,
         "zerotrade_terminal_event_census": zero_trade_census,
+        "wal_checkpoint": wal_checkpoint_result,
         "db_backup": backup_result,
         "dispatch_performed": False,
         "verdicts_changed": False,
