@@ -45,6 +45,7 @@ import custom_history_copy_on_claim
 import custom_history_gate
 import custom_history_lease
 import custom_history_master
+import longrun_scheduling_policy
 from framework.scripts._phase_utils import cold_cache_summary_signature
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
 try:
@@ -70,6 +71,7 @@ _EARLY_RUN_SMOKE_PHASES = frozenset(
 )
 _Q04_PHASE = farmctl.SUPPORTED_BACKTEST_PHASES[-1]
 _Q09_NEWS_PHASE = farmctl.ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+_Q07_PHASE = "Q07"
 _Q08_PHASE = "Q08"
 
 
@@ -1679,6 +1681,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             "multisymbol_ram_skipped": [],
             "multisymbol_commit_skipped": [],
             "terminal_avoid_skipped": [],
+            "longrun_cap_skipped": [],
             "recovery_capped": [],
         }
 
@@ -1889,6 +1892,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_multisym_ram: list[dict[str, Any]] = []
                 skipped_multisym_commit: list[dict[str, Any]] = []
                 skipped_avoid_terminal: list[dict[str, Any]] = []
+                skipped_longrun_cap: list[dict[str, Any]] = []
+                longrun_policy_enabled = longrun_scheduling_policy.policy_enabled()
+                longrun_active_counts: dict[str, int] | None = None
                 multisym_free_ram: float | None = None
                 history_registry = farmctl._dwx_symbol_history_registry()
                 # NOTE: do NOT refresh the poison-pill table here. Measured cost of
@@ -1934,6 +1940,29 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "item_id": item["id"],
                             "ea_id": item["ea_id"],
                             "avoid_terminals": sorted(avoid_terminals),
+                        })
+                        continue
+                    if longrun_active_counts is None:
+                        longrun_active_counts = longrun_scheduling_policy.active_longrun_counts(
+                            conn,
+                            news_phase=_Q09_NEWS_PHASE,
+                            q07_phase=_Q07_PHASE,
+                            q08_phase=_Q08_PHASE,
+                        )
+                    longrun_skip, longrun_detail = longrun_scheduling_policy.should_skip_for_longrun_cap(
+                        item["phase"],
+                        payload,
+                        longrun_active_counts,
+                        news_phase=_Q09_NEWS_PHASE,
+                        q07_phase=_Q07_PHASE,
+                        q08_phase=_Q08_PHASE,
+                        enabled=longrun_policy_enabled,
+                    )
+                    if longrun_skip:
+                        skipped_longrun_cap.append({
+                            "item_id": item["id"],
+                            "ea_id": item["ea_id"],
+                            **(longrun_detail or {}),
                         })
                         continue
                     launch_not_before = _parse_utc_iso(payload.get("launch_not_before_utc"))
@@ -2050,6 +2079,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "multisymbol_ram_skipped": skipped_multisym_ram,
                     "multisymbol_commit_skipped": skipped_multisym_commit,
                     "terminal_avoid_skipped": skipped_avoid_terminal,
+                    "longrun_cap_skipped": skipped_longrun_cap,
                     "recovery_capped": recovery_capped,
                 }
             except Exception:
