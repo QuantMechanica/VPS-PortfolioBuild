@@ -52,7 +52,62 @@ bootstrap_plan_sha256=e636187bd0ee24eeb3abf61b8da9dddb0f30fbb6364926e9112e58e8e4
 
 ## Live-Migration / Service / Render
 
-Noch ausstehend. Nach kanonischer Integration werden hier Backup-Pfade,
-Receipt-Service-Health, Scheduled-Task-Vertrag, Dashboard-Größen und
-Vault-Linter-Ergebnis ergänzt.
+Kanonischer Commit: `d30c82bbb` auf `agents/board-advisor`.
 
+```text
+bootstrap_plan_sha256=627646e18dd5c412158d89e4a2a88f2a95ca04b73d9184e80afd5b74e8d4c5b1
+bootstrap_applied=true
+feed_schema=qm.owner-decisions/v2
+feed_revision=1
+feed_statuses=OPEN:5,DEFERRED:1
+```
+
+Bytegleiche Backups vor der Migration:
+
+- `D:/QM/reports/state/archive/owner_decisions_v1_pre_v2_20260824.json`
+- `G:/My Drive/QuantMechanica - Company Reference/12 ToDo/AI ToDos/Archive/OWNER pre Mission Control 2026-08-24.md`
+- `G:/My Drive/QuantMechanica - Company Reference/12 ToDo/AI ToDos/Archive/_INDEX pre Mission Control 2026-08-24.md`
+
+Der Task-Scheduler-Start mit InteractiveToken wurde vom bekannten Hostvertrag
+`0x800710E0` verweigert und der ausschließlich für diesen Versuch neu angelegte
+Task wieder entfernt. Der finale, zum gemounteten G:-Vault passende
+Sitzungsvertrag ist:
+
+```text
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run\QMOwnerDecisionIntake
+  = "C:\Python311\pythonw.exe" "C:\QM\repo\tools\strategy_farm\owner_decision_service.py"
+current_process_pid=1664
+listener=127.0.0.1:8765
+health.ok=true
+health.mode=DOCUMENT_ONLY
+health.open_count=6
+health.revision=1
+CORS file-origin preflight=204, Allow-Origin:null
+```
+
+Der bestehende 2-Minuten-Cockpit-Renderer ruft `render_cockpit_v2.main()` nach
+dem Advanced-Render auf; kein zweiter Dashboard-Task wurde angelegt.
+
+Live-Artefakte nach dem expliziten Render:
+
+```text
+cockpit_v2.html=67,366 bytes (latest scheduled render)
+cockpit.html SHA == cockpit_v2.html SHA
+owner_cards=6
+max_5_text=false
+intake_token_embedded_matches_state=true
+linear_frontier_summary="30 handlungsnahe Frontiers · Vollbestand 14639 im Drill-down"
+linear_frontier_is_last_section=true
+linear_frontier_details_open=false
+linear_frontier.html=4,233,516 bytes
+linear_frontier_full_rows=14,639
+linear_frontier_search=true
+```
+
+Vault-Verifikation: generierte Queue-Marker vorhanden, 6 IDs, kein `max 5`,
+Index trägt `ohne Cap`; Company-Reference-Linter **PASS**. Es wurde keine echte
+OWNER-Antwort simuliert oder vorweggenommen. Der End-to-End-POST-Vertrag wurde
+gegen temporäre Feed-/Receipt-/Vault-Fixtures getestet; die Live-Prüfung blieb
+read-only (`GET /health`, CORS-Preflight).
+
+Kanonischer Abnahmelauf nach Cherry-pick: **61 passed, 1 skipped** in 8,16 s.
