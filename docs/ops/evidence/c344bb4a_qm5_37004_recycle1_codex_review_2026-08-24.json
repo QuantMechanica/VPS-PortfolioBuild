@@ -1,0 +1,23 @@
+{
+  "review_task_id": "c344bb4a-ff9f-4561-a47f-66e7c753a202",
+  "build_task_id": "6d2369c0-a412-427e-afab-8c5feed10cc3",
+  "ea_id": "QM5_37004",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The approved card is not mechanically complete enough to implement its named position sizing without invention: the half-Kelly equation leaves p and b undefined, the 20-day annualized-volatility estimator omits return/variance conventions and invalid-data behavior, and the interaction between dynamic weight and the required fixed-risk backtest contract is unspecified.",
+    "The unchanged source does not implement volatility targeting or half-Kelly sizing at all. It also replaces the card's undefined 12-month exponential momentum with the endpoint difference Close[1]-Close[253], which is a materially different signal estimator.",
+    "Fresh build-gate hardening fails because the approved 2.0% realized-daily entry halt, 2.5% daily hard stop, and 5.0% total-drawdown stop are all absent. Entry-only rollover/spread filtering also precedes Strategy_ManageOpenPosition, so the approved Chandelier protection can be suspended while a position is open.",
+    "OnInit never calls QM_FrameworkDeclareExecutionContract after QM_FrameworkInit, so the approved D1 chart binding and Friday-close mode are not declared or checked fail-closed at runtime.",
+    "artifacts/qm5_37004_build_result.json reports smoke_result=framework_error, smoke_report_path=null, and a custom-history admission blocker. No valid smoke evidence exists, so the producer result fails the mandatory build-result contract even though the tracked MQ5/EX5 hashes identify a prior compile."
+  ],
+  "reviewed_at": "2026-08-24T09:57:50Z"
+}

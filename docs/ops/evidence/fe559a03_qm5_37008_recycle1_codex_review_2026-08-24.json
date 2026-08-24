@@ -1,0 +1,22 @@
+{
+  "review_task_id": "fe559a03-a33b-4003-a976-8bd9244cfe55",
+  "build_task_id": "dbf26171-4fbc-4ac0-bdf8-c76c761e4974",
+  "ea_id": "QM5_37008",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The card-specific repair is otherwise static-clean: the one-sigma GARCH-cone ratchet is present, closed-D1 state is refreshed before admission, the spread gate uses the refreshed ATR, the 2.0%/2.5%/5.0% limits and 0.5% cap are wired, UTC rollover and three-tick deviation are configured, and focused guardrail/spec/hardening checks pass.",
+    "OnInit never calls QM_FrameworkDeclareExecutionContract after QM_FrameworkInit, so the approved D1 chart binding and Friday-close mode are not declared or checked fail-closed at runtime.",
+    "No EX5 exists for the remediated MQ5 (SHA-256 94e0f1ea793c88c63d276f143d292f170a5f4892398c548210d68ad17e624d1b), so there is no runnable binary containing the reviewed source.",
+    "The only producer build JSON predates the remediation, has no source or binary hash, and reports deferred_p2_smoke with smoke_report_path=null and blocked_reason empty. It cannot prove a governed compile or a sanctioned deferred smoke for the current source, so build_result fails and smoke_sanity remains unknown."
+  ],
+  "reviewed_at": "2026-08-24T09:42:17Z"
+}
