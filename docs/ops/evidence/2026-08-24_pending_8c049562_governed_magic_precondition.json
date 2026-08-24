@@ -6,21 +6,30 @@
   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\PENDING_8C049562_uk100-highvol-liquidity-reversal.md",
   "target_symbols": ["UK100.DWX"],
   "classification": "invalid_ea_id",
-  "required_action": "REFUSE",
-  "verification": {
-    "card_frontmatter_ea_id": "PENDING_8C049562",
-    "ea_id_regex_check": "farmctl.magic_allocation_precheck requires ea_id to fullmatch (?:QM5_)?(\\d+); PENDING_8C049562 does not match -> classification=invalid_ea_id, action=REFUSE (framework precheck, not a claude judgment call)",
-    "card_status": "DRAFT",
-    "card_g0_status": "APPROVED",
-    "card_g0_approval_reasoning": "G0 cross-approval Claude 2026-08-24: orthogonal wave 2 (Codex-built, Opus G0 review APPROVE_G0; docs/research/ORTHOGONAL_WAVE2_2026-08-24.md)",
-    "ea_id_registry_csv_rows_for_this_id": 0,
-    "magic_numbers_csv_rows_for_this_id": 0,
-    "resolver_rows_for_this_id": 0,
-    "ea_directory_exists": false
+  "note": "A prior session (claude-orchestration-3, 2026-08-24T09:22:12Z) already reached this same REFUSE conclusion for this task and wrote an equivalent evidence artifact at this path, but never called agent_router.py update-task, so the task remained IN_PROGRESS and was re-dispatched to this session. This version reconciles: root cause, diagnosis, and REFUSE verdict are unchanged; it adds a live governed_magic_allocator.py dry-run reproduction and independent registry scans as corroboration. Systemic count confirmed unchanged: 17 PENDING_<hash>-ea_id cards remain in cards_approved/ as of this run (2026-08-24), only 3 of which (this one plus PENDING_C992226C, PENDING_0E30F570) were routed as claude tasks; the other 14 have not yet triggered a build precheck.",
+  "diagnosis": {
+    "ea_directory_exists": false,
+    "identity_registry_rows": 0,
+    "active_magic_rows": 0,
+    "retired_magic_rows": 0,
+    "other_status_magic_rows": 0,
+    "total_magic_rows": 0
   },
-  "root_cause": "generate_orthogonal_wave2_cards.py assigns a placeholder ea_id of the form PENDING_<sha256(slug)[:8]> at draft time (pending_id property, tools/strategy_farm/generate_orthogonal_wave2_cards.py:30-33) with g0_status: PENDING_REVIEW. This card's g0_status was subsequently flipped to APPROVED and the file landed in D:/QM/strategy_farm/artifacts/cards_approved/ while ea_id was never resolved from the PENDING_<hash> placeholder to a real sequential QM5_NNNNN identity. No tool in tools/strategy_farm/ performs that placeholder-to-real-ea_id rename/allocation step for orthogonal-wave2 cards; governed_magic_allocator.py allocates identity+magics for a card that already carries a valid numeric ea_id, it does not mint the numeric id itself. This is an intake-pipeline gap, not a one-off card defect: 17 PENDING_<hash> cards are currently sitting in cards_approved/ with this same shape (2026-08-24).",
-  "action_taken": "No allocation attempted. No registry or resolver file touched. No magic invented outside the ea_id*10000+slot formula (none could be, since there is no valid numeric ea_id to base it on). No retired row revived. Original build precheck correctly remains blocked.",
-  "next_step": "This card needs a governed identity-resolution step (mint the next sequential QM5_NNNNN id and rename the card file + ea_id frontmatter field) before governed_magic_allocator.py can allocate magics for it. Recommend Codex/ops fix the orthogonal-wave2 intake path (or add an explicit resolution tool) so g0_status: APPROVED cards never reach cards_approved/ still carrying a PENDING_<hash> ea_id. Flagging for OWNER/Codex review; not fixing the generator myself since identity minting is a governed allocator concern per CLAUDE.md and out of scope for a REFUSE precondition check.",
-  "generated_by": "claude-orchestration-3",
-  "generated_at": "2026-08-24T09:22:12Z"
+  "root_cause": "Card frontmatter carries a placeholder identity (`ea_id: PENDING_8C049562`) minted by tools/strategy_farm/generate_orthogonal_wave2_cards.py (sha256('orthogonal-wave2:<slug>')[:8]). status: DRAFT; g0_status: APPROVED (G0 hypothesis/orthogonality review cleared 2026-08-24). The card has NOT been promoted through `farmctl.py approve-card` / `reserve-ea-ids`, so no numeric QM5_NNNNN identity has ever been minted for it. governed_magic_allocator.py's EA_ID_RE match against the frontmatter ea_id fails, so `candidate_from_card()` raises `exact_card_identity_missing` before any registry write is attempted.",
+  "command_run": "python tools/strategy_farm/governed_magic_allocator.py --card \"D:\\QM\\strategy_farm\\artifacts\\cards_approved\\PENDING_8C049562_uk100-highvol-liquidity-reversal.md\" --dry-run --max-eas 1",
+  "command_result": {
+    "status": "aborted",
+    "reason": "exact_card_identity_missing:D:\\QM\\strategy_farm\\artifacts\\cards_approved\\PENDING_8C049562_uk100-highvol-liquidity-reversal.md",
+    "schema": "qm.governed-magic-allocation/v1"
+  },
+  "independent_verification": {
+    "identity_registry_csv": "framework/registry/ea_id_registry.csv scanned for slug=uk100-highvol-liquidity-reversal: 0 rows",
+    "magic_numbers_csv": "framework/registry/magic_numbers.csv scanned for slug=uk100-highvol-liquidity-reversal: 0 rows",
+    "ea_directory": "framework/EAs/*uk100-highvol-liquidity-reversal*: no match"
+  },
+  "action_taken": "REFUSE. No magic numbers, registry rows, or resolver edits were written. No EA directory or numeric identity was invented. governed_magic_allocator.py itself independently refuses (exact_card_identity_missing), confirming the router's precondition classification.",
+  "required_action_confirmed": "REFUSE",
+  "next_step": "This card is a G0-approved draft (orthogonal wave 2 batch), not yet an identity-bearing candidate. To unblock, run the governed identity-minting step first: `farmctl.py approve-card --card <path> --reasoning <R1-R4> --expected-pf <est> --expected-dd-pct <est>` (or reserve-ea-ids) to mint a real QM5_NNNNN id and rename/relocate the card, THEN re-run governed_magic_allocator.py against the promoted card. approve-card is outside the scope of this magic-precondition task and was not executed here. The original build precheck (source: farmctl build precheck) stays blocked until that promotion happens.",
+  "generated_by": "claude-orchestration-1 (headless single-pass cycle)",
+  "generated_at": "2026-08-24T00:00:00Z"
 }
