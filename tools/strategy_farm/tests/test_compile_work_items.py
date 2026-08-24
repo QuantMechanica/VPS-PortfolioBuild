@@ -227,6 +227,23 @@ def test_hygiene_burn_source_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_rework_33007_source_repair_authority_is_exact_task_and_label_bound() -> None:
+    label = "QM5_33007_george-pruitt-king-keltner-trend-buster"
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.REWORK_33007_SOURCE_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_33008_unrelated",
+        compile_work_items.REWORK_33007_SOURCE_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_review_rework:wrong-task",
+    )
+
+
 def test_batch_from_file_is_dry_run_until_apply(tmp_path: Path) -> None:
     labels = [
         "QM5_1001_compile-fixture-h1",

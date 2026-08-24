@@ -72,6 +72,15 @@ HYGIENE_BURN_SOURCE_REPAIR_AUTHORITY = "ticket:rb-hygiene-burn"
 HYGIENE_BURN_SOURCE_REPAIR_EA_LABELS = frozenset({
     "QM5_41136_xng-mdaily-iqrmean-mom",
 })
+# Exact RECYCLE authority for rework-33007. The existing EX5 belongs to the
+# rejected source, so the ordinary no-overwrite classifier must stay closed
+# everywhere except this router-task/EA binding.
+REWORK_33007_SOURCE_REPAIR_AUTHORITY = (
+    "router_review_rework:85fd5256-cd48-4486-9f2b-64d343f9b3e3"
+)
+REWORK_33007_SOURCE_REPAIR_EA_LABELS = frozenset({
+    "QM5_33007_george-pruitt-king-keltner-trend-buster",
+})
 # Exact paced-fleet authority for the pre-existing QM5_11900 Q02
 # infrastructure-repair task.  The June binary predates its governed magic
 # allocation, so the ordinary no-overwrite classifier correctly refuses it;
@@ -212,6 +221,10 @@ def _source_repair_authorized(ea_label: str, authority: str | None) -> bool:
         or (
             authority == HYGIENE_BURN_SOURCE_REPAIR_AUTHORITY
             and ea_label in HYGIENE_BURN_SOURCE_REPAIR_EA_LABELS
+        )
+        or (
+            authority == REWORK_33007_SOURCE_REPAIR_AUTHORITY
+            and ea_label in REWORK_33007_SOURCE_REPAIR_EA_LABELS
         )
         or (
             authority == Q02_INFRA_SOURCE_REPAIR_AUTHORITY
