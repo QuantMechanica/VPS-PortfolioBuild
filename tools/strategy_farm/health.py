@@ -59,6 +59,14 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm import news_gate_service
 try:
+    import throughput_telemetry
+except ModuleNotFoundError:
+    from tools.strategy_farm import throughput_telemetry
+try:
+    import q10_long_cell_breaker
+except ModuleNotFoundError:
+    from tools.strategy_farm import q10_long_cell_breaker
+try:
     from gate_manifest import load_gate_manifest
 except ModuleNotFoundError:
     from tools.strategy_farm.gate_manifest import load_gate_manifest
@@ -4280,6 +4288,111 @@ def chk_terminal_requalification_verdicts_count(con) -> dict:
     )
 
 
+def chk_execution_verdict_throughput(con) -> dict:
+    """Split tester throughput: execution verdicts vs raw rows/hour by Qxx phase.
+
+    Forensics 2026-08-24 §1: a 182-row ``OWNER-DEC-STRANDED-182`` disposition
+    batch (``payload_json.disposition_only=true``) landed in one second and made
+    a 1-verdict hour read as a 183-verdict spike. Raw verdict rows/hour is NOT a
+    valid tester-throughput metric; this invariant publishes the execution-only
+    count (dispositions excluded) beside the raw count. WARN when a window has
+    raw terminal rows but zero execution verdicts — i.e. the only movement was
+    administrative, no tester actually completed. Read-only; never a verdict.
+    """
+    metrics = throughput_telemetry.execution_vs_raw_by_phase(con, now=_utc_now())
+    raw = int(metrics["raw_total"])
+    execution = int(metrics["execution_total"])
+    disposition = int(metrics["disposition_total"])
+    only_dispositions = raw > 0 and execution == 0
+    status = "WARN" if only_dispositions else "OK"
+    by_phase = ", ".join(
+        f"{qid}={counts['execution']}/{counts['raw']}"
+        for qid, counts in metrics["by_phase"].items()
+    ) or "none"
+    detail = (
+        f"24h execution_verdicts={execution} ({metrics['execution_per_hour']}/h) "
+        f"vs raw_rows={raw} ({metrics['raw_per_hour']}/h); "
+        f"disposition_only_excluded={disposition}; "
+        f"by_phase[exec/raw]: {by_phase}"
+    )
+    return _check(
+        "execution_verdict_throughput",
+        status,
+        {"execution": execution, "raw": raw, "disposition": disposition,
+         "by_phase": metrics["by_phase"]},
+        "visibility SLO: nonzero execution verdicts when terminal rows exist",
+        detail,
+        (
+            "Window shows only disposition_only administrative rows and zero "
+            "tester completions — inspect active-row/latency telemetry, not the "
+            "raw verdict count, to find the real bottleneck."
+        )
+        if only_dispositions else "",
+    )
+
+
+def chk_active_terminal_minutes_by_phase(con) -> dict:
+    """Active terminal-minutes currently occupied per Qxx phase (visibility)."""
+    metrics = throughput_telemetry.active_terminal_minutes_by_phase(con, now=_utc_now())
+    by_phase = ", ".join(
+        f"{qid}={minutes:.0f}m" for qid, minutes in metrics["by_phase"].items()
+    ) or "none"
+    detail = (
+        f"active_rows={metrics['active_rows']}; "
+        f"total_active_minutes={metrics['total_active_minutes']:.0f}; "
+        f"by_phase: {by_phase}"
+    )
+    return _check(
+        "active_terminal_minutes_by_phase",
+        "OK",
+        metrics["by_phase"],
+        "visibility only: terminal occupancy attributed to the working Qxx gate",
+        detail,
+        "",
+    )
+
+
+def chk_claim_to_complete_latency(con) -> dict:
+    """Claimed-to-completed latency percentiles for terminal rows (visibility)."""
+    metrics = throughput_telemetry.claim_to_complete_latency(con, now=_utc_now())
+    detail = (
+        f"24h terminal execution rows with a claim stamp={metrics['sample_count']} "
+        f"(skipped_no_claim={metrics['skipped_no_claim']}); "
+        f"latency_min p50={metrics.get('p50')} p90={metrics.get('p90')} "
+        f"p99={metrics.get('p99')}"
+    )
+    return _check(
+        "claim_to_complete_latency",
+        "OK",
+        {"p50": metrics.get("p50"), "p90": metrics.get("p90"),
+         "p99": metrics.get("p99"), "sample_count": metrics["sample_count"]},
+        "visibility only: (updated_at - claimed_at_iso) distribution, minutes",
+        detail,
+        "",
+    )
+
+
+def chk_q10_cell_throughput(con) -> dict:
+    """Q10 cell receipts/hour and retry-exhausted cells/hour (visibility)."""
+    metrics = throughput_telemetry.q10_cell_throughput(
+        con, now=_utc_now(), reports_root=q10_long_cell_breaker.DEFAULT_REPORTS_ROOT
+    )
+    detail = (
+        f"Q10 parents_scanned={metrics['parents_scanned']}; 24h "
+        f"cell_receipts={metrics['receipts']} ({metrics['receipts_per_hour']}/h); "
+        f"retry_exhausted_cells={metrics['retry_exhausted']} "
+        f"({metrics['retry_exhausted_per_hour']}/h)"
+    )
+    return _check(
+        "q10_cell_throughput",
+        "OK",
+        {"receipts": metrics["receipts"], "retry_exhausted": metrics["retry_exhausted"]},
+        "visibility only: success receipts vs retry-exhausted cells, separated",
+        detail,
+        "",
+    )
+
+
 ALL_CHECKS = [
     ("ea_id_slug_uniqueness", chk_ea_id_slug_uniqueness, False),
     ("card_registry_identity_integrity", chk_card_registry_identity_integrity, False),
@@ -4336,6 +4449,12 @@ ALL_CHECKS = [
     ("pending_artifact_binding_drift", chk_pending_artifact_binding_drift, True),
     ("news_gate_service_rate", chk_news_gate_service_rate, True),
     ("opt_fork_service_rate", chk_opt_fork_service_rate, True),
+    # Split throughput telemetry (forensics 2026-08-24 rec. 6): execution
+    # verdicts vs disposition_only, active terminal-minutes, latency, Q10 cells.
+    ("execution_verdict_throughput", chk_execution_verdict_throughput, True),
+    ("active_terminal_minutes_by_phase", chk_active_terminal_minutes_by_phase, True),
+    ("claim_to_complete_latency", chk_claim_to_complete_latency, True),
+    ("q10_cell_throughput", chk_q10_cell_throughput, True),
     ("terminal_requalification_verdicts_count", chk_terminal_requalification_verdicts_count, True),
 ]
 

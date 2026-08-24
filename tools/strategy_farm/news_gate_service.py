@@ -10,6 +10,12 @@ from pathlib import Path
 from typing import Any, Iterable
 
 
+try:  # direct ``python tools/strategy_farm/<script>.py`` imports
+    from throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL
+except ModuleNotFoundError:  # package imports (tests, module consumers)
+    from tools.strategy_farm.throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL
+
+
 EXPANSION_REASON = "expanded_7x4_matrix_required"
 CONCLUSIVE_VERDICTS = frozenset({"CONFIG_LOCKED"})
 
@@ -147,6 +153,7 @@ def service_metrics(
             SELECT count(*) FROM work_items
             WHERE phase IN ({placeholders}) AND status='done'
               AND verdict IN ({verdict_placeholders}) AND updated_at>=?
+              AND {EXECUTION_VERDICT_EXCLUSION_SQL}
             """,
             (*phases, *sorted(CONCLUSIVE_VERDICTS), cutoff),
         ).fetchone()[0]

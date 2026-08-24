@@ -29,9 +29,11 @@ from typing import Any, Iterable, Mapping
 try:
     from gate_manifest import GateManifest
     from phase_ids import ACTIVE_GATE_MANIFEST
+    from throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL
 except ModuleNotFoundError:
     from tools.strategy_farm.gate_manifest import GateManifest
     from tools.strategy_farm.phase_ids import ACTIVE_GATE_MANIFEST
+    from tools.strategy_farm.throughput_telemetry import EXECUTION_VERDICT_EXCLUSION_SQL
 
 
 SCHEMA = "qm.opt-fork-routing/v1"
@@ -432,6 +434,7 @@ def service_metrics(
                 WHERE upper(phase)=? AND lower(status) IN ('done','failed')
                   AND coalesce(gate_contract_version,?) IN ({version_placeholders})
                   AND updated_at>=?
+                  AND {EXECUTION_VERDICT_EXCLUSION_SQL}
                 """,
                 (
                     phase, "legacy" if version == "v3" else version,

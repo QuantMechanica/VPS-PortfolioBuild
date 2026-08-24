@@ -3244,6 +3244,39 @@ def main() -> int:
         )
     hb_warns_html = "".join(hb_warn_rows)
 
+    # ---------- v7b. THROUGHPUT TELEMETRY (forensics 2026-08-24 rec. 6) ----------
+    # Raw work_items verdict rows/hour is NOT a valid tester-throughput metric: a
+    # single 182-row disposition_only batch made a 1-verdict hour read as 183.
+    # These rows read the split health checks (execution vs disposition, active
+    # terminal-minutes by Qxx phase, claim->complete latency, Q10 cells) by name.
+    _checks_by_name = {c.get("name"): c for c in (health.get("checks") or [])}
+
+    def _tp_row(check_name: str, label: str) -> str:
+        c = _checks_by_name.get(check_name)
+        if not c:
+            return (
+                '<div class="tp-row"><span class="tp-name">' + e(label) + '</span>'
+                '<span class="tp-detail" style="color:var(--text-4)">'
+                'no health.json entry (run farmctl health)</span></div>'
+            )
+        st = str(c.get("status") or "").upper()
+        st_cls = "tp-warn" if st == "WARN" else ("tp-fail" if st == "FAIL" else "tp-ok")
+        return (
+            '<div class="tp-row">'
+            f'<span class="tp-name">{e(label)}</span>'
+            f'<span class="tp-status {st_cls}">{e(st or "OK")}</span>'
+            f'<span class="tp-detail">{e(str(c.get("detail") or ""))}</span>'
+            '</div>'
+        )
+
+    throughput_rows_html = "".join((
+        _tp_row("execution_verdict_throughput", "Execution vs Raw Verdicts // 24h"),
+        _tp_row("active_terminal_minutes_by_phase", "Active Terminal-Minutes // by Qxx"),
+        _tp_row("claim_to_complete_latency", "Claim→Complete Latency // p50/p90/p99"),
+        _tp_row("q10_cell_throughput", "Q10 Cells // receipts vs retry-exhausted"),
+        _tp_row("news_gate_service_rate", "News Gate Service Rate // Q10 conclusions"),
+    ))
+
 # ==== HTML assembly (PAPER/INK Direction C · OWNER-DL 2026-07-20) ====
 
     # CSS lives outside the f-string to avoid brace-escaping.
@@ -3371,6 +3404,22 @@ body { padding: 32px; min-height: 100vh; }
   font-size: 11px; letter-spacing: 0.14em; color: var(--text-4); text-transform: uppercase;
 }
 .panel { background: var(--surface-1); border: 1px solid var(--border); box-shadow: 0 0 0 1px var(--border) inset; }
+
+/* THROUGHPUT TELEMETRY */
+.tp-panel { background: var(--surface-1); border: 1px solid var(--border); }
+.tp-row {
+  display: grid; grid-template-columns: 260px 56px 1fr;
+  gap: 14px; padding: 10px 18px; align-items: baseline;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;
+}
+.tp-row:last-child { border-bottom: none; }
+.tp-name { color: var(--text-2); font-weight: 600; }
+.tp-status { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.tp-status.tp-ok { color: var(--pass); }
+.tp-status.tp-warn { color: var(--warn); }
+.tp-status.tp-fail { color: var(--fail); }
+.tp-detail { color: var(--text-3); word-break: break-word; }
 
 /* OWNER ATTENTION */
 .attention { background: var(--surface-1); border: 1px solid var(--border); }
@@ -4165,6 +4214,18 @@ a.frontier-tile:hover { background: var(--surface-2); }
       <span class="section-aux">W0–W8 // Hash-Bound Source // No Runtime Authority</span>
     </div>
     {programme_html}
+  </div>
+
+  <!-- 7a2. THROUGHPUT TELEMETRY -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Throughput Telemetry // Execution vs Disposition</span>
+      <span class="section-aux">Tester Verdicts // Terminal-Minutes // Latency // Q10 Cells</span>
+    </div>
+    <div class="tp-panel">
+      {throughput_rows_html}
+    </div>
   </div>
 
   <!-- 7b. OPS HEARTBEATS -->
