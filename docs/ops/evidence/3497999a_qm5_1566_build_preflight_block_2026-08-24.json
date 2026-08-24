@@ -1,0 +1,31 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "3497999a-779c-4450-984f-f655503c814f",
+  "checked_at_utc": "2026-08-24T03:50:57Z",
+  "ea_id": "QM5_1566",
+  "slug": "connors-streak-reversal-h4",
+  "approved_card": {
+    "g0_status": "APPROVED",
+    "identity_match": true,
+    "sha256": "991c2a404245e5d5dcb3666ae142a31fe1d7db0ff4a737fc49cc4e9cbc78aad7"
+  },
+  "registry": {
+    "ea_id_registry_exact_rows": 0,
+    "active_magic_rows": 0,
+    "required_magic_rows": 4
+  },
+  "build_check_passed": false,
+  "build_check": {
+    "result": "FAIL",
+    "exit_code": 1,
+    "gate": "MAGIC_NOT_REGISTERED",
+    "compile_one_exit_code": null
+  },
+  "guardrails": {
+    "result": "PASS",
+    "max_news_stale_hours": 336,
+    "findings": []
+  },
+  "evidence_markdown": "C:/QM/repo/docs/ops/evidence/3497999a_qm5_1566_connors_streak_reversal_build_preflight_2026-08-24.md",
+  "verdict": "BUILD_NOT_STARTED_EA_ID_AND_MAGIC_GATE_FAIL"
+}

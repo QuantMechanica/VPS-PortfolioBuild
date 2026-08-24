@@ -1,0 +1,31 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "9624a863-1b3c-4e4a-81b9-697701c1328e",
+  "checked_at_utc": "2026-08-24T03:50:57Z",
+  "ea_id": "QM5_1545",
+  "slug": "bressert-composite-index-h4",
+  "approved_card": {
+    "g0_status": "APPROVED",
+    "identity_match": true,
+    "sha256": "424cf32320453cb638d88744551b6ffe04d3323bb6f5ff2d10070bfcc88b0330"
+  },
+  "registry": {
+    "ea_id_registry_exact_rows": 0,
+    "active_magic_rows": 0,
+    "required_magic_rows": 4
+  },
+  "build_check_passed": false,
+  "build_check": {
+    "result": "FAIL",
+    "exit_code": 1,
+    "gate": "MAGIC_NOT_REGISTERED",
+    "compile_one_exit_code": null
+  },
+  "guardrails": {
+    "result": "PASS",
+    "max_news_stale_hours": 336,
+    "findings": []
+  },
+  "evidence_markdown": "C:/QM/repo/docs/ops/evidence/9624a863_qm5_1545_bressert_composite_index_build_preflight_2026-08-24.md",
+  "verdict": "BUILD_NOT_STARTED_EA_ID_AND_MAGIC_GATE_FAIL"
+}

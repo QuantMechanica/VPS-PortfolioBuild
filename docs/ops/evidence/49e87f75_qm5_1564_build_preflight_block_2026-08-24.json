@@ -1,0 +1,31 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "49e87f75-7bf9-4d6a-a107-62ef0426804b",
+  "checked_at_utc": "2026-08-24T03:50:57Z",
+  "ea_id": "QM5_1564",
+  "slug": "hopwood-bermaui-rsi-mtf-h4",
+  "approved_card": {
+    "g0_status": "APPROVED",
+    "identity_match": true,
+    "sha256": "f39fd7074f49b35193b10a3cedc54430b32a682b437b25980611bda587b2b394"
+  },
+  "registry": {
+    "ea_id_registry_exact_rows": 0,
+    "active_magic_rows": 0,
+    "required_magic_rows": 4
+  },
+  "build_check_passed": false,
+  "build_check": {
+    "result": "FAIL",
+    "exit_code": 1,
+    "gate": "MAGIC_NOT_REGISTERED",
+    "compile_one_exit_code": null
+  },
+  "guardrails": {
+    "result": "PASS",
+    "max_news_stale_hours": 336,
+    "findings": []
+  },
+  "evidence_markdown": "C:/QM/repo/docs/ops/evidence/49e87f75_qm5_1564_hopwood_bermaui_rsi_mtf_build_preflight_2026-08-24.md",
+  "verdict": "BUILD_NOT_STARTED_EA_ID_AND_MAGIC_GATE_FAIL"
+}

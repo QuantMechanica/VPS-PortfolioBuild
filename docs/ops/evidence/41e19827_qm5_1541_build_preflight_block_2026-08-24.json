@@ -1,0 +1,31 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "41e19827-7abe-4297-8ba5-db83aeccb3c5",
+  "checked_at_utc": "2026-08-24T03:50:57Z",
+  "ea_id": "QM5_1541",
+  "slug": "connors-pullback-channel-exit-h4",
+  "approved_card": {
+    "g0_status": "APPROVED",
+    "identity_match": true,
+    "sha256": "5c693f0558d3aeb0afe388c928d078e2414a458c5caabce073332d65b564e54f"
+  },
+  "registry": {
+    "ea_id_registry_exact_rows": 0,
+    "active_magic_rows": 0,
+    "required_magic_rows": 4
+  },
+  "build_check_passed": false,
+  "build_check": {
+    "result": "FAIL",
+    "exit_code": 1,
+    "gate": "MAGIC_NOT_REGISTERED",
+    "compile_one_exit_code": null
+  },
+  "guardrails": {
+    "result": "PASS",
+    "max_news_stale_hours": 336,
+    "findings": []
+  },
+  "evidence_markdown": "C:/QM/repo/docs/ops/evidence/41e19827_qm5_1541_connors_pullback_channel_build_preflight_2026-08-24.md",
+  "verdict": "BUILD_NOT_STARTED_EA_ID_AND_MAGIC_GATE_FAIL"
+}

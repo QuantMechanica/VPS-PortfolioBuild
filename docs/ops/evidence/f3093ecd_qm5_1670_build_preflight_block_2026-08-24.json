@@ -1,0 +1,31 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "f3093ecd-e820-4224-9c22-e248300d50e8",
+  "checked_at_utc": "2026-08-24T03:50:57Z",
+  "ea_id": "QM5_1670",
+  "slug": "hopwood-bermaui-macd-h4",
+  "approved_card": {
+    "g0_status": "APPROVED",
+    "identity_match": true,
+    "sha256": "3140ff22846bf1dea56c00fa80a2cee98d2ef54b8003f9b9b0b329593c23611b"
+  },
+  "registry": {
+    "ea_id_registry_exact_rows": 1,
+    "active_magic_rows": 0,
+    "required_magic_rows": 6
+  },
+  "build_check_passed": false,
+  "build_check": {
+    "result": "FAIL",
+    "exit_code": 1,
+    "gate": "MAGIC_NOT_REGISTERED",
+    "compile_one_exit_code": null
+  },
+  "guardrails": {
+    "result": "PASS",
+    "max_news_stale_hours": 336,
+    "findings": []
+  },
+  "evidence_markdown": "C:/QM/repo/docs/ops/evidence/f3093ecd_qm5_1670_hopwood_bermaui_macd_build_preflight_2026-08-24.md",
+  "verdict": "BUILD_NOT_STARTED_MAGIC_GATE_FAIL"
+}
