@@ -1,0 +1,20 @@
+{
+  "review_task_id": "70395b6d-ee55-4906-bb55-91d75157213b",
+  "build_task_id": "92af0f37-cfdf-41b4-b187-0fd19f00b722",
+  "ea_id": "QM5_39002",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The remediated source (SHA-256 2c8c9129030e1001bd3d97bb956358c4ec7f925db0b50b951c756471687f275b) passes the focused hardening, guardrail, SPEC, symbol, registry, set-risk, and forbidden-code checks, but no EX5 exists for QM5_39002. The reviewed implementation has no runnable binary identity.",
+    "No build-result JSON exists for source task 92af0f37-cfdf-41b4-b187-0fd19f00b722 in either the canonical artifacts tree or D:/QM/strategy_farm/artifacts/builds, and D:/QM/reports/smoke/QM5_39002 is absent. Required compile, build-check, and smoke evidence therefore fails closed."
+  ],
+  "reviewed_at": "2026-08-24T09:24:59Z"
+}
