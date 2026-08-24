@@ -3,16 +3,18 @@
 ; ea_id:        1409
 ; ea_slug:      wyckoff-sign-of-strength-phase-d-h4
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260824-002
 ; symbol:       EURUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   deffd643e4c78e12f58960cca2568e737bd90542a235eca83777c531e8dfaeb3
-; author:       Gemini
-; date:         2026-08-22
+; build_hash:   42c264eb5849a2d7442ac2df2d8e913ff1b281a2b7601c9a7554c78ac7ce3d5d
+; author:       Codex
+; date:         2026-08-24
+; volume_reliability: RELIABLE
+; volume_gate_bias:   ENFORCE_GATE_8
 ;==========================================================
 qm_ea_id=1409
 qm_magic_slot_offset=0

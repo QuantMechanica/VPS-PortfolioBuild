@@ -3,8 +3,8 @@
 **EA ID:** QM5_1409  
 **Slug:** `wyckoff-sign-of-strength-phase-d-h4`  
 **Source:** `6e967762-b26d-59a3-b076-35c17f2e7c36` (see `D:/QM/strategy_farm/artifacts/cards_approved/QM5_1409_wyckoff-sign-of-strength-phase-d-h4.md`)  
-**Author of this spec:** Gemini  
-**Last revised:** 2026-08-22  
+**Author of this spec:** Codex (review rework)
+**Last revised:** 2026-08-24
 
 ---
 
@@ -14,7 +14,7 @@ The EA detects canonical Wyckoff accumulation Phase-D bullish continuation setup
 
 ### Phase A: Trading Range Gate
 - Bounded multi-week consolidation window $N_{TR} \in [60, 240]$ H4 bars.
-- Trimmed quantile bounds: drop highest 5% and lowest 5% wicks; $high\_band$ = top 20% percentile, $low\_band$ = bottom 20% percentile.
+- Trimmed quantile bounds: sort highs/lows, remove the extreme 5% at both ends, then calculate $high\_band$ at the 80th percentile and $low\_band$ at the 20th percentile of the retained sample.
 - Range containment: $\ge 90\%$ of bar closes inside $[low\_band, high\_band]$.
 - Range amplitude: $4.0 \le (high\_band - low\_band) / ATR(14, H4) \le 14.0$.
 - Prior-trend gate: Linear regression slope over 60 bars preceding the range must be negative: $slope_{pre} / ATR(14, H4) \le -0.10$ per bar.
@@ -44,6 +44,13 @@ The EA detects canonical Wyckoff accumulation Phase-D bullish continuation setup
 - **Time Stop**: 60 H4 bars maximum position duration.
 - **Macro Bias Filter**: $close > SMA(200, D1) - 2.0 \cdot ATR(14, D1)$.
 - **Pattern Reuse Guard**: 80 H4 bars cooldown.
+- **Restart state**: the range high, measured move, TP1 trigger/completion,
+  signal time, and reuse deadline are published to terminal Global Variables
+  before/after entry. A position with missing durable state is closed
+  fail-closed instead of silently losing TP1 or pattern-failure protection.
+- **News**: the card's literal high-impact blackout is 480 minutes before and
+  after an event (two H4 bars), applied to new entries only. Management and
+  protective exits remain active during the blackout.
 
 ---
 
@@ -101,17 +108,27 @@ The EA detects canonical Wyckoff accumulation Phase-D bullish continuation setup
 - `EURUSD.DWX`
 - `GBPUSD.DWX`
 - `USDJPY.DWX`
-- `AUDUSD.DWX`
-- `USDCAD.DWX`
-- `USDCHF.DWX`
-- `NZDUSD.DWX`
 - `NDX.DWX`
 - `WS30.DWX`
-- `GDAXI.DWX`
-- `UK100.DWX`
-- `SP500.DWX`
+- `GDAXI.DWX` — governed canonical DWX house-symbol reconciliation for the
+  card token `GER40.DWX`; `GER40.DWX` is not present in
+  `framework/registry/dwx_symbol_matrix.csv`.
 - `XAUUSD.DWX`
 - `XTIUSD.DWX`
+
+The EA validates the host symbol and its pre-existing MagicResolver slot in
+`OnInit`; allocations outside this approved eight-symbol scope are not emitted
+as setfiles and cannot initialize this EA. Existing registry allocations are
+left untouched per the rework order.
+
+### Tick-volume reliability policy
+
+All eight approved hosts belong to the card's reliable classes: USD-major FX,
+XAUUSD, index CFDs, or oil. Their setfiles therefore carry
+`volume_reliability=RELIABLE` and `volume_gate_bias=ENFORCE_GATE_8`. The source
+classifies the host deterministically before applying gate 8; a non-approved
+or cross-pair host receives pass-by-default at the volume gate but is rejected
+by the stricter approved-host `OnInit` check.
 
 ---
 
@@ -133,3 +150,31 @@ The EA detects canonical Wyckoff accumulation Phase-D bullish continuation setup
 | Typical hold time | `3-10 days` (up to 60 H4 bars time stop) |
 | Expected drawdown profile | Well within 5% daily / 10% total DD constraints |
 | Regime preference | Prolonged accumulation basing resolving into decisive markup |
+
+---
+
+## 6. Source Citation
+
+- Hank Pruden, *The Three Skills of Top Trading* (Wiley, 2007),
+  ISBN 978-0-470-03866-5, chapter 5, pp. 117-170: Wyckoff Phase-D SOS
+  and LPS sequence.
+- Richard D. Wyckoff, *Method of Tape Reading* (1931; Fraser Publishing
+  reprint, 2007), ISBN 978-0-87034-148-9.
+- Approved card of record:
+  `D:/QM/strategy_farm/artifacts/cards_approved/QM5_1409_wyckoff-sign-of-strength-phase-d-h4.md`,
+  `g0_status: APPROVED`, source id
+  `6e967762-b26d-59a3-b076-35c17f2e7c36`.
+
+---
+
+## 7. Risk Model
+
+- Backtest/default mode: `RISK_FIXED=1000`, `RISK_PERCENT=0`.
+- Live packaging mode: `RISK_FIXED=0`; `RISK_PERCENT` is supplied only by
+  OWNER-governed live setfiles. This build does not authorize live use.
+- `PORTFOLIO_WEIGHT=1.0` by default.
+- Position size is calculated inside the V5 framework from the normalized
+  structural stop; the EA does not calculate lots or hand-roll magic values.
+- Entry and all partial/SL/close operations use `QM_TM_*`; the framework owns
+  MagicResolver, risk sizing, trade context, kill-switch, Friday-close, and
+  MAE evidence.
