@@ -3979,6 +3979,72 @@ def chk_q09_sealed_plan_hold_age(con) -> dict:
     )
 
 
+# Q10 long-cell circuit breaker (router task cae3df77, forensics recommendation
+# 2). Detection + hold live in tools/strategy_farm/q10_long_cell_breaker.py; this
+# invariant only surfaces the breaker's holds. It is read-only and writes NO
+# verdict — the breaker never sets PASS/FAIL on the parent, it only flags a
+# long-running/exhausted Q10 cell for operator review and stops re-claiming.
+Q10_LONG_CELL_HOLD_CODE = "Q10_LONG_CELL_BREAKER"
+Q10_LONG_CELL_HOLD_FAIL_HOURS = 6.0
+
+
+def chk_q10_long_cell_breaker_holds(con) -> dict:
+    """Surface Q10 long-cell circuit-breaker holds for operator review.
+
+    Case 13f41983 (2026-08-24 forensics §2) held terminal T6 for hours with 0
+    receipts, retrying exhausted cells with no flag. The breaker writes a
+    Q10_LONG_CELL_BREAKER hold so the row stops being re-claimed; this invariant
+    makes that hold visible. WARN when any are present (operator review), FAIL
+    when a hold has aged past the shift window without action. Never a verdict.
+    """
+    rows = con.execute(
+        """
+        SELECT w.id, w.ea_id, w.symbol, w.phase, w.status,
+               h.created_at AS held_at, h.reason
+        FROM work_items w
+        JOIN work_item_holds h ON h.work_item_id=w.id
+        WHERE h.hold_code=? AND h.active=1
+        ORDER BY h.created_at ASC, w.id ASC
+        """,
+        (Q10_LONG_CELL_HOLD_CODE,),
+    ).fetchall()
+    if not rows:
+        return _check(
+            "q10_long_cell_breaker_holds", "OK", 0,
+            Q10_LONG_CELL_HOLD_FAIL_HOURS,
+            "no active Q10 long-cell breaker holds", "",
+        )
+    now = _utc_now()
+    aged = 0
+    rendered = []
+    for row in rows:
+        held_at = _parse_utc_ts(row["held_at"])
+        if held_at is None:
+            hours = float("inf")
+        else:
+            hours = max(0.0, (now - held_at).total_seconds() / 3600.0)
+        if hours > Q10_LONG_CELL_HOLD_FAIL_HOURS:
+            aged += 1
+        age = "unparseable" if hours == float("inf") else f"{hours:.1f}h"
+        if len(rendered) < 12:
+            rendered.append(f"{row['id'][:8]}:{row['ea_id']}:{row['symbol']}:{age}")
+    status = "FAIL" if aged else "WARN"
+    detail = (
+        f"{len(rows)} active Q10 long-cell breaker hold(s); aged>"
+        f"{Q10_LONG_CELL_HOLD_FAIL_HOURS:.0f}h={aged}; " + ", ".join(rendered)
+    )
+    hint = (
+        "Operator review: a Q10 cell exceeded max(3x parent median, configured "
+        "timeout). Inspect the cell_failure_*/receipt evidence, classify the "
+        "parent's real disposition, then release the hold. Do NOT read the "
+        "hold as a pipeline verdict — the breaker writes none."
+    )
+    return _check(
+        "q10_long_cell_breaker_holds", status, len(rows),
+        Q10_LONG_CELL_HOLD_FAIL_HOURS, detail, hint,
+    )
+
+
 def chk_q09_autoseal_hold_census(con) -> dict:
     """Surface held Q09 autoseal failures by state/reason, not as empty queue."""
 
@@ -4265,6 +4331,7 @@ ALL_CHECKS = [
     ("pending_tail_age", chk_pending_tail_age, True),
     ("q02_summary_missing_unclassified", chk_q02_summary_missing_unclassified, True),
     ("q09_sealed_plan_hold_age", chk_q09_sealed_plan_hold_age, True),
+    ("q10_long_cell_breaker_holds", chk_q10_long_cell_breaker_holds, True),
     ("q09_autoseal_hold_census", chk_q09_autoseal_hold_census, True),
     ("pending_artifact_binding_drift", chk_pending_artifact_binding_drift, True),
     ("news_gate_service_rate", chk_news_gate_service_rate, True),
