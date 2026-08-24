@@ -18,6 +18,7 @@ CARD = (
     / "QM5_37008_garch-volatility-forecast-breakout.md"
 )
 SETS = EA_DIR / "sets"
+CARD_MIRROR = EA_DIR / "docs" / "strategy_card.md"
 MAGIC_REGISTRY = REPO / "framework" / "registry" / "magic_numbers.csv"
 
 EXPECTED_SLOTS = {
@@ -61,6 +62,10 @@ def test_approved_card_identity_and_reviewed_mechanism() -> None:
     assert re.search(r"1\.8\s+\\times\s+\\text\{ATR\}\(14", card)
     assert "Trailing Stop" in card
     assert "Ratchet with 1-sigma GARCH cone" in card
+    mirror = CARD_MIRROR.read_text(encoding="utf-8")
+    assert [line.rstrip() for line in mirror.splitlines()] == [
+        line.rstrip() for line in card.splitlines()
+    ]
 
 
 def test_review_findings_are_fixed_without_card_drift() -> None:
@@ -130,10 +135,24 @@ def test_every_declared_input_has_a_non_declaration_use_site() -> None:
 def test_framework_magic_risk_mae_registry_and_sets_are_bound() -> None:
     source = _source()
     on_tick = _function(source, "void OnTick", "void OnTimer")
+    on_init = _function(source, "int OnInit", "void OnDeinit")
 
     assert "#include <QM/QM_Common.mqh>" in source
     assert "QM_FrameworkMagic()" in source
     assert "37008 * 10000" not in source
+    assert "return qm_magic_slot_offset;" in source
+    assert "return -1;" in source
+    assert "if(Strategy_SymbolSlot() < 0)" in source
+    assert "QM_FrameworkDeclareExecutionContract(" in on_init
+    assert "PERIOD_D1" in on_init
+    assert "QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE" in on_init
+    assert '"CARD_HAS_NO_FRIDAY_RULE_FRAMEWORK_SAFETY_OVERRIDE"' in on_init
+    assert on_init.index("QM_FrameworkInit(") < on_init.index(
+        "QM_FrameworkDeclareExecutionContract("
+    )
+    assert on_init.index("QM_FrameworkDeclareExecutionContract(") < on_init.index(
+        "QM_EntryConfigure("
+    )
     assert on_tick.index("QM_FrameworkTrackOpenPositionMae();") < on_tick.index(
         "QM_KillSwitchCheck()"
     )

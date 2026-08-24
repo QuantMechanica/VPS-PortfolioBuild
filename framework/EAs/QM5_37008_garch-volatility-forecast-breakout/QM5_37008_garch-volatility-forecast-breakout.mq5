@@ -79,13 +79,19 @@ int Strategy_SymbolSlot()
    for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
    {
       if(g_universe_symbols[i] == _Symbol)
-         return g_universe_slots[i];
+      {
+         if(qm_magic_slot_offset != g_universe_slots[i])
+            return -1;
+         return qm_magic_slot_offset;
+      }
    }
-   return qm_magic_slot_offset;
+   return -1;
 }
 
 bool Strategy_ConfigValid()
 {
+   if(Strategy_SymbolSlot() < 0)
+      return false;
    if(strategy_omega <= 0.0 || strategy_alpha < 0.0 || strategy_beta < 0.0 ||
       (strategy_alpha + strategy_beta) >= 1.0)
       return false;
@@ -366,8 +372,14 @@ int OnInit()
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,
+                         qm_news_temporal,
                          qm_news_compliance))
+      return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(
+         PERIOD_D1,
+         QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+         "CARD_HAS_NO_FRIDAY_RULE_FRAMEWORK_SAFETY_OVERRIDE"))
       return INIT_FAILED;
 
    QM_EntryConfigure(qm_ea_id,
