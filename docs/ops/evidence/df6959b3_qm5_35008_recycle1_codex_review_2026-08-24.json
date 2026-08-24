@@ -1,0 +1,24 @@
+{
+  "review_task_id": "df6959b3-d3e8-4702-8aed-a3b85a23e222",
+  "build_task_id": "60e3146d-c363-4b7c-af29-18380260e8f1",
+  "ea_id": "QM5_35008",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The current source now converts broker time to UTC for the 18:00-22:00 entry window, rollover blackout, and 23:00 exit; evaluates the card's closed-M15 Bollinger/RSI bounce; uses the SMA20 middle band target and exact 1.5-ATR stop; and performs management and exits before entry-only filters. Those headline remediation claims were independently confirmed.",
+    "StrategyDailyEntryHalt compares current ACCOUNT_EQUITY with g_qm_ks_day_start_equity. This includes floating P&L and therefore does not implement the approved card's 2.0% daily realized-loss entry halt; it also collapses that separate control into an equity-drawdown test.",
+    "Strategy_ExitSignal is true only while UTC hhmm is at least strategy_exit_hhmm and below 23:55. A quote gap or failed close can therefore leave exposure open when the mandatory 23:00 exit deasserts at 23:55 and stays false through midnight. The close requirement must remain asserted until the position is confirmed closed.",
+    "OnInit declares no QM_FrameworkDeclareExecutionContract for the M15 host cadence, and the EA adds Trade/Trade.mqh outside the QM_Common include chain even though no direct CTrade use is required. The host contract is not fail-closed and the framework corset is not clean.",
+    "The current MQ5 hashes to 3c9ad2838912aa02099a87e85d98625f7f17579e99101c28b25bbe96210ece22 and was modified 2026-08-23. The EX5 hashes to 998a192d8c954cdf671ac6a4628da373ec16c51fd7fb67b3b0a16d563d774f77 and was last modified 2026-08-17, before the remediation. No canonical current compile/build-check receipt or smoke report covers the reviewed source, so build_result fails and smoke_sanity remains UNKNOWN.",
+    "Guardrail and SPEC validation pass; all three backtest sets use RISK_FIXED=1000 and RISK_PERCENT=0; the active identity and three magic rows are unique, formula-correct, and resolver-backed; and no direct OrderSend or unwrapped trade call is present. These checks do not cure the strategy, execution-contract, or binary-identity failures."
+  ],
+  "reviewed_at": "2026-08-24T11:21:30Z"
+}
