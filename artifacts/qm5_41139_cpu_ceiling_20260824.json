@@ -1,0 +1,60 @@
+{
+  "schema": "qm.commodity-energy-build-cpu-stop/v1",
+  "generated_at_utc": "2026-08-24T05:22:35Z",
+  "branch": "agents/board-advisor",
+  "candidate": {
+    "ea_id": "QM5_41139",
+    "ea_label": "QM5_41139_wti-mdaily-hl-mom",
+    "strategy_id": "MOP-HL-MEEK-WTI-MDAILY-HL-MOM-2026_S01",
+    "logical_symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 411390000,
+    "mq5_sha256": "0A7A6207C7B5D81B3162E89C797DEA1A4B4EECFC63FD4273BADBFBA8EC55E0C3",
+    "build_commit": "c9de910e4f823369d6256e3a3ab1bdbaf91bea81"
+  },
+  "verification": {
+    "reference_tests_passed": 13,
+    "reference_tests_failed": 0,
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "symbol_scope_violations": 0,
+    "approved_card_copy_equal": true,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "cpu": {
+    "command": "Get-Counter '\\Processor(_Total)\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-24T05:22:35.0975435Z",
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      99.9,
+      100.0
+    ],
+    "average_percent": 99.98,
+    "maximum_percent": 100.0,
+    "claim_ceiling_percent": 97.0,
+    "resume_threshold_percent": 90.0,
+    "below_claim_ceiling": false,
+    "below_resume_threshold": false
+  },
+  "compile": {
+    "status_at_stop": "NOT_ENQUEUED",
+    "work_item_count_at_stop": 0,
+    "ex5_exists_at_stop": false,
+    "ad_hoc_compile_attempted": false
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_count_at_stop": 0,
+    "reason": "The strict compile-PASS and bound EX5 prerequisite was not met because the binding CPU ceiling prohibited queue admission."
+  },
+  "stop_reason": "BACKTEST_CPU_CEILING_REACHED",
+  "queue_mutation_after_stop": false,
+  "terminal_or_tester_action": false,
+  "testing_after_stop": false
+}
