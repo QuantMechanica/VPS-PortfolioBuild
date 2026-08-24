@@ -11,7 +11,7 @@ Run every ~15 min via QM_StrategyFarm_CodexFleetPacer. Idempotent. Spawns paced 
 work (more certified portfolio sleeves), not idle burn.
 """
 from __future__ import annotations
-import argparse, json, os, shutil, subprocess, sys
+import argparse, json, os, shutil, sqlite3, subprocess, sys
 import datetime as dt
 from pathlib import Path
 
@@ -52,6 +52,68 @@ HARD_CEIL_PCT = 94.0     # kill our agents at/above this (guarantee no 100% cap-
 DEFAULT_MAX_AGENTS = 4   # concurrency cap (CPU/backtest + safety)
 MIN_HOURS_TO_RESET = 0.25
 PROMPT_ROTATION = ["focus_fx.md", "focus_commodity.md", "focus_backlog.md"]
+
+# Tester-drain coupling (router task 32c7b01f, following
+# docs/ops/evidence/2026-08-24_throughput_forensics.md recommendation 4:
+# "Move Codex/review burn off peak ... cap active Codex sessions during a
+# saturated tester drain. A practical experiment is <=8 active Codex hosts").
+#
+# Tester-drain signal: fleet-wide count of `work_items` rows with
+# status='active' in farm_state.sqlite, read via a read-only URI connection
+# (same reproducibility convention the forensics report used). The
+# forensics report's own active-count reconstruction found 7-9 busy rows
+# during the confirmed collapse window (2026-08-24T02:30-12:30Z) -- 7 is the
+# saturation threshold below.
+TESTER_DRAIN_DB = Path(r"D:/QM/strategy_farm/state/farm_state.sqlite")
+TESTER_DRAIN_ACTIVE_THRESHOLD = 7
+SATURATED_MAX_TOTAL_CODEX_HOSTS = 8
+# Rollback switch: set to "1" in the pacer's environment to disable the
+# tester-drain cap and fall back to the pre-existing pace-only behaviour.
+# Same convention as QM_DISABLE_LONGRUN_SCHEDULING_CAP.
+DISABLE_TESTER_DRAIN_CAP_ENV = "QM_DISABLE_TESTER_DRAIN_CODEX_CAP"
+
+
+def tester_drain_cap_enabled() -> bool:
+    return os.environ.get(DISABLE_TESTER_DRAIN_CAP_ENV) != "1"
+
+
+def read_tester_drain_active_count(db_path: Path = TESTER_DRAIN_DB) -> int | None:
+    """Fleet-wide count of currently-active work_items rows (all phases).
+
+    Returns None (fail-open, same convention as `_read_quota`) if the
+    database is unreadable -- a missing/locked DB must never block pacing.
+    """
+    try:
+        uri = f"file:{db_path.as_posix()}?mode=ro"
+        conn = sqlite3.connect(uri, uri=True, timeout=5.0)
+        try:
+            row = conn.execute("SELECT COUNT(*) FROM work_items WHERE status='active'").fetchone()
+            return int(row[0]) if row else 0
+        finally:
+            conn.close()
+    except Exception:
+        return None
+
+
+def tester_drain_saturated(active_count: int | None,
+                            *, threshold: int = TESTER_DRAIN_ACTIVE_THRESHOLD) -> bool:
+    if active_count is None:
+        return False  # fail-open: an unreadable signal never blocks pacing
+    return active_count >= threshold
+
+
+def should_hold_for_tester_drain_cap(
+    *, active_count: int | None, total_codex_hosts: int,
+    threshold: int = TESTER_DRAIN_ACTIVE_THRESHOLD,
+    max_hosts: int = SATURATED_MAX_TOTAL_CODEX_HOSTS,
+) -> bool:
+    """True when the tester drain is saturated AND the fleet is already at/over
+    the saturated-drain Codex host ceiling -- i.e. no NEW Codex host should be
+    spawned. Never kills or pauses an already-running, task-claimed session;
+    this only withholds the pacer's own next spawn decision."""
+    if not tester_drain_saturated(active_count, threshold=threshold):
+        return False
+    return total_codex_hosts >= max_hosts
 
 
 def _now() -> dt.datetime:
@@ -275,6 +337,17 @@ def main(argv: list[str] | None = None) -> int:
         target = running
         action = "on_pace_hold"
 
+    tester_drain_active = read_tester_drain_active_count()
+    total_codex_hosts = len(list_live_managed_codex_processes(FARM_ROOT))
+    tester_drain_cap_applied = False
+    if (tester_drain_cap_enabled() and action not in ("HARD_CEIL_kill",)
+            and target > running
+            and should_hold_for_tester_drain_cap(
+                active_count=tester_drain_active, total_codex_hosts=total_codex_hosts)):
+        target = running
+        tester_drain_cap_applied = True
+        action = f"{action}+tester_drain_saturated_no_spawn"
+
     to_spawn = max(0, target - running)
     spawned = 0
     if not args.dry_run:
@@ -299,10 +372,18 @@ def main(argv: list[str] | None = None) -> int:
         "agent_pids": pids, "rotation_idx": rotation_idx, "action": action,
         "hard_ceiling_stops": hard_ceiling_stops,
         "soft_ceil": SOFT_CEIL_PCT, "hard_ceil": HARD_CEIL_PCT, "max_agents": args.max_agents,
+        "tester_drain_active": tester_drain_active,
+        "tester_drain_threshold": TESTER_DRAIN_ACTIVE_THRESHOLD,
+        "total_codex_hosts": total_codex_hosts,
+        "saturated_max_total_codex_hosts": SATURATED_MAX_TOTAL_CODEX_HOSTS,
+        "tester_drain_cap_applied": tester_drain_cap_applied,
+        "tester_drain_cap_enabled": tester_drain_cap_enabled(),
     }
     _write_state(state, dry_run=args.dry_run)
     _log(f"used={used:.1f}% rate={state['rate_pct_per_hr']} target_rate={target_rate:.3f}/hr "
-         f"h_to_reset={hours_to_reset:.1f} running={running} target={target} spawned={spawned} action={action}")
+         f"h_to_reset={hours_to_reset:.1f} running={running} target={target} spawned={spawned} action={action} "
+         f"tester_drain_active={tester_drain_active} total_codex_hosts={total_codex_hosts} "
+         f"tester_drain_cap_applied={tester_drain_cap_applied}")
     print(json.dumps(state, indent=2))
     return 0
 

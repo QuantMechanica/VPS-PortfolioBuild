@@ -95,7 +95,11 @@ def test_pacer_rechecks_interlock_before_spawn(tmp_path: Path, monkeypatch) -> N
     log = tmp_path / "pacer.log"
 
     def list_live(_root: Path, *, purpose: str | None = None) -> list[dict]:
-        assert purpose == "fleet_pacer"
+        # Called twice per cycle since the tester-drain Codex-host cap
+        # (2026-08-24) reads the fleet-wide total in addition to the
+        # purpose="fleet_pacer" own-fleet count; either call site must
+        # observe the async-appeared FACTORY_OFF.flag.
+        assert purpose in ("fleet_pacer", None)
         flag.parent.mkdir(parents=True, exist_ok=True)
         flag.write_text("{}", encoding="utf-8")
         return []
