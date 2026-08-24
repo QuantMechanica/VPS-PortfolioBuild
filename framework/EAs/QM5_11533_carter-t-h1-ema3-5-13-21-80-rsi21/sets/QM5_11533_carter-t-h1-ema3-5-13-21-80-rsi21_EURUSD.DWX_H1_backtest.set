@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   8d58d38b60f8f67aa26400be183ba6dc7425d0a6fffc2451cba55b7d3dcc404a
 ; author:       Development
 ; date:         2026-08-10
 ;==========================================================
@@ -19,6 +19,8 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11533_carter-t-h1-ema3-5-13-21-80-rsi21.md
 strategy_ema_fast=3
