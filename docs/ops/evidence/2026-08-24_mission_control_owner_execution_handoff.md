@@ -103,3 +103,23 @@ not scheduling or Factory concurrency. Focused verification before canonical
 rollout: `38 passed, 1 skipped`; generated production-shaped preview: six open
 cards, six bound Claude plans, 30 frontier preview rows, full census only in the
 existing drill-down. No production decision was submitted during verification.
+
+Canonical/live closeout:
+
+```text
+canonical commit: 608ab6fc7
+broader isolated regression: 127 passed, 1 skipped
+canonical focused regression: 38 passed, 1 skipped
+decision intake restart: PID 25308 -> 9948
+startup reconcile: ok=true, receipt_count=0, errors=0
+intake health: ok=true, mode=ROUTER_HANDOFF, open_count=6, revision=1
+dashboard: 6 cards, 6 card hashes, 6 execution-plan hashes, filters present
+dashboard aliases: cockpit.html SHA-256 == cockpit_v2.html SHA-256
+frontier: last top-level section, 30 preview rows, 14,643 current full-census rows
+router telemetry: HEALTHY; latest observed receipt reconcile ok=true
+```
+
+The full-census number is a moving read model while the Factory runs; it is not
+embedded in Mission Control. No OWNER receipt or execution task was fabricated
+for this closeout, and Factory workers, T1-T10, T_Live and AutoTrading remained
+untouched.
