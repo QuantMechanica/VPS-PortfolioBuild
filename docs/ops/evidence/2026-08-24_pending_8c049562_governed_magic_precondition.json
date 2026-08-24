@@ -1,5 +1,5 @@
 {
-  "schema": "qm.governed-magic-allocation-verification/v1",
+  "schema": "qm.governed-magic-allocation-precondition-refusal/v1",
   "task_id": "08917344-a96d-4658-88d2-4839d39b15a8",
   "ea_id": "PENDING_8C049562",
   "slug": "uk100-highvol-liquidity-reversal",
@@ -7,28 +7,20 @@
   "target_symbols": ["UK100.DWX"],
   "classification": "invalid_ea_id",
   "required_action": "REFUSE",
-  "diagnosis": {
-    "ea_id_pattern_match": false,
-    "ea_id_pattern_expected": "governed_magic_allocator.py EA_ID_RE = ^(?:QM5_)?(\\d+)$ -- numeric only",
-    "ea_id_pattern_reason": "'PENDING_8C049562' is a sha256-digest placeholder minted by tools/strategy_farm/generate_orthogonal_wave2_cards.py (CardSpec.pending_id, line 32-33), not a numeric identity. governed_magic_allocator._numeric_ea_id() returns None for it, so the allocator's own candidate filter rejects this card outright -- it is structurally ineligible for allocation, not merely unallocated.",
-    "card_g0_status": "APPROVED",
+  "verification": {
+    "card_frontmatter_ea_id": "PENDING_8C049562",
+    "ea_id_regex_check": "farmctl.magic_allocation_precheck requires ea_id to fullmatch (?:QM5_)?(\\d+); PENDING_8C049562 does not match -> classification=invalid_ea_id, action=REFUSE (framework precheck, not a claude judgment call)",
     "card_status": "DRAFT",
-    "card_created_by": "Codex",
+    "card_g0_status": "APPROVED",
     "card_g0_approval_reasoning": "G0 cross-approval Claude 2026-08-24: orthogonal wave 2 (Codex-built, Opus G0 review APPROVE_G0; docs/research/ORTHOGONAL_WAVE2_2026-08-24.md)",
-    "ea_directory_exists": false,
-    "ea_directory_checked": "framework/EAs/ (glob for *uk100-highvol-liquidity-reversal*)",
-    "identity_registry_rows": 0,
-    "identity_registry_checked": "framework/registry/ea_id_registry.csv (grep for slug, case-insensitive)",
-    "active_magic_rows": 0,
-    "retired_magic_rows": 0,
-    "other_status_magic_rows": 0,
-    "total_magic_rows": 0,
-    "magic_registry_checked": "framework/registry/magic_numbers.csv (grep for slug, case-insensitive)",
-    "conclusion": "The card was G0-approved with its generator-issued placeholder identity still in place. Nothing downstream (allocator, registries, resolver) has ever referenced this slug. The precondition for governed magic allocation -- a numeric ea_id already present in the card -- is not met."
+    "ea_id_registry_csv_rows_for_this_id": 0,
+    "magic_numbers_csv_rows_for_this_id": 0,
+    "resolver_rows_for_this_id": 0,
+    "ea_directory_exists": false
   },
-  "action_taken": "REFUSED per router classification. No registry row written, no EA directory created, no resolver regeneration attempted. No magic invented outside the ea_id*10000+slot formula (impossible here since there is no numeric ea_id to formula against). No retired row touched.",
-  "root_cause": "Process gap between card generation (tools/strategy_farm/generate_orthogonal_wave2_cards.py, which deliberately mints a non-numeric PENDING_<hash> placeholder pending G0 review) and G0 approval (which flipped g0_status to APPROVED in the frontmatter) -- no step in between promotes the placeholder to a real numeric ea_id reserved in framework/registry/ea_id_registry.csv. tools/strategy_farm/farmctl.py's reidentify_recovery_card() performs an analogous rename but only operates on artifacts/cards_recovery, not artifacts/cards_approved, so it does not cover this case.",
-  "next_step": "A numeric ea_id must be reserved in framework/registry/ea_id_registry.csv (current max allocated id observed: 41139) and the card filename/frontmatter ea_id rewritten to QM5_<new_id> before any governed_magic_allocator.py run or build precheck can proceed for this card. This is an identity-assignment step, not a magic-allocation step, and is out of scope for this REFUSE task per the router's required_action. Recommend routing a follow-up ops_issue (or extending farmctl's recovery-style reidentify helper to cover cards_approved) to perform the rename under the same fail-closed guarantees reidentify_recovery_card() already provides.",
-  "generated_by": "claude-orchestration-2 (headless scheduled cycle)",
-  "generated_at": "2026-08-24T09:22:12+00:00"
+  "root_cause": "generate_orthogonal_wave2_cards.py assigns a placeholder ea_id of the form PENDING_<sha256(slug)[:8]> at draft time (pending_id property, tools/strategy_farm/generate_orthogonal_wave2_cards.py:30-33) with g0_status: PENDING_REVIEW. This card's g0_status was subsequently flipped to APPROVED and the file landed in D:/QM/strategy_farm/artifacts/cards_approved/ while ea_id was never resolved from the PENDING_<hash> placeholder to a real sequential QM5_NNNNN identity. No tool in tools/strategy_farm/ performs that placeholder-to-real-ea_id rename/allocation step for orthogonal-wave2 cards; governed_magic_allocator.py allocates identity+magics for a card that already carries a valid numeric ea_id, it does not mint the numeric id itself. This is an intake-pipeline gap, not a one-off card defect: 17 PENDING_<hash> cards are currently sitting in cards_approved/ with this same shape (2026-08-24).",
+  "action_taken": "No allocation attempted. No registry or resolver file touched. No magic invented outside the ea_id*10000+slot formula (none could be, since there is no valid numeric ea_id to base it on). No retired row revived. Original build precheck correctly remains blocked.",
+  "next_step": "This card needs a governed identity-resolution step (mint the next sequential QM5_NNNNN id and rename the card file + ea_id frontmatter field) before governed_magic_allocator.py can allocate magics for it. Recommend Codex/ops fix the orthogonal-wave2 intake path (or add an explicit resolution tool) so g0_status: APPROVED cards never reach cards_approved/ still carrying a PENDING_<hash> ea_id. Flagging for OWNER/Codex review; not fixing the generator myself since identity minting is a governed allocator concern per CLAUDE.md and out of scope for a REFUSE precondition check.",
+  "generated_by": "claude-orchestration-3",
+  "generated_at": "2026-08-24T09:22:12Z"
 }
