@@ -1,0 +1,23 @@
+{
+  "review_task_id": "ec8363cd-b870-450d-9ce9-4ec345ff87db",
+  "build_task_id": "f361cc66-38ca-4125-ab5f-153ce82fc340",
+  "ea_id": "QM5_39003",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The approved card does not define a reproducible PivotLevel, next-PPZ selection/fallback, or swing-trailing algorithm. The current source invents PPZ support/resistance as the global low/high of the preceding 20 bars at lines 225-237, uses a fixed 2.5R target at lines 266 and 286 instead of the next institutional PPZ, and invents a rolling 20-bar QM_StopStructure trail at lines 311-359. Those choices materially replace rather than implement the approved contract.",
+    "OnInit lines 407-428 never call QM_FrameworkDeclareExecutionContract, so the approved D1 host binding and Friday-close mode are not declared fail-closed.",
+    "The source never calls QM_KillSwitchInit for the approved 2.5% daily and 5.0% total drawdown limits. Its duplicate manual guards anchor initial_equity in function-local static memory at first invocation and reset on restart, so they do not preserve the card's initial-equity total-drawdown contract.",
+    "The current MQ5 was changed on 2026-08-24 (SHA-256 798249b34221a679d0ad582920ef8adbf03a6405015a99406f36e470bd3d1dc3), while the delivered EX5 is still the 2026-08-18 binary (SHA-256 8880fb107e078c01067d22d948d6214ced662494d5911257ef8fbceda5e3e8c3). The runnable binary does not contain the reviewed source.",
+    "The only build JSON predates the current source, provides no source/binary hashes, and reports deferred_p2_smoke with smoke_report_path=null and blocked_reason=null; D:/QM/reports/smoke/QM5_39003 is absent. Current build and smoke identity therefore fails closed."
+  ],
+  "reviewed_at": "2026-08-24T09:28:01Z"
+}
