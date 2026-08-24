@@ -23,12 +23,12 @@ The official NNFX 5-indicator algorithmic framework on D1 combines McGinley Dyna
 - Baseline: McGinley Dynamic(14) evaluated on completed D1 bars (Shift=1).
 - C1 Trigger: SSL Channel(10) (High SMA vs Low SMA comparison).
 - C2 Confirmation: Vortex(14) (VI+ vs VI- comparison).
-- Volume Gate: Waddah Attar Explosion (MACD(12,26,9) momentum exceeding Bollinger Bands(20,2.0) explosion threshold or deadzone).
+- Volume Gate: direction-neutral Waddah Attar Explosion magnitude (absolute MACD(12,26,9) momentum change) exceeding the Bollinger Bands(20,2.0) explosion threshold or deadzone. McGinley, SSL, and Vortex determine direction.
 - Long Entry: Close[1] > McGinley[1] AND SSL Crossover == UP (+1) AND Vortex+ > Vortex- AND WAE > ExplosionLine.
 - Short Entry: Close[1] < McGinley[1] AND SSL Crossover == DOWN (-1) AND Vortex- > Vortex+ AND WAE > ExplosionLine.
 - Stop Loss: Placed at 1.0 * ATR(14, D1)[1] from entry.
-- Take Profit: Placed at 1.0 * ATR(14, D1)[1] from entry.
-- Break-Even: Move SL to Entry + 1.0 pip when open profit reaches +1.0R (1.0x ATR).
+- TP1: Close 50% at 1.0 * entry ATR; no whole-position broker TP is attached.
+- Runner protection: Move the remaining position's SL to Entry + 1.0 pip after TP1. The partial-deal history is the restart-safe proof that TP1 already ran.
 - NNFX Indicator Exit: Close position when DeMarker(14) crosses opposite extreme (> 0.70 for Long, < 0.30 for Short) or SSL flips against position.
 - No-Trade Filter: Dynamic spread filter (Spread > 1.8 * ATR(14, D1)[1]) and rollover blackout 23:55–00:05 GMT.
 
@@ -52,8 +52,15 @@ The official NNFX 5-indicator algorithmic framework on D1 combines McGinley Dyna
 | `strategy_atr_period` | 14 | 10 - 20 | ATR period for stop loss and spread filter |
 | `strategy_sl_atr_mult` | 1.00 | 0.8 - 1.5 | Stop loss distance as ATR multiplier |
 | `strategy_tp_atr_mult` | 1.00 | 0.8 - 1.5 | Take profit distance as ATR multiplier |
+| `strategy_tp1_fraction` | 0.50 | fixed | Fraction closed at TP1 |
+| `strategy_be_buffer_pips` | 1 | fixed | Runner protection beyond entry after TP1 |
 | `strategy_spread_atr_mult` | 1.80 | 1.0 - 2.5 | Spread filter ATR multiplier |
 | `strategy_warmup_bars` | 150 | 100 - 250 | Warmup lookback bars for McGinley recursion |
+| `strategy_daily_loss_halt_pct` | 2.0 | fixed | Daily realized-loss entry halt |
+| `strategy_daily_hard_stop_pct` | 2.5 | fixed | Daily equity hard stop |
+| `strategy_total_dd_halt_pct` | 5.0 | fixed | Total drawdown hard stop |
+| `strategy_per_trade_risk_cap_pct` | 1.0 | fixed | Per-trade risk ceiling |
+| `strategy_max_slippage_ticks` | 3.0 | fixed | Market-order slippage ceiling |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -119,6 +126,6 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit`; `build_check.ps1` reports an unconfigured risk path as `EA_RISK_SIZER_UNCONFIGURED`.
 
 ---
