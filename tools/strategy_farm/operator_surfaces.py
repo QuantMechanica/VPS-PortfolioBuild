@@ -12,9 +12,11 @@ from __future__ import annotations
 import csv
 import dataclasses
 import html
+import re
 import sys
+from collections import Counter
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -221,6 +223,7 @@ def build_operator_snapshot(
     *,
     order_dir: str | Path | None = None,
     pair_limit: int | None = None,
+    pair_detail_limit: int | None = None,
 ) -> dict[str, Any]:
     """Build the common read-only operator surface for one farm database."""
 
@@ -277,12 +280,18 @@ def build_operator_snapshot(
             "backfill_action_reason": row["backfill_action_reason"],
         })
 
-    return {
+    snapshot = {
         "gate_contract_version": ACTIVE_GATE_CONTRACT_VERSION,
         "progress_metric": "highest_contiguous_valid_gate",
         "phase_bands": macro_phase_bands(manifest),
         "pair_count": len(rows),
         "pairs": rows,
+        "pair_preview_count": len(rows),
+        "pair_detail_truncated": False,
+        "pair_detail_href": "linear_frontier.html",
+        "pair_action_counts": dict(
+            sorted(Counter(str(row.get("backfill_action") or "UNKNOWN") for row in rows).items())
+        ),
         "counts": census["summary"],
         "pairs_by_macro_phase": by_macro,
         "book_guard": {
@@ -294,6 +303,64 @@ def build_operator_snapshot(
         },
         "path_to_25": path_metrics,
     }
+    return (
+        compact_operator_snapshot(snapshot, limit=pair_detail_limit)
+        if pair_detail_limit is not None
+        else snapshot
+    )
+
+
+def _frontier_rank(row: Mapping[str, Any]) -> tuple[int, int, str, str]:
+    gate = str(row.get("highest_contiguous_valid_gate") or "")
+    match = re.fullmatch(r"Q(\d{2})", gate)
+    ordinal = int(match.group(1)) if match else -1
+    action_priority = {
+        "REBIND_STALE": 0,
+        "RERUN_INFRA": 1,
+        "FILL_MISSING": 2,
+        "UNKNOWN": 3,
+        "STOP_ECONOMIC_FAIL": 4,
+    }
+    action = str(row.get("backfill_action") or "UNKNOWN")
+    return (
+        -ordinal,
+        action_priority.get(action, 3),
+        str(row.get("ea_id") or ""),
+        str(row.get("symbol") or ""),
+    )
+
+
+def compact_operator_snapshot(
+    snapshot: Mapping[str, Any], *, limit: int = 30
+) -> dict[str, Any]:
+    """Keep an exception-focused preview while preserving full aggregate truth."""
+
+    if limit < 0:
+        raise ValueError("pair preview limit must be non-negative")
+    all_rows = list(snapshot.get("pairs") or [])
+    actionable = [
+        row for row in all_rows
+        if str(row.get("backfill_action") or "") != "STOP_ECONOMIC_FAIL"
+    ]
+    actionable.sort(key=_frontier_rank)
+    selected = actionable[:limit]
+    if len(selected) < limit:
+        selected_ids = {(row.get("ea_id"), row.get("symbol")) for row in selected}
+        remainder = [
+            row for row in sorted(all_rows, key=_frontier_rank)
+            if (row.get("ea_id"), row.get("symbol")) not in selected_ids
+        ]
+        selected.extend(remainder[: limit - len(selected)])
+    result = dict(snapshot)
+    full_count = int(snapshot.get("pair_count") or len(all_rows))
+    result["pairs"] = selected
+    result["pair_preview_count"] = len(selected)
+    result["pair_detail_truncated"] = full_count > len(selected)
+    result["pair_detail_href"] = "linear_frontier.html"
+    result["pair_action_counts"] = dict(
+        sorted(Counter(str(row.get("backfill_action") or "UNKNOWN") for row in all_rows).items())
+    )
+    return result
 
 
 def render_operator_surface_html(snapshot: dict[str, Any]) -> str:
@@ -344,11 +411,26 @@ def render_operator_surface_html(snapshot: dict[str, Any]) -> str:
             f'<td><code>{esc(row.get("symbol"))}</code></td>'
             f'<td>{esc(observed)}</td>'
             f'<td>{esc(contiguous)}</td>'
+            f'<td>{esc(row.get("earliest_missing_prerequisite") or "—")}</td>'
+            f'<td>{esc(row.get("backfill_action") or "—")}</td>'
             f'<td>{esc(row.get("disposition"))}</td>'
             '</tr>'
         )
     if not pair_rows:
-        pair_rows.append('<tr><td colspan="5">No pair evidence.</td></tr>')
+        pair_rows.append('<tr><td colspan="7">No pair evidence.</td></tr>')
+
+    preview_count = int(snapshot.get("pair_preview_count") or len(pair_rows))
+    full_count = int(snapshot.get("pair_count") or preview_count)
+    detail_href = str(snapshot.get("pair_detail_href") or "linear_frontier.html")
+    truncated = bool(snapshot.get("pair_detail_truncated"))
+    summary = (
+        f'{preview_count} handlungsnahe Frontiers · Vollbestand {full_count} im Drill-down'
+        if truncated else f'{full_count} EA/symbol frontiers'
+    )
+    detail_link = (
+        f'<a class="op-detail-link" href="{esc(detail_href)}">Vollständige Frontier öffnen</a>'
+        if truncated else ""
+    )
 
     return (
         '<style>'
@@ -363,6 +445,7 @@ def render_operator_surface_html(snapshot: dict[str, Any]) -> str:
         '.op-guard{display:flex;align-items:center;gap:12px;margin:10px 0}'
         '.op-pairs table{width:100%;margin-top:10px;border-collapse:collapse}'
         '.op-pairs th,.op-pairs td{padding:6px;text-align:left;border-bottom:1px solid var(--border-2,#334155)}'
+        '.op-detail-link{display:inline-block;margin:8px 0;color:var(--signal,#2563eb)}'
         '@media(max-width:900px){.op-bands{grid-template-columns:1fr}.op-guard{align-items:flex-start;flex-direction:column}}'
         '</style>'
         '<section class="operator-gates" id="operator-gates">'
@@ -371,11 +454,75 @@ def render_operator_surface_html(snapshot: dict[str, Any]) -> str:
         'progress = highest_contiguous_valid_gate</div>'
         f'<div class="op-bands">{"".join(bands)}</div>'
         f'{guard_html}'
-        '<details class="op-pairs" open><summary>'
-        f'{int(snapshot.get("pair_count") or 0)} EA/symbol frontiers</summary>'
+        f'{detail_link}'
+        '<details class="op-pairs"><summary>'
+        f'{esc(summary)}</summary>'
         '<table><thead><tr><th>EA</th><th>Symbol</th>'
         '<th>Highest observed gate</th><th>Highest contiguous valid gate</th>'
-        '<th>Disposition</th></tr></thead>'
+        '<th>Earliest missing</th><th>Action</th><th>Disposition</th></tr></thead>'
         f'<tbody>{"".join(pair_rows)}</tbody></table></details>'
         '</section>'
+    )
+
+
+def render_frontier_explorer_html(snapshot: Mapping[str, Any]) -> str:
+    """Render the complete pair census as a separate searchable drill-down."""
+
+    esc = lambda value: html.escape(str(value)) if value is not None else ""  # noqa: E731
+    rows = list(snapshot.get("pairs") or [])
+    action_counts = Counter(str(row.get("backfill_action") or "UNKNOWN") for row in rows)
+    options = ["<option value=''>alle Aktionen</option>"]
+    options.extend(
+        f'<option value="{esc(action)}">{esc(action)} ({count})</option>'
+        for action, count in sorted(action_counts.items())
+    )
+    body = []
+    for row in rows:
+        values = [
+            row.get("ea_id"), row.get("symbol"), row.get("highest_observed_label"),
+            row.get("highest_contiguous_valid_label"),
+            row.get("earliest_missing_prerequisite"), row.get("backfill_action"),
+            row.get("disposition"),
+        ]
+        search = " ".join(str(value or "") for value in values).lower()
+        body.append(
+            f'<tr data-action="{esc(row.get("backfill_action") or "UNKNOWN")}" '
+            f'data-search="{esc(search)}">'
+            + "".join(f"<td>{esc(value or '—')}</td>" for value in values)
+            + "</tr>"
+        )
+    return (
+        "<!doctype html><html lang='de'><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+        "<title>QuantMechanica // Linear Frontier</title>"
+        "<link rel='stylesheet' href='style.css'><style>"
+        ".fx{max-width:1600px;margin:0 auto;padding:24px}.fx-head{display:flex;"
+        "justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap}"
+        ".fx-controls{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}"
+        ".fx input,.fx select{background:var(--surface-2);color:var(--text);"
+        "border:1px solid var(--border-2);padding:8px}.fx input{min-width:320px}"
+        ".fx table{width:100%;border-collapse:collapse;font-size:12px}"
+        ".fx th{position:sticky;top:0;background:var(--surface-1);text-align:left}"
+        ".fx th,.fx td{padding:6px;border-bottom:1px solid var(--border)}"
+        ".fx-status{font-family:var(--font-mono);color:var(--text-3)}"
+        "</style></head><body><main class='fx'>"
+        "<div class='fx-head'><div><h1>Linear Gate Frontier</h1>"
+        f"<div class='fx-status'>contract {esc(snapshot.get('gate_contract_version'))} · "
+        f"{len(rows)} EA/Symbol-Paare · vollständiger Drill-down</div></div>"
+        "<a href='cockpit_v2.html'>zurück zu Mission Control</a></div>"
+        "<div class='fx-controls'><input id='fx-q' type='search' "
+        "placeholder='EA, Symbol, Gate oder Disposition suchen'>"
+        f"<select id='fx-action'>{''.join(options)}</select>"
+        "<span id='fx-status' class='fx-status'></span></div>"
+        "<table><thead><tr><th>EA</th><th>Symbol</th><th>Highest observed</th>"
+        "<th>Highest contiguous valid</th><th>Earliest missing</th><th>Action</th>"
+        f"<th>Disposition</th></tr></thead><tbody>{''.join(body)}</tbody></table>"
+        "</main><script>(function(){var q=document.getElementById('fx-q'),"
+        "a=document.getElementById('fx-action'),s=document.getElementById('fx-status'),"
+        "r=[].slice.call(document.querySelectorAll('tbody tr')),t;function f(){var x=q.value"
+        ".toLowerCase(),y=a.value,n=0;r.forEach(function(z){var ok=(!x||z.dataset.search"
+        ".indexOf(x)>=0)&&(!y||z.dataset.action===y);z.hidden=!ok;if(ok)n++;});"
+        "s.textContent=n+' / '+r.length+' sichtbar';}function d(){clearTimeout(t);t=setTimeout(f,120);}"
+        "q.addEventListener('input',d);a.addEventListener('change',f);f();})();</script>"
+        "</body></html>"
     )

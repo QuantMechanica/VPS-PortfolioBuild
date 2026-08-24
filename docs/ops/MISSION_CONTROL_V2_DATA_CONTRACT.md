@@ -266,25 +266,41 @@ renderer can add a baseline later without a data change.
 Source order mirrors `render_cockpit.owner_decision_rows` (agent work queues are
 **never** OWNER decisions and are excluded by construction):
 
-1. **Curated feed** `D:\QM\reports\state\owner_decisions.json` (hand-maintained
-   by Claude; `{q12_count}` placeholder expanded). `source_as_of` =
-   `updated_at_utc` (fallback: file mtime).
-2. **Q12 admission fallback** — if the feed carries no `ADMISSION` row and
-   `portfolio_candidates(state='Q12_REVIEW_READY')` count > 0, inject one.
-3. **BLOCKED `agent_tasks`** whose `verdict LIKE '%OWNER%'`, excluding
-   superseded/obsolete epitaphs (regex `supersed|obsolete`), max 3.
+1. **Curated feed** `D:\QM\reports\state\owner_decisions.json`, Schema
+   `qm.owner-decisions/v2`. Jede Zeile hat stabile ID, Status, Frage,
+   Empfehlung, JA-/NEIN-Folge, Cost-of-Wait und Evidenz. Nur `OPEN` und
+   `DEFERRED` werden gerendert. `source_as_of` = `updated_at_utc`.
+2. Nur während der v1-Kompatibilitätsmigration: Q12-Admission und bis zu drei
+   BLOCKED-`agent_tasks` als fail-closed Legacy-Fallback. Im v2-Vertrag werden
+   dynamische Fallbacks nicht als klickbare Entscheidungen ausgegeben: Sie
+   müssen zuerst mit stabiler ID, Empfehlung, Folgen und Evidenz kuratiert
+   werden.
 
 | Field | Type | Definition |
 |---|---|---|
 | `count` / `alert_count` | int | total items / items with `alert=true` |
 | `q12_review_ready` | int | `portfolio_candidates` Q12 count |
-| `items[]` | array | `{source, category, title, detail, due, severity, alert}` |
+| `items[]` | array | `{source,id,status,category,title,question,recommendation,yes_effect,no_effect,cost_of_wait,detail,evidence,due,severity,alert}` |
+| `intake` | object | `{enabled,endpoint,token,mode:"DOCUMENT_ONLY",degraded_reason}`; Token kommt aus der lokalen State-Datei, Endpunkt ist ausschließlich Loopback |
 
 `source ∈ {curated_feed, q12_review_ready, blocked_agent_task}`. `alert` is true
 for `severity ∈ {alert, action}`.
 
-This is a canonical **decision store** feed, not a stale manifest — it reads the
-same `owner_decisions.json` the live cockpit uses today.
+Der Feed ist die offene Queue; OWNER-Antworten werden zuerst append-only in
+`owner_decision_receipts.jsonl` geschrieben und danach in Feed und Vault
+materialisiert. Jedes Receipt trägt `execution_authorized=false`. Ein Receipt
+ist niemals Deploy-/Factory-/Live-Autorität.
+
+### Kompakte `operator_surface`, vollständiger Drill-down
+
+Der Census und alle Aggregate werden weiterhin über sämtliche EA/Symbol-Paare
+berechnet. `pair_count` bleibt der Vollbestand. `pairs` enthält im Mission-
+Control-Vertrag höchstens 30 handlungsnahe Vorschauzeilen;
+`pair_preview_count`, `pair_detail_truncated`, `pair_action_counts` und
+`pair_detail_href` machen diese Begrenzung explizit. Der Renderer erzeugt aus
+dem einmal berechneten Vollbestand separat `linear_frontier.html`; dadurch
+ändert die Kompaktierung keine Metrik und bläht die Schaltzentrale nicht mit
+14k+ Detailzeilen auf.
 
 ---
 

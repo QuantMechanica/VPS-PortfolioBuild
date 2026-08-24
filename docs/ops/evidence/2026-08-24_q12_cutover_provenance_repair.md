@@ -48,7 +48,27 @@ plan_sha256=ee826c21b81045f75bba5d69454d4260b32f2f63611788732cfa44494e706422
 
 ## Apply und Verifikation
 
-Noch ausstehend. Dieser Abschnitt wird nach Integration und atomarem Apply mit
-Receipt-Pfad, finalem Plan-Hash, alten/neuen Zuständen und globalem
-Mismatch-Census ergänzt.
+Kanonischer Schutzcode: Commit `ea8705111` auf `agents/board-advisor`.
+
+```text
+apply_at=2026-08-24T06:57:52.223931+00:00
+plan_sha256=ee826c21b81045f75bba5d69454d4260b32f2f63611788732cfa44494e706422
+applied=true
+old_rows=3 x (Q14 / v3 / failed / INFRA_FAIL / taxonomy=infra)
+new_rows=3 x (Q12 / v4 / pending / verdict=NULL / taxonomy=open)
+old_payload_hashes_unchanged=3/3
+gate_contract_provenance_repairs=3
+post_repair_payload_mismatch_count=0
+post_dry_run_state=ALREADY_REPAIRED
+```
+
+Receipt:
+`D:/QM/reports/state/q12_cutover_provenance_repair_20260824.json`.
+
+Aktive Speichergrenzen nach Apply:
+`trg_work_items_phase_immutable`,
+`trg_work_items_payload_provenance_insert` und
+`trg_work_items_payload_provenance_update`. Die Transaktion dauerte rund drei
+Sekunden inklusive Prozessstart/Receipt; keine Factory-Komponente wurde
+pausiert, umkonfiguriert oder getoggelt.
 

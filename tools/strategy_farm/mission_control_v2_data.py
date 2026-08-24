@@ -34,6 +34,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import hashlib
 import json
 import os
 import sqlite3
@@ -53,6 +54,7 @@ try:  # package import (tests, module consumers)
     from tools.strategy_farm import q09_ftmo_recommendation
     from tools.strategy_farm import risk_freeze
     from tools.strategy_farm import operator_surfaces
+    from tools.strategy_farm import owner_decision_store
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/mission_control_v2_data.py``
     from work_item_clean_view import install_clean_view
     from phase_ids import phase_label, normalize_phase_id, PHASE_NAME
@@ -61,6 +63,7 @@ except ModuleNotFoundError:  # direct ``python tools/strategy_farm/mission_contr
     import q09_ftmo_recommendation
     import risk_freeze
     import operator_surfaces
+    import owner_decision_store
 
 
 SCHEMA_VERSION = "qm.mission_control.v2"
@@ -79,6 +82,8 @@ HEALTH_FILE = ROOT / "state" / "health.json"
 FACTORY_OFF_FLAG = ROOT / "state" / "FACTORY_OFF.flag"
 FACTORY_ON_CEREMONY_INCOMPLETE = ROOT / "state" / "FACTORY_ON_CEREMONY_INCOMPLETE.json"
 OWNER_DECISIONS_FILE = REPORTS_STATE / "owner_decisions.json"
+OWNER_DECISION_TOKEN_FILE = ROOT / "state" / "owner_decision_intake_token.txt"
+OWNER_DECISION_INTAKE_ENDPOINT = "http://127.0.0.1:8765/v1/decisions"
 EA_REGISTRY = REPO / "framework" / "registry" / "ea_id_registry.csv"
 
 # Terminal fleet is fixed at T1..T10 (T_Live is C:\ and never a factory slot).
@@ -665,6 +670,7 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
     """
     now = now or _now_utc()
     items: list[dict] = []
+    curated_v2 = False
 
     # Q12 review-ready count (portfolio admission is an OWNER gate).
     try:
@@ -681,30 +687,90 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
     try:
         data = json.loads(OWNER_DECISIONS_FILE.read_text(encoding="utf-8-sig"))
         feed_as_of = data.get("updated_at_utc") or _file_mtime_iso(OWNER_DECISIONS_FILE)
-        for item in data.get("items") or []:
-            detail = str(item.get("detail") or "").replace("{q12_count}", str(q12_count))
-            sev = str(item.get("severity") or "").lower()
-            items.append({
-                "source": "curated_feed",
-                "category": str(item.get("cat") or "DECISION"),
-                "title": str(item.get("title") or "?"),
-                "detail": detail,
-                "due": str(item.get("due") or "") or None,
-                "severity": sev or "info",
-                "alert": sev in ("alert", "action"),
-            })
+        if data.get("schema_version") == owner_decision_store.FEED_SCHEMA:
+            curated_v2 = True
+            owner_decision_store.validate_feed(data)
+            source_items = owner_decision_store.open_items(data)
+            for item in source_items:
+                sev = str(item.get("severity") or "info").lower()
+                question = str(item.get("question") or "?")
+                items.append({
+                    "source": "curated_feed",
+                    "id": str(item["id"]),
+                    "status": str(item["status"]).upper(),
+                    "category": str(item.get("category") or "DECISION"),
+                    "title": question,
+                    "question": question,
+                    "recommendation": str(item.get("recommendation") or ""),
+                    "yes_effect": str(item.get("yes_effect") or ""),
+                    "no_effect": str(item.get("no_effect") or ""),
+                    "cost_of_wait": str(item.get("cost_of_wait") or ""),
+                    "detail": str(item.get("detail") or ""),
+                    "evidence": list(item.get("evidence") or []),
+                    "due": str(item.get("due") or "") or None,
+                    "severity": sev,
+                    "alert": sev in ("alert", "action"),
+                })
+        else:
+            # Compatibility while the v1 feed is being bootstrapped. Legacy
+            # rows get stable derived IDs, but the recommendation is deliberately
+            # fail-closed because the old contract did not carry decision effects.
+            for index, item in enumerate(data.get("items") or []):
+                detail = str(item.get("detail") or "").replace(
+                    "{q12_count}", str(q12_count)
+                )
+                sev = str(item.get("severity") or "").lower()
+                title = str(item.get("title") or "?")
+                digest = hashlib.sha256(
+                    f"{item.get('cat')}:{title}".encode("utf-8")
+                ).hexdigest()[:12].upper()
+                items.append({
+                    "source": "curated_feed",
+                    "id": f"OWNER-LEGACY-{index + 1:03d}-{digest}",
+                    "status": "OPEN",
+                    "category": str(item.get("cat") or "DECISION"),
+                    "title": title,
+                    "question": title,
+                    "recommendation": (
+                        "VERTAGT — Legacy-Eintrag zuerst mit Empfehlung und "
+                        "JA/NEIN-Folgen kuratieren."
+                    ),
+                    "yes_effect": "Nur die OWNER-Antwort wird dokumentiert.",
+                    "no_effect": "Nur die OWNER-Antwort wird dokumentiert.",
+                    "cost_of_wait": "Im Legacy-Vertrag nicht belastbar angegeben.",
+                    "detail": detail,
+                    "evidence": [],
+                    "due": str(item.get("due") or "") or None,
+                    "severity": sev or "info",
+                    "alert": sev in ("alert", "action"),
+                })
     except FileNotFoundError:
         feed_degraded = "curated owner_decisions.json missing"
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, json.JSONDecodeError, owner_decision_store.DecisionStoreError) as exc:
         feed_degraded = f"curated feed unreadable: {exc}"
 
     # Q12 admission fallback row (only if the feed did not already carry one).
-    if q12_count and not any(i["category"].upper() == "ADMISSION" for i in items):
+    if (
+        not curated_v2
+        and q12_count
+        and not any(i["category"].upper() == "ADMISSION" for i in items)
+    ):
         items.append({
             "source": "q12_review_ready",
+            "id": "OWNER-DEC-Q12-ADMISSION",
+            "status": "OPEN",
             "category": "ADMISSION",
             "title": f"{q12_count} candidates Q12_REVIEW_READY",
+            "question": f"Sollen {q12_count} Q12-review-ready Kandidaten zugelassen werden?",
+            "recommendation": (
+                "VERTAGT — zuerst Kandidatenliste, Buchwirkung und Ausschlussgründe "
+                "als kuratierten Entscheid vorlegen."
+            ),
+            "yes_effect": "Zulassung wird dokumentiert; Ausführung bleibt separat.",
+            "no_effect": "Kandidaten bleiben ohne OWNER-Zulassung.",
+            "cost_of_wait": "Buchaufnahme wartet; die Factory läuft weiter.",
             "detail": "portfolio admission is an OWNER gate",
+            "evidence": [],
             "due": None,
             "severity": "info",
             "alert": False,
@@ -722,15 +788,31 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
     except Exception:  # noqa: BLE001
         blocked = []
     import re
-    for b in blocked:
+    for b in (() if curated_v2 else blocked):
         v = str(b.get("verdict") or "")
         if re.search(r"supersed|obsolete", v, re.IGNORECASE):
             continue
         items.append({
             "source": "blocked_agent_task",
+            "id": "OWNER-BLOCKED-" + re.sub(
+                r"[^A-Z0-9_.:-]", "-", str(b.get("id") or "TASK").upper()
+            ),
+            "status": "OPEN",
             "category": "BLOCKED",
             "title": str(b.get("task_type") or b.get("id") or "OWNER-blocked task"),
+            "question": (
+                f"Soll der blockierte Auftrag {b.get('task_type') or b.get('id')} "
+                "freigegeben werden?"
+            ),
+            "recommendation": (
+                "VERTAGT — zuerst einen kuratierten Vorschlag mit konkreten "
+                "JA/NEIN-Folgen und Evidenz vorlegen."
+            ),
+            "yes_effect": "Freigabe wird dokumentiert; Ausführung bleibt separat.",
+            "no_effect": "Der Auftrag bleibt blockiert.",
+            "cost_of_wait": "Der einzelne Auftrag bleibt blockiert; die Factory läuft weiter.",
             "detail": v[:200],
+            "evidence": [],
             "due": None,
             "severity": "action",
             "alert": True,
@@ -739,6 +821,17 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
             break
 
     alert_count = sum(1 for i in items if i.get("alert"))
+    intake_token = None
+    intake_degraded = None
+    try:
+        candidate = OWNER_DECISION_TOKEN_FILE.read_text(encoding="ascii").strip()
+        if not re.fullmatch(r"[0-9a-f]{64}", candidate):
+            raise ValueError("token must be 64 lowercase hex characters")
+        intake_token = candidate
+    except FileNotFoundError:
+        intake_degraded = "decision intake token missing; controls disabled"
+    except (OSError, UnicodeError, ValueError) as exc:
+        intake_degraded = f"decision intake token invalid: {exc}"
     meta = _section_meta(
         source="D:/QM/reports/state/owner_decisions.json + agent_tasks(BLOCKED,OWNER) + Q12",
         source_as_of=feed_as_of or _iso(now),
@@ -752,8 +845,17 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
         "alert_count": alert_count,
         "q12_review_ready": q12_count,
         "items": items,
+        "intake": {
+            "enabled": intake_token is not None,
+            "endpoint": OWNER_DECISION_INTAKE_ENDPOINT,
+            "token": intake_token,
+            "mode": "DOCUMENT_ONLY",
+            "degraded_reason": intake_degraded,
+        },
         "notes": (
-            "Agent work queues (Claude reviews, ops-blocked builds, router SLAs) "
+            "OWNER answers create receipts and Vault documentation only; they never "
+            "execute Factory, deploy, T_Live, or AutoTrading actions. Agent work queues "
+            "(Claude reviews, ops-blocked builds, router SLAs) "
             "are agent status, never OWNER decisions, and are excluded by "
             "construction."
         ),
@@ -963,6 +1065,7 @@ def build_contract(
     *,
     now: dt.datetime | None = None,
     live_pulse_path: Path | None = None,
+    operator_pair_detail_limit: int | None = 30,
 ) -> dict[str, Any]:
     """Assemble the full ``qm.mission_control.v2`` contract from live sources."""
     db = Path(db) if db is not None else DB
@@ -986,7 +1089,9 @@ def build_contract(
         pulse_path=live_pulse_path,
     )
     freeze = build_risk_freeze(now=now)
-    operator_surface = operator_surfaces.build_operator_snapshot(db)
+    operator_surface = operator_surfaces.build_operator_snapshot(
+        db, pair_detail_limit=operator_pair_detail_limit
+    )
     path_to_25 = operator_surface["path_to_25"]
 
     return {
@@ -1217,7 +1322,7 @@ CONTRACT_SCHEMA: dict[str, Any] = {
         },
         "owner_decisions": {
             "type": "object",
-            "required": ["meta", "count", "items"],
+            "required": ["meta", "count", "items", "intake"],
             "properties": {
                 "meta": _section_meta_schema(),
                 "count": {"type": "integer"},
@@ -1226,15 +1331,38 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["category", "title", "severity"],
+                        "required": [
+                            "id", "status", "category", "title", "question",
+                            "recommendation", "yes_effect", "no_effect",
+                            "cost_of_wait", "severity",
+                        ],
                         "properties": {
+                            "id": {"type": "string"},
+                            "status": {"enum": ["OPEN", "DEFERRED"]},
                             "category": {"type": "string"},
                             "title": {"type": "string"},
+                            "question": {"type": "string"},
+                            "recommendation": {"type": "string"},
+                            "yes_effect": {"type": "string"},
+                            "no_effect": {"type": "string"},
+                            "cost_of_wait": {"type": "string"},
                             "detail": {"type": ["string", "null"]},
+                            "evidence": {"type": "array"},
                             "due": {"type": ["string", "null"]},
                             "severity": {"type": "string"},
                             "alert": {"type": "boolean"},
                         },
+                    },
+                },
+                "intake": {
+                    "type": "object",
+                    "required": ["enabled", "endpoint", "token", "mode"],
+                    "properties": {
+                        "enabled": {"type": "boolean"},
+                        "endpoint": {"type": "string"},
+                        "token": {"type": ["string", "null"]},
+                        "mode": {"const": "DOCUMENT_ONLY"},
+                        "degraded_reason": {"type": ["string", "null"]},
                     },
                 },
             },
@@ -1243,7 +1371,8 @@ CONTRACT_SCHEMA: dict[str, Any] = {
             "type": "object",
             "required": [
                 "gate_contract_version", "progress_metric", "phase_bands",
-                "pair_count", "pairs", "book_guard",
+                "pair_count", "pairs", "pair_preview_count",
+                "pair_detail_truncated", "book_guard",
             ],
             "properties": {
                 "gate_contract_version": {"type": "string"},
@@ -1251,6 +1380,10 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                 "phase_bands": {"type": "array", "minItems": 3, "maxItems": 3},
                 "pair_count": {"type": "integer"},
                 "pairs": {"type": "array"},
+                "pair_preview_count": {"type": "integer"},
+                "pair_detail_truncated": {"type": "boolean"},
+                "pair_detail_href": {"type": "string"},
+                "pair_action_counts": {"type": "object"},
                 "counts": {"type": "object"},
                 "book_guard": {"type": "object"},
             },

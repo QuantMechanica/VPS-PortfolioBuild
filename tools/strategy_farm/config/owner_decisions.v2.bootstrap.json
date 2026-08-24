@@ -1,0 +1,111 @@
+{
+  "schema_version": "qm.owner-decisions/v2",
+  "revision": 0,
+  "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
+  "updated_at_utc": "2026-08-24T00:00:00Z",
+  "items": [
+    {
+      "id": "OWNER-DEC-A1-COUNT-UNIT",
+      "status": "OPEN",
+      "category": "Gate governance",
+      "question": "Soll der >=25-Buch-Trigger primaer terminale (EA, Symbol)-Paare zaehlen?",
+      "recommendation": "JA. (EA, Symbol)-Paare sind die operative Zaehlgroesse; distinkte EAs und Strategie-Familien werden als Diversitaetskontrollen daneben berichtet.",
+      "yes_effect": "Die laufende v4-Auffangregel bleibt bestaetigt; keine Pipeline-Aenderung ist noetig.",
+      "no_effect": "Der Buch-Trigger bleibt fachlich offen, bis eine alternative Zaehlgroesse und ihre Migration separat spezifiziert sind.",
+      "cost_of_wait": "Kein Factory-Stopp; Mission Control markiert die angewandte Auffangregel weiter als noch nicht ausdruecklich bestaetigt.",
+      "detail": "Die Pipeline arbeitet derzeit mit terminalen Q14-(EA, Symbol)-Paaren und berichtet EAs/Familien separat.",
+      "evidence": [
+        "decisions/2026-08-23_owner_gate_manifest_v4_linear.md#A1"
+      ],
+      "due": null,
+      "severity": "action",
+      "created_at_utc": "2026-08-23T00:00:00Z"
+    },
+    {
+      "id": "OWNER-DEC-A2-OPT-MANDATORY",
+      "status": "OPEN",
+      "category": "Gate governance",
+      "question": "Soll jedes Buchkandidaten-Paar Q12 bis Q14 durchlaufen, auch wenn keine Verbesserung gefunden wird?",
+      "recommendation": "JA. Ein Ergebnis KEEP_INCUMBENT ist ein valides Optimierungsergebnis und verhindert, dass Optimierung nur Gewinner sichtbar macht.",
+      "yes_effect": "Der verpflichtende lineare Optimierungsabschnitt bleibt aktiv; KEEP_INCUMBENT darf terminal bestehen.",
+      "no_effect": "Die Pflicht wird nicht geaendert, bis ein separater Manifest-Aenderungsentscheid mit Rueckweg und Vergleichstest vorliegt.",
+      "cost_of_wait": "Kein Factory-Stopp; die reversible Auffangregel bleibt aktiv.",
+      "detail": "Aktive v4-Regel: Q11 -> Q12 -> Q13 -> Q14, inklusive unveraendertem Incumbent als legitimes Ergebnis.",
+      "evidence": [
+        "decisions/2026-08-23_owner_gate_manifest_v4_linear.md#A2"
+      ],
+      "due": null,
+      "severity": "action",
+      "created_at_utc": "2026-08-23T00:00:00Z"
+    },
+    {
+      "id": "OWNER-DEC-BACKFILL-TRANCHE-1",
+      "status": "OPEN",
+      "category": "Backfill",
+      "question": "Soll die erste append-only Backfill-Tranche mit maximal 200 Frontier-Zeilen und Symbol-Cap 3 freigegeben werden?",
+      "recommendation": "JA, unter den vorbereiteten Mengen- und Symbolgrenzen. Die Tranche liefert auch die ersten drei echten Q09-v3-Reruns und bleibt vollstaendig append-only.",
+      "yes_effect": "Die Freigabe wird dokumentiert; Enqueue und Verifikation bleiben ein separater, evidenzgebundener Arbeitsauftrag.",
+      "no_effect": "Es wird keine weitere Backfill-Tranche aus diesem Entscheid abgeleitet; die vorhandene Factory-Queue laeuft unveraendert weiter.",
+      "cost_of_wait": "Die lineare Frontier schliesst Altvertragsluecken langsamer; laufende Tests werden nicht blockiert.",
+      "detail": "Vorgeschlagen: etwa 200 Q08+-Frontier-Zeilen, darunter drei echte Q09-v3-Reruns, append-only, Symbol-Cap 3.",
+      "evidence": [
+        "docs/ops/rebaseline/BACKFILL_PLAN_2026-08-23.md"
+      ],
+      "due": null,
+      "severity": "action",
+      "created_at_utc": "2026-08-23T00:00:00Z"
+    },
+    {
+      "id": "OWNER-DEC-RISK-FREEZE-BASELINE-REFRESH",
+      "status": "OPEN",
+      "category": "Live governance",
+      "question": "Soll die Risk-Freeze-Baseline jetzt auf die 10 verifizierten Preset-SHAs nachgefuehrt werden, waehrend der Freeze gehalten bleibt?",
+      "recommendation": "JA. Die Provenienzbedingung ist verifiziert; nur die Baseline wird separat nachgefuehrt. Der Risk Freeze bleibt bis zu News-Contract, Governor-Hardening und spaeterem explizitem OWNER-Lift gehalten.",
+      "yes_effect": "Die Zustimmung wird dokumentiert; Baseline-Update und Verifikation brauchen weiterhin einen separaten ROT-gesteuerten Arbeitsauftrag.",
+      "no_effect": "Die bestehende Freeze-Baseline bleibt unveraendert und die bereits erfuellte Preset-Bedingung wird weiterhin als Drift angezeigt.",
+      "cost_of_wait": "Kein Trading-Stopp zusaetzlich zum bestehenden Freeze; die Lift-Kette bleibt jedoch unnoetig unklar.",
+      "detail": "Preset-Provenienz 10/10 ist verifiziert. News-Contract-V2 und Governor-Hardening bleiben unabhaengige Lift-Bedingungen.",
+      "evidence": [
+        "docs/ops/evidence/2026-08-22_deploy_pointer_manifest_reconciliation.md",
+        "docs/ops/evidence/2026-08-23_tlive_preset_repair_deploy_receipt.json"
+      ],
+      "due": null,
+      "severity": "alert",
+      "created_at_utc": "2026-08-23T21:40:00Z"
+    },
+    {
+      "id": "OWNER-DEC-Q12-ADMISSION",
+      "status": "OPEN",
+      "category": "ADMISSION",
+      "question": "Soll die aktuell als Q12_REVIEW_READY markierte Kandidatenkohorte zur Buchbewertung zugelassen werden?",
+      "recommendation": "VERTAGT. Erst eine aktuelle Kandidatenliste mit Gate-Provenienz, Buchwirkung, Korrelation und Ausschlussgruenden als gemeinsames Dossier vorlegen.",
+      "yes_effect": "Die Zulassung wird dokumentiert; Buchbau und jede weitere Aktion bleiben separat OWNER-gesteuert.",
+      "no_effect": "Die Kohorte bleibt ohne Zulassung; einzelne Kandidaten koennen nach neuer Evidenz erneut vorgelegt werden.",
+      "cost_of_wait": "Die Buchbewertung wartet, waehrend Factory und Optimierung unveraendert weiterlaufen.",
+      "detail": "Mission Control berichtet die aktuelle Q12_REVIEW_READY-Anzahl separat; entschieden wird die belegte Kohorte, nicht eine blosse Zahl.",
+      "evidence": [
+        "D:/QM/reports/state/mission_control_v2_preview.json"
+      ],
+      "due": null,
+      "severity": "action",
+      "created_at_utc": "2026-08-24T00:00:00Z"
+    },
+    {
+      "id": "OWNER-DEC-MQL5CAND",
+      "status": "DEFERRED",
+      "category": "Productization",
+      "question": "Soll bereits jetzt ein erster MQL5-Marketplace-Kandidat ausgewaehlt werden?",
+      "recommendation": "VERTAGT. Erst aus der ersten abgeschlossenen terminalen Q14-Kohorte waehlen; auf mehreren Symbolen profitable EAs bevorzugen.",
+      "yes_effect": "Eine vorzeitige Kandidatenwahl wird nur dokumentiert; Produktisierung braucht weiterhin einen separaten Auftrag und Evidenzcheck.",
+      "no_effect": "Das Marketplace-Programm bleibt Blueprint, bis eine belastbare Q14-Kohorte vorliegt.",
+      "cost_of_wait": "Keiner; die benoetigte Vergleichskohorte fehlt noch.",
+      "detail": "Wiedervorlage beim ersten terminalen Q14-Kohortenabschluss.",
+      "evidence": [
+        "12 ToDo/05_MQL5_EA_Productisierung"
+      ],
+      "due": "EVENT:FIRST_Q14_COHORT",
+      "severity": "info",
+      "created_at_utc": "2026-08-21T00:00:00Z"
+    }
+  ]
+}

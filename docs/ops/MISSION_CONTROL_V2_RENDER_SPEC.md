@@ -4,6 +4,14 @@
 **Programm:** `12 ToDo/03_Mission_Control_Cockpit` · **Datenvertrag:** `docs/ops/MISSION_CONTROL_V2_DATA_CONTRACT.md` (`qm.mission_control.v2`)
 **Ziel-Datei:** `D:\QM\strategy_farm\dashboards\cockpit_v2.html` — parallel zum alten Cockpit (Shadow-Betrieb, Umsetzungsschritt 4). `cockpit.html` bleibt unangetastet, bis OWNER abnimmt.
 
+> **OWNER-Amendment 2026-08-24:** Mission Control ist ab jetzt auch eine
+> dokumentierende Entscheidungsschicht. Der frühere 5er-Cap und das absolute
+> Verbot von Aktions-Elementen sind aufgehoben. Zulässig sind ausschließlich
+> `JA / NEIN / VERTAGT`-Receipts über den Loopback-Intake; kein Klick darf eine
+> Factory-, Deploy-, T_Live- oder AutoTrading-Folgeaktion ausführen. Die volle
+> EA/Symbol-Frontier liegt in einem separaten Drill-down; im Hauptcockpit bleibt
+> ein kompakter, handlungsnaher Auszug als letzter Block.
+
 ## Leitidee
 
 Die Seite beantwortet die fünf Steuerungsfragen in < 30 Sekunden, von oben nach unten
@@ -17,14 +25,16 @@ Alles andere ist Drill-down-Link, kein zweiter Zahlenblock.
   aus `mission_control_v2_data.py` und baut den Vertrag frisch bei Renderzeit
   (Single Source of Truth). Fallback-Flag `--from-json <path>` liest den Preview-Snapshot;
   in dem Fall trägt der Header ein STALE-Badge mit dem Snapshot-Alter.
-- **Read-only absolut:** keinerlei Aktions-Elemente (Abnahmekriterium: keine Cockpit-Aktion
-  kann Factory/Deploy/AutoTrading verändern). Owner-Decisions verlinken nur auf Evidenz.
+- **Document-only Intake:** OWNER-Antworten werden über einen ausschließlich an
+  `127.0.0.1` gebundenen Dienst als append-only Receipt erfasst, in den Feed
+  zurückgespiegelt und im Vault dokumentiert. `execution_authorized=false` ist
+  fester Receipt-Vertrag; Ausführung braucht immer einen separaten Auftrag.
 - **CSS:** `<link rel="stylesheet" href="style.css">` (liegt im selben Verzeichnis) +
   ein kleiner seitenspezifischer `<style>`-Block NUR für Grid-Layouts dieser Seite.
   Ausschließlich `var(--*)`-Tokens; keine neuen Farben. Disziplin gilt hart:
   `border-radius:0`, kein Glow/Gradient/Blur/Motion, Hairline-Borders.
-- **JS:** maximal ein kleines Inline-Script für Relativzeit-Anzeige ("vor 3 min") und
-  Collapse der Sekundärsektionen. Keine externen Libraries, keine Charts in der Shadow-Phase.
+- **JS:** kleine Inline-Scripts für Relativzeit, Decision-POST und Collapse der
+  Sekundärsektionen. Keine externen Libraries.
 - **Gate-Namen:** ausschließlich Qxx über die Contract-Felder (`phase_qid`/`phase_name`).
   Ein Test beweist: kein `P[0-9]`-Token im gerenderten HTML.
 
@@ -45,10 +55,14 @@ Alles andere ist Drill-down-Link, kein zweiter Zahlenblock.
 - **OWNER**: offene Entscheidungen, davon Alert-Anzahl rot, älteste Wartezeit.
 
 ### 2 · Owner Decision Queue
-`owner_decisions.items` — nur wenn `count > 0`. Max. **5** Zeilen, danach "… n weitere"
-(Link auf Drill-down/Vault OWNER.md). Zeile: Severity-Chip · ID · Frage (eine Zeile,
-ellipsis) · Empfehlung (kursiv, `--text-2`) · Cost-of-Wait · Alter. Keine Buttons.
-Reine Agent-Queues erscheinen hier nie (garantiert der Emitter; Renderer testet Feld nur durch).
+`owner_decisions.items` — nur wenn `count > 0`, **ohne künstliche Obergrenze**.
+Jede Karte zeigt stabile ID, Status, Kategorie, genaue Frage, Empfehlung,
+JA-Folge, NEIN-Folge, Cost-of-Wait, Kontext und Evidenz. Danach OWNER-Notiz und
+die drei Aktionen `JA`, `NEIN`, `VERTAGT`. Der sichtbare Grenztext und der
+Receipt-Vertrag sagen ausdrücklich: Dokumentation ja, Folgeausführung nein.
+Reine Agent-Queues erscheinen hier nie; ein automatisch entdeckter OWNER-Blocker
+erscheint erst, nachdem er mit Frage, Empfehlung, Folgen und Evidenz in den
+kuratierten v2-Feed übernommen wurde.
 
 ### 3 · Fortschrittsvergleich
 `progress` — EINE Tabelle, Spalten **Heute · Gestern · 7-Tage-Ø · Gesamt**, Zeilen:
@@ -76,6 +90,15 @@ Alle `meta.degraded_reason ≠ null` als rote Hairline-Boxen; alle `staleness=ST
 gelistet; `progress.caveats`; `health_fail_count` mit Hinweis „Detail: farmctl health /
 Heartbeat". Diese Sektion ist collapsible, default offen wenn nicht leer.
 
+### 7 · Linear Gate Frontier (immer letzter Block)
+
+Nur Aggregate, Book Guard und maximal 30 handlungsnahe Paare (höchste
+kontiguierliche Frontier zuerst; Stale/Infra/Missing vor wirtschaftlich
+beendeten Paaren). Detailtabelle standardmäßig geschlossen. Link auf
+`linear_frontier.html`, das den vollständigen EA/Symbol-Census mit Suche und
+Aktionsfilter enthält. Die 14k+ Zeilen werden nie mehr in das Hauptcockpit
+eingebettet.
+
 ### Fußzeile
 `generated_at` · `schema_version` · Quelle-DB · Renderdauer · „SHADOW — Referenz bleibt
 cockpit.html bis zur OWNER-Abnahme".
@@ -88,12 +111,18 @@ Scheduled-Task-Heartbeats, Live-/FTMO-Narrative, agentische Aktivitätszähler.
 1. Alle 10 Terminals gerendert, Idle mit Grund.
 2. Kein `P[0-9]`-Gate-Token im HTML (Regex über sichtbaren Text).
 3. Factory-Ampel-Mapping: 4 Fälle (ON, OFF-Flag→MAINTENANCE, Health-FAIL+laufend→DEGRADED, wirklich down→CRITICAL).
-4. Decision-Queue cappt bei 5 + „n weitere".
+4. Decision-Queue rendert alle offenen/vertagten Items ohne 5er-Cap; jedes hat
+   Frage, Empfehlung, Folgen, Notiz und drei Entscheidungen.
 5. STALE-Badge erscheint bei `staleness=STALE` und bei `--from-json`.
-6. Kein `<button>`/`<form>`/`onclick`-Aktionselement im Dokument.
+6. Kein `<form>`/`onclick`; Buttons sprechen nur den Loopback-Receipt-Endpunkt
+   an und der Vertrag enthält `DOCUMENT_ONLY` / `execution_authorized=false`.
 7. Queue-Summen: angezeigte Teilmengen addieren zur Gesamtsumme.
+8. Frontier ist letzter Top-Level-Block, Hauptseite enthält höchstens 30 Paare,
+   Drill-down enthält den vollständigen Census.
 
 ## Abnahme (aus dem Programm, hier verbindlich)
-Owner sieht jede offene Entscheidung + Cost of Wait ohne Logsuche; alle zehn Terminals
+Owner sieht jede offene/vertagte Entscheidung samt Empfehlung und Folgen ohne
+Logsuche und kann sie auditierbar dokumentieren; alle zehn Terminals
 zeigen EA/Symbol/Gate/Laufzeit oder expliziten Grund; einheitliche Zähllogik sichtbar;
-Queue-Summe nachvollziehbar; Stale sichtbar im selben Renderzyklus; keine Aktionspfade.
+Queue-Summe nachvollziehbar; Stale sichtbar im selben Renderzyklus; keine
+Ausführung aus dem Decision-Receipt-Pfad.

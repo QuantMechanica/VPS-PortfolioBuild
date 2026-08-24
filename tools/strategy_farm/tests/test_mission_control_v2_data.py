@@ -254,6 +254,61 @@ def test_owner_decisions_excludes_superseded(fixture_db, monkeypatch, tmp_path):
     assert any(i["category"] == "ADMISSION" for i in o["items"])
 
 
+def test_owner_decisions_v2_exposes_prepared_open_items_and_document_only_intake(
+    fixture_db, monkeypatch, tmp_path
+):
+    feed = tmp_path / "owner_decisions.json"
+    token_file = tmp_path / "token.txt"
+    token_file.write_text("a" * 64, encoding="ascii")
+    base = {
+        "category": "Governance",
+        "question": "Freigeben?",
+        "recommendation": "JA.",
+        "yes_effect": "Dokumentiert.",
+        "no_effect": "Bleibt aus.",
+        "cost_of_wait": "Ein Tag.",
+        "detail": "Kontext",
+        "evidence": ["evidence.md"],
+        "due": None,
+        "severity": "action",
+        "created_at_utc": NOW.isoformat(),
+    }
+    feed.write_text(
+        json.dumps(
+            {
+                "schema_version": "qm.owner-decisions/v2",
+                "revision": 3,
+                "updated_at_utc": NOW.isoformat(),
+                "items": [
+                    {**base, "id": "OWNER-DEC-OPEN-TEST", "status": "OPEN"},
+                    {**base, "id": "OWNER-DEC-DONE-TEST", "status": "DECIDED"},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(mc, "OWNER_DECISIONS_FILE", feed)
+    monkeypatch.setattr(mc, "OWNER_DECISION_TOKEN_FILE", token_file)
+
+    con = mc._connect_ro(fixture_db)
+    try:
+        owner = mc.build_owner_decisions(con, now=NOW)
+    finally:
+        con.close()
+
+    curated = [row for row in owner["items"] if row["source"] == "curated_feed"]
+    assert [row["id"] for row in curated] == ["OWNER-DEC-OPEN-TEST"]
+    assert curated[0]["recommendation"] == "JA."
+    assert curated[0]["yes_effect"] == "Dokumentiert."
+    assert owner["intake"] == {
+        "enabled": True,
+        "endpoint": mc.OWNER_DECISION_INTAKE_ENDPOINT,
+        "token": "a" * 64,
+        "mode": "DOCUMENT_ONLY",
+        "degraded_reason": None,
+    }
+
+
 # ---------------------------------------------------------------------------
 # whole-contract validation
 # ---------------------------------------------------------------------------

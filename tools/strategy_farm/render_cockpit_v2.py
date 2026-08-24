@@ -8,11 +8,11 @@ signs it off. This module makes **zero data decisions**: it imports
 fields verbatim (Single Source of Truth). Design is fixed by
 ``docs/ops/MISSION_CONTROL_V2_RENDER_SPEC.md`` (the orchestrator's design lane).
 
-Hard rendering discipline (from the spec, non-negotiable):
+Hard rendering discipline:
 
-  * Read-only page — NO ``<button>`` / ``<form>`` / ``onclick`` action element
-    can touch factory / deploy / AutoTrading. Owner decisions link only to
-    evidence.
+  * OWNER controls write document-only receipts through a loopback service.
+    They can never touch factory / deploy / T_Live / AutoTrading; execution
+    remains a separate governed workflow.
   * ``<link rel="stylesheet" href="style.css">`` (co-located in the output dir)
     plus a small page-grid ``<style>`` block using ONLY ``var(--*)`` tokens from
     that stylesheet. No new colours; ``border-radius:0``; no glow / gradient /
@@ -44,10 +44,18 @@ from typing import Any
 
 try:  # package import (tests, module consumers)
     from tools.strategy_farm.mission_control_v2_data import build_contract
-    from tools.strategy_farm.operator_surfaces import render_operator_surface_html
+    from tools.strategy_farm.operator_surfaces import (
+        compact_operator_snapshot,
+        render_frontier_explorer_html,
+        render_operator_surface_html,
+    )
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit_v2.py``
     from mission_control_v2_data import build_contract
-    from operator_surfaces import render_operator_surface_html
+    from operator_surfaces import (
+        compact_operator_snapshot,
+        render_frontier_explorer_html,
+        render_operator_surface_html,
+    )
 
 
 # Primary cockpit since OWNER approval 2026-08-21; cockpit_v2.html stays as an
@@ -323,36 +331,83 @@ def _render_owner_decisions(contract: dict) -> str:
     count = int(od.get("count") or len(items))
     if count == 0:
         return ""
-    shown = items[:5]
+    intake = od.get("intake", {}) or {}
+    enabled = bool(intake.get("enabled") and intake.get("token"))
+    disabled = "" if enabled else " disabled"
     rows = []
-    for it in shown:
+    for index, it in enumerate(items):
         sev = str(it.get("severity") or "info").lower()
         col = _SEV_COLOR.get(sev, "var(--text-3)")
         due = it.get("due")
         detail = it.get("detail") or ""
+        decision_id = str(it.get("id") or f"OWNER-UNPREPARED-{index + 1:03d}")
+        question = it.get("question") or it.get("title") or "?"
+        recommendation = it.get("recommendation") or (
+            "VERTAGT — dieser Eintrag ist noch nicht als vollständiger Entscheid aufbereitet."
+        )
+        yes_effect = it.get("yes_effect") or "Nur die Antwort wird dokumentiert."
+        no_effect = it.get("no_effect") or "Nur die Antwort wird dokumentiert."
+        cost = it.get("cost_of_wait") or "nicht angegeben"
+        status = str(it.get("status") or "OPEN").upper()
+        evidence = " · ".join(str(value) for value in (it.get("evidence") or []))
+        evidence_html = (
+            f'<div class="mc-dec-evidence"><b>Evidenz:</b> {e(evidence)}</div>'
+            if evidence else ""
+        )
         rows.append(f'''
-      <div class="mc-dec-row">
-        <span class="mc-chip" style="color:{col};border-color:{col}">{e(sev.upper())}</span>
-        <span class="mc-dec-cat">{e(it.get('category'))}</span>
-        <div class="mc-dec-body">
-          <div class="mc-dec-title mc-clip" title="{e(it.get('title'))}">{e(it.get('title'))}</div>
-          <div class="mc-dec-detail mc-clip" title="{e(detail)}">{e(detail)}</div>
+      <article class="mc-dec-row" data-decision-id="{e(decision_id)}">
+        <div class="mc-dec-head">
+          <span class="mc-chip" style="color:{col};border-color:{col}">{e(sev.upper())}</span>
+          <span class="mc-dec-status">{e(status)}</span>
+          <span class="mc-dec-cat">{e(it.get('category'))}</span>
+          <code>{e(decision_id)}</code>
+          <span class="mc-dec-due">{e(due) if due else "ohne Frist"}</span>
         </div>
-        <span class="mc-dec-due">{e(due) if due else "—"}</span>
-      </div>''')
-    more = ""
-    if count > 5:
-        more = (f'<div class="mc-more">… {_int(count - 5)} weitere — '
-                f'vollständige Liste: Vault <span class="mono">12 ToDo/AI ToDos/OWNER.md</span></div>')
+        <div class="mc-dec-question">{e(question)}</div>
+        <div class="mc-dec-rec"><b>Empfehlung:</b> {e(recommendation)}</div>
+        <div class="mc-dec-effects">
+          <div><b>Bei JA</b><span>{e(yes_effect)}</span></div>
+          <div><b>Bei NEIN</b><span>{e(no_effect)}</span></div>
+          <div><b>Cost of Wait</b><span>{e(cost)}</span></div>
+        </div>
+        <div class="mc-dec-detail">{e(detail)}</div>
+        {evidence_html}
+        <div class="mc-dec-controls">
+          <label for="mc-note-{index}">OWNER-Notiz</label>
+          <textarea id="mc-note-{index}" maxlength="4000" rows="2"
+            placeholder="Optional: Begründung, Bedingung oder Wiedervorlage"{disabled}></textarea>
+          <div class="mc-dec-buttons">
+            <button type="button" data-decision-choice="YES"{disabled}>JA</button>
+            <button type="button" data-decision-choice="NO"{disabled}>NEIN</button>
+            <button type="button" data-decision-choice="DEFERRED"{disabled}>VERTAGT</button>
+          </div>
+          <div class="mc-dec-result" role="status" aria-live="polite"></div>
+        </div>
+      </article>''')
     meta_badge = _stale_badge(od.get("meta", {}))
+    service_label = (
+        '<span class="mc-badge mc-badge-ok" data-decision-service-state>INTAKE BEREIT</span>'
+        if enabled else
+        '<span class="mc-badge mc-badge-warn" data-decision-service-state>INTAKE AUS</span>'
+    )
+    degraded = intake.get("degraded_reason")
+    degraded_html = (
+        f'<div class="mc-exbox">Entscheidungsdienst: {e(degraded)}</div>'
+        if degraded else ""
+    )
     return f'''
-  <section class="mc-section">
+  <section class="mc-section mc-decisions" id="owner-decisions"
+    data-intake-enabled="{str(enabled).lower()}"
+    data-intake-endpoint="{e(intake.get('endpoint') or '')}"
+    data-intake-token="{e(intake.get('token') or '')}">
     <div class="mc-h2"><span>Owner Decision Queue</span>
-      <span class="mc-h2-aux">{_int(count)} offen · {_int(od.get('alert_count'))} alert {meta_badge}</span></div>
+      <span class="mc-h2-aux">{_int(count)} offen/vertagt · {_int(od.get('alert_count'))} alert {service_label} {meta_badge}</span></div>
+    <div class="mc-dec-boundary"><b>Dokumentationsgrenze:</b> JA / NEIN / VERTAGT erzeugt
+      ausschließlich Receipt + Vault-Dokumentation. Keine Folgeausführung wird ausgelöst.</div>
+    {degraded_html}
     <div class="mc-dec-list">
       {''.join(rows)}
     </div>
-    {more}
   </section>'''
 
 
@@ -826,21 +881,57 @@ _PAGE_CSS = """
   .mc-caveats li::before{content:'·';position:absolute;left:0;color:var(--text-4)}
 
   .mc-dec-list{display:flex;flex-direction:column}
-  .mc-dec-row{display:grid;grid-template-columns:auto auto 1fr auto;gap:var(--space-3);
-    align-items:center;padding:var(--space-2) 0;border-bottom:1px solid var(--border)}
+  .mc-dec-row{display:block;padding:var(--space-5) 0;border-bottom:1px solid var(--border)}
   .mc-dec-row:last-child{border-bottom:none}
+  .mc-dec-head{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;
+    font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-3)}
+  .mc-dec-head code{color:var(--text-2)}
+  .mc-dec-status{padding:var(--space-1) var(--space-2);border:1px solid var(--border-2);
+    color:var(--warn)}
   .mc-chip{font-family:var(--font-mono);font-size:var(--fs-xs);font-weight:700;
     letter-spacing:0.1em;padding:var(--space-1) var(--space-2);border:1px solid var(--border-2);
     white-space:nowrap}
   .mc-dec-cat{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-3);
     white-space:nowrap}
-  .mc-dec-body{min-width:0}
-  .mc-dec-title{font-size:var(--fs-sm);color:var(--text)}
-  .mc-dec-detail{font-size:var(--fs-xs);color:var(--text-2);font-style:italic}
+  .mc-dec-question{font-size:var(--fs-md);font-weight:700;color:var(--text);
+    margin:var(--space-3) 0 var(--space-2)}
+  .mc-dec-rec{padding:var(--space-3);border-left:3px solid var(--signal);
+    background:var(--surface-2);font-size:var(--fs-sm);color:var(--text-2)}
+  .mc-dec-rec b{color:var(--signal)}
+  .mc-dec-effects{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3);
+    margin:var(--space-3) 0}
+  .mc-dec-effects>div{border:1px solid var(--border);padding:var(--space-3)}
+  .mc-dec-effects b,.mc-dec-effects span{display:block}
+  .mc-dec-effects b{font-family:var(--font-mono);font-size:var(--fs-xs);
+    color:var(--text-3);text-transform:uppercase;margin-bottom:var(--space-1)}
+  .mc-dec-effects span{font-size:var(--fs-xs);color:var(--text-2);line-height:var(--lh-normal)}
+  .mc-dec-detail,.mc-dec-evidence{font-size:var(--fs-xs);color:var(--text-3);
+    line-height:var(--lh-normal);margin-top:var(--space-2)}
+  .mc-dec-evidence b{color:var(--text-2)}
   .mc-dec-due{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-3);
-    white-space:nowrap;text-align:right}
-  .mc-more{margin-top:var(--space-3);font-family:var(--font-mono);font-size:var(--fs-xs)}
-  .mc-more a{color:var(--signal)}
+    white-space:nowrap;margin-left:auto}
+  .mc-dec-boundary{padding:var(--space-3);margin-bottom:var(--space-2);
+    border:1px solid var(--warn);font-size:var(--fs-xs);color:var(--text-2)}
+  .mc-dec-boundary b{color:var(--warn)}
+  .mc-dec-controls{display:grid;grid-template-columns:1fr auto;gap:var(--space-2);
+    margin-top:var(--space-3);align-items:end}
+  .mc-dec-controls label{grid-column:1/-1;font-family:var(--font-mono);
+    font-size:var(--fs-xs);color:var(--text-3)}
+  .mc-dec-controls textarea{width:100%;box-sizing:border-box;resize:vertical;
+    border:1px solid var(--border-2);background:var(--surface-2);color:var(--text);
+    padding:var(--space-2);font:inherit}
+  .mc-dec-buttons{display:flex;gap:var(--space-2);align-items:stretch}
+  .mc-dec-buttons button{border:1px solid var(--border-2);background:var(--surface-2);
+    color:var(--text);padding:var(--space-2) var(--space-3);font-family:var(--font-mono);
+    font-size:var(--fs-xs);font-weight:700;cursor:pointer}
+  .mc-dec-buttons button[data-decision-choice="YES"]{border-color:var(--pass);color:var(--pass)}
+  .mc-dec-buttons button[data-decision-choice="NO"]{border-color:var(--fail);color:var(--fail)}
+  .mc-dec-buttons button[data-decision-choice="DEFERRED"]{border-color:var(--warn);color:var(--warn)}
+  .mc-dec-buttons button:disabled,.mc-dec-controls textarea:disabled{cursor:not-allowed;
+    color:var(--text-4);border-color:var(--border)}
+  .mc-dec-result{grid-column:1/-1;font-family:var(--font-mono);font-size:var(--fs-xs);
+    color:var(--text-3);min-height:1.2em}
+  .mc-dec-row.mc-dec-recorded{border-left:3px solid var(--pass);padding-left:var(--space-3)}
 
   .mc-t-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-3)}
   .mc-t-card{border:1px solid var(--border);background:var(--surface-2);
@@ -893,7 +984,9 @@ _PAGE_CSS = """
     .mc-strip{grid-template-columns:repeat(2,1fr)}
     .mc-cell{border-right:none}
     .mc-t-grid{grid-template-columns:1fr}
-    .mc-dec-row{grid-template-columns:auto 1fr}
+    .mc-dec-effects{grid-template-columns:1fr}
+    .mc-dec-controls{grid-template-columns:1fr}
+    .mc-dec-buttons{flex-wrap:wrap}
   }
 """
 
@@ -917,6 +1010,75 @@ _REL_SCRIPT = """
   }
   tick();
   setInterval(tick,30000);
+})();
+"""
+
+
+_DECISION_SCRIPT = """
+(function(){
+  var root=document.getElementById('owner-decisions');
+  if(!root)return;
+  var enabled=root.getAttribute('data-intake-enabled')==='true';
+  var endpoint=root.getAttribute('data-intake-endpoint')||'';
+  var token=root.getAttribute('data-intake-token')||'';
+  var serviceState=root.querySelector('[data-decision-service-state]');
+  function requestId(){
+    if(window.crypto&&typeof window.crypto.randomUUID==='function')return window.crypto.randomUUID();
+    return 'mc-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+  }
+  function setDisabled(row,value){
+    var controls=row.querySelectorAll('button,textarea');
+    for(var i=0;i<controls.length;i++)controls[i].disabled=value;
+  }
+  if(enabled&&endpoint){
+    try{
+      var health=new URL('/health',endpoint).toString();
+      fetch(health,{method:'GET',cache:'no-store'}).then(function(response){
+        if(!response.ok)throw new Error('HTTP '+response.status);
+        return response.json();
+      }).then(function(payload){
+        if(!payload.ok||payload.mode!=='DOCUMENT_ONLY')throw new Error('ungueltiger Dienstvertrag');
+        if(serviceState)serviceState.textContent='INTAKE VERBUNDEN';
+      }).catch(function(){
+        if(serviceState)serviceState.textContent='INTAKE NICHT ERREICHBAR';
+      });
+    }catch(_error){
+      if(serviceState)serviceState.textContent='INTAKE NICHT ERREICHBAR';
+    }
+  }
+  root.addEventListener('click',function(event){
+    var button=event.target.closest('button[data-decision-choice]');
+    if(!button||!root.contains(button))return;
+    var row=button.closest('[data-decision-id]');
+    var result=row.querySelector('.mc-dec-result');
+    var note=row.querySelector('textarea');
+    var decision=button.getAttribute('data-decision-choice');
+    var id=row.getAttribute('data-decision-id');
+    if(!enabled||!endpoint||!token){
+      result.textContent='Dokumentationsdienst ist nicht verbunden.';
+      return;
+    }
+    setDisabled(row,true);
+    result.textContent='Entscheidung wird dokumentiert ...';
+    fetch(endpoint+'/'+encodeURIComponent(id),{
+      method:'POST',
+      cache:'no-store',
+      headers:{'Content-Type':'application/json','X-QM-Decision-Token':token},
+      body:JSON.stringify({decision:decision,notes:note?note.value:'',request_id:requestId()})
+    }).then(function(response){
+      return response.json().catch(function(){return {};}).then(function(payload){
+        if(!response.ok)throw new Error(payload.detail||payload.error||('HTTP '+response.status));
+        return payload;
+      });
+    }).then(function(payload){
+      row.classList.add('mc-dec-recorded');
+      result.textContent='DOKUMENTIERT: '+payload.decision+' · Receipt '+payload.receipt_id+
+        ' · keine Folgeausfuehrung';
+    }).catch(function(error){
+      setDisabled(row,false);
+      result.textContent='NICHT GESPEICHERT: '+error.message;
+    });
+  });
 })();
 """
 
@@ -987,7 +1149,7 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
         " · MC-v2 primär seit OWNER-Abnahme 2026-08-21</span>\n"
         "  </div>\n"
         "</div>\n"
-        "<script>\n" + _REL_SCRIPT + "\n</script>\n"
+        "<script>\n" + _REL_SCRIPT + "\n" + _DECISION_SCRIPT + "\n</script>\n"
         "</body>\n</html>\n"
     )
 
@@ -1021,7 +1183,18 @@ def main(argv: list[str] | None = None) -> int:
         source_path = str(args.from_json)
         contract = json.loads(Path(args.from_json).read_text(encoding="utf-8-sig"))
     else:
-        contract = build_contract(args.db)
+        # Build the full census once. It feeds the separate drill-down; only a
+        # compact exception-focused preview remains in the main cockpit.
+        contract = build_contract(args.db, operator_pair_detail_limit=None)
+
+    explorer_doc = None
+    if not from_json:
+        full_operator = contract.get("operator_surface") or {}
+        explorer_doc = render_frontier_explorer_html(full_operator)
+        contract = dict(contract)
+        contract["operator_surface"] = compact_operator_snapshot(
+            full_operator, limit=30
+        )
     dur_ms = (time.perf_counter() - t0) * 1000.0
 
     output = Path(args.output)
@@ -1031,6 +1204,10 @@ def main(argv: list[str] | None = None) -> int:
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(doc, encoding="utf-8", newline="\n")
+    if explorer_doc is not None:
+        (output.parent / "linear_frontier.html").write_text(
+            explorer_doc, encoding="utf-8", newline="\n"
+        )
     if output == OUTPUT_PATH:
         ALIAS_PATH.write_text(doc, encoding="utf-8", newline="\n")
     if args.stdout:

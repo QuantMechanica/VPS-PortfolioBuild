@@ -111,6 +111,48 @@ def test_pipeline_state_adds_v4_block_from_versioned_rows(
     assert by_gate["Q14"] == 1  # v4 terminal requalification
 
 
+def test_main_surface_compacts_frontier_and_full_explorer_keeps_every_pair() -> None:
+    rows = []
+    for index in range(40):
+        rows.append({
+            "ea_id": f"QM5_{index:05d}",
+            "symbol": "EURUSD.DWX",
+            "highest_observed_label": f"Q{index % 15:02d}",
+            "highest_contiguous_valid_gate": f"Q{index % 15:02d}",
+            "highest_contiguous_valid_label": f"Q{index % 15:02d}",
+            "earliest_missing_prerequisite": f"Q{(index + 1) % 15:02d}",
+            "backfill_action": (
+                "STOP_ECONOMIC_FAIL" if index < 20 else "FILL_MISSING"
+            ),
+            "disposition": "ECONOMIC_FAIL" if index < 20 else "REUSABLE",
+        })
+    snapshot = {
+        "gate_contract_version": "v4",
+        "progress_metric": "highest_contiguous_valid_gate",
+        "phase_bands": [],
+        "pair_count": len(rows),
+        "pairs": rows,
+        "book_guard": {"qualified_pairs": 0, "minimum_qualified_pairs": 25,
+                       "distinct_eas": 0, "strategy_families": 0, "venues": {}},
+    }
+
+    compact = operator_surfaces.compact_operator_snapshot(snapshot, limit=5)
+    assert compact["pair_count"] == 40
+    assert compact["pair_preview_count"] == 5
+    assert compact["pair_detail_truncated"] is True
+    assert all(row["backfill_action"] == "FILL_MISSING" for row in compact["pairs"])
+    main_html = operator_surfaces.render_operator_surface_html(compact)
+    assert "5 handlungsnahe Frontiers" in main_html
+    assert "Vollbestand 40 im Drill-down" in main_html
+    assert "linear_frontier.html" in main_html
+    assert '<details class="op-pairs" open>' not in main_html
+
+    explorer = operator_surfaces.render_frontier_explorer_html(snapshot)
+    for row in rows:
+        assert row["ea_id"] in explorer
+    assert "40 EA/Symbol-Paare" in explorer
+
+
 def test_checked_public_snapshot_validates_against_schema() -> None:
     schema = REPO_ROOT / "public-data" / "public-snapshot.schema.json"
     snapshot = REPO_ROOT / "public-data" / "public-snapshot.json"

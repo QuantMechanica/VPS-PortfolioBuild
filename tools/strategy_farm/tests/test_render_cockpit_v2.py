@@ -83,7 +83,12 @@ def make_contract(*, factory_state="NOMINAL", n_decisions=3,
     if terminals_meta_stale:
         terminals["meta"] = _meta(staleness="STALE")
     decisions = [
-        {"source": "curated_feed", "category": f"CAT{i}", "title": f"Decision {i}",
+        {"source": "curated_feed", "id": f"OWNER-DEC-TEST-{i:02d}",
+         "status": ("DEFERRED" if i == 1 else "OPEN"),
+         "category": f"CAT{i}", "title": f"Decision {i}",
+         "question": f"Decision {i}?", "recommendation": f"Recommendation {i}",
+         "yes_effect": f"yes {i}", "no_effect": f"no {i}",
+         "cost_of_wait": f"wait {i}", "evidence": [f"evidence-{i}.md"],
          "detail": f"detail {i}", "due": "2026-08-25",
          "severity": ("alert" if i % 2 == 0 else "info"),
          "alert": (i % 2 == 0)}
@@ -193,6 +198,13 @@ def make_contract(*, factory_state="NOMINAL", n_decisions=3,
             "alert_count": alert_count,
             "q12_review_ready": 30,
             "items": decisions,
+            "intake": {
+                "enabled": True,
+                "endpoint": "http://127.0.0.1:8765/v1/decisions",
+                "token": "a" * 64,
+                "mode": "DOCUMENT_ONLY",
+                "degraded_reason": None,
+            },
             "notes": "Agent work queues are excluded by construction.",
         },
     }
@@ -261,16 +273,14 @@ def test_factory_light_four_cases():
 
 
 # ---------------------------------------------------------------------------
-# 4. decision queue caps at 5 with "… n weitere"
+# 4. every prepared OWNER decision is rendered (no artificial cap)
 # ---------------------------------------------------------------------------
-def test_decision_queue_caps_at_five():
+def test_decision_queue_renders_all_items_without_five_cap():
     html = r.render(make_contract(n_decisions=8))
-    # exactly five decision rows are rendered
-    assert html.count('class="mc-dec-row"') == 5
-    assert "3 weitere" in html
-    # a small queue shows no overflow affordance
-    html2 = r.render(make_contract(n_decisions=3))
-    assert "weitere" not in html2
+    assert html.count('class="mc-dec-row"') == 8
+    assert "weitere" not in html
+    for i in range(8):
+        assert f"OWNER-DEC-TEST-{i:02d}" in html
 
 
 # ---------------------------------------------------------------------------
@@ -289,15 +299,18 @@ def test_stale_badge_appears():
 
 
 # ---------------------------------------------------------------------------
-# 6. no action elements — read-only page
+# 6. actions are document-only and carry no inline execution hook
 # ---------------------------------------------------------------------------
-def test_no_action_elements():
+def test_decision_controls_are_document_only():
     html = r.render(make_contract(n_decisions=8))
     low = html.lower()
-    assert "<button" not in low
     assert "<form" not in low
     assert "onclick" not in low
-    assert "<input" not in low
+    assert low.count("data-decision-choice=") >= 24
+    assert "document_only" in low
+    assert "keine folgeausführung" in low
+    for forbidden in ("factory_off", "autotrading", "deploy_tlive"):
+        assert forbidden not in low
 
 
 def test_active_risk_freeze_is_visible_with_baseline_current_and_lift_conditions():
