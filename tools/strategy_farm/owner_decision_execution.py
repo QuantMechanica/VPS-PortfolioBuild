@@ -20,6 +20,7 @@ if __package__ in (None, ""):
 
 from tools.strategy_farm import agent_router, farmctl  # noqa: E402
 from tools.strategy_farm import owner_decision_store as store  # noqa: E402
+from tools.strategy_farm import sqlite_busy  # noqa: E402
 
 
 CONTRACT_SCHEMA = "qm.owner-decision-execution-contract/v1"
@@ -266,69 +267,78 @@ def handoff_receipt(
     if not apply:
         return {"state": "READY", "created": False, **task}
     _require_canonical_live_writer(root)
-    now = farmctl.utc_now()
-    conn = agent_router.connect(root)
-    try:
-        conn.execute("BEGIN IMMEDIATE")
-        existing = conn.execute("SELECT * FROM agent_tasks WHERE id=?", (task["task_id"],)).fetchone()
-        if existing is not None:
-            existing_payload = json.loads(existing["payload_json"] or "{}")
-            if (
-                existing_payload.get("operation") != TASK_OPERATION
-                or (existing_payload.get("owner_decision") or {}).get("receipt_sha256")
-                != receipt["receipt_sha256"]
-            ):
-                raise ExecutionContractError("deterministic execution task id collision")
-            conn.commit()
-            return {
-                "state": "EXISTING",
-                "created": False,
-                "task_id": task["task_id"],
-                "task_state": existing["state"],
-                "assigned_agent": existing["assigned_agent"],
-            }
-        conn.execute(
-            """
-            INSERT INTO agent_tasks(
-                id, task_type, state, priority, required_capabilities_json,
-                required_skills_json, assigned_agent, budget_class, parent_id,
-                artifact_path, verdict, payload_json, created_at, updated_at
-            ) VALUES (?, ?, 'TODO', ?, ?, ?, NULL, ?, NULL, NULL, NULL, ?, ?, ?)
-            """,
-            (
-                task["task_id"], task["task_type"], task["priority"],
-                _canonical_json(task["required_capabilities"]),
-                _canonical_json(task["required_skills"]), task["budget_class"],
-                _canonical_json(task["payload"]), now, now,
-            ),
-        )
+
+    def _write_once() -> dict[str, Any]:
+        # Open a fresh connection for every retry. SQLite writers are serialized
+        # while the Factory is active; reusing a BUSY transaction would make a
+        # durable OWNER receipt needlessly depend on one contention window.
+        now = farmctl.utc_now()
+        conn = agent_router.connect(root)
         try:
-            farmctl.event(
-                conn,
-                "owner_decision_execution",
-                str(receipt["decision_id"]),
-                "execution_task_created",
-                {
+            conn.execute("BEGIN IMMEDIATE")
+            existing = conn.execute(
+                "SELECT * FROM agent_tasks WHERE id=?", (task["task_id"],)
+            ).fetchone()
+            if existing is not None:
+                existing_payload = json.loads(existing["payload_json"] or "{}")
+                if (
+                    existing_payload.get("operation") != TASK_OPERATION
+                    or (existing_payload.get("owner_decision") or {}).get("receipt_sha256")
+                    != receipt["receipt_sha256"]
+                ):
+                    raise ExecutionContractError("deterministic execution task id collision")
+                conn.commit()
+                return {
+                    "state": "EXISTING",
+                    "created": False,
                     "task_id": task["task_id"],
-                    "receipt_id": receipt["receipt_id"],
-                    "receipt_sha256": receipt["receipt_sha256"],
-                    "choice": choice,
-                    "agent": "claude",
-                },
+                    "task_state": existing["state"],
+                    "assigned_agent": existing["assigned_agent"],
+                }
+            conn.execute(
+                """
+                INSERT INTO agent_tasks(
+                    id, task_type, state, priority, required_capabilities_json,
+                    required_skills_json, assigned_agent, budget_class, parent_id,
+                    artifact_path, verdict, payload_json, created_at, updated_at
+                ) VALUES (?, ?, 'TODO', ?, ?, ?, NULL, ?, NULL, NULL, NULL, ?, ?, ?)
+                """,
+                (
+                    task["task_id"], task["task_type"], task["priority"],
+                    _canonical_json(task["required_capabilities"]),
+                    _canonical_json(task["required_skills"]), task["budget_class"],
+                    _canonical_json(task["payload"]), now, now,
+                ),
             )
-        except Exception:
-            pass
-        conn.commit()
-    finally:
-        conn.close()
-    return {
-        "state": "QUEUED",
-        "created": True,
-        "task_id": task["task_id"],
-        "task_state": "TODO",
-        "assigned_agent": None,
-        "expected_artifact": task["expected_artifact"],
-    }
+            try:
+                farmctl.event(
+                    conn,
+                    "owner_decision_execution",
+                    str(receipt["decision_id"]),
+                    "execution_task_created",
+                    {
+                        "task_id": task["task_id"],
+                        "receipt_id": receipt["receipt_id"],
+                        "receipt_sha256": receipt["receipt_sha256"],
+                        "choice": choice,
+                        "agent": "claude",
+                    },
+                )
+            except Exception:
+                pass
+            conn.commit()
+        finally:
+            conn.close()
+        return {
+            "state": "QUEUED",
+            "created": True,
+            "task_id": task["task_id"],
+            "task_state": "TODO",
+            "assigned_agent": None,
+            "expected_artifact": task["expected_artifact"],
+        }
+
+    return sqlite_busy.retry_sqlite_busy(_write_once)
 
 
 def reconcile_receipts(

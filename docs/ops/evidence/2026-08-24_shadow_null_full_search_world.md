@@ -1,7 +1,6 @@
 # Shadow Null Factory — full Factory search world — 2026-08-24
 
-Status: implementation and isolated/live-preview verification complete;
-canonical rollout hashes are appended after integration.
+Status: canonical rollout and live shadow evaluation complete.
 
 Authority: `decisions/2026-08-24_owner_shadow_null_full_search_world.md`
 
@@ -73,6 +72,26 @@ Python byte compilation: PASS
 census JSON Schema parse: PASS
 live preview: deterministic rerun produced the same pair count/hash and result
 ```
+
+## Canonical rollout and runtime artifacts
+
+```text
+canonical commit: b3a6c1f5f (agents/board-advisor)
+canonical related pytest: 41 passed
+census generated_at: 2026-08-24T08:41:31.644730+00:00
+census DB observation: 112,285 work items; 108,446 terminal verdicts
+census artifact: D:\QM\strategy_farm\reports\shadow_research\2026-08-24_null_search_world_census.json
+census bytes: 1,078,722
+census SHA-256: 5c1a6774936e73d23e11fb7611a241d008abca33b2d92315bfbd833bffc7276d
+report generated_at: 2026-08-24T08:41:40.481054+00:00
+report artifact: D:\QM\strategy_farm\reports\shadow_research\2026-08-24_null_factory_full_search_world.json
+report bytes: 14,151
+report SHA-256: 219f212c31b3f2e0168768fc4f834005359fe4017d8dde2c004b2c5189751a78
+```
+
+The census artifact records the canonical code path
+`C:\QM\repo\tools\strategy_farm\rebaseline_census.py`. Its identity count,
+pair hash and statistical decision match the isolated deterministic preview.
 
 No Factory process, work item, verdict, hold, queue priority, candidate, gate,
 book or live surface was changed.

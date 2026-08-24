@@ -232,6 +232,45 @@ def test_five_minute_reconcile_recovers_once_and_is_idempotent(tmp_path: Path) -
     con.close()
 
 
+def test_handoff_retries_factory_sqlite_contention_with_fresh_connection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    receipt, feed, _receipts, contract = _receipt(tmp_path)
+    root = tmp_path / "farm"
+    real_connect = execution.agent_router.connect
+    real_retry = execution.sqlite_busy.retry_sqlite_busy
+    attempts = 0
+
+    def flaky_connect(connect_root: Path) -> sqlite3.Connection:
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            raise sqlite3.OperationalError("database is locked")
+        return real_connect(connect_root)
+
+    def immediate_retry(operation):
+        return real_retry(
+            operation,
+            sleep=lambda _delay: None,
+            random_uniform=lambda _lower, _upper: 0.0,
+        )
+
+    monkeypatch.setattr(execution.agent_router, "connect", flaky_connect)
+    monkeypatch.setattr(execution.sqlite_busy, "retry_sqlite_busy", immediate_retry)
+
+    result = execution.handoff_receipt(
+        receipt, root=root, feed_path=feed, contract_path=contract, apply=True
+    )
+
+    assert attempts == 3
+    assert result["state"] == "QUEUED"
+    con = sqlite3.connect(root / "state" / "farm_state.sqlite")
+    assert con.execute(
+        "SELECT COUNT(*) FROM agent_tasks WHERE id=?", (receipt["execution_task_id"],)
+    ).fetchone()[0] == 1
+    con.close()
+
+
 def test_projection_surfaces_missing_queued_running_review_and_complete(tmp_path: Path) -> None:
     receipt, feed_path, _receipts, contract = _receipt(tmp_path)
     root = tmp_path / "farm"
