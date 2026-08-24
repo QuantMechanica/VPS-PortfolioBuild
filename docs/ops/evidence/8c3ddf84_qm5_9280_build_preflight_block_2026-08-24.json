@@ -1,0 +1,87 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "8c3ddf84-4b96-467f-8893-b59e85840d95",
+  "task_type": "build_ea",
+  "priority": 10,
+  "checked_at_utc": "2026-08-24T02:52:00.0000000Z",
+  "canonical_checkout": "C:/QM/repo",
+  "branch": "agents/board-advisor",
+  "git_head_inspected": "58390b67c5437eaf31b7aacee2f5ec28e66c6031",
+  "requested_identity": {
+    "ea_id": "QM5_9280",
+    "slug": "brooks-failed-triangle-h4",
+    "ea_dir": "C:/QM/repo/framework/EAs/QM5_9280_brooks-failed-triangle-h4"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_9280_brooks-failed-triangle-h4.md",
+    "sha256": "56ea5c327cf1885a6a463cb5fcca2a5edef937d2e75f1875679f6f1e8ce79af1",
+    "length_bytes": 6346,
+    "ea_id": "QM5_9280",
+    "slug": "brooks-failed-triangle-h4",
+    "g0_status": "APPROVED",
+    "period": "H4",
+    "target_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "NDX.DWX",
+      "WS30.DWX",
+      "GDAXI.DWX",
+      "UK100.DWX",
+      "FRA40.DWX",
+      "XAUUSD.DWX",
+      "XTIUSD.DWX"
+    ],
+    "gate_result": "PASS"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "4a0abb97b79df767fcb1571aadbf9d3dc349c22088b9980c6beb50072b530a4f",
+    "exact_identity_row": "9280,mql5-dpo-zero,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19,,,",
+    "exact_identity_gate": "FAIL_SLUG_MISMATCH",
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "1a30b5df1986a641cb0f3bb6be57d643cc003dcb3ec77aca17c4636ccf930b1e",
+    "required_magic_rows": [],
+    "exact_ea_id_magic_rows": [],
+    "magic_gate": "FAIL"
+  },
+  "existing_source_observation": {
+    "path": "framework/EAs/QM5_9280_brooks-failed-triangle-h4/QM5_9280_brooks-failed-triangle-h4.mq5",
+    "sha256": "cc183fd352e41bdef6a83a4a34717ef2939d3d85f0666219ee3c30aca10b872a",
+    "length_bytes": 4082,
+    "line_count": 127,
+    "placeholder_entry_todo": true,
+    "risk_percent_default": 0.5,
+    "ex5_count": 0,
+    "spec_count": 0,
+    "setfile_count": 0,
+    "strategy_card_copy_count": 0,
+    "note": "The pre-existing mq5-only placeholder is not a completed build and does not substitute for governed magic allocation."
+  },
+  "router_context": {
+    "routed_at": "2026-08-24T02:33:48+00:00",
+    "tracking_task": "8d1d903f-39cc-461f-ab90-7b932ce62fee",
+    "prior_review_close_state": "RECYCLE",
+    "prior_review_close_verdict": "batch adjudication 2026-07-19 (Claude, wf_11f17900 verified): No .ex5, no SPEC.md, no registry row for 9280; only bare .mq5 present"
+  },
+  "router_disposition": {
+    "review_requested": true,
+    "review_allowed": false,
+    "review_gate_code": "D6_BUILD_IDENTITY_MISSING",
+    "review_gate_reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
+    "final_state": "BLOCKED",
+    "final_verdict": "PRECONDITION_HOLD_MAGIC_ROWS_REQUIRED; REVIEW refused D6_BUILD_IDENTITY_MISSING"
+  },
+  "verdict": "BUILD_NOT_STARTED_PRECONDITION_GATE_FAIL",
+  "blocked_reason": "ea_id_registry.csv has slug mismatch (mql5-dpo-zero != brooks-failed-triangle-h4) and magic_numbers.csv has zero rows for ea_id 9280. qm-build-ea-from-card forbids Development from allocating those rows.",
+  "required_next_action": "The governed registry writer must align the slug in ea_id_registry.csv to brooks-failed-triangle-h4, allocate all active magic rows in magic_numbers.csv, regenerate QM_MagicResolver.mqh, and verify zero rows were dropped. Then recycle the build task. Any eventual backtest sets must keep RISK_FIXED > 0 and RISK_PERCENT = 0, and the V5 news blackout must remain fail-closed with qm_news_stale_max_hours <= 336.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "setfile_modified": false,
+    "compile_attempted": false,
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "live_or_autotrading_changed": false
+  }
+}
