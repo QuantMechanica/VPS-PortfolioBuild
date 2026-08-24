@@ -44,13 +44,13 @@ input double          strategy_tp_rr_mult          = 2.0;
 input int             strategy_rollover_start_hhmm = 2355;
 input int             strategy_rollover_end_hhmm   = 5;
 input double          strategy_spread_filter_mult  = 1.8;
+input double          strategy_daily_loss_limit_pct = 2.0;
+input double          strategy_daily_dd_hard_stop_pct = 2.5;
+input double          strategy_total_drawdown_stop_pct = 5.0;
 
 // -----------------------------------------------------------------------------
 // State Cache & Indicators
 // -----------------------------------------------------------------------------
-const double STRATEGY_DAILY_ENTRY_HALT_PCT = 2.0;
-const double STRATEGY_DAILY_HARD_STOP_PCT  = 2.5;
-const double STRATEGY_TOTAL_DD_STOP_PCT    = 5.0;
 const int    STRATEGY_MAX_SLIPPAGE_TICKS   = 3;
 
 double g_fast_atr         = 0.0;
@@ -68,6 +68,29 @@ int StrategyHhmm(const datetime t)
    MqlDateTime dt;
    TimeToStruct(t, dt);
    return dt.hour * 100 + dt.min;
+}
+
+bool StrategyHhmmInputValid(const int hhmm)
+{
+   return (hhmm >= 0 && hhmm <= 2359 && (hhmm % 100) < 60);
+}
+
+bool StrategyInputsValid()
+{
+   return (strategy_signal_tf == PERIOD_H1 &&
+           strategy_fast_atr_period >= 5 && strategy_fast_atr_period <= 15 &&
+           strategy_slow_atr_period >= 20 && strategy_slow_atr_period <= 50 &&
+           strategy_trend_ema_period >= 30 && strategy_trend_ema_period <= 80 &&
+           strategy_momentum_bars >= 3 && strategy_momentum_bars <= 10 &&
+           strategy_go_atr_mult >= 1.0 && strategy_go_atr_mult <= 2.5 &&
+           strategy_sl_atr_mult >= 1.0 && strategy_sl_atr_mult <= 2.5 &&
+           strategy_tp_rr_mult >= 1.5 && strategy_tp_rr_mult <= 3.0 &&
+           strategy_spread_filter_mult >= 1.0 && strategy_spread_filter_mult <= 3.0 &&
+           MathAbs(strategy_daily_loss_limit_pct - 2.0) <= 1e-9 &&
+           MathAbs(strategy_daily_dd_hard_stop_pct - 2.5) <= 1e-9 &&
+           MathAbs(strategy_total_drawdown_stop_pct - 5.0) <= 1e-9 &&
+           StrategyHhmmInputValid(strategy_rollover_start_hhmm) &&
+           StrategyHhmmInputValid(strategy_rollover_end_hhmm));
 }
 
 bool StrategyInRolloverWindow(const datetime t)
@@ -131,7 +154,7 @@ void StrategyRefreshDailyEntryHalt(const bool force_refresh)
    if(day_start_balance <= 0.0)
       return;
 
-   g_daily_entry_halt = (realised <= -(STRATEGY_DAILY_ENTRY_HALT_PCT / 100.0) * day_start_balance);
+   g_daily_entry_halt = (realised <= -(strategy_daily_loss_limit_pct / 100.0) * day_start_balance);
 }
 
 void AdvanceState_OnNewBar()
@@ -146,8 +169,7 @@ void AdvanceState_OnNewBar()
    g_close1 = 0.0;
    g_close5 = 0.0;
 
-   if(strategy_fast_atr_period < 1 || strategy_slow_atr_period < 2 ||
-      strategy_trend_ema_period < 1 || strategy_momentum_bars < 2)
+   if(!StrategyInputsValid())
       return;
 
    // A period-1 SMA is exactly the closed-bar price and keeps all indicator
@@ -288,7 +310,10 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
 {
-   if(strategy_signal_tf != PERIOD_H1)
+   // Fail closed before creating framework or indicator state. Besides keeping
+   // optimization inside the card/spec ranges, this caps the ATR-SMA loop at
+   // 50 pooled indicator reads per completed H1 bar.
+   if(!StrategyInputsValid())
       return INIT_PARAMETERS_INCORRECT;
 
    if(!QM_FrameworkInit(qm_ea_id,
@@ -334,8 +359,8 @@ int OnInit()
 
    if(!QM_KillSwitchInit(qm_ea_id,
                          QM_FrameworkMagic(),
-                         STRATEGY_DAILY_HARD_STOP_PCT,
-                         STRATEGY_TOTAL_DD_STOP_PCT,
+                         strategy_daily_dd_hard_stop_pct,
+                         strategy_total_drawdown_stop_pct,
                          1.0))
       return INIT_FAILED;
 
@@ -361,9 +386,9 @@ void OnTick()
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
-
+   // Management and explicit exits must remain reachable while an owned
+   // position is open. Strategy_NoTradeFilter contains the one-position entry
+   // guard and therefore belongs only on the admission path below.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -379,6 +404,9 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
       }
    }
+
+   if(Strategy_NoTradeFilter())
+      return;
 
    if(Strategy_NewsFilterHook(broker_now))
       return;
