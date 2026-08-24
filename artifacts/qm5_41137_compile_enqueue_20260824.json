@@ -1,0 +1,40 @@
+{
+  "activation_held_count": 1,
+  "batch_form": false,
+  "eligible_count": 1,
+  "enqueued": [
+    {
+      "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+      "compiled": false,
+      "ea_id": "QM5_41137",
+      "ea_label": "QM5_41137_wti-mmedian-shift-mom",
+      "failed": false,
+      "failure_classes": [],
+      "status": "pending",
+      "symbol_count": 1,
+      "timeframe": {
+        "candidates": [
+          "D1"
+        ],
+        "source": "existing_setfiles",
+        "timeframe": "D1"
+      },
+      "work_item_id": "83eb3349-3931-40e9-b79a-70bf0700a7b5"
+    }
+  ],
+  "enqueued_count": 1,
+  "idempotent_open": [],
+  "idempotent_open_count": 0,
+  "input_metadata": {
+    "from_file": null,
+    "from_file_sha256": null,
+    "requested_count": 1
+  },
+  "mode": "apply",
+  "no_gate_verdict": true,
+  "ok": true,
+  "refused": [],
+  "refused_count": 0,
+  "requested_count": 1,
+  "source_repair_authority": null
+}

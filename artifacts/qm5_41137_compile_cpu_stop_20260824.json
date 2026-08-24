@@ -1,0 +1,59 @@
+{
+  "branch": "agents/board-advisor",
+  "candidate": {
+    "ea_id": "QM5_41137",
+    "ea_label": "QM5_41137_wti-mmedian-shift-mom",
+    "magic": 411370000,
+    "mq5_sha256": "d465e76f0b0578c6983245442d279c87843a74f003fbc6b93e71b51784c343cc",
+    "strategy_id": "MOP-WTI-MMEDIAN-SHIFT-MOM-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1"
+  },
+  "compile": {
+    "attempt_count_at_stop": 0,
+    "claimed_by_at_stop": null,
+    "ex5_exists_at_stop": false,
+    "release_applied_at": "2026-08-24T01:49:46+00:00",
+    "status_at_stop": "pending",
+    "verdict_at_stop": null,
+    "work_item_id": "83eb3349-3931-40e9-b79a-70bf0700a7b5"
+  },
+  "cpu": {
+    "binding_window_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      99.9
+    ],
+    "binding_window_average_percent": 99.98,
+    "binding_window_maximum_percent": 100.0,
+    "claim_ceiling_percent": 97.0,
+    "pre_enqueue_window_percent": [
+      71.39,
+      64.93,
+      60.88,
+      70.45,
+      59.12
+    ],
+    "pre_enqueue_window_average_percent": 65.35,
+    "pre_enqueue_window_maximum_percent": 71.39,
+    "pre_release_window_percent": [
+      79.71,
+      89.68,
+      46.44,
+      61.04,
+      94.04
+    ],
+    "pre_release_window_average_percent": 74.18,
+    "pre_release_window_maximum_percent": 94.04
+  },
+  "generated_at_utc": "2026-08-24T01:51:32Z",
+  "q02": {
+    "enqueued": false,
+    "row_count_at_stop": 0
+  },
+  "schema": "qm.commodity-energy-build-cpu-stop/v1",
+  "stop_reason": "BACKTEST_CPU_CEILING_REACHED",
+  "testing_after_stop": false
+}
