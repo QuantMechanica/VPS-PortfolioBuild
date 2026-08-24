@@ -1,0 +1,25 @@
+{
+  "review_task_id": "c57623a2-30ff-4264-9839-f7093e815695",
+  "build_task_id": "bab6e8bf-435d-4da2-a25f-1e651cb33960",
+  "ea_id": "QM5_36008",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "Strategy_ManageOpenPosition remains empty. The approved TP1 lifecycle requires a 50% close at +1 ATR, a break-even stop on the remainder, and a KAMA runner; the current EA supplies none of the partial-close or break-even behavior.",
+    "Strategy_ExitSignal still adds a Vortex reversal exit although the approved runner exit is the opposite KAMA cross. This unauthorized exit changes runner holding periods and card mechanism fidelity.",
+    "The approved long and short equations both require WAE above the explosion line. Strategy_WAESignal instead returns signed momentum and the short entry requires wae == -1, substituting a directional MACD-momentum predicate for the declared WAE gate.",
+    "Strategy_ExitSignal rebuilds the long KAMA vector and Vortex history on every tick while a position is open because OnTick invokes it before QM_IsNewBar. OnInit also declares no D1 execution contract and the parameterless new-bar gate follows the host chart rather than proving the card cadence.",
+    "The card's 2.0% realized-daily, 2.5% daily-drawdown, and 5.0% total-drawdown controls remain absent. The EA inherits QM_Common.mqh's incompatible 3.0%/0.0% kill-switch defaults and Strategy_NoTradeFilter can also return before management and rule exits during rollover or spread blocks.",
+    "The producer receipt's MQ5 and EX5 hashes match the current files and compile_succeeded/build_check_passed are true, but smoke_result is deferred_p2_smoke with smoke_report_path and blocked_reason both null. No durable measured tester-fleet saturation exception exists, so smoke_sanity is UNKNOWN and build_result fails closed.",
+    "Focused guardrail and SPEC validation pass; both backtest sets use RISK_FIXED=1000 and RISK_PERCENT=0; the two active magic rows are unique, formula-correct, and present in the resolver. These checks do not cure the strategy and evidence failures."
+  ],
+  "reviewed_at": "2026-08-24T10:43:30Z"
+}
