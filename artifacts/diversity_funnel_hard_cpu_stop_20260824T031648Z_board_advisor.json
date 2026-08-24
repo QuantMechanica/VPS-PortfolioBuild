@@ -1,0 +1,147 @@
+{
+  "artifact_type": "diversity_funnel_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-24T03:17:04.2107072Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "3a2e5a14755fb560201513ce8c0537659ba49526",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "capacity_sample": {
+    "sampled_at_utc": "2026-08-24T03:15:43.2896831Z",
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "cpu_percent": [
+      100.0,
+      100.0,
+      100.0,
+      98.0,
+      100.0
+    ],
+    "average_cpu_percent": 99.6,
+    "maximum_cpu_percent": 100.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "trip_rule": "average_or_max_greater_than_or_equal_to_ceiling",
+    "ceiling_binding": true
+  },
+  "farm_observation": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "db_open_mode": "sqlite_uri_mode_ro",
+    "observed_at_utc": "2026-08-24T03:16:33Z",
+    "build_ea_tasks": {
+      "todo": 23,
+      "in_progress": 5
+    },
+    "pending_work_items": {
+      "Q02": 840,
+      "Q03": 136,
+      "Q04": 1436
+    },
+    "active_work_items": [
+      {
+        "id": "c5260944-a106-4c5f-a4f6-3f4aefcd5bb4",
+        "ea_id": "QM5_21507",
+        "phase": "Q10_NEWS",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T10"
+      },
+      {
+        "id": "1e3b7aa9-6a2d-466b-bea2-198964fda73f",
+        "ea_id": "QM5_20010",
+        "phase": "Q10_NEWS",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T2"
+      },
+      {
+        "id": "76b47e72-6e06-4cdf-82b2-3a9782713f25",
+        "ea_id": "QM5_21501",
+        "phase": "Q07",
+        "symbol": "USDJPY.DWX",
+        "claimed_by": "T3"
+      },
+      {
+        "id": "ffe82ff0-1b1b-4817-8b13-65c69b5abd49",
+        "ea_id": "QM5_11294",
+        "phase": "Q07",
+        "symbol": "NDX.DWX",
+        "claimed_by": "T4"
+      },
+      {
+        "id": "65e66448-2d1f-45ff-8ed7-189b1700337a",
+        "ea_id": "QM5_12708",
+        "phase": "Q09",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T6"
+      },
+      {
+        "id": "1b745b78-6d34-41d0-bede-34a4281cdd50",
+        "ea_id": "QM5_20085",
+        "phase": "Q07",
+        "symbol": "EURUSD.DWX",
+        "claimed_by": "T8"
+      },
+      {
+        "id": "ef0215a1-e3a8-451a-96cb-20b4144c2c41",
+        "ea_id": "QM5_41002",
+        "phase": "Q04",
+        "symbol": "GBPUSD.DWX",
+        "claimed_by": "T9"
+      }
+    ]
+  },
+  "process_observation": {
+    "observed_at_utc": "2026-08-24T03:16:48.2476129Z",
+    "running_factory_terminals": [
+      "T2",
+      "T8",
+      "T10"
+    ],
+    "running_factory_terminal_count": 3,
+    "active_claims_without_matching_process": [
+      "T3",
+      "T4",
+      "T6",
+      "T9"
+    ],
+    "processes_without_matching_active_claim": [],
+    "selection": "exact D:/QM/mt5/T<n>/terminal64.exe path; T_Live excluded",
+    "interpretation": "point-in-time DB/process drift recorded only; no reconciliation attempted after the CPU stop"
+  },
+  "nonduplicate_boundary": {
+    "prior_receipt": "artifacts/commodity_energy_sleeve_hard_cpu_stop_20260824T030102Z_board_advisor.json",
+    "prior_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T8",
+      "T10"
+    ],
+    "current_factory_terminals": [
+      "T2",
+      "T8",
+      "T10"
+    ],
+    "material_change": "governed tester process occupancy fell from six terminals to three, while the farm DB still held seven active terminal claims and the CPU ceiling remained binding"
+  },
+  "actions_this_run": {
+    "supported_farm_status_attempted": true,
+    "supported_farm_status_result": "database_locked_no_result",
+    "farm_db_read_only_snapshot": true,
+    "terminal_inventory_read": true,
+    "cpu_capacity_sampled": true,
+    "candidate_ranked_or_claimed": false,
+    "new_card_or_ea_created": false,
+    "registry_mutation": false,
+    "resolver_regeneration": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reconciliation_reservation_or_control": false,
+    "tester_or_backtest_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  },
+  "unrelated_dirty_worktree_preserved": true
+}
