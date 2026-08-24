@@ -821,6 +821,8 @@ bool Strategy_LoadMonthlyDailyInterquartileMean(
       return false;
    for(int i = 0; i < return_count; ++i)
      {
+      if(i >= ArraySize(sorted_returns))
+         return false;
       if(!MathIsValidNumber(sorted_returns[i]))
          return false;
       if(i > 0 && sorted_returns[i] < sorted_returns[i - 1])

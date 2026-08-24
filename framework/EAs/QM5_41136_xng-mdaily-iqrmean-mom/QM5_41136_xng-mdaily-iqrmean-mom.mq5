@@ -591,9 +591,11 @@ bool Strategy_LoadDailyIqrMeanSignal(const int current_month_key,
       retained_count > 13 ||
       first_retained < 0 ||
       last_retained < first_retained ||
-      last_retained >= return_count ||
-      first_retained >= ArraySize(daily_returns) ||
-      last_retained >= ArraySize(daily_returns))
+      last_retained >= return_count)
+      return false;
+   if(first_retained >= ArraySize(daily_returns))
+      return false;
+   if(last_retained >= ArraySize(daily_returns))
       return false;
 
    retained_low = daily_returns[first_retained];
@@ -712,7 +714,7 @@ void Strategy_PrepareDecisionSignal()
                             g_endpoint_return,
                             raw_direction,
                             endpoint_agrees ? "true" : "false",
-                            g_signal_state))
+                            g_signal_state));
   }
 
 // -----------------------------------------------------------------------------

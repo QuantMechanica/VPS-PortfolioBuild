@@ -68,6 +68,10 @@ SOURCE_REPAIR_EA_LABELS = frozenset({
     "QM5_41131_wti-mdaily-tailtrim-mom",
     "QM5_41132_wti-mweekday-med-mom",
 })
+HYGIENE_BURN_SOURCE_REPAIR_AUTHORITY = "ticket:rb-hygiene-burn"
+HYGIENE_BURN_SOURCE_REPAIR_EA_LABELS = frozenset({
+    "QM5_41136_xng-mdaily-iqrmean-mom",
+})
 # Exact paced-fleet authority for the pre-existing QM5_11900 Q02
 # infrastructure-repair task.  The June binary predates its governed magic
 # allocation, so the ordinary no-overwrite classifier correctly refuses it;
@@ -204,6 +208,10 @@ def _source_repair_authorized(ea_label: str, authority: str | None) -> bool:
         (
             authority == SOURCE_REPAIR_AUTHORITY
             and ea_label in SOURCE_REPAIR_EA_LABELS
+        )
+        or (
+            authority == HYGIENE_BURN_SOURCE_REPAIR_AUTHORITY
+            and ea_label in HYGIENE_BURN_SOURCE_REPAIR_EA_LABELS
         )
         or (
             authority == Q02_INFRA_SOURCE_REPAIR_AUTHORITY

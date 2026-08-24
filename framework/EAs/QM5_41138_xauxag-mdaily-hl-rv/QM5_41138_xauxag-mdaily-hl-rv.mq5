@@ -823,8 +823,12 @@ bool Strategy_LoadMonthlyDailyPseudomedian(
    int pair_index = 0;
    for(int i = 0; i < return_count; ++i)
      {
+      if(i >= ArraySize(daily_returns))
+         return false;
       for(int j = i; j < return_count; ++j)
         {
+         if(j >= ArraySize(daily_returns))
+            return false;
          if(pair_index < 0 || pair_index >= pair_count ||
             pair_index >= ArraySize(pairwise_averages))
             return false;
@@ -851,6 +855,8 @@ bool Strategy_LoadMonthlyDailyPseudomedian(
 
    for(int i = 0; i < pair_count; ++i)
      {
+      if(i >= ArraySize(pairwise_averages))
+         return false;
       if(!MathIsValidNumber(pairwise_averages[i]) ||
          (i > 0 && pairwise_averages[i] < pairwise_averages[i - 1]))
          return false;
@@ -860,6 +866,10 @@ bool Strategy_LoadMonthlyDailyPseudomedian(
    median_right_index = pair_count / 2;
    if(median_left_index < 0 || median_right_index < median_left_index ||
       median_right_index >= pair_count)
+      return false;
+   if(median_left_index >= ArraySize(pairwise_averages))
+      return false;
+   if(median_right_index >= ArraySize(pairwise_averages))
       return false;
    if(median_left_index == median_right_index)
       pseudomedian = pairwise_averages[median_left_index];
