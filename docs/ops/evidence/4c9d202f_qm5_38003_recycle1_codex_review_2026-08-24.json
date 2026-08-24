@@ -1,0 +1,22 @@
+{
+  "review_task_id": "4c9d202f-bc31-4af1-b9b5-fe8d040c7266",
+  "build_task_id": "5fa16349-5252-448a-8f5d-8a7d77306f9b",
+  "ea_id": "QM5_38003",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "PASS",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The card-specific repair is otherwise static-clean: management precedes entry-only filters, the current H1 state feeds admission, the exact split-safe one-time 50% middle-band close is restart-reconstructed, the engulfing-candle extreme plus/minus 2-pip stop and 2R target are retained, and the loss, UTC, deviation, and per-trade risk controls are wired. Focused guardrail/spec/hardening checks pass.",
+    "OnInit never calls QM_FrameworkDeclareExecutionContract after QM_FrameworkInit, so the approved H1 chart binding and Friday-close mode are not declared or checked fail-closed at runtime.",
+    "No EX5 exists for the remediated MQ5 (SHA-256 1710662cd09f19cbbd27af4843bb67d5029197010b2a5ed0f53cb137ea69333d), so there is no runnable binary containing the reviewed source.",
+    "The only build JSON is from the rejected pre-remediation producer pass and reports smoke_result=framework_error with smoke_report_path=null. It neither binds the remediated source to a governed compile nor supplies smoke evidence, so build_result fails and smoke_sanity remains unknown."
+  ],
+  "reviewed_at": "2026-08-24T10:03:50Z"
+}
