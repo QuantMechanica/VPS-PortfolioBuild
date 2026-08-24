@@ -1,9 +1,12 @@
 {
-  "build_check_passed": true,
+  "build_check_passed": false,
+  "build_check_status": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+  "build_check_attempted_at": "2026-08-24T13:02:00Z",
   "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\QM5_9113_aa-ab-velocity.mq5",
-  "mq5_sha256": "bda4cd05d61af5e028da784541e61e2025dc45c88698862268169c309f83fb63",
+  "mq5_sha256": "e277a28b81647a3af844e082f5bb075121f61dba1cea671ce4314461f23c0119",
   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\QM5_9113_aa-ab-velocity.ex5",
-  "ex5_sha256": "e027ee251d422683cb8167d7047fc8902bcbe9d1f06194020acff9d46c1b1b8d",
+  "ex5_current_for_mq5": false,
+  "predecessor_ex5_sha256": "e027ee251d422683cb8167d7047fc8902bcbe9d1f06194020acff9d46c1b1b8d",
   "setfiles_generated": [
     "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_AUDUSD.DWX_D1_backtest.set",
     "C:\\QM\\repo\\framework\\EAs\\QM5_9113_aa-ab-velocity\\sets\\QM5_9113_aa-ab-velocity_EURUSD.DWX_D1_backtest.set",

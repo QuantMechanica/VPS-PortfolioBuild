@@ -2,109 +2,101 @@
 
 **EA ID:** QM5_9716
 **Slug:** `bandy-trend-stretch-ratio-mr-index`
-**Source:** `9ef19e06-5ca6-5b35-aa06-b8187aa0e016` (see `strategy-seeds/sources/9ef19e06-5ca6-5b35-aa06-b8187aa0e016/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-08-23
-
----
+**Approved card:** `docs/strategy_card.md`
+**Source ID:** `9ef19e06-5ca6-5b35-aa06-b8187aa0e016`
+**Last revised:** 2026-08-24
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_9716_bandy-trend-stretch-ratio-mr-index.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
+On each new D1 bar, the EA evaluates the just-closed bar. It computes Bandy's
+Trend-Stretch Ratio as `(Close(1) - SMA(50, Close, 1)) / ATR(14, 1)` and enters
+long at the next session open only when TSR is at or below `-2.5` and the close
+is above SMA(200). The strategy is long-only and allows one position per magic.
 
-Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_9716_bandy-trend-stretch-ratio-mr-index.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
-
----
+Open positions retain a fixed catastrophic stop at `3.0 * ATR(14)` from entry.
+They close when TSR reaches `0.0` or after seven D1 trading bars. These exits,
+the framework Friday close, and MAE tracking remain reachable even when entry
+admission is blocked by warm-up, quote, spread, news, or kill-switch checks.
 
 ## 2. Parameters
 
-| Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| (no strategy-specific inputs) | — | — | uses framework defaults only |
+| Input | Default | P3 candidates / constraint | Meaning |
+|---|---:|---|---|
+| `strategy_sma_ref_period` | 50 | 30 / 50 / 80 | TSR reference SMA period |
+| `strategy_atr_period` | 14 | 10 / 14 / 20 | TSR and stop ATR period |
+| `strategy_tsr_entry_thresh` | -2.5 | -2.0 / -2.5 / -3.0 | Deep-stretch long entry threshold |
+| `strategy_tsr_exit_thresh` | 0.0 | -0.5 / 0.0 / +0.5 | Mean-reversion exit threshold |
+| `strategy_sma_regime_period` | 200 | fixed by approved card | Long-regime SMA period |
+| `strategy_time_stop_days` | 7 | 5 / 7 / 10 | Maximum D1 trading bars held |
+| `strategy_sl_atr_mult` | 3.0 | fixed by approved card | Catastrophic stop distance |
+| `strategy_spread_max_atr` | 0.25 | implementation guard | Entry-only spread ceiling as ATR fraction |
+| `strategy_warmup_bars` | 200 | implementation guard | Minimum D1 history before entry |
 
-> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
-> qm_friday_close_*) are documented in
-> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
-
----
+Every declared strategy input has an executable use-site in the EA and is
+sealed into each canonical backtest setfile.
 
 ## 3. Symbol Universe
 
-**Designed for:**
-- `GDAXI.DWX` — registered in magic_numbers.csv for this EA
-- `NDX.DWX` — registered in magic_numbers.csv for this EA
-- `SP500.DWX` — registered in magic_numbers.csv for this EA
-- `UK100.DWX` — registered in magic_numbers.csv for this EA
-- `WS30.DWX` — registered in magic_numbers.csv for this EA
-- `XAUUSD.DWX` — registered in magic_numbers.csv for this EA
-- `EURUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPUSD.DWX` — registered in magic_numbers.csv for this EA
-- `USDJPY.DWX` — registered in magic_numbers.csv for this EA
-- `USDCHF.DWX` — registered in magic_numbers.csv for this EA
-- `AUDUSD.DWX` — registered in magic_numbers.csv for this EA
-- `USDCAD.DWX` — registered in magic_numbers.csv for this EA
-- `NZDUSD.DWX` — registered in magic_numbers.csv for this EA
+| Symbol | Role | Magic slot |
+|---|---|---:|
+| `SP500.DWX` | Backtest target; live-promotion caveat applies | 2 |
+| `NDX.DWX` | Parallel-validation/live-capable target | 1 |
+| `WS30.DWX` | Parallel-validation/live-capable target | 4 |
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the `QM_SymbolGuard` framework helper
-rejects foreign symbols).
-
----
+No other symbol is authorized by the approved card. Historical registry
+allocations outside this universe are not consumed by this delivery and have
+no setfiles.
 
 ## 4. Timeframe
 
-| Aspect | Value |
+| Aspect | Contract |
 |---|---|
-| Base timeframe | `H1` |
-| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Chart and signal timeframe | `D1` only |
+| Entry timing | First tick of the session after the qualifying D1 close |
+| Bar gate | `QM_IsNewBar()` |
+| Friday close | Framework override, declared as `V5_WEEKEND_RISK_POLICY` |
+| News axes | Framework temporal/compliance inputs |
+| Position cardinality | One long position per resolved magic |
 
----
+`OnInit` fails closed unless `QM_FrameworkInit` and
+`QM_FrameworkDeclareExecutionContract(PERIOD_D1, ...)` both succeed.
 
 ## 5. Expected Behaviour
 
-| Metric | Expected |
-|---|---|
-| Trades / year / symbol | 20 |
-| Cadence note | see card body |
-| Typical hold time | see card body |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | per card thesis |
-| Win rate target (qualitative) | medium |
-
----
+The approved card expects approximately 20 trades per year per symbol. Build
+and static validation establish only implementation conformity; the pipeline,
+not this SPEC, determines economic validity and promotion.
 
 ## 6. Source Citation
 
-This card was mechanised from:
+The strategy is authorized by `docs/strategy_card.md`, sourced from Howard
+Bandy's *Quantitative Technical Analysis* (2015), ISBN 978-0-9791037-7-1,
+under source ID `9ef19e06-5ca6-5b35-aa06-b8187aa0e016`.
 
-**Source ID:** `9ef19e06-5ca6-5b35-aa06-b8187aa0e016`
-**Pointer:** `strategy-seeds/sources/9ef19e06-5ca6-5b35-aa06-b8187aa0e016/`
-**R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_9716_bandy-trend-stretch-ratio-mr-index.md`
+### Framework alignment
 
----
+| Card rule | Implementation surface |
+|---|---|
+| No-trade / operational controls | `QM_KillSwitchCheck`, news framework, Friday-close framework, entry-only spread/warm-up guard |
+| Trade entry | `Strategy_EntrySignal` |
+| Trade management | `Strategy_ManageOpenPosition` seven-trading-day stop |
+| Trade close | `Strategy_ExitSignal` TSR zero-cross plus framework close helper |
+| Risk / stop / magic | `QM_StopATR`, framework risk modes, `QM_FrameworkMagic` |
+| MAE | `QM_FrameworkTrackOpenPositionMae` at the start of `OnTick` |
 
 ## 7. Risk Model
 
-| Phase | Risk mode | Value |
+| Environment | Active risk mode | Inactive mode |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
-| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Backtest | `RISK_FIXED=1000` | `RISK_PERCENT=0` |
+| Live packaging | `RISK_PERCENT` | `RISK_FIXED=0` |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+The EA resolves magic through `QM_FrameworkMagic()` / `QM_MagicResolver`; it
+does not compute magic numbers locally.
 
----
+## Revision history
 
-## Revision History
-
-| Version | Date | Reason | Notes |
-|---|---|---|---|
-| v1 | 2026-08-23 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
+| Version | Date | Reason |
+|---|---|---|
+| v1 | 2026-08-23 | Initial generated specification |
+| v2 | 2026-08-24 | Reconciled D1, parameter, symbol, exit-reachability, and execution-contract requirements with the approved card |

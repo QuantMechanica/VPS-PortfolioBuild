@@ -82,13 +82,16 @@ bool Strategy_CalculateROCZ(double &zscore, double &latest_close)
    const int bars_needed = strategy_zscore_lookback + strategy_roc_period;
    MqlRates rates[];
    ArrayResize(rates, bars_needed);
+   if(ArraySize(rates) < bars_needed)
+      return false;
    ArraySetAsSeries(rates, true);
-   // perf-allowed: the card requires a bounded rolling ROC array; this helper is cached by QM_CalendarPeriodKey and scans once per closed D1 bar.
-   if(CopyRates(_Symbol, PERIOD_D1, 1, bars_needed, rates) != bars_needed)
+   if(CopyRates(_Symbol, PERIOD_D1, 1, bars_needed, rates) != bars_needed) // perf-allowed: bounded card-required ROC window, cached once per closed D1 bar.
       return false;
 
    double roc_series[];
    ArrayResize(roc_series, strategy_zscore_lookback);
+   if(ArraySize(roc_series) < strategy_zscore_lookback)
+      return false;
    double sum = 0.0;
    for(int i = 0; i < strategy_zscore_lookback; ++i)
    {
@@ -134,7 +137,7 @@ bool Strategy_NoTradeFilter()
    if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
       return true;
 
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars) // perf-allowed: bounded D1 readiness probe; no data copy.
       return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -162,7 +165,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars) // perf-allowed: bounded D1 readiness probe; no data copy.
       return false;
 
    const int magic = QM_FrameworkMagic();

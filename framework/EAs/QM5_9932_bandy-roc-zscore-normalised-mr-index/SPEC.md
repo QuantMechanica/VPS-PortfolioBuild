@@ -47,19 +47,10 @@ On each completed D1 bar close:
 - `SP500.DWX` — canonical equity index backtest instrument.
 - `NDX.DWX` — liquid index CFD.
 - `WS30.DWX` — liquid index CFD.
-- `GDAXI.DWX` — liquid index CFD.
-- `UK100.DWX` — liquid index CFD.
-- `XAUUSD.DWX` — liquid gold CFD.
-- `EURUSD.DWX` — liquid FX major.
-- `GBPUSD.DWX` — liquid FX major.
-- `USDJPY.DWX` — liquid FX major.
-- `USDCHF.DWX` — liquid FX major.
-- `AUDUSD.DWX` — liquid FX major.
-- `USDCAD.DWX` — liquid FX major.
-- `NZDUSD.DWX` — liquid FX major.
 
 **Explicitly NOT for:**
-Any symbol not registered in `framework/registry/magic_numbers.csv`.
+Any symbol outside the approved Strategy Card universe above. Pre-existing registry
+allocations do not expand the build's authorized delivery universe.
 
 ---
 
@@ -114,3 +105,4 @@ ENV to mode validation is enforced by `QM_FrameworkInit`.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-23 | Initial build from card | Gemini Orchestration cycle |
+| v2 | 2026-08-24 | Review rework | Restricted delivery to the card-authorized three-index universe. |

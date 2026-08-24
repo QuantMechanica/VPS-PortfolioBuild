@@ -1,0 +1,54 @@
+{
+  "task_id": "c71f308a-76be-456f-8ae7-a5d7c3abc4e0",
+  "rework_task_id": "1db5da1a-e87a-486f-a6f6-2224724a09fe",
+  "ea_id": "QM5_9932",
+  "slug": "bandy-roc-zscore-normalised-mr-index",
+  "ea_dir": "framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index",
+  "mq5_path": "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/QM5_9932_bandy-roc-zscore-normalised-mr-index.mq5",
+  "mq5_sha256": "20553e4da0339eb9a8d5a949a230b67c5980cd7957bcdf607f6700613e970a34",
+  "ex5_path": "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/QM5_9932_bandy-roc-zscore-normalised-mr-index.ex5",
+  "ex5_sha256": "feea799e3e46a96c0f6094e76d6d4dfc1f4069c6c800195430be00b99f2d83dc",
+  "magic_base": 99320000,
+  "symbols_registered": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "NZDUSD.DWX",
+    "SP500.DWX",
+    "UK100.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "USDJPY.DWX",
+    "WS30.DWX",
+    "XAUUSD.DWX"
+  ],
+  "symbols_delivered": [
+    "NDX.DWX",
+    "SP500.DWX",
+    "WS30.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/sets/QM5_9932_bandy-roc-zscore-normalised-mr-index_NDX.DWX_D1_backtest.set",
+    "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/sets/QM5_9932_bandy-roc-zscore-normalised-mr-index_SP500.DWX_D1_backtest.set",
+    "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/sets/QM5_9932_bandy-roc-zscore-normalised-mr-index_WS30.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/worktrees/rework-slot-12/framework/EAs/QM5_9932_bandy-roc-zscore-normalised-mr-index/SPEC.md",
+  "build_check_passed": false,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "Scoped build_check was attempted and refused by LIVE_FACTORY_AD_HOC_COMPILE_REFUSED while terminal64 processes were active; no factory toggle, queue mutation, or backtest/smoke run was authorized. Standalone scoped hardening, guardrails, SPEC validation, and isolated portable compilation passed.",
+  "isolated_compile": {
+    "source_sha256_verified": true,
+    "result": "0 errors, 0 warnings",
+    "ex5_bytes": 401436,
+    "compile_log_path": "D:/QM/strategy_farm/temp/rework-9932-slot12-20260824T143000Z/compile.log",
+    "compile_log_sha256": "3eae69375c3ef0eea691b9c735a7e3acd005f1b1ffa4c269a1fd8f413aeba747"
+  },
+  "open_questions": [
+    "Ten pre-existing active magic allocations remain outside the card universe because this ticket explicitly forbids changing existing allocations; the delivery consumes only NDX, SP500, and WS30 slots.",
+    "Full build_check needs a governed COMPILE_EA/OFF-window adjudication if review requires its single-script PASS rather than the scoped standalone checks plus isolated 0/0 compile."
+  ]
+}
