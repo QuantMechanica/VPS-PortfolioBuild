@@ -25,6 +25,14 @@ Account-wide realised losses halt new entries at 2.0% for the broker day. The fr
 | `InpAtrPeriod` | 20 | 10-30 | ATR period for initial stop loss sizing |
 | `InpAtrSlMult` | 3.0 | 1.5-4.0 | ATR multiplier for stop loss placement |
 | `InpSpreadAtrMult` | 1.8 | 1.0-3.0 | Maximum allowable spread as multiple of D1 ATR(14) |
+| `InpDailyLossEntryHaltPct` | 2.0 | 0-100 | Account-wide realised-loss threshold that blocks new entries |
+| `InpDailyHardStopPct` | 2.5 | 0-100 | Daily equity-loss kill-switch threshold |
+| `InpTotalDrawdownStopPct` | 5.0 | 0-100 | Portfolio drawdown kill-switch threshold |
+
+The card's `InpRiskPercent` is represented by the mandatory V5 `RISK_PERCENT`
+framework input. Backtest sets disable it and use `RISK_FIXED=1000`; a reviewed
+live set must disable `RISK_FIXED` and bind `RISK_PERCENT` within the card's
+0.20%-1.00% range.
 
 ---
 
@@ -47,7 +55,7 @@ Account-wide realised losses halt new entries at 2.0% for the broker day. The fr
 |---|---|
 | Base timeframe | D1 |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar()` with the declared D1 chart contract |
 
 ---
 
@@ -90,3 +98,4 @@ This card was mechanised from:
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Task 30ceeacd-0647-485a-9886-725af2139d61 |
 | v2 | 2026-08-23 | Card-faithful rework after Codex review | Added execution/loss contracts and cached the 20-day exit calculation on the D1 new-bar path |
+| v3 | 2026-08-24 | Review hardening | Sealed loss-limit inputs, replaced raw channel scans with one bounded D1 buffer, and kept management/exits ahead of entry-only filters |

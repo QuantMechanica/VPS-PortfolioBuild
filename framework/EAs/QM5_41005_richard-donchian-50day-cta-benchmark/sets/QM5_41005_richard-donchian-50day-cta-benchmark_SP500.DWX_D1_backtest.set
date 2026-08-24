@@ -26,3 +26,6 @@ InpExitLookback=20
 InpAtrPeriod=20
 InpAtrSlMult=3.0
 InpSpreadAtrMult=1.8
+InpDailyLossEntryHaltPct=2.0
+InpDailyHardStopPct=2.5
+InpTotalDrawdownStopPct=5.0

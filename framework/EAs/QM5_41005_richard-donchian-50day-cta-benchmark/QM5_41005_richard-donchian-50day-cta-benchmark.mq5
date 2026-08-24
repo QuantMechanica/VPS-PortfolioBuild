@@ -3,7 +3,6 @@
 #property description "QM5_41005 Richard Donchian 50-Day CTA Benchmark"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA: QM5_41005
@@ -40,10 +39,9 @@ input int    InpExitLookback            = 20;     // Donchian exit channel bars
 input int    InpAtrPeriod               = 20;     // ATR period for stop loss
 input double InpAtrSlMult               = 3.0;    // ATR stop loss multiplier
 input double InpSpreadAtrMult           = 1.8;    // Max spread as multiple of D1 ATR(14)
-
-const double STRATEGY_DAILY_ENTRY_HALT_PCT = 2.0;
-const double STRATEGY_DAILY_HARD_STOP_PCT  = 2.5;
-const double STRATEGY_TOTAL_DD_STOP_PCT    = 5.0;
+input double InpDailyLossEntryHaltPct   = 2.0;    // Account realised-loss entry halt
+input double InpDailyHardStopPct        = 2.5;    // Daily equity-loss hard stop
+input double InpTotalDrawdownStopPct    = 5.0;    // Portfolio drawdown hard stop
 
 double g_spread_atr       = 0.0;
 double g_stop_atr         = 0.0;
@@ -102,7 +100,34 @@ void StrategyRefreshDailyEntryHalt(const bool force_refresh)
    const double day_start_balance = AccountInfoDouble(ACCOUNT_BALANCE) - realised;
    if(day_start_balance <= 0.0)
       return;
-   g_daily_entry_halt = (realised <= -(STRATEGY_DAILY_ENTRY_HALT_PCT / 100.0) * day_start_balance);
+   g_daily_entry_halt = (realised <= -(InpDailyLossEntryHaltPct / 100.0) * day_start_balance);
+}
+
+bool CalculateDonchianBreakout(const MqlRates &rates[],
+                               const int lookback,
+                               int &breakout)
+{
+   breakout = 0;
+   const int required = lookback + 1;
+   if(lookback < 1 || ArraySize(rates) < required)
+      return false;
+
+   double channel_high = -DBL_MAX;
+   double channel_low = DBL_MAX;
+   for(int i = 1; i <= lookback; ++i)
+   {
+      channel_high = MathMax(channel_high, rates[i].high);
+      channel_low = MathMin(channel_low, rates[i].low);
+   }
+
+   const double closed_price = rates[0].close;
+   if(closed_price <= 0.0 || channel_high == -DBL_MAX || channel_low == DBL_MAX)
+      return false;
+   if(closed_price > channel_high)
+      breakout = 1;
+   else if(closed_price < channel_low)
+      breakout = -1;
+   return true;
 }
 
 void AdvanceState_OnNewBar()
@@ -117,9 +142,11 @@ void AdvanceState_OnNewBar()
       return;
 
    const int max_lookback = (InpEntryLookback > InpExitLookback) ? InpEntryLookback : InpExitLookback;
-   const int warmup = max_lookback + 2;
-   const double oldest_close = iClose(_Symbol, PERIOD_D1, warmup); // perf-allowed: one warmup probe inside the framework new-bar gate
-   if(oldest_close <= 0.0)
+   const int required = max_lookback + 1;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, required, rates); // perf-allowed: one bounded new-bar-only channel buffer
+   if(copied != required || ArraySize(rates) < required)
       return;
 
    const double spread_atr = QM_ATR(_Symbol, PERIOD_D1, 14, 1);
@@ -129,8 +156,9 @@ void AdvanceState_OnNewBar()
 
    g_spread_atr = spread_atr;
    g_stop_atr = stop_atr;
-   g_entry_breakout = QM_Sig_Range_Breakout(_Symbol, PERIOD_D1, InpEntryLookback, 1);
-   g_exit_breakout = QM_Sig_Range_Breakout(_Symbol, PERIOD_D1, InpExitLookback, 1);
+   if(!CalculateDonchianBreakout(rates, InpEntryLookback, g_entry_breakout) ||
+      !CalculateDonchianBreakout(rates, InpExitLookback, g_exit_breakout))
+      return;
    g_state_ready = true;
 }
 
@@ -153,7 +181,7 @@ bool Strategy_NoTradeFilter()
    }
 
    MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
+   TimeToStruct(QM_BrokerToUTC(TimeCurrent()), dt);
    if((dt.hour == 23 && dt.min >= 55) || (dt.hour == 0 && dt.min < 5))
       return true;
 
@@ -249,8 +277,12 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 int OnInit()
 {
-   if(InpEntryLookback < 1 || InpExitLookback < 1 || InpAtrPeriod < 1 ||
-      InpAtrSlMult <= 0.0 || InpSpreadAtrMult <= 0.0)
+   if(InpEntryLookback < 30 || InpEntryLookback > 80 ||
+      InpExitLookback < 10 || InpExitLookback > 30 ||
+      InpAtrPeriod < 1 || InpAtrSlMult <= 0.0 || InpSpreadAtrMult <= 0.0 ||
+      InpDailyLossEntryHaltPct <= 0.0 || InpDailyLossEntryHaltPct > 100.0 ||
+      InpDailyHardStopPct <= 0.0 || InpDailyHardStopPct > 100.0 ||
+      InpTotalDrawdownStopPct <= 0.0 || InpTotalDrawdownStopPct > 100.0)
       return INIT_PARAMETERS_INCORRECT;
 
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
@@ -265,10 +297,10 @@ int OnInit()
       return INIT_FAILED;
 
    if(!QM_KillSwitchInit(qm_ea_id,
-                         QM_FrameworkMagic(),
-                         STRATEGY_DAILY_HARD_STOP_PCT,
-                         STRATEGY_TOTAL_DD_STOP_PCT,
-                         1.0))
+                          QM_FrameworkMagic(),
+                          InpDailyHardStopPct,
+                          InpTotalDrawdownStopPct,
+                          1.0))
       return INIT_FAILED;
 
    StrategyRefreshDailyEntryHalt(true);
@@ -290,11 +322,13 @@ void OnTick()
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
    if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
 
    const bool is_new_bar = QM_IsNewBar();
    if(is_new_bar)
+   {
       AdvanceState_OnNewBar();
+      QM_EquityStreamOnNewBar();
+   }
 
    Strategy_ManageOpenPosition();
 
@@ -310,6 +344,8 @@ void OnTick()
       }
    }
 
+   if(!is_new_bar) return;
+   if(Strategy_NoTradeFilter()) return;
    if(Strategy_NewsFilterHook(broker_now)) return;
 
    bool news_allows = true;
@@ -318,9 +354,6 @@ void OnTick()
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows) return;
-
-   if(!is_new_bar) return;
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    ZeroMemory(req);
