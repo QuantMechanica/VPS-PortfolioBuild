@@ -18024,3 +18024,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41138,xauxag-mdaily-hl-rv,0,XAUUSD.DWX,411380000,2026-08-24,Codex governed allocator,active
 41138,xauxag-mdaily-hl-rv,1,XAGUSD.DWX,411380001,2026-08-24,Codex governed allocator,active
 41139,wti-mdaily-hl-mom,0,XTIUSD.DWX,411390000,2026-08-24,Codex governed allocator,active
+21509,qs-emv-trend-ndx,0,NDX.DWX,215090000,2026-08-24,Codex burn-window build,active
