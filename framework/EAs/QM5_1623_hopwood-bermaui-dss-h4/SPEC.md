@@ -3,20 +3,27 @@
 **EA ID:** QM5_1623
 **Slug:** hopwood-bermaui-dss-h4
 **Source:** 6e967762-b26d-59a3-b076-35c17f2e7c36
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-22
+**Author of this spec:** Development
+**Last revised:** 2026-08-24
 
 ---
 
 ## 1. Strategy Logic
 
-This EA implements the Steve Hopwood Bermaui Double-Smoothed Stochastic (DSS) mean-reversion strategy on H4 bars with a D1 EMA(200) trend regime filter.
-DSS (Blau 1995) applies double EMA smoothing to the raw stochastic oscillator. The Bermaui methodology calculates rolling dynamic overbought/oversold bands based on mean and standard deviation over a lookback window.
+This EA implements the approved Steve Hopwood Bermaui Double-Smoothed Stochastic
+(DSS) mean-reversion strategy on completed H4 bars with a D1 EMA(200) trend
+regime filter. DSS (Blau 1995) applies two EMA smoothing layers to the raw
+stochastic oscillator. Bermaui overbought and oversold bands are the nearest-rank
+80th and 20th percentiles of DSS over the latest 100 completed H4 bars.
 
-- Long Entry: DSS rolls up from oversold, crossing back above the lower threshold while D1 price is above D1 EMA(200) and cooldown condition is met.
-- Short Entry: DSS rolls down from overbought, crossing back below the upper threshold while D1 price is below D1 EMA(200) and cooldown condition is met.
-- Exit: Opposite signal, time stop (max 10-20 H4 bars), or ATR-based TP / BE trailing.
-- Protective Stop: Initial SL placed at 1.5 * ATR(14, H4).
+- Long entry: DSS(10,5,5) crosses above the rolling 20th-percentile band while
+  completed D1 price is above D1 EMA(200) and the six-H4-bar cooldown permits.
+- Short entry: DSS(10,5,5) crosses below the rolling 80th-percentile band while
+  completed D1 price is below D1 EMA(200) and the cooldown permits.
+- Exit: capture exit at the opposite percentile band, fresh opposite-direction
+  entry signal, D1 EMA(200) regime invalidation, or a 20-H4-bar time stop.
+- Protective stop: initial SL at 2.0 * ATR(14, H4). The baseline has no take-profit
+  and no break-even or trailing-stop overlay.
 
 ---
 
@@ -24,20 +31,18 @@ DSS (Blau 1995) applies double EMA smoothing to the raw stochastic oscillator. T
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| strategy_dss_stoch_period | 8 | 5-14 | DSS raw stochastic lookback (%K) |
-| strategy_dss_inner_ema | 5 | 3-8 | DSS first EMA smoothing period |
-| strategy_dss_outer_ema | 3 | 2-5 | DSS second EMA smoothing period |
-| strategy_bermaui_lookback | 20 | 14-50 | Bermaui dynamic threshold lookback |
-| strategy_bermaui_k | 1.8 | 1.5-2.5 | Bermaui std multiplier |
-| strategy_min_overshoot_mult | 2.0 | 1.5-3.0 | Minimum overshoot gate in std deviations |
-| strategy_d1_ema_period | 200 | 100-250 | D1 trend filter EMA period |
-| strategy_atr_period | 14 | 10-20 | ATR period for stops and targets |
-| strategy_atr_sl_mult | 1.5 | 1.0-3.0 | Stop loss multiplier in ATR |
-| strategy_atr_tp_mult | 1.5 | 1.0-3.0 | Take profit multiplier in ATR |
-| strategy_max_hold_bars | 10 | 5-30 | Time stop in H4 bars |
-| strategy_cooldown_bars | 6 | 3-12 | Entry cooldown in H4 bars |
-| strategy_be_atr_mult | 0.75 | 0.5-1.5 | Break-even trigger in ATR |
-| strategy_spread_max_atr_mult | 0.3 | 0.1-0.5 | Max spread threshold in ATR |
+| strategy_dss_stoch_period | 10 | 7, 10, 14, 21 | DSS raw stochastic lookback (%K) |
+| strategy_dss_inner_ema | 5 | card grid | DSS first EMA smoothing period |
+| strategy_dss_outer_ema | 5 | card grid | DSS second EMA smoothing period |
+| strategy_bermaui_lookback | 100 | 50, 100, 200 | Rolling completed-H4 DSS window |
+| strategy_overbought_percentile | 80 | 70, 75, 80, 85 | Upper nearest-rank percentile |
+| strategy_oversold_percentile | 20 | 15, 20, 25, 30 | Lower nearest-rank percentile |
+| strategy_d1_ema_period | 200 | 100, 200 | D1 trend filter EMA period |
+| strategy_atr_period | 14 | fixed baseline | ATR period for protective stop |
+| strategy_atr_sl_mult | 2.0 | 1.5, 2.0, 2.5 | Initial stop multiplier in ATR |
+| strategy_max_hold_bars | 20 | 15, 20, 30 | Time stop in H4 bars |
+| strategy_cooldown_bars | 6 | fixed baseline | Same-direction cooldown in H4 bars |
+| strategy_spread_max_atr_mult | 0.3 | fixed baseline | Maximum spread in ATR units |
 
 ---
 
@@ -64,7 +69,7 @@ DSS (Blau 1995) applies double EMA smoothing to the raw stochastic oscillator. T
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 30-60 |
-| Typical hold time | 2-10 H4 bars |
+| Typical hold time | Up to 20 H4 bars |
 | Regime preference | Mean-reversion in trend direction |
 | Win rate target (qualitative) | medium-high |
 
@@ -83,6 +88,6 @@ DSS (Blau 1995) applies double EMA smoothing to the raw stochastic oscillator. T
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | ,000 per trade |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | 0.5% |
