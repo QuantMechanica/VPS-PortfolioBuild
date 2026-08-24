@@ -1,0 +1,139 @@
+{
+  "artifact_type": "diversity_funnel_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-24T10:51:18.2451649Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "20e8489a939c545b9ace2471b058446442b668cc",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "capacity_sample": {
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true
+  },
+  "farm_snapshot": {
+    "database_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "sqlite_uri_mode_ro",
+    "legacy_pending_build_rows": 46,
+    "pending_work_items": 3832,
+    "active_work_item_count": 8,
+    "active_phase_counts": {
+      "Q02": 1,
+      "Q07": 2,
+      "Q08": 1,
+      "Q10_NEWS": 4
+    },
+    "active_work_items": [
+      {
+        "terminal": "T1",
+        "work_item_id": "e58b8c4c-3894-4aa7-8c9f-fd2d34ac3ebe",
+        "ea_id": "QM5_12849",
+        "phase": "Q10_NEWS",
+        "symbol": "XTIUSD.DWX"
+      },
+      {
+        "terminal": "T2",
+        "work_item_id": "a110f85e-7164-48d3-9efd-b675e52e11a6",
+        "ea_id": "QM5_10128",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "a7c3f1dc-9203-4423-830e-7b23e60af18a",
+        "ea_id": "QM5_20291",
+        "phase": "Q02",
+        "symbol": "QM5_20291_XAU_XAG_HKURT_D1"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "463fa52a-33fa-4d23-b318-dda3d73b12e1",
+        "ea_id": "QM5_21505",
+        "phase": "Q10_NEWS",
+        "symbol": "XAGUSD.DWX"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "13f41983-74c6-4058-8a41-c787633a1391",
+        "ea_id": "QM5_1328",
+        "phase": "Q10_NEWS",
+        "symbol": "EURJPY.DWX"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "1505ff12-34b9-4142-865e-869537fbd597",
+        "ea_id": "QM5_12623",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "5a396f28-70f9-4fe1-81fc-645a1df4eae8",
+        "ea_id": "QM5_1556",
+        "phase": "Q08",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": "9416f0ce-ede3-457e-bf9a-5ed9f892e177",
+        "ea_id": "QM5_20266",
+        "phase": "Q10_NEWS",
+        "symbol": "XTIUSD.DWX"
+      }
+    ],
+    "active_build_claims": [
+      {
+        "agent_task_id": "7e8c9eaa-1af5-40ca-9f49-4c785b5ae07d",
+        "ea_id": "QM5_20065",
+        "assigned_agent": "gemini",
+        "state": "IN_PROGRESS"
+      },
+      {
+        "agent_task_id": "6c35c3ec-b576-4919-a321-796b7c813350",
+        "ea_id": "QM5_20077",
+        "assigned_agent": "gemini",
+        "state": "IN_PROGRESS"
+      }
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_receipt": "artifacts/diversity_funnel_cpu_stop_20260824T064236Z_board_advisor.json",
+    "prior_observation_utc": "2026-08-24T06:42:36Z",
+    "prior_running_factory_terminal_count": 3,
+    "prior_legacy_pending_build_rows": 43,
+    "current_active_work_item_count": 8,
+    "current_legacy_pending_build_rows": 46,
+    "new_observation": "The live database now shows eight active downstream rows across Q02, Q07, Q08, and Q10_NEWS while the CPU gate remains saturated."
+  },
+  "actions_this_run": {
+    "farm_claim": false,
+    "candidate_advance": false,
+    "new_card_or_ea": false,
+    "registry_magic_or_resolver_mutation": false,
+    "source_binary_or_setfile_changed": false,
+    "compile_build_check_or_smoke": false,
+    "enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "tester_launch_or_terminal_control": false,
+    "evidence_commit_only": true,
+    "reason": "The explicit 97 percent backtest CPU ceiling bound before any mutating or CPU-consuming action."
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
