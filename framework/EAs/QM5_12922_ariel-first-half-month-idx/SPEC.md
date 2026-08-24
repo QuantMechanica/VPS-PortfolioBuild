@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-Opens a long position on the first trading session of each calendar month (trading day T+1). Holds the position through the first 9 trading sessions of the month (T+1 through T+9). Exits the long position at the conclusion of trading day 9 (open of trading day 10), remaining in cash for the remainder of the month. The position is protected by an ATR(D1,14) * 3 hard stop loss below the entry price and standard Friday close / news filter controls.
+Opens a long position on the first trading session of each calendar month (trading day T+1). A high-impact FOMC, NFP, or ECB event anywhere on T+1 defers that entry exactly one session to T+2. The EA holds through the first 9 trading sessions of the month (T+1 through T+9) and exits at the open of trading day 10, remaining in cash for the rest of the month. The position is protected by an ATR(D1,14) * 3 hard stop loss. Framework Friday close is locked off because an intervening Friday must not shorten the card-mandated hold.
 
 ---
 
@@ -89,7 +89,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit`; the build gate reports an unconfigured sizing contract as `EA_RISK_SIZER_UNCONFIGURED`.
 
 ---
 
@@ -98,3 +98,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-21 | Initial build from card | 11468a5a-89fc-4872-b6ec-2a78250ae792 |
+| v2 | 2026-08-24 | Review repair | Restart reconstruction, named T+1 macro-event deferral, retry-safe signal consumption, and Friday-close lockout |
