@@ -27,6 +27,17 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Iterable
 
+# rebaseline_census is a same-directory sibling module, not a package member.
+# When this file is imported through the `tools.strategy_farm` package (e.g.
+# operator_surfaces.py -> backfill_planner.py, as build_pipeline_state.py
+# does), only the repo root is on sys.path, so a bare `import
+# rebaseline_census` raises ModuleNotFoundError. Insert this file's own
+# directory so the import resolves the same way whether this module is run
+# standalone or imported as part of the package (same pattern as
+# agy_governor.py / farmctl.py's own sys.path bootstraps).
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 import rebaseline_census as census
 
 

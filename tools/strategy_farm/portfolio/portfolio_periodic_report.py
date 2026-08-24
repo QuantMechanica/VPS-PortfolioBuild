@@ -209,18 +209,31 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     stamp = args.stamp or dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()
-    report = build_report(
-        common_dir=args.common_dir,
-        candidates_db=args.candidates_db,
-        max_dd_pct=args.max_dd_pct,
-        weighting=args.weighting,
-        starting_capital=args.starting_capital,
-        generated_at=stamp,
-        concentration_policy_path=args.concentration_policy,
-        symbol_matrix_path=args.symbol_matrix,
-        venue=args.venue,
-        order_dir=args.order_dir,
-    )
+    try:
+        report = build_report(
+            common_dir=args.common_dir,
+            candidates_db=args.candidates_db,
+            max_dd_pct=args.max_dd_pct,
+            weighting=args.weighting,
+            starting_capital=args.starting_capital,
+            generated_at=stamp,
+            concentration_policy_path=args.concentration_policy,
+            symbol_matrix_path=args.symbol_matrix,
+            venue=args.venue,
+            order_dir=args.order_dir,
+        )
+    except book_build_guard.BookBuildRefused as exc:
+        # Expected, not a bug: the book-build guard is fail-closed by design
+        # and correctly has nothing to report yet (e.g. below the qualified-
+        # pair minimum, no OWNER order on file). Report it the same way the
+        # script already reports any other non-"ok" status below, instead of
+        # letting it surface as an unhandled scheduled-task failure.
+        result = exc.result
+        print(
+            "portfolio report: book_build_refused "
+            f"({'; '.join(result.reasons)}; qualified_pairs={result.qualified_pairs})"
+        )
+        return 0
     args.out_dir.mkdir(parents=True, exist_ok=True)
     (args.out_dir / "portfolio_latest.json").write_text(
         json.dumps(report, indent=2), encoding="utf-8"
