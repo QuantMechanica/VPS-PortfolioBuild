@@ -3,8 +3,8 @@
 **EA ID:** QM5_9908
 **Slug:** bandy-psar-flip-trend
 **Source:** 9ef19e06-5ca6-5b35-aa06-b8187aa0e016
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-23
+**Author of this spec:** Development (Codex rework)
+**Last revised:** 2026-08-24
 
 ---
 
@@ -14,8 +14,8 @@ The EA implements Howard Bandy's Parabolic SAR Flip Trend strategy on daily bars
 On each closed D1 bar, it computes Wilder's Parabolic SAR (step 0.02, max 0.20), a 200-day SMA regime filter, and ATR(14).
 A long entry is triggered on the next bar open when PSAR flips from above price to below price on the closed bar and Close > SMA(200).
 A short entry is triggered on the next bar open when PSAR flips from below price to above price on the closed bar and Close < SMA(200).
-Positions exit on the next bar open when PSAR flips against the position (above price for long, below price for short), or after a 60-bar hard time stop.
-A catastrophic protective stop loss of 4.0 * ATR(14) is placed at entry.
+Positions exit on the next bar open when PSAR flips against the position (above price for long, below price for short), or after a restart-safe 60-D1-bar hard time stop.
+The initial PSAR level is the protective stop and the fixed-risk sizing distance. The stop ratchets with closed-bar PSAR through `QM_TM_MoveSL`. A distinct 4.0 * ATR(14) catastrophe boundary is computed at entry, persisted in the position comment, and remains the worst permitted stop after restart.
 
 ---
 
@@ -29,7 +29,6 @@ A catastrophic protective stop loss of 4.0 * ATR(14) is placed at entry.
 | `strategy_atr_period` | 14 | 7-30 | ATR period for catastrophic stop loss calculation |
 | `strategy_sl_atr_mult` | 4.0 | 2.0-6.0 | ATR multiplier for catastrophic protective stop loss |
 | `strategy_time_stop_bars` | 60 | 20-100 | Maximum holding period in trading days if no SAR flip occurs |
-| `strategy_spread_max_atr` | 0.30 | 0.10-0.50 | Maximum allowed spread as a fraction of ATR(14) |
 | `strategy_warmup_bars` | 200 | 100-300 | Minimum required closed bars before trading |
 
 ---
@@ -40,10 +39,9 @@ A catastrophic protective stop loss of 4.0 * ATR(14) is placed at entry.
 - `SP500.DWX` — S&P 500 benchmark index (backtest baseline)
 - `NDX.DWX` — Nasdaq 100 index CFD
 - `WS30.DWX` — Dow Jones Industrial Average CFD
-- `GDAXI.DWX` — DAX 40 index CFD
-- `UK100.DWX` — FTSE 100 index CFD
 - `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `USDCHF.DWX`, `AUDUSD.DWX`, `USDCAD.DWX`, `NZDUSD.DWX` — Major FX currency pairs
 - `XAUUSD.DWX` — Gold commodity CFD
+- `XTIUSD.DWX` — Oil CFD
 
 **Explicitly NOT for:**
 - Illiquid or non-trending low-volatility instruments.
@@ -56,7 +54,8 @@ A catastrophic protective stop loss of 4.0 * ATR(14) is placed at entry.
 |---|---|
 | Base timeframe | `PERIOD_D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` |
+| Initialization contract | `QM_FrameworkDeclareExecutionContract(PERIOD_D1, ...)` rejects a non-D1 chart |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_D1)`; signals read only closed D1 bars |
 
 ---
 
@@ -91,7 +90,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+Backtest setfiles seal `RISK_FIXED=1000` and `RISK_PERCENT=0`; live packaging must invert the active mode (`RISK_PERCENT>0`, `RISK_FIXED=0`). Framework sizing configuration is checked by `QM_FrameworkInit` / `EA_RISK_SIZER_UNCONFIGURED`.
 
 ---
 
@@ -99,4 +98,5 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
+| v2 | 2026-08-24 | Mandatory review rework | D1 contract, PSAR-distance sizing/trail, restart-safe catastrophe boundary, management reachability, and approved symbol scope |
 | v1 | 2026-08-23 | Initial build from approved card | Task ce7ef250-d7c0-418a-aa51-fff4f7a8136e |
