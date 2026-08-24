@@ -23,7 +23,6 @@ input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST3
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours    = 336;
 input string qm_news_min_impact         = "high";
-input QM_NewsMode qm_news_mode_legacy   = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
@@ -33,38 +32,40 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf           = PERIOD_H1;
 input int             strategy_tdi_rsi_period      = 13;
-input int             strategy_tdi_fast_period     = 2;
-input int             strategy_tdi_slow_period     = 7;
 input int             strategy_tdi_base_period     = 34;
 input int             strategy_ema_period          = 5;
-input int             strategy_atr_period          = 14;
-input int             strategy_swing_lookback      = 5;
-input double          strategy_sl_buffer_pips      = 3.0;
-input double          strategy_tp_rr_mult          = 2.0;
-input bool            strategy_tdi_exit_enabled    = true;
-input bool            strategy_be_enabled          = true;
-input double          strategy_be_trigger_r        = 1.0;
-input int             strategy_rollover_start_hhmm = 2355;
-input int             strategy_rollover_end_hhmm   = 5;
-input double          strategy_spread_filter_mult  = 1.8;
 input double          strategy_daily_loss_halt_pct = 2.0;    // Daily realized-loss entry halt percent
 input double          strategy_daily_hard_stop_pct = 2.5;    // Daily equity hard stop percent
 input double          strategy_total_dd_halt_pct   = 5.0;    // Account-level total drawdown stop percent
 input double          strategy_per_trade_risk_cap_pct = 0.5; // Per-trade risk cap percent
+
+const ENUM_TIMEFRAMES STRATEGY_SIGNAL_TF = PERIOD_H1;
+const int    STRATEGY_TDI_FAST_PERIOD    = 2;
+const int    STRATEGY_TDI_SLOW_PERIOD    = 7;
+const int    STRATEGY_ATR_PERIOD         = 14;
+const int    STRATEGY_SWING_BARS         = 3;
+const int    STRATEGY_SL_BUFFER_PIPS     = 3;
+const double STRATEGY_TP_RR_MULT         = 2.0;
+const int    STRATEGY_ROLLOVER_START     = 2355;
+const int    STRATEGY_ROLLOVER_END       = 5;
+const double STRATEGY_SPREAD_MULT        = 1.8;
+const int    STRATEGY_MAX_SLIPPAGE_TICKS = 3;
 
 // -----------------------------------------------------------------------------
 // State Cache & Indicators
 // -----------------------------------------------------------------------------
 double g_tdi_fast       = 0.0;
 double g_tdi_slow       = 0.0;
+double g_tdi_fast_prev  = 0.0;
+double g_tdi_slow_prev  = 0.0;
 double g_tdi_base       = 0.0;
 double g_ema5           = 0.0;
 double g_last_atr       = 0.0;
 double g_swing_low      = 0.0;
 double g_swing_high     = 0.0;
 int    g_last_signal    = 0;
+bool   g_state_ready    = false;
 
 int StrategyHhmm(const datetime t)
 {
@@ -76,9 +77,37 @@ int StrategyHhmm(const datetime t)
 bool StrategyInRolloverWindow(const datetime t)
 {
    const int hhmm = StrategyHhmm(t);
-   if(strategy_rollover_start_hhmm > strategy_rollover_end_hhmm)
-      return (hhmm >= strategy_rollover_start_hhmm || hhmm < strategy_rollover_end_hhmm);
-   return (hhmm >= strategy_rollover_start_hhmm && hhmm < strategy_rollover_end_hhmm);
+   if(STRATEGY_ROLLOVER_START > STRATEGY_ROLLOVER_END)
+      return (hhmm >= STRATEGY_ROLLOVER_START || hhmm < STRATEGY_ROLLOVER_END);
+   return (hhmm >= STRATEGY_ROLLOVER_START && hhmm < STRATEGY_ROLLOVER_END);
+}
+
+bool Strategy_ValidateInputs()
+{
+   if(strategy_tdi_rsi_period < 8 || strategy_tdi_rsi_period > 21)
+      return false;
+   if(strategy_tdi_base_period < 20 || strategy_tdi_base_period > 50)
+      return false;
+   if(strategy_ema_period < 3 || strategy_ema_period > 8)
+      return false;
+   if(strategy_daily_loss_halt_pct <= 0.0 || strategy_daily_loss_halt_pct > 2.0)
+      return false;
+   if(strategy_daily_hard_stop_pct <= 0.0 || strategy_daily_hard_stop_pct > 2.5)
+      return false;
+   if(strategy_total_dd_halt_pct <= 0.0 || strategy_total_dd_halt_pct > 5.0)
+      return false;
+   if(strategy_per_trade_risk_cap_pct <= 0.0 || strategy_per_trade_risk_cap_pct > 0.5)
+      return false;
+   return true;
+}
+
+int Strategy_MaxDeviationPoints()
+{
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double trade_tick = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(point <= 0.0 || trade_tick <= 0.0)
+      return 0;
+   return (int)MathCeil((double)STRATEGY_MAX_SLIPPAGE_TICKS * trade_tick / point);
 }
 
 bool Strategy_DailyRealizedLossHalt()
@@ -92,55 +121,82 @@ bool Strategy_DailyRealizedLossHalt()
    return (realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0));
 }
 
-double Strategy_TdiSma(const int shift, const int length)
+bool Strategy_TdiSma(const int shift, const int length, double &value)
 {
-   if(length <= 0) return 0.0;
+   value = 0.0;
+   if(shift < 1 || length <= 0)
+      return false;
    double sum = 0.0;
    for(int i = 0; i < length; ++i)
    {
-      const double rsi = QM_RSI(_Symbol, strategy_signal_tf, strategy_tdi_rsi_period, shift + i, PRICE_CLOSE);
+      const double rsi = QM_RSI(_Symbol, STRATEGY_SIGNAL_TF, strategy_tdi_rsi_period, shift + i, PRICE_CLOSE);
+      if(rsi == EMPTY_VALUE || rsi < 0.0 || rsi > 100.0)
+         return false;
       sum += rsi;
    }
-   return sum / (double)length;
+   value = sum / (double)length;
+   return true;
 }
 
-void AdvanceState_OnNewBar()
+void Strategy_ClearState()
 {
-   const double close1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: closed-bar calculation
-   const double open1  = iOpen(_Symbol, strategy_signal_tf, 1);  // perf-allowed: closed-bar calculation
-   if(close1 <= 0.0 || open1 <= 0.0)
-      return;
-
-   g_tdi_fast = Strategy_TdiSma(1, strategy_tdi_fast_period);
-   g_tdi_slow = Strategy_TdiSma(1, strategy_tdi_slow_period);
-   g_tdi_base = Strategy_TdiSma(1, strategy_tdi_base_period);
-   g_ema5     = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 1, PRICE_TYPICAL);
-   g_last_atr = QM_ATR(_Symbol, strategy_signal_tf, MathMax(1, strategy_atr_period), 1);
-
-   // Find swing low and high over lookback bars [1..strategy_swing_lookback]
-   g_swing_low = 999999.0;
+   g_tdi_fast = 0.0;
+   g_tdi_slow = 0.0;
+   g_tdi_fast_prev = 0.0;
+   g_tdi_slow_prev = 0.0;
+   g_tdi_base = 0.0;
+   g_ema5 = 0.0;
+   g_last_atr = 0.0;
+   g_swing_low = 0.0;
    g_swing_high = 0.0;
-   for(int i = 1; i <= MathMax(1, strategy_swing_lookback); ++i)
-   {
-      const double low_i  = iLow(_Symbol, strategy_signal_tf, i);   // perf-allowed: closed-bar calculation
-      const double high_i = iHigh(_Symbol, strategy_signal_tf, i);  // perf-allowed: closed-bar calculation
-      if(low_i > 0.0 && low_i < g_swing_low)
-         g_swing_low = low_i;
-      if(high_i > g_swing_high)
-         g_swing_high = high_i;
-   }
-
    g_last_signal = 0;
+   g_state_ready = false;
+}
 
-   if(g_tdi_fast > 0.0 && g_tdi_slow > 0.0 && g_tdi_base > 0.0 && g_ema5 > 0.0 && g_last_atr > 0.0)
+bool Strategy_RefreshH1State()
+{
+   Strategy_ClearState();
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, STRATEGY_SIGNAL_TF, 1, STRATEGY_SWING_BARS, rates); // perf-allowed: bounded three-completed-H1-bar card window
+   if(copied != STRATEGY_SWING_BARS || ArraySize(rates) < STRATEGY_SWING_BARS)
+      return false;
+
+   if(rates[0].close <= 0.0 || rates[0].open <= 0.0)
+      return false;
+
+   if(!Strategy_TdiSma(1, STRATEGY_TDI_FAST_PERIOD, g_tdi_fast) ||
+      !Strategy_TdiSma(1, STRATEGY_TDI_SLOW_PERIOD, g_tdi_slow) ||
+      !Strategy_TdiSma(2, STRATEGY_TDI_FAST_PERIOD, g_tdi_fast_prev) ||
+      !Strategy_TdiSma(2, STRATEGY_TDI_SLOW_PERIOD, g_tdi_slow_prev) ||
+      !Strategy_TdiSma(1, strategy_tdi_base_period, g_tdi_base))
+      return false;
+
+   g_ema5 = QM_EMA(_Symbol, STRATEGY_SIGNAL_TF, strategy_ema_period, 1, PRICE_TYPICAL);
+   g_last_atr = QM_ATR(_Symbol, STRATEGY_SIGNAL_TF, STRATEGY_ATR_PERIOD, 1);
+   if(g_ema5 <= 0.0 || g_last_atr <= 0.0)
+      return false;
+
+   g_swing_low = rates[0].low;
+   g_swing_high = rates[0].high;
+   for(int i = 1; i < STRATEGY_SWING_BARS && i < ArraySize(rates); ++i)
    {
-      // Long: TDI_Fast > TDI_Slow && TDI_Fast > TDI_MarketBase && Close[1] > EMA(5, Typical)[1]
-      if(g_tdi_fast > g_tdi_slow && g_tdi_fast > g_tdi_base && close1 > g_ema5)
-         g_last_signal = 1;
-      // Short: TDI_Fast < TDI_Slow && TDI_Fast < TDI_MarketBase && Close[1] < EMA(5, Typical)[1]
-      else if(g_tdi_fast < g_tdi_slow && g_tdi_fast < g_tdi_base && close1 < g_ema5)
-         g_last_signal = -1;
+      if(rates[i].low <= 0.0 || rates[i].high <= 0.0)
+         return false;
+      if(rates[i].low < g_swing_low)
+         g_swing_low = rates[i].low;
+      if(rates[i].high > g_swing_high)
+         g_swing_high = rates[i].high;
    }
+
+   if(g_tdi_fast > g_tdi_slow && g_tdi_fast > g_tdi_base && rates[0].close > g_ema5)
+      g_last_signal = 1;
+   else if(g_tdi_fast < g_tdi_slow && g_tdi_fast < g_tdi_base && rates[0].close < g_ema5)
+      g_last_signal = -1;
+
+   g_state_ready = true;
+   return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -149,7 +205,11 @@ void AdvanceState_OnNewBar()
 
 bool Strategy_NoTradeFilter()
 {
-   if(StrategyInRolloverWindow(TimeCurrent()))
+   if(!g_state_ready)
+      return true;
+
+   const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
+   if(StrategyInRolloverWindow(utc_now))
       return true;
 
    if(Strategy_DailyRealizedLossHalt())
@@ -163,7 +223,7 @@ bool Strategy_NoTradeFilter()
    if(ask > bid && g_last_atr > 0.0)
    {
       const double spread = ask - bid;
-      if(spread > g_last_atr * strategy_spread_filter_mult)
+      if(spread > g_last_atr * STRATEGY_SPREAD_MULT)
          return true;
    }
 
@@ -184,7 +244,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(magic <= 0 || QM_TM_OpenPositionCount(magic) >= 1)
       return false;
 
-   if(g_last_signal == 0 || g_last_atr <= 0.0 || g_swing_low <= 0.0 || g_swing_high <= 0.0)
+   if(!g_state_ready || g_last_signal == 0 || g_swing_low <= 0.0 || g_swing_high <= 0.0)
       return false;
 
    const QM_OrderType side = (g_last_signal > 0) ? QM_BUY : QM_SELL;
@@ -193,8 +253,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   const double pip_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(strategy_sl_buffer_pips));
-   const double buffer = (pip_dist > 0.0) ? pip_dist : (strategy_sl_buffer_pips * SymbolInfoDouble(_Symbol, SYMBOL_POINT) * 10.0);
+   const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, STRATEGY_SL_BUFFER_PIPS);
+   if(buffer <= 0.0)
+      return false;
 
    double sl = 0.0;
    double tp = 0.0;
@@ -202,26 +263,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(side == QM_BUY)
    {
       sl = g_swing_low - buffer;
-      double sl_dist = entry - sl;
-      if(sl_dist < 0.5 * g_last_atr)
-      {
-         sl_dist = 0.5 * g_last_atr;
-         sl = entry - sl_dist;
-      }
       sl = QM_StopRulesNormalizePrice(_Symbol, sl);
-      tp = QM_StopRulesNormalizePrice(_Symbol, entry + sl_dist * strategy_tp_rr_mult);
+      const double sl_dist = entry - sl;
+      if(sl_dist <= 0.0)
+         return false;
+      tp = QM_StopRulesNormalizePrice(_Symbol, entry + sl_dist * STRATEGY_TP_RR_MULT);
    }
    else
    {
       sl = g_swing_high + buffer;
-      double sl_dist = sl - entry;
-      if(sl_dist < 0.5 * g_last_atr)
-      {
-         sl_dist = 0.5 * g_last_atr;
-         sl = entry + sl_dist;
-      }
       sl = QM_StopRulesNormalizePrice(_Symbol, sl);
-      tp = QM_StopRulesNormalizePrice(_Symbol, entry - sl_dist * strategy_tp_rr_mult);
+      const double sl_dist = sl - entry;
+      if(sl_dist <= 0.0)
+         return false;
+      tp = QM_StopRulesNormalizePrice(_Symbol, entry - sl_dist * STRATEGY_TP_RR_MULT);
    }
 
    req.type = side;
@@ -249,48 +304,20 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      const double current_sl = PositionGetDouble(POSITION_SL);
-      const double point      = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-
-      // TDI crossing exit
-      if(strategy_tdi_exit_enabled && g_tdi_fast > 0.0 && g_tdi_slow > 0.0)
+      // A cross-back requires the previous and current completed-H1 relationship.
+      if(g_state_ready)
       {
-         if(pos_type == POSITION_TYPE_BUY && g_tdi_fast < g_tdi_slow)
+         const bool crossed_down = (g_tdi_fast_prev >= g_tdi_slow_prev && g_tdi_fast < g_tdi_slow);
+         const bool crossed_up = (g_tdi_fast_prev <= g_tdi_slow_prev && g_tdi_fast > g_tdi_slow);
+         if(pos_type == POSITION_TYPE_BUY && crossed_down)
          {
             QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
             continue;
          }
-         else if(pos_type == POSITION_TYPE_SELL && g_tdi_fast > g_tdi_slow)
+         else if(pos_type == POSITION_TYPE_SELL && crossed_up)
          {
             QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
             continue;
-         }
-      }
-
-      // Break-even lock
-      if(strategy_be_enabled && g_last_atr > 0.0)
-      {
-         const double initial_risk = (current_sl > 0.0) ? MathAbs(open_price - current_sl) : g_last_atr;
-         const double be_trigger   = initial_risk * strategy_be_trigger_r;
-
-         if(pos_type == POSITION_TYPE_BUY)
-         {
-            const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-            if(bid - open_price >= be_trigger && (current_sl < open_price || current_sl == 0.0))
-            {
-               const double new_sl = QM_StopRulesNormalizePrice(_Symbol, open_price + 2.0 * point);
-               QM_TM_MoveSL(ticket, new_sl, "BE_LOCK");
-            }
-         }
-         else if(pos_type == POSITION_TYPE_SELL)
-         {
-            const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-            if(open_price - ask >= be_trigger && (current_sl > open_price || current_sl == 0.0))
-            {
-               const double new_sl = QM_StopRulesNormalizePrice(_Symbol, open_price - 2.0 * point);
-               QM_TM_MoveSL(ticket, new_sl, "BE_LOCK");
-            }
          }
       }
    }
@@ -312,12 +339,15 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
 {
+   if(!Strategy_ValidateInputs())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,
+                        QM_NEWS_OFF,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
                         30,
@@ -330,12 +360,27 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   const int deviation_points = Strategy_MaxDeviationPoints();
+   if(deviation_points <= 0)
+      return INIT_FAILED;
+   QM_EntryConfigure(qm_ea_id,
+                     QM_NEWS_OFF,
+                     deviation_points,
+                     qm_stress_reject_probability,
+                     qm_news_temporal,
+                     qm_news_compliance,
+                     QM_FrameworkMagic());
+
    if(!QM_KillSwitchInit(qm_ea_id,
                          QM_FrameworkMagic(),
                          strategy_daily_hard_stop_pct,
                          strategy_total_dd_halt_pct,
                          strategy_per_trade_risk_cap_pct))
       return INIT_FAILED;
+
+   // Seed closed-H1 state for restart-safe management. A missing read remains
+   // fail-closed and is retried at the first observable H1 bar boundary.
+   Strategy_RefreshH1State();
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
@@ -356,7 +401,11 @@ void OnTick()
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   // Entry blackouts must not suppress management or strategy exits
+   const bool is_new_h1_bar = QM_IsNewBar(_Symbol, STRATEGY_SIGNAL_TF);
+   if(is_new_h1_bar)
+      Strategy_RefreshH1State();
+
+   // Entry blackouts must not suppress management or strategy exits.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -381,17 +430,16 @@ void OnTick()
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
    else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, QM_NEWS_OFF);
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!is_new_h1_bar)
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   AdvanceState_OnNewBar();
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
