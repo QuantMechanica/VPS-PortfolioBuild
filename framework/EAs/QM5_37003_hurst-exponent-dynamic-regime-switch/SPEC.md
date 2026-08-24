@@ -14,6 +14,8 @@ Calculates the rolling Rescaled Range Hurst exponent as `H = ln(R/S) / ln(n)` fr
 
 Mean-reversion entries fail closed when the current Bollinger midline is not a valid favorable-side target; no fixed-R substitute is authorized. Open-position midline management runs before entry-only rollover/spread/loss filters. Account risk rails are a 2.0% closed-PnL entry halt, restart-safe 2.5% daily equity hard stop, and 5.0% account-level total-DD signal threshold.
 
+The approved card does not state Bollinger period/deviation values, so the build exposes the conventional 20-bar/2.0-deviation definition explicitly in source and every governed setfile. The lifecycle diagram names break-even and trailing transitions but supplies no trigger distances; those illustrative transitions are therefore not activated. The executable exit contract is the card's Section 3.4 broker-side ATR stop plus trend 2.0R or mean-reversion midline target.
+
 Entry/exit logic is encoded in the five `Strategy_*` hooks in `QM5_37003_hurst-exponent-dynamic-regime-switch.mq5`. Framework wiring (risk, magic, news, Friday close) is inherited from `QM_Common.mqh` and is not redocumented here.
 
 ---
@@ -37,6 +39,8 @@ Entry/exit logic is encoded in the five `Strategy_*` hooks in `QM5_37003_hurst-e
 | `strategy_total_dd_halt_pct` | 5.0 | fixed | Account-level total-DD signal threshold |
 | `strategy_per_trade_risk_cap_pct` | 0.5 | fixed | Framework per-trade risk cap |
 | `strategy_max_slippage_ticks` | 3.0 | 0 - 3.0 | Maximum market-order slippage in symbol ticks |
+
+`RISK_PERCENT` remains a framework input rather than a duplicate strategy input. Zero is required for backtests; when selected by a live preset, this EA additionally enforces the card's declared 0.20%-1.00% range.
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,

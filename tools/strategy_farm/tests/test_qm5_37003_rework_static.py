@@ -19,6 +19,7 @@ CARD_PATH = (
     / "approved"
     / f"{EA_LABEL}.md"
 )
+LOCAL_CARD_PATH = EA_DIR / "docs" / "strategy_card.md"
 SETS_DIR = EA_DIR / "sets"
 EXPECTED_SLOTS = {
     "EURUSD.DWX": 0,
@@ -62,6 +63,11 @@ def test_card_registry_and_build_hardening_contracts_are_clean() -> None:
         r"(?m)^slug:\s*hurst-exponent-dynamic-regime-switch\s*$", card
     )
     assert re.search(r"(?m)^g0_status:\s*APPROVED\s*$", card)
+    local_card = LOCAL_CARD_PATH.read_text(encoding="utf-8-sig")
+    approved_card = CARD_PATH.read_text(encoding="utf-8-sig")
+    assert [line.rstrip() for line in local_card.splitlines()] == [
+        line.rstrip() for line in approved_card.splitlines()
+    ]
 
     with (ROOT / "framework" / "registry" / "ea_id_registry.csv").open(
         encoding="utf-8-sig", newline=""
@@ -89,6 +95,21 @@ def test_card_registry_and_build_hardening_contracts_are_clean() -> None:
     result = hardening.analyze_file(SOURCE_PATH, hardening.find_card(ROOT, EA_LABEL))
     assert result["failures"] == []
     assert result["warnings"] == []
+
+
+def test_declared_card_parameter_ranges_fail_closed() -> None:
+    source = hardening.strip_comments_preserve_lines(_source())
+    config = _function(source, "Strategy_ConfigValid")
+
+    assert "strategy_hurst_lookback < 50" in config
+    assert "strategy_hurst_lookback > 200" in config
+    assert "strategy_trend_hurst < 0.52" in config
+    assert "strategy_trend_hurst > 0.65" in config
+    assert "strategy_revert_hurst < 0.35" in config
+    assert "strategy_revert_hurst > 0.48" in config
+    assert "RISK_PERCENT > 0.0" in config
+    assert "RISK_PERCENT < 0.20" in config
+    assert "RISK_PERCENT > 1.00" in config
 
 
 def test_review_loss_limits_are_distinct_and_wired() -> None:

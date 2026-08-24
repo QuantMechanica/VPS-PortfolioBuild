@@ -73,7 +73,17 @@ int    g_cached_donchian_breakout = 0;
 
 bool Strategy_ConfigValid()
 {
-   if(strategy_hurst_lookback < 10 || strategy_trend_hurst <= strategy_revert_hurst)
+   // The card declares these as optimization bounds, not merely suggested
+   // defaults.  Reject out-of-contract presets before framework init.
+   if(strategy_hurst_lookback < 50 || strategy_hurst_lookback > 200)
+      return false;
+   if(strategy_trend_hurst < 0.52 || strategy_trend_hurst > 0.65 ||
+      strategy_revert_hurst < 0.35 || strategy_revert_hurst > 0.48 ||
+      strategy_trend_hurst <= strategy_revert_hurst)
+      return false;
+   // RISK_PERCENT is inactive (zero) in governed backtests.  When selected by
+   // a live preset, it must remain inside the card's declared 0.20%-1.00% band.
+   if(RISK_PERCENT > 0.0 && (RISK_PERCENT < 0.20 || RISK_PERCENT > 1.00))
       return false;
    if(strategy_donchian_period < 2 || strategy_bb_period < 2 || strategy_bb_dev <= 0.0)
       return false;
