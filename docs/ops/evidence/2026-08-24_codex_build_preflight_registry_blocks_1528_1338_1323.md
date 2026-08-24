@@ -31,6 +31,10 @@ Registry snapshot hashes at verification time:
 
 Focused verification used `Import-Csv` with exact numeric equality, exact card front-matter reads, `Get-FileHash -Algorithm SHA256`, source/binary/set counts, and `git status --porcelain=v1 -- <EA directory>`. None of the three EA paths had uncommitted changes before this evidence was authored.
 
+## Router disposition
+
+`update-task ... --state REVIEW` was attempted for all three tasks with this evidence path. The canonical router refused every dispatch with `D6_BUILD_IDENTITY_MISSING` / `build_identity_json_missing_review_dispatch_refused`. A preflight report cannot impersonate the required strict-PASS, hash-bound `build_identity.json`; none was fabricated. The tasks are therefore returned to `BLOCKED` with this artifact and their preflight verdicts until the governed prerequisites are repaired.
+
 ## Governed next action
 
 The registry-writer lane must allocate or otherwise adjudicate the three card-declared identities, allocate active magic rows for every approved symbol, regenerate `QM_MagicResolver.mqh`, and verify no row was dropped. The task payloads name tracking task `8d1d903f-39cc-461f-ab90-7b932ce62fee`. Only after those gates pass should the deterministic router return builds to Codex for source review, canonical backtest sets (`RISK_FIXED > 0`, `RISK_PERCENT = 0`), and strict compilation.
