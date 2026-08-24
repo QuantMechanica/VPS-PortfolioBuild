@@ -1,0 +1,119 @@
+{
+  "artifact_type": "fx_cointegration_frontier_q03_pending_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-24T02:46:50.1221098Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "21abacee2d03cb514a4f98e619e3bb54b87972f7",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_reconciliation": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "governed_66_relationship_audit": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "approved_cointegration_card_without_ea_directory_count": 0,
+    "new_scan_pair_selected": false,
+    "reason": "Every governed scan relationship is already covered and every approved cointegration/coint card found in the repository has an EA directory; another card or build would be a duplicate."
+  },
+  "preferred_anchor_status": [
+    {
+      "ea_id": "QM5_12532",
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_terminal_gate": "Q05 FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_terminal_gate": "Q04 FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  ],
+  "existing_forex_continuation": {
+    "rank": 40,
+    "ea_id": "QM5_20219",
+    "pair": [
+      "USDJPY.DWX",
+      "NZDUSD.DWX"
+    ],
+    "logical_symbol": "QM5_20219_USDJPY_NZDUSD_COINTEGRATION_D1",
+    "q02": {
+      "work_item_id": "5eb61981-472e-4f08-82c0-53fbec77d6c8",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q03": {
+      "work_item_id": "4514a6c7-0a2e-4523-a756-b63a232dd8aa",
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0,
+      "duplicate_count": 0
+    },
+    "legacy_q04": {
+      "work_item_id": "b721ce82-2d53-46db-b2d0-f20b561a1513",
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0
+    },
+    "queue_action": "NONE_ALREADY_ENQUEUED_EXACTLY_ONCE"
+  },
+  "farm_observation": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "pending_backtest_p2_tasks": 33,
+    "pending_backtest_q03_tasks": 146,
+    "pending_backtest_q04_tasks": 62,
+    "pending_build_ea_tasks": 43,
+    "paced_launch_max": 1
+  },
+  "capacity_sample": {
+    "sampled_at_utc": "2026-08-24T02:46:50.1221098Z",
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "cpu_percent": [
+      100.0,
+      100.0,
+      100.0,
+      99.0,
+      100.0
+    ],
+    "average_cpu_percent": 99.8,
+    "maximum_cpu_percent": 100.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "trip_rule": "average_or_max_greater_than_or_equal_to_ceiling",
+    "ceiling_binding": true,
+    "free_memory_gib": 34.248,
+    "total_memory_gib": 63.12,
+    "d_drive_free_gib": 135.64
+  },
+  "nonduplicate_delta": {
+    "prior_fx_receipt": "artifacts/fx_cointegration_frontier_q03_pending_hard_cpu_stop_20260824T014916Z_board_advisor.json",
+    "prior_cpu_average_percent": 93.4676,
+    "prior_cpu_maximum_percent": 100.0,
+    "current_cpu_average_percent": 99.8,
+    "current_cpu_maximum_percent": 100.0,
+    "material_change": "The current average CPU increased by 6.3324 percentage points while the exact QM5_20219 Q03 lineage remained pending once; the fresh mission-specific reconciliation also confirmed zero approved cointegration cards without EA directories."
+  },
+  "actions_this_run": {
+    "research_and_duplicate_guard_read": true,
+    "approved_card_to_ea_reconciliation_read": true,
+    "farm_status_read": true,
+    "qm5_20219_work_items_read": true,
+    "cpu_capacity_sampled": true,
+    "new_card_or_ea_created": false,
+    "registry_or_magic_mutation": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  },
+  "unrelated_dirty_worktree_preserved": true
+}
