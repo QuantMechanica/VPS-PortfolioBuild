@@ -1,0 +1,80 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "4f53ec6b-9e40-4266-9a59-dbd707316c2e",
+  "task_type": "build_ea",
+  "priority": 10,
+  "checked_at_utc": "2026-08-24T03:36:00Z",
+  "canonical_checkout": "C:/QM/repo",
+  "branch": "agents/board-advisor",
+  "git_head_inspected": "0b605e5c26bdf4a3eef93d9370cb8f7d9ba4772b",
+  "requested_identity": {
+    "ea_id": "QM5_13211",
+    "slug": "mulham-tgif-weekly-fade",
+    "ea_dir": "C:/QM/repo/framework/EAs/QM5_13211_mulham-tgif-weekly-fade"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_13211_mulham-tgif-weekly-fade.md",
+    "sha256": "f03fbaa901d4ace167c648a3825f29f06e0e5d57c2f4c35725ee211210490043",
+    "length_bytes": 6252,
+    "ea_id": "QM5_13211",
+    "slug": "mulham-tgif-weekly-fade",
+    "g0_status": "APPROVED",
+    "period": "M15",
+    "target_symbols": ["NDX.DWX", "EURUSD.DWX"],
+    "gate_result": "PASS"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "4a0abb97b79df767fcb1571aadbf9d3dc349c22088b9980c6beb50072b530a4f",
+    "exact_identity_row": "13211,mulham-tgif-weekly-fade,YT-MULHAM-2026-07_TGIF-WEEKLY-FADE_S01,active,Research+Development (OWNER Mulham channel mandate),2026-07-13,,,",
+    "exact_identity_gate": "PASS",
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "1a30b5df1986a641cb0f3bb6be57d643cc003dcb3ec77aca17c4636ccf930b1e",
+    "required_magic_rows": [
+      {"symbol_slot": 0, "symbol": "NDX.DWX", "expected_magic": 132110000},
+      {"symbol_slot": 1, "symbol": "EURUSD.DWX", "expected_magic": 132110001}
+    ],
+    "exact_ea_id_magic_rows": [],
+    "magic_gate": "FAIL"
+  },
+  "existing_source_observation": {
+    "path": "framework/EAs/QM5_13211_mulham-tgif-weekly-fade/QM5_13211_mulham-tgif-weekly-fade.mq5",
+    "sha256": "daf73f87a181554c655940be8f7d3115cc4f53acccdb5d7968b0d97565992bc0",
+    "length_bytes": 4085,
+    "line_count": 127,
+    "placeholder_entry_todo": true,
+    "risk_percent_default": 0.5,
+    "ex5_count": 0,
+    "spec_count": 0,
+    "setfile_count": 0,
+    "strategy_card_copy_count": 0,
+    "note": "The pre-existing mq5-only placeholder is not a completed build and does not substitute for governed magic allocation."
+  },
+  "router_context": {
+    "routed_at": "2026-08-24T03:24:01+00:00",
+    "tracking_task": "8d1d903f-39cc-461f-ab90-7b932ce62fee",
+    "prior_review_close_state": "RECYCLE",
+    "prior_review_close_verdict": "CLAUDE REVIEW RECYCLE - not built. Battery findings: no_ex5; no_backtest_setfile; no_magic_row."
+  },
+  "router_disposition": {
+    "review_requested": true,
+    "review_allowed": false,
+    "review_gate_code": "D6_BUILD_IDENTITY_MISSING",
+    "review_gate_reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
+    "final_state": "BLOCKED",
+    "final_verdict": "PRECONDITION_HOLD_MAGIC_ROWS_REQUIRED; REVIEW refused D6_BUILD_IDENTITY_MISSING"
+  },
+  "verdict": "BUILD_NOT_STARTED_MAGIC_GATE_FAIL",
+  "blocked_reason": "The approved card and active EA identity match, but magic_numbers.csv has zero rows for ea_id 13211 while the card requires two symbol slots. qm-build-ea-from-card forbids Development from allocating those rows manually.",
+  "required_next_action": "The governed registry writer must allocate the two active magic rows, regenerate QM_MagicResolver.mqh, and verify zero rows were dropped. Then recycle the build task.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "setfile_modified": false,
+    "compile_attempted": false,
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "live_or_autotrading_changed": false
+  }
+}
