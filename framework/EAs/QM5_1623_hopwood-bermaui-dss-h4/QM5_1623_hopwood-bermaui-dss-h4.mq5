@@ -36,19 +36,17 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_dss_stoch_period  = 8;      // DSS raw stochastic lookback (%K)
+input int    strategy_dss_stoch_period  = 10;     // DSS raw stochastic lookback (%K)
 input int    strategy_dss_inner_ema     = 5;      // DSS first EMA smoothing
-input int    strategy_dss_outer_ema     = 3;      // DSS second EMA smoothing
-input int    strategy_bermaui_lookback  = 20;     // Bermaui dynamic threshold lookback
-input double strategy_bermaui_k         = 1.8;    // Bermaui std multiplier (upper/lower threshold)
-input double strategy_min_overshoot_mult = 2.0;   // Minimum overshoot gate in std deviations
+input int    strategy_dss_outer_ema     = 5;      // DSS second EMA smoothing
+input int    strategy_bermaui_lookback  = 100;    // Rolling completed-H4 DSS window
+input double strategy_overbought_percentile = 80.0;
+input double strategy_oversold_percentile = 20.0;
 input int    strategy_d1_ema_period     = 200;    // Higher-TF (D1) trend filter EMA period
-input int    strategy_atr_period        = 14;     // ATR period for stops and targets
-input double strategy_atr_sl_mult       = 1.5;    // Stop loss multiplier in ATR
-input double strategy_atr_tp_mult       = 1.5;    // Take profit multiplier in ATR
-input int    strategy_max_hold_bars     = 10;     // Time stop: max holding period in H4 bars
+input int    strategy_atr_period        = 14;     // ATR period for protective stop
+input double strategy_atr_sl_mult       = 2.0;    // Initial stop loss multiplier in ATR
+input int    strategy_max_hold_bars     = 20;     // Time stop in completed H4 bars
 input int    strategy_cooldown_bars     = 6;      // Cooldown between entries in H4 bars
-input double strategy_be_atr_mult       = 0.75;   // Break-even profit trigger in ATR
 input double strategy_spread_max_atr_mult = 0.3;  // Maximum spread threshold in ATR
 
 // -----------------------------------------------------------------------------
@@ -56,17 +54,16 @@ input double strategy_spread_max_atr_mult = 0.3;  // Maximum spread threshold in
 // -----------------------------------------------------------------------------
 double g_dss_outer_1 = 0.0;
 double g_dss_outer_2 = 0.0;
-double g_mean_1 = 0.0;
-double g_mean_2 = 0.0;
-double g_std_1 = 0.0;
-double g_std_2 = 0.0;
 double g_upper_thr_1 = 0.0;
 double g_upper_thr_2 = 0.0;
 double g_lower_thr_1 = 0.0;
 double g_lower_thr_2 = 0.0;
 double g_atr_1 = 0.0;
+int    g_d1_bias = 0;
 bool   g_long_signal = false;
 bool   g_short_signal = false;
+bool   g_long_band_exit = false;
+bool   g_short_band_exit = false;
 bool   g_state_ready = false;
 int    g_bars_since_last_long = 100;
 int    g_bars_since_last_short = 100;
@@ -75,126 +72,179 @@ int    g_bars_since_last_short = 100;
 // DSS computation helpers (closed-bar, bounded)
 // -----------------------------------------------------------------------------
 
-double DSS_RawStochAtShift(const int period, const int end_shift)
+bool DSS_RawStochAtShift(const int period, const int end_shift, double &out_value)
 {
+   out_value = 0.0;
+   if(period <= 0 || end_shift <= 0)
+      return false;
+
    double hh = -DBL_MAX;
    double ll =  DBL_MAX;
    for(int s = end_shift; s < end_shift + period; ++s)
    {
-      const double h = iHigh(_Symbol, _Period, s);   // perf-allowed: bounded closed-bar stochastic
-      const double l = iLow(_Symbol, _Period, s);    // perf-allowed: bounded closed-bar stochastic
+      const double h = iHigh(_Symbol, PERIOD_H4, s); // perf-allowed: bounded completed-H4 stochastic
+      const double l = iLow(_Symbol, PERIOD_H4, s);  // perf-allowed: bounded completed-H4 stochastic
+      if(h <= 0.0 || l <= 0.0 || h < l)
+         return false;
       if(h > hh) hh = h;
       if(l < ll) ll = l;
    }
-   const double c = iClose(_Symbol, _Period, end_shift); // perf-allowed: bounded closed-bar stochastic
+   const double c = iClose(_Symbol, PERIOD_H4, end_shift); // perf-allowed: bounded completed-H4 stochastic
+   if(c <= 0.0)
+      return false;
    const double rng = hh - ll;
    if(rng <= 0.0)
-      return 50.0;
-   return 100.0 * (c - ll) / rng;
+      out_value = 50.0;
+   else
+      out_value = 100.0 * (c - ll) / rng;
+   return true;
 }
 
-double DSS_EMAofSeries(const double &arr[], const int count, const int period)
+bool DSS_BuildSeries(const int sample_count, double &out_dss[])
 {
-   if(count <= 0) return 0.0;
-   const double k = 2.0 / (period + 1.0);
-   double ema = arr[count - 1];
-   for(int i = count - 2; i >= 0; --i)
-      ema = arr[i] * k + ema * (1.0 - k);
-   return ema;
-}
+   if(sample_count < 2 || strategy_dss_stoch_period <= 0 ||
+      strategy_dss_inner_ema <= 0 || strategy_dss_outer_ema <= 0)
+      return false;
 
-double DSS_ComputeOuterAtShift(const int end_shift)
-{
-   const int p1 = strategy_dss_stoch_period;
-   const int p2 = strategy_dss_inner_ema;
-   const int p3 = strategy_dss_outer_ema;
+   // A fixed 200-bar seed makes both EMA layers deterministic and converged
+   // while keeping the entire indicator read bounded to one completed-H4 pass.
+   const int warmup_count = 200;
+   const int total_count = sample_count + warmup_count;
+   const int required_bars = total_count + strategy_dss_stoch_period + 1;
+   if(Bars(_Symbol, PERIOD_H4) < required_bars)
+      return false;
 
-   const int inner_len = p3 + 8;
-   double inner[];
-   ArrayResize(inner, inner_len);
+   double raw_values[];
+   double inner_values[];
+   if(ArrayResize(raw_values, total_count) != total_count ||
+      ArrayResize(inner_values, total_count) != total_count ||
+      ArrayResize(out_dss, total_count) != total_count)
+      return false;
+   if(ArraySize(raw_values) < total_count || ArraySize(inner_values) < total_count ||
+      ArraySize(out_dss) < total_count)
+      return false;
 
-   const int rawk_len = p2 + 8;
-   double rawk[];
-   ArrayResize(rawk, rawk_len);
-
-   for(int j = 0; j < inner_len; ++j)
+   for(int i = 0; i < total_count; ++i)
    {
-      const int base = end_shift + j;
-      for(int r = 0; r < rawk_len; ++r)
-         rawk[r] = DSS_RawStochAtShift(p1, base + r);
-      inner[j] = DSS_EMAofSeries(rawk, rawk_len, p2);
+      if(!DSS_RawStochAtShift(strategy_dss_stoch_period, 1 + i, raw_values[i]))
+         return false;
    }
 
-   return DSS_EMAofSeries(inner, inner_len, p3);
+   const double inner_alpha = 2.0 / (strategy_dss_inner_ema + 1.0);
+   const double outer_alpha = 2.0 / (strategy_dss_outer_ema + 1.0);
+   inner_values[total_count - 1] = raw_values[total_count - 1];
+   for(int i = total_count - 2; i >= 0; --i)
+   {
+      if(i >= ArraySize(raw_values))
+         return false;
+      if(i >= ArraySize(inner_values))
+         return false;
+      if(i + 1 >= ArraySize(inner_values))
+         return false;
+      inner_values[i] = inner_alpha * raw_values[i] + (1.0 - inner_alpha) * inner_values[i + 1];
+   }
+
+   out_dss[total_count - 1] = inner_values[total_count - 1];
+   for(int i = total_count - 2; i >= 0; --i)
+   {
+      if(i >= ArraySize(inner_values))
+         return false;
+      if(i >= ArraySize(out_dss))
+         return false;
+      if(i + 1 >= ArraySize(out_dss))
+         return false;
+      out_dss[i] = outer_alpha * inner_values[i] + (1.0 - outer_alpha) * out_dss[i + 1];
+   }
+
+   return true;
 }
 
-void AdvanceState_OnNewBar()
+bool DSS_Percentile(const double &source[],
+                    const int offset,
+                    const int count,
+                    const double percentile,
+                    double &out_value)
 {
+   out_value = 0.0;
+   if(offset < 0 || count <= 0 || percentile <= 0.0 || percentile >= 100.0 ||
+      ArraySize(source) < offset + count)
+      return false;
+
+   double sample[];
+   if(ArrayResize(sample, count) != count || ArraySize(sample) < count)
+      return false;
+   for(int i = 0; i < count; ++i)
+      sample[i] = source[offset + i];
+
+   ArraySort(sample);
+   int rank = (int)MathCeil(percentile * count / 100.0) - 1;
+   if(rank < 0) rank = 0;
+   if(rank >= count) rank = count - 1;
+   if(rank < 0 || rank >= ArraySize(sample))
+      return false;
+   out_value = sample[rank];
+   return true;
+}
+
+bool AdvanceState_OnNewBar()
+{
+   g_state_ready = false;
+   g_long_signal = false;
+   g_short_signal = false;
+   g_long_band_exit = false;
+   g_short_band_exit = false;
+
+   const double atr = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
+   if(atr <= 0.0)
+      return false;
+
+   const int sample_count = strategy_bermaui_lookback + 1;
+   double dss_values[];
+   if(!DSS_BuildSeries(sample_count, dss_values) || ArraySize(dss_values) < sample_count)
+      return false;
+
+   double upper_1 = 0.0;
+   double lower_1 = 0.0;
+   double upper_2 = 0.0;
+   double lower_2 = 0.0;
+   if(!DSS_Percentile(dss_values, 0, strategy_bermaui_lookback,
+                      strategy_overbought_percentile, upper_1) ||
+      !DSS_Percentile(dss_values, 0, strategy_bermaui_lookback,
+                      strategy_oversold_percentile, lower_1) ||
+      !DSS_Percentile(dss_values, 1, strategy_bermaui_lookback,
+                      strategy_overbought_percentile, upper_2) ||
+      !DSS_Percentile(dss_values, 1, strategy_bermaui_lookback,
+                      strategy_oversold_percentile, lower_2))
+      return false;
+
+   g_atr_1 = atr;
+   g_dss_outer_1 = dss_values[0];
+   g_dss_outer_2 = dss_values[1];
+   g_upper_thr_1 = upper_1;
+   g_upper_thr_2 = upper_2;
+   g_lower_thr_1 = lower_1;
+   g_lower_thr_2 = lower_2;
+   g_d1_bias = QM_Sig_Price_Above_MA(_Symbol, PERIOD_D1,
+                                      strategy_d1_ema_period, 0.0, 1);
+
    g_bars_since_last_long++;
    g_bars_since_last_short++;
 
-   g_atr_1 = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   const bool long_cross = (g_dss_outer_2 <= g_lower_thr_2 &&
+                            g_dss_outer_1 > g_lower_thr_1);
+   const bool short_cross = (g_dss_outer_2 >= g_upper_thr_2 &&
+                             g_dss_outer_1 < g_upper_thr_1);
+   g_long_signal = (long_cross && g_d1_bias > 0 &&
+                    g_bars_since_last_long >= strategy_cooldown_bars);
+   g_short_signal = (short_cross && g_d1_bias < 0 &&
+                     g_bars_since_last_short >= strategy_cooldown_bars);
 
-   const int total_samples = strategy_bermaui_lookback + 2;
-   double dss_arr[];
-   ArrayResize(dss_arr, total_samples);
-   for(int i = 0; i < total_samples; ++i)
-   {
-      dss_arr[i] = DSS_ComputeOuterAtShift(1 + i);
-   }
-
-   g_dss_outer_1 = dss_arr[0];
-   g_dss_outer_2 = dss_arr[1];
-
-   double sum1 = 0.0;
-   for(int i = 0; i < strategy_bermaui_lookback; ++i)
-      sum1 += dss_arr[i];
-   g_mean_1 = sum1 / (double)strategy_bermaui_lookback;
-
-   double var1 = 0.0;
-   for(int i = 0; i < strategy_bermaui_lookback; ++i)
-   {
-      double diff = dss_arr[i] - g_mean_1;
-      var1 += diff * diff;
-   }
-   g_std_1 = MathSqrt(var1 / (double)strategy_bermaui_lookback);
-   g_upper_thr_1 = g_mean_1 + strategy_bermaui_k * g_std_1;
-   g_lower_thr_1 = g_mean_1 - strategy_bermaui_k * g_std_1;
-
-   double sum2 = 0.0;
-   for(int i = 0; i < strategy_bermaui_lookback; ++i)
-      sum2 += dss_arr[1 + i];
-   g_mean_2 = sum2 / (double)strategy_bermaui_lookback;
-
-   double var2 = 0.0;
-   for(int i = 0; i < strategy_bermaui_lookback; ++i)
-   {
-      double diff = dss_arr[1 + i] - g_mean_2;
-      var2 += diff * diff;
-   }
-   g_std_2 = MathSqrt(var2 / (double)strategy_bermaui_lookback);
-   g_upper_thr_2 = g_mean_2 + strategy_bermaui_k * g_std_2;
-   g_lower_thr_2 = g_mean_2 - strategy_bermaui_k * g_std_2;
-
-   const int d1_bias = QM_Sig_Price_Above_MA(_Symbol, PERIOD_D1, strategy_d1_ema_period, 0.0, 1);
-
-   const bool long_oversold_prev = (g_dss_outer_2 < g_lower_thr_2);
-   const bool long_cross_back    = (g_dss_outer_1 >= g_lower_thr_1);
-   const bool long_overshoot     = (g_mean_2 - g_dss_outer_2 > strategy_min_overshoot_mult * g_std_2);
-   const bool long_d1_trend      = (d1_bias > 0);
-   const bool long_cooldown      = (g_bars_since_last_long >= strategy_cooldown_bars);
-
-   g_long_signal = (long_oversold_prev && long_cross_back && long_overshoot && long_d1_trend && long_cooldown);
-
-   const bool short_overbought_prev = (g_dss_outer_2 > g_upper_thr_2);
-   const bool short_cross_back      = (g_dss_outer_1 <= g_upper_thr_1);
-   const bool short_overshoot       = (g_dss_outer_2 - g_mean_2 > strategy_min_overshoot_mult * g_std_2);
-   const bool short_d1_trend        = (d1_bias < 0);
-   const bool short_cooldown        = (g_bars_since_last_short >= strategy_cooldown_bars);
-
-   g_short_signal = (short_overbought_prev && short_cross_back && short_overshoot && short_d1_trend && short_cooldown);
-
+   g_long_band_exit = (g_dss_outer_2 <= g_upper_thr_2 &&
+                       g_dss_outer_1 > g_upper_thr_1);
+   g_short_band_exit = (g_dss_outer_2 >= g_lower_thr_2 &&
+                        g_dss_outer_1 < g_lower_thr_1);
    g_state_ready = true;
+   return true;
 }
 
 bool Strategy_HasOurPosition()
@@ -217,18 +267,16 @@ bool Strategy_HasOurPosition()
 
 bool Strategy_NoTradeFilter()
 {
+   if(!g_state_ready || g_atr_1 <= 0.0)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false;
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
+      return true;
 
-   if(ask > bid && g_atr_1 > 0.0)
-   {
-      const double spread = ask - bid;
-      if(spread > strategy_spread_max_atr_mult * g_atr_1)
-         return true;
-   }
-   return false;
+   const double spread = ask - bid;
+   return (spread > strategy_spread_max_atr_mult * g_atr_1);
 }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -245,17 +293,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(ask <= 0.0) return false;
       const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, g_atr_1, strategy_atr_sl_mult);
       if(sl <= 0.0) return false;
-      const double tp = QM_TakeATRFromValue(_Symbol, QM_BUY, ask, g_atr_1, strategy_atr_tp_mult);
 
       req.type = QM_BUY;
       req.price = 0.0;
       req.sl = sl;
-      req.tp = tp;
+      req.tp = 0.0;
       req.reason = "BERMAUI_DSS_OVERSOLD_REVERSAL";
       req.symbol_slot = qm_magic_slot_offset;
       req.expiration_seconds = 0;
-
-      g_bars_since_last_long = 0;
       return true;
    }
    else if(g_short_signal)
@@ -264,17 +309,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(bid <= 0.0) return false;
       const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, bid, g_atr_1, strategy_atr_sl_mult);
       if(sl <= 0.0) return false;
-      const double tp = QM_TakeATRFromValue(_Symbol, QM_SELL, bid, g_atr_1, strategy_atr_tp_mult);
 
       req.type = QM_SELL;
       req.price = 0.0;
       req.sl = sl;
-      req.tp = tp;
+      req.tp = 0.0;
       req.reason = "BERMAUI_DSS_OVERBOUGHT_REVERSAL";
       req.symbol_slot = qm_magic_slot_offset;
       req.expiration_seconds = 0;
-
-      g_bars_since_last_short = 0;
       return true;
    }
 
@@ -292,64 +334,42 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int bars_held = iBarShift(_Symbol, _Period, open_time);
+      const int bars_held = iBarShift(_Symbol, PERIOD_H4, open_time); // perf-allowed: one bounded position-age lookup
       if(bars_held >= strategy_max_hold_bars)
       {
          QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
          continue;
       }
-
-      if(g_atr_1 > 0.0)
-      {
-         const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-         const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-         const double current_sl = PositionGetDouble(POSITION_SL);
-         const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-
-         if(ptype == POSITION_TYPE_BUY)
-         {
-            const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-            if(bid - open_price >= strategy_be_atr_mult * g_atr_1)
-            {
-               const double new_sl = QM_TM_NormalizePrice(_Symbol, open_price + 10.0 * point);
-               if(current_sl < open_price && new_sl > current_sl)
-               {
-                  QM_TM_MoveSL(ticket, new_sl, "BE");
-               }
-            }
-         }
-         else if(ptype == POSITION_TYPE_SELL)
-         {
-            const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-            if(open_price - ask >= strategy_be_atr_mult * g_atr_1)
-            {
-               const double new_sl = QM_TM_NormalizePrice(_Symbol, open_price - 10.0 * point);
-               if((current_sl == 0.0 || current_sl > open_price) && (current_sl == 0.0 || new_sl < current_sl))
-               {
-                  QM_TM_MoveSL(ticket, new_sl, "BE");
-               }
-            }
-         }
-      }
    }
 }
 
-bool Strategy_ExitSignal()
+bool Strategy_ExitSignal(const ulong ticket, QM_ExitReason &out_reason)
 {
-   if(!g_state_ready) return false;
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-   {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket)) continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
+   out_reason = QM_EXIT_STRATEGY;
+   if(!g_state_ready || !PositionSelectByTicket(ticket))
+      return false;
+   if(PositionGetString(POSITION_SYMBOL) != _Symbol ||
+      (int)PositionGetInteger(POSITION_MAGIC) != QM_FrameworkMagic())
+      return false;
 
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY && g_short_signal)
+   const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+   if(ptype == POSITION_TYPE_BUY)
+   {
+      if(g_short_signal)
+      {
+         out_reason = QM_EXIT_OPPOSITE_SIGNAL;
          return true;
-      if(ptype == POSITION_TYPE_SELL && g_long_signal)
+      }
+      return (g_long_band_exit || g_d1_bias <= 0);
+   }
+   if(ptype == POSITION_TYPE_SELL)
+   {
+      if(g_long_signal)
+      {
+         out_reason = QM_EXIT_OPPOSITE_SIGNAL;
          return true;
+      }
+      return (g_short_band_exit || g_d1_bias >= 0);
    }
    return false;
 }
@@ -362,6 +382,23 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 int OnInit()
 {
+   if(_Period != PERIOD_H4)
+   {
+      Print("QM5_1623 requires an H4 chart");
+      return INIT_PARAMETERS_INCORRECT;
+   }
+   if(strategy_dss_stoch_period <= 0 || strategy_dss_inner_ema <= 0 ||
+      strategy_dss_outer_ema <= 0 || strategy_bermaui_lookback < 2 ||
+      strategy_overbought_percentile <= strategy_oversold_percentile ||
+      strategy_overbought_percentile >= 100.0 || strategy_oversold_percentile <= 0.0 ||
+      strategy_d1_ema_period <= 0 || strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0 || strategy_max_hold_bars <= 0 ||
+      strategy_cooldown_bars < 0 || strategy_spread_max_atr_mult <= 0.0)
+   {
+      Print("QM5_1623 invalid strategy parameters");
+      return INIT_PARAMETERS_INCORRECT;
+   }
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -398,29 +435,36 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
    if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
       return;
 
    Strategy_ManageOpenPosition();
 
-   if(Strategy_ExitSignal())
+   if(!QM_IsNewBar(_Symbol, PERIOD_H4))
+      return;
+   if(!AdvanceState_OnNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
    {
-      const int magic = QM_FrameworkMagic();
-      for(int i = PositionsTotal() - 1; i >= 0; --i)
-      {
-         const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket))
-            continue;
-         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-      }
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol ||
+         (int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      QM_ExitReason exit_reason = QM_EXIT_STRATEGY;
+      if(Strategy_ExitSignal(ticket, exit_reason))
+         QM_TM_ClosePosition(ticket, exit_reason);
    }
+
+   if(Strategy_NoTradeFilter())
+      return;
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
 
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
@@ -430,19 +474,18 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   AdvanceState_OnNewBar();
-
-   QM_EquityStreamOnNewBar();
-
    QM_EntryRequest req;
    ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if(QM_TM_OpenPosition(req, out_ticket))
+      {
+         if(req.type == QM_BUY)
+            g_bars_since_last_long = 0;
+         else if(req.type == QM_SELL)
+            g_bars_since_last_short = 0;
+      }
    }
 }
 

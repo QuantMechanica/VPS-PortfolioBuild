@@ -1,9 +1,13 @@
 {
-  "build_check_passed": true,
+  "rework_task_id": "9c4f7a27-e62e-41e4-8d21-1e74c7a05c33",
+  "build_check_passed": false,
+  "compile_succeeded": false,
+  "compile_blocked_reason": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
   "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\QM5_1623_hopwood-bermaui-dss-h4.mq5",
-  "mq5_sha256": "7fbe2049a5cb85fdf94efe68969721f9bac17a34372f9ba2fa593a900a3a3070",
+  "mq5_sha256": "74e40c70b94451e74f2d4f00dedf833e52d3399fee82b52405f181003cee62a5",
   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\QM5_1623_hopwood-bermaui-dss-h4.ex5",
   "ex5_sha256": "913e0fe6818410fcaa9aed753380509a1b76883f15e4aa451793fbfdb48d6144",
+  "ex5_status": "stale_pre_rework_binary_not_rebuilt",
   "setfiles_generated": [
     "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_AUDUSD.DWX_H4_backtest.set",
     "C:\\QM\\repo\\framework\\EAs\\QM5_1623_hopwood-bermaui-dss-h4\\sets\\QM5_1623_hopwood-bermaui-dss-h4_EURUSD.DWX_H4_backtest.set",
