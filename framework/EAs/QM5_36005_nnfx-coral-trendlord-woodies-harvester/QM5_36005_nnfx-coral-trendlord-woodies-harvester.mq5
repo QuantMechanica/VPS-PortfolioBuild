@@ -52,7 +52,16 @@ input double strategy_spread_atr_mult       = 1.8;
 input double strategy_daily_loss_halt_pct   = 2.0;
 input double strategy_daily_hard_stop_pct   = 2.5;
 input double strategy_total_dd_halt_pct     = 5.0;
-input double strategy_per_trade_risk_cap_pct = 0.5;
+input int    strategy_max_slippage_ticks    = 3;
+
+double g_strategy_initial_equity = 0.0;
+bool   g_strategy_total_dd_halted = false;
+string g_strategy_total_dd_baseline_key = "";
+string g_strategy_total_dd_halt_key = "";
+ulong  g_strategy_tp1_ticket = 0;
+double g_strategy_tp1_initial_volume = 0.0;
+bool   g_strategy_tp1_done = false;
+string g_strategy_tp1_marker_key = "";
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implemented mechanically from the approved card.
@@ -74,9 +83,105 @@ bool Strategy_ConfigValid()
       strategy_daily_loss_halt_pct > strategy_daily_hard_stop_pct ||
       strategy_total_dd_halt_pct <= 0.0)
       return false;
-   if(strategy_per_trade_risk_cap_pct <= 0.0 || strategy_per_trade_risk_cap_pct > 1.0)
+   if(strategy_max_slippage_ticks < 1 || strategy_max_slippage_ticks > 3)
+      return false;
+   // InpRiskPercent is the card's risk input; V5 maps it to RISK_PERCENT.
+   if(RISK_PERCENT < 0.0 || RISK_PERCENT > 2.0)
       return false;
    return true;
+  }
+
+string Strategy_StateKey(const string suffix)
+  {
+   return StringFormat("QM5_36005_%d_%s", QM_FrameworkMagic(), suffix);
+  }
+
+bool Strategy_CapitalLimitsInit()
+  {
+   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(equity_now <= 0.0 || QM_FrameworkMagic() <= 0)
+      return false;
+
+   g_strategy_total_dd_baseline_key = Strategy_StateKey("TOTAL_DD_BASE");
+   g_strategy_total_dd_halt_key = Strategy_StateKey("TOTAL_DD_HALT");
+
+   // Tester passes are independent experiments. Live/demo/shadow re-attaches
+   // restore the first-attach baseline and a latched total-DD halt.
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+     {
+      g_strategy_initial_equity = equity_now;
+      g_strategy_total_dd_halted = false;
+      return true;
+     }
+
+   if(GlobalVariableCheck(g_strategy_total_dd_baseline_key))
+      g_strategy_initial_equity = GlobalVariableGet(g_strategy_total_dd_baseline_key);
+   else
+     {
+      g_strategy_initial_equity = equity_now;
+      if(GlobalVariableSet(g_strategy_total_dd_baseline_key,
+                           g_strategy_initial_equity) == 0)
+         return false;
+     }
+
+   if(g_strategy_initial_equity <= 0.0)
+      return false;
+   g_strategy_total_dd_halted =
+      (GlobalVariableCheck(g_strategy_total_dd_halt_key) &&
+       GlobalVariableGet(g_strategy_total_dd_halt_key) > 0.5);
+   return true;
+  }
+
+void Strategy_CloseOwnedPositions(const QM_ExitReason reason)
+  {
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      QM_TM_ClosePosition(ticket, reason);
+     }
+  }
+
+bool Strategy_TotalDrawdownHalt()
+  {
+   if(g_strategy_initial_equity <= 0.0)
+      return true;
+
+   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
+   const double floor_equity =
+      g_strategy_initial_equity * (1.0 - strategy_total_dd_halt_pct / 100.0);
+   if(!g_strategy_total_dd_halted &&
+      (equity_now <= 0.0 || equity_now <= floor_equity))
+     {
+      g_strategy_total_dd_halted = true;
+      if(MQLInfoInteger(MQL_TESTER) == 0)
+         GlobalVariableSet(g_strategy_total_dd_halt_key, 1.0);
+      QM_LogFatal("STRATEGY_TOTAL_DD_HALT",
+                  StringFormat("{\"initial_equity\":%.2f,\"equity_now\":%.2f,\"halt_pct\":%.4f}",
+                               g_strategy_initial_equity,
+                               equity_now,
+                               strategy_total_dd_halt_pct));
+     }
+
+   if(!g_strategy_total_dd_halted)
+      return false;
+
+   // Retry the owned-position sweep on every tick until exposure is flat.
+   Strategy_CloseOwnedPositions(QM_EXIT_KILLSWITCH);
+   return true;
+  }
+
+int Strategy_MaxSlippagePoints()
+  {
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(point <= 0.0 || tick_size <= 0.0)
+      return -1;
+   return (int)MathCeil((double)strategy_max_slippage_ticks * tick_size / point);
   }
 
 bool Strategy_DailyRealizedLossHalt()
@@ -98,6 +203,9 @@ bool Strategy_NoTradeFilter()
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
+      return true;
+
+   if(g_strategy_total_dd_halted || g_strategy_initial_equity <= 0.0)
       return true;
 
    if(QM_TM_OpenPositionCount(magic) > 0)
@@ -139,7 +247,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl = 0.0;
    req.tp = 0.0;
    req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
+   // Slot zero is relative to the host magic already resolved and validated
+   // from qm_magic_slot_offset by QM_FrameworkInit.
+   req.symbol_slot = 0;
    req.expiration_seconds = 0;
 
    if(Strategy_NoTradeFilter())
@@ -222,6 +332,8 @@ void Strategy_ManageOpenPosition()
    if(magic <= 0)
       return;
 
+   bool found_owned_position = false;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -229,6 +341,8 @@ void Strategy_ManageOpenPosition()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+
+      found_owned_position = true;
 
       if(strategy_tp1_atr_mult <= 0.0 || strategy_tp1_fraction <= 0.0 ||
          strategy_tp1_fraction >= 1.0 || strategy_sl_atr_mult <= 0.0)
@@ -244,10 +358,37 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const bool is_buy = (position_type == POSITION_TYPE_BUY);
-      const bool unprotected = is_buy ? (current_sl < open_price - point * 0.5)
-                                      : (current_sl > open_price + point * 0.5);
-      if(!unprotected)
+      const double be_buffer = QM_StopRulesPipsToPriceDistance(_Symbol,
+                                                               strategy_be_buffer_pips);
+      const double be_sl = is_buy ? (open_price + be_buffer)
+                                  : (open_price - be_buffer);
+      const bool runner_protected =
+         is_buy ? (current_sl >= be_sl - point * 0.5)
+                : (current_sl <= be_sl + point * 0.5);
+
+      if(ticket != g_strategy_tp1_ticket)
+        {
+         if(StringLen(g_strategy_tp1_marker_key) > 0 &&
+            MQLInfoInteger(MQL_TESTER) == 0)
+            GlobalVariableDel(g_strategy_tp1_marker_key);
+         g_strategy_tp1_ticket = ticket;
+         g_strategy_tp1_initial_volume = volume;
+         g_strategy_tp1_marker_key =
+            StringFormat("QM5_36005_TP1_%d_%I64u", magic, ticket);
+         g_strategy_tp1_done = runner_protected;
+         if(MQLInfoInteger(MQL_TESTER) == 0 &&
+            GlobalVariableCheck(g_strategy_tp1_marker_key))
+            g_strategy_tp1_done =
+               (GlobalVariableGet(g_strategy_tp1_marker_key) > 0.5);
+        }
+
+      if(g_strategy_tp1_done)
+        {
+         if(!runner_protected)
+            QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, be_sl),
+                         "NNFX_TP1_BE_PROTECTION_RETRY");
          continue;
+        }
 
       const double initial_risk = is_buy ? (open_price - current_sl)
                                          : (current_sl - open_price);
@@ -263,8 +404,9 @@ void Strategy_ManageOpenPosition()
       if(market_price <= 0.0 || favorable_move < trigger_distance)
          continue;
 
-      const double partial_lots = QM_TM_NormalizeVolume(_Symbol,
-                                                        volume * strategy_tp1_fraction);
+      const double partial_lots =
+         QM_TM_NormalizeVolume(_Symbol,
+                               g_strategy_tp1_initial_volume * strategy_tp1_fraction);
       const double min_lot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
       if(partial_lots <= 0.0 || partial_lots >= volume ||
          volume - partial_lots < min_lot - 1e-8)
@@ -272,13 +414,23 @@ void Strategy_ManageOpenPosition()
 
       if(QM_TM_PartialClose(ticket, partial_lots, QM_EXIT_PARTIAL))
         {
-         const double be_buffer = QM_StopRulesPipsToPriceDistance(_Symbol,
-                                                                  strategy_be_buffer_pips);
-         const double be_sl = is_buy ? (open_price + be_buffer)
-                                     : (open_price - be_buffer);
+         g_strategy_tp1_done = true;
+         if(MQLInfoInteger(MQL_TESTER) == 0)
+            GlobalVariableSet(g_strategy_tp1_marker_key, 1.0);
          QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, be_sl),
                       "NNFX_TP1_BE_PROTECTION");
         }
+     }
+
+   if(!found_owned_position && g_strategy_tp1_ticket != 0)
+     {
+      if(StringLen(g_strategy_tp1_marker_key) > 0 &&
+         MQLInfoInteger(MQL_TESTER) == 0)
+         GlobalVariableDel(g_strategy_tp1_marker_key);
+      g_strategy_tp1_ticket = 0;
+      g_strategy_tp1_initial_volume = 0.0;
+      g_strategy_tp1_done = false;
+      g_strategy_tp1_marker_key = "";
      }
   }
 
@@ -356,8 +508,22 @@ int OnInit()
                          QM_FrameworkMagic(),
                          strategy_daily_hard_stop_pct,
                          strategy_total_dd_halt_pct,
-                         strategy_per_trade_risk_cap_pct))
+                         (RISK_PERCENT > 0.0 ? RISK_PERCENT : 1.0)))
       return INIT_FAILED;
+
+   if(!Strategy_CapitalLimitsInit())
+      return INIT_FAILED;
+
+   const int max_slippage_points = Strategy_MaxSlippagePoints();
+   if(max_slippage_points <= 0)
+      return INIT_FAILED;
+   QM_EntryConfigure(qm_ea_id,
+                     qm_news_mode_legacy,
+                     max_slippage_points,
+                     qm_stress_reject_probability,
+                     qm_news_temporal,
+                     qm_news_compliance,
+                     QM_FrameworkMagic());
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
@@ -372,6 +538,9 @@ void OnDeinit(const int reason)
 void OnTick()
   {
    QM_FrameworkTrackOpenPositionMae();
+
+   if(Strategy_TotalDrawdownHalt())
+      return;
 
    if(!QM_KillSwitchCheck())
       return;
