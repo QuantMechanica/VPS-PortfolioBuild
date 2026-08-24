@@ -51,7 +51,7 @@ input int    strategy_warmup_bars       = 200;
 
 bool Strategy_NoTradeFilter()
 {
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars) // perf-allowed: one bounded D1 readiness query on the new-D1-bar entry path.
       return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -60,7 +60,9 @@ bool Strategy_NoTradeFilter()
       return true;
 
    const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(atr > 0.0 && ask > bid && (ask - bid) > (strategy_spread_max_atr * atr))
+   if(atr <= 0.0)
+      return true;
+   if(ask > bid && (ask - bid) > (strategy_spread_max_atr * atr))
       return true;
 
    return false;
@@ -68,14 +70,14 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars) // perf-allowed: one bounded D1 readiness query on the new-D1-bar entry path.
       return false;
 
    const int magic = QM_FrameworkMagic();
    if(magic > 0 && QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: one closed D1 value, evaluated only on the new-D1-bar entry path.
    const double sma200 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1, PRICE_CLOSE);
    const double rsi1   = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1, PRICE_CLOSE);
    const double rsi2   = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 2, PRICE_CLOSE);
@@ -94,10 +96,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(ask <= 0.0)
          return false;
+      const double stop = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_sl_atr_mult);
+      if(stop <= 0.0 || stop >= ask)
+         return false;
 
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_sl_atr_mult);
+      req.sl = stop;
       req.tp = 0.0;
       req.reason = "CONNORS_R2_BUY";
       req.symbol_slot = qm_magic_slot_offset;
@@ -125,7 +130,7 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int bars_held = iBarShift(_Symbol, PERIOD_D1, open_time, false);
+      const int bars_held = QM_TM_HeldPeriods(_Symbol, PERIOD_D1, open_time);
       if(bars_held >= strategy_time_stop_bars)
       {
          QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
@@ -135,9 +140,6 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
 {
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
-      return false;
-
    const double rsi1 = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1, PRICE_CLOSE);
    if(rsi1 <= 0.0)
       return false;
@@ -162,6 +164,12 @@ int OnInit()
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "CARD_HAS_NO_FRIDAY_RULE_FRAMEWORK_SAFETY_OVERRIDE"))
+      return INIT_FAILED;
+
    return INIT_SUCCEEDED;
 }
 
@@ -178,16 +186,11 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
-
+   // Card exits and the ten-D1-bar time stop must remain reachable even when
+   // current quotes, warmup, spread, or news state disallow a new entry.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -206,6 +209,18 @@ void OnTick()
       }
    }
 
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
+      return;
+
+   QM_EquityStreamOnNewBar();
+
+   if(Strategy_NoTradeFilter())
+      return;
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -213,11 +228,6 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
       return;
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    ZeroMemory(req);
