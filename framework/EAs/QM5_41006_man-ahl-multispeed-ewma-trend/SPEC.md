@@ -10,9 +10,9 @@
 
 ## 1. Strategy Logic
 
-Institutional trend following engine evaluating a composite continuous trend forecast signal across six EWMA crossover horizons (2/8, 4/16, 8/32, 16/64, 32/128, 64/256 days). Each spread is normalized by the 60-day sample standard deviation of D1 close-to-close changes, and every volatility and EMA input must be ready before the score is valid. On closed D1 bars, the EA enters Long when the bounded score crosses above +0.35, and enters Short when it crosses below -0.35. Entries carry an initial stop loss of 2.5x ATR(14).
+Institutional trend following engine evaluating a composite continuous trend forecast signal across six EWMA crossover horizons (2/8, 4/16, 8/32, 16/64, 32/128, 64/256 days). Each spread is normalized by the 60-day sample standard deviation of D1 close-to-close returns, scaled by the current close to express sigma in price units. Every volatility and EMA input must be ready before the score is valid. On closed D1 bars, the EA enters Long when the bounded score crosses above +0.35, and enters Short when it crosses below -0.35. Entries carry an initial stop loss of 2.5x ATR(14).
 
-While a forecast remains active, the EA closes and reopens through framework trade helpers once per D1 bar, sizing the new risk amount to `abs(S_t)` of the configured risk budget. That implements the card's continuous forecast-driven rebalancing; a sign change closes the old direction and only a qualifying opposite threshold crossing opens the reverse side. Account-wide realised losses halt new entries at 2.0% for the broker day, while the framework kill switch flattens at 2.5% daily equity loss and consumes the 5.0% portfolio drawdown signal.
+While a forecast remains active, the EA closes and reopens through framework trade helpers once per D1 bar, sizing the new risk amount to `abs(S_t)` of the configured risk budget. That implements the card's continuous forecast-driven rebalancing; a sign change closes the old direction and only a qualifying opposite threshold crossing opens the reverse side. A blocked same-direction resize retains the current exposure, and a failed framework reopen remains pending instead of losing the active forecast. Account-wide realised losses halt new entries at 2.0% for the broker day, while the framework kill switch flattens at 2.5% daily equity loss and consumes the 5.0% portfolio drawdown signal.
 
 ---
 
@@ -25,6 +25,9 @@ While a forecast remains active, the EA closes and reopens through framework tra
 | `InpAtrSlPeriod` | 14 | 10-30 | ATR period for stop loss sizing |
 | `InpAtrSlMult` | 2.5 | 1.5-4.0 | ATR multiplier for stop loss placement |
 | `InpSpreadAtrMult` | 1.8 | 1.0-3.0 | Maximum allowable spread as multiple of D1 ATR(14) |
+| `InpDailyLossEntryHaltPct` | 2.0 | card-fixed | Account-wide realised-loss threshold that blocks new entries |
+| `InpDailyHardStopPct` | 2.5 | card-fixed | Daily equity-loss kill-switch threshold |
+| `InpTotalDrawdownStopPct` | 5.0 | card-fixed | Portfolio drawdown signal threshold |
 
 ---
 
