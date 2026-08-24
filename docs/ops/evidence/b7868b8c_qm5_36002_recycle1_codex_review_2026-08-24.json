@@ -1,0 +1,24 @@
+{
+  "review_task_id": "b7868b8c-cd0e-4f22-b764-fe8a7d53408a",
+  "build_task_id": "f7849572-7aad-4e79-ad7f-8c6d1fccf935",
+  "ea_id": "QM5_36002",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "PASS",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The 2026-08-23/24 hardening now uses the exact Damiani vol > anti gate, converts broker time to UTC, implements a managed 50% TP1 plus Kijun runner, keeps management/exits reachable, and wires the card's loss rails. Those repairs were independently confirmed in the current source.",
+    "OnInit still never calls QM_FrameworkDeclareExecutionContract for the approved D1 host and Friday-close contract. Explicit QM_IsNewBar(_Symbol, PERIOD_D1) fixes signal cadence but does not provide the required fail-closed execution declaration.",
+    "Strategy_ConfigValid does not enforce the card ranges for Kijun, ASO, or Aroon, and allows the fixed 1 ATR stop/TP, 50% partial, and 2.0%/2.5%/5.0% loss thresholds to be weakened through inputs. Default values match the card, but the approved mechanics are not bounded fail-closed.",
+    "TP1 completion is inferred only from the stop reaching entry. A successful QM_TM_PartialClose is followed by an unchecked QM_TM_MoveSL and no durable TP1 latch; a rejected stop modification can cause repeated 50%-of-remainder partial closes, while an unsplittable position receives no fail-closed alternative.",
+    "The current MQ5 hashes to 71b66a9a4a5d3bb86c013b9da623ebb067694c8218b15743846999d03057c570, but the EX5 is absent and the remediation evidence explicitly records a governed compile hold. No canonical current compile/build-check receipt or smoke report exists, so build_result fails and smoke_sanity remains UNKNOWN.",
+    "Focused guardrail and SPEC validation pass; all four presets use RISK_FIXED=1000 and RISK_PERCENT=0; active magic rows are unique, formula-correct, and resolver-backed; permitted raw-series sites are D1-gated. These checks do not cure the contract, lifecycle, and build-evidence failures."
+  ],
+  "reviewed_at": "2026-08-24T10:58:20Z"
+}
