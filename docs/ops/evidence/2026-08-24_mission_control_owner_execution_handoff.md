@@ -24,6 +24,12 @@ task also reconciles every authorized receipt, so a crash between receipt and
 task insert cannot lose the order. UUID identity and receipt-hash validation
 make concurrent/repeated reconciliation idempotent.
 
+The live Factory serializes SQLite writers. The handoff therefore uses the
+shared bounded BUSY/LOCKED retry policy and opens a fresh connection for every
+attempt. A durable receipt is retained as `RETRY_PENDING` if contention still
+outlasts the immediate attempt; the five-minute reconciliation retries the same
+task identity.
+
 ## Hard boundaries
 
 Every task payload carries false flags for live execution, Factory pause,
@@ -34,7 +40,7 @@ Free-form OWNER notes explicitly cannot expand scope.
 ## Isolated verification
 
 ```text
-focused pytest: 29 passed, 1 skipped
+focused pytest: 30 passed, 1 skipped
 router/orchestration regression: 89 passed
 Python byte compilation: PASS
 execution manifest JSON parse: PASS
@@ -49,16 +55,17 @@ compatibility.
 
 ```text
 canonical commit: 481a092c3 (agents/board-advisor)
-canonical regression: 118 passed, 1 skipped
+SQLite contention hardening commit: f1db49beb
+canonical regression: 119 passed, 1 skipped
 receipt dry-run/apply: receipt_count=0, eligible_count=0, errors=0
-intake PID: 24016
+intake PID after contention-hardening restart: 25308
 intake health: ok=true, mode=ROUTER_HANDOFF, open_count=6, revision=1
 startup reconcile: ok=true, receipt_count=0, errors=0
 Claude burn authorization: active through 2026-08-24T23:00:00+02:00
 quota governor: CLAUDE_DISABLED released by its managed-owner contract
 Claude ops_issue spawn gate: allowed=true (OWNER burn authorization active)
 Mission Control: 6 owner cards, 6 CLAUDE READY plans
-Mission Control bytes: 71,647; cockpit.html SHA == cockpit_v2.html SHA
+Mission Control bytes: 70,927; cockpit.html SHA == cockpit_v2.html SHA
 Linear gate frontier: last top-level section, 30 preview rows, 14,639 only in drill-down
 Vault queue: 6 cards, generated text names router handoff
 Company Reference lint: PASS
