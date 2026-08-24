@@ -78,6 +78,16 @@ ENTRY_GRACE_CARD_RES = (
         re.IGNORECASE,
     ),
 )
+ENTRY_SESSION_OFFSET_CARD_RES = (
+    re.compile(
+        r"\bstrategy_session_offset_(?:min|minutes)\b`?\s*(?:[:=]|\|)\s*`?([0-9]+(?:\.[0-9]+)?)",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\bsession[-_ ](?:tick[-_ ])?offset\b[^0-9\r\n]{0,40}([0-9]+(?:\.[0-9]+)?)\s*(?:minutes?|mins?)\b",
+        re.IGNORECASE,
+    ),
+)
 
 
 def utc_now() -> str:
@@ -126,6 +136,23 @@ def _entry_grace_input_defaults(mq5_text: str) -> dict[str, float | None]:
     return defaults
 
 
+def _is_entry_session_offset_name(name: str) -> bool:
+    lower = str(name).strip().lower()
+    return "session" in lower and "offset" in lower and (
+        "minute" in lower or lower.endswith("_min")
+    )
+
+
+def _entry_session_offset_input_defaults(mq5_text: str) -> dict[str, float | None]:
+    defaults: dict[str, float | None] = {}
+    for match in INPUT_RE.finditer(mq5_text):
+        name = match.group("name")
+        if not _is_entry_session_offset_name(name):
+            continue
+        defaults[name] = _parse_number(match.group("default"))
+    return defaults
+
+
 def _entry_grace_card_values(ea_dir: Path) -> list[tuple[str, float]]:
     values: list[tuple[str, float]] = []
     for rel in ("SPEC.md", "strategy_card.md", "docs/strategy_card.md"):
@@ -139,6 +166,47 @@ def _entry_grace_card_values(ea_dir: Path) -> list[tuple[str, float]]:
                 if value is not None:
                     values.append((str(candidate), value))
     return values
+
+
+def _entry_session_offset_card_values(ea_dir: Path) -> list[tuple[str, float]]:
+    values: list[tuple[str, float]] = []
+    for rel in ("SPEC.md", "strategy_card.md", "docs/strategy_card.md"):
+        candidate = ea_dir / rel
+        if not candidate.is_file():
+            continue
+        text = candidate.read_text(encoding="utf-8", errors="ignore")
+        for pattern in ENTRY_SESSION_OFFSET_CARD_RES:
+            for match in pattern.finditer(text):
+                value = _parse_number(match.group(1))
+                if value is not None:
+                    values.append((str(candidate), value))
+    return values
+
+
+def _operational_session_offset_names(code: str, names: set[str]) -> set[str]:
+    """Return session-offset inputs that actually move a time anchor."""
+
+    operational: set[str] = set()
+    for name in names:
+        for match in re.finditer(rf"\b{re.escape(name)}\b", code):
+            line_start = code.rfind("\n", 0, match.start()) + 1
+            line_end = code.find("\n", match.end())
+            if line_end < 0:
+                line_end = len(code)
+            line = code[line_start:line_end]
+            if re.search(r"\binput\b", line):
+                continue
+            if ("!=" in line or "==" in line) and not any(op in line for op in ("<", ">")):
+                continue
+            start = max(0, match.start() - 700)
+            end = min(len(code), match.end() + 700)
+            window = code[start:end]
+            if not re.search(r"\b(?:datetime|TimeCurrent|iTime|QM_ReadBar|bar_time|anchor)\b", window):
+                continue
+            if not re.search(r"(?:\*\s*60(?:\.0)?\b|60(?:\.0)?\s*\*)", window):
+                continue
+            operational.add(name)
+    return operational
 
 
 def _operational_grace_windows(code: str, grace_names: set[str]) -> list[str]:
@@ -494,6 +562,10 @@ def _scan_entry_grace_vs_session_offset(path: Path) -> list[dict[str, Any]]:
         code = _strip_code_comments_and_literals(mq5_text)
         if not _operational_grace_windows(code, set(defaults)):
             continue
+        session_offset_defaults = _entry_session_offset_input_defaults(mq5_text)
+        operational_session_offsets = _operational_session_offset_names(
+            code, set(session_offset_defaults)
+        )
 
         anchor_periods = _entry_grace_anchor_periods(mq5_text)
         registry, registry_error = _load_session_offsets()
@@ -503,6 +575,7 @@ def _scan_entry_grace_vs_session_offset(path: Path) -> list[dict[str, Any]]:
             else sorted((ea_dir / "sets").glob("*.set"))
         )
         card_values = _entry_grace_card_values(ea_dir)
+        session_offset_card_values = _entry_session_offset_card_values(ea_dir)
 
         for setfile in setfiles:
             text = setfile.read_text(encoding="utf-8", errors="ignore")
@@ -542,6 +615,47 @@ def _scan_entry_grace_vs_session_offset(path: Path) -> list[dict[str, Any]]:
             # a wider setfile cannot silently weaken an approved tight boundary.
             grace_minutes = min(value for _, value in numeric)
             grace_sources = sorted(source for source, value in numeric if value == grace_minutes)
+
+            session_anchor_minutes = 0.0
+            session_anchor_sources: list[str] = []
+            if operational_session_offsets:
+                anchor_declarations: list[tuple[str, float | None]] = [
+                    (f"{mq5_path}:input:{name}", session_offset_defaults[name])
+                    for name in sorted(operational_session_offsets)
+                ]
+                for key, raw in values.items():
+                    if key in operational_session_offsets:
+                        anchor_declarations.append(
+                            (f"{setfile}:set:{key}", _parse_number(raw))
+                        )
+                anchor_declarations.extend(session_offset_card_values)
+                invalid_anchors = [
+                    source
+                    for source, value in anchor_declarations
+                    if value is None or value < 0
+                ]
+                if invalid_anchors:
+                    findings.append(
+                        {
+                            "path": str(setfile),
+                            "kind": "entry_session_offset_value_invalid",
+                            "sources": invalid_anchors,
+                            "required": ">= 0 numeric minutes",
+                        }
+                    )
+                    continue
+                numeric_anchors = [
+                    (source, float(value))
+                    for source, value in anchor_declarations
+                    if value is not None
+                ]
+                if numeric_anchors:
+                    session_anchor_minutes = min(value for _, value in numeric_anchors)
+                    session_anchor_sources = sorted(
+                        source
+                        for source, value in numeric_anchors
+                        if value == session_anchor_minutes
+                    )
 
             if registry_error:
                 findings.append(
@@ -613,7 +727,8 @@ def _scan_entry_grace_vs_session_offset(path: Path) -> list[dict[str, Any]]:
                     )
                     continue
                 required_grace = offset_minutes + DEFAULT_ENTRY_GRACE_MARGIN_MINUTES
-                if grace_minutes + 1.0e-9 < required_grace:
+                effective_window_end = session_anchor_minutes + grace_minutes
+                if effective_window_end + 1.0e-9 < required_grace:
                     findings.append(
                         {
                             "path": str(setfile),
@@ -621,11 +736,17 @@ def _scan_entry_grace_vs_session_offset(path: Path) -> list[dict[str, Any]]:
                             "symbol": symbol,
                             "declared_grace_minutes": grace_minutes,
                             "declared_grace_sources": grace_sources,
+                            "declared_session_offset_minutes": session_anchor_minutes,
+                            "declared_session_offset_sources": session_anchor_sources,
+                            "effective_window_end_minutes_from_d1_label": effective_window_end,
                             "offset_minutes": offset_minutes,
                             "offset_source": offset_source,
                             "margin_minutes": DEFAULT_ENTRY_GRACE_MARGIN_MINUTES,
                             "minimum_grace_minutes": required_grace,
-                            "required": "declared_grace_minutes >= offset_minutes + margin_minutes",
+                            "required": (
+                                "declared_session_offset_minutes + declared_grace_minutes "
+                                ">= offset_minutes + margin_minutes"
+                            ),
                         }
                     )
     return findings

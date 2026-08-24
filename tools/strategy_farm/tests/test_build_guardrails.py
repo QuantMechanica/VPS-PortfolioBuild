@@ -35,23 +35,36 @@ def _write_entry_grace_ea(
     set_period: str = "D1",
     operational: bool = True,
     card_grace: int | None = None,
+    session_offset: float | None = None,
 ) -> Path:
     ea = tmp_path / f"QM5_9999_entry-grace-{symbol.replace('.', '-')}"
     sets = ea / "sets"
     sets.mkdir(parents=True)
     use = ""
     if operational:
+        anchor = "entry_bar_time"
+        session_anchor_declaration = ""
+        if session_offset is not None:
+            anchor = "session_anchor"
+            session_anchor_declaration = """
+           const datetime session_anchor = (datetime)(entry_bar_time +
+              (long)MathRound(strategy_session_offset_min * 60.0));
+            """
         use = f"""
         bool Strategy_EntryWindowReady()
           {{
            const datetime entry_bar_time = iTime(_Symbol, PERIOD_{anchor_period}, 0);
-           const long opening_delay = (long)(TimeCurrent() - entry_bar_time);
+           {session_anchor_declaration}
+           const long opening_delay = (long)(TimeCurrent() - {anchor});
            return (opening_delay >= 0 &&
                    opening_delay <= (long)strategy_entry_grace_minutes * 60);
           }}
         """
+    session_input = ""
+    if session_offset is not None:
+        session_input = f"input double strategy_session_offset_min = {session_offset};\n"
     (ea / f"{ea.name}.mq5").write_text(
-        f"input int strategy_entry_grace_minutes = {grace};\n{use}\n",
+        f"{session_input}input int strategy_entry_grace_minutes = {grace};\n{use}\n",
         encoding="utf-8",
     )
     if card_grace is not None:
@@ -64,6 +77,11 @@ def _write_entry_grace_ea(
             [
                 "RISK_FIXED=1000",
                 "RISK_PERCENT=0",
+                *(
+                    [f"strategy_session_offset_min={session_offset}"]
+                    if session_offset is not None
+                    else []
+                ),
                 f"strategy_entry_grace_minutes={grace}",
             ]
         )
@@ -317,6 +335,47 @@ def test_accepts_180_minute_d1_grace_for_measured_xti_offset(
 
     assert result["verdict"] == "PASS"
     assert result["findings"] == []
+
+
+def test_accepts_tight_grace_after_explicit_measured_session_anchor(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        guardrails, "SESSION_OFFSET_REGISTRY_PATH", _write_session_offset_registry(tmp_path)
+    )
+    ea = _write_entry_grace_ea(
+        tmp_path,
+        symbol="XTIUSD.DWX",
+        grace=10,
+        session_offset=61.6,
+    )
+
+    result = validate_path(ea)
+
+    assert result["verdict"] == "PASS"
+    assert result["findings"] == []
+
+
+def test_rejects_session_anchored_window_ending_before_unchanged_margin(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        guardrails, "SESSION_OFFSET_REGISTRY_PATH", _write_session_offset_registry(tmp_path)
+    )
+    ea = _write_entry_grace_ea(
+        tmp_path,
+        symbol="XTIUSD.DWX",
+        grace=4,
+        session_offset=61.6,
+    )
+
+    result = validate_path(ea)
+
+    finding = next(f for f in result["findings"] if f["kind"] == "entry_grace_below_session_offset")
+    assert result["verdict"] == "FAIL"
+    assert finding["minimum_grace_minutes"] == 66.6
+    assert finding["declared_session_offset_minutes"] == 61.6
+    assert finding["effective_window_end_minutes_from_d1_label"] == 65.6
 
 
 def test_accepts_five_minute_d1_grace_for_measured_zero_offset_eurusd(
