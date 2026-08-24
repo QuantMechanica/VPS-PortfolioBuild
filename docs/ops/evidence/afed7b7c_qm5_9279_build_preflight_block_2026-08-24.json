@@ -58,6 +58,14 @@
     "prior_review_close_state": "RECYCLE",
     "prior_review_close_verdict": "batch adjudication 2026-07-19 (Claude, wf_11f17900 verified): No .ex5, no SPEC.md, no registry row for 9279; only bare .mq5 present"
   },
+  "router_disposition": {
+    "review_requested": true,
+    "review_allowed": false,
+    "review_gate_code": "D6_BUILD_IDENTITY_MISSING",
+    "review_gate_reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
+    "final_state": "BLOCKED",
+    "final_verdict": "PRECONDITION_HOLD_MAGIC_ROWS_REQUIRED; REVIEW refused D6_BUILD_IDENTITY_MISSING"
+  },
   "verdict": "BUILD_NOT_STARTED_MAGIC_GATE_FAIL",
   "blocked_reason": "The approved card and active EA identity now match, but magic_numbers.csv has zero rows for ea_id 9279 while the card requires four symbol slots. qm-build-ea-from-card forbids Development from allocating those rows.",
   "required_next_action": "The governed registry writer must allocate all four active magic rows, regenerate QM_MagicResolver.mqh, and verify zero rows were dropped. Then recycle the build task. Any eventual backtest sets must keep RISK_FIXED > 0 and RISK_PERCENT = 0, and the V5 news blackout must remain fail-closed with qm_news_stale_max_hours <= 336.",
