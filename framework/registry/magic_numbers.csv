@@ -16652,6 +16652,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1612,aa-dsp-hplwma10,10,AUDUSD.DWX,16120010,2026-08-17,Codex governed allocator,active
 1612,aa-dsp-hplwma10,11,USDCAD.DWX,16120011,2026-08-17,Codex governed allocator,active
 1612,aa-dsp-hplwma10,12,NZDUSD.DWX,16120012,2026-08-17,Codex governed allocator,active
+1612,aa-dsp-hplwma10,13,XTIUSD.DWX,16120013,2026-08-24,Codex rework-1612 governed gap repair,active
 1613,aa-dsp-atsmom,0,GDAXI.DWX,16130000,2026-08-17,Codex governed allocator,active
 1613,aa-dsp-atsmom,1,NDX.DWX,16130001,2026-08-17,Codex governed allocator,active
 1613,aa-dsp-atsmom,2,SP500.DWX,16130002,2026-08-17,Codex governed allocator,active
