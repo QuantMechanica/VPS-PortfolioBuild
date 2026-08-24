@@ -1,0 +1,25 @@
+{
+  "review_task_id": "6076e5b8-5a12-4590-8e89-bd2d24f21f4d",
+  "build_task_id": "1f82ac59-1c1e-4e72-a1f8-4eaea2120347",
+  "ea_id": "QM5_38008",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The card-specific core repair is present: TP is open-ended, the closed-bar SMA20 midline exit and +1R protection are reachable outside entry-only filters, and the default 2.0%/2.5%/5.0%/0.5% controls are passed to the kill switch.",
+    "The executable and presets are not bound to the reviewed source. The MQ5 is SHA-256 5c8f45f1db08a51e886e0a16c192d15b9db589bd0dc531d04e0cc7649a9ea9b8 from 2026-08-23, while the retained EX5 is the 2026-08-18 binary. The three setfile build hashes are mutually different and none equals the MQ5 hash.",
+    "The card's 23:55-00:05 GMT blackout is evaluated with raw TimeCurrent; fresh build-gate hardening fails EA_BROKER_TIME_USED_FOR_GMT_WINDOW.",
+    "Restart and new-bar state remain unsafe. OnInit does not seed or clear indicator state; management runs before the just-closed D1 state is refreshed; Strategy_NoTradeFilter runs before AdvanceState_OnNewBar, allowing startup spread admission with ATR zero and permitting a first-tick entry blackout to consume the new-bar latch without refreshing the state required by the midline exit.",
+    "The EA uses parameterless QM_IsNewBar and never calls QM_FrameworkDeclareExecutionContract, so D1 cadence is not fail-closed. It also never calls QM_EntryConfigure for the card's maximum three-tick deviation, retaining the framework's 20-point default.",
+    "The configurable daily hard stop, total drawdown stop, and per-trade cap have no upper-bound validation even though SPEC advertises ranges up to 5%, 10%, and 1%, allowing the approved 2.5%/5.0%/0.5% controls to be weakened.",
+    "The producer packet reports deferred_p2_smoke with smoke_report_path=null and blocked_reason=null. It contains neither durable tester-saturation evidence nor a smoke report, so build_result fails and smoke_sanity remains unknown."
+  ],
+  "reviewed_at": "2026-08-24T10:13:11Z"
+}
