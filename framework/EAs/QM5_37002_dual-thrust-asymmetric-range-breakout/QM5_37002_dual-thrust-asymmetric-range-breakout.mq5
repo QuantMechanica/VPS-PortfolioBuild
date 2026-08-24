@@ -14,11 +14,9 @@
 //   - Buy_Trigger  = Open + k1 * Range
 //   - Sell_Trigger = Open - k2 * Range
 //
-// Long Entry:  Close[1] > Buy_Trigger  -> market buy
-// Short Entry: Close[1] < Sell_Trigger -> market sell
-// Exit Signal: Long exits on Close[1] < Sell_Trigger or Max Hold Bars reached
-//              Short exits on Close[1] > Buy_Trigger or Max Hold Bars reached
-// Initial Stop: Fixed ATR(14) stop at 2.0 * ATR(14)
+// Entry: place a paired BUY_STOP / SELL_STOP bracket at the current D1 open.
+// Exit: opposite trigger is the server-side SL; flatten before 23:55 UTC.
+// Target: 1.5R, matching the approved card's stated risk/reward profile.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -49,11 +47,26 @@ input group "Strategy"
 input int    strategy_lookback_days       = 4;      // Dual Thrust lookback window (days)
 input double strategy_k1                  = 0.50;   // Buy trigger range multiplier
 input double strategy_k2                  = 0.50;   // Sell trigger range multiplier
-input int    strategy_atr_period          = 14;     // ATR period for stop loss and spread filter
-input double strategy_sl_atr_mult         = 2.00;   // Stop loss ATR multiplier
-input int    strategy_max_hold_bars       = 5;      // Maximum hold time in D1 bars
-input double strategy_spread_atr_mult     = 1.80;   // Spread filter ATR multiplier
-input int    strategy_max_spread_points   = 300;    // Absolute spread cap in points
+input double strategy_daily_loss_limit_pct         = 2.0; // Realized-loss entry halt
+input double strategy_daily_drawdown_hard_stop_pct = 2.5; // Equity hard stop
+input double strategy_total_drawdown_stop_pct      = 5.0; // Total-drawdown hard stop
+input int    strategy_max_slippage_ticks           = 3;   // Card maximum on market exits
+
+const int    STRATEGY_SPREAD_ATR_PERIOD       = 14;
+const double STRATEGY_SPREAD_ATR_MULT         = 1.80;
+const double STRATEGY_TARGET_R_MULT           = 1.5;
+
+ulong g_strategy_first_pending_ticket = 0;
+
+int Strategy_DeviationPoints()
+{
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(point <= 0.0 || tick_size <= 0.0)
+      return strategy_max_slippage_ticks;
+   return (int)MathMax(1.0,
+                       MathCeil(strategy_max_slippage_ticks * tick_size / point));
+}
 
 // -----------------------------------------------------------------------------
 // Dual Thrust Calculation Helper
@@ -78,9 +91,12 @@ DualThrust_Levels CalculateDualThrust(const string sym, const int lookback, cons
    if(lookback < 1 || k1 <= 0.0 || k2 <= 0.0)
       return res;
 
+   // One current bar plus at most eight prior bars (the card's bounded range).
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   if(CopyRates(sym, PERIOD_D1, 1, lookback + 1, rates) < lookback + 1) // perf-allowed: closed-bar Dual Thrust rates vector
+   const int required = lookback + 1;
+   const int copied = CopyRates(sym, PERIOD_D1, 0, required, rates); // perf-allowed: bounded current-open plus closed D1 range vector
+   if(copied != required || ArraySize(rates) < required)
       return res;
 
    double hh = -1e9;
@@ -88,7 +104,9 @@ DualThrust_Levels CalculateDualThrust(const string sym, const int lookback, cons
    double ll = 1e9;
    double lc = 1e9;
 
-   for(int i = 0; i < lookback; ++i)
+   // rates[0] is the forming/current D1 bar. Range inputs are strictly the
+   // preceding closed bars, rates[1..lookback].
+   for(int i = 1; i <= lookback; ++i)
    {
       if(rates[i].high > hh) hh = rates[i].high;
       if(rates[i].close > hc) hc = rates[i].close;
@@ -105,7 +123,9 @@ DualThrust_Levels CalculateDualThrust(const string sym, const int lookback, cons
    if(range <= 0.0)
       return res;
 
-   double ref_open = rates[0].open;
+   const double ref_open = rates[0].open;
+   if(ref_open <= 0.0)
+      return res;
 
    res.range = range;
    res.buy_trigger = ref_open + k1 * range;
@@ -114,14 +134,138 @@ DualThrust_Levels CalculateDualThrust(const string sym, const int lookback, cons
    return res;
 }
 
-bool IsRolloverBlackout()
+datetime Strategy_UTCNow()
+{
+   return QM_BrokerToUTC(TimeCurrent());
+}
+
+bool Strategy_IsSettlementWindow()
 {
    MqlDateTime dt;
-   TimeToStruct(TimeGMT(), dt);
-   int minute_of_day = dt.hour * 60 + dt.min;
-   if(minute_of_day >= 1435 || minute_of_day <= 5)
-      return true;
+   TimeToStruct(Strategy_UTCNow(), dt);
+   const int minute_of_day = dt.hour * 60 + dt.min;
+   return (minute_of_day >= 1435 || minute_of_day <= 5);
+}
+
+int Strategy_SecondsToSettlement()
+{
+   const datetime utc_now = Strategy_UTCNow();
+   MqlDateTime settlement;
+   TimeToStruct(utc_now, settlement);
+   settlement.hour = 23;
+   settlement.min = 55;
+   settlement.sec = 0;
+   datetime expiry_utc = StructToTime(settlement);
+   if(expiry_utc <= utc_now)
+      expiry_utc += 86400;
+   return (int)(expiry_utc - utc_now);
+}
+
+bool Strategy_IsPendingStopType(const ENUM_ORDER_TYPE order_type)
+{
+   return (order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP);
+}
+
+bool Strategy_HasOpenPosition()
+{
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return true;
+   }
    return false;
+}
+
+int Strategy_PendingStopCount()
+{
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return 0;
+
+   int count = 0;
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(Strategy_IsPendingStopType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+         ++count;
+   }
+   return count;
+}
+
+void Strategy_CancelPendingStops(const string reason)
+{
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(!Strategy_IsPendingStopType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+         continue;
+      QM_TM_RemovePendingOrder(ticket, reason);
+   }
+}
+
+double Strategy_DailyRealizedNet()
+{
+   const datetime utc_now = Strategy_UTCNow();
+   MqlDateTime utc_day;
+   TimeToStruct(utc_now, utc_day);
+   utc_day.hour = 0;
+   utc_day.min = 0;
+   utc_day.sec = 0;
+   const datetime broker_day_start = QM_UTCToBroker(StructToTime(utc_day));
+   if(!HistorySelect(broker_day_start, TimeCurrent()))
+      return 0.0;
+
+   double total = 0.0;
+   for(int i = HistoryDealsTotal() - 1; i >= 0; --i)
+   {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         continue;
+      const ENUM_DEAL_TYPE type = (ENUM_DEAL_TYPE)HistoryDealGetInteger(deal, DEAL_TYPE);
+      if(type != DEAL_TYPE_BUY && type != DEAL_TYPE_SELL)
+         continue;
+      total += HistoryDealGetDouble(deal, DEAL_PROFIT);
+      total += HistoryDealGetDouble(deal, DEAL_SWAP);
+      total += HistoryDealGetDouble(deal, DEAL_COMMISSION);
+      total += HistoryDealGetDouble(deal, DEAL_FEE);
+   }
+   return total;
+}
+
+bool Strategy_DailyRealizedLossLimitHit()
+{
+   const double net = Strategy_DailyRealizedNet();
+   if(net >= 0.0)
+      return false;
+   const double start_balance = AccountInfoDouble(ACCOUNT_BALANCE) - net;
+   if(start_balance <= 0.0)
+      return true;
+   return ((-net / start_balance) * 100.0 >= strategy_daily_loss_limit_pct);
 }
 
 // -----------------------------------------------------------------------------
@@ -130,124 +274,114 @@ bool IsRolloverBlackout()
 
 bool Strategy_NoTradeFilter()
 {
-   if(IsRolloverBlackout())
+   if(Strategy_IsSettlementWindow())
+      return true;
+   if(Strategy_DailyRealizedLossLimitHit())
+      return true;
+   if(Strategy_HasOpenPosition() || Strategy_PendingStopCount() > 0)
       return true;
 
-   const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, STRATEGY_SPREAD_ATR_PERIOD, 1);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(ask > 0.0 && bid > 0.0 && ask > bid)
    {
-      if(atr_1 > 0.0 && (ask - bid) > (strategy_spread_atr_mult * atr_1))
-         return true;
-      if(point > 0.0 && strategy_max_spread_points > 0 && (ask - bid) > (strategy_max_spread_points * point))
+      if(atr_1 > 0.0 && (ask - bid) > (STRATEGY_SPREAD_ATR_MULT * atr_1))
          return true;
    }
    return false;
 }
 
-bool Strategy_EntrySignal(QM_EntryRequest &req)
+void Strategy_InitEntryRequest(QM_EntryRequest &req)
 {
-   req.type               = QM_BUY;
+   req.type               = QM_BUY_STOP;
    req.price              = 0.0;
    req.sl                 = 0.0;
    req.tp                 = 0.0;
    req.reason             = "";
    req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
+}
 
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+{
+   Strategy_InitEntryRequest(req);
+   g_strategy_first_pending_ticket = 0;
+
+   if(Strategy_HasOpenPosition() || Strategy_PendingStopCount() > 0)
       return false;
 
    DualThrust_Levels dt = CalculateDualThrust(_Symbol, strategy_lookback_days, strategy_k1, strategy_k2);
    if(!dt.valid)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed D1 bar close reference
-   if(close1 <= 0.0)
-      return false;
-
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return false;
 
-   if(close1 > dt.buy_trigger)
-   {
-      req.type   = QM_BUY;
-      req.reason = "QM5_37002_DUALTHRUST_BUY";
-      req.sl     = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_sl_atr_mult);
-   }
-   else if(close1 < dt.sell_trigger)
-   {
-      req.type   = QM_SELL;
-      req.reason = "QM5_37002_DUALTHRUST_SELL";
-      req.sl     = QM_StopATR(_Symbol, QM_SELL, bid, strategy_atr_period, strategy_sl_atr_mult);
-   }
-   else
-   {
+   const double min_distance = MathMax(point, (double)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL) * point);
+   const double buy_price = QM_TM_NormalizePrice(_Symbol, dt.buy_trigger);
+   const double sell_price = QM_TM_NormalizePrice(_Symbol, dt.sell_trigger);
+   if(buy_price <= ask + min_distance || sell_price >= bid - min_distance)
       return false;
-   }
 
-   if(req.sl <= 0.0)
+   const double buy_sl = QM_TM_NormalizePrice(_Symbol, sell_price);
+   const double sell_sl = QM_TM_NormalizePrice(_Symbol, buy_price);
+   const double buy_risk = buy_price - buy_sl;
+   const double sell_risk = sell_sl - sell_price;
+   if(buy_risk <= min_distance || sell_risk <= min_distance)
       return false;
+
+   const int expiry_seconds = Strategy_SecondsToSettlement();
+   if(expiry_seconds <= 0)
+      return false;
+
+   QM_EntryRequest buy_req;
+   ZeroMemory(buy_req);
+   Strategy_InitEntryRequest(buy_req);
+   buy_req.type = QM_BUY_STOP;
+   buy_req.price = buy_price;
+   buy_req.sl = buy_sl;
+   buy_req.tp = QM_TM_NormalizePrice(_Symbol, buy_price + STRATEGY_TARGET_R_MULT * buy_risk);
+   buy_req.reason = "QM5_37002_DUALTHRUST_BUY_STOP";
+   buy_req.expiration_seconds = expiry_seconds;
+
+   req.type = QM_SELL_STOP;
+   req.price = sell_price;
+   req.sl = sell_sl;
+   req.tp = QM_TM_NormalizePrice(_Symbol, sell_price - STRATEGY_TARGET_R_MULT * sell_risk);
+   req.reason = "QM5_37002_DUALTHRUST_SELL_STOP";
+   req.expiration_seconds = expiry_seconds;
+
+   if(buy_req.tp <= buy_req.price || req.tp <= 0.0 || req.tp >= req.price)
+      return false;
+
+   if(!QM_TM_OpenPosition(buy_req, g_strategy_first_pending_ticket))
+   {
+      g_strategy_first_pending_ticket = 0;
+      return false;
+   }
 
    return true;
 }
 
 void Strategy_ManageOpenPosition()
 {
+   if(Strategy_IsSettlementWindow())
+   {
+      Strategy_CancelPendingStops("daily_settlement");
+      return;
+   }
+
+   if(Strategy_HasOpenPosition())
+      Strategy_CancelPendingStops("oco_peer_cancel");
 }
 
 bool Strategy_ExitSignal()
 {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   int open_dir = 0;
-   datetime open_time = 0;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-   {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      open_dir = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY) ? 1 : -1;
-      open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      break;
-   }
-
-   if(open_dir == 0)
-      return false;
-
-   DualThrust_Levels dt = CalculateDualThrust(_Symbol, strategy_lookback_days, strategy_k1, strategy_k2);
-   if(dt.valid)
-   {
-      const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed D1 bar close reference
-      if(close1 > 0.0)
-      {
-         if(open_dir > 0 && close1 < dt.sell_trigger)
-            return true;
-         if(open_dir < 0 && close1 > dt.buy_trigger)
-            return true;
-      }
-   }
-
-   if(open_time > 0 && strategy_max_hold_bars > 0)
-   {
-      int hold_seconds = (int)(TimeCurrent() - open_time);
-      int max_hold_seconds = strategy_max_hold_bars * PeriodSeconds(PERIOD_D1);
-      if(hold_seconds >= max_hold_seconds)
-         return true;
-   }
-
-   return false;
+   return (Strategy_HasOpenPosition() && Strategy_IsSettlementWindow());
 }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -261,6 +395,16 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
 {
+   if(strategy_lookback_days < 2 || strategy_lookback_days > 8 ||
+      strategy_k1 < 0.30 || strategy_k1 > 0.80 ||
+      strategy_k2 < 0.30 || strategy_k2 > 0.80 ||
+      strategy_daily_loss_limit_pct <= 0.0 || strategy_daily_loss_limit_pct > 2.0 ||
+      strategy_daily_drawdown_hard_stop_pct <= 0.0 || strategy_daily_drawdown_hard_stop_pct > 2.5 ||
+      strategy_daily_loss_limit_pct > strategy_daily_drawdown_hard_stop_pct ||
+      strategy_total_drawdown_stop_pct <= 0.0 || strategy_total_drawdown_stop_pct > 5.0 ||
+      strategy_max_slippage_ticks <= 0 || strategy_max_slippage_ticks > 3)
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -277,6 +421,21 @@ int OnInit()
                         qm_stress_reject_probability,
                         qm_news_temporal,
                         qm_news_compliance))
+      return INIT_FAILED;
+
+   QM_EntryConfigure(qm_ea_id,
+                     qm_news_mode_legacy,
+                     Strategy_DeviationPoints(),
+                     qm_stress_reject_probability,
+                     qm_news_temporal,
+                     qm_news_compliance,
+                     QM_FrameworkMagic());
+
+   if(!QM_KillSwitchInit(qm_ea_id,
+                         QM_FrameworkMagic(),
+                         strategy_daily_drawdown_hard_stop_pct,
+                         strategy_total_drawdown_stop_pct,
+                         1.0))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"ea\":\"QM5_37002_dual_thrust_breakout\"}");
@@ -296,15 +455,6 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
-      return;
-
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -320,6 +470,15 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
       }
    }
+
+   if(QM_FrameworkHandleFridayClose())
+      return;
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   if(Strategy_NoTradeFilter())
+      return;
 
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
@@ -339,7 +498,12 @@ void OnTick()
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if(!QM_TM_OpenPosition(req, out_ticket))
+      {
+         if(g_strategy_first_pending_ticket > 0)
+            QM_TM_RemovePendingOrder(g_strategy_first_pending_ticket, "paired_submit_rollback");
+      }
+      g_strategy_first_pending_ticket = 0;
    }
 }
 

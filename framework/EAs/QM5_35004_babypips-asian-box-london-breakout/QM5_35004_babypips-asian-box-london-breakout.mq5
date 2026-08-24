@@ -74,23 +74,74 @@ bool StrategyInRolloverWindow(const datetime utc_time)
    return (hhmm >= 2355 || hhmm < 5);
 }
 
-bool StrategyDailyEntryHalt()
+bool StrategyDailyRealizedNet(double &out_realized_net)
 {
-   if(g_qm_ks_day_start_equity <= 0.0)
+   out_realized_net = 0.0;
+   const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
+   MqlDateTime utc_day;
+   TimeToStruct(utc_now, utc_day);
+   utc_day.hour = 0;
+   utc_day.min = 0;
+   utc_day.sec = 0;
+
+   const datetime broker_day_start = QM_UTCToBroker(StructToTime(utc_day));
+   if(!HistorySelect(broker_day_start, TimeCurrent()))
       return false;
 
-   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
-   if(equity_now <= 0.0)
-      return true;
+   const int deal_count = HistoryDealsTotal();
+   for(int i = 0; i < deal_count; ++i)
+   {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         continue;
 
-   const double pnl_pct = ((equity_now - g_qm_ks_day_start_equity) / g_qm_ks_day_start_equity) * 100.0;
-   return (pnl_pct <= -strategy_daily_loss_halt_pct);
+      const ENUM_DEAL_TYPE deal_type = (ENUM_DEAL_TYPE)HistoryDealGetInteger(deal, DEAL_TYPE);
+      if(deal_type != DEAL_TYPE_BUY && deal_type != DEAL_TYPE_SELL)
+         continue;
+
+      out_realized_net += HistoryDealGetDouble(deal, DEAL_PROFIT);
+      out_realized_net += HistoryDealGetDouble(deal, DEAL_SWAP);
+      out_realized_net += HistoryDealGetDouble(deal, DEAL_COMMISSION);
+      out_realized_net += HistoryDealGetDouble(deal, DEAL_FEE);
+   }
+   return true;
 }
 
-bool CalculateAsianBox(double &out_high, double &out_low, double &out_range)
+bool StrategyDailyEntryHalt()
 {
-   const datetime t_1 = iTime(_Symbol, PERIOD_M15, 1);
-   if(t_1 <= 0) return false;
+   double realized_net = 0.0;
+   if(!StrategyDailyRealizedNet(realized_net))
+      return true;
+   if(realized_net >= 0.0)
+      return false;
+
+   // Reconstruct the UTC-day starting balance from realized account P&L.
+   // Floating P&L stays exclusively in the separate 2.5% equity kill switch.
+   const double day_start_balance = AccountInfoDouble(ACCOUNT_BALANCE) - realized_net;
+   if(day_start_balance <= 0.0)
+      return true;
+
+   const double realized_loss_pct = (-realized_net / day_start_balance) * 100.0;
+   return (realized_loss_pct >= strategy_daily_loss_halt_pct);
+}
+
+bool CalculateAsianBox(double &out_high,
+                       double &out_low,
+                       double &out_range,
+                       double &out_close_1,
+                       datetime &out_time_1)
+{
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   // perf-allowed: one bounded 96-bar snapshot, called only behind the M15
+   // framework new-bar gate, supplies both the Asian box and Close[1].
+   const int copied = CopyRates(_Symbol, PERIOD_M15, 1, 96, rates);
+   if(copied <= 0 || ArraySize(rates) < copied)
+      return false;
+
+   const datetime t_1 = rates[0].time;
+   if(t_1 <= 0 || rates[0].close <= 0.0)
+      return false;
 
    const datetime utc_1 = QM_BrokerToUTC(t_1);
    const int date_key_1 = StrategyDateKey(utc_1);
@@ -99,10 +150,10 @@ bool CalculateAsianBox(double &out_high, double &out_low, double &out_range)
    double box_low  = DBL_MAX;
    int bar_count = 0;
 
-   // Search backwards up to 96 M15 bars to find today's 00:00 to 06:00 GMT session
-   for(int i = 1; i <= 96; ++i)
+   // Search the bounded snapshot for today's 00:00 to 06:00 GMT session.
+   for(int i = 0; i < copied; ++i)
    {
-      const datetime bar_time = iTime(_Symbol, PERIOD_M15, i);
+      const datetime bar_time = rates[i].time;
       if(bar_time <= 0) break;
 
       const datetime utc_bar = QM_BrokerToUTC(bar_time);
@@ -119,8 +170,8 @@ bool CalculateAsianBox(double &out_high, double &out_low, double &out_range)
       const int hhmm = StrategyHhmm(utc_bar);
       if(hhmm >= strategy_box_start_hhmm && hhmm < strategy_box_end_hhmm)
       {
-         const double h = iHigh(_Symbol, PERIOD_M15, i);
-         const double l = iLow(_Symbol, PERIOD_M15, i);
+         const double h = rates[i].high;
+         const double l = rates[i].low;
          if(h <= 0.0 || l <= 0.0) return false;
 
          if(h > box_high) box_high = h;
@@ -136,6 +187,8 @@ bool CalculateAsianBox(double &out_high, double &out_low, double &out_range)
    out_high = box_high;
    out_low  = box_low;
    out_range = box_high - box_low;
+   out_close_1 = rates[0].close;
+   out_time_1 = rates[0].time;
    return true;
 }
 
@@ -194,16 +247,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   const datetime t_1 = iTime(_Symbol, PERIOD_M15, 1);
-   if(t_1 <= 0) return false;
-
-   const datetime utc_1 = QM_BrokerToUTC(t_1);
-   const int hhmm_1 = StrategyHhmm(utc_1);
-   if(hhmm_1 < strategy_trade_start_hhmm || hhmm_1 > strategy_trade_end_hhmm)
+   double box_high = 0.0, box_low = 0.0, box_range = 0.0, close_1 = 0.0;
+   datetime time_1 = 0;
+   if(!CalculateAsianBox(box_high, box_low, box_range, close_1, time_1))
       return false;
 
-   double box_high = 0.0, box_low = 0.0, box_range = 0.0;
-   if(!CalculateAsianBox(box_high, box_low, box_range))
+   const datetime utc_1 = QM_BrokerToUTC(time_1);
+   const int hhmm_1 = StrategyHhmm(utc_1);
+   if(hhmm_1 < strategy_trade_start_hhmm || hhmm_1 > strategy_trade_end_hhmm)
       return false;
 
    const double pip_size = QM_StopRulesPipsToPriceDistance(_Symbol, 1.0);
@@ -213,7 +264,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(box_range > strategy_max_box_pips * pip_size)
       return false;
 
-   const double close_1 = iClose(_Symbol, PERIOD_M15, 1);
    const double buffer = strategy_breakout_buffer_pips * pip_size;
 
    // 1. Long Breakout
@@ -259,73 +309,37 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
 {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0) return;
-   const double pip_size = QM_StopRulesPipsToPriceDistance(_Symbol, 1.0);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(pip_size <= 0.0 || point <= 0.0) return;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-   {
-      ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket)) continue;
-      if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-
-      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      const double current_sl = PositionGetDouble(POSITION_SL);
-      const double current_tp = PositionGetDouble(POSITION_TP);
-
-      if(pos_type == POSITION_TYPE_BUY)
-      {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(bid <= 0.0 || open_price <= 0.0) continue;
-
-         double r_dist = 0.0;
-         if(current_tp > open_price)
-            r_dist = (current_tp - open_price) / strategy_tp_range_mult;
-         else if(current_sl > 0.0 && current_sl < open_price)
-            r_dist = open_price - current_sl;
-         else
-            r_dist = 20.0 * pip_size;
-
-         if((bid - open_price) >= r_dist)
-         {
-            const double target_sl = QM_TM_NormalizePrice(_Symbol, open_price + 1.0 * pip_size);
-            if(target_sl > current_sl + point * 0.5)
-               QM_TM_MoveSL(ticket, target_sl, "asian_box_be_plus_1");
-         }
-      }
-      else if(pos_type == POSITION_TYPE_SELL)
-      {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(ask <= 0.0 || open_price <= 0.0) continue;
-
-         double r_dist = 0.0;
-         if(current_tp > 0.0 && current_tp < open_price)
-            r_dist = (open_price - current_tp) / strategy_tp_range_mult;
-         else if(current_sl > open_price)
-            r_dist = current_sl - open_price;
-         else
-            r_dist = 20.0 * pip_size;
-
-         if((open_price - ask) >= r_dist)
-         {
-            const double target_sl = QM_TM_NormalizePrice(_Symbol, open_price - 1.0 * pip_size);
-            if(current_sl <= 0.0 || target_sl < current_sl - point * 0.5)
-               QM_TM_MoveSL(ticket, target_sl, "asian_box_be_plus_1");
-         }
-      }
-   }
+   // The approved card supplies no numeric BE trigger or trailing rule.
+   // Broker-side midpoint SL and 2x-box TP require no per-tick adjustment.
 }
 
 bool Strategy_ExitSignal()
 {
-   const datetime broker_now = TimeCurrent();
-   const datetime utc_now = QM_BrokerToUTC(broker_now);
-   const int hhmm_utc = StrategyHhmm(utc_now);
-   if(hhmm_utc >= strategy_force_close_hhmm && hhmm_utc < 2355)
-      return true;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime broker_open = (datetime)PositionGetInteger(POSITION_TIME);
+      MqlDateTime utc_deadline;
+      TimeToStruct(QM_BrokerToUTC(broker_open), utc_deadline);
+      utc_deadline.hour = strategy_force_close_hhmm / 100;
+      utc_deadline.min = strategy_force_close_hhmm % 100;
+      utc_deadline.sec = 0;
+
+      // The deadline is anchored to the entry's UTC day, so a quote gap or
+      // failed close cannot reset the mandatory exit at midnight.
+      if(utc_now >= StructToTime(utc_deadline))
+         return true;
+   }
    return false;
 }
 
