@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Loopback-only document intake for Mission Control OWNER decisions."""
+"""Loopback-only OWNER decision intake with governed router handoff."""
 from __future__ import annotations
 
 import argparse
@@ -13,13 +13,14 @@ import sys
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from urllib.parse import unquote, urlsplit
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tools.strategy_farm import owner_decision_store as store  # noqa: E402
+from tools.strategy_farm import owner_decision_execution as execution  # noqa: E402
 
 
 DEFAULT_HOST = "127.0.0.1"
@@ -67,9 +68,12 @@ def make_handler(
     feed_path: Path = store.DEFAULT_FEED,
     receipts_path: Path = store.DEFAULT_RECEIPTS,
     vault_owner_path: Path = store.DEFAULT_VAULT_OWNER,
+    handoff_fn: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
 ) -> type[BaseHTTPRequestHandler]:
+    service_mode = "ROUTER_HANDOFF" if handoff_fn is not None else "DOCUMENT_ONLY"
+
     class Handler(BaseHTTPRequestHandler):
-        server_version = "QMOwnerDecisionIntake/1"
+        server_version = "QMOwnerDecisionIntake/2"
 
         def log_message(self, fmt: str, *args: Any) -> None:
             # Under pythonw stderr is absent. The durable receipt is the audit
@@ -123,7 +127,7 @@ def make_handler(
                     HTTPStatus.OK,
                     {
                         "ok": True,
-                        "mode": "DOCUMENT_ONLY",
+                        "mode": service_mode,
                         "schema": feed["schema_version"],
                         "revision": feed["revision"],
                         "open_count": len(store.open_items(feed)),
@@ -190,16 +194,39 @@ def make_handler(
                     {"ok": False, "error": "decision_store_failure"},
                 )
                 return
+            if receipt.get("execution_handoff_authorized") is True and handoff_fn is not None:
+                try:
+                    handoff = handoff_fn(receipt)
+                except Exception:
+                    # The OWNER answer is already durable. The canonical 5-minute
+                    # reconciler will retry this exact deterministic task identity.
+                    handoff = {
+                        "state": "RETRY_PENDING",
+                        "created": False,
+                        "task_id": receipt.get("execution_task_id"),
+                    }
+            elif receipt.get("decision") == "DEFERRED":
+                handoff = {"state": "DEFERRED_NO_HANDOFF", "created": False, "task_id": None}
+            else:
+                handoff = {
+                    "state": "HANDOFF_DISABLED",
+                    "created": False,
+                    "task_id": receipt.get("execution_task_id"),
+                }
             self._json(
                 HTTPStatus.CREATED,
                 {
                     "ok": True,
-                    "mode": "DOCUMENT_ONLY",
+                    "mode": service_mode,
                     "decision_id": receipt["decision_id"],
                     "decision": receipt["decision"],
                     "receipt_id": receipt["receipt_id"],
                     "receipt_sha256": receipt["receipt_sha256"],
-                    "execution_authorized": False,
+                    "execution_authorized": receipt["execution_authorized"],
+                    "execution_boundary": receipt["execution_boundary"],
+                    "execution_task_id": receipt.get("execution_task_id"),
+                    "handoff_state": handoff["state"],
+                    "handoff_created": bool(handoff.get("created")),
                 },
             )
 
@@ -214,6 +241,7 @@ def build_server(
     feed_path: Path = store.DEFAULT_FEED,
     receipts_path: Path = store.DEFAULT_RECEIPTS,
     vault_owner_path: Path = store.DEFAULT_VAULT_OWNER,
+    handoff_fn: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
 ) -> ThreadingHTTPServer:
     if host not in {"127.0.0.1", "::1", "localhost"}:
         raise store.DecisionStoreError("decision service may bind only to loopback")
@@ -222,6 +250,7 @@ def build_server(
         feed_path=feed_path,
         receipts_path=receipts_path,
         vault_owner_path=vault_owner_path,
+        handoff_fn=handoff_fn,
     )
     server = ThreadingHTTPServer((host, port), handler)
     server.daemon_threads = True
@@ -239,6 +268,25 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--vault-owner", type=Path, default=store.DEFAULT_VAULT_OWNER)
     args = parser.parse_args(argv)
     token = ensure_token(args.token_file)
+    startup_reconcile: dict[str, Any]
+    try:
+        startup_reconcile = execution.reconcile_receipts(
+            root=execution.DEFAULT_ROOT,
+            feed_path=args.feed,
+            receipts_path=args.receipts,
+            apply=True,
+        )
+    except Exception as exc:
+        startup_reconcile = {"ok": False, "error": type(exc).__name__}
+
+    def _handoff(receipt: dict[str, Any]) -> dict[str, Any]:
+        return execution.handoff_receipt(
+            receipt,
+            root=execution.DEFAULT_ROOT,
+            feed_path=args.feed,
+            apply=True,
+        )
+
     server = build_server(
         host=args.host,
         port=args.port,
@@ -246,14 +294,16 @@ def main(argv: list[str] | None = None) -> int:
         feed_path=args.feed,
         receipts_path=args.receipts,
         vault_owner_path=args.vault_owner,
+        handoff_fn=_handoff,
     )
     state = {
         "schema": "qm.owner-decision-service-state/v1",
         "pid": os.getpid(),
         "started_at_utc": store.utc_now(),
         "endpoint": f"http://{args.host}:{server.server_port}",
-        "mode": "DOCUMENT_ONLY",
+        "mode": "ROUTER_HANDOFF",
         "token_sha256": hashlib.sha256(token.encode("ascii")).hexdigest(),
+        "startup_reconcile": startup_reconcile,
     }
     _atomic_write(args.state_file, json.dumps(state, indent=2, sort_keys=True).encode("utf-8") + b"\n")
     try:

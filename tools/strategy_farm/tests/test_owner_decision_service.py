@@ -62,19 +62,30 @@ def _request(
     return response.status, data
 
 
-def test_loopback_service_records_only_a_document_receipt(tmp_path: Path) -> None:
+def test_loopback_service_records_receipt_and_one_router_handoff(tmp_path: Path) -> None:
     feed = tmp_path / "owner_decisions.json"
     receipts = tmp_path / "receipts.jsonl"
     vault = tmp_path / "OWNER.md"
     _feed(feed)
     vault.write_text(store.render_vault_queue(store.load_feed(feed)), encoding="utf-8")
     token = "a" * 64
+    handed_off = []
+
+    def _handoff(receipt: dict) -> dict:
+        handed_off.append(receipt)
+        return {
+            "state": "QUEUED",
+            "created": True,
+            "task_id": receipt["execution_task_id"],
+        }
+
     server = service.build_server(
         port=0,
         token=token,
         feed_path=feed,
         receipts_path=receipts,
         vault_owner_path=vault,
+        handoff_fn=_handoff,
     )
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -83,7 +94,7 @@ def test_loopback_service_records_only_a_document_receipt(tmp_path: Path) -> Non
         status, health = _request(port, "GET", "/health")
         assert status == 200
         assert health == {
-            "mode": "DOCUMENT_ONLY",
+            "mode": "ROUTER_HANDOFF",
             "ok": True,
             "open_count": 1,
             "revision": 1,
@@ -113,10 +124,14 @@ def test_loopback_service_records_only_a_document_receipt(tmp_path: Path) -> Non
         )
         assert status == 201
         assert accepted["ok"] is True
-        assert accepted["execution_authorized"] is False
-        assert accepted["mode"] == "DOCUMENT_ONLY"
+        assert accepted["execution_authorized"] is True
+        assert accepted["mode"] == "ROUTER_HANDOFF"
+        assert accepted["handoff_state"] == "QUEUED"
+        assert accepted["handoff_created"] is True
+        assert accepted["execution_task_id"] == handed_off[0]["execution_task_id"]
         receipt = json.loads(receipts.read_text(encoding="utf-8").strip())
-        assert receipt["execution_authorized"] is False
+        assert receipt["execution_authorized"] is True
+        assert len(handed_off) == 1
         assert store.load_feed(feed)["items"][0]["status"] == "DECIDED"
 
         status, rejected_origin = _request(

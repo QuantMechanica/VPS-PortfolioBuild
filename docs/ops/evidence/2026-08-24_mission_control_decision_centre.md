@@ -1,5 +1,11 @@
 # Mission Control Decision Centre + kompakte Frontier — 2026-08-24
 
+> **Nachtrag 2026-08-24:** Der hier belegte `DOCUMENT_ONLY`-Vertrag beschreibt
+> den ersten Rollout und bleibt als historische Evidenz unverändert. Die spätere
+> OWNER-Anweisung ersetzt ihn durch den entscheidungsgebundenen Claude-Handoff;
+> siehe `docs/ops/evidence/2026-08-24_mission_control_owner_execution_handoff.md`.
+> Factory-/Deploy-/T_Live-/AutoTrading-Autorität bleibt weiterhin ausgeschlossen.
+
 **Autorität:** `OWNER-DEC-MISSION-CONTROL-DECISION-CENTRE-20260824` in
 `decisions/2026-08-24_owner_q12_provenance_and_mission_control.md`  
 **Betriebsgrenze:** Dokumentation ja; Factory-/Deploy-/T_Live-/AutoTrading-

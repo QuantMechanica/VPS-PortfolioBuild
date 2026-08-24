@@ -167,7 +167,7 @@ def test_bootstrap_is_hash_guarded_preserves_backups_and_removes_five_cap(
     assert "## Programme" in index_text
 
 
-def test_record_decision_is_receipted_idempotent_and_document_only(tmp_path: Path) -> None:
+def test_record_decision_is_receipted_idempotent_and_router_scoped(tmp_path: Path) -> None:
     feed = tmp_path / "state" / "owner_decisions.json"
     receipts = tmp_path / "state" / "receipts.jsonl"
     vault = tmp_path / "vault" / "12 ToDo" / "AI ToDos" / "OWNER.md"
@@ -189,8 +189,13 @@ def test_record_decision_is_receipted_idempotent_and_document_only(tmp_path: Pat
         vault_owner_path=vault,
         decided_at_utc="2026-08-24T08:00:00+00:00",
     )
-    assert receipt["execution_authorized"] is False
-    assert receipt["execution_boundary"] == "DOCUMENT_ONLY"
+    assert receipt["execution_authorized"] is True
+    assert receipt["execution_handoff_authorized"] is True
+    assert receipt["execution_boundary"] == "DECISION_SCOPED_ROUTER_TASK"
+    assert receipt["execution_task_id"] == store.execution_task_id(receipt["receipt_id"])
+    assert receipt["selected_effect"] == "Freigabe dokumentiert."
+    assert receipt["decision_card_sha256"]
+    assert receipt["live_execution_authorized"] is False
     decided = next(item for item in store.load_feed(feed)["items"] if item["id"].endswith("ONE"))
     assert decided["status"] == "DECIDED"
     assert "OWNER-DEC-TEST-ONE" not in vault.read_text(encoding="utf-8").split(
@@ -223,6 +228,9 @@ def test_record_decision_is_receipted_idempotent_and_document_only(tmp_path: Pat
         decided_at_utc="2026-08-24T08:01:00+00:00",
     )
     assert deferred["decision"] == "DEFERRED"
+    assert deferred["execution_authorized"] is False
+    assert deferred["execution_task_id"] is None
+    assert deferred["execution_boundary"] == "DEFERRED_NO_HANDOFF"
     still_open = next(item for item in store.load_feed(feed)["items"] if item["id"].endswith("TWO"))
     assert still_open["status"] == "DEFERRED"
     assert "OWNER-DEC-TEST-TWO" in vault.read_text(encoding="utf-8")

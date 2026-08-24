@@ -55,6 +55,7 @@ try:  # package import (tests, module consumers)
     from tools.strategy_farm import risk_freeze
     from tools.strategy_farm import operator_surfaces
     from tools.strategy_farm import owner_decision_store
+    from tools.strategy_farm import owner_decision_execution
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/mission_control_v2_data.py``
     from work_item_clean_view import install_clean_view
     from phase_ids import phase_label, normalize_phase_id, PHASE_NAME
@@ -64,6 +65,7 @@ except ModuleNotFoundError:  # direct ``python tools/strategy_farm/mission_contr
     import risk_freeze
     import operator_surfaces
     import owner_decision_store
+    import owner_decision_execution
 
 
 SCHEMA_VERSION = "qm.mission_control.v2"
@@ -671,6 +673,7 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
     now = now or _now_utc()
     items: list[dict] = []
     curated_v2 = False
+    feed_data: dict[str, Any] | None = None
 
     # Q12 review-ready count (portfolio admission is an OWNER gate).
     try:
@@ -690,6 +693,7 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
         if data.get("schema_version") == owner_decision_store.FEED_SCHEMA:
             curated_v2 = True
             owner_decision_store.validate_feed(data)
+            feed_data = data
             source_items = owner_decision_store.open_items(data)
             for item in source_items:
                 sev = str(item.get("severity") or "info").lower()
@@ -710,6 +714,7 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
                     "due": str(item.get("due") or "") or None,
                     "severity": sev,
                     "alert": sev in ("alert", "action"),
+                    "execution_plan": owner_decision_execution.plan_summary(str(item["id"])),
                 })
         else:
             # Compatibility while the v1 feed is being bootstrapped. Legacy
@@ -821,6 +826,17 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
             break
 
     alert_count = sum(1 for i in items if i.get("alert"))
+    execution_degraded = None
+    executions: list[dict[str, Any]] = []
+    if feed_data is not None:
+        try:
+            executions = owner_decision_execution.project_feed_executions(con, feed_data)
+        except (sqlite3.Error, owner_decision_execution.ExecutionContractError) as exc:
+            execution_degraded = f"execution projection unavailable: {exc}"
+    execution_counts: dict[str, int] = {}
+    for row in executions:
+        key = str(row.get("status") or "UNKNOWN")
+        execution_counts[key] = execution_counts.get(key, 0) + 1
     intake_token = None
     intake_degraded = None
     try:
@@ -845,19 +861,22 @@ def build_owner_decisions(con: sqlite3.Connection, *, now: dt.datetime | None = 
         "alert_count": alert_count,
         "q12_review_ready": q12_count,
         "items": items,
+        "executions": executions,
+        "execution_counts": execution_counts,
+        "execution_open_count": sum(1 for row in executions if not row.get("complete")),
         "intake": {
             "enabled": intake_token is not None,
             "endpoint": OWNER_DECISION_INTAKE_ENDPOINT,
             "token": intake_token,
-            "mode": "DOCUMENT_ONLY",
-            "degraded_reason": intake_degraded,
+            "mode": "ROUTER_HANDOFF",
+            "degraded_reason": intake_degraded or execution_degraded,
         },
         "notes": (
-            "OWNER answers create receipts and Vault documentation only; they never "
-            "execute Factory, deploy, T_Live, or AutoTrading actions. Agent work queues "
-            "(Claude reviews, ops-blocked builds, router SLAs) "
-            "are agent status, never OWNER decisions, and are excluded by "
-            "construction."
+            "Terminal OWNER answers create an immutable receipt and exactly one "
+            "decision-scoped Claude router task. VERTAGT creates none. The task may "
+            "implement only the selected card effect; Factory pause, deploy, T_Live "
+            "and AutoTrading authority are never inferred. Other agent work queues "
+            "remain excluded by construction."
         ),
     }
 
@@ -1003,6 +1022,7 @@ def build_control_strip(con: sqlite3.Connection, queue: dict, terminals: dict,
         "terminals": terminals["counts"],
         "owner_decisions_open": owner["count"],
         "owner_decisions_alert": owner["alert_count"],
+        "owner_executions_open": owner.get("execution_open_count", 0),
     }
 
 
@@ -1191,6 +1211,7 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                 "clear_eta_hours_p50": {"type": ["number", "null"]},
                 "clear_eta_hours_p90": {"type": ["number", "null"]},
                 "owner_decisions_open": {"type": "integer"},
+                "owner_executions_open": {"type": "integer"},
                 "data_freshness": {
                     "type": "object",
                     "required": ["any_stale", "critical_readmodels"],
@@ -1351,9 +1372,35 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                             "due": {"type": ["string", "null"]},
                             "severity": {"type": "string"},
                             "alert": {"type": "boolean"},
+                            "execution_plan": {"type": "object"},
                         },
                     },
                 },
+                "executions": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "decision_id", "decision", "receipt_id", "task_id",
+                            "status", "complete",
+                        ],
+                        "properties": {
+                            "decision_id": {"type": "string"},
+                            "decision": {"enum": ["YES", "NO"]},
+                            "receipt_id": {"type": "string"},
+                            "task_id": {"type": "string"},
+                            "status": {"type": "string"},
+                            "task_state": {"type": ["string", "null"]},
+                            "assigned_agent": {"type": ["string", "null"]},
+                            "artifact_path": {"type": ["string", "null"]},
+                            "verdict": {"type": ["string", "null"]},
+                            "updated_at": {"type": ["string", "null"]},
+                            "complete": {"type": "boolean"},
+                        },
+                    },
+                },
+                "execution_counts": {"type": "object"},
+                "execution_open_count": {"type": "integer"},
                 "intake": {
                     "type": "object",
                     "required": ["enabled", "endpoint", "token", "mode"],
@@ -1361,7 +1408,7 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                         "enabled": {"type": "boolean"},
                         "endpoint": {"type": "string"},
                         "token": {"type": ["string", "null"]},
-                        "mode": {"const": "DOCUMENT_ONLY"},
+                        "mode": {"enum": ["DOCUMENT_ONLY", "ROUTER_HANDOFF"]},
                         "degraded_reason": {"type": ["string", "null"]},
                     },
                 },

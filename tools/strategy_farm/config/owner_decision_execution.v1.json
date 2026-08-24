@@ -1,0 +1,231 @@
+{
+  "schema": "qm.owner-decision-execution-contract/v1",
+  "agent": "claude",
+  "task_type": "ops_issue",
+  "required_capabilities": [
+    "code",
+    "ops",
+    "summary"
+  ],
+  "required_skills": [
+    "owner_decision_execution"
+  ],
+  "budget_class": "premium",
+  "default_priority": 90,
+  "global_forbidden_actions": [
+    "Factory_OFF, Factory_ON, worker or terminal interruption",
+    "T_Live file, process, chart, preset or account mutation",
+    "AutoTrading changes, order placement or live deployment",
+    "gate-threshold, gate-criterion or candidate-universe changes",
+    "deletion or overwrite of verdicts, trade streams or immutable evidence",
+    "book construction, live-book mutation or inferred authority beyond the selected decision effect"
+  ],
+  "decisions": [
+    {
+      "id": "OWNER-DEC-A1-COUNT-UNIT",
+      "todo_id": "QM-TODO-20260824-520",
+      "priority": 88,
+      "choices": {
+        "YES": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Ratify terminal (EA, symbol) pairs as the primary >=25 trigger while keeping distinct EAs and strategy families as diversity controls.",
+          "allowed_actions": [
+            "Update governance documentation and operator wording if it still presents A1 as unresolved",
+            "Verify that runtime and Mission Control already implement the selected counting basis"
+          ],
+          "acceptance": [
+            "No gate or runtime logic changes unless a measured implementation drift is found",
+            "The result names the primary count and both diversity controls without conflating them",
+            "A durable evidence artifact records every checked surface"
+          ]
+        },
+        "NO": {
+          "mode": "PREPARE_FOLLOWUP_ONLY",
+          "objective": "Keep A1 unresolved and prepare a bounded follow-up decision comparing alternative count units; do not alter the active trigger.",
+          "allowed_actions": [
+            "Measure the consequences of alternative count units",
+            "Prepare a new OWNER decision with migration, rollback and comparison evidence"
+          ],
+          "acceptance": [
+            "The active count remains unchanged",
+            "The follow-up names exact alternatives and their current measured counts",
+            "No manifest or gate mutation occurs"
+          ]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-A2-OPT-MANDATORY",
+      "todo_id": "QM-TODO-20260824-521",
+      "priority": 88,
+      "choices": {
+        "YES": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Ratify mandatory Q12-Q14 traversal, including KEEP_INCUMBENT as a valid terminal optimization result.",
+          "allowed_actions": [
+            "Update governance documentation and operator wording if A2 is still shown as unresolved",
+            "Verify the active linear optimization contract and KEEP_INCUMBENT representation"
+          ],
+          "acceptance": [
+            "No strategy mechanics or gate thresholds change",
+            "KEEP_INCUMBENT remains visible and is not counted as an optimized winner",
+            "A durable evidence artifact records the verified contract"
+          ]
+        },
+        "NO": {
+          "mode": "PREPARE_FOLLOWUP_ONLY",
+          "objective": "Keep the active optimization obligation unchanged and prepare a separate manifest-change decision with comparison and rollback evidence.",
+          "allowed_actions": [
+            "Analyze opt-out alternatives without applying them",
+            "Prepare a new OWNER decision and deterministic comparison test"
+          ],
+          "acceptance": [
+            "The active Q12-Q14 path remains unchanged",
+            "No manifest, runner or gate mutation occurs",
+            "The follow-up exposes selection-bias implications"
+          ]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-BACKFILL-TRANCHE-1",
+      "todo_id": "QM-TODO-20260824-522",
+      "priority": 94,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Regenerate and execute the first active-v4 append-only frontier backfill tranche, bounded to at most 200 new rows and at most 3 rows per symbol.",
+          "allowed_actions": [
+            "Regenerate a fresh dry-run plan from the canonical checkout against the active v4 manifest",
+            "Append at most 200 bound work items with a symbol cap of 3",
+            "Verify new IDs, parent bindings, payload provenance and queue impact"
+          ],
+          "acceptance": [
+            "Do not reuse the stale v3 plan merely because its filename says 2026-08-23",
+            "Dry-run plan and hash are recorded before apply",
+            "created_rows <= 200 and every symbol_count <= 3",
+            "All new payload phase/version/manifest bindings match their database envelope",
+            "No existing work item or verdict is edited, deleted or relabelled",
+            "Factory remains running; no worker or terminal is interrupted"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Do not create the first backfill tranche and verify that no work item was derived from this receipt.",
+          "allowed_actions": [
+            "Record the rejection and current append-only backfill count",
+            "Leave the existing Factory queue unchanged"
+          ],
+          "acceptance": [
+            "Zero new work items reference this decision receipt",
+            "No existing queue row changes",
+            "The rejection is reflected in the evidence trail"
+          ]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-RISK-FREEZE-BASELINE-REFRESH",
+      "todo_id": "QM-TODO-20260824-523",
+      "priority": 95,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Refresh only the held Risk-Freeze measurement baseline onto the currently verified deployed preset and binary hashes; keep the freeze held.",
+          "allowed_actions": [
+            "Read and verify T_Live preset and binary hashes without modifying T_Live",
+            "Re-arm the local Risk-Freeze state baseline only after provenance and roster checks pass",
+            "Run post-refresh freeze verification"
+          ],
+          "acceptance": [
+            "T_Live files, charts, processes, presets and AutoTrading are untouched",
+            "The 10 repaired preset-provenance bindings and complete current roster are verified first",
+            "The freeze remains ACTIVE and held after the baseline refresh",
+            "Any roster, risk or provenance ambiguity aborts without writing the baseline",
+            "Before/after state hashes and post-refresh verification are recorded"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Keep the existing Risk-Freeze baseline unchanged and document the resulting known drift.",
+          "allowed_actions": [
+            "Run read-only freeze verification",
+            "Record the rejection and remaining lift-chain ambiguity"
+          ],
+          "acceptance": [
+            "The baseline state hash is unchanged",
+            "T_Live and AutoTrading remain untouched",
+            "The current drift is reported without being normalized away"
+          ]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-Q12-ADMISSION",
+      "todo_id": "QM-TODO-20260824-524",
+      "priority": 92,
+      "choices": {
+        "YES": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Freeze the exact currently review-ready cohort into an immutable admission record and authorize only its evidence-backed book evaluation, not book construction or deployment.",
+          "allowed_actions": [
+            "Snapshot exact candidate IDs, symbols, gate provenance, correlations, exclusions and source hashes",
+            "Write a cohort-bound admission record if every member is unambiguous",
+            "Commission a separate shadow book-evaluation task"
+          ],
+          "acceptance": [
+            "A count without exact candidate identities is refused",
+            "Cohort drift or missing provenance aborts admission",
+            "No book manifest, weights, deploy artifact or live state is created",
+            "Any later book construction remains a separate OWNER decision"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Keep the current review-ready cohort without OWNER admission and record exact identities affected by the rejection.",
+          "allowed_actions": [
+            "Snapshot the current cohort for the decision record",
+            "Leave individual candidates eligible for a future evidence-backed proposal"
+          ],
+          "acceptance": [
+            "No candidate is admitted or removed",
+            "No book evaluation or construction is commissioned from this receipt",
+            "The evidence artifact lists the frozen affected cohort"
+          ]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-MQL5CAND",
+      "todo_id": "QM-TODO-20260824-525",
+      "priority": 84,
+      "choices": {
+        "YES": {
+          "mode": "PREPARE_FOLLOWUP_ONLY",
+          "objective": "Prepare an evidence-ranked MQL5 candidate shortlist and a candidate-specific OWNER choice; do not infer which EA was selected from a bare YES.",
+          "allowed_actions": [
+            "Rank eligible terminal Q14 candidates with multi-symbol evidence",
+            "Prepare candidate-specific productization options and a follow-up OWNER decision"
+          ],
+          "acceptance": [
+            "No EA is silently selected without a candidate identity in an OWNER decision",
+            "No marketplace submission, packaging or publication occurs",
+            "The shortlist distinguishes evidence readiness from commercial attractiveness"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Keep the Marketplace programme in blueprint state until a later explicit candidate decision.",
+          "allowed_actions": [
+            "Record the rejection and retain existing blueprint artifacts"
+          ],
+          "acceptance": [
+            "No candidate is selected or productized",
+            "No marketplace or public artifact changes",
+            "The next event trigger remains visible"
+          ]
+        }
+      }
+    }
+  ]
+}

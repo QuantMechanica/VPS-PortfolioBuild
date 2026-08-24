@@ -254,7 +254,7 @@ def test_owner_decisions_excludes_superseded(fixture_db, monkeypatch, tmp_path):
     assert any(i["category"] == "ADMISSION" for i in o["items"])
 
 
-def test_owner_decisions_v2_exposes_prepared_open_items_and_document_only_intake(
+def test_owner_decisions_v2_exposes_prepared_open_items_and_router_handoff(
     fixture_db, monkeypatch, tmp_path
 ):
     feed = tmp_path / "owner_decisions.json"
@@ -300,11 +300,14 @@ def test_owner_decisions_v2_exposes_prepared_open_items_and_document_only_intake
     assert [row["id"] for row in curated] == ["OWNER-DEC-OPEN-TEST"]
     assert curated[0]["recommendation"] == "JA."
     assert curated[0]["yes_effect"] == "Dokumentiert."
+    assert curated[0]["execution_plan"]["ready"] is False
+    assert owner["executions"] == []
+    assert owner["execution_open_count"] == 0
     assert owner["intake"] == {
         "enabled": True,
         "endpoint": mc.OWNER_DECISION_INTAKE_ENDPOINT,
         "token": "a" * 64,
-        "mode": "DOCUMENT_ONLY",
+        "mode": "ROUTER_HANDOFF",
         "degraded_reason": None,
     }
 

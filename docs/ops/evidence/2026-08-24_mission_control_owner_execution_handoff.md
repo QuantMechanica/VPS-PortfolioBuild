@@ -1,0 +1,47 @@
+# Mission Control OWNER execution handoff — 2026-08-24
+
+Status: implementation and isolated verification complete; canonical rollout
+evidence is appended after integration.
+
+Authority: `decisions/2026-08-24_owner_mission_control_execution_handoff.md`
+
+## Contract
+
+1. `YES`/`NO` is written as an immutable v2 receipt before any task exists.
+2. The receipt reserves one UUIDv5 execution task ID.
+3. The receipt hashes the OWNER-visible card and records the exact selected
+   effect; later feed drift makes the handoff fail closed.
+4. The execution manifest maps the exact decision and choice to objective,
+   allowed actions, acceptance criteria and global prohibitions.
+5. One `ops_issue` task requiring `code + ops + summary` is inserted. Only the
+   Claude lane satisfies that capability combination in the governed registry.
+6. The existing router assigns it; the existing Claude scheduled lane executes
+   it and returns an evidence artifact to `REVIEW`.
+7. Mission Control projects the live task state through `COMPLETE` (`PASSED`).
+8. `VERTAGT` never creates a task.
+
+The service attempts the handoff immediately. The existing five-minute router
+task also reconciles every authorized receipt, so a crash between receipt and
+task insert cannot lose the order. UUID identity and receipt-hash validation
+make concurrent/repeated reconciliation idempotent.
+
+## Hard boundaries
+
+Every task payload carries false flags for live execution, Factory pause,
+AutoTrading and deployment. The global deny-list also excludes gate criteria,
+candidate universes, book construction and destructive evidence mutation.
+Free-form OWNER notes explicitly cannot expand scope.
+
+## Isolated verification
+
+```text
+focused pytest: 29 passed, 1 skipped
+router/orchestration regression: 89 passed
+Python byte compilation: PASS
+execution manifest JSON parse: PASS
+```
+
+The focused tests cover receipt idempotency, terminal/deferred semantics,
+tamper refusal, exactly-one task insertion, Claude-only capabilities, state
+projection, loopback handoff, Mission Control rendering and legacy snapshot
+compatibility.

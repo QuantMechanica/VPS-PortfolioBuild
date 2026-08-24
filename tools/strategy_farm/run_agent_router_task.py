@@ -37,6 +37,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from tools.strategy_farm import agent_router  # noqa: E402
+from tools.strategy_farm import owner_decision_execution  # noqa: E402
 
 
 def _write_log(log_path: Path, payload: dict) -> None:
@@ -157,8 +158,21 @@ def main() -> int:
         takeovers.append({"pid": row["pid"], "killed": _kill_process_tree(row["pid"])})
 
     try:
+        try:
+            decision_handoffs = owner_decision_execution.reconcile_receipts(apply=True)
+        except Exception as exc:
+            # Router work must continue; the next 5-minute tick retries the
+            # deterministic receipt identity and records this degraded state.
+            decision_handoffs = {
+                "ok": False,
+                "errors": [{"error": f"reconcile_exception:{type(exc).__name__}"}],
+            }
         result = agent_router.run_once(agent_router.DEFAULT_ROOT, max_routes=5)
-        payload = {"ok": True, "result": result}
+        payload = {
+            "ok": True,
+            "result": result,
+            "owner_decision_handoffs": decision_handoffs,
+        }
         rc = 0
     except Exception as exc:
         payload = {"ok": False, "error": repr(exc)}

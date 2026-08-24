@@ -7,9 +7,10 @@ acceptance properties from docs/ops/MISSION_CONTROL_V2_RENDER_SPEC.md §Tests:
   1. all 10 terminals rendered, idle cards carry a reason;
   2. no ``\\bP[0-9]\\b`` gate token in the rendered HTML (Qxx only);
   3. factory traffic-light mapping — the four cases;
-  4. decision queue caps at 5 with a "… n weitere" affordance;
+  4. decision queue has no artificial cap;
   5. STALE badge appears for ``staleness=STALE`` and for ``--from-json`` mode;
-  6. no ``<button>`` / ``<form>`` / ``onclick`` action element (read-only page);
+  6. no ``<form>`` / ``onclick`` direct action hook; buttons use the loopback
+     receipt + governed router handoff;
   7. queue subtotals shown add up to the totals.
 """
 from __future__ import annotations
@@ -90,6 +91,9 @@ def make_contract(*, factory_state="NOMINAL", n_decisions=3,
          "yes_effect": f"yes {i}", "no_effect": f"no {i}",
          "cost_of_wait": f"wait {i}", "evidence": [f"evidence-{i}.md"],
          "detail": f"detail {i}", "due": "2026-08-25",
+         "execution_plan": {"ready": True, "agent": "claude",
+                            "yes_mode": "APPLY_AND_VERIFY",
+                            "no_mode": "DOCUMENT_AND_VERIFY"},
          "severity": ("alert" if i % 2 == 0 else "info"),
          "alert": (i % 2 == 0)}
         for i in range(n_decisions)
@@ -146,6 +150,7 @@ def make_contract(*, factory_state="NOMINAL", n_decisions=3,
             "terminals": terminals["counts"],
             "owner_decisions_open": len(decisions),
             "owner_decisions_alert": alert_count,
+            "owner_executions_open": 0,
         },
         "queue": {
             "meta": _meta(staleness="N/A"),
@@ -198,11 +203,14 @@ def make_contract(*, factory_state="NOMINAL", n_decisions=3,
             "alert_count": alert_count,
             "q12_review_ready": 30,
             "items": decisions,
+            "executions": [],
+            "execution_counts": {},
+            "execution_open_count": 0,
             "intake": {
                 "enabled": True,
                 "endpoint": "http://127.0.0.1:8765/v1/decisions",
                 "token": "a" * 64,
-                "mode": "DOCUMENT_ONLY",
+                "mode": "ROUTER_HANDOFF",
                 "degraded_reason": None,
             },
             "notes": "Agent work queues are excluded by construction.",
@@ -299,18 +307,46 @@ def test_stale_badge_appears():
 
 
 # ---------------------------------------------------------------------------
-# 6. actions are document-only and carry no inline execution hook
+# 6. actions create a governed handoff and carry no inline operational hook
 # ---------------------------------------------------------------------------
-def test_decision_controls_are_document_only():
+def test_decision_controls_are_router_scoped():
     html = r.render(make_contract(n_decisions=8))
     low = html.lower()
     assert "<form" not in low
     assert "onclick" not in low
     assert low.count("data-decision-choice=") >= 24
-    assert "document_only" in low
-    assert "keine folgeausführung" in low
-    for forbidden in ("factory_off", "autotrading", "deploy_tlive"):
+    assert "router-auftrag" in low
+    assert "der klick selbst führt nichts" in low
+    assert "claude ready" in low
+    assert "autotrading und deployments bleiben separat gesperrt" in low
+    for forbidden in ("factory_off.ps1", "deploy_tlive.py", "terminal64.exe"):
         assert forbidden not in low
+
+
+def test_decision_execution_tracker_is_visible():
+    contract = make_contract(n_decisions=1)
+    contract["owner_decisions"]["executions"] = [{
+        "decision_id": "OWNER-DEC-DONE-01",
+        "decision": "YES",
+        "decided_at_utc": "2026-08-24T09:00:00+00:00",
+        "receipt_id": "receipt-1",
+        "question": "Umsetzen?",
+        "task_id": "task-1",
+        "status": "RUNNING",
+        "task_state": "IN_PROGRESS",
+        "assigned_agent": "claude",
+        "artifact_path": None,
+        "verdict": None,
+        "updated_at": "2026-08-24T09:01:00+00:00",
+        "complete": False,
+    }]
+    contract["owner_decisions"]["execution_counts"] = {"RUNNING": 1}
+    contract["owner_decisions"]["execution_open_count"] = 1
+    contract["control_strip"]["owner_executions_open"] = 1
+    html = r.render(contract)
+    assert "Entscheidung → Umsetzung" in html
+    assert "OWNER-DEC-DONE-01" in html
+    assert "task-1" in html and "IN_PROGRESS" in html
 
 
 def test_active_risk_freeze_is_visible_with_baseline_current_and_lift_conditions():

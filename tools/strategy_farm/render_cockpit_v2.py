@@ -305,7 +305,7 @@ def _render_control_strip(contract: dict) -> str:
         <div class="mc-cell-label">OWNER</div>
         <div class="mc-cell-main mc-num">{_int(open_n)}</div>
         <div class="mc-cell-sub"><span style="color:var(--fail)">{_int(alert_n)} alert</span>
-          · {_int(od.get('q12_review_ready'))} Q12-ready</div>
+          · {_int(cs.get('owner_executions_open'))} Umsetzung · {_int(od.get('q12_review_ready'))} Q12-ready</div>
       </div>'''
 
     return f'''
@@ -328,12 +328,13 @@ _SEV_COLOR = {
 def _render_owner_decisions(contract: dict) -> str:
     od = contract.get("owner_decisions", {}) or {}
     items = od.get("items") or []
+    executions = od.get("executions") or []
     count = int(od.get("count") or len(items))
-    if count == 0:
+    if count == 0 and not executions:
         return ""
     intake = od.get("intake", {}) or {}
     enabled = bool(intake.get("enabled") and intake.get("token"))
-    disabled = "" if enabled else " disabled"
+    service_disabled = "" if enabled else " disabled"
     rows = []
     for index, it in enumerate(items):
         sev = str(it.get("severity") or "info").lower()
@@ -349,6 +350,14 @@ def _render_owner_decisions(contract: dict) -> str:
         no_effect = it.get("no_effect") or "Nur die Antwort wird dokumentiert."
         cost = it.get("cost_of_wait") or "nicht angegeben"
         status = str(it.get("status") or "OPEN").upper()
+        execution_plan = it.get("execution_plan") or {}
+        execution_ready = bool(execution_plan.get("ready"))
+        terminal_disabled = "" if enabled and execution_ready else " disabled"
+        plan_badge = (
+            '<span class="mc-badge mc-badge-ok">CLAUDE READY</span>'
+            if execution_ready else
+            '<span class="mc-badge mc-badge-warn">HANDOFF-PLAN FEHLT</span>'
+        )
         evidence = " · ".join(str(value) for value in (it.get("evidence") or []))
         evidence_html = (
             f'<div class="mc-dec-evidence"><b>Evidenz:</b> {e(evidence)}</div>'
@@ -361,6 +370,7 @@ def _render_owner_decisions(contract: dict) -> str:
           <span class="mc-dec-status">{e(status)}</span>
           <span class="mc-dec-cat">{e(it.get('category'))}</span>
           <code>{e(decision_id)}</code>
+          {plan_badge}
           <span class="mc-dec-due">{e(due) if due else "ohne Frist"}</span>
         </div>
         <div class="mc-dec-question">{e(question)}</div>
@@ -375,15 +385,51 @@ def _render_owner_decisions(contract: dict) -> str:
         <div class="mc-dec-controls">
           <label for="mc-note-{index}">OWNER-Notiz</label>
           <textarea id="mc-note-{index}" maxlength="4000" rows="2"
-            placeholder="Optional: Begründung, Bedingung oder Wiedervorlage"{disabled}></textarea>
+            placeholder="Optional: Begründung, Bedingung oder Wiedervorlage"{service_disabled}></textarea>
           <div class="mc-dec-buttons">
-            <button type="button" data-decision-choice="YES"{disabled}>JA</button>
-            <button type="button" data-decision-choice="NO"{disabled}>NEIN</button>
-            <button type="button" data-decision-choice="DEFERRED"{disabled}>VERTAGT</button>
+            <button type="button" data-decision-choice="YES"
+              data-decision-effect="{e(yes_effect)}"{terminal_disabled}>JA</button>
+            <button type="button" data-decision-choice="NO"
+              data-decision-effect="{e(no_effect)}"{terminal_disabled}>NEIN</button>
+            <button type="button" data-decision-choice="DEFERRED"
+              data-decision-effect="Keine Umsetzung; Entscheidung bleibt offen."{service_disabled}>VERTAGT</button>
           </div>
           <div class="mc-dec-result" role="status" aria-live="polite"></div>
         </div>
       </article>''')
+    execution_rows = []
+    for execution in executions:
+        ex_status = str(execution.get("status") or "UNKNOWN")
+        if execution.get("complete"):
+            colour = "var(--pass)"
+        elif ex_status in {"FAILED", "BLOCKED", "OPS_FIX_REQUIRED"}:
+            colour = "var(--fail)"
+        elif ex_status in {"RUNNING", "AWAITING_REVIEW", "ACCEPTED", "RECYCLE"}:
+            colour = "var(--warn)"
+        else:
+            colour = "var(--signal)"
+        artifact = execution.get("artifact_path") or "Evidenz noch ausstehend"
+        execution_rows.append(f'''
+      <article class="mc-exec-row">
+        <div class="mc-exec-head">
+          <span class="mc-chip" style="color:{colour};border-color:{colour}">{e(ex_status)}</span>
+          <code>{e(execution.get('decision_id'))}</code>
+          <b>{e(execution.get('decision'))}</b>
+          <span>{e(execution.get('assigned_agent') or 'noch nicht geroutet')}</span>
+        </div>
+        <div class="mc-exec-question">{e(execution.get('question') or '')}</div>
+        <div class="mc-exec-meta">Task <code>{e(execution.get('task_id'))}</code> ·
+          State {e(execution.get('task_state') or 'PENDING')} · {e(artifact)}</div>
+        <div class="mc-exec-verdict">{e(execution.get('verdict') or '')}</div>
+      </article>''')
+    execution_html = ""
+    if execution_rows:
+        execution_html = f'''
+    <div class="mc-exec-block">
+      <div class="mc-h3">Entscheidung → Umsetzung
+        <span>{_int(od.get('execution_open_count'))} offen · {_int(len(executions))} gesamt</span></div>
+      <div class="mc-exec-list">{''.join(execution_rows)}</div>
+    </div>'''
     meta_badge = _stale_badge(od.get("meta", {}))
     service_label = (
         '<span class="mc-badge mc-badge-ok" data-decision-service-state>INTAKE BEREIT</span>'
@@ -401,13 +447,17 @@ def _render_owner_decisions(contract: dict) -> str:
     data-intake-endpoint="{e(intake.get('endpoint') or '')}"
     data-intake-token="{e(intake.get('token') or '')}">
     <div class="mc-h2"><span>Owner Decision Queue</span>
-      <span class="mc-h2-aux">{_int(count)} offen/vertagt · {_int(od.get('alert_count'))} alert {service_label} {meta_badge}</span></div>
-    <div class="mc-dec-boundary"><b>Dokumentationsgrenze:</b> JA / NEIN / VERTAGT erzeugt
-      ausschließlich Receipt + Vault-Dokumentation. Keine Folgeausführung wird ausgelöst.</div>
+      <span class="mc-h2-aux">{_int(count)} offen/vertagt · {_int(od.get('alert_count'))} alert ·
+        {_int(od.get('execution_open_count'))} Umsetzungen offen {service_label} {meta_badge}</span></div>
+    <div class="mc-dec-boundary"><b>Ausführungskette:</b> JA oder NEIN erzeugt nach dem
+      unveränderlichen Receipt genau einen begrenzten Claude-Router-Auftrag. VERTAGT erzeugt
+      keinen Auftrag. Der Klick selbst führt nichts an Factory oder Live-Systemen aus; T_Live,
+      AutoTrading und Deployments bleiben separat gesperrt.</div>
     {degraded_html}
     <div class="mc-dec-list">
       {''.join(rows)}
     </div>
+    {execution_html}
   </section>'''
 
 
@@ -932,6 +982,17 @@ _PAGE_CSS = """
   .mc-dec-result{grid-column:1/-1;font-family:var(--font-mono);font-size:var(--fs-xs);
     color:var(--text-3);min-height:1.2em}
   .mc-dec-row.mc-dec-recorded{border-left:3px solid var(--pass);padding-left:var(--space-3)}
+  .mc-exec-block{margin-top:var(--space-5);padding-top:var(--space-4);border-top:1px solid var(--border)}
+  .mc-h3{display:flex;justify-content:space-between;gap:var(--space-3);font-weight:700;
+    margin-bottom:var(--space-2)}
+  .mc-h3 span{font-family:var(--font-mono);font-size:var(--fs-xs);font-weight:400;color:var(--text-3)}
+  .mc-exec-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}
+  .mc-exec-row{padding:var(--space-3);border:1px solid var(--border);background:var(--surface-2)}
+  .mc-exec-head{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;
+    font-family:var(--font-mono);font-size:var(--fs-xs)}
+  .mc-exec-question{margin-top:var(--space-2);font-weight:600}
+  .mc-exec-meta,.mc-exec-verdict{margin-top:var(--space-2);font-size:var(--fs-xs);
+    color:var(--text-3);overflow-wrap:anywhere}
 
   .mc-t-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-3)}
   .mc-t-card{border:1px solid var(--border);background:var(--surface-2);
@@ -987,6 +1048,7 @@ _PAGE_CSS = """
     .mc-dec-effects{grid-template-columns:1fr}
     .mc-dec-controls{grid-template-columns:1fr}
     .mc-dec-buttons{flex-wrap:wrap}
+    .mc-exec-list{grid-template-columns:1fr}
   }
 """
 
@@ -1037,7 +1099,7 @@ _DECISION_SCRIPT = """
         if(!response.ok)throw new Error('HTTP '+response.status);
         return response.json();
       }).then(function(payload){
-        if(!payload.ok||payload.mode!=='DOCUMENT_ONLY')throw new Error('ungueltiger Dienstvertrag');
+        if(!payload.ok||payload.mode!=='ROUTER_HANDOFF')throw new Error('ungueltiger Dienstvertrag');
         if(serviceState)serviceState.textContent='INTAKE VERBUNDEN';
       }).catch(function(){
         if(serviceState)serviceState.textContent='INTAKE NICHT ERREICHBAR';
@@ -1053,13 +1115,18 @@ _DECISION_SCRIPT = """
     var result=row.querySelector('.mc-dec-result');
     var note=row.querySelector('textarea');
     var decision=button.getAttribute('data-decision-choice');
+    var effect=button.getAttribute('data-decision-effect')||'';
     var id=row.getAttribute('data-decision-id');
     if(!enabled||!endpoint||!token){
       result.textContent='Dokumentationsdienst ist nicht verbunden.';
       return;
     }
+    var handoff=(decision==='DEFERRED')
+      ? 'Es wird kein Agent-Auftrag erzeugt.'
+      : 'Danach wird genau ein begrenzter Claude-Auftrag erzeugt.';
+    if(!window.confirm(id+' = '+decision+'\n\nFolge: '+effect+'\n\n'+handoff))return;
     setDisabled(row,true);
-    result.textContent='Entscheidung wird dokumentiert ...';
+    result.textContent='Entscheidung wird receiptiert ...';
     fetch(endpoint+'/'+encodeURIComponent(id),{
       method:'POST',
       cache:'no-store',
@@ -1072,8 +1139,12 @@ _DECISION_SCRIPT = """
       });
     }).then(function(payload){
       row.classList.add('mc-dec-recorded');
-      result.textContent='DOKUMENTIERT: '+payload.decision+' · Receipt '+payload.receipt_id+
-        ' · keine Folgeausfuehrung';
+      if(payload.decision==='DEFERRED'){
+        result.textContent='VERTAGT · Receipt '+payload.receipt_id+' · kein Agent-Auftrag';
+      }else{
+        result.textContent='BEAUFTRAGT: '+payload.decision+' · Task '+payload.execution_task_id+
+          ' · '+payload.handoff_state+' · Umsetzung nur innerhalb der Kartenfolge';
+      }
     }).catch(function(error){
       setDisabled(row,false);
       result.textContent='NICHT GESPEICHERT: '+error.message;

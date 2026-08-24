@@ -280,16 +280,29 @@ Source order mirrors `render_cockpit.owner_decision_rows` (agent work queues are
 |---|---|---|
 | `count` / `alert_count` | int | total items / items with `alert=true` |
 | `q12_review_ready` | int | `portfolio_candidates` Q12 count |
-| `items[]` | array | `{source,id,status,category,title,question,recommendation,yes_effect,no_effect,cost_of_wait,detail,evidence,due,severity,alert}` |
-| `intake` | object | `{enabled,endpoint,token,mode:"DOCUMENT_ONLY",degraded_reason}`; Token kommt aus der lokalen State-Datei, Endpunkt ist ausschließlich Loopback |
+| `items[]` | array | `{source,id,status,category,title,question,recommendation,yes_effect,no_effect,cost_of_wait,detail,evidence,due,severity,alert,execution_plan}` |
+| `executions[]` | array | terminal entschiedene Karten mit Receipt-/Task-ID, Router-State, Agent, Artefakt, Verdict und normalisiertem Status `HANDOFF_PENDING/QUEUED/RUNNING/AWAITING_REVIEW/COMPLETE/...` |
+| `execution_counts` / `execution_open_count` | object / int | Statusverteilung und noch nicht `PASSED` geschlossene Umsetzungen |
+| `intake` | object | `{enabled,endpoint,token,mode:"ROUTER_HANDOFF",degraded_reason}`; Token kommt aus der lokalen State-Datei, Endpunkt ist ausschließlich Loopback |
 
 `source ∈ {curated_feed, q12_review_ready, blocked_agent_task}`. `alert` is true
 for `severity ∈ {alert, action}`.
 
 Der Feed ist die offene Queue; OWNER-Antworten werden zuerst append-only in
 `owner_decision_receipts.jsonl` geschrieben und danach in Feed und Vault
-materialisiert. Jedes Receipt trägt `execution_authorized=false`. Ein Receipt
-ist niemals Deploy-/Factory-/Live-Autorität.
+materialisiert. Ein terminales Receipt (`YES`/`NO`) trägt eine deterministische
+`execution_task_id`, `execution_handoff_authorized=true` und die Grenze
+`DECISION_SCOPED_ROUTER_TASK`. Der Intake legt genau diese eine `agent_tasks`-
+Zeile an; der 5-Minuten-Router reconciliert verpasste Handoffs idempotent.
+`DEFERRED` trägt `DEFERRED_NO_HANDOFF` und erzeugt keinen Auftrag.
+`decision_card_sha256` und `selected_effect` binden dabei Frage, Empfehlung und
+beide sichtbaren Folgen an den Entscheidungszeitpunkt; spätere Feed-Drift wird
+beim Handoff fail-closed abgewiesen.
+
+Die Ausführungsautorität endet immer an der auf der Karte ausgewiesenen Folge.
+Jedes Receipt setzt `live_execution_authorized=false`,
+`factory_pause_authorized=false`, `autotrading_authorized=false` und
+`deployment_authorized=false`. Freitextnotizen können den Scope nicht erweitern.
 
 ### Kompakte `operator_surface`, vollständiger Drill-down
 

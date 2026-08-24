@@ -291,7 +291,14 @@ vault `02 Org/Stehende Vollmacht Claude 2026-08-20.md`.
 - **Auffangregel:** for reversible actions with a submitted Vorlage (options, recommendation,
   rollback, cost of waiting): if OWNER does not answer within 12h, execute own recommendation
   and mark it explicitly as Auffangregel execution. Never for ROT.
-- **Entscheidungsschlange** (max 5 entries) in every report instead of blocking; work continues.
+- **Entscheidungsschlange ohne künstlichen Cap** in Mission Control; sortiere nach
+  Dringlichkeit und Cost-of-Wait, statt Entscheidungen zu verstecken.
+- **OWNER-Entscheid → Umsetzung (OWNER 2026-08-24):** Ein terminales JA/NEIN-Receipt
+  reserviert genau einen entscheidungsgebundenen `agent_tasks`-Auftrag für die Claude-
+  Lane; `VERTAGT` erzeugt keinen. Der Worker darf nur die auf der Karte ausgewiesene
+  Folge umsetzen. Notizen erweitern den Scope nicht; T_Live, AutoTrading, Deployment,
+  Gate-Kriterien und Buchbau bleiben separat autorisiert. Mission Control zeigt den
+  Auftrag bis zur unabhängigen Abnahme.
 - **`docs/ops/OPEN_ITEMS_STATUS.md` accompanies every report.** An order counts as done only
   when its RESULT is reported; a written document alone is not delivery.
 

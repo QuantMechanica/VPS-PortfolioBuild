@@ -8,7 +8,10 @@
 > dokumentierende Entscheidungsschicht. Der frühere 5er-Cap und das absolute
 > Verbot von Aktions-Elementen sind aufgehoben. Zulässig sind ausschließlich
 > `JA / NEIN / VERTAGT`-Receipts über den Loopback-Intake; kein Klick darf eine
-> Factory-, Deploy-, T_Live- oder AutoTrading-Folgeaktion ausführen. Die volle
+> direkte Factory-, Deploy-, T_Live- oder AutoTrading-Aktion ausführen. Seit der
+> OWNER-Erweiterung vom selben Tag erzeugt ein terminales Receipt jedoch genau
+> einen begrenzten Claude-Router-Auftrag zur Umsetzung der ausgewiesenen Folge;
+> `VERTAGT` erzeugt keinen Auftrag. Die volle
 > EA/Symbol-Frontier liegt in einem separaten Drill-down; im Hauptcockpit bleibt
 > ein kompakter, handlungsnaher Auszug als letzter Block.
 
@@ -25,10 +28,12 @@ Alles andere ist Drill-down-Link, kein zweiter Zahlenblock.
   aus `mission_control_v2_data.py` und baut den Vertrag frisch bei Renderzeit
   (Single Source of Truth). Fallback-Flag `--from-json <path>` liest den Preview-Snapshot;
   in dem Fall trägt der Header ein STALE-Badge mit dem Snapshot-Alter.
-- **Document-only Intake:** OWNER-Antworten werden über einen ausschließlich an
+- **Receipt + Router-Handoff:** OWNER-Antworten werden über einen ausschließlich an
   `127.0.0.1` gebundenen Dienst als append-only Receipt erfasst, in den Feed
-  zurückgespiegelt und im Vault dokumentiert. `execution_authorized=false` ist
-  fester Receipt-Vertrag; Ausführung braucht immer einen separaten Auftrag.
+  zurückgespiegelt und im Vault dokumentiert. `YES`/`NO` reserviert eine stabile
+  Task-ID und erzeugt genau einen separaten `agent_tasks`-Auftrag; der normale
+  Router weist ihn über die Claude-only Capability-Kombination zu. Die Karte,
+  nicht die Freitextnotiz, begrenzt den Auftrag. Live-/Deploy-Autorität bleibt false.
 - **CSS:** `<link rel="stylesheet" href="style.css">` (liegt im selben Verzeichnis) +
   ein kleiner seitenspezifischer `<style>`-Block NUR für Grid-Layouts dieser Seite.
   Ausschließlich `var(--*)`-Tokens; keine neuen Farben. Disziplin gilt hart:
@@ -52,14 +57,18 @@ Alles andere ist Drill-down-Link, kein zweiter Zahlenblock.
 - **Queue**: `pending_executable` groß, daneben klein `+parked` und `active` (keine Doppelzählung; Summe ausgewiesen).
 - **Terminals**: `running/fleet` groß, `reserved`/`idle` klein.
 - **Clear-ETA**: P50 in Tagen+Stunden, P90 als Band dahinter ("~11,5 T · P90 19,1 T"), Tooltip/`title` = `eta_to_empty.basis` wörtlich.
-- **OWNER**: offene Entscheidungen, davon Alert-Anzahl rot, älteste Wartezeit.
+- **OWNER**: offene Entscheidungen, Alert-Anzahl und offene Umsetzungen.
 
 ### 2 · Owner Decision Queue
 `owner_decisions.items` — nur wenn `count > 0`, **ohne künstliche Obergrenze**.
 Jede Karte zeigt stabile ID, Status, Kategorie, genaue Frage, Empfehlung,
 JA-Folge, NEIN-Folge, Cost-of-Wait, Kontext und Evidenz. Danach OWNER-Notiz und
-die drei Aktionen `JA`, `NEIN`, `VERTAGT`. Der sichtbare Grenztext und der
-Receipt-Vertrag sagen ausdrücklich: Dokumentation ja, Folgeausführung nein.
+die drei Aktionen `JA`, `NEIN`, `VERTAGT`. Jede terminale Aktion zeigt vor dem
+POST eine Bestätigung mit der ausgewählten Folge. Unter der Queue zeigt
+`Entscheidung → Umsetzung` den zugehörigen Auftrag von `HANDOFF_PENDING` über
+`RUNNING`/`AWAITING_REVIEW` bis `COMPLETE`. Der sichtbare Grenztext sagt
+ausdrücklich: kein direkter Klick-Executor; Folgearbeit läuft nur durch den
+gebundenen Router-Auftrag und seine Abnahme.
 Reine Agent-Queues erscheinen hier nie; ein automatisch entdeckter OWNER-Blocker
 erscheint erst, nachdem er mit Frage, Empfehlung, Folgen und Evidenz in den
 kuratierten v2-Feed übernommen wurde.
@@ -115,7 +124,8 @@ Scheduled-Task-Heartbeats, Live-/FTMO-Narrative, agentische Aktivitätszähler.
    Frage, Empfehlung, Folgen, Notiz und drei Entscheidungen.
 5. STALE-Badge erscheint bei `staleness=STALE` und bei `--from-json`.
 6. Kein `<form>`/`onclick`; Buttons sprechen nur den Loopback-Receipt-Endpunkt
-   an und der Vertrag enthält `DOCUMENT_ONLY` / `execution_authorized=false`.
+   an. Terminale Receipts enthalten eine stabile Task-ID und die Grenze
+   `DECISION_SCOPED_ROUTER_TASK`; Live-/Deploy-Autorität bleibt false.
 7. Queue-Summen: angezeigte Teilmengen addieren zur Gesamtsumme.
 8. Frontier ist letzter Top-Level-Block, Hauptseite enthält höchstens 30 Paare,
    Drill-down enthält den vollständigen Census.
@@ -124,5 +134,5 @@ Scheduled-Task-Heartbeats, Live-/FTMO-Narrative, agentische Aktivitätszähler.
 Owner sieht jede offene/vertagte Entscheidung samt Empfehlung und Folgen ohne
 Logsuche und kann sie auditierbar dokumentieren; alle zehn Terminals
 zeigen EA/Symbol/Gate/Laufzeit oder expliziten Grund; einheitliche Zähllogik sichtbar;
-Queue-Summe nachvollziehbar; Stale sichtbar im selben Renderzyklus; keine
-Ausführung aus dem Decision-Receipt-Pfad.
+Queue-Summe nachvollziehbar; Stale sichtbar im selben Renderzyklus; jede
+terminale Entscheidung hat genau einen sichtbaren, begrenzten Umsetzungsauftrag.

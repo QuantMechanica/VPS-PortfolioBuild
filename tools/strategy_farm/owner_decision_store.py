@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Durable, document-only OWNER decision store for Mission Control.
+"""Durable OWNER decision and decision-scoped handoff store.
 
 The queue is a materialized JSON read model. Every OWNER answer is first
 appended as an immutable JSONL receipt, then reflected into the queue and the
-human-readable Vault. A receipt explicitly grants no Factory, deploy, T_Live,
-or AutoTrading execution authority.
+human-readable Vault. Terminal YES/NO receipts reserve exactly one governed
+agent-task identity. They never grant T_Live, AutoTrading, deployment, or
+authority beyond the selected effect printed on the decision card.
 """
 from __future__ import annotations
 
@@ -23,7 +24,9 @@ from typing import Any, Iterator, Mapping
 
 
 FEED_SCHEMA = "qm.owner-decisions/v2"
-RECEIPT_SCHEMA = "qm.owner-decision-receipt/v1"
+LEGACY_RECEIPT_SCHEMA = "qm.owner-decision-receipt/v1"
+RECEIPT_SCHEMA = "qm.owner-decision-receipt/v2"
+SUPPORTED_RECEIPT_SCHEMAS = frozenset({LEGACY_RECEIPT_SCHEMA, RECEIPT_SCHEMA})
 ALLOWED_STATUSES = frozenset({"OPEN", "DEFERRED", "DECIDED"})
 ALLOWED_DECISIONS = frozenset({"YES", "NO", "DEFERRED"})
 DEFAULT_FEED = Path(r"D:\QM\reports\state\owner_decisions.json")
@@ -62,6 +65,33 @@ def canonical_bytes(value: Any) -> bytes:
 
 def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
+
+
+def execution_task_id(receipt_id: str) -> str:
+    """Reserve one stable router-task UUID for one OWNER receipt."""
+
+    token = str(receipt_id or "").strip()
+    try:
+        uuid.UUID(token)
+    except ValueError as exc:
+        raise DecisionStoreError(f"invalid receipt id for execution task: {token!r}") from exc
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"qm.owner-decision-execution:{token}"))
+
+
+def decision_card_binding(item: Mapping[str, Any]) -> dict[str, str]:
+    """Return the immutable OWNER-visible fields that authorize a follow-up."""
+
+    return {
+        "id": str(item.get("id") or ""),
+        "question": str(item.get("question") or ""),
+        "recommendation": str(item.get("recommendation") or ""),
+        "yes_effect": str(item.get("yes_effect") or ""),
+        "no_effect": str(item.get("no_effect") or ""),
+    }
+
+
+def decision_card_sha256(item: Mapping[str, Any]) -> str:
+    return sha256_bytes(canonical_bytes(decision_card_binding(item)))
 
 
 def _file_sha(path: Path) -> str | None:
@@ -190,7 +220,8 @@ def render_vault_queue(feed: Mapping[str, Any]) -> str:
         "## Mission-Control-Entscheidungsschlange",
         "",
         "> Diese Sicht wird aus `owner_decisions.json` erzeugt. Antworten werden zuerst",
-        "> als Receipt erfasst; sie autorisieren keine automatische Folgeausführung.",
+        "> als Receipt erfasst. JA/NEIN reserviert danach genau einen begrenzten",
+        "> Claude-Router-Auftrag; VERTAGT erzeugt keinen Auftrag.",
         "",
     ]
     items = open_items(feed)
@@ -271,7 +302,7 @@ def sync_vault_queue(
         _atomic_write(vault_owner_path, after.encode("utf-8"))
 
 
-def _receipt_rows(path: Path) -> list[dict[str, Any]]:
+def load_receipts(path: Path = DEFAULT_RECEIPTS) -> list[dict[str, Any]]:
     if not path.is_file():
         return []
     rows: list[dict[str, Any]] = []
@@ -282,7 +313,7 @@ def _receipt_rows(path: Path) -> list[dict[str, Any]]:
             row = json.loads(line)
         except json.JSONDecodeError as exc:
             raise DecisionStoreError(f"invalid receipt JSONL line {line_no}: {exc}") from exc
-        if not isinstance(row, dict) or row.get("schema") != RECEIPT_SCHEMA:
+        if not isinstance(row, dict) or row.get("schema") not in SUPPORTED_RECEIPT_SCHEMAS:
             raise DecisionStoreError(f"invalid receipt contract on line {line_no}")
         rows.append(row)
     return rows
@@ -323,6 +354,14 @@ def _archive_receipt(vault_owner_path: Path, receipt: Mapping[str, Any]) -> None
     if receipt_id in text:
         return
     choice = str(receipt["decision"])
+    task_id = receipt.get("execution_task_id")
+    if task_id:
+        followup = (
+            f"- Folgeauftrag: `{task_id}` (Claude-Lane, entscheidungsgebunden; "
+            "Status in Mission Control)."
+        )
+    else:
+        followup = "- Folgeauftrag: keiner (`VERTAGT`)."
     block = [
         f"## {receipt['decision_id']} — {choice}",
         "",
@@ -331,8 +370,12 @@ def _archive_receipt(vault_owner_path: Path, receipt: Mapping[str, Any]) -> None
         f"- Frage: {_markdown_text(receipt['question'])}",
         f"- Empfehlung zum Entscheidzeitpunkt: {_markdown_text(receipt['recommendation'])}",
         f"- OWNER-Entscheidung: **{choice}**",
+        f"- Ausgewaehlte Folge: {_markdown_text(receipt.get('selected_effect')) or 'keine'}",
+        f"- Kartenbindung SHA-256: `{receipt.get('decision_card_sha256') or 'legacy'}`",
         f"- Notiz: {_markdown_text(receipt['notes']) or '—'}",
-        "- Folgeausfuehrung: **nicht autorisiert**; separater Auftrag und Evidenz erforderlich.",
+        followup,
+        "- Ausfuehrungsgrenze: nur die ausgewaehlte Kartenfolge; kein T_Live, "
+        "AutoTrading oder Deployment durch dieses Receipt.",
         "",
     ]
     _atomic_write(archive, (text.rstrip() + "\n\n" + "\n".join(block)).encode("utf-8"))
@@ -361,7 +404,7 @@ def record_decision(
         raise DecisionStoreError("notes exceed 4000 characters")
 
     with exclusive_store_lock(feed_path):
-        receipts = _receipt_rows(receipts_path)
+        receipts = load_receipts(receipts_path)
         prior = next((row for row in receipts if row.get("request_id") == request_id), None)
         feed = load_feed(feed_path)
         if prior is not None:
@@ -381,9 +424,15 @@ def record_decision(
         if str(item["status"]).upper() == "DECIDED":
             raise DecisionConflict(f"decision is already terminal: {decision_id}")
         at = decided_at_utc or utc_now()
+        terminal = decision in {"YES", "NO"}
+        receipt_id = str(uuid.uuid4())
+        selected_effect = (
+            str(item["yes_effect"] if decision == "YES" else item["no_effect"])
+            if terminal else None
+        )
         receipt: dict[str, Any] = {
             "schema": RECEIPT_SCHEMA,
-            "receipt_id": str(uuid.uuid4()),
+            "receipt_id": receipt_id,
             "request_id": request_id,
             "decision_id": decision_id,
             "decision": decision,
@@ -393,8 +442,19 @@ def record_decision(
             "feed_revision_before": int(feed["revision"]),
             "question": str(item["question"]),
             "recommendation": str(item["recommendation"]),
-            "execution_authorized": False,
-            "execution_boundary": "DOCUMENT_ONLY",
+            "selected_effect": selected_effect,
+            "decision_card_sha256": decision_card_sha256(item),
+            "execution_authorized": terminal,
+            "execution_handoff_authorized": terminal,
+            "execution_task_id": execution_task_id(receipt_id) if terminal else None,
+            "execution_boundary": (
+                "DECISION_SCOPED_ROUTER_TASK" if terminal else "DEFERRED_NO_HANDOFF"
+            ),
+            "live_execution_authorized": False,
+            "factory_pause_authorized": False,
+            "autotrading_authorized": False,
+            "deployment_authorized": False,
+            "notes_may_expand_scope": False,
         }
         receipt["receipt_sha256"] = sha256_bytes(canonical_bytes(receipt))
         _append_receipt(receipts_path, receipt)
