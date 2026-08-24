@@ -34,8 +34,6 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 | `strategy_atr_period` | 14 | (see source) | (see strategy logic) |
 | `strategy_sl_atr_mult` | 2.5 | (see source) | (see strategy logic) |
 | `strategy_time_stop_days` | 7 | (see source) | (see strategy logic) |
-| `strategy_spread_max_atr` | 0.25 | (see source) | (see strategy logic) |
-| `strategy_warmup_bars` | 250 | (see source) | (see strategy logic) |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -47,12 +45,9 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 ## 3. Symbol Universe
 
 **Designed for:**
-- `GDAXI.DWX` — registered in magic_numbers.csv for this EA
 - `NDX.DWX` — registered in magic_numbers.csv for this EA
 - `SP500.DWX` — registered in magic_numbers.csv for this EA
-- `UK100.DWX` — registered in magic_numbers.csv for this EA
 - `WS30.DWX` — registered in magic_numbers.csv for this EA
-- `XAUUSD.DWX` — registered in magic_numbers.csv for this EA
 - `EURUSD.DWX` — registered in magic_numbers.csv for this EA
 - `GBPUSD.DWX` — registered in magic_numbers.csv for this EA
 - `USDJPY.DWX` — registered in magic_numbers.csv for this EA
@@ -73,7 +68,7 @@ rejects foreign symbols).
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | explicit `QM_IsNewBar(_Symbol, PERIOD_D1)` |
 
 ---
 

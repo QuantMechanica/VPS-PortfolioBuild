@@ -10,7 +10,7 @@
 ; magic_slot:   12
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1cb763b49a13d4ccc0a38dd664ef8cd4db6c42766384b16218c808880fe49701
+; build_hash:   8aa14ed73b34dd720a926c749423b1ec3a99860ec1ac7fd1daaae58667a56763
 ; author:       Development
 ; date:         2026-08-23
 ;==========================================================
@@ -30,5 +30,3 @@ strategy_regime_sma_period=200
 strategy_atr_period=14
 strategy_sl_atr_mult=2.5
 strategy_time_stop_days=7
-strategy_spread_max_atr=0.25
-strategy_warmup_bars=250

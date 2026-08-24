@@ -17005,6 +17005,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9908,bandy-psar-flip-trend,10,AUDUSD.DWX,99080010,2026-08-17,Codex governed allocator,active
 9908,bandy-psar-flip-trend,11,USDCAD.DWX,99080011,2026-08-17,Codex governed allocator,active
 9908,bandy-psar-flip-trend,12,NZDUSD.DWX,99080012,2026-08-17,Codex governed allocator,active
+9908,bandy-psar-flip-trend,13,XTIUSD.DWX,99080013,2026-08-24,Codex governed allocator,active
 9909,bandy-lrchannel-breakout-trend,0,GDAXI.DWX,99090000,2026-08-17,Codex governed allocator,active
 9909,bandy-lrchannel-breakout-trend,1,NDX.DWX,99090001,2026-08-17,Codex governed allocator,active
 9909,bandy-lrchannel-breakout-trend,2,SP500.DWX,99090002,2026-08-17,Codex governed allocator,active
