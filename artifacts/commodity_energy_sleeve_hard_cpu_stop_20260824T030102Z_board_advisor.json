@@ -1,0 +1,75 @@
+{
+  "artifact_type": "commodity_energy_sleeve_hard_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-24T03:01:02.4518783Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "dcffee2427aadbd82f0b749b112692b11d5e6caa",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "candidate_preflight": {
+    "candidate": "MISHRA-SMYTH-XNG-1W-2016_S03",
+    "working_slug": "xng-1w-sign-contr",
+    "carrier": "XNGUSD.DWX",
+    "period": "D1",
+    "mechanic": "fixed-complete-week standalone time-series sign contrarian with weekly renewal and Friday-flat lifecycle",
+    "source_packet": "strategy-seeds/sources/MISHRA-SMYTH-XNG-PRED-2016/source.md",
+    "source_quality": "peer-reviewed Economic Modelling paper with DOI, university record, and repository-recorded complete author-manuscript review",
+    "manual_nonduplicate_boundary": [
+      "QM5_12567 is a long-only two-day cumulative-RSI pullback aligned to a slow trend, not a symmetric weekly sign fade.",
+      "QM5_13102 requires a thresholded high-volatility five-D1 shock and exits on normalization; the candidate is unconditional and fixed-horizon.",
+      "QM5_21504 conditions on high tick volume; the candidate has no volume state.",
+      "QM5_20054 and QM5_20013 use one- and two-month endpoints, not exact completed-week renewal."
+    ],
+    "formal_dedup_verdict": "NOT_RUN_CPU_STOP",
+    "source_addendum_created": false,
+    "card_created": false,
+    "g0_approved": false,
+    "ea_id_allocated": false,
+    "ea_built": false
+  },
+  "capacity_sample": {
+    "sampled_at_utc": "2026-08-24T03:01:02.4518783Z",
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "cpu_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "explicit_hard_ceiling_percent": 97.0,
+    "trip_rule": "average_or_max_greater_than_or_equal_to_ceiling",
+    "ceiling_binding": true,
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T8",
+      "T10"
+    ],
+    "running_factory_terminal_count": 6,
+    "process_selection": "exact D:/QM/mt5/T<n>/terminal64.exe path; T_Live excluded"
+  },
+  "actions_this_run": {
+    "candidate_retained": true,
+    "new_source_approval_or_addendum": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "resolver_regeneration": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "t_live_or_autotrading": false
+  },
+  "unrelated_dirty_worktree_preserved": true
+}
