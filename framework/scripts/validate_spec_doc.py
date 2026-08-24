@@ -8,6 +8,7 @@ Checks:
 2. All 7 mandatory section headers are present.
 3. No `<ANGLE_BRACKETED_PLACEHOLDER>` strings remain (copy-paste leftovers).
 4. The EA ID line matches the directory name.
+5. No non-whitespace ASCII control characters are present.
 
 Exit codes:
   0  PASS — SPEC is complete.
@@ -42,6 +43,7 @@ REQUIRED_SECTIONS = [
 PLACEHOLDER_RE = re.compile(r"<[A-Z_][A-Z0-9_]*>|<[a-z_][a-z0-9_]*>")
 EA_ID_RE = re.compile(r"\*\*EA ID:\*\*\s*QM5_(\d+)")
 DIR_RE = re.compile(r"^QM5_(\d+)_(.+)$")
+CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 
 
 def check_one(ea_dir: Path) -> tuple[bool, list[str]]:
@@ -55,6 +57,19 @@ def check_one(ea_dir: Path) -> tuple[bool, list[str]]:
         return False, [f"SPEC.md missing at {spec}"]
 
     text = spec.read_text(encoding="utf-8", errors="replace")
+
+    control_chars = [
+        (offset, ord(char))
+        for offset, char in enumerate(text)
+        if CONTROL_CHAR_RE.match(char)
+    ]
+    if control_chars:
+        sample = ", ".join(
+            f"offset {offset}:0x{code:02x}" for offset, code in control_chars[:8]
+        )
+        failures.append(
+            f"non-whitespace control characters ({len(control_chars)}): {sample}"
+        )
 
     for section in REQUIRED_SECTIONS:
         if f"## {section}" not in text:
