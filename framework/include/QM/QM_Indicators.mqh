@@ -583,6 +583,13 @@ double QM_WMA(const string sym, const ENUM_TIMEFRAMES tf, const int period,
 
 // Hull MA (HMA) — composite indicator: HMA = WMA(2*WMA(n/2) - WMA(n), sqrt(n)).
 // Built from primitives we just defined. Period must be >=4 to make sense.
+// MT5 doesn't expose a buffer-input-to-iMA path natively without writing a
+// custom indicator, so the final LWMA(sqrt(period)) pass is done manually
+// here over the diff = 2*LWMA(n/2) - LWMA(n) series (linearly decreasing
+// weights, most-recent bar weighted sqrt(period), oldest weighted 1 — the
+// same convention QM_LWMA/MT5 MODE_LWMA use). Verified against an
+// independently re-derived reference implementation; see
+// docs/ops/evidence/2026-08-24_qm_hma_shared_include_defect_census.md.
 double QM_HMA(const string sym, const ENUM_TIMEFRAMES tf, const int period,
               const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_CLOSE)
   {
@@ -590,17 +597,19 @@ double QM_HMA(const string sym, const ENUM_TIMEFRAMES tf, const int period,
       return QM_LWMA(sym, tf, period, shift, price);
    const int half = period / 2;
    const int sqr  = (int)MathSqrt((double)period);
-   // HMA approximation using two LWMA passes on raw price + final LWMA on
-   // diff series. MT5 doesn't expose a buffer-input-to-iMA path natively
-   // without writing a custom indicator, so we approximate via difference
-   // of two LWMA(close) values then re-smooth with LWMA(sqrt(period)).
-   const double w_half = QM_LWMA(sym, tf, half,   shift, price);
-   const double w_full = QM_LWMA(sym, tf, period, shift, price);
-   const double diff   = 2.0 * w_half - w_full;
-   // Approximate the final LWMA(diff, sqrt(period)) by returning diff
-   // smoothed with an EMA(sqrt(period)) — close enough for entry signals;
-   // an exact HMA needs a custom indicator. Document the approximation.
-   return diff;
+   double weighted_sum = 0.0;
+   double weight_total = 0.0;
+   for(int i = 0; i < sqr; i++)
+     {
+      const int s      = shift + i;
+      const double w_half = QM_LWMA(sym, tf, half,   s, price);
+      const double w_full = QM_LWMA(sym, tf, period, s, price);
+      const double diff_i = 2.0 * w_half - w_full;
+      const double weight  = (double)(sqr - i);
+      weighted_sum += diff_i * weight;
+      weight_total += weight;
+     }
+   return weighted_sum / weight_total;
   }
 
 int QM_IndRSI(const string sym, const ENUM_TIMEFRAMES tf, const int period,

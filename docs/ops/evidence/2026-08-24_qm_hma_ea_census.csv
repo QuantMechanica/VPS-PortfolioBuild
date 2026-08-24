@@ -1,0 +1,17 @@
+ea_id,slug,max_phase,pass_verdicts,total_work_items,note
+QM5_10222,tv-bbsr-jma-atr,Q02,,15,
+QM5_10251,tv-nova-rev,Q04,Q02:PASSx2;Q03:PASSx2,14,
+QM5_1054,bigdog-tms-tdi-hma-h4,Q02,,42,
+QM5_10593,mql5-adxhull,Q04,Q02:PASSx1;Q03:PASSx1,16,
+QM5_10602,mql5-oshma,Q04,Q02:PASSx2;Q03:PASSx1,36,
+QM5_10699,tv-cisd-hma,Q02,,8,
+QM5_10833,tv-autobot12,Q04,Q02:PASSx1,9,
+QM5_10899,muranno-mfi-hma,Q02,,26,
+QM5_10960,ftmo-hma-rsi,Q04,Q02:PASSx4;Q03:PASSx3,16,
+QM5_12742,nnfx-configurable-engine,Q06,Q02:PASSx11;Q03:PASSx1;Q04:PASS_SOFTx1;Q05:PASSx1,28,
+QM5_12958,nnfx-hma-wae-swing,Q09_PORTFOLIO,Q02:PASSx3;Q03:PASSx2;Q04:PASSx1;Q05:PASSx1;Q06:PASSx1;Q07:PASSx1,17,
+QM5_2002,nnfx-qqe-trend,Q05,Q02:PASSx6;Q03:PASSx1;Q04:PASSx1,243,
+QM5_36003,nnfx-hull-ma-zerolag-macd-stc,NONE,,0,never gated: 0 work_items rows
+QM5_9923,bandy-hma-crossover-trend,COMPILE_EA,,2,
+QM5_9961,bandy-hma-supertrend-confluence-trend,COMPILE_EA,,2,
+QM5_9998,tv-hull-suite-hma-color-flip,Q04,Q02:PASSx4;Q03:PASSx2,32,
