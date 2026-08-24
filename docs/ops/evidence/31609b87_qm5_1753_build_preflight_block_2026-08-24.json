@@ -1,0 +1,84 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "31609b87-fa05-441e-b957-09058a694b1c",
+  "task_type": "build_ea",
+  "priority": 10,
+  "checked_at_utc": "2026-08-24T03:39:00Z",
+  "canonical_checkout": "C:/QM/repo",
+  "branch": "agents/board-advisor",
+  "git_head_inspected": "81cf9ee8ba230bbd743a137887556f8f533a1e50",
+  "requested_identity": {
+    "ea_id": "QM5_1753",
+    "slug": "bressert-timecycle-mtf-h4",
+    "ea_dir": "C:/QM/repo/framework/EAs/QM5_1753_bressert-timecycle-mtf-h4"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1753_bressert-timecycle-mtf-h4.md",
+    "sha256": "5848a9be96defda3ce859ccf7527926e50e06eeee34be83a0411a83545bdd772",
+    "length_bytes": 10326,
+    "ea_id": "QM5_1753",
+    "slug": "bressert-timecycle-mtf-h4",
+    "g0_status": "APPROVED",
+    "period": "H4",
+    "target_symbols": ["EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "XAUUSD.DWX", "NDX.DWX", "WS30.DWX"],
+    "gate_result": "PASS"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "4a0abb97b79df767fcb1571aadbf9d3dc349c22088b9980c6beb50072b530a4f",
+    "exact_identity_rows": [],
+    "exact_identity_gate": "FAIL",
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "1a30b5df1986a641cb0f3bb6be57d643cc003dcb3ec77aca17c4636ccf930b1e",
+    "required_magic_rows": [
+      {"symbol_slot": 0, "symbol": "EURUSD.DWX", "expected_magic": 17530000},
+      {"symbol_slot": 1, "symbol": "GBPUSD.DWX", "expected_magic": 17530001},
+      {"symbol_slot": 2, "symbol": "USDJPY.DWX", "expected_magic": 17530002},
+      {"symbol_slot": 3, "symbol": "XAUUSD.DWX", "expected_magic": 17530003},
+      {"symbol_slot": 4, "symbol": "NDX.DWX", "expected_magic": 17530004},
+      {"symbol_slot": 5, "symbol": "WS30.DWX", "expected_magic": 17530005}
+    ],
+    "exact_ea_id_magic_rows": [],
+    "magic_gate": "FAIL"
+  },
+  "existing_source_observation": {
+    "path": "framework/EAs/QM5_1753_bressert-timecycle-mtf-h4/QM5_1753_bressert-timecycle-mtf-h4.mq5",
+    "sha256": "93702a5aa4f85e1019e25aa0a05e9050dde19a15acbe70448727eead930321ac",
+    "length_bytes": 4082,
+    "line_count": 127,
+    "placeholder_entry_todo": true,
+    "risk_percent_default": 0.5,
+    "ex5_count": 0,
+    "spec_count": 0,
+    "setfile_count": 0,
+    "strategy_card_copy_count": 0,
+    "note": "The pre-existing mq5-only placeholder is not a completed build and does not substitute for governed identity and magic allocation."
+  },
+  "router_context": {
+    "routed_at": "2026-08-24T03:38:29+00:00",
+    "tracking_task": "8d1d903f-39cc-461f-ab90-7b932ce62fee",
+    "prior_review_close_state": "RECYCLE",
+    "prior_review_close_verdict": "CLAUDE REVIEW RECYCLE - not built. Battery findings: no_ex5; no_backtest_setfile; no_magic_row."
+  },
+  "router_disposition": {
+    "review_requested": true,
+    "review_allowed": false,
+    "review_gate_code": "D6_BUILD_IDENTITY_MISSING",
+    "review_gate_reason": "strict_build_pass_evidence_missing_review_dispatch_refused",
+    "final_state": "BLOCKED",
+    "final_verdict": "PRECONDITION_HOLD_REGISTRY_AND_MAGIC_REQUIRED; REVIEW refused D6_BUILD_IDENTITY_MISSING"
+  },
+  "verdict": "BUILD_NOT_STARTED_REGISTRY_AND_MAGIC_GATE_FAIL",
+  "blocked_reason": "Requested ea_id 1753 has no deterministic EA registry row in ea_id_registry.csv and zero rows in magic_numbers.csv while the approved card specifies 6 target symbol slots. qm-build-ea-from-card forbids Development from allocating those rows manually.",
+  "required_next_action": "The governed registry writer must register ea_id 1753, allocate all 6 active magic rows, regenerate QM_MagicResolver.mqh, and verify zero rows were dropped. Then recycle the build task.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "setfile_modified": false,
+    "compile_attempted": false,
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "live_or_autotrading_changed": false
+  }
+}
