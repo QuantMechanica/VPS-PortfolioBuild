@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-On each closed M5 bar, the EA buys when EMA(8) is above EMA(21), EMA(21) is above EMA(55), the bar low touches or crosses EMA(8), and the bullish close remains above EMA(21). It sells under the mirrored bearish ribbon and pullback conditions. The stop is two pips beyond EMA(55), the take-profit is two times the initial stop distance, and EMA(21) becomes the trailing stop after price reaches +1R. The EA blocks new entries during the GMT rollover window, excessive spread, or a card-defined loss halt; hard daily and total drawdown limits also close existing exposure.
+On each closed M5 bar, the EA buys when EMA(8) is above EMA(21), EMA(21) is above EMA(55), the bar low touches or crosses EMA(8), and the bullish close remains above EMA(21). It sells under the mirrored bearish ribbon and pullback conditions. The stop is exactly two pips beyond EMA(55); invalid quote geometry rejects the entry. The take-profit is two times the original stop distance, and that unchanged TP binding reconstructs original R after restarts and SL moves so EMA(21) can trail after +1R. The EA blocks new entries during the GMT rollover window, excessive spread, or the 2.0% realized-loss halt. Framework and strategy rails close exposure at 2.5% daily equity drawdown or 5.0% total drawdown.
 
 ---
 
@@ -30,9 +30,11 @@ On each closed M5 bar, the EA buys when EMA(8) is above EMA(21), EMA(21) is abov
 | `strategy_rollover_start_hhmm` | `2355` | card-fixed | GMT rollover blackout start |
 | `strategy_rollover_end_hhmm` | `5` | card-fixed | GMT rollover blackout end (00:05) |
 | `strategy_spread_filter_mult` | `1.8` | card-fixed | Maximum spread as a multiple of closed-bar ATR |
+| `strategy_max_slippage_ticks` | `3` | `1-3` | Maximum market-order deviation, converted from ticks to broker points |
 | `strategy_daily_loss_limit_pct` | `2.0` | card-fixed | Daily realized-loss threshold that halts new entries |
 | `strategy_daily_drawdown_hard_stop_pct` | `2.5` | card-fixed | Daily equity drawdown threshold that halts and closes |
 | `strategy_total_drawdown_stop_pct` | `5.0` | card-fixed | Runtime equity drawdown threshold that halts and closes |
+| `strategy_per_trade_risk_cap_pct` | `0.5` | `(0, 0.5]` | Live percentage-sizing ceiling; fixed-dollar test mode remains `RISK_FIXED=1000` |
 
 Framework inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
 
@@ -95,7 +97,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation and sizing configuration are enforced by `QM_FrameworkInit`; build validation reports the framework's actual risk failure code `EA_RISK_SIZER_UNCONFIGURED` when sizing is not configured.
 
 ---
 
@@ -104,3 +106,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-24 | Initial build from card | 2ed36fc6-61c9-406a-a6f2-6e7c71df746b |
+| v2 | 2026-08-24 | Review rework | Entry-only admission ordering, restart-safe state/original R, governed loss/risk/deviation controls |
