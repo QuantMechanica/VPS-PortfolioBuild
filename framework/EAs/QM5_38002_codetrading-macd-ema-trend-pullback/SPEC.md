@@ -14,7 +14,7 @@ The strategy is a trend-following momentum pullback engine operating on the M15 
 
 A Long entry is triggered when the previous closed bar's Close is above the 200 EMA, Low is less than or equal to the 50 EMA, and the MACD histogram crosses above zero (`MACD_Hist[1] > 0` and `MACD_Hist[2] <= 0`). A Short entry is triggered when Close is below the 200 EMA, High is greater than or equal to the 50 EMA, and the MACD histogram crosses below zero (`MACD_Hist[1] < 0` and `MACD_Hist[2] >= 0`).
 
-Stop Loss is set to 1.5× ATR(14) from entry price. Take Profit is set to 2.0× SL distance (1:2.0 Risk:Reward ratio). Open positions are actively trailed using a 2.0× ATR trailing stop.
+Stop Loss is set below the lowest low (long) or above the highest high (short) of the five most recent closed bars, with an additional 2.0-pip buffer. Take Profit is set to 2.0× SL distance (1:2.0 Risk:Reward ratio). Open positions are actively trailed using a 2.0× ATR trailing stop.
 
 ---
 
@@ -29,13 +29,19 @@ Stop Loss is set to 1.5× ATR(14) from entry price. Take Profit is set to 2.0× 
 | `strategy_slow_macd_period` | `26` | `20-35` | Slow EMA period for MACD |
 | `strategy_signal_macd_period` | `9` | `5-14` | Signal SMA period for MACD |
 | `strategy_atr_period` | `14` | `10-20` | ATR period for volatility and trailing stops |
-| `strategy_atr_sl_mult` | `1.5` | `1.0-2.5` | Multiplier on ATR for stop loss placement |
+| `strategy_swing_lookback` | `5` | `5` | Closed bars used for the structural swing stop |
+| `strategy_sl_buffer_pips` | `2.0` | `2.0` | Buffer beyond the five-bar swing extreme |
 | `strategy_tp_rr_mult` | `2.0` | `1.5-3.5` | Risk:Reward multiplier for take profit |
 | `strategy_trailing_enabled` | `true` | `true/false` | Enable ATR-based trailing stop |
 | `strategy_trail_atr_mult` | `2.0` | `1.0-3.0` | Multiplier on ATR for trailing stop distance |
 | `strategy_rollover_start_hhmm` | `2355` | `0-2359` | Start time for daily rollover blackout window |
 | `strategy_rollover_end_hhmm` | `5` | `0-2359` | End time for daily rollover blackout window |
 | `strategy_spread_filter_mult` | `1.8` | `1.0-3.0` | Max allowable spread as a multiple of ATR |
+| `strategy_max_slippage_ticks` | `3` | `1-3` | Maximum market-order deviation in trade ticks |
+| `strategy_daily_loss_halt_pct` | `2.0` | `(0,2.0]` | Realized daily-loss entry halt |
+| `strategy_daily_hard_stop_pct` | `2.5` | `(0,2.5]` | Framework daily equity hard stop |
+| `strategy_total_drawdown_stop_pct` | `5.0` | `(0,5.0]` | Framework total drawdown stop |
+| `strategy_per_trade_risk_cap_pct` | `0.5` | `(0,0.5]` | Live percentage-risk cap per trade; fixed-risk backtests remain $1,000 |
 
 ---
 
@@ -92,7 +98,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit`; fixed-risk backtests retain `RISK_FIXED=1000`, while live percentage sizing is capped at 0.5%.
 
 ---
 
@@ -101,3 +107,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Task f0823eb2-3859-45a3-9fa4-a83cc44207ef |
+| v2 | 2026-08-24 | Review repair | Restored five-bar swing stop, card loss controls, UTC rollover, three-tick slippage, and reachable restart-safe management |
