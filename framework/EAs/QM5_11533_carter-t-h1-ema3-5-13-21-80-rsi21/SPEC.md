@@ -12,9 +12,10 @@
 
 Five-EMA ribbon trend-following system with RSI confirmation. Long when the
 fast EMA(3) crosses above EMA(5) on a closed H1 bar, both EMA(3) and EMA(5)
-are positioned above EMA(13) and EMA(21) (medium-term confirmation), EMA(13)
-and EMA(21) both sit above EMA(80) (structural baseline filter), and RSI(21)
-is above 50. Short is the full mirror. No Friday-setup entries. Exit is
+cross above EMA(13) and EMA(21) between closed bars 2 and 1 (medium-term
+confirmation), EMA(13) and EMA(21) both sit above EMA(80) (structural baseline
+filter), and RSI(21) is above 50. Short is the full mirror. No Friday-setup
+entries. Exit is
 purely indicator-driven: close the position when EMA(3) recrosses EMA(5)
 against the trade direction, or RSI(21) recrosses 50 against the trade
 direction — whichever comes first. A fixed `strategy_sl_pips` protects
@@ -59,7 +60,9 @@ against a stalled indicator exit; there is no discretionary take-profit.
 |---|---|
 | Base timeframe | `H1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar()` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_H1)` |
+| Runtime contract | Fail closed unless attached to `PERIOD_H1` |
+| Friday close | Disabled; the card authorizes no Friday entries, not forced Friday exits |
 
 ---
 
@@ -101,3 +104,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-10 | Initial build from card | build_ea task abfb4871-b012-4a57-b800-47e73a63e647 |
+| v2 | 2026-08-24 | Review repair | Entry-only spread guard, exact medium crosses, H1/Friday execution contract |

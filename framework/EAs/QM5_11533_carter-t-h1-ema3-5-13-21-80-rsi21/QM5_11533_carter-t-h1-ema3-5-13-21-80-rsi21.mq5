@@ -16,7 +16,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -28,7 +28,7 @@ input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled    = true;
+input bool   qm_friday_close_enabled    = false;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
@@ -49,25 +49,22 @@ input int    strategy_max_spread_pips   = 15;
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Fast-signal EMA3/EMA5 cross plus medium (EMA13/EMA21) and structural (EMA80)
-// ribbon alignment, confirmed by RSI(21) vs 50. Card LONG/SHORT bullets read
-// "both cross EMA13"; the Mechanik prose clarifies this as EMA3 and EMA5 both
-// positioned beyond EMA13 AND EMA21 (medium confirmation), not a fresh cross
-// event on the medium EMAs.
-bool Strategy_NoTradeFilter()
+// Entry-only spread guard. It must never run before management or the card's
+// indicator exit because a wide spread is not authorization to suppress exits.
+bool Strategy_SpreadAllowsEntry()
 {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return true;
+      return false;
 
    const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_spread_pips);
    if(spread_cap <= 0.0)
-      return true;
+      return false;
    if((ask - bid) > spread_cap)
-      return true;
+      return false;
 
-   return false;
+   return true;
 }
 
 bool RibbonLongSignal()
@@ -77,16 +74,21 @@ bool RibbonLongSignal()
    const double ema3_2 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_fast, 2);
    const double ema5_2 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_signal, 2);
    const double ema13_1 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_medium1, 1);
+   const double ema13_2 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_medium1, 2);
    const double ema21_1 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_medium2, 1);
+   const double ema21_2 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_medium2, 2);
    const double ema80_1 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_baseline, 1);
    const double rsi_1 = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 1);
 
    const bool cross_up = (ema3_2 <= ema5_2) && (ema3_1 > ema5_1);
-   const bool medium_confirm = (ema3_1 > ema13_1) && (ema5_1 > ema13_1) &&
-                               (ema3_1 > ema21_1) && (ema5_1 > ema21_1);
+   const bool medium_cross_up =
+      (ema3_2 <= ema13_2) && (ema3_1 > ema13_1) &&
+      (ema5_2 <= ema13_2) && (ema5_1 > ema13_1) &&
+      (ema3_2 <= ema21_2) && (ema3_1 > ema21_1) &&
+      (ema5_2 <= ema21_2) && (ema5_1 > ema21_1);
    const bool structural = (ema13_1 > ema80_1) && (ema21_1 > ema80_1);
 
-   return cross_up && medium_confirm && structural && (rsi_1 > strategy_rsi_threshold);
+   return cross_up && medium_cross_up && structural && (rsi_1 > strategy_rsi_threshold);
 }
 
 bool RibbonShortSignal()
@@ -96,16 +98,21 @@ bool RibbonShortSignal()
    const double ema3_2 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_fast, 2);
    const double ema5_2 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_signal, 2);
    const double ema13_1 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_medium1, 1);
+   const double ema13_2 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_medium1, 2);
    const double ema21_1 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_medium2, 1);
+   const double ema21_2 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_medium2, 2);
    const double ema80_1 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_baseline, 1);
    const double rsi_1 = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 1);
 
    const bool cross_dn = (ema3_2 >= ema5_2) && (ema3_1 < ema5_1);
-   const bool medium_confirm = (ema3_1 < ema13_1) && (ema5_1 < ema13_1) &&
-                               (ema3_1 < ema21_1) && (ema5_1 < ema21_1);
+   const bool medium_cross_dn =
+      (ema3_2 >= ema13_2) && (ema3_1 < ema13_1) &&
+      (ema5_2 >= ema13_2) && (ema5_1 < ema13_1) &&
+      (ema3_2 >= ema21_2) && (ema3_1 < ema21_1) &&
+      (ema5_2 >= ema21_2) && (ema5_1 < ema21_1);
    const bool structural = (ema13_1 < ema80_1) && (ema21_1 < ema80_1);
 
-   return cross_dn && medium_confirm && structural && (rsi_1 < strategy_rsi_threshold);
+   return cross_dn && medium_cross_dn && structural && (rsi_1 < strategy_rsi_threshold);
 }
 
 // Market entry at open of bar[0]. Fixed pip SL (card gives no ATR/TP model;
@@ -114,6 +121,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
    const int magic = QM_FrameworkMagic();
    if(QM_EntryHasOpenPosition(magic, _Symbol))
+      return false;
+   if(!Strategy_SpreadAllowsEntry())
       return false;
 
    const bool long_sig = RibbonLongSignal();
@@ -200,6 +209,10 @@ int OnInit()
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H1,
+                                             QM_FRIDAY_CLOSE_DISABLED,
+                                             "CARD_NO_FRIDAY_ENTRY_ONLY"))
+      return INIT_FAILED;
    return INIT_SUCCEEDED;
 }
 
@@ -213,7 +226,6 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
    if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
 
    Strategy_ManageOpenPosition();
 
@@ -236,7 +248,7 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows) return;
 
-   if(!QM_IsNewBar()) return;
+   if(!QM_IsNewBar(_Symbol, PERIOD_H1)) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
