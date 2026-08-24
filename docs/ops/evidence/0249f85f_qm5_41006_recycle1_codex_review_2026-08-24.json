@@ -1,0 +1,23 @@
+{
+  "review_task_id": "0249f85f-cd98-4374-998f-8e76a8ad1e48",
+  "build_task_id": "b42bac52-ccda-4a73-b49b-faab46b48c88",
+  "ea_id": "QM5_41006",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "Strategy_NoTradeFilter lines 216-219 applies the card's 23:55-00:05 GMT blackout to raw TimeCurrent broker time without QM_BrokerToUTC.",
+    "The source does not configure the approved three-tick market-order slippage limit; QM_FrameworkInit leaves the entry helper at its generic deviation contract.",
+    "After a same-direction rebalance close, Strategy_EntrySignal copies and clears g_rebalance_reopen at lines 234-235 before price and stop validation, while OnTick ignores Strategy_OpenAtForecastRisk's result at line 432; a transient validation or order failure loses the reopen intent and can leave exposure flat until a later threshold crossing.",
+    "The current MQ5 (sha256 b02152f51bd94a0a1714fb89d1acf87a5a40d8e167c48e259be8bf5525e1517d, mtime 2026-08-23T15:40:21Z) postdates the EX5 (sha256 a9accb29338de23d6e55bc9d9d66e496db0c660236bf520df699293a3eb41651, mtime 2026-08-18T17:29:22Z); the executable is stale relative to the reviewed rework.",
+    "artifacts/builds/b42bac52-ccda-4a73-b49b-faab46b48c88.json has ex5_path=null, build_check_passed=false, compile_succeeded=false, smoke_result=compile_failed, and a non-empty INCLUDE_MIRROR_REFUSED blocked_reason; no QM5_41006 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-24T08:30:00Z"
+}

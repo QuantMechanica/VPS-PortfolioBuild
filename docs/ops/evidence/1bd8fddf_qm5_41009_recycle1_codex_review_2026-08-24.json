@@ -1,0 +1,26 @@
+{
+  "review_task_id": "1bd8fddf-b1b4-4bab-ad15-d0fc10da1e98",
+  "build_task_id": "0fd1b0a8-c415-4309-9778-4ebefa05a1cf",
+  "ea_id": "QM5_41009",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "Source lines 18-19 default RISK_PERCENT=0.5 and RISK_FIXED=1000.0 simultaneously; the framework risk-input contract rejects both-positive inputs, so default OnInit fails unless a setfile overrides the source defaults.",
+    "OnInit lines 386-395 never call QM_FrameworkDeclareExecutionContract, leaving the approved M5 binding and Friday-close policy undeclared and allowing PERIOD_CURRENT profile and signal logic to change silently on another chart timeframe.",
+    "The approved card's 2.0% daily realized-loss entry halt, 2.5% daily hard stop, and 5.0% total-drawdown stop have no matching inputs or implementation; the generic framework defaults are not the approved loss-limit contract.",
+    "Strategy_NoTradeFilter lines 262-265 applies the card's 23:55-00:05 GMT blackout to raw TimeCurrent broker time without QM_BrokerToUTC.",
+    "Entry lines 301 and 318 replace an invalid previous-day POC target with an unauthorized 1.8R take-profit instead of declining the trade, changing the card's sole profit-target mechanic.",
+    "The source does not configure the approved three-tick market-order slippage limit; QM_FrameworkInit leaves the entry helper at its generic deviation contract.",
+    "The current MQ5 (sha256 6778562109d41de0519b208f9b944ff1540c9865d64b0a62741d4b47c7407c8d, mtime 2026-08-23T15:22:34Z) postdates the EX5 (sha256 da2ad0e1343ffaf9b466e0de4bbbbc09871214754b5e4d07b549de174b7266c8, mtime 2026-08-18T17:31:46Z), so the executable is not bound to the reviewed rework.",
+    "artifacts/builds/0fd1b0a8-c415-4309-9778-4ebefa05a1cf.json claims build_check_passed and compile_succeeded but records smoke_result=deferred_p2_smoke with an empty blocked_reason and only a generic custom-history explanation; no QM5_41009 smoke summary exists under D:/QM/reports/smoke."
+  ],
+  "reviewed_at": "2026-08-24T08:30:00Z"
+}
