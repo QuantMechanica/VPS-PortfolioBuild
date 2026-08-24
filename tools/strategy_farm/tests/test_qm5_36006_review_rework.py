@@ -13,6 +13,7 @@ EA_LABEL = "QM5_36006_nnfx-halftrend-jurik-coppock-engine"
 EA_DIR = ROOT / "framework" / "EAs" / EA_LABEL
 SOURCE_PATH = EA_DIR / f"{EA_LABEL}.mq5"
 CARD_PATH = ROOT / "strategy-seeds" / "cards" / "approved" / f"{EA_LABEL}.md"
+CARD_MIRROR_PATH = EA_DIR / "docs" / "strategy_card.md"
 SETS_DIR = EA_DIR / "sets"
 EXPECTED_SLOTS = {"EURUSD.DWX": 0, "GBPUSD.DWX": 1, "USDJPY.DWX": 2}
 
@@ -48,8 +49,12 @@ def _set_values(path: Path) -> dict[str, str]:
 
 def test_approved_card_registry_resolver_and_hardening_are_clean() -> None:
     card = CARD_PATH.read_text(encoding="utf-8-sig")
+    mirror = CARD_MIRROR_PATH.read_text(encoding="utf-8-sig")
     assert re.search(r"(?m)^ea_id:\s*QM5_36006\s*$", card)
     assert re.search(r"(?m)^g0_status:\s*APPROVED\s*$", card)
+    assert [line.rstrip() for line in mirror.splitlines()] == [
+        line.rstrip() for line in card.splitlines()
+    ]
 
     with (ROOT / "framework" / "registry" / "ea_id_registry.csv").open(
         encoding="utf-8-sig", newline=""

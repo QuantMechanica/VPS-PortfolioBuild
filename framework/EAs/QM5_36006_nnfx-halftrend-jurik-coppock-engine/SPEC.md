@@ -4,7 +4,7 @@
 **Slug:** `nnfx-halftrend-jurik-coppock-engine`
 **Source:** `nnfx-halftrend-jurik-coppock-engine-official-source` (see `strategy-seeds/sources/nnfx-halftrend-jurik-coppock-engine/`)
 **Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-08-17
+**Last revised:** 2026-08-24
 
 ---
 
@@ -96,10 +96,10 @@ rejects foreign symbols).
 |---|---|
 | Trades / year / symbol | 25 |
 | Cadence note | "80-160 high-conviction trades per year across 3 pairs" |
-| Typical hold time | Daily swing (several D1 bars, up to 1-3 weeks) |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | Multi-indicator trend consensus with confirmed fast momentum |
-| Win rate target (qualitative) | high |
+| Typical hold time | Not fixed by the card; the runner remains open until the closed-D1 HalfTrend direction flips |
+| Expected drawdown profile | Card prior 18%; runtime protection halts entries/positions at the declared 2.5% daily and 5.0% initial-equity limits |
+| Regime preference | trend-following |
+| Win rate target (qualitative) | Not assumed; source claims are explicitly excluded from gate evidence |
 
 ---
 
@@ -125,3 +125,9 @@ This card was mechanised from:
 ENV→mode validation is enforced by `QM_FrameworkInit`; an unconfigured sizing mode is reported as `EA_RISK_SIZER_UNCONFIGURED`.
 
 ---
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-08-24 | Burn-window build reconciliation from approved card | `build-QM5_36006_nnfx-halftrend-jurik-coppock-engine` |

@@ -17507,9 +17507,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 39001,forexfactory-trading-made-simple-tms,0,EURUSD.DWX,390010000,2026-08-18,Gemini,active
 39001,forexfactory-trading-made-simple-tms,1,GBPUSD.DWX,390010001,2026-08-18,Gemini,active
 39001,forexfactory-trading-made-simple-tms,2,AUDUSD.DWX,390010002,2026-08-18,Gemini,active
-39002,forexfactory-sonic-r-system,0,EURUSD.DWX,390020000,2026-08-18,Gemini,active
-39002,forexfactory-sonic-r-system,1,GBPUSD.DWX,390020001,2026-08-18,Gemini,active
-39002,forexfactory-sonic-r-system,2,USDJPY.DWX,390020002,2026-08-18,Gemini,active
+39002,forexfactory-sonic-r-system,0,EURUSD.DWX,390020000,2026-08-18,Codex burn-window build,active
+39002,forexfactory-sonic-r-system,1,GBPUSD.DWX,390020001,2026-08-18,Codex burn-window build,active
+39002,forexfactory-sonic-r-system,2,USDJPY.DWX,390020002,2026-08-18,Codex burn-window build,active
 41056,energy-rev18,0,XTIUSD.DWX,410560000,2026-08-18T00:00:00Z,Codex,active
 41056,energy-rev18,1,XNGUSD.DWX,410560001,2026-08-18T00:00:00Z,Codex,active
 39003,forexfactory-james16-price-action-ppz,0,EURUSD.DWX,390030000,2026-08-18,Gemini,active

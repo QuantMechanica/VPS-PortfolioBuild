@@ -6,6 +6,8 @@
 
 // =============================================================================
 // QuantMechanica V5 EA: QM5_39002
+// Approved card mirror: docs/strategy_card.md
+// Executable signal contract: approved card §§3.1-3.4 and §4.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
