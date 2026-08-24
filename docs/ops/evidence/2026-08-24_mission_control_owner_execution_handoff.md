@@ -71,6 +71,15 @@ Vault queue: 6 cards, generated text names router handoff
 Company Reference lint: PASS
 ```
 
+Operational caveat observed without pausing the Factory: the general router
+logs at `08:36`, `08:41`, `08:46` and `09:01Z` ended with SQLite `database is
+locked`; the last substantive successful log began at `08:27Z`. Receipt
+reconciliation runs before that broader router work, and the loopback service
+is healthy, so an OWNER answer remains durable and receives the bounded direct
+handoff retries. Assignment to Claude can nevertheless be delayed until a
+lock-free router cycle. This contention was not cleared by stopping or slowing
+Factory workers.
+
 No live OWNER answer was fabricated for rollout. Consequently no production
 execution task exists yet; the first real `YES`/`NO` click will create it.
 Factory workers, T1-T10, T_Live and AutoTrading were not changed or interrupted.
