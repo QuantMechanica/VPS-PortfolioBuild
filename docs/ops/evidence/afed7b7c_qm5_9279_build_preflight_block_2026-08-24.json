@@ -1,0 +1,74 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "afed7b7c-0259-4256-acad-f22224babdab",
+  "task_type": "build_ea",
+  "priority": 10,
+  "checked_at_utc": "2026-08-24T02:20:08.5805005Z",
+  "canonical_checkout": "C:/QM/repo",
+  "branch": "agents/board-advisor",
+  "git_head_inspected": "2ede54f16589526f7978400331b896922a14a7c6",
+  "requested_identity": {
+    "ea_id": "QM5_9279",
+    "slug": "mql5-lw-3bull-fade",
+    "ea_dir": "C:/QM/repo/framework/EAs/QM5_9279_mql5-lw-3bull-fade"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_9279_mql5-lw-3bull-fade.md",
+    "sha256": "5473fc9a59d69f1eeefbbbf594b219a5b044143cb243785ecdd5905c145f4767",
+    "length_bytes": 4377,
+    "ea_id": "QM5_9279",
+    "slug": "mql5-lw-3bull-fade",
+    "g0_status": "APPROVED",
+    "period": "D1",
+    "target_symbols": ["EURUSD.DWX", "GBPUSD.DWX", "XAUUSD.DWX", "GER40.DWX"],
+    "gate_result": "PASS"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "4a0abb97b79df767fcb1571aadbf9d3dc349c22088b9980c6beb50072b530a4f",
+    "exact_identity_row": "9279,mql5-lw-3bull-fade,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19,,,",
+    "exact_identity_gate": "PASS",
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "1a30b5df1986a641cb0f3bb6be57d643cc003dcb3ec77aca17c4636ccf930b1e",
+    "required_magic_rows": [
+      {"symbol_slot": 0, "symbol": "EURUSD.DWX", "expected_magic": 92790000},
+      {"symbol_slot": 1, "symbol": "GBPUSD.DWX", "expected_magic": 92790001},
+      {"symbol_slot": 2, "symbol": "XAUUSD.DWX", "expected_magic": 92790002},
+      {"symbol_slot": 3, "symbol": "GER40.DWX", "expected_magic": 92790003}
+    ],
+    "exact_ea_id_magic_rows": [],
+    "magic_gate": "FAIL"
+  },
+  "existing_source_observation": {
+    "path": "framework/EAs/QM5_9279_mql5-lw-3bull-fade/QM5_9279_mql5-lw-3bull-fade.mq5",
+    "sha256": "b1347f1c19c2d4521e2b5a9378d0e1113d629df2155b52c378123f11a362c221",
+    "length_bytes": 4082,
+    "line_count": 127,
+    "placeholder_entry_todo": true,
+    "risk_percent_default": 0.5,
+    "ex5_count": 0,
+    "spec_count": 0,
+    "setfile_count": 0,
+    "strategy_card_copy_count": 0,
+    "note": "The pre-existing mq5-only placeholder is not a completed build and does not substitute for governed magic allocation."
+  },
+  "router_context": {
+    "routed_at": "2026-08-24T02:13:17+00:00",
+    "tracking_task": "8d1d903f-39cc-461f-ab90-7b932ce62fee",
+    "prior_review_close_state": "RECYCLE",
+    "prior_review_close_verdict": "batch adjudication 2026-07-19 (Claude, wf_11f17900 verified): No .ex5, no SPEC.md, no registry row for 9279; only bare .mq5 present"
+  },
+  "verdict": "BUILD_NOT_STARTED_MAGIC_GATE_FAIL",
+  "blocked_reason": "The approved card and active EA identity now match, but magic_numbers.csv has zero rows for ea_id 9279 while the card requires four symbol slots. qm-build-ea-from-card forbids Development from allocating those rows.",
+  "required_next_action": "The governed registry writer must allocate all four active magic rows, regenerate QM_MagicResolver.mqh, and verify zero rows were dropped. Then recycle the build task. Any eventual backtest sets must keep RISK_FIXED > 0 and RISK_PERCENT = 0, and the V5 news blackout must remain fail-closed with qm_news_stale_max_hours <= 336.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "setfile_modified": false,
+    "compile_attempted": false,
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "live_or_autotrading_changed": false
+  }
+}
