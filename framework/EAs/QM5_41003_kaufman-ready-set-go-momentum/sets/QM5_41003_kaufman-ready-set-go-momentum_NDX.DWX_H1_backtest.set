@@ -3,16 +3,16 @@
 ; ea_id:        41003
 ; ea_slug:      kaufman-ready-set-go-momentum
 ; ea_version:   v5.0
-; set_version:  s20260818-001
+; set_version:  s20260824-001
 ; symbol:       NDX.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   79ef28fc648396f070e93a092851c6f2fc27ce43ae7423cf160ef7b03c84bb17
+; build_hash:   d1670d8cc894df623da1265ae0f099cf6bb658eebe0808bb41cabdaadd29ed08
 ; author:       Development
-; date:         2026-08-18
+; date:         2026-08-24
 ;==========================================================
 qm_ea_id=41003
 qm_magic_slot_offset=1
@@ -32,3 +32,6 @@ strategy_tp_rr_mult=2.0
 strategy_rollover_start_hhmm=2355
 strategy_rollover_end_hhmm=5
 strategy_spread_filter_mult=1.8
+strategy_daily_loss_limit_pct=2.0
+strategy_daily_dd_hard_stop_pct=2.5
+strategy_total_drawdown_stop_pct=5.0

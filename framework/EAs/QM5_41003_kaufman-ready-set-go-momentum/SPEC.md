@@ -4,7 +4,7 @@
 **Slug:** kaufman-ready-set-go-momentum
 **Source:** kaufman-ready-set-go-momentum-official-source (see `D:/QM/strategy_farm/artifacts/cards_approved/QM5_41003_kaufman-ready-set-go-momentum.md`)
 **Author of this spec:** Development (Codex)
-**Last revised:** 2026-08-23
+**Last revised:** 2026-08-24
 
 ---
 
@@ -39,6 +39,9 @@ Account-wide realised losses halt new entries at 2.0% for the broker day. The fr
 | `strategy_rollover_start_hhmm` | `2355` | `0-2359` | Start time in GMT for the daily rollover blackout window |
 | `strategy_rollover_end_hhmm` | `5` | `0-2359` | End time in GMT for the daily rollover blackout window |
 | `strategy_spread_filter_mult` | `1.8` | `1.0-3.0` | Max allowable spread as a multiple of ATR |
+| `strategy_daily_loss_limit_pct` | `2.0` | `2.0` (sealed) | Account-wide realised-loss entry halt for the broker day |
+| `strategy_daily_dd_hard_stop_pct` | `2.5` | `2.5` (sealed) | Framework daily-equity hard stop and flatten threshold |
+| `strategy_total_drawdown_stop_pct` | `5.0` | `5.0` (sealed) | Framework portfolio drawdown signal threshold |
 
 ---
 
@@ -106,3 +109,4 @@ Risk-mode validation is enforced by `QM_FrameworkInit`; strict build validation 
 | v1 | 2026-08-18 | Initial build from card | Task 8de78517-0995-43b1-9c4e-30e0a0f1b1df |
 | v2 | 2026-08-23 | Card-faithful rework after Codex review | Correct ATR baseline, Close[5] horizon, fail-closed cache, ATR(14) spread filter, execution contract, and loss limits |
 | v3 | 2026-08-23 | In-place Q01 rebuild from approved card | c56ae519-dbde-4c50-a46f-0d4cdf4275a8 |
+| v4 | 2026-08-24 | Rework-41003 review resubmission | Seal card ranges and loss inputs; keep management/exit reachable before entry admission |
