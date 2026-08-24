@@ -13,7 +13,7 @@
 // Strategy logic:
 //   Double Linear Weighted Moving Average (DLWMA) trend filter on D1 close.
 //   LWMA1 = LWMA(Close, N=10), LWMA2 = LWMA(LWMA1, N=10).
-//   Trend = LWMA1 - LWMA2 (or 6/(N*(N-1)) * (LWMA1 - LWMA2)).
+//   Trend = 3/(N-1) * (LWMA1 - LWMA2), the Stern/Brown DLWMA slope.
 //   Long : Trend(1) > 0.0 && Trend(2) <= 0.0
 //   Exit : Trend(1) <= 0.0
 //   Stop Loss: 3.0 * ATR(20, D1).
@@ -48,7 +48,7 @@ input int    strategy_period            = 10;
 input int    strategy_min_daily_bars    = 80;
 input int    strategy_atr_period        = 20;
 input double strategy_sl_atr_mult       = 3.0;
-input double strategy_spread_atr_mult   = 0.3;
+input double strategy_spread_median_mult = 2.5;
 input bool   strategy_allow_short       = false;
 
 // -----------------------------------------------------------------------------
@@ -59,18 +59,30 @@ QM_ExitReason g_strategy_exit_reason    = QM_EXIT_STRATEGY;
 // -----------------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------------
-bool SpreadAllows(const double atr_val)
+bool SpreadAllowsEntry()
 {
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(bid <= 0.0 || ask <= 0.0)
+   const int lookback = 20;
+   const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   if(current_spread <= 0 || strategy_spread_median_mult <= 0.0)
       return false;
-   const double spread = ask - bid;
-   if(spread < DBL_EPSILON)
-      return true;
-   if(atr_val <= 0.0)
-      return true;
-   return (spread <= strategy_spread_atr_mult * atr_val);
+
+   int spreads[];
+   ArraySetAsSeries(spreads, true);
+   const int copied = CopySpread(_Symbol, PERIOD_D1, 1, lookback, spreads); // perf-allowed: bounded 20-bar D1 spread sample, entry path only
+   if(copied != lookback || ArraySize(spreads) < lookback)
+      return false;
+
+   for(int i = 0; i < lookback; ++i)
+      if(i >= ArraySize(spreads) || spreads[i] <= 0)
+         return false;
+
+   ArraySort(spreads);
+   const double median_spread = 0.5 * ((double)spreads[(lookback / 2) - 1] +
+                                      (double)spreads[lookback / 2]);
+   if(median_spread <= 0.0 || !MathIsValidNumber(median_spread))
+      return false;
+
+   return ((double)current_spread <= strategy_spread_median_mult * median_spread);
 }
 
 bool SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &ptype, datetime &open_time, double &open_price, double &sl_price)
@@ -105,22 +117,30 @@ bool SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &ptype, datetime &open_
    return false;
 }
 
-double ComputeDLWMATrend(const int shift)
+bool ComputeDLWMATrend(const int shift, double &trend)
 {
+   trend = 0.0;
    const int n = MathMax(2, strategy_period);
    const int sum_weights = n * (n + 1) / 2;
 
    const double lwma1 = QM_LWMA(_Symbol, PERIOD_D1, n, shift, PRICE_CLOSE);
+   if(lwma1 <= 0.0 || !MathIsValidNumber(lwma1))
+      return false;
 
    double sum_lwma2 = 0.0;
    for(int k = 0; k < n; ++k)
    {
       const double l1_val = QM_LWMA(_Symbol, PERIOD_D1, n, shift + k, PRICE_CLOSE);
+      if(l1_val <= 0.0 || !MathIsValidNumber(l1_val))
+         return false;
       sum_lwma2 += (double)(n - k) * l1_val;
    }
    const double lwma2 = sum_lwma2 / (double)sum_weights;
+   if(lwma2 <= 0.0 || !MathIsValidNumber(lwma2))
+      return false;
 
-   return (lwma1 - lwma2);
+   trend = (3.0 / (double)(n - 1)) * (lwma1 - lwma2);
+   return MathIsValidNumber(trend);
 }
 
 // -----------------------------------------------------------------------------
@@ -132,8 +152,7 @@ bool Strategy_NoTradeFilter()
    if(Bars(_Symbol, PERIOD_D1) < strategy_min_daily_bars)
       return true;
 
-   const double atr_val = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(!SpreadAllows(atr_val))
+   if(!SpreadAllowsEntry())
       return true;
 
    return false;
@@ -154,8 +173,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Bars(_Symbol, PERIOD_D1) < strategy_min_daily_bars)
       return false;
 
-   const double trend1 = ComputeDLWMATrend(1);
-   const double trend2 = ComputeDLWMATrend(2);
+   double trend1 = 0.0;
+   double trend2 = 0.0;
+   if(!ComputeDLWMATrend(1, trend1) || !ComputeDLWMATrend(2, trend2))
+      return false;
 
    const bool cross_up = (trend1 > 0.0 && trend2 <= 0.0);
    const bool cross_down = (trend1 < 0.0 && trend2 >= 0.0);
@@ -216,7 +237,9 @@ bool Strategy_ExitSignal()
    if(!SelectOurPosition(ticket, ptype, open_time, open_price, sl_price))
       return false;
 
-   const double trend1 = ComputeDLWMATrend(1);
+   double trend1 = 0.0;
+   if(!ComputeDLWMATrend(1, trend1))
+      return false;
 
    if(ptype == POSITION_TYPE_BUY && trend1 <= 0.0)
    {
@@ -245,6 +268,11 @@ int OnInit()
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"))
+      return INIT_FAILED;
    return INIT_SUCCEEDED;
 }
 
@@ -255,19 +283,13 @@ void OnTick()
    QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
    if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
 
    Strategy_ManageOpenPosition();
+
+   // The card evaluates both exits and entries once per completed D1 bar.
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1)) return;
+   QM_EquityStreamOnNewBar();
 
    if(Strategy_ExitSignal())
    {
@@ -281,8 +303,18 @@ void OnTick()
       }
    }
 
-   if(!QM_IsNewBar()) return;
-   QM_EquityStreamOnNewBar();
+   // News and strategy no-trade filters are entry-only. They must never
+   // suppress the opposite-cross exit or the framework's risk handling.
+   if(Strategy_NewsFilterHook(broker_now)) return;
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
+
+   if(Strategy_NoTradeFilter()) return;
 
    QM_EntryRequest req;
    ZeroMemory(req);

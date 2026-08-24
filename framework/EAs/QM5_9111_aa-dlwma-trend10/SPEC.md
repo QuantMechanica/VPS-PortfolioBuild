@@ -29,7 +29,7 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 | `strategy_min_daily_bars` | 80 | (see source) | (see strategy logic) |
 | `strategy_atr_period` | 20 | (see source) | (see strategy logic) |
 | `strategy_sl_atr_mult` | 3.0 | (see source) | (see strategy logic) |
-| `strategy_spread_atr_mult` | 0.3 | (see source) | (see strategy logic) |
+| `strategy_spread_median_mult` | 2.5 | fixed by card | Maximum current spread versus the median of the prior 20 completed D1 spreads. |
 | `strategy_allow_short` | false | (see source) | (see strategy logic) |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
@@ -68,7 +68,7 @@ rejects foreign symbols).
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_D1)`; `OnInit` rejects non-D1 attachment |
 
 ---
 
