@@ -1,0 +1,148 @@
+{
+  "artifact_type": "fx_cointegration_frontier_q03_pending_hard_cpu_stop",
+  "generated_at_utc": "2026-08-24T03:49:06.1320261Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "086903a366f0790f41d33caf6ab8788c4fbfe543",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_audit": {
+    "evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_authorized": false,
+    "reason": "The governed sign-aware scan is fully mechanized; a new identity would duplicate an existing relationship."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "scan_rank": 40,
+    "pair": [
+      "USDJPY.DWX",
+      "NZDUSD.DWX"
+    ],
+    "ea_id": "QM5_20219",
+    "slug": "usdjpy-nzdusd",
+    "logical_symbol": "QM5_20219_USDJPY_NZDUSD_COINTEGRATION_D1",
+    "g0_status": "APPROVED",
+    "structural_contract": "fixed-beta D1 two-leg z-score reversion; no ML or banned indicator",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "package_hashes_sha256": {
+      "approved_card": "696486d101c7fac2216bb6f6558e78189d833a506c2aea3491fd0b5654ee096b",
+      "mq5": "a3d9f49b79b5eba8eacc96f63fc74266ac4d3deebd17a35d89510758406fed13",
+      "ex5": "4f9758038a5ddfd2d4ca3ffa21ea22facf73973af9b623d4fc924e61eff1caba",
+      "basket_manifest": "f3fb7c93c0bebf8cd86aeae11a2e43e94b4d4bc976a14315092394db992ab54c",
+      "logical_backtest_set": "58bce294bf0ae7d46d398da737b5857e8ec71d985dae202b3f12a54a8a2361bc"
+    },
+    "lineage": [
+      {
+        "phase": "Q02",
+        "work_item_id": "5eb61981-472e-4f08-82c0-53fbec77d6c8",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "phase": "Q03",
+        "work_item_id": "4514a6c7-0a2e-4523-a756-b63a232dd8aa",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "attempt_count": 0
+      },
+      {
+        "phase": "Q04",
+        "work_item_id": "b721ce82-2d53-46db-b2d0-f20b561a1513",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "attempt_count": 0,
+        "note": "legacy row; not dispatched or mutated"
+      }
+    ],
+    "duplicate_enqueue_performed": false
+  },
+  "capacity_sample": {
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "paced_launch_gate_max": 1,
+    "running_factory_terminal_count": 7,
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "running_factory_work_items": [
+      "1e3b7aa9-6a2d-466b-bea2-198964fda73f",
+      "76b47e72-6e06-4cdf-82b2-3a9782713f25",
+      "ffe82ff0-1b1b-4817-8b13-65c69b5abd49",
+      "38637c6a-a458-44f9-a79f-21d9de1931fd",
+      "1b745b78-6d34-41d0-bede-34a4281cdd50",
+      "b184906e-71ce-45b7-8240-2ef58f356a25",
+      "83563f9a-251e-456d-90d1-a5601c30e586"
+    ],
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_receipt": "artifacts/fx_cointegration_frontier_q03_pending_hard_cpu_stop_20260824T024650Z_board_advisor.json",
+    "prior_running_factory_terminal_count": 2,
+    "current_running_factory_terminal_count": 7,
+    "prior_average_cpu_percent": 99.8,
+    "current_average_cpu_percent": 100.0,
+    "lineage_changed": false,
+    "reason_for_receipt": "The governed factory roster expanded from two to seven attributed active terminals while the exact QM5_20219 continuation remained uniquely pending."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The explicit 97% backtest CPU ceiling was binding before any mutating or CPU-consuming action."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
