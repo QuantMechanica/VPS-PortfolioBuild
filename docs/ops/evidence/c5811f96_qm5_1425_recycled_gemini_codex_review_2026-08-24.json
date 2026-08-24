@@ -1,0 +1,22 @@
+{
+  "review_task_id": "c5811f96-bf23-490f-a8e5-2887606d16a7",
+  "build_task_id": "77bb60df-1c46-46db-b0d5-3560e2949375",
+  "ea_id": "QM5_1425",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "FAIL"
+  },
+  "findings": [
+    "Current MQ5/EX5 hashes are unchanged from the 2026-08-22 RECYCLE review; no remediation artifact exists.",
+    "Label-scoped hardening reports five failures, including a proof that descending pivot append order makes the nested entry path unreachable, missing BUY-STOP, inverted rising-SMA logic, a 30/30 versus 480/480-minute news window, and news blocking before management.",
+    "The EA contains three direct CopyBuffer calls, which violate the Codex framework corset and forbidden-code contract.",
+    "The build result omits spec_md_path and uses deferred_p2_smoke with no capacity evidence; the current MQ5 also post-dates the EX5 and no governed compile evidence binds that source hash to the binary."
+  ],
+  "reviewed_at": "2026-08-24T07:26:14Z"
+}

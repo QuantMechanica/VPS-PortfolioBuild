@@ -1,0 +1,22 @@
+{
+  "review_task_id": "25b11704-7145-4489-b8d3-0022f6ffb642",
+  "build_task_id": "ad4b4d2e-3fb7-48ea-a424-09d85a616e34",
+  "ea_id": "QM5_1416",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "FAIL"
+  },
+  "findings": [
+    "Current MQ5/EX5 hashes are unchanged from the 2026-08-22 RECYCLE review; no remediation artifact exists.",
+    "Label-scoped hardening reports eight failures: missing MAE tracking, incomplete request initialization, two unsafe buffer reads, missing SELL-STOP, inverted falling-SMA logic, a 30/30 versus 180/180-minute news window, and news blocking before management.",
+    "The EA contains two direct CopyBuffer calls, which violate the Codex framework corset and forbidden-code contract.",
+    "The build result omits spec_md_path and uses deferred_p2_smoke with an empty blocked_reason, so the canonical saturation-only deferral exception is not satisfied; no smoke summary was supplied."
+  ],
+  "reviewed_at": "2026-08-24T07:26:14Z"
+}

@@ -1,0 +1,23 @@
+{
+  "review_task_id": "ee8153cf-df11-47af-8157-aaf473ce8dbb",
+  "build_task_id": "690cd9ab-da44-4dd5-8cb2-0212384dc3db",
+  "ea_id": "QM5_1612",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "FAIL",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "Current MQ5/EX5 hashes are unchanged from the 2026-08-22 RECYCLE review; no remediation artifact exists.",
+    "The approved baseline includes USOIL.DWX, but neither USOIL.DWX nor governed XTIUSD.DWX has a magic row or setfile for QM5_1612.",
+    "The required 2.5-times-20-day-median spread guard is replaced by a fixed point cap that defaults to disabled, and the D1 exit is evaluated on every tick before QM_IsNewBar.",
+    "The identity JSON omits task_id, ea_id, ea_dir, magic_base, symbols_registered, spec_md_path, compile_succeeded, smoke_result, and smoke_report_path; no smoke summary was supplied.",
+    "SPEC.md contains control bytes 0x07 at offset 77 and 0x1B at offsets 106 and 2063."
+  ],
+  "reviewed_at": "2026-08-24T07:26:14Z"
+}
