@@ -4,13 +4,15 @@
 **Slug:** `ehlers-adaptive-cg-h4`
 **Source:** `6e967762-b26d-59a3-b076-35c17f2e7c36` (see `strategy-seeds/sources/6e967762-b26d-59a3-b076-35c17f2e7c36/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-08-22
+**Last revised:** 2026-08-24
 
 ---
 
 ## 1. Strategy Logic
 
-This EA mechanizes the approved Ehlers Adaptive Center of Gravity strategy on H4 bars. It estimates the dominant cycle period P using a 48-bar autocorrelation periodogram, sets the CG oscillator length to half the dominant cycle (N = P / 2), and computes the Center of Gravity oscillator on close prices with a 1-bar lagged trigger line. Long entries fire when the CG oscillator crosses above its trigger line in agreement with a positive D1 EMA(200) slope. Short entries fire on downward CG crossings with a negative D1 EMA(200) slope. Trades use a 2.0 ATR stop loss, exit on CG-trigger re-crossings or daily EMA slope reversals, and close on an adaptive 2.0 * P bar time stop.
+This EA mechanizes the approved Ehlers Adaptive Center of Gravity strategy on H4 bars. It estimates dominant cycle period P with the Ehlers 2013 Autocorrelation-Periodogram: a 48/10 roofing filter, centered Pearson lag correlations, smoothed and normalized spectral power, and center-of-gravity selection over the qualifying spectrum. It sets the CG oscillator length to half the dominant cycle (N = P / 2) and uses the 1-bar-lagged CG as trigger. Long entries fire when CG crosses above its trigger in agreement with a positive D1 EMA(200) slope; shorts mirror. Trades use a 2.0 ATR stop loss, exit on CG re-crossings or daily EMA slope reversals, and close after 2.0 * entry-P completed H4 bars.
+
+The accepted entry's P, direction, and H4 entry-bar timestamp are sealed in the order comment. On initialization the EA restores that trade-associated provenance from the open position or latest entry deal. Rejected orders never update cooldown state.
 
 ---
 
@@ -20,7 +22,7 @@ This EA mechanizes the approved Ehlers Adaptive Center of Gravity strategy on H4
 |---|---|---|---|
 | `strategy_period_min` | 6 | >=4 | Minimum dominant cycle period bound in H4 bars. |
 | `strategy_period_max` | 48 | <=64 | Maximum dominant cycle period bound in H4 bars. |
-| `strategy_autocorr_lookback` | 48 | >=20 | Lookback window for autocorrelation periodogram calculation. |
+| `strategy_autocorr_lookback` | 48 | period_max..64 | Maximum autocorrelation lag used by the periodogram. |
 | `strategy_d1_ema_period` | 200 | >=10 | D1 EMA period for macro trend slope filter. |
 | `strategy_atr_period` | 14 | >=2 | ATR period for stop loss sizing and spread filter. |
 | `strategy_sl_atr_mult` | 2.0 | >0.0 | Stop loss distance in ATR multiples. |
@@ -63,7 +65,7 @@ This EA mechanizes the approved Ehlers Adaptive Center of Gravity strategy on H4
 |---|---|
 | Base timeframe | `H4` |
 | Multi-timeframe refs | `D1` close EMA(200) slope |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_H4)`; initialization fails closed on any non-H4 chart |
 
 ---
 
@@ -107,3 +109,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-22 | Initial build from card | 02da6437-8c76-42c5-82df-ed307ce12628 |
+| v2 | 2026-08-24 | Review rework | Canonical Ehlers ACP, actual-bar time stop, durable entry state, H4 execution contract, post-accept cooldown commit |
