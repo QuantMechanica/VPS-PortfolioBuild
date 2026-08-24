@@ -19,13 +19,14 @@ Entry/exit logic is encoded in the five `Strategy_*` hooks in
 `QM5_35001_cowabunga-multi-timeframe-trend-system.mq5`. Framework wiring (risk, magic, news, Friday close)
 is inherited from `QM_Common.mqh` and is not redocumented here.
 
-The Cowabunga System uses H4 to determine macro trend direction (EMA 5/10 cross + RSI 9 > 50 / < 50) and M15 for precise 5/10 EMA crossover triggers filtered by RSI(9), Stochastic(10,3,3), and MACD(12,26,9) histogram slope.
-- Long Entry: H4 Trend UP (EMA5 > EMA10 AND RSI9 > 50), M15 EMA5 crosses above EMA10, M15 RSI9 > 50, M15 Stoch_K > Stoch_D AND Stoch_K < 80, M15 MACD Histogram > 0 AND (Hist[1] > Hist[2] OR Hist[2] <= 0).
-- Short Entry: H4 Trend DOWN (EMA5 < EMA10 AND RSI9 < 50), M15 EMA5 crosses below EMA10, M15 RSI9 < 50, M15 Stoch_K < Stoch_D AND Stoch_K > 20, M15 MACD Histogram < 0 AND (Hist[1] < Hist[2] OR Hist[2] >= 0).
-- Stop Loss: Placed at recent M15 swing low/high buffered by 3.0 pips (clamped between 0.5x and 3.5x ATR(14)).
+The Cowabunga System uses H4 to determine macro trend direction (EMA 5/10 cross + RSI 9 > 50 / < 50) and M15 for precise 5/10 EMA crossover triggers filtered by RSI(9), Stochastic(10,3,3), and an exact MACD(12,26,9) histogram zero-line transition.
+- Long Entry: H4 Trend UP (EMA5 > EMA10 AND RSI9 > 50), M15 EMA5 crosses above EMA10, M15 RSI9 > 50, M15 Stoch_K > Stoch_D AND Stoch_K < 80, M15 MACD Histogram[1] > 0 AND Histogram[2] <= 0.
+- Short Entry: H4 Trend DOWN (EMA5 < EMA10 AND RSI9 < 50), M15 EMA5 crosses below EMA10, M15 RSI9 < 50, M15 Stoch_K < Stoch_D AND Stoch_K > 20, M15 MACD Histogram[1] < 0 AND Histogram[2] >= 0.
+- Stop Loss: Placed exactly at the recent M15 swing low/high buffered by 3.0 pips. An invalid-side swing stop rejects the entry; the stop is never replaced by an ATR corridor.
 - Take Profit: 2.0x SL distance (1:2.0 Risk:Reward ratio).
 - Trailing / Break-Even: When profit reaches +1.0R, move SL to Break-Even + 1.0 pip.
-- No-Trade Filter: Rollover blackout 23:55-00:05 and dynamic spread filter (spread > 1.8 * ATR(14)).
+- No-Trade Filter: GMT rollover blackout 23:55-00:05, daily realized-loss entry halt at 2.0%, and dynamic spread filter (spread > 1.8 * ATR(14)). Entry-only filters run after open-position management and strategy exits.
+- Capital Preservation: Daily equity hard stop 2.5%, total drawdown stop 5.0%, and market-order slippage tolerance of 3 trade ticks.
 
 ---
 
@@ -47,6 +48,10 @@ The Cowabunga System uses H4 to determine macro trend direction (EMA 5/10 cross 
 | `strategy_tp_rr_mult` | 2.0 | 1.5 - 3.0 | Risk:Reward multiplier for Take Profit |
 | `strategy_atr_period` | 14 | 10 - 20 | ATR period for spread/fallback |
 | `strategy_spread_atr_mult` | 1.8 | 1.0 - 2.5 | Spread filter ATR multiplier |
+| `strategy_daily_loss_halt_pct` | 2.0 | (0.0, 2.0] | Daily realized-loss entry halt |
+| `strategy_daily_hard_stop_pct` | 2.5 | (0.0, 2.5] | Daily equity hard stop |
+| `strategy_total_dd_halt_pct` | 5.0 | (0.0, 5.0] | Account-level total drawdown stop |
+| `strategy_slippage_ticks` | 3 | 1 - 3 | Market-order slippage tolerance in trade ticks |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -109,6 +114,6 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by the framework and build tooling (`EA_RISK_SIZER_UNCONFIGURED` on an unconfigured sizing contract).
 
 ---

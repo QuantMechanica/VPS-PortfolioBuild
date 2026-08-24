@@ -4,7 +4,7 @@
 **Slug:** `nnfx-alma-qqe-volume-flow-sniper`
 **Source:** `nnfx-alma-qqe-volume-flow-sniper-official-source` (see `strategy-seeds/sources/nnfx-alma-qqe-volume-flow-sniper/`)
 **Author of this spec:** Development (Gemini)
-**Last revised:** 2026-08-17
+**Last revised:** 2026-08-24
 
 ---
 
@@ -22,10 +22,10 @@ The official NNFX trend-following momentum algorithm on D1 combines Arnaud Legou
 - Long Entry: Close[1] > ALMA[1] AND QQE == UP (+1) AND DPO[1] > 0 AND VFI[1] > 0.
 - Short Entry: Close[1] < ALMA[1] AND QQE == DOWN (-1) AND DPO[1] < 0 AND VFI[1] < 0.
 - Stop Loss: Placed at 1.0 * ATR(14, D1)[1] from entry.
-- Take Profit: Placed at 1.0 * ATR(14, D1)[1] from entry.
-- Break-Even: Move SL to Entry + 1.0 pip when open profit reaches +1.0R (1.0x ATR).
-- Indicator Exit: Close position when QQE flips against trade (DOWN for Long, UP for Short) or Close crosses opposite ALMA.
-- No-Trade Filter: Dynamic spread filter (Spread > 1.8 * ATR(14, D1)[1]) and rollover blackout 23:55–00:05 GMT.
+- TP1: At +1.0 * entry ATR, close exactly 50% and retain a runner; TP1 completion is reconstructed from position-deal history after restart.
+- Break-Even: After the TP1 close succeeds, move the runner SL to Entry + 1.0 pip.
+- Runner Exit: Close the runner only on an opposite QQE crossover (DOWN for Long, UP for Short).
+- No-Trade Filter: Dynamic spread filter (Spread > 1.8 * ATR(14, D1)[1]), rollover blackout 23:55–00:05 GMT, one-position cap, and a 2.0% account daily realized-loss entry halt.
 
 ---
 
@@ -45,7 +45,14 @@ The official NNFX trend-following momentum algorithm on D1 combines Arnaud Legou
 | `strategy_atr_period` | 14 | 10 - 20 | ATR period for stop loss and spread filter |
 | `strategy_sl_atr_mult` | 1.00 | 0.8 - 1.5 | Stop loss distance as ATR multiplier |
 | `strategy_tp_atr_mult` | 1.00 | 0.8 - 1.5 | Take profit distance as ATR multiplier |
+| `strategy_tp1_fraction` | 0.50 | fixed | TP1 partial-close fraction |
+| `strategy_be_buffer_pips` | 1 | fixed | Runner break-even buffer after TP1 |
 | `strategy_spread_atr_mult` | 1.80 | 1.0 - 2.5 | Spread filter ATR multiplier |
+| `strategy_daily_loss_halt_pct` | 2.0 | fixed | Daily realized-loss entry halt |
+| `strategy_daily_hard_stop_pct` | 2.5 | fixed | Daily equity hard-stop threshold |
+| `strategy_total_dd_halt_pct` | 5.0 | fixed | Total account drawdown stop |
+| `strategy_per_trade_risk_cap_pct` | 1.0 | fixed | Per-trade risk cap passed to the kill switch |
+| `strategy_slippage_ticks` | 3 | 1 - 3 | Market-order deviation in trade ticks |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -72,7 +79,7 @@ The official NNFX trend-following momentum algorithm on D1 combines Arnaud Legou
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_D1)` |
 
 ---
 
@@ -107,6 +114,6 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit`; static build validation reports `EA_RISK_SIZER_UNCONFIGURED` when neither sizing mode is usable.
 
 ---

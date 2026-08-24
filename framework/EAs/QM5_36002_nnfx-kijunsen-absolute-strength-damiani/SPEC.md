@@ -37,7 +37,10 @@ The exact mechanical implementation is:
 - Long Entry: Close[1] > Kijun[1] AND ASO_Bulls[1] > ASO_Bears[1] AND AroonUp[1] >= 70.0 AND Damiani Trade == TRUE.
 - Short Entry: Close[1] < Kijun[1] AND ASO_Bears[1] > ASO_Bulls[1] AND AroonDown[1] >= 70.0 AND Damiani Trade == TRUE.
 - Stop Loss: Placed at 1.0 * ATR(14, D1)[1] from entry.
-- TP1: At +1.0R (the entry stop distance, derived from ATR), close 50% once.
+- TP1: At +1.0R (the entry stop distance, derived from ATR), close exactly 50%
+  once. Entries whose normalized volume cannot produce equal valid TP1 and
+  runner lots are rejected. The completed TP1 state is reconstructed from the
+  position's outgoing-deal history after restart, preventing repeated halving.
 - Runner protection: After TP1, move SL to Entry + 1.0 pip for a long or Entry - 1.0 pip for a short.
 - Runner Exit: Close position when price re-crosses Kijun-Sen line (Close[1] < Kijun[1] for Long, Close[1] > Kijun[1] for Short).
 - No-Trade Filter: Dynamic spread filter (Spread > 1.8 * ATR(14, D1)[1]), rollover blackout 23:55–00:05 UTC (broker time converted with `QM_BrokerToUTC`), a 2.0% account realized-loss entry halt, and a one-position maximum for the strategy instance.
@@ -61,7 +64,7 @@ The exact mechanical implementation is:
 | `strategy_atr_period` | 14 | 10 - 20 | ATR period for stop loss and spread filter |
 | `strategy_sl_atr_mult` | 1.00 | 0.8 - 1.5 | Stop loss distance as ATR multiplier |
 | `strategy_tp_atr_mult` | 1.00 | 0.8 - 1.5 | TP1 trigger as a multiple of the entry ATR risk |
-| `strategy_tp1_fraction` | 0.50 | 0.1 - 0.9 | Volume closed once at TP1 |
+| `strategy_tp1_fraction` | 0.50 | 0.1 - 0.9 | Volume closed exactly once at TP1; the configured symbol lot step must leave an equal valid runner |
 | `strategy_be_buffer_pips` | 1 | 0 - 5 | Runner stop offset beyond entry after TP1 |
 | `strategy_spread_atr_mult` | 1.80 | 1.0 - 2.5 | Spread filter ATR multiplier |
 | `strategy_daily_loss_halt_pct` | 2.0 | 0.1 - 2.5 | Account realized-loss threshold that blocks new entries |
@@ -143,3 +146,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-24 | Initial build from card | a48f0404-cbba-4611-9eaa-bbd9e4f82a75 |
+| v2 | 2026-08-24 | Review rework | TP1 is exact-volume and restart-safe; regression coverage added for review findings |
