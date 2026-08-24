@@ -17515,9 +17515,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 39003,forexfactory-james16-price-action-ppz,0,EURUSD.DWX,390030000,2026-08-18,Gemini,active
 39003,forexfactory-james16-price-action-ppz,1,GBPUSD.DWX,390030001,2026-08-18,Gemini,active
 39003,forexfactory-james16-price-action-ppz,2,XAUUSD.DWX,390030002,2026-08-18,Gemini,active
-39004,forexfactory-thv-cobra-trix-scalper,0,EURUSD.DWX,390040000,2026-08-18,Gemini,active
-39004,forexfactory-thv-cobra-trix-scalper,1,USDJPY.DWX,390040001,2026-08-18,Gemini,active
-39004,forexfactory-thv-cobra-trix-scalper,2,GBPUSD.DWX,390040002,2026-08-18,Gemini,active
+39004,forexfactory-thv-cobra-trix-scalper,0,EURUSD.DWX,390040000,2026-08-18,Codex burn-window build,active
+39004,forexfactory-thv-cobra-trix-scalper,1,USDJPY.DWX,390040001,2026-08-18,Codex burn-window build,active
+39004,forexfactory-thv-cobra-trix-scalper,2,GBPUSD.DWX,390040002,2026-08-18,Codex burn-window build,active
 41057,xauxag-wflow-agree-fade,0,XAUUSD.DWX,410570000,2026-08-18T00:00:00Z,Codex,active
 41057,xauxag-wflow-agree-fade,1,XAGUSD.DWX,410570001,2026-08-18T00:00:00Z,Codex,active
 39006,forexfactory-spudfyre-stochastic-ribbon,0,EURUSD.DWX,390060000,2026-08-18,Gemini,active

@@ -70,6 +70,7 @@ double g_cached_slow_trix_1 = 0.0;
 double g_cached_coral_1     = 0.0;
 double g_cached_atr_1       = 0.0;
 bool   g_state_ready        = false;
+double g_initial_equity     = 0.0;
 
 int StrategyHhmm(const datetime t)
 {
@@ -82,8 +83,8 @@ bool StrategyInRolloverWindow(const datetime t)
 {
    const int hhmm = StrategyHhmm(t);
    if(strategy_rollover_start_hhmm > strategy_rollover_end_hhmm)
-      return (hhmm >= strategy_rollover_start_hhmm || hhmm < strategy_rollover_end_hhmm);
-   return (hhmm >= strategy_rollover_start_hhmm && hhmm < strategy_rollover_end_hhmm);
+      return (hhmm >= strategy_rollover_start_hhmm || hhmm <= strategy_rollover_end_hhmm);
+   return (hhmm >= strategy_rollover_start_hhmm && hhmm <= strategy_rollover_end_hhmm);
 }
 
 bool StrategyConfigValid()
@@ -134,7 +135,9 @@ bool CalculateTrix(const int period, const int shift, double &trix_val)
    const double alpha = 2.0 / ((double)period + 1.0);
    const double one_minus_alpha = 1.0 - alpha;
    const int oldest = copied;
-   const double seed_close = rates[oldest - 1].close;
+   const int seed_index = oldest - 1;
+   if(seed_index < 0 || seed_index >= ArraySize(rates)) return false;
+   const double seed_close = rates[seed_index].close;
    if(seed_close <= 0.0) return false;
 
    double ema1 = seed_close;
@@ -144,6 +147,7 @@ bool CalculateTrix(const int period, const int shift, double &trix_val)
 
    for(int s = oldest - 1; s >= 0; --s)
    {
+      if(s < 0 || s >= ArraySize(rates)) return false;
       const double cl = rates[s].close;
       if(cl <= 0.0) return false;
       ema1 = alpha * cl + one_minus_alpha * ema1;
@@ -192,6 +196,17 @@ bool StrategyDailyRealizedLossHalt()
    if(balance_now <= 0.0 || day_start_balance <= 0.0)
       return true;
    return (realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0));
+}
+
+bool StrategyTotalDrawdownHalt()
+{
+   if(g_initial_equity <= 0.0)
+      return true;
+   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(equity_now <= 0.0)
+      return true;
+   const double drawdown_pct = (g_initial_equity - equity_now) * 100.0 / g_initial_equity;
+   return (drawdown_pct >= strategy_total_dd_halt_pct);
 }
 
 bool Strategy_NoTradeFilter()
@@ -360,6 +375,10 @@ int OnInit()
                          strategy_per_trade_risk_cap_pct))
       return INIT_FAILED;
 
+   g_initial_equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(g_initial_equity <= 0.0)
+      return INIT_FAILED;
+
    AdvanceState_OnNewBar();
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_39004_forexfactory-thv-cobra-trix-scalper\"}");
@@ -378,6 +397,16 @@ void OnTick()
 
    if(!QM_KillSwitchCheck())
       return;
+
+   if(StrategyTotalDrawdownHalt())
+   {
+      QM_KillSwitchTrip(KS_PORTFOLIO_DD,
+                        StringFormat("{\"initial_equity\":%.2f,\"equity_now\":%.2f,\"halt_pct\":%.2f}",
+                                     g_initial_equity,
+                                     AccountInfoDouble(ACCOUNT_EQUITY),
+                                     strategy_total_dd_halt_pct));
+      return;
+   }
 
    const datetime broker_now = TimeCurrent();
    if(QM_FrameworkHandleFridayClose())
