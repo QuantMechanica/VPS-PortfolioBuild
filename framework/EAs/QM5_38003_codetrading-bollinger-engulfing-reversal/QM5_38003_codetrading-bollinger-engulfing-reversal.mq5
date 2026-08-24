@@ -243,6 +243,17 @@ bool StrategyDailyRealizedLossHalt()
    return (realized_pnl <= -(day_start_balance * strategy_daily_loss_halt_pct / 100.0));
 }
 
+bool StrategySpreadAllowsEntry()
+{
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask < bid || g_last_atr <= 0.0)
+      return false;
+
+   const double spread = ask - bid;
+   return (spread <= g_last_atr * strategy_spread_filter_mult);
+}
+
 bool Strategy_NoTradeFilter()
 {
    if(StrategyInRolloverWindow(QM_BrokerToUTC(TimeCurrent())))
@@ -255,19 +266,7 @@ bool Strategy_NoTradeFilter()
    if(StrategyDailyRealizedLossHalt())
       return true;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || g_last_atr <= 0.0)
-      return true;
-
-   if(ask > bid)
-   {
-      const double spread = ask - bid;
-      if(spread > g_last_atr * strategy_spread_filter_mult)
-         return true;
-   }
-
-   return false;
+   return !StrategySpreadAllowsEntry();
 }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -502,7 +501,7 @@ void OnTick()
 
    QM_EntryRequest req;
    ZeroMemory(req);
-   if(Strategy_EntrySignal(req))
+   if(Strategy_EntrySignal(req) && StrategySpreadAllowsEntry())
    {
       ulong out_ticket = 0;
       QM_TM_OpenPosition(req, out_ticket);

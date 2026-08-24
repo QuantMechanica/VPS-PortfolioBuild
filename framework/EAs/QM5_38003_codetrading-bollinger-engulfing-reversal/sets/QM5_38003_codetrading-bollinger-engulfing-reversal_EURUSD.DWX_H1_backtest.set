@@ -3,14 +3,14 @@
 ; ea_id:        38003
 ; ea_slug:      codetrading-bollinger-engulfing-reversal
 ; ea_version:   v5.0
-; set_version:  s20260823-002
+; set_version:  s20260823-003
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1710662cd09f19cbbd27af4843bb67d5029197010b2a5ed0f53cb137ea69333d
+; build_hash:   f9d52ea768617feca5996dc62fb58c95b8c3b96111239337db791b015b480771
 ; author:       Codex
 ; date:         2026-08-23
 ;==========================================================
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_38003_codetrading-bollinger-engulfing-reversal.md
+; card_defaults_source=strategy-seeds/cards/approved/QM5_38003_codetrading-bollinger-engulfing-reversal.md
 strategy_signal_tf=16385
 strategy_bb_period=20
 strategy_bb_dev=2.00
