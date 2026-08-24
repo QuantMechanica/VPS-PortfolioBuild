@@ -50,6 +50,10 @@ input int    strategy_time_stop_bars         = 8;
 input double strategy_spread_max_atr         = 0.25;
 input int    strategy_warmup_bars            = 120;
 
+const ENUM_TIMEFRAMES STRATEGY_TIMEFRAME = PERIOD_D1;
+double   g_strategy_closed_crsi = -1.0;
+datetime g_strategy_snapshot_bar = 0;
+
 // -----------------------------------------------------------------------------
 // ConnorsRSI (CRSI) calculation
 // -----------------------------------------------------------------------------
@@ -106,17 +110,18 @@ bool Strategy_RsiChron(const double &values[],
 double Strategy_ComputeCRSI(const int shift)
 {
    const int total_needed = strategy_crsi_rank_period + 20;
-   if(iBars(_Symbol, PERIOD_D1) < total_needed + shift)
+   const int history_needed = (strategy_warmup_bars > total_needed) ? strategy_warmup_bars : total_needed;
+   if(iBars(_Symbol, STRATEGY_TIMEFRAME) < history_needed + shift) // perf-allowed: bounded once-per-D1 snapshot preflight.
       return -1.0;
 
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, PERIOD_D1, shift, total_needed, rates);
-   if(copied < total_needed)
+   const int copied = CopyRates(_Symbol, STRATEGY_TIMEFRAME, shift, total_needed, rates); // perf-allowed: bounded immutable closed-D1 snapshot only.
+   if(copied < total_needed || ArraySize(rates) < total_needed)
       return -1.0;
 
    // 1. Price RSI(3)
-   const double price_rsi = QM_RSI(_Symbol, PERIOD_D1, strategy_crsi_rsi_period, shift, PRICE_CLOSE);
+   const double price_rsi = QM_RSI(_Symbol, STRATEGY_TIMEFRAME, strategy_crsi_rsi_period, shift, PRICE_CLOSE);
    if(price_rsi < 0.0)
       return -1.0;
 
@@ -175,21 +180,153 @@ double Strategy_ComputeCRSI(const int shift)
    return crsi;
 }
 
+bool Strategy_RefreshClosedD1Snapshot()
+{
+   const datetime closed_bar = iTime(_Symbol, STRATEGY_TIMEFRAME, 1); // perf-allowed: one closed-bar identity read at the governed D1 boundary.
+   if(closed_bar <= 0)
+      return false;
+
+   if(g_strategy_snapshot_bar == closed_bar)
+      return (g_strategy_closed_crsi >= 0.0);
+
+   // One immutable CRSI reconstruction per closed D1 bar. Entry and exit hooks
+   // only read this cache; neither performs recursive history work per tick.
+   g_strategy_snapshot_bar = closed_bar;
+   g_strategy_closed_crsi = Strategy_ComputeCRSI(1);
+   return (g_strategy_closed_crsi >= 0.0);
+}
+
+bool Strategy_IsApprovedSymbol()
+{
+   return (_Symbol == "SP500.DWX" || _Symbol == "NDX.DWX" || _Symbol == "WS30.DWX");
+}
+
+int Strategy_ApprovedMagicSlot()
+{
+   if(_Symbol == "NDX.DWX")
+      return 1;
+   if(_Symbol == "SP500.DWX")
+      return 2;
+   if(_Symbol == "WS30.DWX")
+      return 4;
+   return -1;
+}
+
+bool Strategy_IsPendingType(const ENUM_ORDER_TYPE type)
+{
+   return (type == ORDER_TYPE_BUY_LIMIT || type == ORDER_TYPE_SELL_LIMIT ||
+           type == ORDER_TYPE_BUY_STOP || type == ORDER_TYPE_SELL_STOP ||
+           type == ORDER_TYPE_BUY_STOP_LIMIT || type == ORDER_TYPE_SELL_STOP_LIMIT);
+}
+
+bool Strategy_HasOurExposure()
+{
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return true;
+
+   if(QM_TM_OpenPositionCount(magic) > 0)
+      return true;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(Strategy_IsPendingType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+         return true;
+   }
+   return false;
+}
+
+bool Strategy_ReconcilePendingAtD1Boundary()
+{
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   bool all_ok = true;
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(!Strategy_IsPendingType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+         continue;
+
+      const datetime setup_time = (datetime)OrderGetInteger(ORDER_TIME_SETUP);
+      const int setup_shift = iBarShift(_Symbol, STRATEGY_TIMEFRAME, setup_time, false); // perf-allowed: one pending-order age lookup at the governed D1 boundary.
+      if(setup_shift < 1)
+         continue;
+
+      if(!QM_TM_RemovePendingOrder(ticket, "CONNORS_D1_T_PLUS_1_EXPIRY"))
+         all_ok = false;
+   }
+   return all_ok;
+}
+
+double Strategy_StopDistance()
+{
+   const double atr = QM_ATR(_Symbol, STRATEGY_TIMEFRAME, strategy_atr_period, 1);
+   if(atr <= 0.0 || strategy_sl_atr_mult <= 0.0)
+      return 0.0;
+   return atr * strategy_sl_atr_mult;
+}
+
+bool Strategy_EnsureFillRelativeStop(const ulong ticket)
+{
+   if(ticket == 0 || !PositionSelectByTicket(ticket))
+      return false;
+   if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+      return false;
+   if((int)PositionGetInteger(POSITION_MAGIC) != QM_FrameworkMagic())
+      return false;
+   if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
+      return false;
+
+   const double fill_price = PositionGetDouble(POSITION_PRICE_OPEN);
+   const double stop_distance = Strategy_StopDistance();
+   if(fill_price <= 0.0 || stop_distance <= 0.0)
+      return false;
+
+   const double target_sl = QM_StopRulesNormalizePrice(_Symbol, fill_price - stop_distance);
+   const double current_sl = PositionGetDouble(POSITION_SL);
+   const double current_tp = PositionGetDouble(POSITION_TP);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double epsilon = (point > 0.0) ? point * 0.5 : 1e-10;
+   if(target_sl > 0.0 && target_sl < fill_price && MathAbs(current_sl - target_sl) <= epsilon)
+      return true;
+
+   if(target_sl <= 0.0 || target_sl >= fill_price)
+      return false;
+   if(!QM_TM_SendSLTPModify(ticket, target_sl, current_tp, "CONNORS_FILL_RELATIVE_ATR_STOP"))
+      return false;
+
+   if(!PositionSelectByTicket(ticket))
+      return false;
+   return (MathAbs(PositionGetDouble(POSITION_SL) - target_sl) <= epsilon);
+}
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
 bool Strategy_NoTradeFilter()
 {
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
-      return true;
-
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return true;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   const double atr = QM_ATR(_Symbol, STRATEGY_TIMEFRAME, strategy_atr_period, 1);
    if(atr > 0.0 && ask > bid && (ask - bid) > (strategy_spread_max_atr * atr))
       return true;
 
@@ -198,23 +335,28 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   if(g_strategy_snapshot_bar <= 0 || g_strategy_closed_crsi < 0.0)
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   if(magic > 0 && QM_TM_OpenPositionCount(magic) > 0)
+   if(Strategy_HasOurExposure())
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
-   const double close2 = iClose(_Symbol, PERIOD_D1, 2);
-   const double high1  = iHigh(_Symbol, PERIOD_D1, 1);
-   const double low1   = iLow(_Symbol, PERIOD_D1, 1);
+   MqlRates setup_rates[];
+   ArraySetAsSeries(setup_rates, true);
+   const int copied = CopyRates(_Symbol, STRATEGY_TIMEFRAME, 1, 2, setup_rates); // perf-allowed: two closed D1 bars, once at the governed boundary.
+   if(copied != 2 || ArraySize(setup_rates) < 2)
+      return false;
+
+   const double close1 = setup_rates[0].close;
+   const double close2 = setup_rates[1].close;
+   const double high1  = setup_rates[0].high;
+   const double low1   = setup_rates[0].low;
 
    if(close1 <= 0.0 || close2 <= 0.0 || high1 <= low1 || low1 <= 0.0)
       return false;
 
    // 1. ADX(10) > 30.0
-   const double adx = QM_ADX(_Symbol, PERIOD_D1, strategy_adx_period, 1);
+   const double adx = QM_ADX(_Symbol, STRATEGY_TIMEFRAME, strategy_adx_period, 1);
    if(adx <= strategy_adx_thresh)
       return false;
 
@@ -228,7 +370,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // 4. ConnorsRSI(3, 2, 100) < 5.0
-   const double crsi = Strategy_ComputeCRSI(1);
+   const double crsi = g_strategy_closed_crsi;
    if(crsi < 0.0 || crsi >= strategy_crsi_entry_thresh)
       return false;
 
@@ -237,23 +379,32 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double limit_price = close1 * strategy_limit_mult;
+   const double stop_distance = Strategy_StopDistance();
+   if(stop_distance <= 0.0)
+      return false;
    if(limit_price >= ask)
    {
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_sl_atr_mult);
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, ask - stop_distance);
    }
    else
    {
       req.type = QM_BUY_LIMIT;
       req.price = limit_price;
-      req.sl = QM_StopATR(_Symbol, QM_BUY, limit_price, strategy_atr_period, strategy_sl_atr_mult);
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, limit_price - stop_distance);
    }
+
+   const double sizing_reference = (req.price > 0.0) ? req.price : ask;
+   if(req.sl <= 0.0 || req.sl >= sizing_reference)
+      return false;
 
    req.tp = 0.0;
    req.reason = "CONNORS_CRSI_PULLBACK_BUY";
    req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 86400;
+   // The card's t+1 expiry is enforced by Strategy_ReconcilePendingAtD1Boundary.
+   // GTC avoids converting a trading-bar rule into a DST/weekend wall-clock rule.
+   req.expiration_seconds = 0;
    return true;
 }
 
@@ -274,7 +425,7 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int bars_held = iBarShift(_Symbol, PERIOD_D1, open_time, false);
+       const int bars_held = iBarShift(_Symbol, STRATEGY_TIMEFRAME, open_time, false); // perf-allowed: one time-stop age read per open position at the D1 boundary.
       if(bars_held >= strategy_time_stop_bars)
       {
          QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
@@ -284,20 +435,9 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
 {
-   if(iBars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
-      return false;
-
-   const double crsi = Strategy_ComputeCRSI(1);
-   if(crsi < 0.0)
-      return false;
-
    // Exit when ConnorsRSI closes > 80.0
-   return (crsi > strategy_crsi_exit_thresh);
-}
-
-bool Strategy_NewsFilterHook(const datetime broker_time)
-{
-   return false;
+   return (g_strategy_closed_crsi >= 0.0 &&
+           g_strategy_closed_crsi > strategy_crsi_exit_thresh);
 }
 
 // -----------------------------------------------------------------------------
@@ -306,10 +446,18 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
 {
+   if(!Strategy_IsApprovedSymbol() || qm_magic_slot_offset != Strategy_ApprovedMagicSlot())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
                         qm_news_mode_legacy, qm_friday_close_enabled, qm_friday_close_hour_broker,
                         30, 30, qm_news_stale_max_hours, qm_news_min_impact, qm_rng_seed,
-                        qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
+                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
+      return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(STRATEGY_TIMEFRAME,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "CARD_HAS_NO_FRIDAY_RULE_FRAMEWORK_RISK_OVERRIDE"))
       return INIT_FAILED;
    return INIT_SUCCEEDED;
 }
@@ -328,18 +476,21 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
+   if(!QM_IsNewBar(_Symbol, STRATEGY_TIMEFRAME))
       return;
 
+   QM_EquityStreamOnNewBar();
+
+   // Expiry, time-stop and CRSI exits are risk-reducing and must remain
+   // reachable independently of quote/spread/news entry filters.
+   const bool pending_reconciled = Strategy_ReconcilePendingAtD1Boundary();
+   const bool snapshot_ready = Strategy_RefreshClosedD1Snapshot();
    Strategy_ManageOpenPosition();
 
-   if(Strategy_ExitSignal())
+   if(snapshot_ready && Strategy_ExitSignal())
    {
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -355,6 +506,9 @@ void OnTick()
       }
    }
 
+   if(!snapshot_ready || !pending_reconciled)
+      return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -363,10 +517,8 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(Strategy_NoTradeFilter())
       return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    ZeroMemory(req);
@@ -387,6 +539,29 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeResult &result)
 {
    QM_FrameworkOnTradeTransaction(trans, request, result);
+
+   if(trans.type != TRADE_TRANSACTION_DEAL_ADD || trans.deal == 0 || trans.position == 0)
+      return;
+   if(!HistoryDealSelect(trans.deal))
+      return;
+   const ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
+   if(entry != DEAL_ENTRY_IN && entry != DEAL_ENTRY_INOUT)
+      return;
+   if(HistoryDealGetString(trans.deal, DEAL_SYMBOL) != _Symbol)
+      return;
+   if((int)HistoryDealGetInteger(trans.deal, DEAL_MAGIC) != QM_FrameworkMagic())
+      return;
+
+   // Pending and market requests are sized from the same ATR distance carried
+   // in req.sl. Rebinding that distance to POSITION_PRICE_OPEN preserves fixed
+   // risk after a price-improved/gapped fill. Failure to verify protection is
+   // fail-closed: the newly opened exposure is immediately removed.
+   if(!Strategy_EnsureFillRelativeStop(trans.position))
+   {
+      QM_LogEvent(QM_ERROR, "FILL_RELATIVE_STOP_FAILED",
+                  StringFormat("{\"position\":%I64u,\"deal\":%I64u}", trans.position, trans.deal));
+      QM_TM_ClosePosition(trans.position, QM_EXIT_KILLSWITCH);
+   }
 }
 
 double OnTester()

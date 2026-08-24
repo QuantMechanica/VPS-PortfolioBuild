@@ -8,6 +8,7 @@ Checks:
 2. All 7 mandatory section headers are present.
 3. No `<ANGLE_BRACKETED_PLACEHOLDER>` strings remain (copy-paste leftovers).
 4. The EA ID line matches the directory name.
+5. No text-corrupting control bytes or truncated currency tokens remain.
 
 Exit codes:
   0  PASS — SPEC is complete.
@@ -42,6 +43,8 @@ REQUIRED_SECTIONS = [
 PLACEHOLDER_RE = re.compile(r"<[A-Z_][A-Z0-9_]*>|<[a-z_][a-z0-9_]*>")
 EA_ID_RE = re.compile(r"\*\*EA ID:\*\*\s*QM5_(\d+)")
 DIR_RE = re.compile(r"^QM5_(\d+)_(.+)$")
+DISALLOWED_CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+MALFORMED_CURRENCY_RE = re.compile(r"(?<![\w$]),\d{3}\b")
 
 
 def check_one(ea_dir: Path) -> tuple[bool, list[str]]:
@@ -55,6 +58,18 @@ def check_one(ea_dir: Path) -> tuple[bool, list[str]]:
         return False, [f"SPEC.md missing at {spec}"]
 
     text = spec.read_text(encoding="utf-8", errors="replace")
+
+    control_chars = sorted({ord(match.group(0)) for match in DISALLOWED_CONTROL_RE.finditer(text)})
+    if control_chars:
+        rendered = ", ".join(f"0x{value:02X}" for value in control_chars)
+        failures.append(f"disallowed control character(s): {rendered}")
+
+    malformed_currency = MALFORMED_CURRENCY_RE.search(text)
+    if malformed_currency:
+        failures.append(
+            "malformed currency token (for example `,000`); preserve the literal "
+            "currency marker, such as `$1,000`"
+        )
 
     for section in REQUIRED_SECTIONS:
         if f"## {section}" not in text:
