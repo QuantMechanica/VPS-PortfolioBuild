@@ -3,8 +3,8 @@
 **EA ID:** QM5_39004
 **Slug:** `forexfactory-thv-cobra-trix-scalper`
 **Source:** `forexfactory-thv-cobra-trix-scalper-official-source`
-**Author of this spec:** Gemini
-**Last revised:** 2026-08-23
+**Author of this spec:** Development
+**Last revised:** 2026-08-24
 
 ---
 
@@ -16,6 +16,8 @@ Long entry executes on a closed M5 bar when Close is above the Coral line, Fast 
 
 The Coral stop is exact: invalid stop geometry rejects entry rather than substituting an ATR stop. Fast-Trix direction is reconstructed from the current broker-side position type after restart, so exit behavior does not depend on entry-process memory. Exit management runs before entry-only rollover, spread, daily-loss, and news admission.
 
+The card's illustrative state diagram names break-even and trailing states but does not define either trigger or a trailing-distance rule. The executable card sections therefore remain literal: broker-side Coral SL and 2R TP plus the Fast-Trix direction exit; no unapproved break-even or trailing mechanics are invented.
+
 ---
 
 ## 2. Parameters
@@ -25,9 +27,9 @@ The Coral stop is exact: invalid stop geometry rejects entry rather than substit
 | `InpCoralPeriod` | 20 | 14-30 | THV Coral SMMA baseline period |
 | `InpFastTrix` | 9 | 5-12 | Fast Trix derivative period |
 | `InpSlowTrix` | 18 | 12-24 | Slow Trix derivative period |
-| `strategy_atr_period` | 14 | 7-28 | ATR period on M5 |
-| `strategy_sl_buffer_pips` | 2.0 | 1.0-5.0 | Stop loss buffer beyond Coral in pips |
-| `strategy_tp_rr` | 2.0 | 1.5-3.5 | Take profit risk-to-reward multiple |
+| `strategy_atr_period` | 14 | fixed | ATR period on M5 |
+| `strategy_sl_buffer_pips` | 2.0 | fixed | Stop loss buffer beyond Coral in pips |
+| `strategy_tp_rr` | 2.0 | fixed | Take profit risk-to-reward multiple |
 | `strategy_rollover_start_hhmm` | 2355 | fixed | GMT rollover blackout start |
 | `strategy_rollover_end_hhmm` | 5 | fixed | GMT rollover blackout end |
 | `strategy_spread_filter_mult` | 1.8 | fixed | ATR spread ceiling multiplier |
@@ -66,10 +68,10 @@ The Coral stop is exact: invalid stop geometry rejects entry rather than substit
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 150 |
-| Typical hold time | 15-60 minutes |
-| Expected drawdown profile | < 2.7% maximum drawdown |
+| Typical hold time | Not declared by the approved card; measured downstream |
+| Expected drawdown profile | 12% conservative ordering prior from card frontmatter; source claims are not gate evidence |
 | Regime preference | Intraday trend continuation and momentum scalping |
-| Win rate target (qualitative) | High (70-80% win rate) |
+| Source win-rate claim | Not used as gate evidence |
 
 ---
 
@@ -89,8 +91,8 @@ This card was mechanised from:
 | Phase | Risk mode | Value |
 |---|---|---|
 | Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
-| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Live burn-in (Q13) | Min-lot | Set only by an OWNER-signed deploy manifest |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Card value 0.5%; final value and portfolio weight require an OWNER-signed manifest |
 
 ---
 
@@ -100,3 +102,4 @@ This card was mechanised from:
 |---|---|---|---|
 | v1 | 2026-08-18 | Initial build from card | Gemini build pass |
 | v2 | 2026-08-23 | Card-contract remediation | Exact Coral stop, restart-safe Trix exit, UTC rollover, loss rails, and slippage cap |
+| v3 | 2026-08-24 | Burn-window conformance | Explicit buffer index proofs, inclusive rollover endpoint, total-DD execution, and card mirror |
