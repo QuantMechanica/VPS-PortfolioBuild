@@ -1,0 +1,26 @@
+{
+  "review_task_id": "d47d0803-00ea-4832-905a-d5436728784f",
+  "build_task_id": "3c1da904-b03a-40d5-a1b3-c23e9ffad4b8",
+  "ea_id": "QM5_36001",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "FAIL",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The remediated source does implement genuine SSL/DeMarker crossings, symmetric WAE gating, a managed partial TP, UTC rollover handling, and management-before-entry filters. Those headline repairs were independently confirmed.",
+    "OnInit declares no QM_FrameworkDeclareExecutionContract and OnTick uses parameterless QM_IsNewBar(), so the approved D1/Friday-close execution contract is not fail-closed and entry cadence follows the host chart. The source also directly includes Trade/Trade.mqh despite the framework corset permitting only the QM_Common include chain.",
+    "The approved hard stop is exactly one completed-D1 ATR. Strategy_EntrySignal substitutes MathMax(strategy_sl_atr_mult * atr_1, 10 pips), silently widening the stop whenever one ATR is smaller than ten pips and changing risk geometry.",
+    "The card's 2.0% gate is explicitly daily realized loss, but Strategy_NoTradeFilter compares current ACCOUNT_EQUITY with the framework day-start equity, so floating PnL can block entries. QM_KillSwitchInit's return value is also ignored, allowing OnInit success if the card-specific 2.5%/5.0% reconfiguration fails.",
+    "RISK_PERCENT defaults to 0.5 while RISK_FIXED also defaults positive. The fixed-risk presets correctly override RISK_PERCENT to zero, but the EA's default risk mode is ambiguous and not fail-closed.",
+    "TP1 uses the current D1 ATR rather than entry risk and records completion only through a successful break-even stop. If partial close succeeds but QM_TM_MoveSL fails, the next tick can halve the remainder again; if the half close is unavailable, the source moves the full position to break-even without banking the required 50%.",
+    "The MQ5 hashes to 03be79d0e3dfbf52a8d2169ab22c9107271ab3ad713faeed1ebe908e1bfb43ac, but the EX5 hash 5b463d9138ee8ad1d31566ac0093b127932965facfde75c09f184c683f789a61 is byte-identical to the pre-remediation binary. The JSON merely relabels both hashes, claims smoke_result passed with a null smoke_report_path, and supplies no compile binding or runtime report. build_result fails and smoke_sanity remains UNKNOWN.",
+    "Guardrail and SPEC validation pass; all five backtest sets use RISK_FIXED=1000 and RISK_PERCENT=0; active magic rows are unique, formula-correct, and resolver-backed. These checks do not cure the source and evidence failures."
+  ],
+  "reviewed_at": "2026-08-24T11:08:18Z"
+}
