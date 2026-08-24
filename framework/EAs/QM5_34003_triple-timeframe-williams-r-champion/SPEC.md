@@ -1,104 +1,101 @@
 # QM5_34003_triple-timeframe-williams-r-champion - Strategy Spec
 
 **EA ID:** QM5_34003
-**Slug:** 	riple-timeframe-williams-r-champion
-**Source:** 	riple-timeframe-williams-r-champion-official-source (see strategy-seeds/sources/triple-timeframe-williams-r-champion-official-source/)
-**Author of this spec:** Development
-**Last revised:** 2026-08-17
-
----
+**Slug:** triple-timeframe-williams-r-champion
+**Approved card:** `D:/QM/strategy_farm/artifacts/cards_approved/QM5_34003_triple-timeframe-williams-r-champion.md`
+**Last revised:** 2026-08-24
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-rtifacts/cards_approved/QM5_34003_triple-timeframe-williams-r-champion.md. See that card body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
+The EA evaluates closed bar `[1]` only. H4 and H1 Williams %R establish trend
+direction; M15 Williams %R identifies the pullback entry.
 
-Entry/exit logic is encoded in the five Strategy_* hooks in
-QM5_34003_triple-timeframe-williams-r-champion.mq5. Framework wiring (risk, magic, news, Friday close)
-is inherited from QM_Common.mqh and is not redocumented here.
+- Long: WPR(14,H4) >= -35, WPR(14,H1) >= -50, WPR(14,M15) <= -80.
+- Short: WPR(14,H4) <= -65, WPR(14,H1) <= -50, WPR(14,M15) >= -20.
+- Initial SL: 1.5 * ATR(14,M15)[1].
+- Initial TP: 2.5 * initial SL distance.
+- Maximum one open position for the EA magic.
 
-- Multi-timeframe trend alignment: H4 macro trend, H1 intermediate trend, M15 entry timing.
-- Indicator: Williams %R (14) across H4, H1, M15.
-- Long Entry: H4 WPR >= -35.0 AND H1 WPR >= -50.0 AND M15 WPR <= -80.0.
-- Short Entry: H4 WPR <= -65.0 AND H1 WPR <= -50.0 AND M15 WPR >= -20.0.
-- Stop Loss: 1.5 * ATR(14, M15)[1].
-- Take Profit: 2.5 * SL_Distance (1:2.5 R:R).
+The card mentions break-even and trailing states but supplies no numerical
+activation rule. The EA therefore does not invent either mechanism; the exact
+card SL and TP remain broker-side.
 
----
+No-trade and capital-preservation rules:
+
+- Block new entries from 23:55 through 00:05 UTC, using `QM_BrokerToUTC`.
+- Block when spread exceeds 1.8 * ATR(14,M15)[1].
+- Block after daily realized loss reaches 2.0% of start-of-day balance.
+- Flatten/halt at 2.5% daily equity drawdown and close/block at 5.0% total
+  drawdown from initial session equity.
+- Convert the card's three-tick slippage ceiling to points through
+  `QM_EntryConfigure`.
+
+Management and hard exits run before entry-only news, rollover, spread, and
+signal gates.
 
 ## 2. Parameters
 
-| Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| strategy_wpr_period | 14 | 10 - 28 | Williams %R calculation lookback period |
-| strategy_h4_trend_long | -35.0 | -45.0 - -25.0 | H4 macro trend threshold for Long |
-| strategy_h4_trend_short | -65.0 | -75.0 - -55.0 | H4 macro trend threshold for Short |
-| strategy_h1_trend_mid | -50.0 | -60.0 - -40.0 | H1 intermediate trend threshold |
-| strategy_m15_pullback_long | -80.0 | -90.0 - -70.0 | M15 pullback extreme for Long |
-| strategy_m15_pullback_short | -20.0 | -30.0 - -10.0 | M15 pullback extreme for Short |
-| strategy_atr_period | 14 | 10 - 20 | ATR period for stop loss sizing |
-| strategy_sl_atr_mult | 1.5 | 1.0 - 2.5 | Initial SL in ATR multiples |
-| strategy_tp_rr_mult | 2.5 | 1.5 - 3.5 | Take Profit risk:reward multiplier |
-| strategy_spread_atr_period | 14 | 10 - 20 | Spread filter ATR period |
-| strategy_spread_atr_mult | 1.8 | 1.2 - 2.5 | Spread filter threshold |
+| Input | Default | Purpose |
+|---|---:|---|
+| `strategy_wpr_period` | 14 | Williams %R lookback on H4/H1/M15 |
+| `strategy_h4_trend_long` | -35.0 | Long H4 threshold |
+| `strategy_h4_trend_short` | -65.0 | Short H4 threshold |
+| `strategy_h1_trend_mid` | -50.0 | H1 trend threshold |
+| `strategy_m15_pullback_long` | -80.0 | Long M15 pullback threshold |
+| `strategy_m15_pullback_short` | -20.0 | Short M15 pullback threshold |
+| `strategy_atr_period` | 14 | Stop-distance ATR lookback |
+| `strategy_sl_atr_mult` | 1.5 | Initial stop ATR multiple |
+| `strategy_tp_rr_mult` | 2.5 | Reward/risk multiple |
+| `strategy_spread_atr_period` | 14 | Spread-filter ATR lookback |
+| `strategy_spread_atr_mult` | 1.8 | Spread-filter ATR multiple |
+| `strategy_max_open_positions` | 1 | EA-magic position ceiling |
+| `strategy_max_slippage_ticks` | 3 | Market-entry deviation ceiling |
+| `strategy_daily_loss_halt_pct` | 2.0 | Realized-loss entry halt |
+| `strategy_daily_hard_stop_pct` | 2.5 | Daily equity hard stop |
+| `strategy_total_dd_stop_pct` | 5.0 | Total equity drawdown stop |
 
----
+Every input is consumed by executable source and sealed into all three
+backtest setfiles.
 
 ## 3. Symbol Universe
 
-**Designed for:**
-- EURUSD.DWX - registered in magic_numbers.csv for this EA (slot 0)
-- GBPUSD.DWX - registered in magic_numbers.csv for this EA (slot 1)
-- USDCHF.DWX - registered in magic_numbers.csv for this EA (slot 2)
+| Symbol | Magic slot |
+|---|---:|
+| EURUSD.DWX | 0 |
+| GBPUSD.DWX | 1 |
+| USDCHF.DWX | 2 |
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the QM_SymbolGuard framework helper
-rejects foreign symbols).
-
----
+No other symbols are authorized by the approved card or registry rows.
 
 ## 4. Timeframe
 
 | Aspect | Value |
 |---|---|
 | Base timeframe | M15 |
-| Multi-timeframe refs | H4, H1, M15 |
-| Bar gating | QM_IsNewBar(_Symbol, PERIOD_M15) |
-
----
+| Multi-timeframe references | H4, H1, M15 |
+| Decision shift | Closed bar `[1]` |
+| Entry gate | `QM_IsNewBar(_Symbol, PERIOD_M15)` |
 
 ## 5. Expected Behaviour
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 110 |
-| Cadence note | 80-160 high-conviction trades per year |
-| Typical hold time | Intraday to multi-day swing |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | Trending with pullback |
-| Win rate target (qualitative) | high |
-
----
+| Trades/year/symbol | 110 ordering prior; Q02 measures reality |
+| Typical holding period | Intraday to multi-day |
+| Preferred regime | Trend with M15 pullback |
+| Concurrency | One position per EA magic |
 
 ## 6. Source Citation
 
-This card was mechanised from:
-
-**Source ID:** 	riple-timeframe-williams-r-champion-official-source
-**Pointer:** strategy-seeds/sources/triple-timeframe-williams-r-champion-official-source/
-**R1-R4 verdict (Q00):** all PASS - see
-rtifacts/cards_approved/QM5_34003_triple-timeframe-williams-r-champion.md
-
----
+Alexey Bobylov (Better), *Automated Trading Championship 1st Place Winner
+Report* (2007), as authenticated by the approved G0 Strategy Card named above.
 
 ## 7. Risk Model
 
-| Phase | Risk mode | Value |
-|---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | ,000 per trade (HR4) |
-| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
-
-ENV->mode validation is enforced by QM_FrameworkInit (EA_INPUT_RISK_MODE_MISMATCH).
+- Backtest: `RISK_FIXED=1000`, `RISK_PERCENT=0`.
+- Live packaging: positive `RISK_PERCENT` and `RISK_FIXED=0`; live use is not
+  authorized by this build.
+- V5 umbrella include only: `QM/QM_Common.mqh`.
+- Magic is resolved by the framework/MagicResolver for slots 0-2.
+- Entry uses `QM_TM_OpenPosition`; MAE uses
+  `QM_FrameworkTrackOpenPositionMae`; indicators use pooled `QM_WPR`/`QM_ATR`.
