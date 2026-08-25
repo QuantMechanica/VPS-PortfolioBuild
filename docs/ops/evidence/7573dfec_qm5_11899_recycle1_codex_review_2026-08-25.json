@@ -1,0 +1,45 @@
+{
+  "schema": "qm.codex-review-evidence/v1",
+  "review_task_id": "7573dfec-4c4e-4bde-840a-12ea6b8d89f1",
+  "source_task_id": "1f400c88-a2b7-4c48-acd4-37a139b772fe",
+  "source_agent": "gemini",
+  "ea_id": "QM5_11899",
+  "reviewed_at": "2026-08-25T15:21:00Z",
+  "verdict": "CHANGES_REQUIRED_UNCHANGED",
+  "identity": {
+    "mq5_sha256": "01d9a06e46b8f1007757b78bf23aabf026811bd443b6b31c2d977efabf9c42aa",
+    "ex5_sha256": "c9f22e73cba4775666ecf97a9b132150c36c8fe84f70fd105bb1e4e38d5daf26",
+    "matches_routed_build_result": true,
+    "last_mq5_commit": "f5a23a4a26ffe9a0bb429042dbec3481bbd23d81"
+  },
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "code": "NEW_BAR_EDGE_DOUBLE_CONSUME",
+      "detail": "Strategy_ExitSignal consumes the H1 QM_IsNewBar edge at line 193 and OnTick consumes it again at line 264, preventing the approved same-bar mirror re-entry after an alternate exit."
+    },
+    {
+      "severity": "BLOCKER",
+      "code": "MAE_HOOK_ORDER",
+      "detail": "OnTick calls QM_KillSwitchCheck at line 235 before QM_FrameworkTrackOpenPositionMae at line 236; a kill-switch return skips mandatory open-position MAE sampling."
+    },
+    {
+      "severity": "BLOCKER",
+      "code": "MANDATORY_PRE_NEWS_CLOSE_ABSENT",
+      "detail": "All news modes are OFF at lines 22-26, Strategy_NewsFilterHook is inert at line 214, and the remaining news call only gates entries. The card-required close 15 minutes before scheduled high-impact EUR/USD/GBP news is absent."
+    },
+    {
+      "severity": "BLOCKER",
+      "code": "WALL_CLOCK_TIMEOUT_NOT_COMPLETED_BARS",
+      "detail": "The 96-bar hard timeout at lines 187-190 compares TimeCurrent minus open time with nominal seconds; weekends and market closures count despite producing no completed H1 bars."
+    }
+  ],
+  "positive_checks": [
+    "The earlier PSAR-transition finding is not treated as a blocker in this recycle; the routed close adjudicated it non-defective.",
+    "The earlier untracked-artifact observation is stale; build_result.json is present in the committed EA directory.",
+    "build_gate_hardening failures=0 and warnings=0.",
+    "validate_build_guardrails PASS across 11 files with the 336-hour ceiling.",
+    "All 10 backtest setfiles use RISK_FIXED=1000 and RISK_PERCENT=0."
+  ],
+  "required_action": "Deliver source rework for the four confirmed blockers, then a governed compile and identity-bound build artifact for independent Codex re-review. Keep this Gemini-origin task in REVIEW; do not promote to Q02 or PIPELINE."
+}

@@ -1,0 +1,44 @@
+{
+  "schema": "qm.codex-review-evidence/v1",
+  "review_task_id": "cf69bca5-0d11-498c-acfa-19c602f1b5f6",
+  "source_task_id": "98fb1997-3c5d-4bfa-af26-6f46dd7c8a1b",
+  "source_agent": "gemini",
+  "ea_id": "QM5_37005",
+  "reviewed_at": "2026-08-25T15:21:00Z",
+  "verdict": "CHANGES_REQUIRED_IDENTITY",
+  "current_identity": {
+    "mq5_sha256": "97514cfe13fca4bdb4700225c0b4b3c1cde0445cc217e43811b924ed8a175885",
+    "ex5_sha256": "24552679e230ad968363a8afd13972d880a422ea74eb279869f8fdbc31ab7709",
+    "setfile_build_hashes": [
+      "76ad59b8630a83f60db3cc43cd17e9bb76b3656757a59acfa129b26cc64e459d",
+      "9f106ed83e1132f7e540b659f8c6c2a437b0c5d279157b2af978c505097c0e86",
+      "f989880e7dfd9a88d7e9f1c2d3cc285074cdcaf95ccfaba6aa44396113b549fb"
+    ],
+    "last_mq5_commit": "e59303901b3c24cdae4f9343ac7a1e16218b9900"
+  },
+  "source_artifact_identity": {
+    "mq5_sha256": "12dd519d1493d732d093e7d613dde5c6c63c5ff7fe0102037e4a61f1aa754e1f",
+    "ex5_sha256": "24552679e230ad968363a8afd13972d880a422ea74eb279869f8fdbc31ab7709"
+  },
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "code": "STALE_PRE_REWORK_EX5",
+      "detail": "The current EX5 is byte-identical to the routed pre-rework Gemini binary, while the MQ5 was changed by commit e59303901 to fix card exits and loss controls. No governed COMPILE_OK binds that source to a new binary."
+    },
+    {
+      "severity": "BLOCKER",
+      "code": "INCONSISTENT_SETFILE_BUILD_IDENTITY",
+      "detail": "The EURUSD, AUDCAD, and USDCAD setfiles carry three different build_hash values, and none equals the current MQ5 SHA-256. The executable/setfile/source bundle is not deterministic."
+    }
+  ],
+  "positive_checks": [
+    "The unauthorized 1R fallback is removed; an invalid SMA-midline target now rejects the setup.",
+    "The 2.0% daily entry halt, 2.5% daily hard stop, and 5.0% total drawdown controls are implemented fail-closed.",
+    "Focused rework suite: 4 passed.",
+    "build_gate_hardening failures=0 and warnings=0.",
+    "validate_build_guardrails PASS across 4 files with the 336-hour ceiling.",
+    "All 3 backtest setfiles use RISK_FIXED=1000 and RISK_PERCENT=0."
+  ],
+  "required_action": "Regenerate all three setfiles from one reviewed source identity and run the governed compile path to produce a COMPILE_OK EX5 bound to that same identity. Keep this Gemini-origin task in REVIEW; do not promote the stale binary to Q02 or PIPELINE."
+}
