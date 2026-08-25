@@ -1,0 +1,103 @@
+{
+  "schema": "qm.commodity-energy-build-cpu-stop/v1",
+  "generated_at_utc": "2026-08-25T21:31:14.9967169Z",
+  "branch": "agents/board-advisor",
+  "candidate": {
+    "ea_id": "QM5_41159",
+    "ea_label": "QM5_41159_wti-lad-tr",
+    "strategy_id": "MOP-KOENKER-BASSETT-WTI-LAD-TREND-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 411590000,
+    "mq5_sha256": "bb516e5603b4965a6fe08302f7e983074f741160038596c88958c0e2d1c21732",
+    "spec_sha256": "8d5df7716b0cdc83e768089aa07c88412039536894432f289e8271d2b498c587",
+    "setfile_sha256": "ac8643e2246c2e5922bf3dd9d4ce016592bf5043bce469d5f682961f942c8f13",
+    "reference_test_sha256": "c21fcb9bd97fd8fe5acb6f2868239e74e473c914fb036cda02ae2725c407cb44",
+    "card_sha256": "f396276c9ca565681703f8681ef04f48069716cec05f20a5ada91ee3f122b3b3",
+    "build_source_commit": "992e83f4071348fd88d9cc3ce5691871ec99aded"
+  },
+  "non_duplicate_evidence": {
+    "checker_verdict": "CLEAN",
+    "checker_artifact": "artifacts/qm5_wti_lad_tr_preallocation_dedup_20260825.json",
+    "checker_artifact_sha256": "c53ae2817a8139c7d57c376b0913b9a9f201b48447a285530082b3569114b308",
+    "ea_registry_rows_checked": 4658,
+    "strategy_cards_checked": 1311,
+    "strategy_wiki_nodes_checked": 45,
+    "counterexample_log_prices": [
+      0.0,
+      0.02,
+      0.0,
+      0.0,
+      -0.06,
+      -0.09,
+      -0.05,
+      -0.05,
+      0.03,
+      0.06,
+      -0.02,
+      -0.03,
+      0.05
+    ],
+    "lad_slope_on_counterexample": -0.002,
+    "theil_sen_sign_on_counterexample": "POSITIVE",
+    "repeated_median_sign_on_counterexample": "POSITIVE",
+    "ols_sign_on_counterexample": "POSITIVE",
+    "endpoint_sign_on_counterexample": "POSITIVE"
+  },
+  "verification": {
+    "reference_tests_passed": 10,
+    "reference_tests_failed": 0,
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "ml_hits": [],
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS",
+    "build_guardrail_files_checked": 2,
+    "build_guardrail_findings": 0,
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "symbol_scope_violations": 0,
+    "approved_card_copies_byte_equal": true,
+    "backtest_setfile_count": 1,
+    "non_backtest_setfile_count": 0,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "cpu": {
+    "command": "Get-Counter '\\\\Processor(_Total)\\\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-25T21:28:52.7872538Z",
+    "samples_percent": [
+      93.36,
+      96.94,
+      100.0,
+      88.86,
+      98.44
+    ],
+    "average_percent": 95.52,
+    "maximum_percent": 100.0,
+    "claim_ceiling_percent": 97.0,
+    "resume_percent": 90.0,
+    "anchored_terminal64_count": 7,
+    "anchored_metatester64_count": 7,
+    "anchored_mt5_process_count": 14,
+    "anchored_terminal_slots": ["T2", "T3", "T4", "T6", "T7", "T8", "T9"],
+    "anchored_metatester_slots": ["T2", "T3", "T4", "T6", "T7", "T8", "T9"]
+  },
+  "compile": {
+    "status_at_stop": "NOT_ATTEMPTED_CPU_STOP",
+    "ex5_exists_at_stop": false,
+    "ad_hoc_compile_attempted": false,
+    "governed_compile_enqueued": false
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_count_at_stop": 0,
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "reason": "A strict zero-error/zero-warning compile and hash-bound EX5 are required before Q02; the binding CPU ceiling stopped compile and enqueue."
+  },
+  "stop_reason": "BACKTEST_CPU_CEILING_REACHED",
+  "queue_mutation_after_stop": false,
+  "terminal_or_tester_action": false,
+  "testing_after_stop": false,
+  "live_or_portfolio_mutation": false
+}
