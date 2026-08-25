@@ -311,6 +311,109 @@ def test_review_rework_source_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_hma_cata_requal_authority_is_exact_and_artifact_hash_bound(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    label = "QM5_10251_tv-nova-rev"
+    repo = tmp_path / "repo"
+    artifact_paths = [
+        "decisions/owner.md",
+        "docs/ops/evidence/census.csv",
+        "framework/include/QM/QM_Indicators.mqh",
+    ]
+    expected: dict[str, str] = {}
+    for index, relative_path in enumerate(artifact_paths):
+        artifact = repo / relative_path
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text(f"artifact-{index}\n", encoding="utf-8")
+        expected[relative_path] = compile_work_items.sha256_file(artifact)
+    monkeypatch.setattr(
+        compile_work_items, "HMA_CATA_REQUAL_ARTIFACT_SHA256", expected
+    )
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY,
+        repo_root=repo,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_10252_unrelated",
+        compile_work_items.HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY,
+        repo_root=repo,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_ops_issue:wrong-task",
+        repo_root=repo,
+    )
+
+    (repo / artifact_paths[-1]).write_text("changed\n", encoding="utf-8")
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY,
+        repo_root=repo,
+    )
+
+
+def test_hma_cata_requal_payload_binds_owner_artifacts_and_worker_recheck(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    monkeypatch.setattr(
+        compile_work_items, "HMA_CATA_REQUAL_EA_LABELS", frozenset({label})
+    )
+    artifact = repo / "framework" / "include" / "QM" / "QM_Indicators.mqh"
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    artifact.write_text("// fixed HMA\n", encoding="utf-8")
+    expected = {
+        "framework/include/QM/QM_Indicators.mqh": (
+            compile_work_items.sha256_file(artifact)
+        )
+    }
+    monkeypatch.setattr(
+        compile_work_items, "HMA_CATA_REQUAL_ARTIFACT_SHA256", expected
+    )
+    # Make this a source repair rather than an ordinary first compile.
+    source = repo / "framework" / "EAs" / label / f"{label}.mq5"
+    (source.parent / f"{label}.ex5").write_bytes(b"historical binary")
+
+    result = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority=(
+            compile_work_items.HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY
+        ),
+    )
+
+    assert result["enqueued_count"] == 1
+    work_item_id = result["enqueued"][0]["work_item_id"]
+    with farmctl.connect(root) as conn:
+        raw_payload = conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (work_item_id,)
+        ).fetchone()[0]
+    payload = json.loads(raw_payload)
+    assert payload["owner_decision_id"] == "OWNER-DEC-HMA-CATA"
+    assert payload["requalification_new_identity_from_phase"] == "Q02"
+    assert payload["source_repair_artifact_bindings"] == [
+        {"path": next(iter(expected)), "sha256": next(iter(expected.values()))}
+    ]
+
+    worker_recheck = compile_work_items.classify_candidate(
+        root,
+        repo,
+        label,
+        compile_work_items._inventory(root, repo),
+        current_work_item_id=work_item_id,
+        source_repair_authority=(
+            compile_work_items.HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY
+        ),
+    )
+    assert worker_recheck["eligible"] is True
+    assert worker_recheck["source_repair_authorized"] is True
+
+
 def test_batch_from_file_is_dry_run_until_apply(tmp_path: Path) -> None:
     labels = [
         "QM5_1001_compile-fixture-h1",

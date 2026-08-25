@@ -141,6 +141,37 @@ ROT_REMEDIATION_39001_38001_EA_LABELS = frozenset({
 ROLLOUT_RECONCILIATION_SOURCE_REPAIR_AUTHORITY = (
     "router_ops_issue:e9944090-1e0f-4dea-af90-e74f8079d1c8"
 )
+# Exact OWNER-approved requalification authority for the nine Category-A EAs
+# whose historical PASS chain was built through the defective QM_HMA helper.
+# This contract is deliberately self-expiring: enqueue and worker recheck both
+# require the decision, approved census, and fixed shared include to retain the
+# reviewed hashes below. It grants no authority outside these nine labels.
+HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY = (
+    "router_ops_issue:c29fddf8-fab7-4909-a506-499f6ab78f37"
+)
+HMA_CATA_REQUAL_OWNER_DECISION_ID = "OWNER-DEC-HMA-CATA"
+HMA_CATA_REQUAL_EA_LABELS = frozenset({
+    "QM5_10251_tv-nova-rev",
+    "QM5_10593_mql5-adxhull",
+    "QM5_10602_mql5-oshma",
+    "QM5_10833_tv-autobot12",
+    "QM5_10960_ftmo-hma-rsi",
+    "QM5_12742_nnfx-configurable-engine",
+    "QM5_12958_nnfx-hma-wae-swing",
+    "QM5_2002_nnfx-qqe-trend",
+    "QM5_9998_tv-hull-suite-hma-color-flip",
+})
+HMA_CATA_REQUAL_ARTIFACT_SHA256 = {
+    "decisions/2026-08-25_owner_hma_requal_ftmo_park_q02_dead16.md": (
+        "ec484d61c5d7a103522572d91fcee7adb50a899678e34e536087b593428c5bdd"
+    ),
+    "docs/ops/evidence/2026-08-24_qm_hma_ea_census.csv": (
+        "d5393e1b51c6a43e693933142b384dcc88495b5e5dbc8fc611f0bf36df606d87"
+    ),
+    "framework/include/QM/QM_Indicators.mqh": (
+        "50d47f901236ed0a827fd9e74e82e781f52c7c9a45ff3097630b2e497686bca4"
+    ),
+}
 COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
@@ -261,7 +292,15 @@ def _numeric_ea_reference(value: Any) -> str | None:
     return str(int(match.group(1)))
 
 
-def _source_repair_authorized(
+def _hma_cata_requal_artifact_bindings() -> list[dict[str, str]]:
+    return [
+        {"path": path, "sha256": expected_sha}
+        for path, expected_sha in sorted(HMA_CATA_REQUAL_ARTIFACT_SHA256.items())
+    ]
+
+
+def _hma_cata_requal_authorized(
+    repo_root: Path | None,
     ea_label: str,
     authority: str | None,
     *,
@@ -270,6 +309,57 @@ def _source_repair_authorized(
     inventory: dict[str, Any] | None = None,
     current_work_item_id: str | None = None,
 ) -> bool:
+    if (
+        authority != HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY
+        or ea_label not in HMA_CATA_REQUAL_EA_LABELS
+        or repo_root is None
+    ):
+        return False
+    for relative_path, expected_sha in HMA_CATA_REQUAL_ARTIFACT_SHA256.items():
+        artifact = repo_root / Path(relative_path)
+        if not artifact.is_file() or sha256_file(artifact).lower() != expected_sha:
+            return False
+    if current_work_item_id is None:
+        return True
+    if not ea_id or not source_sha or inventory is None:
+        return False
+    current_row = _work_row_by_id(inventory, ea_id, current_work_item_id)
+    current_payload = _json_object(
+        current_row.get("payload_json") if current_row else None
+    )
+    return bool(
+        current_row
+        and current_payload.get("append_only_source_repair") is True
+        and current_payload.get("compile_source_repair_authority") == authority
+        and str(current_payload.get("mq5_sha256") or "").lower()
+        == str(source_sha).lower()
+        and current_payload.get("owner_decision_id")
+        == HMA_CATA_REQUAL_OWNER_DECISION_ID
+        and current_payload.get("source_repair_artifact_bindings")
+        == _hma_cata_requal_artifact_bindings()
+    )
+
+
+def _source_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    repo_root: Path | None = None,
+    ea_id: str | None = None,
+    source_sha: str | None = None,
+    inventory: dict[str, Any] | None = None,
+    current_work_item_id: str | None = None,
+) -> bool:
+    if authority == HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY:
+        return _hma_cata_requal_authorized(
+            repo_root,
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+            current_work_item_id=current_work_item_id,
+        )
     statically_authorized = bool(
         (
             authority == SOURCE_REPAIR_AUTHORITY
@@ -596,6 +686,7 @@ def classify_candidate(
     repair_authorized = _source_repair_authorized(
         canonical_label,
         source_repair_authority,
+        repo_root=repo_root,
         ea_id=ea_id,
         source_sha=source_sha,
         inventory=inventory,
@@ -740,6 +831,12 @@ def classify_candidate(
             if str(row.get("id")) != str(current_work_item_id or "")
             and str(_json_object(row.get("payload_json")).get("mq5_sha256") or "").lower()
             != str(source_sha or "").lower()
+        ),
+        "source_repair_artifact_bindings": (
+            _hma_cata_requal_artifact_bindings()
+            if repair_authorized
+            and source_repair_authority == HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY
+            else []
         ),
         "current_compile_ok_work_item_ids": current_compile_ok,
     }
@@ -975,6 +1072,22 @@ def enqueue_compile_eas(
             for candidate in eligible:
                 if (
                     source_repair_authority
+                    == HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY
+                    and not _hma_cata_requal_authorized(
+                        repo_root,
+                        str(candidate["ea_label"]),
+                        source_repair_authority,
+                    )
+                ):
+                    refused.append({
+                        **candidate,
+                        "eligible": False,
+                        "reason": "SOURCE_REPAIR_AUTHORITY_INVALID_AT_APPLY",
+                        "reasons": ["SOURCE_REPAIR_AUTHORITY_INVALID_AT_APPLY"],
+                    })
+                    continue
+                if (
+                    source_repair_authority
                     == ROLLOUT_RECONCILIATION_SOURCE_REPAIR_AUTHORITY
                     and not _active_stale_rollout_hold_exists(
                         conn,
@@ -1079,7 +1192,19 @@ def enqueue_compile_eas(
                         "source_repair_waived_reasons": candidate.get(
                             "source_repair_waived_reasons", []
                         ),
+                        "source_repair_artifact_bindings": candidate.get(
+                            "source_repair_artifact_bindings", []
+                        ),
                     })
+                    if (
+                        source_repair_authority
+                        == HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY
+                    ):
+                        payload.update({
+                            "owner_decision_id": HMA_CATA_REQUAL_OWNER_DECISION_ID,
+                            "requalification_scope": "QM_HMA_CATEGORY_A",
+                            "requalification_new_identity_from_phase": "Q02",
+                        })
                 conn.execute(
                     "INSERT INTO work_items "
                     "(id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,"
