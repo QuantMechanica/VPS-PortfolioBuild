@@ -1,0 +1,39 @@
+{
+  "schema": "qm.codex-review-evidence/v1",
+  "review_task_id": "98a8ca09-c712-4064-866e-cf7112c465d5",
+  "source_task_id": "14432f77-9abf-4032-aefc-278a6bdbad34",
+  "source_agent": "gemini",
+  "ea_id": "QM5_1417",
+  "reviewed_at": "2026-08-25T15:12:00Z",
+  "verdict": "CHANGES_REQUIRED_UNCHANGED",
+  "current_identity": {
+    "mq5_sha256": "81ef61c05c0fb6be24cdb1b58b537eeaf5f77fa30a9754afcbcaef264d22f3bc",
+    "ex5_sha256": "a22a278f4526793299851a1f4557bcaa9ee3fceb411c14d26726e68051830ee9",
+    "setfile_build_hash": "730efcecfa5ec6a043a423cd64fabcd1285c5881e6653f462d67a8a0d2732a20",
+    "last_mq5_commit": "0c4d5e34df7807038b9fc60b3e8d2c6351821263"
+  },
+  "source_artifact_identity": {
+    "mq5_sha256": "8f01e6c78b44922626a70c79ba96d8479427c0267f9f1cd6e8a92d24fad1fc5c",
+    "ex5_sha256": "a22a278f4526793299851a1f4557bcaa9ee3fceb411c14d26726e68051830ee9"
+  },
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "code": "EA_FRAMEWORK_RAW_COPYBUFFER",
+      "detail": "Current source still calls CopyBuffer directly at MQ5 lines 303 and 443; the required QM_SMA/QM_ATR or QM_IndicatorReadBuffer remediation was not delivered."
+    },
+    {
+      "severity": "BLOCKER",
+      "code": "STALE_BINARY_AND_BUILD_BINDING",
+      "detail": "The current repaired MQ5 differs from the Gemini artifact source while the EX5 is unchanged from that artifact; no governed COMPILE_OK binds the repaired source to a binary."
+    }
+  ],
+  "positive_checks": [
+    "The four prior card-semantics defects remain fixed in rework commit 0c4d5e34d.",
+    "build_gate_hardening failures=0 and warnings=0.",
+    "validate_build_guardrails PASS at qm_news_stale_max_hours=336 across 15 files.",
+    "All 14 backtest setfiles use RISK_FIXED=1000 and RISK_PERCENT=0.",
+    "Focused three-EA rework suite: 16 passed."
+  ],
+  "required_action": "Replace both raw CopyBuffer sites without changing corrected chronology, then run the governed compile path and return a COMPILE_OK identity-bound EX5. Keep this Gemini-origin task in REVIEW; do not promote to Q02 or PIPELINE."
+}

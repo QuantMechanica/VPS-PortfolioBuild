@@ -1,0 +1,35 @@
+{
+  "schema": "qm.codex-review-evidence/v1",
+  "review_task_id": "c5811f96-bf23-490f-a8e5-2887606d16a7",
+  "source_task_id": "77bb60df-1c46-46db-b0d5-3560e2949375",
+  "source_agent": "gemini",
+  "ea_id": "QM5_1425",
+  "reviewed_at": "2026-08-25T15:12:00Z",
+  "verdict": "CHANGES_REQUIRED_UNCHANGED",
+  "current_identity": {
+    "mq5_sha256": "efd7ca3a8bd2a923050af27fa3e02551c736a30140bd4c9aa035024926de7cf2",
+    "ex5_sha256": "7cae1f96a30910f832df2d726e89205d714f26edd1b1eaaf0cf9b8a3e60fc51d",
+    "setfile_build_hash": "45c2da17808f38def24b158d4fe7c517a77cafab02491ca759cc05b8bfb6d408",
+    "last_mq5_commit": "2441e3a82a0da115d8d75e8ff028756025e938fd"
+  },
+  "source_artifact_identity": {
+    "mq5_sha256": "263e03e45c3b6fe16398919bfb51421f23462ef2e1737c1eca8c6571a434af14",
+    "ex5_sha256": "7cae1f96a30910f832df2d726e89205d714f26edd1b1eaaf0cf9b8a3e60fc51d"
+  },
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "code": "STALE_PRE_REWORK_EX5",
+      "detail": "The on-disk EX5 is byte-identical to the Gemini artifact's original binary while the current MQ5 is the later card-faithful rework. No governed COMPILE_OK binds the repaired source to a replacement EX5."
+    }
+  ],
+  "positive_checks": [
+    "The eight prior source defects remain fixed in rework commit 2441e3a82.",
+    "No raw CopyBuffer call remains; execution contract is explicit PERIOD_H4 and new-bar selection is explicit.",
+    "build_gate_hardening failures=0 with one documented SMA-helper analysis warning.",
+    "validate_build_guardrails PASS at qm_news_stale_max_hours=336 across 15 files.",
+    "All 14 backtest setfiles use RISK_FIXED=1000 and RISK_PERCENT=0.",
+    "Focused three-EA rework suite: 16 passed."
+  ],
+  "required_action": "Produce a governed COMPILE_OK EX5 for the repaired source and return the exact source/binary identity for Codex re-review. Keep this Gemini-origin task in REVIEW; do not promote the original binary to Q02 or PIPELINE."
+}

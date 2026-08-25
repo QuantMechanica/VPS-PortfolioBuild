@@ -1,0 +1,38 @@
+{
+  "schema": "qm.codex-review-evidence/v1",
+  "review_task_id": "9b0b37f8-087b-436e-a044-8b004c20905f",
+  "source_task_id": "0d490609-922c-47df-a3eb-2a27412e3796",
+  "source_agent": "gemini",
+  "ea_id": "QM5_1409",
+  "reviewed_at": "2026-08-25T15:12:00Z",
+  "verdict": "CHANGES_REQUIRED_UNCHANGED",
+  "current_identity": {
+    "mq5_sha256": "b2e08065ec339b602b7c4256cfc5c304a103c3091be02223b7f1a69fcb1b9776",
+    "ex5_sha256": "6fdbf8b1f6c28e3e5f8c9d517106b84d37d8dee0e1f01c27d27b1bb271dcbd3b",
+    "setfile_build_hash": "42c264eb5849a2d7442ac2df2d8e913ff1b281a2b7601c9a7554c78ac7ce3d5d",
+    "last_mq5_commit": "15b2a36c609cb17c28b8fa74dfc850d016b63fd9"
+  },
+  "source_artifact_identity": {
+    "mq5_sha256": "deffd643e4c78e12f58960cca2568e737bd90542a235eca83777c531e8dfaeb3",
+    "ex5_sha256": "71640fddfa134ae235543e034e67a72737a4fa83830b088219b28a23f4648979"
+  },
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "code": "SOURCE_BINARY_SETFILE_IDENTITY_DRIFT",
+      "detail": "Current MQ5, current EX5, and the common setfile build_hash remain three non-matching identities; the routed artifact describes a fourth, older identity. No governed COMPILE_OK binds the reviewed source."
+    },
+    {
+      "severity": "BLOCKER",
+      "code": "D17_AUTHORIZED_UNIVERSE_RED",
+      "detail": "Strict build hardening still emits seven EA_SYMBOL_NOT_IN_CARD_UNIVERSE failures: AUDUSD, GDAXI versus card alias GER40, NZDUSD, SP500, UK100, USDCAD, and USDCHF. Six are out-of-card active magic rows; the alias still keeps the deterministic gate red."
+    }
+  ],
+  "positive_checks": [
+    "Mechanism rework remains source-clean: no raw CopyBuffer and the prior semantic/static defects stay fixed.",
+    "validate_build_guardrails PASS at qm_news_stale_max_hours=336 across 9 files.",
+    "All 8 retained backtest setfiles use RISK_FIXED=1000 and RISK_PERCENT=0.",
+    "Focused three-EA rework suite: 16 passed."
+  ],
+  "required_action": "Use the governed registry writer to resolve the seven strict D17 observations (including the GER40/GDAXI canonical decision), regenerate resolver/setfiles, and produce a governed COMPILE_OK EX5 bound to the current reviewed MQ5. Keep this Gemini-origin task in REVIEW; do not promote to Q02 or PIPELINE."
+}
