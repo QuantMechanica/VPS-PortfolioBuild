@@ -1,0 +1,14 @@
+#!/bin/sh
+# Tracked source for .git/hooks/pre-commit — see
+# tools/strategy_farm/install_ex5_commit_guard_hook.py for installation and
+# docs/ops/EX5_COMMIT_GOVERNANCE_GUARD_2026-08-24.md for the guard contract
+# and its current activation status (NOT installed live by default — see
+# that doc's "Activation status" section before running the installer).
+#
+# Fail-closed: if this hook cannot run python at all, the commit is blocked
+# rather than silently skipped.
+
+set -e
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+exec python "$REPO_ROOT/tools/strategy_farm/validate_ex5_commit_guard.py" \
+    --staged --repo-root "$REPO_ROOT"

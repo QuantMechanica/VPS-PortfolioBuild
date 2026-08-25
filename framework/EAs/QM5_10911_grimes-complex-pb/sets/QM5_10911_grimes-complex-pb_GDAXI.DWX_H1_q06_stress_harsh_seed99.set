@@ -3,16 +3,16 @@
 ; ea_id:        10911
 ; ea_slug:      grimes-complex-pb
 ; ea_version:   v5.0
-; set_version:  s20260725-stress-harsh
+; set_version:  s20260825-stress-harsh
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  q06_stress_harsh
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   fbe8fef3a966cb2010810a2e8f7cff342cd0351fc4df25993c4522f61a1bc414
+; build_hash:   03eb7b56134b589f0e69ce66610f681315261db9c35ba8e357cc520f0c69c518
 ; author:       Development
-; date:         2026-07-25
+; date:         2026-08-25
 ;==========================================================
 qm_magic_slot_offset=3
 qm_rng_seed=99

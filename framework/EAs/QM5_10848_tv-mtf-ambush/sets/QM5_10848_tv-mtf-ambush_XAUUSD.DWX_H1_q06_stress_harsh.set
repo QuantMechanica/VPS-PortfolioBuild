@@ -3,7 +3,7 @@
 ; ea_id:        10848
 ; ea_slug:      tv-mtf-ambush
 ; ea_version:   v5.0
-; set_version:  s20260824-stress-harsh
+; set_version:  s20260825-stress-harsh
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H1
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   ec6f08d4e7970739cd059855aadfd7ee8f57b753185d2cd0351429708c4d0003
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-25
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
