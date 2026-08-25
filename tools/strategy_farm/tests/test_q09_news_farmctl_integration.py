@@ -7,6 +7,8 @@ import types
 from pathlib import Path
 from unittest import mock
 
+import pytest
+
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
@@ -981,6 +983,124 @@ def test_news_autoseal_preserves_stale_closure_and_builds_scoped_successor(
         mock.call("QM5_1", canonical, ea_dir=tmp_path / "QM5_1_demo"),
         mock.call("QM5_1", successor, ea_dir=tmp_path / "QM5_1_demo"),
     ]
+
+
+def _autoseal_plan_collision_fixture(tmp_path: Path) -> tuple[dict, dict]:
+    source_paths = {}
+    for name in ("q08", "baseline", "expert", "closure", "calendar"):
+        path = tmp_path / f"{name}.bin"
+        path.write_bytes(f"{name}-bytes".encode("ascii"))
+        source_paths[name] = path
+    kwargs = {
+        "work_item_id": "q09-child",
+        "candidate_lineage_key": "lineage-key",
+        "deployment_target": "DXZ",
+        "q08_work_item_id": "q08-parent",
+        "q08_evidence_path": source_paths["q08"],
+        "baseline_setfile_path": source_paths["baseline"],
+        "ex5_path": source_paths["expert"],
+        "include_closure_path": source_paths["closure"],
+        "calendar_manifest_path": source_paths["calendar"],
+        "calendar_common_relative_path": "QM/q09_news/events.csv",
+        "full_from_utc": "2019-01-01T00:00:00Z",
+        "full_to_utc": "2025-12-31T23:59:59Z",
+        "selection_from_utc": "2019-01-01T00:00:00Z",
+        "selection_to_utc": "2023-12-31T23:59:59Z",
+        "holdout_from_utc": "2024-01-01T00:00:00Z",
+        "holdout_to_utc": "2025-12-31T23:59:59Z",
+        "complete_months": 60,
+        "holdout_complete_months": 24,
+        "tester_model": "REAL_TICKS",
+        "cost_profile": "DXZ_CANONICAL_REAL_TICKS_V1",
+        "news_or_event_strategy": False,
+        "force_expanded_matrix": False,
+        "contract_version": q09_news_runner.contract.SCHEMA_VERSION_V3,
+    }
+    manifest = {
+        "work_item_id": kwargs["work_item_id"],
+        "candidate_lineage_key": kwargs["candidate_lineage_key"],
+        "contract_version": kwargs["contract_version"],
+        "identities": {
+            "q08_work_item_id": kwargs["q08_work_item_id"],
+            "q08_evidence_sha256": _sha(source_paths["q08"]),
+            "baseline_setfile_sha256": _sha(source_paths["baseline"]),
+            "ex5_sha256": _sha(source_paths["expert"]),
+        },
+    }
+    return kwargs, manifest
+
+
+def test_autoseal_plan_collision_builds_authenticated_hash_scoped_successor(
+    tmp_path: Path,
+) -> None:
+    output_root = tmp_path / "q09_contract_v3"
+    output_root.mkdir()
+    primary_plan = output_root / "run_plan.json"
+    primary_plan.write_text("primary-plan\n", encoding="utf-8")
+    kwargs, manifest = _autoseal_plan_collision_fixture(tmp_path)
+    runner = mock.MagicMock()
+    runner.RunnerError = q09_news_runner.RunnerError
+    runner.load_authenticated_plan.return_value = (
+        {
+            "work_item_id": kwargs["work_item_id"],
+            "candidate_lineage_key": kwargs["candidate_lineage_key"],
+            "contract_version": kwargs["contract_version"],
+        },
+        manifest,
+    )
+
+    def build(**call_kwargs):
+        if call_kwargs["output_root"] == output_root:
+            raise q09_news_runner.RunnerError(
+                "existing planned artifact contradicts immutable content: input_manifest.json"
+            )
+        return {"plan_path": str(call_kwargs["output_root"] / "run_plan.json")}
+
+    runner.build_run_plan.side_effect = build
+
+    plan, generation = farmctl._build_q09_autoseal_plan(
+        runner,
+        output_root=output_root,
+        **kwargs,
+    )
+
+    successor_root = Path(plan["plan_path"]).parent
+    assert generation["mode"] == "hash_scoped_successor"
+    assert successor_root.parent == output_root / "successors"
+    assert successor_root.name == generation["generation_key_sha256"]
+    assert len(successor_root.name) == 64
+    assert generation["supersedes_plan_path"] == str(primary_plan)
+    assert primary_plan.read_text(encoding="utf-8") == "primary-plan\n"
+
+
+def test_autoseal_plan_collision_refuses_mismatched_primary_identity(
+    tmp_path: Path,
+) -> None:
+    output_root = tmp_path / "q09_contract_v3"
+    output_root.mkdir()
+    (output_root / "run_plan.json").write_text("primary-plan\n", encoding="utf-8")
+    kwargs, manifest = _autoseal_plan_collision_fixture(tmp_path)
+    manifest["identities"]["ex5_sha256"] = "0" * 64
+    runner = mock.MagicMock()
+    runner.RunnerError = q09_news_runner.RunnerError
+    runner.build_run_plan.side_effect = q09_news_runner.RunnerError(
+        "existing planned artifact contradicts immutable content: input_manifest.json"
+    )
+    runner.load_authenticated_plan.return_value = (
+        {
+            "work_item_id": kwargs["work_item_id"],
+            "candidate_lineage_key": kwargs["candidate_lineage_key"],
+            "contract_version": kwargs["contract_version"],
+        },
+        manifest,
+    )
+
+    with pytest.raises(q09_news_runner.RunnerError, match="not eligible"):
+        farmctl._build_q09_autoseal_plan(
+            runner,
+            output_root=output_root,
+            **kwargs,
+        )
 
 
 def test_bind_q09_dry_run_does_not_initialize_or_write_database(tmp_path: Path) -> None:

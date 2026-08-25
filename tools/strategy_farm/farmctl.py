@@ -16455,6 +16455,147 @@ def _validated_q09_include_closure(
         )
 
 
+def _build_q09_autoseal_plan(
+    q09_runner: Any,
+    *,
+    output_root: Path,
+    **plan_kwargs: Any,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Preserve an authenticated stale plan and build a scoped successor.
+
+    Autoseal can legitimately refresh the calendar or include-closure input
+    after an earlier, unbound plan was written.  The primary plan directory is
+    immutable, so a changed generation must never overwrite it.  A successor
+    is allowed only when that primary plan authenticates and still binds the
+    exact Q08 evidence, baseline setfile, and EX5 identities supplied now.
+    """
+
+    output_root = output_root.resolve()
+    try:
+        plan = q09_runner.build_run_plan(
+            output_root=output_root,
+            **plan_kwargs,
+        )
+        return plan, {
+            "mode": "primary",
+            "output_root": str(output_root),
+            "supersedes_plan_path": None,
+            "generation_key_sha256": None,
+        }
+    except q09_runner.RunnerError as exc:
+        collision_marker = "existing planned artifact contradicts immutable content:"
+        if collision_marker not in str(exc):
+            raise
+
+        primary_plan_path = output_root / "run_plan.json"
+        primary_plan, primary_manifest = q09_runner.load_authenticated_plan(
+            primary_plan_path
+        )
+        identities = primary_manifest.get("identities") or {}
+        current_identities = {
+            "q08_work_item_id": str(plan_kwargs["q08_work_item_id"]),
+            "q08_evidence_sha256": _sha256_file(
+                Path(plan_kwargs["q08_evidence_path"])
+            ),
+            "baseline_setfile_sha256": _sha256_file(
+                Path(plan_kwargs["baseline_setfile_path"])
+            ),
+            "ex5_sha256": _sha256_file(Path(plan_kwargs["ex5_path"])),
+        }
+        primary_contract = str(
+            primary_manifest.get("contract_version")
+            or primary_plan.get("contract_version")
+            or ""
+        )
+        expected_contract = str(plan_kwargs["contract_version"])
+        primary_matches = bool(
+            primary_plan.get("work_item_id") == plan_kwargs["work_item_id"]
+            and primary_manifest.get("work_item_id") == plan_kwargs["work_item_id"]
+            and primary_plan.get("candidate_lineage_key")
+            == plan_kwargs["candidate_lineage_key"]
+            and primary_manifest.get("candidate_lineage_key")
+            == plan_kwargs["candidate_lineage_key"]
+            and primary_contract == expected_contract
+            and all(
+                str(identities.get(key) or "").lower() == value.lower()
+                for key, value in current_identities.items()
+            )
+        )
+        if not primary_matches:
+            raise q09_runner.RunnerError(
+                "immutable primary Q09 plan collision is not eligible for a "
+                "successor: authenticated Q08/setfile/EX5 identity mismatch"
+            ) from exc
+
+        path_fields = (
+            "q08_evidence_path",
+            "baseline_setfile_path",
+            "ex5_path",
+            "include_closure_path",
+            "calendar_manifest_path",
+        )
+        source_bindings = {
+            field: {
+                "path": str(Path(plan_kwargs[field]).resolve()),
+                "sha256": _sha256_file(Path(plan_kwargs[field])),
+            }
+            for field in path_fields
+        }
+        generation_material = {
+            "schema_version": "qm.q09-autoseal-plan-generation/v1",
+            "work_item_id": str(plan_kwargs["work_item_id"]),
+            "candidate_lineage_key": str(plan_kwargs["candidate_lineage_key"]),
+            "q08_work_item_id": str(plan_kwargs["q08_work_item_id"]),
+            "deployment_target": str(plan_kwargs["deployment_target"]),
+            "calendar_common_relative_path": str(
+                plan_kwargs["calendar_common_relative_path"]
+            ),
+            "tester_model": str(plan_kwargs["tester_model"]),
+            "cost_profile": str(plan_kwargs["cost_profile"]),
+            "news_or_event_strategy": bool(
+                plan_kwargs.get("news_or_event_strategy", False)
+            ),
+            "force_expanded_matrix": bool(
+                plan_kwargs.get("force_expanded_matrix", False)
+            ),
+            "contract_version": expected_contract,
+            "windows": {
+                key: plan_kwargs[key]
+                for key in (
+                    "full_from_utc",
+                    "full_to_utc",
+                    "selection_from_utc",
+                    "selection_to_utc",
+                    "holdout_from_utc",
+                    "holdout_to_utc",
+                    "complete_months",
+                    "holdout_complete_months",
+                )
+            },
+            "source_bindings": source_bindings,
+        }
+        generation_key = hashlib.sha256(
+            json.dumps(
+                generation_material,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+        successor_root = output_root / "successors" / generation_key
+        plan = q09_runner.build_run_plan(
+            output_root=successor_root,
+            **plan_kwargs,
+        )
+        return plan, {
+            "mode": "hash_scoped_successor",
+            "output_root": str(successor_root),
+            "supersedes_plan_path": str(primary_plan_path),
+            "supersedes_plan_sha256": _sha256_file(primary_plan_path),
+            "generation_key_sha256": generation_key,
+            "generation_material": generation_material,
+        }
+
+
 def auto_seal_pending_q09_news(
     root: Path,
     *,
@@ -16577,7 +16718,9 @@ def auto_seal_pending_q09_news(
             output_root = (
                 Q09_AUTOPILOT_REPORT_ROOT / work_item_id / "q09_contract_v3"
             )
-            plan = q09_runner.build_run_plan(
+            plan, plan_generation = _build_q09_autoseal_plan(
+                q09_runner,
+                output_root=output_root,
                 work_item_id=work_item_id,
                 candidate_lineage_key=_q09_candidate_lineage_key(ea_id, symbol, q08_id),
                 deployment_target="DXZ",
@@ -16590,7 +16733,6 @@ def auto_seal_pending_q09_news(
                 calendar_common_relative_path=Q09_AUTOPILOT_CALENDAR_COMMON_RELATIVE_PATH,
                 tester_model="REAL_TICKS",
                 cost_profile="DXZ_CANONICAL_REAL_TICKS_V1",
-                output_root=output_root,
                 news_or_event_strategy=False,
                 force_expanded_matrix=_force_expanded_news_matrix(candidate),
                 contract_version=q09_runner.contract.SCHEMA_VERSION_V3,
@@ -16634,6 +16776,7 @@ def auto_seal_pending_q09_news(
                     )
                 else:
                     current_payload.pop("q09_include_closure_generated_drift", None)
+                current_payload["q09_autoseal_plan_generation"] = plan_generation
                 conn.execute(
                     "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
                     (json.dumps(current_payload, sort_keys=True), utc_now(), work_item_id),
@@ -16655,6 +16798,7 @@ def auto_seal_pending_q09_news(
                 "plan_file_sha256": plan_file_sha256,
                 "plan_sha256": plan["plan_sha256"],
                 "cell_count": plan["cell_count"],
+                "plan_generation": plan_generation,
                 "activation_hold_released": bound["activation_hold_released"],
                 "superseded_q09_work_item_ids": superseded_q09_ids,
             })
