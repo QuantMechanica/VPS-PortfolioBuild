@@ -1,0 +1,46 @@
+{
+  "schema": "qm.codex-ea-review.v1",
+  "review_task_id": "c789e9ec-4aeb-41c4-acdd-ad8aff760737",
+  "source_task_id": "ea5327f9-2e58-4f02-b542-3861c7432401",
+  "ea_id": "QM5_1407",
+  "reviewer": "codex",
+  "reviewed_at": "2026-08-25T14:38:24.1929164Z",
+  "canonical_head": "87dc33a7abf5a5d10c3f6f0fbb9287db599a7682",
+  "verdict": "CHANGES_REQUIRED",
+  "pipeline_eligible": false,
+  "identity": {
+    "approved_card_sha256": "9b8873c45ae8331d5cbae08abccb0d965e8c85b7610a0abdea9ac0881ce489c4",
+    "current_mq5_sha256": "43daaf27bbaa3ae1b36a6c3eda072c9bcfefa45a89af3936fe9797aba0229def",
+    "current_ex5_sha256": "3511e99858e36be123a908b6b43d3fad5dd98bb30f2c53e205b81da0237a9760",
+    "producer_mq5_sha256": "ec703768d87320dbcffbc2742a7780cfa9aed76729dbf441980af64a90dea39a",
+    "producer_ex5_sha256": "3511e99858e36be123a908b6b43d3fad5dd98bb30f2c53e205b81da0237a9760",
+    "source_binary_match": false,
+    "producer_current_source_match": false
+  },
+  "checks": {
+    "card_mechanics_static_review": "PASS",
+    "qm5_1407_static_tests": "PASS: 7 passed",
+    "build_guardrails_336h": "PASS",
+    "build_gate_source_checks": "PASS",
+    "build_gate_aggregate": "FAIL: 6 D17 unauthorized active magic rows",
+    "setfile_risk": "PASS: 8/8 use RISK_FIXED=1000 and RISK_PERCENT=0",
+    "setfile_build_binding": "FAIL: 8/8 remain PENDING_COMPILE",
+    "strict_build_check": "FAIL: no fresh governed compile/build-check PASS exists for current source"
+  },
+  "blocking_findings": [
+    "The current MQ5 is the card-faithful rework at SHA-256 43daaf27..., but the routed producer artifact is bound to the superseded ec703768... source and the checked-in EX5 is still the old 3511e998... binary. The reviewed source therefore has no matching governed EX5 or strict build-check PASS.",
+    "All eight current setfiles truthfully retain build_hash=PENDING_COMPILE, so none is bound to a compiled form of the reviewed source.",
+    "build_gate_hardening D17 fails because AUDUSD.DWX, NZDUSD.DWX, SP500.DWX, USDCAD.DWX, USDCHF.DWX, and USDJPY.DWX remain active magic rows outside the approved eight-symbol card universe. The review does not retire or rewrite governed registry history."
+  ],
+  "positive_evidence": [
+    "Direct source review and the focused static suite confirm BUY-STOP/SELL-STOP OCO placement, 12-H4 expiry, past-apex invalidation, 0.25-ATR spread gating, 480/480-minute entry news blackout, restart fail-close, checked TP1 actions, time-advancing pattern-failure exits, and the exact eight setfiles including XTIUSD.DWX.",
+    "validate_build_guardrails.py with --max-news-stale-hours 336 returned PASS; qm_news_stale_max_hours remains 336.",
+    "All current backtest sets satisfy the fixed-risk contract."
+  ],
+  "required_follow_up": [
+    "Obtain governed registry adjudication for the six out-of-card active magic rows without reviving, renumbering, or silently mutating historical allocations.",
+    "Run a fresh governed strict compile/build-check against MQ5 SHA-256 43daaf27..., emit a matching EX5 and canonical producer result, and replace PENDING_COMPILE setfile bindings with the resulting governed hash.",
+    "Re-review the new producer identity; do not advance this Gemini-origin lane to PIPELINE from this review."
+  ],
+  "safety_boundary": "Read-only EA review. No EA, card, registry, resolver, setfile, EX5, terminal, backtest, Q-phase, T_Live, AutoTrading, risk threshold, or news-staleness ceiling was changed."
+}
