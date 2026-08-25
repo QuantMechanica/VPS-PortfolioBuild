@@ -26982,8 +26982,11 @@ def service_opt_fork(
         "work_item_ids": work_item_ids,
     }
     if apply:
-        with connect(root) as conn:
-            return service.service_pending(conn, **kwargs)
+        def _apply_with_fresh_connection() -> dict[str, Any]:
+            with connect(root) as conn:
+                return service.service_pending(conn, **kwargs)
+
+        return _with_sqlite_write_retry(_apply_with_fresh_connection)
     uri = f"file:{database.as_posix()}?mode=ro"
     with sqlite3.connect(uri, uri=True, timeout=30) as conn:
         conn.row_factory = sqlite3.Row
