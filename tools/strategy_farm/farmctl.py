@@ -16029,7 +16029,8 @@ def _supersede_stale_q09_holds_after_rebind(
     """Retire older unadjudicated holds only after a replacement binds."""
     replacement = conn.execute(
         """
-        SELECT w.ea_id,w.symbol,w.setfile_path,q.created_at AS q08_created_at
+        SELECT w.ea_id,w.symbol,w.setfile_path,w.payload_json,
+               q.created_at AS q08_created_at
         FROM work_items w
         JOIN work_item_dependencies d
           ON d.child_work_item_id=w.id AND d.dependency_role='Q08_INPUT'
@@ -16042,6 +16043,25 @@ def _supersede_stale_q09_holds_after_rebind(
     ).fetchone()
     if replacement is None:
         return []
+    try:
+        replacement_payload = json.loads(str(replacement["payload_json"] or "{}"))
+    except json.JSONDecodeError as exc:
+        raise ValueError("replacement Q09 payload is not valid JSON") from exc
+    supersession_evidence_path = Path(
+        str(replacement_payload.get("q09_run_plan_path") or "")
+    )
+    supersession_evidence_sha256 = str(
+        replacement_payload.get("q09_run_plan_file_sha256") or ""
+    ).lower()
+    if (
+        not supersession_evidence_path.is_file()
+        or len(supersession_evidence_sha256) != 64
+        or _sha256_file(supersession_evidence_path).lower()
+        != supersession_evidence_sha256
+    ):
+        raise ValueError(
+            "replacement Q09 supersession requires its authenticated bound run plan"
+        )
     stale = conn.execute(
         """
         SELECT w.id,w.payload_json FROM work_items w
@@ -16074,14 +16094,22 @@ def _supersede_stale_q09_holds_after_rebind(
             "superseded_by_work_item_id": replacement_q09_id,
             "superseded_by_q08_work_item_id": replacement_q08_id,
             "superseded_reason": "regenerated_q08_identity_bound_to_replacement_q09",
+            "supersession_evidence_path": str(supersession_evidence_path),
+            "supersession_evidence_sha256": supersession_evidence_sha256,
         })
         conn.execute(
             """
             UPDATE work_items
-            SET status='done',verdict='SUPERSEDED',payload_json=?,updated_at=?
+            SET status='done',verdict='SUPERSEDED',evidence_path=?,
+                payload_json=?,updated_at=?
             WHERE id=? AND status='pending' AND verdict IS NULL
             """,
-            (json.dumps(payload, sort_keys=True), now, row["id"]),
+            (
+                str(supersession_evidence_path),
+                json.dumps(payload, sort_keys=True),
+                now,
+                row["id"],
+            ),
         )
         conn.execute(
             """

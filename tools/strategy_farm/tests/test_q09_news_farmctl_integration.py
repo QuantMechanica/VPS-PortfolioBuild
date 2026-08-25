@@ -799,9 +799,11 @@ def test_autoseal_replaces_immutable_predecessor_after_append_only_q08(
     setfile = tmp_path / "baseline.set"
     old_evidence = tmp_path / "q08-old.json"
     new_evidence = tmp_path / "q08-new.json"
+    replacement_plan = tmp_path / "replacement-run-plan.json"
     setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
     old_evidence.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
     new_evidence.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
+    replacement_plan.write_text('{"sealed":true}\n', encoding="utf-8")
     with farmctl.connect(tmp_path) as conn:
         for row_id, evidence, created, payload in (
             ("q08-old", old_evidence, "2026-08-01T00:00:00Z", {}),
@@ -847,6 +849,17 @@ def test_autoseal_replaces_immutable_predecessor_after_append_only_q08(
     replacement_id = spawned[0]["replacement_q09_work_item_id"]
     assert spawned[0]["replacement_q08_work_item_id"] == "q08-new"
     with farmctl.connect(tmp_path) as conn:
+        replacement_payload = json.loads(conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (replacement_id,)
+        ).fetchone()[0])
+        replacement_payload.update({
+            "q09_run_plan_path": str(replacement_plan),
+            "q09_run_plan_file_sha256": _sha(replacement_plan),
+        })
+        conn.execute(
+            "UPDATE work_items SET payload_json=? WHERE id=?",
+            (json.dumps(replacement_payload), replacement_id),
+        )
         dependency = conn.execute(
             """
             SELECT parent_work_item_id FROM work_item_dependencies
@@ -872,7 +885,8 @@ def test_autoseal_replaces_immutable_predecessor_after_append_only_q08(
         )
         conn.commit()
         old = conn.execute(
-            "SELECT status,verdict FROM work_items WHERE id='q09-old'"
+            "SELECT status,verdict,evidence_path,payload_json "
+            "FROM work_items WHERE id='q09-old'"
         ).fetchone()
         old_hold = conn.execute(
             "SELECT active,release_note FROM work_item_holds WHERE work_item_id='q09-old'"
@@ -881,7 +895,10 @@ def test_autoseal_replaces_immutable_predecessor_after_append_only_q08(
     assert dependency[0] == "q08-new"
     assert replacement_hold[0] == 1
     assert superseded == ["q09-old"]
-    assert tuple(old) == ("done", "SUPERSEDED")
+    assert tuple(old[:3]) == ("done", "SUPERSEDED", str(replacement_plan))
+    old_payload = json.loads(old[3])
+    assert old_payload["supersession_evidence_path"] == str(replacement_plan)
+    assert old_payload["supersession_evidence_sha256"] == _sha(replacement_plan)
     assert old_hold[0] == 0
     assert "regenerated Q08" in old_hold[1]
 
