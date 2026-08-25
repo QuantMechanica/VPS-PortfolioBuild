@@ -17630,6 +17630,7 @@ PUMP_DISPATCH_AUTOSEAL_LIMIT = 2
 PUMP_LATE_AUTOSEAL_LIMIT = 4
 PUMP_NEWS_EXPANSION_LIMIT = 2
 PUMP_OPT_FORK_BUDGET_SECONDS = 30.0
+PUMP_OPT_FORK_SERVICE_BUDGET_SECONDS = 15.0
 
 
 def _pump_unlocked(
@@ -19466,6 +19467,28 @@ def _pump_unlocked(
         _opt_fork_stage,
         budget_seconds=PUMP_OPT_FORK_BUDGET_SECONDS,
         minimum_start_seconds=10.0,
+    )
+
+    # Analytic optimization rows are intentionally invisible to T1-T10.  The
+    # bounded no-change service handles only the explicit zero-search contract
+    # emitted by optimization_fork_driver.  Any measured/candidate-bearing row
+    # remains pending for its governed evaluator; no selection rule is applied
+    # or relaxed here.  Successors are materialized by the routing stage on the
+    # next pump cycle, keeping each serialized writer interval short.
+    def _opt_fork_service_stage() -> dict[str, Any]:
+        try:
+            return service_opt_fork(root, apply=True, limit=3)
+        except Exception as exc:  # fail closed without stopping unrelated pump work
+            return {
+                "applied": False,
+                "machine_reason": f"OPTIMIZATION_FORK_SERVICE_FAILED:{exc}",
+            }
+
+    result["optimization_fork_service"] = cycle_budget.run(
+        "optimization_fork_service",
+        _opt_fork_service_stage,
+        budget_seconds=PUMP_OPT_FORK_SERVICE_BUDGET_SECONDS,
+        minimum_start_seconds=5.0,
     )
 
     if cycle_budget.remaining_seconds <= 15.0:
@@ -26928,6 +26951,40 @@ def advance_opt_fork(
         )
 
 
+def service_opt_fork(
+    root: Path,
+    *,
+    apply: bool,
+    limit: int = 3,
+    work_item_ids: list[str] | None = None,
+) -> dict[str, Any]:
+    """Run the bounded governed no-change executor for optimization rows."""
+    try:
+        import optimization_fork_service as service
+    except ModuleNotFoundError:
+        from tools.strategy_farm import optimization_fork_service as service
+
+    database = db_path(root).resolve()
+    if not database.is_file():
+        raise ValueError(f"farm database is missing: {database}")
+    kwargs = {
+        "manifest": ACTIVE_GATE_MANIFEST,
+        "repo_root": CANONICAL_REPO_ROOT,
+        "evidence_root": service.DEFAULT_EVIDENCE_ROOT,
+        "apply": apply,
+        "limit": limit,
+        "work_item_ids": work_item_ids,
+    }
+    if apply:
+        with connect(root) as conn:
+            return service.service_pending(conn, **kwargs)
+    uri = f"file:{database.as_posix()}?mode=ro"
+    with sqlite3.connect(uri, uri=True, timeout=30) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA query_only=ON")
+        return service.service_pending(conn, **kwargs)
+
+
 def print_json(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True))
 
@@ -28041,6 +28098,14 @@ def build_parser() -> argparse.ArgumentParser:
     opt_advance.add_argument("--symbol")
     opt_advance.add_argument("--apply", action="store_true")
 
+    opt_service = sub.add_parser(
+        "service-optimization-fork",
+        help="Execute bounded manifest-native no-change optimization rows (dry-run default).",
+    )
+    opt_service.add_argument("--work-item-id", action="append")
+    opt_service.add_argument("--limit", type=int, default=3)
+    opt_service.add_argument("--apply", action="store_true")
+
     q16 = sub.add_parser(
         "enqueue-head-to-head",
         help=f"Validate and optionally enqueue one analytic {_HEAD_TO_HEAD_PHASE} sealed comparison (dry-run default).",
@@ -28083,7 +28148,12 @@ def _command_mutates_state(args: argparse.Namespace) -> bool:
         return bool(args.apply or not args.from_file)
     if args.command == "enqueue-news-expansions":
         return bool(args.apply)
-    if args.command in {"admit-optimization", "enqueue-opt-admission", "advance-optimization-fork"}:
+    if args.command in {
+        "admit-optimization",
+        "enqueue-opt-admission",
+        "advance-optimization-fork",
+        "service-optimization-fork",
+    }:
         return bool(args.apply)
     if args.command == "enqueue-head-to-head":
         return bool(args.apply)
@@ -28309,6 +28379,13 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "advance-optimization-fork":
         print_json(advance_opt_fork(
             root, apply=args.apply, ea_id=args.ea, symbol=args.symbol,
+        ))
+    elif args.command == "service-optimization-fork":
+        print_json(service_opt_fork(
+            root,
+            apply=args.apply,
+            limit=args.limit,
+            work_item_ids=args.work_item_id,
         ))
     elif args.command == "enqueue-head-to-head":
         print_json(enqueue_head_to_head(
