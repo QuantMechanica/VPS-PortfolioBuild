@@ -2,9 +2,9 @@
 
 Router task de0f052e-8e04-419a-bfc6-c81ff4362abf, following
 docs/ops/evidence/2026-08-24_throughput_forensics.md recommendation 1: cap
-concurrent 29-cell expanded Q10_NEWS parents at 2 and concurrent Q07/Q08
-long regenerations at 2, fleet-wide, so at least 6 terminals stay available
-for ordinary short gates/compiles.
+all concurrent Q10_NEWS parents at 4, retain the expanded-parent subcap of 2,
+and cap concurrent Q07/Q08 long regenerations at 2, fleet-wide, so at least 4
+terminals stay available for ordinary short gates/compiles.
 
 Covers the acceptance criteria: (1) unit coverage of the pure classify/skip
 functions including the literal "3rd expansion not claimed while 2 active"
@@ -40,11 +40,11 @@ class ClassifyAndCapTests(unittest.TestCase):
         )
         self.assertEqual(cls, policy.EXPANDED_NEWS_PARENT_CLASS)
 
-    def test_standard_news_matrix_not_classified(self) -> None:
+    def test_standard_news_matrix_classified_for_total_cap(self) -> None:
         cls = policy.classify_longrun_candidate(
             NEWS_PHASE, {"q09_cell_count": 8}, news_phase=NEWS_PHASE
         )
-        self.assertIsNone(cls)
+        self.assertEqual(cls, policy.TOTAL_NEWS_PARENT_CLASS)
 
     def test_q07_and_q08_classified(self) -> None:
         self.assertEqual(
@@ -74,10 +74,40 @@ class ClassifyAndCapTests(unittest.TestCase):
         self.assertEqual(detail["fleet_cap"], 2)
 
     def test_second_expansion_admitted_while_one_active(self) -> None:
-        active_counts = {policy.EXPANDED_NEWS_PARENT_CLASS: 1, policy.Q07_Q08_LONGRUN_CLASS: 0}
+        active_counts = {
+            policy.EXPANDED_NEWS_PARENT_CLASS: 1,
+            policy.TOTAL_NEWS_PARENT_CLASS: 1,
+            policy.Q07_Q08_LONGRUN_CLASS: 0,
+        }
         payload = {"force_expanded_news_matrix": True}
         skip, detail = policy.should_skip_for_longrun_cap(
             NEWS_PHASE, payload, active_counts, news_phase=NEWS_PHASE
+        )
+        self.assertFalse(skip)
+        self.assertIsNone(detail)
+
+    def test_fifth_standard_news_skipped_while_four_active(self) -> None:
+        active_counts = {
+            policy.EXPANDED_NEWS_PARENT_CLASS: 0,
+            policy.TOTAL_NEWS_PARENT_CLASS: 4,
+            policy.Q07_Q08_LONGRUN_CLASS: 0,
+        }
+        skip, detail = policy.should_skip_for_longrun_cap(
+            NEWS_PHASE, {"q09_cell_count": 8}, active_counts, news_phase=NEWS_PHASE
+        )
+        self.assertTrue(skip)
+        self.assertEqual(detail["longrun_class"], policy.TOTAL_NEWS_PARENT_CLASS)
+        self.assertEqual(detail["active_count"], 4)
+        self.assertEqual(detail["fleet_cap"], 4)
+
+    def test_fourth_standard_news_admitted_while_three_active(self) -> None:
+        active_counts = {
+            policy.EXPANDED_NEWS_PARENT_CLASS: 0,
+            policy.TOTAL_NEWS_PARENT_CLASS: 3,
+            policy.Q07_Q08_LONGRUN_CLASS: 0,
+        }
+        skip, detail = policy.should_skip_for_longrun_cap(
+            NEWS_PHASE, {"q09_cell_count": 8}, active_counts, news_phase=NEWS_PHASE
         )
         self.assertFalse(skip)
         self.assertIsNone(detail)
@@ -152,6 +182,7 @@ class ActiveLongrunCountsDbTests(unittest.TestCase):
             conn.row_factory = sqlite3.Row
             counts = policy.active_longrun_counts(conn, news_phase=NEWS_PHASE)
         self.assertEqual(counts[policy.EXPANDED_NEWS_PARENT_CLASS], 1)
+        self.assertEqual(counts[policy.TOTAL_NEWS_PARENT_CLASS], 2)
         self.assertEqual(counts[policy.Q07_Q08_LONGRUN_CLASS], 1)
 
 
@@ -225,6 +256,34 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
         self.assertEqual(skipped[0]["item_id"], "pending-3")
         self.assertEqual(skipped[0]["longrun_class"], policy.EXPANDED_NEWS_PARENT_CLASS)
 
+    def test_fifth_standard_news_not_claimed_while_four_active_fleet_wide(self) -> None:
+        standard_payload = {
+            "q09_cell_count": 8,
+            "q09_binding_version": "q09-news-dispatch-binding/v1",
+            "q09_run_plan_path": "D:/QM/reports/q09_plans/dummy.json",
+            "q09_run_plan_file_sha256": "a" * 64,
+            "q09_dispatch_binding_sha256": "b" * 64,
+        }
+        for index, symbol in enumerate(
+            ("EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "AUDUSD.DWX"), start=1
+        ):
+            self._insert(
+                f"active-standard-{index}", symbol,
+                phase=terminal_worker._Q09_NEWS_PHASE, status="active",
+                claimed_by=f"T{index}", payload=standard_payload, ea_id=f"QM5_{index}",
+            )
+        self._insert(
+            "pending-standard-5", "USDCAD.DWX",
+            phase=terminal_worker._Q09_NEWS_PHASE, payload=standard_payload, ea_id="QM5_5",
+        )
+
+        result = terminal_worker.claim_atomic(self.root, "T5")
+
+        self.assertFalse(result.get("claimed"))
+        skipped = result.get("longrun_cap_skipped") or []
+        self.assertEqual(skipped[0]["item_id"], "pending-standard-5")
+        self.assertEqual(skipped[0]["longrun_class"], policy.TOTAL_NEWS_PARENT_CLASS)
+
     def test_short_row_not_displaced_by_capped_longrun_row(self) -> None:
         """Floor case: an ordinary short row is claimed even though a
         capped-out expansion sorts ahead of it in priority order."""
@@ -248,6 +307,60 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
 
         self.assertTrue(result.get("claimed"))
         self.assertEqual(result["item"]["id"], "pending-short")
+
+    def test_short_row_claimed_instead_of_fifth_standard_news(self) -> None:
+        standard_payload = {
+            "q09_cell_count": 8,
+            "q09_binding_version": "q09-news-dispatch-binding/v1",
+            "q09_run_plan_path": "D:/QM/reports/q09_plans/dummy.json",
+            "q09_run_plan_file_sha256": "a" * 64,
+            "q09_dispatch_binding_sha256": "b" * 64,
+        }
+        for index, symbol in enumerate(
+            ("EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "AUDUSD.DWX"), start=1
+        ):
+            self._insert(
+                f"active-standard-{index}", symbol,
+                phase=terminal_worker._Q09_NEWS_PHASE, status="active",
+                claimed_by=f"T{index}", payload=standard_payload, ea_id=f"QM5_{index}",
+            )
+        self._insert(
+            "pending-standard-5", "USDCAD.DWX",
+            phase=terminal_worker._Q09_NEWS_PHASE, payload=standard_payload, ea_id="QM5_5",
+        )
+        self._insert("pending-short", "XAUUSD.DWX", phase="Q03", ea_id="QM5_6")
+
+        result = terminal_worker.claim_atomic(self.root, "T5")
+
+        self.assertTrue(result.get("claimed"))
+        self.assertEqual(result["item"]["id"], "pending-short")
+
+    def test_policy_disabled_allows_fifth_standard_news_to_claim(self) -> None:
+        standard_payload = {
+            "q09_cell_count": 8,
+            "q09_binding_version": "q09-news-dispatch-binding/v1",
+            "q09_run_plan_path": "D:/QM/reports/q09_plans/dummy.json",
+            "q09_run_plan_file_sha256": "a" * 64,
+            "q09_dispatch_binding_sha256": "b" * 64,
+        }
+        for index, symbol in enumerate(
+            ("EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "AUDUSD.DWX"), start=1
+        ):
+            self._insert(
+                f"active-standard-{index}", symbol,
+                phase=terminal_worker._Q09_NEWS_PHASE, status="active",
+                claimed_by=f"T{index}", payload=standard_payload, ea_id=f"QM5_{index}",
+            )
+        self._insert(
+            "pending-standard-5", "USDCAD.DWX",
+            phase=terminal_worker._Q09_NEWS_PHASE, payload=standard_payload, ea_id="QM5_5",
+        )
+
+        with patch.dict("os.environ", {policy.DISABLE_ENV_VAR: "1"}):
+            result = terminal_worker.claim_atomic(self.root, "T5")
+
+        self.assertTrue(result.get("claimed"))
+        self.assertEqual(result["item"]["id"], "pending-standard-5")
 
     def test_policy_disabled_allows_third_expansion_to_claim(self) -> None:
         expanded_payload = {

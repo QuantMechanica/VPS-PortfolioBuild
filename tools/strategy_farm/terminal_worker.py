@@ -1942,6 +1942,8 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "avoid_terminals": sorted(avoid_terminals),
                         })
                         continue
+                    # One transaction-bound snapshot enforces the combined
+                    # Q10_NEWS cap, its expansion subcap, and the Q07/Q08 cap.
                     if longrun_active_counts is None:
                         longrun_active_counts = longrun_scheduling_policy.active_longrun_counts(
                             conn,
