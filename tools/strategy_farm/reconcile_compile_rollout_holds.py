@@ -141,13 +141,6 @@ def inspect(db: Path, repo: Path) -> dict[str, Any]:
                 "action": "MANUAL_REVIEW",
             })
             continue
-        if bound_sha == current_sha.lower():
-            rows.append({
-                **base,
-                "classification": "SOURCE_FRESH_HELD_SUCCESSOR",
-                "action": "RELEASE_VIA_BOUNDED_WAVE",
-            })
-            continue
         candidates = []
         for candidate in compile_by_ea.get(str(old["ea_id"]), []):
             if str(candidate["id"]) == str(old["id"]):
@@ -160,9 +153,27 @@ def inspect(db: Path, repo: Path) -> dict[str, Any]:
             if candidate_sha == current_sha.lower():
                 candidates.append(candidate)
         if not candidates:
+            if bound_sha == current_sha.lower() and old["status"] in {"pending", "active"}:
+                rows.append({
+                    **base,
+                    "classification": "SOURCE_FRESH_HELD_WORK_ITEM",
+                    "action": "RELEASE_VIA_BOUNDED_WAVE",
+                })
+                continue
+            if (
+                bound_sha == current_sha.lower()
+                and old["status"] in {"done", "failed"}
+                and old["verdict"] in {"COMPILE_OK", "COMPILE_FAIL"}
+            ):
+                rows.append({
+                    **base,
+                    "classification": "SOURCE_FRESH_TERMINAL_RESULT_HOLD",
+                    "action": "CLOSE_INERT_TERMINAL_HOLD",
+                })
+                continue
             rows.append({
                 **base,
-                "classification": "STALE_SOURCE_NO_CURRENT_SUCCESSOR",
+                "classification": "ROLLOUT_PREDECESSOR_NO_CURRENT_SUCCESSOR",
                 "action": "ENQUEUE_CURRENT_SOURCE_SUCCESSOR",
             })
             continue
@@ -173,8 +184,8 @@ def inspect(db: Path, repo: Path) -> dict[str, Any]:
             "successor_status": str(successor["status"]),
             "successor_verdict": successor["verdict"],
             "successor_created_at": successor["created_at"],
-            "classification": "STALE_SOURCE_CURRENT_SUCCESSOR_EXISTS",
-            "action": "SUPERSEDE_AND_CLOSE_STALE_HOLD",
+            "classification": "ROLLOUT_PREDECESSOR_CURRENT_SUCCESSOR_EXISTS",
+            "action": "SUPERSEDE_AND_CLOSE_PREDECESSOR_HOLD",
         })
 
     counts = Counter(row["classification"] for row in rows)
@@ -186,9 +197,12 @@ def inspect(db: Path, repo: Path) -> dict[str, Any]:
         "at_utc": utc_now(),
         "active_hold_count": len(rows),
         "stale_hold_count": len(stale_rows),
-        "source_fresh_hold_count": counts["SOURCE_FRESH_HELD_SUCCESSOR"],
-        "ready_to_supersede_count": counts["STALE_SOURCE_CURRENT_SUCCESSOR_EXISTS"],
-        "needs_successor_count": counts["STALE_SOURCE_NO_CURRENT_SUCCESSOR"],
+        "source_fresh_hold_count": counts["SOURCE_FRESH_HELD_WORK_ITEM"],
+        "terminal_result_hold_count": counts["SOURCE_FRESH_TERMINAL_RESULT_HOLD"],
+        "ready_to_supersede_count": counts[
+            "ROLLOUT_PREDECESSOR_CURRENT_SUCCESSOR_EXISTS"
+        ],
+        "needs_successor_count": counts["ROLLOUT_PREDECESSOR_NO_CURRENT_SUCCESSOR"],
         "manual_review_count": counts["SOURCE_OR_BINDING_UNAVAILABLE"],
         "classification_counts": dict(sorted(counts.items())),
         "rows": rows,
@@ -216,27 +230,28 @@ def apply_reconciliation(
     repo: Path,
     backup_dir: Path,
     *,
-    expected_stale_count: int,
+    expected_predecessor_count: int,
     evidence_path: str,
 ) -> dict[str, Any]:
     plan = inspect(db, repo)
-    if plan["stale_hold_count"] != expected_stale_count:
+    if (
+        plan["needs_successor_count"]
+        or plan["manual_review_count"]
+        or plan["terminal_result_hold_count"]
+    ):
         raise ReconciliationError(
-            f"stale_hold_count_changed:{plan['stale_hold_count']}!={expected_stale_count}"
-        )
-    if plan["needs_successor_count"] or plan["manual_review_count"]:
-        raise ReconciliationError(
-            "stale_rows_not_ready:"
+            "predecessor_rows_not_ready:"
             f"needs_successor={plan['needs_successor_count']},"
-            f"manual_review={plan['manual_review_count']}"
+            f"manual_review={plan['manual_review_count']},"
+            f"terminal_result_holds={plan['terminal_result_hold_count']}"
         )
     targets = [
         row for row in plan["rows"]
-        if row["classification"] == "STALE_SOURCE_CURRENT_SUCCESSOR_EXISTS"
+        if row["classification"] == "ROLLOUT_PREDECESSOR_CURRENT_SUCCESSOR_EXISTS"
     ]
-    if len(targets) != expected_stale_count:
+    if len(targets) != expected_predecessor_count:
         raise ReconciliationError(
-            f"ready_target_count_changed:{len(targets)}!={expected_stale_count}"
+            f"ready_target_count_changed:{len(targets)}!={expected_predecessor_count}"
         )
 
     backup_path, backup_sha = _backup(db, backup_dir)
@@ -264,9 +279,9 @@ def apply_reconciliation(
                 source = repo / "framework" / "EAs" / label / f"{label}.mq5"
                 current_sha = sha256_file(source) if source.is_file() else None
                 bound_sha = str(payload.get("mq5_sha256") or "").lower()
-                if not current_sha or bound_sha == current_sha.lower():
+                if not current_sha:
                     raise ReconciliationError(
-                        f"source_fresh_or_missing_at_apply:{target['work_item_id']}"
+                        f"source_missing_at_apply:{target['work_item_id']}"
                     )
                 successor = conn.execute(
                     "SELECT ea_id,payload_json,created_at FROM work_items WHERE id=?",
@@ -398,7 +413,7 @@ def main() -> int:
     parser.add_argument("--repo", type=Path, default=DEFAULT_REPO)
     parser.add_argument("--backup-dir", type=Path, default=DEFAULT_BACKUP_DIR)
     parser.add_argument("--apply", action="store_true")
-    parser.add_argument("--expected-stale-count", type=int)
+    parser.add_argument("--expected-predecessor-count", type=int)
     parser.add_argument("--evidence-path", default="")
     parser.add_argument("--output-json", type=Path)
     parser.add_argument("--output-csv", type=Path)
@@ -410,15 +425,15 @@ def main() -> int:
     args = parser.parse_args()
     try:
         if args.apply:
-            if args.expected_stale_count is None or not args.evidence_path:
+            if args.expected_predecessor_count is None or not args.evidence_path:
                 raise ReconciliationError(
-                    "--apply requires --expected-stale-count and --evidence-path"
+                    "--apply requires --expected-predecessor-count and --evidence-path"
                 )
             result = apply_reconciliation(
                 args.db,
                 args.repo,
                 args.backup_dir,
-                expected_stale_count=args.expected_stale_count,
+                expected_predecessor_count=args.expected_predecessor_count,
                 evidence_path=args.evidence_path,
             )
         else:

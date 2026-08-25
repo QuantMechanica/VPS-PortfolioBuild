@@ -73,7 +73,7 @@ def test_inspect_separates_stale_predecessor_from_fresh_successor(tmp_path: Path
     assert result["source_fresh_hold_count"] == 1
     old = next(row for row in result["rows"] if row["work_item_id"] == "old")
     assert old["successor_work_item_id"] == "new"
-    assert old["action"] == "SUPERSEDE_AND_CLOSE_STALE_HOLD"
+    assert old["action"] == "SUPERSEDE_AND_CLOSE_PREDECESSOR_HOLD"
 
 
 def test_apply_records_supersession_and_closes_only_stale_hold(tmp_path: Path):
@@ -83,7 +83,7 @@ def test_apply_records_supersession_and_closes_only_stale_hold(tmp_path: Path):
         db,
         repo,
         tmp_path / "backups",
-        expected_stale_count=1,
+        expected_predecessor_count=1,
         evidence_path="evidence.md",
     )
 
@@ -110,11 +110,11 @@ def test_apply_records_supersession_and_closes_only_stale_hold(tmp_path: Path):
 def test_apply_refuses_stale_row_without_successor(tmp_path: Path):
     db, repo = _fixture(tmp_path, with_successor=False)
 
-    with pytest.raises(subject.ReconciliationError, match="stale_rows_not_ready"):
+    with pytest.raises(subject.ReconciliationError, match="predecessor_rows_not_ready"):
         subject.apply_reconciliation(
             db,
             repo,
             tmp_path / "backups",
-            expected_stale_count=1,
+            expected_predecessor_count=1,
             evidence_path="evidence.md",
         )
