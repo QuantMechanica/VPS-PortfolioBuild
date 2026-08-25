@@ -1,0 +1,49 @@
+{
+  "schema": "qm.governed-magic-precondition-evidence.v1",
+  "task_id": "8649217c-ed25-4889-8942-a5732a4587c0",
+  "checked_at": "2026-08-25T14:41:40.7767071Z",
+  "canonical_head": "db0456884be6cad3a533d540eb2dbf491c7e886a",
+  "operation": "governed_magic_precondition",
+  "requested_ea_id": "PENDING_A3A88F5E",
+  "requested_slug": "eurjpy-carry-unwind-crisis-momentum",
+  "requested_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/PENDING_A3A88F5E_eurjpy-carry-unwind-crisis-momentum.md",
+  "classification": "invalid_ea_id",
+  "action": "REFUSE",
+  "verdict": "REFUSE_SUPERSEDED_PLACEHOLDER",
+  "diagnosis": {
+    "requested_card_exists": false,
+    "requested_identity_registry_rows": 0,
+    "requested_magic_rows": 0,
+    "requested_ea_directory_exists": false,
+    "requested_resolver_rows": 0,
+    "magic_invented": false,
+    "registry_mutated": false,
+    "resolver_regenerated": false
+  },
+  "governed_successor": {
+    "ea_id": "QM5_41154",
+    "slug": "eurjpy-carry-unwind-crisis-momentum",
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41154_eurjpy-carry-unwind-crisis-momentum.md",
+    "card_sha256": "8ce741d028be29cfc55f43074c26c154b6a44287038fc49d48b2c8ab98b977e0",
+    "card_g0_status": "APPROVED",
+    "identity_registry_rows": 1,
+    "identity_status": "active",
+    "target_symbols": ["EURJPY.DWX"],
+    "magic_rows": 0,
+    "ea_directory_exists": false,
+    "resolver_rows": 0,
+    "allocator_dry_run": {
+      "exit_code": 0,
+      "reason": "eligible",
+      "action": "allocate",
+      "planned_rows": 1,
+      "apply_executed": false
+    }
+  },
+  "evidence_chain": {
+    "identity_mint_commit": "c046a7f68efd5eadca4d99ed259c1bace1ae91d1",
+    "identity_mint_artifact": "C:/QM/repo/docs/ops/evidence/2026-08-24_pending_cards_governed_identity_minting.md",
+    "mapping": "PENDING_A3A88F5E -> QM5_41154"
+  },
+  "follow_up": "Keep the placeholder build blocked. A separately routed build for QM5_41154 may execute the governed allocator apply sequence, create the EA directory, regenerate the resolver, and prove the exact EURJPY.DWX slot/magic tuple before build work begins."
+}

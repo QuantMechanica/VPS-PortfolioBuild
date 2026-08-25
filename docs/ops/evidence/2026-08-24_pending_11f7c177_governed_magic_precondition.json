@@ -1,0 +1,49 @@
+{
+  "schema": "qm.governed-magic-precondition-evidence.v1",
+  "task_id": "32e81065-76bf-4074-b3bb-c5da32323beb",
+  "checked_at": "2026-08-25T14:41:40.7767071Z",
+  "canonical_head": "db0456884be6cad3a533d540eb2dbf491c7e886a",
+  "operation": "governed_magic_precondition",
+  "requested_ea_id": "PENDING_11F7C177",
+  "requested_slug": "eurusd-month-end-benchmark-fix-hedge-flow",
+  "requested_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/PENDING_11F7C177_eurusd-month-end-benchmark-fix-hedge-flow.md",
+  "classification": "invalid_ea_id",
+  "action": "REFUSE",
+  "verdict": "REFUSE_SUPERSEDED_PLACEHOLDER",
+  "diagnosis": {
+    "requested_card_exists": false,
+    "requested_identity_registry_rows": 0,
+    "requested_magic_rows": 0,
+    "requested_ea_directory_exists": false,
+    "requested_resolver_rows": 0,
+    "magic_invented": false,
+    "registry_mutated": false,
+    "resolver_regenerated": false
+  },
+  "governed_successor": {
+    "ea_id": "QM5_41142",
+    "slug": "eurusd-month-end-benchmark-fix-hedge-flow",
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.md",
+    "card_sha256": "62558e7dd039847dae93def565c7f48f1108e9e965611a8502da33020446dc55",
+    "card_g0_status": "APPROVED",
+    "identity_registry_rows": 1,
+    "identity_status": "active",
+    "target_symbols": ["EURUSD.DWX"],
+    "magic_rows": 0,
+    "ea_directory_exists": false,
+    "resolver_rows": 0,
+    "allocator_dry_run": {
+      "exit_code": 0,
+      "reason": "eligible",
+      "action": "allocate",
+      "planned_rows": 1,
+      "apply_executed": false
+    }
+  },
+  "evidence_chain": {
+    "identity_mint_commit": "c046a7f68efd5eadca4d99ed259c1bace1ae91d1",
+    "identity_mint_artifact": "C:/QM/repo/docs/ops/evidence/2026-08-24_pending_cards_governed_identity_minting.md",
+    "mapping": "PENDING_11F7C177 -> QM5_41142"
+  },
+  "follow_up": "Keep the placeholder build blocked. A separately routed build for QM5_41142 may execute the governed allocator apply sequence, create the EA directory, regenerate the resolver, and prove the exact EURUSD.DWX slot/magic tuple before build work begins."
+}
