@@ -21,33 +21,40 @@ from __future__ import annotations
 import csv
 import json
 import re
+import sqlite3
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 try:
     import health_contract
+    import path_to_25
 except ModuleNotFoundError:
-    from tools.strategy_farm import health_contract
+    from tools.strategy_farm import health_contract, path_to_25
 
 DATA_DIR = Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\81A933A9AFC5DE3C23B15CAB19C63850")
 QM_DIR = DATA_DIR / "MQL5" / "Files" / "QM"
 STATE_JSON = Path(r"D:\QM\reports\state\ftmo_trial_pulse.json")
 STATE_LOG = Path(r"D:\QM\reports\state\ftmo_trial_pulse.log")
 MAINTENANCE_FLAG = Path(r"D:\QM\reports\state\LIVE_UPTIME_MAINTENANCE.flag")
+FARM_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 
 # OWNER state contract. Deliberately baked into the existing pulse rather than
 # hidden in a second, potentially stale flag file.
 #
-# 2026-08-13 (OWNER, chat): "da haben wir ja am Wochenende ein Demokonto
-# gestartet, das lassen wir einfach laufen" -- supersedes the 2026-07-26 PARKED
-# contract. The demo runs; the terminal being up with QM trading is the
-# expected state, not an alarm. Review date kept at 2026-08-25 so the contract
-# forces a fresh OWNER decision then. NOTE: no signed deploy manifest exists
-# for the demo book; EXPECTED_MAGICS below pins the single magic OWNER
-# ratified by keeping it running. Anything else appearing is still an anomaly.
-EXPECTED_STATE = "RUNNING"
-EXPECTED_STATE_REVIEW_EXPIRES_UTC = "2026-08-25T00:00:00Z"
+# 2026-08-25 OWNER receipt: do not open another FTMO account until the canonical
+# path-to-25 census reaches 25 terminally qualified (EA, symbol) pairs. This
+# supersedes the 2026-08-13 RUNNING contract. The monitor remains observation-
+# only: PARKED never stops the terminal or closes a position, and a warm profile
+# with broker-confirmed QM activity continues to alarm rather than being
+# silently relabelled healthy.
+EXPECTED_STATE = "PARKED"
+EXPECTED_STATE_REVIEW_EXPIRES_UTC = None
+EXPECTED_STATE_DECISION_ID = "OWNER-DEC-FTMO-PARK-UNTIL-25-20260825"
+EXPECTED_STATE_DECISION_PATH = (
+    "decisions/2026-08-25_owner_hma_requal_ftmo_park_q02_dead16.md"
+)
+EXPECTED_STATE_REVIEW_TRIGGER_QUALIFIED_PAIRS = 25
 
 BASE_EQUITY = 100_000.0
 DAILY_LIMIT_PCT = 5.0     # FTMO daily loss limit
@@ -92,6 +99,30 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def assess_owner_review_trigger(db_path: Path = FARM_DB) -> dict:
+    """Measure the OWNER's >=25 re-review trigger without mutating farm state."""
+    try:
+        metrics = path_to_25.path_to_25_metrics(db_path)
+        qualified_pairs = int(metrics.get("qualified_pairs"))
+    except (OSError, ValueError, TypeError, RuntimeError, sqlite3.Error) as exc:
+        return {
+            "ok": False,
+            "qualified_pairs": None,
+            "threshold": EXPECTED_STATE_REVIEW_TRIGGER_QUALIFIED_PAIRS,
+            "reached": False,
+            "reason": f"{type(exc).__name__}: {exc}",
+        }
+    threshold = EXPECTED_STATE_REVIEW_TRIGGER_QUALIFIED_PAIRS
+    return {
+        "ok": True,
+        "qualified_pairs": qualified_pairs,
+        "threshold": threshold,
+        "reached": qualified_pairs >= threshold,
+        "reason": "qualified_pairs_threshold_reached" if qualified_pairs >= threshold
+        else "park_until_qualified_pairs_threshold",
+    }
+
+
 def assess_expected_state(
     *,
     terminal_up: bool | None,
@@ -99,7 +130,8 @@ def assess_expected_state(
     magics_seen: int | None = None,
     maintenance: bool = False,
     expected_state: str = EXPECTED_STATE,
-    review_expires_utc: str = EXPECTED_STATE_REVIEW_EXPIRES_UTC,
+    review_expires_utc: str | None = EXPECTED_STATE_REVIEW_EXPIRES_UTC,
+    review_trigger_reached: bool = False,
 ) -> dict:
     """Pure tri-state contract assessment; never starts or stops a process."""
     expected = str(expected_state or "").upper()
@@ -108,19 +140,24 @@ def assess_expected_state(
         invalid = True
     else:
         invalid = False
-    try:
-        expiry = datetime.fromisoformat(review_expires_utc.replace("Z", "+00:00"))
-        if expiry.tzinfo is None:
-            expiry = expiry.replace(tzinfo=timezone.utc)
-        review_expired = now.astimezone(timezone.utc) >= expiry.astimezone(timezone.utc)
-    except (TypeError, ValueError):
-        review_expired = True
+    if review_expires_utc is None:
+        review_expired = False
+    else:
+        try:
+            expiry = datetime.fromisoformat(review_expires_utc.replace("Z", "+00:00"))
+            if expiry.tzinfo is None:
+                expiry = expiry.replace(tzinfo=timezone.utc)
+            review_expired = now.astimezone(timezone.utc) >= expiry.astimezone(timezone.utc)
+        except (AttributeError, TypeError, ValueError):
+            review_expired = True
 
     effective = "MAINTENANCE" if maintenance or expected == "MAINTENANCE" else expected
     if invalid:
         condition, alarm = "contract_invalid", "expected_state_contract_invalid"
     elif review_expired:
         condition, alarm = "contract_expired", "expected_state_review_expired"
+    elif review_trigger_reached:
+        condition, alarm = "review_trigger_reached", "expected_state_review_trigger_reached"
     elif effective == "MAINTENANCE":
         condition, alarm = "maintenance", None
     elif terminal_up is None:
@@ -144,6 +181,7 @@ def assess_expected_state(
         "effective_state": effective,
         "review_expires_utc": review_expires_utc,
         "review_expired": review_expired,
+        "review_trigger_reached": bool(review_trigger_reached),
         "condition": condition,
         "alarm": alarm,
     }
@@ -428,11 +466,19 @@ def publish_pulse(out: dict) -> int:
         source="ftmo_trial_pulse",
     )
     op_intent["condition"] = out.get("expected_state_condition")
+    op_intent["decision_id"] = out.get("expected_state_decision_id")
+    op_intent["review_trigger"] = out.get("expected_state_review_trigger")
     status = health_contract.normalize_status(out.get("verdict"))
     if out.get("effective_state") == "MAINTENANCE" and status == health_contract.OK:
         status = health_contract.WARN
     detail_parts = [
         f"condition={out.get('expected_state_condition')}",
+        f"decision={out.get('expected_state_decision_id')}",
+        (
+            "review_trigger="
+            f"{out.get('qualified_pairs')}/"
+            f"{out.get('expected_state_review_trigger_qualified_pairs')}"
+        ),
         *[str(value) for value in (out.get("alarms") or [])],
         *[str(value) for value in (out.get("warns") or [])],
     ]
@@ -470,6 +516,9 @@ def main() -> int:
     now = utc_now()
     alarms: list[str] = []
     warns: list[str] = []
+    owner_review = assess_owner_review_trigger()
+    if not owner_review["ok"]:
+        alarms.append(f"ftmo_owner_review_trigger_probe_failed:{owner_review['reason']}")
 
     up = terminal_running()
     parked_activity = {
@@ -494,6 +543,7 @@ def main() -> int:
         now=now,
         magics_seen=parked_magics_seen,
         maintenance=MAINTENANCE_FLAG.exists(),
+        review_trigger_reached=bool(owner_review["reached"]),
     )
     # PARKED has no journal/equity SLA, but it does retain a fail-closed
     # broker-deal activity contract. Short-circuiting avoids RUNNING-only
@@ -513,6 +563,14 @@ def main() -> int:
             "expected_state_condition": contract["condition"],
             "expected_state_review_expires_utc": contract["review_expires_utc"],
             "expected_state_review_expired": contract["review_expired"],
+            "expected_state_decision_id": EXPECTED_STATE_DECISION_ID,
+            "expected_state_decision_path": EXPECTED_STATE_DECISION_PATH,
+            "expected_state_review_trigger": "qualified_pairs>=25",
+            "expected_state_review_trigger_qualified_pairs": owner_review["threshold"],
+            "expected_state_review_trigger_reached": owner_review["reached"],
+            "qualified_pairs": owner_review["qualified_pairs"],
+            "qualified_pairs_probe_ok": owner_review["ok"],
+            "qualified_pairs_probe_reason": owner_review["reason"],
             "magics_seen": parked_magics_seen,
             "expected_magics": 0 if contract["expected_state"] == "PARKED" else len(EXPECTED_MAGICS),
             "active_qm_magics": parked_activity["magics"],
@@ -617,6 +675,14 @@ def main() -> int:
         "expected_state_condition": contract["condition"],
         "expected_state_review_expires_utc": contract["review_expires_utc"],
         "expected_state_review_expired": contract["review_expired"],
+        "expected_state_decision_id": EXPECTED_STATE_DECISION_ID,
+        "expected_state_decision_path": EXPECTED_STATE_DECISION_PATH,
+        "expected_state_review_trigger": "qualified_pairs>=25",
+        "expected_state_review_trigger_qualified_pairs": owner_review["threshold"],
+        "expected_state_review_trigger_reached": owner_review["reached"],
+        "qualified_pairs": owner_review["qualified_pairs"],
+        "qualified_pairs_probe_ok": owner_review["ok"],
+        "qualified_pairs_probe_reason": owner_review["reason"],
         "magics_seen": eas["magics_seen"],
         "expected_magics": len(EXPECTED_MAGICS),
         "equity": equity or None,

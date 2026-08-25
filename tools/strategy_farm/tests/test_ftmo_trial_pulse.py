@@ -1,12 +1,4 @@
-"""Contract tests for the FTMO trial pulse.
-
-The four PARKED-branch tests below pass ``expected_state="PARKED"`` explicitly.
-They used to rely on the module default, which OWNER changed from PARKED to
-RUNNING on 2026-08-13 when the demo was ratified as running -- so all four went
-red and stayed red. A branch test must pin the branch it tests, not inherit
-whatever the current operational default happens to be; a permanently red test
-in the live-monitoring suite trains everyone to ignore red.
-"""
+"""Contract tests for the read-only FTMO trial pulse."""
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -159,7 +151,11 @@ def test_parked_activity_requires_fresh_matching_account_position_count() -> Non
 def test_expected_state_expiry_fails_closed() -> None:
     now = datetime(2026, 8, 25, tzinfo=timezone.utc)
 
-    state = ftmo_trial_pulse.assess_expected_state(terminal_up=False, now=now)
+    state = ftmo_trial_pulse.assess_expected_state(
+        terminal_up=False,
+        now=now,
+        review_expires_utc="2026-08-25T00:00:00Z",
+    )
 
     assert state["review_expired"] is True
     assert state["condition"] == "contract_expired"
@@ -196,6 +192,7 @@ def test_contract_expiry_wins_over_maintenance() -> None:
         terminal_up=True,
         now=now,
         maintenance=True,
+        review_expires_utc="2026-08-25T00:00:00Z",
     )
 
     assert state["effective_state"] == "MAINTENANCE"
@@ -223,10 +220,44 @@ def test_contract_expiry_wins_over_unknown_process_probe() -> None:
     state = ftmo_trial_pulse.assess_expected_state(
         terminal_up=None,
         now=now,
+        review_expires_utc="2026-08-25T00:00:00Z",
     )
 
     assert state["condition"] == "contract_expired"
     assert state["alarm"] == "expected_state_review_expired"
+
+
+def test_owner_park_contract_has_threshold_review_not_date_expiry() -> None:
+    assert ftmo_trial_pulse.EXPECTED_STATE == "PARKED"
+    assert ftmo_trial_pulse.EXPECTED_STATE_REVIEW_EXPIRES_UTC is None
+    assert ftmo_trial_pulse.EXPECTED_STATE_REVIEW_TRIGGER_QUALIFIED_PAIRS == 25
+    assert ftmo_trial_pulse.EXPECTED_STATE_DECISION_PATH.endswith(
+        "2026-08-25_owner_hma_requal_ftmo_park_q02_dead16.md"
+    )
+
+
+def test_owner_review_trigger_reopens_contract_at_25(monkeypatch) -> None:
+    monkeypatch.setattr(
+        ftmo_trial_pulse.path_to_25,
+        "path_to_25_metrics",
+        lambda _db: {"qualified_pairs": 25},
+    )
+    trigger = ftmo_trial_pulse.assess_owner_review_trigger(Path("ignored.sqlite"))
+    state = ftmo_trial_pulse.assess_expected_state(
+        terminal_up=False,
+        now=datetime(2026, 8, 25, tzinfo=timezone.utc),
+        review_trigger_reached=trigger["reached"],
+    )
+
+    assert trigger == {
+        "ok": True,
+        "qualified_pairs": 25,
+        "threshold": 25,
+        "reached": True,
+        "reason": "qualified_pairs_threshold_reached",
+    }
+    assert state["condition"] == "review_trigger_reached"
+    assert state["alarm"] == "expected_state_review_trigger_reached"
 
 
 def test_pulse_is_observer_only_no_halt_signal_emission() -> None:
