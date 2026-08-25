@@ -1,0 +1,171 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_stop",
+  "generated_at_utc": "2026-08-25T22:46:56Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "be25e4691424c4b1b58c54727de87ab8f7515560",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_audit": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "strict_reputable_source_survivors": [
+      "QM5_12532",
+      "QM5_12533"
+    ],
+    "new_card_or_ea_authorized": false,
+    "reason": "The source threshold admitted only the two original survivors and the governed sign-aware audit accounts for all 66 relationships; another scan-derived identity would be a duplicate or would weaken the reputable-source criterion."
+  },
+  "anchor_triage": {
+    "evidence_basis": "latest durable governed reconciliation",
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "scan_rank": 40,
+    "pair": [
+      "USDJPY.DWX",
+      "NZDUSD.DWX"
+    ],
+    "ea_id": "QM5_20219",
+    "slug": "usdjpy-nzdusd",
+    "logical_symbol": "QM5_20219_USDJPY_NZDUSD_COINTEGRATION_D1",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20219_usdjpy-nzdusd_card.md",
+    "source_quality": "OWNER-ratified Tier-A Ernest Chan pair-trading method plus the frozen in-house 66-pair scan",
+    "structural_contract": "fixed-beta D1 two-leg z-score reversion; no ML or banned indicator",
+    "basket_manifest": "framework/EAs/QM5_20219_usdjpy-nzdusd/basket_manifest.json",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "queried_at_utc": "2026-08-25T22:46:56Z",
+    "work_item_count": 3,
+    "q02": {
+      "work_item_id": "5eb61981-472e-4f08-82c0-53fbec77d6c8",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "unique_q03_successor": {
+      "work_item_id": "4514a6c7-0a2e-4523-a756-b63a232dd8aa",
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0
+    },
+    "preexisting_q04": {
+      "work_item_id": "b721ce82-2d53-46db-b2d0-f20b561a1513",
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0
+    },
+    "duplicate_enqueue_performed": false
+  },
+  "capacity_sample": {
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      100.0,
+      99.81,
+      100.0,
+      99.22,
+      98.45
+    ],
+    "average_cpu_percent": 99.5,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "average_triggered": true,
+    "maximum_triggered": true,
+    "ceiling_binding": true,
+    "terminal_scan_at_utc": "2026-08-25T22:46:57Z",
+    "running_factory_terminal_count": 4,
+    "running_factory_terminals": [
+      "T2",
+      "T4",
+      "T7",
+      "T9"
+    ],
+    "running_factory_work_items": [
+      "1b745b78-6d34-41d0-bede-34a4281cdd50",
+      "07d7d086-3e99-48d5-a738-5bb7da28f7ec",
+      "cf8eac17-4079-4d81-9ed1-fcd9f4300a93",
+      "504a936c-b01f-47e5-bd2e-5395570e7af1"
+    ],
+    "terminal_worker_count": 10,
+    "active_terminal_reservation_count": 4,
+    "active_terminal_reservations": [
+      "T2",
+      "T4",
+      "T7",
+      "T9"
+    ],
+    "orphaned_factory_terminal_process_count": 0,
+    "launch_gate_max": 1,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_receipt": "artifacts/diversity_funnel_hard_cpu_stop_20260825T223300Z_board_advisor.json",
+    "prior_running_factory_terminals": [
+      "T2",
+      "T4",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "current_running_factory_terminals": [
+      "T2",
+      "T4",
+      "T7",
+      "T9"
+    ],
+    "departed_running_terminal": "T6",
+    "prior_active_terminal_reservation_count": 5,
+    "current_active_terminal_reservation_count": 4,
+    "prior_average_cpu_percent": 95.87,
+    "current_average_cpu_percent": 99.5,
+    "prior_maximum_cpu_percent": 100.0,
+    "current_maximum_cpu_percent": 100.0,
+    "reason_for_receipt": "The supported factory census dropped from five running terminals and reservations to four when T6 left, while average CPU rose from 95.87 percent to 99.50 percent; the unique QM5_20219 Q03 lineage was freshly reconfirmed without duplication."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "Both the average and maximum exceeded the explicit 97 percent backtest CPU ceiling before any mutating or CPU-consuming pipeline action."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed_by_this_run": false
+  }
+}
