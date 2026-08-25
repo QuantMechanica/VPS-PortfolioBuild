@@ -1,0 +1,72 @@
+{
+  "schema": "qm.commodity-energy-build-cpu-stop/v1",
+  "generated_at_utc": "2026-08-25T15:22:27.7674205Z",
+  "branch": "agents/board-advisor",
+  "candidate": {
+    "ea_id": "QM5_41157",
+    "ea_label": "QM5_41157_xauxag-mtheilsen-rv",
+    "strategy_id": "SCHWEIKERT-MOP-CME-XAUXAG-MTHEILSEN-RV-2026_S01",
+    "logical_symbol": "QM5_41157_XAU_XAG_MTHEILSEN_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "host_magic": 411570000,
+    "companion_magic": 411570001,
+    "mq5_sha256": "38e8471f64e679568340ab25e5413a99b9e25b11de61d46613d596333101a3ad",
+    "card_sha256": "994c7c07e43fd8fd39ab6b0eb1becfadc65b8611c9051adc48167843ff02612a",
+    "build_source_commit": "74ace92142d24c0171cdd9530ea358c408a059ed"
+  },
+  "verification": {
+    "reference_tests_passed": 7,
+    "reference_tests_failed": 0,
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "ml_hits": [],
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS",
+    "build_guardrail_files_checked": 4,
+    "symbol_scope": "BASKET_OK",
+    "symbol_scope_violations": 0,
+    "approved_card_copies_byte_equal": true,
+    "backtest_setfile_count": 3,
+    "non_backtest_setfile_count": 0,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "cpu": {
+    "command": "Get-Counter '\\\\Processor(_Total)\\\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-25T15:22:27.7674205Z",
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      97.12
+    ],
+    "average_percent": 99.42,
+    "maximum_percent": 100.0,
+    "claim_ceiling_percent": 97.0,
+    "resume_percent": 90.0,
+    "anchored_terminal64_count": 8,
+    "anchored_metatester64_count": 6,
+    "anchored_mt5_process_count": 14
+  },
+  "compile": {
+    "status_at_stop": "NOT_ATTEMPTED_CPU_STOP",
+    "ex5_exists_at_stop": false,
+    "ad_hoc_compile_attempted": false,
+    "governed_compile_enqueued": false
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_count_at_stop": 0,
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "reason": "A strict compile PASS and hash-bound EX5 are required before Q02; the binding CPU ceiling stopped compile and enqueue."
+  },
+  "stop_reason": "BACKTEST_CPU_CEILING_REACHED",
+  "queue_mutation_after_stop": false,
+  "terminal_or_tester_action": false,
+  "testing_after_stop": false,
+  "live_or_portfolio_mutation": false
+}
