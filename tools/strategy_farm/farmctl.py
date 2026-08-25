@@ -26938,10 +26938,16 @@ def advance_opt_fork(
     if not database.is_file():
         raise ValueError(f"farm database is missing: {database}")
     if apply:
-        with connect(root) as conn:
-            return driver.advance_optimization_fork(
-                conn, manifest=ACTIVE_GATE_MANIFEST, target_pairs=targets, apply=True,
-            )
+        def _apply_with_fresh_connection() -> dict[str, Any]:
+            with connect(root) as conn:
+                return driver.advance_optimization_fork(
+                    conn,
+                    manifest=ACTIVE_GATE_MANIFEST,
+                    target_pairs=targets,
+                    apply=True,
+                )
+
+        return _with_sqlite_write_retry(_apply_with_fresh_connection)
     uri = f"file:{database.as_posix()}?mode=ro"
     with sqlite3.connect(uri, uri=True, timeout=30) as conn:
         conn.row_factory = sqlite3.Row
