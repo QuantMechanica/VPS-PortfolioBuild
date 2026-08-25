@@ -1,14 +1,14 @@
 #!/bin/sh
-# Tracked source for .git/hooks/pre-commit — see
-# tools/strategy_farm/install_ex5_commit_guard_hook.py for installation and
-# docs/ops/EX5_COMMIT_GOVERNANCE_GUARD_2026-08-24.md for the guard contract
-# and its current activation status (NOT installed live by default — see
-# that doc's "Activation status" section before running the installer).
+# Tracked source for .git/hooks/pre-commit. Fail-closed guard: refuse commits
+# that stage framework/EAs/**/*.ex5 changes without a governed COMPILE_EA
+# receipt. See tools/strategy_farm/validate_ex5_commit_guard.py for the check
+# and docs/ops/evidence/2026-08-24_ex5_commit_guard.md for the incident this
+# closes. Installed into the shared .git/hooks/ dir (worktrees read hooks from
+# there), so it applies to every worktree checkout.
 #
 # Fail-closed: if this hook cannot run python at all, the commit is blocked
 # rather than silently skipped.
 
 set -e
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-exec python "$REPO_ROOT/tools/strategy_farm/validate_ex5_commit_guard.py" \
-    --staged --repo-root "$REPO_ROOT"
+exec python "$REPO_ROOT/tools/strategy_farm/validate_ex5_commit_guard.py" --repo-root "$REPO_ROOT"
