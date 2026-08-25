@@ -1,0 +1,38 @@
+{
+  "schema": "qm.codex-ea-review.v1",
+  "review_task_id": "a91ce051-fe84-4156-a3fb-0f566aca2365",
+  "ea_id": "QM5_11537",
+  "reviewer": "codex",
+  "reviewed_at": "2026-08-25T14:45:40.5043825Z",
+  "canonical_head": "74a97f8c84dd99a93867d6bdc068615ae3a0ce56",
+  "verdict": "CHANGES_REQUIRED_UNCHANGED",
+  "pipeline_eligible": false,
+  "identity": {
+    "mq5_sha256": "9797890d9f32e5cbd28f994565d0c2c2a031427add1f75e147618d68b987b39a",
+    "ex5_sha256": "5be000517de4d42f4f124447d8275dc0c1b509cea2b91b1fa5bc69f9856ad3c3",
+    "last_ea_source_commit": "52065efc2ab838aadb71469e7f49764e05613847",
+    "changed_since_2026_08_24_rejection": false
+  },
+  "blocking_finding": {
+    "class": "undeclared_h1_execution_contract",
+    "evidence": [
+      "The approved card and all strategy series reads require PERIOD_H1; source lines 100-103 read H1 close/EMA/Bollinger-middle/RSI.",
+      "OnInit at source lines 174-195 initializes the legacy framework path but never calls QM_FrameworkDeclareExecutionContract(PERIOD_H1, ...).",
+      "Entry cadence at source line 244 still calls no-argument QM_IsNewBar(), which follows the attached chart period.",
+      "A wrong-period attachment can therefore evaluate H1 state on the wrong cadence rather than failing initialization."
+    ],
+    "required_repair": "Declare the H1 execution contract and explicit Friday-close mode, use the declared H1 cadence, rebuild through the governed strict path, refresh the source/EX5/set identity evidence, and return for review."
+  },
+  "checks": {
+    "card_fidelity_except_execution_contract": "PASS",
+    "build_gate_hardening": "PASS",
+    "build_guardrails_336h": "PASS",
+    "spec_validation": "PASS",
+    "strict_compile_prior_hash_bound_evidence": "PASS: 0 errors, 0 warnings; unchanged source and EX5",
+    "magic_registry": "PASS: EURUSD.DWX slot 0 magic 115370000; GBPUSD.DWX slot 1 magic 115370001",
+    "resolver_occurrences": "PASS: each magic occurs exactly once",
+    "setfile_risk": "PASS: both sets use RISK_FIXED=1000 and RISK_PERCENT=0"
+  },
+  "informational_finding": "strategy_bb_deviation is wired to the Bollinger reader but cannot affect the middle band mathematically; a 2.0/2.5 sweep must not be treated as sensitivity evidence.",
+  "safety_boundary": "Read-only review. No EA, card, setfile, registry, resolver, EX5, terminal, backtest, Q-phase, T_Live, AutoTrading, risk threshold, or news-staleness ceiling was changed."
+}
