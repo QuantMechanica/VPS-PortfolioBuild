@@ -18,10 +18,12 @@ preserved as evidence.
 from __future__ import annotations
 
 import datetime as dt
+import gzip
 import hashlib
 import json
 import re
 import sqlite3
+import subprocess
 import uuid
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -51,6 +53,7 @@ TERMINAL_REQUALIFICATION_VERDICTS = frozenset(
     {"PROMOTE_CHALLENGER", "CHALLENGER_PROMOTED", "KEEP_INCUMBENT", "ADMIT_BOTH"}
 )
 ROW_NAMESPACE = uuid.UUID("ee66f777-f906-4d5e-a302-a46e44af5b7a")
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 class OptimizationForkError(RuntimeError):
@@ -76,11 +79,128 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _binding(path_value: Any, label: str) -> dict[str, Any]:
+def _archive_binding(
+    path: Path,
+    *,
+    expected_sha256: str,
+    expected_size: int | None,
+) -> dict[str, Any] | None:
+    """Resolve exact historical bytes without restoring or weakening a bind."""
+    gzip_path = Path(str(path) + ".gz")
+    if gzip_path.is_file():
+        digest = hashlib.sha256()
+        content_size = 0
+        try:
+            with gzip.open(gzip_path, "rb") as handle:
+                for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                    digest.update(chunk)
+                    content_size += len(chunk)
+        except OSError as exc:
+            raise OptimizationForkError(f"{label} gzip archive invalid: {gzip_path}") from exc
+        if digest.hexdigest() == expected_sha256 and (
+            expected_size is None or content_size == expected_size
+        ):
+            return {
+                "path": str(path),
+                "sha256": expected_sha256,
+                "size_bytes": content_size,
+                "archive_type": "gzip_sibling",
+                "archive_path": str(gzip_path.resolve()),
+                "archive_sha256": _sha256(gzip_path),
+                "archive_size_bytes": gzip_path.stat().st_size,
+            }
+    try:
+        relative = path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        return None
+    try:
+        commits = subprocess.check_output(
+            ["git", "-C", str(REPO_ROOT), "log", "--all", "--format=%H", "--", relative],
+            text=True,
+            stderr=subprocess.DEVNULL,
+            timeout=30,
+        ).split()
+    except (OSError, subprocess.SubprocessError):
+        return None
+    for commit in commits:
+        try:
+            raw = subprocess.check_output(
+                ["git", "-C", str(REPO_ROOT), "show", f"{commit}:{relative}"],
+                stderr=subprocess.DEVNULL,
+                timeout=30,
+            )
+        except (OSError, subprocess.SubprocessError):
+            continue
+        lf = raw.replace(b"\r\n", b"\n")
+        for variant, content in (
+            ("git_blob", raw),
+            ("lf_checkout", lf),
+            ("crlf_checkout", lf.replace(b"\n", b"\r\n")),
+        ):
+            if hashlib.sha256(content).hexdigest() != expected_sha256 or (
+                expected_size is not None and len(content) != expected_size
+            ):
+                continue
+            try:
+                blob = subprocess.check_output(
+                    ["git", "-C", str(REPO_ROOT), "rev-parse", f"{commit}:{relative}"],
+                    text=True,
+                    stderr=subprocess.DEVNULL,
+                    timeout=30,
+                ).strip()
+            except (OSError, subprocess.SubprocessError):
+                blob = None
+            return {
+                "path": str(path),
+                "sha256": expected_sha256,
+                "size_bytes": len(content),
+                "archive_type": "git_history",
+                "archive_commit": commit,
+                "archive_blob": blob,
+                "archive_path": relative,
+                "archive_bytes_variant": variant,
+            }
+    return None
+
+
+def _binding(
+    path_value: Any,
+    label: str,
+    *,
+    expected_sha256: str | None = None,
+    expected_size: int | None = None,
+) -> dict[str, Any]:
     path = Path(str(path_value or "")).resolve()
+    if path.is_file():
+        observed = {
+            "path": str(path),
+            "sha256": _sha256(path),
+            "size_bytes": path.stat().st_size,
+        }
+        if not expected_sha256 or (
+            observed["sha256"] == expected_sha256
+            and (expected_size is None or observed["size_bytes"] == expected_size)
+        ):
+            return observed
+        current_detail = (
+            f"current_sha256={observed['sha256']},current_size={observed['size_bytes']}"
+        )
+    else:
+        current_detail = "current_path_missing"
+    if expected_sha256:
+        archived = _archive_binding(
+            path,
+            expected_sha256=expected_sha256,
+            expected_size=expected_size,
+        )
+        if archived is not None:
+            return archived
     if not path.is_file():
         raise OptimizationForkError(f"{label} missing: {path}")
-    return {"path": str(path), "sha256": _sha256(path), "size_bytes": path.stat().st_size}
+    raise OptimizationForkError(
+        f"{label} binding drift: expected_sha256={expected_sha256},"
+        f"expected_size={expected_size},{current_detail}"
+    )
 
 
 def _contract_version(manifest: GateManifest) -> str:
@@ -104,15 +224,39 @@ def _artifact_bindings(row: sqlite3.Row | Mapping[str, Any]) -> dict[str, Any]:
     """Bind the row evidence plus current source/binary/setfile bytes."""
 
     evidence = _binding(row["evidence_path"], "parent evidence")
-    setfile = _binding(row["setfile_path"], "parent setfile")
     payload = _decode_payload(row)
+    prior_bindings = payload.get("parent_bindings")
+    prior_bindings = prior_bindings if isinstance(prior_bindings, Mapping) else {}
+
+    def _expected_size(label: str) -> int | None:
+        binding = prior_bindings.get(label)
+        if not isinstance(binding, Mapping) or binding.get("size_bytes") is None:
+            return None
+        return int(binding["size_bytes"])
+
+    setfile = _binding(
+        row["setfile_path"],
+        "parent setfile",
+        expected_sha256=str(payload.get("expected_setfile_sha256") or "").lower() or None,
+        expected_size=_expected_size("setfile"),
+    )
     set_path = Path(setfile["path"])
     ea_dir = set_path.parent.parent
     ea_dir_name = str(payload.get("ea_dir_name") or ea_dir.name).strip()
     ex5_path = Path(str(payload.get("expected_ex5_path") or ea_dir / f"{ea_dir_name}.ex5"))
     mq5_path = Path(str(payload.get("expected_mq5_path") or ea_dir / f"{ea_dir_name}.mq5"))
-    binary = _binding(ex5_path, "parent binary")
-    source = _binding(mq5_path, "parent source")
+    binary = _binding(
+        ex5_path,
+        "parent binary",
+        expected_sha256=str(payload.get("expected_ex5_sha256") or "").lower() or None,
+        expected_size=_expected_size("binary"),
+    )
+    source = _binding(
+        mq5_path,
+        "parent source",
+        expected_sha256=str(payload.get("expected_mq5_sha256") or "").lower() or None,
+        expected_size=_expected_size("source"),
+    )
     for key, observed in (
         ("expected_ex5_sha256", binary["sha256"]),
         ("expected_mq5_sha256", source["sha256"]),
