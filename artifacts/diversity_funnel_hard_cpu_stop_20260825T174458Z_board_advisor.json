@@ -1,0 +1,149 @@
+{
+  "artifact_type": "diversity_funnel_hard_cpu_stop",
+  "generated_at_utc": "2026-08-25T17:44:58.9298831Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "598a3e3221b2e273ff161763cf439c3b56ba08dd",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "admission_decision": {
+    "farm_claim_performed": false,
+    "candidate_ranking_completed": false,
+    "reason": "The explicit 97 percent average-or-maximum whole-host CPU ceiling bound before any claim, mutation, compile, or enqueue."
+  },
+  "capacity_sample": {
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      79.01,
+      93.15,
+      97.28,
+      96.58,
+      84.2
+    ],
+    "average_cpu_percent": 90.04,
+    "maximum_cpu_percent": 97.28,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "average_triggered": false,
+    "maximum_triggered": true,
+    "ceiling_binding": true
+  },
+  "farm_coordination_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "sqlite_read_only_uri",
+    "snapshotted_at_utc": "2026-08-25T17:46:18.011Z",
+    "work_item_counts": {
+      "active": 6,
+      "done": 59784,
+      "failed": 48914,
+      "pending": 3609
+    },
+    "active_phase_counts": {
+      "Q10_NEWS": 6
+    },
+    "active_symbols": [
+      "GBPUSD.DWX",
+      "GDAXI.DWX",
+      "XAUUSD.DWX"
+    ],
+    "separately_owned_agent_builds": [
+      {
+        "ea_id": "QM5_20065",
+        "agent_task_id": "7e8c9eaa-1af5-40ca-9f49-4c785b5ae07d",
+        "assigned_agent": "gemini",
+        "state": "IN_PROGRESS"
+      },
+      {
+        "ea_id": "QM5_20077",
+        "agent_task_id": "6c35c3ec-b576-4919-a321-796b7c813350",
+        "assigned_agent": "gemini",
+        "state": "IN_PROGRESS"
+      }
+    ],
+    "claim_or_queue_mutation_performed": false
+  },
+  "terminal_snapshot": {
+    "scanned_at_utc": "2026-08-25T17:45:37+00:00",
+    "running_factory_terminal_count": 5,
+    "running_factory_terminals": [
+      "T3",
+      "T4",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "terminal_worker_count": 10,
+    "active_terminal_reservation_count": 5,
+    "reserved_terminals": [
+      "T3",
+      "T4",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "db_active_claims_without_matching_terminal_process_in_scan": [
+      {
+        "terminal": "T6",
+        "work_item_id": "3a44e240-c86d-41a3-8367-ee9d7aa90436",
+        "ea_id": "QM5_12708",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS"
+      }
+    ],
+    "reconciliation_performed": false,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_diversity_receipt": "artifacts/diversity_funnel_hard_cpu_stop_20260825T164853Z_board_advisor.json",
+    "prior_active_work_items": 8,
+    "current_active_work_items": 6,
+    "prior_pending_work_items": 3621,
+    "current_pending_work_items": 3609,
+    "latest_general_fleet_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260825T171613Z_board_advisor.json",
+    "prior_running_factory_terminals": [
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "current_running_factory_terminals": [
+      "T3",
+      "T4",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "prior_average_cpu_percent": 99.95,
+    "current_average_cpu_percent": 90.04,
+    "prior_maximum_cpu_percent": 100.0,
+    "current_maximum_cpu_percent": 97.28,
+    "reason_for_receipt": "The farm drained two active and twelve pending rows, T6 left and T3 joined the running factory roster, and mean CPU fell materially; the maximum alone still binds the hard ceiling."
+  },
+  "actions_this_run": {
+    "farm_claim": false,
+    "candidate_advance": false,
+    "card_or_ea_mutation": false,
+    "registry_or_magic_mutation": false,
+    "compile_or_build_check": false,
+    "smoke_or_backtest_run": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "evidence_commit_only": true
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed_by_this_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
