@@ -1,0 +1,133 @@
+{
+  "schema_version": "diversity_funnel_cpu_stop.v1",
+  "observed_at_utc": "2026-08-25T15:01:22.1689052Z",
+  "branch": "agents/board-advisor",
+  "decision": "STOP_CPU_CEILING",
+  "cpu_admission": {
+    "counter": "\\Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 1,
+    "samples_pct": [
+      99.52,
+      100.0,
+      100.0,
+      97.0,
+      100.0
+    ],
+    "average_pct": 99.304,
+    "maximum_pct": 100.0,
+    "ceiling_pct": 97.0,
+    "binding_rule": "average_gte_ceiling_or_maximum_gte_ceiling",
+    "binding": true
+  },
+  "farm_snapshot": {
+    "observed_at_utc": "2026-08-25T15:01:52.952171+00:00",
+    "db_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "sqlite_uri_mode_ro",
+    "supported_status_result": "sqlite3.OperationalError: database is locked",
+    "work_items_by_status": {
+      "active": 8,
+      "done": 59763,
+      "failed": 48910,
+      "pending": 3628
+    },
+    "pending_build_ea_tasks": 46,
+    "active_work_items": [
+      {
+        "id": "002ccb7f-d17e-473c-bdbd-cca20dccc535",
+        "ea_id": "QM5_13213",
+        "symbol": "USDJPY.DWX",
+        "phase": "Q07",
+        "claimed_by": "T2"
+      },
+      {
+        "id": "ecb464bd-3475-46a4-a732-d92ac16a7004",
+        "ea_id": "QM5_10094",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T4"
+      },
+      {
+        "id": "504a936c-b01f-47e5-bd2e-5395570e7af1",
+        "ea_id": "QM5_10114",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T9"
+      },
+      {
+        "id": "64453ed3-225f-4984-9a33-fa43f70d047c",
+        "ea_id": "QM5_10142",
+        "symbol": "SP500.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T10"
+      },
+      {
+        "id": "cf8eac17-4079-4d81-9ed1-fcd9f4300a93",
+        "ea_id": "QM5_12354",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T7"
+      },
+      {
+        "id": "14e2dbb2-c2fc-49f3-b7e5-8e6b853d0867",
+        "ea_id": "QM5_12357",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T8"
+      },
+      {
+        "id": "3a44e240-c86d-41a3-8367-ee9d7aa90436",
+        "ea_id": "QM5_12708",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T6"
+      },
+      {
+        "id": "d6cb83f4-96c2-4a9b-bdc6-cc0b4441f291",
+        "ea_id": "QM5_9510",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T1"
+      }
+    ],
+    "running_pipeline_terminal_processes": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T7",
+      "T9",
+      "T10"
+    ],
+    "db_active_without_matching_terminal_process_in_scan": [
+      "T8"
+    ]
+  },
+  "eligibility_preflight": {
+    "ea_id": "QM5_41157",
+    "registry_row_present": true,
+    "approved_card_present": false,
+    "eligible_for_q01_build": false,
+    "reason": "registry reservation is not an OWNER-approved Strategy Card"
+  },
+  "non_duplicate_delta_from_20260824T105118Z": {
+    "pending_work_items_previous": 3832,
+    "pending_work_items_current": 3628,
+    "pending_work_items_delta": -204,
+    "active_topology_previous": "Q02+Q07+Q08+Q10_NEWS",
+    "active_topology_current": "Q07+Q10_NEWS",
+    "active_q02_current": 0,
+    "active_q08_current": 0
+  },
+  "actions": {
+    "farm_claim_created": false,
+    "ea_or_card_mutated": false,
+    "compile_run": false,
+    "smoke_run": false,
+    "q02_or_q03_enqueued": false,
+    "tester_launched": false,
+    "terminal_controlled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}
