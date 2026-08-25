@@ -56,6 +56,24 @@ CREATE TABLE IF NOT EXISTS work_item_supersedes (
 );
 CREATE INDEX IF NOT EXISTS idx_work_item_supersedes_target
     ON work_item_supersedes(superseded_by_work_item_id);
+
+-- The queue selector excludes canonical history, but resident terminal workers
+-- can survive a code rollout.  Keep the same invariant at the durable write
+-- boundary so a pre-rollout claimant cannot reactivate a superseded pending
+-- row while newer daemons are coming online.  RAISE(IGNORE) makes the guarded
+-- UPDATE affect zero rows, which every claimant already treats as a lost race.
+CREATE TRIGGER IF NOT EXISTS trg_work_items_superseded_no_activate
+BEFORE UPDATE OF status ON work_items
+WHEN OLD.status = 'pending'
+     AND NEW.status = 'active'
+     AND EXISTS (
+         SELECT 1
+         FROM work_item_supersedes s
+         WHERE s.work_item_id = OLD.id
+     )
+BEGIN
+    SELECT RAISE(IGNORE);
+END;
 """
 
 
