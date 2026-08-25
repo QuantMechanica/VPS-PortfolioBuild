@@ -193,6 +193,68 @@ def test_source_repair_refuses_current_compile_ok(
     assert repair["refused"][0]["reason"] == "USABLE_CURRENT_COMPILE_VERDICT_EXISTS"
 
 
+def test_rollout_reconciliation_authority_requires_stale_hold_and_supersession(
+    tmp_path: Path,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    first = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    old_id = first["enqueued"][0]["work_item_id"]
+    source = repo / "framework" / "EAs" / label / f"{label}.mq5"
+    source.write_text(source.read_text(encoding="utf-8") + "// current\n", encoding="utf-8")
+
+    repair = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority=(
+            compile_work_items.ROLLOUT_RECONCILIATION_SOURCE_REPAIR_AUTHORITY
+        ),
+    )
+
+    assert repair["ok"] is True
+    assert repair["enqueued_count"] == 1
+    new_id = repair["enqueued"][0]["work_item_id"]
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            """INSERT INTO work_item_supersedes
+               (work_item_id,superseded_by_work_item_id,reason,source_encoding,
+                evidence_path,recorded_by,recorded_at)
+               VALUES (?,?,'test','operator:test',NULL,'test',?)""",
+            (old_id, new_id, farmctl.utc_now()),
+        )
+        conn.execute(
+            "UPDATE work_item_holds SET active=0 WHERE work_item_id=?",
+            (old_id,),
+        )
+        conn.commit()
+
+    worker_recheck = compile_work_items.classify_candidate(
+        root,
+        repo,
+        label,
+        compile_work_items._inventory(root, repo),
+        current_work_item_id=new_id,
+        source_repair_authority=(
+            compile_work_items.ROLLOUT_RECONCILIATION_SOURCE_REPAIR_AUTHORITY
+        ),
+    )
+    unauthorized_new_enqueue = compile_work_items.classify_candidate(
+        root,
+        repo,
+        label,
+        compile_work_items._inventory(root, repo),
+        source_repair_authority=(
+            compile_work_items.ROLLOUT_RECONCILIATION_SOURCE_REPAIR_AUTHORITY
+        ),
+    )
+
+    assert worker_recheck["eligible"] is True
+    assert worker_recheck["source_repair_authorized"] is True
+    assert unauthorized_new_enqueue["eligible"] is False
+    assert unauthorized_new_enqueue["reason"] == "OPEN_COMPILE_EA_EXISTS"
+
+
 def test_q02_infra_source_repair_authority_is_exact_label_bound() -> None:
     label = "QM5_11900_kobasfx-4ema-macd-sentiment-h1"
 

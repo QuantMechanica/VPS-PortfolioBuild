@@ -133,6 +133,14 @@ ROT_REMEDIATION_39001_38001_EA_LABELS = frozenset({
     "QM5_39001_forexfactory-trading-made-simple-tms",
     "QM5_38001_codetrading-vwap-bollinger-rsi-scalper",
 })
+# Exact, self-expiring authority for the stale rollout-hold reconciliation.
+# Initial enqueue is authorized only while the same EA still has an active
+# COMPILE_EA_WORKER_ROLLOUT_PENDING predecessor bound to a different source
+# hash. Worker recheck survives hold closure only through a canonical
+# work_item_supersedes edge back to that historical predecessor.
+ROLLOUT_RECONCILIATION_SOURCE_REPAIR_AUTHORITY = (
+    "router_ops_issue:e9944090-1e0f-4dea-af90-e74f8079d1c8"
+)
 COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
@@ -253,8 +261,16 @@ def _numeric_ea_reference(value: Any) -> str | None:
     return str(int(match.group(1)))
 
 
-def _source_repair_authorized(ea_label: str, authority: str | None) -> bool:
-    return bool(
+def _source_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None = None,
+    source_sha: str | None = None,
+    inventory: dict[str, Any] | None = None,
+    current_work_item_id: str | None = None,
+) -> bool:
+    statically_authorized = bool(
         (
             authority == SOURCE_REPAIR_AUTHORITY
             and ea_label in SOURCE_REPAIR_EA_LABELS
@@ -276,12 +292,79 @@ def _source_repair_authorized(ea_label: str, authority: str | None) -> bool:
             and ea_label in QM5_35005_REVIEW_REPAIR_EA_LABELS
         )
         or (
-            authority == REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES.get(ea_label)
+            authority is not None
+            and authority == REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES.get(ea_label)
         )
         or (
             authority == ROT_REMEDIATION_39001_38001_AUTHORITY
             and ea_label in ROT_REMEDIATION_39001_38001_EA_LABELS
         )
+    )
+    if statically_authorized:
+        return True
+    if (
+        authority != ROLLOUT_RECONCILIATION_SOURCE_REPAIR_AUTHORITY
+        or not ea_id
+        or not source_sha
+        or inventory is None
+    ):
+        return False
+
+    source_sha = str(source_sha).lower()
+    rollout_rows = inventory.get("rollout_holds", {}).get(ea_id, [])
+    if current_work_item_id is None:
+        return any(
+            int(row.get("active") or 0) == 1
+            and str(_json_object(row.get("payload_json")).get("ea_label") or "")
+            == ea_label
+            and str(_json_object(row.get("payload_json")).get("mq5_sha256") or "").lower()
+            != source_sha
+            for row in rollout_rows
+        )
+
+    current_row = _work_row_by_id(inventory, ea_id, current_work_item_id)
+    current_payload = _json_object(
+        current_row.get("payload_json") if current_row else None
+    )
+    predecessor_ids = {
+        str(value)
+        for value in current_payload.get("source_repair_predecessor_work_item_ids", [])
+        if str(value or "")
+    }
+    if not (
+        current_row
+        and current_payload.get("append_only_source_repair") is True
+        and current_payload.get("compile_source_repair_authority") == authority
+        and str(current_payload.get("mq5_sha256") or "").lower() == source_sha
+        and predecessor_ids
+    ):
+        return False
+    superseded_by = inventory.get("superseded_by", {})
+    return any(
+        str(row.get("id")) in predecessor_ids
+        and current_work_item_id in superseded_by.get(str(row.get("id")), set())
+        for row in rollout_rows
+    )
+
+
+def _active_stale_rollout_hold_exists(
+    conn: sqlite3.Connection,
+    *,
+    ea_id: str,
+    ea_label: str,
+    source_sha: str,
+) -> bool:
+    rows = conn.execute(
+        """SELECT w.payload_json
+           FROM work_items w JOIN work_item_holds h ON h.work_item_id=w.id
+           WHERE w.ea_id=? AND w.phase=? AND h.hold_code=? AND h.active=1""",
+        (ea_id, COMPILE_EA_PHASE, COMPILE_ACTIVATION_HOLD_CODE),
+    ).fetchall()
+    return any(
+        str(_json_object(row["payload_json"]).get("ea_label") or "") == ea_label
+        and str(_json_object(row["payload_json"]).get("mq5_sha256") or "").lower()
+        != source_sha.lower()
+        for row in rows
     )
 
 
@@ -440,6 +523,7 @@ def _inventory(root: Path, repo_root: Path) -> dict[str, Any]:
     with _connect(root) as conn:
         work_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)
         open_compile: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        rollout_holds: dict[str, list[dict[str, Any]]] = defaultdict(list)
         for row in conn.execute(
             "SELECT id,ea_id,phase,status,verdict,evidence_path,payload_json "
             "FROM work_items"
@@ -451,6 +535,23 @@ def _inventory(root: Path, repo_root: Path) -> dict[str, Any]:
             work_rows[ea_id].append(item)
             if row["phase"] == COMPILE_EA_PHASE and row["status"] in ("pending", "active"):
                 open_compile[ea_id].append(item)
+        for row in conn.execute(
+            """SELECT w.id,w.ea_id,w.status,w.verdict,w.payload_json,h.active
+               FROM work_items w JOIN work_item_holds h ON h.work_item_id=w.id
+               WHERE w.phase=? AND h.hold_code=?""",
+            (COMPILE_EA_PHASE, COMPILE_ACTIVATION_HOLD_CODE),
+        ):
+            ea_id = _numeric_ea_reference(row["ea_id"])
+            if ea_id:
+                rollout_holds[ea_id].append(dict(row))
+        superseded_by: dict[str, set[str]] = defaultdict(set)
+        for row in conn.execute(
+            "SELECT work_item_id,superseded_by_work_item_id FROM work_item_supersedes "
+            "WHERE superseded_by_work_item_id IS NOT NULL"
+        ):
+            superseded_by[str(row["work_item_id"])].add(
+                str(row["superseded_by_work_item_id"])
+            )
         build_ids = {
             ea_id
             for row in conn.execute(
@@ -464,6 +565,8 @@ def _inventory(root: Path, repo_root: Path) -> dict[str, Any]:
         "active_magics": active_magics,
         "work_rows": work_rows,
         "open_compile": open_compile,
+        "rollout_holds": rollout_holds,
+        "superseded_by": superseded_by,
         "build_ids": build_ids,
     }
 
@@ -484,15 +587,20 @@ def classify_candidate(
         return {"ea_label": label, "eligible": False, "reason": "EA_LABEL_INVALID"}
     canonical_label, ea_id, _slug = parts
     repair_requested = source_repair_authority is not None
-    repair_authorized = _source_repair_authorized(
-        canonical_label, source_repair_authority
-    )
     sanctioned_ids = {
         str(value) for value in sanctioned_predecessor_ids if str(value or "")
     }
     ea_dir = repo_root / "framework" / "EAs" / canonical_label
     source = ea_dir / f"{canonical_label}.mq5"
     source_sha = sha256_file(source) if source.is_file() else None
+    repair_authorized = _source_repair_authorized(
+        canonical_label,
+        source_repair_authority,
+        ea_id=ea_id,
+        source_sha=source_sha,
+        inventory=inventory,
+        current_work_item_id=current_work_item_id,
+    )
     prior_compile_rows = [
         row
         for row in inventory["work_rows"].get(ea_id, [])
@@ -865,6 +973,23 @@ def enqueue_compile_eas(
         with _connect(root) as conn:
             conn.execute("BEGIN IMMEDIATE")
             for candidate in eligible:
+                if (
+                    source_repair_authority
+                    == ROLLOUT_RECONCILIATION_SOURCE_REPAIR_AUTHORITY
+                    and not _active_stale_rollout_hold_exists(
+                        conn,
+                        ea_id=str(candidate["ea_id"]),
+                        ea_label=str(candidate["ea_label"]),
+                        source_sha=str(candidate["mq5_sha256"]),
+                    )
+                ):
+                    refused.append({
+                        **candidate,
+                        "eligible": False,
+                        "reason": "SOURCE_REPAIR_AUTHORITY_INVALID_AT_APPLY",
+                        "reasons": ["SOURCE_REPAIR_AUTHORITY_INVALID_AT_APPLY"],
+                    })
+                    continue
                 existing_rows = conn.execute(
                     "SELECT id,payload_json FROM work_items WHERE ea_id=? AND phase=? "
                     "AND status IN ('pending','active') ORDER BY created_at,id",

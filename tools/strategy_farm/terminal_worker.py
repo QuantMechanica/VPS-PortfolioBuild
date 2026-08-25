@@ -1848,6 +1848,10 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             SELECT 1 FROM work_item_holds h
                             WHERE h.work_item_id=w.id AND h.active=1
                           )
+                          AND NOT EXISTS (
+                            SELECT 1 FROM work_item_supersedes s
+                            WHERE s.work_item_id=w.id
+                          )
                         LIMIT 1
                         """,
                         (farmctl.COMPILE_EA_PHASE,),

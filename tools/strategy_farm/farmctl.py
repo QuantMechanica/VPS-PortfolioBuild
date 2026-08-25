@@ -34,6 +34,13 @@ except ModuleNotFoundError:
     )
 
 try:
+    from work_item_supersedes import ensure_schema as ensure_work_item_supersedes_schema
+except ModuleNotFoundError:
+    from tools.strategy_farm.work_item_supersedes import (
+        ensure_schema as ensure_work_item_supersedes_schema,
+    )
+
+try:
     from pump_budget import PumpCycleBudget
     from sqlite_busy import (
         BUSY_TIMEOUT_MS,
@@ -1529,6 +1536,13 @@ def pending_claim_order_sql() -> str:
             SELECT 1 FROM work_item_holds h
             WHERE h.work_item_id=w.id AND h.active=1
           )
+          -- Canonically superseded history is never executable. A pending row
+          -- may remain immutable while its replacement proceeds; removing its
+          -- operational hold must not make the historical row claimable again.
+          AND NOT EXISTS (
+            SELECT 1 FROM work_item_supersedes s
+            WHERE s.work_item_id=w.id
+          )
           AND NOT EXISTS (
             SELECT 1 FROM poison_pill_quarantine q
             WHERE q.ea_id=w.ea_id AND q.symbol=w.symbol AND q.phase=w.phase
@@ -2187,6 +2201,10 @@ def init_db(root: Path) -> None:
         except sqlite3.OperationalError:
             pass  # already exists
         ensure_work_item_gate_contract_schema(conn)
+        # Install the canonical append-only supersession sidecar before any
+        # claimant executes pending_claim_order_sql(), which excludes rows
+        # recorded in this table.
+        ensure_work_item_supersedes_schema(conn)
         # Q09_NEWS v2 is an additive sidecar schema.  Install it on every
         # init/repair without rewriting historical work_items or candidates.
         _ensure_portfolio_candidates_table(conn)
