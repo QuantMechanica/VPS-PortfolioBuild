@@ -330,6 +330,7 @@ authorize a rescue sweep after failure.
 | `strategy_max_endpoint_gap_days` | 10 | [10] | immediately prior month-end freshness guard |
 | `strategy_atr_period_d1` | 20 | [20] | completed-D1 stop estimator |
 | `strategy_atr_sl_mult` | 3.5 | [3.5] | frozen per-leg hard-stop multiple |
+| `strategy_notional_ratio` | 1.0 | [1.0] | equal target absolute XAU/XAG notionals |
 | `strategy_xau_max_spread_points` | 1500 | [1500] | gold entry spread ceiling |
 | `strategy_xag_max_spread_points` | 500 | [500] | silver entry spread ceiling |
 | `strategy_max_notional_mismatch_fraction` | 0.20 | [0.20] | post-open package tolerance |
