@@ -1,0 +1,172 @@
+{
+  "artifact_type": "diversity_funnel_hard_cpu_stop",
+  "generated_at_utc": "2026-08-25T22:33:00.2409679Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "b74ac598878813a14692791cd9861e86c5a94c89",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "admission_decision": {
+    "farm_claim_performed": false,
+    "candidate_ranking_completed": false,
+    "reason": "The explicit 97 percent average-or-maximum whole-host CPU ceiling bound before any claim, mutation, compile, smoke, or enqueue."
+  },
+  "capacity_sample": {
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      100.0,
+      96.79,
+      92.0,
+      90.66,
+      99.9
+    ],
+    "average_cpu_percent": 95.87,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "average_triggered": false,
+    "maximum_triggered": true,
+    "ceiling_binding": true
+  },
+  "farm_coordination_snapshot": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "database_access": "sqlite_read_only_uri",
+    "database_snapshotted_at_utc": "2026-08-25T22:32:10.445591+00:00",
+    "terminal_view": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "terminal_scanned_at_utc": "2026-08-25T22:31:23+00:00",
+    "work_item_counts": {
+      "active": 7,
+      "done": 59813,
+      "failed": 48937,
+      "pending": 3731
+    },
+    "active_phase_counts": {
+      "Q03": 1,
+      "Q07": 1,
+      "Q09": 1,
+      "Q10_NEWS": 4
+    },
+    "active_symbols": [
+      "EURUSD.DWX",
+      "GDAXI.DWX",
+      "QM5_20057_XAU_XAG_XMOM1_D1",
+      "XAUUSD.DWX"
+    ],
+    "running_factory_terminal_count": 5,
+    "running_factory_terminals": [
+      "T2",
+      "T4",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "active_terminal_reservation_count": 5,
+    "active_terminal_reservations": [
+      "T2",
+      "T4",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "terminal_worker_count": 10,
+    "active_claims_without_matching_terminal_process_in_scan": [
+      {
+        "terminal": "T1",
+        "work_item_id": "e6bef83e-8ce1-4b53-b9e1-5d07fa09024d",
+        "ea_id": "QM5_10513",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q09"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "14e2dbb2-c2fc-49f3-b7e5-8e6b853d0867",
+        "ea_id": "QM5_12357",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q10_NEWS"
+      }
+    ],
+    "separately_owned_agent_builds": [
+      {
+        "ea_id": "QM5_20065",
+        "slug": "pricebob-refbar-breakout-eurusd",
+        "agent_task_id": "7e8c9eaa-1af5-40ca-9f49-4c785b5ae07d",
+        "assigned_agent": "gemini",
+        "state": "IN_PROGRESS"
+      },
+      {
+        "ea_id": "QM5_20077",
+        "slug": "atr-channel-trail-breakout-h1",
+        "agent_task_id": "6c35c3ec-b576-4919-a321-796b7c813350",
+        "assigned_agent": "gemini",
+        "state": "IN_PROGRESS"
+      }
+    ],
+    "claim_or_queue_mutation_performed": false,
+    "reconciliation_performed": false,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_diversity_receipt": "artifacts/diversity_funnel_hard_cpu_stop_20260825T183325Z_board_advisor.json",
+    "prior_active_work_item_count": 8,
+    "current_active_work_item_count": 7,
+    "prior_active_phase_counts": {
+      "Q07": 2,
+      "Q10_NEWS": 6
+    },
+    "current_active_phase_counts": {
+      "Q03": 1,
+      "Q07": 1,
+      "Q09": 1,
+      "Q10_NEWS": 4
+    },
+    "latest_general_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260825T214742Z_board_advisor.json",
+    "prior_running_factory_terminals": [
+      "T2",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "current_running_factory_terminals": [
+      "T2",
+      "T4",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "prior_active_terminal_reservation_count": 7,
+    "current_active_terminal_reservation_count": 5,
+    "prior_average_cpu_percent": 99.98100335767501,
+    "current_average_cpu_percent": 95.87,
+    "prior_maximum_cpu_percent": 100.0,
+    "current_maximum_cpu_percent": 100.0,
+    "reason_for_receipt": "The active phase mix changed from Q07/Q10-only to Q03/Q07/Q09/Q10, the running roster dropped from six terminals to five while T4 replaced T5/T8, and reservations fell from seven to five; the maximum still binds the hard ceiling."
+  },
+  "actions_this_run": {
+    "farm_claim": false,
+    "candidate_advance": false,
+    "card_or_ea_mutation": false,
+    "registry_or_magic_mutation": false,
+    "compile_or_build_check": false,
+    "smoke_or_backtest_run": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "evidence_commit_only": true
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed_by_this_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
