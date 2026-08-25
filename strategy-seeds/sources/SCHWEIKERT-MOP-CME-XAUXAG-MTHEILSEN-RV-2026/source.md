@@ -13,7 +13,8 @@ parent_sha256:
   MOP-WTI-THEILSEN-2026: F83880B74B1DB645F6C20A58B76825DA96787E327C461D0E798CA01CAB72535E
 created: 2026-08-25
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - xauxag-mtheilsen-rv
 ---
 
 # XAU/XAG Thirteen-Month Theil-Sen Ratio-Slope Reversion Source Packet
