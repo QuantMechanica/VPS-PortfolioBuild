@@ -17700,6 +17700,20 @@ def _pump_unlocked(
         "build_records": [],
         "build_retries": [],
     }
+    # Expansion authoring is a bounded, append-only control-plane step.  Keep it
+    # ahead of build dispatch: build process discovery/spawn can overrun the
+    # whole pump budget, which previously starved this stage for many cycles and
+    # left authenticated expanded_7x4_matrix_required rows without successors.
+    # The next cycle's leading dispatch_tick can seal a child if the later
+    # same-cycle autoseal is itself deferred by the budget.
+    result["news_expansions"] = cycle_budget.run(
+        "news_expansions",
+        lambda: author_news_expansion_continuations(
+            root, limit=PUMP_NEWS_EXPANSION_LIMIT, apply=True
+        ),
+        budget_seconds=10.0,
+        minimum_start_seconds=10.0,
+    )
     codex_low_tokens = (
         (root / "CODEX_LOW_TOKENS.flag").exists()
         or os.environ.get("QM_CODEX_LOW_TOKENS") == "1"
@@ -19413,18 +19427,6 @@ def _pump_unlocked(
     cycle_budget.record_elapsed(
         "promotions", promotion_stage_started, budget_seconds=60.0
     )
-    # A completed standard-scope adjudication can require the full compliance
-    # matrix.  Materialize an append-only continuation before autoseal so the
-    # same cycle can author, hash-bind, and release its expanded plan.
-    result["news_expansions"] = cycle_budget.run(
-        "news_expansions",
-        lambda: author_news_expansion_continuations(
-            root, limit=PUMP_NEWS_EXPANSION_LIMIT, apply=True
-        ),
-        budget_seconds=10.0,
-        minimum_start_seconds=10.0,
-    )
-
     # Newly created and previously parked news rows become runnable in the same
     # pump cycle.  Each row is independently fail-closed, so one bad lineage
     # cannot starve the remaining cohort.

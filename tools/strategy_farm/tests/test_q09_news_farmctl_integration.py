@@ -778,6 +778,18 @@ def test_pump_retries_autoseal_after_regenerated_q08_promotion() -> None:
     assert promotion < post_cascade_retry
 
 
+def test_pump_authors_news_expansions_before_build_dispatch_can_exhaust_budget() -> None:
+    """A slow build stage must not starve authenticated expansion requests."""
+    source = inspect.getsource(farmctl._pump_unlocked)
+
+    expansion = source.index('result["news_expansions"] = cycle_budget.run(')
+    build_dispatch = source.index(
+        'cycle_budget.record_elapsed(\n        "build_dispatch"'
+    )
+
+    assert expansion < build_dispatch
+
+
 def test_autoseal_replaces_immutable_predecessor_after_append_only_q08(
     tmp_path: Path,
 ) -> None:
