@@ -1,0 +1,116 @@
+{
+  "artifact_type": "fx_cointegration_frontier_cpu_ceiling_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-26T19:19:46.3741123Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "8a7618234776934dab222c62075e1225de1138bb",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_WITHOUT_QUEUE_OR_TESTER_MUTATION",
+  "frontier_audit": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_would_be_duplicate": true
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "existing_pair_fallback": {
+    "ea_id": "QM5_20220",
+    "pair": [
+      "USDCAD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "logical_symbol": "QM5_20220_USDCAD_AUDJPY_COINTEGRATION_D1",
+    "phase": "Q03",
+    "status": "active",
+    "terminal": "T4",
+    "work_item_id": "2e797aa8-42ef-479e-875f-da93436ca528",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20220_usdcad-audjpy_card.md",
+    "basket_manifest": "framework/EAs/QM5_20220_usdcad-audjpy/basket_manifest.json",
+    "fixed_risk_setfile": "framework/EAs/QM5_20220_usdcad-audjpy/sets/QM5_20220_usdcad-audjpy_QM5_20220_USDCAD_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+    "duplicate_enqueue_performed": false
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "factory_terminal_ceiling": 7
+  },
+  "farm_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-26T19:17:40+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T10",
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "running_factory_terminal_count": 8,
+    "terminal_worker_count": 10,
+    "active_terminal_reservation_count": 8,
+    "orphaned_factory_terminal_process_count": 0,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ],
+    "terminal_count_ceiling_binding": true
+  },
+  "cpu_sample": {
+    "command": "Get-CimInstance Win32_Processor LoadPercentage, five sequential readings",
+    "started_at_utc": "2026-08-26T19:19:40.9417313Z",
+    "ended_at_utc": "2026-08-26T19:19:46.3741123Z",
+    "samples_percent": [
+      100.0,
+      99.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 99.8,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "preceding_fx_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260826T181625Z_board_advisor.json",
+    "preceding_running_factory_terminal_count": 4,
+    "current_running_factory_terminal_count": 8,
+    "preceding_active_fx_q03_ea": "QM5_20219",
+    "current_active_fx_q03_ea": "QM5_20220"
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "q02_or_q03_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "tester_or_backtest_started": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
