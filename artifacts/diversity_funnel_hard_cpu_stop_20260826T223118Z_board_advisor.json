@@ -1,0 +1,138 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-26T22:31:18.0111193Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "e9ae07157fd6a5bc2ab98ce20b732a2828a305ed",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_FARM_CLAIM",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "factory_terminal_ceiling": 7,
+    "paced_launch_gate_max": 1
+  },
+  "farm_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-26T22:30:43+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T4",
+      "T5",
+      "T6",
+      "T7"
+    ],
+    "running_factory_terminal_count": 5,
+    "terminal64_process_count_including_excluded": 7,
+    "metatester64_process_count": 5,
+    "terminal_worker_count": 10,
+    "active_terminal_reservation_count": 5,
+    "orphaned_factory_terminal_process_count": 0,
+    "running_work": [
+      {
+        "terminal": "T1",
+        "work_item_id": "e5d40e56-8e65-49b8-bd1e-0a95768a281b",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_21507",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "1a395c0b-73ea-4bb3-9160-6fb55c4d6777",
+        "phase": "Q03",
+        "ea_id": "QM5_20228",
+        "symbol": "QM5_20228_USDCAD_GBPJPY_COINTEGRATION_D1"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "01de0b78-c15c-4920-a2f1-aa8efb7b6642",
+        "phase": "Q07",
+        "ea_id": "QM5_21501",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "cf18f426-1ba8-4479-92ee-b7e14b85d5de",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_10403",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "cf8eac17-4079-4d81-9ed1-fcd9f4300a93",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_12354",
+        "symbol": "XAUUSD.DWX"
+      }
+    ],
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "farm_db_snapshot": {
+    "db_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "access_mode": "read_only",
+    "pending_build_ea_tasks": 43,
+    "pending_backtest_p2_tasks": 33,
+    "pending_backtest_q03_tasks": 146,
+    "pending_backtest_q04_tasks": 62,
+    "open_agent_tasks": 0,
+    "farm_claim_created": false
+  },
+  "cpu_sample": {
+    "command": "Get-CimInstance Win32_Processor LoadPercentage, five sequential readings",
+    "started_at_utc": "2026-08-26T22:31:08.3159294Z",
+    "ended_at_utc": "2026-08-26T22:31:18.0111193Z",
+    "samples_percent": [
+      100.0,
+      100.0,
+      99.0,
+      94.0,
+      97.0
+    ],
+    "average_percent": 98.0,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/fx_cointegration_frontier_cpu_stop_20260826T214609Z_board_advisor.json",
+    "preceding_scanned_at_utc": "2026-08-26T21:45:53+00:00",
+    "preceding_running_factory_terminals": [
+      "T1",
+      "T4",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T4",
+      "T5",
+      "T6",
+      "T7"
+    ],
+    "topology_change": "T5 replaced T9 in the running factory cohort",
+    "preceding_cpu_average_percent": 97.6,
+    "current_cpu_average_percent": 98.0
+  },
+  "actions_this_run": {
+    "candidate_selected": false,
+    "farm_claim_created": false,
+    "new_card_or_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
