@@ -8732,13 +8732,15 @@ def record_work_item_spawn_refusal(
             ),
         }
         payload.update({
+            "verdict_taxonomy": "infra",
             "verdict_reason": reason,
             "spawn_refusal": refusal,
         })
         cur = conn.execute(
             """
             UPDATE work_items
-            SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
+            SET status='failed', verdict='INFRA_FAIL', verdict_taxonomy='infra',
+                claimed_by=NULL,
                 evidence_path=?, payload_json=?, updated_at=?
             WHERE id=? AND status='active' AND upper(claimed_by)=upper(?)
             """,

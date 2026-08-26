@@ -17,6 +17,7 @@ sys.path.insert(0, str(REPO / "framework" / "scripts"))
 sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 import farmctl  # noqa: E402
+import schema_hardening  # noqa: E402
 
 
 WORK_ITEM_ID = "000034e8-7161-430b-be4f-e140cb99789b"
@@ -462,15 +463,17 @@ def test_dispatch_spawn_refusal_records_reason_and_event(
 ) -> None:
     root = tmp_path / "farm"
     farmctl.init_db(root)
+    with sqlite3.connect(root / "state" / "farm_state.sqlite") as conn:
+        schema_hardening.migrate_sh3(conn, tmp_path / "pre_sh3.sqlite")
     now = farmctl.utc_now()
     with sqlite3.connect(root / "state" / "farm_state.sqlite") as conn:
         conn.execute(
             """
             INSERT INTO work_items
               (id, kind, phase, ea_id, symbol, setfile_path, status,
-               attempt_count, payload_json, created_at, updated_at)
+               attempt_count, payload_json, created_at, updated_at, sh3_enforced)
             VALUES (?, 'backtest', 'Q07', 'QM5_9999', 'EURUSD.DWX',
-                    'dummy.set', 'pending', 0, '{"retained": true}', ?, ?)
+                    'dummy.set', 'pending', 0, '{"retained": true}', ?, ?, 1)
             """,
             (WORK_ITEM_ID, now, now),
         )
@@ -507,7 +510,7 @@ def test_dispatch_spawn_refusal_records_reason_and_event(
     assert failed[0]["refusal_evidence"]["event"] == "runner_spawn_refused"
     with sqlite3.connect(root / "state" / "farm_state.sqlite") as conn:
         row = conn.execute(
-            "SELECT status, verdict, claimed_by, payload_json "
+            "SELECT status, verdict, verdict_taxonomy, claimed_by, payload_json "
             "FROM work_items WHERE id=?",
             (WORK_ITEM_ID,),
         ).fetchone()
@@ -516,9 +519,10 @@ def test_dispatch_spawn_refusal_records_reason_and_event(
             "WHERE entity_type='work_item' AND entity_id=?",
             (WORK_ITEM_ID,),
         ).fetchone()
-    assert row[:3] == ("failed", "INFRA_FAIL", None)
-    payload = json.loads(row[3])
+    assert row[:4] == ("failed", "INFRA_FAIL", "infra", None)
+    payload = json.loads(row[4])
     assert payload["retained"] is True
+    assert payload["verdict_taxonomy"] == "infra"
     assert payload["verdict_reason"] == "test_spawn_refused"
     assert event[0] == "runner_spawn_refused"
     assert json.loads(event[1])["reason"] == "test_spawn_refused"
