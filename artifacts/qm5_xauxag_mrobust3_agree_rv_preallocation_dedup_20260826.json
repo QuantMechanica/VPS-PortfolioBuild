@@ -1,0 +1,47 @@
+{
+  "candidate": {
+    "author": "Karsten Schweikert; Roger Koenker; Gilbert Bassett Jr.; Andrew F. Siegel; CME Group",
+    "mechanic": "monthly synchronized gold silver log ratio Theil Sen LAD repeated median unanimous strict sign consensus reversion equal notional basket",
+    "slug": "xauxag-mrobust3-agree-rv",
+    "strategy_id": "SCHWEIKERT-THEILSEN-KOENKER-SIEGEL-CME-XAUXAG-MROBUST3-AGREE-RV-2026_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-08-26T10:34:57+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41165_wti-mrobust3-agree-tr_card.md",
+      "score": 0.7142857142857143,
+      "slug": "wti-mrobust3-agree-tr",
+      "source": "card",
+      "strategy_id": "MOP-THEILSEN-KOENKER-SIEGEL-WTI-MROBUST3-AGREE-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4665,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1316,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
