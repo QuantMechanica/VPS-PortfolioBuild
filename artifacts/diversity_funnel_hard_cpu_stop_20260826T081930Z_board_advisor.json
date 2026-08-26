@@ -1,0 +1,130 @@
+{
+  "artifact_type": "diversity_funnel_hard_cpu_stop",
+  "generated_at_utc": "2026-08-26T08:19:30.8252259Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "4e5824c1034b4638e6646f1485726eeb393870ab",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "priority_1_build_preflight": {
+    "highest_diversity_frontier_card": {
+      "ea_id": "QM5_41140",
+      "slug": "nzdjpy-carry-unwind-crisis-momentum",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41140_nzdjpy-carry-unwind-crisis-momentum.md",
+      "g0_status": "APPROVED",
+      "instrument": "NZDJPY.DWX",
+      "timeframe": "D1",
+      "family": "carry_funding",
+      "mechanism": "carry_unwind_crisis_momentum",
+      "structural_only": true,
+      "ml_required": false,
+      "source_id": "BRUNNERMEIER-NAGEL-PEDERSEN-CARRY-CRASH-2008",
+      "source_quality": "TIER_A peer-reviewed DOI-bearing citation",
+      "risk_contract": "RISK_FIXED backtest; RISK_PERCENT=0"
+    },
+    "governed_inventory_generated_at_utc": "2026-08-26T08:18:59+00:00",
+    "identity_registry_rows": 1,
+    "identity_registry_status": "active",
+    "active_magic_rows": 0,
+    "total_magic_rows": 0,
+    "repo_ea_directory_exists": false,
+    "classification": "never_allocated",
+    "required_action": "GOVERNED_ALLOCATE",
+    "build_skill_preflight_passed": false,
+    "build_not_started_reason": "The qm-build-ea-from-card gate requires deterministic magic rows before implementation; the governed inventory reports zero rows and no EA directory.",
+    "existing_coordination_task": {
+      "id": "8036a966-9f6b-4094-9280-820c6c75ba0e",
+      "task_type": "ops_issue",
+      "state": "APPROVED",
+      "assigned_agent": "codex",
+      "operation": "governed_magic_precondition",
+      "review_outcome": "honest fail-closed refusal; no mutation"
+    },
+    "new_claim_or_allocation_performed": false
+  },
+  "priority_2_infra_preflight": {
+    "existing_diverse_fx_repair_task": {
+      "id": "46e34047-c661-462c-96d5-b4f9d76914db",
+      "task_type": "q02_infra_repair",
+      "state": "APPROVED",
+      "assigned_agent": "codex:agents/board-advisor",
+      "ea_id": "QM5_11900",
+      "ea_label": "QM5_11900_kobasfx-4ema-macd-sentiment-h1",
+      "source_work_item_id": "fe21ca57-20eb-44af-90f1-d961618b2900",
+      "review_closed_at": "2026-08-24T16:33:58+02:00",
+      "review_outcome": "repair commit approved; compile and Q02 intentionally deferred at the 97 percent CPU ceiling"
+    },
+    "duplicate_repair_claim_or_reenqueue_performed": false,
+    "reason": "The distinct branch-scoped repair is already completed and review-approved; duplicating its claim or queue row would not advance the funnel."
+  },
+  "priority_3_mechanization": {
+    "started": false,
+    "reason": "The explicit CPU stop bound before a new structural edge could be built and smoke-tested."
+  },
+  "capacity_sample": {
+    "sampled_at_utc": "2026-08-26T08:19:30.8252259Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      100.0,
+      100.0,
+      99.902449,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 99.98049,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "binding_measure": "average_and_maximum",
+    "metatester64_process_count": 5,
+    "metatester64_process_ids": [
+      13368,
+      27888,
+      35144,
+      36436,
+      37884
+    ],
+    "farm_mt5_slot_scan_at_utc": "2026-08-26T08:17:39+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T3",
+      "T4",
+      "T7",
+      "T8",
+      "T9"
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260826T074557Z_board_advisor.json",
+    "prior_average_cpu_percent": 93.528853337229,
+    "prior_maximum_cpu_percent": 99.317169921594,
+    "prior_metatester64_process_count": 5,
+    "current_average_delta_percentage_points": 6.451636662771,
+    "current_maximum_delta_percentage_points": 0.682830078406,
+    "reason_for_receipt": "The new observation is a materially different full-saturation state: both the average and maximum now bind, while the prior observation bound only on its maximum. It also records the governed QM5_41140 preflight and the already-completed QM5_11900 repair coordination state."
+  },
+  "actions_this_run": {
+    "farm_db_claim_or_state_mutation": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutation": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "The explicit backtest CPU ceiling bound before every mutating or CPU-consuming mission action."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed_by_this_run": false
+  }
+}
