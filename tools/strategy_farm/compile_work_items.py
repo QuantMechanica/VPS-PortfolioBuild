@@ -102,10 +102,10 @@ QM5_35005_REVIEW_REPAIR_AUTHORITY = (
 QM5_35005_REVIEW_REPAIR_EA_LABELS = frozenset({
     "QM5_35005_sma-crossover-pullback-system",
 })
-# Exact review-rework authorities for RECYCLE tasks that rejected stale
-# binary/source packages.  Each permits one append-only COMPILE_EA successor
-# bound to the repaired source hash; it grants no backtest or gate authority
-# and cannot be used for another EA.
+# Exact review-rework authorities for review tasks that accepted repaired
+# source while rejecting the stale binary/source package. Each permits one
+# append-only COMPILE_EA successor bound to the repaired source hash; it grants
+# no backtest or gate authority and cannot be used for another EA.
 REVIEW_REWORK_SOURCE_REPAIR_AUTHORITY = (
     "router_review_ea:cd6442dd-4ad9-4845-862a-2ef6e3ec0172"
 )
@@ -113,6 +113,9 @@ REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES = {
     "QM5_9468_connors-rsi4-3day-d1": REVIEW_REWORK_SOURCE_REPAIR_AUTHORITY,
     "QM5_9909_bandy-lrchannel-breakout-trend": (
         "router_review_ea:d6ea3abe-d44b-4861-b466-475a28899eaa"
+    ),
+    "QM5_41011_tokyo-london-bank-flow-handover": (
+        "router_review_ea:86e63523-90c7-47e7-bd41-b220e70042e7"
     ),
 }
 REVIEW_REWORK_SOURCE_REPAIR_EA_LABELS = frozenset(

@@ -299,6 +299,9 @@ def test_review_rework_source_repair_authority_is_exact_label_bound() -> None:
         "QM5_9909_bandy-lrchannel-breakout-trend": (
             "router_review_ea:d6ea3abe-d44b-4861-b466-475a28899eaa"
         ),
+        "QM5_41011_tokyo-london-bank-flow-handover": (
+            "router_review_ea:86e63523-90c7-47e7-bd41-b220e70042e7"
+        ),
     }
     for label, authority in authorities.items():
         assert compile_work_items._source_repair_authorized(label, authority)
