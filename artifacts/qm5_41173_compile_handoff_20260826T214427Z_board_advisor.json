@@ -1,0 +1,116 @@
+{
+  "schema": "qm.source-build-compile-handoff/v1",
+  "recorded_at_utc": "2026-08-26T21:44:27.4896840Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41173",
+  "ea_label": "QM5_41173_wti-mspearman-tr",
+  "strategy_id": "MOP-SPEARMAN-WTI-MRANK-TREND-2026_S01",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "magic": 411730000,
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_Q02_STOPPED_CPU_CEILING",
+  "commits": {
+    "source_approval": "86bde74ea",
+    "card_identity_and_g0": "b072d21a3",
+    "magic_and_source_build": "63c1aad5d"
+  },
+  "hashes": {
+    "source_packet_sha256": "38B53FD42A8E9CBA533957D5A376D8F8D4E5CA0F8EBB249D8464F761C8D2AB98",
+    "preallocation_dedup_sha256": "B7296C4BDEEC4624F25909AD9AD48A1F0020D57955676B84819855373EAD91F8",
+    "mq5_sha256": "6B6C746DBB51374FB77A0E838F5C537F7200894A64C74E4979E2D5E832199ED3",
+    "unbound_setfile_sha256": "87192D94473654A23E02BD125DC40E0AC70D31A3E7078D9A6E4005C61DC08BA4",
+    "canonical_card_sha256": "40A433746360469EA1292E49DD30B817857C89F6F24FD9A15D69093B455886AE",
+    "ea_card_copy_sha256": "40A433746360469EA1292E49DD30B817857C89F6F24FD9A15D69093B455886AE"
+  },
+  "source_validation": {
+    "reference_tests": {
+      "passed": 9,
+      "failed": 0,
+      "covers": [
+        "strict_rank_permutation",
+        "spearman_displacement_identity",
+        "inclusive_integer_threshold",
+        "long_short_symmetry",
+        "all_13_factorial_density_count",
+        "four_nonduplicate_neighbor_fixtures",
+        "thirteen_consecutive_month_keys",
+        "fixed_risk_backtest_set",
+        "card_copy_identity_and_no_live_set"
+      ]
+    },
+    "skill_build_guard": "PASS",
+    "build_guardrails": "PASS",
+    "build_gate_hardening": "PASS_NO_FAILURES_WITH_CARD_DISCOVERY_WARNINGS",
+    "spec_validator": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "canonical_card_lint": "PASS",
+    "ea_card_copy_lint": "PASS",
+    "card_copy_byte_identical": true,
+    "magic_allocator_collision_count": 0,
+    "magic_resolver_dry_run_dropped_rows": 0,
+    "repository_wide_registry_validator": "NONZERO_PREEXISTING_UNRELATED_INVENTORY_ISSUES"
+  },
+  "compile": {
+    "ad_hoc_attempt_result": "REFUSED_NO_RETRY",
+    "ad_hoc_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "ad_hoc_log": "framework/build/compile/20260826_214255/QM5_41173_wti-mspearman-tr.compile.log",
+    "governed_work_item_id": "71ef9990-199b-4381-b43b-e3c36045b4f5",
+    "status_at_last_read": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "ceiling_percent": 97.0,
+    "samples": [
+      {
+        "sample": 1,
+        "utc": "2026-08-26T21:43:25.1534968Z",
+        "cpu_percent": 95.0
+      },
+      {
+        "sample": 2,
+        "utc": "2026-08-26T21:43:29.4515497Z",
+        "cpu_percent": 99.0
+      },
+      {
+        "sample": 3,
+        "utc": "2026-08-26T21:43:33.7209476Z",
+        "cpu_percent": 96.0
+      },
+      {
+        "sample": 4,
+        "utc": "2026-08-26T21:43:38.0311047Z",
+        "cpu_percent": 93.0
+      },
+      {
+        "sample": 5,
+        "utc": "2026-08-26T21:43:42.3046305Z",
+        "cpu_percent": 99.0
+      }
+    ],
+    "average_cpu_percent": 96.4,
+    "maximum_cpu_percent": 99.0,
+    "ceiling_hit": true,
+    "process_snapshot": {
+      "terminal64_count": 7,
+      "metatester64_count": 5
+    }
+  },
+  "q02": {
+    "enqueued": false,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_COMPILE_ACTIVATION_HELD",
+      "BACKTEST_CPU_CEILING_HIT"
+    ]
+  },
+  "safety": {
+    "terminal_processes_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
