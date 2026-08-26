@@ -1,0 +1,125 @@
+{
+  "artifact_type": "diversity_build_cpu_ceiling_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-26T18:00:16.2027414Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "20156b9a5b0e9151f67fb2935426e97383299041",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_CARD_SELECTION_OR_MUTATION",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "source": "explicit OWNER paced-fleet mission"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\\\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "average_binding": true,
+    "maximum_binding": true,
+    "ceiling_binding": true
+  },
+  "farm_db_coordination": {
+    "snapshot_command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "snapshot_scanned_at_utc": "2026-08-26T17:59:54+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "running_factory_terminal_count": 7,
+    "terminal_worker_daemon_count": 10,
+    "active_terminal_reservation_count": 7,
+    "orphaned_terminal_process_count": 0,
+    "active_work_items": [
+      {
+        "terminal": "T1",
+        "work_item_id": "e5d40e56-8e65-49b8-bd1e-0a95768a281b",
+        "ea_id": "QM5_21507",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T2",
+        "work_item_id": "ed92d3e4-f7d9-45e0-91be-3ae8f2c0329a",
+        "ea_id": "QM5_21501",
+        "phase": "Q07"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "4514a6c7-0a2e-4523-a756-b63a232dd8aa",
+        "ea_id": "QM5_20219",
+        "phase": "Q03"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "cf8eac17-4079-4d81-9ed1-fcd9f4300a93",
+        "ea_id": "QM5_12354",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "9c8d0ea5-e8a0-46f8-a616-3636e2c06a88",
+        "ea_id": "QM5_10692",
+        "phase": "Q09"
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": "504a936c-b01f-47e5-bd2e-5395570e7af1",
+        "ea_id": "QM5_10114",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T10",
+        "work_item_id": "a114165d-9c44-4bba-bdf3-0a2abeb3f001",
+        "ea_id": "QM5_10123",
+        "phase": "Q10_NEWS"
+      }
+    ],
+    "candidate_or_ea_claim_created": false,
+    "database_mutated": false,
+    "collision_decision": "Do not select or claim a build-backlog EA while the explicit CPU stop is binding."
+  },
+  "actions_this_run": {
+    "approved_card_selected": false,
+    "candidate_or_ea_claimed": false,
+    "stuck_ea_repair_started": false,
+    "new_structural_edge_mechanized": false,
+    "registry_or_magic_mutated": false,
+    "ea_source_or_setfile_created": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "terminal_or_worker_controlled": false,
+    "evidence_commit_only": true,
+    "reason": "All five fresh whole-host CPU readings were 100.0 percent, so both the average and maximum exceeded the 97 percent hard ceiling."
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_demo_shadow_or_stress_artifact_created": false
+  },
+  "worktree_hygiene": {
+    "preexisting_tracked_change_count": 1078,
+    "preexisting_untracked_entry_count": 106,
+    "preexisting_total_porcelain_entry_count": 1184,
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  }
+}
