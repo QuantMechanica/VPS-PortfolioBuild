@@ -1,0 +1,144 @@
+{
+  "artifact_type": "diversity_frontier_cpu_ceiling_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-26T18:50:16.8723531Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "80e971014cde3b3bd58e71eca36759e73a7df619",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_WITHOUT_CLAIM_OR_MUTATION",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "sources": [
+      "explicit OWNER paced-fleet mission",
+      "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+    ]
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      98.7701,
+      98.0326,
+      100.0,
+      99.9035,
+      100.0
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 99.3412,
+    "maximum_cpu_percent": 100.0,
+    "average_binding": true,
+    "maximum_binding": true,
+    "ceiling_binding": true
+  },
+  "farm_db_coordination": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "snapshot_command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "snapshot_scanned_at": "2026-08-26T20:50:03+02:00",
+    "running_factory_terminals": [
+      "T1",
+      "T10",
+      "T4",
+      "T5",
+      "T6",
+      "T9"
+    ],
+    "running_factory_terminal_count": 6,
+    "active_terminal_reservation_count": 6,
+    "orphaned_terminal_process_count": 0,
+    "active_work_items": [
+      {
+        "terminal": "T1",
+        "work_item_id": "e5d40e56-8e65-49b8-bd1e-0a95768a281b",
+        "ea_id": "QM5_21507",
+        "phase": "Q10_NEWS",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "2e797aa8-42ef-479e-875f-da93436ca528",
+        "ea_id": "QM5_20220",
+        "phase": "Q03",
+        "symbol": "QM5_20220_USDCAD_AUDJPY_COINTEGRATION_D1"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "ed92d3e4-f7d9-45e0-91be-3ae8f2c0329a",
+        "ea_id": "QM5_21501",
+        "phase": "Q07",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "809ba975-0b2a-4f67-ab3e-a6fa79737637",
+        "ea_id": "QM5_11132",
+        "phase": "Q09",
+        "symbol": "SP500.DWX"
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": "504a936c-b01f-47e5-bd2e-5395570e7af1",
+        "ea_id": "QM5_10114",
+        "phase": "Q10_NEWS",
+        "symbol": "GDAXI.DWX"
+      },
+      {
+        "terminal": "T10",
+        "work_item_id": "a114165d-9c44-4bba-bdf3-0a2abeb3f001",
+        "ea_id": "QM5_10123",
+        "phase": "Q10_NEWS",
+        "symbol": "XAUUSD.DWX"
+      }
+    ],
+    "candidate_state": {
+      "QM5_41170": {
+        "task_rows": 0,
+        "pending_build_rows": 0,
+        "work_item_rows": 0
+      },
+      "QM5_41171": {
+        "approved_card_committed_at_observation_base": true,
+        "task_rows": 0,
+        "pending_build_rows": 0,
+        "work_item_rows": 0,
+        "concurrent_worktree_build_materialization_observed": true
+      }
+    },
+    "candidate_or_ea_claim_created": false,
+    "database_mutated": false,
+    "collision_decision": "Do not claim QM5_41171 or another candidate while the CPU stop binds; preserve the concurrently materializing QM5_41171 paths as unrelated fleet work."
+  },
+  "non_duplicate_basis": {
+    "new_frontier_fact": "QM5_41171 became an APPROVED committed card at observation base 80e971014 after the prior capacity receipts.",
+    "new_collision_fact": "QM5_41171 build paths and its magic row were already materializing concurrently while its farm task/work-item counts remained zero.",
+    "result": "This receipt seals the post-approval collision boundary and leaves the candidate unclaimed by this run."
+  },
+  "actions_this_run": {
+    "approved_card_claimed": false,
+    "stuck_ea_repair_started": false,
+    "new_structural_edge_mechanized": false,
+    "registry_or_magic_mutated": false,
+    "ea_source_or_setfile_created": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "terminal_or_worker_controlled": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_demo_shadow_or_stress_artifact_created": false
+  },
+  "worktree_hygiene": {
+    "preexisting_tracked_change_count": 1079,
+    "preexisting_untracked_entry_count": 110,
+    "preexisting_total_porcelain_entry_count": 1189,
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  }
+}
