@@ -1,0 +1,134 @@
+{
+  "artifact_type": "qm5_41164_xauxag_repeated_median_source_build_cpu_ceiling",
+  "generated_at_utc": "2026-08-26T09:08:05.2992367Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "SOURCE_BUILD_COMMITTED_COMPILE_HELD_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "candidate": {
+    "ea_id": "QM5_41164",
+    "slug": "xauxag-mrepmedian-rv",
+    "strategy_id": "SCHWEIKERT-SIEGEL-CME-XAUXAG-MREPMEDIAN-RV-2026_S01",
+    "logical_symbol": "QM5_41164_XAU_XAG_MREPMEDIAN_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "mechanic": "fade the exact repeated median of thirteen pivot-specific slope medians over thirteen synchronized completed-month gold-minus-silver log ratios",
+    "market_neutral_style_not_proven_neutral": true
+  },
+  "commits": {
+    "source_approval_and_dedup": "12d432f58",
+    "g0_card_and_identity": "1da626c79",
+    "source_build_and_magic_allocation": "c7bd5e8d5"
+  },
+  "non_duplicate_evidence": {
+    "path": "artifacts/qm5_xauxag_mrepmedian_rv_preallocation_dedup_20260826.json",
+    "sha256": "D831A578286D639AFD34C8BC6AA02A9D6FEF93E3B5AD14E1DBC346691D8CB28F",
+    "verdict": "CLEAN",
+    "registry_rows_scanned": 4663,
+    "card_files_scanned": 1314,
+    "wiki_nodes_scanned": 45,
+    "functional_counterexample": {
+      "ratio_levels": [0.0, 0.01, 0.06, 0.11, 0.14, 0.13, 0.11, 0.12, 0.09, 0.04, 0.02, 0.05, 0.10],
+      "existing_theil_sen": 0.00155555555555556,
+      "existing_lad": 0.00375,
+      "new_repeated_median": -0.0045,
+      "conclusion": "the new fade opens the opposite XAU/XAG package from both closest existing robust-slope baskets"
+    }
+  },
+  "source_build": {
+    "mq5_path": "framework/EAs/QM5_41164_xauxag-mrepmedian-rv/QM5_41164_xauxag-mrepmedian-rv.mq5",
+    "mq5_sha256": "B61DE8CC33CD1A0387698A2451D87480812FB3C76E076E0F2215F729C856854C",
+    "basket_manifest_path": "framework/EAs/QM5_41164_xauxag-mrepmedian-rv/basket_manifest.json",
+    "basket_manifest_sha256": "91BDCD29F958F804A991F0E814278107850B5B93986AB5F70141CBE7EAA4D623",
+    "backtest_setfile_count": 3,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "live_setfile_count": 0,
+    "reference_tests": {
+      "path": "framework/EAs/QM5_41164_xauxag-mrepmedian-rv/docs/test_monthly_repeated_median_ratio_reference.py",
+      "passed": 7,
+      "failed": 0
+    },
+    "card_schema_lint": "PASS",
+    "strict_compile": "NOT_RUN_TO_VERDICT",
+    "ex5_present": false,
+    "q01_status": "PENDING"
+  },
+  "governed_allocation": {
+    "dry_run_receipt": "artifacts/qm5_41164_magic_allocation_dry_run_20260826.json",
+    "dry_run_sha256": "1BDB24E03B90FDC627BB9034A605AB67BBC286920AD0EBC8CC6B2FDED5043D99",
+    "apply_receipt": "artifacts/qm5_41164_magic_allocation_20260826.json",
+    "apply_sha256": "D4A1FF5A99AB1A5D36DE37FEEE623CA04E6178518265EFD38EDF9311CB822911",
+    "allocated_rows": 2,
+    "slot_0": {
+      "symbol": "XAUUSD.DWX",
+      "magic": 411640000
+    },
+    "slot_1": {
+      "symbol": "XAGUSD.DWX",
+      "magic": 411640001
+    },
+    "status_aware_magic_collisions_after": 0,
+    "resolver_rows_before": 17901,
+    "resolver_rows_after": 17903
+  },
+  "compile_handoff": {
+    "direct_compile_attempt": "REFUSED_BEFORE_COMPILE",
+    "direct_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "compile_one_reason_class": "INCLUDE_MIRROR_REFUSED",
+    "compile_log": "framework/build/compile/20260826_090510/QM5_41164_xauxag-mrepmedian-rv.compile.log",
+    "governed_work_item_id": "6dd83b82-1f24-448c-862d-956677219498",
+    "governed_work_item_status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "failed": false,
+    "build_check_result": null,
+    "ex5_sha256": null
+  },
+  "factory_snapshot": {
+    "scanned_at_utc": "2026-08-26T09:06:34+00:00",
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "running_factory_terminals": ["T1", "T3", "T4", "T6", "T7", "T8", "T9"],
+    "running_factory_terminal_count": 7,
+    "terminal64_running_count_including_live_and_ftmo": 9,
+    "t_live_observed_only_for_exclusion": true,
+    "t_live_controlled": false
+  },
+  "capacity_sample": {
+    "completed_at_utc": "2026-08-26T09:06:48.0852737Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [100.0, 100.0, 100.0, 100.0, 100.0],
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "binding_measures": ["average", "maximum"],
+    "metatester64_process_count_at_completion": 5
+  },
+  "q02": {
+    "enqueued": false,
+    "reason": "strict compile/Q01 has no PASS and the fresh backtest CPU ceiling is binding",
+    "queue_mutation_performed": false,
+    "dispatch_performed": false
+  },
+  "actions_this_run": {
+    "new_card_created": true,
+    "new_ea_source_created": true,
+    "registry_and_magic_mutation": true,
+    "compile_work_item_enqueued": true,
+    "q02_enqueue_or_priority_mutation": false,
+    "tester_or_backtest_run": false,
+    "terminal_reservation_or_control": false,
+    "portfolio_gate_mutation": false,
+    "t_live_manifest_mutation": false,
+    "t_live_or_autotrading_control": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed_by_this_run": false
+  }
+}
