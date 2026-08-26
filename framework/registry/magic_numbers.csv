@@ -18040,3 +18040,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41163,williams-18ma-outside-bar-entry-d1-opt,0,USDCAD.DWX,411630000,2026-08-26,Codex governed allocator,active
 41164,xauxag-mrepmedian-rv,0,XAUUSD.DWX,411640000,2026-08-26,Codex governed allocator,active
 41164,xauxag-mrepmedian-rv,1,XAGUSD.DWX,411640001,2026-08-26,Codex governed allocator,active
+41165,wti-mrobust3-agree-tr,0,XTIUSD.DWX,411650000,2026-08-26,Codex governed allocator,active
