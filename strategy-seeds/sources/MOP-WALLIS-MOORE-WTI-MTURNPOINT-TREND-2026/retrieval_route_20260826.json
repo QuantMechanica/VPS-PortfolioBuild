@@ -1,0 +1,79 @@
+{
+  "schema": "qm.trading-source-retrieval.v1",
+  "source_id": "MOP-WALLIS-MOORE-WTI-MTURNPOINT-TREND-2026",
+  "retrieval_started_at_utc": "2026-08-26T18:32:00Z",
+  "retrieval_finished_at_utc": "2026-08-26T18:36:51Z",
+  "router": {
+    "github": {
+      "command": "python C:\\Users\\Administrator\\.codex\\skills\\qm\\qm-read-trading-source\\scripts\\read_trading_source.py https://github.com/cran/spgs --format json",
+      "status": "ROUTE_GITHUB_API",
+      "adapter": "github",
+      "route": "public GitHub API",
+      "url": "https://github.com/cran/spgs"
+    },
+    "journal_pdf": {
+      "url": "https://webspace.ship.edu/pgmarr/Geo441/Readings/Wallis%20and%20Moore%201946%20-%20A%20Significance%20Test%20for%20Time%20Series%20Analysis.pdf",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter_state": "ROUTER_ONLY",
+      "body_used": false
+    },
+    "cran_html": {
+      "url": "https://search.r-project.org/CRAN/refmans/spgs/html/turningpoint.test.html",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter_state": "ROUTER_ONLY",
+      "body_used": false
+    }
+  },
+  "repository": "cran/spgs",
+  "commit_sha": "987257510f8b2a7ffe903d6b840021befbb4de58",
+  "commit_committer_date_utc": "2023-10-03T15:31:22Z",
+  "files": [
+    {
+      "path": "DESCRIPTION",
+      "api_url": "https://api.github.com/repos/cran/spgs/git/blobs/4f86301f26a0dc36a98e67949b887b7d3ce62129",
+      "git_blob_sha": "4f86301f26a0dc36a98e67949b887b7d3ce62129",
+      "sha256": "C99E54AC30E20115AF02EDF13E29F92EABB0302F15143E683B462416FEDC8887",
+      "size_bytes": 1584,
+      "read_complete": true
+    },
+    {
+      "path": "R/auxtests.R",
+      "api_url": "https://api.github.com/repos/cran/spgs/git/blobs/9d35c2ddcbe8a4c9a96aae825bbad85ff1cf8761",
+      "git_blob_sha": "9d35c2ddcbe8a4c9a96aae825bbad85ff1cf8761",
+      "sha256": "A63EC6EE3FB14413FE31C28D9D31F9ED2EF58FA5AEE19E0EFC6EEBE54BE7260E",
+      "size_bytes": 7498,
+      "read_complete": true
+    },
+    {
+      "path": "man/turningpoint.test.Rd",
+      "api_url": "https://api.github.com/repos/cran/spgs/git/blobs/290e16789a4f453bf329acef09d22ce75cc6493c",
+      "git_blob_sha": "290e16789a4f453bf329acef09d22ce75cc6493c",
+      "sha256": "5F3ADD2F425E21377254D7544D5F12E0F44A0D75784BB8487F488776397EBE3C",
+      "size_bytes": 3466,
+      "read_complete": true
+    }
+  ],
+  "crossref_metadata": {
+    "api_url": "https://api.crossref.org/works/10.1080/01621459.1941.10500577",
+    "doi": "10.1080/01621459.1941.10500577",
+    "title": "A Significance Test for Time Series Analysis",
+    "author": "W. Allen Wallis; Geoffrey H. Moore",
+    "container_title": "Journal of the American Statistical Association",
+    "volume": "36",
+    "issue": "215",
+    "pages": "401-409",
+    "published": "1941-09",
+    "publisher": "Informa UK Limited",
+    "record_checked_at_utc": "2026-08-26T18:36:20Z",
+    "body_read_complete": false
+  },
+  "safety": {
+    "authentication_used": false,
+    "third_party_code_executed": false,
+    "binary_downloaded": false,
+    "raw_source_republished": false,
+    "deferred_bodies_used": false
+  }
+}
