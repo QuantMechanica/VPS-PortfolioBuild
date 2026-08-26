@@ -1,0 +1,96 @@
+{
+  "schema": "qm.source-build-compile-handoff/v1",
+  "recorded_at_utc": "2026-08-26T15:45:53Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41169",
+  "ea_label": "QM5_41169_wti-foster-record-tr",
+  "strategy_id": "MOP-FOSTER-STUART-WTI-MRECORD-TREND-2026_S01",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "magic": 411690000,
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_Q02_STOPPED_CPU_CEILING",
+  "commits": {
+    "source_approval": "97221b5cc",
+    "card_identity_and_g0": "633eddf81",
+    "magic_and_source_build": "4a224d35d"
+  },
+  "hashes": {
+    "mq5_sha256": "824de3b7364fd65fa44649e6d5dc276ad571a0aebb53d5c1598c5fab4bcc75df",
+    "unbound_setfile_sha256": "6cd3dd2b72c339afd228e5fe4ac3e7c501037d74fbc42cf9310ffde5474dcf6b",
+    "canonical_card_sha256": "754b82a0e72fecd5ee3dee11a704ca11a5e540b8c9efad8858b23e54080813a",
+    "ea_card_copy_sha256": "754b82a0e72fecd5ee3dee11a704ca11a5e540b8c9efad8858b23e54080813a"
+  },
+  "source_validation": {
+    "reference_tests": {
+      "passed": 8,
+      "failed": 0,
+      "includes_exact_13_factorial_density_count": true,
+      "qualifying_distinct_rank_permutations": 2963909390,
+      "total_distinct_rank_permutations": 6227020800
+    },
+    "skill_build_guard": "PASS",
+    "build_guardrails": "PASS",
+    "spec_validator": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "canonical_card_lint": "PASS",
+    "ea_card_copy_lint": "PASS"
+  },
+  "compile": {
+    "ad_hoc_attempt_result": "REFUSED_NO_RETRY",
+    "ad_hoc_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_work_item_id": "4a6e89aa-9405-4e9b-b292-bae442b52015",
+    "status_at_last_successful_read": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "ceiling_percent": 97.0,
+    "samples": [
+      {
+        "sample": 1,
+        "utc": "2026-08-26T15:45:35.3569236Z",
+        "cpu_percent": 100.0
+      },
+      {
+        "sample": 2,
+        "utc": "2026-08-26T15:45:39.8538493Z",
+        "cpu_percent": 100.0
+      },
+      {
+        "sample": 3,
+        "utc": "2026-08-26T15:45:44.1337069Z",
+        "cpu_percent": 97.0
+      },
+      {
+        "sample": 4,
+        "utc": "2026-08-26T15:45:48.4523047Z",
+        "cpu_percent": 99.0
+      },
+      {
+        "sample": 5,
+        "utc": "2026-08-26T15:45:52.7275508Z",
+        "cpu_percent": 100.0
+      }
+    ],
+    "average_cpu_percent": 99.2,
+    "maximum_cpu_percent": 100.0,
+    "ceiling_hit": true
+  },
+  "q02": {
+    "enqueued": false,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_COMPILE_ACTIVATION_HELD",
+      "BACKTEST_CPU_CEILING_HIT"
+    ]
+  },
+  "safety": {
+    "terminal_processes_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
