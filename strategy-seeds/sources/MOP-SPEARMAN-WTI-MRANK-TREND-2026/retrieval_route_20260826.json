@@ -1,0 +1,65 @@
+{
+  "schema": "qm.trading-source-retrieval.v1",
+  "source_id": "MOP-SPEARMAN-WTI-MRANK-TREND-2026",
+  "retrieval_started_at_utc": "2026-08-26T21:15:00Z",
+  "retrieval_finished_at_utc": "2026-08-26T21:23:32Z",
+  "router": {
+    "r_source": {
+      "command": "python C:\\Users\\Administrator\\.codex\\skills\\qm\\qm-read-trading-source\\scripts\\read_trading_source.py https://github.com/wch/r-source --format json",
+      "status": "ROUTE_GITHUB_API",
+      "adapter": "github",
+      "route": "public GitHub API",
+      "url": "https://github.com/wch/r-source"
+    },
+    "spearman_article": {
+      "url": "https://doi.org/10.2307/1412159",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter_state": "ROUTER_ONLY",
+      "body_used": false
+    }
+  },
+  "repository": "wch/r-source",
+  "branch": "trunk",
+  "commit_sha": "7344a2d9d96b3c2b997535d3abc8c3a44af16e82",
+  "commit_committer_date_utc": "2026-08-25T16:06:32Z",
+  "files": [
+    {
+      "path": "src/library/stats/R/cor.R",
+      "api_url": "https://api.github.com/repos/wch/r-source/contents/src/library/stats/R/cor.R?ref=7344a2d9d96b3c2b997535d3abc8c3a44af16e82",
+      "git_blob_sha": "304bf189322aa4a5363c5b2cd6e1264c2fd6ee91",
+      "sha256": "4C771B2EDC229F342060EEB3648F968FB2394B830DDE054C6FBDAEF217E360FF",
+      "size_bytes": 8295,
+      "read_complete": true
+    },
+    {
+      "path": "src/library/stats/man/cor.Rd",
+      "api_url": "https://api.github.com/repos/wch/r-source/contents/src/library/stats/man/cor.Rd?ref=7344a2d9d96b3c2b997535d3abc8c3a44af16e82",
+      "git_blob_sha": "04f5e07ccc97490e6042da631b53fb35c6e49692",
+      "sha256": "FD7380E5D501DDD835F2B130C567C86F7E5FA688F2762B018C13220FF0D3FE14",
+      "size_bytes": 8646,
+      "read_complete": true
+    }
+  ],
+  "crossref_metadata": {
+    "api_url": "https://api.crossref.org/works/10.2307/1412159",
+    "doi": "10.2307/1412159",
+    "title": "The Proof and Measurement of Association between Two Things",
+    "author": "C. Spearman",
+    "container_title": "The American Journal of Psychology",
+    "volume": "15",
+    "issue": "1",
+    "page": "72",
+    "published": "1904-01",
+    "publisher": "University of Illinois Press",
+    "record_checked_at_utc": "2026-08-26T21:18:00Z",
+    "body_read_complete": false
+  },
+  "safety": {
+    "authentication_used": false,
+    "third_party_code_executed": false,
+    "binary_downloaded": false,
+    "raw_source_republished": false,
+    "deferred_bodies_used": false
+  }
+}
