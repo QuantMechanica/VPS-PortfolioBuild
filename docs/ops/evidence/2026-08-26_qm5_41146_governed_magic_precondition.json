@@ -1,0 +1,5 @@
+{
+  "reason": "resolver_regeneration_failed:[WARNING] 3 ea_id(s) in magic_numbers.csv dropped from resolver because their EA dir is missing under C:\\QM\\repo\\framework\\EAs:\n  ea_id=1001  (expected: C:\\QM\\repo\\framework\\EAs/QM5_1001_*)\n  ea_id=1015  (expected: C:\\QM\\repo\\framework\\EAs/QM5_1015_*)\n  ea_id=1016  (expected: C:\\QM\\repo\\framework\\EAs/QM5_1016_*)\n[WARNING] Run update_magic_resolver.py from the canonical checkout (C:/QM/repo) where framework/EAs/ is fully materialised, or investigate whether the EA dir was deleted without retiring the magic.\n\n[strict-default] 3 active ea_id(s) would be dropped; refusing to generate or replace QM_MagicResolver.mqh. Use --allow-dropped only for an explicitly reviewed recovery.",
+  "schema": "qm.governed-magic-allocation/v1",
+  "status": "aborted"
+}
