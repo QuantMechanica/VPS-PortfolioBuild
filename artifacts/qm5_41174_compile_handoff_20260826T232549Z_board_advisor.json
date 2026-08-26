@@ -1,0 +1,108 @@
+{
+  "schema": "qm.source-build-compile-handoff/v1",
+  "recorded_at_utc": "2026-08-26T23:25:49.8522516Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41174",
+  "ea_label": "QM5_41174_xauxag-mspearman-rv",
+  "strategy_id": "SCHWEIKERT-SPEARMAN-CME-XAUXAG-MRANK-RV-2026_S01",
+  "logical_symbol": "QM5_41174_XAU_XAG_MSPEARMAN_RV_D1",
+  "symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "timeframe": "D1",
+  "magics": [
+    411740000,
+    411740001
+  ],
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_Q02_STOPPED_CPU_CEILING",
+  "commits": {
+    "source_approval": "6d967cde8",
+    "card_identity_and_g0": "3a7eaf8c7",
+    "magic_and_source_build": "ea0e9ac87"
+  },
+  "hashes": {
+    "source_packet_sha256": "FBE965262B3FC03F1EEB3BBDE4151A22A1A81F52DB9220BCBFB4BAB7F4B5CE4E",
+    "preallocation_dedup_sha256": "7C6C2348095D17941118509E84F3E8A5F6C62FCFD684875AC7176397F40469B8",
+    "canonical_card_sha256": "EC1A681180F6467BCBB1D7CB9C78B95517015CFC739DFBA4608359B41855B715",
+    "ea_card_copy_sha256": "EC1A681180F6467BCBB1D7CB9C78B95517015CFC739DFBA4608359B41855B715",
+    "mq5_sha256": "91ACE245813C2444AF70D65E723611082BB083418A4DBFD6C68E4578FBA6F740",
+    "logical_setfile_sha256": "A41C5E4C46B27062F5CAE95F6D2DDCC297CE46B1324458D6B12BCD551C52D921",
+    "basket_manifest_sha256": "F1DF3C24056081B6C84A8F1AF10BFB9E25CF737F72FD972E03C75510EEC5198C"
+  },
+  "edge": {
+    "carrier": "XAUUSD.DWX/XAGUSD.DWX equal-notional two-leg basket",
+    "decision_clock": "first eligible synchronized D1 bar of each broker month",
+    "signal": "strict price ranks of thirteen synchronized completed monthly log(XAU)-log(XAG) endpoints",
+    "score": "T = 364 - sum((rank_i - i)^2)",
+    "entry": "fade T >= 104 with SELL XAU/BUY XAG; fade T <= -104 with BUY XAU/SELL XAG; exact ties and interior scores are consumed flat",
+    "lifecycle": "one consumed attempt per month; next-month or forty-day package exit",
+    "risk": "one aggregate RISK_FIXED=1000 budget split across frozen 3.5 ATR(20,D1) stops with equal target notionals and 20% maximum mismatch"
+  },
+  "source_validation": {
+    "canonical_dedup": "CLEAN_ACROSS_4673_REGISTRY_ROWS_1324_CARDS_45_WIKI_FILES",
+    "reference_tests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "card_schema_lint": "PASS_BOTH_COPIES",
+    "card_copy_byte_identical": true,
+    "build_guardrails": "PASS",
+    "build_gate_hardening": "PASS_NO_FAILURES_WITH_CARD_DISCOVERY_WARNINGS",
+    "spec_validator": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "magic_allocator_collision_count": 0,
+    "risk_setfiles": "THREE_BACKTEST_ONLY_RISK_FIXED_SETS",
+    "live_set_count": 0
+  },
+  "compile": {
+    "ad_hoc_attempt_result": "REFUSED_NO_RETRY",
+    "ad_hoc_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_work_item_id": "f36b05fd-699d-4c18-9103-bdb1e2ebad64",
+    "status_at_last_read": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "sampling_method": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "ceiling_percent": 97.0,
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      99.903829
+    ],
+    "average_cpu_percent": 99.980766,
+    "maximum_cpu_percent": 100.0,
+    "ceiling_hit": true,
+    "process_snapshot": {
+      "terminal64_count": 7,
+      "metatester64_count": 5,
+      "factory_terminals_running": [
+        "T1",
+        "T4",
+        "T5",
+        "T7",
+        "T8"
+      ]
+    }
+  },
+  "q02": {
+    "enqueued": false,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_COMPILE_ACTIVATION_HELD",
+      "BACKTEST_CPU_CEILING_HIT"
+    ]
+  },
+  "safety": {
+    "terminal_processes_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
