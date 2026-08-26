@@ -495,6 +495,13 @@ bool Strategy_LoadMonthlyEndpoints(const int current_month_key,
          else if(Strategy_NextMonthKey(month_key) != last_month_key)
             return false;
 
+         if(endpoint_count < 0 ||
+            endpoint_count >= ArraySize(reverse_closes))
+            return false;
+         if(endpoint_count >= ArraySize(reverse_times))
+            return false;
+         if(endpoint_count >= ArraySize(reverse_month_keys))
+            return false;
          reverse_closes[endpoint_count] = bars[index].close;
          reverse_times[endpoint_count] = normalized_label;
          reverse_month_keys[endpoint_count] = month_key;
@@ -524,6 +531,13 @@ bool Strategy_LoadMonthlyEndpoints(const int current_month_key,
    for(int index = 0; index < endpoint_count; ++index)
      {
       const int reverse_index = endpoint_count - 1 - index;
+      if(reverse_index < 0 ||
+         reverse_index >= ArraySize(reverse_closes))
+         return false;
+      if(reverse_index >= ArraySize(reverse_times))
+         return false;
+      if(reverse_index >= ArraySize(reverse_month_keys))
+         return false;
       closes[index] = reverse_closes[reverse_index];
       endpoint_times[index] = reverse_times[reverse_index];
       chronological_month_keys[index] =
@@ -580,6 +594,10 @@ bool Strategy_CoxStuartSignal(const double &closes[],
       const int newer = pair + strategy_pair_count;
       if(older < 0 || newer <= older ||
          newer >= strategy_endpoint_count)
+         return false;
+      if(older >= ArraySize(log_prices))
+         return false;
+      if(newer >= ArraySize(log_prices))
          return false;
 
       const double difference =
@@ -1061,4 +1079,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
