@@ -18035,3 +18035,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41159,wti-lad-tr,0,XTIUSD.DWX,411590000,2026-08-25,Codex governed allocator fallback,active
 41160,xauxag-mlad-rv,0,XAUUSD.DWX,411600000,2026-08-26,Codex governed allocator fallback,active
 41160,xauxag-mlad-rv,1,XAGUSD.DWX,411600001,2026-08-26,Codex governed allocator fallback,active
+41161,tv-mon-ls-opt,0,GBPUSD.DWX,411610000,2026-08-26,Codex governed allocator,active
+41162,ohlc-daily-squeeze-reversal-d1-opt,0,EURUSD.DWX,411620000,2026-08-26,Codex governed allocator,active
+41163,williams-18ma-outside-bar-entry-d1-opt,0,USDCAD.DWX,411630000,2026-08-26,Codex governed allocator,active
