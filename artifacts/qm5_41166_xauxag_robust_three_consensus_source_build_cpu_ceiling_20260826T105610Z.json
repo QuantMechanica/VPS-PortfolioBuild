@@ -1,0 +1,204 @@
+{
+  "artifact_type": "qm5_41166_xauxag_robust_three_consensus_source_build_cpu_ceiling",
+  "generated_at_utc": "2026-08-26T10:56:10.5514815Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "SOURCE_BUILD_COMMITTED_COMPILE_HELD_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "candidate": {
+    "ea_id": "QM5_41166",
+    "slug": "xauxag-mrobust3-agree-rv",
+    "strategy_id": "SCHWEIKERT-THEILSEN-KOENKER-SIEGEL-CME-XAUXAG-MROBUST3-AGREE-RV-2026_S01",
+    "logical_symbol": "QM5_41166_XAU_XAG_MROBUST3_AGREE_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "mechanic": "fade only unanimous strict sign agreement among exact Theil-Sen, finite profiled LAD, and Siegel repeated-median slopes over thirteen synchronized completed monthly gold-minus-silver log ratios",
+    "market_neutral_structural_commodity_exposure": true,
+    "portfolio_uncorrelation_not_claimed": true,
+    "portfolio_correlation_owner": "Q09"
+  },
+  "commits": {
+    "source_approval_and_dedup": "8978302cbfb75c28e82cb04ae2fa8058a0cb67e6",
+    "g0_card_and_identity": "9304a6d689b1b3897994b410b7de21f18dda14a3",
+    "source_build_and_magic_allocation": "b2c6f725cc6dedc3c0cde1dfecf301798294267b"
+  },
+  "source_governance": {
+    "packet_path": "strategy-seeds/sources/SCHWEIKERT-THEILSEN-KOENKER-SIEGEL-CME-XAUXAG-MROBUST3-AGREE-RV-2026/source.md",
+    "packet_sha256": "3CB443F1A19E89E39F755B5A94C5E1BE65509E0184FC5F59A9A1EA0DAA5468FD",
+    "approval_path": "decisions/2026-08-26_xauxag_monthly_robust_three_consensus_reversion_source_approval.md",
+    "approval_sha256": "AF8FF991445B7CF0DF5CBBBA42EC09AF074979278F53BA4347AEB7DFA6320E19",
+    "criteria": [
+      "Schweikert peer-reviewed gold/silver state-dependence evidence",
+      "Koenker-Bassett least-absolute-deviation regression lineage",
+      "Siegel peer-reviewed repeated-median robust regression",
+      "official CME gold/silver ratio-spread carrier lineage"
+    ]
+  },
+  "non_duplicate_evidence": {
+    "path": "artifacts/qm5_xauxag_mrobust3_agree_rv_preallocation_dedup_20260826.json",
+    "sha256": "2B9557DF89DA97C26E08BFF67DDAAD42A93C7D8E931CF6BEFBC3DDCAC7C5C6BB",
+    "tool_verdict": "FUZZY_MATCH",
+    "adjudicated_verdict": "CLEAN_AFTER_EXPECTED_ROBUST_THREE_FUZZY_AND_FUNCTIONAL_REVIEW",
+    "registry_rows_scanned": 4665,
+    "card_files_scanned": 1316,
+    "wiki_nodes_scanned": 45,
+    "closest_fuzzy_candidate": {
+      "slug": "wti-mrobust3-agree-tr",
+      "score": 0.7142857142857143,
+      "material_difference": "the fuzzy match is a one-leg WTI continuation strategy; QM5_41166 is a two-leg equal-notional XAU/XAG contrarian relative-value package with paired execution and repair semantics"
+    },
+    "single_estimator_predecessors": [
+      "QM5_41157_xauxag-mtheilsen-rv",
+      "QM5_41160_xauxag-mlad-rv",
+      "QM5_41164_xauxag-mrepmedian-rv"
+    ],
+    "material_difference_from_single_estimators": "QM5_41166 requires all three independently defined slopes to have one strict sign and consumes every disagreement or zero month flat",
+    "functional_counterexamples": [
+      {
+        "log_ratio_levels": [0.0, 0.01, 0.06, 0.11, 0.14, 0.13, 0.11, 0.12, 0.09, 0.04, 0.02, 0.05, 0.10],
+        "theil_sen": 0.00155555555555556,
+        "lad_profile": 0.00375,
+        "repeated_median": -0.0045,
+        "new_consensus_action": "FLAT"
+      },
+      {
+        "log_ratio_levels": [0.0, 0.02, 0.0, 0.0, -0.06, -0.09, -0.05, -0.05, 0.03, 0.06, -0.02, -0.03, 0.05],
+        "theil_sen_sign": "POSITIVE",
+        "lad_profile": -0.002,
+        "repeated_median_sign": "POSITIVE",
+        "new_consensus_action": "FLAT"
+      }
+    ]
+  },
+  "approved_card": {
+    "path": "strategy-seeds/cards/approved/QM5_41166_xauxag-mrobust3-agree-rv_card.md",
+    "sha256": "238406E30672A695A341789FAB6C8DC248CED9DB917CAF8FA25BC226FAE761BB",
+    "g0_decision_path": "decisions/2026-08-26_qm5_41166_xauxag_monthly_robust_three_consensus_reversion_g0.md",
+    "g0_decision_sha256": "3B911CBACB8C5F405160726432FBB8E51A93A78D95ADE8BFC4B7482D678AD325",
+    "g0_status": "APPROVED",
+    "schema_lint": "PASS",
+    "g0_lint": "PASS",
+    "ml_ban_hits": []
+  },
+  "source_build": {
+    "mq5_path": "framework/EAs/QM5_41166_xauxag-mrobust3-agree-rv/QM5_41166_xauxag-mrobust3-agree-rv.mq5",
+    "mq5_sha256": "9416E49FB73EB59490A99B352FBCBF0EFB33478D03BFC1A0F16013D4C773CA7D",
+    "build_card_copy_path": "framework/EAs/QM5_41166_xauxag-mrobust3-agree-rv/docs/strategy_card.md",
+    "build_card_copy_sha256": "238406E30672A695A341789FAB6C8DC248CED9DB917CAF8FA25BC226FAE761BB",
+    "basket_manifest_path": "framework/EAs/QM5_41166_xauxag-mrobust3-agree-rv/basket_manifest.json",
+    "basket_manifest_sha256": "95E72C33C3E4424B5BBE92EF332710A6C4A373C8DE2662DFF799F0E4F694F3AD",
+    "backtest_setfiles": [
+      {
+        "path": "framework/EAs/QM5_41166_xauxag-mrobust3-agree-rv/sets/QM5_41166_xauxag-mrobust3-agree-rv_QM5_41166_XAU_XAG_MROBUST3_AGREE_RV_D1_D1_backtest.set",
+        "sha256": "9B27A31AE7D9D0F23C5B8E42D1C4E241B47A38E3208F0549B91209F6C33A29B7"
+      },
+      {
+        "path": "framework/EAs/QM5_41166_xauxag-mrobust3-agree-rv/sets/QM5_41166_xauxag-mrobust3-agree-rv_XAGUSD.DWX_D1_backtest.set",
+        "sha256": "3AB5A7FDB657D2EB42CB1431CA86FFD2A0F7FCF343652268CF49A0236A4E56FE"
+      },
+      {
+        "path": "framework/EAs/QM5_41166_xauxag-mrobust3-agree-rv/sets/QM5_41166_xauxag-mrobust3-agree-rv_XAUUSD.DWX_D1_backtest.set",
+        "sha256": "97843DCFDFE26AF73A0835EAE54DB6177BF31C91DEA21248239728F86A27AE75"
+      }
+    ],
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "live_setfile_count": 0,
+    "strict_compile": "NOT_RUN_TO_VERDICT",
+    "ex5_present": false,
+    "q01_status": "PENDING"
+  },
+  "validation": {
+    "reference_tests": {
+      "path": "framework/EAs/QM5_41166_xauxag-mrobust3-agree-rv/docs/test_monthly_robust_three_ratio_reference.py",
+      "passed": 11,
+      "failed": 0
+    },
+    "spec_lint": "PASS",
+    "build_prerequisite_guard": "PASS",
+    "target_identity_and_magic_checks": "PASS",
+    "approved_and_build_card_byte_identical": true
+  },
+  "governed_allocation": {
+    "dry_run_receipt": "artifacts/qm5_41166_magic_allocation_dry_run_20260826.json",
+    "dry_run_sha256": "B13C22DF20AAE9AE263092464B27446BC3113693EE7F9CE07763A8CEF7139391",
+    "apply_receipt": "artifacts/qm5_41166_magic_allocation_20260826.json",
+    "apply_sha256": "92F8C54C71248C1A4E1723C9B529EEB9A9BCBAF9A92BDD080FBA40FD63F6CB31",
+    "allocated_rows": 2,
+    "slot_0": {
+      "symbol": "XAUUSD.DWX",
+      "magic": 411660000
+    },
+    "slot_1": {
+      "symbol": "XAGUSD.DWX",
+      "magic": 411660001
+    },
+    "status_aware_magic_collisions_after": 0
+  },
+  "compile_handoff": {
+    "direct_compile_preflight": "REFUSED_BEFORE_COMPILE",
+    "direct_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "direct_compile_log": "framework/build/compile/20260826_105520/QM5_41166_xauxag-mrobust3-agree-rv.compile.log",
+    "governed_work_item_id": "b70236ad-6e36-4f8f-9116-2f72786638ef",
+    "governed_work_item_status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "failed": false,
+    "build_check_result": null,
+    "ex5_sha256": null
+  },
+  "factory_snapshot": {
+    "scanned_at_utc": "2026-08-26T10:55:48+00:00",
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "running_factory_terminals": ["T1", "T2", "T3", "T4", "T7", "T8", "T9"],
+    "running_factory_terminal_count": 7,
+    "terminal64_running_count_including_live_and_ftmo": 9,
+    "t_live_observed_only_for_exclusion": true,
+    "t_live_controlled": false
+  },
+  "capacity_sample": {
+    "completed_at_utc": "2026-08-26T10:56:10.5514815Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [99.2, 92.4, 98.93, 100.0, 99.71],
+    "average_cpu_percent": 98.05,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "binding_measures": ["average", "maximum"],
+    "metatester64_process_count": 7,
+    "metatester64_process_ids": [8728, 16996, 21728, 23008, 28128, 35152, 36968]
+  },
+  "q02": {
+    "enqueued": false,
+    "reason": "strict compile/Q01 has no PASS and both fresh CPU measures exceeded the 97 percent hard ceiling",
+    "work_items_for_ea": [
+      {
+        "id": "b70236ad-6e36-4f8f-9116-2f72786638ef",
+        "phase": "COMPILE_EA",
+        "status": "pending"
+      }
+    ],
+    "queue_mutation_performed": false,
+    "dispatch_performed": false
+  },
+  "actions_this_run": {
+    "new_card_created": true,
+    "new_ea_source_created": true,
+    "registry_and_magic_mutation": true,
+    "compile_work_item_enqueued": true,
+    "q02_enqueue_or_priority_mutation": false,
+    "tester_or_backtest_run": false,
+    "terminal_reservation_or_control": false,
+    "portfolio_gate_mutation": false,
+    "t_live_manifest_mutation": false,
+    "t_live_or_autotrading_control": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed_by_this_run": false
+  }
+}
