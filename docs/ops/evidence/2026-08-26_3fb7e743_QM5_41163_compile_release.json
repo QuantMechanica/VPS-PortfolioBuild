@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "16f86fe7-50c5-4815-82f0-8aafe5ba4dfd"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260826T044712Z_a7bfe521.sqlite",
+    "sha256": "41af71ba218f927e100a8df37f465d6aa985e5f856e174b8925f1d1237baf940"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "e29e22586a3011a3d18db83463101360a1818f14c3d355b9cd5b0df063190976",
+      "ea_id": "QM5_41163",
+      "ea_label": "QM5_41163_williams-18ma-outside-bar-entry-d1-opt",
+      "expected_mq5_sha256": "e29e22586a3011a3d18db83463101360a1818f14c3d355b9cd5b0df063190976",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41163_williams-18ma-outside-bar-entry-d1-opt\\QM5_41163_williams-18ma-outside-bar-entry-d1-opt.mq5",
+      "work_item_id": "16f86fe7-50c5-4815-82f0-8aafe5ba4dfd"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-26T04:47:18+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "16f86fe7-50c5-4815-82f0-8aafe5ba4dfd"
+}

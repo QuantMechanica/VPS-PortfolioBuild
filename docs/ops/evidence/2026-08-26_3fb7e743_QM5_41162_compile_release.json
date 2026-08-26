@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "bfd92dec-957c-4534-b7fc-da7f355c05cc"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260826T044703Z_ffb97901.sqlite",
+    "sha256": "3aa81b38bd3723812d7e0078ce520821e5540a3967a5c9782d36e4ad49e5c202"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "92368d032c7c4cc1bc0e7243338e6e363d79de97960be8752dbc16e4b3c1f48f",
+      "ea_id": "QM5_41162",
+      "ea_label": "QM5_41162_ohlc-daily-squeeze-reversal-d1-opt",
+      "expected_mq5_sha256": "92368d032c7c4cc1bc0e7243338e6e363d79de97960be8752dbc16e4b3c1f48f",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41162_ohlc-daily-squeeze-reversal-d1-opt\\QM5_41162_ohlc-daily-squeeze-reversal-d1-opt.mq5",
+      "work_item_id": "bfd92dec-957c-4534-b7fc-da7f355c05cc"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-26T04:47:10+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "bfd92dec-957c-4534-b7fc-da7f355c05cc"
+}
