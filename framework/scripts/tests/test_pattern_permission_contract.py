@@ -224,10 +224,15 @@ def test_v1_is_blacklist_only():
     assert "unsupported_profile_mode" in SRC
 
 
-def test_not_included_by_qm_common():
-    """Including this in the umbrella would force a fleet-wide recompile."""
+def test_integrated_in_qm_common_for_new_governed_builds():
+    """New builds inherit the gate; old binaries change only on governed rebuild."""
     common = HEADER.parent / "QM_Common.mqh"
-    assert "QM_PatternPermission" not in common.read_text(encoding="utf-8")
+    common_src = common.read_text(encoding="utf-8")
+    assert '#include "QM_PatternPermission.mqh"' in common_src
+    for name in ("opt_pp_buy1", "opt_pp_buy2", "opt_pp_buy3",
+                 "opt_pp_sell1", "opt_pp_sell2", "opt_pp_sell3"):
+        assert f"input int {name}" in common_src
+    assert "QM_EntryPatternConfigure(" in common_src
 
 
 @pytest.mark.parametrize("guard", ["b.count < QM_PP_RequiredBars(id)"])

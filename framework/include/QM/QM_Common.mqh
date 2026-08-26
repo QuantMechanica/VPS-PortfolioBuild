@@ -14,6 +14,7 @@
 #include "QM_KillSwitch.mqh"
 #include "QM_KillSwitchKS.mqh"
 #include "QM_RuntimeExecutionContract.mqh"
+#include "QM_PatternPermission.mqh"
 #include "QM_Entry.mqh"
 #include "QM_Exit.mqh"
 #include "QM_StopRules.mqh"
@@ -109,6 +110,22 @@ QM_FrameworkMagicContext g_qm_fw_magic_contexts[];
 // figure without depending on tester-side commission. Default 0 = no effect (every other
 // phase / EA is unchanged until a Q04 setfile sets this input).
 input double InpQMSimCommissionPerLot = 0.0;   // Q04: worst-case USD/lot round-trip (0=off)
+
+// New-build instrumentation surface: direction-specific blacklist vetoes at
+// the canonical entry boundary. Zero disables a slot and all-zero preserves
+// the historical entry path without history reads, logging or RNG activity.
+// The three research _opt siblings predate this framework integration and set
+// QM_PATTERN_PERMISSION_EA_MANAGED before including QM_Common so their sealed,
+// EA-local census wiring remains the executable contract.
+#ifndef QM_PATTERN_PERMISSION_EA_MANAGED
+input group "Optimization Pattern Profile"
+input int opt_pp_buy1  = 0;
+input int opt_pp_buy2  = 0;
+input int opt_pp_buy3  = 0;
+input int opt_pp_sell1 = 0;
+input int opt_pp_sell2 = 0;
+input int opt_pp_sell3 = 0;
+#endif
 
 double g_qm_sim_gross_profit_net = 0.0;
 double g_qm_sim_gross_loss_net   = 0.0;
@@ -295,6 +312,14 @@ bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
 
    QM_EntryConfigure(ea_id, news_mode, 20, stress_reject_probability,
                       news_temporal, news_compliance, g_qm_fw_magic);
+#ifndef QM_PATTERN_PERMISSION_EA_MANAGED
+   if(!QM_EntryPatternConfigure(opt_pp_buy1, opt_pp_buy2, opt_pp_buy3,
+                                opt_pp_sell1, opt_pp_sell2, opt_pp_sell3,
+                                (ENUM_TIMEFRAMES)_Period, 1))
+      return false;
+#else
+   QM_EntryPatternDisable();
+#endif
    QM_KillSwitchInit(ea_id, g_qm_fw_magic, 3.0, 0.0, 1.0);
 
    // FW4 2026-05-23 — KS-test kill-switch (Q13 burn-in safety).

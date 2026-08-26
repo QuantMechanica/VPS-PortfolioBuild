@@ -4,6 +4,7 @@
 // Derivative Card: QM5_41161_tv-mon-ls-opt, parent QM5_10706, OWNER-authorized DL-089 instrumentation.
 // Source: andrei_keenvent, "Monday Liquidity Sweep - WolfWeb", TradingView.
 
+#define QM_PATTERN_PERMISSION_EA_MANAGED
 #include <QM/QM_Common.mqh>
 #include <QM/QM_PatternPermission.mqh>
 

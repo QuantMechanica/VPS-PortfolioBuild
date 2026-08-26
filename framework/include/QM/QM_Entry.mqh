@@ -11,6 +11,7 @@
 #include "QM_SeedRNG.mqh"
 #include "QM_RuntimeExecutionContract.mqh"
 #include "QM_FTMOGovernorClient.mqh"
+#include "QM_PatternPermission.mqh"
 
 struct QM_EntryRequest
 {
@@ -50,7 +51,8 @@ enum QM_EntryResult
    QM_ENTRY_REJECTED_STRESS,      // FW2: Q06 HARSH simulated trade rejection
    QM_ENTRY_REJECTED_CONTRACT,
    QM_ENTRY_REJECTED_GOVERNOR,
-   QM_ENTRY_REJECTED_ACCOUNT_RISK
+   QM_ENTRY_REJECTED_ACCOUNT_RISK,
+   QM_ENTRY_REJECTED_PATTERN
 };
 
 int                       g_qm_entry_ea_id              = 0;
@@ -62,6 +64,91 @@ QM_NewsTemporalMode       g_qm_entry_news_temporal      = QM_NEWS_TEMPORAL_OFF;
 QM_NewsComplianceProfile  g_qm_entry_news_compliance    = QM_NEWS_COMPLIANCE_NONE;
 int                       g_qm_entry_deviation_points   = 20;
 double                    g_qm_entry_stress_reject_prob = 0.0;   // FW2: Q06 HARSH default = 0.10
+bool                      g_qm_entry_pattern_active      = false;
+QM_PatternProfile         g_qm_entry_pattern_profile;
+
+void QM_EntryPatternDisable()
+{
+   g_qm_entry_pattern_active = false;
+   QM_PP_ProfileInit(g_qm_entry_pattern_profile, "framework_default_inert",
+                     PERIOD_CURRENT, 1);
+}
+
+bool QM_EntryPatternAddConfigured(QM_PatternProfile &profile,
+                                  const int predicate_id,
+                                  const bool buy_side)
+{
+   if(predicate_id == 0)
+      return true;
+   if(predicate_id < 0)
+      return false;
+   const QM_PatternId id = (QM_PatternId)predicate_id;
+   return buy_side ? QM_PP_ProfileAddBuy(profile, id)
+                   : QM_PP_ProfileAddSell(profile, id);
+}
+
+bool QM_EntryPatternConfigure(const int buy1,
+                              const int buy2,
+                              const int buy3,
+                              const int sell1,
+                              const int sell2,
+                              const int sell3,
+                              const ENUM_TIMEFRAMES reference_tf,
+                              const int closed_shift)
+{
+   QM_EntryPatternDisable();
+   QM_PP_ProfileInit(g_qm_entry_pattern_profile,
+                     "framework_opt_pp",
+                     reference_tf,
+                     closed_shift);
+   if(closed_shift < 1 ||
+      !QM_EntryPatternAddConfigured(g_qm_entry_pattern_profile, buy1, true) ||
+      !QM_EntryPatternAddConfigured(g_qm_entry_pattern_profile, buy2, true) ||
+      !QM_EntryPatternAddConfigured(g_qm_entry_pattern_profile, buy3, true) ||
+      !QM_EntryPatternAddConfigured(g_qm_entry_pattern_profile, sell1, false) ||
+      !QM_EntryPatternAddConfigured(g_qm_entry_pattern_profile, sell2, false) ||
+      !QM_EntryPatternAddConfigured(g_qm_entry_pattern_profile, sell3, false))
+   {
+      QM_LogEvent(QM_ERROR, "PATTERN_PERMISSION_CONFIG_INVALID",
+                  StringFormat("{\"buy\":[%d,%d,%d],\"sell\":[%d,%d,%d],\"closed_shift\":%d}",
+                               buy1, buy2, buy3, sell1, sell2, sell3, closed_shift));
+      return false;
+   }
+   g_qm_entry_pattern_active =
+      (g_qm_entry_pattern_profile.buy_count > 0 ||
+       g_qm_entry_pattern_profile.sell_count > 0);
+   return true;
+}
+
+// Shared opinion used by both QM_EntryInternal and QM_BasketOpenPosition.
+// The inactive branch must remain first: it is the default-equivalence
+// contract and performs no bar/history read, logging, RNG draw or mutation.
+bool QM_EntryPatternAllows(const string symbol,
+                           const QM_OrderType type,
+                           string &detail)
+{
+   if(!g_qm_entry_pattern_active)
+   {
+      detail = "pattern_permission_off";
+      return true;
+   }
+
+   const QM_PermissionResult permission =
+      QM_PatternPermissionEvaluate(symbol,
+                                   g_qm_entry_pattern_profile.reference_tf,
+                                   g_qm_entry_pattern_profile.closed_shift,
+                                   g_qm_entry_pattern_profile);
+   if(!permission.valid)
+   {
+      detail = "pattern_permission_invalid:" + permission.reason;
+      return false;
+   }
+   const bool allowed = QM_OrderTypeIsBuy(type)
+                        ? permission.allow_buy
+                        : permission.allow_sell;
+   detail = allowed ? "pattern_permission_clear" : permission.reason;
+   return allowed;
+}
 
 void QM_EntryConfigure(const int ea_id,
                        const QM_NewsMode news_mode = QM_NEWS_OFF,
@@ -129,6 +216,7 @@ string QM_EntryResultToString(const QM_EntryResult result)
       case QM_ENTRY_REJECTED_CONTRACT:   return "QM_ENTRY_REJECTED_CONTRACT";
       case QM_ENTRY_REJECTED_GOVERNOR:   return "QM_ENTRY_REJECTED_GOVERNOR";
       case QM_ENTRY_REJECTED_ACCOUNT_RISK: return "QM_ENTRY_REJECTED_ACCOUNT_RISK";
+      case QM_ENTRY_REJECTED_PATTERN:    return "QM_ENTRY_REJECTED_PATTERN";
    }
    return "QM_ENTRY_REJECTED_BROKER";
 }
@@ -280,6 +368,13 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_RISK, "entry_not_configured");
       return QM_ENTRY_REJECTED_RISK;
+   }
+
+   string pattern_detail = "";
+   if(!QM_EntryPatternAllows(_Symbol, req.type, pattern_detail))
+   {
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_PATTERN, pattern_detail);
+      return QM_ENTRY_REJECTED_PATTERN;
    }
 
    // A positive per-call magic is already registry-checked by QM_MagicFor and

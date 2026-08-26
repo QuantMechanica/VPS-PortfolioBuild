@@ -2,6 +2,7 @@
 #property version   "5.0"
 #property description "QM5_41163 Williams 18MA outside-bar stop entry D1 DL-089 instrument"
 
+#define QM_PATTERN_PERMISSION_EA_MANAGED
 #include <QM/QM_Common.mqh>
 #include <QM/QM_PatternPermission.mqh>
 
@@ -383,6 +384,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 

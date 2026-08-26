@@ -162,6 +162,13 @@ bool QM_BasketOpenPosition(const int ea_id,
       return false;
    }
 
+   string pattern_detail = "";
+   if(!QM_EntryPatternAllows(req.symbol, req.type, pattern_detail))
+   {
+      QM_BasketLogReject(req, "QM_BASKET_REJECTED_PATTERN", pattern_detail);
+      return false;
+   }
+
    // Basket slot zero has the same relative-host meaning as QM_Entry only
    // when this leg is the configured host identity. Foreign basket legs keep
    // absolute registry-slot semantics and pass through QM_MagicChecked.

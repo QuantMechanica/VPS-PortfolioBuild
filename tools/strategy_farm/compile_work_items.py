@@ -121,6 +121,16 @@ REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES = {
 REVIEW_REWORK_SOURCE_REPAIR_EA_LABELS = frozenset(
     REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES
 )
+# Exact router authority for the QM5_41163 Pattern-Permission sibling MAE-hook
+# retrofit. The original governed compile row 16f86fe7 failed only the current
+# Q08 sampler requirement; this one-task/one-label binding permits an append-only
+# source-hash-bound successor and grants no backtest or pipeline authority.
+QM5_41163_MAE_REPAIR_AUTHORITY = (
+    "router_ops_issue:1353730a-c94c-47fe-9a6d-ba09c4d48469"
+)
+QM5_41163_MAE_REPAIR_EA_LABELS = frozenset({
+    "QM5_41163_williams-18ma-outside-bar-entry-d1-opt",
+})
 # Exact remediation authority for the 2026-08-24 ROT-violation revert
 # (router task b63eaead-7890-4be4-b8e7-0edea3fe6a85). Both EAs had ad-hoc
 # EX5 binaries committed after an explicit LIVE_FACTORY_AD_HOC_COMPILE_REFUSED
@@ -391,6 +401,10 @@ def _source_repair_authorized(
         or (
             authority == ROT_REMEDIATION_39001_38001_AUTHORITY
             and ea_label in ROT_REMEDIATION_39001_38001_EA_LABELS
+        )
+        or (
+            authority == QM5_41163_MAE_REPAIR_AUTHORITY
+            and ea_label in QM5_41163_MAE_REPAIR_EA_LABELS
         )
     )
     if statically_authorized:

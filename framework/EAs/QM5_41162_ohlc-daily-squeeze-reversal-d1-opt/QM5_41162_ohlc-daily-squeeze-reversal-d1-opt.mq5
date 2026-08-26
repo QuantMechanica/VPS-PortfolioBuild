@@ -2,6 +2,7 @@
 #property version   "5.0"
 #property description "QM5_41162 ohlc-daily-squeeze-reversal-d1-opt — DL-089 instrument"
 
+#define QM_PATTERN_PERMISSION_EA_MANAGED
 #include <QM/QM_Common.mqh>
 #include <QM/QM_PatternPermission.mqh>
 

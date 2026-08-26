@@ -2,10 +2,10 @@
 //| QM_PatternPermission.mqh                                          |
 //| Closed-bar, fail-closed directional permission gate.              |
 //|                                                                    |
-//| OPT-IN ONLY. This file is deliberately NOT included by            |
-//| QM_Common.mqh: pulling it into the umbrella would force a         |
-//| fleet-wide recompile and hash churn on every live sleeve.         |
-//| An EA that wants the gate includes it directly.                   |
+//| Framework-integrated for NEW governed builds. QM_Common exposes   |
+//| six zero-default opt_pp_* inputs and configures the common entry   |
+//| boundary. Existing binaries do not change until their next        |
+//| governed recompile; zero inputs take an O(1) no-op path.           |
 //|                                                                    |
 //| Contract (plan v2, docs/research/PATTERN_PERMISSION_FILTER_       |
 //| PLAN_V2_2026-08-13.md):                                           |
