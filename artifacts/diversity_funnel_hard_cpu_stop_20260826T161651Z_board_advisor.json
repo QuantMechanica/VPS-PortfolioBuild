@@ -1,0 +1,130 @@
+{
+  "schema": "qm.diversity-funnel-cpu-stop/v1",
+  "generated_at_utc": "2026-08-26T16:16:51.0112734Z",
+  "branch": "agents/board-advisor",
+  "head_before_evidence_commit": "40135c69a14f10c9c6def8b15caa822204303b68",
+  "mission": "Advance the V5 strategy farm toward more certified portfolio sleeves by prioritising instrument diversity and Q02-Q04 funnel throughput",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "capacity_sample": {
+    "started_at_utc": "2026-08-26T16:16:44.8820667Z",
+    "completed_at_utc": "2026-08-26T16:16:51.0112734Z",
+    "command": "System.Diagnostics.PerformanceCounter('Processor','% Processor Time','_Total'), primed once, then sampled five times at one-second intervals",
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      99.91,
+      99.62,
+      99.71,
+      99.71,
+      100.0
+    ],
+    "average_cpu_percent": 99.79,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "binding_measures": [
+      "average",
+      "maximum"
+    ],
+    "metatester64_process_count_on_final_read": 7
+  },
+  "factory_snapshot": {
+    "scanned_at_utc": "2026-08-26T16:16:37+00:00",
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "running_factory_terminals": [
+      "T1",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "running_factory_terminal_count": 7,
+    "terminal_worker_daemon_count": 10,
+    "active_terminal_reservation_count": 7,
+    "orphaned_terminal_process_count": 0,
+    "active_phase_counts": {
+      "Q03": 1,
+      "Q07": 1,
+      "Q09": 1,
+      "Q10_NEWS": 4
+    },
+    "t_live_observed_only_for_exclusion": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only_for_exclusion": true
+  },
+  "farm_coordination": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "database_read_succeeded": true,
+    "pending_build_ea_tasks": 43,
+    "pending_q02_tasks": 33,
+    "pending_q03_tasks": 146,
+    "ea_claim_created": false,
+    "reason": "The CPU ceiling bound before backlog selection or claim."
+  },
+  "non_duplicate_delta": {
+    "prior_receipt": "artifacts/diversity_funnel_hard_cpu_stop_20260826T153026Z_board_advisor.json",
+    "prior_generated_at_utc": "2026-08-26T15:30:26.4890165Z",
+    "prior_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T5",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "newly_active_factory_terminals": [
+      "T6"
+    ],
+    "no_longer_active_factory_terminals": [
+      "T2",
+      "T10"
+    ],
+    "prior_metatester64_process_count": 8,
+    "current_metatester64_process_count": 7,
+    "prior_active_terminal_reservation_count": 8,
+    "current_active_terminal_reservation_count": 7,
+    "prior_average_cpu_percent": 99.51,
+    "current_average_cpu_percent": 99.79,
+    "reason": "The governed cohort rotated from eight to seven active factory terminals: T6 entered while T2 and T10 exited. Despite one fewer tester and reservation, whole-host CPU increased and remained binding."
+  },
+  "actions_this_run": {
+    "read_only_capacity_and_farm_status_inspection": true,
+    "ea_claim": false,
+    "source_or_card_creation": false,
+    "registry_or_magic_mutation": false,
+    "ea_or_setfile_mutation": false,
+    "compile_or_build_check": false,
+    "smoke_or_backtest_run": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "evidence_commit_only": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "q08_contribution_path": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false,
+    "deploy_manifest": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  },
+  "continuation_condition": "Run a fresh five-sample whole-host CPU preflight in a later paced turn. Only if both the average and maximum are below 97 percent may one diverse EA be claimed and advanced."
+}
