@@ -1,0 +1,153 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_stop",
+  "generated_at_utc": "2026-08-26T00:18:34Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "ce8eaa8a88bf41b3540efa7aa510fddfc6325e68",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_audit": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "strict_reputable_source_survivors": [
+      "QM5_12532",
+      "QM5_12533"
+    ],
+    "new_card_or_ea_authorized": false,
+    "reason": "The bounded source admitted only QM5_12532 and QM5_12533, and the governed sign-aware audit already accounts for every relationship in the 66-pair scan."
+  },
+  "anchor_triage": {
+    "evidence_source": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260825T233158Z_board_advisor.json",
+    "evidence_generated_at_utc": "2026-08-25T23:31:58Z",
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    "fresh_work_item_query_after_ceiling": false,
+    "reason": "The explicit stop condition bound before another work-item query; the latest durable supported query was 46 minutes old and showed neither anchor blocked at Q02."
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_20219",
+    "pair": [
+      "USDJPY.DWX",
+      "NZDUSD.DWX"
+    ],
+    "logical_symbol": "QM5_20219_USDJPY_NZDUSD_COINTEGRATION_D1",
+    "latest_durable_lineage_evidence": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260825T233158Z_board_advisor.json",
+    "latest_durable_state": "Q02 PASS; unique Q03 successor pending with zero attempts; preexisting Q04 pending",
+    "queue_mutation_performed": false,
+    "reason": "A successor already exists, and the CPU ceiling prohibited dispatch or any competing enqueue."
+  },
+  "capacity_sample": {
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      100.0,
+      99.9,
+      98.94,
+      99.81,
+      97.96
+    ],
+    "average_cpu_percent": 99.32,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "average_triggered": true,
+    "maximum_triggered": true,
+    "ceiling_binding": true,
+    "launch_gate_max": 1,
+    "terminal_scan_at_utc": "2026-08-26T00:16:49Z",
+    "running_factory_terminal_count": 5,
+    "running_factory_terminals": [
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "running_factory_work_items": [
+      "07d7d086-3e99-48d5-a738-5bb7da28f7ec",
+      "3a44e240-c86d-41a3-8367-ee9d7aa90436",
+      "cf8eac17-4079-4d81-9ed1-fcd9f4300a93",
+      "14e2dbb2-c2fc-49f3-b7e5-8e6b853d0867"
+    ],
+    "pipeline_terminal_without_work_item_id": [
+      "T5"
+    ],
+    "terminal_worker_count": 10,
+    "active_terminal_reservation_count": 5,
+    "active_terminal_reservations": [
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "orphaned_factory_terminal_process_count": 0,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260825T233158Z_board_advisor.json",
+    "prior_running_factory_terminals": [
+      "T4",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "current_running_factory_terminals": [
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "departed_running_terminals": [],
+    "joined_running_terminals": [
+      "T5"
+    ],
+    "prior_active_terminal_reservation_count": 4,
+    "current_active_terminal_reservation_count": 5,
+    "prior_average_cpu_percent": 99.8,
+    "current_average_cpu_percent": 99.32,
+    "prior_maximum_cpu_percent": 100.0,
+    "current_maximum_cpu_percent": 100.0,
+    "reason_for_receipt": "T5 joined the prior T4/T6/T7/T8 roster as a governed pipeline run, increasing active factory occupancy and reservations from four to five while the host remained above the hard CPU ceiling."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "The explicit 97 percent backtest CPU ceiling bound before any mutating or CPU-consuming pipeline action."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed_by_this_run": false
+  }
+}
