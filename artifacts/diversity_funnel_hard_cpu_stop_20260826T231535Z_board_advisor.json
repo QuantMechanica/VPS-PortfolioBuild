@@ -1,0 +1,147 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-26T23:15:35.0462700Z",
+  "generated_at_europe_berlin": "2026-08-27T01:15:35.0462700+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "3a7eaf8c7a26e6eb1036b6728976e2041158d6d9",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_FARM_CLAIM",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "factory_terminal_ceiling": 7,
+    "paced_launch_gate_max": 1
+  },
+  "farm_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-26T23:15:35+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T7"
+    ],
+    "running_factory_terminal_count": 5,
+    "terminal64_process_count_including_excluded": 7,
+    "metatester64_process_count": 5,
+    "terminal_worker_count": 10,
+    "active_terminal_reservation_count": 7,
+    "reserved_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "orphaned_factory_terminal_process_count": 0,
+    "running_work": [
+      {
+        "terminal": "T1",
+        "work_item_id": "e5d40e56-8e65-49b8-bd1e-0a95768a281b",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_21507",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T2",
+        "work_item_id": "87073918-1d9b-4618-9fad-1e7a02d036f8",
+        "phase": "Q09",
+        "ea_id": "QM5_10692",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "1a395c0b-73ea-4bb3-9160-6fb55c4d6777",
+        "phase": "Q03",
+        "ea_id": "QM5_20228",
+        "symbol": "QM5_20228_USDCAD_GBPJPY_COINTEGRATION_D1"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "cf18f426-1ba8-4479-92ee-b7e14b85d5de",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_10403",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "cf8eac17-4079-4d81-9ed1-fcd9f4300a93",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_12354",
+        "symbol": "XAUUSD.DWX"
+      }
+    ],
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "farm_db_snapshot": {
+    "db_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "access_mode": "read_only",
+    "farm_claim_created": false,
+    "candidate_selected": false
+  },
+  "cpu_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time, five one-second readings",
+    "started_at_utc": "2026-08-26T23:15:31.0150865Z",
+    "ended_at_utc": "2026-08-26T23:15:35.0462700Z",
+    "samples_percent": [
+      99.8048,
+      98.3420,
+      97.6618,
+      83.6955,
+      99.5124
+    ],
+    "average_percent": 95.8033,
+    "maximum_percent": 99.8048,
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/diversity_funnel_hard_cpu_stop_20260826T223118Z_board_advisor.json",
+    "preceding_running_factory_terminals": [
+      "T1",
+      "T4",
+      "T5",
+      "T6",
+      "T7"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T7"
+    ],
+    "topology_change": "T2 replaced T5 in the running factory cohort",
+    "preceding_active_terminal_reservation_count": 5,
+    "current_active_terminal_reservation_count": 7,
+    "preceding_cpu_average_percent": 98.0,
+    "current_cpu_average_percent": 95.8033,
+    "preceding_cpu_maximum_percent": 100.0,
+    "current_cpu_maximum_percent": 99.8048
+  },
+  "actions_this_run": {
+    "candidate_selected": false,
+    "farm_claim_created": false,
+    "new_card_or_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
