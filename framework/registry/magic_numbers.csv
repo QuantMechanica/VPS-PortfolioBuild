@@ -18033,3 +18033,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41157,xauxag-mtheilsen-rv,1,XAGUSD.DWX,411570001,2026-08-25,Codex governed allocator fallback,active
 41158,wti-repmedian-tr,0,XTIUSD.DWX,411580000,2026-08-25,Codex governed allocator fallback,active
 41159,wti-lad-tr,0,XTIUSD.DWX,411590000,2026-08-25,Codex governed allocator fallback,active
+41160,xauxag-mlad-rv,0,XAUUSD.DWX,411600000,2026-08-26,Codex governed allocator fallback,active
+41160,xauxag-mlad-rv,1,XAGUSD.DWX,411600001,2026-08-26,Codex governed allocator fallback,active
