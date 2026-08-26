@@ -1587,7 +1587,7 @@ CONTRACT_SCHEMA: dict[str, Any] = {
             "required": [
                 "qualified_pairs", "distinct_eas", "families",
                 "frontier_histogram", "news_gate", "opt_fork", "backfill",
-                "eta_days",
+                "committed_work", "eta_days",
             ],
             "properties": {
                 "qualified_pairs": {"type": "integer"},
@@ -1597,6 +1597,7 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                 "news_gate": {"type": "object"},
                 "opt_fork": {"type": "object"},
                 "backfill": {"type": "object"},
+                "committed_work": {"type": "object"},
                 "eta_days": {"type": ["number", "null"]},
             },
         },

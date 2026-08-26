@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import hashlib
+import json
 import re
 import sqlite3
 from pathlib import Path
@@ -19,6 +20,8 @@ CREATE TABLE work_items (
     status TEXT NOT NULL,
     verdict TEXT,
     payload_json TEXT,
+    parent_task_id TEXT,
+    evidence_path TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     gate_contract_version TEXT
@@ -43,9 +46,9 @@ def _fixture_db(path: Path) -> Path:
         created_at: dt.datetime = created, updated_at: dt.datetime = updated,
     ) -> None:
         con.execute(
-            "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
             (
-                row_id, phase, ea, "EURUSD.DWX", status, verdict, payload,
+                row_id, phase, ea, "EURUSD.DWX", status, verdict, payload, None, None,
                 created_at.isoformat(), updated_at.isoformat(), "v4",
             ),
         )
@@ -114,6 +117,16 @@ def test_path_to_25_metrics_fixture_is_complete_and_read_only(
         "KEEP_INCUMBENT": 12,
     }
     assert metrics["backfill"] == {"enqueued_today": 2, "rerun_infra_open": 1}
+    assert metrics["committed_work"] == {
+        "parents": 0, "declared": 0, "materialized": 0, "receipts": 0,
+        "unmaterialized": 0,
+        "classes": {
+            "Q12_PATTERN": {"parents": 0, "declared": 0, "materialized": 0,
+                            "receipts": 0, "unmaterialized": 0},
+            "Q10_NEWS": {"parents": 0, "declared": 0, "materialized": 0,
+                         "receipts": 0, "unmaterialized": 0},
+        },
+    }
     assert metrics["eta_days"] == 0.1
 
 
@@ -133,6 +146,18 @@ def _render_metrics() -> dict:
             "terminal_verdicts": {"KEEP_INCUMBENT": 7},
         },
         "backfill": {"enqueued_today": 10, "rerun_infra_open": 4},
+        "committed_work": {
+            "parents": 2, "declared": 1129, "materialized": 5,
+            "receipts": 4, "unmaterialized": 1124,
+            "classes": {
+                "Q12_PATTERN": {"parents": 1, "declared": 1089,
+                                "materialized": 1, "receipts": 0,
+                                "unmaterialized": 1088},
+                "Q10_NEWS": {"parents": 1, "declared": 40,
+                             "materialized": 4, "receipts": 4,
+                             "unmaterialized": 36},
+            },
+        },
         "eta_days": 18.5,
     }
 
@@ -164,3 +189,50 @@ def test_all_owner_surfaces_render_the_shared_metrics(tmp_path: Path) -> None:
     assert "7 / 25" in heartbeat
     assert "7<span" in owner_html and "/25" in owner_html
     assert "RERUN_INFRA" in cockpit and "RERUN_INFRA" in owner_html
+    assert "Committed" in cockpit and "1.124" in cockpit
+
+
+def test_committed_work_uses_payload_declarations_and_receipts(tmp_path: Path) -> None:
+    db = _fixture_db(tmp_path / "committed.sqlite")
+    declaration = {
+        "routing_revision": "dl089-annual-wf-cells-v1",
+        "pattern_filter_sweep": {
+            "annual_cell_count": 3,
+            "wf_cell_count": 2,
+            "annual_cells": [{"work_item_id": "declared-a"},
+                             {"work_item_id": "declared-b"},
+                             {"work_item_id": "declared-c"}],
+            "wf_cells": [{"work_item_id": "declared-d"},
+                         {"work_item_id": "declared-e"}],
+        },
+    }
+    con = sqlite3.connect(db)
+    now = dt.datetime.now(dt.timezone.utc).isoformat()
+    con.execute(
+        "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+        ("q12-parent", "Q12", "QM5_1", "EURUSD.DWX", "pending", None,
+         json.dumps(declaration), None, None, now, now, "v4"),
+    )
+    con.execute(
+        "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+        ("declared-a", "OPT_CENSUS", "QM5_1", "EURUSD.DWX", "done", "PASS",
+         "{}", "q12-parent", "receipt.json", now, now, "v4"),
+    )
+    con.execute(
+        "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+        ("q10-parent", "Q10_NEWS", "QM5_2", "EURUSD.DWX", "active", None,
+         json.dumps({"planned_cell_count": 7, "authenticated_cell_count": 3}),
+         None, None, now, now, "v4"),
+    )
+    con.commit()
+    con.row_factory = sqlite3.Row
+    rows = path_to_25._work_rows(con)
+    con.close()
+
+    committed = path_to_25._committed_work(rows)
+    assert committed["declared"] == 12
+    assert committed["materialized"] == 4
+    assert committed["receipts"] == 4
+    assert committed["unmaterialized"] == 8
+    assert committed["classes"]["Q12_PATTERN"]["declared"] == 5
+    assert committed["classes"]["Q10_NEWS"]["receipts"] == 3

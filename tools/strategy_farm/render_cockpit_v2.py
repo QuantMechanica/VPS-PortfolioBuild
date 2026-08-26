@@ -721,6 +721,7 @@ def _render_path_to_25(contract: dict) -> str:
     news = metrics.get("news_gate", {}) or {}
     opt = metrics.get("opt_fork", {}) or {}
     backfill = metrics.get("backfill", {}) or {}
+    committed = metrics.get("committed_work", {}) or {}
     eta = metrics.get("eta_days")
     eta_text = f"{_de(eta, 2)} Tage" if eta is not None else "nicht belastbar"
 
@@ -744,6 +745,21 @@ def _render_path_to_25(contract: dict) -> str:
         f"{key} {_int(value)}"
         for key, value in (opt.get("terminal_verdicts") or {}).items()
     ) or "keine"
+    committed_rows = "".join(
+        '<tr>'
+        f'<td class="mc-rowlabel">{e(label)}</td>'
+        f'<td class="mc-num">{_int(values.get("declared"))}</td>'
+        f'<td class="mc-num">{_int(values.get("materialized"))}</td>'
+        f'<td class="mc-num">{_int(values.get("receipts"))}</td>'
+        '</tr>'
+        for label, values in (committed.get("classes") or {}).items()
+    )
+    if not committed_rows:
+        committed_rows = (
+            '<tr><td class="mc-rowlabel">keine</td>'
+            '<td class="mc-num">0</td><td class="mc-num">0</td>'
+            '<td class="mc-num">0</td></tr>'
+        )
 
     return f'''
   <section class="mc-section mc-p25" id="path-to-25">
@@ -757,6 +773,13 @@ def _render_path_to_25(contract: dict) -> str:
       <div class="mc-p25-stat"><b>{e(eta_text)}</b><span>Median-ETA</span></div>
     </div>
     <div class="mc-p25-frontier"><span>Frontier</span>{frontier}</div>
+    <div class="mc-p25-frontier"><span>Committed</span>
+      <b>{_int(committed.get("unmaterialized", 0))}</b>
+      <span class="mc-dim">noch nicht materialisierte Zellen · {_int(committed.get("parents", 0))} Parents</span>
+    </div>
+    <table class="mc-table"><thead><tr><th>Klasse</th><th class="mc-num">deklariert</th>
+      <th class="mc-num">materialisiert</th><th class="mc-num">Receipts</th></tr></thead>
+      <tbody>{committed_rows}</tbody></table>
     <div class="mc-p25-grid">
       <div>
         <div class="mc-sublabel">Q10 News</div>

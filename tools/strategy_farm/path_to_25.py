@@ -99,13 +99,112 @@ def _work_rows(con: sqlite3.Connection) -> list[dict[str, Any]]:
         else "NULL AS gate_contract_version"
     )
     payload = "payload_json" if "payload_json" in columns else "NULL AS payload_json"
+    row_id = "id" if "id" in columns else "NULL AS id"
+    parent = (
+        "parent_task_id" if "parent_task_id" in columns
+        else "NULL AS parent_task_id"
+    )
+    evidence = "evidence_path" if "evidence_path" in columns else "NULL AS evidence_path"
     return [
         dict(row)
         for row in con.execute(
             "SELECT phase,status,verdict,created_at,updated_at,"
-            f"{contract},{payload} FROM work_items"
+            f"{contract},{payload},{row_id},{parent},{evidence} FROM work_items"
         )
     ]
+
+
+def _nonnegative_int(value: Any) -> int:
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _q10_receipt_count(payload: dict[str, Any]) -> int:
+    """Return only receipts evidenced by a Q10 parent payload.
+
+    Runner payloads have used both a direct count and an explicit receipt
+    collection.  Failure/missing buckets are deliberately not receipts.
+    """
+    for key in ("authenticated_cell_count", "receipt_count"):
+        if key in payload:
+            return _nonnegative_int(payload.get(key))
+    receipts = payload.get("receipts")
+    if isinstance(receipts, (list, dict)):
+        return len(receipts)
+    details = payload.get("details")
+    if isinstance(details, dict):
+        return _q10_receipt_count(details)
+    return 0
+
+
+def _committed_work(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Count declared cell budgets for open Q12 and Q10_NEWS parents.
+
+    Q12 declarations name deterministic child work-item IDs, so materialized
+    and receipted counts are joined to those IDs.  Q10 news cells live inside
+    the sealed parent plan rather than as child work_items; their authenticated
+    receipt count is therefore the materialized count for this telemetry.
+    """
+    by_id = {str(row.get("id") or ""): row for row in rows if row.get("id")}
+    classes = {
+        "Q12_PATTERN": {"parents": 0, "declared": 0, "materialized": 0, "receipts": 0},
+        "Q10_NEWS": {"parents": 0, "declared": 0, "materialized": 0, "receipts": 0},
+    }
+    for row in rows:
+        if str(row.get("status") or "").lower() not in _OPEN_STATUSES:
+            continue
+        payload = _payload(row.get("payload_json"))
+        phase = str(row.get("phase") or "").upper()
+        if phase == "Q12" and str(payload.get("routing_revision") or "") == "dl089-annual-wf-cells-v1":
+            declaration = payload.get("pattern_filter_sweep")
+            if not isinstance(declaration, dict):
+                continue
+            annual = _nonnegative_int(declaration.get("annual_cell_count"))
+            wf = _nonnegative_int(declaration.get("wf_cell_count"))
+            declared = annual + wf
+            declared_ids = {
+                str(cell.get("work_item_id"))
+                for key in ("annual_cells", "wf_cells")
+                for cell in (declaration.get(key) or [])
+                if isinstance(cell, dict) and cell.get("work_item_id")
+            }
+            children = [by_id[item_id] for item_id in declared_ids if item_id in by_id]
+            receipts = sum(
+                1 for child in children
+                if str(child.get("status") or "").lower() in _TERMINAL_STATUSES
+                and bool(child.get("evidence_path"))
+            )
+            bucket = classes["Q12_PATTERN"]
+            bucket["parents"] += 1
+            bucket["declared"] += declared
+            bucket["materialized"] += len(children)
+            bucket["receipts"] += receipts
+        elif phase == "Q10_NEWS":
+            details = payload.get("details") if isinstance(payload.get("details"), dict) else {}
+            declared = _nonnegative_int(
+                payload.get("planned_cell_count")
+                or payload.get("q09_cell_count")
+                or details.get("planned_cell_count")
+            )
+            if declared <= 0:
+                continue
+            receipts = min(declared, _q10_receipt_count(payload))
+            bucket = classes["Q10_NEWS"]
+            bucket["parents"] += 1
+            bucket["declared"] += declared
+            bucket["materialized"] += receipts
+            bucket["receipts"] += receipts
+
+    totals = {
+        key: sum(int(bucket[key]) for bucket in classes.values())
+        for key in ("parents", "declared", "materialized", "receipts")
+    }
+    totals["unmaterialized"] = max(0, totals["declared"] - totals["materialized"])
+    for bucket in classes.values():
+        bucket["unmaterialized"] = max(0, bucket["declared"] - bucket["materialized"])
+    return {**totals, "classes": classes}
 
 
 def _qualified_pool(pair_rows: list[dict[str, Any]], terminal_gate: str) -> list[dict]:
@@ -276,6 +375,7 @@ def path_to_25_metrics(
             # remains canonical; this avoids a second 100k-row history walk.
             pair_rows = _pair_rows
         rows = _work_rows(con)
+        committed_work = _committed_work(rows)
 
         frontier_counts = Counter(
             str(row.get("highest_contiguous_valid_gate") or "") for row in pair_rows
@@ -388,6 +488,7 @@ def path_to_25_metrics(
         "news_gate": news,
         "opt_fork": opt_fork,
         "backfill": backfill,
+        "committed_work": committed_work,
         "eta_days": eta,
     }
 
