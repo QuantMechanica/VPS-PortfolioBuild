@@ -1,0 +1,72 @@
+{
+  "schema": "qm.trading-source-retrieval.v1",
+  "source_id": "MOP-PETTITT-WTI-MSHIFT-TREND-2026",
+  "retrieval_started_at_utc": "2026-08-26T20:22:00Z",
+  "retrieval_finished_at_utc": "2026-08-26T20:24:13Z",
+  "router": {
+    "github": {
+      "command": "python C:\\Users\\Administrator\\.codex\\skills\\qm\\qm-read-trading-source\\scripts\\read_trading_source.py https://github.com/cran/trend --format json",
+      "status": "ROUTE_GITHUB_API",
+      "adapter": "github",
+      "route": "public GitHub API",
+      "url": "https://github.com/cran/trend"
+    },
+    "journal_page": {
+      "url": "https://rss.onlinelibrary.wiley.com/doi/10.2307/2346729",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter_state": "ROUTER_ONLY",
+      "body_used": false
+    }
+  },
+  "repository": "cran/trend",
+  "commit_sha": "d0ec3cf8b99b4f3226f5211f592955b85565721d",
+  "commit_committer_date_utc": "2026-07-14T15:06:08Z",
+  "files": [
+    {
+      "path": "DESCRIPTION",
+      "api_url": "https://api.github.com/repos/cran/trend/git/blobs/62ad2af22dba91f071f82e82b77d485a7fd4ab61",
+      "git_blob_sha": "62ad2af22dba91f071f82e82b77d485a7fd4ab61",
+      "sha256": "C756C1AADE30740AF31B69879C62F44C0AB39969DE83B47B3808CC434CAA6EDC",
+      "size_bytes": 1630,
+      "read_complete": true
+    },
+    {
+      "path": "R/pettitt.test.R",
+      "api_url": "https://api.github.com/repos/cran/trend/git/blobs/c1e27cc9b521b8fd20c7d5d069e2829034f8f8b2",
+      "git_blob_sha": "c1e27cc9b521b8fd20c7d5d069e2829034f8f8b2",
+      "sha256": "74FB2994BAE59F7A43C7B61AEA4F3C00C2420F0C0F966CFCBD6E358BFB6BD034",
+      "size_bytes": 4281,
+      "read_complete": true
+    },
+    {
+      "path": "man/pettitt.test.Rd",
+      "api_url": "https://api.github.com/repos/cran/trend/git/blobs/bfe3d117b579dbfa0d7c8016e86cf3d62787a7a7",
+      "git_blob_sha": "bfe3d117b579dbfa0d7c8016e86cf3d62787a7a7",
+      "sha256": "EF0A2824D805727CE563F12025DBF496B181C6A7726EBB15A8993FFB5FC2C19D",
+      "size_bytes": 2456,
+      "read_complete": true
+    }
+  ],
+  "crossref_metadata": {
+    "api_url": "https://api.crossref.org/works/10.2307/2346729",
+    "doi": "10.2307/2346729",
+    "title": "A Non-Parametric Approach to the Change-Point Problem",
+    "author": "A. N. Pettitt",
+    "container_title": "Applied Statistics",
+    "volume": "28",
+    "issue": "2",
+    "pages": "126-135",
+    "published": "1979",
+    "publisher": "JSTOR",
+    "record_checked_at_utc": "2026-08-26T20:23:00Z",
+    "body_read_complete": false
+  },
+  "safety": {
+    "authentication_used": false,
+    "third_party_code_executed": false,
+    "binary_downloaded": false,
+    "raw_source_republished": false,
+    "deferred_bodies_used": false
+  }
+}
