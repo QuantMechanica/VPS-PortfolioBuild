@@ -27261,6 +27261,26 @@ def _write_csv_atomic(path: Path, fieldnames: list[str], rows: list[dict[str, An
             time.sleep(0.2 * (attempt + 1))
 
 
+def _write_bytes_atomic(path: Path, payload: bytes) -> None:
+    """Restore exact file bytes by same-directory replace with Windows retries."""
+    tmp = path.with_suffix(path.suffix + f".{os.getpid()}.{uuid.uuid4().hex}.tmp")
+    try:
+        tmp.write_bytes(payload)
+        for attempt in range(5):
+            try:
+                tmp.replace(path)
+                return
+            except PermissionError:
+                if attempt == 4:
+                    raise
+                time.sleep(0.2 * (attempt + 1))
+    finally:
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+
+
 def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
     """Write one JSON document by same-directory replace."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -27470,6 +27490,7 @@ def retire_ea_ids(
     *,
     reason: str,
     evidence: str,
+    retire_magic_rows: bool = False,
     apply: bool = False,
     limit: int | None = None,
     repo_root: Path | None = None,
@@ -27478,10 +27499,11 @@ def retire_ea_ids(
     """Retire eligible registry IDs under the reservation lock and atomic writer.
 
     Dry-run is the default. Apply requires an explicit positive limit. Every
-    active target is classified independently; EA directories, any work-item
-    history, and any magic row are fail-loud refusal guards. Retirement
-    provenance lives on the same registry row so status and reason transition
-    in one atomic file replace.
+    active target is classified independently; EA directories and any work-item
+    history are fail-loud refusal guards. Magic rows remain a refusal guard by
+    default. ``retire_magic_rows=True`` is the explicit OWNER-evidence path for
+    changing every target magic row from active to retired under the same
+    registry lock; no row is deleted and no magic value is rewritten.
     """
     repo = (repo_root or REPO_ROOT).resolve()
     init_db(root)
@@ -27490,7 +27512,10 @@ def retire_ea_ids(
             _scope_guard(
                 "registry.reserve_ea_ids",
                 tool="retire_ea_ids",
-                args_summary=f"apply={apply}:limit={limit}:ids={len(ea_ids)}",
+                args_summary=(
+                    f"apply={apply}:limit={limit}:ids={len(ea_ids)}:"
+                    f"retire_magic_rows={retire_magic_rows}"
+                ),
                 conn=audit_conn,
             )
         except Exception:
@@ -27575,7 +27600,10 @@ def retire_ea_ids(
             "lock_path": str(_registry_lock_path()),
         }
     try:
-        registry_sha_before = hashlib.sha256(registry.read_bytes()).hexdigest()
+        registry_bytes_before = registry.read_bytes()
+        magic_bytes_before = magics.read_bytes()
+        registry_sha_before = hashlib.sha256(registry_bytes_before).hexdigest()
+        magic_sha_before = hashlib.sha256(magic_bytes_before).hexdigest()
         fieldnames, rows = _read_csv_dicts_with_columns(registry)
         if not fieldnames:
             return {"ok": False, "retired": False, "reason": "registry_empty"}
@@ -27587,12 +27615,21 @@ def retire_ea_ids(
             if row_id:
                 registry_indices.setdefault(row_id, []).append(index)
 
-        with magics.open("r", encoding="utf-8-sig", newline="") as handle:
-            magic_ids = {
-                normalized_magic
-                for magic_row in csv.DictReader(handle)
-                if (normalized_magic := _normalize_retirement_ea_id(magic_row.get("ea_id")))
+        magic_fieldnames, magic_rows = _read_csv_dicts_with_columns(magics)
+        if not magic_fieldnames:
+            return {"ok": False, "retired": False, "reason": "magic_registry_empty"}
+        if retire_magic_rows and "status" not in magic_fieldnames:
+            return {
+                "ok": False,
+                "retired": False,
+                "reason": "magic_registry_status_column_required",
             }
+        magic_rows_before = [dict(row) for row in magic_rows]
+        magic_indices: dict[str, list[int]] = {}
+        for index, magic_row in enumerate(magic_rows):
+            normalized_magic = _normalize_retirement_ea_id(magic_row.get("ea_id"))
+            if normalized_magic:
+                magic_indices.setdefault(normalized_magic, []).append(index)
 
         ea_dir_ids: set[str] = set()
         for directory in eas_root.iterdir():
@@ -27644,8 +27681,24 @@ def retire_ea_ids(
                 reasons.append("ea_directory_exists")
             if ea_id in work_item_ids:
                 reasons.append("work_items_exist")
-            if ea_id in magic_ids:
+            target_magic_indices = magic_indices.get(ea_id, [])
+            target_magic_statuses = {
+                str(magic_rows[index].get("status") or "").strip().lower()
+                for index in target_magic_indices
+            }
+            if target_magic_indices and not retire_magic_rows:
                 reasons.append("magic_rows_exist")
+            elif retire_magic_rows:
+                invalid_magic_statuses = sorted(
+                    status_value
+                    for status_value in target_magic_statuses
+                    if status_value not in {"active", "retired"}
+                )
+                if invalid_magic_statuses:
+                    reasons.append(
+                        "magic_status_not_retirable:"
+                        + ",".join(value or "<blank>" for value in invalid_magic_statuses)
+                    )
             if reasons:
                 refused.append({"ea_id": f"QM5_{ea_id}", "reasons": reasons})
             else:
@@ -27654,6 +27707,12 @@ def retire_ea_ids(
         selected = eligible[:limit] if limit is not None else eligible
         deferred = eligible[len(selected) :]
         transitioned_at = utc_now()
+        selected_magic_indices = [
+            index
+            for ea_id in selected
+            for index in magic_indices.get(ea_id, [])
+            if str(magic_rows[index].get("status") or "").strip().lower() == "active"
+        ]
         if apply and selected:
             for field in EA_ID_RETIREMENT_FIELDS:
                 if field not in fieldnames:
@@ -27664,18 +27723,52 @@ def retire_ea_ids(
                 row["retired_at"] = transitioned_at
                 row["retired_reason"] = clean_reason
                 row["retired_evidence"] = evidence_relative
-            _write_csv_atomic(registry, fieldnames, rows)
+            for index in selected_magic_indices:
+                magic_rows[index]["status"] = "retired"
+            try:
+                if selected_magic_indices:
+                    _write_csv_atomic(magics, magic_fieldnames, magic_rows)
+                _write_csv_atomic(registry, fieldnames, rows)
+            except BaseException:
+                # Both files are append-only registries. If either replace fails,
+                # restore the exact pre-wave bytes before releasing the lock.
+                _write_bytes_atomic(magics, magic_bytes_before)
+                _write_bytes_atomic(registry, registry_bytes_before)
+                raise
 
         after_rows = _read_csv_dicts_with_columns(registry)[1]
+        after_magic_rows = _read_csv_dicts_with_columns(magics)[1]
         after_counts = _registry_status_counts(after_rows)
         registry_sha_after = hashlib.sha256(registry.read_bytes()).hexdigest()
+        magic_sha_after = hashlib.sha256(magics.read_bytes()).hexdigest()
+        target_magic_indices_all = [
+            index
+            for ea_id in normalized
+            for index in magic_indices.get(ea_id, [])
+        ]
+        target_magic_status_before = _registry_status_counts(
+            [magic_rows_before[index] for index in target_magic_indices_all]
+        )
+        after_magic_indices: dict[str, list[int]] = {}
+        for index, magic_row in enumerate(after_magic_rows):
+            normalized_magic = _normalize_retirement_ea_id(magic_row.get("ea_id"))
+            if normalized_magic:
+                after_magic_indices.setdefault(normalized_magic, []).append(index)
+        target_magic_status_after = _registry_status_counts(
+            [
+                after_magic_rows[index]
+                for ea_id in normalized
+                for index in after_magic_indices.get(ea_id, [])
+            ]
+        )
         receipt_path = _retirement_receipt_path(repo, apply=apply)
         receipt = {
-            "schema_version": "qm.ea-id-retirement-wave/v1",
+            "schema_version": "qm.ea-id-retirement-wave/v2",
             "created_at": utc_now(),
             "mode": "apply" if apply else "dry_run",
             "reason": clean_reason,
             "evidence": evidence_relative,
+            "retire_magic_rows": bool(retire_magic_rows),
             "input_metadata": input_metadata or {},
             "limit": limit,
             "requested_count": len(normalized),
@@ -27694,8 +27787,16 @@ def retire_ea_ids(
             "registry_sha256_after": registry_sha_after,
             "registry_status_counts_before": before_counts,
             "registry_status_counts_after": after_counts,
+            "magic_registry": str(magics),
+            "magic_registry_sha256_before": magic_sha_before,
+            "magic_registry_sha256_after": magic_sha_after,
+            "target_magic_row_count": len(target_magic_indices_all),
+            "planned_magic_row_count": len(selected_magic_indices),
+            "applied_magic_row_count": len(selected_magic_indices) if apply else 0,
+            "target_magic_status_counts_before": target_magic_status_before,
+            "target_magic_status_counts_after": target_magic_status_after,
             "registry_lock": str(_registry_lock_path()),
-            "atomic_writer": "farmctl._write_csv_atomic",
+            "atomic_writer": "farmctl._write_csv_atomic under one registry lock with exact-byte rollback",
             "receipt_path": str(receipt_path),
         }
         _write_json_atomic(receipt_path, receipt)
@@ -27948,6 +28049,14 @@ def build_parser() -> argparse.ArgumentParser:
     retire_ids.add_argument("--from-file", help="CSV (action=RETIRE rows only) or newline-delimited EA IDs")
     retire_ids.add_argument("--reason", required=True, help="Durable reason recorded on every transitioned registry row")
     retire_ids.add_argument("--evidence", required=True, help="Existing path under canonical docs/ops/evidence")
+    retire_ids.add_argument(
+        "--retire-magic-rows",
+        action="store_true",
+        help=(
+            "With explicit OWNER evidence, retire all active magic rows for the "
+            "selected IDs under the same registry lock; default remains refusal"
+        ),
+    )
     retire_ids.add_argument("--limit", type=int, help="Maximum eligible transitions in this wave; required with --apply")
     retire_ids.add_argument("--apply", action="store_true", help="Apply one bounded atomic wave; default is dry-run")
 
@@ -28487,6 +28596,7 @@ def main(argv: list[str] | None = None) -> int:
             retirement_ids,
             reason=args.reason,
             evidence=args.evidence,
+            retire_magic_rows=args.retire_magic_rows,
             apply=args.apply,
             limit=args.limit,
             repo_root=REPO_ROOT,

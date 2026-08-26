@@ -67,6 +67,7 @@ def _retire(
     evidence: Path,
     ea_ids: list[str],
     *,
+    retire_magic_rows: bool = False,
     apply: bool = False,
     limit: int | None = None,
 ) -> dict:
@@ -75,6 +76,7 @@ def _retire(
         ea_ids,
         reason="OWNER-approved disposition",
         evidence=str(evidence),
+        retire_magic_rows=retire_magic_rows,
         apply=apply,
         limit=limit,
         repo_root=repo,
@@ -119,6 +121,64 @@ def test_retirement_refuses_magic_row_without_registry_mutation(
         {"ea_id": "QM5_1001", "reasons": ["magic_rows_exist"]}
     ]
     assert registry.read_bytes() == before
+
+
+def test_retirement_can_cascade_active_magic_rows_with_explicit_owner_path(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo, farm, evidence = _fixture(tmp_path, monkeypatch)
+    registry = repo / "framework" / "registry" / "ea_id_registry.csv"
+    magics = repo / "framework" / "registry" / "magic_numbers.csv"
+    _write_csv(
+        magics,
+        ["ea_id", "magic", "status"],
+        [
+            {"ea_id": "QM5_1001", "magic": "100100001", "status": "active"},
+            {"ea_id": "QM5_1002", "magic": "100200001", "status": "active"},
+        ],
+    )
+    registry_before = registry.read_bytes()
+    magics_before = magics.read_bytes()
+
+    dry_run = _retire(
+        farm,
+        repo,
+        evidence,
+        ["1001"],
+        retire_magic_rows=True,
+    )
+
+    assert dry_run["ok"] is True
+    assert dry_run["planned_count"] == 1
+    assert dry_run["planned_magic_row_count"] == 1
+    assert dry_run["applied_magic_row_count"] == 0
+    assert dry_run["target_magic_status_counts_before"] == {"active": 1}
+    assert dry_run["target_magic_status_counts_after"] == {"active": 1}
+    assert registry.read_bytes() == registry_before
+    assert magics.read_bytes() == magics_before
+
+    applied = _retire(
+        farm,
+        repo,
+        evidence,
+        ["1001"],
+        retire_magic_rows=True,
+        apply=True,
+        limit=1,
+    )
+
+    assert applied["ok"] is True
+    assert applied["applied_count"] == 1
+    assert applied["applied_magic_row_count"] == 1
+    assert applied["target_magic_status_counts_before"] == {"active": 1}
+    assert applied["target_magic_status_counts_after"] == {"retired": 1}
+    assert _registry_rows(repo)[0]["status"] == "retired"
+    with magics.open(encoding="utf-8", newline="") as handle:
+        magic_rows = list(csv.DictReader(handle))
+    assert magic_rows == [
+        {"ea_id": "QM5_1001", "magic": "100100001", "status": "retired"},
+        {"ea_id": "QM5_1002", "magic": "100200001", "status": "active"},
+    ]
 
 
 def test_retirement_refuses_any_work_item_reference_without_registry_mutation(
