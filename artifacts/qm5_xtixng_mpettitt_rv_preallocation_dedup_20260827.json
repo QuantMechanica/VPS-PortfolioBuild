@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Jose A Villar Frederick L Joutz David J Ramberg John E Parsons A N Pettitt Thorsten Pohlert",
+    "mechanic": "monthly XTI XNG thirteen synchronized completed month-end log oil minus log gas ratio strict-rank Pettitt cumulative sum unique central change point contrarian equal-notional basket next-month exit",
+    "slug": "xtixng-mpettitt-rv",
+    "strategy_id": "VILLAR-PETTITT-XTIXNG-MSHIFT-RV-2026_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-08-26T23:48:08+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4674,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1325,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
