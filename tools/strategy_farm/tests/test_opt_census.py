@@ -114,6 +114,48 @@ def test_enqueue_refuses_until_fixture_harness_passes(tmp_path: Path) -> None:
     assert not (tmp_path / "sets").exists()
 
 
+def test_enqueue_resolves_failed_harness_root_to_latest_green_successor(tmp_path: Path) -> None:
+    plan = _plan(tmp_path)
+    db = _db(tmp_path / "farm.sqlite", harness_pass=False)
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            ("green-harness-successor", "harness", subject.HARNESS_PHASE,
+             subject.HARNESS_EA_ID, "EURUSD.DWX", "", "done", "HARNESS_OK",
+             0, None, "successor-harness.csv", None, "{}", "later", "later"),
+        )
+        conn.commit()
+
+    ledger = tmp_path / "ledger.json"
+    result = subject.enqueue(plan, db_path=db, ledger_path=ledger)
+
+    assert result["inserted"] == 1085
+    payload = json.loads(ledger.read_text(encoding="utf-8"))
+    assert payload["harness_work_item_id"] == "green-harness-successor"
+    assert payload["harness_evidence"]["verdict"] == "HARNESS_OK"
+
+
+def test_enqueue_keeps_explicit_nonroot_harness_id_exact(tmp_path: Path) -> None:
+    plan = _plan(tmp_path)
+    db = _db(tmp_path / "farm.sqlite")
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            ("explicit-failed", "harness", subject.HARNESS_PHASE,
+             subject.HARNESS_EA_ID, "EURUSD.DWX", "", "failed", "INFRA_FAIL",
+             0, None, "failed.json", None, "{}", "later", "later"),
+        )
+        conn.commit()
+
+    with pytest.raises(subject.CensusError, match="not green"):
+        subject.enqueue(
+            plan,
+            db_path=db,
+            ledger_path=tmp_path / "ledger.json",
+            harness_id="explicit-failed",
+        )
+
+
 @pytest.mark.parametrize(
     ("fixed", "percent", "stale", "message"),
     [("0", "0", "336", "RISK_FIXED"),

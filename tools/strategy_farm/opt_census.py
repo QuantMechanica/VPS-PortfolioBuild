@@ -31,6 +31,8 @@ SCHEMA = "qm.opt-census.v1"
 DECLARED_TRIAL_COUNT = 154
 YEARS = tuple(range(2019, 2026))
 HARNESS_WORK_ITEM_ID = "83b89730-bb86-4c18-955a-efefe3039cc5"
+HARNESS_EA_ID = "QM_PP_FIXTURE_HARNESS"
+HARNESS_PHASE = "HARNESS_PP_FIXTURE"
 CELL_NAMESPACE = uuid.UUID("f45f154c-65d5-5e0f-96c8-505bc44bbc39")
 SET_KEYS = (
     "opt_pp_buy1", "opt_pp_buy2", "opt_pp_buy3",
@@ -414,17 +416,48 @@ def _render_cell_setfile(base_setfile: Path, cell: dict[str, Any]) -> str:
 
 def _harness_pass(conn: sqlite3.Connection, harness_id: str) -> dict[str, Any]:
     row = conn.execute(
-        "SELECT status,verdict,evidence_path,updated_at FROM work_items WHERE id=?",
+        "SELECT id,status,verdict,evidence_path,updated_at FROM work_items WHERE id=?",
         (harness_id,),
     ).fetchone()
-    if row is None:
-        raise CensusError(f"fixture harness row missing: {harness_id}")
-    result = dict(zip(("status", "verdict", "evidence_path", "updated_at"), row))
+    result = None if row is None else dict(zip(
+        ("id", "status", "verdict", "evidence_path", "updated_at"), row
+    ))
     # The harness completion path lands verdict='HARNESS_OK' (its canonical
     # measurement token, e.g. row 93338948 on 2026-08-22), not the gate token
     # 'PASS' this check originally demanded — that mismatch would have held the
     # census closed forever after a successful harness run.
-    if result["status"] != "done" or result["verdict"] not in ("HARNESS_OK", "PASS"):
+    def green(candidate: dict[str, Any] | None) -> bool:
+        return bool(
+            candidate
+            and str(candidate["status"]).lower() == "done"
+            and str(candidate["verdict"] or "").upper() in ("HARNESS_OK", "PASS")
+        )
+
+    # HARNESS_WORK_ITEM_ID is the historical root/anchor, not the only valid
+    # execution.  The root failed preflight before the governed harness path was
+    # fixed; later immutable successor rows completed HARNESS_OK.  Keep an
+    # explicitly supplied non-root ID exact, while resolving the default anchor
+    # to the newest green successor using the same contract as
+    # optimization_fork_driver._harness_state().
+    if not green(result) and harness_id == HARNESS_WORK_ITEM_ID:
+        row = conn.execute(
+            """
+            SELECT id,status,verdict,evidence_path,updated_at
+              FROM work_items
+             WHERE ea_id=? AND phase=? AND lower(status)='done'
+               AND upper(coalesce(verdict,'')) IN ('HARNESS_OK','PASS')
+             ORDER BY updated_at DESC,created_at DESC,id DESC LIMIT 1
+            """,
+            (HARNESS_EA_ID, HARNESS_PHASE),
+        ).fetchone()
+        if row is not None:
+            result = dict(zip(
+                ("id", "status", "verdict", "evidence_path", "updated_at"), row
+            ))
+
+    if not green(result):
+        if result is None:
+            raise CensusError(f"fixture harness row missing: {harness_id}")
         raise CensusError(
             f"fixture harness is not green: status={result['status']} verdict={result['verdict']}"
         )
@@ -470,7 +503,7 @@ def enqueue(plan: dict[str, Any], *, db_path: Path, ledger_path: Path,
         ledger = {key: value for key, value in plan.items() if key != "cells"}
         ledger.update({
             "status": "PLANNED",
-            "harness_work_item_id": harness_id,
+            "harness_work_item_id": harness["id"],
             "harness_evidence": harness,
             "q02_precondition": q02,
             "created_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
