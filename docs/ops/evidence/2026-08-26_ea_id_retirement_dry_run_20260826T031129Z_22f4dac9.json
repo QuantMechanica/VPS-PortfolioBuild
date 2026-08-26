@@ -1,0 +1,68 @@
+{
+  "already_retired_count": 0,
+  "already_retired_ids": [],
+  "applied_count": 0,
+  "applied_magic_row_count": 0,
+  "atomic_writer": "farmctl._write_csv_atomic under one registry lock with exact-byte rollback",
+  "created_at": "2026-08-26T03:11:29+00:00",
+  "deferred_count": 0,
+  "deferred_ids": [],
+  "eligible_count": 3,
+  "evidence": "docs/ops/evidence/2026-08-26_780c7c37_registry_gap_retirement.md",
+  "input_metadata": {
+    "explicit_id_count": 3,
+    "filtered_actions": {},
+    "filtered_non_retire_count": 0,
+    "from_file": null
+  },
+  "limit": 3,
+  "magic_registry": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+  "magic_registry_sha256_after": "bf6b36dd6e27cc3fa241de3285eb9cc5ff96f0f6451f5a387ed936f69d5c056c",
+  "magic_registry_sha256_before": "bf6b36dd6e27cc3fa241de3285eb9cc5ff96f0f6451f5a387ed936f69d5c056c",
+  "mode": "dry_run",
+  "planned_count": 3,
+  "planned_magic_row_count": 107,
+  "planned_or_applied_ids": [
+    "QM5_1001",
+    "QM5_1015",
+    "QM5_1016"
+  ],
+  "reason": "OWNER Option B: retire unmaterialized legacy reservations; fresh intake only",
+  "receipt_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-26_ea_id_retirement_dry_run_20260826T031129Z_22f4dac9.json",
+  "refused": [],
+  "refused_count": 0,
+  "registry": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+  "registry_lock": "C:\\QM\\repo\\framework\\registry\\.ea_id_registry.lock",
+  "registry_sha256_after": "1c5d7102abe02cd9975e214abf1b4399b690990de5ea96336c32a240bfaf9bf1",
+  "registry_sha256_before": "1c5d7102abe02cd9975e214abf1b4399b690990de5ea96336c32a240bfaf9bf1",
+  "registry_status_counts_after": {
+    "APPROVED": 1,
+    "DRAFT": 4,
+    "active": 3818,
+    "allocated": 4,
+    "backtest-only": 2,
+    "build_test": 1,
+    "pending": 32,
+    "retired": 798
+  },
+  "registry_status_counts_before": {
+    "APPROVED": 1,
+    "DRAFT": 4,
+    "active": 3818,
+    "allocated": 4,
+    "backtest-only": 2,
+    "build_test": 1,
+    "pending": 32,
+    "retired": 798
+  },
+  "requested_count": 3,
+  "retire_magic_rows": true,
+  "schema_version": "qm.ea-id-retirement-wave/v2",
+  "target_magic_row_count": 107,
+  "target_magic_status_counts_after": {
+    "active": 107
+  },
+  "target_magic_status_counts_before": {
+    "active": 107
+  }
+}
