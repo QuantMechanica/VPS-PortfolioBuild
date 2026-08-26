@@ -366,6 +366,17 @@ def _ensure_rollout_hold(
             "existing_hold": None if existing is None else existing["hold_code"],
             "would_install_or_convert_release_on_restart": True,
         }
+    if existing is not None and int(existing["active"] or 0) == 0:
+        # The governed worker restart already loaded the permanent claim guard
+        # and released this transitional hold.  Never resurrect it on a later
+        # pump cycle.
+        return {
+            "work_item_id": work_item_id,
+            "hold_code": str(existing["hold_code"]),
+            "active": False,
+            "release_on_restart": bool(existing["release_on_restart"]),
+            "restart_release_preserved": True,
+        }
     now = _now()
     reason = (
         "DL-089 matrix service is installed on disk; keep old resident generic workers "

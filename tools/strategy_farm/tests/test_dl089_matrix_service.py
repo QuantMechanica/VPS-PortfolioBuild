@@ -302,3 +302,41 @@ def test_recovery_successor_preserves_declaration_and_not_source_verdict(tmp_pat
     successor_payload = json.loads(successor["payload_json"])
     assert successor_payload["pattern_filter_sweep"] == declaration
     assert successor_payload["matrix_runner"]["recovery_of_work_item_id"] == "bad-pass"
+
+
+def test_rollout_hold_is_not_resurrected_after_restart_release(tmp_path: Path) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    db = root / farmctl.DB_REL
+    with farmctl.connect(root) as conn:
+        now = farmctl.utc_now()
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+              payload_json,created_at,updated_at
+            ) VALUES('released-q12','analytic','Q12','QM5_10706','GBPUSD.DWX','x.set',
+                     'pending',NULL,0,'{}',?,?)
+            """,
+            (now, now),
+        )
+        conn.execute(
+            """
+            INSERT INTO work_item_holds(
+              work_item_id,hold_code,reason,active,release_on_restart,
+              created_at,updated_at,released_at,release_note
+            ) VALUES('released-q12',?,'guard loaded',0,1,?,?,?,'worker restart')
+            """,
+            (service.ROLLOUT_HOLD_CODE, now, now, now),
+        )
+        conn.commit()
+
+        result = service._ensure_rollout_hold(conn, "released-q12", apply=True)
+        conn.commit()
+
+        hold = conn.execute(
+            "SELECT active,released_at,release_note FROM work_item_holds "
+            "WHERE work_item_id='released-q12'"
+        ).fetchone()
+    assert result["restart_release_preserved"] is True
+    assert tuple(hold) == (0, now, "worker restart")
