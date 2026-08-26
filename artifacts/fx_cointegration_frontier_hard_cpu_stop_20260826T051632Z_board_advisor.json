@@ -1,0 +1,105 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_stop",
+  "generated_at_utc": "2026-08-26T05:16:32Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "c45ec010ee531a49afce6b14f4fe374b01258b0d",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "frontier_audit": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "strict_reputable_source_survivors": [
+      "QM5_12532",
+      "QM5_12533"
+    ],
+    "new_card_or_ea_authorized": false,
+    "reason": "The bounded source admitted only QM5_12532 and QM5_12533, and the governed sign-aware audit already accounts for every relationship in the 66-pair scan."
+  },
+  "anchor_triage": {
+    "evidence_source": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260826T041543Z_board_advisor.json",
+    "evidence_generated_at_utc": "2026-08-26T04:15:43Z",
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    "fresh_work_item_query_after_ceiling": false,
+    "reason": "The explicit stop condition bound before a fresh work-item query; the latest durable supported evidence showed neither anchor blocked at Q02."
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_20219",
+    "pair": [
+      "USDJPY.DWX",
+      "NZDUSD.DWX"
+    ],
+    "logical_symbol": "QM5_20219_USDJPY_NZDUSD_COINTEGRATION_D1",
+    "latest_durable_lineage_evidence": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260826T041543Z_board_advisor.json",
+    "latest_durable_state": "Q02 PASS; unique Q03 successor pending with zero attempts; preexisting Q04 pending",
+    "queue_mutation_performed": false,
+    "reason": "A successor already exists, and the CPU ceiling prohibited dispatch or any competing enqueue."
+  },
+  "capacity_sample": {
+    "sampled_at_utc": "2026-08-26T05:16:32.8750577Z",
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      100.0,
+      97.76,
+      97.12,
+      94.67,
+      100.0
+    ],
+    "average_cpu_percent": 97.91,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "average_triggered": true,
+    "maximum_triggered": true,
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "prior_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260826T041543Z_board_advisor.json",
+    "prior_sampled_at_utc": "2026-08-26T04:15:43.7483771Z",
+    "current_sampled_at_utc": "2026-08-26T05:16:32.8750577Z",
+    "elapsed_seconds": 3649,
+    "prior_average_cpu_percent": 99.11,
+    "current_average_cpu_percent": 97.91,
+    "prior_maximum_cpu_percent": 99.9,
+    "current_maximum_cpu_percent": 100.0,
+    "reason_for_receipt": "A fresh sample approximately one hour after the prior receipt shows average CPU decreased by 1.20 percentage points, but both the average and maximum still trigger the explicit hard ceiling."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "The explicit 97 percent backtest CPU ceiling bound before any mutating or CPU-consuming pipeline action."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed_by_this_run": false
+  }
+}
