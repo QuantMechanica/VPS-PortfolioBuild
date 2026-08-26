@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "checked_at_utc": "2026-08-26T14:40:26.3022532Z",
+  "branch": "agents/board-advisor",
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_HELD_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "ea": {
+    "ea_id": 41168,
+    "ea_label": "QM5_41168_xauxag-mcoxstuart-rv",
+    "source_build_commit": "55bf1ace6e0f5f4140b8e0703c4df61a2b9667b9",
+    "card_commit": "9b3df2775740e03440802990c1d0f9bc57a5e628",
+    "source_approval_commit": "d5e5a0c79e5edb1ac5d2b4eec8e88a4f419bde24",
+    "ex5_exists": false,
+    "logical_symbol": "QM5_41168_XAU_XAG_MCOXSTUART_RV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX",
+    "timeframe": "D1",
+    "magic_slots": [
+      {
+        "slot": 0,
+        "symbol": "XAUUSD.DWX",
+        "magic": 411680000
+      },
+      {
+        "slot": 1,
+        "symbol": "XAGUSD.DWX",
+        "magic": 411680001
+      }
+    ]
+  },
+  "compile": {
+    "direct_build_check_result": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_work_item_id": "830c8cb9-d45e-450b-a90e-a750e8886dd5",
+    "status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "failed": false,
+    "verdict": null,
+    "evidence_path": null
+  },
+  "q02": {
+    "enqueued": false,
+    "dispatched": false,
+    "reason": "No strict compile PASS and whole-host CPU ceiling is binding."
+  },
+  "cpu_ceiling": {
+    "counter": "\\Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "threshold_percent": 97.0,
+    "threshold_operator": ">=",
+    "samples_percent": [
+      99.90,
+      100.00,
+      98.64,
+      99.61,
+      99.42
+    ],
+    "average_percent": 99.51,
+    "maximum_percent": 100.00,
+    "binding": true
+  },
+  "observed_processes": {
+    "metatester64_count": 7,
+    "metatester64_ids": [
+      1180,
+      8560,
+      15108,
+      21380,
+      23428,
+      32584,
+      37048
+    ],
+    "governed_factory_terminal64_count": 8,
+    "governed_factory_terminal64_ids": [
+      10148,
+      22184,
+      22400,
+      22540,
+      28320,
+      31888,
+      32680,
+      38024
+    ]
+  },
+  "validation": {
+    "canonical_dedup": "CLEAN",
+    "dedup_registry_rows": 4667,
+    "dedup_cards": 1318,
+    "dedup_wiki_nodes": 45,
+    "card_schema_lint": "PASS",
+    "g0_lint": "PASS",
+    "spec_lint": "PASS",
+    "build_prerequisite_guard": "PASS",
+    "build_guardrails": "PASS",
+    "build_guardrail_findings": 0,
+    "reference_test_count": 9,
+    "reference_tests": "PASS",
+    "approved_and_local_card_sha256": "1DB0EB17B8E699EAE6A1D9A7223AFF3C1D5694F2B556FB94C773CB522C000B13",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0,
+    "live_setfiles_present": false,
+    "banned_or_ml_indicator_hits": 0
+  },
+  "safety": {
+    "terminal_processes_started_or_stopped": false,
+    "autotrading_changed": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "tester_reservation_changed": false
+  }
+}
