@@ -157,7 +157,9 @@ def test_v3_auto_chain_q10_to_q14_q15_q16(tmp_path: Path) -> None:
     )
 
 
-def test_v4_monkeypatched_manifest_uses_q11_q12_q13_q14(tmp_path: Path) -> None:
+def test_v4_q11_pass_auto_declares_dl089_q12_matrix_and_routes_chain(
+    tmp_path: Path,
+) -> None:
     conn = _db(tmp_path / "farm.sqlite")
     files = _seed_incumbent(conn, tmp_path, V4)
     first = subject.advance_optimization_fork(conn, manifest=V4, apply=True)
@@ -166,6 +168,36 @@ def test_v4_monkeypatched_manifest_uses_q11_q12_q13_q14(tmp_path: Path) -> None:
     }
     pattern = first["actions"][0]
     assert pattern["phase"] == "Q12"
+    pattern_payload = json.loads(conn.execute(
+        "SELECT payload_json FROM work_items WHERE id=?", (pattern["work_item_id"],)
+    ).fetchone()[0])
+    declaration = pattern_payload["pattern_filter_sweep"]
+    assert pattern_payload["routing_revision"] == subject.PATTERN_DECLARATION_REVISION
+    assert declaration["schema"] == subject.PATTERN_DECLARATION_SCHEMA
+    assert declaration["declared_parameter_count"] == 154
+    assert declaration["declared_trial_count"] == 154
+    assert declaration["candidate_count"] == 154
+    assert declaration["annual_cell_count"] == 1085
+    assert len(declaration["annual_cells"]) == 1085
+    assert len({cell["cell_key"] for cell in declaration["annual_cells"]}) == 1085
+    assert len({cell["work_item_id"] for cell in declaration["annual_cells"]}) == 1085
+    assert declaration["wf_cell_count"] == 4
+    assert [cell["test_year"] for cell in declaration["wf_cells"]] == [
+        2022, 2023, 2024, 2025
+    ]
+    assert declaration["selection_contract"]["sealed_rule_sha256"] == (
+        "4cc2bbd108bf500f33ef5eee30536c9a4afe58dc2684116a972c0bfb65f3d383"
+    )
+    assert declaration["selection_contract"]["selection_year_quorum"] == "2/3"
+    assert declaration["selection_contract"]["relative_improve_min"] == 0.05
+    assert all(
+        candidate["declared_parameter_count"] == 1
+        and candidate["annual_measurement_cell_count"] == 7
+        and candidate["frequency_floor_per_scored_year"] == 10
+        for candidate in declaration["candidates"]
+    )
+    assert declaration["measurement_readiness"]["status"] == "BLOCKED"
+    assert declaration["measured_candidate_adjudicated"] is False
     _complete(conn, pattern["work_item_id"], "PASS", files["stage"])
     second = subject.advance_optimization_fork(conn, manifest=V4, apply=True)
     param = next(action for action in second["actions"] if action["role"] == "PARAM_OPT")
@@ -177,6 +209,70 @@ def test_v4_monkeypatched_manifest_uses_q11_q12_q13_q14(tmp_path: Path) -> None:
     assert conn.execute("SELECT gate_contract_version FROM work_items WHERE id=?", (
         head["work_item_id"],
     )).fetchone()[0] == "v4"
+
+
+def test_v4_legacy_q12_no_search_gets_append_only_declared_successor(
+    tmp_path: Path,
+) -> None:
+    conn = _db(tmp_path / "farm.sqlite")
+    files = _artifacts(tmp_path, "QM5_90001")
+    _green_harness(conn, files)
+    _insert(
+        conn,
+        wid="legacy-q10-incumbent",
+        phase="Q10",
+        ea_id="QM5_90001",
+        status="done",
+        verdict="PASS",
+        setfile=files["setfile"],
+        evidence=files["evidence"],
+        payload={"ea_dir_name": "QM5_90001_fixture"},
+        version="v4",
+    )
+    parent = conn.execute(
+        "SELECT * FROM work_items WHERE id='legacy-q10-incumbent'"
+    ).fetchone()
+    parent_bindings = subject._artifact_bindings(parent)
+    _insert(
+        conn,
+        wid="legacy-q12-zero-search",
+        phase="Q12",
+        ea_id="QM5_90001",
+        status="done",
+        verdict="NO_FILTER_CHANGE",
+        setfile=files["setfile"],
+        evidence=files["stage"],
+        payload={
+            "schema": subject.SCHEMA,
+            "gate_manifest_sha256": V4.sha256,
+            "parent_work_item_id": "legacy-q10-incumbent",
+            "parent_bindings": parent_bindings,
+        },
+        version="v4",
+    )
+    conn.commit()
+
+    result = subject.advance_optimization_fork(
+        conn,
+        manifest=V4,
+        target_pairs=[("QM5_90001", "EURUSD.DWX")],
+        apply=True,
+    )
+
+    pattern = next(action for action in result["actions"] if action["role"] == "PATTERN")
+    assert pattern["work_item_id"] != "legacy-q12-zero-search"
+    assert pattern["append_only_correction_of_work_item_id"] == "legacy-q12-zero-search"
+    row = conn.execute(
+        "SELECT status,verdict,payload_json FROM work_items WHERE id=?",
+        (pattern["work_item_id"],),
+    ).fetchone()
+    payload = json.loads(row[2])
+    assert row[:2] == ("pending", None)
+    assert payload["parent_work_item_id"] == "legacy-q10-incumbent"
+    assert payload["pattern_filter_sweep"]["declared_trial_count"] == 154
+    assert conn.execute(
+        "SELECT status,verdict FROM work_items WHERE id='legacy-q12-zero-search'"
+    ).fetchone()[:] == ("done", "NO_FILTER_CHANGE")
 
 
 def test_fixture_dry_run_plans_whole_chain_without_writes(tmp_path: Path) -> None:

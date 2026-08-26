@@ -139,12 +139,41 @@ def _route_one(conn: sqlite3.Connection, role: str) -> str:
     return next(row["work_item_id"] for row in result["actions"] if row["role"] == role)
 
 
-def test_full_v4_no_change_chain_is_evidence_bound(tmp_path: Path) -> None:
+def _rewrite_pattern_as_legacy_zero_search(conn: sqlite3.Connection, wid: str) -> str:
+    """Model a pre-declaration routing row for backward-compatibility coverage."""
+
+    payload = json.loads(conn.execute(
+        "SELECT payload_json FROM work_items WHERE id=?", (wid,)
+    ).fetchone()[0])
+    payload.pop("pattern_filter_sweep")
+    payload.pop("routing_revision")
+    payload["dl089_contract"].pop("declared_pattern_search_required")
+    legacy_id = driver._row_id(
+        manifest=V4,
+        role="PATTERN",
+        parent_id=payload["parent_work_item_id"],
+        prerequisite_id=payload["fixture_harness"]["selected_work_item_id"],
+    )
+    identity = dict(payload)
+    identity.pop("routing_identity_sha256")
+    payload["routing_identity_sha256"] = hashlib.sha256(
+        driver._canonical_bytes(identity)
+    ).hexdigest()
+    conn.execute(
+        "UPDATE work_items SET id=?,payload_json=? WHERE id=?",
+        (legacy_id, json.dumps(payload, sort_keys=True), wid),
+    )
+    conn.commit()
+    return legacy_id
+
+
+def test_legacy_v4_no_change_chain_remains_evidence_bound(tmp_path: Path) -> None:
     conn = _db(tmp_path / "farm.sqlite")
     _seed(conn, tmp_path)
     evidence_root = tmp_path / "receipts"
 
     pattern_id = _route_one(conn, "PATTERN")
+    pattern_id = _rewrite_pattern_as_legacy_zero_search(conn, pattern_id)
     preview = subject.service_pending(
         conn,
         manifest=V4,
@@ -213,17 +242,11 @@ def test_declared_pattern_work_is_left_pending(tmp_path: Path) -> None:
         "SELECT payload_json FROM work_items WHERE id=?", (pattern_id,)
     ).fetchone()
     payload = json.loads(row[0])
-    payload["pattern_filter_sweep"] = {"candidate_count": 3}
-    identity = dict(payload)
-    identity.pop("routing_identity_sha256")
-    payload["routing_identity_sha256"] = hashlib.sha256(
-        driver._canonical_bytes(identity)
-    ).hexdigest()
-    conn.execute(
-        "UPDATE work_items SET payload_json=? WHERE id=?",
-        (json.dumps(payload, sort_keys=True), pattern_id),
-    )
-    conn.commit()
+    declaration = payload["pattern_filter_sweep"]
+    assert declaration["declared_trial_count"] == 154
+    assert declaration["annual_cell_count"] == 1085
+    assert declaration["wf_cell_count"] == 4
+    assert declaration["measured_candidate_adjudicated"] is False
 
     result = subject.service_pending(
         conn,

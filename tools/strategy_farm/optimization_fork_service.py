@@ -2,11 +2,14 @@
 
 The optimization fork router deliberately creates ``kind=analytic`` rows,
 which terminal workers must not claim.  This service consumes only the narrow
-no-change contract emitted by :mod:`optimization_fork_driver`:
+legacy no-change contract emitted before the mandatory DL-089 declaration was
+wired into :mod:`optimization_fork_driver`:
 
 * Q12/PATTERN may finish as ``NO_FILTER_CHANGE`` only when the payload declares
   that zero selected filters is valid and contains no filter-search result or
-  candidate plan for a human/analytic selector to adjudicate.
+  candidate plan for a human/analytic selector to adjudicate.  Current Q12
+  rows always carry the sealed 154-candidate declaration and therefore remain
+  pending for the governed measurement/evaluation path.
 * Q13/PARAM_OPT may finish as ``NO_PARAMETER_CHANGE`` only for the explicit
   ``NO_NEW_PARAMETER_SWEEP`` / zero-trial contract.
 * Q14/HEAD_TO_HEAD may finish as ``KEEP_INCUMBENT`` only when both upstream
