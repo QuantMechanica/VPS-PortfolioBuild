@@ -1,0 +1,152 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_stop",
+  "generated_at_utc": "2026-08-26T14:01:07.8317844Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "916c484799b9fcc160a016ff6d74825fe36295b4",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "card_extraction_gate": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "research_source_sha256": "E513CC785DF2DFC7C74F2D89A03C47A9A90E00DCC9E14902839EE80946C13DF7",
+    "bounded_source_read_completely": true,
+    "strict_scan_pair_count": 66,
+    "strict_scan_survivor_count": 2,
+    "strict_scan_survivors": [
+      "AUDUSD.DWX/NZDUSD.DWX",
+      "EURJPY.DWX/GBPJPY.DWX"
+    ],
+    "new_card_authorized": false,
+    "reason": "The OWNER-requested scan admits only these two reputable-source survivors, both already approved and built. The durable sign-aware audit covers all 66 relationships with zero uncovered."
+  },
+  "frontier_audit": {
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "coverage_evidence_sha256": "5B11C01EC9AFEBF853433585D172FDC52669B367567EC5AFFF5FCA4077BC5344",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_scan_identity_available": false
+  },
+  "canonical_lineage_refresh": {
+    "attempted_commands": [
+      "python tools/strategy_farm/farmctl.py work-items --ea QM5_12532",
+      "python tools/strategy_farm/farmctl.py work-items --ea QM5_12533",
+      "python tools/strategy_farm/farmctl.py work-items --ea QM5_20219"
+    ],
+    "result": "READ_BLOCKED",
+    "error": "sqlite3.OperationalError: database is locked",
+    "database_mutation_performed": false,
+    "last_durable_canonical_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260826T131637Z_board_advisor.json",
+    "last_durable_anchor_state": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    },
+    "last_durable_existing_pair_fallback": {
+      "ea": "QM5_20219_usdjpy-nzdusd",
+      "pair": [
+        "USDJPY.DWX",
+        "NZDUSD.DWX"
+      ],
+      "state": "Q02_PASS_WITH_EXISTING_Q03_PENDING_SUCCESSOR"
+    },
+    "decision": "No repair, enqueue, requeue, priority mutation, or dispatch was attempted while the canonical database was locked and the hard CPU ceiling bound."
+  },
+  "factory_snapshot": {
+    "scanned_at_utc": "2026-08-26T14:00:41+00:00",
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "running_factory_terminal_count": 6,
+    "terminal_worker_daemon_count": 10,
+    "active_terminal_reservation_count": 6,
+    "orphaned_terminal_process_count": 0,
+    "launch_gate_max": 1,
+    "t_live_observed_only_for_exclusion": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only_for_exclusion": true
+  },
+  "capacity_sample": {
+    "completed_at_utc": "2026-08-26T14:01:07.8317844Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "binding_measures": [
+      "average",
+      "maximum"
+    ],
+    "metatester64_process_count_on_final_read": 5
+  },
+  "non_duplicate_delta": {
+    "prior_fx_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260826T131637Z_board_advisor.json",
+    "prior_running_factory_terminal_count": 7,
+    "prior_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T5",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "current_running_factory_terminal_count": 6,
+    "current_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "newly_active_factory_terminals": [
+      "T6"
+    ],
+    "no_longer_active_factory_terminals": [
+      "T4",
+      "T5"
+    ],
+    "prior_average_cpu_percent": 99.52,
+    "current_average_cpu_percent": 100.0,
+    "canonical_work_item_read_lock_observed": true,
+    "reason_for_receipt": "The governed tester cohort changed from seven to six, with T6 newly active and T4/T5 no longer active; whole-host CPU rose to a flat 100 percent sample and the supported lineage read encountered a live database lock."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutation": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "The explicit backtest CPU ceiling bound before any mutating or CPU-consuming pipeline action."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed_by_this_run": false
+  }
+}
