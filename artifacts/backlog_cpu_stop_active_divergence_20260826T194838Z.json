@@ -1,0 +1,125 @@
+{
+  "artifact_type": "build_backlog_cpu_ceiling_active_process_divergence",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-26T19:48:44.046Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "914112133233b7366708e24ffc23d7b01905f2ec",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_WITH_ACTIVE_PROCESS_DIVERGENCE",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "terminal_worker.py refuses a new claim when sampled CPU load exceeds CPU_MAX_LOAD_PERCENT",
+    "sources": [
+      "explicit OWNER paced-fleet mission",
+      "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+    ]
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      99.51638692532259,
+      99.7293770054701,
+      99.61637393774382,
+      96.78164487181945,
+      97.30450231126872
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 98.58965701032494,
+    "maximum_cpu_percent": 99.7293770054701,
+    "ceiling_binding": true
+  },
+  "farm_db_coordination": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "active_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "process_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mt5-slots",
+    "snapshot_scanned_at": "2026-08-26T19:48:38+00:00",
+    "active_work_item_count": 8,
+    "running_factory_terminal_count": 4,
+    "active_terminal_reservation_count": 4,
+    "process_bound_active_rows": [
+      {
+        "terminal": "T4",
+        "work_item_id": "2e797aa8-42ef-479e-875f-da93436ca528",
+        "ea_id": "QM5_20220",
+        "phase": "Q03",
+        "symbol": "QM5_20220_USDCAD_AUDJPY_COINTEGRATION_D1"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "ed92d3e4-f7d9-45e0-91be-3ae8f2c0329a",
+        "ea_id": "QM5_21501",
+        "phase": "Q07",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "e38d4011-2d00-4028-9cea-1f4ea428ae64",
+        "ea_id": "QM5_10692",
+        "phase": "Q09",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "cf8eac17-4079-4d81-9ed1-fcd9f4300a93",
+        "ea_id": "QM5_12354",
+        "phase": "Q10_NEWS",
+        "symbol": "XAUUSD.DWX"
+      }
+    ],
+    "active_rows_without_live_terminal_or_reservation": [
+      {
+        "terminal": "T1",
+        "work_item_id": "e5d40e56-8e65-49b8-bd1e-0a95768a281b",
+        "ea_id": "QM5_21507",
+        "phase": "Q10_NEWS",
+        "symbol": "XAUUSD.DWX",
+        "db_updated_at": "2026-08-26T13:55:00+00:00"
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "97722bc9-a3cb-4a2c-aa74-e9b0dae50f77",
+        "ea_id": "QM5_11124",
+        "phase": "Q09",
+        "symbol": "SP500.DWX",
+        "db_updated_at": "2026-08-26T11:48:40+00:00"
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": "504a936c-b01f-47e5-bd2e-5395570e7af1",
+        "ea_id": "QM5_10114",
+        "phase": "Q10_NEWS",
+        "symbol": "GDAXI.DWX",
+        "db_updated_at": "2026-08-25T12:34:53+00:00"
+      },
+      {
+        "terminal": "T10",
+        "work_item_id": "a114165d-9c44-4bba-bdf3-0a2abeb3f001",
+        "ea_id": "QM5_10123",
+        "phase": "Q10_NEWS",
+        "symbol": "XAUUSD.DWX",
+        "db_updated_at": "2026-08-26T16:50:49+00:00"
+      }
+    ],
+    "interpretation": "The four unmatched rows are an observed DB/process divergence, not a terminal verdict. A later unsaturated operator should reconcile them before assuming four slots are genuinely occupied or safely reclaimable.",
+    "candidate_or_ea_claim_created": false,
+    "database_mutated": false
+  },
+  "actions_this_run": {
+    "edge_selected": false,
+    "build_task_claimed": false,
+    "registry_or_magic_mutated": false,
+    "ea_source_or_setfile_created": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_enqueued": false,
+    "worker_or_terminal_repair_started": false,
+    "capacity_and_divergence_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
