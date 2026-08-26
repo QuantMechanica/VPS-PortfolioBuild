@@ -18046,3 +18046,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41167,wti-coxstuart-tr,0,XTIUSD.DWX,411670000,2026-08-26,Codex governed allocator,active
 41168,xauxag-mcoxstuart-rv,0,XAUUSD.DWX,411680000,2026-08-26,Codex governed allocator,active
 41168,xauxag-mcoxstuart-rv,1,XAGUSD.DWX,411680001,2026-08-26,Codex governed allocator,active
+41169,wti-foster-record-tr,0,XTIUSD.DWX,411690000,2026-08-26,Codex governed allocator,active
