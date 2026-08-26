@@ -3,7 +3,7 @@ ea_id,slug,strategy_id,status,owner,created_at,retired_at,retired_reason,retired
 11429,carter-london-open-box-breakout-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Development,2026-06-21,,,
 11548,carter-t-m5-session-box-breakout,42530cb3-0265-534a-89cc-150f80733ff5,active,Development,2026-06-20,,,
 1128,daniel-momentum-crash-vol-scale,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Research,2026-05-18,,,
-1001,breakout-atr,TBD,active,Development,2026-04-27,,,
+1001,breakout-atr,TBD,retired,Development,2026-04-27,2026-08-26T03:11:38+00:00,OWNER Option B: retire unmaterialized legacy reservations; fresh intake only,docs/ops/evidence/2026-08-26_780c7c37_registry_gap_retirement.md
 1002,davey-eu-night,SRC01_S01,active,Development,2026-04-27,,,
 1003,davey-baseline-3bar,SRC01_S03,active,Development,2026-04-28,,,
 1004,davey-es-breakout,SRC01_S04,active,Development,2026-04-28,,,
@@ -14,8 +14,8 @@ ea_id,slug,strategy_id,status,owner,created_at,retired_at,retired_reason,retired
 1012,lien-fader,SRC04_S06,active,Development,2026-05-01,,,
 1013,lien-20day-breakout,SRC04_S07,active,Development,2026-05-01,,,
 1014,lien-channels,SRC04_S08,active,Development,2026-05-01,,,
-1015,lien-perfect-order,SRC04_S09,active,Development,2026-05-01,,,
-1016,lien-carry-trade,SRC04_S11,active,Development,2026-05-01,,,
+1015,lien-perfect-order,SRC04_S09,retired,Development,2026-05-01,2026-08-26T03:11:38+00:00,OWNER Option B: retire unmaterialized legacy reservations; fresh intake only,docs/ops/evidence/2026-08-26_780c7c37_registry_gap_retirement.md
+1016,lien-carry-trade,SRC04_S11,retired,Development,2026-05-01,2026-08-26T03:11:38+00:00,OWNER Option B: retire unmaterialized legacy reservations; fresh intake only,docs/ops/evidence/2026-08-26_780c7c37_registry_gap_retirement.md
 1018,williams-pro-go,SRC03_S16,retired,Development,2026-05-09,2026-08-21T18:52:27+00:00,OWNER-approved D1 disposition; action=RETIRE only,docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv
 1019,williams-pinch-paunch,SRC03_S17,retired,Development,2026-05-09,2026-08-21T18:52:27+00:00,OWNER-approved D1 disposition; action=RETIRE only,docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv
 1020,williams-vol-bo,SRC03_S01,retired,Development,2026-05-13,2026-08-21T18:52:27+00:00,OWNER-approved D1 disposition; action=RETIRE only,docs/ops/evidence/2026-08-21_ea_id_disposition_963.csv
