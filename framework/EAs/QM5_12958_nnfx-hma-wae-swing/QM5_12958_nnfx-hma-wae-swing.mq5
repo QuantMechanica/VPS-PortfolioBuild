@@ -145,8 +145,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasOpenPosition())
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
-   const double close2 = iClose(_Symbol, PERIOD_D1, 2);
+   MqlRates signal_bar1;
+   MqlRates signal_bar2;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, signal_bar1) ||
+      !QM_ReadBar(_Symbol, PERIOD_D1, 2, signal_bar2))
+      return false;
+   const double close1 = signal_bar1.close;
+   const double close2 = signal_bar2.close;
    const double hma1 = QM_HMA(_Symbol, PERIOD_D1, strategy_hma_period, 1, PRICE_CLOSE);
    const double hma2 = QM_HMA(_Symbol, PERIOD_D1, strategy_hma_period, 2, PRICE_CLOSE);
    if(close1 <= 0.0 || close2 <= 0.0 || hma1 <= 0.0 || hma2 <= 0.0)
@@ -228,7 +233,10 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, signal_bar))
+      return false;
+   const double close1 = signal_bar.close;
    const double hma1 = QM_HMA(_Symbol, PERIOD_D1, strategy_hma_period, 1, PRICE_CLOSE);
    if(close1 <= 0.0 || hma1 <= 0.0)
       return false;
@@ -291,6 +299,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
    if(QM_FrameworkHandleFridayClose())

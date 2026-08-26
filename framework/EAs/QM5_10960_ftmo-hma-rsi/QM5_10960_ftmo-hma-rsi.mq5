@@ -125,6 +125,8 @@ bool Strategy_RefreshVolatilityFilter()
      {
       if(adr_values[i] > 0.0)
         {
+         if(out >= ArraySize(positives))
+            return false;
          positives[out] = adr_values[i];
          out++;
         }
@@ -133,6 +135,8 @@ bool Strategy_RefreshVolatilityFilter()
    const double pct = MathMax(0.0, MathMin(100.0, strategy_min_vol_percentile));
    int percentile_index = (int)MathFloor((pct / 100.0) * (double)(positive_count - 1));
    percentile_index = MathMax(0, MathMin(positive_count - 1, percentile_index));
+   if(percentile_index >= ArraySize(positives))
+      return false;
    g_vol_threshold_adr = positives[percentile_index];
    g_vol_filter_blocks = (g_current_adr < g_vol_threshold_adr);
    g_vol_filter_ready = true;
@@ -406,6 +410,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 

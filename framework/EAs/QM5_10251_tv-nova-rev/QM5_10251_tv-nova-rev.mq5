@@ -101,6 +101,8 @@ double Strategy_PercentileRange(const MqlRates &rates[],
 
    double ranges[];
    ArrayResize(ranges, lookback);
+   if(ArraySize(ranges) < lookback)
+      return 0.0;
    for(int i = 0; i < lookback; ++i)
      {
       const MqlRates bar = rates[start_index + i];
@@ -120,6 +122,8 @@ double Strategy_PercentileRange(const MqlRates &rates[],
       idx = 0;
    if(idx >= lookback)
       idx = lookback - 1;
+   if(idx >= ArraySize(ranges))
+      return 0.0;
    return ranges[idx];
   }
 
@@ -428,6 +432,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 

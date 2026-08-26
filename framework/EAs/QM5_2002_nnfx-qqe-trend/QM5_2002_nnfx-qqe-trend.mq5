@@ -66,10 +66,13 @@ double CmfValue(const int shift)
    for(int i = 0; i < strategy_cmf_period; ++i)
      {
       const int bar = shift + i;
-      const double high = iHigh(_Symbol, _Period, bar);
-      const double low = iLow(_Symbol, _Period, bar);
-      const double close = iClose(_Symbol, _Period, bar);
-      const double volume = (double)iVolume(_Symbol, _Period, bar);
+      MqlRates rate;
+      if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, bar, rate))
+         continue;
+      const double high = rate.high;
+      const double low = rate.low;
+      const double close = rate.close;
+      const double volume = (double)rate.tick_volume;
       if(high <= low || volume <= 0.0) continue;
       const double mfm = ((close - low) - (high - close)) / (high - low);
       mfv_sum += mfm * volume;
@@ -107,7 +110,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    if(HasOpenPosition()) return false;
 
-   const double close_1 = iClose(_Symbol, _Period, 1);
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, signal_bar))
+      return false;
+   const double close_1 = signal_bar.close;
    const double hma_1 = HmaBaseline(1);
    const int qqe_1 = QqeSignal(1);
    const double cmf_1 = CmfValue(1);
@@ -168,6 +174,7 @@ void OnDeinit(const int reason) { QM_FrameworkShutdown(); }
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
@@ -191,7 +198,7 @@ void OnTick()
         }
      }
 
-   QM_EntryRequest req;
+   QM_EntryRequest req = {};
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
