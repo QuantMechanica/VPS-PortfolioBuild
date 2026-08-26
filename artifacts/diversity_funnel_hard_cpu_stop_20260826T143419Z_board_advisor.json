@@ -1,0 +1,104 @@
+{
+  "schema": "qm.diversity-funnel-cpu-stop/v1",
+  "generated_at_utc": "2026-08-26T14:34:19.7051710Z",
+  "branch": "agents/board-advisor",
+  "head_before_evidence_commit": "9b3df2775",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "metatester64_process_count_on_final_read": 6
+  },
+  "factory_snapshot": {
+    "scanned_at_utc": "2026-08-26T14:34:27+00:00",
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "running_factory_terminal_count": 7,
+    "terminal_worker_daemon_count": 10,
+    "active_terminal_reservation_count": 7,
+    "orphaned_terminal_process_count": 0
+  },
+  "farm_coordination": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "database_read_succeeded": true,
+    "pending_build_ea_tasks": 43,
+    "ea_claim_created": false,
+    "reason": "The CPU ceiling bound before selection or claim."
+  },
+  "non_duplicate_delta": {
+    "prior_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260826T140107Z_board_advisor.json",
+    "prior_generated_at_utc": "2026-08-26T14:01:07.8317844Z",
+    "prior_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "newly_active_factory_terminals": [
+      "T4",
+      "T10"
+    ],
+    "no_longer_active_factory_terminals": [
+      "T7"
+    ],
+    "prior_metatester64_process_count": 5,
+    "current_metatester64_process_count": 6,
+    "prior_database_read_result": "LOCKED",
+    "current_database_read_result": "SUCCEEDED",
+    "reason": "The governed tester cohort rotated and expanded, one additional MetaTester is running, and the farm database is readable again; the hard ceiling nevertheless remains flat at 100 percent."
+  },
+  "actions_this_run": {
+    "ea_claim": false,
+    "source_or_card_creation": false,
+    "registry_or_magic_mutation": false,
+    "ea_or_setfile_mutation": false,
+    "compile_or_build_check": false,
+    "smoke_or_backtest_run": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "evidence_commit_only": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  }
+}
