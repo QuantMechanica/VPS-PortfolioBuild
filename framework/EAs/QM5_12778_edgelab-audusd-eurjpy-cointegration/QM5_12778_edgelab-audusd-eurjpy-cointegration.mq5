@@ -451,6 +451,9 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 lifecycle sampling must precede every per-tick early-return guard.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
