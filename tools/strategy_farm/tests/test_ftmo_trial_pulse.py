@@ -41,7 +41,7 @@ def test_snapshot_age_rejects_invalid_timestamp() -> None:
     assert ftmo_trial_pulse.snapshot_age_minutes("not-a-time") is None
 
 
-def test_expected_state_parked_off_is_ok() -> None:
+def test_expected_state_parked_off_fails_when_authorized_position_disappears() -> None:
     now = datetime(2026, 7, 28, tzinfo=timezone.utc)
 
     state = ftmo_trial_pulse.assess_expected_state(
@@ -49,36 +49,51 @@ def test_expected_state_parked_off_is_ok() -> None:
     )
 
     assert state["expected_state"] == "PARKED"
-    assert state["condition"] == "parked_terminal_stopped"
-    assert state["alarm"] is None
+    assert state["condition"] == "parked_position_missing"
+    assert state["alarm"] == "ftmo_parked_position_count_changed:0!=1"
 
 
-def test_expected_state_parked_running_without_qm_magics_is_ok() -> None:
+def test_expected_state_parked_running_without_qm_position_fails() -> None:
     now = datetime(2026, 7, 28, tzinfo=timezone.utc)
 
     state = ftmo_trial_pulse.assess_expected_state(
         terminal_up=True,
         now=now,
         magics_seen=0,
+        positions_seen=0,
         expected_state="PARKED",
     )
 
-    assert state["condition"] == "parked_terminal_running_no_qm_trading"
-    assert state["alarm"] is None
+    assert state["condition"] == "parked_position_count_changed"
+    assert state["alarm"] == "ftmo_parked_position_count_changed:0!=1"
 
 
-def test_expected_state_parked_running_with_qm_magic_is_alarm() -> None:
+def test_expected_state_parked_running_with_owner_position_is_ok() -> None:
     now = datetime(2026, 7, 28, tzinfo=timezone.utc)
 
     state = ftmo_trial_pulse.assess_expected_state(
         terminal_up=True,
         now=now,
         magics_seen=1,
+        positions_seen=1,
         expected_state="PARKED",
     )
 
-    assert state["condition"] == "parked_qm_trading_active"
-    assert state["alarm"] == "ftmo_qm_magics_active_while_parked:1"
+    assert state["condition"] == "PARKED_WITH_POSITION"
+    assert state["alarm"] is None
+
+
+def test_expected_state_second_parked_position_fails_closed() -> None:
+    state = ftmo_trial_pulse.assess_expected_state(
+        terminal_up=True,
+        now=datetime(2026, 8, 26, tzinfo=timezone.utc),
+        magics_seen=1,
+        positions_seen=2,
+        expected_state="PARKED",
+    )
+
+    assert state["condition"] == "parked_position_count_changed"
+    assert state["alarm"] == "ftmo_parked_position_count_changed:2!=1"
 
 
 def test_expected_state_parked_running_fails_closed_on_unknown_magic_probe() -> None:
@@ -140,12 +155,19 @@ def test_parked_activity_requires_fresh_matching_account_position_count() -> Non
         {"fresh": True},
     )
 
-    assert matching == {"ok": True, "reason": "ok", "magics_seen": 1}
+    assert matching == {
+        "ok": True,
+        "reason": "ok",
+        "magics_seen": 1,
+        "positions_seen": 1,
+    }
     assert mismatch["ok"] is False
     assert mismatch["reason"] == "account_position_count_mismatch:0!=1"
     assert mismatch["magics_seen"] is None
+    assert mismatch["positions_seen"] is None
     assert missing_count["reason"] == "account_open_positions_invalid"
     assert missing_count["magics_seen"] is None
+    assert missing_count["positions_seen"] is None
 
 
 def test_expected_state_expiry_fails_closed() -> None:
@@ -231,6 +253,10 @@ def test_owner_park_contract_has_threshold_review_not_date_expiry() -> None:
     assert ftmo_trial_pulse.EXPECTED_STATE == "PARKED"
     assert ftmo_trial_pulse.EXPECTED_STATE_REVIEW_EXPIRES_UTC is None
     assert ftmo_trial_pulse.EXPECTED_STATE_REVIEW_TRIGGER_QUALIFIED_PAIRS == 25
+    assert ftmo_trial_pulse.EXPECTED_PARKED_POSITION_COUNT == 1
+    assert ftmo_trial_pulse.EXPECTED_PARKED_POSITION_DECISION_REFERENCE.endswith(
+        "2026-08-26_owner_q12_disposition_ftmo_position.md#2"
+    )
     assert ftmo_trial_pulse.EXPECTED_STATE_DECISION_PATH.endswith(
         "2026-08-25_owner_hma_requal_ftmo_park_q02_dead16.md"
     )

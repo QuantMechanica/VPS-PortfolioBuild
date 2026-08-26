@@ -6,8 +6,8 @@ QM EA logs only; never touches the terminal.
 
 Checks:
   1. FTMO terminal64 process and broker-confirmed QM activity match the baked
-     RUNNING/PARKED/MAINTENANCE state. PARKED permits a warm terminal but no
-     open QM positions.
+     RUNNING/PARKED/MAINTENANCE state. PARKED permits the one OWNER-bound
+     legacy position and rejects any position-count or identity change.
   2. Today's journal: disconnects / errors.
   3. QM EA logs: all 12 expected magics seen, ERROR-level events.
   4. Latest EQUITY_SNAPSHOT: equity + day_pnl vs FTMO limits
@@ -55,6 +55,16 @@ EXPECTED_STATE_DECISION_PATH = (
     "decisions/2026-08-25_owner_hma_requal_ftmo_park_q02_dead16.md"
 )
 EXPECTED_STATE_REVIEW_TRIGGER_QUALIFIED_PAIRS = 25
+
+# 2026-08-26 OWNER receipt: the already-open position is intentionally retained
+# while the trial is PARKED. This is an exact observation contract, not trading
+# authority: a replacement, second position, or different magic fails closed.
+EXPECTED_PARKED_POSITION_COUNT = 1
+EXPECTED_PARKED_POSITION_IDS = {527674048}
+EXPECTED_PARKED_POSITION_MAGICS = {107060001}
+EXPECTED_PARKED_POSITION_DECISION_REFERENCE = (
+    "decisions/2026-08-26_owner_q12_disposition_ftmo_position.md#2"
+)
 
 BASE_EQUITY = 100_000.0
 DAILY_LIMIT_PCT = 5.0     # FTMO daily loss limit
@@ -128,6 +138,7 @@ def assess_expected_state(
     terminal_up: bool | None,
     now: datetime,
     magics_seen: int | None = None,
+    positions_seen: int | None = None,
     maintenance: bool = False,
     expected_state: str = EXPECTED_STATE,
     review_expires_utc: str | None = EXPECTED_STATE_REVIEW_EXPIRES_UTC,
@@ -164,14 +175,23 @@ def assess_expected_state(
         condition, alarm = "probe_unknown", "ftmo_terminal_process_probe_unknown"
     elif expected == "PARKED":
         if not terminal_up:
-            condition, alarm = "parked_terminal_stopped", None
-        elif magics_seen is None:
+            condition, alarm = "parked_position_missing", "ftmo_parked_position_count_changed:0!=1"
+        elif magics_seen is None or positions_seen is None:
             condition, alarm = "parked_magic_probe_unknown", "ftmo_parked_magic_probe_unknown"
-        elif magics_seen > 0:
-            condition = "parked_qm_trading_active"
-            alarm = f"ftmo_qm_magics_active_while_parked:{magics_seen}"
+        elif positions_seen != EXPECTED_PARKED_POSITION_COUNT:
+            condition = "parked_position_count_changed"
+            alarm = (
+                f"ftmo_parked_position_count_changed:{positions_seen}"
+                f"!={EXPECTED_PARKED_POSITION_COUNT}"
+            )
+        elif magics_seen != len(EXPECTED_PARKED_POSITION_MAGICS):
+            condition = "parked_position_magic_changed"
+            alarm = (
+                f"ftmo_parked_position_magic_count_changed:{magics_seen}"
+                f"!={len(EXPECTED_PARKED_POSITION_MAGICS)}"
+            )
         else:
-            condition, alarm = "parked_terminal_running_no_qm_trading", None
+            condition, alarm = "PARKED_WITH_POSITION", None
     elif not terminal_up:
         condition, alarm = "missing", "ftmo_terminal_not_running"
     else:
@@ -278,23 +298,40 @@ def read_open_qm_positions(path: Path = MONITOR_DEALS_CSV) -> dict:
 def reconcile_parked_activity(activity: dict, monitor: dict | None) -> dict:
     """Bind deal-derived QM positions to a fresh account-level position count."""
     if not activity.get("ok"):
-        return {"ok": False, "reason": activity.get("reason") or "deal_activity_unknown", "magics_seen": None}
+        return {
+            "ok": False,
+            "reason": activity.get("reason") or "deal_activity_unknown",
+            "magics_seen": None,
+            "positions_seen": None,
+        }
     if not monitor or not monitor.get("fresh"):
-        return {"ok": False, "reason": "account_snapshot_missing_or_stale", "magics_seen": None}
+        return {
+            "ok": False,
+            "reason": "account_snapshot_missing_or_stale",
+            "magics_seen": None,
+            "positions_seen": None,
+        }
     open_positions = monitor.get("open_positions")
     if isinstance(open_positions, bool) or not isinstance(open_positions, int) or open_positions < 0:
-        return {"ok": False, "reason": "account_open_positions_invalid", "magics_seen": None}
+        return {
+            "ok": False,
+            "reason": "account_open_positions_invalid",
+            "magics_seen": None,
+            "positions_seen": None,
+        }
     activity_count = len(activity.get("positions") or [])
     if open_positions != activity_count:
         return {
             "ok": False,
             "reason": f"account_position_count_mismatch:{open_positions}!={activity_count}",
             "magics_seen": None,
+            "positions_seen": None,
         }
     return {
         "ok": True,
         "reason": "ok",
         "magics_seen": len(activity.get("magics") or []),
+        "positions_seen": activity_count,
     }
 
 
@@ -529,6 +566,7 @@ def main() -> int:
     }
     parked_monitor: dict | None = None
     parked_magics_seen: int | None = None
+    parked_positions_seen: int | None = None
     if EXPECTED_STATE == "PARKED" and up:
         parked_activity = read_open_qm_positions()
         parked_monitor = read_monitor_snapshot(now)
@@ -536,22 +574,48 @@ def main() -> int:
         parked_activity["ok"] = reconciliation["ok"]
         parked_activity["reason"] = reconciliation["reason"]
         parked_magics_seen = reconciliation["magics_seen"]
+        parked_positions_seen = reconciliation["positions_seen"]
     elif EXPECTED_STATE == "PARKED" and up is False:
         parked_magics_seen = 0
+        parked_positions_seen = 0
     contract = assess_expected_state(
         terminal_up=up,
         now=now,
         magics_seen=parked_magics_seen,
+        positions_seen=parked_positions_seen,
         maintenance=MAINTENANCE_FLAG.exists(),
         review_trigger_reached=bool(owner_review["reached"]),
     )
-    # PARKED has no journal/equity SLA, but it does retain a fail-closed
-    # broker-deal activity contract. Short-circuiting avoids RUNNING-only
-    # checks after that bounded PARKED assessment.
+    # PARKED retains the exact OWNER-bound position plus account/equity delta
+    # monitoring. It does not require RUNNING-only EA presence/kill-switch SLAs.
     if contract["effective_state"] != "RUNNING" or contract["alarm"]:
         if contract["alarm"]:
             alarms.append(contract["alarm"])
-        verdict = "ALARM" if alarms else "OK"
+        active_ids = {int(row["position_id"]) for row in parked_activity["positions"]}
+        active_magics = {int(value) for value in parked_activity["magics"]}
+        if parked_activity["ok"] and active_ids != EXPECTED_PARKED_POSITION_IDS:
+            alarms.append(
+                "ftmo_parked_position_identity_changed:"
+                f"{sorted(active_ids)}!={sorted(EXPECTED_PARKED_POSITION_IDS)}"
+            )
+        if parked_activity["ok"] and active_magics != EXPECTED_PARKED_POSITION_MAGICS:
+            alarms.append(
+                "ftmo_parked_position_magic_changed:"
+                f"{sorted(active_magics)}!={sorted(EXPECTED_PARKED_POSITION_MAGICS)}"
+            )
+
+        warns.extend(journal_issues())
+        parked_equity = (parked_monitor or {}).get("equity")
+        parked_day_pnl = (parked_monitor or {}).get("daily_pnl")
+        if parked_equity:
+            total_dd_pct, day_loss_pct, risk_alarms, risk_warns = assess_loss_limits(
+                float(parked_equity), float(parked_day_pnl or 0.0)
+            )
+            alarms.extend(risk_alarms)
+            warns.extend(risk_warns)
+        else:
+            total_dd_pct = day_loss_pct = None
+        verdict = "ALARM" if alarms else ("WARN" if warns else "OK")
         return publish_pulse({
             "checked_at_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "verdict": verdict,
@@ -565,6 +629,7 @@ def main() -> int:
             "expected_state_review_expired": contract["review_expired"],
             "expected_state_decision_id": EXPECTED_STATE_DECISION_ID,
             "expected_state_decision_path": EXPECTED_STATE_DECISION_PATH,
+            "parked_position_decision_reference": EXPECTED_PARKED_POSITION_DECISION_REFERENCE,
             "expected_state_review_trigger": "qualified_pairs>=25",
             "expected_state_review_trigger_qualified_pairs": owner_review["threshold"],
             "expected_state_review_trigger_reached": owner_review["reached"],
@@ -572,20 +637,21 @@ def main() -> int:
             "qualified_pairs_probe_ok": owner_review["ok"],
             "qualified_pairs_probe_reason": owner_review["reason"],
             "magics_seen": parked_magics_seen,
-            "expected_magics": 0 if contract["expected_state"] == "PARKED" else len(EXPECTED_MAGICS),
+            "expected_magics": len(EXPECTED_PARKED_POSITION_MAGICS),
+            "expected_open_positions": EXPECTED_PARKED_POSITION_COUNT,
             "active_qm_magics": parked_activity["magics"],
             "active_qm_position_ids": [
                 row["position_id"] for row in parked_activity["positions"]
             ],
             "parked_activity_evidence_ok": parked_activity["ok"],
             "parked_activity_evidence_reason": parked_activity["reason"],
-            "equity": None,
-            "day_pnl": None,
-            "equity_source": None,
+            "equity": parked_equity,
+            "day_pnl": parked_day_pnl,
+            "equity_source": "account_monitor" if parked_equity else None,
             "monitor_age_minutes": (parked_monitor or {}).get("age_minutes"),
             "open_positions": (parked_monitor or {}).get("open_positions"),
-            "total_dd_pct": None,
-            "day_loss_pct": None,
+            "total_dd_pct": total_dd_pct,
+            "day_loss_pct": day_loss_pct,
             "equity_snapshot_ts": None,
             "equity_snapshot_age_minutes": None,
             "kill_switch_day_anchor_magics": 0,
@@ -594,7 +660,7 @@ def main() -> int:
             "server_request_day_broker": None,
             "server_request_events": {},
             "alarms": alarms,
-            "warns": [],
+            "warns": warns[-10:],
         })
 
     if not up:
