@@ -18049,3 +18049,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41169,wti-foster-record-tr,0,XTIUSD.DWX,411690000,2026-08-26,Codex governed allocator,active
 41170,wti-bartels-rank-tr,0,XTIUSD.DWX,411700000,2026-08-26,Codex governed allocator,active
 41171,wti-mturnpoint-tr,0,XTIUSD.DWX,411710000,2026-08-26,Codex governed allocator,active
+41172,wti-mpettitt-shift-tr,0,XTIUSD.DWX,411720000,2026-08-26,Codex governed allocator,active
