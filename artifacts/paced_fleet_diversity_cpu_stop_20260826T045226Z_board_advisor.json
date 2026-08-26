@@ -1,0 +1,101 @@
+{
+  "schema": "qm.paced-fleet-cpu-stop/v1",
+  "observed_at_utc": "2026-08-26T04:52:26.7160432Z",
+  "branch": "agents/board-advisor",
+  "observation_base": "a32226826b6a9c163e02c2f0c0d53c7dbb531410",
+  "ceiling_percent": 97.0,
+  "resume_threshold_percent": 90.0,
+  "cpu_samples_percent": [
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0
+  ],
+  "cpu_mean_percent": 100.0,
+  "cpu_max_percent": 100.0,
+  "ceiling_hit": true,
+  "active_work_item_count": 7,
+  "active_work_items": [
+    {
+      "terminal": "T2",
+      "work_item_id": "da5dc579-3d0a-4591-80e8-dc64eb52d81e",
+      "ea_id": "QM5_10513",
+      "phase": "Q08",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "terminal": "T3",
+      "work_item_id": "11cbafc9-5452-45d6-8a11-a81bc33473c1",
+      "ea_id": "QM5_20161",
+      "phase": "Q03",
+      "symbol": "QM5_20161_XAUUSD_XAGUSD_OLS_D1"
+    },
+    {
+      "terminal": "T4",
+      "work_item_id": "f35e08ce-95f0-4a8a-8c65-f6deac55650d",
+      "ea_id": "QM5_11708",
+      "phase": "Q07",
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "terminal": "T6",
+      "work_item_id": "3a44e240-c86d-41a3-8367-ee9d7aa90436",
+      "ea_id": "QM5_12708",
+      "phase": "Q10_NEWS",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "terminal": "T7",
+      "work_item_id": "cf8eac17-4079-4d81-9ed1-fcd9f4300a93",
+      "ea_id": "QM5_12354",
+      "phase": "Q10_NEWS",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "terminal": "T8",
+      "work_item_id": "14e2dbb2-c2fc-49f3-b7e5-8e6b853d0867",
+      "ea_id": "QM5_12357",
+      "phase": "Q10_NEWS",
+      "symbol": "GDAXI.DWX"
+    },
+    {
+      "terminal": "T9",
+      "work_item_id": "504a936c-b01f-47e5-bd2e-5395570e7af1",
+      "ea_id": "QM5_10114",
+      "phase": "Q10_NEWS",
+      "symbol": "GDAXI.DWX"
+    }
+  ],
+  "continuation_candidate": {
+    "ea_id": "QM5_36005",
+    "ea_label": "QM5_36005_nnfx-coral-trendlord-woodies-harvester",
+    "symbols": [
+      "GBPJPY.DWX",
+      "EURJPY.DWX",
+      "AUDNZD.DWX"
+    ],
+    "timeframe": "D1",
+    "expected_trades_per_year_per_symbol": 25,
+    "current_ex5_exists": false,
+    "work_item_count": 0,
+    "claim_taken": false,
+    "next_work": "repeat atomic collision and CPU checks, repair hash provenance only, governed strict compile, then fixed-risk Q02 handoff"
+  },
+  "mutations": {
+    "farm_claim": false,
+    "strategy_card": false,
+    "registry": false,
+    "ea_source": false,
+    "binary": false,
+    "setfile": false,
+    "compile": false,
+    "smoke": false,
+    "q02_enqueue": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "autotrading": false,
+    "deploy_manifest": false
+  },
+  "outcome": "STOP_BACKTEST_CPU_CEILING"
+}
