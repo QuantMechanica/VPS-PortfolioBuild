@@ -1,0 +1,183 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_stop",
+  "generated_at_utc": "2026-08-26T16:31:17.7998843Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "71bf1feb1ffe6115e6637d4b1825cff63dbe6f3f",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "frontier_decision": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "research_source_sha256": "E513CC785DF2DFC7C74F2D89A03C47A9A90E00DCC9E14902839EE80946C13DF7",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260826T154621Z_board_advisor.json",
+    "durable_coverage_evidence_sha256": "E1A0D58BC556025D21541BC522EF4B31420C0295FDA610F71DCA271F0D38673E",
+    "strict_scan_pair_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_reputable_nonduplicate_pair_available": false,
+    "decision": "Do not create another scan-derived card or EA. The frozen source has no uncovered governed relationship, so the mission fallback applies."
+  },
+  "anchor_triage": {
+    "evidence_refreshed_at_utc": "2026-08-26T15:46:21.5725137Z",
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": {
+        "work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "later_terminal_state": "Q04 PASS; Q05 FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": {
+        "work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "later_terminal_state": "Q04 FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair_reconciliation": {
+    "ea": "QM5_12778_edgelab-audusd-eurjpy-cointegration",
+    "pair": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "card_g0_status": "APPROVED",
+    "basket_manifest_present": true,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "structural_repair_commit": "904748f9cdca6f4dffec621d47dd628fad40a38d",
+    "compile_successor": {
+      "work_item_id": "3cf75022-91f6-413f-aa0e-dfe24a738c05",
+      "status": "pending",
+      "created_at": "2026-08-26T14:56:47+00:00"
+    },
+    "canonical_q02": {
+      "latest_pass_work_item_id": "462e2f78-8589-48eb-8bca-25c804b67bf8",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "later_lineage": {
+      "Q03": "PASS",
+      "Q04": "PASS",
+      "Q05": "PASS",
+      "Q06": "PASS",
+      "Q07": "PASS",
+      "Q08": "pending requalification",
+      "Q09": "pending requalification",
+      "Q10": "PASS"
+    },
+    "decision": "No Q02 row was inserted because canonical Q02 PASS evidence already exists. No compile duplicate was inserted because the repaired-source compile successor is already pending."
+  },
+  "active_fx_funnel_observation": {
+    "ea_id": "QM5_20212",
+    "logical_symbol": "QM5_20212_GBPUSD_EURJPY_COINTEGRATION_D1",
+    "work_item_id": "6455c1ea-5159-4a1c-92d0-b9ee3b0078f6",
+    "phase": "Q03",
+    "status": "active",
+    "terminal": "T6",
+    "observed_at_utc": "2026-08-26T16:30:47+00:00",
+    "decision": "The paced fleet is already advancing an existing FX basket; no duplicate successor or terminal action was taken."
+  },
+  "factory_snapshot": {
+    "scanned_at_utc": "2026-08-26T16:30:47+00:00",
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "running_factory_terminal_count": 7,
+    "terminal_worker_daemon_count": 10,
+    "active_terminal_reservation_count": 7,
+    "orphaned_terminal_process_count": 0,
+    "t_live_observed_only_for_exclusion": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only_for_exclusion": true
+  },
+  "capacity_sample": {
+    "completed_at_utc": "2026-08-26T16:31:17.7998843Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      100.0,
+      100.0,
+      99.9,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 99.98,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "binding_measures": [
+      "average",
+      "maximum"
+    ],
+    "metatester64_process_count": 7
+  },
+  "non_duplicate_delta": {
+    "prior_fx_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260826T154621Z_board_advisor.json",
+    "prior_running_factory_terminals": [
+      "T2",
+      "T5",
+      "T7",
+      "T9"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "newly_active_factory_terminals": [
+      "T1",
+      "T4",
+      "T6"
+    ],
+    "prior_average_cpu_percent": 94.56,
+    "prior_maximum_cpu_percent": 99.9,
+    "current_average_cpu_percent": 99.98,
+    "current_maximum_cpu_percent": 100.0,
+    "new_lineage_finding": "QM5_12778 cannot receive the requested Q02 enqueue because it already has two canonical Q02 PASS rows and later-phase evidence; its current structural-source compile successor is already pending. QM5_20212 is concurrently active at Q03 on T6."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutation": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "The explicit backtest CPU ceiling bound before a non-duplicate pipeline mutation was available."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed_by_this_run": false
+  }
+}
