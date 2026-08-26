@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-08-26T02:34:56.697Z",
+  "branch": "agents/board-advisor",
+  "mission": "one new low-frequency commodity or energy sleeve through Q02 enqueue",
+  "cpu_counter": "Processor(_Total)\\% Processor Time",
+  "cpu_samples_percent": [
+    99.9124,
+    98.0454,
+    99.4144,
+    96.1117,
+    100.0
+  ],
+  "cpu_average_percent": 98.6968,
+  "cpu_max_percent": 100.0,
+  "cpu_ceiling_percent": 97.0,
+  "cpu_resume_percent": 90.0,
+  "cpu_ceiling_hit": true,
+  "factory_terminals_running": [
+    "T1",
+    "T2",
+    "T6",
+    "T7",
+    "T9"
+  ],
+  "factory_terminal_and_metatester_process_count": 10,
+  "duplicate_terminal_workers": {},
+  "orphaned_terminal_processes": [],
+  "mutations_withheld": [
+    "source approval",
+    "strategy card",
+    "EA ID reservation",
+    "magic allocation",
+    "EA source",
+    "compile",
+    "tester dispatch",
+    "Q02 enqueue",
+    "portfolio gate",
+    "T_Live manifest",
+    "AutoTrading"
+  ]
+}
