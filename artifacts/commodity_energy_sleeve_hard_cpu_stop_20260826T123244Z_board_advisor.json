@@ -1,0 +1,106 @@
+{
+  "schema": "qm.commodity-energy-mission-cpu-stop/v1",
+  "generated_at_utc": "2026-08-26T12:32:44.5203260Z",
+  "branch": "agents/board-advisor",
+  "head_before_evidence_commit": "9802e3ea3d2ad2cbb672b94e4e15f9e57d5de816",
+  "mission": "Create, build, and enqueue one non-duplicate structural low-frequency commodity or energy edge outside the certified XAU/SP500/NDX/XNG book",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "candidate_status": {
+    "candidate_selected": false,
+    "source_approved": false,
+    "card_created": false,
+    "reason": "The mandatory capacity preflight bound before candidate selection or any governed mutation. Existing WTI Mann-Kendall and Cox-Stuart identities were observed read-only and excluded as duplicates."
+  },
+  "factory_snapshot": {
+    "scanned_at_utc": "2026-08-26T12:32:13+00:00",
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "running_factory_terminals": [
+      "T1",
+      "T4",
+      "T5",
+      "T7",
+      "T9"
+    ],
+    "running_factory_terminal_count": 5,
+    "terminal_worker_daemon_count": 10,
+    "active_terminal_reservation_count": 5,
+    "orphaned_terminal_process_count": 0,
+    "t_live_observed_only_for_exclusion": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only_for_exclusion": true
+  },
+  "capacity_sample": {
+    "completed_at_utc": "2026-08-26T12:32:44.5203260Z",
+    "command": "Get-Counter \\\\Processor(_Total)\\\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      96.69,
+      99.9,
+      99.9,
+      99.04,
+      96.78
+    ],
+    "average_cpu_percent": 98.46,
+    "maximum_cpu_percent": 99.9,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "binding_measures": [
+      "average",
+      "maximum"
+    ],
+    "metatester64_process_count_on_final_read": 5
+  },
+  "non_duplicate_delta": {
+    "prior_capacity_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260826T121653Z_board_advisor.json",
+    "prior_sampled_at_utc": "2026-08-26T12:16:53.5661471Z",
+    "elapsed_seconds_approx": 951,
+    "prior_average_cpu_percent": 99.9,
+    "current_average_cpu_percent": 98.46,
+    "prior_maximum_cpu_percent": 100.0,
+    "current_maximum_cpu_percent": 99.9,
+    "prior_running_factory_terminals": [
+      "T1",
+      "T4",
+      "T5",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T4",
+      "T5",
+      "T7",
+      "T9"
+    ],
+    "reason_for_receipt": "A fresh mission-specific preflight records a rotated five-terminal factory cohort and a lower but still binding host load. It creates no duplicate strategy identity or queue row."
+  },
+  "actions_this_run": {
+    "read_only_branch_and_duplicate_frontier_inspection": true,
+    "new_source_or_source_approval_created": false,
+    "new_card_or_g0_decision_created": false,
+    "ea_id_or_magic_registry_mutated": false,
+    "ea_or_setfile_created": false,
+    "compile_or_build_check_run": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "portfolio_admission": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false,
+    "deploy_manifest": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  },
+  "continuation_condition": "Run a fresh five-sample whole-host CPU preflight in a later mission turn. Only if the ceiling is clear may one new candidate proceed through source approval, card extraction, allocation, strict build, and one paced non-live Q02 enqueue."
+}
