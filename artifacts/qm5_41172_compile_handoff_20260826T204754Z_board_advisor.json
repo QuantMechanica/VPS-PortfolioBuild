@@ -1,0 +1,110 @@
+{
+  "schema": "qm.source-build-compile-handoff/v1",
+  "recorded_at_utc": "2026-08-26T20:47:55Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41172",
+  "ea_label": "QM5_41172_wti-mpettitt-shift-tr",
+  "strategy_id": "MOP-PETTITT-WTI-MSHIFT-TREND-2026_S01",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "magic": 411720000,
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_Q02_STOPPED_CPU_CEILING",
+  "commits": {
+    "source_approval": "978da98a90cc26d6e7a54fd6c2366718a960b631",
+    "card_identity_and_g0": "22beec865546a3ed8ac5d6ad475db84313f4ad3f",
+    "magic_and_source_build": "b743220ebe1cf8d256303d76b62272ec4e2f8679"
+  },
+  "hashes": {
+    "mq5_sha256": "118ca6ff5a0668a2dbf85c735ffed8a5460baf935038b0e075f687c883f1b738",
+    "unbound_setfile_sha256": "beb3a6b5aec301d43cbbf8d730aabac424acc457fdb034dd5c63eef422ae9cf5",
+    "canonical_card_sha256": "e31e558ee2cb8d22ad02553248b470e1d9aba78b383ae417c5bdd0990ca182f6",
+    "ea_card_copy_sha256": "e31e558ee2cb8d22ad02553248b470e1d9aba78b383ae417c5bdd0990ca182f6"
+  },
+  "source_validation": {
+    "reference_tests": {
+      "passed": 8,
+      "failed": 0,
+      "covers": [
+        "strict_rank_permutation",
+        "all_twelve_signed_u_values",
+        "parity_and_range",
+        "unique_central_maximum",
+        "signed_long_short_symmetry",
+        "edge_and_tied_maxima_flat",
+        "two_nonduplicate_neighbor_fixtures",
+        "fixed_risk_backtest_set"
+      ]
+    },
+    "skill_build_guard": "PASS",
+    "build_guardrails": "PASS",
+    "spec_validator": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "canonical_card_lint": "PASS",
+    "ea_card_copy_lint": "PASS",
+    "card_copy_byte_identical": true
+  },
+  "compile": {
+    "ad_hoc_attempt_result": "REFUSED_NO_RETRY",
+    "ad_hoc_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_work_item_id": "de8fa2b9-f2d5-42cd-bf75-e5782c9f492b",
+    "status_at_last_successful_read": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "ceiling_percent": 97.0,
+    "samples": [
+      {
+        "sample": 1,
+        "utc": "2026-08-26T20:47:38.3360000Z",
+        "cpu_percent": 97.9
+      },
+      {
+        "sample": 2,
+        "utc": "2026-08-26T20:47:42.3690000Z",
+        "cpu_percent": 99.64
+      },
+      {
+        "sample": 3,
+        "utc": "2026-08-26T20:47:46.3930000Z",
+        "cpu_percent": 99.68
+      },
+      {
+        "sample": 4,
+        "utc": "2026-08-26T20:47:50.3980000Z",
+        "cpu_percent": 99.93
+      },
+      {
+        "sample": 5,
+        "utc": "2026-08-26T20:47:54.3990000Z",
+        "cpu_percent": 98.54
+      }
+    ],
+    "average_cpu_percent": 99.14,
+    "maximum_cpu_percent": 99.93,
+    "ceiling_hit": true,
+    "process_snapshot": {
+      "utc": "2026-08-26T20:47:33.2482612Z",
+      "terminal64_count": 8,
+      "metatester64_count": 6
+    }
+  },
+  "q02": {
+    "enqueued": false,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_COMPILE_ACTIVATION_HELD",
+      "BACKTEST_CPU_CEILING_HIT"
+    ]
+  },
+  "safety": {
+    "terminal_processes_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
+
