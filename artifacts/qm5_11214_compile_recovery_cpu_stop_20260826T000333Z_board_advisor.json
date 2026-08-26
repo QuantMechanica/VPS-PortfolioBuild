@@ -1,0 +1,49 @@
+{
+  "schema": "qm.diversity-infra-recovery-cpu-stop/v1",
+  "generated_at_utc": "2026-08-26T00:03:33Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "4e75680ab22928780ea658cda8322f49b49763bc",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "selected_recovery": {
+    "ea_id": "QM5_11214",
+    "slug": "ft-clucmay",
+    "asset_diversity": "FX-first basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX; XAUUSD.DWX comparison sleeve",
+    "structural_contract": "approved fixed-rule M5 reversal; no ML or banned indicator",
+    "prior_build_evidence": "docs/ops/evidence/0252ecca_qm5_11214_ft_clucmay_source_ready_compile_hold_2026-08-25.md",
+    "current_work_item_query": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_11214",
+    "current_work_item_count": 0,
+    "interpretation": "The diverse source-ready EA still has no Q02/Q03 lineage to duplicate; its next useful action remains one governed strict compile followed by review and Q02 enqueue."
+  },
+  "capacity_sample": {
+    "command": "Get-Counter '\\\\Processor(_Total)\\\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [97.39, 99.90, 99.81, 100.00, 99.90],
+    "average_percent": 99.40,
+    "maximum_percent": 100.00,
+    "hard_ceiling_percent": 97.00,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "prior_source_ready_evidence": "docs/ops/evidence/0252ecca_qm5_11214_ft_clucmay_source_ready_compile_hold_2026-08-25.md",
+    "prior_evidence_scope": "source implementation and compile interlock/database-lock diagnosis",
+    "current_evidence_scope": "fresh capacity-bound recovery admission check plus current zero-work-item confirmation",
+    "reason_for_receipt": "This checks the exact diverse recovery frontier before mutation and proves that neither a duplicate work item nor a capacity-safe compile/backtest action was available in this run."
+  },
+  "actions_this_run": {
+    "farm_database_access": "read_only",
+    "farm_claim": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "source_card_ea_or_registry_mutation": false,
+    "evidence_commit_only": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "continuation_condition": "Retry the governed QM5_11214 compile recovery only after a fresh five-sample whole-host CPU guard is below the governed resume threshold."
+}
