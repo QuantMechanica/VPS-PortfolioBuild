@@ -1235,7 +1235,7 @@ _REL_SCRIPT = """
 """
 
 
-_DECISION_SCRIPT = """
+_DECISION_SCRIPT = r"""
 (function(){
   var root=document.getElementById('owner-decisions');
   if(!root)return;
