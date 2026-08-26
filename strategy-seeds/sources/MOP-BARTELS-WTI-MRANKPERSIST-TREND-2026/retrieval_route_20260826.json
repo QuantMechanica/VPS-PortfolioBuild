@@ -1,0 +1,63 @@
+{
+  "schema": "qm.trading-source-retrieval.v1",
+  "source_id": "MOP-BARTELS-WTI-MRANKPERSIST-TREND-2026",
+  "router": {
+    "command": "python C:\\Users\\Administrator\\.codex\\skills\\qm\\qm-read-trading-source\\scripts\\read_trading_source.py https://github.com/cran/randtests --format json",
+    "status": "ROUTE_GITHUB_API",
+    "adapter": "github",
+    "route": "public GitHub API",
+    "url": "https://github.com/cran/randtests"
+  },
+  "retrieval_started_at_utc": "2026-08-26T17:54:51.9503014Z",
+  "retrieval_finished_at_utc": "2026-08-26T17:54:52.7116052Z",
+  "repository": "cran/randtests",
+  "commit_sha": "7244d86764445e657634c9ae4d59ce942a5fcbc8",
+  "commit_committer_date_utc": "2024-04-24T02:35:52Z",
+  "files": [
+    {
+      "path": "DESCRIPTION",
+      "api_url": "https://api.github.com/repos/cran/randtests/contents/DESCRIPTION?ref=7244d86764445e657634c9ae4d59ce942a5fcbc8",
+      "git_blob_sha": "8ddbc89bf39f0a7a4cdea200db7615266a91a0ab",
+      "sha256": "BFBB156D935D9C37E746AB295174BD855E05C7C6DDB8517FD62D5C912B76FCC6",
+      "size_bytes": 872,
+      "read_complete": true
+    },
+    {
+      "path": "R/bartels.rank.test.R",
+      "api_url": "https://api.github.com/repos/cran/randtests/contents/R/bartels.rank.test.R?ref=7244d86764445e657634c9ae4d59ce942a5fcbc8",
+      "git_blob_sha": "bdbf3b945ebef7515fbdcce57b69a795b162ee7c",
+      "sha256": "D1F33B545F49AF90E36EC486CB36FCC0CB6CA0F1FBD148F3A8C73DA163EDBE6B",
+      "size_bytes": 2607,
+      "read_complete": true
+    },
+    {
+      "path": "man/bartels.rank.test.Rd",
+      "api_url": "https://api.github.com/repos/cran/randtests/contents/man/bartels.rank.test.Rd?ref=7244d86764445e657634c9ae4d59ce942a5fcbc8",
+      "git_blob_sha": "b2ec4c9045a338d59e0f09dd6144ecbd814b8a93",
+      "sha256": "37388DBB0F90C727676AB1F22E90784B4A2D509F877BA066545424E4A3E0F14A",
+      "size_bytes": 5436,
+      "read_complete": true
+    }
+  ],
+  "crossref_metadata": {
+    "api_url": "https://api.crossref.org/works/10.1080/01621459.1982.10477764",
+    "doi": "10.1080/01621459.1982.10477764",
+    "title": "The Rank Version of von Neumann's Ratio Test for Randomness",
+    "author": "Robert Bartels",
+    "container_title": "Journal of the American Statistical Association",
+    "volume": "77",
+    "issue": "377",
+    "pages": "40-46",
+    "published": "1982-03",
+    "publisher": "Informa UK Limited",
+    "record_checked_at_utc": "2026-08-26T17:53:48.8881158Z",
+    "body_read_complete": false
+  },
+  "safety": {
+    "authentication_used": false,
+    "third_party_code_executed": false,
+    "binary_downloaded": false,
+    "raw_source_republished": false
+  }
+}
+
