@@ -90,6 +90,13 @@ def _sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _canonical_bytes(value: Any) -> bytes:
+    return (
+        json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+        + "\n"
+    ).encode("utf-8")
+
+
 def extract_sealed_rule_text(plan_doc: Path = PLAN_DOC) -> str:
     """Return the verbatim DL-089 §2 walk-forward selection rule, SHA-pinned.
 
@@ -278,6 +285,121 @@ def build_plan(*, ea_id: str, ea_label: str, symbol: str, timeframe: str,
     return plan
 
 
+def build_plan_from_declaration(
+    *,
+    ea_id: str,
+    ea_label: str,
+    symbol: str,
+    timeframe: str,
+    base_setfile: Path,
+    output_dir: Path,
+    declaration: dict[str, Any],
+    subject_ea_id: str,
+    param_grid: Path | None = None,
+    plan_doc: Path = PLAN_DOC,
+) -> dict[str, Any]:
+    """Bind an instrumented EA to an already sealed DL-089 declaration.
+
+    Q12 is declared against the incumbent/subject identity, while its governed
+    measurement executable is an ``_opt`` sibling with a different EA id.  The
+    old manual planner derived cell UUIDs from the executable id, so using it
+    directly would silently materialize a different experiment.  This adapter
+    validates every declared annual/WF cell and then retains the declaration's
+    exact keys and UUIDs while using the sibling only for executable/setfile
+    identity.
+    """
+
+    if declaration.get("schema") != "qm.dl089-pattern-candidate-declaration/v1":
+        raise CensusError("not a DL-089 pattern candidate declaration")
+    if declaration.get("revision") != "dl089-annual-wf-cells-v1":
+        raise CensusError("unsupported DL-089 declaration revision")
+    if str(declaration.get("ea_id") or "").upper() != str(subject_ea_id).upper():
+        raise CensusError("declaration subject EA mismatch")
+    if str(declaration.get("symbol") or "").upper() != str(symbol).upper():
+        raise CensusError("declaration symbol mismatch")
+
+    declared_candidates = declaration.get("candidates")
+    declared_annual = declaration.get("annual_cells")
+    declared_wf = declaration.get("wf_cells")
+    if not isinstance(declared_candidates, list) or len(declared_candidates) != DECLARED_TRIAL_COUNT:
+        raise CensusError("declaration must contain exactly 154 candidates")
+    if not isinstance(declared_annual, list) or len(declared_annual) != 1085:
+        raise CensusError("declaration must contain exactly 1085 annual cells")
+    if not isinstance(declared_wf, list) or len(declared_wf) != len(WF_WINDOWS):
+        raise CensusError("declaration must contain exactly four WF cells")
+
+    hash_checks = (
+        ("candidate_manifest_sha256", declared_candidates),
+        ("annual_cells_sha256", declared_annual),
+        ("wf_cells_sha256", declared_wf),
+    )
+    for field, value in hash_checks:
+        observed = _sha256_bytes(_canonical_bytes(value))
+        if str(declaration.get(field) or "").lower() != observed:
+            raise CensusError(f"declaration {field} mismatch")
+    declaration_preimage = dict(declaration)
+    expected_declaration_sha = str(declaration_preimage.pop("declaration_sha256", "")).lower()
+    observed_declaration_sha = _sha256_bytes(_canonical_bytes(declaration_preimage))
+    if expected_declaration_sha != observed_declaration_sha:
+        raise CensusError("declaration_sha256 mismatch")
+
+    plan = build_plan(
+        ea_id=ea_id,
+        ea_label=ea_label,
+        symbol=symbol,
+        timeframe=timeframe,
+        base_setfile=base_setfile,
+        output_dir=output_dir,
+        param_grid=param_grid,
+        plan_doc=plan_doc,
+    )
+    program_id = str(declaration.get("program_id") or "")
+    if not program_id:
+        raise CensusError("declaration program_id missing")
+
+    bound_cells: list[dict[str, Any]] = []
+    for generated, sealed in zip(plan["cells"], declared_annual, strict=True):
+        expected_key = f"{program_id}:{sealed.get('year')}:{sealed.get('arm')}"
+        expected_id = str(uuid.uuid5(CELL_NAMESPACE, expected_key))
+        if str(sealed.get("cell_key") or "") != expected_key:
+            raise CensusError(f"declared annual cell key mismatch: {expected_key}")
+        if str(sealed.get("work_item_id") or "") != expected_id:
+            raise CensusError(f"declared annual cell UUID mismatch: {expected_key}")
+        for field in ("year", "from_date", "to_date", "arm", "direction", "predicate_id"):
+            if sealed.get(field) != generated.get(field):
+                raise CensusError(f"declared annual cell {field} mismatch: {expected_key}")
+        cell = dict(generated)
+        cell["cell_key"] = expected_key
+        cell["work_item_id"] = expected_id
+        bound_cells.append(cell)
+
+    for sealed, window in zip(declared_wf, WF_WINDOWS, strict=True):
+        expected_key = f"{program_id}:wf{window['step']}:combo:{window['test_year']}"
+        if str(sealed.get("cell_key") or "") != expected_key:
+            raise CensusError(f"declared WF cell key mismatch: {expected_key}")
+        if str(sealed.get("work_item_id") or "") != str(uuid.uuid5(CELL_NAMESPACE, expected_key)):
+            raise CensusError(f"declared WF cell UUID mismatch: {expected_key}")
+        if (
+            sealed.get("wf_step") != window["step"]
+            or sealed.get("select_years") != window["select_years"]
+            or sealed.get("test_year") != window["test_year"]
+        ):
+            raise CensusError(f"declared WF window mismatch: {expected_key}")
+
+    selection = declaration.get("selection_contract") or {}
+    if str(selection.get("sealed_rule_sha256") or "") != SEALED_RULE_SHA256:
+        raise CensusError("declaration sealed selection rule mismatch")
+    if declaration.get("declared_trial_count") != DECLARED_TRIAL_COUNT:
+        raise CensusError("declaration trial count mismatch")
+
+    plan["program_id"] = program_id
+    plan["subject_ea_id"] = str(subject_ea_id)
+    plan["declaration_sha256"] = observed_declaration_sha
+    plan["declaration_revision"] = declaration["revision"]
+    plan["cells"] = bound_cells
+    return plan
+
+
 def _render_cell_setfile(base_setfile: Path, cell: dict[str, Any]) -> str:
     base_text, _ = _parse_setfile(base_setfile)
     rendered = _replace_inputs(base_text, cell["inputs"])
@@ -335,7 +457,10 @@ def _q02_pass(conn: sqlite3.Connection, ea_id: str) -> dict[str, Any]:
 
 def enqueue(plan: dict[str, Any], *, db_path: Path, ledger_path: Path,
             harness_id: str = HARNESS_WORK_ITEM_ID,
-            q02_ea_id: str | None = None) -> dict[str, Any]:
+            q02_ea_id: str | None = None,
+            parent_work_item_id: str | None = None,
+            declaration_sha256: str | None = None,
+            runner_revision: str | None = None) -> dict[str, Any]:
     if plan.get("schema") != SCHEMA or plan.get("planned_trials") != 1085:
         raise CensusError("invalid or incomplete census plan")
     conn = sqlite3.connect(db_path, timeout=60)
@@ -354,6 +479,12 @@ def enqueue(plan: dict[str, Any], *, db_path: Path, ledger_path: Path,
                 "predicate_id", "setfile_path", "from_date", "to_date"
             )} for cell in plan["cells"]],
         })
+        if parent_work_item_id:
+            ledger["q12_work_item_id"] = str(parent_work_item_id)
+        if declaration_sha256:
+            ledger["q12_declaration_sha256"] = str(declaration_sha256)
+        if runner_revision:
+            ledger["matrix_runner_revision"] = str(runner_revision)
         _atomic_write(ledger_path, json.dumps(ledger, indent=2, sort_keys=True) + "\n")
 
         base_setfile = Path(plan["base_setfile_path"])
@@ -381,14 +512,20 @@ def enqueue(plan: dict[str, Any], *, db_path: Path, ledger_path: Path,
                 "planned_trials": 1085,
                 "ledger_path": str(ledger_path.resolve()),
             }
+            if parent_work_item_id:
+                payload["q12_work_item_id"] = str(parent_work_item_id)
+            if declaration_sha256:
+                payload["q12_declaration_sha256"] = str(declaration_sha256)
+            if runner_revision:
+                payload["matrix_runner_revision"] = str(runner_revision)
             cur = conn.execute(
                 """INSERT OR IGNORE INTO work_items
                    (id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
                     attempt_count,parent_task_id,evidence_path,claimed_by,
                     payload_json,created_at,updated_at)
-                   VALUES (?,?,?,?,?,?,'pending',NULL,0,NULL,NULL,NULL,?,?,?)""",
+                   VALUES (?,?,?,?,?,?,'pending',NULL,0,?,NULL,NULL,?,?,?)""",
                 (cell["work_item_id"], "backtest", PHASE, plan["ea_id"],
-                 plan["symbol"], cell["setfile_path"],
+                 plan["symbol"], cell["setfile_path"], parent_work_item_id,
                  json.dumps(payload, sort_keys=True), now, now),
             )
             if cur.rowcount == 1:

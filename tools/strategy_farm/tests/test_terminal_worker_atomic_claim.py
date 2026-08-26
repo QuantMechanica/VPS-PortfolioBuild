@@ -47,6 +47,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
         payload: dict[str, object] | None = None,
         ea_id: str = "QM5_9999",
         setfile_path: str = "dummy.set",
+        kind: str = "backtest",
     ) -> None:
         farmctl.init_db(root)
         now = farmctl.utc_now()
@@ -58,11 +59,12 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                    attempt_count, parent_task_id, evidence_path, claimed_by,
                    payload_json, created_at, updated_at)
                 VALUES
-                  (?, 'backtest', ?, ?, ?, ?, ?, ?,
+                  (?, ?, ?, ?, ?, ?, ?, ?,
                    0, NULL, NULL, ?, ?, ?, ?)
                 """,
                 (
                     item_id,
+                    kind,
                     phase,
                     ea_id,
                     symbol,
@@ -98,6 +100,59 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 rows = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='wi-1'").fetchall()
             self.assertEqual(rows[0][0], "active")
             self.assertIn(rows[0][1], {"T1", "T2"})
+
+    def test_generic_worker_skips_declared_dl089_matrix_row(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "dl089-q12",
+                "GBPUSD.DWX",
+                phase="Q12",
+                kind="analytic",
+                payload={
+                    "role": "PATTERN",
+                    "routing_revision": "dl089-annual-wf-cells-v1",
+                    "execution_lane": "GOVERNED_ANALYTIC_DISPATCH",
+                },
+                ea_id="QM5_10706",
+            )
+            self._insert_work_item(root, "ordinary", "EURUSD.DWX", phase="P3")
+
+            claimed = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(claimed.get("claimed"), claimed)
+            self.assertEqual(claimed["item"]["id"], "ordinary")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status,claimed_by FROM work_items WHERE id='dl089-q12'"
+                ).fetchone()
+            self.assertEqual(row, ("pending", None))
+
+    def test_specific_generic_worker_rejects_declared_dl089_matrix_row(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "dl089-target",
+                "GBPUSD.DWX",
+                phase="Q12",
+                kind="analytic",
+                payload={
+                    "role": "PATTERN",
+                    "routing_revision": "dl089-annual-wf-cells-v1",
+                    "execution_lane": "GOVERNED_ANALYTIC_DISPATCH",
+                },
+                ea_id="QM5_10706",
+            )
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.write_text("{}", encoding="ascii")
+
+            refused = terminal_worker.claim_specific_atomic(root, "T2", "dl089-target")
+
+            self.assertFalse(refused.get("claimed"))
+            self.assertEqual(refused.get("reason"), "governed_analytic_dispatch_required")
+            self.assertEqual(refused.get("required_runner"), "dl089_matrix_service")
 
     def test_normal_claim_refuses_existing_factory_off_without_db_mutation(self) -> None:
         with self._root() as tmp:

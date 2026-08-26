@@ -95,6 +95,9 @@ def _sha256(path: Path) -> str:
 def _materialized_text(binding: Mapping[str, Any]) -> str | None:
     """Read currently materialized bound text without restoring archived bytes."""
 
+    inline = binding.get("text")
+    if isinstance(inline, str):
+        return inline
     path = Path(str(binding.get("path") or ""))
     if not path.is_file():
         return None

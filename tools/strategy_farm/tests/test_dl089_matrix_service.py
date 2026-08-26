@@ -1,0 +1,304 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import sqlite3
+from pathlib import Path
+
+from tools.strategy_farm import dl089_matrix_service as service
+from tools.strategy_farm import farmctl
+from tools.strategy_farm import optimization_fork_driver as routing
+
+
+def _sha(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _sibling(repo: Path) -> dict[str, Path]:
+    label = "QM5_41161_tv-mon-ls-opt"
+    ea_dir = repo / "framework" / "EAs" / label
+    sets = ea_dir / "sets"
+    docs = ea_dir / "docs"
+    sets.mkdir(parents=True)
+    docs.mkdir()
+    source = ea_dir / f"{label}.mq5"
+    source.write_text(
+        "\n".join(
+            [
+                "input int opt_pp_buy1 = 0;",
+                "input int opt_pp_buy2 = 0;",
+                "input int opt_pp_buy3 = 0;",
+                "input int opt_pp_sell1 = 0;",
+                "input int opt_pp_sell2 = 0;",
+                "input int opt_pp_sell3 = 0;",
+                "// QM_PatternPermission",
+                "bool gate = QM_PatternPermissionEvaluate();",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    binary = ea_dir / f"{label}.ex5"
+    binary.write_bytes(b"compiled-fixture")
+    setfile = sets / f"{label}_GBPUSD.DWX_H1_backtest.set"
+    setfile.write_text(
+        "\n".join(
+            [
+                "; environment: backtest",
+                "qm_ea_id=41161",
+                "RISK_FIXED=1000",
+                "RISK_PERCENT=0",
+                "qm_news_stale_max_hours=336",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    card = docs / "strategy_card.md"
+    card.write_text(
+        """---
+ea_id: QM5_41161
+slug: tv-mon-ls-opt
+parent_ea_id: QM5_10706
+g0_status: APPROVED
+period: H1
+target_symbols: [GBPUSD.DWX]
+---
+""",
+        encoding="utf-8",
+    )
+    return {
+        "ea_dir": ea_dir,
+        "source": source,
+        "binary": binary,
+        "setfile": setfile,
+        "card": card,
+    }
+
+
+def _insert_fixture_rows(db: Path, files: dict[str, Path], tmp_path: Path) -> str:
+    compile_evidence = tmp_path / "compile_evidence.json"
+    compile_evidence.write_text('{"verdict":"COMPILE_OK"}\n', encoding="utf-8")
+    q02_evidence = tmp_path / "q02_summary.json"
+    q02_evidence.write_text("{}\n", encoding="utf-8")
+    harness_evidence = tmp_path / "harness.csv"
+    harness_evidence.write_text("case,status\nfixture,PASS\n", encoding="utf-8")
+
+    declaration = routing._pattern_candidate_declaration(
+        parent={"ea_id": "QM5_10706", "symbol": "GBPUSD.DWX"},
+        parent_bindings={
+            "source": {"path": str(files["source"])},
+            "setfile": {"path": str(files["setfile"])},
+        },
+    )
+    payload = {
+        "schema": routing.SCHEMA,
+        "role": "PATTERN",
+        "phase": "Q12",
+        "gate_contract_version": "v4",
+        "routing_revision": routing.PATTERN_DECLARATION_REVISION,
+        "execution_lane": "GOVERNED_ANALYTIC_DISPATCH",
+        "activation_state": "READY",
+        "machine_reason": "PREREQUISITES_GREEN",
+        "pattern_filter_sweep": declaration,
+    }
+    now = "2026-08-26T10:00:00+00:00"
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+              payload_json,created_at,updated_at,gate_contract_version
+            ) VALUES(?,?,?,?,?,?,'pending',NULL,0,?,?,?,'v4')
+            """,
+            (
+                "q12-declared",
+                "analytic",
+                "Q12",
+                "QM5_10706",
+                "GBPUSD.DWX",
+                str(files["setfile"]),
+                json.dumps(payload, sort_keys=True),
+                now,
+                now,
+            ),
+        )
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+              evidence_path,payload_json,created_at,updated_at,gate_contract_version,
+              ex5_sha256,mq5_sha256
+            ) VALUES(?,?,?,?,?,?,'done','COMPILE_OK',0,?, '{}',?,?,'v4',?,?)
+            """,
+            (
+                "compile-ok",
+                "utility",
+                "COMPILE_EA",
+                "QM5_41161",
+                "",
+                str(files["source"]),
+                str(compile_evidence),
+                now,
+                now,
+                _sha(files["binary"]),
+                _sha(files["source"]),
+            ),
+        )
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+              evidence_path,payload_json,created_at,updated_at,gate_contract_version
+            ) VALUES(?,?,?,?,?,?,'done','PASS',0,?,'{}',?,?,'v4')
+            """,
+            (
+                "q02-pass",
+                "backtest",
+                "Q02",
+                "QM5_41161",
+                "GBPUSD.DWX",
+                str(files["setfile"]),
+                str(q02_evidence),
+                now,
+                now,
+            ),
+        )
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+              evidence_path,payload_json,created_at,updated_at,gate_contract_version
+            ) VALUES(?,?,?,?,?,?,'done','HARNESS_OK',0,?,'{}',?,?,'legacy')
+            """,
+            (
+                routing.HARNESS_ROOT_WORK_ITEM_ID,
+                "harness",
+                routing.HARNESS_PHASE,
+                routing.HARNESS_EA_ID,
+                "EURUSD.DWX",
+                str(files["setfile"]),
+                str(harness_evidence),
+                now,
+                now,
+            ),
+        )
+        conn.commit()
+    return declaration["declaration_sha256"]
+
+
+def test_matrix_service_materializes_declared_cells_with_bounded_window(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    files = _sibling(repo)
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    db = root / farmctl.DB_REL
+    declaration_sha = _insert_fixture_rows(db, files, tmp_path)
+    artifact_root = tmp_path / "matrix_artifacts"
+
+    with farmctl.connect(root) as conn:
+        result = service.service_pending(
+            conn,
+            db_path=db,
+            repo_root=repo,
+            artifact_root=artifact_root,
+            apply=True,
+            q12_work_item_ids=["q12-declared"],
+            window=8,
+        )
+
+    assert result["materialized"][0]["enqueue"]["inserted"] == 1085
+    assert result["materialized"][0]["measurement_ea_id"] == "QM5_41161"
+    registration = Path(result["materialized"][0]["registration_path"])
+    assert registration.is_file()
+    registration_payload = json.loads(registration.read_text(encoding="utf-8"))
+    assert registration_payload["declaration_sha256"] == declaration_sha
+    neutral_setfile = Path(registration_payload["measurement_bindings"]["setfile"]["path"])
+    neutral_text = neutral_setfile.read_text(encoding="utf-8")
+    assert neutral_setfile.is_file()
+    for key in service.census.SET_KEYS:
+        assert f"{key}=0" in neutral_text
+    assert "RISK_FIXED=1000" in neutral_text
+    assert "RISK_PERCENT=0" in neutral_text
+    assert "qm_news_stale_max_hours=336" in neutral_text
+
+    with sqlite3.connect(db) as conn:
+        conn.row_factory = sqlite3.Row
+        cells = conn.execute(
+            "SELECT * FROM work_items WHERE phase='OPT_CENSUS' ORDER BY created_at,id"
+        ).fetchall()
+        assert len(cells) == 1085
+        assert {row["ea_id"] for row in cells} == {"QM5_41161"}
+        assert {row["parent_task_id"] for row in cells} == {"q12-declared"}
+        flagged = 0
+        for row in cells:
+            payload = json.loads(row["payload_json"])
+            assert payload["q12_work_item_id"] == "q12-declared"
+            assert payload["q12_declaration_sha256"] == declaration_sha
+            if payload.get("priority_track") is True:
+                flagged += 1
+        assert flagged == 8
+        hold = conn.execute(
+            "SELECT hold_code,active,release_on_restart FROM work_item_holds "
+            "WHERE work_item_id='q12-declared'"
+        ).fetchone()
+        assert tuple(hold) == (service.ROLLOUT_HOLD_CODE, 1, 1)
+
+
+def test_recovery_successor_preserves_declaration_and_not_source_verdict(tmp_path: Path) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    db = root / farmctl.DB_REL
+    files = _sibling(tmp_path / "repo")
+    declaration = routing._pattern_candidate_declaration(
+        parent={"ea_id": "QM5_10706", "symbol": "GBPUSD.DWX"},
+        parent_bindings={
+            "source": {"path": str(files["source"])},
+            "setfile": {"path": str(files["setfile"])},
+        },
+    )
+    payload = {
+        "schema": routing.SCHEMA,
+        "role": "PATTERN",
+        "phase": "Q12",
+        "routing_revision": routing.PATTERN_DECLARATION_REVISION,
+        "execution_lane": "GOVERNED_ANALYTIC_DISPATCH",
+        "activation_state": "READY",
+        "pattern_filter_sweep": declaration,
+        "evidence_provenance": "real_mt5",
+    }
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+              evidence_path,payload_json,created_at,updated_at,gate_contract_version
+            ) VALUES('bad-pass','analytic','Q12','QM5_10706','GBPUSD.DWX',?,
+                     'done','PASS',0,'bad-summary.json',?,? ,?,'v4')
+            """,
+            (str(files["setfile"]), json.dumps(payload, sort_keys=True),
+             "2026-08-26T10:00:00+00:00", "2026-08-26T10:04:00+00:00"),
+        )
+        conn.commit()
+    evidence = tmp_path / "owner_template.md"
+    evidence.write_text("pending OWNER disposition\n", encoding="utf-8")
+
+    with farmctl.connect(root) as conn:
+        result = service.append_recovery_successor(
+            conn,
+            source_work_item_id="bad-pass",
+            evidence_path=evidence,
+            apply=True,
+        )
+        conn.commit()
+
+    with sqlite3.connect(db) as conn:
+        conn.row_factory = sqlite3.Row
+        source = conn.execute("SELECT status,verdict,evidence_path FROM work_items WHERE id='bad-pass'").fetchone()
+        successor = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (result["successor_work_item_id"],)
+        ).fetchone()
+    assert tuple(source) == ("done", "PASS", "bad-summary.json")
+    assert (successor["status"], successor["verdict"]) == ("pending", None)
+    successor_payload = json.loads(successor["payload_json"])
+    assert successor_payload["pattern_filter_sweep"] == declaration
+    assert successor_payload["matrix_runner"]["recovery_of_work_item_id"] == "bad-pass"

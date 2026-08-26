@@ -1642,6 +1642,28 @@ def _claim_queue_may_need_mutation(root: Path, terminal: str) -> bool:
         return True
 
 
+def _governed_analytic_claim_block(
+    item: sqlite3.Row | dict[str, Any], payload: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Reject control-plane declarations from the one-setfile terminal lane."""
+
+    dl089 = payload.get("routing_revision") == "dl089-annual-wf-cells-v1"
+    governed = (
+        str(_work_item_value(item, "kind", "") or "").lower() == "analytic"
+        and payload.get("execution_lane") == "GOVERNED_ANALYTIC_DISPATCH"
+    )
+    if not (dl089 or governed):
+        return None
+    return {
+        "claimed": False,
+        "reason": "governed_analytic_dispatch_required",
+        "item_id": _work_item_value(item, "id"),
+        "routing_revision": payload.get("routing_revision"),
+        "execution_lane": payload.get("execution_lane"),
+        "required_runner": "dl089_matrix_service" if dl089 else "governed_analytic_service",
+    }
+
+
 def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     """Atomically claim one pending work_item for a terminal.
 
@@ -2239,6 +2261,10 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                     }
 
                 payload = _json_loads(item["payload_json"])
+                analytic_block = _governed_analytic_claim_block(item, payload)
+                if analytic_block is not None:
+                    conn.commit()
+                    return analytic_block
                 avoid_terminals = _payload_avoid_terminals(payload)
                 if terminal.upper() in avoid_terminals:
                     conn.commit()

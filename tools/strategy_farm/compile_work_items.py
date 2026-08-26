@@ -131,6 +131,18 @@ QM5_41163_MAE_REPAIR_AUTHORITY = (
 QM5_41163_MAE_REPAIR_EA_LABELS = frozenset({
     "QM5_41163_williams-18ma-outside-bar-entry-d1-opt",
 })
+# Exact authority for the two DL-089 measurement siblings whose initial compile
+# receipts preceded the final source normalization commit.  The P0 dispatch
+# repair requires current source-bound binaries before it may enqueue any real
+# matrix cell; this grants only append-only COMPILE_EA successors for those two
+# labels and no gate/backtest authority.
+DL089_MATRIX_DISPATCH_REPAIR_AUTHORITY = (
+    "router_ops_issue:78f6404a-cfc5-43da-befb-1d0b6fa58376"
+)
+DL089_MATRIX_DISPATCH_REPAIR_EA_LABELS = frozenset({
+    "QM5_41161_tv-mon-ls-opt",
+    "QM5_41162_ohlc-daily-squeeze-reversal-d1-opt",
+})
 # Exact remediation authority for the 2026-08-24 ROT-violation revert
 # (router task b63eaead-7890-4be4-b8e7-0edea3fe6a85). Both EAs had ad-hoc
 # EX5 binaries committed after an explicit LIVE_FACTORY_AD_HOC_COMPILE_REFUSED
@@ -405,6 +417,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_41163_MAE_REPAIR_AUTHORITY
             and ea_label in QM5_41163_MAE_REPAIR_EA_LABELS
+        )
+        or (
+            authority == DL089_MATRIX_DISPATCH_REPAIR_AUTHORITY
+            and ea_label in DL089_MATRIX_DISPATCH_REPAIR_EA_LABELS
         )
     )
     if statically_authorized:

@@ -46,8 +46,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional
 
-from tools.strategy_farm import opt_census as census
-from tools.strategy_farm.opt_census import CensusError
+try:
+    from tools.strategy_farm import opt_census as census
+    from tools.strategy_farm.opt_census import CensusError
+except ModuleNotFoundError:
+    import opt_census as census
+    from opt_census import CensusError
 
 DRIVER_SCHEMA = "qm.opt-census-driver.v1"
 GRID_SCHEMA = "qm.opt-param-grid.v1"
@@ -70,9 +74,10 @@ STATE_ENQUEUED = "ENQUEUED"
 STATE_WF_COMBO = "WF_COMBO_MEASURING"
 STATE_NUMERIC = "NUMERIC_MEASURING"
 STATE_FINAL_FULLWINDOW = "FINAL_FULLWINDOW_MEASURING"
+STATE_PATTERN_READY = "PATTERN_SELECTION_READY"
 STATE_READY = "READY_FOR_Q15"
 STATE_UNSTABLE = "WF_UNSTABLE"
-TERMINAL_STATES = frozenset({STATE_READY, STATE_UNSTABLE})
+TERMINAL_STATES = frozenset({STATE_PATTERN_READY, STATE_READY, STATE_UNSTABLE})
 
 
 # ===========================================================================
@@ -637,7 +642,15 @@ def _handle_enqueued(conn, ledger, driver, reader) -> dict[str, Any]:
             "measured": ok, "combo_runs": len(combo_runs)}
 
 
-def _handle_wf_combo(conn, ledger, driver, reader, param_grid: Optional[Path]) -> dict[str, Any]:
+def _handle_wf_combo(
+    conn,
+    ledger,
+    driver,
+    reader,
+    param_grid: Optional[Path],
+    *,
+    pattern_only: bool = False,
+) -> dict[str, Any]:
     combo_runs = driver["wf"]["combo_runs"]
     reenq = _maybe_reenqueue_infra(conn, ledger, driver, combo_runs, reader)
     status = _all_measured(reader, driver, combo_runs)
@@ -663,6 +676,26 @@ def _handle_wf_combo(conn, ledger, driver, reader, param_grid: Optional[Path]) -
 
     final = step_selections[4]
     driver["wf"]["final_selection"] = {"BUY": final.get("BUY", []), "SELL": final.get("SELL", [])}
+
+    # Gate-manifest v4 gives the pattern selection and numeric optimisation
+    # separate Q phases.  The historical pilot driver continued directly into
+    # numerics, which is correct for its legacy combined workflow but wrong for
+    # the Q12 matrix service.  ``pattern_only`` makes the sealed WF selection a
+    # terminal hand-off without changing one selection criterion.
+    if pattern_only:
+        _transition(
+            driver,
+            STATE_PATTERN_READY,
+            "walk-forward pattern selection complete; hand off to the numeric gate",
+            {"stability": verdict, "final_selection": driver["wf"]["final_selection"]},
+        )
+        return {
+            "changed": True,
+            "state": driver["state"],
+            "waiting": False,
+            "stability": verdict,
+            "final_selection": driver["wf"]["final_selection"],
+        }
 
     # Stable → the numeric stage runs NEXT (DL-089 Nachtrag 2: numeric BEFORE the single
     # full-window confirmation).  The numeric cells need the sealed grid; without it, hold
@@ -822,6 +855,7 @@ def _fmt_value(value: Any) -> str:
 
 def advance(*, ledger_path: Path, db_path: Path, param_grid: Optional[Path] = None,
             dry_run: bool = False,
+            pattern_only: bool = False,
             metric_reader: Optional[Callable[[str], tuple[str, Optional[dict]]]] = None,
             conn: Optional[sqlite3.Connection] = None) -> dict[str, Any]:
     """Advance the pilot one deterministic, idempotent step.
@@ -848,7 +882,14 @@ def advance(*, ledger_path: Path, db_path: Path, param_grid: Optional[Path] = No
         if state == STATE_ENQUEUED:
             result = _handle_enqueued(conn, ledger, driver, reader)
         elif state == STATE_WF_COMBO:
-            result = _handle_wf_combo(conn, ledger, driver, reader, param_grid)
+            result = _handle_wf_combo(
+                conn,
+                ledger,
+                driver,
+                reader,
+                param_grid,
+                pattern_only=pattern_only,
+            )
         elif state == STATE_NUMERIC:
             result = _handle_numeric(conn, ledger, driver, reader)
         elif state == STATE_FINAL_FULLWINDOW:

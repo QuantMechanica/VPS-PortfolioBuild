@@ -1515,6 +1515,19 @@ def pending_claim_order_sql() -> str:
             ELSE 3 END AS _asset_rank
         FROM work_items w
         WHERE w.status='pending'
+          -- Governed analytic declarations are control-plane rows, not one-run
+          -- terminal jobs.  In particular a DL-089 Q12 row declares 1,089
+          -- matrix/WF cells and must be expanded by dl089_matrix_service; a
+          -- generic run_smoke claim would manufacture a false gate verdict.
+          AND NOT (
+            lower(COALESCE(w.kind,''))='analytic'
+            AND json_valid(w.payload_json)=1
+            AND COALESCE(json_extract(w.payload_json,'$.execution_lane'),'')='GOVERNED_ANALYTIC_DISPATCH'
+          )
+          AND NOT (
+            json_valid(w.payload_json)=1
+            AND COALESCE(json_extract(w.payload_json,'$.routing_revision'),'')='dl089-annual-wf-cells-v1'
+          )
           -- A historical top-level news alias is inspection-only under v3.
           -- and legacy rows must never be claimed/re-executed under a new contract.
           AND w.phase<>'{_INSPECTION_ONLY_NEWS_ALIAS}'
@@ -17822,6 +17835,7 @@ PUMP_DISPATCH_AUTOSEAL_LIMIT = 2
 PUMP_LATE_AUTOSEAL_LIMIT = 4
 PUMP_NEWS_EXPANSION_LIMIT = 2
 PUMP_OPT_FORK_BUDGET_SECONDS = 30.0
+PUMP_DL089_MATRIX_SERVICE_BUDGET_SECONDS = 20.0
 PUMP_OPT_FORK_SERVICE_BUDGET_SECONDS = 15.0
 
 
@@ -19659,6 +19673,26 @@ def _pump_unlocked(
         _opt_fork_stage,
         budget_seconds=PUMP_OPT_FORK_BUDGET_SECONDS,
         minimum_start_seconds=10.0,
+    )
+
+    # Declared DL-089 Q12 rows are control-plane matrix declarations, never
+    # one-setfile terminal jobs.  This bounded service seeds the governed _opt
+    # Q02 prerequisite, materializes at most one serial matrix, and maintains
+    # its eight-cell priority window/evidence receipts.
+    def _dl089_matrix_stage() -> dict[str, Any]:
+        try:
+            return service_dl089_matrix(root, apply=True, receipt_limit=16)
+        except Exception as exc:  # fail closed without stopping unrelated work
+            return {
+                "applied": False,
+                "machine_reason": f"DL089_MATRIX_SERVICE_FAILED:{exc}",
+            }
+
+    result["dl089_matrix_service"] = cycle_budget.run(
+        "dl089_matrix_service",
+        _dl089_matrix_stage,
+        budget_seconds=PUMP_DL089_MATRIX_SERVICE_BUDGET_SECONDS,
+        minimum_start_seconds=5.0,
     )
 
     # Analytic optimization rows are intentionally invisible to T1-T10.  The
@@ -27186,6 +27220,49 @@ def service_opt_fork(
         return service.service_pending(conn, **kwargs)
 
 
+def service_dl089_matrix(
+    root: Path,
+    *,
+    apply: bool,
+    q12_work_item_ids: list[str] | None = None,
+    recover_work_item_ids: list[str] | None = None,
+    evidence_path: str | None = None,
+    receipt_limit: int = 16,
+) -> dict[str, Any]:
+    """Run the governed DL-089 declaration-to-cell matrix service."""
+
+    try:
+        import dl089_matrix_service as service
+    except ModuleNotFoundError:
+        from tools.strategy_farm import dl089_matrix_service as service
+
+    database = db_path(root).resolve()
+    if not database.is_file():
+        raise ValueError(f"farm database is missing: {database}")
+    kwargs = {
+        "db_path": database,
+        "repo_root": CANONICAL_REPO_ROOT,
+        "artifact_root": service.DEFAULT_ARTIFACT_ROOT,
+        "apply": apply,
+        "q12_work_item_ids": q12_work_item_ids,
+        "recover_work_item_ids": recover_work_item_ids,
+        "evidence_path": None if evidence_path is None else Path(evidence_path),
+        "window": 8,
+        "receipt_limit": receipt_limit,
+    }
+    if apply:
+        def _apply_with_fresh_connection() -> dict[str, Any]:
+            with connect(root) as conn:
+                return service.service_pending(conn, **kwargs)
+
+        return _with_sqlite_write_retry(_apply_with_fresh_connection)
+    uri = f"file:{database.as_posix()}?mode=ro"
+    with sqlite3.connect(uri, uri=True, timeout=30) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA query_only=ON")
+        return service.service_pending(conn, **kwargs)
+
+
 def print_json(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True))
 
@@ -28416,6 +28493,16 @@ def build_parser() -> argparse.ArgumentParser:
     opt_service.add_argument("--limit", type=int, default=3)
     opt_service.add_argument("--apply", action="store_true")
 
+    dl089_service = sub.add_parser(
+        "service-dl089-matrix",
+        help="Expand and maintain governed DL-089 Q12 matrices (dry-run default).",
+    )
+    dl089_service.add_argument("--work-item-id", action="append")
+    dl089_service.add_argument("--recover-work-item-id", action="append")
+    dl089_service.add_argument("--evidence-path")
+    dl089_service.add_argument("--receipt-limit", type=int, default=16)
+    dl089_service.add_argument("--apply", action="store_true")
+
     q16 = sub.add_parser(
         "enqueue-head-to-head",
         help=f"Validate and optionally enqueue one analytic {_HEAD_TO_HEAD_PHASE} sealed comparison (dry-run default).",
@@ -28447,6 +28534,7 @@ _STATE_MUTATING_COMMANDS = frozenset({
     "claude-prompt", "build-ea", "claude-review-prompt", "claim-source", "set-source-status",
     "reserve-ea-ids", "retire-ea-ids", "reserve-terminal", "release-terminal",
     "normalize-ea-id-slugs",
+    "service-dl089-matrix",
     "resume-mining", "add-source",
 })
 
@@ -28697,6 +28785,15 @@ def main(argv: list[str] | None = None) -> int:
             apply=args.apply,
             limit=args.limit,
             work_item_ids=args.work_item_id,
+        ))
+    elif args.command == "service-dl089-matrix":
+        print_json(service_dl089_matrix(
+            root,
+            apply=args.apply,
+            q12_work_item_ids=args.work_item_id,
+            recover_work_item_ids=args.recover_work_item_id,
+            evidence_path=args.evidence_path,
+            receipt_limit=args.receipt_limit,
         ))
     elif args.command == "enqueue-head-to-head":
         print_json(enqueue_head_to_head(
