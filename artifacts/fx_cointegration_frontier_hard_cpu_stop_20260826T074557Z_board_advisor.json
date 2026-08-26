@@ -1,0 +1,127 @@
+{
+  "artifact_type": "fx_cointegration_frontier_hard_cpu_stop",
+  "generated_at_utc": "2026-08-26T07:45:57.6721723Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "55e5a03d2a96fa86dafbe0268775e83e1bb3ca57",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "card_extraction_gate": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "bounded_source_read_completely": true,
+    "strict_scan_survivor_count": 2,
+    "strict_scan_survivors": [
+      "AUDUSD.DWX/NZDUSD.DWX",
+      "EURJPY.DWX/GBPJPY.DWX"
+    ],
+    "new_card_authorized": false,
+    "reason": "The OWNER-requested source explicitly cards only the two strict survivors; its other tested FX and triangular forms are weak, dead net, or below the admission bar."
+  },
+  "frontier_audit": {
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_scan_identity_available": false,
+    "reason": "The durable sign-aware coverage audit accounts for every frozen scan relationship, so another scan-derived build would be a duplicate."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "selection_basis": "latest durable nonterminal frozen-scan continuation",
+    "scan_rank": 40,
+    "pair": [
+      "USDJPY.DWX",
+      "NZDUSD.DWX"
+    ],
+    "ea_id": "QM5_20219",
+    "slug": "usdjpy-nzdusd",
+    "logical_symbol": "QM5_20219_USDJPY_NZDUSD_COINTEGRATION_D1",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20219_usdjpy-nzdusd_card.md",
+    "basket_manifest": "framework/EAs/QM5_20219_usdjpy-nzdusd/basket_manifest.json",
+    "structural_contract": "fixed-beta D1 two-leg z-score reversion; no ML or banned indicator",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "latest_durable_lineage_evidence": "artifacts/fx_cointegration_frontier_transient_clear_hard_cpu_stop_20260826T065333Z_board_advisor.json",
+    "latest_durable_state": "Q02_PASS_WITH_ONE_UNIQUE_Q03_PENDING",
+    "fresh_queue_query_performed": false,
+    "duplicate_enqueue_or_priority_mutation_performed": false
+  },
+  "capacity_sample": {
+    "sampled_at_utc": "2026-08-26T07:45:52.2144202Z",
+    "completed_at_utc": "2026-08-26T07:45:57.6721723Z",
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      90.635409678601,
+      97.904325929582,
+      99.317169921594,
+      92.774226886692,
+      87.013134269678
+    ],
+    "average_cpu_percent": 93.528853337229,
+    "maximum_cpu_percent": 99.317169921594,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "binding_measure": "maximum",
+    "metatester64_process_count_at_completion": 5,
+    "metatester64_process_ids": [
+      8184,
+      17376,
+      28160,
+      33628,
+      37884
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_fx_receipt": "artifacts/fx_cointegration_frontier_transient_clear_hard_cpu_stop_20260826T065333Z_board_advisor.json",
+    "prior_confirmation_average_cpu_percent": 99.76853463004589,
+    "prior_confirmation_maximum_cpu_percent": 100.0,
+    "prior_metatester64_process_count": 4,
+    "current_average_cpu_percent": 93.528853337229,
+    "current_maximum_cpu_percent": 99.317169921594,
+    "current_metatester64_process_count": 5,
+    "reason_for_receipt": "This is a fresh mixed-load sample with a lower average but a still-binding maximum and one additional tester process; it records the changed capacity state without duplicating a card, EA, or queue row."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutation": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "The explicit backtest CPU ceiling bound before any mutating or CPU-consuming pipeline action."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed_by_this_run": false
+  }
+}
