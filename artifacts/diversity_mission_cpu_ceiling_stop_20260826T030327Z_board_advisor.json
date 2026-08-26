@@ -1,0 +1,61 @@
+{
+  "artifact_type": "diversity_mission_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-26T03:03:27.9715391Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "682a701f2106b504bc3dd1e8938a471e20fcea26",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "capacity_sample": {
+    "counter": "Processor(_Total)/% Processor Time",
+    "sample_interval_seconds": 1,
+    "cpu_samples_percent": [
+      100.0,
+      99.81,
+      99.9,
+      100.0,
+      100.0
+    ],
+    "cpu_average_percent": 99.94,
+    "cpu_maximum_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true
+  },
+  "preflight": {
+    "skill": "qm-build-ea-from-card",
+    "build_contract_read": true,
+    "branch_verified": true,
+    "farm_database_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "farm_database_mutated": false,
+    "candidate_ranking_started": false,
+    "candidate_claimed": false,
+    "reason_for_no_claim": "The explicit CPU-ceiling stop bound before live candidate discovery or an atomic farm claim."
+  },
+  "non_duplicate_delta": {
+    "previous_diversity_cpu_evidence": "artifacts/diversity_backlog_eligibility_hard_cpu_stop_20260823T202819Z_board_advisor.json",
+    "current_observation_date": "2026-08-26",
+    "current_branch_head": "682a701f2106b504bc3dd1e8938a471e20fcea26",
+    "current_head_subject": "docs: record Option B card re-intake",
+    "reason_for_fresh_evidence": "A new paced-fleet mission ran on a later branch state and encountered a newly sampled binding capacity window before any claim."
+  },
+  "actions_this_run": {
+    "farm_claim": false,
+    "new_card_or_ea": false,
+    "registry_or_magic_mutation": false,
+    "build_check_compile_or_smoke": false,
+    "enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "tester_launch_or_terminal_control": false,
+    "evidence_commit_only": true,
+    "reason": "The mission explicitly requires a stop when the backtest CPU ceiling is hit."
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
