@@ -1,0 +1,126 @@
+{
+  "schema": "qm.diversity-backlog-cpu-stop/v1",
+  "generated_at_utc": "2026-08-26T13:06:19.5952269Z",
+  "branch": "agents/board-advisor",
+  "head_before_evidence_commit": "0c877694733e9d370c20ae6c43764afebb231704",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "whole_host_cpu_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "metatester64_process_count_on_final_read": 8
+  },
+  "non_duplicate_delta": {
+    "prior_receipt": "artifacts/commodity_energy_sleeve_hard_cpu_stop_20260826T123244Z_board_advisor.json",
+    "prior_generated_at_utc": "2026-08-26T12:32:44.5203260Z",
+    "prior_average_cpu_percent": 98.46,
+    "prior_metatester64_process_count": 5,
+    "current_average_cpu_percent": 100.0,
+    "current_metatester64_process_count": 8,
+    "reason": "The tester cohort expanded from five to eight and host load reached a flat 100 percent while this mission also reconciled the diversity build backlog against committed artifacts and farm lineage."
+  },
+  "farm_coordination": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access_mode": "read_only_wal_safe",
+    "pending_build_ea_tasks": 43,
+    "pending_with_mq5_and_ex5": 39,
+    "pending_with_mq5_without_ex5": [
+      "QM5_1457",
+      "QM5_1459"
+    ],
+    "pending_without_slug_or_ea_directory": [
+      "QM5_20104",
+      "QM5_20123"
+    ],
+    "ea_claim_created": false,
+    "build_dispatch_marker_created": false,
+    "reason": "The CPU ceiling bound before any claim or mutation."
+  },
+  "diversity_candidate_checks": {
+    "QM5_32007": {
+      "strategy": "london-fix-wm-reuters-currency-drift",
+      "symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "artifact_state": "MQ5_AND_EX5_COMMITTED",
+      "build_commit": "65f06eab9",
+      "q02": {
+        "EURUSD.DWX": "PASS",
+        "GBPUSD.DWX": "PASS"
+      },
+      "q04": {
+        "EURUSD.DWX": "FAIL",
+        "GBPUSD.DWX": "FAIL"
+      },
+      "disposition": "EXCLUDE_DUPLICATE_REBUILD"
+    },
+    "QM5_10012": {
+      "strategy": "rw-fx-intraday-seas",
+      "symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX",
+        "AUDUSD.DWX"
+      ],
+      "artifact_state": "MQ5_AND_EX5_COMMITTED",
+      "q02_pass_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX",
+        "AUDUSD.DWX"
+      ],
+      "q03_pass_symbols": [
+        "AUDUSD.DWX"
+      ],
+      "current_q02_q03_infra_blocker": false,
+      "disposition": "EXCLUDE_PRIORITY_2_NOT_CURRENTLY_BLOCKED_AT_Q02_Q03"
+    },
+    "QM5_1457": {
+      "strategy": "as-predict-bonds",
+      "asset_class_intent": "rates",
+      "artifact_state": "MQ5_WITHOUT_EX5",
+      "card_r3_data_available": "FAIL",
+      "reason": "Required Treasury, cash, commodity, and yield inputs are absent from the approved DWX matrix.",
+      "disposition": "INELIGIBLE_PREBUILD_GATE"
+    }
+  },
+  "actions_this_run": {
+    "read_only_farm_db_reconciliation": true,
+    "read_only_artifact_reconciliation": true,
+    "ea_claim": false,
+    "source_or_card_creation": false,
+    "registry_or_magic_mutation": false,
+    "ea_or_setfile_mutation": false,
+    "compile_or_build_check": false,
+    "queue_enqueue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "portfolio_admission": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false,
+    "deploy_manifest": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  }
+}
