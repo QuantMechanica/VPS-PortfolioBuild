@@ -1,0 +1,121 @@
+{
+  "artifact_type": "commodity_energy_new_sleeve_hard_cpu_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-26T16:46:21.0960000Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "bf2a264bd2f4363554c7b7639c58b98dc59c3f41",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_EDGE_SELECTION_OR_MUTATION",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "source": "explicit OWNER commodity/energy sleeve mission"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples": [
+      {
+        "timestamp_utc": "2026-08-26T16:46:17.0760000Z",
+        "cpu_percent": 96.1
+      },
+      {
+        "timestamp_utc": "2026-08-26T16:46:18.0910000Z",
+        "cpu_percent": 94.4
+      },
+      {
+        "timestamp_utc": "2026-08-26T16:46:19.0920000Z",
+        "cpu_percent": 84.0
+      },
+      {
+        "timestamp_utc": "2026-08-26T16:46:20.0930000Z",
+        "cpu_percent": 76.6
+      },
+      {
+        "timestamp_utc": "2026-08-26T16:46:21.0960000Z",
+        "cpu_percent": 97.5
+      }
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 89.72,
+    "maximum_cpu_percent": 97.5,
+    "average_binding": false,
+    "maximum_binding": true,
+    "ceiling_binding": true
+  },
+  "factory_snapshot": {
+    "scanned_at_utc": "2026-08-26T16:45:56+00:00",
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "running_factory_terminals": [
+      "T1",
+      "T10",
+      "T5",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "running_factory_terminal_count": 6,
+    "terminal_worker_daemon_count": 10,
+    "active_terminal_reservation_count": 6,
+    "orphaned_terminal_process_count": 0,
+    "t_live_observed_only_for_exclusion": true,
+    "external_ftmo_terminal_observed_only_for_exclusion": true
+  },
+  "commodity_frontier_reconciliation": {
+    "registry_max_ea_id": "QM5_41169",
+    "latest_distinct_frontier": [
+      {
+        "ea_id": "QM5_41167",
+        "slug": "wti-coxstuart-tr",
+        "mechanic": "monthly WTI Cox-Stuart paired-sign trend"
+      },
+      {
+        "ea_id": "QM5_41168",
+        "slug": "xauxag-mcoxstuart-rv",
+        "mechanic": "monthly market-neutral XAU/XAG Cox-Stuart paired-sign reversion"
+      },
+      {
+        "ea_id": "QM5_41169",
+        "slug": "wti-foster-record-tr",
+        "mechanic": "monthly WTI Foster-Stuart forward-record-count trend"
+      }
+    ],
+    "latest_compile_successor": {
+      "ea_id": "QM5_41169",
+      "work_item_id": "4a6e89aa-9405-4e9b-b292-bae442b52015",
+      "phase": "COMPILE_EA",
+      "status": "pending",
+      "verdict": null,
+      "observed_at_utc": "2026-08-26T16:46:00+00:00"
+    },
+    "decision": "Do not reuse an existing commodity mechanic, allocate QM5_41170, or create another compile/Q02 successor while the explicit CPU stop is binding. Edge selection remains unconsumed for a later unsaturated mission run."
+  },
+  "actions_this_run": {
+    "new_source_approval": false,
+    "new_strategy_card": false,
+    "ea_id_or_magic_allocation": false,
+    "new_ea_or_setfile": false,
+    "compile_or_build_check": false,
+    "q02_enqueue": false,
+    "queue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "The fresh maximum whole-host CPU sample reached 97.5 percent, above the binding 97 percent ceiling."
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_demo_shadow_or_stress_artifact_created": false
+  },
+  "worktree_hygiene": {
+    "preexisting_tracked_change_count": 1077,
+    "preexisting_total_porcelain_entry_count": 1182,
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  }
+}
