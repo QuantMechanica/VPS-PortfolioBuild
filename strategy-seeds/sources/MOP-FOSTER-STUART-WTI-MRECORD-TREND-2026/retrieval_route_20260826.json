@@ -1,0 +1,48 @@
+{
+  "schema": "qm.trading-source-retrieval.v1",
+  "source_id": "MOP-FOSTER-STUART-WTI-MRECORD-TREND-2026",
+  "retrieved_at_utc": "2026-08-26T15:23:18Z",
+  "router": {
+    "status": "ROUTE_GITHUB_API",
+    "adapter": "github",
+    "url": "https://github.com/JorgeCastilloMateo/RecordTest",
+    "route": "public GitHub API"
+  },
+  "repository": {
+    "owner": "JorgeCastilloMateo",
+    "name": "RecordTest",
+    "commit": "463cca629cec54ed58dfe0f03140d29be6c8f2aa",
+    "commit_date_utc": "2023-08-06T17:51:48Z",
+    "commit_message": "VERSION 2.2.0",
+    "commit_url": "https://github.com/JorgeCastilloMateo/RecordTest/commit/463cca629cec54ed58dfe0f03140d29be6c8f2aa"
+  },
+  "files": [
+    {
+      "path": "R/foster.test.R",
+      "git_blob_sha1": "b7ed6e8b879a7d9eb498d409b7b849fa3e503f42",
+      "sha256": "63B76A8425ED7E71DF0B1C5B8837B2816AA10A8877467C9AF04D779C9455B1E2",
+      "bytes": 24522,
+      "read_complete": true
+    },
+    {
+      "path": "R/I.record.R",
+      "git_blob_sha1": "c39a1a0e13a07897c441fafc859b5821883ffaa6",
+      "sha256": "74B5A7448FDEE923A94A192D0122CF1FD2A7358417042F6607F6AD1E36814739",
+      "bytes": 6533,
+      "read_complete": true
+    },
+    {
+      "path": "man/foster.test.Rd",
+      "git_blob_sha1": "b64754a117c4f7b9f564d4310c24ca83adaf1354",
+      "sha256": "E0011CD9D900D1A8425CE2E024F1692233ACA6EE87A6A72A2136D695CB5F0519",
+      "bytes": 8977,
+      "read_complete": true
+    }
+  ],
+  "safety": {
+    "authenticated": false,
+    "site_mutation": false,
+    "downloaded_binary": false,
+    "executed_source_code": false
+  }
+}

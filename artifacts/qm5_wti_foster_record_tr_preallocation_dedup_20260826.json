@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; F. G. Foster; A. Stuart; Jorge Castillo-Mateo",
+    "mechanic": "monthly WTI thirteen completed month-end forward upper minus forward lower Foster-Stuart record-count d absolute threshold two continuation",
+    "slug": "wti-foster-record-tr",
+    "strategy_id": "MOP-FOSTER-STUART-WTI-MRECORD-TREND-2026_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-08-26T15:22:09+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4668,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1319,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
