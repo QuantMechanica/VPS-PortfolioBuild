@@ -1,0 +1,89 @@
+{
+  "schema": "qm.commodity-energy-mission-cpu-stop/v1",
+  "generated_at_utc": "2026-08-26T04:30:51.9980914Z",
+  "branch": "agents/board-advisor",
+  "head_before_evidence_commit": "47fe7ab2da2eb4fa0c65085987f52aee175b4e43",
+  "mission": "Select, card, build, and enqueue one new structural low-frequency commodity or energy edge outside the certified XAU/SP500/NDX/XNG book",
+  "selection_status": "NOT_STARTED_CPU_STOP",
+  "cpu": {
+    "command": "Get-Counter '\\\\Processor(_Total)\\\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-26T04:30:51.9980914Z",
+    "samples_percent": [
+      100.0,
+      98.240839,
+      99.220408,
+      92.57893,
+      99.51202
+    ],
+    "average_percent": 97.910439,
+    "maximum_percent": 100.0,
+    "claim_ceiling_percent": 97.0,
+    "resume_percent": 90.0,
+    "average_triggered": true,
+    "maximum_triggered": true,
+    "ceiling_binding": true,
+    "anchored_terminal64_count": 6,
+    "anchored_metatester64_count": 6,
+    "anchored_mt5_process_count": 12,
+    "anchored_slots": [
+      "T2",
+      "T3",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "read_only_observations": {
+      "t_live_terminal_observed": true,
+      "ftmo_terminal_observed": true
+    }
+  },
+  "non_duplicate_delta": {
+    "prior_receipt": "artifacts/commodity_energy_sleeve_cpu_stop_20260826T033036Z_board_advisor.json",
+    "prior_sampled_at_utc": "2026-08-26T03:30:36.0038027Z",
+    "elapsed_seconds": 3615.994289,
+    "prior_average_percent": 100.0,
+    "current_average_percent": 97.910439,
+    "prior_maximum_percent": 100.0,
+    "current_maximum_percent": 100.0,
+    "prior_anchored_slots": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "current_anchored_slots": [
+      "T2",
+      "T3",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "reason_for_receipt": "A fresh sample approximately one hour after the prior commodity receipt shows a changed factory roster and lower average CPU, while the average and maximum still bind the hard ceiling."
+  },
+  "actions": {
+    "preliminary_duplicate_scan_read_only": true,
+    "source_selected": false,
+    "source_or_card_created": false,
+    "ea_id_or_magic_allocated": false,
+    "ea_created_or_compiled": false,
+    "backtest_started": false,
+    "q02_enqueued": false,
+    "terminal_or_tester_control_attempted": false,
+    "portfolio_gate_touched": false,
+    "t_live_or_deploy_manifest_touched": false,
+    "autotrading_touched": false,
+    "evidence_commit_only": true
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  },
+  "stop_reason": "BACKTEST_CPU_CEILING_REACHED",
+  "continuation_condition": "Start a fresh mission only after a new five-sample whole-host CPU guard remains below the governed resume threshold."
+}
