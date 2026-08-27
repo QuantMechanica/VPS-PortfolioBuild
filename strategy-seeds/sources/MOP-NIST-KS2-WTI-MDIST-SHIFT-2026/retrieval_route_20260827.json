@@ -1,0 +1,29 @@
+{
+  "source_id": "NIST-DATAPLOT-KS2SAMP",
+  "retrieved_at_utc": "2026-08-27T13:04:55.9801400Z",
+  "url": "https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/ks2samp.htm",
+  "host": "www.itl.nist.gov",
+  "owner": "National Institute of Standards and Technology",
+  "document": "NIST Dataplot Reference Manual, Kolmogorov-Smirnov Two-Sample Goodness of Fit Test",
+  "http_result": "FETCHED",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "last_modified": "Mon, 10 Aug 2026 19:21:25 GMT",
+  "utf8_bytes": 23056,
+  "sha256": "15EB4DF37FB991D41A6AE16CEF8CD341124C24DB8A7B7078B11DC42E2C90A289",
+  "read_scope": "complete official HTML method page; purpose, ECDF definition, two-sample statistic, hypotheses, critical-value warning, syntax, examples, references, and revision metadata",
+  "retrieval_method": "read-only web open plus direct HTTP header and in-memory UTF-8 SHA-256 verification",
+  "raw_content_committed": false,
+  "claims_used": [
+    "the two-sample method compares two empirical distribution functions",
+    "both empirical distribution functions are evaluated at every observation from both samples",
+    "the statistic is the maximum absolute gap between the two empirical distribution functions",
+    "the method tests whether two samples share an unspecified distribution"
+  ],
+  "claims_not_used": [
+    "a tabulated critical value or p-value",
+    "a significance claim for six observations per sample",
+    "trading efficacy",
+    "WTI predictability"
+  ]
+}
