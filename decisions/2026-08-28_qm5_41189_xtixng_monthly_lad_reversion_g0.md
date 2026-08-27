@@ -141,4 +141,3 @@ It does not permit a manual backtest, terminal control, component-leg Q02,
 live/demo/shadow/stress/optimization setfiles, `T_Live`, AutoTrading, deploy
 or live manifests, portfolio-gate mutation, portfolio admission, or a
 correlation waiver.
-
