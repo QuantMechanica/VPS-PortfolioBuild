@@ -1,0 +1,55 @@
+{
+  "candidate": {
+    "author": "Jose A. Villar; Frederick L. Joutz; David J. Ramberg; John E. Parsons; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "synchronized thirteen completed month end XTI XNG oil minus gas log ratio seventy eight forward month index normalized slopes exact even Theil Sen median sign contrarian equal notional basket",
+    "slug": "xtixng-mtheilsen-rv",
+    "strategy_id": "VILLAR-MOP-XTIXNG-MTHEILSEN-RV-2026_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-08-27T23:48:24+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41157_xauxag-mtheilsen-rv_card.md",
+      "score": 0.84,
+      "slug": "xauxag-mtheilsen-rv",
+      "source": "card",
+      "strategy_id": "SCHWEIKERT-MOP-CME-XAUXAG-MTHEILSEN-RV-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\xauxag-mtheilsen-rv_card.md",
+      "score": 0.84,
+      "slug": "xauxag-mtheilsen-rv",
+      "source": "card",
+      "strategy_id": "SCHWEIKERT-MOP-CME-XAUXAG-MTHEILSEN-RV-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4689,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1340,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
