@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Villar; Joutz; Ramberg; Parsons; NIST",
+    "mechanic": "monthly-thirteen-oil-gas-log-ratio-median-dichotomy-run-count-extreme-regime-reversion-two-leg-basket",
+    "slug": "xtixng-median-runs-rv",
+    "strategy_id": "VILLAR-NIST-XTIXNG-MEDRUN-RV-2026_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-08-27T17:08:48+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4685,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1336,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
