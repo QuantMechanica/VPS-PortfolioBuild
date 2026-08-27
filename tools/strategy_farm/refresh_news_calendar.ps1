@@ -59,7 +59,8 @@ $repinLock = if (-not [string]::IsNullOrWhiteSpace($env:QM_CALENDAR_REPIN_LOCK))
 $commonTargets = @(
   'C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files',
   'C:\Windows\System32\config\systemprofile\AppData\Roaming\MetaQuotes\Terminal\Common\Files',
-  'C:\Users\QMDev1\AppData\Roaming\MetaQuotes\Terminal\Common\Files'
+  'C:\Users\QMDev1\AppData\Roaming\MetaQuotes\Terminal\Common\Files',
+  'C:\Users\QMDev2\AppData\Roaming\MetaQuotes\Terminal\Common\Files'
 )
 $primaryHeader = 'datetime,currency,event_name,impact,actual,forecast,previous,impact_numeric,is_high_impact,is_nfp,is_fomc,is_ecb,is_boe,is_gdp,is_cpi,is_pmi,day_of_week,hour,day,is_first_friday'
 $secondaryHeader = 'Date,DateTime_UTC,DateTime_EET,Currency,Impact,Event,Actual,Forecast,Previous'

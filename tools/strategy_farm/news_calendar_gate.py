@@ -60,6 +60,7 @@ PRODUCTION_COMMON_DIRS = (
         r"\Terminal\Common\Files"
     ),
     Path(r"C:\Users\QMDev1\AppData\Roaming\MetaQuotes\Terminal\Common\Files"),
+    Path(r"C:\Users\QMDev2\AppData\Roaming\MetaQuotes\Terminal\Common\Files"),
 )
 PRODUCTION_FACTORY_OFF_FLAG = Path(r"D:\QM\strategy_farm\state\FACTORY_OFF.flag")
 PRODUCTION_EVIDENCE_DIR = Path(r"D:\QM\reports\state")

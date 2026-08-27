@@ -508,6 +508,7 @@ def test_scheduled_defaults_cover_all_principals_without_legacy_copy() -> None:
     assert "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files" in text
     assert "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files" in text
     assert "C:\\Users\\QMDev1\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files" in text
+    assert "C:\\Users\\QMDev2\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files" in text
     assert "multi-publish" in text
     assert "news_calendar_repin.py" in text
     assert "QM_NEWS_CALENDAR_REFRESH_PARENT_PID" in text
