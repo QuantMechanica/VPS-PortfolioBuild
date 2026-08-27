@@ -1,0 +1,81 @@
+{
+  "artifact_type": "diversity_build_cpu_ceiling_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T08:00:43.041Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "6a424285e290240f56ad98c182033119fb149825",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "stop when either the five-sample average or maximum reaches the governed tester admission ceiling",
+    "sources": [
+      "explicit OWNER paced-fleet mission",
+      "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+    ]
+  },
+  "capacity_sample": {
+    "command": "five one-second Get-Counter \\Processor(_Total)\\% Processor Time samples",
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      98.343,
+      99.3203
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 99.5327,
+    "maximum_cpu_percent": 100.0,
+    "ceiling_binding": true
+  },
+  "farm_db_coordination": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "active_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "process_snapshot_command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "process_snapshot_scanned_at_utc": "2026-08-27T08:00:02+00:00",
+    "active_work_item_count": 6,
+    "active_phase_counts": {
+      "Q07": 1,
+      "Q09": 1,
+      "Q10_NEWS": 4
+    },
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T6",
+      "T8"
+    ],
+    "active_terminal_reservation_count": 5,
+    "active_row_without_live_terminal_or_reservation": {
+      "terminal": "T5",
+      "work_item_id": "8ac4dd37-4d59-4721-bf19-da6a8e34e384",
+      "ea_id": "QM5_13036",
+      "phase": "Q09",
+      "symbol": "GDAXI.DWX",
+      "db_updated_at_utc": "2026-08-27T05:52:15+00:00"
+    },
+    "interpretation": "The unmatched row is an observed DB/process divergence, not a stale-row verdict or authority to reclaim it.",
+    "candidate_or_ea_claim_created": false,
+    "database_mutated": false
+  },
+  "actions_this_run": {
+    "backlog_ranked": false,
+    "edge_selected": false,
+    "build_task_claimed": false,
+    "registry_or_magic_mutated": false,
+    "ea_source_or_setfile_created": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_enqueued": false,
+    "worker_or_terminal_repair_started": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
