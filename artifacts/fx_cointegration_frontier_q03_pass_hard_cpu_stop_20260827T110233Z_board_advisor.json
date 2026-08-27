@@ -1,0 +1,158 @@
+{
+  "artifact_type": "fx_cointegration_frontier_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T11:03:05.4988694Z",
+  "generated_at_europe_berlin": "2026-08-27T13:03:05.4988694+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "8bdfadeaa274ed03aa0fcc33bb6d58538f740b16",
+  "mission_outcome": "FRONTIER_EXHAUSTED_EXISTING_PAIR_Q03_PASS_STOPPED_AT_CPU_CEILING",
+  "frontier_audit": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "strict_scan_survivors": [
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "QM5_12532_AUDNZD_COINTEGRATION_D1"
+    ],
+    "new_card_or_ea_would_be_duplicate_or_relax_the_published_threshold": true,
+    "card_extraction_gate_opened": false,
+    "build_preflight_entered": false
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "existing_pair_fallback": {
+    "ea_id": "QM5_20255",
+    "logical_symbol": "QM5_20255_USDCHF_EURJPY_COINTEGRATION_D1",
+    "traded_symbols": [
+      "USDCHF.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "USDJPY.DWX"
+    ],
+    "basket_manifest": "framework/EAs/QM5_20255_usdchf-eurjpy/basket_manifest.json",
+    "q02": "PASS",
+    "q02_work_item_id": "72ca17ca-f9df-40d5-806d-1d815ee4ea08",
+    "q03": "PASS",
+    "q03_work_item_id": "d50b8721-4691-4ab3-b0b4-14012ecb6f6a",
+    "q03_evidence": "D:/QM/reports/work_items/d50b8721-4691-4ab3-b0b4-14012ecb6f6a/QM5_20255/20260827_090419/summary.json",
+    "q03_completed_at_utc": "2026-08-27T10:08:22+00:00",
+    "q03_deterministic": true,
+    "q03_runs_ok": 2,
+    "q03_trades_per_run": 122,
+    "q03_profit_factor_per_run": 0.6,
+    "q03_drawdown_percent_per_run": 9.77,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "q04_work_item_id": "265024c2-9c2c-457e-8696-b22b75b7d722",
+    "q04_status": "pending",
+    "action": "recognized the completed Q03 PASS and preserved the existing Q04 successor; no duplicate enqueue or priority mutation",
+    "duplicate_enqueue_performed": false
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "farm_snapshot": {
+    "command": "py -3 tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-27T11:01:33+00:00",
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "running_factory_terminal_count": 5,
+    "active_terminal_reservation_count": 5,
+    "orphaned_factory_terminal_process_count": 0,
+    "active_work_item_count": 7,
+    "active_phase_counts": {
+      "OPT_CENSUS": 1,
+      "Q07": 1,
+      "Q09": 1,
+      "Q10_NEWS": 4
+    },
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "cpu_sample": {
+    "command": "Get-CimInstance Win32_Processor LoadPercentage, five sequential readings with two-second intervals",
+    "observed_at_utc": "2026-08-27T11:02:33.8353536Z",
+    "samples_percent": [
+      99.0,
+      97.0,
+      100.0,
+      100.0,
+      99.0
+    ],
+    "average_percent": 99.0,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "triggers": [
+      "average_percent",
+      "maximum_percent"
+    ]
+  },
+  "non_duplicate_delta": {
+    "preceding_fx_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260827T100349Z_board_advisor.json",
+    "preceding_fallback_state": "QM5_20255 Q03 active on T10",
+    "current_fallback_state": "QM5_20255 Q03 done PASS with its pre-existing Q04 successor pending",
+    "preceding_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "changed_state": "the governed FX fallback completed deterministic Q03 PASS and released T10; T7 became active on unrelated Q07 work while the CPU ceiling remained binding"
+  },
+  "actions_this_run": {
+    "candidate_selected_for_new_build": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "tester_or_backtest_started": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
