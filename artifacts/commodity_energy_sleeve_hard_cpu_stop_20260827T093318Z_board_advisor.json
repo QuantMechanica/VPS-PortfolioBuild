@@ -1,0 +1,97 @@
+{
+  "artifact_type": "commodity_energy_sleeve_hard_cpu_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T09:33:18.1312899Z",
+  "generated_at_local": "2026-08-27T11:33:18.1399331+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "86a9907c3241c0414b1baeec62c7dd359949a367",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_AFTER_READ_ONLY_CANDIDATE_SCREEN_BEFORE_MUTATION",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "source": "explicit OWNER commodity/energy sleeve mission"
+  },
+  "capacity_sample": {
+    "command": "five sequential Get-Counter \\Processor(_Total)\\% Processor Time samples",
+    "samples_percent": [
+      98.6335664576091,
+      98.7171596944671,
+      98.9790139085142,
+      91.0261131658751,
+      88.0127180690107
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 95.07371425909525,
+    "maximum_cpu_percent": 98.9790139085142,
+    "average_binding": false,
+    "maximum_binding": true,
+    "ceiling_binding": true
+  },
+  "factory_snapshot": {
+    "path_anchored_factory_terminal_count": 5,
+    "factory_terminals_running": [
+      "T2",
+      "T3",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "excluded_process_classes": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "frontier_observation": {
+    "existing_current_branch_commodity_build": "QM5_41180_xtixng-mspearman-rv",
+    "existing_build_commit": "cdd8689254a211117caffd33203828a7544a33ed",
+    "read_only_candidate_screen": "monthly XAUUSD.DWX/XAGUSD.DWX Bartels successive-rank persistence contrarian equal-notional basket",
+    "candidate_status": "NOT_APPROVED_NOT_DEDUPED_NOT_ALLOCATED",
+    "decision": "Do not duplicate QM5_41180 and do not approve, allocate, build, compile, or enqueue a successor while the explicit CPU stop is binding."
+  },
+  "nonduplicate_observation_delta": {
+    "previous_receipt": "artifacts/commodity_energy_sleeve_hard_cpu_stop_20260827T074547Z_board_advisor.json",
+    "previous_factory_roster": [
+      "T2",
+      "T4",
+      "T6",
+      "T8",
+      "T9"
+    ],
+    "current_factory_roster": [
+      "T2",
+      "T3",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "delta": "T3 and T10 are now active while T4 and T9 are no longer in the path-anchored terminal roster; peak CPU remains above the binding ceiling."
+  },
+  "actions_this_run": {
+    "new_source_approval": false,
+    "new_strategy_card": false,
+    "canonical_dedup_receipt": false,
+    "ea_id_or_magic_allocation": false,
+    "new_ea_or_setfile": false,
+    "compile_or_build_check": false,
+    "q02_enqueue": false,
+    "queue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "The fresh five-sample whole-host CPU maximum was 98.9790139085142 percent, above the binding 97 percent ceiling."
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_demo_shadow_or_stress_artifact_created": false
+  },
+  "worktree_hygiene": {
+    "pre_evidence_porcelain_entry_count": 0,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  }
+}
