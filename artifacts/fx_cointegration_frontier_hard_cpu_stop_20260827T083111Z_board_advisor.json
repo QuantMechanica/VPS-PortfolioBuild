@@ -1,0 +1,147 @@
+{
+  "artifact_type": "fx_cointegration_frontier_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T08:32:04.6258443Z",
+  "generated_at_europe_berlin": "2026-08-27T10:32:04.6258443+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "49e5d4b120ef8b47a6848394cc20cc7d8a1a4628",
+  "mission_outcome": "FRONTIER_EXHAUSTED_EXISTING_PAIR_ACTIVE_STOPPED_AT_CPU_CEILING",
+  "frontier_audit": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "strict_scan_survivors": [
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "QM5_12532_AUDNZD_COINTEGRATION_D1"
+    ],
+    "new_card_or_ea_would_be_duplicate_or_relax_the_published_threshold": true
+  },
+  "anchor_triage": {
+    "evidence_source": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260827T073243Z_board_advisor.json",
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "existing_pair_fallback": {
+    "ea_id": "QM5_20250",
+    "logical_symbol": "QM5_20250_USDCHF_AUDJPY_COINTEGRATION_D1",
+    "pair": [
+      "USDCHF.DWX",
+      "AUDJPY.DWX"
+    ],
+    "work_item_id": "5a987bd1-b335-404f-85c9-e2406dadb806",
+    "phase": "Q03",
+    "status": "active",
+    "terminal": "T9",
+    "action": "left undisturbed because the governed existing-pair fallback is already advancing",
+    "duplicate_enqueue_performed": false
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "factory_terminal_ceiling": 7,
+    "paced_launch_gate_max": 1
+  },
+  "farm_snapshot": {
+    "command": "py -3 tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-27T08:31:11+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T3",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "running_factory_terminal_count": 6,
+    "factory_terminal_count_at_ceiling": false,
+    "terminal64_process_count_including_excluded": 8,
+    "active_terminal_reservation_count": 6,
+    "active_phases": [
+      "Q03",
+      "Q07",
+      "Q09",
+      "Q10_NEWS"
+    ],
+    "orphaned_factory_terminal_process_count": 0,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "cpu_sample": {
+    "command": "Get-CimInstance Win32_Processor LoadPercentage, five sequential readings with two-second intervals",
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 100.0,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "triggers": [
+      "average_percent",
+      "maximum_percent"
+    ]
+  },
+  "non_duplicate_delta": {
+    "preceding_fx_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260827T073243Z_board_advisor.json",
+    "preceding_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T6",
+      "T9"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T3",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "topology_change": "T2 cleared while T1, T7, and T8 became active; factory occupancy rose from four to six",
+    "preceding_active_fx_fallback": "QM5_20238_USDCAD_EURJPY_COINTEGRATION_D1",
+    "current_active_fx_fallback": "QM5_20250_USDCHF_AUDJPY_COINTEGRATION_D1",
+    "preceding_cpu_average_percent": 83.4,
+    "current_cpu_average_percent": 100.0,
+    "preceding_cpu_maximum_percent": 99.0,
+    "current_cpu_maximum_percent": 100.0,
+    "changed_state": "the governed FX fallback advanced to a different existing basket, occupancy increased, and both fresh CPU measures now bind at 100 percent"
+  },
+  "actions_this_run": {
+    "candidate_selected_for_new_build": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "tester_or_backtest_started": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
