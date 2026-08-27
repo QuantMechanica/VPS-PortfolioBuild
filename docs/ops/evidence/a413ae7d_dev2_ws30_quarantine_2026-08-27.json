@@ -1,0 +1,1932 @@
+{
+  "authorization": {
+    "feature_flag": "QM_ENABLE_DEV2_WS30_QUARANTINE",
+    "feature_flag_process_value": "1",
+    "manifest": {
+      "allow_account_enable": false,
+      "allow_contract_expansion": false,
+      "allow_delete": false,
+      "allow_terminal_start": false,
+      "commissioned_by": "deterministic agent-router assignment",
+      "expected_file_count": 98,
+      "expected_file_set_sha256": "2130460517c1affa3f6749d4c30279ddc6f47dcbc1cfcdc73370ccb1a1ebf674",
+      "factory_terminals_allowed": false,
+      "lane": "DEV2",
+      "lane_contract_sha256": "866e4e346187e47c33e32beb30bb96dc4085e98cc316819fb33f7925306dda06",
+      "live_allowed": false,
+      "operation": "QUARANTINE_UNCONTRACTED_CUSTOM_HISTORY",
+      "provision_receipt": "D:/QM/reports/setup/tick-data-timezone/WS30.DWX_DEV2_TRANSPORT_001/provision_receipt.json",
+      "provision_receipt_sha256": "16e4f1d647e72180ed40028dbf9bf323deca275e99f12a0faf659cb0f4acd782",
+      "quarantine_root": "D:/QM/reports/dev2/quarantine/a413ae7d_ws30_transport_2026-08-27",
+      "schema": "qm.dev2-ws30-quarantine-authorization/v1",
+      "source_custom_root": "D:/QM/mt5/DEV2/Bases/Custom",
+      "symbol": "WS30.DWX",
+      "task_id": "a413ae7d-75bc-43f4-93b0-4fa8f27732f8"
+    },
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\a413ae7d_dev2_ws30_quarantine_authorization.json",
+    "sha256": "47bd9b1b0d1b8da688981d8228e2ea1d61ba8f185ab400388cc8ec3c82d2b49d"
+  },
+  "completed_utc": "2026-08-27T17:15:48.273502+00:00",
+  "decision": {
+    "contract_expanded": false,
+    "files_deleted": 0,
+    "reason": "QM5_10834 offline WS30 transport is outside the signed six-symbol DEV2 lane contract",
+    "recoverable": true
+  },
+  "inventory_preserved": true,
+  "lane_after": {
+    "account_enabled": false,
+    "password_required": true,
+    "process_count": 0,
+    "process_ids": []
+  },
+  "lane_before": {
+    "account_enabled": false,
+    "password_required": true,
+    "process_count": 0,
+    "process_ids": []
+  },
+  "lane_contract": {
+    "allowed_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "USDJPY.DWX",
+      "XAUUSD.DWX"
+    ],
+    "contract_id": "QM_DEV2_ISOLATED_MT5_LANE_V3",
+    "path": "C:\\QM\\repo\\framework\\registry\\dev2_lane_contract.json",
+    "sha256": "866e4e346187e47c33e32beb30bb96dc4085e98cc316819fb33f7925306dda06",
+    "ws30_allowed": false
+  },
+  "pre_move_inventory": {
+    "file_count": 98,
+    "file_set_sha256": "2130460517c1affa3f6749d4c30279ddc6f47dcbc1cfcdc73370ccb1a1ebf674",
+    "files": [
+      {
+        "creation_time_ns": 1784619338331324600,
+        "kind": "history",
+        "last_write_time_ns": 1784619338345360300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\history\\WS30.DWX\\2018.hcc",
+        "period": "2018",
+        "sha256": "13314703d852e0f90dd3e279e5f3bc81489913304c59c01764b53f3099570237",
+        "size": 10460625
+      },
+      {
+        "creation_time_ns": 1784619338372431200,
+        "kind": "history",
+        "last_write_time_ns": 1784619338400504400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\history\\WS30.DWX\\2019.hcc",
+        "period": "2019",
+        "sha256": "0ee6f8fc721de8176a61a2e2ac8c59a09991c12cd3684a462092d8df47ec57e4",
+        "size": 20858997
+      },
+      {
+        "creation_time_ns": 1784619338438602300,
+        "kind": "history",
+        "last_write_time_ns": 1784619338467678500,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\history\\WS30.DWX\\2020.hcc",
+        "period": "2020",
+        "sha256": "08b70450975254dceb67d297e8aae8ec30b23284ef15db60af493c62af8f8c65",
+        "size": 21023055
+      },
+      {
+        "creation_time_ns": 1784619338506780300,
+        "kind": "history",
+        "last_write_time_ns": 1784619338537861100,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\history\\WS30.DWX\\2021.hcc",
+        "period": "2021",
+        "sha256": "8bb2962a161d3184a621e7e73b97168fbae1ccd7e23f97077a57f9c44335ba15",
+        "size": 21295155
+      },
+      {
+        "creation_time_ns": 1784619338577965200,
+        "kind": "history",
+        "last_write_time_ns": 1784619338610049000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\history\\WS30.DWX\\2022.hcc",
+        "period": "2022",
+        "sha256": "ca927c8cc8e0ad83a5e2d17fabacfa4e2e8beaaf7a980325d307d31be40dc67a",
+        "size": 21269046
+      },
+      {
+        "creation_time_ns": 1784619338652158900,
+        "kind": "history",
+        "last_write_time_ns": 1784619338680231700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\history\\WS30.DWX\\2023.hcc",
+        "period": "2023",
+        "sha256": "3d78354eeeaaf35f764fc1922469404d0e6a13eac122d4be066e7a14dd903e3b",
+        "size": 20820459
+      },
+      {
+        "creation_time_ns": 1784619338720335600,
+        "kind": "history",
+        "last_write_time_ns": 1784619338752465300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\history\\WS30.DWX\\2024.hcc",
+        "period": "2024",
+        "sha256": "86e6b0837437984a67dcd4ae5d6e93fe2c29d6af967408fccb29dc0b5c3f9af3",
+        "size": 21248415
+      },
+      {
+        "creation_time_ns": 1784619338796841500,
+        "kind": "history",
+        "last_write_time_ns": 1784619338826920000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\history\\WS30.DWX\\2025.hcc",
+        "period": "2025",
+        "sha256": "d42eeb198fd33b950e846226c1e21d955ec16ee77c444f08f759dee535a8d149",
+        "size": 20991468
+      },
+      {
+        "creation_time_ns": 1784619338870032300,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619338874042900,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201807.tkc",
+        "period": "201807",
+        "sha256": "203970934654376284d0c45429266c9bc132bcd018a7e84ab61bd42b48639e5c",
+        "size": 2046116
+      },
+      {
+        "creation_time_ns": 1784619338888078700,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619338892089500,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201808.tkc",
+        "period": "201808",
+        "sha256": "c55844cd8bde90690be82375ef8b96ca9f9e3dc5e37e446b61858779d5c02a52",
+        "size": 1766148
+      },
+      {
+        "creation_time_ns": 1784619338905123400,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619338908131400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201809.tkc",
+        "period": "201809",
+        "sha256": "42ff874730a165fb97b0cb2e5fabeb14a16255233a1ed9991b8ca9b9a4da967b",
+        "size": 1976126
+      },
+      {
+        "creation_time_ns": 1784619338924172400,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619338931190700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201810.tkc",
+        "period": "201810",
+        "sha256": "b03e5456dc8c37b8ad5982e3a6c703bbc7b034feed744d0ccae33c39726756a2",
+        "size": 3890654
+      },
+      {
+        "creation_time_ns": 1784619338948235800,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619338955253800,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201811.tkc",
+        "period": "201811",
+        "sha256": "fc281a6a7ab9816183f627201d718ccc5e948d09cb4ce5cfd22d0c78d7a02eba",
+        "size": 3494808
+      },
+      {
+        "creation_time_ns": 1784619338972298100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619338978313900,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201812.tkc",
+        "period": "201812",
+        "sha256": "8ba22419c11cbae0eeb46a64ec1e45ddaa2adb13ac65c3ba399aba04a2017449",
+        "size": 3486294
+      },
+      {
+        "creation_time_ns": 1784619338993353600,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619338999368600,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201901.tkc",
+        "period": "201901",
+        "sha256": "5ee6e9697492edbc7f863c21b57ef0c3e4f7ca9d42c39f0dc9cf6f6ea61de5f3",
+        "size": 3542560
+      },
+      {
+        "creation_time_ns": 1784619339103640800,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339107650400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201902.tkc",
+        "period": "201902",
+        "sha256": "cb5c2eeb29010dd0016c325ae9102b4317ec547a67255cb7e30653e36c67af92",
+        "size": 2356569
+      },
+      {
+        "creation_time_ns": 1784619339121687600,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339126701600,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201903.tkc",
+        "period": "201903",
+        "sha256": "92c98bfe6df852aba6622fca500755c008c8ae8ed4a2682324d76e4b524be6a5",
+        "size": 2727784
+      },
+      {
+        "creation_time_ns": 1784619339140736800,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339144747000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201904.tkc",
+        "period": "201904",
+        "sha256": "58493fbcf024eb9294253acd2228aa28adb417cf27061695fd3967bec3386c9e",
+        "size": 1983911
+      },
+      {
+        "creation_time_ns": 1784619339158783900,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339167807100,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201905.tkc",
+        "period": "201905",
+        "sha256": "b35d21ba64e04a664c927a489332635a00ee9cc17726363839e49433d03e2752",
+        "size": 5406793
+      },
+      {
+        "creation_time_ns": 1784619339185853500,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339189865400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201906.tkc",
+        "period": "201906",
+        "sha256": "dd1f432bdc5755708ec2c2ec8706cd6472fe653ee0b959913c56ff6427a93b72",
+        "size": 2365264
+      },
+      {
+        "creation_time_ns": 1784619339204903000,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339208914300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201907.tkc",
+        "period": "201907",
+        "sha256": "1303b244550055dc0bdf1d83c59c84b0346287af1b38a364d719e549e6cbd6a3",
+        "size": 1893754
+      },
+      {
+        "creation_time_ns": 1784619339221947400,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339226960800,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201908.tkc",
+        "period": "201908",
+        "sha256": "d474e2ac39dad5d36b95c8861ede0beb3cd955cbab1707c8c05094968e36571f",
+        "size": 3436478
+      },
+      {
+        "creation_time_ns": 1784619339244005100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339249018100,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201909.tkc",
+        "period": "201909",
+        "sha256": "edd0305bd12485bc9da109278c3d097948327ad3ec0b33a5205e72ae4817444e",
+        "size": 3531686
+      },
+      {
+        "creation_time_ns": 1784619339266062300,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339278094300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201910.tkc",
+        "period": "201910",
+        "sha256": "fe7d63e57dcfe9e9a63a2ce252696649a9ad02d87850036d95719f55cf836c2d",
+        "size": 8301778
+      },
+      {
+        "creation_time_ns": 1784619339302156700,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339311180200,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201911.tkc",
+        "period": "201911",
+        "sha256": "ff68971b4a08ef351d252284dd497e65239cbd8f384b6d4c2255981a52c3011d",
+        "size": 4359042
+      },
+      {
+        "creation_time_ns": 1784619339330229500,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339338250700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\201912.tkc",
+        "period": "201912",
+        "sha256": "a598a88f78a2848815fdc11b0ffe712b2202a796daf1dec22ed95f4624d31c7a",
+        "size": 4270771
+      },
+      {
+        "creation_time_ns": 1784619339357300100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339369331200,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202001.tkc",
+        "period": "202001",
+        "sha256": "fb940f6f627297a1f4736c919cd1796175535e0e8389c69d5213743070f17a05",
+        "size": 7411298
+      },
+      {
+        "creation_time_ns": 1784619339392390700,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339415450700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202002.tkc",
+        "period": "202002",
+        "sha256": "a8bd92a59b4f1317cf292fd7b8557918e0297717e76218d267496d3fb40be5de",
+        "size": 14808930
+      },
+      {
+        "creation_time_ns": 1784619339447535200,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339503966100,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202003.tkc",
+        "period": "202003",
+        "sha256": "ba35d97e1de68c11cae1ebc2627768f19ca0a71947d34258752fe02aa53f640f",
+        "size": 39466004
+      },
+      {
+        "creation_time_ns": 1784619339568133600,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339597208400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202004.tkc",
+        "period": "202004",
+        "sha256": "fb443198618caa1b9cc7c7e76e5a564c617ce4813c6fa4f4f650436e71bac784",
+        "size": 21471669
+      },
+      {
+        "creation_time_ns": 1784619339638316300,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339658367200,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202005.tkc",
+        "period": "202005",
+        "sha256": "4bb46c9e9871153c88e56900c880d421e909a575a58093fc07870e86ddff2bde",
+        "size": 13903255
+      },
+      {
+        "creation_time_ns": 1784619339687442700,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339709501000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202006.tkc",
+        "period": "202006",
+        "sha256": "438f09a35893888bcdf3155344336afe5c31080e28847f79d2f02bea2970fc06",
+        "size": 18393470
+      },
+      {
+        "creation_time_ns": 1784619339743589100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339762639100,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202007.tkc",
+        "period": "202007",
+        "sha256": "a1d71a25aff374107a78f19cf6bca8dc36bb6ee2840340c0ed9e65139e058296",
+        "size": 12802954
+      },
+      {
+        "creation_time_ns": 1784619339791714400,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339804748400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202008.tkc",
+        "period": "202008",
+        "sha256": "674b529633f2fe79097e0b36206f068e2f44da9d91f8e833eb18ba5405489f3b",
+        "size": 7761853
+      },
+      {
+        "creation_time_ns": 1784619339826805400,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339851871200,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202009.tkc",
+        "period": "202009",
+        "sha256": "ea8e9002d2f194e3faac34a8bfdb705b5cb5cb7826db434e317d24de1b6457cd",
+        "size": 17302780
+      },
+      {
+        "creation_time_ns": 1784619339889970200,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339908017000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202010.tkc",
+        "period": "202010",
+        "sha256": "300ba6ab188cbd989c0de28133c5da335c463cf28e578fde71d7103b52b9f03b",
+        "size": 12766001
+      },
+      {
+        "creation_time_ns": 1784619339938095000,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619339958147600,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202011.tkc",
+        "period": "202011",
+        "sha256": "8c3b91483dc15dd757eb9425b4c2085a584e389ab71fd8c0129fbc80548716ba",
+        "size": 13611825
+      },
+      {
+        "creation_time_ns": 1784619339989227900,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340000257700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202012.tkc",
+        "period": "202012",
+        "sha256": "10938b19f2d63afea4c255c9d5b5b55af262d40ff72705a59821c07547dc94da",
+        "size": 7596960
+      },
+      {
+        "creation_time_ns": 1784619340020309700,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340033342700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202101.tkc",
+        "period": "202101",
+        "sha256": "197c60ccca4377270befcc56d0a5909338336a44bda96f88fedc9bdb97be7db4",
+        "size": 9342403
+      },
+      {
+        "creation_time_ns": 1784619340057406100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340070439900,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202102.tkc",
+        "period": "202102",
+        "sha256": "5fa499062d4ca357b010a8467d076b7528ca78cafe7098d665d56368311690ae",
+        "size": 8752882
+      },
+      {
+        "creation_time_ns": 1784619340093499900,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340109541600,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202103.tkc",
+        "period": "202103",
+        "sha256": "a5cb12f94e9044f5647965d47e47b401bfe037553583eaa95fee63fa316ba230",
+        "size": 12480116
+      },
+      {
+        "creation_time_ns": 1784619340136612500,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340144633400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202104.tkc",
+        "period": "202104",
+        "sha256": "a1f43c616b6e31c81b9d2f8d63ea3ccdaecbf97b0798f4b0b571c7190a89969e",
+        "size": 5443242
+      },
+      {
+        "creation_time_ns": 1784619340162680000,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340176716400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202105.tkc",
+        "period": "202105",
+        "sha256": "f46899708deb11ae66d40ee3becab8844dd2631540c8bcd10995a77c757ee6e8",
+        "size": 10412942
+      },
+      {
+        "creation_time_ns": 1784619340199776600,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340211807700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202106.tkc",
+        "period": "202106",
+        "sha256": "77f749ac997c11d3152b4c479969aa4737042f46b01d31cde7999e082c5769a3",
+        "size": 8558583
+      },
+      {
+        "creation_time_ns": 1784619340234867800,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340248904300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202107.tkc",
+        "period": "202107",
+        "sha256": "02f44728d4839755c27d4a7eca6f88a353ec783a1883fc4c7963f59737d60870",
+        "size": 10383315
+      },
+      {
+        "creation_time_ns": 1784619340274972000,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340288005600,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202108.tkc",
+        "period": "202108",
+        "sha256": "eb4244afdef968c69ecdb3985a4d40d02e945ea8beb03789d6afac94a1710b75",
+        "size": 8758678
+      },
+      {
+        "creation_time_ns": 1784619340312068400,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340329113100,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202109.tkc",
+        "period": "202109",
+        "sha256": "2c011ee1750bb16dbe56da845f9e7d8d468a19a07012cb751d57de53430024d7",
+        "size": 11788111
+      },
+      {
+        "creation_time_ns": 1784619340358188500,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340377238600,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202110.tkc",
+        "period": "202110",
+        "sha256": "44540ad05ade76c8d0f16eb539b68e5ccd73cb179b7c719ddd7eb50afc88b5a9",
+        "size": 12582251
+      },
+      {
+        "creation_time_ns": 1784619340405312100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340418345000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202111.tkc",
+        "period": "202111",
+        "sha256": "68ff08c460034d900be1a07a7f1518445c6e798b67e7a0a3b7b5374afd080320",
+        "size": 9886917
+      },
+      {
+        "creation_time_ns": 1784619340442407700,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340460455000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202112.tkc",
+        "period": "202112",
+        "sha256": "2a42ec6094334be48d9f5b1d328e96138fe06d63b3706ec6186bcb151f4891a6",
+        "size": 12185478
+      },
+      {
+        "creation_time_ns": 1784619340489530400,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340514596300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202201.tkc",
+        "period": "202201",
+        "sha256": "36b0b2fb703044367be01295165704a7c92e9a178bd480e62ff2f18a8f58755c",
+        "size": 19936951
+      },
+      {
+        "creation_time_ns": 1784619340552695500,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340578763700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202202.tkc",
+        "period": "202202",
+        "sha256": "eadda60586d621f90b2b3e2936b1d1d96ce44527e247291b1f5750e92a20d1cd",
+        "size": 20427032
+      },
+      {
+        "creation_time_ns": 1784619340616861800,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340656967500,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202203.tkc",
+        "period": "202203",
+        "sha256": "822fd36deed18b16de5d0496ad1f7097e58579c4f3acc84cc506d3cd4d86f6ea",
+        "size": 31037376
+      },
+      {
+        "creation_time_ns": 1784619340710104500,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340736171600,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202204.tkc",
+        "period": "202204",
+        "sha256": "119d1565319ee5d7f07df9abcd2aa7f99e83b78f67511195c757eed7822fc3fa",
+        "size": 19776916
+      },
+      {
+        "creation_time_ns": 1784619340773269100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340803347400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202205.tkc",
+        "period": "202205",
+        "sha256": "0b3aeb16eb4f5886c5789d26b0bf9e9c440a598ebdbd9d73287ccd7f9288047b",
+        "size": 21238266
+      },
+      {
+        "creation_time_ns": 1784619340846461300,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340865510600,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202206.tkc",
+        "period": "202206",
+        "sha256": "2d2390c898faa54059e07aae39a938ecfdddfbca244e36d8c31d73b5a180cc7b",
+        "size": 11913813
+      },
+      {
+        "creation_time_ns": 1784619340895588000,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340911628200,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202207.tkc",
+        "period": "202207",
+        "sha256": "040e4ba4032d6f963be7bb553b806e6e61978be8bfe7a5d616650b03831df3bb",
+        "size": 10238317
+      },
+      {
+        "creation_time_ns": 1784619340937697000,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340952735500,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202208.tkc",
+        "period": "202208",
+        "sha256": "015f5736ffbc4a9680b75e7a6724e57b0b2ed5d874dcfdd14a85a596a1a432c9",
+        "size": 9910722
+      },
+      {
+        "creation_time_ns": 1784619340977800300,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619340996850400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202209.tkc",
+        "period": "202209",
+        "sha256": "5e7b602b52f632c10e93ac3390e1d2076b1984d7091c7869259eb98d50f9f2f9",
+        "size": 11985340
+      },
+      {
+        "creation_time_ns": 1784619341024923500,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341047983700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202210.tkc",
+        "period": "202210",
+        "sha256": "2545239814a521cb2af31c86eaa9058adeff0a66f66d2449def4c0f5ce9d54fd",
+        "size": 13717985
+      },
+      {
+        "creation_time_ns": 1784619341080067400,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341097111000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202211.tkc",
+        "period": "202211",
+        "sha256": "e0b045b1d81e5aed2dc62459ca6e3f48e6fe16a909ddc501be01938f941192a2",
+        "size": 9116569
+      },
+      {
+        "creation_time_ns": 1784619341123178800,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341135210000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202212.tkc",
+        "period": "202212",
+        "sha256": "943616a862bad30a0ce2c1bafc2f7e4b410fb85083f3fd50f816289009894019",
+        "size": 6590558
+      },
+      {
+        "creation_time_ns": 1784619341161278100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341171304900,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202301.tkc",
+        "period": "202301",
+        "sha256": "920fa6f643d24321ea04339d32d108ac6e7f096f11eec4567e757da9300a5ead",
+        "size": 6165363
+      },
+      {
+        "creation_time_ns": 1784619341192358500,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341202385700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202302.tkc",
+        "period": "202302",
+        "sha256": "5692eb9a137fd7214198a92777c4718448f4a317667d2c985a97eb48b7068829",
+        "size": 5919228
+      },
+      {
+        "creation_time_ns": 1784619341222437100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341233468000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202303.tkc",
+        "period": "202303",
+        "sha256": "a7b82d915c468d9d4985b5fa4ef3e79fa511ffd07051e958355433c5f9edb588",
+        "size": 7513516
+      },
+      {
+        "creation_time_ns": 1784619341257528800,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341263544700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202304.tkc",
+        "period": "202304",
+        "sha256": "2eca4d4368a02a649bb87a2df6b5736ab3bbd1c35aa04962450ff43070ea52dc",
+        "size": 3963086
+      },
+      {
+        "creation_time_ns": 1784619341280589000,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341288610300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202305.tkc",
+        "period": "202305",
+        "sha256": "4b69d239dc3a2f145c43388c983a120dae1fd12bc83580485f76954da1180e0d",
+        "size": 5076785
+      },
+      {
+        "creation_time_ns": 1784619341307659100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341314677800,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202306.tkc",
+        "period": "202306",
+        "sha256": "d853859d0918e3f616557b3d99cbfb08105259e7f6ac77b219796aa2bc8e154a",
+        "size": 4489970
+      },
+      {
+        "creation_time_ns": 1784619341332724700,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341338740400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202307.tkc",
+        "period": "202307",
+        "sha256": "e383c055fb26f7e892898d10f6625eff2fc1582d17609dca17a8c93edf0207b0",
+        "size": 3589392
+      },
+      {
+        "creation_time_ns": 1784619341355462200,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341363483300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202308.tkc",
+        "period": "202308",
+        "sha256": "0ab81a45d787982fd32627a2f59d898705c35609868b8e2c78c71cb0d87f0b67",
+        "size": 5386756
+      },
+      {
+        "creation_time_ns": 1784619341383534500,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341390553100,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202309.tkc",
+        "period": "202309",
+        "sha256": "df7f2a02701d18231dc9cdecf364acb6bd5fbbe604d91a5495a0415e71ae5505",
+        "size": 4452561
+      },
+      {
+        "creation_time_ns": 1784619341409601900,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341418626300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202310.tkc",
+        "period": "202310",
+        "sha256": "c4ddb9efca29e4e092883d567d094a557cdb7e554ed225e0e77aa21aff8cf37f",
+        "size": 6609450
+      },
+      {
+        "creation_time_ns": 1784619341439680600,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341445697000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202311.tkc",
+        "period": "202311",
+        "sha256": "484bdb78e51bbce6d0416892c8e6df95eb5205287c259cbeb898e93320a8329c",
+        "size": 3743919
+      },
+      {
+        "creation_time_ns": 1784619341462740700,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341466752000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202312.tkc",
+        "period": "202312",
+        "sha256": "3c5e4b3179acd5f58132ddb30ef605eab052bc4276dc344bf49db45c4fa611ff",
+        "size": 2560974
+      },
+      {
+        "creation_time_ns": 1784619341482793700,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341489811300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202401.tkc",
+        "period": "202401",
+        "sha256": "af3aaa1056e0538d62a531d98d5becc075ffc5c0fca71122b84189cdd79bdd5f",
+        "size": 4470111
+      },
+      {
+        "creation_time_ns": 1784619341508862100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341514877500,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202402.tkc",
+        "period": "202402",
+        "sha256": "d591531b7aa6822da733787b350f621ae3698eb0feaea1ccffcebdd9818bc61b",
+        "size": 4053490
+      },
+      {
+        "creation_time_ns": 1784619341533926000,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341540946400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202403.tkc",
+        "period": "202403",
+        "sha256": "4dce20dd25f16f29c4b34f0bbf22a73bc3c1a99f05d1c48deefe6f6f6a09a3a6",
+        "size": 4053587
+      },
+      {
+        "creation_time_ns": 1784619341558990900,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341568014700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202404.tkc",
+        "period": "202404",
+        "sha256": "79697b28e1c1dd8a3f995dc714bdc7ef488b509989ebc8beee6ab8a2b85f5b08",
+        "size": 5819043
+      },
+      {
+        "creation_time_ns": 1784619341588067100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341594082400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202405.tkc",
+        "period": "202405",
+        "sha256": "4a2ccec1881c0568e09b69f525896661b2eb4b798431682e457bde1d14ecb778",
+        "size": 4053940
+      },
+      {
+        "creation_time_ns": 1784619341612129800,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341618144700,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202406.tkc",
+        "period": "202406",
+        "sha256": "3b0b5693e3b05f65803d903ed4bbba5133f4701cabc06172a7fb3278fed08926",
+        "size": 3799522
+      },
+      {
+        "creation_time_ns": 1784619341634186800,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341643210100,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202407.tkc",
+        "period": "202407",
+        "sha256": "151aa7b02bcd02881f6e9de9c5a3d451ba4350c952e72b7ece3ed594e6e0135d",
+        "size": 4702615
+      },
+      {
+        "creation_time_ns": 1784619341661256600,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341671282600,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202408.tkc",
+        "period": "202408",
+        "sha256": "a58ba44d2c20f91e1a6edb6a370019fd7c4728b3e9c0da4d714e5bcee5e411d4",
+        "size": 6233093
+      },
+      {
+        "creation_time_ns": 1784619341693340700,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341701361000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202409.tkc",
+        "period": "202409",
+        "sha256": "35ef52d3c9bd617885c2a5f6d18837c0b3dbee92c62872b70cfd0ed63312dc17",
+        "size": 4769996
+      },
+      {
+        "creation_time_ns": 1784619341721413000,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341728431100,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202410.tkc",
+        "period": "202410",
+        "sha256": "6d7c70f6c4292ee3076ddeda3b12c9e30aea7b7e1f78f0b10c39600de15b1f21",
+        "size": 4192947
+      },
+      {
+        "creation_time_ns": 1784619341745476100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341752494800,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202411.tkc",
+        "period": "202411",
+        "sha256": "17eb0d248d52a374ea865dfbcadc4ebd01139adb661155b679acc8fb9d6ea622",
+        "size": 4090945
+      },
+      {
+        "creation_time_ns": 1784619341770541600,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341777559800,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202412.tkc",
+        "period": "202412",
+        "sha256": "b5fe58b115473a380d3b8382d2ffb880cbf660423eae496dbb0889619c0869dc",
+        "size": 4143747
+      },
+      {
+        "creation_time_ns": 1784619341796609100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341805633400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202501.tkc",
+        "period": "202501",
+        "sha256": "3e73c0b80959a3769d401b9fce7ddafc0e3b65b22833abdcd585d265770c8888",
+        "size": 4764255
+      },
+      {
+        "creation_time_ns": 1784619341825684200,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341834707600,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202502.tkc",
+        "period": "202502",
+        "sha256": "fec54e89682876bfd2b2b9319e2f55804128bfb8e0a4f8ea4abcfa6030b9136a",
+        "size": 4511534
+      },
+      {
+        "creation_time_ns": 1784619341854760400,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341866791000,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202503.tkc",
+        "period": "202503",
+        "sha256": "584684f21f7150f20a9e333b8979e26416c04f97ade19860f3485869e839876f",
+        "size": 7296422
+      },
+      {
+        "creation_time_ns": 1784619341889851100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341906895500,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202504.tkc",
+        "period": "202504",
+        "sha256": "1c08b334de5ff147e95e17a7f1a32976da24125a6e4d8b1b79a975b4102a4941",
+        "size": 11011387
+      },
+      {
+        "creation_time_ns": 1784619341932964100,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341941987900,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202505.tkc",
+        "period": "202505",
+        "sha256": "28157559fca80d48734cb85d5e4c4ba557f8da15b599dacc9a06dbcbbd9cb733",
+        "size": 5877275
+      },
+      {
+        "creation_time_ns": 1784619341963042300,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341972065300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202506.tkc",
+        "period": "202506",
+        "sha256": "094617c1dbdc692fa184db696a752439c6de72f07d4fc50aa01257eaea31a99b",
+        "size": 4666281
+      },
+      {
+        "creation_time_ns": 1784619341991115200,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619341998133800,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202507.tkc",
+        "period": "202507",
+        "sha256": "f18101032983534e89f62f497287c352adb94cca0354ea5c34c6909365caea7d",
+        "size": 3879926
+      },
+      {
+        "creation_time_ns": 1784619342015177800,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619342022196500,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202508.tkc",
+        "period": "202508",
+        "sha256": "c425fcefa30fe346b1fc97eba98befd03b4fff7ffae25b22e2e3541c065d2301",
+        "size": 4219691
+      },
+      {
+        "creation_time_ns": 1784619342041246000,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619342050269300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202509.tkc",
+        "period": "202509",
+        "sha256": "6bb49ebbbfb7b799071749bac47f0e3bda559d861b867068dcf74623a72ee15f",
+        "size": 4223201
+      },
+      {
+        "creation_time_ns": 1784619342069318900,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619342079344300,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202510.tkc",
+        "period": "202510",
+        "sha256": "4ff2ba97c62b9ffbee3f730604c9bc96cd717998ff352080b0ee3b2b22e61435",
+        "size": 5891936
+      },
+      {
+        "creation_time_ns": 1784619342097392200,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619342107418400,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202511.tkc",
+        "period": "202511",
+        "sha256": "0b2688d8a9c54768f6f7d4d837e9ec406878a913353aa8812a2ddaf83ee238e4",
+        "size": 5968434
+      },
+      {
+        "creation_time_ns": 1784619342128472600,
+        "kind": "ticks",
+        "last_write_time_ns": 1784619342134488800,
+        "path": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX\\202512.tkc",
+        "period": "202512",
+        "sha256": "7145b4ffa2ceb40ce0074e5c1bdbfb4abfaec7ee9e859e5bbd7864c14fbc15f9",
+        "size": 3971673
+      }
+    ],
+    "total_bytes": 892701569
+  },
+  "provenance": {
+    "data_receipt": {
+      "creation_time_ns": 1784619364843992400,
+      "last_write_time_ns": 1784619364844995100,
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\data\\WS30_DWX_201807_202512_DEV2_backtest_data_receipt.json",
+      "sha256": "bd398f53d31e7c91667069e6b2c5b6ec466bb2630fb0934436a3b8f75aedd401",
+      "size": 29800
+    },
+    "data_receipt_created_utc": "2026-07-21T07:36:04.839981+00:00",
+    "prior_v4a_handoff": "C:\\QM\\repo\\docs\\ops\\evidence\\2cb9d160_v4a_phase3_handoff_2026-08-27.md",
+    "provision_completed_utc": "2026-07-21T07:35:44.510874Z",
+    "provision_receipt": {
+      "creation_time_ns": 1784619344515887200,
+      "last_write_time_ns": 1784619344516890200,
+      "path": "D:\\QM\\reports\\setup\\tick-data-timezone\\WS30.DWX_DEV2_TRANSPORT_001\\provision_receipt.json",
+      "sha256": "16e4f1d647e72180ed40028dbf9bf323deca275e99f12a0faf659cb0f4acd782",
+      "size": 49576
+    },
+    "provisioner": {
+      "creation_time_ns": 1784618198046456400,
+      "last_write_time_ns": 1784618835875306200,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10834_tv-nq-ict-ob\\tools\\candidate_analysis\\provision_ws30_dev2_transport.py",
+      "sha256": "eef1eed12da8fb2924bcd320a2a732d30ff2bee0318eeeb2c76f7089889568a4",
+      "size": 28974
+    },
+    "provisioner_git_commit": "e183104e448c7771562e0064cf3287d2ba5578b1",
+    "source_target_sha256_equal": true,
+    "source_terminal_at_transport": "T1",
+    "target_terminal_at_transport": "DEV2"
+  },
+  "quarantine": {
+    "history": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\history\\WS30.DWX",
+    "inventory": {
+      "file_count": 98,
+      "file_set_sha256": "2130460517c1affa3f6749d4c30279ddc6f47dcbc1cfcdc73370ccb1a1ebf674",
+      "files": [
+        {
+          "creation_time_ns": 1784619338331324600,
+          "kind": "history",
+          "last_write_time_ns": 1784619338345360300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\history\\WS30.DWX\\2018.hcc",
+          "period": "2018",
+          "sha256": "13314703d852e0f90dd3e279e5f3bc81489913304c59c01764b53f3099570237",
+          "size": 10460625
+        },
+        {
+          "creation_time_ns": 1784619338372431200,
+          "kind": "history",
+          "last_write_time_ns": 1784619338400504400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\history\\WS30.DWX\\2019.hcc",
+          "period": "2019",
+          "sha256": "0ee6f8fc721de8176a61a2e2ac8c59a09991c12cd3684a462092d8df47ec57e4",
+          "size": 20858997
+        },
+        {
+          "creation_time_ns": 1784619338438602300,
+          "kind": "history",
+          "last_write_time_ns": 1784619338467678500,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\history\\WS30.DWX\\2020.hcc",
+          "period": "2020",
+          "sha256": "08b70450975254dceb67d297e8aae8ec30b23284ef15db60af493c62af8f8c65",
+          "size": 21023055
+        },
+        {
+          "creation_time_ns": 1784619338506780300,
+          "kind": "history",
+          "last_write_time_ns": 1784619338537861100,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\history\\WS30.DWX\\2021.hcc",
+          "period": "2021",
+          "sha256": "8bb2962a161d3184a621e7e73b97168fbae1ccd7e23f97077a57f9c44335ba15",
+          "size": 21295155
+        },
+        {
+          "creation_time_ns": 1784619338577965200,
+          "kind": "history",
+          "last_write_time_ns": 1784619338610049000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\history\\WS30.DWX\\2022.hcc",
+          "period": "2022",
+          "sha256": "ca927c8cc8e0ad83a5e2d17fabacfa4e2e8beaaf7a980325d307d31be40dc67a",
+          "size": 21269046
+        },
+        {
+          "creation_time_ns": 1784619338652158900,
+          "kind": "history",
+          "last_write_time_ns": 1784619338680231700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\history\\WS30.DWX\\2023.hcc",
+          "period": "2023",
+          "sha256": "3d78354eeeaaf35f764fc1922469404d0e6a13eac122d4be066e7a14dd903e3b",
+          "size": 20820459
+        },
+        {
+          "creation_time_ns": 1784619338720335600,
+          "kind": "history",
+          "last_write_time_ns": 1784619338752465300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\history\\WS30.DWX\\2024.hcc",
+          "period": "2024",
+          "sha256": "86e6b0837437984a67dcd4ae5d6e93fe2c29d6af967408fccb29dc0b5c3f9af3",
+          "size": 21248415
+        },
+        {
+          "creation_time_ns": 1784619338796841500,
+          "kind": "history",
+          "last_write_time_ns": 1784619338826920000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\history\\WS30.DWX\\2025.hcc",
+          "period": "2025",
+          "sha256": "d42eeb198fd33b950e846226c1e21d955ec16ee77c444f08f759dee535a8d149",
+          "size": 20991468
+        },
+        {
+          "creation_time_ns": 1784619338870032300,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619338874042900,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201807.tkc",
+          "period": "201807",
+          "sha256": "203970934654376284d0c45429266c9bc132bcd018a7e84ab61bd42b48639e5c",
+          "size": 2046116
+        },
+        {
+          "creation_time_ns": 1784619338888078700,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619338892089500,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201808.tkc",
+          "period": "201808",
+          "sha256": "c55844cd8bde90690be82375ef8b96ca9f9e3dc5e37e446b61858779d5c02a52",
+          "size": 1766148
+        },
+        {
+          "creation_time_ns": 1784619338905123400,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619338908131400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201809.tkc",
+          "period": "201809",
+          "sha256": "42ff874730a165fb97b0cb2e5fabeb14a16255233a1ed9991b8ca9b9a4da967b",
+          "size": 1976126
+        },
+        {
+          "creation_time_ns": 1784619338924172400,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619338931190700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201810.tkc",
+          "period": "201810",
+          "sha256": "b03e5456dc8c37b8ad5982e3a6c703bbc7b034feed744d0ccae33c39726756a2",
+          "size": 3890654
+        },
+        {
+          "creation_time_ns": 1784619338948235800,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619338955253800,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201811.tkc",
+          "period": "201811",
+          "sha256": "fc281a6a7ab9816183f627201d718ccc5e948d09cb4ce5cfd22d0c78d7a02eba",
+          "size": 3494808
+        },
+        {
+          "creation_time_ns": 1784619338972298100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619338978313900,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201812.tkc",
+          "period": "201812",
+          "sha256": "8ba22419c11cbae0eeb46a64ec1e45ddaa2adb13ac65c3ba399aba04a2017449",
+          "size": 3486294
+        },
+        {
+          "creation_time_ns": 1784619338993353600,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619338999368600,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201901.tkc",
+          "period": "201901",
+          "sha256": "5ee6e9697492edbc7f863c21b57ef0c3e4f7ca9d42c39f0dc9cf6f6ea61de5f3",
+          "size": 3542560
+        },
+        {
+          "creation_time_ns": 1784619339103640800,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339107650400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201902.tkc",
+          "period": "201902",
+          "sha256": "cb5c2eeb29010dd0016c325ae9102b4317ec547a67255cb7e30653e36c67af92",
+          "size": 2356569
+        },
+        {
+          "creation_time_ns": 1784619339121687600,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339126701600,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201903.tkc",
+          "period": "201903",
+          "sha256": "92c98bfe6df852aba6622fca500755c008c8ae8ed4a2682324d76e4b524be6a5",
+          "size": 2727784
+        },
+        {
+          "creation_time_ns": 1784619339140736800,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339144747000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201904.tkc",
+          "period": "201904",
+          "sha256": "58493fbcf024eb9294253acd2228aa28adb417cf27061695fd3967bec3386c9e",
+          "size": 1983911
+        },
+        {
+          "creation_time_ns": 1784619339158783900,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339167807100,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201905.tkc",
+          "period": "201905",
+          "sha256": "b35d21ba64e04a664c927a489332635a00ee9cc17726363839e49433d03e2752",
+          "size": 5406793
+        },
+        {
+          "creation_time_ns": 1784619339185853500,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339189865400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201906.tkc",
+          "period": "201906",
+          "sha256": "dd1f432bdc5755708ec2c2ec8706cd6472fe653ee0b959913c56ff6427a93b72",
+          "size": 2365264
+        },
+        {
+          "creation_time_ns": 1784619339204903000,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339208914300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201907.tkc",
+          "period": "201907",
+          "sha256": "1303b244550055dc0bdf1d83c59c84b0346287af1b38a364d719e549e6cbd6a3",
+          "size": 1893754
+        },
+        {
+          "creation_time_ns": 1784619339221947400,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339226960800,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201908.tkc",
+          "period": "201908",
+          "sha256": "d474e2ac39dad5d36b95c8861ede0beb3cd955cbab1707c8c05094968e36571f",
+          "size": 3436478
+        },
+        {
+          "creation_time_ns": 1784619339244005100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339249018100,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201909.tkc",
+          "period": "201909",
+          "sha256": "edd0305bd12485bc9da109278c3d097948327ad3ec0b33a5205e72ae4817444e",
+          "size": 3531686
+        },
+        {
+          "creation_time_ns": 1784619339266062300,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339278094300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201910.tkc",
+          "period": "201910",
+          "sha256": "fe7d63e57dcfe9e9a63a2ce252696649a9ad02d87850036d95719f55cf836c2d",
+          "size": 8301778
+        },
+        {
+          "creation_time_ns": 1784619339302156700,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339311180200,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201911.tkc",
+          "period": "201911",
+          "sha256": "ff68971b4a08ef351d252284dd497e65239cbd8f384b6d4c2255981a52c3011d",
+          "size": 4359042
+        },
+        {
+          "creation_time_ns": 1784619339330229500,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339338250700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\201912.tkc",
+          "period": "201912",
+          "sha256": "a598a88f78a2848815fdc11b0ffe712b2202a796daf1dec22ed95f4624d31c7a",
+          "size": 4270771
+        },
+        {
+          "creation_time_ns": 1784619339357300100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339369331200,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202001.tkc",
+          "period": "202001",
+          "sha256": "fb940f6f627297a1f4736c919cd1796175535e0e8389c69d5213743070f17a05",
+          "size": 7411298
+        },
+        {
+          "creation_time_ns": 1784619339392390700,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339415450700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202002.tkc",
+          "period": "202002",
+          "sha256": "a8bd92a59b4f1317cf292fd7b8557918e0297717e76218d267496d3fb40be5de",
+          "size": 14808930
+        },
+        {
+          "creation_time_ns": 1784619339447535200,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339503966100,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202003.tkc",
+          "period": "202003",
+          "sha256": "ba35d97e1de68c11cae1ebc2627768f19ca0a71947d34258752fe02aa53f640f",
+          "size": 39466004
+        },
+        {
+          "creation_time_ns": 1784619339568133600,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339597208400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202004.tkc",
+          "period": "202004",
+          "sha256": "fb443198618caa1b9cc7c7e76e5a564c617ce4813c6fa4f4f650436e71bac784",
+          "size": 21471669
+        },
+        {
+          "creation_time_ns": 1784619339638316300,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339658367200,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202005.tkc",
+          "period": "202005",
+          "sha256": "4bb46c9e9871153c88e56900c880d421e909a575a58093fc07870e86ddff2bde",
+          "size": 13903255
+        },
+        {
+          "creation_time_ns": 1784619339687442700,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339709501000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202006.tkc",
+          "period": "202006",
+          "sha256": "438f09a35893888bcdf3155344336afe5c31080e28847f79d2f02bea2970fc06",
+          "size": 18393470
+        },
+        {
+          "creation_time_ns": 1784619339743589100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339762639100,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202007.tkc",
+          "period": "202007",
+          "sha256": "a1d71a25aff374107a78f19cf6bca8dc36bb6ee2840340c0ed9e65139e058296",
+          "size": 12802954
+        },
+        {
+          "creation_time_ns": 1784619339791714400,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339804748400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202008.tkc",
+          "period": "202008",
+          "sha256": "674b529633f2fe79097e0b36206f068e2f44da9d91f8e833eb18ba5405489f3b",
+          "size": 7761853
+        },
+        {
+          "creation_time_ns": 1784619339826805400,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339851871200,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202009.tkc",
+          "period": "202009",
+          "sha256": "ea8e9002d2f194e3faac34a8bfdb705b5cb5cb7826db434e317d24de1b6457cd",
+          "size": 17302780
+        },
+        {
+          "creation_time_ns": 1784619339889970200,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339908017000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202010.tkc",
+          "period": "202010",
+          "sha256": "300ba6ab188cbd989c0de28133c5da335c463cf28e578fde71d7103b52b9f03b",
+          "size": 12766001
+        },
+        {
+          "creation_time_ns": 1784619339938095000,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619339958147600,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202011.tkc",
+          "period": "202011",
+          "sha256": "8c3b91483dc15dd757eb9425b4c2085a584e389ab71fd8c0129fbc80548716ba",
+          "size": 13611825
+        },
+        {
+          "creation_time_ns": 1784619339989227900,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340000257700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202012.tkc",
+          "period": "202012",
+          "sha256": "10938b19f2d63afea4c255c9d5b5b55af262d40ff72705a59821c07547dc94da",
+          "size": 7596960
+        },
+        {
+          "creation_time_ns": 1784619340020309700,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340033342700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202101.tkc",
+          "period": "202101",
+          "sha256": "197c60ccca4377270befcc56d0a5909338336a44bda96f88fedc9bdb97be7db4",
+          "size": 9342403
+        },
+        {
+          "creation_time_ns": 1784619340057406100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340070439900,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202102.tkc",
+          "period": "202102",
+          "sha256": "5fa499062d4ca357b010a8467d076b7528ca78cafe7098d665d56368311690ae",
+          "size": 8752882
+        },
+        {
+          "creation_time_ns": 1784619340093499900,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340109541600,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202103.tkc",
+          "period": "202103",
+          "sha256": "a5cb12f94e9044f5647965d47e47b401bfe037553583eaa95fee63fa316ba230",
+          "size": 12480116
+        },
+        {
+          "creation_time_ns": 1784619340136612500,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340144633400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202104.tkc",
+          "period": "202104",
+          "sha256": "a1f43c616b6e31c81b9d2f8d63ea3ccdaecbf97b0798f4b0b571c7190a89969e",
+          "size": 5443242
+        },
+        {
+          "creation_time_ns": 1784619340162680000,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340176716400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202105.tkc",
+          "period": "202105",
+          "sha256": "f46899708deb11ae66d40ee3becab8844dd2631540c8bcd10995a77c757ee6e8",
+          "size": 10412942
+        },
+        {
+          "creation_time_ns": 1784619340199776600,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340211807700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202106.tkc",
+          "period": "202106",
+          "sha256": "77f749ac997c11d3152b4c479969aa4737042f46b01d31cde7999e082c5769a3",
+          "size": 8558583
+        },
+        {
+          "creation_time_ns": 1784619340234867800,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340248904300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202107.tkc",
+          "period": "202107",
+          "sha256": "02f44728d4839755c27d4a7eca6f88a353ec783a1883fc4c7963f59737d60870",
+          "size": 10383315
+        },
+        {
+          "creation_time_ns": 1784619340274972000,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340288005600,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202108.tkc",
+          "period": "202108",
+          "sha256": "eb4244afdef968c69ecdb3985a4d40d02e945ea8beb03789d6afac94a1710b75",
+          "size": 8758678
+        },
+        {
+          "creation_time_ns": 1784619340312068400,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340329113100,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202109.tkc",
+          "period": "202109",
+          "sha256": "2c011ee1750bb16dbe56da845f9e7d8d468a19a07012cb751d57de53430024d7",
+          "size": 11788111
+        },
+        {
+          "creation_time_ns": 1784619340358188500,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340377238600,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202110.tkc",
+          "period": "202110",
+          "sha256": "44540ad05ade76c8d0f16eb539b68e5ccd73cb179b7c719ddd7eb50afc88b5a9",
+          "size": 12582251
+        },
+        {
+          "creation_time_ns": 1784619340405312100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340418345000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202111.tkc",
+          "period": "202111",
+          "sha256": "68ff08c460034d900be1a07a7f1518445c6e798b67e7a0a3b7b5374afd080320",
+          "size": 9886917
+        },
+        {
+          "creation_time_ns": 1784619340442407700,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340460455000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202112.tkc",
+          "period": "202112",
+          "sha256": "2a42ec6094334be48d9f5b1d328e96138fe06d63b3706ec6186bcb151f4891a6",
+          "size": 12185478
+        },
+        {
+          "creation_time_ns": 1784619340489530400,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340514596300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202201.tkc",
+          "period": "202201",
+          "sha256": "36b0b2fb703044367be01295165704a7c92e9a178bd480e62ff2f18a8f58755c",
+          "size": 19936951
+        },
+        {
+          "creation_time_ns": 1784619340552695500,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340578763700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202202.tkc",
+          "period": "202202",
+          "sha256": "eadda60586d621f90b2b3e2936b1d1d96ce44527e247291b1f5750e92a20d1cd",
+          "size": 20427032
+        },
+        {
+          "creation_time_ns": 1784619340616861800,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340656967500,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202203.tkc",
+          "period": "202203",
+          "sha256": "822fd36deed18b16de5d0496ad1f7097e58579c4f3acc84cc506d3cd4d86f6ea",
+          "size": 31037376
+        },
+        {
+          "creation_time_ns": 1784619340710104500,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340736171600,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202204.tkc",
+          "period": "202204",
+          "sha256": "119d1565319ee5d7f07df9abcd2aa7f99e83b78f67511195c757eed7822fc3fa",
+          "size": 19776916
+        },
+        {
+          "creation_time_ns": 1784619340773269100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340803347400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202205.tkc",
+          "period": "202205",
+          "sha256": "0b3aeb16eb4f5886c5789d26b0bf9e9c440a598ebdbd9d73287ccd7f9288047b",
+          "size": 21238266
+        },
+        {
+          "creation_time_ns": 1784619340846461300,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340865510600,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202206.tkc",
+          "period": "202206",
+          "sha256": "2d2390c898faa54059e07aae39a938ecfdddfbca244e36d8c31d73b5a180cc7b",
+          "size": 11913813
+        },
+        {
+          "creation_time_ns": 1784619340895588000,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340911628200,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202207.tkc",
+          "period": "202207",
+          "sha256": "040e4ba4032d6f963be7bb553b806e6e61978be8bfe7a5d616650b03831df3bb",
+          "size": 10238317
+        },
+        {
+          "creation_time_ns": 1784619340937697000,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340952735500,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202208.tkc",
+          "period": "202208",
+          "sha256": "015f5736ffbc4a9680b75e7a6724e57b0b2ed5d874dcfdd14a85a596a1a432c9",
+          "size": 9910722
+        },
+        {
+          "creation_time_ns": 1784619340977800300,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619340996850400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202209.tkc",
+          "period": "202209",
+          "sha256": "5e7b602b52f632c10e93ac3390e1d2076b1984d7091c7869259eb98d50f9f2f9",
+          "size": 11985340
+        },
+        {
+          "creation_time_ns": 1784619341024923500,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341047983700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202210.tkc",
+          "period": "202210",
+          "sha256": "2545239814a521cb2af31c86eaa9058adeff0a66f66d2449def4c0f5ce9d54fd",
+          "size": 13717985
+        },
+        {
+          "creation_time_ns": 1784619341080067400,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341097111000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202211.tkc",
+          "period": "202211",
+          "sha256": "e0b045b1d81e5aed2dc62459ca6e3f48e6fe16a909ddc501be01938f941192a2",
+          "size": 9116569
+        },
+        {
+          "creation_time_ns": 1784619341123178800,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341135210000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202212.tkc",
+          "period": "202212",
+          "sha256": "943616a862bad30a0ce2c1bafc2f7e4b410fb85083f3fd50f816289009894019",
+          "size": 6590558
+        },
+        {
+          "creation_time_ns": 1784619341161278100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341171304900,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202301.tkc",
+          "period": "202301",
+          "sha256": "920fa6f643d24321ea04339d32d108ac6e7f096f11eec4567e757da9300a5ead",
+          "size": 6165363
+        },
+        {
+          "creation_time_ns": 1784619341192358500,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341202385700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202302.tkc",
+          "period": "202302",
+          "sha256": "5692eb9a137fd7214198a92777c4718448f4a317667d2c985a97eb48b7068829",
+          "size": 5919228
+        },
+        {
+          "creation_time_ns": 1784619341222437100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341233468000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202303.tkc",
+          "period": "202303",
+          "sha256": "a7b82d915c468d9d4985b5fa4ef3e79fa511ffd07051e958355433c5f9edb588",
+          "size": 7513516
+        },
+        {
+          "creation_time_ns": 1784619341257528800,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341263544700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202304.tkc",
+          "period": "202304",
+          "sha256": "2eca4d4368a02a649bb87a2df6b5736ab3bbd1c35aa04962450ff43070ea52dc",
+          "size": 3963086
+        },
+        {
+          "creation_time_ns": 1784619341280589000,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341288610300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202305.tkc",
+          "period": "202305",
+          "sha256": "4b69d239dc3a2f145c43388c983a120dae1fd12bc83580485f76954da1180e0d",
+          "size": 5076785
+        },
+        {
+          "creation_time_ns": 1784619341307659100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341314677800,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202306.tkc",
+          "period": "202306",
+          "sha256": "d853859d0918e3f616557b3d99cbfb08105259e7f6ac77b219796aa2bc8e154a",
+          "size": 4489970
+        },
+        {
+          "creation_time_ns": 1784619341332724700,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341338740400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202307.tkc",
+          "period": "202307",
+          "sha256": "e383c055fb26f7e892898d10f6625eff2fc1582d17609dca17a8c93edf0207b0",
+          "size": 3589392
+        },
+        {
+          "creation_time_ns": 1784619341355462200,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341363483300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202308.tkc",
+          "period": "202308",
+          "sha256": "0ab81a45d787982fd32627a2f59d898705c35609868b8e2c78c71cb0d87f0b67",
+          "size": 5386756
+        },
+        {
+          "creation_time_ns": 1784619341383534500,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341390553100,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202309.tkc",
+          "period": "202309",
+          "sha256": "df7f2a02701d18231dc9cdecf364acb6bd5fbbe604d91a5495a0415e71ae5505",
+          "size": 4452561
+        },
+        {
+          "creation_time_ns": 1784619341409601900,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341418626300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202310.tkc",
+          "period": "202310",
+          "sha256": "c4ddb9efca29e4e092883d567d094a557cdb7e554ed225e0e77aa21aff8cf37f",
+          "size": 6609450
+        },
+        {
+          "creation_time_ns": 1784619341439680600,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341445697000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202311.tkc",
+          "period": "202311",
+          "sha256": "484bdb78e51bbce6d0416892c8e6df95eb5205287c259cbeb898e93320a8329c",
+          "size": 3743919
+        },
+        {
+          "creation_time_ns": 1784619341462740700,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341466752000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202312.tkc",
+          "period": "202312",
+          "sha256": "3c5e4b3179acd5f58132ddb30ef605eab052bc4276dc344bf49db45c4fa611ff",
+          "size": 2560974
+        },
+        {
+          "creation_time_ns": 1784619341482793700,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341489811300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202401.tkc",
+          "period": "202401",
+          "sha256": "af3aaa1056e0538d62a531d98d5becc075ffc5c0fca71122b84189cdd79bdd5f",
+          "size": 4470111
+        },
+        {
+          "creation_time_ns": 1784619341508862100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341514877500,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202402.tkc",
+          "period": "202402",
+          "sha256": "d591531b7aa6822da733787b350f621ae3698eb0feaea1ccffcebdd9818bc61b",
+          "size": 4053490
+        },
+        {
+          "creation_time_ns": 1784619341533926000,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341540946400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202403.tkc",
+          "period": "202403",
+          "sha256": "4dce20dd25f16f29c4b34f0bbf22a73bc3c1a99f05d1c48deefe6f6f6a09a3a6",
+          "size": 4053587
+        },
+        {
+          "creation_time_ns": 1784619341558990900,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341568014700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202404.tkc",
+          "period": "202404",
+          "sha256": "79697b28e1c1dd8a3f995dc714bdc7ef488b509989ebc8beee6ab8a2b85f5b08",
+          "size": 5819043
+        },
+        {
+          "creation_time_ns": 1784619341588067100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341594082400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202405.tkc",
+          "period": "202405",
+          "sha256": "4a2ccec1881c0568e09b69f525896661b2eb4b798431682e457bde1d14ecb778",
+          "size": 4053940
+        },
+        {
+          "creation_time_ns": 1784619341612129800,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341618144700,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202406.tkc",
+          "period": "202406",
+          "sha256": "3b0b5693e3b05f65803d903ed4bbba5133f4701cabc06172a7fb3278fed08926",
+          "size": 3799522
+        },
+        {
+          "creation_time_ns": 1784619341634186800,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341643210100,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202407.tkc",
+          "period": "202407",
+          "sha256": "151aa7b02bcd02881f6e9de9c5a3d451ba4350c952e72b7ece3ed594e6e0135d",
+          "size": 4702615
+        },
+        {
+          "creation_time_ns": 1784619341661256600,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341671282600,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202408.tkc",
+          "period": "202408",
+          "sha256": "a58ba44d2c20f91e1a6edb6a370019fd7c4728b3e9c0da4d714e5bcee5e411d4",
+          "size": 6233093
+        },
+        {
+          "creation_time_ns": 1784619341693340700,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341701361000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202409.tkc",
+          "period": "202409",
+          "sha256": "35ef52d3c9bd617885c2a5f6d18837c0b3dbee92c62872b70cfd0ed63312dc17",
+          "size": 4769996
+        },
+        {
+          "creation_time_ns": 1784619341721413000,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341728431100,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202410.tkc",
+          "period": "202410",
+          "sha256": "6d7c70f6c4292ee3076ddeda3b12c9e30aea7b7e1f78f0b10c39600de15b1f21",
+          "size": 4192947
+        },
+        {
+          "creation_time_ns": 1784619341745476100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341752494800,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202411.tkc",
+          "period": "202411",
+          "sha256": "17eb0d248d52a374ea865dfbcadc4ebd01139adb661155b679acc8fb9d6ea622",
+          "size": 4090945
+        },
+        {
+          "creation_time_ns": 1784619341770541600,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341777559800,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202412.tkc",
+          "period": "202412",
+          "sha256": "b5fe58b115473a380d3b8382d2ffb880cbf660423eae496dbb0889619c0869dc",
+          "size": 4143747
+        },
+        {
+          "creation_time_ns": 1784619341796609100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341805633400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202501.tkc",
+          "period": "202501",
+          "sha256": "3e73c0b80959a3769d401b9fce7ddafc0e3b65b22833abdcd585d265770c8888",
+          "size": 4764255
+        },
+        {
+          "creation_time_ns": 1784619341825684200,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341834707600,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202502.tkc",
+          "period": "202502",
+          "sha256": "fec54e89682876bfd2b2b9319e2f55804128bfb8e0a4f8ea4abcfa6030b9136a",
+          "size": 4511534
+        },
+        {
+          "creation_time_ns": 1784619341854760400,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341866791000,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202503.tkc",
+          "period": "202503",
+          "sha256": "584684f21f7150f20a9e333b8979e26416c04f97ade19860f3485869e839876f",
+          "size": 7296422
+        },
+        {
+          "creation_time_ns": 1784619341889851100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341906895500,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202504.tkc",
+          "period": "202504",
+          "sha256": "1c08b334de5ff147e95e17a7f1a32976da24125a6e4d8b1b79a975b4102a4941",
+          "size": 11011387
+        },
+        {
+          "creation_time_ns": 1784619341932964100,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341941987900,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202505.tkc",
+          "period": "202505",
+          "sha256": "28157559fca80d48734cb85d5e4c4ba557f8da15b599dacc9a06dbcbbd9cb733",
+          "size": 5877275
+        },
+        {
+          "creation_time_ns": 1784619341963042300,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341972065300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202506.tkc",
+          "period": "202506",
+          "sha256": "094617c1dbdc692fa184db696a752439c6de72f07d4fc50aa01257eaea31a99b",
+          "size": 4666281
+        },
+        {
+          "creation_time_ns": 1784619341991115200,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619341998133800,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202507.tkc",
+          "period": "202507",
+          "sha256": "f18101032983534e89f62f497287c352adb94cca0354ea5c34c6909365caea7d",
+          "size": 3879926
+        },
+        {
+          "creation_time_ns": 1784619342015177800,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619342022196500,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202508.tkc",
+          "period": "202508",
+          "sha256": "c425fcefa30fe346b1fc97eba98befd03b4fff7ffae25b22e2e3541c065d2301",
+          "size": 4219691
+        },
+        {
+          "creation_time_ns": 1784619342041246000,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619342050269300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202509.tkc",
+          "period": "202509",
+          "sha256": "6bb49ebbbfb7b799071749bac47f0e3bda559d861b867068dcf74623a72ee15f",
+          "size": 4223201
+        },
+        {
+          "creation_time_ns": 1784619342069318900,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619342079344300,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202510.tkc",
+          "period": "202510",
+          "sha256": "4ff2ba97c62b9ffbee3f730604c9bc96cd717998ff352080b0ee3b2b22e61435",
+          "size": 5891936
+        },
+        {
+          "creation_time_ns": 1784619342097392200,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619342107418400,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202511.tkc",
+          "period": "202511",
+          "sha256": "0b2688d8a9c54768f6f7d4d837e9ec406878a913353aa8812a2ddaf83ee238e4",
+          "size": 5968434
+        },
+        {
+          "creation_time_ns": 1784619342128472600,
+          "kind": "ticks",
+          "last_write_time_ns": 1784619342134488800,
+          "path": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX\\202512.tkc",
+          "period": "202512",
+          "sha256": "7145b4ffa2ceb40ce0074e5c1bdbfb4abfaec7ee9e859e5bbd7864c14fbc15f9",
+          "size": 3971673
+        }
+      ],
+      "total_bytes": 892701569
+    },
+    "root": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27",
+    "ticks": "D:\\QM\\reports\\dev2\\quarantine\\a413ae7d_ws30_transport_2026-08-27\\Bases\\Custom\\ticks\\WS30.DWX"
+  },
+  "safety": {
+    "account_enabled": false,
+    "auto_trading_touched": false,
+    "contract_modified": false,
+    "delete_used": false,
+    "factory_terminals_touched": false,
+    "live_touched": false,
+    "terminal_started": false
+  },
+  "schema": "qm.dev2-ws30-quarantine/v1",
+  "source": {
+    "absent_after": true,
+    "custom_root": "D:\\QM\\mt5\\DEV2\\Bases\\Custom",
+    "history": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\history\\WS30.DWX",
+    "symbol_directories_after": {
+      "history": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "GDAXI.DWX",
+        "NDX.DWX",
+        "USDJPY.DWX",
+        "XAUUSD.DWX"
+      ],
+      "ticks": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "GDAXI.DWX",
+        "NDX.DWX",
+        "USDJPY.DWX",
+        "XAUUSD.DWX"
+      ]
+    },
+    "symbol_directories_before": {
+      "history": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "GDAXI.DWX",
+        "NDX.DWX",
+        "USDJPY.DWX",
+        "WS30.DWX",
+        "XAUUSD.DWX"
+      ],
+      "ticks": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "GDAXI.DWX",
+        "NDX.DWX",
+        "USDJPY.DWX",
+        "WS30.DWX",
+        "XAUUSD.DWX"
+      ]
+    },
+    "ticks": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX"
+  },
+  "status": "PASS_QUARANTINED_RECOVERABLE",
+  "task_id": "a413ae7d-75bc-43f4-93b0-4fa8f27732f8"
+}
