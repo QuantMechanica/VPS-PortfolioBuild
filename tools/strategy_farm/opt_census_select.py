@@ -48,9 +48,11 @@ from typing import Any, Callable, Iterable, Optional
 
 try:
     from tools.strategy_farm import opt_census as census
+    from tools.strategy_farm import opt_census_pruning as pruning
     from tools.strategy_farm.opt_census import CensusError
 except ModuleNotFoundError:
     import opt_census as census
+    import opt_census_pruning as pruning
     from opt_census import CensusError
 
 DRIVER_SCHEMA = "qm.opt-census-driver.v1"
@@ -408,14 +410,36 @@ def _persist(ledger_path: Path, ledger: dict[str, Any]) -> None:
 def _default_metric_reader(conn: sqlite3.Connection) -> Callable[[str], tuple[str, Optional[dict]]]:
     def read(work_item_id: str) -> tuple[str, Optional[dict]]:
         row = conn.execute(
-            "SELECT status,verdict,evidence_path FROM work_items WHERE id=?",
+            "SELECT status,verdict,evidence_path,payload_json FROM work_items WHERE id=?",
             (work_item_id,),
         ).fetchone()
         if row is None:
             return ("MISSING", None)
-        status, verdict, evidence = row
+        status, verdict, evidence, payload_json = row
         if verdict == "INFRA_FAIL":
             return ("INFRA", None)
+        if status == "done" and verdict == pruning.SKIPPED_VERDICT:
+            if not evidence:
+                raise CensusError(f"{work_item_id}: skip receipt path missing")
+            try:
+                payload = json.loads(payload_json or "{}")
+                disposition = payload[pruning.DISPOSITION]
+                expected_cell_key = str(payload["cell_key"])
+                expected_trigger = str(disposition["trigger_cell_key"])
+                expected_sha = str(disposition["receipt_sha256"])
+            except (KeyError, TypeError, json.JSONDecodeError) as exc:
+                raise CensusError(
+                    f"{work_item_id}: skip payload binding invalid"
+                ) from exc
+            receipt_path = Path(evidence)
+            receipt = pruning.validate_receipt(
+                receipt_path,
+                expected_cell_key=expected_cell_key,
+                expected_trigger_cell_key=expected_trigger,
+            )
+            if pruning.receipt_sha256(receipt_path) != expected_sha:
+                raise CensusError(f"{work_item_id}: skip receipt sha256 mismatch")
+            return ("SKIPPED_EXCLUDED", {"receipt": receipt})
         if status != "done" or verdict != census_measured_verdict():
             return ("PENDING", None)
         if not evidence:
@@ -441,6 +465,8 @@ def _resolve(reader: Callable[[str], tuple[str, Optional[dict]]], driver: dict[s
         status, metric = reader(wid)
         if status == "OK":
             return ("OK", metric)
+        if status == "SKIPPED_EXCLUDED":
+            return ("SKIPPED_EXCLUDED", metric)
         statuses.append(status)
     if statuses and all(s == "INFRA" for s in statuses):
         return ("INFRA", None)
@@ -551,6 +577,7 @@ def _build_matrix(ledger: dict[str, Any], driver: dict[str, Any],
     baseline: dict[int, YearCell] = {}
     pending = 0
     infra = 0
+    skipped = 0
     for spec in _census_specs(ledger):
         status, metric = _resolve(reader, driver, spec["cell_key"], spec["work_item_id"])
         if status == "PENDING" or status == "MISSING":
@@ -559,12 +586,21 @@ def _build_matrix(ledger: dict[str, Any], driver: dict[str, Any],
         if status == "INFRA":
             infra += 1
             continue
+        if status == "SKIPPED_EXCLUDED":
+            skipped += 1
+            continue
         cell = YearCell(spec["year"], int(metric["entry_days"]), metric["return_to_maxdd"])
         if spec["arm"] == "baseline":
             baseline[spec["year"]] = cell
         else:
             matrix.setdefault(spec["direction"], {}).setdefault(spec["predicate_id"], {})[spec["year"]] = cell
-    return {"matrix": matrix, "baseline": baseline, "pending": pending, "infra": infra}
+    return {
+        "matrix": matrix,
+        "baseline": baseline,
+        "pending": pending,
+        "infra": infra,
+        "skipped": skipped,
+    }
 
 
 def _all_measured(reader: Callable[[str], tuple[str, Optional[dict]]], driver: dict[str, Any],
@@ -572,6 +608,7 @@ def _all_measured(reader: Callable[[str], tuple[str, Optional[dict]]], driver: d
     ok = 0
     pending = 0
     infra = 0
+    skipped = 0
     metrics: dict[str, Optional[dict]] = {}
     for spec in specs:
         status, metric = _resolve(reader, driver, spec["cell_key"], spec["work_item_id"])
@@ -580,9 +617,18 @@ def _all_measured(reader: Callable[[str], tuple[str, Optional[dict]]], driver: d
             ok += 1
         elif status == "INFRA":
             infra += 1
+        elif status == "SKIPPED_EXCLUDED":
+            skipped += 1
         else:
             pending += 1
-    return {"ok": ok, "pending": pending, "infra": infra, "total": len(specs), "metrics": metrics}
+    return {
+        "ok": ok,
+        "pending": pending,
+        "infra": infra,
+        "skipped": skipped,
+        "total": len(specs),
+        "metrics": metrics,
+    }
 
 
 def _transition(driver: dict[str, Any], to_state: str, note: str, inputs: Any) -> None:
@@ -602,7 +648,7 @@ def _handle_enqueued(conn, ledger, driver, reader) -> dict[str, Any]:
     if built["pending"] or built["infra"]:
         return {"changed": reenq > 0, "state": driver["state"], "waiting": True,
                 "pending": built["pending"], "infra": built["infra"],
-                "reenqueued": reenq, "measured": ok}
+                "skipped": built["skipped"], "reenqueued": reenq, "measured": ok}
 
     floor = ledger["activity_floor"]
     min_rel = ledger["relative_improve_min"]
@@ -842,7 +888,8 @@ def _handle_final_fullwindow(conn, ledger, driver, reader) -> dict[str, Any]:
 
 def _counts(status: dict[str, Any]) -> dict[str, Any]:
     return {"measured": status["ok"], "pending": status["pending"],
-            "infra": status["infra"], "total": status["total"]}
+            "infra": status["infra"], "skipped": status.get("skipped", 0),
+            "total": status["total"]}
 
 
 def _fmt_value(value: Any) -> str:

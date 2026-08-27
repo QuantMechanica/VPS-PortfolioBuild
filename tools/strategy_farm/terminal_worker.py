@@ -46,6 +46,7 @@ import custom_history_gate
 import custom_history_lease
 import custom_history_master
 import longrun_scheduling_policy
+import opt_census_pruning
 from framework.scripts._phase_utils import cold_cache_summary_signature
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
 try:
@@ -1947,6 +1948,11 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 recovery_capped = False
                 for item in conn.execute(_priority_pending_query()).fetchall():
                     payload = _json_loads(item["payload_json"])
+                    pruning = opt_census_pruning.prune_candidate_if_excluded(
+                        conn, item, now=now
+                    )
+                    if pruning.get("skipped_current"):
+                        continue
                     if (
                         compile_only_due_to_commit_headroom
                         and str(item["phase"]).upper() != farmctl.COMPILE_EA_PHASE
@@ -3567,6 +3573,16 @@ def _finish_work_item(
                     farmctl._promote_zero_trade_q02_cohort_to_draft_defect(conn, item)
                     if not missing_identity else []
                 )
+                dl089_pruning = None
+                if (
+                    final_status == "done"
+                    and verdict == opt_census_pruning.census_measured_verdict()
+                ):
+                    dl089_pruning = (
+                        opt_census_pruning.prune_after_completed_measurement(
+                            conn, work_item_id=item_id, now=now
+                        )
+                    )
                 conn.commit()
                 if item_id in promoted:
                     verdict = "DRAFT_DEFECT"
@@ -3575,6 +3591,7 @@ def _finish_work_item(
                 return {"finished": True, "status": final_status, "verdict": verdict,
                         "reason": payload.get("verdict_reason", reason),
                         "artifact_identity_missing": list(missing_identity),
+                        "dl089_pruning": dl089_pruning,
                         "aggregate": aggregate}
 
             payload["run_smoke_exit_code"] = exit_code

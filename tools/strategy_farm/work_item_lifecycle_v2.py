@@ -51,6 +51,10 @@ SUCCEEDED_VERDICTS = frozenset(
         # only needs a terminal-success lifecycle bucket so the read-only
         # inventory does not fail closed on the new verdict token.
         "MEASURED",
+        # DL-089 Amendment 1: a declared cell deterministically excluded by an
+        # earlier-year activity-floor breach is terminally resolved, but is not
+        # a gate pass or an economic result.
+        "SKIPPED_EXCLUDED",
     }
 )
 WAITING_INPUT_VERDICTS = frozenset(

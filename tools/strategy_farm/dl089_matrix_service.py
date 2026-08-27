@@ -28,6 +28,7 @@ from typing import Any, Iterable, Mapping
 
 try:
     import opt_census as census
+    import opt_census_pruning as pruning
     import opt_census_select as selector
     from optimization_fork_driver import (
         PATTERN_DECLARATION_REVISION,
@@ -35,6 +36,7 @@ try:
     )
 except ModuleNotFoundError:
     from tools.strategy_farm import opt_census as census
+    from tools.strategy_farm import opt_census_pruning as pruning
     from tools.strategy_farm import opt_census_select as selector
     from tools.strategy_farm.optimization_fork_driver import (
         PATTERN_DECLARATION_REVISION,
@@ -705,8 +707,10 @@ def _finalize_from_terminal_ledger(
                 "cell_key": _payload(row).get("cell_key"),
             }
         )
+    resolved_verdicts = {selector.census_measured_verdict(), pruning.SKIPPED_VERDICT}
     if not evidence_rows or any(
-        str(item["status"]).lower() != "done" or str(item["verdict"]).upper() != "MEASURED"
+        str(item["status"]).lower() != "done"
+        or str(item["verdict"]).upper() not in resolved_verdicts
         for item in evidence_rows
     ):
         return None

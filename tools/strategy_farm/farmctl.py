@@ -34,6 +34,11 @@ except ModuleNotFoundError:
     )
 
 try:
+    import opt_census_pruning
+except ModuleNotFoundError:
+    from tools.strategy_farm import opt_census_pruning
+
+try:
     from work_item_supersedes import ensure_schema as ensure_work_item_supersedes_schema
 except ModuleNotFoundError:
     from tools.strategy_farm.work_item_supersedes import (
@@ -10495,6 +10500,10 @@ CANONICAL_PARENT_CHILD_VERDICTS = frozenset({
     # clean-view taxonomy) and OPT_CENSUS rows carry no parent, so it never
     # participates in a Q02→Q10 cascade aggregation.
     "MEASURED",
+    # DL-089 Amendment 1: append-only disposition of a declared annual cell
+    # excluded by an authenticated earlier-year activity-floor breach. Like
+    # MEASURED, this resolves a census row but is never a gate pass.
+    "SKIPPED_EXCLUDED",
 })
 PHYSICALLY_TERMINAL_WORK_ITEM_STATUSES = frozenset({"done", "failed"})
 PARENT_PROGRESSION_MAP = {
@@ -11255,6 +11264,15 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                         _promote_zero_trade_q02_cohort_to_draft_defect(conn2, item)
                         if not missing_identity else []
                     )
+                    dl089_pruning = None
+                    if final_status == "done" and verdict == MEASURED_VERDICT:
+                        dl089_pruning = (
+                            opt_census_pruning.prune_after_completed_measurement(
+                                conn2,
+                                work_item_id=str(item["id"]),
+                                now=started_iso,
+                            )
+                        )
                     conn2.commit()
                 if item["id"] in promoted:
                     verdict = "DRAFT_DEFECT"
@@ -11264,6 +11282,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                                "ea_id": item["ea_id"], "symbol": item["symbol"],
                                "verdict": verdict, "reason": reason,
                                "effective_min_trades": effective_min_trades,
+                               "dl089_pruning": dl089_pruning,
                                "terminal_released": terminal})
                 continue
         worker_pid = payload.get("pid")
@@ -11548,11 +11567,27 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             }
             claim_won = False
             recovery_capped = False
+            pruning_result = None
+            pruned_current = False
             with connect(root) as conn2:
                 try:
                     conn2.execute("BEGIN IMMEDIATE")
+                    fresh_item = conn2.execute(
+                        "SELECT * FROM work_items WHERE id=?", (item["id"],)
+                    ).fetchone()
+                    if fresh_item is not None and fresh_item["status"] == "pending":
+                        pruning_result = (
+                            opt_census_pruning.prune_candidate_if_excluded(
+                                conn2, fresh_item, now=started_iso
+                            )
+                        )
+                        pruned_current = bool(
+                            pruning_result.get("skipped_current")
+                        )
                     # Recovery idle-cap decision read INSIDE the claim transaction.
-                    if item_is_recovery and not recovery_claim_allowed(conn2):
+                    if pruned_current:
+                        pass
+                    elif item_is_recovery and not recovery_claim_allowed(conn2):
                         recovery_capped = True
                     else:
                         cur = conn2.execute(
@@ -11572,6 +11607,16 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 except Exception:
                     conn2.rollback()
                     raise
+            if pruned_current:
+                free_terminals.insert(0, terminal)
+                actions.append({
+                    "action": "dl089_skipped_as_excluded",
+                    "item_id": item["id"],
+                    "ea_id": item["ea_id"],
+                    "trigger_cell_key": pruning_result.get("trigger_cell_key"),
+                    "skipped": pruning_result.get("skipped", 0),
+                })
+                continue
             if recovery_capped:
                 # Recovery-class rows sort LAST, so once the cap is hit nothing else is
                 # claimable this pass. Return the terminal and stop.

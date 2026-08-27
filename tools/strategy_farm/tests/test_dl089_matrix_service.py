@@ -7,6 +7,7 @@ from pathlib import Path
 
 from tools.strategy_farm import dl089_matrix_service as service
 from tools.strategy_farm import farmctl
+from tools.strategy_farm import opt_census_pruning as pruning
 from tools.strategy_farm import optimization_fork_driver as routing
 
 
@@ -340,3 +341,104 @@ def test_rollout_hold_is_not_resurrected_after_restart_release(tmp_path: Path) -
         ).fetchone()
     assert result["restart_release_preserved"] is True
     assert tuple(hold) == (0, now, "worker restart")
+
+
+def test_q12_finalization_accepts_authenticated_exclusion_dispositions(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    program_dir = tmp_path / "program"
+    program_dir.mkdir()
+    ledger_path = program_dir / "ledger.json"
+    ledger_path.write_text(
+        json.dumps(
+            {
+                "driver": {
+                    "state": service.selector.STATE_PATTERN_READY,
+                    "wf": {"final_selection": {"BUY": [], "SELL": []}},
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    measured = tmp_path / "measured.json"
+    measured.write_text("{}\n", encoding="utf-8")
+    skipped = tmp_path / "skipped.json"
+    skipped.write_text("{}\n", encoding="utf-8")
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        for values in (
+            (
+                "q12-owner",
+                "analytic",
+                "Q12",
+                "QM5_PARENT",
+                "EURUSD.DWX",
+                "pending",
+                None,
+                None,
+                "{}",
+            ),
+            (
+                "cell-measured",
+                "backtest",
+                "OPT_CENSUS",
+                "QM5_OPT",
+                "EURUSD.DWX",
+                "done",
+                "MEASURED",
+                str(measured),
+                json.dumps(
+                    {"q12_work_item_id": "q12-owner", "cell_key": "cell:measured"}
+                ),
+            ),
+            (
+                "cell-skipped",
+                "backtest",
+                "OPT_CENSUS",
+                "QM5_OPT",
+                "EURUSD.DWX",
+                "done",
+                pruning.SKIPPED_VERDICT,
+                str(skipped),
+                json.dumps(
+                    {"q12_work_item_id": "q12-owner", "cell_key": "cell:skipped"}
+                ),
+            ),
+        ):
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                  id,kind,phase,ea_id,symbol,setfile_path,status,verdict,evidence_path,
+                  payload_json,created_at,updated_at
+                ) VALUES(?,?,?,?,?,'x.set',?,?,?,?,?,?)
+                """,
+                (*values, now, now),
+            )
+        q12 = conn.execute(
+            "SELECT * FROM work_items WHERE id='q12-owner'"
+        ).fetchone()
+        result = service._finalize_from_terminal_ledger(
+            conn,
+            q12_row=q12,
+            ledger_path=ledger_path,
+            program_dir=program_dir,
+            apply=True,
+        )
+        conn.commit()
+        q12_after = conn.execute(
+            "SELECT status,verdict,evidence_path FROM work_items WHERE id='q12-owner'"
+        ).fetchone()
+
+    assert result["verdict"] == "NO_FILTER_CHANGE"
+    assert tuple(q12_after) == (
+        "done",
+        "NO_FILTER_CHANGE",
+        str((program_dir / "q12_selection_receipt.json").resolve()),
+    )
+    receipt = json.loads(Path(q12_after["evidence_path"]).read_text(encoding="utf-8"))
+    assert {row["verdict"] for row in receipt["cell_evidence"]} == {
+        "MEASURED",
+        pruning.SKIPPED_VERDICT,
+    }
