@@ -331,10 +331,10 @@
         "stale_behavior": "INIT_AND_ENTRY_FAIL_CLOSED",
         "live_source": "NATIVE_MT5_CALENDAR",
         "sources": [
-          {"role": "SHARED_PRIMARY", "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv", "sha256": "97942c1e1f2c0b4330462da2b72f164d9f703abb4face41c469e3d48cba1dd46", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
-          {"role": "SHARED_SECONDARY", "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv", "sha256": "f3d7b56db495871c65423b771adb47a5551bde881915accf6e562c9af6f4dc08", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
-          {"role": "QMDEV1_COMMON_PRIMARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv", "sha256": "97942c1e1f2c0b4330462da2b72f164d9f703abb4face41c469e3d48cba1dd46", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
-          {"role": "QMDEV1_COMMON_SECONDARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv", "sha256": "f3d7b56db495871c65423b771adb47a5551bde881915accf6e562c9af6f4dc08", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"}
+          {"role": "SHARED_PRIMARY", "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv", "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
+          {"role": "SHARED_SECONDARY", "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv", "sha256": "853440667555a0f5344ce7d722ea5d1d0d82c31683d3bc195e0d41830be71096", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
+          {"role": "QMDEV1_COMMON_PRIMARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv", "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
+          {"role": "QMDEV1_COMMON_SECONDARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv", "sha256": "853440667555a0f5344ce7d722ea5d1d0d82c31683d3bc195e0d41830be71096", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"}
         ]
       },
       "promotion": {"status": "BLOCKED", "block_reasons": ["research_contract_not_yet_qualified", "locked_2026_holdout_unread", "synchronized_ftmo_joint_replay_missing"]}
@@ -359,10 +359,10 @@
         "stale_behavior": "INIT_AND_ENTRY_FAIL_CLOSED",
         "live_source": "NATIVE_MT5_CALENDAR",
         "sources": [
-          {"role": "SHARED_PRIMARY", "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv", "sha256": "97942c1e1f2c0b4330462da2b72f164d9f703abb4face41c469e3d48cba1dd46", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
-          {"role": "SHARED_SECONDARY", "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv", "sha256": "f3d7b56db495871c65423b771adb47a5551bde881915accf6e562c9af6f4dc08", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
-          {"role": "QMDEV1_COMMON_PRIMARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv", "sha256": "97942c1e1f2c0b4330462da2b72f164d9f703abb4face41c469e3d48cba1dd46", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
-          {"role": "QMDEV1_COMMON_SECONDARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv", "sha256": "f3d7b56db495871c65423b771adb47a5551bde881915accf6e562c9af6f4dc08", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"}
+          {"role": "SHARED_PRIMARY", "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv", "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
+          {"role": "SHARED_SECONDARY", "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv", "sha256": "853440667555a0f5344ce7d722ea5d1d0d82c31683d3bc195e0d41830be71096", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
+          {"role": "QMDEV1_COMMON_PRIMARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv", "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
+          {"role": "QMDEV1_COMMON_SECONDARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv", "sha256": "853440667555a0f5344ce7d722ea5d1d0d82c31683d3bc195e0d41830be71096", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"}
         ]
       },
       "promotion": {"status": "BLOCKED", "block_reasons": ["transport_only_not_selection_market", "research_contract_not_yet_qualified", "synchronized_ftmo_joint_replay_missing"]}
@@ -387,10 +387,10 @@
         "stale_behavior": "INIT_AND_ENTRY_FAIL_CLOSED",
         "live_source": "NATIVE_MT5_CALENDAR",
         "sources": [
-          {"role": "SHARED_PRIMARY", "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv", "sha256": "97942c1e1f2c0b4330462da2b72f164d9f703abb4face41c469e3d48cba1dd46", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
-          {"role": "SHARED_SECONDARY", "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv", "sha256": "f3d7b56db495871c65423b771adb47a5551bde881915accf6e562c9af6f4dc08", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
-          {"role": "QMDEV1_COMMON_PRIMARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv", "sha256": "97942c1e1f2c0b4330462da2b72f164d9f703abb4face41c469e3d48cba1dd46", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
-          {"role": "QMDEV1_COMMON_SECONDARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv", "sha256": "f3d7b56db495871c65423b771adb47a5551bde881915accf6e562c9af6f4dc08", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"}
+          {"role": "SHARED_PRIMARY", "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv", "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
+          {"role": "SHARED_SECONDARY", "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv", "sha256": "853440667555a0f5344ce7d722ea5d1d0d82c31683d3bc195e0d41830be71096", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
+          {"role": "QMDEV1_COMMON_PRIMARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv", "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
+          {"role": "QMDEV1_COMMON_SECONDARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv", "sha256": "853440667555a0f5344ce7d722ea5d1d0d82c31683d3bc195e0d41830be71096", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"}
         ]
       },
       "promotion": {"status": "BLOCKED", "block_reasons": ["engineering_hypothesis_not_official_ict_model", "research_contract_not_yet_qualified", "locked_2026_holdout_unread", "synchronized_ftmo_joint_replay_missing"]}
@@ -415,10 +415,10 @@
         "stale_behavior": "INIT_AND_ENTRY_FAIL_CLOSED",
         "live_source": "NATIVE_MT5_CALENDAR",
         "sources": [
-          {"role": "SHARED_PRIMARY", "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv", "sha256": "97942c1e1f2c0b4330462da2b72f164d9f703abb4face41c469e3d48cba1dd46", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
-          {"role": "SHARED_SECONDARY", "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv", "sha256": "f3d7b56db495871c65423b771adb47a5551bde881915accf6e562c9af6f4dc08", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
-          {"role": "QMDEV1_COMMON_PRIMARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv", "sha256": "97942c1e1f2c0b4330462da2b72f164d9f703abb4face41c469e3d48cba1dd46", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
-          {"role": "QMDEV1_COMMON_SECONDARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv", "sha256": "f3d7b56db495871c65423b771adb47a5551bde881915accf6e562c9af6f4dc08", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"}
+          {"role": "SHARED_PRIMARY", "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv", "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
+          {"role": "SHARED_SECONDARY", "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv", "sha256": "853440667555a0f5344ce7d722ea5d1d0d82c31683d3bc195e0d41830be71096", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
+          {"role": "QMDEV1_COMMON_PRIMARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv", "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"},
+          {"role": "QMDEV1_COMMON_SECONDARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv", "sha256": "853440667555a0f5344ce7d722ea5d1d0d82c31683d3bc195e0d41830be71096", "coverage_start": "2015-01-01", "coverage_end": "2026-08-29"}
         ]
       },
       "promotion": {"status": "BLOCKED", "block_reasons": ["engineering_hypothesis_not_official_ict_model", "research_contract_not_yet_qualified", "locked_2026_holdout_unread", "synchronized_ftmo_joint_replay_missing"]}
@@ -462,7 +462,7 @@
           "calendar_policy": "DEPLOYED_FRAMEWORK_EVENT_ROWS_FAIL_CLOSED",
           "stale_behavior": "ENTRY_FAIL_CLOSED",
           "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
-          "sha256": "97942c1e1f2c0b4330462da2b72f164d9f703abb4face41c469e3d48cba1dd46",
+          "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f",
           "coverage_start": "2015-01-01",
           "coverage_end": "2026-08-29"
         },
@@ -692,7 +692,7 @@
           "calendar_policy": "DEPLOYED_FRAMEWORK_EVENT_ROWS_FAIL_CLOSED",
           "stale_behavior": "ENTRY_FAIL_CLOSED",
           "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
-          "sha256": "97942c1e1f2c0b4330462da2b72f164d9f703abb4face41c469e3d48cba1dd46",
+          "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f",
           "coverage_start": "2015-01-01",
           "coverage_end": "2026-08-29"
         },
@@ -784,7 +784,7 @@
           "calendar_policy": "DEPLOYED_FRAMEWORK_EVENT_ROWS_FAIL_CLOSED",
           "stale_behavior": "ENTRY_FAIL_CLOSED",
           "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
-          "sha256": "97942c1e1f2c0b4330462da2b72f164d9f703abb4face41c469e3d48cba1dd46",
+          "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f",
           "coverage_start": "2015-01-01",
           "coverage_end": "2026-08-29"
         },

@@ -784,9 +784,9 @@ def test_20030_20032_bindings_follow_deployed_calendar_but_remain_blocked() -> N
             "calendar_policy": "DEPLOYED_FRAMEWORK_EVENT_ROWS_FAIL_CLOSED",
             "stale_behavior": "ENTRY_FAIL_CLOSED",
             "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
-            "sha256": "42b02ae062271b643a9039410617a4c246ebed62c9a77db2e8b610fee6ce82bc",
+            "sha256": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f",
             "coverage_start": "2015-01-01",
-            "coverage_end": "2026-08-21",
+            "coverage_end": "2026-08-29",
         }
         assert contract["card_binding"]["status"] == "DRAFT"
         assert contract["card_binding"]["execution_contract_status"] == "DRAFT"
@@ -1241,10 +1241,10 @@ def test_20009_multimode_runtime_declarations_are_exactly_registered() -> None:
 def test_20009_ftmo_news_calendar_is_exact_and_evidence_bound() -> None:
     contracts = [item for item in _contracts() if item["ea_id"] == 20009]
     expected_hashes = {
-        "SHARED_PRIMARY": "42b02ae062271b643a9039410617a4c246ebed62c9a77db2e8b610fee6ce82bc",
-        "SHARED_SECONDARY": "a0418087ea4f0cf2bc0aa7e5858b2e9dda56337995bf96e7e64e5d20f8356017",
-        "QMDEV1_COMMON_PRIMARY": "42b02ae062271b643a9039410617a4c246ebed62c9a77db2e8b610fee6ce82bc",
-        "QMDEV1_COMMON_SECONDARY": "a0418087ea4f0cf2bc0aa7e5858b2e9dda56337995bf96e7e64e5d20f8356017",
+        "SHARED_PRIMARY": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f",
+        "SHARED_SECONDARY": "853440667555a0f5344ce7d722ea5d1d0d82c31683d3bc195e0d41830be71096",
+        "QMDEV1_COMMON_PRIMARY": "66f7b74616fd975beb4ce1921d1c24c33e4e8a8629df68b3a82deef50dba9e7f",
+        "QMDEV1_COMMON_SECONDARY": "853440667555a0f5344ce7d722ea5d1d0d82c31683d3bc195e0d41830be71096",
     }
     expected_paths = {
         "SHARED_PRIMARY": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
@@ -1253,10 +1253,10 @@ def test_20009_ftmo_news_calendar_is_exact_and_evidence_bound() -> None:
         "QMDEV1_COMMON_SECONDARY": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv",
     }
     expected_coverage = {
-        "SHARED_PRIMARY": ("2015-01-01", "2026-08-21"),
-        "SHARED_SECONDARY": ("2015-01-01", "2026-08-21"),
-        "QMDEV1_COMMON_PRIMARY": ("2015-01-01", "2026-08-21"),
-        "QMDEV1_COMMON_SECONDARY": ("2015-01-01", "2026-08-21"),
+        "SHARED_PRIMARY": ("2015-01-01", "2026-08-29"),
+        "SHARED_SECONDARY": ("2015-01-01", "2026-08-29"),
+        "QMDEV1_COMMON_PRIMARY": ("2015-01-01", "2026-08-29"),
+        "QMDEV1_COMMON_SECONDARY": ("2015-01-01", "2026-08-29"),
     }
     calendar_codes = {
         "calendar_news_contract_invalid",
