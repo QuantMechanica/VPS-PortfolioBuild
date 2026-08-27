@@ -334,6 +334,8 @@ def test_governed_dev2_backend_uses_controller_and_authenticates_receipt(
     for path in (controller, contract, helper):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(path.name, encoding="utf-8")
+    run_smoke = repo / "framework" / "scripts" / "run_smoke.ps1"
+    run_smoke.write_text("run smoke", encoding="utf-8")
     lane = tmp_path / "DEV2"
     programs = {}
     for name in ("terminal64.exe", "metatester64.exe", "MetaEditor64.exe"):
@@ -404,6 +406,7 @@ def test_governed_dev2_backend_uses_controller_and_authenticates_receipt(
                 "stable_during_run": True,
             },
             "mq5_source": {"sha256": "b" * 64},
+            "run_smoke": {"sha256": runner.sha256_file(run_smoke)},
         },
         "runs": [
             {
@@ -432,6 +435,7 @@ def test_governed_dev2_backend_uses_controller_and_authenticates_receipt(
         "dev2_account_restored_disabled": True,
         "cleanup_lease_disarmed": True,
         "log_path": str(controller_log),
+        "run_smoke_sha256": runner.sha256_file(run_smoke),
     }
     calls = []
 

@@ -904,14 +904,17 @@ class GovernedDev2RestartBackend:
         self.controller_path = self.repo_root / DEV2_CONTROLLER_RELATIVE
         self.contract_path = self.repo_root / DEV2_LANE_CONTRACT_RELATIVE
         self.helper_path = self.repo_root / DEV2_CREDENTIAL_HELPER_RELATIVE
+        self.run_smoke_path = self.repo_root / "framework/scripts/run_smoke.ps1"
         self.results: list[dict[str, Any]] = []
         self.session_summary: dict[str, Any] = {}
+        self.active_fixed_inputs: dict[str, Any] = {}
 
     def _fixed_inputs(self) -> dict[str, Any]:
         required = (
             self.controller_path,
             self.contract_path,
             self.helper_path,
+            self.run_smoke_path,
             DEV2_CREDENTIAL,
         )
         for path in required:
@@ -945,8 +948,36 @@ class GovernedDev2RestartBackend:
                 "path": str(self.helper_path),
                 "sha256": sha256_file(self.helper_path),
             },
+            "run_smoke": {
+                "path": str(self.run_smoke_path),
+                "sha256": sha256_file(self.run_smoke_path),
+            },
             "programs": programs,
         }
+
+    @staticmethod
+    def _fixed_input_problems(fixed: Mapping[str, Any]) -> list[str]:
+        problems: list[str] = []
+        for label in (
+            "controller",
+            "lane_contract",
+            "credential",
+            "credential_helper",
+            "run_smoke",
+        ):
+            identity = fixed.get(label) or {}
+            path = Path(str(identity.get("path") or ""))
+            if not path.is_file():
+                problems.append(f"MISSING:{label}")
+            elif sha256_file(path) != identity.get("sha256"):
+                problems.append(f"HASH_CHANGED:{label}")
+        for name, identity in (fixed.get("programs") or {}).items():
+            path = Path(str(identity.get("path") or ""))
+            if not path.is_file():
+                problems.append(f"MISSING:program:{name}")
+            elif sha256_file(path) != identity.get("sha256"):
+                problems.append(f"HASH_CHANGED:program:{name}")
+        return problems
 
     def open_session(self, pair_contract: Mapping[str, Any]) -> dict[str, Any]:
         if pair_contract.get("history_manifest_sha256") != self.expected_history_manifest_sha256:
@@ -962,6 +993,7 @@ class GovernedDev2RestartBackend:
         if lane_before.get("password_required") is not True:
             raise ActivationRefused("DEV2_SESSION_PASSWORD_CONTRACT_INVALID")
         fixed = self._fixed_inputs()
+        self.active_fixed_inputs = fixed
         history_before = audit_history_receipt(
             receipt_path=self.history_receipt_path,
             lane_root=DEV2_ROOT,
@@ -1021,6 +1053,7 @@ class GovernedDev2RestartBackend:
         expert_binary = execution.get("expert_binary") or {}
         setfile = execution.get("setfile") or {}
         mq5 = execution.get("mq5_source") or {}
+        run_smoke = execution.get("run_smoke") or {}
         expected = {
             "ea_id": int(str(cell.get("ea_id") or "").replace("QM5_", "")),
             "symbol": cell.get("symbol"),
@@ -1042,6 +1075,10 @@ class GovernedDev2RestartBackend:
             or setfile.get("source_matches_deployed") is not True
             or setfile.get("stable_during_run") is not True
             or mq5.get("sha256") != cell.get("mq5_sha256")
+            or run_smoke.get("sha256")
+            != self.active_fixed_inputs.get("run_smoke", {}).get("sha256")
+            or controller_result.get("run_smoke_sha256")
+            != self.active_fixed_inputs.get("run_smoke", {}).get("sha256")
         ):
             raise ActivationRefused("DEV2_RECEIPT_FILE_IDENTITY_MISMATCH")
         trades, parsed_stats = _canonical_closed_trades(report_path)
@@ -1099,6 +1136,11 @@ class GovernedDev2RestartBackend:
     def run_cell(
         self, session: dict[str, Any], cell: Mapping[str, Any]
     ) -> Mapping[str, Any]:
+        fixed_problems = self._fixed_input_problems(session["fixed_inputs"])
+        if fixed_problems:
+            raise ActivationRefused(
+                "DEV2_SESSION_FIXED_INPUT_DRIFT:" + ";".join(fixed_problems)
+            )
         setfile_path = Path(str(cell.get("setfile_path") or "")).resolve()
         if not setfile_path.is_file() or not _path_is_within(setfile_path, self.repo_root):
             raise ActivationRefused("DEV2_CELL_SETFILE_OUTSIDE_REPO_OR_MISSING")
@@ -1209,6 +1251,7 @@ class GovernedDev2RestartBackend:
             != session["history_before"]["inventory_sha256"]
         ):
             problems.append("DEV2_HISTORY_CHANGED_DURING_SESSION")
+        problems.extend(self._fixed_input_problems(session["fixed_inputs"]))
         self.session_summary = {
             "schema": session["schema"],
             "session_id": session["session_id"],

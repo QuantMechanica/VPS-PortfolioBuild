@@ -105,6 +105,7 @@ def test_phase3_packet_proves_twenty_exact_and_measured_speedup(
     ]
     monkeypatch.setattr(core, "cold_path_identity", lambda *args, **kwargs: cold_rows)
     monkeypatch.setattr(phase3, "_git_head", lambda path: "0" * 40)
+    monkeypatch.setattr(phase3, "_implementation_commit", lambda path: "1" * 40)
     packet = phase3.build_packet(
         references=references,
         comparisons=comparisons,

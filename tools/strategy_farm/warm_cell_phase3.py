@@ -47,6 +47,26 @@ def _git_head(repo_root: Path) -> str:
     return completed.stdout.strip()
 
 
+def _implementation_commit(repo_root: Path) -> str:
+    completed = subprocess.run(
+        [
+            "git",
+            "log",
+            "-1",
+            "--format=%H",
+            "--",
+            "tools/strategy_farm/warm_cell_runner.py",
+            "tools/strategy_farm/warm_cell_phase3.py",
+        ],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    return completed.stdout.strip()
+
+
 def prepare_cells(
     references: Sequence[Mapping[str, Any]], *, input_dir: Path, repo_root: Path
 ) -> list[dict[str, Any]]:
@@ -230,6 +250,7 @@ def build_packet(
         "source": {
             "repo_root": str(repo_root.resolve()),
             "git_head": _git_head(repo_root),
+            "implementation_commit": _implementation_commit(repo_root),
             "database": str(db_path.resolve()),
             "database_mode": "URI mode=ro + PRAGMA query_only=ON",
         },
