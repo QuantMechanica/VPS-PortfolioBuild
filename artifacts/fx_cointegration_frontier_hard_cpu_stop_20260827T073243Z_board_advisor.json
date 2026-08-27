@@ -1,0 +1,142 @@
+{
+  "artifact_type": "fx_cointegration_frontier_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T07:32:43.8739689Z",
+  "generated_at_europe_berlin": "2026-08-27T09:32:43.8739689+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "1f6b0b43598410e1bf5474c3b0c0bb86c1716f35",
+  "mission_outcome": "FRONTIER_EXHAUSTED_EXISTING_PAIR_ACTIVE_STOPPED_AT_CPU_CEILING",
+  "frontier_audit": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "strict_scan_survivors": [
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "QM5_12532_AUDNZD_COINTEGRATION_D1"
+    ],
+    "new_card_or_ea_would_be_duplicate_or_relax_the_published_threshold": true
+  },
+  "anchor_triage": {
+    "evidence_source": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260827T054551Z_board_advisor.json",
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "existing_pair_fallback": {
+    "ea_id": "QM5_20238",
+    "logical_symbol": "QM5_20238_USDCAD_EURJPY_COINTEGRATION_D1",
+    "pair": [
+      "USDCAD.DWX",
+      "EURJPY.DWX"
+    ],
+    "work_item_id": "dc7cadb3-f1f3-40a7-b6dc-d9b38b208223",
+    "phase": "Q03",
+    "status": "active",
+    "terminal": "T9",
+    "action": "left undisturbed because the governed existing-pair fallback is already advancing",
+    "duplicate_enqueue_performed": false
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "factory_terminal_ceiling": 7,
+    "paced_launch_gate_max": 1
+  },
+  "farm_snapshot": {
+    "command": "py -3 tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-27T07:32:26+00:00",
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T6",
+      "T9"
+    ],
+    "running_factory_terminal_count": 4,
+    "factory_terminal_count_at_ceiling": false,
+    "terminal64_process_count_including_excluded": 6,
+    "active_terminal_reservation_count": 4,
+    "active_phases": [
+      "Q03",
+      "Q10_NEWS"
+    ],
+    "orphaned_factory_terminal_process_count": 0,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "cpu_sample": {
+    "command": "Get-CimInstance Win32_Processor LoadPercentage, five sequential readings with two-second intervals",
+    "ended_at_utc": "2026-08-27T07:32:43.8739689Z",
+    "samples_percent": [
+      87.0,
+      76.0,
+      79.0,
+      76.0,
+      99.0
+    ],
+    "average_percent": 83.4,
+    "maximum_percent": 99.0,
+    "ceiling_binding": true,
+    "triggers": [
+      "maximum_percent"
+    ]
+  },
+  "non_duplicate_delta": {
+    "preceding_fleet_receipt": "artifacts/diversity_funnel_cpu_stop_20260827T071609Z_board_advisor.json",
+    "preceding_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T6",
+      "T9"
+    ],
+    "topology_change": "T4, T8, and T10 cleared; factory occupancy fell from seven to four while the fresh CPU maximum remained above the hard ceiling",
+    "preceding_cpu_average_percent": 99.6165,
+    "current_cpu_average_percent": 83.4,
+    "preceding_cpu_maximum_percent": 100.0,
+    "current_cpu_maximum_percent": 99.0,
+    "changed_state": "occupancy and average CPU fell materially, and the live FX fallback QM5_20238 remained active at Q03, but the hard maximum-CPU rule still bound"
+  },
+  "actions_this_run": {
+    "candidate_selected_for_new_build": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "tester_or_backtest_started": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
