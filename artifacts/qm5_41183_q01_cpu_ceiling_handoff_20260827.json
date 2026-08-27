@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-08-27T13:19:55Z",
+  "ea_id": "QM5_41183",
+  "ea_slug": "wti-mks-shift-tr",
+  "strategy_id": "MOP-NIST-KS2-WTI-MDIST-SHIFT-2026_S01",
+  "branch": "agents/board-advisor",
+  "source_build": {
+    "status": "STAGED_AND_COMMITTED_PENDING_STRICT_COMPILE",
+    "ea_source_sha256": "CE733FD5F37CFF2EA19FB88758FDBDBFF16142C4CAFEF4F9D10684B430C24FD1",
+    "setfile_sha256": "CFB478C2537C3045C7F1A9D39AE11EDF56BB47CC4ABF548AC130CF82C46DD38A",
+    "reference_test_sha256": "A9D6AFE8F8E07193C8CC17D14B61363203216CF8471DFEA2F33F9F7C1D972DFD",
+    "reference_tests": {
+      "command": "python -m unittest framework/EAs/QM5_41183_wti-mks-shift-tr/docs/test_monthly_signed_ecdf_reference.py -v",
+      "tests_run": 10,
+      "status": "PASS"
+    },
+    "card_lint": {
+      "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_41183_wti-mks-shift-tr_card.md",
+      "status": "PASS",
+      "ml_hits": [],
+      "missing_sections": []
+    }
+  },
+  "registry": {
+    "ea_id_status": "active",
+    "magic_status": "active",
+    "symbol_slot": 0,
+    "symbol": "XTIUSD.DWX",
+    "magic": 411830000,
+    "magic_registry_sha256": "CD79B8FB581F86896C2873ABDFF043919E89DE26953A82244263CE597FA3F1E3",
+    "resolver_rows": 17932,
+    "resolver_magic_occurrences": 1,
+    "active_status_aware_collisions": 0
+  },
+  "strict_compile_attempt": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_41183_wti-mks-shift-tr/QM5_41183_wti-mks-shift-tr.mq5 -Strict",
+    "status": "NOT_ATTEMPTED_BY_COMPILER",
+    "wrapper_status": "FAIL",
+    "reason_class": "INCLUDE_MIRROR_REFUSED",
+    "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "retry_attempted": false,
+    "compile_log": "framework/build/compile/20260827_131940/QM5_41183_wti-mks-shift-tr.compile.log",
+    "detail": "terminal64 processes were alive; the wrapper refused the ad-hoc include mirror before invoking MetaEditor"
+  },
+  "cpu_ceiling": {
+    "status": "HIT",
+    "load_percentage": 100,
+    "logical_processors": 16,
+    "running_governed_test_terminals": ["T3", "T6", "T7", "T10"],
+    "terminal64_running_count": 6,
+    "action": "STOP_WITHOUT_COMPILE_QUEUE_OR_Q02_ENQUEUE"
+  },
+  "pipeline": {
+    "q01": "NOT_BUILT_STRICT_COMPILE_DEFERRED_AT_CPU_CEILING",
+    "q02": "NOT_ENQUEUED_CPU_CEILING",
+    "compile_queue_items_created": 0,
+    "q02_queue_items_created": 0
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "autotrading_toggled": false,
+    "t_live_modified": false,
+    "live_manifest_modified": false,
+    "portfolio_gate_modified": false
+  },
+  "resume_condition": "When the host is below the governed CPU ceiling, enqueue exactly one governed compile for QM5_41183_wti-mks-shift-tr; require strict zero-error/zero-warning Q01 and build-check PASS before enqueueing exactly one Q02 baseline."
+}
