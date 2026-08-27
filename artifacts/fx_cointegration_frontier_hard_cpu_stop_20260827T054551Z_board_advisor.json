@@ -1,0 +1,126 @@
+{
+  "artifact_type": "fx_cointegration_frontier_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T05:45:51.6373458Z",
+  "generated_at_europe_berlin": "2026-08-27T07:45:51.6373458+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "0a48fcc9bced86155037147826b479a9e257e3c7",
+  "mission_outcome": "FRONTIER_EXHAUSTED_STOPPED_AT_CPU_CEILING",
+  "frontier_audit": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "strict_scan_survivors": [
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "QM5_12532_AUDNZD_COINTEGRATION_D1"
+    ],
+    "new_card_or_ea_would_be_duplicate_or_relax_the_published_threshold": true
+  },
+  "anchor_triage": {
+    "evidence_source": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260827T044612Z_board_advisor.json",
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "existing_pair_fallback": {
+    "candidate_selected_after_capacity_stop": false,
+    "fresh_work_item_query_after_capacity_stop": false,
+    "duplicate_enqueue_performed": false
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "factory_terminal_ceiling": 7,
+    "paced_launch_gate_max": 1
+  },
+  "farm_snapshot": {
+    "command": "py -3 tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-27T05:45:33+00:00",
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T8"
+    ],
+    "running_factory_terminal_count": 3,
+    "factory_terminal_count_at_ceiling": false,
+    "terminal64_process_count_including_excluded": 5,
+    "active_terminal_reservation_count": 3,
+    "active_phases": [
+      "Q10_NEWS"
+    ],
+    "orphaned_factory_terminal_process_count": 0,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "cpu_sample": {
+    "command": "Get-CimInstance Win32_Processor LoadPercentage, five sequential readings with two-second intervals",
+    "ended_at_utc": "2026-08-27T05:45:51.6373458Z",
+    "samples_percent": [
+      57.0,
+      91.0,
+      99.0,
+      99.0,
+      72.0
+    ],
+    "average_percent": 83.6,
+    "maximum_percent": 99.0,
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260827T044612Z_board_advisor.json",
+    "preceding_running_factory_terminals": [
+      "T2",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "current_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T8"
+    ],
+    "topology_change": "T5, T6, T7, and T9 cleared while T3 joined; the governed factory count fell from six to three",
+    "preceding_cpu_average_percent": 100.0,
+    "current_cpu_average_percent": 83.6,
+    "preceding_cpu_maximum_percent": 100.0,
+    "current_cpu_maximum_percent": 99.0,
+    "changed_state": "factory occupancy and average CPU fell materially, but the fresh sample maximum still breached the hard ceiling"
+  },
+  "actions_this_run": {
+    "candidate_selected": false,
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "tester_or_backtest_started": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
