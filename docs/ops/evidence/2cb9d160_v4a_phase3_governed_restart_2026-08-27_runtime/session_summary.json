@@ -1,0 +1,1377 @@
+{
+  "cells_authenticated": 0,
+  "closed_exact": true,
+  "elapsed_seconds": 61.86,
+  "finished_utc": "2026-08-27T15:47:52.340217+00:00",
+  "fixed_inputs": {
+    "controller": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\run_dev2_smoke.ps1",
+      "sha256": "d3d2bcbcd2d2d52bea4d0a50f501d86e35d48211b67066fad236d5c5d4efc485"
+    },
+    "credential": {
+      "path": "C:\\ProgramData\\QM\\DEV2\\credential.machine-dpapi.json",
+      "sha256": "32f621bab2069924727f5cc0fbdb9e98d38701f2186f00bbc4f687f4a870f5b7"
+    },
+    "credential_helper": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\dev2_machine_credential.ps1",
+      "sha256": "bd3077f5ff671d80a377a820e35cd233cdf8ad1b25d376d579da4714c323ad2c"
+    },
+    "lane_contract": {
+      "contract_id": "QM_DEV2_ISOLATED_MT5_LANE_V3",
+      "path": "C:\\QM\\repo\\framework\\registry\\dev2_lane_contract.json",
+      "sha256": "866e4e346187e47c33e32beb30bb96dc4085e98cc316819fb33f7925306dda06"
+    },
+    "programs": {
+      "MetaEditor64.exe": {
+        "path": "D:\\QM\\mt5\\DEV2\\MetaEditor64.exe",
+        "sha256": "2c0c8e9e5c1239e30e8a908d9205cdb01b9cdfcf876752e43bd7a755cce58ad3"
+      },
+      "metatester64.exe": {
+        "path": "D:\\QM\\mt5\\DEV2\\metatester64.exe",
+        "sha256": "d1e991d84243ec913db8c82505ab69eab48babcb2fa6826ab3871b3360abb646"
+      },
+      "terminal64.exe": {
+        "path": "D:\\QM\\mt5\\DEV2\\terminal64.exe",
+        "sha256": "abd32f97efea4d3ddaaf694230c13eacef228e71d5115da7202033aa226c6946"
+      }
+    },
+    "run_smoke": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\run_smoke.ps1",
+      "sha256": "750478498f9280b61d2cb02ba1ee03a52b54bb448461b2d3d3cc246af411cf4a"
+    }
+  },
+  "history_after": {
+    "file_count": 108,
+    "files": [
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2017.hcc",
+        "sha256": "55587e6a5b0d8de666aa3237e19774033eab35898db2d1581dd770c63d50fc3b",
+        "size": 5569149
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2018.hcc",
+        "sha256": "f344d81fc87b702df12e55518cfd543879d1f47ed4d5ad35d5110c1ad68bbdab",
+        "size": 22308504
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2019.hcc",
+        "sha256": "2bd22d821022a82accd5e4b7b752a30a40e4ee3c2f4bdea14527fd008c9655af",
+        "size": 22247775
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2020.hcc",
+        "sha256": "1d3a766e8ddca4bbad8e4102a936de68aff62fd840ae93926f222aee6c824a0e",
+        "size": 22318584
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2021.hcc",
+        "sha256": "cde04ee4d1a8895bf06b6e39e7d807df145308b6380b17b2a2061245d186ad37",
+        "size": 22272444
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2022.hcc",
+        "sha256": "65088758b20a71ec640b5f2d29ee5f10d1ee52435a816e82327bba3bbe000a2a",
+        "size": 22250004
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2023.hcc",
+        "sha256": "dc5c19bd7bf1dde208b988b20f09a72ec62ca4fe875cb3d7b29a28303ce9d56a",
+        "size": 21854757
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2024.hcc",
+        "sha256": "5bc2ebded2722bd559e674fe237ad2c15a0420ef8839d6674d138c0630fc1a39",
+        "size": 22256124
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2025.hcc",
+        "sha256": "9a085d00e7abd50f909e75f11da0f0d324d5d034c787af1f4a3e755c988e8c4d",
+        "size": 20681142
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201710.tkc",
+        "sha256": "a1978ca832c0873e8bacb94a4c774118ecf263d52814fd1dd8ef09c2e7add695",
+        "size": 15061650
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201711.tkc",
+        "sha256": "1d7b9f8c258f79c0aab62ccccee62bab1efbd3b4fb59998bc4f057549f37c6af",
+        "size": 14960802
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201712.tkc",
+        "sha256": "cd08a836c7579c5808e35a1d8141afbe1b96b07c5e3ddfce839d1a1f281507f6",
+        "size": 14593014
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201801.tkc",
+        "sha256": "63159719ef45fa7fccfcf4f326aa59b78477e2a0b0739024b32902c371e0bd3d",
+        "size": 18798018
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201802.tkc",
+        "sha256": "e68bcd232456b2ebe8f4ed837e9844f295da681e06d2b69e6795ebe3f039e9de",
+        "size": 25133133
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201803.tkc",
+        "sha256": "a122ae6a94bdd01a18b27f34889313e63b3e86e90f9adc3d9d662ecfc1e7986b",
+        "size": 18405254
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201804.tkc",
+        "sha256": "90a28aeeaa33c6491e9e647b377e17dd0c29260f5b950b6372b3e90a478867ab",
+        "size": 14462152
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201805.tkc",
+        "sha256": "5f4c6eea0715cb133d7840346fd9373c8c17b7861a345ee1f0ee6bf212b678c9",
+        "size": 8717404
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201806.tkc",
+        "sha256": "7e5de798814fb9fe53e5c5f29c6ee6e722858d2c36f897ff6afff320b522b7a2",
+        "size": 4174142
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201807.tkc",
+        "sha256": "0ad03a57104969668b35d45f6e47a12b56a2144594773a133b408bd27180fc3d",
+        "size": 3709632
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201808.tkc",
+        "sha256": "c731957a0f381c403149c60598186b1e441ac44c82f93fb5263bf9088ccd54e7",
+        "size": 3409150
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201809.tkc",
+        "sha256": "f90fa226af25c87f58a8cdf0db34250569024bf1adf704a7d9249a1b64ec7532",
+        "size": 3649489
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201810.tkc",
+        "sha256": "d894c409b20c17836f102ea376351c9ea7c45ca6a540132e54cda8ec1ef229db",
+        "size": 4599181
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201811.tkc",
+        "sha256": "5aab2b3edf942809c566856e394b70add900891b296fb3f8fbcff2c597e90698",
+        "size": 3650777
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201812.tkc",
+        "sha256": "fbd8ebb6c11f461ab1870e93d337f7e276ba478348ea5fd20d5a4f5318a86caf",
+        "size": 10513121
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201901.tkc",
+        "sha256": "7673c8d7dfcb92d7414b8824f446fab1e64f2224dd38b8552d1f0704fff3e9f8",
+        "size": 11882670
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201902.tkc",
+        "sha256": "677ba524bf8120b0f3192feef3b8f1bceda7a418152cfcf8ddbca887ce667369",
+        "size": 7044749
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201903.tkc",
+        "sha256": "c3950a9e1ec04b4affcba6e78d5b7754cb2355455c728bf5bad4561665794376",
+        "size": 8286287
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201904.tkc",
+        "sha256": "9ee0a32d0d971f62427ea94a8e48f25c4b153dd3baf28f880c5d61f299f7c3f3",
+        "size": 6248275
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201905.tkc",
+        "sha256": "a0d0d091b50e8e67851bf1b158e7c77770a1735269ce6b7ee4cd5bba1edb71ea",
+        "size": 9381728
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201906.tkc",
+        "sha256": "c1808889034420eb1b6c40ce24ae65326ad5570f01b6b3ac3203dcdeb7952812",
+        "size": 7499058
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201907.tkc",
+        "sha256": "e6f50859148ead4ca246dcd325f20ad49188ee875524f1907c3e6e6604b88e01",
+        "size": 5916735
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201908.tkc",
+        "sha256": "3779f9e2f29d6214757b6760ca8b7f7fda5e4f33684c971ac17b13caa7976c07",
+        "size": 14691137
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201909.tkc",
+        "sha256": "823afaf8d5ccc2d1364efada1e68417238723a455e10c25cf1b14db775405df2",
+        "size": 9362158
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201910.tkc",
+        "sha256": "fd6c3e305a27b2c3ea2e6435b8e78528926d3e90086392ce41e4726a9ec49faa",
+        "size": 10102823
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201911.tkc",
+        "sha256": "f9c032823cba4d641d5685d1991d488cdf275df755b39a8ec2353421bbed7228",
+        "size": 6483291
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201912.tkc",
+        "sha256": "49d66ebf2bc0e78809882d65002a04e2072d89722a8344f6693e6b421f2873cc",
+        "size": 5525777
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202001.tkc",
+        "sha256": "5a2a54272a8e24771b1f1df1503f7dee23d1ed524eecc1a40ba8d2eb3c31c2fd",
+        "size": 6973300
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202002.tkc",
+        "sha256": "9df2e08199e4f2ae5c9c54732ebdb4d0538560b79d712052060ca155be8cfbe7",
+        "size": 10650011
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202003.tkc",
+        "sha256": "beb6b3c921b2beaf0793c41110db45e9203b953d1f737b4797ecf90797b04e08",
+        "size": 44344546
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202004.tkc",
+        "sha256": "974ef8acb39cf68e011a874474e01b08f9f82f476ab7cf9afc7eb144cde2726b",
+        "size": 13279655
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202005.tkc",
+        "sha256": "4403d54f310a7374b26fca4f9583e759f1988e7b66b2fda9239f284326665ba2",
+        "size": 6278783
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202006.tkc",
+        "sha256": "2faf481dad10f4e5f0ff6f471abe6a1d2edbf5d5351be5de0cd138a4e160873c",
+        "size": 11349891
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202007.tkc",
+        "sha256": "c1184c15cfd0b3c485f804d33b0b77ff0f8740a57792f9173720c9294403a555",
+        "size": 7876444
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202008.tkc",
+        "sha256": "a229602eb4cf029575f897d6c17d1656513d2d8845134454093b55bdfd7bcd87",
+        "size": 9407352
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202009.tkc",
+        "sha256": "218eeef77dfd8f2c32a433881a014c3afa9137ac05e7e7ea999af1d8b647a24d",
+        "size": 7870798
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202010.tkc",
+        "sha256": "ac6bf6c168aa5c3c923b2cc7626677d9e2c373512062c013c5222027d39b0c21",
+        "size": 8497552
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202011.tkc",
+        "sha256": "f0429230c412b6ed9ea054eb88d8d9b286c136be6a60a12920cc5d595db5dc87",
+        "size": 10687370
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202012.tkc",
+        "sha256": "b3f1dfff021fcb1298581d28a5f6fddd631cfda682d809258120e638535ef556",
+        "size": 8975631
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202101.tkc",
+        "sha256": "32780a5f66fe4cb1cee35e6065689fb3d08c03ad46a78bcb2e5477d9c6c56fa5",
+        "size": 7853872
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202102.tkc",
+        "sha256": "fbea8b5e946e7d1cd522393954c6470b9ee27b2816a2f691a7c16aeced313dcf",
+        "size": 6529340
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202103.tkc",
+        "sha256": "6d33b40f8a94ec763570d60045e94d3714bc3e78eb8edba3e93f7016fbac2c74",
+        "size": 9184616
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202104.tkc",
+        "sha256": "90e247a1337561e352bc10638d7ed57c5cddf51a5d588af67f6714839d565403",
+        "size": 6890919
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202105.tkc",
+        "sha256": "212a5b283c7e8775325c629962837eec092235e6f2722b17396538f2871d9849",
+        "size": 6791233
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202106.tkc",
+        "sha256": "3639731be4acbfbcc7292464d15214eb075db6908cb725c571335b4118aed908",
+        "size": 7172045
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202107.tkc",
+        "sha256": "ec1800c86d4537d8277863aa287cd978079fb2be885071a80295efe852e9fd06",
+        "size": 7901020
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202108.tkc",
+        "sha256": "8f602fc7d0d8e9032142de29dbad39f07a6ae010c82c7ed954341cd12b5d3e95",
+        "size": 6130995
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202109.tkc",
+        "sha256": "77e805251a14cc73df190b5f7a603e0992ecae5791ed659e66f0cd671e6fa9fb",
+        "size": 6590681
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202110.tkc",
+        "sha256": "2ae80d7b8d3b4802916f7f073ba08f87232a5c871f476f713fb6074632678ae4",
+        "size": 7736050
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202111.tkc",
+        "sha256": "bc552ad656e681a39ddf517ee566c97ddae42e4a431160996c756b3885353e8c",
+        "size": 9348739
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202112.tkc",
+        "sha256": "662e98b872a579d443390bc4ab2e25259998ee7f1c4051eaad9facb8cec0ac65",
+        "size": 9519054
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202201.tkc",
+        "sha256": "c9d268a2cd97aceb7847e61975ae697355d52ce4b57829093a4c948883d740ab",
+        "size": 9123062
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202202.tkc",
+        "sha256": "999cfebc7b05a69a6c45822312e4b8209484f9fedb99fbc7e6899959ba73a06d",
+        "size": 10665499
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202203.tkc",
+        "sha256": "253f6721a503541f15990427ccf2c4e054b8f4c5b8b69a71542740d475b2a019",
+        "size": 14787368
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202204.tkc",
+        "sha256": "090921bb90dbbc91738cc11e5a90ab26789569048e7e5296c6174ccb29fcdb6e",
+        "size": 17945179
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202205.tkc",
+        "sha256": "4af4ec2c7f363f1a6d8b3852da5d658494fce55b7d13724cd7d49022ed6a5688",
+        "size": 16840749
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202206.tkc",
+        "sha256": "7eb15268b59686354be4ee875c0ce471b2b360a5b76b9555c26ad771afafe6e0",
+        "size": 10970759
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202207.tkc",
+        "sha256": "d240a74984475782d701b9b7a7525ac8a53d81f3e3d6468f62068932225027a4",
+        "size": 11035864
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202208.tkc",
+        "sha256": "6c8c420c5b3cc7a1842b5be24469baae27624faf7de294d82d030d09b3882e53",
+        "size": 12741999
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202209.tkc",
+        "sha256": "8d08fef9f26a7c23d0b31d91bdd2b20008a9d50783d8b217a4b2019852b4a673",
+        "size": 12007471
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202210.tkc",
+        "sha256": "71817ce85dc9e5cb0498b2390d8a7c19fea33b5013fd4a482ac6936b7305566a",
+        "size": 9174061
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202211.tkc",
+        "sha256": "88c0805db2ab76fc8d14bcd931da2f5ce06c3cedf587583e86367ea7c1de8d0a",
+        "size": 13107784
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202212.tkc",
+        "sha256": "3b7fac1f1860c1da5ece819b5efdb337de2f64cee668cee05a278c9339dff0fc",
+        "size": 10338000
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202301.tkc",
+        "sha256": "030c7823b00e63cf0395be67a30391d22c2403144d47eeeaf636630e6bd1c37e",
+        "size": 11464035
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202302.tkc",
+        "sha256": "2b170bc35e4bdf38be7c507f1be674fbdaf5934db7f916c8f0defbdca96d8140",
+        "size": 10394964
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202303.tkc",
+        "sha256": "55374bd12c30f48bc4714159935ad48e9aa9c23711a47d6de694c4ab656dcf7b",
+        "size": 13985852
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202304.tkc",
+        "sha256": "a3405f3862231506b3432af367ec9e9ea3c230d23bc7f07e54567c7325a907b0",
+        "size": 9658285
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202305.tkc",
+        "sha256": "c847a4936f2899de14d07981ff178ffd7bc4cce6c380079d8a50852af0bcaa2e",
+        "size": 11427193
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202306.tkc",
+        "sha256": "96188b763ef3cee4e9c70b9286fe36181106b1fc0d3adbaacca645ba4e2f835a",
+        "size": 9079960
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202307.tkc",
+        "sha256": "bd05ccaab6e7d0db55830eb89919ee113bbf00b3b06888ed34375c4e9adf4117",
+        "size": 8800087
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202308.tkc",
+        "sha256": "1fcf3ef9259db81cc593b357724fd2fcdb20f207e9ca3c1746a4d634d1b680e9",
+        "size": 7381399
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202309.tkc",
+        "sha256": "2c69b1e64fc5ec2c4c9c56abdf90cc3695046e0e62c0f78bf12216e4a9d91944",
+        "size": 5241294
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202310.tkc",
+        "sha256": "ebe9fdfd76ae2fc8f87520e078499cac8290561479bb1f67b6a920ffab171901",
+        "size": 5770066
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202311.tkc",
+        "sha256": "971855c461f9899e839f30dc5bdd267f7f37c99b8ddf6094904fe5d03401f70a",
+        "size": 5561948
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202312.tkc",
+        "sha256": "6ba8ce01421927450274623b4a8507b327b06673649e919e289c6de70e512a72",
+        "size": 6330870
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202401.tkc",
+        "sha256": "232d297bf00bb605b007b355198bafa0697d3836c600ad4eedd39287be99323b",
+        "size": 8796438
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202402.tkc",
+        "sha256": "52a79d5fc1997cde404c24fbc2212af81ed03e83cdff56c114884891e7331a1f",
+        "size": 7367547
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202403.tkc",
+        "sha256": "a4c76e1244f8e3a626bc99c4b1352ae504eb8f48ca41d45a30d45b229ac71b69",
+        "size": 6716503
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202404.tkc",
+        "sha256": "7197ce8108255bf99cdb9a33df482477ec5550dfdd0dfe2f27ecf5aa0cd232bd",
+        "size": 5844733
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202405.tkc",
+        "sha256": "339d0d483ea2db28d93d7b789876cc6f5bf6247d9f08a7d82f7f0deb18cb56a9",
+        "size": 5643359
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202406.tkc",
+        "sha256": "affbda26052d6380aec6b87c845d380495f9ae33e310c8d492d32a6283c6c421",
+        "size": 5538374
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202407.tkc",
+        "sha256": "dfa719d69e4aba87c31878bc30bec0987fec7e739225c2a7365292aca2ca5dc7",
+        "size": 8460457
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202408.tkc",
+        "sha256": "f33850ece0ebccf1321d7aa9497a8e48e90fa343b20e26538cd22c05b7213ed2",
+        "size": 12840954
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202409.tkc",
+        "sha256": "4d129bd803c3f5d17fcec648c5658c8b56e40ecdfc9157825181700c32e8d853",
+        "size": 12120530
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202410.tkc",
+        "sha256": "fd6704310c49907da68ee2ccdbea5fdaa72f6e7aed5d2ed4871a131e2b3ddd12",
+        "size": 8913229
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202411.tkc",
+        "sha256": "b79cbdde347f07461882241e9159f42868599d28bfd186a6058bfa4a0e010991",
+        "size": 10350910
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202412.tkc",
+        "sha256": "8260350f8c020a5761f0c1cb4187f2d612948b6bd8fbf5bb27a331b29ba419d2",
+        "size": 8702314
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202501.tkc",
+        "sha256": "6f733cb72b7e2bcd820d2fbdf8a200d9654c3aab45379325f9a2b0435fae9088",
+        "size": 9605714
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202502.tkc",
+        "sha256": "f2d6d42690c10522f0fdebffebad3d587297c168bc118472bc76df699174428d",
+        "size": 9992267
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202503.tkc",
+        "sha256": "ca99cd8077bd50b936643e56ac8259ff8323668cd0b9ef5b9723e04d20eda174",
+        "size": 12385466
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202504.tkc",
+        "sha256": "20de692f4a18413991245e1da34083ad51c0fb6dcd76faa88ab7c41806e1fc87",
+        "size": 16023968
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202505.tkc",
+        "sha256": "4e7c662e4cb23dc4b317ee5ffc12e0dd7da34e70fb142df37e3e92c19ca2c1a9",
+        "size": 10963014
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202506.tkc",
+        "sha256": "6dec75573a58b2320cd723ea4d8f08fed55e67a5c1b903ebdb098d148500a102",
+        "size": 9413070
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202507.tkc",
+        "sha256": "e4b41330caf87bfb9a059be33615b843a632734775bb9432765c3beef0b6df71",
+        "size": 9266883
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202508.tkc",
+        "sha256": "40acf9d8144e8194df13ab6be9e471de0c8b18bcc90812f3e0f64abd9bed347b",
+        "size": 8225194
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202509.tkc",
+        "sha256": "01ef019c8a3efc48f1446d80d4b532bda38b813382d54b076e626a26fddc5e2e",
+        "size": 8274915
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202510.tkc",
+        "sha256": "8a73138d3e68e03b6bfe102d41514442a01186e753f798c25de86e0d10dfbd4a",
+        "size": 2391444
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202511.tkc",
+        "sha256": "fc92559b6733371d824ab5a68420e5c09cc186463be01990bae1493c31acc776",
+        "size": 8484332
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202512.tkc",
+        "sha256": "3091b81572d50048524ee4d35b67c7378cef200c0e602fade739db5fe284b43c",
+        "size": 6832541
+      }
+    ],
+    "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+    "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+    "receipt_file_sha256": "abe76f72374fbe071f797d094bd31e37b42f4b2d01710f95386ecf24a839bbc1",
+    "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\356a3655-5f0a-51ea-84f3-a3d04e2ed714_T10.json",
+    "status": "PASS_EXACT"
+  },
+  "history_before": {
+    "file_count": 108,
+    "files": [
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2017.hcc",
+        "sha256": "55587e6a5b0d8de666aa3237e19774033eab35898db2d1581dd770c63d50fc3b",
+        "size": 5569149
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2018.hcc",
+        "sha256": "f344d81fc87b702df12e55518cfd543879d1f47ed4d5ad35d5110c1ad68bbdab",
+        "size": 22308504
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2019.hcc",
+        "sha256": "2bd22d821022a82accd5e4b7b752a30a40e4ee3c2f4bdea14527fd008c9655af",
+        "size": 22247775
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2020.hcc",
+        "sha256": "1d3a766e8ddca4bbad8e4102a936de68aff62fd840ae93926f222aee6c824a0e",
+        "size": 22318584
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2021.hcc",
+        "sha256": "cde04ee4d1a8895bf06b6e39e7d807df145308b6380b17b2a2061245d186ad37",
+        "size": 22272444
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2022.hcc",
+        "sha256": "65088758b20a71ec640b5f2d29ee5f10d1ee52435a816e82327bba3bbe000a2a",
+        "size": 22250004
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2023.hcc",
+        "sha256": "dc5c19bd7bf1dde208b988b20f09a72ec62ca4fe875cb3d7b29a28303ce9d56a",
+        "size": 21854757
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2024.hcc",
+        "sha256": "5bc2ebded2722bd559e674fe237ad2c15a0420ef8839d6674d138c0630fc1a39",
+        "size": 22256124
+      },
+      {
+        "exact": true,
+        "relative_path": "history/USDJPY.DWX/2025.hcc",
+        "sha256": "9a085d00e7abd50f909e75f11da0f0d324d5d034c787af1f4a3e755c988e8c4d",
+        "size": 20681142
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201710.tkc",
+        "sha256": "a1978ca832c0873e8bacb94a4c774118ecf263d52814fd1dd8ef09c2e7add695",
+        "size": 15061650
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201711.tkc",
+        "sha256": "1d7b9f8c258f79c0aab62ccccee62bab1efbd3b4fb59998bc4f057549f37c6af",
+        "size": 14960802
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201712.tkc",
+        "sha256": "cd08a836c7579c5808e35a1d8141afbe1b96b07c5e3ddfce839d1a1f281507f6",
+        "size": 14593014
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201801.tkc",
+        "sha256": "63159719ef45fa7fccfcf4f326aa59b78477e2a0b0739024b32902c371e0bd3d",
+        "size": 18798018
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201802.tkc",
+        "sha256": "e68bcd232456b2ebe8f4ed837e9844f295da681e06d2b69e6795ebe3f039e9de",
+        "size": 25133133
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201803.tkc",
+        "sha256": "a122ae6a94bdd01a18b27f34889313e63b3e86e90f9adc3d9d662ecfc1e7986b",
+        "size": 18405254
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201804.tkc",
+        "sha256": "90a28aeeaa33c6491e9e647b377e17dd0c29260f5b950b6372b3e90a478867ab",
+        "size": 14462152
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201805.tkc",
+        "sha256": "5f4c6eea0715cb133d7840346fd9373c8c17b7861a345ee1f0ee6bf212b678c9",
+        "size": 8717404
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201806.tkc",
+        "sha256": "7e5de798814fb9fe53e5c5f29c6ee6e722858d2c36f897ff6afff320b522b7a2",
+        "size": 4174142
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201807.tkc",
+        "sha256": "0ad03a57104969668b35d45f6e47a12b56a2144594773a133b408bd27180fc3d",
+        "size": 3709632
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201808.tkc",
+        "sha256": "c731957a0f381c403149c60598186b1e441ac44c82f93fb5263bf9088ccd54e7",
+        "size": 3409150
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201809.tkc",
+        "sha256": "f90fa226af25c87f58a8cdf0db34250569024bf1adf704a7d9249a1b64ec7532",
+        "size": 3649489
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201810.tkc",
+        "sha256": "d894c409b20c17836f102ea376351c9ea7c45ca6a540132e54cda8ec1ef229db",
+        "size": 4599181
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201811.tkc",
+        "sha256": "5aab2b3edf942809c566856e394b70add900891b296fb3f8fbcff2c597e90698",
+        "size": 3650777
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201812.tkc",
+        "sha256": "fbd8ebb6c11f461ab1870e93d337f7e276ba478348ea5fd20d5a4f5318a86caf",
+        "size": 10513121
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201901.tkc",
+        "sha256": "7673c8d7dfcb92d7414b8824f446fab1e64f2224dd38b8552d1f0704fff3e9f8",
+        "size": 11882670
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201902.tkc",
+        "sha256": "677ba524bf8120b0f3192feef3b8f1bceda7a418152cfcf8ddbca887ce667369",
+        "size": 7044749
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201903.tkc",
+        "sha256": "c3950a9e1ec04b4affcba6e78d5b7754cb2355455c728bf5bad4561665794376",
+        "size": 8286287
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201904.tkc",
+        "sha256": "9ee0a32d0d971f62427ea94a8e48f25c4b153dd3baf28f880c5d61f299f7c3f3",
+        "size": 6248275
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201905.tkc",
+        "sha256": "a0d0d091b50e8e67851bf1b158e7c77770a1735269ce6b7ee4cd5bba1edb71ea",
+        "size": 9381728
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201906.tkc",
+        "sha256": "c1808889034420eb1b6c40ce24ae65326ad5570f01b6b3ac3203dcdeb7952812",
+        "size": 7499058
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201907.tkc",
+        "sha256": "e6f50859148ead4ca246dcd325f20ad49188ee875524f1907c3e6e6604b88e01",
+        "size": 5916735
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201908.tkc",
+        "sha256": "3779f9e2f29d6214757b6760ca8b7f7fda5e4f33684c971ac17b13caa7976c07",
+        "size": 14691137
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201909.tkc",
+        "sha256": "823afaf8d5ccc2d1364efada1e68417238723a455e10c25cf1b14db775405df2",
+        "size": 9362158
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201910.tkc",
+        "sha256": "fd6c3e305a27b2c3ea2e6435b8e78528926d3e90086392ce41e4726a9ec49faa",
+        "size": 10102823
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201911.tkc",
+        "sha256": "f9c032823cba4d641d5685d1991d488cdf275df755b39a8ec2353421bbed7228",
+        "size": 6483291
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/201912.tkc",
+        "sha256": "49d66ebf2bc0e78809882d65002a04e2072d89722a8344f6693e6b421f2873cc",
+        "size": 5525777
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202001.tkc",
+        "sha256": "5a2a54272a8e24771b1f1df1503f7dee23d1ed524eecc1a40ba8d2eb3c31c2fd",
+        "size": 6973300
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202002.tkc",
+        "sha256": "9df2e08199e4f2ae5c9c54732ebdb4d0538560b79d712052060ca155be8cfbe7",
+        "size": 10650011
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202003.tkc",
+        "sha256": "beb6b3c921b2beaf0793c41110db45e9203b953d1f737b4797ecf90797b04e08",
+        "size": 44344546
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202004.tkc",
+        "sha256": "974ef8acb39cf68e011a874474e01b08f9f82f476ab7cf9afc7eb144cde2726b",
+        "size": 13279655
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202005.tkc",
+        "sha256": "4403d54f310a7374b26fca4f9583e759f1988e7b66b2fda9239f284326665ba2",
+        "size": 6278783
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202006.tkc",
+        "sha256": "2faf481dad10f4e5f0ff6f471abe6a1d2edbf5d5351be5de0cd138a4e160873c",
+        "size": 11349891
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202007.tkc",
+        "sha256": "c1184c15cfd0b3c485f804d33b0b77ff0f8740a57792f9173720c9294403a555",
+        "size": 7876444
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202008.tkc",
+        "sha256": "a229602eb4cf029575f897d6c17d1656513d2d8845134454093b55bdfd7bcd87",
+        "size": 9407352
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202009.tkc",
+        "sha256": "218eeef77dfd8f2c32a433881a014c3afa9137ac05e7e7ea999af1d8b647a24d",
+        "size": 7870798
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202010.tkc",
+        "sha256": "ac6bf6c168aa5c3c923b2cc7626677d9e2c373512062c013c5222027d39b0c21",
+        "size": 8497552
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202011.tkc",
+        "sha256": "f0429230c412b6ed9ea054eb88d8d9b286c136be6a60a12920cc5d595db5dc87",
+        "size": 10687370
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202012.tkc",
+        "sha256": "b3f1dfff021fcb1298581d28a5f6fddd631cfda682d809258120e638535ef556",
+        "size": 8975631
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202101.tkc",
+        "sha256": "32780a5f66fe4cb1cee35e6065689fb3d08c03ad46a78bcb2e5477d9c6c56fa5",
+        "size": 7853872
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202102.tkc",
+        "sha256": "fbea8b5e946e7d1cd522393954c6470b9ee27b2816a2f691a7c16aeced313dcf",
+        "size": 6529340
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202103.tkc",
+        "sha256": "6d33b40f8a94ec763570d60045e94d3714bc3e78eb8edba3e93f7016fbac2c74",
+        "size": 9184616
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202104.tkc",
+        "sha256": "90e247a1337561e352bc10638d7ed57c5cddf51a5d588af67f6714839d565403",
+        "size": 6890919
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202105.tkc",
+        "sha256": "212a5b283c7e8775325c629962837eec092235e6f2722b17396538f2871d9849",
+        "size": 6791233
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202106.tkc",
+        "sha256": "3639731be4acbfbcc7292464d15214eb075db6908cb725c571335b4118aed908",
+        "size": 7172045
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202107.tkc",
+        "sha256": "ec1800c86d4537d8277863aa287cd978079fb2be885071a80295efe852e9fd06",
+        "size": 7901020
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202108.tkc",
+        "sha256": "8f602fc7d0d8e9032142de29dbad39f07a6ae010c82c7ed954341cd12b5d3e95",
+        "size": 6130995
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202109.tkc",
+        "sha256": "77e805251a14cc73df190b5f7a603e0992ecae5791ed659e66f0cd671e6fa9fb",
+        "size": 6590681
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202110.tkc",
+        "sha256": "2ae80d7b8d3b4802916f7f073ba08f87232a5c871f476f713fb6074632678ae4",
+        "size": 7736050
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202111.tkc",
+        "sha256": "bc552ad656e681a39ddf517ee566c97ddae42e4a431160996c756b3885353e8c",
+        "size": 9348739
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202112.tkc",
+        "sha256": "662e98b872a579d443390bc4ab2e25259998ee7f1c4051eaad9facb8cec0ac65",
+        "size": 9519054
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202201.tkc",
+        "sha256": "c9d268a2cd97aceb7847e61975ae697355d52ce4b57829093a4c948883d740ab",
+        "size": 9123062
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202202.tkc",
+        "sha256": "999cfebc7b05a69a6c45822312e4b8209484f9fedb99fbc7e6899959ba73a06d",
+        "size": 10665499
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202203.tkc",
+        "sha256": "253f6721a503541f15990427ccf2c4e054b8f4c5b8b69a71542740d475b2a019",
+        "size": 14787368
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202204.tkc",
+        "sha256": "090921bb90dbbc91738cc11e5a90ab26789569048e7e5296c6174ccb29fcdb6e",
+        "size": 17945179
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202205.tkc",
+        "sha256": "4af4ec2c7f363f1a6d8b3852da5d658494fce55b7d13724cd7d49022ed6a5688",
+        "size": 16840749
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202206.tkc",
+        "sha256": "7eb15268b59686354be4ee875c0ce471b2b360a5b76b9555c26ad771afafe6e0",
+        "size": 10970759
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202207.tkc",
+        "sha256": "d240a74984475782d701b9b7a7525ac8a53d81f3e3d6468f62068932225027a4",
+        "size": 11035864
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202208.tkc",
+        "sha256": "6c8c420c5b3cc7a1842b5be24469baae27624faf7de294d82d030d09b3882e53",
+        "size": 12741999
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202209.tkc",
+        "sha256": "8d08fef9f26a7c23d0b31d91bdd2b20008a9d50783d8b217a4b2019852b4a673",
+        "size": 12007471
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202210.tkc",
+        "sha256": "71817ce85dc9e5cb0498b2390d8a7c19fea33b5013fd4a482ac6936b7305566a",
+        "size": 9174061
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202211.tkc",
+        "sha256": "88c0805db2ab76fc8d14bcd931da2f5ce06c3cedf587583e86367ea7c1de8d0a",
+        "size": 13107784
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202212.tkc",
+        "sha256": "3b7fac1f1860c1da5ece819b5efdb337de2f64cee668cee05a278c9339dff0fc",
+        "size": 10338000
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202301.tkc",
+        "sha256": "030c7823b00e63cf0395be67a30391d22c2403144d47eeeaf636630e6bd1c37e",
+        "size": 11464035
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202302.tkc",
+        "sha256": "2b170bc35e4bdf38be7c507f1be674fbdaf5934db7f916c8f0defbdca96d8140",
+        "size": 10394964
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202303.tkc",
+        "sha256": "55374bd12c30f48bc4714159935ad48e9aa9c23711a47d6de694c4ab656dcf7b",
+        "size": 13985852
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202304.tkc",
+        "sha256": "a3405f3862231506b3432af367ec9e9ea3c230d23bc7f07e54567c7325a907b0",
+        "size": 9658285
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202305.tkc",
+        "sha256": "c847a4936f2899de14d07981ff178ffd7bc4cce6c380079d8a50852af0bcaa2e",
+        "size": 11427193
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202306.tkc",
+        "sha256": "96188b763ef3cee4e9c70b9286fe36181106b1fc0d3adbaacca645ba4e2f835a",
+        "size": 9079960
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202307.tkc",
+        "sha256": "bd05ccaab6e7d0db55830eb89919ee113bbf00b3b06888ed34375c4e9adf4117",
+        "size": 8800087
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202308.tkc",
+        "sha256": "1fcf3ef9259db81cc593b357724fd2fcdb20f207e9ca3c1746a4d634d1b680e9",
+        "size": 7381399
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202309.tkc",
+        "sha256": "2c69b1e64fc5ec2c4c9c56abdf90cc3695046e0e62c0f78bf12216e4a9d91944",
+        "size": 5241294
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202310.tkc",
+        "sha256": "ebe9fdfd76ae2fc8f87520e078499cac8290561479bb1f67b6a920ffab171901",
+        "size": 5770066
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202311.tkc",
+        "sha256": "971855c461f9899e839f30dc5bdd267f7f37c99b8ddf6094904fe5d03401f70a",
+        "size": 5561948
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202312.tkc",
+        "sha256": "6ba8ce01421927450274623b4a8507b327b06673649e919e289c6de70e512a72",
+        "size": 6330870
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202401.tkc",
+        "sha256": "232d297bf00bb605b007b355198bafa0697d3836c600ad4eedd39287be99323b",
+        "size": 8796438
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202402.tkc",
+        "sha256": "52a79d5fc1997cde404c24fbc2212af81ed03e83cdff56c114884891e7331a1f",
+        "size": 7367547
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202403.tkc",
+        "sha256": "a4c76e1244f8e3a626bc99c4b1352ae504eb8f48ca41d45a30d45b229ac71b69",
+        "size": 6716503
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202404.tkc",
+        "sha256": "7197ce8108255bf99cdb9a33df482477ec5550dfdd0dfe2f27ecf5aa0cd232bd",
+        "size": 5844733
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202405.tkc",
+        "sha256": "339d0d483ea2db28d93d7b789876cc6f5bf6247d9f08a7d82f7f0deb18cb56a9",
+        "size": 5643359
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202406.tkc",
+        "sha256": "affbda26052d6380aec6b87c845d380495f9ae33e310c8d492d32a6283c6c421",
+        "size": 5538374
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202407.tkc",
+        "sha256": "dfa719d69e4aba87c31878bc30bec0987fec7e739225c2a7365292aca2ca5dc7",
+        "size": 8460457
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202408.tkc",
+        "sha256": "f33850ece0ebccf1321d7aa9497a8e48e90fa343b20e26538cd22c05b7213ed2",
+        "size": 12840954
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202409.tkc",
+        "sha256": "4d129bd803c3f5d17fcec648c5658c8b56e40ecdfc9157825181700c32e8d853",
+        "size": 12120530
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202410.tkc",
+        "sha256": "fd6704310c49907da68ee2ccdbea5fdaa72f6e7aed5d2ed4871a131e2b3ddd12",
+        "size": 8913229
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202411.tkc",
+        "sha256": "b79cbdde347f07461882241e9159f42868599d28bfd186a6058bfa4a0e010991",
+        "size": 10350910
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202412.tkc",
+        "sha256": "8260350f8c020a5761f0c1cb4187f2d612948b6bd8fbf5bb27a331b29ba419d2",
+        "size": 8702314
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202501.tkc",
+        "sha256": "6f733cb72b7e2bcd820d2fbdf8a200d9654c3aab45379325f9a2b0435fae9088",
+        "size": 9605714
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202502.tkc",
+        "sha256": "f2d6d42690c10522f0fdebffebad3d587297c168bc118472bc76df699174428d",
+        "size": 9992267
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202503.tkc",
+        "sha256": "ca99cd8077bd50b936643e56ac8259ff8323668cd0b9ef5b9723e04d20eda174",
+        "size": 12385466
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202504.tkc",
+        "sha256": "20de692f4a18413991245e1da34083ad51c0fb6dcd76faa88ab7c41806e1fc87",
+        "size": 16023968
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202505.tkc",
+        "sha256": "4e7c662e4cb23dc4b317ee5ffc12e0dd7da34e70fb142df37e3e92c19ca2c1a9",
+        "size": 10963014
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202506.tkc",
+        "sha256": "6dec75573a58b2320cd723ea4d8f08fed55e67a5c1b903ebdb098d148500a102",
+        "size": 9413070
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202507.tkc",
+        "sha256": "e4b41330caf87bfb9a059be33615b843a632734775bb9432765c3beef0b6df71",
+        "size": 9266883
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202508.tkc",
+        "sha256": "40acf9d8144e8194df13ab6be9e471de0c8b18bcc90812f3e0f64abd9bed347b",
+        "size": 8225194
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202509.tkc",
+        "sha256": "01ef019c8a3efc48f1446d80d4b532bda38b813382d54b076e626a26fddc5e2e",
+        "size": 8274915
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202510.tkc",
+        "sha256": "8a73138d3e68e03b6bfe102d41514442a01186e753f798c25de86e0d10dfbd4a",
+        "size": 2391444
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202511.tkc",
+        "sha256": "fc92559b6733371d824ab5a68420e5c09cc186463be01990bae1493c31acc776",
+        "size": 8484332
+      },
+      {
+        "exact": true,
+        "relative_path": "ticks/USDJPY.DWX/202512.tkc",
+        "sha256": "3091b81572d50048524ee4d35b67c7378cef200c0e602fade739db5fe284b43c",
+        "size": 6832541
+      }
+    ],
+    "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+    "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+    "receipt_file_sha256": "abe76f72374fbe071f797d094bd31e37b42f4b2d01710f95386ecf24a839bbc1",
+    "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\356a3655-5f0a-51ea-84f3-a3d04e2ed714_T10.json",
+    "status": "PASS_EXACT"
+  },
+  "lane": "DEV2",
+  "lane_after": {
+    "account_enabled": false,
+    "password_required": true,
+    "process_count": 0,
+    "process_ids": []
+  },
+  "lane_before": {
+    "account_enabled": false,
+    "password_required": true,
+    "process_count": 0,
+    "process_ids": []
+  },
+  "problems": [],
+  "schema": "qm.warm-cell-governed-restart-session/v1",
+  "session_id": "facd65b1-7d0a-4c78-bae0-400e3c877ef6",
+  "started_utc": "2026-08-27T15:46:50.477022+00:00",
+  "terminal_restarts": 0
+}
