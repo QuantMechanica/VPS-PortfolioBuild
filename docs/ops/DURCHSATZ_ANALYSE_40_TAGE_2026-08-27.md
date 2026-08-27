@@ -76,3 +76,57 @@ Mutation-Lock-Wartezeiten (Pump-Serialisierung) im at_utc-Log jetzt messbar.
 
 Fenster kürzen, Seeds reduzieren, Zellen samplen, Gates parallelisieren, die
 DL-089-Matrix beschneiden — alles Qualitätsverlust bzw. ROT.
+
+---
+
+# Nachtrag §5 (27.08. mittags): Vertiefung Optimierungszweig — OWNER-Korrektur eingearbeitet
+
+**Korrektur:** Per OWNER-DEC-A1 zählt der ≥25-Trigger **terminale Q14-Paare** — der
+Optimierungszweig (Q12→Q13→Q14) liegt AUF dem Weg zu 25. §2 oben ist insoweit falsch;
+die 40 Tage sind für „25 durch alle Gates inkl. Optimierung" richtig kalibriert.
+
+## 5.1 Gemessene Optimierungs-Ökonomie je Paar
+
+- Zell-Wandzeit (n=98 MEASURED): **Median 7,2 min**, Mean 8,2, p90 12,5.
+- Q12-Deklaration je Paar: 1.089 Zellen → **~132–149 Terminal-h je Paar** allein für Q12.
+- Upstream (Q02→Q11) je Paar: ~10–15 h — **Rundungsfehler daneben.** Der Optimierungszweig
+  ist ~90 % der Paarkosten.
+- Q13 ist noch unbepreist (bisher 0 deklarierte Parameter) — jeder künftig deklarierte
+  numerische Parameter erzeugt einen eigenen Sweep. **Unbudgetiert ist das der Ort, an dem
+  die Schlange explodieren kann.** Q14 selbst ist billig (wenige Voll-Fenster-Läufe).
+
+## 5.2 Hochrechnung zu 25
+
+25 Paare × ~140 h Q12 ≈ **3.500 Terminal-h** (+ Q13 unbekannt). Kapazität 240 Slot-h/Tag
+brutto; realistisch nutzbar nach den Fixes ~150–170 h/Tag, geteilt mit News/Q09/Q02-Zufluss
+→ **35–50 Tage — deckt sich mit der 40-Tage-Anzeige.** Wachstum: aktuell speisen nur 3
+Q11-PASS-Paare den Zweig; 53 Q09-PASS-Paare stehen davor. Jede News/Q11-Qualifikation
+addiert ~140 h Optimierungs-Bedarf — der Zweig wird strukturell zum Dauerengpass.
+
+Zählhinweis: 10 (EA,Symbol)-Paare haben historisch terminale Q14-Zeilen (v3-Ära + Piloten),
+der Cockpit-Zähler zeigt 0/25 — die v4-Lineage-Definition entscheidet; Klärung gehört in
+die ETA-zu-25-Anzeige (V2).
+
+## 5.3 Revidierte Vorschlags-Reihung (Optimierung im Zentrum)
+
+**V4↑ (jetzt DER Hebel) — Zell-Ausführung batchen:** Die 7,2 min je Zelle bestehen
+mutmaßlich zu 60–80 % aus Launch/Init/History-Load/Receipt-Overhead (ein 1-Jahres-Lauf
+eines D1/H1-EA rechnet in 1–3 min). Zwei Stufen, beide qualitätsneutral:
+(a) **Warm-Terminal-Zellrunner**: Zellen desselben Paars sequenziell im stehenden Terminal
+(gleicher EA, gleiches Symbol, gleiche History — nur Input+Fenster wechseln) → erwartet
+7,2→2–3 min = **2,5–3×**; (b) **MT5-nativer Optimizer** (154 Werte eines Inputs, geteilte
+Tick-Pipeline, mehrere lokale Agents) → **bis 5–10×**. Abnahme jeweils: Byte-Vergleich
+gegen ≥20 Referenzzellen. 3.500 h → 500–1.200 h: **Tage statt Wochen.**
+
+**NEU V7 — Deterministisches Pruning (OWNER-Entscheid, DL-089-Amendment):** Bricht ein
+Kandidat den Frequency-Floor in einem Jahr, ist er per versiegelter Regel deterministisch
+ausgeschlossen — seine restlichen Jahres-Zellen liefern **null Information**. Skip mit
+`skipped_as_excluded`-Receipt = reine Beschleunigung ohne Informationsverlust. Da es den
+deklarierten Zellplan ändert: ROT → braucht dein explizites Amendment. Potenzial abhängig
+von der Floor-Break-Quote (nach GBP-Abschluss messbar), plausibel 20–50 % der Zellen.
+
+**NEU V8 — Q13-Budget-Politik JETZT:** Bevor erste Parameter deklariert werden: Budget je
+Paar (max. Parameter × Werte, DL-089-Stil, deklariert + versiegelt). Verhindert, dass Q13
+die nächste unbepreiste 3.500-h-Schlange wird. Governance-Arbeit, keine Rechenzeit.
+
+V5 (Hardware 2×) und V3 (Concurrency-Experiment) unverändert gültig und multiplikativ zu V4.
