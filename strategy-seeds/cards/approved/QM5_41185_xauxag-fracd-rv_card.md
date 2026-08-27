@@ -95,7 +95,7 @@ force_build: true
 review_focus: "Falsify a fixed fractional-difference gold/silver ratio-reversion basket outside the directional XAU/SP500/NDX/XNG book. Verify exact synchronization/count, d=0.40 K=64 recurrence, 253 outputs, held-out 252-sample baseline, inclusive abs(z)>=0.50 contrarian sides, consumed attempt, aggregate fixed risk, equal-notional tolerance, atomicity, and next-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
-hard_rules_at_risk: [exact_symbols_period, first_tradable_month_bar, exact_316_synchronized_d1_pairs, completed_bar_only, strictly_chronological_history, fixed_fractional_order_040, exact_64_coefficient_recurrence, exact_253_filter_outputs, heldout_latest_output, sample_sd_denominator_251, inclusive_absolute_z_threshold_050, contrarian_pair_sides, monthly_attempt_state, equal_notional_pair, aggregate_fixed_risk, atomic_pair_lifecycle, hard_stops_present, next_month_exit, q02_frequency_floor, portfolio_correlation]
+hard_rules_at_risk: [exact_symbols_period, first_tradable_month_bar, exact_316_synchronized_d1_pairs, completed_bar_only, strictly_chronological_history, fixed_fractional_order_040, exact_64_coefficient_recurrence, exact_253_filter_outputs, heldout_latest_output, sample_sd_denominator_251, sample_sd_floor_1e_12, inclusive_absolute_z_threshold_050, contrarian_pair_sides, monthly_attempt_state, equal_notional_pair, aggregate_fixed_risk, atomic_pair_lifecycle, hard_stops_present, next_month_exit, q02_frequency_floor, portfolio_correlation]
 g0_approval_reasoning: "OWNER mission 2026-08-27 and decisions/2026-08-27_qm5_41185_xauxag_fractional_difference_reversion_g0.md: R1 passes with explicit translation risk on peer-reviewed gold/silver and official CME evidence; R2 locks the complete fixed-filter contract; R3 passes registered native XAU/XAG D1 with synchronization/CFD risk; R4 uses deterministic native arithmetic only. The canonical checker returned CLEAN across 4,684 registry identities, 1,335 cards, and 45 Strategy Wiki nodes; semantic review separates raw ratio, OLS, CADF/OU, threshold-cointegration, return-spread, rank, robust-location, quantile, channel, stochastic, and seasonal builds."
 ---
 
@@ -180,6 +180,7 @@ baseline = fd[63..314]                 # exactly 252 outputs
 latest = fd[315]                        # held out
 mu = mean(baseline)
 sd = sample_std(baseline, denominator=251)
+require sd > 1e-12
 z = (latest - mu) / sd
 
 SELL XAU / BUY XAG iff z >= +0.50
@@ -200,7 +201,7 @@ or signal-strength sizing.
 - Use only completed exact-timestamp-matched pairs in strict chronological
   order; current open bars never enter the filter.
 - Reject wrong counts, stale endpoints, nonpositive closes, nonfinite weights
-  or outputs, nonpositive sample variance, or threshold/side mismatch.
+  or outputs, sample deviation at or below `1e-12`, or threshold/side mismatch.
 - Both news axes, legacy news mode, and Friday close are OFF.
 
 ## 4. Entry Rules
@@ -220,7 +221,8 @@ or signal-strength sizing.
    finite closes, and finite log ratios.
 6. Build exactly 64 fixed fractional-difference weights with the locked
    recurrence, then exactly 253 filtered outputs. Standardize only the held-
-   out latest output against the preceding 252 using sample denominator 251.
+   out latest output against the preceding 252 using sample denominator 251;
+   require sample deviation strictly above `1e-12`.
 7. Require finite `z>=+0.50` or `z<=-0.50`, mapping to the exact contrarian
    package sides. An interior or invalid state consumes the month flat.
 8. Require XAU/XAG spreads no greater than 1,500/500 points, valid executable
@@ -250,8 +252,8 @@ or signal-strength sizing.
   news/Friday modes, or locked strategy inputs.
 - Reject a consumed month, late monthly tick, owned exposure, same-month deal,
   missing or stale history, wrong pair count/order, timestamp mismatch,
-  nonpositive close, invalid ratio/weight/output, wrong output count, zero or
-  invalid variance, sub-threshold z, excessive spread, invalid quote, missing
+  nonpositive close, invalid ratio/weight/output, wrong output count, sample
+  deviation at or below `1e-12`, sub-threshold z, excessive spread, invalid quote, missing
   ATR, invalid stop, invalid contract metadata, or invalid sizing solution.
 - Lifecycle exits and package repair run before entry-only filters.
 - Runtime may not read an external file/API, futures chain, paper estimate,

@@ -1,0 +1,47 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41185
+; ea_slug:      xauxag-fracd-rv
+; ea_version:   v5.0
+; set_version:  s20260827-001
+; symbol:       XAGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-27
+;==========================================================
+qm_ea_id=41185
+qm_magic_slot_offset=1
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_xag_symbol=XAGUSD.DWX
+strategy_pair_count_d1=316
+strategy_frac_lags=64
+strategy_baseline_outputs=252
+strategy_frac_order=0.40
+strategy_entry_abs_z=0.50
+strategy_history_bars_d1=700
+strategy_entry_window_minutes=180
+strategy_max_endpoint_gap_days=10
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_notional_ratio=1.0
+strategy_max_notional_mismatch_fraction=0.20
+strategy_max_hold_days=40
+strategy_xau_max_spread_points=1500
+strategy_xag_max_spread_points=500
+strategy_deviation_points=20
