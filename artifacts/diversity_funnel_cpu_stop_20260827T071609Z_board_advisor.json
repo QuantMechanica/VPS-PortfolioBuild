@@ -1,0 +1,115 @@
+{
+  "schema": "qm.paced-fleet-diversity-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-27T07:16:09.8255754Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "27c8d4b2b50c19aef2887bc6c77b54a1a0f4dc26",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_CLAIM",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "stop when either the fresh five-sample average or maximum reaches 97 percent",
+    "implementation_source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "cpu_sample": {
+    "command": "five Get-Counter \\Processor(_Total)\\% Processor Time readings with one-second spacing",
+    "samples_percent": [
+      98.0825,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 99.6165,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "triggers": [
+      "average_percent",
+      "maximum_percent"
+    ]
+  },
+  "farm_snapshot": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "slot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mt5-slots",
+    "work_item_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "slot_scan_at_utc": "2026-08-27T07:15:31+00:00",
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "running_factory_terminal_count": 7,
+    "active_terminal_reservation_count": 7,
+    "active_work_item_count": 9,
+    "active_phase_counts": {
+      "Q03": 1,
+      "Q07": 1,
+      "Q09": 3,
+      "Q10_NEWS": 4
+    },
+    "orphaned_factory_terminal_process_count": 0,
+    "active_rows_without_live_process_or_reservation_in_slot_snapshot": [
+      {
+        "terminal": "T1",
+        "work_item_id": "d9995724-9905-4702-833f-0d41159cbb38",
+        "ea_id": "QM5_11124",
+        "phase": "Q09",
+        "symbol": "SP500.DWX",
+        "updated_at_utc": "2026-08-27T07:15:09+00:00"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "8ac4dd37-4d59-4721-bf19-da6a8e34e384",
+        "ea_id": "QM5_13036",
+        "phase": "Q09",
+        "symbol": "GDAXI.DWX",
+        "updated_at_utc": "2026-08-27T05:52:15+00:00"
+      }
+    ],
+    "divergence_interpretation": "point-in-time observation only; no stale verdict or safe-reclaim conclusion was made",
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "diversity_coordination": {
+    "diverse_active_row": {
+      "terminal": "T9",
+      "work_item_id": "dc7cadb3-f1f3-40a7-b6dc-d9b38b208223",
+      "ea_id": "QM5_20238",
+      "phase": "Q03",
+      "symbol": "QM5_20238_USDCAD_EURJPY_COINTEGRATION_D1"
+    },
+    "action": "left undisturbed",
+    "approved_build_card_ranked": false,
+    "build_task_claimed": false,
+    "farm_db_mutated": false
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/qm5_41140_fx_q01_cpu_stop_20260827T064614Z_board_advisor.json",
+    "preceding_running_factory_terminal_count": 5,
+    "current_running_factory_terminal_count": 7,
+    "topology_change": "T6 and T10 are now active in addition to the preceding five-terminal snapshot; host CPU remains saturated"
+  },
+  "actions_after_capacity_stop": {
+    "candidate_claimed": false,
+    "registry_or_magic_mutated": false,
+    "ea_source_or_setfile_created": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_or_reconciliation_run": false,
+    "terminal_or_worker_controlled": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  },
+  "next_action": "After a fresh five-sample CPU check clears the ceiling, rank and atomically claim the highest-diversity approved build card before making any EA or Q02 mutation."
+}
