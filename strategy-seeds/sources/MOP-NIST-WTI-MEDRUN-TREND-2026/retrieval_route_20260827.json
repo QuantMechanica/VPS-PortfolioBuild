@@ -1,0 +1,30 @@
+{
+  "source_id": "NIST-RUNS-TEST-EDA35D",
+  "retrieved_at_utc": "2026-08-27T12:06:27.0738145Z",
+  "url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda35d.htm",
+  "host": "www.itl.nist.gov",
+  "owner": "National Institute of Standards and Technology",
+  "document": "NIST/SEMATECH e-Handbook of Statistical Methods, section 1.3.5.13, Runs Test for Detecting Non-randomness",
+  "http_result": "FETCHED",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "last_modified": "Wed, 22 Apr 2026 02:03:12 GMT",
+  "utf8_bytes": 12074,
+  "sha256": "9ACBE3A27118ABDF934FDD0EA75C4C1FFF52378BF7528271C0C751FB0531D374",
+  "read_scope": "complete official HTML method page; definition, formulas, limitations, example, related techniques, and software notes",
+  "retrieval_method": "read-only web open plus direct HTTP header and in-memory UTF-8 SHA-256 verification",
+  "raw_content_committed": false,
+  "claims_used": [
+    "a runs formulation produces a chronological dichotomous sequence",
+    "values above the sample median are coded positive and values below it negative",
+    "a run is a consecutive sequence of identical signs",
+    "the observed run count is R",
+    "the expected run count is 2*n1*n2/(n1+n2)+1"
+  ],
+  "claims_not_used": [
+    "large-sample normal significance threshold",
+    "small-sample significance claim",
+    "trading efficacy",
+    "WTI predictability"
+  ]
+}

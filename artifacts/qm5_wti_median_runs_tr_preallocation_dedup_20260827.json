@@ -1,0 +1,39 @@
+{
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "tool_version": "2.0.0",
+  "generated_at_utc": "2026-08-27T12:07:00+00:00",
+  "candidate": {
+    "slug": "wti-median-runs-tr",
+    "strategy_id": "MOP-NIST-WTI-MEDRUN-TREND-2026_S01",
+    "author": "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; NIST/SEMATECH",
+    "mechanic": "monthly-wti-thirteen-completed-month-end-above-below-sample-median-run-count-at-most-seven-terminal-regime-continuation"
+  },
+  "verdict": "CLEAN",
+  "exit_code": 0,
+  "sources": [
+    {
+      "label": "ea_id_registry",
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4681,
+      "status": "OK",
+      "detail": null
+    },
+    {
+      "label": "strategy_cards",
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1332,
+      "status": "OK",
+      "detail": null
+    },
+    {
+      "label": "strategy_wiki",
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "status": "OK",
+      "detail": null
+    }
+  ],
+  "matches": [],
+  "error": null,
+  "preflight_note": "A prior invocation using the tool's obsolete default Wiki root returned INPUT_ERROR_FAIL_CLOSED. This successful invocation explicitly bound the current Company Reference vault; no allocation occurred after the failed invocation."
+}
