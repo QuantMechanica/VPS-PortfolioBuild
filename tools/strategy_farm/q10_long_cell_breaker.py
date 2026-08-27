@@ -265,7 +265,10 @@ def evaluate_parent(
 # Artifact scanning (filesystem IO)
 # ---------------------------------------------------------------------------
 
-def _earliest_run_marker_epoch(cell_dir: Path) -> Optional[float]:
+def _earliest_run_marker_epoch(
+    cell_dir: Path,
+    claim_started_epoch: Optional[float] = None,
+) -> Optional[float]:
     """Earliest tester-run artifact mtime for the cell = wall-time start.
 
     The forensics report defines cell wall time as "earliest timestamped
@@ -274,27 +277,37 @@ def _earliest_run_marker_epoch(cell_dir: Path) -> Optional[float]:
     YYYYMMDD_HHMMSS dir-name string, because the dir name is broker/local wall
     clock while the terminal artifact end marker is a UTC os mtime — using
     mtimes on both ends measures the same interval without the local/UTC skew
-    the string method carries. Falls back to inputs.set, then the cell dir.
+    the string method carries. Falls back to inputs.set, then the cell dir, but
+    only when that fallback marker was written during the current active claim.
+    This prevents a newly claimed parent from inheriting days of apparent wall
+    time from plan materialization or debris belonging to an older claim.
     """
+    def _in_current_claim(epoch: float) -> bool:
+        return claim_started_epoch is None or epoch >= claim_started_epoch
+
     candidates: list[float] = []
     for run_dir in cell_dir.glob("runs/*/*/*"):
         if run_dir.is_dir() and _TS_RE.match(run_dir.name):
             try:
-                candidates.append(run_dir.stat().st_mtime)
+                marker = run_dir.stat().st_mtime
             except OSError:
                 continue
+            if _in_current_claim(marker):
+                candidates.append(marker)
     if candidates:
         return min(candidates)
     inputs = cell_dir / "inputs.set"
     if inputs.exists():
         try:
-            return inputs.stat().st_mtime
+            marker = inputs.stat().st_mtime
         except OSError:
             return None
+        return marker if _in_current_claim(marker) else None
     try:
-        return cell_dir.stat().st_mtime
+        marker = cell_dir.stat().st_mtime
     except OSError:
         return None
+    return marker if _in_current_claim(marker) else None
 
 
 def _max_failure_occurrence(cell_dir: Path) -> tuple[int, Optional[Path]]:
@@ -316,9 +329,13 @@ def _max_failure_occurrence(cell_dir: Path) -> tuple[int, Optional[Path]]:
     return best, best_path
 
 
-def scan_cell_timing(cell_dir: Path, now_epoch: float) -> CellTiming:
+def scan_cell_timing(
+    cell_dir: Path,
+    now_epoch: float,
+    claim_started_epoch: Optional[float] = None,
+) -> CellTiming:
     """Classify one cell directory into a CellTiming."""
-    start = _earliest_run_marker_epoch(cell_dir)
+    start = _earliest_run_marker_epoch(cell_dir, claim_started_epoch)
     receipt = cell_dir / "cell_receipt.json"
     max_failure, failure_path = _max_failure_occurrence(cell_dir)
 
@@ -343,7 +360,9 @@ def scan_cell_timing(cell_dir: Path, now_epoch: float) -> CellTiming:
 
 
 def scan_parent_cells(
-    parent_reports_dir: Path, now_epoch: float
+    parent_reports_dir: Path,
+    now_epoch: float,
+    claim_started_epoch: Optional[float] = None,
 ) -> list[CellTiming]:
     """All cell timings under ``<work_item>/q09_contract_v3/cells``."""
     cells_dir = parent_reports_dir / "q09_contract_v3" / "cells"
@@ -352,7 +371,9 @@ def scan_parent_cells(
     timings: list[CellTiming] = []
     for cell_dir in sorted(cells_dir.iterdir()):
         if cell_dir.is_dir():
-            timings.append(scan_cell_timing(cell_dir, now_epoch))
+            timings.append(
+                scan_cell_timing(cell_dir, now_epoch, claim_started_epoch)
+            )
     return timings
 
 
@@ -363,7 +384,7 @@ def scan_parent_cells(
 def read_active_q10_parents(
     db_path: Path, phases: Sequence[str] = DEFAULT_Q10_PHASES
 ) -> list[dict]:
-    """Active/pending Q10 parents, read-only.
+    """Currently claimed Q10 parents with a valid active-claim stamp, read-only.
 
     Fails open (returns []) if the DB is unreadable — this is a visibility
     mechanism and must never crash the caller.
@@ -382,10 +403,12 @@ def read_active_q10_parents(
         con.execute("PRAGMA query_only = ON")
         rows = con.execute(
             f"""
-            SELECT id, ea_id, symbol, phase, status
+            SELECT id, ea_id, symbol, phase, status, claimed_by, payload_json
             FROM work_items
             WHERE phase IN ({marks})
-              AND status IN ('active', 'pending')
+              AND status = 'active'
+              AND claimed_by IS NOT NULL
+              AND TRIM(claimed_by) <> ''
             ORDER BY id
             """,
             tuple(phases),
@@ -394,7 +417,25 @@ def read_active_q10_parents(
         return []
     finally:
         con.close()
-    return [dict(r) for r in rows]
+
+    parents: list[dict] = []
+    for row in rows:
+        parent = dict(row)
+        try:
+            payload = json.loads(parent.pop("payload_json") or "{}")
+            claimed_at_iso = str(payload.get("claimed_at_iso") or "").strip()
+            parsed = dt.datetime.fromisoformat(
+                claimed_at_iso.replace("Z", "+00:00")
+            )
+            if parsed.tzinfo is None:
+                continue
+            claimed_at_epoch = parsed.astimezone(dt.timezone.utc).timestamp()
+        except (AttributeError, TypeError, ValueError, json.JSONDecodeError):
+            continue
+        parent["claimed_at_iso"] = claimed_at_iso
+        parent["claimed_at_epoch"] = claimed_at_epoch
+        parents.append(parent)
+    return parents
 
 
 def write_long_cell_hold(
@@ -502,12 +543,18 @@ def run(
     try:
         for parent in parents:
             wid = parent["id"]
-            cells = scan_parent_cells(Path(reports_root) / wid, now_epoch)
+            cells = scan_parent_cells(
+                Path(reports_root) / wid,
+                now_epoch,
+                parent["claimed_at_epoch"],
+            )
             ev = evaluate_parent(wid, cells, timeout)
             ev["ea_id"] = parent.get("ea_id")
             ev["symbol"] = parent.get("symbol")
             ev["phase"] = parent.get("phase")
             ev["status"] = parent.get("status")
+            ev["claimed_by"] = parent.get("claimed_by")
+            ev["claimed_at_iso"] = parent.get("claimed_at_iso")
             ev["hold_written"] = False
             if ev["breached"]:
                 result.parents_breached += 1

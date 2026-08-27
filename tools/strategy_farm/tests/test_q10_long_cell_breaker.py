@@ -228,6 +228,42 @@ def test_scan_parent_cells_full_tree(tmp_path):
     assert timings[0].status == "exhausted"
 
 
+def test_inputs_mtime_fallback_before_current_claim_is_not_timed(tmp_path):
+    now = 1_000_000.0
+    cell = tmp_path / "control_off__m0__c0__s17"
+    cell.mkdir()
+    inputs = cell / "inputs.set"
+    inputs.write_text("plan-only", encoding="utf-8")
+    os.utime(inputs, (now - 20_000.0, now - 20_000.0))
+
+    timing = breaker.scan_cell_timing(
+        cell,
+        now,
+        claim_started_epoch=now - 600.0,
+    )
+
+    assert timing.status == "inflight"
+    assert timing.wall_seconds is None
+
+
+def test_inputs_mtime_fallback_within_current_claim_is_timed(tmp_path):
+    now = 1_000_000.0
+    cell = tmp_path / "control_off__m0__c0__s17"
+    cell.mkdir()
+    inputs = cell / "inputs.set"
+    inputs.write_text("claim-local", encoding="utf-8")
+    os.utime(inputs, (now - 300.0, now - 300.0))
+
+    timing = breaker.scan_cell_timing(
+        cell,
+        now,
+        claim_started_epoch=now - 600.0,
+    )
+
+    assert timing.status == "inflight"
+    assert timing.wall_seconds == 300.0
+
+
 # ---------------------------------------------------------------------------
 # Database schema helpers
 # ---------------------------------------------------------------------------
@@ -239,7 +275,7 @@ def _make_db(tmp_path: Path) -> Path:
         """
         CREATE TABLE work_items (
             id TEXT PRIMARY KEY, ea_id TEXT, symbol TEXT, phase TEXT,
-            status TEXT, verdict TEXT, payload_json TEXT
+            status TEXT, verdict TEXT, claimed_by TEXT, payload_json TEXT
         );
         CREATE TABLE work_item_holds (
             work_item_id TEXT PRIMARY KEY,
@@ -284,20 +320,24 @@ def test_read_active_q10_parents_real_db(tmp_path):
     db = _make_db(tmp_path)
     con = sqlite3.connect(db)
     con.executemany(
-        "INSERT INTO work_items(id,ea_id,symbol,phase,status,verdict,payload_json) "
-        "VALUES(?,?,?,?,?,?,?)",
+        "INSERT INTO work_items(id,ea_id,symbol,phase,status,verdict,claimed_by,payload_json) "
+        "VALUES(?,?,?,?,?,?,?,?)",
         [
-            ("p1", "QM5_1328", "EURJPY", "Q10_NEWS", "active", None, "{}"),
-            ("p2", "QM5_1", "XAUUSD", "Q10", "pending", None, "{}"),
-            ("p3", "QM5_2", "GBPUSD", "Q10_NEWS", "done", "PASS", "{}"),  # terminal
-            ("p4", "QM5_3", "USDJPY", "Q09_NEWS", "active", None, "{}"),  # wrong phase
+            ("p1", "QM5_1328", "EURJPY", "Q10_NEWS", "active", None, "T8", '{"claimed_at_iso":"2026-08-27T05:34:20Z"}'),
+            ("p2", "QM5_1", "XAUUSD", "Q10", "pending", None, None, "{}"),
+            ("p3", "QM5_2", "GBPUSD", "Q10_NEWS", "done", "PASS", None, "{}"),  # terminal
+            ("p4", "QM5_3", "USDJPY", "Q09_NEWS", "active", None, "T4", '{"claimed_at_iso":"2026-08-27T05:34:20Z"}'),  # wrong phase
+            ("p5", "QM5_4", "USDJPY", "Q10_NEWS", "active", None, None, '{"claimed_at_iso":"2026-08-27T05:34:20Z"}'),  # no holder
+            ("p6", "QM5_5", "USDJPY", "Q10_NEWS", "active", None, "T5", "{}"),  # no claim time
         ],
     )
     con.commit()
     con.close()
     parents = breaker.read_active_q10_parents(db)
     ids = {p["id"] for p in parents}
-    assert ids == {"p1", "p2"}
+    assert ids == {"p1"}
+    assert parents[0]["claimed_by"] == "T8"
+    assert parents[0]["claimed_at_epoch"] > 0
 
 
 def test_read_active_q10_parents_missing_db_fails_open(tmp_path):
@@ -357,22 +397,38 @@ def test_write_long_cell_hold_never_overwrites_different_hold(tmp_path):
 # writes no verdict; and the rollback flag suppresses all writes.
 # ---------------------------------------------------------------------------
 
-def _seed_breaching_parent(tmp_path: Path, status: str = "pending") -> Path:
+def _seed_breaching_parent(
+    tmp_path: Path,
+    *,
+    status: str = "active",
+    claimed_by: str | None = "T8",
+    claim_age_seconds: float = 18_000.0,
+    plan_only: bool = False,
+) -> Path:
     db = _make_db(tmp_path)
+    now = time.time()
+    claimed_at = time.strftime(
+        "%Y-%m-%dT%H:%M:%SZ", time.gmtime(now - claim_age_seconds)
+    )
+    payload = '{"claimed_at_iso":"' + claimed_at + '"}'
     con = sqlite3.connect(db)
     con.execute(
-        "INSERT INTO work_items(id,ea_id,symbol,phase,status,verdict,payload_json) "
-        "VALUES('13f41983','QM5_1328','EURJPY','Q10_NEWS',?,NULL,'{}')",
-        (status,),
+        "INSERT INTO work_items(id,ea_id,symbol,phase,status,verdict,claimed_by,payload_json) "
+        "VALUES('13f41983','QM5_1328','EURJPY','Q10_NEWS',?,NULL,?,?)",
+        (status, claimed_by, payload),
     )
     con.commit()
     con.close()
     # Artifacts: a parent with 0 receipts, one exhausted cell far over floor.
-    now = time.time()
     cells_dir = tmp_path / "reports" / "13f41983" / "q09_contract_v3" / "cells"
     cells_dir.mkdir(parents=True)
     cell = cells_dir / "control_off__m0__c0__s17"
     cell.mkdir()
+    if plan_only:
+        inputs = cell / "inputs.set"
+        inputs.write_text("old plan", encoding="utf-8")
+        os.utime(inputs, (now - 20_000.0, now - 20_000.0))
+        return db
     _make_run_dir(cell, "selection", "20260824_052707", now - 16000.0)
     for i in ("cell_failure.json", "cell_failure_2.json"):
         _write_json(cell / i, now - 12000.0)
@@ -381,11 +437,8 @@ def _seed_breaching_parent(tmp_path: Path, status: str = "pending") -> Path:
 
 
 def test_run_apply_flags_parent_writes_hold_no_verdict_stops_reclaim(tmp_path):
-    db = _seed_breaching_parent(tmp_path, status="pending")
+    db = _seed_breaching_parent(tmp_path)
     reports_root = tmp_path / "reports"
-
-    # Before: the pending parent is claimable.
-    assert "13f41983" in _claimable_ids(db)
 
     result = breaker.run(
         db_path=db, reports_root=reports_root, apply=True, env={}
@@ -394,20 +447,26 @@ def test_run_apply_flags_parent_writes_hold_no_verdict_stops_reclaim(tmp_path):
     assert result.parents_breached == 1
     assert result.holds_written == 1
 
-    # Criterion 2: the retry chain can no longer re-claim the row.
-    assert "13f41983" not in _claimable_ids(db)
-
     # Criterion 1: no verdict written, status untouched.
     con = sqlite3.connect(db)
     row = con.execute(
         "SELECT status,verdict FROM work_items WHERE id='13f41983'"
     ).fetchone()
-    assert row == ("pending", None)
+    assert row == ("active", None)
     hold = con.execute(
         "SELECT hold_code,active FROM work_item_holds WHERE work_item_id='13f41983'"
     ).fetchone()
+    con.execute(
+        "UPDATE work_items SET status='pending', claimed_by=NULL "
+        "WHERE id='13f41983'"
+    )
+    con.commit()
     con.close()
     assert hold == (breaker.HOLD_CODE, 1)
+
+    # Once the worker releases the parent back to pending, the documented hold
+    # prevents another claim without mutating the pipeline verdict.
+    assert "13f41983" not in _claimable_ids(db)
 
     # Criterion 3: telemetry separates the (empty) success series from the
     # exhaustion series.
@@ -418,17 +477,55 @@ def test_run_apply_flags_parent_writes_hold_no_verdict_stops_reclaim(tmp_path):
 
 
 def test_run_dry_run_writes_no_hold(tmp_path):
-    db = _seed_breaching_parent(tmp_path, status="pending")
+    db = _seed_breaching_parent(tmp_path)
     result = breaker.run(
         db_path=db, reports_root=tmp_path / "reports", apply=False, env={}
     )
     assert result.parents_breached == 1
     assert result.holds_written == 0
-    assert "13f41983" in _claimable_ids(db)  # still claimable in dry-run
+    con = sqlite3.connect(db)
+    assert con.execute(
+        "SELECT COUNT(*) FROM work_item_holds WHERE work_item_id='13f41983'"
+    ).fetchone()[0] == 0
+    con.close()
+
+
+def test_run_excludes_never_claimed_pending_parent(tmp_path):
+    db = _seed_breaching_parent(
+        tmp_path,
+        status="pending",
+        claimed_by=None,
+    )
+    result = breaker.run(
+        db_path=db,
+        reports_root=tmp_path / "reports",
+        apply=True,
+        env={},
+    )
+    assert result.parents_scanned == 0
+    assert result.parents_breached == 0
+    assert result.holds_written == 0
+
+
+def test_run_old_plan_mtime_does_not_age_new_active_claim(tmp_path):
+    db = _seed_breaching_parent(
+        tmp_path,
+        claim_age_seconds=600.0,
+        plan_only=True,
+    )
+    result = breaker.run(
+        db_path=db,
+        reports_root=tmp_path / "reports",
+        apply=True,
+        env={},
+    )
+    assert result.parents_scanned == 1
+    assert result.parents_breached == 0
+    assert result.holds_written == 0
 
 
 def test_run_disabled_via_rollback_flag_writes_nothing(tmp_path):
-    db = _seed_breaching_parent(tmp_path, status="pending")
+    db = _seed_breaching_parent(tmp_path)
     result = breaker.run(
         db_path=db,
         reports_root=tmp_path / "reports",
@@ -438,7 +535,11 @@ def test_run_disabled_via_rollback_flag_writes_nothing(tmp_path):
     assert result.enabled is False
     assert result.parents_scanned == 0
     assert result.holds_written == 0
-    assert "13f41983" in _claimable_ids(db)
+    con = sqlite3.connect(db)
+    assert con.execute(
+        "SELECT COUNT(*) FROM work_item_holds WHERE work_item_id='13f41983'"
+    ).fetchone()[0] == 0
+    con.close()
 
 
 # ---------------------------------------------------------------------------
