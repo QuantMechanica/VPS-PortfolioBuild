@@ -18067,3 +18067,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41140,nzdjpy-carry-unwind-crisis-momentum,0,NZDJPY.DWX,411400000,2026-08-27,Codex governed allocator,active
 41181,xauxag-mkendall-rv,0,XAUUSD.DWX,411810000,2026-08-27,Codex governed allocator,active
 41181,xauxag-mkendall-rv,1,XAGUSD.DWX,411810001,2026-08-27,Codex governed allocator,active
+41182,wti-median-runs-tr,0,XTIUSD.DWX,411820000,2026-08-27,Codex governed allocator,active
