@@ -1,0 +1,55 @@
+{
+  "candidate": {
+    "author": "Jose A Villar Frederick L Joutz David J Ramberg John E Parsons H B Mann D R Whitney R Core Team",
+    "mechanic": "monthly XTI XNG twelve synchronized completed month-end log oil minus log gas ratios fixed six older versus six newer blocks strict no-tie Wilcoxon Mann-Whitney U location shift threshold 24 12 contrarian equal-notional basket next-month exit",
+    "slug": "xtixng-mwilcoxon-rv",
+    "strategy_id": "VILLAR-MANNWHITNEY-XTIXNG-MSHIFT-RV-2026_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-08-27T03:19:44+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41177_xauxag-mwilcoxon-shift-rv_card.md",
+      "score": 0.76,
+      "slug": "xauxag-mwilcoxon-shift-rv",
+      "source": "card",
+      "strategy_id": "SCHWEIKERT-MANNWHITNEY-CME-XAUXAG-MSHIFT-RV-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41175_xtixng-mpettitt-rv_card.md",
+      "score": 0.75,
+      "slug": "xtixng-mpettitt-rv",
+      "source": "card",
+      "strategy_id": "VILLAR-PETTITT-XTIXNG-MSHIFT-RV-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4677,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1328,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
