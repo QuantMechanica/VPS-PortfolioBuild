@@ -1,0 +1,125 @@
+{
+  "artifact_type": "diversity_funnel_cpu_ceiling_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T01:06:27.6397647Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "66028fed4af0bb7411fc287bce445086a851626c",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "stop when the five-sample whole-host average or maximum exceeds 97 percent",
+    "sources": [
+      "explicit OWNER paced-fleet mission",
+      "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+    ]
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      96.5875,
+      99.2223,
+      98.1494,
+      99.1225,
+      94.2904
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 97.4744,
+    "maximum_cpu_percent": 99.2223,
+    "ceiling_binding": true,
+    "metatester64_process_count": 5,
+    "terminal64_process_count": 7
+  },
+  "farm_db_coordination": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "connection_mode": "read_only_wal_safe",
+    "active_work_item_count": 7,
+    "active_work_items": [
+      {
+        "terminal": "T1",
+        "work_item_id": "e5d40e56-8e65-49b8-bd1e-0a95768a281b",
+        "ea_id": "QM5_21507",
+        "phase": "Q10_NEWS",
+        "symbol": "XAUUSD.DWX",
+        "db_updated_at": "2026-08-26T13:55:00+00:00"
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "97722bc9-a3cb-4a2c-aa74-e9b0dae50f77",
+        "ea_id": "QM5_11124",
+        "phase": "Q09",
+        "symbol": "SP500.DWX",
+        "db_updated_at": "2026-08-26T11:48:40+00:00"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "0362a795-6e7b-4ed3-9cd1-71f598590197",
+        "ea_id": "QM5_11132",
+        "phase": "Q09",
+        "symbol": "SP500.DWX",
+        "db_updated_at": "2026-08-27T01:05:50+00:00"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "2c2d77b4-786a-4b47-b8ac-1f3eba932b0e",
+        "ea_id": "QM5_10128",
+        "phase": "Q10_NEWS",
+        "symbol": "XAUUSD.DWX",
+        "db_updated_at": "2026-08-27T00:45:11+00:00"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "f9ccf272-d66e-4a68-b332-76133baab427",
+        "ea_id": "QM5_20233",
+        "phase": "Q03",
+        "symbol": "QM5_20233_XAU_XAG_SKEW_RANK_D1",
+        "db_updated_at": "2026-08-27T00:58:27+00:00"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "cf8eac17-4079-4d81-9ed1-fcd9f4300a93",
+        "ea_id": "QM5_12354",
+        "phase": "Q10_NEWS",
+        "symbol": "XAUUSD.DWX",
+        "db_updated_at": "2026-08-25T08:28:42+00:00"
+      },
+      {
+        "terminal": "T10",
+        "work_item_id": "d6ced52f-a3dc-4ee0-93e3-5eb592532725",
+        "ea_id": "QM5_9403",
+        "phase": "Q10_NEWS",
+        "symbol": "GDAXI.DWX",
+        "db_updated_at": "2026-08-27T00:52:51+00:00"
+      }
+    ],
+    "candidate_or_ea_claim_created": false,
+    "database_mutated": false
+  },
+  "nonduplicate_delta": {
+    "comparison_receipt": "artifacts/backlog_cpu_stop_active_divergence_20260826T194838Z.json",
+    "prior_active_work_item_count": 8,
+    "current_active_work_item_count": 7,
+    "prior_observed_metatester64_process_count": 4,
+    "current_observed_metatester64_process_count": 5,
+    "prior_diverse_frontier_ea": "QM5_20220",
+    "current_diverse_frontier_ea": "QM5_20233"
+  },
+  "actions_this_run": {
+    "edge_selected": false,
+    "build_task_claimed": false,
+    "registry_or_magic_mutated": false,
+    "ea_source_or_setfile_created": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_enqueued": false,
+    "worker_or_terminal_repair_started": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
