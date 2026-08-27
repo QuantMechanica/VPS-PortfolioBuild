@@ -1,0 +1,135 @@
+{
+  "schema": "qm.source-build-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-27T17:29:37Z",
+  "recorded_at_local": "2026-08-27T19:29:37+02:00",
+  "branch": "agents/board-advisor",
+  "recorded_on_head": "fd4cab79f92c01e1c9d499e47a403d19e7544838",
+  "ea_id": "QM5_41186",
+  "ea_label": "QM5_41186_xtixng-median-runs-rv",
+  "strategy_id": "VILLAR-NIST-XTIXNG-MEDRUN-RV-2026_S01",
+  "logical_symbol": "QM5_41186_XTI_XNG_MEDRUN_RV_D1",
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "magics": [
+    411860000,
+    411860001
+  ],
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_ENQUEUED_HELD_Q01_NOT_PASS_Q02_STOPPED_CPU_CEILING",
+  "commits": {
+    "source_approval_and_preallocation_dedup": "4ddcc28dc",
+    "source_extraction": "c199e510d",
+    "card_identity_and_g0": "f6809d8f0",
+    "source_build": "fd4cab79f92c01e1c9d499e47a403d19e7544838"
+  },
+  "hashes": {
+    "source_packet_sha256": "477EBD53C6EE74BCD2986FA0469C3431BEBA750AA2EAA5609DCDF3506AB76FF3",
+    "preallocation_dedup_sha256": "7B476FA894E6753006BF0C96AB05E14382DDD7904939506E2B193ACF44B14E0F",
+    "canonical_card_sha256": "7993FF4B39693BD2C45FB2CC51DCC49FFEF26F6691056ADB43DE939BE54E7163",
+    "ea_card_copy_sha256": "7993FF4B39693BD2C45FB2CC51DCC49FFEF26F6691056ADB43DE939BE54E7163",
+    "mq5_sha256": "2AE7F7B27F98ED76EA026557565445B3BF1DFFDDF2921171286BFCCA9616B7BC",
+    "reference_test_sha256": "F32DCCA89895DA9296B2F3F2077AD3F3701C7991062EA877DE5EC0CE8F8A9FA7",
+    "logical_setfile_sha256": "126C4DAFFD2F5349F75703B831115BC1427F38268231568D2082DBD78E14ADBD",
+    "basket_manifest_sha256": "A0B733FED8385EBDBA25BE31FEB6149E8C260AC96F617D3B24BDF74E6C526E42",
+    "magic_allocation_receipt_sha256": "8DC8C069C3F0F1F1EEE1C08ADC8A72028AFA4ECF9EFF31A553174F06FF58E2BF"
+  },
+  "edge": {
+    "carrier": "XTIUSD.DWX/XNGUSD.DWX equal-target-notional two-leg basket",
+    "decision_clock": "first eligible synchronized D1 bar of each broker month",
+    "signal": "strict ranks of thirteen synchronized completed monthly log(XTI)-log(XNG) endpoints; omit unique rank seven, prove six low/six high states, and count every chronological run",
+    "entry": "R<=7 and newest high ratio sells XTI/buys XNG; R<=7 and newest low ratio buys XTI/sells XNG; weak, median, tied, or invalid state consumes flat",
+    "lifecycle": "one consumed attempt per month; next-month or forty-day stale package exit",
+    "risk": "one aggregate RISK_FIXED=1000 budget split across frozen 3.5*ATR(20,D1) stops with equal target notionals and a 20% maximum mismatch"
+  },
+  "source_and_nonduplicate_evidence": {
+    "source_basis": "complete government and peer-reviewed oil/gas relationship evidence plus the complete official NIST median-runs method",
+    "runtime_external_data": false,
+    "preallocation_dedup_verdict": "CLEAN",
+    "dedup_scope": {
+      "registry_identities": 4685,
+      "cards": 1336,
+      "strategy_wiki_nodes": 45
+    },
+    "portfolio_claim_boundary": "market-neutral-style construction is not a realized decorrelation claim; unchanged Q09 remains authoritative"
+  },
+  "validation": {
+    "reference_tests": {
+      "passed": 10,
+      "failed": 0
+    },
+    "card_schema_lint": "PASS_NO_ML_HITS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "build_check": "REFUSED_BEFORE_EXECUTION_BY_LIVE_FACTORY_AD_HOC_COMPILE_INTERLOCK",
+    "banned_or_ml_indicator_hits": 0,
+    "card_copy_byte_identical": true,
+    "registry_identity": "ACTIVE",
+    "magic_rows": "TWO_ACTIVE_ROWS_ZERO_NEW_STATUS_AWARE_COLLISIONS",
+    "risk_setfiles": "THREE_BACKTEST_ONLY_RISK_FIXED_SETS",
+    "live_set_count": 0
+  },
+  "compile": {
+    "ad_hoc_strict_compile_attempted": false,
+    "ad_hoc_interlock_result": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED_NO_RETRY",
+    "governed_work_item_enqueued": true,
+    "governed_work_item_id": "78d5f43e-d805-4748-923d-c36c33370b78",
+    "governed_work_item_status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "bound_mq5_sha256": "2AE7F7B27F98ED76EA026557565445B3BF1DFFDDF2921171286BFCCA9616B7BC",
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "sampling_method": "Get-Counter Processor(_Total) Percent Processor Time, five samples at one-second cadence",
+    "sampled_at_utc": "2026-08-27T17:29:37Z",
+    "cpu_ceiling_percent": 97.0,
+    "binding_rule": "stop when either five-sample average or maximum reaches the governed tester admission ceiling",
+    "samples_percent": [
+      100.0,
+      100.0,
+      95.2222736644055,
+      100.0,
+      99.7150593982061
+    ],
+    "average_cpu_percent": 98.98746661252232,
+    "maximum_cpu_percent": 100.0,
+    "cpu_ceiling_hit": true,
+    "factory_terminal_count": 5,
+    "factory_terminals_running": [
+      "T1",
+      "T2",
+      "T3",
+      "T6",
+      "T8"
+    ],
+    "active_work_item_count": 7,
+    "active_phase_counts": {
+      "Q03": 1,
+      "Q07": 1,
+      "Q09": 1,
+      "Q10_NEWS": 4
+    },
+    "t_live_and_nonfactory_processes_excluded": true
+  },
+  "q02": {
+    "enqueued": false,
+    "component_rows_enqueued": 0,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_NO_EX5",
+      "BACKTEST_CPU_CEILING_HIT"
+    ],
+    "resume_contract": "Let the existing governed compile item resolve; require exact source hash, strict zero-error/zero-warning EX5 and Q01 approval; recheck CPU below 97%; then append exactly one logical-basket Q02 row and zero component-leg rows."
+  },
+  "safety": {
+    "terminal_processes_started_or_stopped_by_this_run": false,
+    "terminal_reservations_mutated_by_this_run": false,
+    "autotrading_toggled_by_this_run": false,
+    "t_live_touched_by_this_run": false,
+    "portfolio_gate_touched_by_this_run": false,
+    "t_live_manifest_touched_by_this_run": false,
+    "unrelated_worktree_changes_preserved_and_unstaged": true
+  }
+}
