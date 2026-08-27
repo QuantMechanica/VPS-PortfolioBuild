@@ -1,0 +1,147 @@
+{
+  "artifact_type": "commodity_energy_sleeve_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T20:33:17.6052648Z",
+  "generated_at_europe_berlin": "2026-08-27T22:33:17.6052648+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "bc58add59eaa5e1e4bc2b26f3869b458a11b91a3",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "candidate_held": {
+    "name": "WTI same-calendar-month seasonal Mann-Kendall trend",
+    "proposed_slug": "wti-seasonal-kendall-tr",
+    "carrier": "XTIUSD.DWX outright",
+    "decision_clock": "first eligible D1 bar of each broker month",
+    "provisional_signal": "use exactly ten completed historical endpoints from the same calendar month in the preceding ten years; compute the chronological no-tie Mann-Kendall pair score over the 45 ordered pairs; BUY at S >= 23, SELL at S <= -23, otherwise consume the month flat",
+    "provisional_lifecycle": "one consumed attempt per broker month; exit at the next broker month with a forty-day stale repair",
+    "provisional_risk": "one backtest-only RISK_FIXED=1000 budget with RISK_PERCENT=0; final stop and sizing contract intentionally not approved before complete source intake",
+    "durable_predecessor_receipt": "artifacts/commodity_energy_sleeve_hard_cpu_stop_20260827T194513Z_board_advisor.json",
+    "status": "HELD_BEFORE_SOURCE_APPROVAL_OR_CANONICAL_DEDUP",
+    "qualification_boundary": "This is a concrete research candidate, not an approved source, Strategy Card, allocated identity, build, queue row, or portfolio claim. R1-R4, complete source reading, canonical dedup, G0, and deterministic allocation remain mandatory after capacity clears."
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Stop before source approval, allocation, build, compile, queue mutation, or tester work when either the five-sample average or maximum reaches the governed tester-admission ceiling.",
+    "hard_ceiling_source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-27T20:33:17.6052648Z",
+    "samples_percent": [
+      100.0,
+      100.0,
+      96.3871224745563,
+      89.7523226373719,
+      98.7413328013909
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_percent": 96.97615558266384,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "triggers": [
+      "maximum_percent"
+    ]
+  },
+  "farm_snapshot": {
+    "slots_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mt5-slots",
+    "work_items_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "slots_scanned_at_utc": "2026-08-27T20:33:32+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T10",
+      "T2",
+      "T8",
+      "T9"
+    ],
+    "running_factory_terminal_count": 5,
+    "active_terminal_reservation_count": 5,
+    "terminal_worker_daemon_count": 10,
+    "orphaned_factory_terminal_process_count": 0,
+    "active_work_item_count": 8,
+    "active_phase_counts": {
+      "OPT_CENSUS": 2,
+      "Q03": 1,
+      "Q07": 1,
+      "Q09": 1,
+      "Q10_NEWS": 3
+    },
+    "active_factory_process_work_item_ids": [
+      "f350a252-c487-4c67-a343-06e08dd00f83",
+      "0e586e05-cad8-49bd-96f2-501c5ffd28cd",
+      "5d96f05b-d91b-4d0f-ab34-d0a2d4f66134",
+      "025fe79a-d687-4242-bcb3-1522637dfcde",
+      "f1b479fe-8fcb-58f9-9d59-4e25b7393245"
+    ],
+    "active_rows_without_visible_terminal_process": [
+      {
+        "work_item_id": "8ac4dd37-4d59-4721-bf19-da6a8e34e384",
+        "ea_id": "QM5_13036",
+        "phase": "Q09",
+        "claimed_by": "T5"
+      },
+      {
+        "work_item_id": "56d7632e-bf10-458b-bba8-9d86629b01f9",
+        "ea_id": "QM5_21501",
+        "phase": "Q07",
+        "claimed_by": "T7"
+      },
+      {
+        "work_item_id": "17f688db-acb4-5dd3-b304-d1ea34e9a6ae",
+        "ea_id": "QM5_41161",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T3"
+      }
+    ],
+    "point_in_time_mismatch_disposition": "Observed only; a process/database mismatch does not establish staleness or authorize reclaim, repair, or duplicate enqueue.",
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "database_mutated": false
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/commodity_energy_sleeve_hard_cpu_stop_20260827T194513Z_board_advisor.json",
+    "preceding_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T7"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T10",
+      "T2",
+      "T8",
+      "T9"
+    ],
+    "preceding_average_cpu_percent": 100.0,
+    "current_average_cpu_percent": 96.97615558266384,
+    "current_maximum_cpu_percent": 100.0,
+    "preceding_active_work_query": "SQLITE_DATABASE_LOCKED",
+    "current_active_work_item_count": 8,
+    "changed_state": "The supported active-work query now succeeded and exposed eight active rows. The visible tester roster rotated from T1/T2/T3/T7 to T1/T2/T8/T9/T10. Average CPU fell below 97 percent, but a 100 percent sample kept the maximum-side admission stop binding."
+  },
+  "actions_this_run": {
+    "candidate_reconciled_read_only": true,
+    "new_source_approved": false,
+    "source_extraction_started": false,
+    "canonical_dedup_started": false,
+    "card_or_g0_created": false,
+    "registry_or_magic_mutated": false,
+    "ea_or_setfile_created": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "resume_contract": "After a fresh five-sample window is strictly below 97% on both average and maximum, start with reputable-source approval and complete reading for the held candidate, run canonical dedup, then proceed through G0, deterministic ID and magic allocation, a strict non-live V5 RISK_FIXED build, Q01, and exactly one paced XTIUSD.DWX Q02 enqueue."
+}
