@@ -31,7 +31,7 @@ matches the exact slug and strategy identity.
 
 Exactly one canonical source ID identifies the governed AI-originated packet
 `strategy-seeds/sources/AI-CODEX-WTI-M2RUNS-20260827/source.md`, SHA-256
-`90486EA94D449BB207D1625000A1200CDE3F1B0B7D4B05C712F4D1A1E03C9806`.
+`AB4B8ADE3D3E4B4CA1B7AE6D9ADE98DD69AD30BC5D5CEDEC0EC6F9D073795FB6`.
 Canonical R1 permits this source class. The Wald-Wolfowitz peer-reviewed
 bibliography is metadata-only because the generic reader policy-deferred the
 DOI; the complete-read MOP packet supports monthly WTI continuation and WTI
@@ -42,7 +42,7 @@ source alpha.
 
 The contract fixes one genuine-month decision, exactly ten consecutive
 completed month-end closes, fixed old/new blocks of five, strict no ties, one
-pooled ascending membership order, exact label-run count, inclusive `R<=5`,
+pooled ascending membership order, exact label-run count, inclusive `R<=6`,
 exact block medians, symmetric side, consumed attempt, fixed-dollar risk,
 frozen ATR hard stop, spread cap, next-month exit, stale exit, and exposure
 repair. There is no p-value, critical table, fallback, optimization, or
@@ -73,16 +73,21 @@ N = C[5..9]
 sort O union N ascending, carrying fixed O/N labels
 R = 1 + adjacent label transitions
 
-BUY  iff R <= 5 and median(N) > median(O)
-SELL iff R <= 5 and median(N) < median(O)
+BUY  iff R <= 6 and median(N) > median(O)
+SELL iff R <= 6 and median(N) < median(O)
 FLAT otherwise
 ```
 
 Exact enumeration of `choose(10,5)=252` label assignments produces the run
-distribution `2,8,32,72,72,32,32,8,2` for runs two through ten. The inclusive
-boundary qualifies 114 assignments, split by label reflection into 57 BUY
-and 57 SELL states. This gives a pre-market density prior of 5.4286 decisions
+distribution `2,8,32,48,72,48,32,8,2` for runs two through ten. The inclusive
+boundary qualifies 162 assignments, split by label reflection into 81 BUY
+and 81 SELL states. This gives a pre-market density prior of 7.7143 decisions
 per twelve months, not statistical significance or WTI evidence.
+
+The initial table transcription and `R<=5` boundary were corrected before
+compilation, Q01, Q02, or any market-result observation. The one-time
+pre-build correction is governed by
+`decisions/2026-08-27_qm5_41184_prebuild_density_correction.md`.
 
 ## Non-Duplicate Adjudication
 
@@ -105,7 +110,7 @@ adjacency of fixed block labels in pooled price order. None of those EAs has
 that state function plus exact five-value block-median direction.
 
 Verdict:
-`CLEAN_WTI_MONTHLY_FIXED_FIVE_BY_FIVE_POOLED_LABEL_RUNS_LE5_MEDIAN_DIRECTED_DISTRIBUTION_SHIFT_CONTINUATION`.
+`CLEAN_WTI_MONTHLY_FIXED_FIVE_BY_FIVE_POOLED_LABEL_RUNS_LE6_MEDIAN_DIRECTED_DISTRIBUTION_SHIFT_CONTINUATION`.
 
 ## Build Authorization And Boundary
 

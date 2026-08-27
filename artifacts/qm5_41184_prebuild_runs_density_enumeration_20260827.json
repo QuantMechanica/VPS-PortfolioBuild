@@ -1,0 +1,46 @@
+{
+  "schema_version": "qm_exact_density_evidence_v1",
+  "generated_date": "2026-08-27",
+  "ea_id": 41184,
+  "slug": "wti-mww-runs-shift-tr",
+  "status": "PASS",
+  "method": "Exhaustively enumerate every choice of five O-label positions among ten pooled ranks; count one plus adjacent label transitions; infer direction from the two exact rank medians.",
+  "market_data_used": false,
+  "compile_attempted_before_correction": false,
+  "q01_attempted_before_correction": false,
+  "q02_attempted_before_correction": false,
+  "sample_sizes": {
+    "older": 5,
+    "newer": 5,
+    "pooled": 10
+  },
+  "total_label_orders": 252,
+  "run_distribution": {
+    "2": 2,
+    "3": 8,
+    "4": 32,
+    "5": 48,
+    "6": 72,
+    "7": 48,
+    "8": 32,
+    "9": 8,
+    "10": 2
+  },
+  "superseded_boundary": {
+    "maximum_runs": 5,
+    "qualifying_orders": 90,
+    "buy_orders": 45,
+    "sell_orders": 45,
+    "annual_density_prior": 4.285714285714286,
+    "verdict": "FAILS_PREDECLARED_FIVE_TRADE_ANNUAL_FLOOR"
+  },
+  "corrected_locked_boundary": {
+    "maximum_runs": 6,
+    "qualifying_orders": 162,
+    "buy_orders": 81,
+    "sell_orders": 81,
+    "annual_density_prior": 7.714285714285714,
+    "interpretation": "inclusive at-or-below balanced-sample null expected run count; not a significance threshold"
+  },
+  "reproduction": "python framework/EAs/QM5_41184_wti-mww-runs-shift-tr/docs/test_monthly_two_sample_runs_reference.py"
+}

@@ -30,7 +30,7 @@ reserves nor predicts one.
 
 The single lineage source is the complete governed AI-originated packet
 `strategy-seeds/sources/AI-CODEX-WTI-M2RUNS-20260827/source.md`, SHA-256
-`90486EA94D449BB207D1625000A1200CDE3F1B0B7D4B05C712F4D1A1E03C9806`.
+`AB4B8ADE3D3E4B4CA1B7AE6D9ADE98DD69AD30BC5D5CEDEC0EC6F9D073795FB6`.
 Canonical R1 expressly permits an AI source when its prompt/output trail and
 mechanization boundary are captured.
 
@@ -65,7 +65,7 @@ transition:
    values.
 3. Fix `O=C[0..4]` and `N=C[5..9]`. Pool and sort all values ascending while
    retaining their fixed block labels. Count `R=1+adjacent label changes`.
-4. Qualify only when `R<=5`. Buy when the exact five-value newer median is
+4. Qualify only when `R<=6`. Buy when the exact five-value newer median is
    above the older median; sell when it is below. Otherwise consume flat.
    There is no p-value, lookup table, fallback, or adaptive threshold.
 5. Use one position, `RISK_FIXED=1000`, `RISK_PERCENT=0`,
@@ -75,10 +75,16 @@ transition:
    days; immediately repair invalid owned exposure.
 
 Both news axes, legacy news mode, and Friday close are OFF. Exact enumeration
-gives 114 qualifying assignments among 252 strict fixed five/five label
-orders, split symmetrically into 57 long and 57 short states. The random-rank
-density prior is `12*114/252 = 5.4286` decisions/year. This is neither a
+gives 162 qualifying assignments among 252 strict fixed five/five label
+orders, split symmetrically into 81 long and 81 short states. The random-rank
+density prior is `12*162/252 = 7.7143` decisions/year. This is neither a
 market result nor a significance claim.
+
+An exhaustive pre-build check corrected a transcription error in the run
+table and the resulting locked boundary from five to six before compilation,
+Q01, Q02, or market-result observation. The one-time correction and its
+fail-closed rationale are recorded in
+`decisions/2026-08-27_qm5_41184_prebuild_density_correction.md`.
 
 ## Reputable-Source Criteria
 
@@ -110,7 +116,7 @@ chronological change point. It also shares no logic with certified
 `QM5_12567`, a long-only two-day XNG cumulative-RSI pullback.
 
 Verdict:
-`CLEAN_WTI_MONTHLY_FIXED_FIVE_BY_FIVE_POOLED_LABEL_RUNS_LE5_MEDIAN_DIRECTED_DISTRIBUTION_SHIFT_CONTINUATION`.
+`CLEAN_WTI_MONTHLY_FIXED_FIVE_BY_FIVE_POOLED_LABEL_RUNS_LE6_MEDIAN_DIRECTED_DISTRIBUTION_SHIFT_CONTINUATION`.
 
 ## Kill And Safety Boundary
 

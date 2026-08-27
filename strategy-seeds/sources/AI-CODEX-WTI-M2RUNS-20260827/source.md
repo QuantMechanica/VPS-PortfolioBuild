@@ -77,7 +77,9 @@ On the first executable `XTIUSD.DWX` D1 tick of a genuine new broker month:
 3. Pool the ten values, sort them in strict ascending order, retain only each
    value's fixed `O` or `N` label, and count
    `R = 1 + number_of_adjacent_label_changes`.
-4. Qualify only at `R<=5`. Compute the exact five-observation median of each
+4. Qualify only at `R<=6`. This is the balanced-sample null expected run
+   count, used only as an inclusive structural clustering boundary. Compute
+   the exact five-observation median of each
    fixed block. Buy when `median(N)>median(O)` and sell when
    `median(N)<median(O)`. With pairwise-distinct inputs equality is
    impossible; malformed state consumes the month flat.
@@ -102,18 +104,28 @@ are:
 | 2 | 2 |
 | 3 | 8 |
 | 4 | 32 |
-| 5 | 72 |
+| 5 | 48 |
 | 6 | 72 |
-| 7 | 32 |
+| 7 | 48 |
 | 8 | 32 |
 | 9 | 8 |
 | 10 | 2 |
 
-Thus `R<=5` qualifies `114/252 = 19/42`, and label reflection splits those
-states into 57 higher-new-median and 57 lower-new-median assignments. Before
-market data this is approximately `12*19/42 = 5.4286` directional decisions
+Thus `R<=6` qualifies `162/252 = 9/14`, and label reflection splits those
+states into 81 higher-new-median and 81 lower-new-median assignments. Before
+market data this is exactly `12*9/14 = 54/7`, or approximately `7.7143`, directional decisions
 per year. It is a density prior only. Q02 owns actual trades and retires the
 candidate below five completed trades in any full post-warm-up year.
+
+The source packet originally transcribed the exact table incorrectly and
+locked `R<=5`, which exhaustive pre-build enumeration showed would admit only
+`90/252` states, or `4.2857` decisions/year. Before compilation, Q01, Q02, or
+any market-result observation, the execution contract was corrected once to
+the untuned `R<=6` boundary so the predeclared five-trade floor is feasible.
+The correction is governed by
+`decisions/2026-08-27_qm5_41184_prebuild_density_correction.md`; it is not a
+performance-conditioned rescue and does not change the pooled-label-runs
+mechanic family.
 
 ## Non-Duplicate Boundary
 
@@ -149,7 +161,7 @@ The nearest mechanics are different state functions:
   its page was policy-deferred and is not represented as complete-read. The
   monthly WTI support is a durable complete-read peer-reviewed packet.
 - **R2 — PASS.** Clock, ten endpoints, fixed five/five membership, strict
-  ties, pooled sort, run count, inclusive boundary five, exact medians,
+  ties, pooled sort, run count, inclusive boundary six, exact medians,
   direction, attempt, fixed risk, hard stop, and lifecycle are locked.
 - **R3 — PASS_WITH_CONTINUOUS_CFD_BASIS_RISK.** Registered
   `XTIUSD.DWX` D1 prices and native MT5 execution state provide every runtime

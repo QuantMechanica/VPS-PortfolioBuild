@@ -34,7 +34,7 @@ source_citations:
     location: "DOI 10.1016/j.jfineco.2011.11.003; complete-paper evidence in strategy-seeds/sources/MOP-TSMOM-2012/source.md"
     quality_tier: A
     role: supporting_monthly_own_price_continuation_and_wti_membership
-strategy_mechanic: monthly-wti-fixed-five-old-five-new-completed-month-end-wald-wolfowitz-two-sample-pooled-label-runs-at-most-five-median-directed-distribution-shift-continuation
+strategy_mechanic: monthly-wti-fixed-five-old-five-new-completed-month-end-wald-wolfowitz-two-sample-pooled-label-runs-at-most-six-median-directed-distribution-shift-continuation
 sources:
   - "[[sources/AI-CODEX-WTI-M2RUNS-20260827]]"
 concepts:
@@ -64,8 +64,8 @@ timeframe: D1
 execution_timeframe: D1
 signal_timeframe: D1
 direction: symmetric_long_short
-expected_trade_frequency: "Approximately 5-6 completed WTI positions per full post-warm-up year; one consumed attempt per broker month. Exact random-rank qualification is 114/252, or about 5.429 decisions/year, before market data."
-expected_trades_per_year_per_symbol: 5
+expected_trade_frequency: "Approximately 7-8 completed WTI positions per full post-warm-up year; one consumed attempt per broker month. Exact random-rank qualification is 162/252, or about 7.714 decisions/year, before market data."
+expected_trades_per_year_per_symbol: 7
 expected_pf: 1.01
 expected_dd_pct: 30.0
 risk_class: high
@@ -73,12 +73,12 @@ ml_required: false
 r1_track_record: PASS_WITH_PUBLIC_METHOD_ACCESS_LIMITATION
 r1_reasoning: "One canonical AI-originated governed packet is permitted by R1; its supporting peer-reviewed method record is metadata-only after a policy defer, while the monthly WTI carrier has complete-read peer-reviewed support."
 r2_mechanical: PASS
-r2_reasoning: "Month clock, ten endpoints, fixed five/five blocks, pooled sort, label-run count, inclusive boundary five, exact block medians, direction, attempt, fixed risk, stop, and lifecycle are deterministic and locked."
+r2_reasoning: "Month clock, ten endpoints, fixed five/five blocks, pooled sort, label-run count, inclusive boundary six, exact block medians, direction, attempt, fixed risk, stop, and lifecycle are deterministic and locked."
 r3_data_available: PASS_WITH_CONTINUOUS_CFD_BASIS_RISK
 r3_reasoning: "Registered native XTIUSD.DWX D1 history and MT5 execution state supply every runtime input; continuous-CFD roll, basis, financing, gap, and label risks remain explicit."
 r4_ml_forbidden: PASS
 r4_reasoning: "Only timestamps, completed prices, sorting, comparisons, integer counts, ATR risk controls, and execution state; no trained signal, prohibited runtime feed, grid, martingale, scale-in, or pyramid."
-parameters_to_test: "Locked Q02 baseline only: 10 completed month ends; fixed old/new block size 5; inclusive maximum pooled-label runs 5; exact five-value block medians; 900 D1 history bars; 180-minute month-entry grace; 10-day endpoint staleness; ATR(20)*3.5 stop; 40-day stale exit; 1500-point spread ceiling."
+parameters_to_test: "Locked Q02 baseline only: 10 completed month ends; fixed old/new block size 5; inclusive maximum pooled-label runs 6; exact five-value block medians; 900 D1 history bars; 180-minute month-entry grace; 10-day endpoint staleness; ATR(20)*3.5 stop; 40-day stale exit; 1500-point spread ceiling."
 risk_fixed_backtest: 1000
 risk_percent_backtest: 0
 portfolio_weight_backtest: 1
@@ -89,10 +89,10 @@ pipeline_phase: Q01
 q01_status: NOT_BUILT
 q02_status: NOT_ENQUEUED_Q01_PENDING
 force_build: true
-review_focus: "Falsify a direct-WTI monthly pooled-label-runs distribution-shift stream outside the directional XAU/SP500/NDX/XNG book. Verify ten consecutive completed endpoints, exact fixed five/five membership, strict ties, stable pooled ordering, every label transition, inclusive runs-five boundary, exact block medians, symmetric side, consumed attempt, fixed risk, hard stop, and next-month exit. Q09 alone may establish realized decorrelation."
+review_focus: "Falsify a direct-WTI monthly pooled-label-runs distribution-shift stream outside the directional XAU/SP500/NDX/XNG book. Verify ten consecutive completed endpoints, exact fixed five/five membership, strict ties, stable pooled ordering, every label transition, inclusive runs-six boundary, exact block medians, symmetric side, consumed attempt, fixed risk, hard stop, and next-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
-hard_rules_at_risk: [exact_symbol_period, first_tradable_month_bar, ten_consecutive_completed_months, latest_close_per_month, fixed_five_by_five_membership, strict_no_tie_pooled_order, exact_label_run_count, inclusive_runs_five_boundary, exact_block_medians, symmetric_direction, monthly_attempt_state, fixed_risk, hard_stop_present, next_month_exit, q02_frequency_floor, portfolio_correlation]
+hard_rules_at_risk: [exact_symbol_period, first_tradable_month_bar, ten_consecutive_completed_months, latest_close_per_month, fixed_five_by_five_membership, strict_no_tie_pooled_order, exact_label_run_count, inclusive_runs_six_boundary, exact_block_medians, symmetric_direction, monthly_attempt_state, fixed_risk, hard_stop_present, next_month_exit, q02_frequency_floor, portfolio_correlation]
 g0_approval_reasoning: "OWNER mission 2026-08-27 and decisions/2026-08-27_qm5_41184_wti_monthly_wald_wolfowitz_runs_shift_trend_g0.md: R1 PASS with one governed AI source, explicit public-method access limitation, peer-reviewed method bibliography, and complete-read peer-reviewed WTI support; R2 PASS locks endpoints, blocks, pooled order, runs, median direction, attempt, risk, stop, and lifecycle; R3 PASS registered WTI D1 with continuous-CFD basis risk; R4 PASS deterministic native arithmetic only. Canonical dedup returned CLEAN, and separating fixtures distinguish chronological median-runs, signed ECDF/KS, Mann-Whitney, Pettitt, and certified XNG pullback mechanics."
 ---
 
@@ -115,7 +115,7 @@ Q02 owns density/economics and unchanged Q09 owns realized overlap.
 
 The single governed source ID resolves to
 `strategy-seeds/sources/AI-CODEX-WTI-M2RUNS-20260827/source.md`, SHA-256
-`90486EA94D449BB207D1625000A1200CDE3F1B0B7D4B05C712F4D1A1E03C9806`,
+`AB4B8ADE3D3E4B4CA1B7AE6D9ADE98DD69AD30BC5D5CEDEC0EC6F9D073795FB6`,
 authorized in commit `fb7ef4580` before card extraction.
 
 The public Wald-Wolfowitz DOI was classified
@@ -150,7 +150,7 @@ The fixed state function is distinct:
 
 Locked separating fixtures appear under Rules and in the pure reference
 suite. Verdict:
-`CLEAN_WTI_MONTHLY_FIXED_FIVE_BY_FIVE_POOLED_LABEL_RUNS_LE5_MEDIAN_DIRECTED_DISTRIBUTION_SHIFT_CONTINUATION`.
+`CLEAN_WTI_MONTHLY_FIXED_FIVE_BY_FIVE_POOLED_LABEL_RUNS_LE6_MEDIAN_DIRECTED_DISTRIBUTION_SHIFT_CONTINUATION`.
 
 ## Rules
 
@@ -175,22 +175,22 @@ R = 1 + count(L[i] != L[i-1], i=1..9)
 old_median = middle value of sorted O
 new_median = middle value of sorted N
 
-BUY  iff R <= 5 and new_median > old_median
-SELL iff R <= 5 and new_median < old_median
+BUY  iff R <= 6 and new_median > old_median
+SELL iff R <= 6 and new_median < old_median
 FLAT otherwise
 ```
 
 Pairwise-distinct values make block-median equality impossible. Invalid
-labels, sort order, run counts outside `2..10`, a late clock, or `R>5`
+labels, sort order, run counts outside `2..10`, a late clock, or `R>6`
 consume the month flat. No p-value, critical table, variable split, fallback,
 or adaptive threshold exists.
 
 ### Exact density prior
 
 All `choose(10,5)=252` fixed-label orders are exhaustively enumerable. Runs
-`2,3,4,5` occur in `2,8,32,72` orders, respectively, so `R<=5` qualifies
-114 states. Label reflection gives 57 BUY and 57 SELL states. The pre-market
-density is `12*114/252 = 5.4286` decisions/year before data failures and
+`2,3,4,5,6` occur in `2,8,32,48,72` orders, respectively, so `R<=6` qualifies
+162 states. Label reflection gives 81 BUY and 81 SELL states. The pre-market
+density is `12*162/252 = 7.7143` decisions/year before data failures and
 median-price mechanics. This is not a significance or performance claim.
 
 ### Separating fixtures
@@ -201,11 +201,11 @@ median-price mechanics. This is not a significance or performance claim.
 - Labels `ONONONONON` have ten runs and stay flat even though either block can
   have a higher median.
 - Two pooled orders with the same Mann-Whitney cross-block win sum but run
-  counts five and six must produce qualify/flat here.
+  counts six and seven must produce qualify/flat here.
 - Reflecting every label preserves the run count and reverses median side.
 
 The pure reference suite must enumerate all 252 label orders, verify the
-distribution `2,8,32,72,72,32,32,8,2` for runs 2 through 10, verify 57/57
+distribution `2,8,32,48,72,48,32,8,2` for runs 2 through 10, verify 81/81
 directional qualifying states under rank medians, and lock these separating
 fixtures against chronological median-runs and signed-ECDF logic.
 
@@ -289,7 +289,7 @@ One locked Q02 baseline only:
 |---|---:|
 | completed endpoints | 10 |
 | fixed block size | 5 |
-| maximum qualifying label runs | 5 |
+| maximum qualifying label runs | 6 |
 | D1 reconstruction buffer | 900 bars |
 | entry grace | 180 minutes |
 | newest endpoint staleness | 10 days |
