@@ -1,0 +1,108 @@
+{
+  "schema": "qm.source-build-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-27T06:13:08.9491001Z",
+  "recorded_at_local": "2026-08-27T08:13:08.9559818+02:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41180",
+  "ea_label": "QM5_41180_xtixng-mspearman-rv",
+  "strategy_id": "VILLAR-SPEARMAN-XTIXNG-MRANK-RV-2026_S01",
+  "logical_symbol": "QM5_41180_XTI_XNG_MSPEARMAN_RV_D1",
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "magics": [
+    411800000,
+    411800001
+  ],
+  "outcome": "SOURCE_BUILD_COMMITTED_Q01_NOT_ENQUEUED_Q02_STOPPED_CPU_CEILING",
+  "commits": {
+    "source_approval": "0f841c02880aa589746fb5e0ed63b58db7a87c56",
+    "card_identity_and_g0": "68ffc2256fcca7c2fe82dd5fa5d49b71b7a0f3e2",
+    "source_build": "cdd8689254a211117caffd33203828a7544a33ed"
+  },
+  "hashes": {
+    "source_packet_sha256": "57B1D693D67E74B6629591D18981C517AEC3D7BF624F8E6064EA6CA884791BE2",
+    "preallocation_dedup_sha256": "A4FF1F602456C41BC719B6357629E68388515AF4DDDE281F9A62C9AC0B668AC8",
+    "canonical_card_sha256": "6050F5F740B8CB90ED46A6F0DCAB88D198315875EF5D11BCF4F7F106DCE281CD",
+    "ea_card_copy_sha256": "6050F5F740B8CB90ED46A6F0DCAB88D198315875EF5D11BCF4F7F106DCE281CD",
+    "mq5_sha256": "CBA7056423594C42C52A4B03FAE96372BA96259ACB5157D80E05DEFB987CCA77",
+    "reference_test_sha256": "28AA313D19C2165642A4C62BBA2209B0CD78202246B19F8C456619886436BE20",
+    "logical_setfile_sha256": "9B9060E21FE7C479881CBA27FD34E500FCD03BEF8F4D5BE7F80DED9172687CA1",
+    "basket_manifest_sha256": "CE7B69809C2941067826BFF68CB70D78525E478723D38354CB3E644973D21EB5"
+  },
+  "edge": {
+    "carrier": "XTIUSD.DWX/XNGUSD.DWX equal-target-notional two-leg basket",
+    "decision_clock": "first eligible synchronized D1 bar of each broker month",
+    "signal": "strict Spearman time ranks of thirteen synchronized completed monthly log(XTI)-log(XNG) endpoints",
+    "entry": "T>=104 sells XTI and buys XNG; T<=-104 buys XTI and sells XNG; ties and the interior consume flat",
+    "lifecycle": "one consumed attempt per month; next-month or forty-day package exit",
+    "risk": "one aggregate RISK_FIXED=1000 budget split across frozen 3.5 ATR(20,D1) stops with 20% maximum notional mismatch"
+  },
+  "validation": {
+    "reference_tests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "card_schema_lint": "PASS",
+    "ea_card_schema_lint": "PASS",
+    "banned_or_ml_indicator_hits": 0,
+    "card_copy_byte_identical": true,
+    "registry_identity": "ACTIVE",
+    "magic_rows": "TWO_ACTIVE_ROWS",
+    "risk_setfiles": "THREE_BACKTEST_ONLY_RISK_FIXED_SETS",
+    "live_set_count": 0
+  },
+  "compile": {
+    "ad_hoc_guard_result": "REFUSED_NO_RETRY",
+    "ad_hoc_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_work_item_enqueued": false,
+    "status_at_last_read": "NOT_ENQUEUED",
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "sampling_method": "CIM Win32_PerfFormattedData_PerfOS_Processor _Total PercentProcessorTime, five samples at two-second cadence",
+    "cpu_ceiling_percent": 97.0,
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      99.0
+    ],
+    "average_cpu_percent": 99.8,
+    "maximum_cpu_percent": 100.0,
+    "cpu_ceiling_hit": true,
+    "factory_terminal_ceiling": 7,
+    "factory_terminal_count": 5,
+    "factory_terminal_ceiling_hit": false,
+    "factory_terminals_running": [
+      "T2",
+      "T4",
+      "T6",
+      "T8",
+      "T9"
+    ]
+  },
+  "q02": {
+    "existing_work_item_count_before": 0,
+    "enqueued": false,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_NO_EX5",
+      "BACKTEST_CPU_CEILING_HIT"
+    ],
+    "resume_contract": "Recheck the CPU ceiling; enqueue one governed compile item only if capacity permits; require current strict compile/build-check PASS and EX5; then enqueue exactly one logical-basket Q02 row and zero component-leg rows."
+  },
+  "safety": {
+    "terminal_processes_started_or_stopped_by_this_run": false,
+    "terminal_reservations_mutated_by_this_run": false,
+    "autotrading_toggled_by_this_run": false,
+    "t_live_touched_by_this_run": false,
+    "portfolio_gate_touched_by_this_run": false,
+    "t_live_manifest_touched_by_this_run": false,
+    "unrelated_public_data_changes_preserved_and_unstaged": true
+  }
+}
