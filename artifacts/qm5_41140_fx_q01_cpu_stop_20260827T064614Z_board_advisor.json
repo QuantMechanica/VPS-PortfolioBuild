@@ -1,0 +1,121 @@
+{
+  "schema": "qm.paced-fleet-build-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-27T06:46:14.7027501Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "6414473332fa2dad410ff0408394506291b8f03a",
+  "mission": "grow_certified_v5_forex_book",
+  "frontier": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_in_frozen_scan": 66,
+    "covered_relationships": 66,
+    "uncovered_relationships": 0,
+    "new_scan_pair_selected": false,
+    "reason": "all frozen-scan relationships are already covered; a new card would duplicate governed work or relax the reputable-source threshold"
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "existing_forex_fallback": {
+    "ea_id": "QM5_41140",
+    "label": "QM5_41140_nzdjpy-carry-unwind-crisis-momentum",
+    "execution_symbol": "NZDJPY.DWX",
+    "timeframe": "D1",
+    "selection": "already-approved and mechanized structural low-frequency FX card awaiting governed Q01 compilation",
+    "known_build_task_id": "5f69b208-6e8b-4900-a8c2-020c779eb030",
+    "known_build_task_state_source": "artifacts/qm5_41140_fx_build_cpu_stop_20260827T063716Z_board_advisor.json",
+    "pipeline_work_item_query_count": 0,
+    "ex5_present": false,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "stop when either five-sample average or maximum reaches 97 percent",
+    "paced_launch_gate_max": 1
+  },
+  "farm_snapshot": {
+    "command": "py -3 tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-27T06:45:53+00:00",
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T8",
+      "T9"
+    ],
+    "running_factory_terminal_count": 5,
+    "active_phases": [
+      "Q03",
+      "Q07",
+      "Q10_NEWS"
+    ],
+    "active_terminal_reservation_count": 5,
+    "orphaned_factory_terminal_process_count": 0,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "cpu_sample": {
+    "command": "Get-CimInstance Win32_Processor LoadPercentage, five sequential readings with two-second intervals",
+    "ended_at_utc": "2026-08-27T06:46:14.7027501Z",
+    "samples_percent": [
+      66.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 93.2,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "trigger": "maximum_percent"
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/qm5_41140_fx_build_cpu_stop_20260827T063716Z_board_advisor.json",
+    "preceding_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T8",
+      "T9"
+    ],
+    "current_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T8",
+      "T9"
+    ],
+    "topology_change": "T6 cleared; five governed terminals remain active and the fresh CPU maximum remains 100 percent"
+  },
+  "actions_after_capacity_stop": {
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  },
+  "next_action": "After a fresh five-sample CPU check clears the ceiling, resume the existing QM5_41140 governed build task, obtain strict compile PASS and an EX5 without bypassing the live-factory include guard, then enqueue exactly one NZDJPY D1 Q02 row."
+}
