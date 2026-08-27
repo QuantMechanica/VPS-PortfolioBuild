@@ -1,0 +1,177 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T04:31:54.5159089Z",
+  "generated_at_europe_berlin": "2026-08-27T06:31:54.5321380+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "9149cfeac8650b002a5d0e8cba52287c826ef86f",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_FARM_CLAIM",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "factory_terminal_ceiling": 7,
+    "paced_launch_gate_max": 1
+  },
+  "farm_snapshot": {
+    "command": "py -3 tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-27T04:30:38+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T5",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "running_factory_terminal_count": 6,
+    "factory_terminal_count_at_ceiling": false,
+    "terminal64_process_count_including_excluded": 8,
+    "terminal_worker_count": 10,
+    "terminal_worker_slots": [
+      "T1",
+      "T10",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "active_terminal_reservation_count": 6,
+    "reserved_factory_terminals": [
+      "T1",
+      "T2",
+      "T5",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "orphaned_factory_terminal_process_count": 0,
+    "running_work": [
+      {
+        "terminal": "T1",
+        "work_item_id": "878c5d16-b9e8-404e-9532-ef8f71bbea51",
+        "phase": "Q09",
+        "ea_id": "QM5_13013",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T2",
+        "work_item_id": "a0694aa0-633f-4346-87a5-3f2f78627669",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_10848",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "66af966d-f123-4f8c-be21-27354394cee9",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_10513",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "f9ccf272-d66e-4a68-b332-76133baab427",
+        "phase": "Q03",
+        "ea_id": "QM5_20233",
+        "symbol": "QM5_20233_XAU_XAG_SKEW_RANK_D1"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "bff66e2b-48b9-4809-a7aa-de74a7f8ad31",
+        "phase": "Q07",
+        "ea_id": "QM5_21501",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": "f350a252-c487-4c67-a343-06e08dd00f83",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_10115",
+        "symbol": "GDAXI.DWX"
+      }
+    ],
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "farm_db_snapshot": {
+    "command": "py -3 tools/strategy_farm/farmctl.py status plus SQLite URI mode=ro agent-task census",
+    "db_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "access_mode": "read_only",
+    "pending_build_ea_tasks": 43,
+    "pending_backtest_p2_tasks": 33,
+    "pending_backtest_q03_tasks": 146,
+    "pending_backtest_q04_tasks": 62,
+    "in_progress_agent_tasks": 2,
+    "in_progress_agent_task_ids": [
+      "7e8c9eaa-1af5-40ca-9f49-4c785b5ae07d",
+      "6c35c3ec-b576-4919-a321-796b7c813350"
+    ],
+    "farm_claim_created": false,
+    "candidate_selected": false
+  },
+  "cpu_sample": {
+    "command": "Get-CimInstance Win32_Processor LoadPercentage, five sequential readings with two-second intervals",
+    "ended_at_utc": "2026-08-27T04:30:24.7850869Z",
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      96.0,
+      100.0
+    ],
+    "average_percent": 99.2,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/qm5_41179_compile_handoff_20260827T042035Z_board_advisor.json",
+    "preceding_running_factory_terminals": [
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T9",
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T5",
+      "T6",
+      "T7",
+      "T9"
+    ],
+    "topology_change": "T1 joined while T4 and T10 left; active factory tests fell from seven to six",
+    "preceding_cpu_average_percent": 100.0,
+    "current_cpu_average_percent": 99.2,
+    "preceding_cpu_maximum_percent": 100.0,
+    "current_cpu_maximum_percent": 100.0,
+    "changed_state": "the governed factory roster rotated and dropped below the terminal-count ceiling, while whole-host CPU remained above the independent hard ceiling"
+  },
+  "actions_this_run": {
+    "candidate_selected": false,
+    "farm_claim_created": false,
+    "new_card_or_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
