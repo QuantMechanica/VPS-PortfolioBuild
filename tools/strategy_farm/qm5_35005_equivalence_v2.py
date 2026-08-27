@@ -52,7 +52,10 @@ FROM_DATE = "2022.07.01"
 TO_DATE = "2022.12.31"
 DEFAULT_TEMPLATE = Path(r"D:\QM\mt5\DEV1")
 DEFAULT_ARTIFACT_ROOT = (
-    Path(r"D:\QM\strategy_farm\artifacts\equivalence_v2") / TASK_ID
+    # Keep the disposable checkout prefix short.  The exact historical trees
+    # contain tracked paths long enough to exceed Win32's checkout boundary
+    # under the descriptive artifact path used by the first fail-closed run.
+    Path(r"D:\QM\strategy_farm\artifacts\e2") / "cbfca92a-a2"
 )
 ARTIFACTS_BASE = Path(r"D:\QM\strategy_farm\artifacts")
 DEFAULT_EVIDENCE_DIR = Path(r"C:\QM\repo\docs\ops\evidence")

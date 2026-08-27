@@ -118,3 +118,4 @@ def test_controller_has_no_factory_or_live_execution_target() -> None:
     assert r"D:\QM\mt5\T1" not in source
     assert r"D:\QM\mt5\T_Live" not in source
     assert v2.DEFAULT_TEMPLATE.name == "DEV1"
+    assert len(str(v2.DEFAULT_ARTIFACT_ROOT)) <= 48
