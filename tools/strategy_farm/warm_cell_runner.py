@@ -21,6 +21,7 @@ import hashlib
 import json
 import os
 import sqlite3
+import statistics
 import subprocess
 import sys
 from pathlib import Path
@@ -36,6 +37,8 @@ if str(REPO_IMPORT_ROOT) not in sys.path:
 
 FLAG_NAME = "QM_ENABLE_WARM_CELL_RUNNER"
 TASK_ID = "c7536f46-2c1e-4ab9-b18c-47cfe01c6491"
+PHASE2_TASK_ID = "7d800fe1-be0d-42df-8e67-a9b9a55d0906"
+VALIDATION_TASK_IDS = frozenset({TASK_ID, PHASE2_TASK_ID})
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 DEFAULT_REPO = Path(r"C:\QM\repo")
 MIN_PARITY_CELLS = 20
@@ -66,6 +69,16 @@ TASK_START_COLD_PATH_SHA256 = {
     "framework/scripts/run_smoke.ps1": "750478498f9280b61d2cb02ba1ee03a52b54bb448461b2d3d3cc246af411cf4a",
     "tools/strategy_farm/opt_census.py": "1c23cf9cf399902bff07fcbd1e02e104c0c5f09c8ec16d990a89c681f6f18f9a",
     "tools/strategy_farm/dl089_matrix_service.py": "14d5c0ff11cd65846bd59436a1ab40e3375e154e553c4368b21ebe0c91a51a0c",
+}
+# Captured immediately before the Phase-2 evidence-tool edit.  DL-089 changed
+# terminal_worker.py and dl089_matrix_service.py after the Phase-1 packet, so a
+# fresh task boundary is required rather than comparing against stale Phase-1
+# bytes.  None of these four governed cold-path files is edited by Phase 2.
+PHASE2_TASK_START_COLD_PATH_SHA256 = {
+    "tools/strategy_farm/terminal_worker.py": "78d98a793f501bd833d98a912a7d4f8395fd8830d3f2ed6a389a8920b93144bb",
+    "framework/scripts/run_smoke.ps1": "750478498f9280b61d2cb02ba1ee03a52b54bb448461b2d3d3cc246af411cf4a",
+    "tools/strategy_farm/opt_census.py": "1c23cf9cf399902bff07fcbd1e02e104c0c5f09c8ec16d990a89c681f6f18f9a",
+    "tools/strategy_farm/dl089_matrix_service.py": "30e3929f3408b801fc47c93f68adcc288f1e418b8ed7d8fe3e707ecaaebf8bb7",
 }
 
 
@@ -172,7 +185,6 @@ def validation_authorization_problems(
     expected = {
         "schema": "qm.warm-cell-validation-run/v1",
         "purpose": "OFFLINE_PARITY_VALIDATION",
-        "task_id": TASK_ID,
         "authorized_by": "OWNER_COMMISSION",
         "execution_backend": "SUPPORTED_RESIDENT_TESTER_CONTROL",
         "profile_mode": "DISPOSABLE",
@@ -182,6 +194,8 @@ def validation_authorization_problems(
     for field, value in expected.items():
         if manifest.get(field) != value:
             problems.append(f"VALIDATION_{field.upper()}_INVALID")
+    if manifest.get("task_id") not in VALIDATION_TASK_IDS:
+        problems.append("VALIDATION_TASK_ID_INVALID")
     try:
         minimum = int(manifest.get("minimum_comparisons") or 0)
     except (TypeError, ValueError):
@@ -401,6 +415,27 @@ def _load_json(path: Path) -> dict[str, Any]:
     return value
 
 
+def _utc_datetime(value: Any) -> dt.datetime | None:
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    try:
+        parsed = dt.datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=dt.timezone.utc)
+    return parsed.astimezone(dt.timezone.utc)
+
+
+def elapsed_seconds(start: Any, end: Any) -> float | None:
+    started = _utc_datetime(start)
+    completed = _utc_datetime(end)
+    if started is None or completed is None or completed < started:
+        return None
+    return round((completed - started).total_seconds(), 3)
+
+
 def _canonical_closed_trades(report_path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     from framework.scripts.q10_recency import extract_closed_trades
 
@@ -452,6 +487,7 @@ def cold_references(
             ).get("manifest_sha256"),
             "summary_path": str(row["evidence_path"] or ""),
             "updated_at": row["updated_at"],
+            "started_at_utc": payload.get("started_at_iso"),
             "reference_status": "INVALID",
             "reference_errors": [],
         }
@@ -462,6 +498,10 @@ def cold_references(
             if len(ok_runs) != 1:
                 raise ValueError(f"expected one OK run, found {len(ok_runs)}")
             run = ok_runs[0]
+            record["completed_at_utc"] = summary.get("timestamp_utc") or row["updated_at"]
+            record["cold_elapsed_seconds"] = elapsed_seconds(
+                record["started_at_utc"], record["completed_at_utc"]
+            )
             report_path = Path(str(run.get("report_canonical_path") or ""))
             if not report_path.is_file():
                 raise ValueError(f"native report missing: {report_path}")
@@ -496,12 +536,15 @@ def cold_references(
     return output
 
 
-def cold_path_identity(repo_root: Path) -> list[dict[str, Any]]:
+def cold_path_identity(
+    repo_root: Path,
+    task_start_hashes: Mapping[str, str] = TASK_START_COLD_PATH_SHA256,
+) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for relative in COLD_PATH_FILES:
         workspace = Path(repo_root) / relative
         workspace_hash = sha256_file(workspace)
-        task_start_hash = TASK_START_COLD_PATH_SHA256[relative.as_posix()]
+        task_start_hash = task_start_hashes[relative.as_posix()]
         diff = subprocess.run(
             ["git", "diff", "--quiet", "--", relative.as_posix()],
             cwd=repo_root,
@@ -592,6 +635,325 @@ def build_deviation_packet(
             "Rollback by unsetting the flag and using the governed restart procedure after active tests finish; never start terminal64.exe manually.",
         ],
     }
+
+
+def oldest_authenticated_references(
+    references: Sequence[Mapping[str, Any]], *, limit: int = MIN_PARITY_CELLS
+) -> list[dict[str, Any]]:
+    """Select the oldest complete receipts, with work-item id as the tie-break."""
+
+    authenticated = [
+        dict(row)
+        for row in references
+        if row.get("reference_status") == "AUTHENTICATED_COLD"
+    ]
+    authenticated.sort(
+        key=lambda row: (str(row.get("updated_at") or ""), str(row.get("work_item_id") or ""))
+    )
+    return authenticated[:limit]
+
+
+def cold_timing_summary(references: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    samples = [
+        float(row["cold_elapsed_seconds"])
+        for row in references
+        if row.get("cold_elapsed_seconds") is not None
+    ]
+    if not samples:
+        return {
+            "sample_count": 0,
+            "total_seconds": None,
+            "mean_seconds": None,
+            "median_seconds": None,
+            "minimum_seconds": None,
+            "maximum_seconds": None,
+        }
+    return {
+        "sample_count": len(samples),
+        "total_seconds": round(sum(samples), 3),
+        "mean_seconds": round(statistics.fmean(samples), 3),
+        "median_seconds": round(statistics.median(samples), 3),
+        "minimum_seconds": round(min(samples), 3),
+        "maximum_seconds": round(max(samples), 3),
+    }
+
+
+def build_phase2_deviation_packet(
+    *,
+    references: Sequence[Mapping[str, Any]],
+    repo_root: Path,
+    db_path: Path,
+) -> dict[str, Any]:
+    """Build the commissioned USDJPY packet without inventing a warm backend."""
+
+    authenticated = [
+        row for row in references if row.get("reference_status") == "AUTHENTICATED_COLD"
+    ]
+    selected = oldest_authenticated_references(references)
+    if len(selected) < MIN_PARITY_CELLS:
+        raise ValueError(
+            f"Phase-2 requires {MIN_PARITY_CELLS} authenticated cold references; "
+            f"found {len(selected)}"
+        )
+    cohort_fields = (
+        "ea_id",
+        "symbol",
+        "period",
+        "model",
+        "seed",
+        "from_date",
+        "to_date",
+        "ex5_sha256",
+        "mq5_sha256",
+        "history_manifest_sha256",
+    )
+    first = selected[0]
+    cohort_contract = {field: first.get(field) for field in cohort_fields}
+    cohort_mismatches = {
+        field: sorted({str(row.get(field)) for row in selected})
+        for field in cohort_fields
+        if any(row.get(field) != first.get(field) for row in selected[1:])
+    }
+    selection_rows = [
+        {
+            "selection_rank": index,
+            "cell_key": row.get("cell_key"),
+            "work_item_id": row.get("work_item_id"),
+            "updated_at": row.get("updated_at"),
+            "identity_sha256": row.get("identity_sha256"),
+            "report_metrics_sha256": row.get("report_metrics_sha256"),
+            "trade_list_sha256": row.get("trade_list_sha256"),
+        }
+        for index, row in enumerate(selected, start=1)
+    ]
+    for index, row in enumerate(selected, start=1):
+        row["selection_rank"] = index
+    cold_identity = cold_path_identity(
+        repo_root, PHASE2_TASK_START_COLD_PATH_SHA256
+    )
+    run_smoke_path = Path(repo_root) / "framework/scripts/run_smoke.ps1"
+    run_smoke_text = run_smoke_path.read_text(encoding="utf-8-sig")
+    timing = cold_timing_summary(selected)
+    timing_complete = timing["sample_count"] == MIN_PARITY_CELLS
+    return {
+        "schema": "qm.warm-cell-phase2-validation/v1",
+        "generated_at_utc": utc_now(),
+        "task_id": PHASE2_TASK_ID,
+        "verdict": "DEVIATION_STOP_UNSUPPORTED_BACKEND",
+        "reasons": [
+            "UNSUPPORTED_RESIDENT_TESTER_CONTROL",
+            "WARM_PARITY_NOT_RUN",
+            "WARM_TIMING_NOT_MEASURABLE",
+        ],
+        "flag": {
+            "name": FLAG_NAME,
+            "default": "OFF",
+            "observed_process_environment": os.environ.get(FLAG_NAME),
+            "observed_enabled": feature_flag_enabled(),
+            "production_wiring_present": False,
+            "activation_in_scope": False,
+        },
+        "execution": {
+            "launch_performed": False,
+            "terminal_process_started": False,
+            "warm_cells_run": 0,
+            "production_claims_created": 0,
+            "database_open_mode": "URI mode=ro + PRAGMA query_only=ON",
+            "database_write_performed": False,
+            "db_path": str(Path(db_path).resolve()),
+        },
+        "selection": {
+            "contract": "oldest AUTHENTICATED_COLD by (updated_at, work_item_id)",
+            "rows_found": len(references),
+            "authenticated_count": len(authenticated),
+            "selected_count": len(selected),
+            "selection_sha256": sha256_bytes(canonical_json_bytes(selection_rows)),
+            "rows": selection_rows,
+        },
+        "cohort": {
+            "contract": cohort_contract,
+            "common_identity_exact": not cohort_mismatches,
+            "mismatches": cohort_mismatches,
+            "cell_specific_setfiles": True,
+        },
+        "comparison": {
+            "required": MIN_PARITY_CELLS,
+            "attempted": 0,
+            "exact": 0,
+            "deviations": 0,
+            "not_run": MIN_PARITY_CELLS,
+            "all_exact": None,
+            "status": "NOT_RUN_UNSUPPORTED_RESIDENT_CONTROL",
+        },
+        "timing": {
+            "cold_measurement_basis": (
+                "summary.timestamp_utc minus payload.started_at_iso for each governed cold cell"
+            ),
+            "cold": timing,
+            "cold_timing_complete": timing_complete,
+            "warm": {
+                "sample_count": 0,
+                "total_seconds": None,
+                "mean_seconds": None,
+                "median_seconds": None,
+            },
+            "speedup_ratio_cold_over_warm": None,
+            "status": "NOT_MEASURABLE_WARM_RUN_NOT_STARTED",
+        },
+        "current_interface": {
+            "run_smoke_sha256": sha256_file(run_smoke_path),
+            "sets_shutdown_terminal_1": "ShutdownTerminal=1" in run_smoke_text,
+            "starts_process_for_each_test": "Start-Process -FilePath $TerminalExe" in run_smoke_text,
+            "allow_running_skips_fresh_logger": "reason=allow_running_terminal" in run_smoke_text,
+            "supported_resident_next_cell_command_found": False,
+            "native_optimizer_field_exact_receipt_supported": False,
+        },
+        "cold_path_files": cold_identity,
+        "cold_path_byte_identical_to_phase2_start": all(
+            row["byte_identical_to_task_start"] for row in cold_identity
+        ),
+        "selected_references": selected,
+        "activation_checklist": [
+            {
+                "gate": "supported resident tester-control backend reviewed",
+                "status": "BLOCKED",
+                "evidence": "Only an injected Protocol/fake backend exists; no governed next-cell implementation exists.",
+            },
+            {
+                "gate": "20 oldest complete homogeneous cold references",
+                "status": "PASS" if not cohort_mismatches else "BLOCKED",
+                "evidence": f"{len(selected)} selected; selection SHA-256 is bound in this packet.",
+            },
+            {
+                "gate": "20/20 field- and trade-byte exact warm parity",
+                "status": "BLOCKED",
+                "evidence": "0 warm cells were launched; equality is null, not assumed.",
+            },
+            {
+                "gate": "measured warm-versus-cold speedup",
+                "status": "BLOCKED",
+                "evidence": "Cold timing is measured for 20 cells; warm timing is null.",
+            },
+            {
+                "gate": "repeat complete warm batch deterministically",
+                "status": "BLOCKED",
+                "evidence": "Requires the same reviewed backend after first-batch exact parity.",
+            },
+            {
+                "gate": "OWNER activation seal binding backend and parity packet",
+                "status": "BLOCKED",
+                "evidence": "Not eligible until parity and speedup gates pass.",
+            },
+            {
+                "gate": "production remains Default-OFF",
+                "status": "PASS" if not feature_flag_enabled() else "BLOCKED",
+                "evidence": "No production wiring, claims, queue writes, terminal launch, T_Live, or AutoTrading change.",
+            },
+        ],
+    }
+
+
+def render_phase2_report(packet: Mapping[str, Any]) -> str:
+    selection = packet["selection"]
+    comparison = packet["comparison"]
+    timing = packet["timing"]
+    cohort = packet["cohort"]
+    lines = [
+        "# V4a Phase 2 — USDJPY warm-runner validation deviation stop",
+        "",
+        "**Verdict:** `DEVIATION_STOP_UNSUPPORTED_BACKEND`",
+        "**Execution:** `NO_MT5_LAUNCH`",
+        f"**Feature flag:** `{FLAG_NAME}` remained globally unset/Default-OFF.",
+        "",
+        "The commissioned reference floor now passes, but the execution precondition does not. "
+        "The repository still has only an injected resident-session interface used by tests; it has no reviewed backend that can submit a second tester cell to one already-running MT5 session. The governed cold launcher starts one terminal process per cell. Therefore no warm result, parity value, timing value, or speedup claim was fabricated.",
+        "",
+        "## Acceptance result",
+        "",
+        "| Criterion | Result |",
+        "|---|---|",
+        f"| Deterministic oldest complete cohort | PASS — {selection['selected_count']} of {selection['authenticated_count']} authenticated receipts selected; selection `{selection['selection_sha256']}` |",
+        f"| 20/20 comparison table with hashes | DEVIATION — {comparison['attempted']}/20 warm comparisons; all 20 cold hashes are bound below and warm fields are explicitly NOT RUN |",
+        f"| Warm versus cold timing | DEVIATION — 20-cell cold total {timing['cold']['total_seconds']} s; warm timing and speedup are null |",
+        "| Activation checklist | NOT ELIGIBLE — backend, exact-parity, speedup, repeatability, and OWNER-seal gates remain blocked |",
+        "| Cold path / DL-089 | PASS — four governed cold-path files match their Phase-2 start bytes; no production claim or DL-089 mutation |",
+        "",
+        "## Deterministic cohort",
+        "",
+        f"The read-only snapshot found **{selection['rows_found']}** measured USDJPY rows, all **{selection['authenticated_count']}** authenticated. Selection is ascending `(updated_at, work_item_id)` after receipt authentication. Common identity exact: **{str(cohort['common_identity_exact']).upper()}**. Setfiles are intentionally cell-specific because each arm encodes a different predicate.",
+        "",
+        "| Field | Common value |",
+        "|---|---|",
+    ]
+    for field, value in cohort["contract"].items():
+        lines.append(f"| `{field}` | `{value}` |")
+    lines.extend(
+        [
+            "",
+            "## Timing",
+            "",
+            "Cold elapsed time is measured from each governed receipt's `payload.started_at_iso` to `summary.timestamp_utc`. It includes the existing per-cell startup path and is the relevant cold baseline. No warm elapsed clock exists because the unsupported backend gate stopped execution before launch.",
+            "",
+            "| Path | Cells | Total s | Mean s | Median s | Min s | Max s | Speedup |",
+            "|---|---:|---:|---:|---:|---:|---:|---|",
+            f"| Cold governed receipts | {timing['cold']['sample_count']} | {timing['cold']['total_seconds']} | {timing['cold']['mean_seconds']} | {timing['cold']['median_seconds']} | {timing['cold']['minimum_seconds']} | {timing['cold']['maximum_seconds']} | baseline |",
+            "| Warm resident session | 0 | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT MEASURABLE |",
+            "",
+            "## 20-cell comparison table",
+            "",
+            "| # | Arm | Work item | Cold s | Metrics SHA-256 | Trade-list SHA-256 | Warm | Exact |",
+            "|---:|---|---|---:|---|---|---|---|",
+        ]
+    )
+    for row in packet["selected_references"]:
+        lines.append(
+            f"| {row['selection_rank']} | {row.get('arm')} | `{row.get('work_item_id')}` | "
+            f"{row.get('cold_elapsed_seconds')} | `{row.get('report_metrics_sha256')}` | "
+            f"`{row.get('trade_list_sha256')}` | NOT RUN | NULL |"
+        )
+    lines.extend(
+        [
+            "",
+            "## Why the warm launch is not valid yet",
+            "",
+            "`warm_cell_runner.py` defines sequencing, authorization, exact comparison, and immediate deviation stop around an injected backend. It deliberately contains no MetaTrader launcher. The governed `run_smoke.ps1` writes `ShutdownTerminal=1` and starts `/portable /config:<ini>` for every test. A second startup invocation is not resident next-cell control, and `-AllowRunningTerminal` also bypasses the fresh logger-authentication path.",
+            "",
+            "The only supported MT5 multi-pass mechanism found is native optimization. The V4b feasibility packet already proved its standard pass report lacks the per-pass closed-trade list, entry-day evidence, logger sample, and native report bytes required for field-for-field cold receipt parity. It cannot be substituted silently.",
+            "",
+            "## Activation checklist",
+            "",
+            "| Gate | Status | Evidence / next condition |",
+            "|---|---|---|",
+        ]
+    )
+    for item in packet["activation_checklist"]:
+        lines.append(f"| {item['gate']} | **{item['status']}** | {item['evidence']} |")
+    lines.extend(
+        [
+            "",
+            "## Cold-path identity",
+            "",
+            "| File | Workspace SHA-256 | Phase-2 start SHA-256 | Exact |",
+            "|---|---|---|---|",
+        ]
+    )
+    for row in packet["cold_path_files"]:
+        lines.append(
+            f"| `{row['path']}` | `{row['workspace_sha256']}` | `{row['task_start_sha256']}` | "
+            f"{str(row['byte_identical_to_task_start']).upper()} |"
+        )
+    lines.extend(
+        [
+            "",
+            "## Safety record",
+            "",
+            "- The farm database was opened with SQLite URI `mode=ro` and `PRAGMA query_only=ON`.",
+            "- No terminal, tester, worker, production claim, queue row, verdict, policy file, DL-089 receipt, T_Live, or AutoTrading state was changed.",
+            "- This is a deviation packet, not pipeline evidence and not an activation authorization.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
 
 
 def render_report(packet: Mapping[str, Any]) -> str:
@@ -717,11 +1079,68 @@ def write_outputs(
     }
 
 
+def write_phase2_outputs(
+    *, packet: Mapping[str, Any], output_dir: Path, output_stem: str
+) -> dict[str, Path]:
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    report_path = output_dir / f"{output_stem}.md"
+    packet_path = output_dir / f"{output_stem}_packet.json"
+    comparison_path = output_dir / f"{output_stem}_comparison.csv"
+    _atomic_text(packet_path, json.dumps(packet, indent=2, sort_keys=True) + "\n")
+    _atomic_text(report_path, render_phase2_report(packet))
+    fields = [
+        "selection_rank",
+        "cell_key",
+        "work_item_id",
+        "arm",
+        "updated_at",
+        "cold_elapsed_seconds",
+        "identity_sha256",
+        "report_metrics_sha256",
+        "trade_list_sha256",
+        "trade_count",
+        "warm_status",
+        "warm_elapsed_seconds",
+        "warm_identity_sha256",
+        "warm_report_metrics_sha256",
+        "warm_trade_list_sha256",
+        "all_exact",
+    ]
+    temp = comparison_path.with_name(f".{comparison_path.name}.{os.getpid()}.tmp")
+    with temp.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
+        writer.writeheader()
+        for reference in packet["selected_references"]:
+            writer.writerow(
+                {
+                    **{field: reference.get(field) for field in fields},
+                    "warm_status": "NOT_RUN_UNSUPPORTED_RESIDENT_CONTROL",
+                    "warm_elapsed_seconds": None,
+                    "warm_identity_sha256": None,
+                    "warm_report_metrics_sha256": None,
+                    "warm_trade_list_sha256": None,
+                    "all_exact": None,
+                }
+            )
+    os.replace(temp, comparison_path)
+    return {
+        "report": report_path,
+        "packet": packet_path,
+        "comparison": comparison_path,
+    }
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--db", type=Path, default=DEFAULT_DB)
     parser.add_argument("--repo-root", type=Path, default=DEFAULT_REPO)
     parser.add_argument("--year", type=int, default=2019)
+    parser.add_argument(
+        "--phase2-usdjpy",
+        action="store_true",
+        help="emit the fail-closed 20-cell QM5_41097/USDJPY Phase-2 packet",
+    )
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument(
         "--output-stem",
@@ -734,25 +1153,51 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     with _read_only_connection(args.db) as con:
         con.execute("BEGIN")
-        references = cold_references(con, year=args.year)
+        if args.phase2_usdjpy:
+            references = cold_references(
+                con,
+                ea_id="QM5_41097",
+                symbol="USDJPY.DWX",
+                year=args.year,
+            )
+        else:
+            references = cold_references(con, year=args.year)
         con.rollback()
-    packet = build_deviation_packet(
-        references=references,
-        repo_root=args.repo_root.resolve(),
-        db_path=args.db.resolve(),
-    )
-    outputs = write_outputs(
-        packet=packet,
-        output_dir=args.output_dir,
-        output_stem=args.output_stem,
-    )
+    if args.phase2_usdjpy:
+        packet = build_phase2_deviation_packet(
+            references=references,
+            repo_root=args.repo_root.resolve(),
+            db_path=args.db.resolve(),
+        )
+        outputs = write_phase2_outputs(
+            packet=packet,
+            output_dir=args.output_dir,
+            output_stem=args.output_stem,
+        )
+        cold_references_count = packet["selection"]["authenticated_count"]
+    else:
+        packet = build_deviation_packet(
+            references=references,
+            repo_root=args.repo_root.resolve(),
+            db_path=args.db.resolve(),
+        )
+        outputs = write_outputs(
+            packet=packet,
+            output_dir=args.output_dir,
+            output_stem=args.output_stem,
+        )
+        cold_references_count = packet["reference_inventory"]["authenticated_count"]
     print(
         json.dumps(
             {
                 "status": packet["verdict"],
                 "flag_default": packet["flag"]["default"],
-                "cold_path_unchanged": packet["cold_path_byte_identical_to_task_start"],
-                "cold_references": packet["reference_inventory"]["authenticated_count"],
+                "cold_path_unchanged": (
+                    packet.get("cold_path_byte_identical_to_task_start")
+                    if not args.phase2_usdjpy
+                    else packet.get("cold_path_byte_identical_to_phase2_start")
+                ),
+                "cold_references": cold_references_count,
                 "warm_cells": packet["execution"]["warm_cells_run"],
                 "launch_performed": packet["execution"]["launch_performed"],
                 "outputs": {key: str(path.resolve()) for key, path in outputs.items()},

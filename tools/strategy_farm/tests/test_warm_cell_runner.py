@@ -172,3 +172,54 @@ def test_parity_floor_rejects_nineteen_exact_rows():
     summary = runner.parity_summary(rows)
     assert summary["all_exact"] is False
     assert summary["problems"] == ["PARITY_SAMPLE_BELOW_MINIMUM"]
+
+
+def test_phase2_task_id_is_valid_for_offline_validation():
+    manifest = _validation_authorization()
+    manifest["task_id"] = runner.PHASE2_TASK_ID
+    assert runner.validation_authorization_problems(manifest) == []
+
+
+def test_oldest_authenticated_selection_is_deterministic_after_authentication():
+    rows = [
+        {
+            "work_item_id": "b",
+            "updated_at": "2026-08-22T07:00:00+00:00",
+            "reference_status": "AUTHENTICATED_COLD",
+        },
+        {
+            "work_item_id": "ignored",
+            "updated_at": "2026-08-22T05:00:00+00:00",
+            "reference_status": "INVALID",
+        },
+        {
+            "work_item_id": "a",
+            "updated_at": "2026-08-22T07:00:00+00:00",
+            "reference_status": "AUTHENTICATED_COLD",
+        },
+        {
+            "work_item_id": "c",
+            "updated_at": "2026-08-22T08:00:00+00:00",
+            "reference_status": "AUTHENTICATED_COLD",
+        },
+    ]
+    selected = runner.oldest_authenticated_references(rows, limit=2)
+    assert [row["work_item_id"] for row in selected] == ["a", "b"]
+
+
+def test_cold_timing_summary_keeps_missing_samples_explicit():
+    summary = runner.cold_timing_summary(
+        [
+            {"cold_elapsed_seconds": 10.0},
+            {"cold_elapsed_seconds": None},
+            {"cold_elapsed_seconds": 20.0},
+        ]
+    )
+    assert summary == {
+        "sample_count": 2,
+        "total_seconds": 30.0,
+        "mean_seconds": 15.0,
+        "median_seconds": 15.0,
+        "minimum_seconds": 10.0,
+        "maximum_seconds": 20.0,
+    }
