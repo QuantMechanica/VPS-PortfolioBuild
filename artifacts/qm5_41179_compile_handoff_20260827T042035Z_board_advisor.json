@@ -1,0 +1,111 @@
+{
+  "schema": "qm.source-build-compile-handoff/v1",
+  "recorded_at_utc": "2026-08-27T04:20:35.3845563Z",
+  "recorded_at_local": "2026-08-27T06:20:35.3947545+02:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41179",
+  "ea_label": "QM5_41179_xtixng-mcoxstuart-rv",
+  "strategy_id": "VILLAR-COX-STUART-XTIXNG-MPAIRSIGN-RV-2026_S01",
+  "logical_symbol": "QM5_41179_XTI_XNG_MCOXSTUART_RV_D1",
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "timeframe": "D1",
+  "magics": [
+    411790000,
+    411790001
+  ],
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_Q02_STOPPED_CPU_CEILING",
+  "commits": {
+    "source_approval": "184c3536b2934d9492e107a8063453b2d1371a94",
+    "card_identity_and_g0": "91126bdbe990fa4dbd545ea9390151fabb6950a6",
+    "magic_and_source_build": "ecebbc466282ebbb62b2d310aff127be85feba44"
+  },
+  "hashes": {
+    "source_packet_sha256": "A8D709E17729474ACF1FA220D0FA0C73FD8DC8F2A555C740DBEC8BFE8061BF38",
+    "preallocation_dedup_sha256": "E75E18D836E67A898CE5B6EFC6E3D8FC545862DBC5E21F1B01D954F7118DF429",
+    "canonical_card_sha256": "9E479165639FCE3A7956ED57106D52495D685EA0021ADC3C5FF1E9E2BC2C7413",
+    "ea_card_copy_sha256": "9E479165639FCE3A7956ED57106D52495D685EA0021ADC3C5FF1E9E2BC2C7413",
+    "mq5_sha256": "5E373104EE5BF0F0428C5C277E0D8ECEA10E83FCAE80386D27DDB74B58A1E6BE",
+    "logical_setfile_sha256": "B94242F6BDA83F2E924453730CD250C9A9F2304AAAB21D3F0D10A2C971686C18",
+    "basket_manifest_sha256": "32BB76202C1B05EFDBBEC31D24A64379ED75D0F15124ECB16221DA10BE8DA83E"
+  },
+  "edge": {
+    "carrier": "XTIUSD.DWX/XNGUSD.DWX equal-notional two-leg basket",
+    "decision_clock": "first eligible synchronized D1 bar of each broker month",
+    "signal": "fourteen synchronized completed monthly log(XTI)-log(XNG) endpoints split into seven fixed lag-seven Cox-Stuart pairs",
+    "entry": "at least five positive pair differences produce SELL XTI/BUY XNG; at least five negative differences produce BUY XTI/SELL XNG; any zero difference or a 4/3 split consumes the monthly attempt flat",
+    "lifecycle": "one consumed attempt per month; next-month or forty-day package exit",
+    "risk": "one aggregate RISK_FIXED=1000 budget split across frozen 3.5 ATR(20,D1) stops with equal target notionals and 20% maximum mismatch"
+  },
+  "source_validation": {
+    "source_criteria": "COMPLETE_OFFICIAL_EIA_AND_PEER_REVIEWED_ENERGY_RECORDS_PLUS_COMPLETE_NIST_COX_STUART_ALGORITHM_RECORD",
+    "canonical_dedup": "CLEAN_ACROSS_4678_REGISTRY_ROWS_1329_CARDS_45_WIKI_NODES",
+    "reference_tests": {
+      "passed": 9,
+      "failed": 0
+    },
+    "card_schema_lint": "PASS",
+    "banned_or_ml_indicator_hits": 0,
+    "card_copy_byte_identical": true,
+    "magic_allocator_collision_count": 0,
+    "risk_setfiles": "THREE_BACKTEST_ONLY_RISK_FIXED_SETS",
+    "live_set_count": 0
+  },
+  "compile": {
+    "ad_hoc_attempt_result": "REFUSED_NO_RETRY",
+    "ad_hoc_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "ad_hoc_log": "framework/build/compile/20260827_041534/QM5_41179_xtixng-mcoxstuart-rv.compile.log",
+    "governed_work_item_id": "9ced0252-9ceb-4fe7-a2c5-d7a8d0b30a82",
+    "status_at_last_read": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "sampling_method": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 2 -MaxSamples 5",
+    "cpu_ceiling_percent": 97.0,
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "cpu_ceiling_hit": true,
+    "factory_terminal_ceiling": 7,
+    "factory_terminal_count": 7,
+    "factory_terminal_ceiling_hit": true,
+    "factory_terminals_running": [
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T9",
+      "T10"
+    ]
+  },
+  "q02": {
+    "enqueued": false,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_COMPILE_ACTIVATION_HELD",
+      "BACKTEST_CPU_CEILING_HIT",
+      "FACTORY_TERMINAL_CEILING_HIT"
+    ],
+    "resume_contract": "Do not duplicate the existing compile item. After it produces a current strict compile/build-check PASS and EX5, recheck capacity and enqueue exactly one logical-basket Q02 only if the ceiling has cleared."
+  },
+  "safety": {
+    "terminal_processes_started_or_stopped_by_this_run": false,
+    "autotrading_toggled_by_this_run": false,
+    "t_live_touched_by_this_run": false,
+    "portfolio_gate_touched_by_this_run": false,
+    "t_live_manifest_touched_by_this_run": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}

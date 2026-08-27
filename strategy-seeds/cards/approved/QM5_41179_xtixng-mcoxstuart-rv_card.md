@@ -238,4 +238,3 @@ schema lint, exact deterministic identity allocation, and R1-R4 review. Q01
 must produce current strict compile/build-check PASS before one paced logical-
 basket Q02 enqueue. Any failure is terminal for this locked variant; no
 post-result direction, threshold, sample, carrier, risk, or lifecycle rescue.
-
