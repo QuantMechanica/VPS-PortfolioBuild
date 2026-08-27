@@ -1,0 +1,122 @@
+{
+  "schema": "qm.source-build-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-27T10:42:44.2392881Z",
+  "recorded_at_local": "2026-08-27T12:42:44.2392881+02:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41181",
+  "ea_label": "QM5_41181_xauxag-mkendall-rv",
+  "strategy_id": "SCHWEIKERT-MANNKENDALL-CME-XAUXAG-MRANK-RV-2026_S01",
+  "logical_symbol": "QM5_41181_XAU_XAG_MKENDALL_RV_D1",
+  "symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "magics": [
+    411810000,
+    411810001
+  ],
+  "outcome": "SOURCE_BUILD_COMMITTED_Q01_NOT_ENQUEUED_Q02_STOPPED_CPU_CEILING",
+  "commits": {
+    "source_approval": "796c2934a00bb7acbd2f3a3bda4406a9b744a4ea",
+    "source_count_correction": "e44cdaa93fb3f8157a7ff47b1e244b3582d3d555",
+    "card_identity_and_g0": "1e4685a91f82e2f0d6458bee1f8ba46a5d3d9842",
+    "source_build": "718fdd1842cbde1f9f8f3ca3b885e0e8717c8f91"
+  },
+  "hashes": {
+    "source_packet_sha256": "7C8612A5D47D24D25349521C7A8FEA00651735A3E6BD00B9A28D9AE75290C117",
+    "preallocation_dedup_sha256": "613D32B36DDA35E438C5F0D24C89265EEBDF27C3927EB622ACB363D3EC3409C9",
+    "canonical_card_sha256": "C0A2C57DD7B6B04D5B1910EB3FEF75CB884C5A7C4B859E2E9F1709FCC83F9672",
+    "ea_card_copy_sha256": "C0A2C57DD7B6B04D5B1910EB3FEF75CB884C5A7C4B859E2E9F1709FCC83F9672",
+    "mq5_sha256": "3A8D76484925BE9F9FEA5ECC08D6AB17CC131A1FD7EDA25CA7E9F952C9971431",
+    "reference_test_sha256": "E6320F2390BC8209462912E9CC769D7A2085F82359E5A0CA878CF3EDAE41768D",
+    "logical_setfile_sha256": "70484B516A9C165B96CA5E711F7749572AF754E4D4CB3507B3AB5CE51931D575",
+    "basket_manifest_sha256": "EE6B6EF050896A433FC5B7F0C39F209974365FDE9465ECE2A2828571E93E990B"
+  },
+  "edge": {
+    "carrier": "XAUUSD.DWX/XAGUSD.DWX equal-target-notional two-leg basket",
+    "decision_clock": "first eligible synchronized D1 bar of each broker month",
+    "signal": "all 78 older/newer sign comparisons across thirteen synchronized completed monthly log(XAU)-log(XAG) endpoints",
+    "entry": "S>=14 sells XAU and buys XAG; S<=-14 buys XAU and sells XAG; ties and the interior consume flat",
+    "lifecycle": "one consumed attempt per month; next-month or forty-day package exit",
+    "risk": "one aggregate RISK_FIXED=1000 budget split across frozen 3.5 ATR(20,D1) stops with 20% maximum notional mismatch"
+  },
+  "validation": {
+    "reference_tests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "magic_resolver_tests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "governed_allocator_tests": {
+      "passed": 10,
+      "failed": 0
+    },
+    "card_schema_lint": "PASS",
+    "ea_card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "banned_or_ml_indicator_hits": 0,
+    "card_copy_byte_identical": true,
+    "registry_identity": "ACTIVE",
+    "magic_rows": "TWO_ACTIVE_ROWS",
+    "risk_setfiles": "THREE_BACKTEST_ONLY_RISK_FIXED_SETS",
+    "live_set_count": 0,
+    "preallocation_dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_XAUXAG_MONTHLY_ALL78_PAIR_RANK_S14_CONTRARIAN_BASKET"
+  },
+  "compile": {
+    "ad_hoc_guard_result": "REFUSED_NO_RETRY",
+    "ad_hoc_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_work_item_enqueued": false,
+    "status_at_last_read": "NOT_ENQUEUED",
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "sampling_method": "CIM Win32_PerfFormattedData_PerfOS_Processor _Total PercentProcessorTime, five samples at two-second cadence",
+    "cpu_ceiling_percent": 97.0,
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "cpu_ceiling_hit": true,
+    "factory_terminal_ceiling": 7,
+    "factory_terminal_count": 7,
+    "factory_terminal_ceiling_hit": true,
+    "factory_terminals_running": [
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T10"
+    ]
+  },
+  "q02": {
+    "existing_work_item_count_before": 0,
+    "enqueued": false,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_NO_EX5",
+      "BACKTEST_CPU_CEILING_HIT",
+      "FACTORY_TERMINAL_CEILING_HIT"
+    ],
+    "resume_contract": "Recheck both capacity ceilings; enqueue one governed compile item only if capacity permits; require current strict compile/build-check PASS and a source-fresh EX5; then enqueue exactly one logical-basket Q02 row and zero component-leg rows."
+  },
+  "safety": {
+    "terminal_processes_started_or_stopped_by_this_run": false,
+    "terminal_reservations_mutated_by_this_run": false,
+    "autotrading_toggled_by_this_run": false,
+    "t_live_touched_by_this_run": false,
+    "portfolio_gate_touched_by_this_run": false,
+    "t_live_manifest_touched_by_this_run": false,
+    "unrelated_worktree_changes_preserved_and_unstaged": true
+  }
+}
