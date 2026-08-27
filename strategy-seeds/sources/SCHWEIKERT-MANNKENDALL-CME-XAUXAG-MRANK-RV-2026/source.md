@@ -90,7 +90,7 @@ oscillator, seasonal direction, external series, or prior pipeline result.
 
 The boundary was fixed before market testing. Exact inversion-count dynamic
 enumeration across all `13! = 6,227,020,800` no-tie rank paths gives
-`2,711,320,614` qualifying paths, split symmetrically. The two-tail rate is
+`2,711,123,108` qualifying paths, split symmetrically. The two-tail rate is
 `0.4353804483839206`, or about `5.224565380607047` qualifying months per
 twelve random-order decisions. This is a design-density fact used to clear
 the unchanged five-per-year Q02 floor, not evidence about gold/silver
@@ -189,4 +189,3 @@ owns realized overlap. This packet authorizes no manual backtest; live,
 demo, shadow, stress, or optimization setfile; AutoTrading; `T_Live`; deploy
 or live manifest; portfolio-gate change; portfolio admission; correlation
 waiver; or terminal process control.
-
