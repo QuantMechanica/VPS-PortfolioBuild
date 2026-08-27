@@ -1,0 +1,6 @@
+Exception: C:\QM\repo\framework\scripts\run_dev2_smoke.ps1:1314
+Line |
+1314 |          throw "DEV2 smoke failed (code=$($result.error_code), exit=$( â€¦
+     |          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | DEV2 smoke failed (code=DEV2_AGENT_PORT_PROOF_MISSING, exit=1);
+     | log=D:\QM\reports\dev2\runs\20260827T171758Z_caebaaaceabc4114ba2f03ca93daeae2\output\run.log
