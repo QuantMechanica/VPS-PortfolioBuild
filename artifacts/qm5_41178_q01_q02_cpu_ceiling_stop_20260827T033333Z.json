@@ -1,0 +1,92 @@
+{
+  "artifact_type": "qm5_q01_q02_capacity_stop",
+  "schema": "qm.q01-q02-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T03:35:25.2569437Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41178",
+  "ea_label": "QM5_41178_xtixng-mwilcoxon-rv",
+  "logical_symbol": "QM5_41178_XTI_XNG_MWILCOXON_RV_D1",
+  "build_commit": "24846a7f4a18da47733de78e1436c9f06fc06d12",
+  "build_state": "SOURCE_COMPLETE_Q01_STRICT_COMPILE_PENDING",
+  "completed_validation": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "independent_reference_tests": {
+      "status": "PASS",
+      "tests_run": 8,
+      "scope": "all 924 fixed-block rank assignments, inclusive tails, U identities, ties, month sequence, exact manifest/set/card/source contracts"
+    },
+    "setfiles": {
+      "count": 3,
+      "environment": "backtest",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "live_presets": 0
+    },
+    "magic_rows": [
+      {
+        "slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 411780000
+      },
+      {
+        "slot": 1,
+        "symbol": "XNGUSD.DWX",
+        "magic": 411780001
+      }
+    ]
+  },
+  "strict_compile_attempt": {
+    "started_at_utc": "2026-08-27T03:33:33Z",
+    "command": "powershell framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_41178_xtixng-mwilcoxon-rv/QM5_41178_xtixng-mwilcoxon-rv.mq5 -Strict",
+    "strict_compile_verdict": "NOT_RUN",
+    "wrapper_result": "FAIL",
+    "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "reason": "terminal64 processes were alive; include mirroring and ad-hoc compilation were refused before MetaEditor compilation",
+    "retry_attempted": false,
+    "compile_log": "framework/build/compile/20260827_033333/QM5_41178_xtixng-mwilcoxon-rv.compile.log"
+  },
+  "capacity_evidence": {
+    "source_receipt": "artifacts/diversity_funnel_hard_cpu_stop_20260827T033033Z_board_advisor.json",
+    "source_receipt_sha256": "B1FF1763206FA5B6C76E32204B346E7BE79428639CA01E1615351A9A98AA8215",
+    "sample_ended_at_utc": "2026-08-27T03:30:33.7445637Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 100.0,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "fresh_fleet_scan_at_utc": "2026-08-27T03:34:37Z",
+    "fresh_running_factory_terminals": [
+      "T2",
+      "T6",
+      "T8"
+    ],
+    "fresh_terminal64_process_count_including_excluded": 5
+  },
+  "decision": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_GOVERNED_COMPILE_OR_Q02_ENQUEUE",
+  "queue_state": {
+    "governed_compile": "NOT_ENQUEUED",
+    "q02": "NOT_ENQUEUED",
+    "backtest_started": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "queue_priority_or_existing_verdict_mutated": false
+  },
+  "remaining_authorized_handoff": [
+    "enqueue one governed COMPILE_EA item after the tester CPU ceiling clears",
+    "require strict zero-error and zero-warning compile plus Q01 build checks",
+    "enqueue exactly one logical-basket D1 Q02 row only after Q01 passes and capacity permits"
+  ],
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
