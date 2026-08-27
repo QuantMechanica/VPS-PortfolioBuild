@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "source_id": "AI-CODEX-WTI-M2RUNS-20260827",
+  "recorded_at_utc": "2026-08-27T15:05:24.6411355Z",
+  "canonical_origin": {
+    "type": "ai_originated_governed_synthesis",
+    "actor": "OpenAI Codex",
+    "authority": "current explicit OWNER commodity/energy portfolio mission on agents/board-advisor",
+    "scope": "one structural low-frequency WTI card and non-live build"
+  },
+  "public_method_record": {
+    "url": "https://doi.org/10.1214/aoms/1177731909",
+    "title": "On a Test Whether Two Samples Are from the Same Population",
+    "authors": ["Abraham Wald", "Jacob Wolfowitz"],
+    "publication": "The Annals of Mathematical Statistics 11(2), 147-162 (1940)",
+    "doi": "10.1214/aoms/1177731909",
+    "metadata_scope_only": true,
+    "runtime_reader": {
+      "status": "PERMISSION_REQUIRED",
+      "adapter": "generic",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "reason": "generic runtime retrieval is disabled until a cryptographic OWNER authorization verifier exists",
+      "adapter_state": "ROUTER_ONLY",
+      "retrieved_at": null
+    }
+  },
+  "local_supporting_record": {
+    "path": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+    "sha256": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+    "read_scope": "complete durable source packet preserving the complete-paper review of monthly own-price continuation and explicit WTI membership"
+  },
+  "claims_used": [
+    "the Wald-Wolfowitz bibliographic record identifies a peer-reviewed two-sample population test",
+    "the preserved MOP packet supports monthly own-price continuation research and WTI as an explicit commodity carrier",
+    "the exact pooled-label-runs trading rule is a disclosed Codex synthesis rather than extracted source alpha"
+  ],
+  "claims_not_used": [
+    "complete text of the Wald-Wolfowitz paper",
+    "a source critical value or p-value",
+    "statistical significance for five observations per block",
+    "WTI-specific profitability",
+    "trade density, drawdown, costs, CFD equivalence, decorrelation, or portfolio admission"
+  ],
+  "raw_public_content_committed": false
+}
