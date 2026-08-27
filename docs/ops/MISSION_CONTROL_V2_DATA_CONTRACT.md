@@ -327,7 +327,30 @@ dem einmal berechneten Vollbestand separat `linear_frontier.html`; dadurch
 
 ---
 
-## 7. Validation
+## 7. `path_to_25` — kritischer Pfad, getrennt von Queue-leer
+
+`path_to_25` ist read-only und payload-/Sidecar-abgeleitet. Der Block enthält:
+
+- `reservoir`: eindeutige v4-Q09-PASS-Paare und deren Q10-`chosen`-, Q11-,
+  Q12-, Q13- und Q14-Fortschritt;
+- `pair_progress`: dieselben Schritte pro `(ea_id,symbol)`, einschließlich
+  offener Reruns und roher NO_CHANGE-Pilotzeilen;
+- `completion_rates`: eindeutige Paarabschlüsse pro Tag im rollierenden
+  7×24-h-Fenster;
+- `eta_to_25`: Restpaare geteilt durch die gemessene rohe Q14-Abschlussrate;
+  dies ist ausdrücklich weder eine Queue-leer-ETA noch ein Survival-Modell;
+- `counting_definition`: die bis zur OWNER/Orchestrator-Versiegelung
+  provisorisch gerenderte Definition plus unverbindliche Alternativzählungen.
+
+Die aktive Anzeige zählt fail-closed nur Paare mit kanonischer v4-Lineage und
+`highest_contiguous_valid_gate=Q14`. Historische Q14-Labels und rohe v4-Q14-
+Pilotzeilen werden sichtbar separat ausgewiesen und verändern `qualified_pairs`
+nicht. Eine Änderung dieser Definition ist eine eigene OWNER-Entscheidung, kein
+Dashboard- oder Telemetrieeffekt.
+
+---
+
+## 8. Validation
 
 `CONTRACT_SCHEMA` (JSON-Schema draft-2020-12) is embedded in the emitter. The
 `jsonschema` package is **not installed** on this VPS, so the module ships a
@@ -342,7 +365,7 @@ passed. The live run on 2026-08-21 validated clean.
 
 ---
 
-## 8. CLI
+## 9. CLI
 
 ```powershell
 cd C:/QM/repo
@@ -357,7 +380,7 @@ count).
 
 ---
 
-## 9. Contract stability notes for the renderer
+## 10. Contract stability notes for the renderer
 
 - All timestamps are UTC ISO-8601.
 - Absent values are `null`, never omitted for the documented fields — a renderer

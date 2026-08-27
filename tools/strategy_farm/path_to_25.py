@@ -25,6 +25,7 @@ from tools.strategy_farm import book_build_guard, gate_manifest, rebaseline_cens
 
 TARGET_QUALIFIED_PAIRS = 25
 TERMINAL_CAPACITY = 10
+COMPLETION_RATE_WINDOW_DAYS = 7
 _TERMINAL_STATUSES = frozenset({"done", "failed"})
 _OPEN_STATUSES = frozenset({"pending", "active"})
 _NEWS_CONCLUSIVE_VERDICTS = frozenset({
@@ -39,6 +40,21 @@ _NEWS_PASS_VERDICTS = frozenset({
 })
 _PLANNER_REASON_PREFIX = "rb-backfill-planner:"
 _PLANNER_RERUN_INFRA = "rb-backfill-planner:rerun_infra"
+
+# Raw v4 stage outcomes are deliberately separate from the sealed contiguous
+# census.  They drive the progress/rate telemetry only; they never promote a
+# pair into ``qualified_pairs``.  In particular, the three historical
+# NO_CHANGE pilots can be shown without silently deciding whether they count
+# toward the OWNER's 25-pair trigger.
+_V4_STAGE_OUTCOMES = {
+    "Q09": frozenset({"PASS", "PASS_SOFT", "PASS_LOWFREQ"}),
+    "Q11": frozenset({"PASS", "PASS_SOFT", "PASS_LOWFREQ"}),
+    "Q12": frozenset({"PASS", "PASS_SOFT", "OPT_ELIGIBLE", "NO_FILTER_CHANGE"}),
+    "Q13": frozenset({"PASS", "PASS_SOFT", "CHALLENGER_SPAWNED", "NO_PARAMETER_CHANGE"}),
+    "Q14": frozenset({"CHALLENGER_PROMOTED", "KEEP_INCUMBENT"}),
+}
+_PROGRESS_STAGES = ("Q09", "Q11", "Q12", "Q13", "Q14")
+_RENDERED_DEFINITION_ID = "STRICT_V4_CONTIGUOUS_Q14"
 
 
 def _open_ro(db: str | Path) -> sqlite3.Connection:
@@ -90,7 +106,9 @@ def _is_portfolio_lane(phase: Any, contract_version: Any) -> bool:
 
 def _work_rows(con: sqlite3.Connection) -> list[dict[str, Any]]:
     columns = _columns(con, "work_items")
-    required = {"phase", "status", "verdict", "created_at", "updated_at"}
+    required = {
+        "phase", "ea_id", "symbol", "status", "verdict", "created_at", "updated_at"
+    }
     missing = required - columns
     if missing:
         raise RuntimeError(f"work_items schema missing required columns: {sorted(missing)}")
@@ -108,7 +126,7 @@ def _work_rows(con: sqlite3.Connection) -> list[dict[str, Any]]:
     return [
         dict(row)
         for row in con.execute(
-            "SELECT phase,status,verdict,created_at,updated_at,"
+            "SELECT phase,ea_id,symbol,status,verdict,created_at,updated_at,"
             f"{contract},{payload},{row_id},{parent},{evidence} FROM work_items"
         )
     ]
@@ -320,6 +338,268 @@ def _phase_medians(
     return {gate: statistics.median(values) for gate, values in durations.items()}
 
 
+def _pair_key(row: dict[str, Any]) -> tuple[str, str] | None:
+    ea_id = str(row.get("ea_id") or "").strip()
+    symbol = str(row.get("symbol") or "").strip()
+    return (ea_id, symbol) if ea_id and symbol else None
+
+
+def _raw_v4_stage_progress(
+    con: sqlite3.Connection,
+    rows: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
+    """Return payload-backed raw stage progress without changing qualification.
+
+    The strict 25-pair counter remains the canonical contiguous census.  This
+    projection instead reports what evidence is physically present at each v4
+    stage, including open reruns and NO_CHANGE pilots.  News conclusiveness is
+    authenticated by the append-only ``q09_news_tests`` sidecar: ``chosen``
+    means both chosen fields are populated on a CONFIG_LOCKED adjudication.
+    """
+
+    by_pair: dict[tuple[str, str], dict[str, dict[str, Any]]] = defaultdict(dict)
+    for row in rows:
+        if str(row.get("gate_contract_version") or "").strip().lower() != "v4":
+            continue
+        stage = str(row.get("phase") or "").strip().upper()
+        if stage not in _V4_STAGE_OUTCOMES:
+            continue
+        key = _pair_key(row)
+        if key is None:
+            continue
+        item = by_pair[key].setdefault(stage, {
+            "started": False,
+            "open": False,
+            "valid_done": False,
+            "completed_at": None,
+            "latest_at": None,
+            "latest_status": None,
+            "latest_verdict": None,
+        })
+        item["started"] = True
+        status = str(row.get("status") or "").strip().lower()
+        verdict = str(row.get("verdict") or "").strip().upper()
+        updated = _parse_time(row.get("updated_at"))
+        updated_iso = updated.isoformat() if updated is not None else None
+        if status in _OPEN_STATUSES:
+            item["open"] = True
+        if status == "done" and verdict in _V4_STAGE_OUTCOMES[stage]:
+            item["valid_done"] = True
+            if updated_iso and (
+                item["completed_at"] is None or updated_iso > item["completed_at"]
+            ):
+                item["completed_at"] = updated_iso
+        if updated_iso and (
+            item["latest_at"] is None or updated_iso >= item["latest_at"]
+        ):
+            item["latest_at"] = updated_iso
+            item["latest_status"] = status.upper() if status else None
+            item["latest_verdict"] = verdict or None
+
+    news_chosen: dict[tuple[str, str], dict[str, Any]] = {}
+    if _table_exists(con, "q09_news_tests"):
+        news_columns = _columns(con, "q09_news_tests")
+        required = {
+            "work_item_id", "verdict", "chosen_temporal", "chosen_compliance", "created_at"
+        }
+        if required.issubset(news_columns):
+            for row in con.execute(
+                """
+                SELECT w.ea_id,w.symbol,t.chosen_temporal,t.chosen_compliance,t.created_at
+                FROM q09_news_tests t
+                JOIN work_items w ON w.id=t.work_item_id
+                WHERE t.verdict='CONFIG_LOCKED'
+                  AND COALESCE(t.chosen_temporal,'')<>''
+                  AND COALESCE(t.chosen_compliance,'')<>''
+                """
+            ):
+                key = (str(row[0]), str(row[1]))
+                created = _parse_time(row[4])
+                created_iso = created.isoformat() if created is not None else None
+                prior = news_chosen.get(key)
+                if prior is None or (created_iso or "") >= (prior.get("completed_at") or ""):
+                    news_chosen[key] = {
+                        "chosen_temporal": str(row[2]),
+                        "chosen_compliance": str(row[3]),
+                        "completed_at": created_iso,
+                    }
+
+    all_keys = set(by_pair) | set(news_chosen)
+    reservoir_keys = {
+        key for key, stages in by_pair.items()
+        if (stages.get("Q09") or {}).get("valid_done")
+    }
+
+    def stage_view(stages: dict[str, dict[str, Any]], stage: str) -> dict[str, Any]:
+        item = stages.get(stage) or {}
+        if item.get("open"):
+            state = "OPEN"
+        elif item.get("valid_done"):
+            state = "DONE"
+        elif item.get("started"):
+            state = "NOT_VALID"
+        else:
+            state = "NOT_STARTED"
+        return {
+            "state": state,
+            "valid_done": bool(item.get("valid_done")),
+            "open": bool(item.get("open")),
+            "latest_status": item.get("latest_status"),
+            "latest_verdict": item.get("latest_verdict"),
+            "completed_at": item.get("completed_at"),
+        }
+
+    pair_progress = []
+    for key in sorted(all_keys):
+        stages = by_pair.get(key) or {}
+        pair_progress.append({
+            "ea_id": key[0],
+            "symbol": key[1],
+            "in_q09_reservoir": key in reservoir_keys,
+            "news_chosen": key in news_chosen,
+            "news_choice": news_chosen.get(key),
+            **{stage.lower(): stage_view(stages, stage) for stage in _PROGRESS_STAGES},
+        })
+
+    reservoir = {
+        "q09_pass_pairs": len(reservoir_keys),
+        "news_chosen_pairs": len(reservoir_keys & set(news_chosen)),
+        "q11_pass_pairs": sum(
+            bool((by_pair.get(key, {}).get("Q11") or {}).get("valid_done"))
+            for key in reservoir_keys
+        ),
+        "q12_valid_pairs": sum(
+            bool((by_pair.get(key, {}).get("Q12") or {}).get("valid_done"))
+            for key in reservoir_keys
+        ),
+        "q13_valid_pairs": sum(
+            bool((by_pair.get(key, {}).get("Q13") or {}).get("valid_done"))
+            for key in reservoir_keys
+        ),
+        "q14_terminal_rows": sum(
+            bool((by_pair.get(key, {}).get("Q14") or {}).get("valid_done"))
+            for key in reservoir_keys
+        ),
+        "basis": (
+            "distinct (ea_id,symbol) with a done v4 Q09 PASS-class row; news chosen "
+            "requires q09_news_tests CONFIG_LOCKED with both chosen fields populated"
+        ),
+    }
+    raw_counts = {
+        stage: {
+            "started_pairs": sum(stage in stages for stages in by_pair.values()),
+            "open_pairs": sum(bool((stages.get(stage) or {}).get("open")) for stages in by_pair.values()),
+            "valid_done_pairs": sum(
+                bool((stages.get(stage) or {}).get("valid_done")) for stages in by_pair.values()
+            ),
+        }
+        for stage in _PROGRESS_STAGES
+    }
+    raw_counts["Q10_CHOSEN"] = {"valid_done_pairs": len(news_chosen)}
+    return pair_progress, reservoir, raw_counts
+
+
+def _completion_rates(
+    pair_progress: list[dict[str, Any]],
+    *,
+    now: dt.datetime,
+) -> dict[str, Any]:
+    cutoff = now - dt.timedelta(days=COMPLETION_RATE_WINDOW_DAYS)
+    stage_fields = {
+        "Q09": "q09",
+        "Q10_CHOSEN": "news_choice",
+        "Q11": "q11",
+        "Q12": "q12",
+        "Q13": "q13",
+        "Q14": "q14",
+    }
+    rates: dict[str, Any] = {}
+    for label, field in stage_fields.items():
+        completed = 0
+        for pair in pair_progress:
+            item = pair.get(field) or {}
+            stamp = _parse_time(item.get("completed_at"))
+            if stamp is not None and cutoff <= stamp <= now:
+                completed += 1
+        rates[label] = {
+            "completed_pairs": completed,
+            "pairs_per_day": round(completed / COMPLETION_RATE_WINDOW_DAYS, 3),
+        }
+    return {
+        "window_days": COMPLETION_RATE_WINDOW_DAYS,
+        "basis": (
+            "distinct pair completions observed in the trailing 7x24h window; "
+            "Q10_CHOSEN uses authenticated q09_news_tests.created_at"
+        ),
+        "stages": rates,
+    }
+
+
+def _counting_definition(
+    rows: list[dict[str, Any]],
+    *,
+    strict_pairs: set[tuple[str, str]],
+    raw_q14_pairs: set[tuple[str, str]],
+    terminal_gate: str,
+) -> dict[str, Any]:
+    terminal_equivalent: set[tuple[str, str]] = set()
+    historical_label: set[tuple[str, str]] = set()
+    historical_q14_outcomes = {
+        "OPT_ELIGIBLE", "OPT_REJECTED", "PROMOTE_CHALLENGER",
+        "CHALLENGER_PROMOTED", "KEEP_INCUMBENT", "ADMIT_BOTH",
+    }
+    for row in rows:
+        key = _pair_key(row)
+        if key is None or str(row.get("status") or "").lower() != "done":
+            continue
+        verdict = str(row.get("verdict") or "").upper()
+        if (
+            rebaseline_census.canonical_gate(
+                row.get("phase"), row.get("gate_contract_version")
+            ) == terminal_gate
+            and rebaseline_census.vclass(verdict) == "PASS"
+        ):
+            terminal_equivalent.add(key)
+        if str(row.get("phase") or "").upper() == "Q14" and verdict in historical_q14_outcomes:
+            historical_label.add(key)
+
+    return {
+        "status": "PROVISIONAL_OWNER_ORCHESTRATOR_DECISION_PENDING",
+        "rendered_definition_id": _RENDERED_DEFINITION_ID,
+        "rendered_count": len(strict_pairs),
+        "recommended_option_id": _RENDERED_DEFINITION_ID,
+        "decision_required": True,
+        "footnote": (
+            "Provisorisch gerendert: nur Paare mit kanonischer v4-Lineage und "
+            "highest_contiguous_valid_gate=Q14. Historische Q14-Zeilen und die "
+            "drei NO_CHANGE-Piloten werden separat gezeigt und zählen bis zur "
+            "OWNER/Orchestrator-Versiegelung nicht zu 25."
+        ),
+        "options": [
+            {
+                "id": _RENDERED_DEFINITION_ID,
+                "count": len(strict_pairs),
+                "description": "canonical v4 contiguous evidence through terminal Q14",
+            },
+            {
+                "id": "V4_TERMINAL_ROW_ONLY",
+                "count": len(raw_q14_pairs),
+                "description": "any done v4 Q14 row with a terminal valid outcome",
+            },
+            {
+                "id": "CONTRACT_EQUIVALENT_TERMINAL",
+                "count": len(terminal_equivalent),
+                "description": "any contract row explicitly translated to terminal Q14",
+            },
+            {
+                "id": "HISTORICAL_Q14_LABEL_INCLUSIVE",
+                "count": len(historical_label),
+                "description": "raw historical Q14-labelled outcome rows; eras are not comparable",
+            },
+        ],
+    }
+
+
 def _eta_days(
     pair_rows: list[dict[str, Any]], qualified_pairs: int,
     candidate_gates: tuple[str, ...], medians: dict[str, float],
@@ -475,8 +755,63 @@ def path_to_25_metrics(
                         news["holds"] += 1
 
         opt_fork["terminal_verdicts"] = dict(sorted(terminal_verdicts.items()))
+        pair_progress, reservoir, raw_stage_counts = _raw_v4_stage_progress(con, rows)
+        completion_rates = _completion_rates(pair_progress, now=now)
+        strict_pairs = {
+            (str(row["ea_id"]), str(row["symbol"])) for row in qualified
+        }
+        raw_q14_pairs = {
+            (str(row["ea_id"]), str(row["symbol"]))
+            for row in pair_progress
+            if bool((row.get("q14") or {}).get("valid_done"))
+        }
+        counting_definition = _counting_definition(
+            rows,
+            strict_pairs=strict_pairs,
+            raw_q14_pairs=raw_q14_pairs,
+            terminal_gate=terminal_gate,
+        )
         medians = _phase_medians(rows, candidate_gates)
-        eta = _eta_days(pair_rows, len(qualified), candidate_gates, medians)
+        capacity_lower_bound_days = _eta_days(
+            pair_rows, len(qualified), candidate_gates, medians
+        )
+        remaining_pairs = max(0, TARGET_QUALIFIED_PAIRS - len(qualified))
+        q14_rate = float(
+            completion_rates["stages"]["Q14"]["pairs_per_day"] or 0.0
+        )
+        if remaining_pairs == 0:
+            eta = 0.0
+        elif q14_rate > 0:
+            eta = round(remaining_pairs / q14_rate, 2)
+        else:
+            eta = None
+        q14_sample = int(
+            completion_rates["stages"]["Q14"]["completed_pairs"] or 0
+        )
+        eta_to_25 = {
+            "target_pairs": TARGET_QUALIFIED_PAIRS,
+            "qualified_pairs": len(qualified),
+            "remaining_pairs": remaining_pairs,
+            "eta_days": eta,
+            "measured_q14_pairs_per_day": q14_rate,
+            "sample_completed_pairs": q14_sample,
+            "rate_window_days": COMPLETION_RATE_WINDOW_DAYS,
+            "reliability": (
+                "TARGET_REACHED" if remaining_pairs == 0
+                else "LOW" if q14_sample < 5
+                else "MEASURED"
+            ),
+            "capacity_lower_bound_days": capacity_lower_bound_days,
+            "basis": (
+                "remaining provisional strict-v4 qualified pairs / trailing-7d "
+                "raw valid v4 Q14 pair completion rate"
+            ),
+            "caveat": (
+                "The observed Q14 sample may contain NO_CHANGE pilots that are not "
+                "strictly qualified. It is a throughput proxy, not an OWNER counting "
+                "decision, survival model, or queue-empty ETA."
+            ),
+        }
     finally:
         con.close()
 
@@ -489,6 +824,12 @@ def path_to_25_metrics(
         "opt_fork": opt_fork,
         "backfill": backfill,
         "committed_work": committed_work,
+        "reservoir": reservoir,
+        "raw_stage_counts": raw_stage_counts,
+        "pair_progress": pair_progress,
+        "completion_rates": completion_rates,
+        "counting_definition": counting_definition,
+        "eta_to_25": eta_to_25,
         "eta_days": eta,
     }
 

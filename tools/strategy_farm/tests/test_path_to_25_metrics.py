@@ -30,6 +30,13 @@ CREATE TABLE work_item_holds (
     work_item_id TEXT PRIMARY KEY,
     active INTEGER NOT NULL
 );
+CREATE TABLE q09_news_tests (
+    work_item_id TEXT PRIMARY KEY,
+    verdict TEXT NOT NULL,
+    chosen_temporal TEXT,
+    chosen_compliance TEXT,
+    created_at TEXT NOT NULL
+);
 """
 
 
@@ -69,10 +76,15 @@ def _fixture_db(path: Path) -> Path:
             add(f"{ea}-{gate}", gate, ea, verdict=verdict)
 
     add("news-locked", "Q10_NEWS", "QM5_910001", verdict="CONFIG_LOCKED")
+    add("news-chosen-reservoir", "Q10_NEWS", "QM5_900000", verdict="CONFIG_LOCKED")
     add("news-review", "Q10_NEWS", "QM5_910002", verdict="REVIEW_REQUIRED")
     add("news-open", "Q10_NEWS", "QM5_910003", status="active", verdict=None,
         created_at=now, updated_at=now)
     con.execute("INSERT INTO work_item_holds VALUES (?,1)", ("news-open",))
+    con.execute(
+        "INSERT INTO q09_news_tests VALUES (?,?,?,?,?)",
+        ("news-chosen-reservoir", "CONFIG_LOCKED", "OFF", "DXZ", updated.isoformat()),
+    )
 
     for gate in ("Q12", "Q13", "Q14"):
         add(f"{gate}-pending", gate, f"QM5_92{gate[1:]}", status="pending", verdict=None,
@@ -104,8 +116,8 @@ def test_path_to_25_metrics_fixture_is_complete_and_read_only(
     assert metrics["frontier_histogram"]["Q14"] == 24
     assert metrics["frontier_histogram"]["Q13"] == 1
     assert metrics["news_gate"] == {
-        "conclusive_verdicts_7d": 27,
-        "pass_7d": 26,
+        "conclusive_verdicts_7d": 28,
+        "pass_7d": 27,
         "pending": 1,
         "holds": 1,
     }
@@ -127,7 +139,32 @@ def test_path_to_25_metrics_fixture_is_complete_and_read_only(
                          "receipts": 0, "unmaterialized": 0},
         },
     }
-    assert metrics["eta_days"] == 0.1
+    assert metrics["reservoir"] == {
+        "q09_pass_pairs": 25,
+        "news_chosen_pairs": 1,
+        "q11_pass_pairs": 25,
+        "q12_valid_pairs": 25,
+        "q13_valid_pairs": 25,
+        "q14_terminal_rows": 24,
+        "basis": (
+            "distinct (ea_id,symbol) with a done v4 Q09 PASS-class row; news chosen "
+            "requires q09_news_tests CONFIG_LOCKED with both chosen fields populated"
+        ),
+    }
+    assert metrics["raw_stage_counts"]["Q14"] == {
+        "started_pairs": 25, "open_pairs": 1, "valid_done_pairs": 24,
+    }
+    assert metrics["completion_rates"]["stages"]["Q14"] == {
+        "completed_pairs": 24, "pairs_per_day": 3.429,
+    }
+    assert metrics["counting_definition"]["rendered_definition_id"] == (
+        "STRICT_V4_CONTIGUOUS_Q14"
+    )
+    assert metrics["counting_definition"]["rendered_count"] == 24
+    assert metrics["counting_definition"]["decision_required"] is True
+    assert metrics["eta_to_25"]["remaining_pairs"] == 1
+    assert metrics["eta_to_25"]["reliability"] == "MEASURED"
+    assert metrics["eta_days"] == 0.29
 
 
 def _render_metrics() -> dict:
@@ -155,9 +192,48 @@ def _render_metrics() -> dict:
                                 "unmaterialized": 1088},
                 "Q10_NEWS": {"parents": 1, "declared": 40,
                              "materialized": 4, "receipts": 4,
-                             "unmaterialized": 36},
+                "unmaterialized": 36},
             },
         },
+        "reservoir": {
+            "q09_pass_pairs": 53, "news_chosen_pairs": 4,
+            "q11_pass_pairs": 3, "q12_valid_pairs": 0,
+            "q13_valid_pairs": 0, "q14_terminal_rows": 0,
+        },
+        "completion_rates": {
+            "window_days": 7,
+            "stages": {
+                "Q10_CHOSEN": {"completed_pairs": 4, "pairs_per_day": 0.571},
+                "Q11": {"completed_pairs": 3, "pairs_per_day": 0.429},
+                "Q12": {"completed_pairs": 3, "pairs_per_day": 0.429},
+                "Q13": {"completed_pairs": 3, "pairs_per_day": 0.429},
+                "Q14": {"completed_pairs": 3, "pairs_per_day": 0.429},
+            },
+        },
+        "counting_definition": {
+            "status": "PROVISIONAL_OWNER_ORCHESTRATOR_DECISION_PENDING",
+            "rendered_definition_id": "STRICT_V4_CONTIGUOUS_Q14",
+            "footnote": "Provisorisch gerendert; OWNER/Orchestrator-Versiegelung ausstehend.",
+            "options": [
+                {"id": "STRICT_V4_CONTIGUOUS_Q14", "count": 7,
+                 "description": "strict"},
+                {"id": "V4_TERMINAL_ROW_ONLY", "count": 10,
+                 "description": "raw"},
+            ],
+        },
+        "eta_to_25": {
+            "eta_days": 18.5, "reliability": "LOW",
+            "basis": "remaining / measured Q14 rate",
+            "caveat": "pilot sample; not queue-empty ETA",
+        },
+        "pair_progress": [{
+            "ea_id": "QM5_900001", "symbol": "EURUSD.DWX",
+            "in_q09_reservoir": True, "news_chosen": True,
+            "q11": {"state": "DONE", "latest_verdict": "PASS"},
+            "q12": {"state": "OPEN", "latest_verdict": None},
+            "q13": {"state": "NOT_STARTED", "latest_verdict": None},
+            "q14": {"state": "NOT_STARTED", "latest_verdict": None},
+        }],
         "eta_days": 18.5,
     }
 
@@ -190,6 +266,10 @@ def test_all_owner_surfaces_render_the_shared_metrics(tmp_path: Path) -> None:
     assert "7<span" in owner_html and "/25" in owner_html
     assert "RERUN_INFRA" in cockpit and "RERUN_INFRA" in owner_html
     assert "Committed" in cockpit and "1.124" in cockpit
+    assert "ETA zu 25" in cockpit and "Queue-leer-ETA" in cockpit
+    assert "Zählung PROVISORISCH" in cockpit
+    assert "Q09-Reservoir" in cockpit and "Q10 chosen" in cockpit
+    assert "QM5_900001" in cockpit
 
 
 def test_committed_work_uses_payload_declarations_and_receipts(tmp_path: Path) -> None:

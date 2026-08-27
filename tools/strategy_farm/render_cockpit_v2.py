@@ -722,8 +722,13 @@ def _render_path_to_25(contract: dict) -> str:
     opt = metrics.get("opt_fork", {}) or {}
     backfill = metrics.get("backfill", {}) or {}
     committed = metrics.get("committed_work", {}) or {}
-    eta = metrics.get("eta_days")
+    reservoir = metrics.get("reservoir", {}) or {}
+    rates = metrics.get("completion_rates", {}) or {}
+    definition = metrics.get("counting_definition", {}) or {}
+    eta_contract = metrics.get("eta_to_25", {}) or {}
+    eta = eta_contract.get("eta_days", metrics.get("eta_days"))
     eta_text = f"{_de(eta, 2)} Tage" if eta is not None else "nicht belastbar"
+    eta_reliability = str(eta_contract.get("reliability") or "UNKNOWN")
 
     frontier = "".join(
         f'<span class="mc-p25-gate"><b>{e(gate)}</b>{_int(count)}</span>'
@@ -761,16 +766,77 @@ def _render_path_to_25(contract: dict) -> str:
             '<td class="mc-num">0</td></tr>'
         )
 
+    rate_labels = {
+        "Q10_CHOSEN": "Q10 chosen",
+        "Q11": "Q11",
+        "Q12": "Q12",
+        "Q13": "Q13",
+        "Q14": "Q14",
+    }
+    rate_rows = "".join(
+        '<tr>'
+        f'<td class="mc-rowlabel">{e(rate_labels[key])}</td>'
+        f'<td class="mc-num">{_int(((rates.get("stages") or {}).get(key) or {}).get("completed_pairs"))}</td>'
+        f'<td class="mc-num">{_de(((rates.get("stages") or {}).get(key) or {}).get("pairs_per_day"), 2)}</td>'
+        '</tr>'
+        for key in rate_labels
+    )
+
+    def pair_state(pair: dict, field: str) -> str:
+        item = pair.get(field) or {}
+        state = str(item.get("state") or "NOT_STARTED")
+        verdict = str(item.get("latest_verdict") or "")
+        if verdict and state in {"DONE", "NOT_VALID"}:
+            return f"{state} · {verdict}"
+        return state
+
+    pair_rows = "".join(
+        '<tr>'
+        f'<td class="mc-mono">{e(pair.get("ea_id"))}</td>'
+        f'<td class="mc-mono">{e(pair.get("symbol"))}</td>'
+        f'<td>{"PASS" if pair.get("in_q09_reservoir") else "—"}</td>'
+        f'<td>{"chosen" if pair.get("news_chosen") else "—"}</td>'
+        f'<td>{e(pair_state(pair, "q11"))}</td>'
+        f'<td>{e(pair_state(pair, "q12"))}</td>'
+        f'<td>{e(pair_state(pair, "q13"))}</td>'
+        f'<td>{e(pair_state(pair, "q14"))}</td>'
+        '</tr>'
+        for pair in (metrics.get("pair_progress") or [])
+    )
+    if not pair_rows:
+        pair_rows = '<tr><td colspan="8" class="mc-dim">keine v4-Paardaten</td></tr>'
+
+    option_chips = "".join(
+        f'<span class="mc-p25-gate" title="{e(option.get("description"))}">'
+        f'<b>{e(option.get("id"))}</b>{_int(option.get("count"))}</span>'
+        for option in (definition.get("options") or [])
+    )
+    definition_footnote = definition.get("footnote") or (
+        "Zähldefinition fehlt; Anzeige ist nicht für eine OWNER-Entscheidung belastbar."
+    )
+
     return f'''
   <section class="mc-section mc-p25" id="path-to-25">
     <div class="mc-h2"><span>Weg zu 25</span>
-      <span class="mc-h2-aux">Q14 terminal · ETA {e(eta_text)} · 10 Terminals</span></div>
+      <span class="mc-h2-aux">Q14 terminal · ETA zu 25 {e(eta_text)} · Rate {e(eta_reliability)}</span></div>
     <div class="mc-p25-head">
       <div><span class="mc-p25-value">{_int(metrics.get("qualified_pairs"))}<small>/25</small></span>
         <span class="mc-p25-label">voll qualifizierte Paare</span></div>
       <div class="mc-p25-stat"><b>{_int(metrics.get("distinct_eas"))}</b><span>EAs</span></div>
       <div class="mc-p25-stat"><b>{_int(metrics.get("families"))}</b><span>Familien</span></div>
-      <div class="mc-p25-stat"><b>{e(eta_text)}</b><span>Median-ETA</span></div>
+      <div class="mc-p25-stat"><b>{e(eta_text)}</b><span>ETA zu 25</span></div>
+    </div>
+    <div class="mc-p25-definition"><b>Zählung PROVISORISCH · {e(definition.get("rendered_definition_id"))}</b>
+      <span>{e(definition_footnote)}</span>
+      <div class="mc-p25-frontier"><span>Definitionsoptionen</span>{option_chips}</div>
+    </div>
+    <div class="mc-p25-frontier"><span>Q09-Reservoir</span>
+      <b>{_int(reservoir.get("q09_pass_pairs"))}</b><span>PASS</span>
+      <b>{_int(reservoir.get("news_chosen_pairs"))}</b><span>Q10 chosen</span>
+      <b>{_int(reservoir.get("q11_pass_pairs"))}</b><span>Q11 PASS</span>
+      <b>{_int(reservoir.get("q12_valid_pairs"))}</b><span>Q12 valid</span>
+      <b>{_int(reservoir.get("q13_valid_pairs"))}</b><span>Q13 valid</span>
+      <b>{_int(reservoir.get("q14_terminal_rows"))}</b><span>Q14 raw terminal</span>
     </div>
     <div class="mc-p25-frontier"><span>Frontier</span>{frontier}</div>
     <div class="mc-p25-frontier"><span>Committed</span>
@@ -797,14 +863,20 @@ def _render_path_to_25(contract: dict) -> str:
         <div class="mc-foot"><b>Q14 terminal:</b> {e(verdicts)}</div>
       </div>
       <div>
-        <div class="mc-sublabel">Backfill</div>
-        <table class="mc-table"><tbody>
-          <tr><td class="mc-rowlabel">heute enqueued</td><td class="mc-num">{_int(backfill.get("enqueued_today"))}</td></tr>
-          <tr><td class="mc-rowlabel">RERUN_INFRA offen</td><td class="mc-num">{_int(backfill.get("rerun_infra_open"))}</td></tr>
-        </tbody></table>
-        <div class="mc-foot">ETA = nächstgelegene Pfade aus Phasenmedianen / 10; ohne vollständige Medianbasis keine Schätzung.</div>
+        <div class="mc-sublabel">Gemessene Abschlussraten · {e(rates.get("window_days"))} T</div>
+        <table class="mc-table"><thead><tr><th>Gate</th><th class="mc-num">Paare</th><th class="mc-num">/ Tag</th></tr></thead>
+          <tbody>{rate_rows}</tbody></table>
+        <div class="mc-foot"><b>ETA-Basis:</b> {e(eta_contract.get("basis"))}<br>{e(eta_contract.get("caveat"))}</div>
       </div>
     </div>
+    <div class="mc-foot"><b>Backfill:</b> heute {_int(backfill.get("enqueued_today"))} enqueued ·
+      RERUN_INFRA offen {_int(backfill.get("rerun_infra_open"))}. Queue-leer-ETA bleibt ein separater Wert.</div>
+    <details class="mc-p25-details">
+      <summary>Paarschritte Q09–Q14 · payload-abgeleitet ({_int(len(metrics.get("pair_progress") or []))})</summary>
+      <div class="mc-p25-table-wrap"><table class="mc-table"><thead><tr>
+        <th>EA</th><th>Symbol</th><th>Q09</th><th>Q10</th><th>Q11</th><th>Q12</th><th>Q13</th><th>Q14</th>
+      </tr></thead><tbody>{pair_rows}</tbody></table></div>
+    </details>
   </section>'''
 
 
@@ -1028,6 +1100,18 @@ _PAGE_CSS = """
     border:1px solid var(--border-2);color:var(--text-2)}
   .mc-p25-gate b{color:var(--path25-accent)}
   .mc-p25-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-6)}
+  .mc-p25-definition{margin:var(--space-4) 0;padding:var(--space-3);
+    border:1px solid var(--warn);background:var(--surface-2);font-size:var(--fs-xs);
+    color:var(--text-2);line-height:var(--lh-normal)}
+  .mc-p25-definition>b,.mc-p25-definition>span{display:block}
+  .mc-p25-definition>b{font-family:var(--font-mono);color:var(--warn);
+    margin-bottom:var(--space-1)}
+  .mc-p25-details{margin-top:var(--space-4);border:1px solid var(--border);
+    padding:var(--space-3)}
+  .mc-p25-details summary{cursor:pointer;font-family:var(--font-mono);
+    font-size:var(--fs-xs);font-weight:700;color:var(--path25-accent)}
+  .mc-p25-table-wrap{overflow-x:auto;margin-top:var(--space-3)}
+  .mc-p25-table-wrap .mc-table{min-width:1050px}
   .mc-h2{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-4);
     margin-bottom:var(--space-4);border-bottom:1px solid var(--border);
     padding-bottom:var(--space-2);flex-wrap:wrap}

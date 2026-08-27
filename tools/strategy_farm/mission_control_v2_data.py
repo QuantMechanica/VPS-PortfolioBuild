@@ -1587,7 +1587,9 @@ CONTRACT_SCHEMA: dict[str, Any] = {
             "required": [
                 "qualified_pairs", "distinct_eas", "families",
                 "frontier_histogram", "news_gate", "opt_fork", "backfill",
-                "committed_work", "eta_days",
+                "committed_work", "reservoir", "raw_stage_counts",
+                "pair_progress", "completion_rates", "counting_definition",
+                "eta_to_25", "eta_days",
             ],
             "properties": {
                 "qualified_pairs": {"type": "integer"},
@@ -1598,6 +1600,12 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                 "opt_fork": {"type": "object"},
                 "backfill": {"type": "object"},
                 "committed_work": {"type": "object"},
+                "reservoir": {"type": "object"},
+                "raw_stage_counts": {"type": "object"},
+                "pair_progress": {"type": "array"},
+                "completion_rates": {"type": "object"},
+                "counting_definition": {"type": "object"},
+                "eta_to_25": {"type": "object"},
                 "eta_days": {"type": ["number", "null"]},
             },
         },
