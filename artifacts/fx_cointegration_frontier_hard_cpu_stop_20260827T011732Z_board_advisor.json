@@ -1,0 +1,143 @@
+{
+  "artifact_type": "fx_cointegration_frontier_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T01:17:32.9439782Z",
+  "generated_at_europe_berlin": "2026-08-27T03:17:32.9439782+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "91f77dca2b7b67197c90a91ae413359d5d65530a",
+  "mission_outcome": "FRONTIER_EXHAUSTED_EXISTING_Q04_PENDING_STOPPED_AT_HARD_CPU_CEILING",
+  "frontier_audit": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "strict_scan_survivors": [
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "QM5_12532_AUDNZD_COINTEGRATION_D1"
+    ],
+    "new_card_or_ea_would_be_duplicate_or_relax_the_published_threshold": true
+  },
+  "anchor_triage": {
+    "command": "python tools/strategy_farm/farmctl.py work-items --ea <EA_ID>",
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "existing_pair_fallback": {
+    "selection_reason": "No unbuilt scan relationship remains. QM5_20232 is the concrete existing low-frequency FX pair with newly completed Q03 evidence in this observation; its unique Q04 successor already exists, so another enqueue would be duplicate work.",
+    "ea_id": "QM5_20232",
+    "pair": [
+      "USDCHF.DWX",
+      "NZDUSD.DWX"
+    ],
+    "scan_rank": 55,
+    "logical_symbol": "QM5_20232_USDCHF_NZDUSD_COINTEGRATION_D1",
+    "q02": {
+      "status": "done",
+      "verdict": "PASS",
+      "work_item_id": "ca72ac7d-162c-4c54-b2e4-d7765c15efeb"
+    },
+    "q03": {
+      "status": "done",
+      "verdict": "PASS",
+      "work_item_id": "73d11c4c-0542-4828-9631-1954799a87a5",
+      "updated_at_utc": "2026-08-27T00:47:35+00:00",
+      "evidence_path": "D:\\QM\\reports\\work_items\\73d11c4c-0542-4828-9631-1954799a87a5\\QM5_20232\\20260827_000638\\summary.json"
+    },
+    "q04": {
+      "status": "pending",
+      "work_item_id": "bfad4436-ae19-4b7d-a7cf-1c02a0324d67",
+      "duplicate_enqueue_performed": false
+    },
+    "approved_card": "strategy-seeds/cards/approved/QM5_20232_usdchf-nzdusd_card.md",
+    "approved_card_sha256": "8f95bd82d91957b794949298ebbc4d65f06bf91a71f6e7ebe38331dd7e405001",
+    "source_quality_tier": "A",
+    "basket_manifest": "framework/EAs/QM5_20232_usdchf-nzdusd/basket_manifest.json",
+    "basket_manifest_sha256": "728679e87475089e5ead200bd2d63fbf462fd3780af753911619f5e4593c0fe0",
+    "fixed_risk_setfile": "framework/EAs/QM5_20232_usdchf-nzdusd/sets/QM5_20232_usdchf-nzdusd_QM5_20232_USDCHF_NZDUSD_COINTEGRATION_D1_D1_backtest.set",
+    "fixed_risk_setfile_sha256": "5e08262b87977127392e2e0f322233cb0c6de4c343555cc9823d43dd47fd4d46",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_low_frequency_no_ml": true
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "factory_terminal_ceiling": 7,
+    "paced_launch_gate_max": 1
+  },
+  "farm_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-27T01:17:06+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T6",
+      "T7"
+    ],
+    "running_factory_terminal_count": 3,
+    "factory_terminal_count_at_ceiling": false,
+    "terminal_worker_count": 10,
+    "active_terminal_reservation_count": 5,
+    "orphaned_factory_terminal_process_count": 0,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "cpu_sample": {
+    "command": "Get-Counter '\\\\Processor(_Total)\\\\% Processor Time', five sequential readings with two-second sleeps",
+    "ended_at_utc": "2026-08-27T01:17:32.9439782Z",
+    "samples_percent": [
+      97.07,
+      95.58,
+      96.78,
+      96.29,
+      94.63
+    ],
+    "average_percent": 96.07,
+    "maximum_percent": 97.07,
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "preceding_fx_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260827T001633Z_board_advisor.json",
+    "preceding_running_factory_terminal_count": 6,
+    "current_running_factory_terminal_count": 3,
+    "preceding_cpu_average_percent": 100.0,
+    "current_cpu_average_percent": 96.07,
+    "current_cpu_maximum_percent": 97.07,
+    "new_terminal_pipeline_evidence": "QM5_20232 Q03 changed from active to done/PASS; its pre-existing unique Q04 row remains pending"
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "tester_or_backtest_started": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
