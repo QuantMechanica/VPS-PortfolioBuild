@@ -20,10 +20,13 @@ import datetime as dt
 import hashlib
 import json
 import os
+import re
 import sqlite3
 import statistics
 import subprocess
 import sys
+import time
+import uuid
 from pathlib import Path
 from typing import Any, Mapping, Protocol, Sequence
 
@@ -38,10 +41,19 @@ if str(REPO_IMPORT_ROOT) not in sys.path:
 FLAG_NAME = "QM_ENABLE_WARM_CELL_RUNNER"
 TASK_ID = "c7536f46-2c1e-4ab9-b18c-47cfe01c6491"
 PHASE2_TASK_ID = "7d800fe1-be0d-42df-8e67-a9b9a55d0906"
-VALIDATION_TASK_IDS = frozenset({TASK_ID, PHASE2_TASK_ID})
+PHASE3_TASK_ID = "2cb9d160-d5c0-46ea-ae45-d145a63cf1f4"
+VALIDATION_TASK_IDS = frozenset({TASK_ID, PHASE2_TASK_ID, PHASE3_TASK_ID})
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 DEFAULT_REPO = Path(r"C:\QM\repo")
 MIN_PARITY_CELLS = 20
+GOVERNED_RESTART_BACKEND = "GOVERNED_SEQUENTIAL_TESTER_RESTART"
+GOVERNED_RESTART_PROFILE = "ISOLATED_DEV2"
+DEV2_ROOT = Path(r"D:\QM\mt5\DEV2")
+DEV2_REPORTS_ROOT = Path(r"D:\QM\reports\dev2")
+DEV2_CONTROLLER_RELATIVE = Path("framework/scripts/run_dev2_smoke.ps1")
+DEV2_LANE_CONTRACT_RELATIVE = Path("framework/registry/dev2_lane_contract.json")
+DEV2_CREDENTIAL = Path(r"C:\ProgramData\QM\DEV2\credential.machine-dpapi.json")
+DEV2_CREDENTIAL_HELPER_RELATIVE = Path("framework/scripts/dev2_machine_credential.ps1")
 IDENTITY_FIELDS = (
     "ea_id",
     "symbol",
@@ -80,6 +92,10 @@ PHASE2_TASK_START_COLD_PATH_SHA256 = {
     "tools/strategy_farm/opt_census.py": "1c23cf9cf399902bff07fcbd1e02e104c0c5f09c8ec16d990a89c681f6f18f9a",
     "tools/strategy_farm/dl089_matrix_service.py": "30e3929f3408b801fc47c93f68adcc288f1e418b8ed7d8fe3e707ecaaebf8bb7",
 }
+# Re-authenticated at the Phase-3 task boundary.  The equality with the Phase-2
+# values is intentional evidence that the commissioned backend did not require a
+# cold worker, run_smoke, optimizer-census, or DL-089 receipt change.
+PHASE3_TASK_START_COLD_PATH_SHA256 = dict(PHASE2_TASK_START_COLD_PATH_SHA256)
 
 
 class FlagValueError(ValueError):
@@ -92,6 +108,17 @@ class ActivationRefused(RuntimeError):
 
 class ParityDeviation(RuntimeError):
     """Raised immediately when a warm cell differs from its cold reference."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        comparisons: Sequence[Mapping[str, Any]] | None = None,
+        warm_result: Mapping[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.comparisons = [dict(row) for row in (comparisons or [])]
+        self.warm_result = dict(warm_result or {})
 
 
 class ResidentSessionBackend(Protocol):
@@ -186,8 +213,6 @@ def validation_authorization_problems(
         "schema": "qm.warm-cell-validation-run/v1",
         "purpose": "OFFLINE_PARITY_VALIDATION",
         "authorized_by": "OWNER_COMMISSION",
-        "execution_backend": "SUPPORTED_RESIDENT_TESTER_CONTROL",
-        "profile_mode": "DISPOSABLE",
         "production_wiring": False,
         "active_terminal_allowed": False,
     }
@@ -196,6 +221,21 @@ def validation_authorization_problems(
             problems.append(f"VALIDATION_{field.upper()}_INVALID")
     if manifest.get("task_id") not in VALIDATION_TASK_IDS:
         problems.append("VALIDATION_TASK_ID_INVALID")
+    backend_profile = (
+        manifest.get("execution_backend"),
+        manifest.get("profile_mode"),
+    )
+    allowed_backend_profiles = {
+        ("SUPPORTED_RESIDENT_TESTER_CONTROL", "DISPOSABLE"),
+        (GOVERNED_RESTART_BACKEND, GOVERNED_RESTART_PROFILE),
+    }
+    if backend_profile not in allowed_backend_profiles:
+        problems.append("VALIDATION_BACKEND_PROFILE_INVALID")
+    if backend_profile == (GOVERNED_RESTART_BACKEND, GOVERNED_RESTART_PROFILE):
+        if manifest.get("task_id") != PHASE3_TASK_ID:
+            problems.append("VALIDATION_RESTART_TASK_ID_INVALID")
+        if manifest.get("lane") != "DEV2":
+            problems.append("VALIDATION_RESTART_LANE_INVALID")
     try:
         minimum = int(manifest.get("minimum_comparisons") or 0)
     except (TypeError, ValueError):
@@ -254,6 +294,34 @@ def _json_ready(value: Any) -> Any:
     return value
 
 
+def _json_field_paths(value: Any, prefix: str = "$") -> list[str]:
+    """Return a deterministic field-shape inventory without retaining values."""
+
+    if isinstance(value, Mapping):
+        rows = [f"{prefix}:object"]
+        for key in sorted(str(item) for item in value):
+            rows.extend(_json_field_paths(value[key], f"{prefix}.{key}"))
+        return rows
+    if isinstance(value, (list, tuple)):
+        rows = [f"{prefix}:array"]
+        shapes = {
+            tuple(_json_field_paths(item, f"{prefix}[]")) for item in value
+        }
+        for shape in sorted(shapes):
+            rows.extend(shape)
+        return rows
+    return [f"{prefix}:scalar"]
+
+
+def receipt_schema_fingerprint(summary: Mapping[str, Any]) -> dict[str, Any]:
+    fields = _json_field_paths(summary)
+    return {
+        "field_paths": fields,
+        "field_path_count": len(fields),
+        "sha256": sha256_bytes(canonical_json_bytes(fields)),
+    }
+
+
 def result_fingerprints(result: Mapping[str, Any]) -> dict[str, Any]:
     """Fingerprint exact identity, report fields, and canonical trade-list bytes."""
 
@@ -271,6 +339,11 @@ def result_fingerprints(result: Mapping[str, Any]) -> dict[str, Any]:
         "report_metrics_sha256": sha256_bytes(metric_bytes),
         "trade_list_sha256": sha256_bytes(trade_bytes),
         "trade_count": len(trades),
+        "entry_trading_days": result.get("entry_trading_days"),
+        "logger_sample_sha256": result.get("logger_sample_sha256"),
+        "native_report_sha256": result.get("native_report_sha256")
+        or result.get("report_sha256"),
+        "receipt_schema_sha256": result.get("receipt_schema_sha256"),
     }
 
 
@@ -287,7 +360,28 @@ def compare_cell_results(
     cell_key_match = cold.get("cell_key") == warm.get("cell_key")
     metric_match = cold_fp["report_metrics_sha256"] == warm_fp["report_metrics_sha256"]
     trade_match = cold_fp["trade_list_sha256"] == warm_fp["trade_list_sha256"]
-    exact = cell_key_match and not identity_mismatches and metric_match and trade_match
+    entry_days_match = (
+        cold_fp["entry_trading_days"] == warm_fp["entry_trading_days"]
+    )
+    logger_match = (
+        cold_fp["logger_sample_sha256"] == warm_fp["logger_sample_sha256"]
+    )
+    native_report_match = (
+        cold_fp["native_report_sha256"] == warm_fp["native_report_sha256"]
+    )
+    receipt_schema_match = (
+        cold_fp["receipt_schema_sha256"] == warm_fp["receipt_schema_sha256"]
+    )
+    exact = (
+        cell_key_match
+        and not identity_mismatches
+        and metric_match
+        and trade_match
+        and entry_days_match
+        and logger_match
+        and native_report_match
+        and receipt_schema_match
+    )
     return {
         "cell_key": cold.get("cell_key"),
         "warm_cell_key": warm.get("cell_key"),
@@ -296,6 +390,10 @@ def compare_cell_results(
         "identity_mismatch_fields": identity_mismatches,
         "report_metrics_field_exact_match": metric_match,
         "trade_list_byte_exact_match": trade_match,
+        "entry_trading_days_exact_match": entry_days_match,
+        "logger_sample_byte_exact_match": logger_match,
+        "native_report_byte_exact_match": native_report_match,
+        "receipt_schema_exact_match": receipt_schema_match,
         "all_exact": exact,
         "cold_identity_sha256": cold_fp["identity_sha256"],
         "warm_identity_sha256": warm_fp["identity_sha256"],
@@ -305,6 +403,16 @@ def compare_cell_results(
         "warm_trade_list_sha256": warm_fp["trade_list_sha256"],
         "cold_trade_count": cold_fp["trade_count"],
         "warm_trade_count": warm_fp["trade_count"],
+        "cold_entry_trading_days": cold_fp["entry_trading_days"],
+        "warm_entry_trading_days": warm_fp["entry_trading_days"],
+        "cold_logger_sample_sha256": cold_fp["logger_sample_sha256"],
+        "warm_logger_sample_sha256": warm_fp["logger_sample_sha256"],
+        "cold_native_report_sha256": cold_fp["native_report_sha256"],
+        "warm_native_report_sha256": warm_fp["native_report_sha256"],
+        "cold_receipt_schema_sha256": cold_fp["receipt_schema_sha256"],
+        "warm_receipt_schema_sha256": warm_fp["receipt_schema_sha256"],
+        "cold_elapsed_seconds": cold.get("cold_elapsed_seconds"),
+        "warm_elapsed_seconds": warm.get("warm_elapsed_seconds"),
     }
 
 
@@ -380,14 +488,19 @@ class WarmCellRunner:
                 if not comparison["all_exact"]:
                     raise ParityDeviation(
                         f"warm parity deviation at {key}: "
-                        + ",".join(comparison["identity_mismatch_fields"])
+                        + ",".join(comparison["identity_mismatch_fields"]),
+                        comparisons=comparisons,
+                        warm_result=warm,
                     )
         finally:
             self.backend.close_session(session)
 
         summary = parity_summary(comparisons)
         if not summary["all_exact"]:
-            raise ParityDeviation("warm parity sample did not satisfy the sealed minimum")
+            raise ParityDeviation(
+                "warm parity sample did not satisfy the sealed minimum",
+                comparisons=comparisons,
+            )
         return {
             "status": "EXACT_PARITY",
             "flag": FLAG_NAME,
@@ -485,6 +598,9 @@ def cold_references(
             "history_manifest_sha256": (
                 payload.get("custom_history_copy_on_claim") or {}
             ).get("manifest_sha256"),
+            "history_receipt_path": (
+                payload.get("custom_history_copy_on_claim") or {}
+            ).get("receipt_path"),
             "summary_path": str(row["evidence_path"] or ""),
             "updated_at": row["updated_at"],
             "started_at_utc": payload.get("started_at_iso"),
@@ -494,6 +610,10 @@ def cold_references(
         try:
             summary_path = Path(record["summary_path"])
             summary = _load_json(summary_path)
+            if summary.get("evidence_schema") != "run_smoke/v2":
+                raise ValueError(
+                    f"unexpected cold receipt schema: {summary.get('evidence_schema')!r}"
+                )
             ok_runs = [run for run in summary.get("runs", []) if run.get("status") == "OK"]
             if len(ok_runs) != 1:
                 raise ValueError(f"expected one OK run, found {len(ok_runs)}")
@@ -506,9 +626,56 @@ def cold_references(
             if not report_path.is_file():
                 raise ValueError(f"native report missing: {report_path}")
             trades, parsed_stats = _canonical_closed_trades(report_path)
+            actual_report_sha256 = sha256_file(report_path)
+            recorded_report_sha256 = str(run.get("report_sha256") or "").lower()
+            if recorded_report_sha256 and recorded_report_sha256 != actual_report_sha256:
+                raise ValueError("cold native report hash does not match its receipt")
             record["model"] = summary.get("model")
             record["report_path"] = str(report_path.resolve())
-            record["report_sha256"] = run.get("report_sha256") or sha256_file(report_path)
+            record["report_sha256"] = actual_report_sha256
+            record["native_report_sha256"] = actual_report_sha256
+            record["summary_sha256"] = sha256_file(summary_path)
+            receipt_schema = receipt_schema_fingerprint(summary)
+            record["receipt_schema_sha256"] = receipt_schema["sha256"]
+            record["receipt_schema_field_paths"] = receipt_schema["field_paths"]
+            record["entry_trading_days"] = len(
+                {
+                    str(trade.get("entry_time") or "")[:10]
+                    for trade in trades
+                    if trade.get("entry_time")
+                }
+            )
+            logger_path = Path(
+                str(
+                    summary.get("logger_sample_path")
+                    or (summary.get("logger_sample") or {}).get("path")
+                    or ""
+                )
+            )
+            if not logger_path.is_file():
+                raise ValueError(f"cold logger sample missing: {logger_path}")
+            actual_logger_sha256 = sha256_file(logger_path)
+            recorded_logger_sha256 = str(
+                (summary.get("logger_sample") or {}).get("sha256") or ""
+            ).lower()
+            if recorded_logger_sha256 and recorded_logger_sha256 != actual_logger_sha256:
+                raise ValueError("cold logger sample hash does not match its receipt")
+            record["logger_sample_path"] = str(logger_path.resolve())
+            record["logger_sample_sha256"] = actual_logger_sha256
+            setfile_source = Path(
+                str(
+                    ((summary.get("execution_identity") or {}).get("setfile") or {})
+                    .get("source", {})
+                    .get("path", "")
+                )
+            )
+            if not setfile_source.is_file():
+                raise ValueError(f"cold setfile source missing: {setfile_source}")
+            if sha256_file(setfile_source) != str(record["setfile_sha256"]).lower():
+                raise ValueError("cold setfile source hash does not match work item")
+            record["setfile_source_path"] = str(setfile_source.resolve())
+            record["expert"] = summary.get("expert")
+            record["ea_label"] = summary.get("ea_label")
             record["report_metrics"] = {
                 "total_trades": run.get("total_trades"),
                 "total_trades_raw": run.get("total_trades_raw"),
@@ -534,6 +701,539 @@ def cold_references(
             record["reference_errors"].append(str(exc))
         output.append(record)
     return output
+
+
+def _path_is_within(path: Path, root: Path) -> bool:
+    try:
+        Path(path).resolve().relative_to(Path(root).resolve())
+    except ValueError:
+        return False
+    return True
+
+
+def _setfile_values(path: Path) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for raw in Path(path).read_text(encoding="utf-8-sig").splitlines():
+        line = raw.strip()
+        if not line or line.startswith(";") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        values[key.strip()] = value.strip().split("||", 1)[0]
+    return values
+
+
+def validate_validation_setfile(path: Path) -> dict[str, Any]:
+    """Enforce the immutable build guardrails before a validation launch."""
+
+    values = _setfile_values(path)
+    try:
+        risk_fixed = float(values.get("RISK_FIXED", ""))
+        risk_percent = float(values.get("RISK_PERCENT", ""))
+    except ValueError as exc:
+        raise ActivationRefused("VALIDATION_SETFILE_RISK_VALUES_INVALID") from exc
+    if risk_fixed <= 0 or risk_percent != 0:
+        raise ActivationRefused("VALIDATION_SETFILE_RISK_CONTRACT_INVALID")
+    stale_raw = values.get("qm_news_stale_max_hours")
+    if stale_raw is not None:
+        try:
+            stale_hours = float(stale_raw)
+        except ValueError as exc:
+            raise ActivationRefused("VALIDATION_SETFILE_NEWS_STALE_INVALID") from exc
+        if stale_hours > 336:
+            raise ActivationRefused("VALIDATION_SETFILE_NEWS_STALE_ABOVE_336")
+    return {
+        "path": str(Path(path).resolve()),
+        "sha256": sha256_file(path),
+        "risk_fixed": risk_fixed,
+        "risk_percent": risk_percent,
+        "qm_news_stale_max_hours": None if stale_raw is None else float(stale_raw),
+    }
+
+
+def audit_history_receipt(
+    *, receipt_path: Path, lane_root: Path, expected_manifest_sha256: str
+) -> dict[str, Any]:
+    """Read-only, byte-exact audit of a frozen custom-history projection."""
+
+    receipt = _load_json(receipt_path)
+    if receipt.get("schema_version") != "qm.custom-history-copy-on-claim/v1":
+        raise ActivationRefused("HISTORY_RECEIPT_SCHEMA_INVALID")
+    if receipt.get("status") != "PASS_PRIVATIZED":
+        raise ActivationRefused("HISTORY_RECEIPT_STATUS_INVALID")
+    if str(receipt.get("manifest_sha256") or "").lower() != str(
+        expected_manifest_sha256
+    ).lower():
+        raise ActivationRefused("HISTORY_RECEIPT_MANIFEST_MISMATCH")
+    files = receipt.get("files")
+    if not isinstance(files, list) or len(files) < 1:
+        raise ActivationRefused("HISTORY_RECEIPT_FILES_MISSING")
+    custom_root = Path(lane_root).resolve() / "Bases" / "Custom"
+    rows: list[dict[str, Any]] = []
+    problems: list[str] = []
+    for item in files:
+        relative = Path(str(item.get("relative_path") or ""))
+        target = (custom_root / relative).resolve()
+        if not _path_is_within(target, custom_root):
+            problems.append(f"PATH_ESCAPE:{relative.as_posix()}")
+            continue
+        if not target.is_file():
+            problems.append(f"MISSING:{relative.as_posix()}")
+            continue
+        actual_size = target.stat().st_size
+        actual_sha256 = sha256_file(target)
+        expected_size = int(item.get("size") or -1)
+        expected_sha256 = str(item.get("sha256") or "").lower()
+        exact = actual_size == expected_size and actual_sha256 == expected_sha256
+        rows.append(
+            {
+                "relative_path": relative.as_posix(),
+                "size": actual_size,
+                "sha256": actual_sha256,
+                "exact": exact,
+            }
+        )
+        if not exact:
+            problems.append(f"BYTE_MISMATCH:{relative.as_posix()}")
+    if problems:
+        raise ActivationRefused("HISTORY_PROJECTION_INVALID:" + ";".join(problems[:10]))
+    inventory = [
+        {"relative_path": row["relative_path"], "size": row["size"], "sha256": row["sha256"]}
+        for row in rows
+    ]
+    return {
+        "status": "PASS_EXACT",
+        "receipt_path": str(Path(receipt_path).resolve()),
+        "receipt_file_sha256": sha256_file(receipt_path),
+        "manifest_sha256": str(expected_manifest_sha256).lower(),
+        "file_count": len(rows),
+        "inventory_sha256": sha256_bytes(canonical_json_bytes(inventory)),
+        "files": rows,
+    }
+
+
+def _parse_json_envelope(output: str) -> dict[str, Any]:
+    text = str(output or "").strip()
+    try:
+        value = json.loads(text)
+    except json.JSONDecodeError:
+        starts = [index for index, char in enumerate(text) if char == "{"]
+        value = None
+        for start in reversed(starts):
+            try:
+                candidate = json.loads(text[start:])
+            except json.JSONDecodeError:
+                continue
+            value = candidate
+            break
+        if value is None:
+            raise ActivationRefused("DEV2_CONTROLLER_JSON_MISSING")
+    if not isinstance(value, dict):
+        raise ActivationRefused("DEV2_CONTROLLER_JSON_NOT_OBJECT")
+    return value
+
+
+def _summary_path_from_controller_log(path: Path) -> Path:
+    text = Path(path).read_text(encoding="utf-8-sig", errors="replace")
+    matches = re.findall(r"(?m)^run_smoke\.summary=(.+?)\s*$", text)
+    if len(matches) != 1:
+        raise ActivationRefused(
+            f"DEV2_RUN_SMOKE_SUMMARY_POINTER_COUNT_{len(matches)}"
+        )
+    summary_path = Path(matches[0].strip())
+    if not summary_path.is_file():
+        raise ActivationRefused("DEV2_RUN_SMOKE_SUMMARY_MISSING")
+    return summary_path.resolve()
+
+
+def _dev2_lane_state() -> dict[str, Any]:
+    script = (
+        "$laneRoot=[System.IO.Path]::GetFullPath('D:\\QM\\mt5\\DEV2');"
+        "$rows=@(Get-CimInstance Win32_Process -Property ProcessId,ExecutablePath "
+        "-ErrorAction Stop | Where-Object { -not [string]::IsNullOrWhiteSpace($_.ExecutablePath) "
+        "-and [System.IO.Path]::GetFullPath($_.ExecutablePath).StartsWith($laneRoot+'\\',"
+        "[System.StringComparison]::OrdinalIgnoreCase) });"
+        "$user=Get-LocalUser -Name QMDev2 -ErrorAction Stop;"
+        "[pscustomobject]@{process_count=$rows.Count;process_ids=@($rows|ForEach-Object{[int]$_.ProcessId});"
+        "account_enabled=[bool]$user.Enabled;password_required=[bool]$user.PasswordRequired}"
+        "|ConvertTo-Json -Compress"
+    )
+    completed = subprocess.run(
+        [
+            "pwsh",
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            script,
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    if completed.returncode != 0:
+        raise ActivationRefused("DEV2_LANE_STATE_PROBE_FAILED")
+    return _parse_json_envelope(completed.stdout)
+
+
+class GovernedDev2RestartBackend:
+    """Validation-only backend using the isolated DEV2 Scheduled-Task controller.
+
+    It deliberately restarts the tester for each cell in one fixed, governed
+    process space.  It is not production wiring and does not claim resident IPC.
+    """
+
+    def __init__(
+        self,
+        *,
+        repo_root: Path,
+        artifact_dir: Path,
+        history_receipt_path: Path,
+        expected_history_manifest_sha256: str,
+        process_runner: Any | None = None,
+        lane_probe: Any | None = None,
+    ) -> None:
+        self.repo_root = Path(repo_root).resolve()
+        self.artifact_dir = Path(artifact_dir).resolve()
+        self.history_receipt_path = Path(history_receipt_path).resolve()
+        self.expected_history_manifest_sha256 = str(
+            expected_history_manifest_sha256
+        ).lower()
+        self.process_runner = process_runner or subprocess.run
+        self.lane_probe = lane_probe or _dev2_lane_state
+        self.controller_path = self.repo_root / DEV2_CONTROLLER_RELATIVE
+        self.contract_path = self.repo_root / DEV2_LANE_CONTRACT_RELATIVE
+        self.helper_path = self.repo_root / DEV2_CREDENTIAL_HELPER_RELATIVE
+        self.results: list[dict[str, Any]] = []
+        self.session_summary: dict[str, Any] = {}
+
+    def _fixed_inputs(self) -> dict[str, Any]:
+        required = (
+            self.controller_path,
+            self.contract_path,
+            self.helper_path,
+            DEV2_CREDENTIAL,
+        )
+        for path in required:
+            if not Path(path).is_file():
+                raise ActivationRefused(f"DEV2_FIXED_INPUT_MISSING:{path}")
+        contract = _load_json(self.contract_path)
+        if contract.get("contract_id") != "QM_DEV2_ISOLATED_MT5_LANE_V3":
+            raise ActivationRefused("DEV2_LANE_CONTRACT_INVALID")
+        programs: dict[str, dict[str, Any]] = {}
+        for name, expected in (contract.get("program_sha256") or {}).items():
+            path = DEV2_ROOT / str(name)
+            actual = sha256_file(path)
+            if actual != str(expected).lower():
+                raise ActivationRefused(f"DEV2_PROGRAM_HASH_MISMATCH:{name}")
+            programs[str(name)] = {"path": str(path.resolve()), "sha256": actual}
+        return {
+            "controller": {
+                "path": str(self.controller_path),
+                "sha256": sha256_file(self.controller_path),
+            },
+            "lane_contract": {
+                "path": str(self.contract_path),
+                "sha256": sha256_file(self.contract_path),
+                "contract_id": contract.get("contract_id"),
+            },
+            "credential": {
+                "path": str(DEV2_CREDENTIAL),
+                "sha256": sha256_file(DEV2_CREDENTIAL),
+            },
+            "credential_helper": {
+                "path": str(self.helper_path),
+                "sha256": sha256_file(self.helper_path),
+            },
+            "programs": programs,
+        }
+
+    def open_session(self, pair_contract: Mapping[str, Any]) -> dict[str, Any]:
+        if pair_contract.get("history_manifest_sha256") != self.expected_history_manifest_sha256:
+            raise ActivationRefused("DEV2_SESSION_HISTORY_MANIFEST_MISMATCH")
+        if not _path_is_within(self.artifact_dir, self.repo_root):
+            raise ActivationRefused("DEV2_SESSION_ARTIFACT_DIR_OUTSIDE_REPO")
+        self.artifact_dir.mkdir(parents=True, exist_ok=False)
+        lane_before = self.lane_probe()
+        if int(lane_before.get("process_count") or 0) != 0:
+            raise ActivationRefused("DEV2_SESSION_LANE_NOT_IDLE")
+        if lane_before.get("account_enabled") is not False:
+            raise ActivationRefused("DEV2_SESSION_ACCOUNT_NOT_DISABLED")
+        if lane_before.get("password_required") is not True:
+            raise ActivationRefused("DEV2_SESSION_PASSWORD_CONTRACT_INVALID")
+        fixed = self._fixed_inputs()
+        history_before = audit_history_receipt(
+            receipt_path=self.history_receipt_path,
+            lane_root=DEV2_ROOT,
+            expected_manifest_sha256=self.expected_history_manifest_sha256,
+        )
+        return {
+            "schema": "qm.warm-cell-governed-restart-session/v1",
+            "session_id": str(uuid.uuid4()),
+            "started_utc": utc_now(),
+            "started_monotonic": time.monotonic(),
+            "pair_contract": dict(pair_contract),
+            "lane": "DEV2",
+            "lane_before": lane_before,
+            "fixed_inputs": fixed,
+            "history_before": history_before,
+            "terminal_restarts": 0,
+        }
+
+    def _authenticate_summary(
+        self,
+        *,
+        summary_path: Path,
+        cell: Mapping[str, Any],
+        controller_result: Mapping[str, Any],
+        wall_seconds: float,
+    ) -> dict[str, Any]:
+        summary = _load_json(summary_path)
+        if summary.get("evidence_schema") != "run_smoke/v2":
+            raise ActivationRefused("DEV2_RECEIPT_SCHEMA_INVALID")
+        if summary.get("result") != "PASS":
+            raise ActivationRefused(f"DEV2_RECEIPT_RESULT_{summary.get('result')}")
+        ok_runs = [row for row in summary.get("runs", []) if row.get("status") == "OK"]
+        if len(ok_runs) != 1:
+            raise ActivationRefused("DEV2_RECEIPT_OK_RUN_COUNT_INVALID")
+        run = ok_runs[0]
+        report_path = Path(str(run.get("report_canonical_path") or ""))
+        if not report_path.is_file():
+            raise ActivationRefused("DEV2_NATIVE_REPORT_MISSING")
+        report_sha256 = sha256_file(report_path)
+        if report_sha256 != str(run.get("report_sha256") or "").lower():
+            raise ActivationRefused("DEV2_NATIVE_REPORT_HASH_MISMATCH")
+        logger_path = Path(
+            str(
+                summary.get("logger_sample_path")
+                or (summary.get("logger_sample") or {}).get("path")
+                or ""
+            )
+        )
+        if not logger_path.is_file():
+            raise ActivationRefused("DEV2_LOGGER_SAMPLE_MISSING")
+        logger_sha256 = sha256_file(logger_path)
+        if logger_sha256 != str(
+            (summary.get("logger_sample") or {}).get("sha256") or ""
+        ).lower():
+            raise ActivationRefused("DEV2_LOGGER_SAMPLE_HASH_MISMATCH")
+        execution = summary.get("execution_identity") or {}
+        expert_binary = execution.get("expert_binary") or {}
+        setfile = execution.get("setfile") or {}
+        mq5 = execution.get("mq5_source") or {}
+        expected = {
+            "ea_id": int(str(cell.get("ea_id") or "").replace("QM5_", "")),
+            "symbol": cell.get("symbol"),
+            "period": cell.get("period"),
+            "model": int(cell.get("model") or 0),
+            "from_date": cell.get("from_date"),
+            "to_date": cell.get("to_date"),
+            "expert": cell.get("expert"),
+        }
+        actual = {field: summary.get(field) for field in expected}
+        if actual != expected:
+            raise ActivationRefused("DEV2_RECEIPT_EXECUTION_IDENTITY_MISMATCH")
+        if (
+            (expert_binary.get("deployed") or {}).get("sha256")
+            != cell.get("ex5_sha256")
+            or expert_binary.get("stable_during_run") is not True
+            or (setfile.get("deployed") or {}).get("sha256")
+            != cell.get("setfile_sha256")
+            or setfile.get("source_matches_deployed") is not True
+            or setfile.get("stable_during_run") is not True
+            or mq5.get("sha256") != cell.get("mq5_sha256")
+        ):
+            raise ActivationRefused("DEV2_RECEIPT_FILE_IDENTITY_MISMATCH")
+        trades, parsed_stats = _canonical_closed_trades(report_path)
+        receipt_schema = receipt_schema_fingerprint(summary)
+        return {
+            "cell_key": cell.get("cell_key"),
+            "work_item_id": cell.get("work_item_id"),
+            "arm": cell.get("arm"),
+            "ea_id": cell.get("ea_id"),
+            "symbol": cell.get("symbol"),
+            "period": cell.get("period"),
+            "model": cell.get("model"),
+            "seed": cell.get("seed"),
+            "from_date": cell.get("from_date"),
+            "to_date": cell.get("to_date"),
+            "ex5_sha256": cell.get("ex5_sha256"),
+            "mq5_sha256": cell.get("mq5_sha256"),
+            "setfile_sha256": cell.get("setfile_sha256"),
+            "history_manifest_sha256": self.expected_history_manifest_sha256,
+            "summary_path": str(summary_path),
+            "summary_sha256": sha256_file(summary_path),
+            "receipt_schema_sha256": receipt_schema["sha256"],
+            "receipt_schema_field_paths": receipt_schema["field_paths"],
+            "native_report_path": str(report_path.resolve()),
+            "native_report_sha256": report_sha256,
+            "report_sha256": report_sha256,
+            "logger_sample_path": str(logger_path.resolve()),
+            "logger_sample_sha256": logger_sha256,
+            "entry_trading_days": len(
+                {
+                    str(trade.get("entry_time") or "")[:10]
+                    for trade in trades
+                    if trade.get("entry_time")
+                }
+            ),
+            "report_metrics": {
+                "total_trades": run.get("total_trades"),
+                "total_trades_raw": run.get("total_trades_raw"),
+                "profit_factor": run.get("profit_factor"),
+                "profit_factor_raw": run.get("profit_factor_raw"),
+                "net_profit": run.get("net_profit"),
+                "net_profit_raw": run.get("net_profit_raw"),
+                "drawdown": run.get("drawdown"),
+                "drawdown_raw": run.get("drawdown_raw"),
+                "from_date": run.get("from_date"),
+                "to_date": run.get("to_date"),
+                "real_ticks_marker": run.get("real_ticks_marker"),
+                "native_parser": parsed_stats,
+            },
+            "trades": trades,
+            "warm_elapsed_seconds": round(float(wall_seconds), 3),
+            "controller_result": _json_ready(controller_result),
+        }
+
+    def run_cell(
+        self, session: dict[str, Any], cell: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
+        setfile_path = Path(str(cell.get("setfile_path") or "")).resolve()
+        if not setfile_path.is_file() or not _path_is_within(setfile_path, self.repo_root):
+            raise ActivationRefused("DEV2_CELL_SETFILE_OUTSIDE_REPO_OR_MISSING")
+        setfile_guard = validate_validation_setfile(setfile_path)
+        if setfile_guard["sha256"] != cell.get("setfile_sha256"):
+            raise ActivationRefused("DEV2_CELL_SETFILE_HASH_MISMATCH")
+        run_index = len(self.results) + 1
+        run_dir = self.artifact_dir / f"cell_{run_index:02d}"
+        run_dir.mkdir(parents=True, exist_ok=False)
+        fixed = session["fixed_inputs"]
+        ea_numeric = int(str(cell.get("ea_id") or "").replace("QM5_", ""))
+        timeout_seconds = int(cell.get("timeout_seconds") or 7200)
+        command = [
+            "pwsh",
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(self.controller_path),
+            "-EAId",
+            str(ea_numeric),
+            "-Symbol",
+            str(cell.get("symbol")),
+            "-Year",
+            str(cell.get("from_date"))[:4],
+            "-FromDate",
+            str(cell.get("from_date")),
+            "-ToDate",
+            str(cell.get("to_date")),
+            "-Expert",
+            str(cell.get("expert")),
+            "-Period",
+            str(cell.get("period")),
+            "-Runs",
+            "1",
+            "-MinTrades",
+            str(int(cell.get("min_trades") or 5)),
+            "-Model",
+            str(int(cell.get("model") or 4)),
+            "-TimeoutSeconds",
+            str(timeout_seconds),
+            "-SetFile",
+            str(setfile_path),
+            "-ExpectedCredentialSha256",
+            fixed["credential"]["sha256"],
+            "-ExpectedHelperSha256",
+            fixed["credential_helper"]["sha256"],
+        ]
+        started = time.monotonic()
+        completed = self.process_runner(
+            command,
+            cwd=self.repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=max(3600, timeout_seconds * 3 + 3600),
+        )
+        wall_seconds = time.monotonic() - started
+        _atomic_text(run_dir / "controller_stdout.log", completed.stdout or "")
+        _atomic_text(run_dir / "controller_stderr.log", completed.stderr or "")
+        if completed.returncode != 0:
+            raise ActivationRefused(
+                f"DEV2_CONTROLLER_FAILED_CELL_{run_index:02d}_EXIT_{completed.returncode}"
+            )
+        controller_result = _parse_json_envelope(completed.stdout)
+        if controller_result.get("success") is not True:
+            raise ActivationRefused("DEV2_CONTROLLER_RESULT_NOT_SUCCESS")
+        if (
+            controller_result.get("dev2_account_restored_disabled") is not True
+            or controller_result.get("cleanup_lease_disarmed") is not True
+        ):
+            raise ActivationRefused("DEV2_CONTROLLER_CONTAINMENT_NOT_CLOSED")
+        controller_log = Path(str(controller_result.get("log_path") or ""))
+        if not controller_log.is_file():
+            raise ActivationRefused("DEV2_CONTROLLER_LOG_MISSING")
+        summary_path = _summary_path_from_controller_log(controller_log)
+        result = self._authenticate_summary(
+            summary_path=summary_path,
+            cell=cell,
+            controller_result=controller_result,
+            wall_seconds=wall_seconds,
+        )
+        result["controller_stdout_path"] = str((run_dir / "controller_stdout.log").resolve())
+        result["controller_stderr_path"] = str((run_dir / "controller_stderr.log").resolve())
+        result["setfile_guard"] = setfile_guard
+        self.results.append(dict(result))
+        session["terminal_restarts"] += 1
+        return result
+
+    def close_session(self, session: dict[str, Any]) -> None:
+        history_after = audit_history_receipt(
+            receipt_path=self.history_receipt_path,
+            lane_root=DEV2_ROOT,
+            expected_manifest_sha256=self.expected_history_manifest_sha256,
+        )
+        lane_after = self.lane_probe()
+        problems: list[str] = []
+        if int(lane_after.get("process_count") or 0) != 0:
+            problems.append("DEV2_PROCESS_REMAINS")
+        if lane_after.get("account_enabled") is not False:
+            problems.append("DEV2_ACCOUNT_ENABLED_AFTER")
+        if lane_after.get("password_required") is not True:
+            problems.append("DEV2_PASSWORD_CONTRACT_AFTER")
+        if (
+            history_after["inventory_sha256"]
+            != session["history_before"]["inventory_sha256"]
+        ):
+            problems.append("DEV2_HISTORY_CHANGED_DURING_SESSION")
+        self.session_summary = {
+            "schema": session["schema"],
+            "session_id": session["session_id"],
+            "lane": session["lane"],
+            "started_utc": session["started_utc"],
+            "finished_utc": utc_now(),
+            "elapsed_seconds": round(
+                time.monotonic() - float(session["started_monotonic"]), 3
+            ),
+            "terminal_restarts": session["terminal_restarts"],
+            "cells_authenticated": len(self.results),
+            "lane_before": session["lane_before"],
+            "lane_after": lane_after,
+            "fixed_inputs": session["fixed_inputs"],
+            "history_before": session["history_before"],
+            "history_after": history_after,
+            "problems": problems,
+            "closed_exact": not problems,
+        }
+        _atomic_text(
+            self.artifact_dir / "session_summary.json",
+            json.dumps(self.session_summary, indent=2, sort_keys=True) + "\n",
+        )
+        if problems:
+            raise ActivationRefused("DEV2_SESSION_CLOSE_FAILED:" + ";".join(problems))
 
 
 def cold_path_identity(

@@ -1,0 +1,45 @@
+; opt_census_schema: qm.opt-census.v1
+; opt_census_cell_key: DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_006
+; opt_census_from_date: 2019.01.01
+; opt_census_to_date: 2019.12.31
+;==========================================================
+; QM5 Set File
+; ea_id:        41097
+; ea_slug:      balke-gmt3-range-breakout-opt
+; ea_version:   v5.0
+; set_version:  s20260821-opt001
+; symbol:       USDJPY.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   592c86eed538aeaab0e3b56e6846e03d738e8419a5520e071f84be1e2c50e274
+; author:       Development
+; date:         2026-08-21
+;==========================================================
+qm_ea_id=41097
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_range_start_hour=3
+strategy_range_end_hour=6
+strategy_exit_hour=18
+strategy_atr_period=14
+strategy_min_range_atr_mult=0.4
+strategy_max_range_atr_mult=2.5
+strategy_trail_trigger_r=1.0
+strategy_range_scan_bars=36
+opt_pp_buy1=6
+opt_pp_buy2=0
+opt_pp_buy3=0
+opt_pp_sell1=0
+opt_pp_sell2=0
+opt_pp_sell3=0
+; DL-089 stage S5 optimizes the parent's already-wired numeric levers
+; (strategy_max_range_atr_mult, strategy_trail_trigger_r, strategy_range_end_hour),
+; one per trial with the parent value as control — see opt_param_grid.json.
+; Their pattern-pilot values are already set above at their parent defaults.

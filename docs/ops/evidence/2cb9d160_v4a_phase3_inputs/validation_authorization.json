@@ -1,0 +1,16 @@
+{
+  "schema": "qm.warm-cell-validation-run/v1",
+  "purpose": "OFFLINE_PARITY_VALIDATION",
+  "task_id": "2cb9d160-d5c0-46ea-ae45-d145a63cf1f4",
+  "authorized_by": "OWNER_COMMISSION",
+  "commissioned_via": "deterministic agent-router task assigned to codex",
+  "execution_backend": "GOVERNED_SEQUENTIAL_TESTER_RESTART",
+  "profile_mode": "ISOLATED_DEV2",
+  "lane": "DEV2",
+  "production_wiring": false,
+  "active_terminal_allowed": false,
+  "minimum_comparisons": 20,
+  "cold_path_default": "OFF",
+  "resident_ipc_claimed": false,
+  "stop_on_first_deviation": true
+}

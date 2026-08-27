@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
+from types import SimpleNamespace
 
 import pytest
 
@@ -223,3 +225,279 @@ def test_cold_timing_summary_keeps_missing_samples_explicit():
         "minimum_seconds": 10.0,
         "maximum_seconds": 20.0,
     }
+
+
+def test_phase3_restart_authorization_is_task_and_lane_bound():
+    manifest = {
+        "schema": "qm.warm-cell-validation-run/v1",
+        "purpose": "OFFLINE_PARITY_VALIDATION",
+        "task_id": runner.PHASE3_TASK_ID,
+        "authorized_by": "OWNER_COMMISSION",
+        "execution_backend": runner.GOVERNED_RESTART_BACKEND,
+        "profile_mode": runner.GOVERNED_RESTART_PROFILE,
+        "production_wiring": False,
+        "active_terminal_allowed": False,
+        "minimum_comparisons": 20,
+        "lane": "DEV2",
+    }
+    assert runner.validation_authorization_problems(manifest) == []
+    manifest["lane"] = "T1"
+    assert "VALIDATION_RESTART_LANE_INVALID" in runner.validation_authorization_problems(
+        manifest
+    )
+
+
+def test_comparator_includes_receipt_artifact_bytes_and_entry_days():
+    cold = _result(1)
+    cold.update(
+        {
+            "entry_trading_days": 5,
+            "logger_sample_sha256": "d" * 64,
+            "native_report_sha256": "e" * 64,
+            "receipt_schema_sha256": "f" * 64,
+        }
+    )
+    warm = deepcopy(cold)
+    warm["logger_sample_sha256"] = "0" * 64
+    comparison = runner.compare_cell_results(cold, warm)
+    assert comparison["all_exact"] is False
+    assert comparison["logger_sample_byte_exact_match"] is False
+    assert comparison["native_report_byte_exact_match"] is True
+    assert comparison["entry_trading_days_exact_match"] is True
+    assert comparison["receipt_schema_exact_match"] is True
+
+
+def test_validation_setfile_enforces_risk_and_news_guardrails(tmp_path):
+    path = tmp_path / "cell.set"
+    path.write_text(
+        "RISK_FIXED=1000\nRISK_PERCENT=0\nqm_news_stale_max_hours=336\n",
+        encoding="utf-8",
+    )
+    result = runner.validate_validation_setfile(path)
+    assert result["risk_fixed"] == 1000
+    assert result["risk_percent"] == 0
+    assert result["qm_news_stale_max_hours"] == 336
+    path.write_text(
+        "RISK_FIXED=1000\nRISK_PERCENT=0\nqm_news_stale_max_hours=337\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(runner.ActivationRefused, match="ABOVE_336"):
+        runner.validate_validation_setfile(path)
+
+
+def test_history_receipt_audit_is_byte_exact(tmp_path):
+    lane = tmp_path / "DEV2"
+    target = lane / "Bases" / "Custom" / "history" / "USDJPY.DWX" / "2019.hcc"
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b"history")
+    receipt = tmp_path / "receipt.json"
+    receipt.write_text(
+        json.dumps(
+            {
+                "schema_version": "qm.custom-history-copy-on-claim/v1",
+                "status": "PASS_PRIVATIZED",
+                "manifest_sha256": "a" * 64,
+                "files": [
+                    {
+                        "relative_path": "history/USDJPY.DWX/2019.hcc",
+                        "size": 7,
+                        "sha256": runner.sha256_file(target),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = runner.audit_history_receipt(
+        receipt_path=receipt,
+        lane_root=lane,
+        expected_manifest_sha256="a" * 64,
+    )
+    assert result["status"] == "PASS_EXACT"
+    assert result["file_count"] == 1
+    target.write_bytes(b"changed")
+    with pytest.raises(runner.ActivationRefused, match="HISTORY_PROJECTION_INVALID"):
+        runner.audit_history_receipt(
+            receipt_path=receipt,
+            lane_root=lane,
+            expected_manifest_sha256="a" * 64,
+        )
+
+
+def test_governed_dev2_backend_uses_controller_and_authenticates_receipt(
+    tmp_path, monkeypatch
+):
+    repo = tmp_path / "repo"
+    controller = repo / runner.DEV2_CONTROLLER_RELATIVE
+    contract = repo / runner.DEV2_LANE_CONTRACT_RELATIVE
+    helper = repo / runner.DEV2_CREDENTIAL_HELPER_RELATIVE
+    for path in (controller, contract, helper):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(path.name, encoding="utf-8")
+    lane = tmp_path / "DEV2"
+    programs = {}
+    for name in ("terminal64.exe", "metatester64.exe", "MetaEditor64.exe"):
+        path = lane / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(name.encode("ascii"))
+        programs[name] = runner.sha256_file(path)
+    contract.write_text(
+        json.dumps(
+            {
+                "contract_id": "QM_DEV2_ISOLATED_MT5_LANE_V3",
+                "program_sha256": programs,
+            }
+        ),
+        encoding="utf-8",
+    )
+    credential = tmp_path / "credential.json"
+    credential.write_text("credential", encoding="utf-8")
+    history = lane / "Bases" / "Custom" / "history" / "USDJPY.DWX" / "2019.hcc"
+    history.parent.mkdir(parents=True)
+    history.write_bytes(b"history")
+    history_receipt = tmp_path / "history_receipt.json"
+    history_receipt.write_text(
+        json.dumps(
+            {
+                "schema_version": "qm.custom-history-copy-on-claim/v1",
+                "status": "PASS_PRIVATIZED",
+                "manifest_sha256": "c" * 64,
+                "files": [
+                    {
+                        "relative_path": "history/USDJPY.DWX/2019.hcc",
+                        "size": history.stat().st_size,
+                        "sha256": runner.sha256_file(history),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    setfile = repo / "evidence" / "cell.set"
+    setfile.parent.mkdir(parents=True)
+    setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+    report = tmp_path / "report.htm"
+    report.write_bytes(b"native report")
+    logger = tmp_path / "logger.jsonl"
+    logger.write_bytes(b"logger")
+    summary = tmp_path / "summary.json"
+    summary_payload = {
+        "evidence_schema": "run_smoke/v2",
+        "result": "PASS",
+        "ea_id": 41097,
+        "symbol": "USDJPY.DWX",
+        "period": "H1",
+        "model": 4,
+        "from_date": "2019.01.01",
+        "to_date": "2019.12.31",
+        "expert": r"QM\QM5_41097_example",
+        "logger_sample_path": str(logger),
+        "logger_sample": {"path": str(logger), "sha256": runner.sha256_file(logger)},
+        "execution_identity": {
+            "expert_binary": {
+                "deployed": {"sha256": "a" * 64},
+                "stable_during_run": True,
+            },
+            "setfile": {
+                "deployed": {"sha256": runner.sha256_file(setfile)},
+                "source_matches_deployed": True,
+                "stable_during_run": True,
+            },
+            "mq5_source": {"sha256": "b" * 64},
+        },
+        "runs": [
+            {
+                "status": "OK",
+                "report_canonical_path": str(report),
+                "report_sha256": runner.sha256_file(report),
+                "total_trades": 1,
+                "total_trades_raw": "1",
+                "profit_factor": 1.1,
+                "profit_factor_raw": "1.10",
+                "net_profit": 10.0,
+                "net_profit_raw": "10.00",
+                "drawdown": 5.0,
+                "drawdown_raw": "5.00 (0.01%)",
+                "from_date": "2019.01.01",
+                "to_date": "2019.12.31",
+                "real_ticks_marker": True,
+            }
+        ],
+    }
+    summary.write_text(json.dumps(summary_payload), encoding="utf-8")
+    controller_log = tmp_path / "controller.log"
+    controller_log.write_text(f"run_smoke.summary={summary}\n", encoding="utf-8")
+    controller_result = {
+        "success": True,
+        "dev2_account_restored_disabled": True,
+        "cleanup_lease_disarmed": True,
+        "log_path": str(controller_log),
+    }
+    calls = []
+
+    def fake_process(command, **kwargs):
+        calls.append((command, kwargs))
+        return SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps(controller_result),
+            stderr="",
+        )
+
+    monkeypatch.setattr(runner, "DEV2_ROOT", lane)
+    monkeypatch.setattr(runner, "DEV2_CREDENTIAL", credential)
+    monkeypatch.setattr(
+        runner,
+        "_canonical_closed_trades",
+        lambda path: ([{"entry_time": "2019-01-02T10:00:00Z"}], {"total_trades": 1}),
+    )
+    backend = runner.GovernedDev2RestartBackend(
+        repo_root=repo,
+        artifact_dir=repo / "evidence" / "runtime",
+        history_receipt_path=history_receipt,
+        expected_history_manifest_sha256="c" * 64,
+        process_runner=fake_process,
+        lane_probe=lambda: {
+            "process_count": 0,
+            "account_enabled": False,
+            "password_required": True,
+        },
+    )
+    session = backend.open_session(
+        {
+            "ea_id": "QM5_41097",
+            "symbol": "USDJPY.DWX",
+            "period": "H1",
+            "ex5_sha256": "a" * 64,
+            "history_manifest_sha256": "c" * 64,
+        }
+    )
+    result = backend.run_cell(
+        session,
+        {
+            "cell_key": "cell-00",
+            "work_item_id": "work-00",
+            "arm": "baseline",
+            "ea_id": "QM5_41097",
+            "ea_label": "QM5_41097_example",
+            "expert": r"QM\QM5_41097_example",
+            "symbol": "USDJPY.DWX",
+            "period": "H1",
+            "model": 4,
+            "seed": None,
+            "from_date": "2019.01.01",
+            "to_date": "2019.12.31",
+            "ex5_sha256": "a" * 64,
+            "mq5_sha256": "b" * 64,
+            "setfile_sha256": runner.sha256_file(setfile),
+            "setfile_path": str(setfile),
+            "history_manifest_sha256": "c" * 64,
+        },
+    )
+    backend.close_session(session)
+    assert calls and "terminal64.exe" not in calls[0][0]
+    assert str(controller) in calls[0][0]
+    assert result["native_report_sha256"] == runner.sha256_file(report)
+    assert result["logger_sample_sha256"] == runner.sha256_file(logger)
+    assert result["entry_trading_days"] == 1
+    assert backend.session_summary["closed_exact"] is True
+    assert backend.session_summary["terminal_restarts"] == 1
