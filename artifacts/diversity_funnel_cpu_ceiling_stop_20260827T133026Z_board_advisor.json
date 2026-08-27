@@ -1,0 +1,138 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T13:30:26.6917520Z",
+  "generated_at_europe_berlin": "2026-08-27T15:30:26.6917520+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "b4b7642eceb968dd64f487df34264e3b4537c789",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "stop when either the five-sample average or maximum reaches the governed tester admission ceiling",
+    "source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-27T13:30:26.6917520Z",
+    "samples_percent": [
+      100.0,
+      98.1524,
+      96.8753,
+      99.805,
+      98.9265
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_percent": 98.7518,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "triggers": [
+      "average_percent",
+      "maximum_percent"
+    ]
+  },
+  "farm_db_coordination": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "active_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "active_work_item_count": 8,
+    "active_phase_counts": {
+      "OPT_CENSUS": 1,
+      "Q03": 1,
+      "Q07": 1,
+      "Q09": 1,
+      "Q10_NEWS": 4
+    },
+    "process_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mt5-slots",
+    "process_snapshot_scanned_at_utc": "2026-08-27T13:30:39+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "running_factory_terminal_count": 6,
+    "active_terminal_reservation_count": 6,
+    "orphaned_factory_terminal_process_count": 0,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ],
+    "diverse_active_row": {
+      "work_item_id": "ebe0edd2-407d-4ad3-917e-b5aa09311006",
+      "ea_id": "QM5_20263",
+      "logical_symbol": "QM5_20263_XAU_XAG_MADRV_D1",
+      "phase": "Q03",
+      "status": "active",
+      "claimed_by": "T7",
+      "updated_at_utc": "2026-08-27T11:42:13+00:00",
+      "process_or_reservation_visible_in_snapshot": true,
+      "action": "left undisturbed"
+    },
+    "active_rows_without_live_terminal_or_reservation": [
+      {
+        "work_item_id": "8ac4dd37-4d59-4721-bf19-da6a8e34e384",
+        "ea_id": "QM5_13036",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q09",
+        "claimed_by": "T5",
+        "updated_at_utc": "2026-08-27T05:52:15+00:00"
+      },
+      {
+        "work_item_id": "ef27d75d-8f81-409c-9f68-df690ad4a404",
+        "ea_id": "QM5_9502",
+        "symbol": "SP500.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T10",
+        "updated_at_utc": "2026-08-27T11:45:34+00:00"
+      }
+    ],
+    "row_divergence_disposition": "observed only; a point-in-time process mismatch is not a stale-row verdict or authority to reclaim or duplicate-enqueue",
+    "candidate_or_ea_claim_created": false,
+    "database_mutated": false
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/diversity_funnel_cpu_ceiling_stop_20260827T090314Z_board_advisor.json",
+    "preceding_active_work_item_count": 7,
+    "current_active_work_item_count": 8,
+    "preceding_diverse_fallback": "QM5_20255_USDCHF_EURJPY_COINTEGRATION_D1 on T10",
+    "current_diverse_active_row": "QM5_20263_XAU_XAG_MADRV_D1 on T7",
+    "preceding_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T6",
+      "T8"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "changed_state": "the earlier FX-pair Q03 row is no longer active; a metals-pair Q03 row is now running on T7, an OPT_CENSUS row is active on T1, and the active count increased from seven to eight"
+  },
+  "actions_this_run": {
+    "approved_backlog_ranked": false,
+    "build_task_claimed": false,
+    "infra_repair_claimed": false,
+    "new_edge_mechanized": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
