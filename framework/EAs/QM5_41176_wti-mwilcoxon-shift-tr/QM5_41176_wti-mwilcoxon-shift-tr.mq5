@@ -432,7 +432,7 @@ bool Strategy_LoadMonthlyEndpoints(const int current_month_key,
    MqlRates bars[];
    ArraySetAsSeries(bars, true);
    const int copied =
-      CopyRates(_Symbol, // perf-allowed: one bounded thirteen-month scan behind a consumed monthly attempt or monthly restart validation.
+      CopyRates(_Symbol, // perf-allowed: one bounded twelve-month scan behind a consumed monthly attempt or monthly restart validation.
                 PERIOD_D1,
                 1,
                 strategy_history_bars_d1,
@@ -970,7 +970,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 int OnInit()
   {
    if(!SymbolSelect(g_symbol, true) ||
-       !Strategy_IsHostChart() || qm_ea_id != 41176 ||
+      !Strategy_IsHostChart() || qm_ea_id != 41176 ||
       qm_magic_slot_offset != 0)
       return INIT_PARAMETERS_INCORRECT;
 

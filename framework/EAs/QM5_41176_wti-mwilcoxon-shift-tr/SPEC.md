@@ -27,7 +27,7 @@ A valid direction owns one fixed-risk WTI position until the first later
 normalized broker month, protected by a frozen ATR hard stop. Statistic
 magnitude never changes risk.
 
-## 2. Locked Parameters
+## 2. Parameters
 
 | Parameter | Value | Meaning |
 |---|---:|---|
@@ -46,14 +46,14 @@ magnitude never changes risk.
 
 There is no optimization surface.
 
-## 3. Symbol And Identity
+## 3. Symbol Universe
 
 - Host and traded symbol: exact `XTIUSD.DWX`, D1.
 - Symbol slot: 0.
 - Magic: `411760000`.
 - No companion, conversion, ratio, hedge, or external symbol exists.
 
-## 4. Formula
+## 4. Timeframe And Formula
 
 ```text
 O = C[0..5]
@@ -74,20 +74,7 @@ FLAT otherwise
 The split never moves and the runtime never computes a p-value, averages
 ties, searches for a change point, or falls back to endpoint direction.
 
-## 5. Risk And Lifecycle
-
-Q02 uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
-`PORTFOLIO_WEIGHT=1`. The entry receives a frozen
-`3.5*ATR(20,D1)` stop and no target. Both news axes, legacy news, and Friday
-close are OFF.
-
-The normalized broker month is persisted before history, arithmetic, news,
-spread, quote, ATR, sizing, margin, or order checks. A rejection never retries
-that month. Lifecycle repair runs before entry-only gates on every tick and
-closes duplicate, malformed, wrong-side, later-month, or forty-day-stale
-owned exposure.
-
-## 6. Expected Behaviour
+## 5. Expected Behaviour
 
 - Pre-result density prior: four to eight completed positions per full
   post-warm-up year; Q02 retires below four in any full year.
@@ -98,7 +85,7 @@ owned exposure.
 - The direct-WTI location-shift mechanic is distinct from the certified
   short-horizon XNG oscillator. Q09 alone may establish portfolio overlap.
 
-## 7. Sources And Claim Boundary
+## 6. Source Citation
 
 Moskowitz, Ooi, and Pedersen (2012), “Time Series Momentum,” *Journal of
 Financial Economics* 104(2), 228-250, DOI
@@ -116,6 +103,19 @@ Canonical packet:
 `strategy-seeds/sources/MOP-MANNWHITNEY-WTI-MSHIFT-TREND-2026/source.md`.
 The sources supply monthly WTI continuation and two-sample ordinal lineage;
 they do not test this exact continuous-CFD rule or threshold.
+
+## 7. Risk Model
+
+Q02 uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
+`PORTFOLIO_WEIGHT=1`. The entry receives a frozen
+`3.5*ATR(20,D1)` stop and no target. Both news axes, legacy news, and Friday
+close are OFF.
+
+The normalized broker month is persisted before history, arithmetic, news,
+spread, quote, ATR, sizing, margin, or order checks. A rejection never retries
+that month. Lifecycle repair runs before entry-only gates on every tick and
+closes duplicate, malformed, wrong-side, later-month, or forty-day-stale
+owned exposure.
 
 ## 8. Deterministic Failure Contract
 
