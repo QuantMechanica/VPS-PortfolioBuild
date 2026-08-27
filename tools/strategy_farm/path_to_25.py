@@ -9,6 +9,7 @@ items, verdicts, holds, queues, or planner artifacts.
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import sqlite3
 import statistics
@@ -55,6 +56,12 @@ _V4_STAGE_OUTCOMES = {
 }
 _PROGRESS_STAGES = ("Q09", "Q11", "Q12", "Q13", "Q14")
 _RENDERED_DEFINITION_ID = "STRICT_V4_CONTIGUOUS_Q14"
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_COUNT_DECISION_REL = "decisions/2026-08-27_owner_count_definition_option_a.md"
+_COUNT_DECISION_PATH = _REPO_ROOT / _COUNT_DECISION_REL
+_COUNT_DECISION_SHA256 = (
+    "d47501ca1f633d49ea2f7213bb107e1cc508a0e0b4b1901af321ec8fbd00fcd2"
+)
 
 
 def _open_ro(db: str | Path) -> sqlite3.Connection:
@@ -542,6 +549,14 @@ def _counting_definition(
     raw_q14_pairs: set[tuple[str, str]],
     terminal_gate: str,
 ) -> dict[str, Any]:
+    if not _COUNT_DECISION_PATH.is_file():
+        raise RuntimeError(f"sealed count decision missing: {_COUNT_DECISION_PATH}")
+    actual_decision_sha = hashlib.sha256(_COUNT_DECISION_PATH.read_bytes()).hexdigest()
+    if actual_decision_sha != _COUNT_DECISION_SHA256:
+        raise RuntimeError(
+            "sealed count decision sha256 mismatch: "
+            f"expected={_COUNT_DECISION_SHA256} actual={actual_decision_sha}"
+        )
     terminal_equivalent: set[tuple[str, str]] = set()
     historical_label: set[tuple[str, str]] = set()
     historical_q14_outcomes = {
@@ -563,37 +578,45 @@ def _counting_definition(
         if str(row.get("phase") or "").upper() == "Q14" and verdict in historical_q14_outcomes:
             historical_label.add(key)
 
+    trigger = {
+        "id": _RENDERED_DEFINITION_ID,
+        "count": len(strict_pairs),
+        "target": TARGET_QUALIFIED_PAIRS,
+        "canonical_unit": "(ea_id,symbol)",
+        "predicate": f"highest_contiguous_valid_gate={terminal_gate}",
+        "is_trigger": True,
+    }
     return {
-        "status": "PROVISIONAL_OWNER_ORCHESTRATOR_DECISION_PENDING",
-        "rendered_definition_id": _RENDERED_DEFINITION_ID,
-        "rendered_count": len(strict_pairs),
-        "recommended_option_id": _RENDERED_DEFINITION_ID,
-        "decision_required": True,
+        "status": "SEALED_OWNER_OPTION_A",
+        "authority_path": _COUNT_DECISION_REL,
+        "authority_sha256": actual_decision_sha,
+        "rendered_definition_id": trigger["id"],
+        "rendered_count": trigger["count"],
+        "decision_required": False,
+        "trigger": trigger,
         "footnote": (
-            "Provisorisch gerendert: nur Paare mit kanonischer v4-Lineage und "
-            "highest_contiguous_valid_gate=Q14. Historische Q14-Zeilen und die "
-            "drei NO_CHANGE-Piloten werden separat gezeigt und zählen bis zur "
-            "OWNER/Orchestrator-Versiegelung nicht zu 25."
+            f"Versiegelt durch {_COUNT_DECISION_REL}: Für den >=25-Trigger zählt "
+            "ausschließlich ein (EA, Symbol)-Paar mit kanonischer v4-Evidenz "
+            f"lückenlos bis {terminal_gate}. B/C/D sind reine Sekundärdiagnostik "
+            "und niemals Triggerzahlen."
         ),
-        "options": [
-            {
-                "id": _RENDERED_DEFINITION_ID,
-                "count": len(strict_pairs),
-                "description": "canonical v4 contiguous evidence through terminal Q14",
-            },
+        "diagnostics": [
             {
                 "id": "V4_TERMINAL_ROW_ONLY",
                 "count": len(raw_q14_pairs),
+                "is_trigger": False,
                 "description": "any done v4 Q14 row with a terminal valid outcome",
             },
             {
                 "id": "CONTRACT_EQUIVALENT_TERMINAL",
                 "count": len(terminal_equivalent),
+                "is_trigger": False,
                 "description": "any contract row explicitly translated to terminal Q14",
             },
             {
                 "id": "HISTORICAL_Q14_LABEL_INCLUSIVE",
                 "count": len(historical_label),
+                "is_trigger": False,
                 "description": "raw historical Q14-labelled outcome rows; eras are not comparable",
             },
         ],
@@ -771,11 +794,14 @@ def path_to_25_metrics(
             raw_q14_pairs=raw_q14_pairs,
             terminal_gate=terminal_gate,
         )
+        trigger_count = int(counting_definition["trigger"]["count"])
+        if trigger_count != len(qualified):
+            raise RuntimeError("sealed trigger count diverged from contiguous qualified pool")
         medians = _phase_medians(rows, candidate_gates)
         capacity_lower_bound_days = _eta_days(
-            pair_rows, len(qualified), candidate_gates, medians
+            pair_rows, trigger_count, candidate_gates, medians
         )
-        remaining_pairs = max(0, TARGET_QUALIFIED_PAIRS - len(qualified))
+        remaining_pairs = max(0, TARGET_QUALIFIED_PAIRS - trigger_count)
         q14_rate = float(
             completion_rates["stages"]["Q14"]["pairs_per_day"] or 0.0
         )
@@ -790,7 +816,7 @@ def path_to_25_metrics(
         )
         eta_to_25 = {
             "target_pairs": TARGET_QUALIFIED_PAIRS,
-            "qualified_pairs": len(qualified),
+            "qualified_pairs": trigger_count,
             "remaining_pairs": remaining_pairs,
             "eta_days": eta,
             "measured_q14_pairs_per_day": q14_rate,
@@ -803,20 +829,20 @@ def path_to_25_metrics(
             ),
             "capacity_lower_bound_days": capacity_lower_bound_days,
             "basis": (
-                "remaining provisional strict-v4 qualified pairs / trailing-7d "
+                "remaining sealed strict-v4 contiguous-Q14 trigger pairs / trailing-7d "
                 "raw valid v4 Q14 pair completion rate"
             ),
             "caveat": (
                 "The observed Q14 sample may contain NO_CHANGE pilots that are not "
-                "strictly qualified. It is a throughput proxy, not an OWNER counting "
-                "decision, survival model, or queue-empty ETA."
+                "strictly qualified. The rate is a throughput proxy, not a survival "
+                "model or queue-empty ETA; it never changes the sealed trigger count."
             ),
         }
     finally:
         con.close()
 
     return {
-        "qualified_pairs": len(qualified),
+        "qualified_pairs": trigger_count,
         "distinct_eas": guard.distinct_eas,
         "families": guard.strategy_families,
         "frontier_histogram": frontier_histogram,

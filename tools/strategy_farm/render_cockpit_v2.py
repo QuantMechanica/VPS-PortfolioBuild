@@ -806,14 +806,16 @@ def _render_path_to_25(contract: dict) -> str:
     if not pair_rows:
         pair_rows = '<tr><td colspan="8" class="mc-dim">keine v4-Paardaten</td></tr>'
 
-    option_chips = "".join(
+    diagnostic_chips = "".join(
         f'<span class="mc-p25-gate" title="{e(option.get("description"))}">'
-        f'<b>{e(option.get("id"))}</b>{_int(option.get("count"))}</span>'
-        for option in (definition.get("options") or [])
+        f'<b>Diagnostik · {e(option.get("id"))} · kein Trigger</b>'
+        f'{_int(option.get("count"))}</span>'
+        for option in (definition.get("diagnostics") or [])
     )
     definition_footnote = definition.get("footnote") or (
         "Zähldefinition fehlt; Anzeige ist nicht für eine OWNER-Entscheidung belastbar."
     )
+    definition_authority = definition.get("authority_path") or "Authority fehlt"
 
     return f'''
   <section class="mc-section mc-p25" id="path-to-25">
@@ -826,9 +828,10 @@ def _render_path_to_25(contract: dict) -> str:
       <div class="mc-p25-stat"><b>{_int(metrics.get("families"))}</b><span>Familien</span></div>
       <div class="mc-p25-stat"><b>{e(eta_text)}</b><span>ETA zu 25</span></div>
     </div>
-    <div class="mc-p25-definition"><b>Zählung PROVISORISCH · {e(definition.get("rendered_definition_id"))}</b>
+    <div class="mc-p25-definition"><b>Zählung VERSIEGELT · {e(definition.get("rendered_definition_id"))}</b>
       <span>{e(definition_footnote)}</span>
-      <div class="mc-p25-frontier"><span>Definitionsoptionen</span>{option_chips}</div>
+      <div class="mc-p25-frontier"><span>OWNER-Entscheid</span><b>{e(definition_authority)}</b></div>
+      <div class="mc-p25-frontier"><span>Sekundärdiagnostik · KEIN Trigger</span>{diagnostic_chips}</div>
     </div>
     <div class="mc-p25-frontier"><span>Q09-Reservoir</span>
       <b>{_int(reservoir.get("q09_pass_pairs"))}</b><span>PASS</span>

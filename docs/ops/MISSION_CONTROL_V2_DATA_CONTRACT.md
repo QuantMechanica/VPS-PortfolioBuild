@@ -339,14 +339,18 @@ dem einmal berechneten Vollbestand separat `linear_frontier.html`; dadurch
   7×24-h-Fenster;
 - `eta_to_25`: Restpaare geteilt durch die gemessene rohe Q14-Abschlussrate;
   dies ist ausdrücklich weder eine Queue-leer-ETA noch ein Survival-Modell;
-- `counting_definition`: die bis zur OWNER/Orchestrator-Versiegelung
-  provisorisch gerenderte Definition plus unverbindliche Alternativzählungen.
+- `counting_definition`: die durch
+  `decisions/2026-08-27_owner_count_definition_option_a.md` versiegelte
+  `STRICT_V4_CONTIGUOUS_Q14`-Triggerdefinition plus klar getrennte, niemals
+  triggernde B/C/D-Sekundärdiagnostik.
 
 Die aktive Anzeige zählt fail-closed nur Paare mit kanonischer v4-Lineage und
 `highest_contiguous_valid_gate=Q14`. Historische Q14-Labels und rohe v4-Q14-
 Pilotzeilen werden sichtbar separat ausgewiesen und verändern `qualified_pairs`
-nicht. Eine Änderung dieser Definition ist eine eigene OWNER-Entscheidung, kein
-Dashboard- oder Telemetrieeffekt.
+nicht. `qualified_pairs`, der Hauptzähler und `eta_to_25.remaining_pairs` werden
+aus demselben versiegelten Triggerobjekt abgeleitet. Eine Änderung dieser
+Definition ist eine eigene OWNER-Entscheidung, kein Dashboard- oder
+Telemetrieeffekt.
 
 ---
 

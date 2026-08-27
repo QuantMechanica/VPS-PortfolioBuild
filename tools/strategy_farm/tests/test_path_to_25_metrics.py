@@ -161,7 +161,15 @@ def test_path_to_25_metrics_fixture_is_complete_and_read_only(
         "STRICT_V4_CONTIGUOUS_Q14"
     )
     assert metrics["counting_definition"]["rendered_count"] == 24
-    assert metrics["counting_definition"]["decision_required"] is True
+    assert metrics["counting_definition"]["status"] == "SEALED_OWNER_OPTION_A"
+    assert metrics["counting_definition"]["decision_required"] is False
+    assert metrics["counting_definition"]["trigger"]["count"] == 24
+    assert metrics["counting_definition"]["trigger"]["is_trigger"] is True
+    assert metrics["counting_definition"]["authority_path"] == (
+        "decisions/2026-08-27_owner_count_definition_option_a.md"
+    )
+    assert metrics["qualified_pairs"] == metrics["counting_definition"]["trigger"]["count"]
+    assert metrics["eta_to_25"]["qualified_pairs"] == metrics["qualified_pairs"]
     assert metrics["eta_to_25"]["remaining_pairs"] == 1
     assert metrics["eta_to_25"]["reliability"] == "MEASURED"
     assert metrics["eta_days"] == 0.29
@@ -211,14 +219,17 @@ def _render_metrics() -> dict:
             },
         },
         "counting_definition": {
-            "status": "PROVISIONAL_OWNER_ORCHESTRATOR_DECISION_PENDING",
+            "status": "SEALED_OWNER_OPTION_A",
+            "authority_path": "decisions/2026-08-27_owner_count_definition_option_a.md",
             "rendered_definition_id": "STRICT_V4_CONTIGUOUS_Q14",
-            "footnote": "Provisorisch gerendert; OWNER/Orchestrator-Versiegelung ausstehend.",
-            "options": [
-                {"id": "STRICT_V4_CONTIGUOUS_Q14", "count": 7,
-                 "description": "strict"},
+            "footnote": "Durch OWNER-Entscheid versiegelt.",
+            "trigger": {
+                "id": "STRICT_V4_CONTIGUOUS_Q14", "count": 7,
+                "target": 25, "is_trigger": True,
+            },
+            "diagnostics": [
                 {"id": "V4_TERMINAL_ROW_ONLY", "count": 10,
-                 "description": "raw"},
+                 "is_trigger": False, "description": "raw"},
             ],
         },
         "eta_to_25": {
@@ -267,9 +278,74 @@ def test_all_owner_surfaces_render_the_shared_metrics(tmp_path: Path) -> None:
     assert "RERUN_INFRA" in cockpit and "RERUN_INFRA" in owner_html
     assert "Committed" in cockpit and "1.124" in cockpit
     assert "ETA zu 25" in cockpit and "Queue-leer-ETA" in cockpit
-    assert "Zählung PROVISORISCH" in cockpit
+    assert "Zählung VERSIEGELT" in cockpit
+    assert "Zählung PROVISORISCH" not in cockpit
+    assert "decisions/2026-08-27_owner_count_definition_option_a.md" in cockpit
+    assert "Sekundärdiagnostik · KEIN Trigger" in cockpit
+    assert "V4_TERMINAL_ROW_ONLY · kein Trigger" in cockpit
     assert "Q09-Reservoir" in cockpit and "Q10 chosen" in cockpit
     assert "QM5_900001" in cockpit
+
+
+def test_sealed_option_a_excludes_holes_pilots_and_historical_q14(
+    tmp_path: Path, monkeypatch
+) -> None:
+    db = tmp_path / "sealed-count.sqlite"
+    con = sqlite3.connect(db)
+    con.executescript(DDL)
+    now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
+
+    def add(row_id: str, gate: str, ea_id: str, verdict: str, contract: str) -> None:
+        con.execute(
+            "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                row_id, gate, ea_id, "EURUSD.DWX", "done", verdict, "{}",
+                None, None, now, now, contract,
+            ),
+        )
+
+    gates = tuple(f"Q{index:02d}" for index in range(2, 15))
+    for gate in gates:
+        add(
+            f"full-{gate}", gate, "QM5_FULL",
+            "KEEP_INCUMBENT" if gate == "Q14" else "PASS", "v4",
+        )
+    for gate in gates:
+        if gate != "Q06":
+            add(
+                f"hole-{gate}", gate, "QM5_HOLE",
+                "KEEP_INCUMBENT" if gate == "Q14" else "PASS", "v4",
+            )
+    add("pilot-q12", "Q12", "QM5_PILOT", "NO_FILTER_CHANGE", "v4")
+    add("pilot-q13", "Q13", "QM5_PILOT", "NO_PARAMETER_CHANGE", "v4")
+    add("pilot-q14", "Q14", "QM5_PILOT", "KEEP_INCUMBENT", "v4")
+    add("legacy-q14", "Q14", "QM5_LEGACY", "OPT_ELIGIBLE", "v3")
+    con.commit()
+    con.close()
+    monkeypatch.setattr(book_build_guard, "_count_strategy_families", lambda rows: 1)
+
+    metrics = path_to_25.path_to_25_metrics(db)
+    definition = metrics["counting_definition"]
+    diagnostics = {item["id"]: item for item in definition["diagnostics"]}
+
+    assert metrics["qualified_pairs"] == 1
+    assert definition["trigger"] == {
+        "id": "STRICT_V4_CONTIGUOUS_Q14",
+        "count": 1,
+        "target": 25,
+        "canonical_unit": "(ea_id,symbol)",
+        "predicate": "highest_contiguous_valid_gate=Q14",
+        "is_trigger": True,
+    }
+    assert metrics["eta_to_25"]["qualified_pairs"] == 1
+    assert metrics["eta_to_25"]["remaining_pairs"] == 24
+    assert diagnostics["V4_TERMINAL_ROW_ONLY"]["count"] == 3
+    assert diagnostics["CONTRACT_EQUIVALENT_TERMINAL"]["count"] == 3
+    assert diagnostics["HISTORICAL_Q14_LABEL_INCLUSIVE"]["count"] == 4
+    assert all(item["is_trigger"] is False for item in diagnostics.values())
+    assert definition["authority_sha256"] == (
+        "d47501ca1f633d49ea2f7213bb107e1cc508a0e0b4b1901af321ec8fbd00fcd2"
+    )
 
 
 def test_committed_work_uses_payload_declarations_and_receipts(tmp_path: Path) -> None:
