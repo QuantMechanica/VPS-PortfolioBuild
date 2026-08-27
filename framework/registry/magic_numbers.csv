@@ -18055,3 +18055,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41174,xauxag-mspearman-rv,1,XAGUSD.DWX,411740001,2026-08-26,Codex governed allocator,active
 41175,xtixng-mpettitt-rv,0,XTIUSD.DWX,411750000,2026-08-26,Codex governed allocator,active
 41175,xtixng-mpettitt-rv,1,XNGUSD.DWX,411750001,2026-08-26,Codex governed allocator,active
+41176,wti-mwilcoxon-shift-tr,0,XTIUSD.DWX,411760000,2026-08-27,Codex governed allocator,active
