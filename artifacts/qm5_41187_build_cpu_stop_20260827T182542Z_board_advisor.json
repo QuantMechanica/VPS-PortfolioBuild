@@ -1,0 +1,141 @@
+{
+  "schema": "qm.source-build-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-27T18:25:42Z",
+  "recorded_at_local": "2026-08-27T20:25:42+02:00",
+  "branch": "agents/board-advisor",
+  "recorded_on_head": "df23ce4c3b1a1b8b4a6b0d7e2baaf3a8a9836715",
+  "ea_id": "QM5_41187",
+  "ea_label": "QM5_41187_xauxag-mks-rv",
+  "strategy_id": "SCHWEIKERT-NIST-KS2-CME-XAUXAG-MDIST-RV-2026_S01",
+  "logical_symbol": "QM5_41187_XAU_XAG_MKS_RV_D1",
+  "symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "magics": [
+    411870000,
+    411870001
+  ],
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_ENQUEUED_HELD_Q01_NOT_PASS_Q02_STOPPED_CPU_CEILING",
+  "commits": {
+    "source_approval_and_preallocation_dedup": "673be5a44a9d5610a4d55989fb683bc8627b9cb0",
+    "source_extraction": "9a7ed8613225bb142532bcbfbe8363b2f0269637",
+    "card_identity_and_g0": "6755344017fb8ae36df17bd63362b806aa80650a",
+    "source_build": "df23ce4c3b1a1b8b4a6b0d7e2baaf3a8a9836715"
+  },
+  "hashes": {
+    "source_packet_sha256": "EFA401D3916AEBAE3403C9CD0C9D141FAB5492678EF52DA458D2F86BFAF7A396",
+    "preallocation_dedup_sha256": "C2DF4289E83E77847B7BDA7D2A6BA620A555E7846F91CAF1B3CC0EF44112FA7D",
+    "canonical_card_sha256": "FA81618B43A356CEB36666C5A9A4D7D05E0E5F2C097C077A257D9494B2FD6B18",
+    "ea_card_copy_sha256": "FA81618B43A356CEB36666C5A9A4D7D05E0E5F2C097C077A257D9494B2FD6B18",
+    "mq5_sha256": "EC8B6AFBD1FF01F77C7B0A1D8996DAB22F7CC53E3D4FE14611089AFF98E7FA56",
+    "reference_test_sha256": "09AEDE316AA30ECFD50D1F859F2EB71D1BFBACD9A83A799804F6CB1E3A5B41A5",
+    "logical_setfile_sha256": "058FF5EE7381191363E5926CE061481F4DD1EDC5C38F3FF9745659890C40661A",
+    "basket_manifest_sha256": "66CC7F95B887B3C9E1FCE71226C527572AE9E6E514F6535BAFA6DB77038392F0",
+    "magic_allocation_receipt_sha256": "682092E19289551A9071F3B2D6248EC8BABF6013CD85E22C5F1015EAC8F7C28A"
+  },
+  "edge": {
+    "carrier": "XAUUSD.DWX/XAGUSD.DWX equal-target-notional two-leg basket",
+    "decision_clock": "first eligible synchronized D1 bar of each broker month",
+    "signal": "twelve synchronized completed monthly log(XAU)-log(XAG) endpoints split into fixed older and newer blocks of six; scan the combined strict order and measure the two signed empirical-CDF count gaps",
+    "entry": "dominant newer-higher gap at or above three sells XAU and buys XAG; dominant newer-lower gap at or above three buys XAU and sells XAG; weak, tied-maxima, exact-tie, or invalid state consumes flat",
+    "lifecycle": "one consumed attempt per month; next-month or forty-day stale package exit",
+    "risk": "one aggregate RISK_FIXED=1000 budget split across frozen 3.5*ATR(20,D1) stops with equal target notionals and a 20% maximum mismatch",
+    "exact_signal_density": "436 qualifying strict permutations out of C(12,6)=924, or 109/231; 218 in each direction, 486 weak flats, and 2 tied-maxima flats"
+  },
+  "source_and_nonduplicate_evidence": {
+    "source_basis": "complete peer-reviewed gold/silver relationship evidence plus complete official CME spread-carrier and NIST two-sample KS method evidence",
+    "runtime_external_data": false,
+    "preallocation_dedup_verdict": "FUZZY_MATCH_RESOLVED_DISTINCT_XAUXAG_FIXED_SIX_BY_SIX_SIGNED_KS_GAP3_DISTRIBUTION_SHIFT_REVERSION_BASKET",
+    "dedup_scope": {
+      "registry_identities": 4686,
+      "cards": 1337,
+      "strategy_wiki_nodes": 45
+    },
+    "mechanic_boundary": "fixed six-by-six signed ECDF count-gap reversion is distinct from the existing XAU/XAG Mann-Whitney rank-sum, fractional-difference, OLS, MAD, breakout, cross-sectional-reversal, RSJ, and other basket mechanics",
+    "portfolio_claim_boundary": "market-neutral-style construction is not a realized decorrelation claim; unchanged Q09 remains authoritative"
+  },
+  "validation": {
+    "reference_tests": {
+      "passed": 9,
+      "failed": 0
+    },
+    "card_schema_lint": "PASS_NO_ML_HITS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "build_guard": "PASS",
+    "build_check": "REFUSED_BEFORE_EXECUTION_BY_LIVE_FACTORY_AD_HOC_COMPILE_INTERLOCK",
+    "banned_or_ml_indicator_hits": 0,
+    "card_copy_byte_identical": true,
+    "registry_identity": "ACTIVE",
+    "magic_rows": "TWO_ACTIVE_ROWS_ZERO_NEW_STATUS_AWARE_COLLISIONS",
+    "risk_setfiles": "THREE_BACKTEST_ONLY_RISK_FIXED_SETS",
+    "live_set_count": 0
+  },
+  "compile": {
+    "ad_hoc_strict_compile_attempted": false,
+    "ad_hoc_interlock_result": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED_NO_RETRY",
+    "governed_work_item_enqueued": true,
+    "governed_work_item_id": "37dbc847-cf01-47cf-b89d-9ab761262f8c",
+    "governed_work_item_status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "bound_mq5_sha256": "EC8B6AFBD1FF01F77C7B0A1D8996DAB22F7CC53E3D4FE14611089AFF98E7FA56",
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "sampling_method": "Get-Counter Processor(_Total) Percent Processor Time, five samples at one-second cadence",
+    "sampled_at_utc": "2026-08-27T18:25:02.5630319Z",
+    "cpu_ceiling_percent": 97.0,
+    "binding_rule": "stop when either five-sample average or maximum reaches the governed tester admission ceiling",
+    "samples_percent": [
+      99.90279900057664,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 99.98055980011533,
+    "maximum_cpu_percent": 100.0,
+    "cpu_ceiling_hit": true,
+    "factory_terminal_count": 7,
+    "factory_terminals_running": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "active_work_item_count": 8,
+    "active_phase_counts": {
+      "Q03": 1,
+      "Q07": 1,
+      "Q09": 1,
+      "Q10_NEWS": 4,
+      "OPT_CENSUS": 1
+    },
+    "t_live_and_nonfactory_processes_excluded": true
+  },
+  "q02": {
+    "enqueued": false,
+    "component_rows_enqueued": 0,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_NO_EX5",
+      "BACKTEST_CPU_CEILING_HIT"
+    ],
+    "resume_contract": "Let the existing governed compile item resolve; require the exact source hash, strict zero-error/zero-warning EX5 and Q01 approval; recheck CPU below 97%; then append exactly one logical-basket Q02 row and zero component-leg rows."
+  },
+  "safety": {
+    "terminal_processes_started_or_stopped_by_this_run": false,
+    "terminal_reservations_mutated_by_this_run": false,
+    "autotrading_toggled_by_this_run": false,
+    "t_live_touched_by_this_run": false,
+    "portfolio_gate_touched_by_this_run": false,
+    "t_live_manifest_touched_by_this_run": false,
+    "unrelated_worktree_changes_preserved_and_unstaged": true
+  }
+}
