@@ -1,0 +1,137 @@
+{
+  "artifact_type": "qm5_source_build_compile_handoff_cpu_ceiling",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T12:28:48.3568298Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "SOURCE_BUILT_COMPILE_ENQUEUED_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "candidate": {
+    "ea_id": "QM5_41182",
+    "ea_id_numeric": 41182,
+    "slug": "wti-median-runs-tr",
+    "strategy_id": "MOP-NIST-WTI-MEDRUN-TREND-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 411820000,
+    "logic": "thirteen completed monthly WTI closes; strict ranks; omit rank seven; count runs in the chronological balanced six-low/six-high sequence; continue the newest nonmedian regime at runs<=7",
+    "asset_exposure": "direct WTI structural monthly continuation",
+    "portfolio_claim_boundary": "new energy carrier exposure only; no realized decorrelation claim before Q09"
+  },
+  "commits": {
+    "source_approval": "2ace42211",
+    "card_and_ea_id_approval": "b6f5dd344",
+    "source_build_and_magic": "46b072d877707e286f72409f509947679b39d81d"
+  },
+  "source_and_nonduplicate_evidence": {
+    "canonical_source_packet": "strategy-seeds/sources/MOP-NIST-WTI-MEDRUN-TREND-2026/source.md",
+    "canonical_source_packet_sha256": "E1954B72A7E9F45BEA151DC1C18DFDA64C40D543C37CB22CF02E95F268147429",
+    "dedup_receipt": "artifacts/qm5_wti_median_runs_tr_preallocation_dedup_20260827.json",
+    "dedup_receipt_sha256": "7740FB213317764F76737EB97638FA3E6F5BCADC08CD8FE124708EAD6D6658B6",
+    "dedup_verdict": "CLEAN_WTI_MONTHLY_MEDIAN_DICHOTOMY_RUNCOUNT_LE7_NEWEST_REGIME_CONTINUATION",
+    "exact_density": {
+      "representations_total": 12012,
+      "representations_qualifying": 6744,
+      "buy": 3372,
+      "sell": 3372,
+      "flat": 5268,
+      "qualification_fraction": "562/1001",
+      "qualification_rate": 0.5614385614385614,
+      "qualifying_rank_permutations": 3496089600
+    }
+  },
+  "build_artifacts": {
+    "mq5": {
+      "path": "framework/EAs/QM5_41182_wti-median-runs-tr/QM5_41182_wti-median-runs-tr.mq5",
+      "sha256": "2FFC31B19715BAED817751245428C59FAB3CCCBDC0C6F09DC9E1BE17CC74AD04"
+    },
+    "spec": {
+      "path": "framework/EAs/QM5_41182_wti-median-runs-tr/SPEC.md",
+      "sha256": "8F9EB15B722540DFA0E8BE2812639414448AD648518E5EAA3BD4164EFACA7F71"
+    },
+    "backtest_set": {
+      "path": "framework/EAs/QM5_41182_wti-median-runs-tr/sets/QM5_41182_wti-median-runs-tr_XTIUSD.DWX_D1_backtest.set",
+      "sha256": "B4F49882ABE80ED1D04A68A7B1A0AD443E5AA894EB385687BB773E485F845225",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "environment": "backtest"
+    },
+    "reference_test": {
+      "path": "framework/EAs/QM5_41182_wti-median-runs-tr/docs/test_monthly_median_runs_reference.py",
+      "sha256": "FD2E0EE887FBAAB90034A9180C98C989CDF8F251922F60E6BB4292EA194557C5"
+    },
+    "approved_card_copy_sha256": "2014EE9C158A358B65E963DFC84EBDB27E3A298FD9F129060AAD0BAE6C85DB79",
+    "ex5_present": false
+  },
+  "validation": {
+    "reference_tests": "PASS_10_OF_10",
+    "strategy_card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "build_prerequisite_guard": "PASS",
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS_MQ5_AND_SETFILE",
+    "resolver_tests": "PASS_14_OF_14",
+    "banned_or_ml_scan": "NO_HITS",
+    "magic_allocator": "PASS_ONE_ACTIVE_ROW_NO_COLLISIONS",
+    "strict_compile": "PENDING",
+    "q01": "PENDING_COMPILE",
+    "q02": "NOT_ENQUEUED_Q01_PENDING_AND_CPU_CEILING"
+  },
+  "compile_coordination": {
+    "ad_hoc_build_check": {
+      "attempted": true,
+      "compiled": false,
+      "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+      "retry_attempted": false
+    },
+    "governed_compile_work_item": {
+      "id": "a994435a-61b0-46a3-8b46-0a07e24a9e4b",
+      "phase": "COMPILE_EA",
+      "status": "pending",
+      "attempt_count": 0,
+      "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+    }
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "stop when either the five-sample average or maximum reaches the governed tester admission ceiling",
+    "source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-27T12:27:53+00:00",
+    "samples_percent": [100.0, 100.0, 100.0, 100.0, 100.0],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_percent": 100.0,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "metatester64_process_count": 6,
+    "terminal64_process_count_including_nonfactory": 8
+  },
+  "farm_state": {
+    "active_work_item_count": 8,
+    "active_phase_counts": {
+      "OPT_CENSUS": 1,
+      "Q03": 1,
+      "Q07": 1,
+      "Q09": 1,
+      "Q10_NEWS": 4
+    },
+    "running_factory_terminals": ["T1", "T3", "T4", "T7", "T8", "T10"],
+    "running_factory_terminal_count": 6,
+    "orphaned_factory_terminal_process_count": 0,
+    "excluded_and_not_controlled": ["T_Live", "FTMO"]
+  },
+  "stop_actions": {
+    "q02_enqueued": false,
+    "manual_smoke_or_backtest_started": false,
+    "compile_retry_attempted": false,
+    "terminal_or_worker_controlled": false,
+    "queue_priority_changed": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  },
+  "next_action": "Allow the governed compile worker to produce a hash-bound 0-error/0-warning EX5 and Q01 PASS. Recheck the CPU ceiling, then enqueue exactly one XTIUSD.DWX D1 RISK_FIXED Q02 row if eligible."
+}
