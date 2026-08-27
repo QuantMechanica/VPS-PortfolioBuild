@@ -1,0 +1,61 @@
+{
+  "artifact_type": "commodity_energy_sleeve_hard_cpu_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T07:45:47.205Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "554d45fab3e4d66741cab72d3297278c2592c229",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_EDGE_SELECTION_OR_MUTATION",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "source": "explicit OWNER commodity/energy sleeve mission"
+  },
+  "capacity_sample": {
+    "command": "five sequential Get-Counter \\Processor(_Total)\\% Processor Time samples",
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      99.9,
+      100.0
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 99.98,
+    "maximum_cpu_percent": 100.0,
+    "average_binding": true,
+    "maximum_binding": true,
+    "ceiling_binding": true
+  },
+  "frontier_observation": {
+    "existing_current_branch_commodity_build": "QM5_41180_xtixng-mspearman-rv",
+    "existing_build_commit": "cdd868925",
+    "decision": "Do not duplicate the already-built XTI/XNG monthly Spearman basket and do not select, allocate, build, compile, or enqueue a successor while the explicit CPU stop is binding."
+  },
+  "actions_this_run": {
+    "new_source_approval": false,
+    "new_strategy_card": false,
+    "ea_id_or_magic_allocation": false,
+    "new_ea_or_setfile": false,
+    "compile_or_build_check": false,
+    "q02_enqueue": false,
+    "queue_requeue_or_priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "evidence_commit_only": true,
+    "reason": "The fresh five-sample whole-host CPU average was 99.98 percent and the maximum was 100.0 percent, both above the binding 97 percent ceiling."
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_demo_shadow_or_stress_artifact_created": false
+  },
+  "worktree_hygiene": {
+    "preflight_porcelain_entry_count": 0,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  }
+}
