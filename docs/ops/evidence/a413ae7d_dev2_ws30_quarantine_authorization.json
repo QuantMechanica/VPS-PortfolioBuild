@@ -1,0 +1,21 @@
+{
+  "schema": "qm.dev2-ws30-quarantine-authorization/v1",
+  "task_id": "a413ae7d-75bc-43f4-93b0-4fa8f27732f8",
+  "commissioned_by": "deterministic agent-router assignment",
+  "operation": "QUARANTINE_UNCONTRACTED_CUSTOM_HISTORY",
+  "lane": "DEV2",
+  "symbol": "WS30.DWX",
+  "source_custom_root": "D:/QM/mt5/DEV2/Bases/Custom",
+  "quarantine_root": "D:/QM/reports/dev2/quarantine/a413ae7d_ws30_transport_2026-08-27",
+  "provision_receipt": "D:/QM/reports/setup/tick-data-timezone/WS30.DWX_DEV2_TRANSPORT_001/provision_receipt.json",
+  "provision_receipt_sha256": "16e4f1d647e72180ed40028dbf9bf323deca275e99f12a0faf659cb0f4acd782",
+  "expected_file_count": 98,
+  "expected_file_set_sha256": "2130460517c1affa3f6749d4c30279ddc6f47dcbc1cfcdc73370ccb1a1ebf674",
+  "lane_contract_sha256": "866e4e346187e47c33e32beb30bb96dc4085e98cc316819fb33f7925306dda06",
+  "allow_delete": false,
+  "allow_contract_expansion": false,
+  "allow_terminal_start": false,
+  "allow_account_enable": false,
+  "factory_terminals_allowed": false,
+  "live_allowed": false
+}
