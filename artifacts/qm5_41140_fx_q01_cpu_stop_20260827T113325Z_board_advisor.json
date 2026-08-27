@@ -1,0 +1,96 @@
+{
+  "schema": "qm.paced-fleet-build-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-27T11:33:25.0947673Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "4f440ddbb0606a4de682b5213a76ae7cef2b0c27",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_COMPILE",
+  "candidate": {
+    "ea_id": "QM5_41140",
+    "label": "QM5_41140_nzdjpy-carry-unwind-crisis-momentum",
+    "router_task_id": "29863320-8536-4252-b02c-6dae6db885d9",
+    "router_task_state": "BLOCKED",
+    "selection_basis": "existing unique claim for the highest-ranked eligible structural low-frequency diverse FX card",
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41140_nzdjpy-carry-unwind-crisis-momentum.md",
+    "execution_symbol": "NZDJPY.DWX",
+    "timeframe": "D1",
+    "source_present": true,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "canonical_backtest_setfile_present": true,
+    "active_magic_rows": 1,
+    "ex5_present": false,
+    "pipeline_work_item_count": 0,
+    "build_dispatch_claim_file_count": 0
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "stop when either the fresh five-sample average or maximum reaches 97 percent",
+    "implementation_source": "tools/strategy_farm/terminal_worker.py:147"
+  },
+  "cpu_sample": {
+    "command": "five Get-CimInstance Win32_Processor LoadPercentage readings with two-second intervals",
+    "samples_percent": [
+      99.0,
+      97.0,
+      85.0,
+      88.0,
+      93.0
+    ],
+    "average_percent": 92.4,
+    "maximum_percent": 99.0,
+    "ceiling_binding": true,
+    "trigger": "maximum_percent"
+  },
+  "farm_snapshot": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "slot_command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "work_item_command": "python tools/strategy_farm/farmctl.py work-items --status active",
+    "slot_scan_at_utc": "2026-08-27T11:32:53+00:00",
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T6",
+      "T8"
+    ],
+    "running_factory_terminal_count": 4,
+    "active_work_item_count": 6,
+    "active_phase_counts": {
+      "Q07": 1,
+      "Q09": 1,
+      "Q10_NEWS": 4
+    },
+    "orphaned_factory_terminal_process_count": 0,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/diversity_funnel_cpu_stop_20260827T071609Z_board_advisor.json",
+    "preceding_running_factory_terminal_count": 7,
+    "current_running_factory_terminal_count": 4,
+    "preceding_active_work_item_count": 9,
+    "current_active_work_item_count": 6,
+    "topology_change": "T4, T9, and T10 cleared since the preceding receipt; four governed terminal processes remain and the fresh CPU maximum still binds the ceiling",
+    "candidate_progress_since_preceding_receipt": "QM5_41140 now has its governed active magic row, resolver-backed source build, SPEC, and canonical RISK_FIXED setfile committed; EX5 and Q02 remain absent"
+  },
+  "actions_after_capacity_stop": {
+    "task_claim_or_state_mutation": false,
+    "registry_or_magic_mutated": false,
+    "ea_source_or_setfile_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_or_reconciliation_run": false,
+    "terminal_or_worker_controlled": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  },
+  "next_action": "After a fresh five-sample CPU check clears the ceiling, resume router task 29863320-8536-4252-b02c-6dae6db885d9, obtain a governed strict compile PASS and current EX5 without bypassing the live-factory include guard, then enqueue exactly one NZDJPY.DWX D1 Q02 row."
+}
