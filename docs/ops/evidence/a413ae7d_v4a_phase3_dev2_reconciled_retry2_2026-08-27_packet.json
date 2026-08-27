@@ -1,0 +1,4804 @@
+{
+  "activation_checklist": [
+    {
+      "gate": "validation-only governed backend implemented and tested",
+      "status": "PASS"
+    },
+    {
+      "gate": "20 oldest authenticated references selected",
+      "status": "PASS"
+    },
+    {
+      "gate": "20/20 field and artifact-byte parity",
+      "status": "BLOCKED"
+    },
+    {
+      "gate": "measured >=2.5x complete-batch speedup",
+      "status": "BLOCKED"
+    },
+    {
+      "gate": "repeat complete batch deterministically",
+      "status": "BLOCKED"
+    },
+    {
+      "gate": "OWNER activation seal binds reviewed backend and parity packet",
+      "status": "BLOCKED"
+    },
+    {
+      "gate": "production remains Default-OFF; cold path and DL-089 unchanged",
+      "status": "PASS"
+    }
+  ],
+  "authorization": {
+    "feature_flag": "QM_ENABLE_WARM_CELL_RUNNER",
+    "feature_flag_process_value": "1",
+    "manifest": {
+      "active_terminal_allowed": false,
+      "authorized_by": "OWNER_COMMISSION",
+      "cold_path_default": "OFF",
+      "commissioned_via": "deterministic agent-router task assigned to codex",
+      "execution_backend": "GOVERNED_SEQUENTIAL_TESTER_RESTART",
+      "lane": "DEV2",
+      "minimum_comparisons": 20,
+      "production_wiring": false,
+      "profile_mode": "ISOLATED_DEV2",
+      "purpose": "OFFLINE_PARITY_VALIDATION",
+      "resident_ipc_claimed": false,
+      "schema": "qm.warm-cell-validation-run/v1",
+      "stop_on_first_deviation": true,
+      "task_id": "2cb9d160-d5c0-46ea-ae45-d145a63cf1f4"
+    },
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2cb9d160_v4a_phase3_inputs\\validation_authorization.json",
+    "production_wiring": false,
+    "sha256": "77af09ccc6f5036b19758b69c3b9b8aae5043e14a8152475d222c4acd8d504e6"
+  },
+  "backend": {
+    "execution_backend": "GOVERNED_SEQUENTIAL_TESTER_RESTART",
+    "lane": "DEV2",
+    "logical_session": {
+      "cells_authenticated": 1,
+      "closed_exact": true,
+      "elapsed_seconds": 451.625,
+      "finished_utc": "2026-08-27T17:41:18.589625+00:00",
+      "fixed_inputs": {
+        "controller": {
+          "path": "C:\\QM\\repo\\framework\\scripts\\run_dev2_smoke.ps1",
+          "sha256": "d3d2bcbcd2d2d52bea4d0a50f501d86e35d48211b67066fad236d5c5d4efc485"
+        },
+        "credential": {
+          "path": "C:\\ProgramData\\QM\\DEV2\\credential.machine-dpapi.json",
+          "sha256": "32f621bab2069924727f5cc0fbdb9e98d38701f2186f00bbc4f687f4a870f5b7"
+        },
+        "credential_helper": {
+          "path": "C:\\QM\\repo\\framework\\scripts\\dev2_machine_credential.ps1",
+          "sha256": "bd3077f5ff671d80a377a820e35cd233cdf8ad1b25d376d579da4714c323ad2c"
+        },
+        "lane_contract": {
+          "contract_id": "QM_DEV2_ISOLATED_MT5_LANE_V3",
+          "path": "C:\\QM\\repo\\framework\\registry\\dev2_lane_contract.json",
+          "sha256": "866e4e346187e47c33e32beb30bb96dc4085e98cc316819fb33f7925306dda06"
+        },
+        "programs": {
+          "MetaEditor64.exe": {
+            "path": "D:\\QM\\mt5\\DEV2\\MetaEditor64.exe",
+            "sha256": "2c0c8e9e5c1239e30e8a908d9205cdb01b9cdfcf876752e43bd7a755cce58ad3"
+          },
+          "metatester64.exe": {
+            "path": "D:\\QM\\mt5\\DEV2\\metatester64.exe",
+            "sha256": "d1e991d84243ec913db8c82505ab69eab48babcb2fa6826ab3871b3360abb646"
+          },
+          "terminal64.exe": {
+            "path": "D:\\QM\\mt5\\DEV2\\terminal64.exe",
+            "sha256": "abd32f97efea4d3ddaaf694230c13eacef228e71d5115da7202033aa226c6946"
+          }
+        },
+        "run_smoke": {
+          "path": "C:\\QM\\repo\\framework\\scripts\\run_smoke.ps1",
+          "sha256": "750478498f9280b61d2cb02ba1ee03a52b54bb448461b2d3d3cc246af411cf4a"
+        }
+      },
+      "history_after": {
+        "file_count": 108,
+        "files": [
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2017.hcc",
+            "sha256": "55587e6a5b0d8de666aa3237e19774033eab35898db2d1581dd770c63d50fc3b",
+            "size": 5569149
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2018.hcc",
+            "sha256": "f344d81fc87b702df12e55518cfd543879d1f47ed4d5ad35d5110c1ad68bbdab",
+            "size": 22308504
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2019.hcc",
+            "sha256": "2bd22d821022a82accd5e4b7b752a30a40e4ee3c2f4bdea14527fd008c9655af",
+            "size": 22247775
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2020.hcc",
+            "sha256": "1d3a766e8ddca4bbad8e4102a936de68aff62fd840ae93926f222aee6c824a0e",
+            "size": 22318584
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2021.hcc",
+            "sha256": "cde04ee4d1a8895bf06b6e39e7d807df145308b6380b17b2a2061245d186ad37",
+            "size": 22272444
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2022.hcc",
+            "sha256": "65088758b20a71ec640b5f2d29ee5f10d1ee52435a816e82327bba3bbe000a2a",
+            "size": 22250004
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2023.hcc",
+            "sha256": "dc5c19bd7bf1dde208b988b20f09a72ec62ca4fe875cb3d7b29a28303ce9d56a",
+            "size": 21854757
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2024.hcc",
+            "sha256": "5bc2ebded2722bd559e674fe237ad2c15a0420ef8839d6674d138c0630fc1a39",
+            "size": 22256124
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2025.hcc",
+            "sha256": "9a085d00e7abd50f909e75f11da0f0d324d5d034c787af1f4a3e755c988e8c4d",
+            "size": 20681142
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201710.tkc",
+            "sha256": "a1978ca832c0873e8bacb94a4c774118ecf263d52814fd1dd8ef09c2e7add695",
+            "size": 15061650
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201711.tkc",
+            "sha256": "1d7b9f8c258f79c0aab62ccccee62bab1efbd3b4fb59998bc4f057549f37c6af",
+            "size": 14960802
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201712.tkc",
+            "sha256": "cd08a836c7579c5808e35a1d8141afbe1b96b07c5e3ddfce839d1a1f281507f6",
+            "size": 14593014
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201801.tkc",
+            "sha256": "63159719ef45fa7fccfcf4f326aa59b78477e2a0b0739024b32902c371e0bd3d",
+            "size": 18798018
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201802.tkc",
+            "sha256": "e68bcd232456b2ebe8f4ed837e9844f295da681e06d2b69e6795ebe3f039e9de",
+            "size": 25133133
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201803.tkc",
+            "sha256": "a122ae6a94bdd01a18b27f34889313e63b3e86e90f9adc3d9d662ecfc1e7986b",
+            "size": 18405254
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201804.tkc",
+            "sha256": "90a28aeeaa33c6491e9e647b377e17dd0c29260f5b950b6372b3e90a478867ab",
+            "size": 14462152
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201805.tkc",
+            "sha256": "5f4c6eea0715cb133d7840346fd9373c8c17b7861a345ee1f0ee6bf212b678c9",
+            "size": 8717404
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201806.tkc",
+            "sha256": "7e5de798814fb9fe53e5c5f29c6ee6e722858d2c36f897ff6afff320b522b7a2",
+            "size": 4174142
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201807.tkc",
+            "sha256": "0ad03a57104969668b35d45f6e47a12b56a2144594773a133b408bd27180fc3d",
+            "size": 3709632
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201808.tkc",
+            "sha256": "c731957a0f381c403149c60598186b1e441ac44c82f93fb5263bf9088ccd54e7",
+            "size": 3409150
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201809.tkc",
+            "sha256": "f90fa226af25c87f58a8cdf0db34250569024bf1adf704a7d9249a1b64ec7532",
+            "size": 3649489
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201810.tkc",
+            "sha256": "d894c409b20c17836f102ea376351c9ea7c45ca6a540132e54cda8ec1ef229db",
+            "size": 4599181
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201811.tkc",
+            "sha256": "5aab2b3edf942809c566856e394b70add900891b296fb3f8fbcff2c597e90698",
+            "size": 3650777
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201812.tkc",
+            "sha256": "fbd8ebb6c11f461ab1870e93d337f7e276ba478348ea5fd20d5a4f5318a86caf",
+            "size": 10513121
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201901.tkc",
+            "sha256": "7673c8d7dfcb92d7414b8824f446fab1e64f2224dd38b8552d1f0704fff3e9f8",
+            "size": 11882670
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201902.tkc",
+            "sha256": "677ba524bf8120b0f3192feef3b8f1bceda7a418152cfcf8ddbca887ce667369",
+            "size": 7044749
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201903.tkc",
+            "sha256": "c3950a9e1ec04b4affcba6e78d5b7754cb2355455c728bf5bad4561665794376",
+            "size": 8286287
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201904.tkc",
+            "sha256": "9ee0a32d0d971f62427ea94a8e48f25c4b153dd3baf28f880c5d61f299f7c3f3",
+            "size": 6248275
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201905.tkc",
+            "sha256": "a0d0d091b50e8e67851bf1b158e7c77770a1735269ce6b7ee4cd5bba1edb71ea",
+            "size": 9381728
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201906.tkc",
+            "sha256": "c1808889034420eb1b6c40ce24ae65326ad5570f01b6b3ac3203dcdeb7952812",
+            "size": 7499058
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201907.tkc",
+            "sha256": "e6f50859148ead4ca246dcd325f20ad49188ee875524f1907c3e6e6604b88e01",
+            "size": 5916735
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201908.tkc",
+            "sha256": "3779f9e2f29d6214757b6760ca8b7f7fda5e4f33684c971ac17b13caa7976c07",
+            "size": 14691137
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201909.tkc",
+            "sha256": "823afaf8d5ccc2d1364efada1e68417238723a455e10c25cf1b14db775405df2",
+            "size": 9362158
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201910.tkc",
+            "sha256": "fd6c3e305a27b2c3ea2e6435b8e78528926d3e90086392ce41e4726a9ec49faa",
+            "size": 10102823
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201911.tkc",
+            "sha256": "f9c032823cba4d641d5685d1991d488cdf275df755b39a8ec2353421bbed7228",
+            "size": 6483291
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201912.tkc",
+            "sha256": "49d66ebf2bc0e78809882d65002a04e2072d89722a8344f6693e6b421f2873cc",
+            "size": 5525777
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202001.tkc",
+            "sha256": "5a2a54272a8e24771b1f1df1503f7dee23d1ed524eecc1a40ba8d2eb3c31c2fd",
+            "size": 6973300
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202002.tkc",
+            "sha256": "9df2e08199e4f2ae5c9c54732ebdb4d0538560b79d712052060ca155be8cfbe7",
+            "size": 10650011
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202003.tkc",
+            "sha256": "beb6b3c921b2beaf0793c41110db45e9203b953d1f737b4797ecf90797b04e08",
+            "size": 44344546
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202004.tkc",
+            "sha256": "974ef8acb39cf68e011a874474e01b08f9f82f476ab7cf9afc7eb144cde2726b",
+            "size": 13279655
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202005.tkc",
+            "sha256": "4403d54f310a7374b26fca4f9583e759f1988e7b66b2fda9239f284326665ba2",
+            "size": 6278783
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202006.tkc",
+            "sha256": "2faf481dad10f4e5f0ff6f471abe6a1d2edbf5d5351be5de0cd138a4e160873c",
+            "size": 11349891
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202007.tkc",
+            "sha256": "c1184c15cfd0b3c485f804d33b0b77ff0f8740a57792f9173720c9294403a555",
+            "size": 7876444
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202008.tkc",
+            "sha256": "a229602eb4cf029575f897d6c17d1656513d2d8845134454093b55bdfd7bcd87",
+            "size": 9407352
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202009.tkc",
+            "sha256": "218eeef77dfd8f2c32a433881a014c3afa9137ac05e7e7ea999af1d8b647a24d",
+            "size": 7870798
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202010.tkc",
+            "sha256": "ac6bf6c168aa5c3c923b2cc7626677d9e2c373512062c013c5222027d39b0c21",
+            "size": 8497552
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202011.tkc",
+            "sha256": "f0429230c412b6ed9ea054eb88d8d9b286c136be6a60a12920cc5d595db5dc87",
+            "size": 10687370
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202012.tkc",
+            "sha256": "b3f1dfff021fcb1298581d28a5f6fddd631cfda682d809258120e638535ef556",
+            "size": 8975631
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202101.tkc",
+            "sha256": "32780a5f66fe4cb1cee35e6065689fb3d08c03ad46a78bcb2e5477d9c6c56fa5",
+            "size": 7853872
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202102.tkc",
+            "sha256": "fbea8b5e946e7d1cd522393954c6470b9ee27b2816a2f691a7c16aeced313dcf",
+            "size": 6529340
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202103.tkc",
+            "sha256": "6d33b40f8a94ec763570d60045e94d3714bc3e78eb8edba3e93f7016fbac2c74",
+            "size": 9184616
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202104.tkc",
+            "sha256": "90e247a1337561e352bc10638d7ed57c5cddf51a5d588af67f6714839d565403",
+            "size": 6890919
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202105.tkc",
+            "sha256": "212a5b283c7e8775325c629962837eec092235e6f2722b17396538f2871d9849",
+            "size": 6791233
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202106.tkc",
+            "sha256": "3639731be4acbfbcc7292464d15214eb075db6908cb725c571335b4118aed908",
+            "size": 7172045
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202107.tkc",
+            "sha256": "ec1800c86d4537d8277863aa287cd978079fb2be885071a80295efe852e9fd06",
+            "size": 7901020
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202108.tkc",
+            "sha256": "8f602fc7d0d8e9032142de29dbad39f07a6ae010c82c7ed954341cd12b5d3e95",
+            "size": 6130995
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202109.tkc",
+            "sha256": "77e805251a14cc73df190b5f7a603e0992ecae5791ed659e66f0cd671e6fa9fb",
+            "size": 6590681
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202110.tkc",
+            "sha256": "2ae80d7b8d3b4802916f7f073ba08f87232a5c871f476f713fb6074632678ae4",
+            "size": 7736050
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202111.tkc",
+            "sha256": "bc552ad656e681a39ddf517ee566c97ddae42e4a431160996c756b3885353e8c",
+            "size": 9348739
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202112.tkc",
+            "sha256": "662e98b872a579d443390bc4ab2e25259998ee7f1c4051eaad9facb8cec0ac65",
+            "size": 9519054
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202201.tkc",
+            "sha256": "c9d268a2cd97aceb7847e61975ae697355d52ce4b57829093a4c948883d740ab",
+            "size": 9123062
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202202.tkc",
+            "sha256": "999cfebc7b05a69a6c45822312e4b8209484f9fedb99fbc7e6899959ba73a06d",
+            "size": 10665499
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202203.tkc",
+            "sha256": "253f6721a503541f15990427ccf2c4e054b8f4c5b8b69a71542740d475b2a019",
+            "size": 14787368
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202204.tkc",
+            "sha256": "090921bb90dbbc91738cc11e5a90ab26789569048e7e5296c6174ccb29fcdb6e",
+            "size": 17945179
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202205.tkc",
+            "sha256": "4af4ec2c7f363f1a6d8b3852da5d658494fce55b7d13724cd7d49022ed6a5688",
+            "size": 16840749
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202206.tkc",
+            "sha256": "7eb15268b59686354be4ee875c0ce471b2b360a5b76b9555c26ad771afafe6e0",
+            "size": 10970759
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202207.tkc",
+            "sha256": "d240a74984475782d701b9b7a7525ac8a53d81f3e3d6468f62068932225027a4",
+            "size": 11035864
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202208.tkc",
+            "sha256": "6c8c420c5b3cc7a1842b5be24469baae27624faf7de294d82d030d09b3882e53",
+            "size": 12741999
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202209.tkc",
+            "sha256": "8d08fef9f26a7c23d0b31d91bdd2b20008a9d50783d8b217a4b2019852b4a673",
+            "size": 12007471
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202210.tkc",
+            "sha256": "71817ce85dc9e5cb0498b2390d8a7c19fea33b5013fd4a482ac6936b7305566a",
+            "size": 9174061
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202211.tkc",
+            "sha256": "88c0805db2ab76fc8d14bcd931da2f5ce06c3cedf587583e86367ea7c1de8d0a",
+            "size": 13107784
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202212.tkc",
+            "sha256": "3b7fac1f1860c1da5ece819b5efdb337de2f64cee668cee05a278c9339dff0fc",
+            "size": 10338000
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202301.tkc",
+            "sha256": "030c7823b00e63cf0395be67a30391d22c2403144d47eeeaf636630e6bd1c37e",
+            "size": 11464035
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202302.tkc",
+            "sha256": "2b170bc35e4bdf38be7c507f1be674fbdaf5934db7f916c8f0defbdca96d8140",
+            "size": 10394964
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202303.tkc",
+            "sha256": "55374bd12c30f48bc4714159935ad48e9aa9c23711a47d6de694c4ab656dcf7b",
+            "size": 13985852
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202304.tkc",
+            "sha256": "a3405f3862231506b3432af367ec9e9ea3c230d23bc7f07e54567c7325a907b0",
+            "size": 9658285
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202305.tkc",
+            "sha256": "c847a4936f2899de14d07981ff178ffd7bc4cce6c380079d8a50852af0bcaa2e",
+            "size": 11427193
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202306.tkc",
+            "sha256": "96188b763ef3cee4e9c70b9286fe36181106b1fc0d3adbaacca645ba4e2f835a",
+            "size": 9079960
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202307.tkc",
+            "sha256": "bd05ccaab6e7d0db55830eb89919ee113bbf00b3b06888ed34375c4e9adf4117",
+            "size": 8800087
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202308.tkc",
+            "sha256": "1fcf3ef9259db81cc593b357724fd2fcdb20f207e9ca3c1746a4d634d1b680e9",
+            "size": 7381399
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202309.tkc",
+            "sha256": "2c69b1e64fc5ec2c4c9c56abdf90cc3695046e0e62c0f78bf12216e4a9d91944",
+            "size": 5241294
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202310.tkc",
+            "sha256": "ebe9fdfd76ae2fc8f87520e078499cac8290561479bb1f67b6a920ffab171901",
+            "size": 5770066
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202311.tkc",
+            "sha256": "971855c461f9899e839f30dc5bdd267f7f37c99b8ddf6094904fe5d03401f70a",
+            "size": 5561948
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202312.tkc",
+            "sha256": "6ba8ce01421927450274623b4a8507b327b06673649e919e289c6de70e512a72",
+            "size": 6330870
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202401.tkc",
+            "sha256": "232d297bf00bb605b007b355198bafa0697d3836c600ad4eedd39287be99323b",
+            "size": 8796438
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202402.tkc",
+            "sha256": "52a79d5fc1997cde404c24fbc2212af81ed03e83cdff56c114884891e7331a1f",
+            "size": 7367547
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202403.tkc",
+            "sha256": "a4c76e1244f8e3a626bc99c4b1352ae504eb8f48ca41d45a30d45b229ac71b69",
+            "size": 6716503
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202404.tkc",
+            "sha256": "7197ce8108255bf99cdb9a33df482477ec5550dfdd0dfe2f27ecf5aa0cd232bd",
+            "size": 5844733
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202405.tkc",
+            "sha256": "339d0d483ea2db28d93d7b789876cc6f5bf6247d9f08a7d82f7f0deb18cb56a9",
+            "size": 5643359
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202406.tkc",
+            "sha256": "affbda26052d6380aec6b87c845d380495f9ae33e310c8d492d32a6283c6c421",
+            "size": 5538374
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202407.tkc",
+            "sha256": "dfa719d69e4aba87c31878bc30bec0987fec7e739225c2a7365292aca2ca5dc7",
+            "size": 8460457
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202408.tkc",
+            "sha256": "f33850ece0ebccf1321d7aa9497a8e48e90fa343b20e26538cd22c05b7213ed2",
+            "size": 12840954
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202409.tkc",
+            "sha256": "4d129bd803c3f5d17fcec648c5658c8b56e40ecdfc9157825181700c32e8d853",
+            "size": 12120530
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202410.tkc",
+            "sha256": "fd6704310c49907da68ee2ccdbea5fdaa72f6e7aed5d2ed4871a131e2b3ddd12",
+            "size": 8913229
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202411.tkc",
+            "sha256": "b79cbdde347f07461882241e9159f42868599d28bfd186a6058bfa4a0e010991",
+            "size": 10350910
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202412.tkc",
+            "sha256": "8260350f8c020a5761f0c1cb4187f2d612948b6bd8fbf5bb27a331b29ba419d2",
+            "size": 8702314
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202501.tkc",
+            "sha256": "6f733cb72b7e2bcd820d2fbdf8a200d9654c3aab45379325f9a2b0435fae9088",
+            "size": 9605714
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202502.tkc",
+            "sha256": "f2d6d42690c10522f0fdebffebad3d587297c168bc118472bc76df699174428d",
+            "size": 9992267
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202503.tkc",
+            "sha256": "ca99cd8077bd50b936643e56ac8259ff8323668cd0b9ef5b9723e04d20eda174",
+            "size": 12385466
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202504.tkc",
+            "sha256": "20de692f4a18413991245e1da34083ad51c0fb6dcd76faa88ab7c41806e1fc87",
+            "size": 16023968
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202505.tkc",
+            "sha256": "4e7c662e4cb23dc4b317ee5ffc12e0dd7da34e70fb142df37e3e92c19ca2c1a9",
+            "size": 10963014
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202506.tkc",
+            "sha256": "6dec75573a58b2320cd723ea4d8f08fed55e67a5c1b903ebdb098d148500a102",
+            "size": 9413070
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202507.tkc",
+            "sha256": "e4b41330caf87bfb9a059be33615b843a632734775bb9432765c3beef0b6df71",
+            "size": 9266883
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202508.tkc",
+            "sha256": "40acf9d8144e8194df13ab6be9e471de0c8b18bcc90812f3e0f64abd9bed347b",
+            "size": 8225194
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202509.tkc",
+            "sha256": "01ef019c8a3efc48f1446d80d4b532bda38b813382d54b076e626a26fddc5e2e",
+            "size": 8274915
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202510.tkc",
+            "sha256": "8a73138d3e68e03b6bfe102d41514442a01186e753f798c25de86e0d10dfbd4a",
+            "size": 2391444
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202511.tkc",
+            "sha256": "fc92559b6733371d824ab5a68420e5c09cc186463be01990bae1493c31acc776",
+            "size": 8484332
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202512.tkc",
+            "sha256": "3091b81572d50048524ee4d35b67c7378cef200c0e602fade739db5fe284b43c",
+            "size": 6832541
+          }
+        ],
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_file_sha256": "abe76f72374fbe071f797d094bd31e37b42f4b2d01710f95386ecf24a839bbc1",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\356a3655-5f0a-51ea-84f3-a3d04e2ed714_T10.json",
+        "status": "PASS_EXACT"
+      },
+      "history_before": {
+        "file_count": 108,
+        "files": [
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2017.hcc",
+            "sha256": "55587e6a5b0d8de666aa3237e19774033eab35898db2d1581dd770c63d50fc3b",
+            "size": 5569149
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2018.hcc",
+            "sha256": "f344d81fc87b702df12e55518cfd543879d1f47ed4d5ad35d5110c1ad68bbdab",
+            "size": 22308504
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2019.hcc",
+            "sha256": "2bd22d821022a82accd5e4b7b752a30a40e4ee3c2f4bdea14527fd008c9655af",
+            "size": 22247775
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2020.hcc",
+            "sha256": "1d3a766e8ddca4bbad8e4102a936de68aff62fd840ae93926f222aee6c824a0e",
+            "size": 22318584
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2021.hcc",
+            "sha256": "cde04ee4d1a8895bf06b6e39e7d807df145308b6380b17b2a2061245d186ad37",
+            "size": 22272444
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2022.hcc",
+            "sha256": "65088758b20a71ec640b5f2d29ee5f10d1ee52435a816e82327bba3bbe000a2a",
+            "size": 22250004
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2023.hcc",
+            "sha256": "dc5c19bd7bf1dde208b988b20f09a72ec62ca4fe875cb3d7b29a28303ce9d56a",
+            "size": 21854757
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2024.hcc",
+            "sha256": "5bc2ebded2722bd559e674fe237ad2c15a0420ef8839d6674d138c0630fc1a39",
+            "size": 22256124
+          },
+          {
+            "exact": true,
+            "relative_path": "history/USDJPY.DWX/2025.hcc",
+            "sha256": "9a085d00e7abd50f909e75f11da0f0d324d5d034c787af1f4a3e755c988e8c4d",
+            "size": 20681142
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201710.tkc",
+            "sha256": "a1978ca832c0873e8bacb94a4c774118ecf263d52814fd1dd8ef09c2e7add695",
+            "size": 15061650
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201711.tkc",
+            "sha256": "1d7b9f8c258f79c0aab62ccccee62bab1efbd3b4fb59998bc4f057549f37c6af",
+            "size": 14960802
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201712.tkc",
+            "sha256": "cd08a836c7579c5808e35a1d8141afbe1b96b07c5e3ddfce839d1a1f281507f6",
+            "size": 14593014
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201801.tkc",
+            "sha256": "63159719ef45fa7fccfcf4f326aa59b78477e2a0b0739024b32902c371e0bd3d",
+            "size": 18798018
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201802.tkc",
+            "sha256": "e68bcd232456b2ebe8f4ed837e9844f295da681e06d2b69e6795ebe3f039e9de",
+            "size": 25133133
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201803.tkc",
+            "sha256": "a122ae6a94bdd01a18b27f34889313e63b3e86e90f9adc3d9d662ecfc1e7986b",
+            "size": 18405254
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201804.tkc",
+            "sha256": "90a28aeeaa33c6491e9e647b377e17dd0c29260f5b950b6372b3e90a478867ab",
+            "size": 14462152
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201805.tkc",
+            "sha256": "5f4c6eea0715cb133d7840346fd9373c8c17b7861a345ee1f0ee6bf212b678c9",
+            "size": 8717404
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201806.tkc",
+            "sha256": "7e5de798814fb9fe53e5c5f29c6ee6e722858d2c36f897ff6afff320b522b7a2",
+            "size": 4174142
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201807.tkc",
+            "sha256": "0ad03a57104969668b35d45f6e47a12b56a2144594773a133b408bd27180fc3d",
+            "size": 3709632
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201808.tkc",
+            "sha256": "c731957a0f381c403149c60598186b1e441ac44c82f93fb5263bf9088ccd54e7",
+            "size": 3409150
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201809.tkc",
+            "sha256": "f90fa226af25c87f58a8cdf0db34250569024bf1adf704a7d9249a1b64ec7532",
+            "size": 3649489
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201810.tkc",
+            "sha256": "d894c409b20c17836f102ea376351c9ea7c45ca6a540132e54cda8ec1ef229db",
+            "size": 4599181
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201811.tkc",
+            "sha256": "5aab2b3edf942809c566856e394b70add900891b296fb3f8fbcff2c597e90698",
+            "size": 3650777
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201812.tkc",
+            "sha256": "fbd8ebb6c11f461ab1870e93d337f7e276ba478348ea5fd20d5a4f5318a86caf",
+            "size": 10513121
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201901.tkc",
+            "sha256": "7673c8d7dfcb92d7414b8824f446fab1e64f2224dd38b8552d1f0704fff3e9f8",
+            "size": 11882670
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201902.tkc",
+            "sha256": "677ba524bf8120b0f3192feef3b8f1bceda7a418152cfcf8ddbca887ce667369",
+            "size": 7044749
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201903.tkc",
+            "sha256": "c3950a9e1ec04b4affcba6e78d5b7754cb2355455c728bf5bad4561665794376",
+            "size": 8286287
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201904.tkc",
+            "sha256": "9ee0a32d0d971f62427ea94a8e48f25c4b153dd3baf28f880c5d61f299f7c3f3",
+            "size": 6248275
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201905.tkc",
+            "sha256": "a0d0d091b50e8e67851bf1b158e7c77770a1735269ce6b7ee4cd5bba1edb71ea",
+            "size": 9381728
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201906.tkc",
+            "sha256": "c1808889034420eb1b6c40ce24ae65326ad5570f01b6b3ac3203dcdeb7952812",
+            "size": 7499058
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201907.tkc",
+            "sha256": "e6f50859148ead4ca246dcd325f20ad49188ee875524f1907c3e6e6604b88e01",
+            "size": 5916735
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201908.tkc",
+            "sha256": "3779f9e2f29d6214757b6760ca8b7f7fda5e4f33684c971ac17b13caa7976c07",
+            "size": 14691137
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201909.tkc",
+            "sha256": "823afaf8d5ccc2d1364efada1e68417238723a455e10c25cf1b14db775405df2",
+            "size": 9362158
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201910.tkc",
+            "sha256": "fd6c3e305a27b2c3ea2e6435b8e78528926d3e90086392ce41e4726a9ec49faa",
+            "size": 10102823
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201911.tkc",
+            "sha256": "f9c032823cba4d641d5685d1991d488cdf275df755b39a8ec2353421bbed7228",
+            "size": 6483291
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/201912.tkc",
+            "sha256": "49d66ebf2bc0e78809882d65002a04e2072d89722a8344f6693e6b421f2873cc",
+            "size": 5525777
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202001.tkc",
+            "sha256": "5a2a54272a8e24771b1f1df1503f7dee23d1ed524eecc1a40ba8d2eb3c31c2fd",
+            "size": 6973300
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202002.tkc",
+            "sha256": "9df2e08199e4f2ae5c9c54732ebdb4d0538560b79d712052060ca155be8cfbe7",
+            "size": 10650011
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202003.tkc",
+            "sha256": "beb6b3c921b2beaf0793c41110db45e9203b953d1f737b4797ecf90797b04e08",
+            "size": 44344546
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202004.tkc",
+            "sha256": "974ef8acb39cf68e011a874474e01b08f9f82f476ab7cf9afc7eb144cde2726b",
+            "size": 13279655
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202005.tkc",
+            "sha256": "4403d54f310a7374b26fca4f9583e759f1988e7b66b2fda9239f284326665ba2",
+            "size": 6278783
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202006.tkc",
+            "sha256": "2faf481dad10f4e5f0ff6f471abe6a1d2edbf5d5351be5de0cd138a4e160873c",
+            "size": 11349891
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202007.tkc",
+            "sha256": "c1184c15cfd0b3c485f804d33b0b77ff0f8740a57792f9173720c9294403a555",
+            "size": 7876444
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202008.tkc",
+            "sha256": "a229602eb4cf029575f897d6c17d1656513d2d8845134454093b55bdfd7bcd87",
+            "size": 9407352
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202009.tkc",
+            "sha256": "218eeef77dfd8f2c32a433881a014c3afa9137ac05e7e7ea999af1d8b647a24d",
+            "size": 7870798
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202010.tkc",
+            "sha256": "ac6bf6c168aa5c3c923b2cc7626677d9e2c373512062c013c5222027d39b0c21",
+            "size": 8497552
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202011.tkc",
+            "sha256": "f0429230c412b6ed9ea054eb88d8d9b286c136be6a60a12920cc5d595db5dc87",
+            "size": 10687370
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202012.tkc",
+            "sha256": "b3f1dfff021fcb1298581d28a5f6fddd631cfda682d809258120e638535ef556",
+            "size": 8975631
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202101.tkc",
+            "sha256": "32780a5f66fe4cb1cee35e6065689fb3d08c03ad46a78bcb2e5477d9c6c56fa5",
+            "size": 7853872
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202102.tkc",
+            "sha256": "fbea8b5e946e7d1cd522393954c6470b9ee27b2816a2f691a7c16aeced313dcf",
+            "size": 6529340
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202103.tkc",
+            "sha256": "6d33b40f8a94ec763570d60045e94d3714bc3e78eb8edba3e93f7016fbac2c74",
+            "size": 9184616
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202104.tkc",
+            "sha256": "90e247a1337561e352bc10638d7ed57c5cddf51a5d588af67f6714839d565403",
+            "size": 6890919
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202105.tkc",
+            "sha256": "212a5b283c7e8775325c629962837eec092235e6f2722b17396538f2871d9849",
+            "size": 6791233
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202106.tkc",
+            "sha256": "3639731be4acbfbcc7292464d15214eb075db6908cb725c571335b4118aed908",
+            "size": 7172045
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202107.tkc",
+            "sha256": "ec1800c86d4537d8277863aa287cd978079fb2be885071a80295efe852e9fd06",
+            "size": 7901020
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202108.tkc",
+            "sha256": "8f602fc7d0d8e9032142de29dbad39f07a6ae010c82c7ed954341cd12b5d3e95",
+            "size": 6130995
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202109.tkc",
+            "sha256": "77e805251a14cc73df190b5f7a603e0992ecae5791ed659e66f0cd671e6fa9fb",
+            "size": 6590681
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202110.tkc",
+            "sha256": "2ae80d7b8d3b4802916f7f073ba08f87232a5c871f476f713fb6074632678ae4",
+            "size": 7736050
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202111.tkc",
+            "sha256": "bc552ad656e681a39ddf517ee566c97ddae42e4a431160996c756b3885353e8c",
+            "size": 9348739
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202112.tkc",
+            "sha256": "662e98b872a579d443390bc4ab2e25259998ee7f1c4051eaad9facb8cec0ac65",
+            "size": 9519054
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202201.tkc",
+            "sha256": "c9d268a2cd97aceb7847e61975ae697355d52ce4b57829093a4c948883d740ab",
+            "size": 9123062
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202202.tkc",
+            "sha256": "999cfebc7b05a69a6c45822312e4b8209484f9fedb99fbc7e6899959ba73a06d",
+            "size": 10665499
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202203.tkc",
+            "sha256": "253f6721a503541f15990427ccf2c4e054b8f4c5b8b69a71542740d475b2a019",
+            "size": 14787368
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202204.tkc",
+            "sha256": "090921bb90dbbc91738cc11e5a90ab26789569048e7e5296c6174ccb29fcdb6e",
+            "size": 17945179
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202205.tkc",
+            "sha256": "4af4ec2c7f363f1a6d8b3852da5d658494fce55b7d13724cd7d49022ed6a5688",
+            "size": 16840749
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202206.tkc",
+            "sha256": "7eb15268b59686354be4ee875c0ce471b2b360a5b76b9555c26ad771afafe6e0",
+            "size": 10970759
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202207.tkc",
+            "sha256": "d240a74984475782d701b9b7a7525ac8a53d81f3e3d6468f62068932225027a4",
+            "size": 11035864
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202208.tkc",
+            "sha256": "6c8c420c5b3cc7a1842b5be24469baae27624faf7de294d82d030d09b3882e53",
+            "size": 12741999
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202209.tkc",
+            "sha256": "8d08fef9f26a7c23d0b31d91bdd2b20008a9d50783d8b217a4b2019852b4a673",
+            "size": 12007471
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202210.tkc",
+            "sha256": "71817ce85dc9e5cb0498b2390d8a7c19fea33b5013fd4a482ac6936b7305566a",
+            "size": 9174061
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202211.tkc",
+            "sha256": "88c0805db2ab76fc8d14bcd931da2f5ce06c3cedf587583e86367ea7c1de8d0a",
+            "size": 13107784
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202212.tkc",
+            "sha256": "3b7fac1f1860c1da5ece819b5efdb337de2f64cee668cee05a278c9339dff0fc",
+            "size": 10338000
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202301.tkc",
+            "sha256": "030c7823b00e63cf0395be67a30391d22c2403144d47eeeaf636630e6bd1c37e",
+            "size": 11464035
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202302.tkc",
+            "sha256": "2b170bc35e4bdf38be7c507f1be674fbdaf5934db7f916c8f0defbdca96d8140",
+            "size": 10394964
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202303.tkc",
+            "sha256": "55374bd12c30f48bc4714159935ad48e9aa9c23711a47d6de694c4ab656dcf7b",
+            "size": 13985852
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202304.tkc",
+            "sha256": "a3405f3862231506b3432af367ec9e9ea3c230d23bc7f07e54567c7325a907b0",
+            "size": 9658285
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202305.tkc",
+            "sha256": "c847a4936f2899de14d07981ff178ffd7bc4cce6c380079d8a50852af0bcaa2e",
+            "size": 11427193
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202306.tkc",
+            "sha256": "96188b763ef3cee4e9c70b9286fe36181106b1fc0d3adbaacca645ba4e2f835a",
+            "size": 9079960
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202307.tkc",
+            "sha256": "bd05ccaab6e7d0db55830eb89919ee113bbf00b3b06888ed34375c4e9adf4117",
+            "size": 8800087
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202308.tkc",
+            "sha256": "1fcf3ef9259db81cc593b357724fd2fcdb20f207e9ca3c1746a4d634d1b680e9",
+            "size": 7381399
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202309.tkc",
+            "sha256": "2c69b1e64fc5ec2c4c9c56abdf90cc3695046e0e62c0f78bf12216e4a9d91944",
+            "size": 5241294
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202310.tkc",
+            "sha256": "ebe9fdfd76ae2fc8f87520e078499cac8290561479bb1f67b6a920ffab171901",
+            "size": 5770066
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202311.tkc",
+            "sha256": "971855c461f9899e839f30dc5bdd267f7f37c99b8ddf6094904fe5d03401f70a",
+            "size": 5561948
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202312.tkc",
+            "sha256": "6ba8ce01421927450274623b4a8507b327b06673649e919e289c6de70e512a72",
+            "size": 6330870
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202401.tkc",
+            "sha256": "232d297bf00bb605b007b355198bafa0697d3836c600ad4eedd39287be99323b",
+            "size": 8796438
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202402.tkc",
+            "sha256": "52a79d5fc1997cde404c24fbc2212af81ed03e83cdff56c114884891e7331a1f",
+            "size": 7367547
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202403.tkc",
+            "sha256": "a4c76e1244f8e3a626bc99c4b1352ae504eb8f48ca41d45a30d45b229ac71b69",
+            "size": 6716503
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202404.tkc",
+            "sha256": "7197ce8108255bf99cdb9a33df482477ec5550dfdd0dfe2f27ecf5aa0cd232bd",
+            "size": 5844733
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202405.tkc",
+            "sha256": "339d0d483ea2db28d93d7b789876cc6f5bf6247d9f08a7d82f7f0deb18cb56a9",
+            "size": 5643359
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202406.tkc",
+            "sha256": "affbda26052d6380aec6b87c845d380495f9ae33e310c8d492d32a6283c6c421",
+            "size": 5538374
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202407.tkc",
+            "sha256": "dfa719d69e4aba87c31878bc30bec0987fec7e739225c2a7365292aca2ca5dc7",
+            "size": 8460457
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202408.tkc",
+            "sha256": "f33850ece0ebccf1321d7aa9497a8e48e90fa343b20e26538cd22c05b7213ed2",
+            "size": 12840954
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202409.tkc",
+            "sha256": "4d129bd803c3f5d17fcec648c5658c8b56e40ecdfc9157825181700c32e8d853",
+            "size": 12120530
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202410.tkc",
+            "sha256": "fd6704310c49907da68ee2ccdbea5fdaa72f6e7aed5d2ed4871a131e2b3ddd12",
+            "size": 8913229
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202411.tkc",
+            "sha256": "b79cbdde347f07461882241e9159f42868599d28bfd186a6058bfa4a0e010991",
+            "size": 10350910
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202412.tkc",
+            "sha256": "8260350f8c020a5761f0c1cb4187f2d612948b6bd8fbf5bb27a331b29ba419d2",
+            "size": 8702314
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202501.tkc",
+            "sha256": "6f733cb72b7e2bcd820d2fbdf8a200d9654c3aab45379325f9a2b0435fae9088",
+            "size": 9605714
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202502.tkc",
+            "sha256": "f2d6d42690c10522f0fdebffebad3d587297c168bc118472bc76df699174428d",
+            "size": 9992267
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202503.tkc",
+            "sha256": "ca99cd8077bd50b936643e56ac8259ff8323668cd0b9ef5b9723e04d20eda174",
+            "size": 12385466
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202504.tkc",
+            "sha256": "20de692f4a18413991245e1da34083ad51c0fb6dcd76faa88ab7c41806e1fc87",
+            "size": 16023968
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202505.tkc",
+            "sha256": "4e7c662e4cb23dc4b317ee5ffc12e0dd7da34e70fb142df37e3e92c19ca2c1a9",
+            "size": 10963014
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202506.tkc",
+            "sha256": "6dec75573a58b2320cd723ea4d8f08fed55e67a5c1b903ebdb098d148500a102",
+            "size": 9413070
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202507.tkc",
+            "sha256": "e4b41330caf87bfb9a059be33615b843a632734775bb9432765c3beef0b6df71",
+            "size": 9266883
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202508.tkc",
+            "sha256": "40acf9d8144e8194df13ab6be9e471de0c8b18bcc90812f3e0f64abd9bed347b",
+            "size": 8225194
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202509.tkc",
+            "sha256": "01ef019c8a3efc48f1446d80d4b532bda38b813382d54b076e626a26fddc5e2e",
+            "size": 8274915
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202510.tkc",
+            "sha256": "8a73138d3e68e03b6bfe102d41514442a01186e753f798c25de86e0d10dfbd4a",
+            "size": 2391444
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202511.tkc",
+            "sha256": "fc92559b6733371d824ab5a68420e5c09cc186463be01990bae1493c31acc776",
+            "size": 8484332
+          },
+          {
+            "exact": true,
+            "relative_path": "ticks/USDJPY.DWX/202512.tkc",
+            "sha256": "3091b81572d50048524ee4d35b67c7378cef200c0e602fade739db5fe284b43c",
+            "size": 6832541
+          }
+        ],
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_file_sha256": "abe76f72374fbe071f797d094bd31e37b42f4b2d01710f95386ecf24a839bbc1",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\356a3655-5f0a-51ea-84f3-a3d04e2ed714_T10.json",
+        "status": "PASS_EXACT"
+      },
+      "lane": "DEV2",
+      "lane_after": {
+        "account_enabled": false,
+        "password_required": true,
+        "process_count": 0,
+        "process_ids": []
+      },
+      "lane_before": {
+        "account_enabled": false,
+        "password_required": true,
+        "process_count": 0,
+        "process_ids": []
+      },
+      "problems": [],
+      "schema": "qm.warm-cell-governed-restart-session/v1",
+      "session_id": "61530cdc-1cfb-4b0b-9664-746c71e45cfd",
+      "started_utc": "2026-08-27T17:33:46.981050+00:00",
+      "terminal_restarts": 1
+    },
+    "production_supported": false,
+    "profile_mode": "ISOLATED_DEV2",
+    "resident_ipc_claimed": false,
+    "runtime_artifact_dir": "C:\\QM\\repo\\docs\\ops\\evidence\\a413ae7d_v4a_phase3_dev2_reconciled_retry2_2026-08-27_runtime"
+  },
+  "cold_history_projection": {
+    "audit_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\356a3655-5f0a-51ea-84f3-a3d04e2ed714_T10.json",
+    "file_count": 108,
+    "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+    "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+    "receipt_count": 20,
+    "receipts": [
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:baseline",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\356a3655-5f0a-51ea-84f3-a3d04e2ed714_T10.json",
+        "receipt_sha256": "abe76f72374fbe071f797d094bd31e37b42f4b2d01710f95386ecf24a839bbc1"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_003",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\ccc0055d-046a-5b80-9f3f-7d1ed7392e38_T2.json",
+        "receipt_sha256": "549939aba611a0821d50c26664dfeb89b2dd4417c12f87797323c923a162efe5"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_004",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\ea962544-3f33-536b-a20e-081e4a7bc5eb_T2.json",
+        "receipt_sha256": "4a6311dea23f738529f2c4ac51632acec04f096e05dec6313cfebc2ecedd2923"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_005",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\86ba5c0c-7d44-5461-8b69-c4ca4e68bf0f_T2.json",
+        "receipt_sha256": "bfff64fb9b69de6d2acd49d2a9e9baab51c37cceecd33bc4be0607d4b715f6ad"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_006",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\76963c69-9b55-5924-8e92-385705cbb582_T2.json",
+        "receipt_sha256": "e20abc7441d923ee8d1b6e6626593e5f80642676da45461f88d3ef9ed7677850"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_008",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\05fb3d10-950c-51c0-9b18-eaa31acb1e1f_T10.json",
+        "receipt_sha256": "d7972051b67d7b1005251a85e3e410db6d686c905b7a47bfaef3fa7286ee639a"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_009",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\7b192d77-6305-569a-a034-ff13f54d18a3_T10.json",
+        "receipt_sha256": "b055bc9c19fd4d6e7d15c33f7665da2220a13c89943b7309691d2ccd33b1cba6"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_011",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\3c7642dc-8046-56d0-b923-3d78adb6bf87_T10.json",
+        "receipt_sha256": "a5c14ec6fe18384628c8beee5b281bb2cc0119c2de0e2f52c18af6944323807c"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_012",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\e2ddff40-e36a-5e8c-8f14-887fa974e268_T4.json",
+        "receipt_sha256": "b75fe9fcc3febfe91bc0f267a5acfb2bf89ddf7b9ea6181188bb01514f2d6075"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_013",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\590b1266-f6c5-5bda-9883-81f6cbd222d5_T4.json",
+        "receipt_sha256": "59aa6b27bac260da6acdb3fd24109514ff3f6a07ab7c1de6e05315debd049d3b"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_015",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\ba0d42dc-9471-5e03-a4e0-fda59ac0d324_T4.json",
+        "receipt_sha256": "bfc790c60c3dee1a239197ce0040b19ba0d302cc29129d5f533e49a1dc20d284"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_017",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\e4533930-dda7-57af-879f-3ecd94efd6e6_T8.json",
+        "receipt_sha256": "55b7743ca2e21b6eb7c6b948a6d0cb2ce6712c45cf1f123c4a4fee01261abd98"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_018",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\2f02b9e6-f2db-5077-b477-83312244f011_T8.json",
+        "receipt_sha256": "a5019ab777588b1ca1b36d542e11b8d3b3f643bc5e7cbd9c53ee01e44b6bedc7"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_019",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\85ce2003-8d1a-58c3-baf3-52386ad6ad27_T8.json",
+        "receipt_sha256": "54d1a71e8e4304b65b52791705950245307af797fce2e09d383c83957d85a1c9"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_020",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\b1e6dd54-edc1-5ef1-9f39-dc5e28db2e81_T9.json",
+        "receipt_sha256": "0cb9157b6ca6c7f5866c35a1b432d8e68f2ec7a66d2dd117982875dbc0aad9a8"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_021",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\07a2e28a-a1fd-598b-9df1-e7e36dd08d4d_T7.json",
+        "receipt_sha256": "676875a499627d83758ddd7e5368ff739b913b94aa01c5423a38f4ce5c7aae80"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_022",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\6be17ed2-4993-55ee-9c9e-9226e10f8c3f_T4.json",
+        "receipt_sha256": "e89038b5421da2893f3088ea6eb0e2339cad5b122edae4a33c7c99fe96d79226"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_024",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\bc835d88-299a-50db-ad43-c6637b07fa66_T6.json",
+        "receipt_sha256": "286955ee70e0e870f9cea20ceb88026bff86d6b1d894b04ef4d7ad7a9fc71e2f"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_025",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\f91ec1a9-c609-59c9-867c-a441ebabf82f_T4.json",
+        "receipt_sha256": "6ce078a7d92d5e0eaab1b73fa18f1a14ae69bc43e9ebd9e311ab5e68cd07ff18"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_027",
+        "file_count": 108,
+        "inventory_sha256": "b849a1608e0533f633ee516b2bb468ea9819dfe38b9008ddfae2c5893dfe5640",
+        "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_copy_on_claim\\1a393cf2-6f8b-5ef5-9ce7-5fa9c1fc69e4_T4.json",
+        "receipt_sha256": "09c8d6b36c604d77af77ee81a7b340a0b5a277e94c9374ba18d48447965c5297"
+      }
+    ],
+    "status": "PASS_COMMON_BYTE_INVENTORY"
+  },
+  "cold_path": {
+    "byte_identical_to_phase3_start": true,
+    "dl089_untouched": true,
+    "files": [
+      {
+        "byte_identical_to_task_start": true,
+        "path": "tools/strategy_farm/terminal_worker.py",
+        "task_start_sha256": "78d98a793f501bd833d98a912a7d4f8395fd8830d3f2ed6a389a8920b93144bb",
+        "tracked_content_equal_to_head": true,
+        "workspace_sha256": "78d98a793f501bd833d98a912a7d4f8395fd8830d3f2ed6a389a8920b93144bb"
+      },
+      {
+        "byte_identical_to_task_start": true,
+        "path": "framework/scripts/run_smoke.ps1",
+        "task_start_sha256": "750478498f9280b61d2cb02ba1ee03a52b54bb448461b2d3d3cc246af411cf4a",
+        "tracked_content_equal_to_head": true,
+        "workspace_sha256": "750478498f9280b61d2cb02ba1ee03a52b54bb448461b2d3d3cc246af411cf4a"
+      },
+      {
+        "byte_identical_to_task_start": true,
+        "path": "tools/strategy_farm/opt_census.py",
+        "task_start_sha256": "1c23cf9cf399902bff07fcbd1e02e104c0c5f09c8ec16d990a89c681f6f18f9a",
+        "tracked_content_equal_to_head": true,
+        "workspace_sha256": "1c23cf9cf399902bff07fcbd1e02e104c0c5f09c8ec16d990a89c681f6f18f9a"
+      },
+      {
+        "byte_identical_to_task_start": true,
+        "path": "tools/strategy_farm/dl089_matrix_service.py",
+        "task_start_sha256": "30e3929f3408b801fc47c93f68adcc288f1e418b8ed7d8fe3e707ecaaebf8bb7",
+        "tracked_content_equal_to_head": true,
+        "workspace_sha256": "30e3929f3408b801fc47c93f68adcc288f1e418b8ed7d8fe3e707ecaaebf8bb7"
+      }
+    ]
+  },
+  "comparison": {
+    "all_twenty_exact": false,
+    "minimum_required": 20,
+    "rows": [
+      {
+        "all_exact": false,
+        "arm": "baseline",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:baseline",
+        "cold_elapsed_seconds": 238.565,
+        "cold_entry_trading_days": 193,
+        "cold_identity_sha256": "7b26e67f5dbd9f5eb0ae39f326e68c3da7e87233d887ea2504c3944571ed1b73",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\356a3655-5f0a-51ea-84f3-a3d04e2ed714\\QM5_41097\\20260822_063632\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "20011036f5c2ed0732845939f9188b52f759642bc16375a2c2767010334da16b",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\356a3655-5f0a-51ea-84f3-a3d04e2ed714\\QM5_41097\\20260822_063632\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "2a6cc66d37c41d398cdecf726632aeabf8f7fe547d148c47956de9db5c9899bf",
+        "cold_receipt_schema_sha256": "e95e4720df87bf4d3624ac44c0943bb5b5c627820f63faf83b64008d80e3f22f",
+        "cold_report_metrics_sha256": "ed0d8a78c41b92974e877ea4b98f0623edfbf0ddaa9e1d3b6d20324670c1bd48",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\356a3655-5f0a-51ea-84f3-a3d04e2ed714\\QM5_41097\\20260822_063632\\summary.json",
+        "cold_trade_list_sha256": "b1ef198b0b16a1abccf45e9071c0089b5f1211597197b653294d2395f9634ea4",
+        "entry_days_exact": true,
+        "identity_exact": true,
+        "logger_sample_exact": false,
+        "metrics_exact": false,
+        "native_report_exact": false,
+        "receipt_schema_exact": false,
+        "selection_rank": 1,
+        "setfile_sha256": "efb30cbb4d99938c44a4d62012e7ae136712fffbea3dcda7abf5890d9c2350e9",
+        "trades_exact": false,
+        "warm_elapsed_seconds": 444.766,
+        "warm_entry_trading_days": 193,
+        "warm_identity_sha256": "7b26e67f5dbd9f5eb0ae39f326e68c3da7e87233d887ea2504c3944571ed1b73",
+        "warm_logger_sample_path": "D:\\QM\\reports\\dev2\\runs\\20260827T173415Z_98d6e958d2c34ff8bce74462c9b37f98\\output\\smoke\\QM5_41097\\20260827_173442\\logger_sample.jsonl",
+        "warm_logger_sample_sha256": "33f8e043181a841a6b887980d3b3e51ff0bfe2ad80481c4c059463d66fe68b78",
+        "warm_native_report_path": "D:\\QM\\reports\\dev2\\runs\\20260827T173415Z_98d6e958d2c34ff8bce74462c9b37f98\\output\\smoke\\QM5_41097\\20260827_173442\\raw\\run_01\\report.htm",
+        "warm_native_report_sha256": "6f7c9da29d760a383219f415fceda3ffc1f531fb450e16659c37b3fc54901869",
+        "warm_receipt_schema_sha256": "0797bebef2b994719420374abd9ec7f88103cacece88bfc44a6f6127274c8c77",
+        "warm_report_metrics_sha256": "aa6a81e08bdafa5921ce787455638a2089165397b9f2005506bb79d545ca1cdb",
+        "warm_status": "DEVIATION",
+        "warm_summary_path": "D:\\QM\\reports\\dev2\\runs\\20260827T173415Z_98d6e958d2c34ff8bce74462c9b37f98\\output\\smoke\\QM5_41097\\20260827_173442\\summary.json",
+        "warm_trade_list_sha256": "997d912a434b970d65ada8d453dc6138035e4f99af202ab11c6bf816fb803064",
+        "work_item_id": "356a3655-5f0a-51ea-84f3-a3d04e2ed714"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_003",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_003",
+        "cold_elapsed_seconds": 516.103,
+        "cold_entry_trading_days": 183,
+        "cold_identity_sha256": "a360fc112a86832b3c439a8a2c3971775fcae85eed6a5989d72bad42efea1379",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\ccc0055d-046a-5b80-9f3f-7d1ed7392e38\\QM5_41097\\20260822_065122\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "e8452640fad88286d15267bca3f8ec4a6e80e6b16f0b1a0c8f0d90781bf09de9",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\ccc0055d-046a-5b80-9f3f-7d1ed7392e38\\QM5_41097\\20260822_065122\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "144e32b94d8210f0fea91d05a83897843e10204f34396526d353705720a81ff1",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "c939eac37d0c409bcc2d05396c58f4ba7a54541db5786a0c6014f5f58b6ad9d8",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\ccc0055d-046a-5b80-9f3f-7d1ed7392e38\\QM5_41097\\20260822_065122\\summary.json",
+        "cold_trade_list_sha256": "69befe7a507a3943d2a75924248a4530cec5076f3e2a4253e9ca93637af17080",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 2,
+        "setfile_sha256": "245138245344231b1159baa069646fef7a14d3911f80df666c046b700f7ce1ad",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "ccc0055d-046a-5b80-9f3f-7d1ed7392e38"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_004",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_004",
+        "cold_elapsed_seconds": 272.551,
+        "cold_entry_trading_days": 193,
+        "cold_identity_sha256": "68e3c2cc8e4b08f5744c168d408addff7312b3a72c52faed033207b2f42ec4d4",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\ea962544-3f33-536b-a20e-081e4a7bc5eb\\QM5_41097\\20260822_070609\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "2c7ca47b6ba9fb5cfcaad41e88c4ee42497226f0b1419a0404f16986dd1dcfa6",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\ea962544-3f33-536b-a20e-081e4a7bc5eb\\QM5_41097\\20260822_070609\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "266dfbf06404db1a6da2fec2aefae10752283e986d064427986ee7127066b5ff",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "ed0d8a78c41b92974e877ea4b98f0623edfbf0ddaa9e1d3b6d20324670c1bd48",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\ea962544-3f33-536b-a20e-081e4a7bc5eb\\QM5_41097\\20260822_070609\\summary.json",
+        "cold_trade_list_sha256": "b1ef198b0b16a1abccf45e9071c0089b5f1211597197b653294d2395f9634ea4",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 3,
+        "setfile_sha256": "0793b52f66f941cdfd65512f2ee723f503d3c535ee4b9278cb2e204fd13a4783",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "ea962544-3f33-536b-a20e-081e4a7bc5eb"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_005",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_005",
+        "cold_elapsed_seconds": 403.304,
+        "cold_entry_trading_days": 193,
+        "cold_identity_sha256": "88ad48aed74c4213d736fc438bdd7e75e6f2a2df8ce0df2eab62c94fa8fd8659",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\86ba5c0c-7d44-5461-8b69-c4ca4e68bf0f\\QM5_41097\\20260822_071615\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "44f022a7abff1a22223274e7afaab75c31ec3b7ed1655ce1f26820861a07ed2d",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\86ba5c0c-7d44-5461-8b69-c4ca4e68bf0f\\QM5_41097\\20260822_071615\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "484d131f9969700a65c6346f33e243f3b5e6468122594209bc9ed4dbca8c418b",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "ed0d8a78c41b92974e877ea4b98f0623edfbf0ddaa9e1d3b6d20324670c1bd48",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\86ba5c0c-7d44-5461-8b69-c4ca4e68bf0f\\QM5_41097\\20260822_071615\\summary.json",
+        "cold_trade_list_sha256": "b1ef198b0b16a1abccf45e9071c0089b5f1211597197b653294d2395f9634ea4",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 4,
+        "setfile_sha256": "3c87e821bf80b69622d42c93f0eb88b0c6a674f428e961c0cefd87f77e4cf39d",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "86ba5c0c-7d44-5461-8b69-c4ca4e68bf0f"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_006",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_006",
+        "cold_elapsed_seconds": 379.362,
+        "cold_entry_trading_days": 190,
+        "cold_identity_sha256": "bbb71c115eebd7f640ea2f8e99a637faf5bb065bc79643dd156b551c37b47f78",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\76963c69-9b55-5924-8e92-385705cbb582\\QM5_41097\\20260822_072744\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "a746e0879cde1fe6af62ac8dae10508aa0a635d7f157505d5d720c2033fd809b",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\76963c69-9b55-5924-8e92-385705cbb582\\QM5_41097\\20260822_072744\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "d4614715a2e497203703b173b4f18bf82a657f32724d4fe2092a3e719aae9983",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "c5d05a555f5affede5905015bda167a8e2faf7cf7adc09143e0b4aa9e903103d",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\76963c69-9b55-5924-8e92-385705cbb582\\QM5_41097\\20260822_072744\\summary.json",
+        "cold_trade_list_sha256": "db78ccde49fb8caac3ebd6d1188c1984809c2d8e26febbedff1d04c2d7dcc8b8",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 5,
+        "setfile_sha256": "5950dbb9e0dd87c3c731b61013a56111f4cebf7d88d8caf155473a34f5645561",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "76963c69-9b55-5924-8e92-385705cbb582"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_008",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_008",
+        "cold_elapsed_seconds": 279.532,
+        "cold_entry_trading_days": 192,
+        "cold_identity_sha256": "83efc3ea41612c55f0133893122607ab9431c9ee261a67836ad9f1003ce4e922",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\05fb3d10-950c-51c0-9b18-eaa31acb1e1f\\QM5_41097\\20260822_075430\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "709a966e9070b0c1cd4912ef63e874f18281dd4294a0ce8a6b68dcbd062300ea",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\05fb3d10-950c-51c0-9b18-eaa31acb1e1f\\QM5_41097\\20260822_075430\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "23bf334275eb5a1d1ad187bb2b7bc7cb1bc987683a86db8833e0f7dc0cb3f15d",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "950d222ef2fa8a90a44b689fff73730e25519fae78679e0b3d30b68043d195b9",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\05fb3d10-950c-51c0-9b18-eaa31acb1e1f\\QM5_41097\\20260822_075430\\summary.json",
+        "cold_trade_list_sha256": "435c5436f6c3d24046c3ac1e6830f9f7e9e942e28f6eda11001613235d2588e6",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 6,
+        "setfile_sha256": "5dc40032c44482b37b35ae49ca531e71f177b350be5a2309f85320687e48987e",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "05fb3d10-950c-51c0-9b18-eaa31acb1e1f"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_009",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_009",
+        "cold_elapsed_seconds": 291.041,
+        "cold_entry_trading_days": 193,
+        "cold_identity_sha256": "ad4daf2d73e08b636a91cb4c8e59cff7b9c752ccad54d66c6adc97c225ecbcd5",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\7b192d77-6305-569a-a034-ff13f54d18a3\\QM5_41097\\20260822_080233\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "397ba9317730855db06d467187df7eabffecb77c1bf6669643cfad2622999f79",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\7b192d77-6305-569a-a034-ff13f54d18a3\\QM5_41097\\20260822_080233\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "3c0b64a6487e30a46281074c893775ce311b5b70cd8bc1785e7d3c1996508e8f",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "ed0d8a78c41b92974e877ea4b98f0623edfbf0ddaa9e1d3b6d20324670c1bd48",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\7b192d77-6305-569a-a034-ff13f54d18a3\\QM5_41097\\20260822_080233\\summary.json",
+        "cold_trade_list_sha256": "b1ef198b0b16a1abccf45e9071c0089b5f1211597197b653294d2395f9634ea4",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 7,
+        "setfile_sha256": "9012025e2b8db81c6ddac702925c2d6d055fb4dbb4e2b9414829c67b402b72f5",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "7b192d77-6305-569a-a034-ff13f54d18a3"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_011",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_011",
+        "cold_elapsed_seconds": 264.479,
+        "cold_entry_trading_days": 192,
+        "cold_identity_sha256": "3fb8fa850e6f79085ad1e77afb6a44c22b4de32e9225dfe536e4149a6ef261b0",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\3c7642dc-8046-56d0-b923-3d78adb6bf87\\QM5_41097\\20260822_082416\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "2bd25e1ef44299bc7fcbbe305c2deced35fc0fc7773a1f0c45f3c148de2f45ad",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\3c7642dc-8046-56d0-b923-3d78adb6bf87\\QM5_41097\\20260822_082416\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "0325de65f4ce10a29434b71a255bd541720eb16d48dd8614f027be1fdfc2a8c2",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "a38adb929b3335128837a2b99ecb0cee80abeac236556b2bc6f0082f5b3da7a2",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\3c7642dc-8046-56d0-b923-3d78adb6bf87\\QM5_41097\\20260822_082416\\summary.json",
+        "cold_trade_list_sha256": "151800be34e02c3d55c2039f3a283ce2b62db9c66cb8806c25c30142334d36d8",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 8,
+        "setfile_sha256": "952840be62875652a73128e3661cdc580f9cef44fb099d43be8aa2009bc18206",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "3c7642dc-8046-56d0-b923-3d78adb6bf87"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_012",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_012",
+        "cold_elapsed_seconds": 379.08,
+        "cold_entry_trading_days": 181,
+        "cold_identity_sha256": "e4da53121fb55c1f897fede6ced7fd37e9052c98cfeb3131c8f870f1bdd5df37",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\e2ddff40-e36a-5e8c-8f14-887fa974e268\\QM5_41097\\20260822_084845\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "8cee697a3363d61a82b9c6e94f47c3e21d3eb759f9b8881d5c1efba77cd47ece",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\e2ddff40-e36a-5e8c-8f14-887fa974e268\\QM5_41097\\20260822_084845\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "75fa9f33fcf7b8a47e0cbbc826d0407650d2a50c938d0b6ce5f441cc89bb0fbf",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "44720c613e29b790de66cad5b9940c66a310a4fd6259f8f22d49e97b7a1638be",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\e2ddff40-e36a-5e8c-8f14-887fa974e268\\QM5_41097\\20260822_084845\\summary.json",
+        "cold_trade_list_sha256": "df8d8086ab7b35b0c089ab9d7b59e58d60ec75de07f4d7334e4afe3602a0f554",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 9,
+        "setfile_sha256": "4055e3ea3299523f64eedab31c049a70b5d88ec0004b972dcf2ab619e923f324",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "e2ddff40-e36a-5e8c-8f14-887fa974e268"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_013",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_013",
+        "cold_elapsed_seconds": 422.656,
+        "cold_entry_trading_days": 185,
+        "cold_identity_sha256": "0bfbcd2d7d81e5088ea510b658b858ee58fc2468d02a9a572945df1552ef4852",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\590b1266-f6c5-5bda-9883-81f6cbd222d5\\QM5_41097\\20260822_085825\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "dcbfee5551714fb8a51ab673582510153e66346186e30f4f3b3c2c639eb4e237",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\590b1266-f6c5-5bda-9883-81f6cbd222d5\\QM5_41097\\20260822_085825\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "e824cd2f256569e63ad337b2b98b5076cbad40e981f4aaa0759916dba33ab58f",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "c2c0b4c63fb664659ae226b6b6ea60bc18e69a35bb5b84f51158547989286063",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\590b1266-f6c5-5bda-9883-81f6cbd222d5\\QM5_41097\\20260822_085825\\summary.json",
+        "cold_trade_list_sha256": "166708674db87ac87efca8085cee4dade876257c3f41f91bd6e5251c68bb08f4",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 10,
+        "setfile_sha256": "041953ae417a55262984dbda23b08e73517b8a70cdae504e365cc3ee8670c411",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "590b1266-f6c5-5bda-9883-81f6cbd222d5"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_015",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_015",
+        "cold_elapsed_seconds": 370.126,
+        "cold_entry_trading_days": 193,
+        "cold_identity_sha256": "8caf7bbe095dfc40034cab8deff23cba1053aa0b93a719a20964fdab6698f8b7",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\ba0d42dc-9471-5e03-a4e0-fda59ac0d324\\QM5_41097\\20260822_093120\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "fe314e645f88d324098181ceb88467931e36d9370f6c3597569837d08fc4fcfa",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\ba0d42dc-9471-5e03-a4e0-fda59ac0d324\\QM5_41097\\20260822_093120\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "4e6ee4bb7b332af0edda835aeaf0016f756e633bfde1747a466650850734009a",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "ed0d8a78c41b92974e877ea4b98f0623edfbf0ddaa9e1d3b6d20324670c1bd48",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\ba0d42dc-9471-5e03-a4e0-fda59ac0d324\\QM5_41097\\20260822_093120\\summary.json",
+        "cold_trade_list_sha256": "b1ef198b0b16a1abccf45e9071c0089b5f1211597197b653294d2395f9634ea4",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 11,
+        "setfile_sha256": "b47ee59cb248c62bd418d09f6ce26f8646494bada4bdd38d3d68de29d3e8a01e",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "ba0d42dc-9471-5e03-a4e0-fda59ac0d324"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_017",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_017",
+        "cold_elapsed_seconds": 252.569,
+        "cold_entry_trading_days": 193,
+        "cold_identity_sha256": "cada80c3d7ca14de9207f3db19a03a5a705053d9a2133cf22d1043afc0a75c31",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\e4533930-dda7-57af-879f-3ecd94efd6e6\\QM5_41097\\20260822_094946\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "cf6434e5a71ebfacf0e7ffd3d2efc7519e1ad6da4771ce8cffbdc815dfdfba20",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\e4533930-dda7-57af-879f-3ecd94efd6e6\\QM5_41097\\20260822_094946\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "7ff492b271cbfef3d535a3832d4d4e143b08996e694142a54cf9c9892879ea62",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "e7436c51311ba53b064069db0f87395e94785ed12100cded4b02337606903a36",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\e4533930-dda7-57af-879f-3ecd94efd6e6\\QM5_41097\\20260822_094946\\summary.json",
+        "cold_trade_list_sha256": "5a3d3bfef8a9c2c04af9609934ba3daabb8b79498e49def6a1c3e60f05d8eb5d",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 12,
+        "setfile_sha256": "780456ae8381643561cd073816554b107f3951ed50a6d95812758ab030c530c6",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "e4533930-dda7-57af-879f-3ecd94efd6e6"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_018",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_018",
+        "cold_elapsed_seconds": 263.652,
+        "cold_entry_trading_days": 188,
+        "cold_identity_sha256": "81f1c2efd76261a0a815191531df50b446ad18b522b29a230902bc8d1869ac0b",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\2f02b9e6-f2db-5077-b477-83312244f011\\QM5_41097\\20260822_095933\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "a349ff9e22c32ab7456127a32e41678ae0806d6ee0b13623115758f76a76f26c",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\2f02b9e6-f2db-5077-b477-83312244f011\\QM5_41097\\20260822_095933\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "466dfa4e83a1fadeb7254c5867f099af5cedc50f9f0621765b31de497c038038",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "2e308f588d24f1b54bc96a9aefc7b43f4cd9fb788018254a226252666e0cce47",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\2f02b9e6-f2db-5077-b477-83312244f011\\QM5_41097\\20260822_095933\\summary.json",
+        "cold_trade_list_sha256": "bb3cba89327b6883f32a4f972fbc06b4e17e561d9d16d8311efb1b8393fb0e26",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 13,
+        "setfile_sha256": "bbec7c638e57b735a8fdc054e3ca29d412122c18cbfc17b3f09c56cb34f06deb",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "2f02b9e6-f2db-5077-b477-83312244f011"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_019",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_019",
+        "cold_elapsed_seconds": 596.262,
+        "cold_entry_trading_days": 190,
+        "cold_identity_sha256": "2e2072360a810f03c275c3195a9c6f30092028f2451b23b85f24c988ee0aee6b",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\85ce2003-8d1a-58c3-baf3-52386ad6ad27\\QM5_41097\\20260822_102617\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "8ef44c1cc31999c7a4587c08bf9ec3eb86aaa70c02be0f7acc69e63c4d5c8a61",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\85ce2003-8d1a-58c3-baf3-52386ad6ad27\\QM5_41097\\20260822_102617\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "5e7b8ec8245026a90229813279e23335307e95b82b5338be90e085027dfbfa39",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "174682be19ada36eb090bbd14b81fa6afa61b1409afaf295e0446a19fc27be16",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\85ce2003-8d1a-58c3-baf3-52386ad6ad27\\QM5_41097\\20260822_102617\\summary.json",
+        "cold_trade_list_sha256": "c7032dce9c15eb8c780cea805373a4e1c557d45048bbf57a05f37dd492a0e47d",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 14,
+        "setfile_sha256": "da9ffc8cb4ecfd17429d37b6a0d45cfa4aeab72f8cb773385431c47a763830ec",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "85ce2003-8d1a-58c3-baf3-52386ad6ad27"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_020",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_020",
+        "cold_elapsed_seconds": 347.243,
+        "cold_entry_trading_days": 192,
+        "cold_identity_sha256": "98211dd0fb1de99672bdac7aa07c5423d090dbcbfef2c392737e646742528fa0",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\b1e6dd54-edc1-5ef1-9f39-dc5e28db2e81\\QM5_41097\\20260822_103910\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "a17c522d4016c0fcfd7a3ea27b78e268ffe67b0986bcfbb19a4e485c37344c45",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\b1e6dd54-edc1-5ef1-9f39-dc5e28db2e81\\QM5_41097\\20260822_103910\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "91d919c0c8c015a9dfe66ef0411274513a714f56b83dc9e32beeaf89a4fb1d29",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "58c401cfaf6521a36198eef74d6344a8dd65794bde7a3e44ec16f697f87340e5",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\b1e6dd54-edc1-5ef1-9f39-dc5e28db2e81\\QM5_41097\\20260822_103910\\summary.json",
+        "cold_trade_list_sha256": "7dd7b691e34dbfb2ee5dd9ff2238113102ccce1468a6a632ddcf3220142e41dd",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 15,
+        "setfile_sha256": "a7006d74428646da4ef757274d2622ab3b55f9cf38a9c44c8d9798fe66542018",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "b1e6dd54-edc1-5ef1-9f39-dc5e28db2e81"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_021",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_021",
+        "cold_elapsed_seconds": 376.03,
+        "cold_entry_trading_days": 193,
+        "cold_identity_sha256": "78509dd8915078efd908add515ff56f61219d22c9f357ac139c9777267e4c15c",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\07a2e28a-a1fd-598b-9df1-e7e36dd08d4d\\QM5_41097\\20260822_104712\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "6e09ae80cb8337ef02d71d1a15a7cedbc458cd1d97ea38acf41f2f86b1c7ed37",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\07a2e28a-a1fd-598b-9df1-e7e36dd08d4d\\QM5_41097\\20260822_104712\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "3eb3791a392988bd847983f88e7ff7201267d6071e6fe62b53b3f0b8a986bac2",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "ed0d8a78c41b92974e877ea4b98f0623edfbf0ddaa9e1d3b6d20324670c1bd48",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\07a2e28a-a1fd-598b-9df1-e7e36dd08d4d\\QM5_41097\\20260822_104712\\summary.json",
+        "cold_trade_list_sha256": "b1ef198b0b16a1abccf45e9071c0089b5f1211597197b653294d2395f9634ea4",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 16,
+        "setfile_sha256": "899a4ffa6388332498b873105d36c1766b5c1c9828d610113c1ed18e72276b5e",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "07a2e28a-a1fd-598b-9df1-e7e36dd08d4d"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_022",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_022",
+        "cold_elapsed_seconds": 291.135,
+        "cold_entry_trading_days": 189,
+        "cold_identity_sha256": "39ac398df8ed49b741e0a41b5730cec07f723039da15d48a0358eaae90c0634a",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\6be17ed2-4993-55ee-9c9e-9226e10f8c3f\\QM5_41097\\20260822_105553\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "54247f3ca482c26ac02d544be6defd2b0e21ec7721de315e567578d64a60783d",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\6be17ed2-4993-55ee-9c9e-9226e10f8c3f\\QM5_41097\\20260822_105553\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "0213860b320c3b95f2f21db3d767f7f72cdd807e5f5d247b97ad06d3ac96cd72",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "ed0b452d372620c5d767fc186b66c61eb8810093dd9da56140e57512e948994a",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\6be17ed2-4993-55ee-9c9e-9226e10f8c3f\\QM5_41097\\20260822_105553\\summary.json",
+        "cold_trade_list_sha256": "7d2eaa00eb29aefe3802d9d579d66e35f1c49ddd4dce0d09efa5412cfef19099",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 17,
+        "setfile_sha256": "c0555e8ebb0d8012048ffea4c875d1940deed649fe2585b3f69a931066c0672e",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "6be17ed2-4993-55ee-9c9e-9226e10f8c3f"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_024",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_024",
+        "cold_elapsed_seconds": 245.789,
+        "cold_entry_trading_days": 193,
+        "cold_identity_sha256": "dc654daae99cfa6cb58ed04524f883bf9515117f21f84de7b5864e04a513de61",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\bc835d88-299a-50db-ad43-c6637b07fa66\\QM5_41097\\20260822_111217\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "89ea9329c56b191e22a747edaab0944f3e9128fb8dae0f9725dbb199aa2bd661",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\bc835d88-299a-50db-ad43-c6637b07fa66\\QM5_41097\\20260822_111217\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "470e44c71f6f1ee22e1f5267b842bd72b391dd89f75832e01487957af031fea9",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "ed0d8a78c41b92974e877ea4b98f0623edfbf0ddaa9e1d3b6d20324670c1bd48",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\bc835d88-299a-50db-ad43-c6637b07fa66\\QM5_41097\\20260822_111217\\summary.json",
+        "cold_trade_list_sha256": "b1ef198b0b16a1abccf45e9071c0089b5f1211597197b653294d2395f9634ea4",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 18,
+        "setfile_sha256": "f2062619182f111a83fe54cca52b8bf23ea4389afc56061abfc921b0ac7da2f5",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "bc835d88-299a-50db-ad43-c6637b07fa66"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_025",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_025",
+        "cold_elapsed_seconds": 270.117,
+        "cold_entry_trading_days": 193,
+        "cold_identity_sha256": "3f2635625d5f91e7c42da460793a81eafcfc810d3b824b77f00e28ce75b5a477",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\f91ec1a9-c609-59c9-867c-a441ebabf82f\\QM5_41097\\20260822_111942\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "6146e908511643ae072042106c8d41228a4368de81e4ecaf1022d10a6ae4defd",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\f91ec1a9-c609-59c9-867c-a441ebabf82f\\QM5_41097\\20260822_111942\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "65fff5ba236b2df500cdb86898f615a9c4fbc1a75f6053736a560522ad7de588",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "3a51e5eb3e3f18f8f357c95f5fa74211a1db462d6279880c178892951805a93e",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\f91ec1a9-c609-59c9-867c-a441ebabf82f\\QM5_41097\\20260822_111942\\summary.json",
+        "cold_trade_list_sha256": "eff5246ac0c5ecf3a9f79288da30634a2149060f4e46dc3f4d1844ac1724a5c8",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 19,
+        "setfile_sha256": "8a9acfd7b601486b120c535e1a7f23fc24d3cae211693b09ec1fe9481c4020fb",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "f91ec1a9-c609-59c9-867c-a441ebabf82f"
+      },
+      {
+        "all_exact": null,
+        "arm": "buy_027",
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_027",
+        "cold_elapsed_seconds": 282.015,
+        "cold_entry_trading_days": 189,
+        "cold_identity_sha256": "a3db021d4ef871448e1db49b30b7680159636b0f7141b3e652d85e6d9545b605",
+        "cold_logger_sample_path": "D:\\QM\\reports\\work_items\\1a393cf2-6f8b-5ef5-9ce7-5fa9c1fc69e4\\QM5_41097\\20260822_114028\\logger_sample.jsonl",
+        "cold_logger_sample_sha256": "4d03ca12e498e448f176aadaaba92b8b5427037352b97c28eacdfd6402025f45",
+        "cold_native_report_path": "D:\\QM\\reports\\work_items\\1a393cf2-6f8b-5ef5-9ce7-5fa9c1fc69e4\\QM5_41097\\20260822_114028\\raw\\run_01\\report.htm",
+        "cold_native_report_sha256": "243cd04e7902198cc22906f87c741c3268aa8ec528fbfdefe53c7b8ef0a47494",
+        "cold_receipt_schema_sha256": "f4a134e8f87c3e1588f0441d276ce098c4341fd167a76204020c61e5c97561f2",
+        "cold_report_metrics_sha256": "1f9fa1ff16a23f689252f828728a2431fef70ea4e96b9a111f1c84b29cc3420c",
+        "cold_summary_path": "D:\\QM\\reports\\work_items\\1a393cf2-6f8b-5ef5-9ce7-5fa9c1fc69e4\\QM5_41097\\20260822_114028\\summary.json",
+        "cold_trade_list_sha256": "37c7f2ec39de93327308d1c1204520cfa4e49fe81b9200155f41cf7790730237",
+        "entry_days_exact": null,
+        "identity_exact": null,
+        "logger_sample_exact": null,
+        "metrics_exact": null,
+        "native_report_exact": null,
+        "receipt_schema_exact": null,
+        "selection_rank": 20,
+        "setfile_sha256": "137cd526cd50803364dc05830602d1ca6ed01b199786e030b065b21759f5fe76",
+        "trades_exact": null,
+        "warm_elapsed_seconds": null,
+        "warm_entry_trading_days": null,
+        "warm_identity_sha256": null,
+        "warm_logger_sample_path": null,
+        "warm_logger_sample_sha256": null,
+        "warm_native_report_path": null,
+        "warm_native_report_sha256": null,
+        "warm_receipt_schema_sha256": null,
+        "warm_report_metrics_sha256": null,
+        "warm_status": "NOT_RUN_AFTER_STOP",
+        "warm_summary_path": null,
+        "warm_trade_list_sha256": null,
+        "work_item_id": "1a393cf2-6f8b-5ef5-9ce7-5fa9c1fc69e4"
+      }
+    ]
+  },
+  "generated_at_utc": "2026-08-27T17:41:19.714055+00:00",
+  "outcome": {
+    "all_twenty_exact": false,
+    "attempted": 1,
+    "compared": 1,
+    "error": "warm parity deviation at DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:baseline: ",
+    "exact": 0,
+    "status": "DEVIATION_STOP"
+  },
+  "schema": "qm.warm-cell-phase3-validation/v1",
+  "selection": {
+    "identity_sha256": "ac619fda8deb6e648838deb9cae1268be7f2a7b600255fcd3de8036380a80a18",
+    "rows": [
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:baseline",
+        "rank": 1,
+        "setfile_sha256": "efb30cbb4d99938c44a4d62012e7ae136712fffbea3dcda7abf5890d9c2350e9",
+        "work_item_id": "356a3655-5f0a-51ea-84f3-a3d04e2ed714"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_003",
+        "rank": 2,
+        "setfile_sha256": "245138245344231b1159baa069646fef7a14d3911f80df666c046b700f7ce1ad",
+        "work_item_id": "ccc0055d-046a-5b80-9f3f-7d1ed7392e38"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_004",
+        "rank": 3,
+        "setfile_sha256": "0793b52f66f941cdfd65512f2ee723f503d3c535ee4b9278cb2e204fd13a4783",
+        "work_item_id": "ea962544-3f33-536b-a20e-081e4a7bc5eb"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_005",
+        "rank": 4,
+        "setfile_sha256": "3c87e821bf80b69622d42c93f0eb88b0c6a674f428e961c0cefd87f77e4cf39d",
+        "work_item_id": "86ba5c0c-7d44-5461-8b69-c4ca4e68bf0f"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_006",
+        "rank": 5,
+        "setfile_sha256": "5950dbb9e0dd87c3c731b61013a56111f4cebf7d88d8caf155473a34f5645561",
+        "work_item_id": "76963c69-9b55-5924-8e92-385705cbb582"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_008",
+        "rank": 6,
+        "setfile_sha256": "5dc40032c44482b37b35ae49ca531e71f177b350be5a2309f85320687e48987e",
+        "work_item_id": "05fb3d10-950c-51c0-9b18-eaa31acb1e1f"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_009",
+        "rank": 7,
+        "setfile_sha256": "9012025e2b8db81c6ddac702925c2d6d055fb4dbb4e2b9414829c67b402b72f5",
+        "work_item_id": "7b192d77-6305-569a-a034-ff13f54d18a3"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_011",
+        "rank": 8,
+        "setfile_sha256": "952840be62875652a73128e3661cdc580f9cef44fb099d43be8aa2009bc18206",
+        "work_item_id": "3c7642dc-8046-56d0-b923-3d78adb6bf87"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_012",
+        "rank": 9,
+        "setfile_sha256": "4055e3ea3299523f64eedab31c049a70b5d88ec0004b972dcf2ab619e923f324",
+        "work_item_id": "e2ddff40-e36a-5e8c-8f14-887fa974e268"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_013",
+        "rank": 10,
+        "setfile_sha256": "041953ae417a55262984dbda23b08e73517b8a70cdae504e365cc3ee8670c411",
+        "work_item_id": "590b1266-f6c5-5bda-9883-81f6cbd222d5"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_015",
+        "rank": 11,
+        "setfile_sha256": "b47ee59cb248c62bd418d09f6ce26f8646494bada4bdd38d3d68de29d3e8a01e",
+        "work_item_id": "ba0d42dc-9471-5e03-a4e0-fda59ac0d324"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_017",
+        "rank": 12,
+        "setfile_sha256": "780456ae8381643561cd073816554b107f3951ed50a6d95812758ab030c530c6",
+        "work_item_id": "e4533930-dda7-57af-879f-3ecd94efd6e6"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_018",
+        "rank": 13,
+        "setfile_sha256": "bbec7c638e57b735a8fdc054e3ca29d412122c18cbfc17b3f09c56cb34f06deb",
+        "work_item_id": "2f02b9e6-f2db-5077-b477-83312244f011"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_019",
+        "rank": 14,
+        "setfile_sha256": "da9ffc8cb4ecfd17429d37b6a0d45cfa4aeab72f8cb773385431c47a763830ec",
+        "work_item_id": "85ce2003-8d1a-58c3-baf3-52386ad6ad27"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_020",
+        "rank": 15,
+        "setfile_sha256": "a7006d74428646da4ef757274d2622ab3b55f9cf38a9c44c8d9798fe66542018",
+        "work_item_id": "b1e6dd54-edc1-5ef1-9f39-dc5e28db2e81"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_021",
+        "rank": 16,
+        "setfile_sha256": "899a4ffa6388332498b873105d36c1766b5c1c9828d610113c1ed18e72276b5e",
+        "work_item_id": "07a2e28a-a1fd-598b-9df1-e7e36dd08d4d"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_022",
+        "rank": 17,
+        "setfile_sha256": "c0555e8ebb0d8012048ffea4c875d1940deed649fe2585b3f69a931066c0672e",
+        "work_item_id": "6be17ed2-4993-55ee-9c9e-9226e10f8c3f"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_024",
+        "rank": 18,
+        "setfile_sha256": "f2062619182f111a83fe54cca52b8bf23ea4389afc56061abfc921b0ac7da2f5",
+        "work_item_id": "bc835d88-299a-50db-ad43-c6637b07fa66"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_025",
+        "rank": 19,
+        "setfile_sha256": "8a9acfd7b601486b120c535e1a7f23fc24d3cae211693b09ec1fe9481c4020fb",
+        "work_item_id": "f91ec1a9-c609-59c9-867c-a441ebabf82f"
+      },
+      {
+        "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:buy_027",
+        "rank": 20,
+        "setfile_sha256": "137cd526cd50803364dc05830602d1ca6ed01b199786e030b065b21759f5fe76",
+        "work_item_id": "1a393cf2-6f8b-5ef5-9ce7-5fa9c1fc69e4"
+      }
+    ],
+    "rule": "oldest AUTHENTICATED_COLD by (updated_at, work_item_id)",
+    "selected_count": 20
+  },
+  "source": {
+    "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "database_mode": "URI mode=ro + PRAGMA query_only=ON",
+    "git_head": "78e9d5992d7886329bffc5b43e2094ab1444db63",
+    "implementation_commit": "08f6ca21f28ce2b76bad69198fdbb1d5c47da79c",
+    "repo_root": "C:\\QM\\repo"
+  },
+  "task_id": "2cb9d160-d5c0-46ea-ae45-d145a63cf1f4",
+  "timing": {
+    "attempted_cold_seconds": 238.565,
+    "attempted_like_for_like_speedup": 0.5282,
+    "cold_baseline": {
+      "maximum_seconds": 596.262,
+      "mean_seconds": 337.081,
+      "median_seconds": 291.088,
+      "minimum_seconds": 238.565,
+      "sample_count": 20,
+      "total_seconds": 6741.611
+    },
+    "complete_batch_speedup": null,
+    "target_met": false,
+    "target_minimum": 2.5,
+    "warm_cells": {
+      "maximum_seconds": 444.766,
+      "mean_seconds": 444.766,
+      "median_seconds": 444.766,
+      "minimum_seconds": 444.766,
+      "sample_count": 1,
+      "total_seconds": 444.766
+    },
+    "warm_logical_session_seconds": 451.625
+  },
+  "warm_results": [
+    {
+      "arm": "baseline",
+      "cell_key": "DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:baseline",
+      "controller_result": {
+        "agent_port_proof": {
+          "concurrent_port_owner": false,
+          "exclusivity_semantics": "NO_CONCURRENT_OVERLAPPING_ENDPOINT_OWNER",
+          "listeners": [
+            {
+              "baseline_endpoint_was_occupied": false,
+              "concurrent_port_owner": false,
+              "creation_utc": "2026-08-27T19:35:21.953877+02:00",
+              "current_overlapping_owner_count": 1,
+              "exclusive_current_owner": true,
+              "executable_path": "D:\\QM\\mt5\\DEV2\\metatester64.exe",
+              "first_observed_utc": "2026-08-27T17:38:53.6677209Z",
+              "local_address": "127.0.0.1",
+              "local_port": 3006,
+              "owner_sid": "S-1-5-21-1736347224-3968129211-1303436014-1006",
+              "preexisting_port_owner": false,
+              "process_id": 12720,
+              "released_baseline_owner_count": 0
+            }
+          ],
+          "metatester_path": "D:\\QM\\mt5\\DEV2\\metatester64.exe",
+          "metatester_sha256": "d1e991d84243ec913db8c82505ab69eab48babcb2fa6826ab3871b3360abb646",
+          "preexisting_port_owner": false,
+          "released_baseline_endpoint_reuse_allowed": true,
+          "status": "PASS"
+        },
+        "child_sha256": "6602217a4c27636a9d4faa26086b6be5dfd3a4817b5fa8174640e5160922d6b1",
+        "cleanup_helper_sha256": "617bbd95dfd1324bf70654a831ca6caec087df3cbaa8c1d064ddda3455e9f250",
+        "cleanup_lease_disarmed": true,
+        "cleanup_lease_registered": true,
+        "common_path": "C:\\Users\\QMDev2\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common",
+        "controller_mutex": "Global\\QM_DEV2_SMOKE_CONTROLLER",
+        "dev2_account_enabled_by_controller": true,
+        "dev2_account_initially_enabled": false,
+        "dev2_account_restored_disabled": true,
+        "error_code": null,
+        "error_message": null,
+        "expected_task_name": "QM_DEV2_SMOKE_a479387606c94d99aecea969c5c4e0c1",
+        "finished_utc": "2026-08-27T17:39:02.446731Z",
+        "identity_sid": "S-1-5-21-1736347224-3968129211-1303436014-1006",
+        "lane_contract_sha256": "866e4e346187e47c33e32beb30bb96dc4085e98cc316819fb33f7925306dda06",
+        "log_path": "D:\\QM\\reports\\dev2\\runs\\20260827T173415Z_98d6e958d2c34ff8bce74462c9b37f98\\output\\run.log",
+        "machine_credential_helper_sha256": "bd3077f5ff671d80a377a820e35cd233cdf8ad1b25d376d579da4714c323ad2c",
+        "machine_credential_sha256": "32f621bab2069924727f5cc0fbdb9e98d38701f2186f00bbc4f687f4a870f5b7",
+        "nonce": "86172a9a5b644a518ad714ae5c8b7863",
+        "program_sha256": {
+          "MetaEditor64.exe": "2c0c8e9e5c1239e30e8a908d9205cdb01b9cdfcf876752e43bd7a755cce58ad3",
+          "metatester64.exe": "d1e991d84243ec913db8c82505ab69eab48babcb2fa6826ab3871b3360abb646",
+          "terminal64.exe": "abd32f97efea4d3ddaaf694230c13eacef228e71d5115da7202033aa226c6946"
+        },
+        "run_id": "20260827T173415Z_98d6e958d2c34ff8bce74462c9b37f98",
+        "run_smoke_exit_code": 0,
+        "run_smoke_sha256": "750478498f9280b61d2cb02ba1ee03a52b54bb448461b2d3d3cc246af411cf4a",
+        "schema_version": 2,
+        "started_utc": "2026-08-27T17:34:37.8656494Z",
+        "success": true,
+        "tester_groups_canonical_path": "C:\\QM\\repo\\framework\\registry\\tester_groups\\Darwinex-Live_real.canonical.txt",
+        "tester_groups_dev2_path": "D:\\QM\\mt5\\DEV2\\MQL5\\Profiles\\Tester\\Groups\\Darwinex-Live_real.txt",
+        "tester_groups_post_child_sha256": "25314333AF81FAF48E2AFE2DB5D52BEEA640CC74EC33A85A46B7C43AADB921DD",
+        "tester_groups_restored_sha256": "25314333AF81FAF48E2AFE2DB5D52BEEA640CC74EC33A85A46B7C43AADB921DD"
+      },
+      "controller_stderr_path": "C:\\QM\\repo\\docs\\ops\\evidence\\a413ae7d_v4a_phase3_dev2_reconciled_retry2_2026-08-27_runtime\\cell_01\\controller_stderr.log",
+      "controller_stdout_path": "C:\\QM\\repo\\docs\\ops\\evidence\\a413ae7d_v4a_phase3_dev2_reconciled_retry2_2026-08-27_runtime\\cell_01\\controller_stdout.log",
+      "ea_id": "QM5_41097",
+      "entry_trading_days": 193,
+      "ex5_sha256": "e077660cc9ac5d74a6edc8896b72249f221fb030279bbd022f7e9d7756bb3a2e",
+      "from_date": "2019.01.01",
+      "history_manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+      "logger_sample_path": "D:\\QM\\reports\\dev2\\runs\\20260827T173415Z_98d6e958d2c34ff8bce74462c9b37f98\\output\\smoke\\QM5_41097\\20260827_173442\\logger_sample.jsonl",
+      "logger_sample_sha256": "33f8e043181a841a6b887980d3b3e51ff0bfe2ad80481c4c059463d66fe68b78",
+      "model": 4,
+      "mq5_sha256": "8e5cfdbf6f513bdbfd5fdcd25357907cad124497123b8a1abe133c9f2d1d6329",
+      "native_report_path": "D:\\QM\\reports\\dev2\\runs\\20260827T173415Z_98d6e958d2c34ff8bce74462c9b37f98\\output\\smoke\\QM5_41097\\20260827_173442\\raw\\run_01\\report.htm",
+      "native_report_sha256": "6f7c9da29d760a383219f415fceda3ffc1f531fb450e16659c37b3fc54901869",
+      "period": "H1",
+      "receipt_schema_field_paths": [
+        "$:object",
+        "$.attempted_runs:scalar",
+        "$.commission_group:object",
+        "$.commission_group.canonical_sha256:scalar",
+        "$.commission_group.commission_matcher:scalar",
+        "$.commission_group.commission_mode:scalar",
+        "$.commission_group.commission_per_lot:scalar",
+        "$.commission_group.commission_per_side_native:scalar",
+        "$.commission_group.injected_sha256:scalar",
+        "$.commission_group.restored_sha256:scalar",
+        "$.commission_group.restored_to_canonical:scalar",
+        "$.deterministic:scalar",
+        "$.ea_id:scalar",
+        "$.ea_label:scalar",
+        "$.evidence_schema:scalar",
+        "$.execution_identity:object",
+        "$.execution_identity.expert_binary:object",
+        "$.execution_identity.expert_binary.deployed:object",
+        "$.execution_identity.expert_binary.deployed.last_write_utc:scalar",
+        "$.execution_identity.expert_binary.deployed.path:scalar",
+        "$.execution_identity.expert_binary.deployed.sha256:scalar",
+        "$.execution_identity.expert_binary.deployed.size_bytes:scalar",
+        "$.execution_identity.expert_binary.observed_after:object",
+        "$.execution_identity.expert_binary.observed_after.last_write_utc:scalar",
+        "$.execution_identity.expert_binary.observed_after.path:scalar",
+        "$.execution_identity.expert_binary.observed_after.sha256:scalar",
+        "$.execution_identity.expert_binary.observed_after.size_bytes:scalar",
+        "$.execution_identity.expert_binary.source:object",
+        "$.execution_identity.expert_binary.source.last_write_utc:scalar",
+        "$.execution_identity.expert_binary.source.path:scalar",
+        "$.execution_identity.expert_binary.source.sha256:scalar",
+        "$.execution_identity.expert_binary.source.size_bytes:scalar",
+        "$.execution_identity.expert_binary.source_matches_deployed:scalar",
+        "$.execution_identity.expert_binary.stable_during_run:scalar",
+        "$.execution_identity.mq5_source:object",
+        "$.execution_identity.mq5_source.last_write_utc:scalar",
+        "$.execution_identity.mq5_source.path:scalar",
+        "$.execution_identity.mq5_source.sha256:scalar",
+        "$.execution_identity.mq5_source.size_bytes:scalar",
+        "$.execution_identity.run_smoke:object",
+        "$.execution_identity.run_smoke.last_write_utc:scalar",
+        "$.execution_identity.run_smoke.path:scalar",
+        "$.execution_identity.run_smoke.sha256:scalar",
+        "$.execution_identity.run_smoke.size_bytes:scalar",
+        "$.execution_identity.setfile:object",
+        "$.execution_identity.setfile.deployed:object",
+        "$.execution_identity.setfile.deployed.last_write_utc:scalar",
+        "$.execution_identity.setfile.deployed.path:scalar",
+        "$.execution_identity.setfile.deployed.sha256:scalar",
+        "$.execution_identity.setfile.deployed.size_bytes:scalar",
+        "$.execution_identity.setfile.observed_after:object",
+        "$.execution_identity.setfile.observed_after.last_write_utc:scalar",
+        "$.execution_identity.setfile.observed_after.path:scalar",
+        "$.execution_identity.setfile.observed_after.sha256:scalar",
+        "$.execution_identity.setfile.observed_after.size_bytes:scalar",
+        "$.execution_identity.setfile.source:object",
+        "$.execution_identity.setfile.source.last_write_utc:scalar",
+        "$.execution_identity.setfile.source.path:scalar",
+        "$.execution_identity.setfile.source.sha256:scalar",
+        "$.execution_identity.setfile.source.size_bytes:scalar",
+        "$.execution_identity.setfile.source_matches_deployed:scalar",
+        "$.execution_identity.setfile.stable_during_run:scalar",
+        "$.execution_identity.stable_during_run:scalar",
+        "$.expert:scalar",
+        "$.frequency_floor:object",
+        "$.frequency_floor.application_reason:scalar",
+        "$.frequency_floor.applied:scalar",
+        "$.frequency_floor.calculated_min_trades_required:scalar",
+        "$.frequency_floor.coverage_end:scalar",
+        "$.frequency_floor.coverage_start:scalar",
+        "$.frequency_floor.coverage_start_source:scalar",
+        "$.frequency_floor.effective_run_marker_count:scalar",
+        "$.frequency_floor.fallback_visible:scalar",
+        "$.frequency_floor.first_tradable_bar:scalar",
+        "$.frequency_floor.marker_count:scalar",
+        "$.frequency_floor.marker_status:scalar",
+        "$.frequency_floor.min_trades_required:scalar",
+        "$.frequency_floor.rate_per_year:scalar",
+        "$.frequency_floor.schema:scalar",
+        "$.frequency_floor.valid_marker_count:scalar",
+        "$.frequency_floor.year_count:scalar",
+        "$.from_date:scalar",
+        "$.log_bomb_detected:scalar",
+        "$.logger_sample:object",
+        "$.logger_sample.capture_mode:scalar",
+        "$.logger_sample.event_count:scalar",
+        "$.logger_sample.exact_byte_copy:scalar",
+        "$.logger_sample.path:scalar",
+        "$.logger_sample.pre_run_archive_manifest_path:scalar",
+        "$.logger_sample.pre_run_archive_manifest_sha256:scalar",
+        "$.logger_sample.run:scalar",
+        "$.logger_sample.sha256:scalar",
+        "$.logger_sample.size_bytes:scalar",
+        "$.logger_sample.source_offset_end_exclusive:scalar",
+        "$.logger_sample.source_offset_start:scalar",
+        "$.logger_sample.source_path:scalar",
+        "$.logger_sample.source_snapshot_sha256:scalar",
+        "$.logger_sample_path:scalar",
+        "$.max_run_attempts:scalar",
+        "$.min_trades_required:scalar",
+        "$.model:scalar",
+        "$.model4_log_marker_detected:scalar",
+        "$.news_calendar:object",
+        "$.news_calendar.age_hours:scalar",
+        "$.news_calendar.common_dir:scalar",
+        "$.news_calendar.latest_modified_utc:scalar",
+        "$.news_calendar.max_age_hours:scalar",
+        "$.news_calendar.mismatches:array",
+        "$.news_calendar.missing_common_paths:array",
+        "$.news_calendar.missing_source_paths:array",
+        "$.news_calendar.primary_path:scalar",
+        "$.news_calendar.secondary_path:scalar",
+        "$.news_calendar.source_dir:scalar",
+        "$.news_calendar.status:scalar",
+        "$.non_ok_attempts:scalar",
+        "$.oninit_failure_detected:scalar",
+        "$.period:scalar",
+        "$.reason_classes:array",
+        "$.reason_classes[]:scalar",
+        "$.report_dir:scalar",
+        "$.report_export_mode:scalar",
+        "$.requested_runs:scalar",
+        "$.requested_year:scalar",
+        "$.result:scalar",
+        "$.run_tag:scalar",
+        "$.runs:array",
+        "$.runs[]:object",
+        "$.runs[].drawdown:scalar",
+        "$.runs[].drawdown_raw:scalar",
+        "$.runs[].exit_code:scalar",
+        "$.runs[].from_date:scalar",
+        "$.runs[].net_profit:scalar",
+        "$.runs[].net_profit_raw:scalar",
+        "$.runs[].oninit_failure:scalar",
+        "$.runs[].profit_factor:scalar",
+        "$.runs[].profit_factor_raw:scalar",
+        "$.runs[].real_ticks_marker:scalar",
+        "$.runs[].report_canonical_path:scalar",
+        "$.runs[].report_sha256:scalar",
+        "$.runs[].report_size_bytes:scalar",
+        "$.runs[].report_source_path:scalar",
+        "$.runs[].run:scalar",
+        "$.runs[].status:scalar",
+        "$.runs[].tester_ini_path:scalar",
+        "$.runs[].tester_ini_sha256:scalar",
+        "$.runs[].tester_log_path:scalar",
+        "$.runs[].to_date:scalar",
+        "$.runs[].total_trades:scalar",
+        "$.runs[].total_trades_raw:scalar",
+        "$.symbol:scalar",
+        "$.terminal:scalar",
+        "$.test_window:object",
+        "$.test_window.from_date:scalar",
+        "$.test_window.source:scalar",
+        "$.test_window.tester_ini_files:array",
+        "$.test_window.tester_ini_files[]:object",
+        "$.test_window.tester_ini_files[].expert:scalar",
+        "$.test_window.tester_ini_files[].expert_parameters:scalar",
+        "$.test_window.tester_ini_files[].from_date:scalar",
+        "$.test_window.tester_ini_files[].model:scalar",
+        "$.test_window.tester_ini_files[].path:scalar",
+        "$.test_window.tester_ini_files[].period:scalar",
+        "$.test_window.tester_ini_files[].run:scalar",
+        "$.test_window.tester_ini_files[].sha256:scalar",
+        "$.test_window.tester_ini_files[].size_bytes:scalar",
+        "$.test_window.tester_ini_files[].symbol:scalar",
+        "$.test_window.tester_ini_files[].to_date:scalar",
+        "$.test_window.to_date:scalar",
+        "$.timestamp_utc:scalar",
+        "$.to_date:scalar",
+        "$.year:scalar"
+      ],
+      "receipt_schema_sha256": "0797bebef2b994719420374abd9ec7f88103cacece88bfc44a6f6127274c8c77",
+      "report_metrics": {
+        "drawdown": 16843.63,
+        "drawdown_raw": "16 843.63 (15.13%)",
+        "from_date": "2019.01.01",
+        "native_parser": {
+          "expert": "QM5_41097_balke-gmt3-range-breakout-opt",
+          "net": -4500.7,
+          "period": "H1 (2019.01.01 - 2019.12.31)",
+          "pf": 0.95,
+          "symbol": "USDJPY.DWX",
+          "total_trades": 193
+        },
+        "net_profit": -4500.7,
+        "net_profit_raw": "-4 500.70",
+        "profit_factor": 0.95,
+        "profit_factor_raw": "0.95",
+        "real_ticks_marker": true,
+        "to_date": "2019.12.31",
+        "total_trades": 193,
+        "total_trades_raw": "193"
+      },
+      "report_sha256": "6f7c9da29d760a383219f415fceda3ffc1f531fb450e16659c37b3fc54901869",
+      "seed": null,
+      "setfile_guard": {
+        "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2cb9d160_v4a_phase3_inputs\\QM5_41097_balke-gmt3-range-breakout-opt_USDJPY.DWX_H1_opt_census_2019_baseline.set",
+        "qm_news_stale_max_hours": null,
+        "risk_fixed": 1000.0,
+        "risk_percent": 0.0,
+        "sha256": "efb30cbb4d99938c44a4d62012e7ae136712fffbea3dcda7abf5890d9c2350e9"
+      },
+      "setfile_sha256": "efb30cbb4d99938c44a4d62012e7ae136712fffbea3dcda7abf5890d9c2350e9",
+      "summary_path": "D:\\QM\\reports\\dev2\\runs\\20260827T173415Z_98d6e958d2c34ff8bce74462c9b37f98\\output\\smoke\\QM5_41097\\20260827_173442\\summary.json",
+      "summary_sha256": "68fb6d8c1ac0b9cd809fa7c549475a1826bc3def84195bea8baba270851febd3",
+      "symbol": "USDJPY.DWX",
+      "to_date": "2019.12.31",
+      "trades": [
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-03T05:11:26Z",
+          "exit_time": "2019-01-03T10:30:25Z",
+          "net": -999.3,
+          "profit": -999.3,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-04T05:05:13Z",
+          "exit_time": "2019-01-04T18:00:00Z",
+          "net": -121.99,
+          "profit": -121.99,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-07T05:06:01Z",
+          "exit_time": "2019-01-07T17:00:00Z",
+          "net": -237.22,
+          "profit": -237.22,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-08T05:46:21Z",
+          "exit_time": "2019-01-08T11:30:45Z",
+          "net": 186.86,
+          "profit": 186.86,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-09T16:03:12Z",
+          "exit_time": "2019-01-09T17:00:00Z",
+          "net": 711.6,
+          "profit": 711.6,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-10T06:00:51Z",
+          "exit_time": "2019-01-10T17:00:00Z",
+          "net": -401.13,
+          "profit": -401.13,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-11T06:17:08Z",
+          "exit_time": "2019-01-11T16:22:36Z",
+          "net": -998.75,
+          "profit": -998.75,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-14T05:05:02Z",
+          "exit_time": "2019-01-14T17:00:00Z",
+          "net": -38.16,
+          "profit": -38.16,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-15T05:00:30Z",
+          "exit_time": "2019-01-15T10:32:09Z",
+          "net": 455.98,
+          "profit": 455.98,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-16T12:11:44Z",
+          "exit_time": "2019-01-16T17:00:00Z",
+          "net": 590.35,
+          "profit": 590.35,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-18T06:25:50Z",
+          "exit_time": "2019-01-18T17:00:00Z",
+          "net": 457.09,
+          "profit": 457.09,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-24T08:02:22Z",
+          "exit_time": "2019-01-24T16:40:33Z",
+          "net": -999.56,
+          "profit": -999.56,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-25T05:40:43Z",
+          "exit_time": "2019-01-25T16:56:24Z",
+          "net": -998.42,
+          "profit": -998.42,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-28T10:09:39Z",
+          "exit_time": "2019-01-28T16:39:52Z",
+          "net": -1063.74,
+          "profit": -1063.74,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-29T07:33:00Z",
+          "exit_time": "2019-01-29T16:02:55Z",
+          "net": 714.87,
+          "profit": 714.87,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-30T13:04:40Z",
+          "exit_time": "2019-01-30T17:00:00Z",
+          "net": 1096.19,
+          "profit": 1096.19,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-01-31T05:00:26Z",
+          "exit_time": "2019-01-31T14:53:19Z",
+          "net": 1069.85,
+          "profit": 1069.85,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-01T09:42:42Z",
+          "exit_time": "2019-02-01T18:00:00Z",
+          "net": 1617.63,
+          "profit": 1617.63,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-04T05:38:12Z",
+          "exit_time": "2019-02-04T13:53:13Z",
+          "net": 1496.57,
+          "profit": 1496.57,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-05T06:08:29Z",
+          "exit_time": "2019-02-05T10:19:26Z",
+          "net": 110.15,
+          "profit": 110.15,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-08T11:07:36Z",
+          "exit_time": "2019-02-08T17:00:00Z",
+          "net": -566.39,
+          "profit": -566.39,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-12T05:42:42Z",
+          "exit_time": "2019-02-12T16:31:59Z",
+          "net": -998.45,
+          "profit": -998.45,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-13T05:18:19Z",
+          "exit_time": "2019-02-13T17:00:00Z",
+          "net": 1169.78,
+          "profit": 1169.78,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-14T05:50:04Z",
+          "exit_time": "2019-02-14T15:30:03Z",
+          "net": -1009.71,
+          "profit": -1009.71,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-15T05:00:01Z",
+          "exit_time": "2019-02-15T15:21:45Z",
+          "net": -998.68,
+          "profit": -998.68,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-18T08:57:58Z",
+          "exit_time": "2019-02-18T17:00:00Z",
+          "net": 137.74,
+          "profit": 137.74,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-21T05:00:00Z",
+          "exit_time": "2019-02-21T15:30:28Z",
+          "net": -999.76,
+          "profit": -999.76,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-22T06:24:00Z",
+          "exit_time": "2019-02-22T19:01:12Z",
+          "net": -1021.19,
+          "profit": -1021.19,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-25T08:06:27Z",
+          "exit_time": "2019-02-25T17:00:00Z",
+          "net": -899.09,
+          "profit": -899.09,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-27T06:28:37Z",
+          "exit_time": "2019-02-27T08:30:37Z",
+          "net": -999.52,
+          "profit": -999.52,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-02-28T07:13:44Z",
+          "exit_time": "2019-02-28T07:57:20Z",
+          "net": -999.63,
+          "profit": -999.63,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-04T09:50:44Z",
+          "exit_time": "2019-03-04T17:00:00Z",
+          "net": -402.12,
+          "profit": -402.12,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-05T06:05:43Z",
+          "exit_time": "2019-03-05T17:00:00Z",
+          "net": -613.26,
+          "profit": -613.26,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-06T11:15:05Z",
+          "exit_time": "2019-03-06T16:49:29Z",
+          "net": -1005.57,
+          "profit": -1005.57,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-07T05:14:35Z",
+          "exit_time": "2019-03-07T16:31:45Z",
+          "net": 70.05,
+          "profit": 70.05,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-08T05:01:00Z",
+          "exit_time": "2019-03-08T11:41:19Z",
+          "net": 1714.13,
+          "profit": 1714.13,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-11T06:07:51Z",
+          "exit_time": "2019-03-11T18:00:00Z",
+          "net": 306.21,
+          "profit": 306.21,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-12T09:04:50Z",
+          "exit_time": "2019-03-12T12:04:51Z",
+          "net": -998.74,
+          "profit": -998.74,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-13T11:08:05Z",
+          "exit_time": "2019-03-13T18:00:00Z",
+          "net": -184.96,
+          "profit": -184.96,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-18T10:57:19Z",
+          "exit_time": "2019-03-18T18:00:03Z",
+          "net": -288.22,
+          "profit": -288.22,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-21T06:01:24Z",
+          "exit_time": "2019-03-21T12:56:31Z",
+          "net": 288.9,
+          "profit": 288.9,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-22T11:35:56Z",
+          "exit_time": "2019-03-22T18:00:00Z",
+          "net": 3062.7,
+          "profit": 3062.7,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-25T11:36:42Z",
+          "exit_time": "2019-03-25T18:00:00Z",
+          "net": -176.08,
+          "profit": -176.08,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-26T06:05:33Z",
+          "exit_time": "2019-03-26T12:29:16Z",
+          "net": -1014.09,
+          "profit": -1014.09,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-03-27T07:27:47Z",
+          "exit_time": "2019-03-27T13:01:20Z",
+          "net": -1004.93,
+          "profit": -1004.93,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-01T12:14:36Z",
+          "exit_time": "2019-04-01T17:20:18Z",
+          "net": -1003.73,
+          "profit": -1003.73,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-02T09:14:29Z",
+          "exit_time": "2019-04-02T18:00:00Z",
+          "net": -106.3,
+          "profit": -106.3,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-04T09:37:22Z",
+          "exit_time": "2019-04-04T16:08:54Z",
+          "net": -998.82,
+          "profit": -998.82,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-05T09:52:58Z",
+          "exit_time": "2019-04-05T15:43:35Z",
+          "net": -999.06,
+          "profit": -999.06,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-10T10:43:25Z",
+          "exit_time": "2019-04-10T16:30:32Z",
+          "net": -999.14,
+          "profit": -999.14,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-11T09:34:18Z",
+          "exit_time": "2019-04-11T18:00:00Z",
+          "net": 2415.44,
+          "profit": 2415.44,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-12T08:43:34Z",
+          "exit_time": "2019-04-12T18:00:00Z",
+          "net": 867.97,
+          "profit": 867.97,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-15T06:30:01Z",
+          "exit_time": "2019-04-15T18:00:00Z",
+          "net": -411.73,
+          "profit": -411.73,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-16T09:57:24Z",
+          "exit_time": "2019-04-16T15:35:50Z",
+          "net": -998.8,
+          "profit": -998.8,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-18T06:30:43Z",
+          "exit_time": "2019-04-18T18:00:00Z",
+          "net": 108.26,
+          "profit": 108.26,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-24T06:55:16Z",
+          "exit_time": "2019-04-24T18:00:00Z",
+          "net": 415.55,
+          "profit": 415.55,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-29T09:24:22Z",
+          "exit_time": "2019-04-29T15:30:03Z",
+          "net": 1045.42,
+          "profit": 1045.42,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-04-30T07:18:08Z",
+          "exit_time": "2019-04-30T12:19:22Z",
+          "net": 941.94,
+          "profit": 941.94,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-01T06:04:19Z",
+          "exit_time": "2019-05-01T10:35:25Z",
+          "net": 144.79,
+          "profit": 144.79,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-03T06:00:15Z",
+          "exit_time": "2019-05-03T16:02:42Z",
+          "net": -999.8,
+          "profit": -999.8,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-06T07:55:26Z",
+          "exit_time": "2019-05-06T18:00:00Z",
+          "net": 377.18,
+          "profit": 377.18,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-07T06:36:00Z",
+          "exit_time": "2019-05-07T18:00:00Z",
+          "net": 1039.95,
+          "profit": 1039.95,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-09T09:48:46Z",
+          "exit_time": "2019-05-09T18:00:00Z",
+          "net": 1056.1,
+          "profit": 1056.1,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-10T06:16:54Z",
+          "exit_time": "2019-05-10T18:00:00Z",
+          "net": 536.63,
+          "profit": 536.63,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-13T11:11:30Z",
+          "exit_time": "2019-05-13T18:00:00Z",
+          "net": 2229.01,
+          "profit": 2229.01,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-15T08:59:17Z",
+          "exit_time": "2019-05-15T10:37:36Z",
+          "net": -998.74,
+          "profit": -998.74,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-16T06:35:36Z",
+          "exit_time": "2019-05-16T18:00:00Z",
+          "net": 1973.32,
+          "profit": 1973.32,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-17T06:21:15Z",
+          "exit_time": "2019-05-17T10:29:03Z",
+          "net": 459.37,
+          "profit": 459.37,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-20T08:44:23Z",
+          "exit_time": "2019-05-20T16:29:54Z",
+          "net": 1226.19,
+          "profit": 1226.19,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-21T06:07:59Z",
+          "exit_time": "2019-05-21T20:00:00Z",
+          "net": 2578.57,
+          "profit": 2578.57,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-22T07:18:55Z",
+          "exit_time": "2019-05-22T18:00:00Z",
+          "net": 869.21,
+          "profit": 869.21,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-23T06:48:37Z",
+          "exit_time": "2019-05-23T11:40:05Z",
+          "net": -999.12,
+          "profit": -999.12,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-24T06:12:05Z",
+          "exit_time": "2019-05-24T18:00:00Z",
+          "net": 1023.25,
+          "profit": 1023.25,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-30T07:38:48Z",
+          "exit_time": "2019-05-30T12:42:31Z",
+          "net": 229.71,
+          "profit": 229.71,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-05-31T07:21:43Z",
+          "exit_time": "2019-05-31T14:26:49Z",
+          "net": 1032.68,
+          "profit": 1032.68,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-03T06:03:48Z",
+          "exit_time": "2019-06-03T09:35:24Z",
+          "net": -998.33,
+          "profit": -998.33,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-04T09:23:26Z",
+          "exit_time": "2019-06-04T10:57:02Z",
+          "net": -999.89,
+          "profit": -999.89,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-05T09:05:51Z",
+          "exit_time": "2019-06-05T10:45:32Z",
+          "net": -998.54,
+          "profit": -998.54,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-06T06:13:21Z",
+          "exit_time": "2019-06-06T10:20:21Z",
+          "net": 41.97,
+          "profit": 41.97,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-07T12:39:50Z",
+          "exit_time": "2019-06-07T15:30:01Z",
+          "net": -1089.39,
+          "profit": -1089.39,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-10T06:49:39Z",
+          "exit_time": "2019-06-10T18:00:00Z",
+          "net": -266.42,
+          "profit": -266.42,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-12T08:54:43Z",
+          "exit_time": "2019-06-12T13:14:49Z",
+          "net": 691.9,
+          "profit": 691.9,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-14T09:40:46Z",
+          "exit_time": "2019-06-14T15:35:56Z",
+          "net": -999.67,
+          "profit": -999.67,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-17T09:19:39Z",
+          "exit_time": "2019-06-17T13:51:38Z",
+          "net": -999.25,
+          "profit": -999.25,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-19T06:13:41Z",
+          "exit_time": "2019-06-19T10:33:38Z",
+          "net": 335.47,
+          "profit": 335.47,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-21T06:05:02Z",
+          "exit_time": "2019-06-21T10:24:36Z",
+          "net": -999.88,
+          "profit": -999.88,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-24T07:29:14Z",
+          "exit_time": "2019-06-24T14:06:56Z",
+          "net": -999.52,
+          "profit": -999.52,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-26T07:39:34Z",
+          "exit_time": "2019-06-26T18:00:00Z",
+          "net": 397.6,
+          "profit": 397.6,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-06-28T15:35:41Z",
+          "exit_time": "2019-06-28T18:00:00Z",
+          "net": -217.66,
+          "profit": -217.66,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-01T09:15:27Z",
+          "exit_time": "2019-07-01T18:00:01Z",
+          "net": -208.82,
+          "profit": -208.82,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-02T08:10:00Z",
+          "exit_time": "2019-07-02T13:11:53Z",
+          "net": 485.67,
+          "profit": 485.67,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-04T07:33:57Z",
+          "exit_time": "2019-07-04T18:00:00Z",
+          "net": 93.58,
+          "profit": 93.58,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-05T08:04:01Z",
+          "exit_time": "2019-07-05T19:00:00Z",
+          "net": 8406.33,
+          "profit": 8406.33,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-08T06:00:06Z",
+          "exit_time": "2019-07-08T14:03:56Z",
+          "net": -998.62,
+          "profit": -998.62,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-09T07:29:07Z",
+          "exit_time": "2019-07-09T10:27:11Z",
+          "net": -999.14,
+          "profit": -999.14,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-10T07:32:23Z",
+          "exit_time": "2019-07-10T18:00:00Z",
+          "net": 3018.6,
+          "profit": 3018.6,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-15T06:15:00Z",
+          "exit_time": "2019-07-15T18:00:00Z",
+          "net": -393.09,
+          "profit": -393.09,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-17T17:48:52Z",
+          "exit_time": "2019-07-17T18:00:00Z",
+          "net": 93.07,
+          "profit": 93.07,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-19T07:42:33Z",
+          "exit_time": "2019-07-19T19:00:00Z",
+          "net": 683.91,
+          "profit": 683.91,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-24T08:41:01Z",
+          "exit_time": "2019-07-24T18:00:00Z",
+          "net": 321.09,
+          "profit": 321.09,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-25T08:05:01Z",
+          "exit_time": "2019-07-25T16:03:20Z",
+          "net": -1000.0,
+          "profit": -1000.0,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-26T06:07:27Z",
+          "exit_time": "2019-07-26T15:30:01Z",
+          "net": -1046.08,
+          "profit": -1046.08,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-07-31T16:39:22Z",
+          "exit_time": "2019-07-31T17:51:47Z",
+          "net": -998.87,
+          "profit": -998.87,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-02T10:24:46Z",
+          "exit_time": "2019-08-02T18:00:00Z",
+          "net": 470.51,
+          "profit": 470.51,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-07T06:14:10Z",
+          "exit_time": "2019-08-07T18:00:00Z",
+          "net": 624.81,
+          "profit": 624.81,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-08T14:08:13Z",
+          "exit_time": "2019-08-08T18:00:00Z",
+          "net": -738.28,
+          "profit": -738.28,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-09T09:04:00Z",
+          "exit_time": "2019-08-09T18:00:00Z",
+          "net": 915.4,
+          "profit": 915.4,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-12T10:22:43Z",
+          "exit_time": "2019-08-12T11:08:14Z",
+          "net": -999.11,
+          "profit": -999.11,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-13T09:22:48Z",
+          "exit_time": "2019-08-13T16:45:42Z",
+          "net": -999.55,
+          "profit": -999.55,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-14T07:49:10Z",
+          "exit_time": "2019-08-14T13:08:26Z",
+          "net": -997.13,
+          "profit": -997.13,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-15T09:35:11Z",
+          "exit_time": "2019-08-15T12:03:09Z",
+          "net": -630.07,
+          "profit": -630.07,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-16T11:45:13Z",
+          "exit_time": "2019-08-16T18:00:00Z",
+          "net": 465.58,
+          "profit": 465.58,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-19T10:01:13Z",
+          "exit_time": "2019-08-19T17:00:50Z",
+          "net": 549.15,
+          "profit": 549.15,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-20T09:06:25Z",
+          "exit_time": "2019-08-20T15:15:38Z",
+          "net": 740.15,
+          "profit": 740.15,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-21T06:03:25Z",
+          "exit_time": "2019-08-21T18:00:00Z",
+          "net": -160.56,
+          "profit": -160.56,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-22T06:00:00Z",
+          "exit_time": "2019-08-22T18:00:00Z",
+          "net": -254.33,
+          "profit": -254.33,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-23T08:41:51Z",
+          "exit_time": "2019-08-23T15:01:01Z",
+          "net": -1011.83,
+          "profit": -1011.83,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-27T06:48:26Z",
+          "exit_time": "2019-08-27T16:47:12Z",
+          "net": -999.4,
+          "profit": -999.4,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-28T06:40:10Z",
+          "exit_time": "2019-08-28T19:00:00Z",
+          "net": -83.69,
+          "profit": -83.69,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-29T10:14:10Z",
+          "exit_time": "2019-08-29T18:00:00Z",
+          "net": 1059.87,
+          "profit": 1059.87,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-08-30T08:04:01Z",
+          "exit_time": "2019-08-30T18:00:00Z",
+          "net": 1434.1,
+          "profit": 1434.1,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-02T10:19:33Z",
+          "exit_time": "2019-09-02T18:00:00Z",
+          "net": 72.51,
+          "profit": 72.51,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-03T09:00:21Z",
+          "exit_time": "2019-09-03T13:47:54Z",
+          "net": 381.29,
+          "profit": 381.29,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-04T08:00:13Z",
+          "exit_time": "2019-09-04T18:00:00Z",
+          "net": 481.5,
+          "profit": 481.5,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-06T15:30:00Z",
+          "exit_time": "2019-09-06T18:00:02Z",
+          "net": 743.15,
+          "profit": 743.15,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-09T12:35:38Z",
+          "exit_time": "2019-09-09T18:00:00Z",
+          "net": 524.13,
+          "profit": 524.13,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-10T10:37:51Z",
+          "exit_time": "2019-09-10T18:00:00Z",
+          "net": 23.96,
+          "profit": 23.96,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-11T06:03:11Z",
+          "exit_time": "2019-09-11T10:03:25Z",
+          "net": 230.71,
+          "profit": 230.71,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-12T06:49:40Z",
+          "exit_time": "2019-09-12T10:16:57Z",
+          "net": -998.63,
+          "profit": -998.63,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-13T08:25:54Z",
+          "exit_time": "2019-09-13T12:07:21Z",
+          "net": 255.15,
+          "profit": 255.15,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-16T06:00:00Z",
+          "exit_time": "2019-09-16T18:00:00Z",
+          "net": 746.54,
+          "profit": 746.54,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-18T06:00:10Z",
+          "exit_time": "2019-09-18T19:00:01Z",
+          "net": -522.44,
+          "profit": -522.44,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-20T06:32:50Z",
+          "exit_time": "2019-09-20T19:00:00Z",
+          "net": -313.7,
+          "profit": -313.7,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-23T10:05:13Z",
+          "exit_time": "2019-09-23T10:26:34Z",
+          "net": -999.94,
+          "profit": -999.94,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-24T06:15:35Z",
+          "exit_time": "2019-09-24T12:12:14Z",
+          "net": -999.02,
+          "profit": -999.02,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-25T10:01:35Z",
+          "exit_time": "2019-09-25T19:00:00Z",
+          "net": 830.36,
+          "profit": 830.36,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-26T09:57:48Z",
+          "exit_time": "2019-09-26T17:55:29Z",
+          "net": -998.84,
+          "profit": -998.84,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-27T07:48:35Z",
+          "exit_time": "2019-09-27T09:40:18Z",
+          "net": -999.75,
+          "profit": -999.75,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-09-30T07:49:56Z",
+          "exit_time": "2019-09-30T15:15:41Z",
+          "net": -999.9,
+          "profit": -999.9,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-01T06:00:24Z",
+          "exit_time": "2019-10-01T13:23:27Z",
+          "net": 506.79,
+          "profit": 506.79,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-02T06:02:58Z",
+          "exit_time": "2019-10-02T10:22:08Z",
+          "net": -999.3,
+          "profit": -999.3,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-03T06:14:30Z",
+          "exit_time": "2019-10-03T14:36:32Z",
+          "net": -999.51,
+          "profit": -999.51,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-04T10:26:04Z",
+          "exit_time": "2019-10-04T15:32:23Z",
+          "net": -1005.69,
+          "profit": -1005.69,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-07T06:34:50Z",
+          "exit_time": "2019-10-07T18:00:00Z",
+          "net": 639.27,
+          "profit": 639.27,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-08T06:33:15Z",
+          "exit_time": "2019-10-08T10:54:07Z",
+          "net": -1005.42,
+          "profit": -1005.42,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-09T09:02:50Z",
+          "exit_time": "2019-10-09T19:00:00Z",
+          "net": 869.18,
+          "profit": 869.18,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-11T12:41:52Z",
+          "exit_time": "2019-10-11T18:00:00Z",
+          "net": 1577.65,
+          "profit": 1577.65,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-14T09:54:05Z",
+          "exit_time": "2019-10-14T18:00:00Z",
+          "net": -818.11,
+          "profit": -818.11,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-15T06:07:33Z",
+          "exit_time": "2019-10-15T16:21:50Z",
+          "net": -999.3,
+          "profit": -999.3,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-16T10:27:42Z",
+          "exit_time": "2019-10-16T17:41:07Z",
+          "net": -999.66,
+          "profit": -999.66,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-17T10:09:28Z",
+          "exit_time": "2019-10-17T15:30:47Z",
+          "net": -999.57,
+          "profit": -999.57,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-18T06:22:50Z",
+          "exit_time": "2019-10-18T11:19:05Z",
+          "net": -999.43,
+          "profit": -999.43,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-21T07:09:42Z",
+          "exit_time": "2019-10-21T15:05:00Z",
+          "net": 180.13,
+          "profit": 180.13,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-22T09:26:21Z",
+          "exit_time": "2019-10-22T18:00:00Z",
+          "net": 221.6,
+          "profit": 221.6,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-24T06:13:12Z",
+          "exit_time": "2019-10-24T10:01:06Z",
+          "net": -999.81,
+          "profit": -999.81,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-25T11:50:36Z",
+          "exit_time": "2019-10-25T18:00:00Z",
+          "net": -8.7,
+          "profit": -8.7,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-28T10:37:50Z",
+          "exit_time": "2019-10-28T15:48:24Z",
+          "net": -999.98,
+          "profit": -999.98,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-29T10:02:00Z",
+          "exit_time": "2019-10-29T13:38:04Z",
+          "net": 72.11,
+          "profit": 72.11,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-30T15:30:01Z",
+          "exit_time": "2019-10-30T17:03:57Z",
+          "net": -1025.88,
+          "profit": -1025.88,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-10-31T11:03:00Z",
+          "exit_time": "2019-10-31T16:25:51Z",
+          "net": 1103.35,
+          "profit": 1103.35,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-01T06:00:04Z",
+          "exit_time": "2019-11-01T18:00:00Z",
+          "net": 34.81,
+          "profit": 34.81,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-05T05:04:16Z",
+          "exit_time": "2019-11-05T16:56:15Z",
+          "net": 229.06,
+          "profit": 229.06,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-06T08:37:19Z",
+          "exit_time": "2019-11-06T18:00:00Z",
+          "net": -84.76,
+          "profit": -84.76,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-07T05:03:19Z",
+          "exit_time": "2019-11-07T09:24:46Z",
+          "net": -998.26,
+          "profit": -998.26,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-08T13:43:11Z",
+          "exit_time": "2019-11-08T16:59:44Z",
+          "net": -998.1,
+          "profit": -998.1,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-11T06:09:08Z",
+          "exit_time": "2019-11-11T17:00:00Z",
+          "net": -12.77,
+          "profit": -12.77,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-13T05:08:10Z",
+          "exit_time": "2019-11-13T11:55:10Z",
+          "net": -998.13,
+          "profit": -998.13,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-14T05:19:11Z",
+          "exit_time": "2019-11-14T18:00:00Z",
+          "net": 765.78,
+          "profit": 765.78,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-15T11:06:12Z",
+          "exit_time": "2019-11-15T17:00:00Z",
+          "net": 526.93,
+          "profit": 526.93,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-18T09:16:02Z",
+          "exit_time": "2019-11-18T15:07:44Z",
+          "net": 900.41,
+          "profit": 900.41,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-19T10:30:58Z",
+          "exit_time": "2019-11-19T17:00:00Z",
+          "net": -257.39,
+          "profit": -257.39,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-20T11:04:38Z",
+          "exit_time": "2019-11-20T16:19:06Z",
+          "net": -999.64,
+          "profit": -999.64,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-21T07:37:50Z",
+          "exit_time": "2019-11-21T17:00:00Z",
+          "net": 136.12,
+          "profit": 136.12,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-22T09:40:48Z",
+          "exit_time": "2019-11-22T17:45:12Z",
+          "net": -999.28,
+          "profit": -999.28,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-25T07:28:59Z",
+          "exit_time": "2019-11-25T16:54:02Z",
+          "net": 422.73,
+          "profit": 422.73,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-27T07:30:09Z",
+          "exit_time": "2019-11-27T18:00:00Z",
+          "net": 2779.75,
+          "profit": 2779.75,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-11-28T09:07:55Z",
+          "exit_time": "2019-11-28T17:00:00Z",
+          "net": 265.87,
+          "profit": 265.87,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-02T13:35:03Z",
+          "exit_time": "2019-12-02T18:00:00Z",
+          "net": 2115.95,
+          "profit": 2115.95,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-03T05:00:18Z",
+          "exit_time": "2019-12-03T12:10:53Z",
+          "net": -999.01,
+          "profit": -999.01,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-04T09:29:02Z",
+          "exit_time": "2019-12-04T11:07:01Z",
+          "net": -1036.02,
+          "profit": -1036.02,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-05T07:25:02Z",
+          "exit_time": "2019-12-05T10:49:34Z",
+          "net": -998.88,
+          "profit": -998.88,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-06T06:55:06Z",
+          "exit_time": "2019-12-06T15:30:03Z",
+          "net": 475.5,
+          "profit": 475.5,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-09T10:00:07Z",
+          "exit_time": "2019-12-09T15:11:49Z",
+          "net": 475.22,
+          "profit": 475.22,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-10T11:03:44Z",
+          "exit_time": "2019-12-10T15:32:27Z",
+          "net": -999.71,
+          "profit": -999.71,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-11T10:19:53Z",
+          "exit_time": "2019-12-11T12:37:35Z",
+          "net": -999.57,
+          "profit": -999.57,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-12T05:00:01Z",
+          "exit_time": "2019-12-12T17:00:00Z",
+          "net": 2818.25,
+          "profit": 2818.25,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-13T05:05:12Z",
+          "exit_time": "2019-12-13T16:07:43Z",
+          "net": -998.8,
+          "profit": -998.8,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-16T09:46:50Z",
+          "exit_time": "2019-12-16T15:01:30Z",
+          "net": -177.26,
+          "profit": -177.26,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-17T09:28:49Z",
+          "exit_time": "2019-12-17T17:00:00Z",
+          "net": -156.06,
+          "profit": -156.06,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-18T10:25:18Z",
+          "exit_time": "2019-12-18T14:54:22Z",
+          "net": -999.34,
+          "profit": -999.34,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-20T08:12:05Z",
+          "exit_time": "2019-12-20T10:02:13Z",
+          "net": -1009.25,
+          "profit": -1009.25,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-23T05:47:18Z",
+          "exit_time": "2019-12-23T17:00:00Z",
+          "net": 330.6,
+          "profit": 330.6,
+          "side": "sell",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        },
+        {
+          "commission": 0.0,
+          "entry_time": "2019-12-27T15:18:51Z",
+          "exit_time": "2019-12-27T17:00:00Z",
+          "net": -837.18,
+          "profit": -837.18,
+          "side": "buy",
+          "swap": 0.0,
+          "symbol": "USDJPY.DWX"
+        }
+      ],
+      "warm_elapsed_seconds": 444.766,
+      "work_item_id": "356a3655-5f0a-51ea-84f3-a3d04e2ed714"
+    }
+  ]
+}
