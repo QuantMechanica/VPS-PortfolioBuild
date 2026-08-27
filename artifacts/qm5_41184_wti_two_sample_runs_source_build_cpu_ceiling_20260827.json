@@ -1,0 +1,123 @@
+{
+  "artifact_type": "qm5_source_build_q02_cpu_ceiling_handoff",
+  "schema": "qm.mission-capacity-stop/v1",
+  "recorded_at_utc": "2026-08-27T15:33:09.6948926Z",
+  "branch": "agents/board-advisor",
+  "recorded_on_head": "5e1b33865e640cac6ccc99b678fee365352f837a",
+  "mission_outcome": "SOURCE_BUILD_COMMITTED_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "candidate": {
+    "ea_id": "QM5_41184",
+    "ea_id_numeric": 41184,
+    "slug": "wti-mww-runs-shift-tr",
+    "strategy_id": "AI-CODEX-WTI-M2RUNS-20260827_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "magic": 411840000,
+    "logic": "ten completed monthly WTI closes; fixed older/newer blocks of five; strict pooled old/new membership runs at R<=6; continue the exact newer-block median direction",
+    "asset_exposure": "direct WTI structural monthly distribution-shift continuation",
+    "portfolio_claim_boundary": "new crude-oil carrier exposure only; no realized decorrelation or portfolio-admission claim before unchanged Q09"
+  },
+  "commits": {
+    "source_approval": "fb7ef45800c78c75d8683053c6ed8db4377f43d1",
+    "card_and_ea_id_approval": "ec0b7413f6f307a87710402c7324dde8dc6eff0b",
+    "prebuild_density_correction": "34484b115629c395a311f82c75132e6c42b99686",
+    "source_build_and_magic": "1dcf96924d622a925814e0723197b4f678ee3731"
+  },
+  "source_and_nonduplicate_evidence": {
+    "canonical_source_packet": "strategy-seeds/sources/AI-CODEX-WTI-M2RUNS-20260827/source.md",
+    "canonical_source_packet_sha256": "AB4B8ADE3D3E4B4CA1B7AE6D9ADE98DD69AD30BC5D5CEDEC0EC6F9D073795FB6",
+    "public_method_retrieval": "DEFERRED_SOURCE_POLICY_NO_COMPLETE_READ_CLAIM",
+    "dedup_receipt": "artifacts/qm5_wti_mww_runs_shift_tr_preallocation_dedup_20260827.json",
+    "dedup_receipt_sha256": "88D3A10D84ECB5C876FA9916F24234DA802EDEB8AFA1A8D0805B2EC387EC27B1",
+    "dedup_verdict": "CLEAN_WTI_MONTHLY_FIXED_FIVE_BY_FIVE_POOLED_LABEL_RUNS_MEDIAN_DIRECTED_DISTRIBUTION_SHIFT_CONTINUATION",
+    "density_correction_receipt": "artifacts/qm5_41184_prebuild_runs_density_enumeration_20260827.json",
+    "density_correction_receipt_sha256": "46DE2EA549E7B01EB2ECB26B7FBC78EEFB31A94EC01FB5B882310A760BB0C400",
+    "exact_density": {
+      "label_orders_total": 252,
+      "run_distribution_2_through_10": [2, 8, 32, 48, 72, 48, 32, 8, 2],
+      "qualifying_r_le_6": 162,
+      "buy": 81,
+      "sell": 81,
+      "flat": 90,
+      "annual_random_rank_prior": 7.714285714285714
+    }
+  },
+  "build_artifacts": {
+    "mq5": {
+      "path": "framework/EAs/QM5_41184_wti-mww-runs-shift-tr/QM5_41184_wti-mww-runs-shift-tr.mq5",
+      "sha256": "F9A736609681906CC76245C4B36EB2CE52A3B55DBC11129991DDDC95D6411BEF"
+    },
+    "spec": {
+      "path": "framework/EAs/QM5_41184_wti-mww-runs-shift-tr/SPEC.md",
+      "sha256": "719DA91FB69C33A1CC396358561B01F1872788BF99839981F731475736C1FBE8"
+    },
+    "backtest_set": {
+      "path": "framework/EAs/QM5_41184_wti-mww-runs-shift-tr/sets/QM5_41184_wti-mww-runs-shift-tr_XTIUSD.DWX_D1_backtest.set",
+      "sha256": "47AB9E358FF6AEF4F9F6C6F625C5794A66E462A2AC9BDC2692B1F49344384CBD",
+      "environment": "backtest",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    },
+    "reference_test": {
+      "path": "framework/EAs/QM5_41184_wti-mww-runs-shift-tr/docs/test_monthly_two_sample_runs_reference.py",
+      "sha256": "AC50CDC5060E86F9A82587DFC15D9E7AE29A9884B6F1941BFB9438A264924D24"
+    },
+    "magic_registry_sha256": "2D2525BEBE7F7F9ACBE8B3EFEAAD7BF673389DD77DFAA48A34C790F3A787D04C",
+    "magic_resolver_sha256": "8FFC14957928C0E0F384AC8C6B6AF55892794D3B773D6E76415D2DE6BCA10CF9",
+    "resolver_rows": 17933,
+    "resolver_rows_dropped": 0,
+    "ex5_present": false
+  },
+  "validation": {
+    "strategy_card_schema_lint": "PASS_NO_ML_HITS_NO_MISSING_SECTIONS",
+    "reference_tests": "PASS_11_OF_11",
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS_NO_FINDINGS",
+    "resolver_and_guardrail_pytests": "PASS_36_OF_36",
+    "magic_allocation": "PASS_ONE_ACTIVE_ROW_ZERO_STATUS_AWARE_COLLISIONS",
+    "resolver_dry_run": "PASS_17933_KEPT_ZERO_DROPPED",
+    "banned_or_ml_scan": "NO_HITS",
+    "strict_compile": "NOT_ATTEMPTED_LIVE_FACTORY_GUARD_AND_CPU_CEILING",
+    "q01": "PENDING_STRICT_COMPILE",
+    "q02": "NOT_ENQUEUED_Q01_PENDING_AND_CPU_CEILING"
+  },
+  "compile_guard": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_41184_wti-mww-runs-shift-tr -RepoRoot C:\\QM\\repo -SkipCompile",
+    "status": "REFUSED_BEFORE_STATIC_BUILD_CHECK_BODY",
+    "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "compiler_invoked": false,
+    "retry_attempted": false,
+    "compile_queue_items_created": 0
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "stop when the fresh five-sample average or maximum reaches the governed tester admission ceiling",
+    "source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "sampled_at_utc": "2026-08-27T15:32:31.6138837Z",
+    "samples_percent": [100.0, 99.81, 100.0, 99.9, 100.0],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_percent": 99.94,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "terminal64_process_count": 8,
+    "metatester64_process_count": 6
+  },
+  "stop_actions": {
+    "q02_enqueued": false,
+    "governed_compile_enqueued": false,
+    "manual_smoke_or_backtest_started": false,
+    "compile_retry_attempted": false,
+    "terminal_or_worker_controlled": false,
+    "queue_priority_changed": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  },
+  "resume_condition": "When the host is below the governed CPU ceiling, enqueue exactly one governed compile for QM5_41184_wti-mww-runs-shift-tr. Require a hash-bound strict zero-error/zero-warning EX5 and Q01 PASS, then enqueue exactly one XTIUSD.DWX D1 RISK_FIXED Q02 baseline."
+}
