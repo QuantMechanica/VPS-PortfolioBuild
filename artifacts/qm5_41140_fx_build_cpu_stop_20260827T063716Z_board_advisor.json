@@ -1,0 +1,83 @@
+{
+  "schema": "qm.paced-fleet-build-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-27T06:37:16.6290675Z",
+  "branch": "agents/board-advisor",
+  "mission": "diversity_funnel_throughput",
+  "ea": {
+    "ea_id": "QM5_41140",
+    "label": "QM5_41140_nzdjpy-carry-unwind-crisis-momentum",
+    "family": "carry_funding",
+    "mechanism": "carry_unwind_crisis_momentum",
+    "execution_symbol": "NZDJPY.DWX",
+    "timeframe": "D1",
+    "single_symbol_only": true,
+    "source_tier": "TIER_A",
+    "source_url": "https://www.nber.org/papers/w14473"
+  },
+  "claim": {
+    "agent_task_id": "29863320-8536-4252-b02c-6dae6db885d9",
+    "build_task_id": "5f69b208-6e8b-4900-a8c2-020c779eb030",
+    "selection": "strategy_priority rank 8 overall and first eligible structural low-frequency FX-cross diversity card",
+    "build_task_status_at_stop": "pending"
+  },
+  "build_delta": {
+    "mq5_sha256": "9BDFD70380C9040D84CE3AC323A39EE94ACC5D7A9201816FE5EEE6231E387479",
+    "spec_sha256": "E73DA5BF599EF0F82C88ED440BB920FEFBB0301E23A8FBA268C73EB381DFC4B4",
+    "basket_manifest_sha256": "E80347214E1D93BE5155B475090D0E65BB86416676E296EE619CD6AA3599A1A4",
+    "card_sha256": "95BAB94226A0081A485D971E65314833DEB3278FB9B68A81203238CB82D078C6",
+    "magic": 411400000,
+    "magic_slot": 0,
+    "registry_sha256": "26303559C983702D4322AA5784BB0D69C39555B6E6D1DE04D134860F714C378A",
+    "resolver_rows": 17928,
+    "status_aware_magic_collisions": 0,
+    "spec_validation": "PASS",
+    "risk_fixed_default": 1000.0,
+    "risk_percent_default": 0.0,
+    "setfiles_generated": [
+      {
+        "path": "framework/EAs/QM5_41140_nzdjpy-carry-unwind-crisis-momentum/sets/QM5_41140_nzdjpy-carry-unwind-crisis-momentum_NZDJPY.DWX_D1_backtest.set",
+        "sha256": "3643CD4B0002FC2F6707E5DBE92F986847C62407324296CB3B885AE7536225E5",
+        "risk_fixed": 1000.0,
+        "risk_percent": 0.0
+      }
+    ],
+    "ex5_present": false
+  },
+  "compile_gate": {
+    "build_check_reached_strategy_checks": false,
+    "build_check_exit_code": 1,
+    "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "detail": "terminal64 processes are alive; ad-hoc compile/build_check is refused",
+    "retry_attempted": false,
+    "governed_compile_enqueue": {
+      "enqueued_count": 0,
+      "refused_count": 1,
+      "reason": "BUILD_TASK_EXISTS",
+      "compile_status": "NOT_ENQUEUED"
+    }
+  },
+  "cpu_stop": {
+    "rule": "stop when either five-sample average or maximum reaches 97 percent",
+    "samples_percent": [97.66, 100.0, 99.9, 97.27, 80.86],
+    "average_percent": 95.14,
+    "maximum_percent": 100.0,
+    "trigger": "maximum_percent",
+    "active_factory_terminals": ["T2", "T3", "T4", "T6", "T8", "T9"],
+    "active_factory_terminal_count": 6,
+    "live_and_ftmo_excluded_from_factory_count": true
+  },
+  "pipeline_disposition": {
+    "q01_pass": false,
+    "q02_enqueued": false,
+    "work_items_created": 0,
+    "smoke_started": false,
+    "next_action": "After CPU falls below the ceiling, resume the pending standard build task and resolve the BUILD_TASK_EXISTS versus governed-COMPILE_EA routing conflict without bypassing the include-mirror guard; then require strict build/compile PASS, run at most one smoke with the existing fixed-risk setfile, and enqueue one NZDJPY D1 Q02 row."
+  },
+  "safety": {
+    "terminal_started_stopped_reserved_or_released": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
