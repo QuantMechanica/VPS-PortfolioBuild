@@ -1,0 +1,101 @@
+{
+  "schema": "qm.q13-budget-contract/v1",
+  "contract_id": "OWNER-DEC-Q13-BUDGET-CONTRACT-20260827-OPTION-M",
+  "status": "SEALED_NOT_ACTIVE",
+  "gate_contract_version": "v4",
+  "gate": "Q13",
+  "budget_option": "M",
+  "owner_decision": {
+    "decision_id": "OWNER-DEC-Q13-BUDGET-OPTION-M-20260827",
+    "path": "decisions/2026-08-27_owner_q13_budget_option_m.md",
+    "sha256": "f9d854c373edacd07668bad225447090f8d346aa368fb07d6606eec7cb32d929"
+  },
+  "draft_source": {
+    "router_task_id": "550db748-239c-4596-9efc-ffd50fc73224",
+    "path": "docs/ops/evidence/550db748_q13_budget_contract_draft_2026-08-27.md",
+    "sha256": "1190d4685b59da14db09f3d82217e313b42e318cfd837a795d5f9e449307ef75"
+  },
+  "parent_contract": {
+    "decision_id": "DL-088",
+    "path": "decisions/DL-088_optimization_track_v2_levers_and_overfit_contract.md",
+    "sha256": "cdbb9fbd4dce7a18b0757b81bcd4644057c98497bc78d850061882a7c25d5f1f"
+  },
+  "activation": {
+    "env": "QM_ENABLE_Q13_OPTION_M_DECLARATIONS",
+    "default_enabled": false,
+    "current_effect": "NO_PARAMETER_CHANGE_REMAINS_DEFAULT"
+  },
+  "limits": {
+    "max_parameter_count": 3,
+    "max_values_per_parameter_including_parent": 5,
+    "max_lineage_trial_increment": 12,
+    "selection_years": [2019, 2020, 2021, 2022, 2023, 2024, 2025],
+    "max_physical_q13_cells": 114,
+    "minutes_per_cell": 7.2,
+    "max_terminal_hours_per_pair": 13.68,
+    "terminal_hours_for_25_pairs": 342.0
+  },
+  "fixed_rules": {
+    "objective": "return_to_maxdd",
+    "one_parameter_per_cell": true,
+    "full_cross_forbidden": true,
+    "parent_value_required": true,
+    "entry_trading_days_floor": 10,
+    "partial_year_pro_rata": true,
+    "consistency_min_year_fraction": "2/3",
+    "consistency_min_relative_improvement_pct": 5.0,
+    "q12_filter_frozen": true,
+    "holdout_blind_selection": true
+  },
+  "required_top_level_fields": [
+    "schema",
+    "contract_id",
+    "gate_contract_version",
+    "budget_option",
+    "owner_decision_id",
+    "ea_id",
+    "symbol",
+    "timeframe",
+    "bindings",
+    "hashes",
+    "q12_filter_freeze_sha256",
+    "one_parameter_per_cell",
+    "selection_years",
+    "objective",
+    "activity_floor",
+    "consistency_rule",
+    "parameter_count",
+    "parameters",
+    "declared_trial_count_before",
+    "declared_trial_increment",
+    "declared_trial_count_effective_after",
+    "q13_lineage_trial_increment_before",
+    "q13_lineage_trial_increment_effective_after",
+    "physical_q13_cells",
+    "terminal_hours",
+    "declaration_sha256"
+  ],
+  "required_binding_fields": [
+    "q11_work_item_id",
+    "q11_evidence_sha256",
+    "q12_work_item_id",
+    "q12_evidence_sha256"
+  ],
+  "required_hash_fields": [
+    "parent_build_sha256",
+    "setfile_sha256",
+    "include_closure_sha256"
+  ],
+  "required_parameter_fields": [
+    "input_name",
+    "input_type",
+    "parent_value",
+    "candidate_values",
+    "technical_bounds",
+    "interaction_constraints",
+    "hypothesis",
+    "expected_effect",
+    "refutation_criterion",
+    "frequency_check"
+  ]
+}
