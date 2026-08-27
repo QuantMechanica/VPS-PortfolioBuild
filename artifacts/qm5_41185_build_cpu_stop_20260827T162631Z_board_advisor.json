@@ -1,0 +1,121 @@
+{
+  "schema": "qm.source-build-cpu-stop/v1",
+  "recorded_at_utc": "2026-08-27T16:26:31.6566343Z",
+  "recorded_at_local": "2026-08-27T18:26:31.6566343+02:00",
+  "branch": "agents/board-advisor",
+  "recorded_on_head": "8db5a06086f6d05ed6f7b4a351ecd7c4b5e656f1",
+  "ea_id": "QM5_41185",
+  "ea_label": "QM5_41185_xauxag-fracd-rv",
+  "strategy_id": "YAYA-CME-XAUXAG-FRACD-RV-2026_S01",
+  "logical_symbol": "QM5_41185_XAU_XAG_FRACD_RV_D1",
+  "symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "magics": [
+    411850000,
+    411850001
+  ],
+  "outcome": "SOURCE_BUILD_COMMITTED_Q01_NOT_ENQUEUED_Q02_STOPPED_CPU_CEILING",
+  "commits": {
+    "source_approval_and_preallocation_dedup": "17d4b7b12ce3b73c6e019e7d044dd888e05e6c66",
+    "source_extraction": "53e171fe53353bb96b349b1cae24d1041a17ee86",
+    "card_identity_and_g0": "6719100ab3c51b0e6c922d8d77b9219ea1611955",
+    "source_build": "8db5a06086f6d05ed6f7b4a351ecd7c4b5e656f1"
+  },
+  "hashes": {
+    "source_packet_sha256": "CEC08E0FB0C040227A52053A7051F64CF5D530B2D68C67B8DD87851970B7E4DE",
+    "preallocation_dedup_sha256": "98BA647CF8B8618B85AC71E62E99640A4CED0A9A589576D4FDF8957340657DB9",
+    "canonical_card_sha256": "47074A6FBB214B0707F6C418AEC969C4E118265EAA2890C55A72FB6303488685",
+    "ea_card_copy_sha256": "47074A6FBB214B0707F6C418AEC969C4E118265EAA2890C55A72FB6303488685",
+    "mq5_sha256": "B3AF62CCBD3E36677A4278450905C97B205352803A67C6830D49A0A93423FBA5",
+    "reference_test_sha256": "8A8803C21AF79E740AC99FE3DA63A76DA18335BA3596F12F4C7078996C39FD6A",
+    "logical_setfile_sha256": "98A96F077854653E82EA356383FE0A7493FFAB7E39F3E6D3A3FF6F1F4DDEDBBD",
+    "basket_manifest_sha256": "AD371947DFB68A5370DA741F526C95018AC6074A24C06A9D19F459AA126D4B55"
+  },
+  "edge": {
+    "carrier": "XAUUSD.DWX/XAGUSD.DWX equal-target-notional two-leg basket",
+    "decision_clock": "first eligible synchronized D1 bar of each broker month",
+    "signal": "fixed d=0.40 fractional difference of 316 synchronized completed D1 log(XAU)-log(XAG) ratios using exactly 64 recurrence weights; first 252 filtered outputs form the baseline and the 253rd is held out",
+    "entry": "held-out z>=0.50 sells XAU and buys XAG; z<=-0.50 buys XAU and sells XAG; the interior consumes flat",
+    "lifecycle": "one consumed attempt per month; next-month or forty-day stale package exit",
+    "risk": "one aggregate RISK_FIXED=1000 budget split equally across frozen 3.5*ATR(20,D1) stops with a 20% maximum target-notional mismatch"
+  },
+  "source_and_nonduplicate_evidence": {
+    "source_basis": "approved peer-reviewed gold/silver fractional-cointegration research plus CME gold/silver spread-market documentation",
+    "runtime_external_data": false,
+    "preallocation_dedup_verdict": "CLEAN",
+    "portfolio_claim_boundary": "market-neutral-style construction is not a realized decorrelation claim; unchanged Q09 remains authoritative"
+  },
+  "validation": {
+    "reference_tests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "targeted_allocator_and_resolver_tests": {
+      "passed": 23,
+      "failed": 0
+    },
+    "card_schema_lint": "PASS",
+    "ea_card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "static_build_hardening": "PASS_ZERO_FAILURES",
+    "banned_or_ml_indicator_hits": 0,
+    "card_copy_byte_identical": true,
+    "registry_identity": "ACTIVE",
+    "magic_rows": "TWO_ACTIVE_ROWS_ZERO_NEW_STATUS_AWARE_COLLISIONS",
+    "risk_setfiles": "THREE_BACKTEST_ONLY_RISK_FIXED_SETS",
+    "live_set_count": 0
+  },
+  "compile": {
+    "strict_compile_attempted": false,
+    "governed_work_item_enqueued": false,
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false,
+    "blocking_reason": "CPU_CEILING_BOUND_BEFORE_COMPILE_ADMISSION"
+  },
+  "capacity": {
+    "sampling_method": "CIM Win32_PerfFormattedData_PerfOS_Processor _Total PercentProcessorTime, five samples at two-second cadence",
+    "sampled_at_utc": "2026-08-27T16:26:31.6566343Z",
+    "cpu_ceiling_percent": 97.0,
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "cpu_ceiling_hit": true,
+    "factory_terminal_count": 6,
+    "factory_terminals_running": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T8"
+    ],
+    "t_live_and_nonfactory_processes_excluded": true
+  },
+  "q02": {
+    "enqueued": false,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_NO_EX5",
+      "BACKTEST_CPU_CEILING_HIT"
+    ],
+    "resume_contract": "Recheck CPU below the governed 97% admission ceiling; enqueue one governed compile item; require a current strict zero-error/zero-warning compile, source-fresh EX5, and Q01 PASS; then enqueue exactly one logical-basket Q02 row and zero component-leg rows."
+  },
+  "safety": {
+    "terminal_processes_started_or_stopped_by_this_run": false,
+    "terminal_reservations_mutated_by_this_run": false,
+    "autotrading_toggled_by_this_run": false,
+    "t_live_touched_by_this_run": false,
+    "portfolio_gate_touched_by_this_run": false,
+    "t_live_manifest_touched_by_this_run": false,
+    "unrelated_worktree_changes_preserved_and_unstaged": true
+  }
+}
