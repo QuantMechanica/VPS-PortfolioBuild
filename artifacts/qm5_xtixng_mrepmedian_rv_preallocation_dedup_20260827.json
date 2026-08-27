@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Jose A. Villar; Frederick L. Joutz; David J. Ramberg; John E. Parsons; Andrew F. Siegel",
+    "mechanic": "monthly synchronized oil gas log ratio exact Siegel repeated median nested pivot slope reversion equal notional basket",
+    "slug": "xtixng-mrepmedian-rv",
+    "strategy_id": "VILLAR-SIEGEL-XTIXNG-MREPMEDIAN-RV-2026_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-08-27T21:18:42+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4687,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1338,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
