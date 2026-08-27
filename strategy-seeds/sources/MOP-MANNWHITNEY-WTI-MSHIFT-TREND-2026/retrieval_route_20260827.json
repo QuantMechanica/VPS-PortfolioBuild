@@ -1,0 +1,72 @@
+{
+  "schema": "qm.trading-source-retrieval.v1",
+  "source_id": "MOP-MANNWHITNEY-WTI-MSHIFT-TREND-2026",
+  "retrieval_started_at_utc": "2026-08-27T01:30:00Z",
+  "retrieval_finished_at_utc": "2026-08-27T01:36:06Z",
+  "router": {
+    "r_source_implementation": {
+      "command": "python C:\\Users\\Administrator\\.codex\\skills\\qm\\qm-read-trading-source\\scripts\\read_trading_source.py https://github.com/wch/r-source/blob/7344a2d9d96b3c2b997535d3abc8c3a44af16e82/src/library/stats/R/wilcox.test.R --format json",
+      "status": "ROUTE_GITHUB_API",
+      "adapter": "github",
+      "route": "public GitHub API",
+      "url": "https://github.com/wch/r-source/blob/7344a2d9d96b3c2b997535d3abc8c3a44af16e82/src/library/stats/R/wilcox.test.R"
+    },
+    "r_source_manual": {
+      "command": "python C:\\Users\\Administrator\\.codex\\skills\\qm\\qm-read-trading-source\\scripts\\read_trading_source.py https://github.com/wch/r-source/blob/7344a2d9d96b3c2b997535d3abc8c3a44af16e82/src/library/stats/man/wilcox.test.Rd --format json",
+      "status": "ROUTE_GITHUB_API",
+      "adapter": "github",
+      "route": "public GitHub API",
+      "url": "https://github.com/wch/r-source/blob/7344a2d9d96b3c2b997535d3abc8c3a44af16e82/src/library/stats/man/wilcox.test.Rd"
+    },
+    "mann_whitney_article": {
+      "url": "https://projecteuclid.org/journals/annals-of-mathematical-statistics/volume-18/issue-1/On-a-Test-of-Whether-one-of-Two-Random-Variables/10.1214/aoms/1177730491.full",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter_state": "ROUTER_ONLY",
+      "body_used": false
+    }
+  },
+  "repository": "wch/r-source",
+  "branch": "trunk",
+  "commit_sha": "7344a2d9d96b3c2b997535d3abc8c3a44af16e82",
+  "commit_committer_date_utc": "2026-08-25T16:06:32Z",
+  "files": [
+    {
+      "path": "src/library/stats/R/wilcox.test.R",
+      "api_url": "https://api.github.com/repos/wch/r-source/contents/src/library/stats/R/wilcox.test.R?ref=7344a2d9d96b3c2b997535d3abc8c3a44af16e82",
+      "git_blob_sha": "60eb142e6a6c6a1355d96a881d9464ea017cdf18",
+      "sha256": "669C3DC5B93B8DFA7F1C1ED866725960BA6F34C55E1E0378D3775E8EAA0E3C15",
+      "size_bytes": 42614,
+      "read_complete": true
+    },
+    {
+      "path": "src/library/stats/man/wilcox.test.Rd",
+      "api_url": "https://api.github.com/repos/wch/r-source/contents/src/library/stats/man/wilcox.test.Rd?ref=7344a2d9d96b3c2b997535d3abc8c3a44af16e82",
+      "git_blob_sha": "b630339352861e45975540421b408124414bbea8",
+      "sha256": "4B75352AB44829943EF35F0B174D7FA84CF17EFB4F22F1BD6CBA1B09EF0A3E69",
+      "size_bytes": 12273,
+      "read_complete": true
+    }
+  ],
+  "crossref_metadata": {
+    "api_url": "https://api.crossref.org/works/10.1214/aoms/1177730491",
+    "doi": "10.1214/aoms/1177730491",
+    "title": "On a Test of Whether one of Two Random Variables is Stochastically Larger than the Other",
+    "authors": ["H. B. Mann", "D. R. Whitney"],
+    "container_title": "The Annals of Mathematical Statistics",
+    "volume": "18",
+    "issue": "1",
+    "pages": "50-60",
+    "published": "1947-03",
+    "publisher": "Institute of Mathematical Statistics",
+    "record_checked_at_utc": "2026-08-27T01:34:00Z",
+    "body_read_complete": false
+  },
+  "safety": {
+    "authentication_used": false,
+    "third_party_code_executed": false,
+    "binary_downloaded": false,
+    "raw_source_republished": false,
+    "deferred_bodies_used": false
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Tobias J Moskowitz Yao Hua Ooi Lasse Heje Pedersen H B Mann D R Whitney R Core Team",
+    "mechanic": "monthly WTI twelve completed month-end closes fixed six older versus six newer blocks strict no-tie Wilcoxon Mann-Whitney rank-sum U location shift threshold 24 12 directional continuation next-month exit",
+    "slug": "wti-mwilcoxon-shift-tr",
+    "strategy_id": "MOP-MANNWHITNEY-WTI-MSHIFT-TREND-2026_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-08-27T01:35:28+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4675,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1326,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
