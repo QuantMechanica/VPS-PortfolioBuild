@@ -1507,6 +1507,29 @@ def run_compile_work_item(
     terminal: str,
 ) -> dict[str, Any]:
     """Run one already-claimed COMPILE_EA row without launching terminal64."""
+    # A narrowly commissioned runtime-equivalence utility reuses the compile
+    # work-item dispatch class so a resident worker owns an idle terminal, but
+    # it is not a compile and must not pass through candidate classification or
+    # emit a pipeline verdict.  Keep this import lazy: ordinary COMPILE_EA
+    # workers retain their small, terminal-free execution path unchanged.
+    try:
+        dispatch_payload = json.loads(item["payload_json"] or "{}")
+    except (json.JSONDecodeError, TypeError):
+        dispatch_payload = {}
+    if dispatch_payload.get("equivalence_contract_version") == (
+        "qm.qm5-35005-pattern-include-equivalence/v1"
+    ):
+        try:
+            from tools.strategy_farm import qm5_35005_equivalence
+        except ModuleNotFoundError:
+            import qm5_35005_equivalence
+        return qm5_35005_equivalence.run_work_item(
+            root,
+            repo_root,
+            item,
+            terminal,
+        )
+
     work_item_id = str(item["id"])
     report_dir = (
         Path(r"D:\QM\reports\work_items")
