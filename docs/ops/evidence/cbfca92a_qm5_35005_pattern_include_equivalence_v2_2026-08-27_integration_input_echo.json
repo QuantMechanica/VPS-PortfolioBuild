@@ -1,0 +1,12 @@
+{
+  "failures": {},
+  "observed": {
+    "opt_pp_buy1": "0",
+    "opt_pp_buy2": "0",
+    "opt_pp_buy3": "0",
+    "opt_pp_sell1": "0",
+    "opt_pp_sell2": "0",
+    "opt_pp_sell3": "0"
+  },
+  "pass": true
+}
