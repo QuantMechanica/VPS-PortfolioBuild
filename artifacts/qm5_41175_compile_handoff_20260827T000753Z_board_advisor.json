@@ -1,0 +1,108 @@
+{
+  "schema": "qm.source-build-compile-handoff/v1",
+  "recorded_at_utc": "2026-08-27T00:07:53.6499405Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41175",
+  "ea_label": "QM5_41175_xtixng-mpettitt-rv",
+  "strategy_id": "VILLAR-PETTITT-XTIXNG-MSHIFT-RV-2026_S01",
+  "logical_symbol": "QM5_41175_XTI_XNG_MPETTITT_RV_D1",
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "timeframe": "D1",
+  "magics": [
+    411750000,
+    411750001
+  ],
+  "outcome": "SOURCE_BUILD_COMMITTED_COMPILE_QUEUED_ACTIVATION_HELD_Q02_STOPPED_CPU_CEILING",
+  "commits": {
+    "source_approval": "39aeee243",
+    "card_identity_and_g0": "cf08d30b9",
+    "magic_and_source_build": "18d31b0f6"
+  },
+  "hashes": {
+    "source_packet_sha256": "4919B9F71CEAA0D38FF22117A7E1AEBB419022B096FDFCD022D5311187A002B1",
+    "preallocation_dedup_sha256": "03FECB559F3EC214799DDF8D7A570D7479B23A8C6C26C652EFDF1620174DBACB",
+    "canonical_card_sha256": "5C0A67C6015AC7644F25BC7C7D422EC7EC4EAEBA3E1C6526197D1D72325DDCD4",
+    "ea_card_copy_sha256": "5C0A67C6015AC7644F25BC7C7D422EC7EC4EAEBA3E1C6526197D1D72325DDCD4",
+    "mq5_sha256": "992982EF025EA8068A1D39DCC7D425B7A38DC1EC1BE5F11BCCB895B5D0F6D700",
+    "logical_setfile_sha256": "B020B79F7EE9FE321C066CF52669F98AA7F8A39043C62C99E0185DE73C702F4D",
+    "basket_manifest_sha256": "313D2D75E756C534980F4ACA9910EB23419829761A6E02C5AF932EF2CA4AE3B9"
+  },
+  "edge": {
+    "carrier": "XTIUSD.DWX/XNGUSD.DWX equal-target-notional two-leg basket",
+    "decision_clock": "first eligible synchronized D1 boundary of each broker month",
+    "signal": "strict ranks of thirteen synchronized completed monthly log(XTI)-log(XNG) endpoints",
+    "statistic": "U[K] = 2 * sum(rank[1..K]) - 14 * K for K=1..12",
+    "entry": "fade one unique absolute maximum only at K=4..9; negative U sells XTI/buys XNG and positive U buys XTI/sells XNG",
+    "lifecycle": "one consumed attempt per month; next-month or forty-day package exit; persisted signal direction repairs reversed restart state",
+    "risk": "one aggregate RISK_FIXED=1000 budget split across frozen 3.5 ATR(20,D1) stops with equal target notionals and 20% maximum mismatch"
+  },
+  "source_validation": {
+    "canonical_dedup": "CLEAN_ACROSS_4674_REGISTRY_ROWS_1325_CARDS_45_WIKI_FILES",
+    "reference_tests": {
+      "passed": 6,
+      "failed": 0
+    },
+    "card_schema_and_g0_lint": "PASS_CANONICAL_CARD",
+    "card_copy_byte_identical": true,
+    "build_check": "REFUSED_BEFORE_STATIC_GATES_BY_LIVE_FACTORY_AD_HOC_COMPILE_GUARD",
+    "magic_allocator_status_aware_collision_count": 0,
+    "risk_setfiles": "THREE_BACKTEST_ONLY_RISK_FIXED_SETS",
+    "live_set_count": 0
+  },
+  "compile": {
+    "ad_hoc_attempt_result": "REFUSED_NO_RETRY",
+    "ad_hoc_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_work_item_id": "6bb37ab0-60b7-4c00-be70-a7555d359857",
+    "status_at_last_read": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "sampling_method": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "ceiling_percent": 97.0,
+    "samples_percent": [
+      99.80732,
+      99.908454,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_cpu_percent": 99.943155,
+    "maximum_cpu_percent": 100.0,
+    "ceiling_hit": true,
+    "process_snapshot": {
+      "terminal64_count": 7,
+      "metatester64_count": 5,
+      "terminal_roots_observed": [
+        "FTMO Global Markets MT5 Terminal",
+        "MT5_Base",
+        "T1",
+        "T2",
+        "T6",
+        "T7",
+        "T9"
+      ]
+    }
+  },
+  "q02": {
+    "enqueued": false,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_COMPILE_ACTIVATION_HELD",
+      "BACKTEST_CPU_CEILING_HIT"
+    ]
+  },
+  "safety": {
+    "terminal_processes_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "preexisting_worktree_changes_preserved": true
+  }
+}
