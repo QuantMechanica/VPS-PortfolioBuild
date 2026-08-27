@@ -1,0 +1,15 @@
+{
+  "schema": "qm.qm5-35005-equivalence-v2-authorization/v1",
+  "task_id": "cbfca92a-79ca-4cde-9dc8-1992a6023f39",
+  "commissioned_by": "deterministic agent-router assignment",
+  "purpose": "OFFLINE_ONE_VARIABLE_RUNTIME_EQUIVALENCE",
+  "parent_commit": "73d81a93e7df539d51f7496c3b3c9a428611e29c",
+  "integration_commit": "b0bdc4d72f23876398b707db72450a560718ef4a",
+  "artifact_root": "D:/QM/strategy_farm/artifacts/equivalence_v2/cbfca92a-79ca-4cde-9dc8-1992a6023f39",
+  "factory_terminals_allowed": false,
+  "live_allowed": false,
+  "publish_ex5": false,
+  "network_mode": "DENY_OUTBOUND_DURING_EXECUTION",
+  "stop_on_failure": true,
+  "pipeline_verdict_authorized": false
+}
