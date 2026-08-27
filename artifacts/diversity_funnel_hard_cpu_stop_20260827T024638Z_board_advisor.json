@@ -1,0 +1,164 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T02:46:38.3428852Z",
+  "generated_at_europe_berlin": "2026-08-27T04:46:38.3428852+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "d14f41087568f691323bc29b5f1b5befb426b6f0",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_FARM_CLAIM",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "factory_terminal_ceiling": 7,
+    "paced_launch_gate_max": 1
+  },
+  "farm_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-27T02:47:20+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T10",
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T8"
+    ],
+    "running_factory_terminal_count": 7,
+    "terminal64_process_count_including_excluded": 9,
+    "metatester64_process_count": 7,
+    "terminal_worker_count": 10,
+    "active_terminal_reservation_count": 7,
+    "reserved_factory_terminals": [
+      "T1",
+      "T10",
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T8"
+    ],
+    "orphaned_factory_terminal_process_count": 0,
+    "running_work": [
+      {
+        "terminal": "T1",
+        "work_item_id": "495d6ea5-feaf-4c59-b19e-e7968c43db60",
+        "phase": "Q11",
+        "ea_id": "QM5_21507",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T10",
+        "work_item_id": "d6ced52f-a3dc-4ee0-93e3-5eb592532725",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_9403",
+        "symbol": "GDAXI.DWX"
+      },
+      {
+        "terminal": "T2",
+        "work_item_id": "a0694aa0-633f-4346-87a5-3f2f78627669",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_10848",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "79281cf7-dd4c-4194-8c14-51b822b8c118",
+        "phase": "Q09",
+        "ea_id": "QM5_10692",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "2c2d77b4-786a-4b47-b8ac-1f3eba932b0e",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_10128",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "f9ccf272-d66e-4a68-b332-76133baab427",
+        "phase": "Q03",
+        "ea_id": "QM5_20233",
+        "symbol": "QM5_20233_XAU_XAG_SKEW_RANK_D1"
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "01de0b78-c15c-4920-a2f1-aa8efb7b6642",
+        "phase": "Q07",
+        "ea_id": "QM5_21501",
+        "symbol": "USDJPY.DWX"
+      }
+    ],
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "farm_db_snapshot": {
+    "db_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "access_mode": "read_only",
+    "farm_claim_created": false,
+    "candidate_selected": false
+  },
+  "cpu_sample": {
+    "command": "System.Diagnostics.PerformanceCounter Processor/% Processor Time/_Total; one warm-up plus five one-second readings",
+    "ended_at_utc": "2026-08-27T02:46:38.3428852Z",
+    "samples_percent": [
+      100.0,
+      99.90342712402344,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 99.9807,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/diversity_funnel_hard_cpu_stop_20260826T231535Z_board_advisor.json",
+    "preceding_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T7"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T10",
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T8"
+    ],
+    "topology_change": "T10, T5, and T8 joined while T7 left; active factory tests rose from five to the seven-terminal ceiling",
+    "preceding_active_terminal_reservation_count": 7,
+    "current_active_terminal_reservation_count": 7,
+    "preceding_cpu_average_percent": 95.8033,
+    "current_cpu_average_percent": 99.9807,
+    "preceding_cpu_maximum_percent": 99.8048,
+    "current_cpu_maximum_percent": 100.0
+  },
+  "actions_this_run": {
+    "candidate_selected": false,
+    "farm_claim_created": false,
+    "new_card_or_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
