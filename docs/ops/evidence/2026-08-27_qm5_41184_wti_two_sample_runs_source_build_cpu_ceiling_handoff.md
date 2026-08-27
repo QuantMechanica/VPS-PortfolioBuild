@@ -1,7 +1,9 @@
 # QM5_41184 WTI Two-Sample Runs — Source Build / CPU-Ceiling Handoff
 
-Date: 2026-08-27  
-Branch: `agents/board-advisor`  
+Date: 2026-08-27
+
+Branch: `agents/board-advisor`
+
 Outcome: `SOURCE_BUILD_COMMITTED_Q02_NOT_ENQUEUED_CPU_CEILING`
 
 ## Delivered
