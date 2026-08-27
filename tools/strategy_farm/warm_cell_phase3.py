@@ -97,6 +97,69 @@ def prepare_cells(
     return cells
 
 
+def authenticate_common_history_projection(
+    references: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Prove that per-claim receipts bind one byte-identical history inventory."""
+
+    rows: list[dict[str, Any]] = []
+    for reference in references:
+        receipt_path = Path(str(reference.get("history_receipt_path") or ""))
+        if not receipt_path.is_file():
+            raise core.ActivationRefused(
+                f"PHASE3_HISTORY_RECEIPT_MISSING:{receipt_path}"
+            )
+        receipt = _load_json(receipt_path)
+        if receipt.get("schema_version") != "qm.custom-history-copy-on-claim/v1":
+            raise core.ActivationRefused("PHASE3_HISTORY_RECEIPT_SCHEMA_INVALID")
+        if receipt.get("status") != "PASS_PRIVATIZED":
+            raise core.ActivationRefused("PHASE3_HISTORY_RECEIPT_STATUS_INVALID")
+        manifest_sha256 = str(receipt.get("manifest_sha256") or "").lower()
+        if manifest_sha256 != str(
+            reference.get("history_manifest_sha256") or ""
+        ).lower():
+            raise core.ActivationRefused("PHASE3_HISTORY_RECEIPT_MANIFEST_MISMATCH")
+        files = receipt.get("files")
+        if not isinstance(files, list) or not files:
+            raise core.ActivationRefused("PHASE3_HISTORY_RECEIPT_FILES_MISSING")
+        inventory = [
+            {
+                "relative_path": str(item.get("relative_path") or ""),
+                "size": int(item.get("size") or -1),
+                "sha256": str(item.get("sha256") or "").lower(),
+            }
+            for item in files
+        ]
+        rows.append(
+            {
+                "cell_key": reference.get("cell_key"),
+                "receipt_path": str(receipt_path.resolve()),
+                "receipt_sha256": core.sha256_file(receipt_path),
+                "manifest_sha256": manifest_sha256,
+                "file_count": len(inventory),
+                "inventory_sha256": core.sha256_bytes(
+                    core.canonical_json_bytes(inventory)
+                ),
+            }
+        )
+    manifests = {row["manifest_sha256"] for row in rows}
+    inventories = {row["inventory_sha256"] for row in rows}
+    file_counts = {row["file_count"] for row in rows}
+    if len(manifests) != 1 or "" in manifests:
+        raise core.ActivationRefused("PHASE3_HISTORY_MANIFEST_NOT_COMMON")
+    if len(inventories) != 1 or len(file_counts) != 1:
+        raise core.ActivationRefused("PHASE3_HISTORY_INVENTORY_NOT_COMMON")
+    return {
+        "status": "PASS_COMMON_BYTE_INVENTORY",
+        "receipt_count": len(rows),
+        "manifest_sha256": next(iter(manifests)),
+        "inventory_sha256": next(iter(inventories)),
+        "file_count": next(iter(file_counts)),
+        "audit_receipt_path": rows[0]["receipt_path"],
+        "receipts": rows,
+    }
+
+
 def _timing_summary(values: Sequence[float]) -> dict[str, Any]:
     samples = [float(value) for value in values]
     if not samples:
@@ -129,6 +192,7 @@ def build_packet(
     db_path: Path,
     outcome_status: str,
     outcome_error: str | None,
+    history_projection: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     comparison_by_key = {
         str(row.get("cell_key")): dict(row) for row in comparisons
@@ -262,6 +326,7 @@ def build_packet(
             ),
             "rows": selection_identity,
         },
+        "cold_history_projection": dict(history_projection or {}),
         "backend": {
             "execution_backend": core.GOVERNED_RESTART_BACKEND,
             "profile_mode": core.GOVERNED_RESTART_PROFILE,
@@ -351,6 +416,7 @@ def render_report(packet: Mapping[str, Any]) -> str:
         f"| 20-cell parity | {'PASS' if outcome['all_twenty_exact'] else 'DEVIATION/STOP'} — {outcome['exact']}/20 exact; full hashes are in the table, CSV, and JSON packet |",
         f"| Speedup | cold={cold['total_seconds']} s; attempted like-for-like={timing['attempted_like_for_like_speedup']}; complete batch={timing['complete_batch_speedup']}; target >=2.5x={'PASS' if timing['target_met'] else 'NOT MET'} |",
         f"| Cold path / DL-089 | {'PASS' if packet['cold_path']['byte_identical_to_phase3_start'] else 'FAIL'} — governed cold-path files byte-identical to Phase-3 start |",
+        f"| Frozen history | {packet['cold_history_projection'].get('status', 'NOT RECORDED')} — {packet['cold_history_projection'].get('receipt_count', 0)} claim receipts, {packet['cold_history_projection'].get('file_count', 0)} byte-identical files |",
         "",
     ]
     if outcome.get("error"):
@@ -489,18 +555,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"PHASE3_AUTHENTICATED_REFERENCE_COUNT_{len(references)}"
         )
     cells = prepare_cells(references, input_dir=args.input_dir, repo_root=repo_root)
-    manifests = {str(row.get("history_manifest_sha256") or "") for row in references}
-    receipts = {str(row.get("history_receipt_path") or "") for row in references}
-    if len(manifests) != 1 or "" in manifests:
-        raise core.ActivationRefused("PHASE3_HISTORY_MANIFEST_NOT_COMMON")
-    if len(receipts) != 1 or "" in receipts:
-        raise core.ActivationRefused("PHASE3_HISTORY_RECEIPT_NOT_COMMON")
+    history_projection = authenticate_common_history_projection(references)
     runtime_dir = args.output_dir.resolve() / f"{args.output_stem}_runtime"
     backend = core.GovernedDev2RestartBackend(
         repo_root=repo_root,
         artifact_dir=runtime_dir,
-        history_receipt_path=Path(next(iter(receipts))),
-        expected_history_manifest_sha256=next(iter(manifests)),
+        history_receipt_path=Path(history_projection["audit_receipt_path"]),
+        expected_history_manifest_sha256=history_projection["manifest_sha256"],
     )
     comparisons: list[dict[str, Any]] = []
     outcome_status = "BACKEND_EXECUTION_STOP"
@@ -531,6 +592,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         db_path=args.db,
         outcome_status=outcome_status,
         outcome_error=outcome_error,
+        history_projection=history_projection,
     )
     outputs = write_outputs(
         packet=packet,

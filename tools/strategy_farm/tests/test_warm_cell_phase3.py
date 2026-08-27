@@ -55,6 +55,36 @@ def test_prepare_cells_authenticates_staged_risk_fixed_inputs(tmp_path):
     assert cells[0]["setfile_guard"]["risk_percent"] == 0
 
 
+def test_history_receipts_may_have_distinct_paths_when_inventory_is_identical(
+    tmp_path,
+):
+    references = [_reference(index) for index in range(2)]
+    files = [
+        {"relative_path": "USDJPY.DWX/1.hcc", "size": 3, "sha256": "1" * 64}
+    ]
+    for index, reference in enumerate(references):
+        path = tmp_path / f"receipt-{index}.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "qm.custom-history-copy-on-claim/v1",
+                    "status": "PASS_PRIVATIZED",
+                    "manifest_sha256": "c" * 64,
+                    "work_item_id": f"claim-{index}",
+                    "files": files,
+                }
+            ),
+            encoding="utf-8",
+        )
+        reference["history_receipt_path"] = str(path)
+    result = phase3.authenticate_common_history_projection(references)
+    assert result["status"] == "PASS_COMMON_BYTE_INVENTORY"
+    assert result["receipt_count"] == 2
+    assert result["file_count"] == 1
+    assert result["receipts"][0]["receipt_sha256"] != result["receipts"][1]["receipt_sha256"]
+    assert result["receipts"][0]["inventory_sha256"] == result["receipts"][1]["inventory_sha256"]
+
+
 def test_phase3_packet_proves_twenty_exact_and_measured_speedup(
     tmp_path, monkeypatch
 ):
@@ -116,9 +146,15 @@ def test_phase3_packet_proves_twenty_exact_and_measured_speedup(
         db_path=tmp_path / "farm.sqlite",
         outcome_status="EXACT_PARITY",
         outcome_error=None,
+        history_projection={
+            "status": "PASS_COMMON_BYTE_INVENTORY",
+            "receipt_count": 20,
+            "file_count": 108,
+        },
     )
     assert packet["outcome"]["all_twenty_exact"] is True
     assert packet["timing"]["complete_batch_speedup"] == 2.5
     assert packet["timing"]["target_met"] is True
     assert len(packet["comparison"]["rows"]) == 20
     assert packet["cold_path"]["dl089_untouched"] is True
+    assert packet["cold_history_projection"]["receipt_count"] == 20
