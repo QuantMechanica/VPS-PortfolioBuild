@@ -1,0 +1,7 @@
+Exception: C:\QM\repo\framework\scripts\run_dev2_smoke.ps1:227
+Line |
+ 227 |              throw "DEV2 Custom/$kind symbol directories drifted. Expe â€¦
+     |              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | DEV2 Custom/history symbol directories drifted.
+     | Expected=EURUSD.DWX,GBPUSD.DWX,GDAXI.DWX,NDX.DWX,USDJPY.DWX,XAUUSD.DWX;
+     | actual=EURUSD.DWX,GBPUSD.DWX,GDAXI.DWX,NDX.DWX,USDJPY.DWX,WS30.DWX,XAUUSD.DWX
