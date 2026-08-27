@@ -1,0 +1,147 @@
+{
+  "artifact_type": "fx_cointegration_frontier_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T00:16:33.5051234Z",
+  "generated_at_europe_berlin": "2026-08-27T02:16:33.5051234+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "d7f1ffa9b7a1424c97a9ff434c146b307f21613d",
+  "mission_outcome": "FRONTIER_EXHAUSTED_EXISTING_Q04_PENDING_STOPPED_AT_HARD_CPU_CEILING",
+  "frontier_audit": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "strict_scan_survivors": [
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "QM5_12532_AUDNZD_COINTEGRATION_D1"
+    ],
+    "new_card_or_ea_would_be_duplicate_or_relax_the_published_threshold": true
+  },
+  "anchor_triage": {
+    "command": "python tools/strategy_farm/farmctl.py work-items --ea <EA_ID>",
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "existing_pair_fallback": {
+    "ea_id": "QM5_20220",
+    "pair": [
+      "USDCAD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "logical_symbol": "QM5_20220_USDCAD_AUDJPY_COINTEGRATION_D1",
+    "q02": {
+      "status": "done",
+      "verdict": "PASS",
+      "work_item_id": "61e7d1af-35a2-48f4-8602-afcf94949118"
+    },
+    "q03": {
+      "status": "done",
+      "verdict": "PASS",
+      "work_item_id": "2e797aa8-42ef-479e-875f-da93436ca528",
+      "updated_at_utc": "2026-08-26T20:14:49+00:00"
+    },
+    "q04": {
+      "status": "pending",
+      "work_item_id": "0961cfd5-4831-4ef9-bf5b-cab4bfcab089",
+      "duplicate_enqueue_performed": false
+    },
+    "approved_card": "strategy-seeds/cards/approved/QM5_20220_usdcad-audjpy_card.md",
+    "source_quality_tier": "A",
+    "basket_manifest": "framework/EAs/QM5_20220_usdcad-audjpy/basket_manifest.json",
+    "fixed_risk_setfile": "framework/EAs/QM5_20220_usdcad-audjpy/sets/QM5_20220_usdcad-audjpy_QM5_20220_USDCAD_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_low_frequency_no_ml": true
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "average_or_maximum_at_or_above_97_percent",
+    "factory_terminal_ceiling": 7,
+    "paced_launch_gate_max": 1
+  },
+  "farm_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-27T00:16:08+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "running_factory_terminal_count": 6,
+    "factory_terminal_count_at_ceiling": false,
+    "terminal_worker_count": 10,
+    "active_terminal_reservation_count": 6,
+    "orphaned_factory_terminal_process_count": 0,
+    "observed_active_fx_cointegration_work": {
+      "terminal": "T9",
+      "ea_id": "QM5_20232",
+      "phase": "Q03",
+      "work_item_id": "73d11c4c-0542-4828-9631-1954799a87a5",
+      "logical_symbol": "QM5_20232_USDCHF_NZDUSD_COINTEGRATION_D1"
+    },
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "cpu_sample": {
+    "command": "Get-CimInstance Win32_Processor LoadPercentage, sequential readings",
+    "started_at_utc": "2026-08-27T00:16:25.2108667+00:00",
+    "ended_at_utc": "2026-08-27T00:16:33.5051234+00:00",
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0
+    ],
+    "sample_count": 3,
+    "average_percent": 100.0,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true
+  },
+  "non_duplicate_delta": {
+    "preceding_fx_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260826T233120Z_board_advisor.json",
+    "preceding_running_factory_terminal_count": 5,
+    "current_running_factory_terminal_count": 6,
+    "preceding_cpu_average_percent": 100.0,
+    "current_cpu_average_percent": 100.0,
+    "q04_successor_state": "pending",
+    "newly_observed_active_fx_cointegration_work_item": "73d11c4c-0542-4828-9631-1954799a87a5"
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick_run": false,
+    "terminal_or_worker_controlled": false,
+    "tester_or_backtest_started": false,
+    "evidence_commit_only": true
+  },
+  "protected_surfaces": {
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  }
+}
