@@ -3,16 +3,16 @@
 ; ea_id:        12952
 ; ea_slug:      mql5-force-ema-card
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   721caa06891108d99f009c60d7664ee0873f0cc960bfa38c99f24b1e51ad3d0d
+; build_hash:   a8e3745ade138d47fc3edbf2faa76495f978ec9dc777eab104ab76a4b5666f18
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=12952
 qm_magic_slot_offset=0

@@ -3,16 +3,16 @@
 ; ea_id:        1539
 ; ea_slug:      aa-canary-13612w
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   12
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7cbbb46b1b94a17bef08e0e0173239c66f68d7c5c6877755d7f5314836ec6d71
+; build_hash:   04f871f9342b2758b1db08439f7f115587e256e6854023545aa9c8455447d69e
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=1539
 qm_magic_slot_offset=12

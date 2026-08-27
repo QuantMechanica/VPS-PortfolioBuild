@@ -3,16 +3,16 @@
 ; ea_id:        9909
 ; ea_slug:      bandy-lrchannel-breakout-trend
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   12
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b4e1fa3ad9daa253b78ad71009d1495ae5a8b0f87f0b07445d4ce134b64de7d4
+; build_hash:   74772bc085d268964808425dd1d9983734724556e8b67a64518113f85ea2ff05
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9909
 qm_magic_slot_offset=12

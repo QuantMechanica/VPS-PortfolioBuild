@@ -3,16 +3,16 @@
 ; ea_id:        1607
 ; ea_slug:      aa-mom-tol-band
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   186e1c42dd3ab9297183b0217fb311fd5c6cbc98de9941e3f37834d7e0b63b5d
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=1607
 qm_magic_slot_offset=0

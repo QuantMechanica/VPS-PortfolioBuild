@@ -3,16 +3,16 @@
 ; ea_id:        10706
 ; ea_slug:      tv-mon-ls
 ; ea_version:   v5.0
-; set_version:  s20260718-stress-harsh
+; set_version:  s20260825-stress-harsh
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  q06_stress_harsh
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   55ae46b954dc64ec2182cd8067378c47cf911fe682c74a2fdf2b2857cca646a9
+; build_hash:   5992328e8fccd33df051859795955e26b86f75b75f68570c6036f3e505bd7618
 ; author:       Development
-; date:         2026-07-18
+; date:         2026-08-25
 ;==========================================================
 qm_magic_slot_offset=1
 qm_rng_seed=2026
@@ -34,7 +34,6 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=framework/EAs/QM5_10706_tv-mon-ls/SPEC.md
-strategy_spread_atr_mult=0.25
 MondayBoxShiftHours=7
 LiqPct=0.0002
 MaxWickPct=0.0025

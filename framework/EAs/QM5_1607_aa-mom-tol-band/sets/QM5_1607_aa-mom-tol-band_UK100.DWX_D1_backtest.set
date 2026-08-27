@@ -3,16 +3,16 @@
 ; ea_id:        1607
 ; ea_slug:      aa-mom-tol-band
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       UK100.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   71e16bbc2a29255e0713bc0fa4e02063812e22f45452d98285bb0a118ca0b551
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=1607
 qm_magic_slot_offset=3

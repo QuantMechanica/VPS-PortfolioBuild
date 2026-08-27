@@ -3,16 +3,16 @@
 ; ea_id:        9910
 ; ea_slug:      bandy-tema-adx-crossover-trend
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6f7ce8d05acabbf40149a1af63921681f644afaf00c931b0a7911e17b993c589
+; build_hash:   96c013c5828cedd5e83980aaf23940d2fd0b625ff7637652f0da24837a40a3b4
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9910
 qm_magic_slot_offset=0

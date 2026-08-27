@@ -3,16 +3,16 @@
 ; ea_id:        1617
 ; ea_slug:      mql5-sar-sma-rapid
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       UK100.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   2be67b22926fa92d609dbd99bd2c39a3fb460ddad97ec78c7fbc115129e20b83
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=1617
 qm_magic_slot_offset=3

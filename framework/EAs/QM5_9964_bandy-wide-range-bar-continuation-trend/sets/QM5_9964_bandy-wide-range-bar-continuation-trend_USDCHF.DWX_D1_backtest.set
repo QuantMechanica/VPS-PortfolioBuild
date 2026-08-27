@@ -3,16 +3,16 @@
 ; ea_id:        9964
 ; ea_slug:      bandy-wide-range-bar-continuation-trend
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       USDCHF.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   9
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6ddaca03a8c0ba4852d0b2937d6d4b4b4a92a6c663ed8baefa68ac948604548f
+; build_hash:   2c698aa9e9bed28f5c204e5e7a7fb5ec54dba174e875d270d2251283e99b85ab
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9964
 qm_magic_slot_offset=9

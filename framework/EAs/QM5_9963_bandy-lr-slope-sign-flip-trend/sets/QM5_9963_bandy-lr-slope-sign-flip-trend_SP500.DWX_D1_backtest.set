@@ -3,16 +3,16 @@
 ; ea_id:        9963
 ; ea_slug:      bandy-lr-slope-sign-flip-trend
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ee73a550b024196b930572695d5bfb1a40709e1488a13e1334c47872e5cdc56c
+; build_hash:   0a9b90a4ad130821771eca8df8184c626fdeb28ca9b23759fa90655a65ee8b35
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9963
 qm_magic_slot_offset=2

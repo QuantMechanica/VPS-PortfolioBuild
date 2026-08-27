@@ -3,16 +3,16 @@
 ; ea_id:        9979
 ; ea_slug:      bandy-index-gap-fade-mr-index
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   88e6bc32d99660941aeb3b32101bdc41ee28c9f8189ff0e115a52e693b4eb754
+; build_hash:   8774452541faaf1f28ad71e536e39fd384db4f9444a6d119cee200dff47b362b
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9979
 qm_magic_slot_offset=2
@@ -21,13 +21,9 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9979_bandy-index-gap-fade-mr-index.md
-; card_defaults_status=none_found
-; strategy params backfilled from the EA's own input defaults;
-; behaviour-identical (an omitted param already used this value),
-; required by Q08 sub-gate 8.5 which perturbs named parameters.
-strategy_anti_cluster_bars=2
-strategy_atr_period=14
-strategy_atr_stop_mult=1.5
 strategy_gap_atr_mult=0.5
 strategy_regime_sma_period=200
+strategy_atr_period=14
+strategy_atr_stop_mult=1.5
 strategy_time_stop_days=5
+strategy_anti_cluster_bars=2

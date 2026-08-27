@@ -3,16 +3,16 @@
 ; ea_id:        12931
 ; ea_slug:      classical-triple-top-reversal-h4
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c10b1771f20ad62540166f7105d6e5712370af12520936ba19d06aaed803f20f
+; build_hash:   c30c63187208c9d2c9928b121e6b3ed5adbb4711dd5a65df003fdb4b3ad09db7
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=12931
 qm_magic_slot_offset=7
@@ -20,6 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12931_classical-triple-top-reversal-h4.md
 strategy_tf=16388
 strategy_atr_period=14
 strategy_fractal_wing_bars=1

@@ -10,28 +10,17 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   46d0ac78b12d22aed4ef411e6540fecca46c4d61ec59e8c4789f2b40e2fdfa85
 ; author:       Development
 ; date:         2026-08-26
 ;==========================================================
 qm_ea_id=41167
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; Fourteen-month WTI Cox-Stuart paired-sign trend; both news axes are OFF.
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-; Full broker-month hold; Friday flattening is intentionally disabled.
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-; Locked strategy defaults from the approved card; no optimization surface.
-; card_defaults_source=strategy-seeds/cards/approved/QM5_41167_wti-coxstuart-tr_card.md
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_endpoint_count=14
 strategy_pair_count=7
 strategy_signs_required=5
@@ -42,4 +31,3 @@ strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.5
 strategy_max_hold_days=40
 strategy_max_spread_points=1500
-

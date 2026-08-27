@@ -3,16 +3,16 @@
 ; ea_id:        12950
 ; ea_slug:      mql5-ad-price-card
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   57d6670ddf315fc5ecdf53d9109bd370e6f5cb06a3a5f3916cf685eb1486c364
+; build_hash:   76a072aee41dd187d57c1b8126ebf1021ce30a64016e45fefdf32ada9a54015c
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=12950
 qm_magic_slot_offset=2

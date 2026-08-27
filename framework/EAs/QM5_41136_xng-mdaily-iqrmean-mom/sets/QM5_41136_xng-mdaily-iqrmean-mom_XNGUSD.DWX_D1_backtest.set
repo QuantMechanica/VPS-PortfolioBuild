@@ -3,16 +3,16 @@
 ; ea_id:        41136
 ; ea_slug:      xng-mdaily-iqrmean-mom
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a08cf8ad391b4d19185897db47f6464451e5a05520b923ab89a19dbc7f822f13
+; build_hash:   f2ab4e9606cd01149aad3ece186a6c2e3699501c57a73d1174f7da8585bc5098
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=41136
 qm_magic_slot_offset=0

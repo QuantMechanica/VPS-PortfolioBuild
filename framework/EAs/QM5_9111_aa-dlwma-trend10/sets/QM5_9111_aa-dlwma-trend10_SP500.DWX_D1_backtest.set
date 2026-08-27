@@ -3,16 +3,16 @@
 ; ea_id:        9111
 ; ea_slug:      aa-dlwma-trend10
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   49b21e7604f41908ff6120fc565d7b1f00865ae05ddbff63586f5a7e56ddcd46
+; build_hash:   61bb35e678e3bb40725d9729507c0d23569d209086ad1707758c2fb70ca470a2
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9111
 qm_magic_slot_offset=2

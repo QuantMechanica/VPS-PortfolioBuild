@@ -3,16 +3,16 @@
 ; ea_id:        9113
 ; ea_slug:      aa-ab-velocity
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   679489d5af4df0db98e27a1340711210e2934b8e73c745bd9b4bafec24f98e95
+; build_hash:   57f32d707108bb58ae951aff7ff2034f1478674b1995f6002fef0c7c8653ae84
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9113
 qm_magic_slot_offset=0
@@ -21,4 +21,9 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9113_aa-ab-velocity.md
-; card_defaults_status=none_found
+strategy_alpha=0.29896
+strategy_beta=0.05295
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_min_warmup_bars=120
+strategy_enable_shorts=false

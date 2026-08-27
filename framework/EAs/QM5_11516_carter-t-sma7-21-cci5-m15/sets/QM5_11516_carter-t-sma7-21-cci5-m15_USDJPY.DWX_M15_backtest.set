@@ -3,16 +3,16 @@
 ; ea_id:        11516
 ; ea_slug:      carter-t-sma7-21-cci5-m15
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   aeb38178d8d842f914a8cfe73ae7dc932a4f196ceba55dfe2634ba463c974fe8
+; build_hash:   a465824fcda07995d8c62d437d5fa00bfc31c575e5e0df573f29d68b28c7f34b
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=11516
 qm_magic_slot_offset=2
@@ -21,7 +21,6 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11516_carter-t-sma7-21-cci5-m15.md
-; card_defaults_status=none_found
 strategy_sma_fast_period=7
 strategy_sma_slow_period=21
 strategy_cci_period=5

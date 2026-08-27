@@ -141,4 +141,3 @@ owned exposure.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v0 | 2026-08-26 | approved source build | G0-approved card and governed magic `411670000` |
-

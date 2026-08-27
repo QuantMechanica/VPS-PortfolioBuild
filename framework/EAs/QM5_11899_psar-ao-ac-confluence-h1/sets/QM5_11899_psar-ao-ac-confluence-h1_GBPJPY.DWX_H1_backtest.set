@@ -1,33 +1,33 @@
-﻿;==========================================================
-; QM5 Set File
-; ea_id:        11899
-; ea_slug:      psar-ao-ac-confluence-h1
-; ea_version:   v5.0
-; set_version:  s20260823-001
-; symbol:       GBPJPY.DWX
-; timeframe:    H1
-; environment:  backtest
-; magic_slot:   8
-; risk_mode:    FIXED
-; portfolio_weight: 1
-; build_hash:   a7e5e3ca292ea68ed66ec40e3ff4120d84d4cfa77dc0800be93a6bf6d15a4388
-; author:       Development
-; date:         2026-08-23
-;==========================================================
-qm_ea_id=11899
-qm_magic_slot_offset=8
-RISK_FIXED=1000
-RISK_PERCENT=0
-PORTFOLIO_WEIGHT=1
-; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11899_psar-ao-ac-confluence-h1.md
-strategy_signal_tf=16385
-strategy_psar_step=0.02
-strategy_psar_max=0.2
-strategy_ao_fast_period=5
-strategy_ao_slow_period=34
-strategy_ac_period=5
-strategy_target_rr=1.0
-strategy_sl_buffer_pips=2.0
-strategy_alt_exit=true
-strategy_time_stop_bars=96
+;==========================================================
+; QM5 Set File
+; ea_id:        11899
+; ea_slug:      psar-ao-ac-confluence-h1
+; ea_version:   v5.0
+; set_version:  s20260826-001
+; symbol:       GBPJPY.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   8
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   153350586b14c25299c223095a2216b73b6e15959aa5d0e9c6e307a7e786411c
+; author:       Development
+; date:         2026-08-26
+;==========================================================
+qm_ea_id=11899
+qm_magic_slot_offset=8
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11899_psar-ao-ac-confluence-h1.md
+strategy_signal_tf=16385
+strategy_psar_step=0.02
+strategy_psar_max=0.2
+strategy_ao_fast_period=5
+strategy_ao_slow_period=34
+strategy_ac_period=5
+strategy_target_rr=1.0
+strategy_sl_buffer_pips=2.0
+strategy_alt_exit=true
+strategy_time_stop_bars=96

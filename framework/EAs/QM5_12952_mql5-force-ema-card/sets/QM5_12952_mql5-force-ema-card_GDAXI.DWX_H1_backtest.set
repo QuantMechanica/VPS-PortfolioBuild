@@ -3,16 +3,16 @@
 ; ea_id:        12952
 ; ea_slug:      mql5-force-ema-card
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9a02773e2508c812a8a663e2c17189546ad4e84d1c30be119b062123eb2aaa51
+; build_hash:   d17482adc23a4f3992c26cccc41614896b7449ef50cad129ed3d8eda29c062c4
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=12952
 qm_magic_slot_offset=2

@@ -3,16 +3,16 @@
 ; ea_id:        9909
 ; ea_slug:      bandy-lrchannel-breakout-trend
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0d1fd93f2e64065b49da3447abe4b77ee13d76bd3d0697b5e40be7aced9d3544
+; build_hash:   4d6e0ea876d316e92fc2d5c0fab3eae44fad213df556ca4e6ffbe3a1d84fcd1a
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9909
 qm_magic_slot_offset=8

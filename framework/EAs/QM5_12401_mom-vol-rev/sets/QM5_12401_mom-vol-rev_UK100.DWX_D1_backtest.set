@@ -3,16 +3,16 @@
 ; ea_id:        12401
 ; ea_slug:      mom-vol-rev
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260825-001
 ; symbol:       UK100.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   4da84387b355ad3058198e29bebd28d617dc309ca784bdec4b94bc047b60f9eb
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=12401
 qm_magic_slot_offset=4

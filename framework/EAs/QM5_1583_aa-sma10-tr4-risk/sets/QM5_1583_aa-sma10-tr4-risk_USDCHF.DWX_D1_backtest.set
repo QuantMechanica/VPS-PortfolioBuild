@@ -3,16 +3,16 @@
 ; ea_id:        1583
 ; ea_slug:      aa-sma10-tr4-risk
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       USDCHF.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   9
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0ca4420c4e6bd98affad1cb11e0bf799153dde55c55c1af3d6bf189b7829eaee
+; build_hash:   923224f2a03c36e767a51c3a640e4aea36ba75c80548b364c3ad1aebe0060a93
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=1583
 qm_magic_slot_offset=9

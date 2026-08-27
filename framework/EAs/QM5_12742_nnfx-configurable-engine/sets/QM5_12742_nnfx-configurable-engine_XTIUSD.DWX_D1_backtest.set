@@ -3,32 +3,64 @@
 ; ea_id:        12742
 ; ea_slug:      nnfx-configurable-engine
 ; ea_version:   v5.0
-; set_version:  s20260628-001
+; set_version:  s20260826-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   21dd8531c3c27de720e3868986068033da767a7459e8382eab1dd4c7beda7d78
+; build_hash:   8457a22e32a6f08be75b1f7a1089d01feb881b4d4799823f2ca4763a59ebd30a
 ; author:       Development
-; date:         2026-06-28
+; date:         2026-08-26
 ;==========================================================
+qm_ea_id=12742
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12742_nnfx-configurable-engine.md
+strategy_timeframe=16408
+nnfx_baseline=NNFX_BASELINE_HMA
+nnfx_c1=NNFX_C1_STC
+nnfx_c2=NNFX_C2_OFF
+nnfx_volume=NNFX_VOLUME_ATR_EXPANSION
+nnfx_exit=NNFX_EXIT_PSAR
+nnfx_entry_window_bars=7
+nnfx_proximity_atr_mult=1.0
+strategy_baseline_period=34
+strategy_kijun_period=26
+strategy_atr_period=14
+strategy_sl_atr_mult=1.5
+strategy_tp_half_atr_mult=1.0
+strategy_partial_fraction=0.5
+strategy_warmup_bars=240
+strategy_max_spread_points=500
+strategy_ssl_period=10
+strategy_aroon_period=25
+strategy_vortex_period=14
+strategy_supertrend_period=10
+strategy_supertrend_mult=3.0
+strategy_stc_cycle=10
+strategy_qqe_rsi_period=14
+strategy_fisher_period=10
+strategy_trix_period=15
+strategy_adx_period=14
+strategy_adx_threshold=20.0
+strategy_cmf_period=20
+strategy_atr_expansion_mult=0.90
+strategy_wae_fast=20
+strategy_wae_slow=40
+strategy_wae_signal=9
+strategy_wae_sensitivity=150.0
+strategy_wae_bb_period=20
+strategy_wae_bb_deviation=2.0
+strategy_wae_deadzone_pts=150
+strategy_psar_step=0.02
+strategy_psar_maximum=0.20
+strategy_chandelier_period=22
+strategy_chandelier_mult=3.0
+strategy_alma_offset=0.85
+strategy_alma_sigma=6.0
+strategy_t3_vfactor=0.70

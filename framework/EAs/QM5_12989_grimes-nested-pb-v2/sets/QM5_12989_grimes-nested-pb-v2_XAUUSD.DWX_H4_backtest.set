@@ -3,16 +3,16 @@
 ; ea_id:        12989
 ; ea_slug:      grimes-nested-pb-v2
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   17b0bdc85f4eb095d5b419a59fd388277390fb36ffa790a32ca35c110bf77507
+; build_hash:   5dee586e99e93a4c1aa098aaff6dfa09c985ca4e076d3cd0b5e247b90af398d4
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=12989
 qm_magic_slot_offset=3

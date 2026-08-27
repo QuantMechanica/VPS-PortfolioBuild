@@ -3,16 +3,16 @@
 ; ea_id:        11292
 ; ea_slug:      trix14-signal-cross
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   bf73a28ed24d82367741c066bcc7376faf25f744d8d0c8a3f829ba751d4033bf
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=11292
 qm_magic_slot_offset=0

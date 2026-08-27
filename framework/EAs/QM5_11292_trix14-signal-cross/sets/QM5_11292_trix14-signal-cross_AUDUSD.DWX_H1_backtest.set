@@ -3,16 +3,16 @@
 ; ea_id:        11292
 ; ea_slug:      trix14-signal-cross
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   b05557606d806fbc2084e48760f2fcc8b6ae57ef829d29243bfcdf0eabc86cf9
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=11292
 qm_magic_slot_offset=3

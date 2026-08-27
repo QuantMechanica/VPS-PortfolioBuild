@@ -3,16 +3,16 @@
 ; ea_id:        9963
 ; ea_slug:      bandy-lr-slope-sign-flip-trend
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       USDCAD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   11
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9d1fa13775f3a9ce2869a17071b948cbda4ee0ab0bed44cc5384c4fc79538e55
+; build_hash:   401dc10cc3b428123f5aa480929decbc2c44efb9cfeadf34cc51a52a7dddb2c9
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9963
 qm_magic_slot_offset=11

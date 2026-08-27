@@ -3,16 +3,16 @@
 ; ea_id:        11300
 ; ea_slug:      macd-psar-atr-trender-h4
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   83ef727b80d9010706c7faddc8d1eea90a933a3bf37226a2bccd140af7504b53
+; build_hash:   94d114dceea71d3f200dcaffbd876419948df995c8b8d3a0804cf24e72ce2faf
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=11300
 qm_magic_slot_offset=3
@@ -21,4 +21,13 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11300_macd-psar-atr-trender-h4.md
-; card_defaults_status=none_found
+strategy_timeframe=16388
+strategy_macd_fast=12
+strategy_macd_slow=26
+strategy_macd_signal=9
+strategy_psar_step=0.02
+strategy_psar_maximum=0.20
+strategy_atr_period=14
+strategy_tp_atr_mult=2.0
+strategy_sl_max_atr_mult=1.5
+strategy_max_spread_pips=20

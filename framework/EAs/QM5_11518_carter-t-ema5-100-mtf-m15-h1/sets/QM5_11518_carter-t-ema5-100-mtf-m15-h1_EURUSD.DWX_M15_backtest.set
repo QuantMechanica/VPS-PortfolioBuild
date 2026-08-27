@@ -3,22 +3,24 @@
 ; ea_id:        11518
 ; ea_slug:      carter-t-ema5-100-mtf-m15-h1
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   607d19d65681ad9e4f0333d2b6550b1a48b95b3af33acddd2bc4e595c328be97
-; author:       Gemini
-; date:         2026-08-23
+; build_hash:   a205839204ebe913db11711fd3feaefeab20f6ca31cef90dcc858ba5e3867729
+; author:       Development
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=11518
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11518_carter-t-ema5-100-mtf-m15-h1.md
 strategy_fast_ema_period=5
 strategy_slow_ema_period=100
 strategy_sl_pips=15

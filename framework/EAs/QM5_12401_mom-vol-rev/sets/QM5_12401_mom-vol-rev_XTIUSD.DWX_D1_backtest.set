@@ -3,16 +3,16 @@
 ; ea_id:        12401
 ; ea_slug:      mom-vol-rev
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260825-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   d1db3d312b10c89bbf5b7d1b812bd5ced6e22cbb9bbe6d8fe3b3c85328d06fb0
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=12401
 qm_magic_slot_offset=6

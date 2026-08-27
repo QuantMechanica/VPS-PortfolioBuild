@@ -3,16 +3,16 @@
 ; ea_id:        1538
 ; ea_slug:      aa-tsmom-1-3-12
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9d3647ac1ec3aeec6f1f2a981f64bfee4a687239b9cc10f1b0b25312b63ef50e
+; build_hash:   6716efd605797726ca30e48b57dcc3fe1ea717f5887e21dbc440359f709ca360
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=1538
 qm_magic_slot_offset=7

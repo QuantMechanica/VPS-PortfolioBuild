@@ -3,16 +3,16 @@
 ; ea_id:        36002
 ; ea_slug:      nnfx-kijunsen-absolute-strength-damiani
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8f76e0b15ab8324015a7346a35a92d6067d33084d3755d744490b73954225cc3
+; build_hash:   5c156c67e907da78068847a9506485a9b0b4afe20180270dac0a11d96a706963
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=36002
 qm_magic_slot_offset=0
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\worktrees\rework-slot-20\strategy-seeds\cards\QM5_36002_nnfx-kijunsen-absolute-strength-damiani.md
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_36002_nnfx-kijunsen-absolute-strength-damiani.md
 strategy_kijun_period=26
 strategy_tenkan_period=9
 strategy_senkou_period=52

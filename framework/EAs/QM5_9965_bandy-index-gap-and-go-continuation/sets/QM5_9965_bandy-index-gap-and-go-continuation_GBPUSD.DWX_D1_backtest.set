@@ -3,16 +3,16 @@
 ; ea_id:        9965
 ; ea_slug:      bandy-index-gap-and-go-continuation
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   250b76c60c18b0623b059e73894d7dea3bac56234fc6ead6163fdd72e539a2a4
+; build_hash:   ab189ca8ec91872f47150b31917e2bc61f5c46ca7b68675751fdbf44f6059bc3
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9965
 qm_magic_slot_offset=7
@@ -21,13 +21,9 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9965_bandy-index-gap-and-go-continuation.md
-; card_defaults_status=none_found
-; strategy params backfilled from the EA's own input defaults;
-; behaviour-identical (an omitted param already used this value),
-; required by Q08 sub-gate 8.5 which perturbs named parameters.
-strategy_anti_cluster_bars=2
-strategy_atr_period=14
-strategy_atr_stop_mult=1.5
 strategy_gap_atr_mult=0.5
 strategy_regime_sma_period=200
+strategy_atr_period=14
+strategy_atr_stop_mult=1.5
 strategy_time_stop_days=5
+strategy_anti_cluster_bars=2

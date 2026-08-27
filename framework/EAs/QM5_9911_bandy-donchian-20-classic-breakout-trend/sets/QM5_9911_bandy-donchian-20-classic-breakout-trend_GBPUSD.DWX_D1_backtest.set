@@ -3,16 +3,16 @@
 ; ea_id:        9911
 ; ea_slug:      bandy-donchian-20-classic-breakout-trend
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a7d35d2cd5b7d8df5c0fbd2956fd76aabf812df7898db720b7e8fbc86f43a3c4
+; build_hash:   e229748abdb479651a4e692ffea72f7f74356e28dcdc640fe4fe55f5034c136a
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9911
 qm_magic_slot_offset=7

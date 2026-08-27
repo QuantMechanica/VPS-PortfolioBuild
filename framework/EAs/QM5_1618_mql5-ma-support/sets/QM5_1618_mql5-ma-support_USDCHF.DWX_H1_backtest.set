@@ -3,16 +3,16 @@
 ; ea_id:        1618
 ; ea_slug:      mql5-ma-support
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       USDCHF.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   9
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   56404aca1cdc5e90ac4f12ac73c781f5f3c2dd124d887b900b15ac0363de2a97
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=1618
 qm_magic_slot_offset=9

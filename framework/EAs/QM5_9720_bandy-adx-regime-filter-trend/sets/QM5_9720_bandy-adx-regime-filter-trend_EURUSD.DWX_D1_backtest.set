@@ -3,16 +3,16 @@
 ; ea_id:        9720
 ; ea_slug:      bandy-adx-regime-filter-trend
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   724148e510526f436493b28008d213addbac8adbba6db88d1b311ec9b270b032
+; build_hash:   71d8d488437dc0fce03b6283e9b0dcc49bfc9a9b34e5cdb17cc853530fa0a135
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9720
 qm_magic_slot_offset=6
@@ -21,4 +21,10 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9720_bandy-adx-regime-filter-trend.md
-; card_defaults_status=none_found
+strategy_sma_fast_period=20
+strategy_sma_slow_period=50
+strategy_adx_period=14
+strategy_adx_threshold=25.0
+strategy_trail_atr_period=14
+strategy_trail_atr_mult=2.5
+strategy_max_hold_days=60

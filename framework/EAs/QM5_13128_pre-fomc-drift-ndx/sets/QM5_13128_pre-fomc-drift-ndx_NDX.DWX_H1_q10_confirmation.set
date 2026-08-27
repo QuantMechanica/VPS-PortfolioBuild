@@ -3,16 +3,16 @@
 ; ea_id:        13128
 ; ea_slug:      pre-fomc-drift-ndx
 ; ea_version:   v5.0
-; set_version:  s20260710-001
+; set_version:  s20260825-001
 ; symbol:       NDX.DWX
 ; timeframe:    H1
 ; environment:  q10_full_history_confirmation
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   86d6ff7126f0c65fef6f5651bb805aae6b4d4603fc6b15b68a225b226fc192fd
+; build_hash:   16f386e9b7503e9a130bff09fbc09dcec1047779a17aef478f14dee20db2a888
 ; author:       Development
-; date:         2026-07-10
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=13128
 qm_magic_slot_offset=0
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_13128_pre-fomc-drift-ndx.md
 strategy_timeframe=16385
 strategy_entry_hour=21
 strategy_exit_hour=20

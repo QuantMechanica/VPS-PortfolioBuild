@@ -3,16 +3,16 @@
 ; ea_id:        9716
 ; ea_slug:      bandy-trend-stretch-ratio-mr-index
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2950ef712a6f316d0f41a539dea57affa240c5121e466b1625ed30dd2f5c1bd3
+; build_hash:   1c730dbb4a5d91386c7f99a9d5782087a990c4a5ce35bf30f0a6ebdba0a6fcf4
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9716
 qm_magic_slot_offset=4

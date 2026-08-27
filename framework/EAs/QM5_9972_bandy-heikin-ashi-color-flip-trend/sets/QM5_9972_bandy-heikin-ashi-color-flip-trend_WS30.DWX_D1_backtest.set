@@ -3,16 +3,16 @@
 ; ea_id:        9972
 ; ea_slug:      bandy-heikin-ashi-color-flip-trend
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   42a68fc46e88fd68e3760d0919317202e5e169b8bd3aa6ca88a2009f36d2e072
+; build_hash:   e84a0f7d17387fe9c9af47e2b3ff3e4f6069f83b33ab5daa0d22ef94e3b8bbe2
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9972
 qm_magic_slot_offset=4
@@ -21,14 +21,10 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9972_bandy-heikin-ashi-color-flip-trend.md
-; card_defaults_status=none_found
-; strategy params backfilled from the EA's own input defaults;
-; behaviour-identical (an omitted param already used this value),
-; required by Q08 sub-gate 8.5 which perturbs named parameters.
-strategy_anti_cluster_bars=3
+strategy_regime_sma_period=200
 strategy_atr_period=14
 strategy_atr_stop_mult=2.5
-strategy_ha_seed_bars=50
-strategy_razor_body_atr_mult=0.1
-strategy_regime_sma_period=200
 strategy_time_stop_bars=30
+strategy_anti_cluster_bars=3
+strategy_razor_body_atr_mult=0.1
+strategy_ha_seed_bars=50

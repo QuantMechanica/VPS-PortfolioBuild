@@ -3,16 +3,16 @@
 ; ea_id:        9964
 ; ea_slug:      bandy-wide-range-bar-continuation-trend
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   943fd365117c00dcfa446e818bad51865a62598b62a59fc6292fa3de2f74a165
+; build_hash:   6dd7f72f652c09eec3ed44c45007db8b61ba3272ec1d5c3b4d212e6829a8214a
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9964
 qm_magic_slot_offset=5

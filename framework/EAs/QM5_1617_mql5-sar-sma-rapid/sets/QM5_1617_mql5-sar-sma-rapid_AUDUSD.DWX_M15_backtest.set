@@ -3,16 +3,16 @@
 ; ea_id:        1617
 ; ea_slug:      mql5-sar-sma-rapid
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   10
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   8022ebf0baec9cef3230bdb3dc76cacf51c2af0c9b01dc294ced5d167c8be1f1
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=1617
 qm_magic_slot_offset=10

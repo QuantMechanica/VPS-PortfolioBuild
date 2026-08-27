@@ -3,16 +3,16 @@
 ; ea_id:        1606
 ; ea_slug:      aa-gvmt-robust
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   10
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   6f1de5cf0ffb55862292ab17f5c652bb47d1994814dc91522d0695727e8071ad
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=1606
 qm_magic_slot_offset=10

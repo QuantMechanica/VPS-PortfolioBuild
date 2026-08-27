@@ -3,16 +3,16 @@
 ; ea_id:        41104
 ; ea_slug:      xauxag-mmedian-shift-rv
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f46e44aff34bdd62fcdbf04571ca63b021acd4f7133e5268f5a2d98586824fa1
+; build_hash:   82076b9e511b647860cd2872d5e4ba9f62c8c63bd083f32bb3df56aad48fd320
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=41104
 qm_magic_slot_offset=0

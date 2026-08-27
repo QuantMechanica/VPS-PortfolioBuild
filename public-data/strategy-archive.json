@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-08-24T20:09:45.1489731Z",
-    "total":  3860,
+    "generated_at":  "2026-08-27T05:10:26.2664349Z",
+    "total":  3863,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -2362,6 +2362,12 @@
                       "last_updated_utc":  "2026-08-12T23:20:38.3123395Z"
                   },
                   {
+                      "slug":  "wti-lad-tr_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-08-25T21:15:47.0659692Z"
+                  },
+                  {
                       "slug":  "wti-linw-mom_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
@@ -2558,6 +2564,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-29T01:05:48.4673872Z"
+                  },
+                  {
+                      "slug":  "wti-repmedian-tr_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-08-25T17:43:09.8888791Z"
                   },
                   {
                       "slug":  "wti-roc14-xtrm_card",
@@ -2978,6 +2990,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-08-07T05:23:26.0446654Z"
+                  },
+                  {
+                      "slug":  "xauxag-mtheilsen-rv_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-08-25T15:18:59.7966161Z"
                   },
                   {
                       "slug":  "xau-xag-qc_card",

@@ -3,16 +3,16 @@
 ; ea_id:        1583
 ; ea_slug:      aa-sma10-tr4-risk
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   10
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cf17b289a0b38f57261a8e3f34643e9d8712a3ae87b2acbc90966c59735df19d
+; build_hash:   1ee2374dc7491b6e0e5f2e1bbe23fa64e3a87f3c5bca4e808c99f9164a45ac45
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=1583
 qm_magic_slot_offset=10

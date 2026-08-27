@@ -3,16 +3,16 @@
 ; ea_id:        12931
 ; ea_slug:      classical-triple-top-reversal-h4
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       USDCAD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   11
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e6a0fee656da693c6ea6b859a5765af695e328d9262e88e316b546bd4e7edbbd
+; build_hash:   b4a95d9f701db3059311afdd6e8ff783798ae1c4421ceac6b16ea398a1b588d4
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=12931
 qm_magic_slot_offset=11
@@ -20,6 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12931_classical-triple-top-reversal-h4.md
 strategy_tf=16388
 strategy_atr_period=14
 strategy_fractal_wing_bars=1

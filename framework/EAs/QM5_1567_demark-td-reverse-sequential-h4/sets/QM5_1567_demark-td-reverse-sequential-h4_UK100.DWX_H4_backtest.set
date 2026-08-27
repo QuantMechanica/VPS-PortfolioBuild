@@ -3,16 +3,16 @@
 ; ea_id:        1567
 ; ea_slug:      demark-td-reverse-sequential-h4
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       UK100.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   87eaffda1b9ab52e8916a1975f17dc6c047bb4ec6951f80363e18ef431426a4a
+; build_hash:   1593b8ab4c4689259a0b40d01645974c48864d3309c78624f219dcdb00fbaa00
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=1567
 qm_magic_slot_offset=4

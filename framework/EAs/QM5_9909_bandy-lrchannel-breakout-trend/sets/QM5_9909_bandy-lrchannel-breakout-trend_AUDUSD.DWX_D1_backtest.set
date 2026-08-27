@@ -3,16 +3,16 @@
 ; ea_id:        9909
 ; ea_slug:      bandy-lrchannel-breakout-trend
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   10
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   54ddeb3478c8db38f8a4878b875c32164a020e16009676f39149c32af1e5a0b9
+; build_hash:   7cb7524b1e7477c6f4107695687a021d2d0a1ec1276874b5ec92e3eb4d006843
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9909
 qm_magic_slot_offset=10

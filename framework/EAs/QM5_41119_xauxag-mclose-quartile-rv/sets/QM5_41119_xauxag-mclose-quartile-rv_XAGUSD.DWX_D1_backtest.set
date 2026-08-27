@@ -3,16 +3,16 @@
 ; ea_id:        41119
 ; ea_slug:      xauxag-mclose-quartile-rv
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260825-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e4aa214250191ad94dd5c5bd88175e6265e4d7e5058f61a9060abd19c3081a10
+; build_hash:   edcff7658aaf56f7e054adafc0030bd659fae239286d7b3164e48ce1fc9cd3b9
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=41119
 qm_magic_slot_offset=1

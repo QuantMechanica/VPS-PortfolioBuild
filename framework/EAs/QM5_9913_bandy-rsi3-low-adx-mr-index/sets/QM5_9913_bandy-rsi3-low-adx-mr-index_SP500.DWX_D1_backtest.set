@@ -3,16 +3,16 @@
 ; ea_id:        9913
 ; ea_slug:      bandy-rsi3-low-adx-mr-index
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8aa14ed73b34dd720a926c749423b1ec3a99860ec1ac7fd1daaae58667a56763
+; build_hash:   b22862d01de28ee7a222be104dde2f835c3a51ef66b545e9cc5920d612f8c97d
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9913
 qm_magic_slot_offset=2

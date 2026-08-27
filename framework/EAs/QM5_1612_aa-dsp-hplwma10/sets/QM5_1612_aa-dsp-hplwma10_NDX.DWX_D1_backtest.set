@@ -3,16 +3,16 @@
 ; ea_id:        1612
 ; ea_slug:      aa-dsp-hplwma10
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   02ac5bc08d9caaa6b22079c3da10e88872758502b534836369101caa1409b477
+; build_hash:   5d3c5d1246fa383586ba4cd58bc26b2b60e043ea671df1cb64dd5753e4ac08a4
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=1612
 qm_magic_slot_offset=1

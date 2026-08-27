@@ -10,8 +10,8 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:
-; author:       Codex
+; build_hash:   61ebd06b1aeee11908d88b88b4ad49f6c1d6366a0c987bc7b092dea684a3381c
+; author:       Development
 ; date:         2026-08-26
 ;==========================================================
 qm_ea_id=41161
@@ -19,9 +19,8 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_stale_max_hours=336
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=framework/EAs/QM5_41161_tv-mon-ls-opt/docs/strategy_card.md
+; card_defaults_source=ea_input_defaults
 strategy_spread_atr_mult=0.25
 MondayBoxShiftHours=7
 LiqPct=0.0002
@@ -35,9 +34,3 @@ BeLockFrac=0.1
 EntryMode=MLS_ONE_TRADE_PER_WEEK
 FridayExitHourBroker=18
 FridayExitMinuteBroker=30
-opt_pp_buy1=0
-opt_pp_buy2=0
-opt_pp_buy3=0
-opt_pp_sell1=0
-opt_pp_sell2=0
-opt_pp_sell3=0

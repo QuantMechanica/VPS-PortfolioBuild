@@ -3,22 +3,24 @@
 ; ea_id:        9580
 ; ea_slug:      bandy-regslope-pullback-mr-index
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       UK100.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5ec3aa4d8249340e85702365a53d291c120730419971dfe711df6a31e797ccbf
+; build_hash:   187c1c63cae4cb835e0b5f51ac1ec45fc04c04413973ddd448293d3f9cd56e98
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9580
 qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9580_bandy-regslope-pullback-mr-index.md
 strategy_reg_period=50
 strategy_r2_min=0.30
 strategy_rsi_period=2

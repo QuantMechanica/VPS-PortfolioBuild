@@ -3,28 +3,22 @@
 ; ea_id:        9353
 ; ea_slug:      chande-stochrsi-base-cross-h4
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   85d19a7541f8d58b8c5dac1f71edc824b9c380d697aa8ae629445a69afec6bd1
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9353
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; card-approved HIGH-impact entry blackout: 60 minutes before and after
-qm_news_temporal=4
-qm_news_compliance=1
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9353_chande-stochrsi-base-cross-h4.md
 strategy_rsi_period=14

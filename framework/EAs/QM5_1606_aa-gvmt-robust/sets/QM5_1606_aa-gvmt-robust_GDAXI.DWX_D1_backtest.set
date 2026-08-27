@@ -3,16 +3,16 @@
 ; ea_id:        1606
 ; ea_slug:      aa-gvmt-robust
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   2fff0888dde99a7289be57d782a51ad2134c8329a6f79990456d53628fcda6cd
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=1606
 qm_magic_slot_offset=0

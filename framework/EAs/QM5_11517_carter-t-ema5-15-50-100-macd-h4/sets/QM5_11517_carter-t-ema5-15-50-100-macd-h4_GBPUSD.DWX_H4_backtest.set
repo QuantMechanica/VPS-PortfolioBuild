@@ -3,16 +3,16 @@
 ; ea_id:        11517
 ; ea_slug:      carter-t-ema5-15-50-100-macd-h4
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0ca5e89d59be0838c2a3b5722dd3ca7daa13a37eb02247d7d038b3294ab24fc2
+; build_hash:   ce753ce4b17417766006158510c9ac4b11b1e28372c850183f02c73a9a46e44e
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=11517
 qm_magic_slot_offset=1
@@ -21,7 +21,6 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11517_carter-t-ema5-15-50-100-macd-h4.md
-; card_defaults_status=none_found
 strategy_ema_fast_period=5
 strategy_ema_slow_period=15
 strategy_ema_trend1_period=50

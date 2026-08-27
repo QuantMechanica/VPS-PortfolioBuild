@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1640
+; ea_slug:      aa-indmom-12-0
+; ea_version:   v5.0
+; set_version:  s20260826-001
+; symbol:       NZDUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   12
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   d332d46276fd7831fac9bc2bad5c5c0301e0d2068c68276e4d3e9e53c9f3c2a8
+; author:       Development
+; date:         2026-08-26
+;==========================================================
+qm_ea_id=1640
+qm_magic_slot_offset=12
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1640_aa-indmom-12-0.md
+strategy_min_monthly_bars=14
+strategy_top_slots=5
+strategy_atr_period_d1=20
+strategy_sl_atr_mult=3.0
+strategy_spread_median_days=20
+strategy_spread_median_mult=2.5

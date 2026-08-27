@@ -3,16 +3,16 @@
 ; ea_id:        9720
 ; ea_slug:      bandy-adx-regime-filter-trend
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4361b637b5060edd254aae0af34bc442549779a30b9895c91decdea812c54334
+; build_hash:   98ab753cc08254dc2ad2d80b3b23691cd8f7dfd846a8f89cd58afaf6363d0816
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9720
 qm_magic_slot_offset=2
@@ -21,4 +21,10 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9720_bandy-adx-regime-filter-trend.md
-; card_defaults_status=none_found
+strategy_sma_fast_period=20
+strategy_sma_slow_period=50
+strategy_adx_period=14
+strategy_adx_threshold=25.0
+strategy_trail_atr_period=14
+strategy_trail_atr_mult=2.5
+strategy_max_hold_days=60

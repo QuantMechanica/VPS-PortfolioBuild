@@ -3,16 +3,16 @@
 ; ea_id:        1583
 ; ea_slug:      aa-sma10-tr4-risk
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e4700b9c55d6bd95eb3eba7e6791fb311c943df93b4ddbe6f5b41da7d6096e1e
+; build_hash:   22bd12a1ed7883b582404cb9f71fe064cced599d7d4baf54823f6d7244651b9b
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=1583
 qm_magic_slot_offset=1

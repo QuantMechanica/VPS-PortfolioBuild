@@ -3,7 +3,7 @@
 ; ea_id:        13108
 ; ea_slug:      xti-mtsm-s2
 ; ea_version:   v5.0
-; set_version:  s20260722-stress-harsh
+; set_version:  s20260825-stress-harsh
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   4c500dd5460a2867f82b58a29433e81c38204cd8a8e6c7d3e68854abaa010282
 ; author:       Codex
-; date:         2026-07-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=13108
 qm_magic_slot_offset=0

@@ -3,16 +3,16 @@
 ; ea_id:        35005
 ; ea_slug:      sma-crossover-pullback-system
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       EURJPY.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   51b5055f60927b8e7ca5cc2ae8e2e891f0b67f89d70e3967260ba3c929e5ba7c
+; build_hash:   7767ec9a11b8582a7970e58d4335144b4321dadd1666c145edc1c6ba7e9ead9e
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=35005
 qm_magic_slot_offset=2

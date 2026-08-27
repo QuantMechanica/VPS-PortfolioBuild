@@ -3,16 +3,16 @@
 ; ea_id:        1613
 ; ea_slug:      aa-dsp-atsmom
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c01635af8a2a937afdf2465c53d1f42542f9bc65b6f9811b4480f665302a8594
+; build_hash:   59a6a92a46d788439037845caf5802f38502b0098eac506311081d7d3db13455
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=1613
 qm_magic_slot_offset=2

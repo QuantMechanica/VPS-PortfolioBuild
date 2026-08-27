@@ -3,16 +3,16 @@
 ; ea_id:        12950
 ; ea_slug:      mql5-ad-price-card
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   57d6670ddf315fc5ecdf53d9109bd370e6f5cb06a3a5f3916cf685eb1486c364
+; build_hash:   6bd6ca710b7b4ce7baece7fbc0e6c2f5fc4ffa00eeea8d3354a01497cb1db915
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=12950
 qm_magic_slot_offset=0

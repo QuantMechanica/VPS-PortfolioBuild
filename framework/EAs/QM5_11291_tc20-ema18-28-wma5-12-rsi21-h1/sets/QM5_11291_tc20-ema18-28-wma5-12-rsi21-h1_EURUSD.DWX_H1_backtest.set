@@ -3,16 +3,16 @@
 ; ea_id:        11291
 ; ea_slug:      tc20-ema18-28-wma5-12-rsi21-h1
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   b4460bdca6cd594325aebda0c76fcf2d4702bdd8533b9888dc88ad02f3b57b32
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=11291
 qm_magic_slot_offset=0

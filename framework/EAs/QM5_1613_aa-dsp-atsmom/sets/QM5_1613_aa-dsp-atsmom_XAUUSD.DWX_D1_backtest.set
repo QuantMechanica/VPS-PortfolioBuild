@@ -3,16 +3,16 @@
 ; ea_id:        1613
 ; ea_slug:      aa-dsp-atsmom
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c01635af8a2a937afdf2465c53d1f42542f9bc65b6f9811b4480f665302a8594
+; build_hash:   a1b9f8390cbf2504a2e6bfb0d19cfd400b29f1281b7fae6dfbd706a4e8049670
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=1613
 qm_magic_slot_offset=5

@@ -3,16 +3,16 @@
 ; ea_id:        9113
 ; ea_slug:      aa-ab-velocity
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   10
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2060206a89c6d0cd149d8673a52377c382c5d7ef3e8d2580fdc655cbfbd3df94
+; build_hash:   2e87c80903fd7cfe56b60cf7f97f779885567b64c2ff10ff843455e610c296e2
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9113
 qm_magic_slot_offset=10
@@ -21,4 +21,9 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9113_aa-ab-velocity.md
-; card_defaults_status=none_found
+strategy_alpha=0.29896
+strategy_beta=0.05295
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_min_warmup_bars=120
+strategy_enable_shorts=false

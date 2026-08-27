@@ -3,16 +3,16 @@
 ; ea_id:        9910
 ; ea_slug:      bandy-tema-adx-crossover-trend
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7b4133f4148c8e59322db56bf0fb05ed249def10b63cbeee9933fd9f2a7a9885
+; build_hash:   be55304e7ee134db9f78284444230ef22cf2d42b038be2d04b937cecedcad753
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9910
 qm_magic_slot_offset=7

@@ -1,27 +1,26 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        2002
 ; ea_slug:      nnfx-qqe-trend
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260826-001
 ; symbol:       NZDCAD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   23
 ; risk_mode:    FIXED
-; portfolio_weight: 1.0
-; build_hash:   ac2b381f5328dcd83863b0e7477dfccdda940c55d0ce55814093e45035367e6a
+; portfolio_weight: 1
+; build_hash:   49d180cd7f52d6cbb6b300a4bd1249c921353b516a2ba8f69a8f9c76aa5e5336
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=2002
 qm_magic_slot_offset=23
 RISK_FIXED=1000
 RISK_PERCENT=0
-PORTFOLIO_WEIGHT=1.0
-qm_news_mode=0
-qm_friday_close_enabled=true
-qm_friday_close_hour_broker=21
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_2002_nnfx-qqe-trend.md
 strategy_hma_period=20
 strategy_rsi_period=14
 strategy_qqe_ema=5
@@ -29,4 +28,4 @@ strategy_cmf_period=20
 strategy_atr_period=14
 strategy_atr_sl_mult=1.5
 strategy_rr=1.5
-strategy_spread_cap_points=0
+strategy_spread_cap_points=25

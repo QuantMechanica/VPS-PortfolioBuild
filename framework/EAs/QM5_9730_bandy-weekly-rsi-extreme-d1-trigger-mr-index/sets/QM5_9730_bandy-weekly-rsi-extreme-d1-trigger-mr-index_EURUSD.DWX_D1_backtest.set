@@ -3,16 +3,16 @@
 ; ea_id:        9730
 ; ea_slug:      bandy-weekly-rsi-extreme-d1-trigger-mr-index
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   406a8740c2469fac9e6fd384fee1380532f13a65bb15b65350f11ecd30bdde92
+; build_hash:   570720c8875f8077dba0f7998cf061dfbcafee19f36afd7eaf0bb47074bf4c16
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9730
 qm_magic_slot_offset=6

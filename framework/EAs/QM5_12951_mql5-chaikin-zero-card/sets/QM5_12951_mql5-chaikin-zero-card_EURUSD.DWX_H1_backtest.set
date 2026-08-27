@@ -3,16 +3,16 @@
 ; ea_id:        12951
 ; ea_slug:      mql5-chaikin-zero-card
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3dcdb9c8ff75df00d9b70d617e69d8358f8cf5cdb843a0409b79f00b54b8a326
+; build_hash:   9aa11969a65ad7996d1a6c817716009409da301af16a64968cc9d636aeefa83a
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=12951
 qm_magic_slot_offset=0

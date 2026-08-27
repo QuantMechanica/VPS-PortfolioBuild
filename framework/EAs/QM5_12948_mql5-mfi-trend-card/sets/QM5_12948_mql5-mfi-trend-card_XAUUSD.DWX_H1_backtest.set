@@ -3,21 +3,24 @@
 ; ea_id:        12948
 ; ea_slug:      mql5-mfi-trend-card
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bed127f9d9d35a577d315c8f1ba977b109a44a109b4f01cf3fe342c6d9be347c
-; author:       Gemini
-; date:         2026-08-22
+; build_hash:   c35cd2834c12c525823a0fe1eb0607882183f515287c87c3a5d66fbdd8b47c68
+; author:       Development
+; date:         2026-08-25
 ;==========================================================
+qm_ea_id=12948
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12948_mql5-mfi-trend-card.md
 strategy_mfi_period=24
 strategy_ema_period=100
 strategy_mfi_long_trigger=50.0

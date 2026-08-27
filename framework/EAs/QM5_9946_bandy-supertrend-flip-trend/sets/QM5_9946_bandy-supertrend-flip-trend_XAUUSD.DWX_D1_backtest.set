@@ -3,16 +3,16 @@
 ; ea_id:        9946
 ; ea_slug:      bandy-supertrend-flip-trend
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   256aa8839caddc08fa3ea3822ee33ea8b8cc75a9cd0b1c2c3da7f5b5e9f5d754
+; build_hash:   e23e4fe8c456d87cbc132426d0b0ad03129c1b07dd30391abdaa4cad7a47df7a
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9946
 qm_magic_slot_offset=5
@@ -21,4 +21,11 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9946_bandy-supertrend-flip-trend.md
-; card_defaults_status=none_found
+strategy_supertrend_period=10
+strategy_supertrend_mult=3.0
+strategy_regime_sma_period=200
+strategy_atr_period=14
+strategy_stop_atr_mult=3.0
+strategy_max_hold_bars=60
+strategy_warmup_bars=200
+strategy_max_spread_points=0

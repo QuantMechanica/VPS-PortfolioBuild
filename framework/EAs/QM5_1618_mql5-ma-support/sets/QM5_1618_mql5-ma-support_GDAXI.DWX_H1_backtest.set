@@ -3,16 +3,16 @@
 ; ea_id:        1618
 ; ea_slug:      mql5-ma-support
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   f5087f97b36581640c825c81499659bbaff1ed0c109a8d33a033608389682889
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=1618
 qm_magic_slot_offset=0

@@ -3,16 +3,16 @@
 ; ea_id:        9113
 ; ea_slug:      aa-ab-velocity
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       USDCAD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   11
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5da82bbaef92c76f1c416ada7d62253cd671053ec0c62a65ac20f97ed3cc45e7
+; build_hash:   a0a37b755689f33270d6ca1eb5bd235d37cdf041f1f132832f380a5b942cc8a1
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9113
 qm_magic_slot_offset=11
@@ -21,4 +21,9 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9113_aa-ab-velocity.md
-; card_defaults_status=none_found
+strategy_alpha=0.29896
+strategy_beta=0.05295
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_min_warmup_bars=120
+strategy_enable_shorts=false

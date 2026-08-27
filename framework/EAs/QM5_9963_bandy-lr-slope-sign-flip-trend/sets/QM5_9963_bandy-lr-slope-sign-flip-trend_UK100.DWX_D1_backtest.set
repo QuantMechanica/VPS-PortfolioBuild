@@ -3,16 +3,16 @@
 ; ea_id:        9963
 ; ea_slug:      bandy-lr-slope-sign-flip-trend
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       UK100.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a46eafe373cb8db0502d65257fa76d1f400ff35159403043403336ab5fea6207
+; build_hash:   cb2c5130dbafeb915a0f24163c30813d641847b3b8a3930ea54f99294e696a04
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9963
 qm_magic_slot_offset=3

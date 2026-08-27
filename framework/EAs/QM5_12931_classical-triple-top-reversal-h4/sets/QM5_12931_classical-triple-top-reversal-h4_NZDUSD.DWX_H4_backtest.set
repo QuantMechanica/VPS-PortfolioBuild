@@ -3,16 +3,16 @@
 ; ea_id:        12931
 ; ea_slug:      classical-triple-top-reversal-h4
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   12
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   87ba704739812b0bce63b419d59fba1aa3b843a4f80cc3a23dbf65461091cfd4
+; build_hash:   bb35c28fbb70d86c5dfd78dab6f40cd42f0c73204f62a5c642532234bcc0c39f
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=12931
 qm_magic_slot_offset=12
@@ -20,6 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12931_classical-triple-top-reversal-h4.md
 strategy_tf=16388
 strategy_atr_period=14
 strategy_fractal_wing_bars=1

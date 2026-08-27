@@ -3,16 +3,16 @@
 ; ea_id:        9932
 ; ea_slug:      bandy-roc-zscore-normalised-mr-index
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   20553e4da0339eb9a8d5a949a230b67c5980cd7957bcdf607f6700613e970a34
+; build_hash:   75bd3539bd24771f81982e0abba78377f9cc956499421b859d7c90713770f2f7
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9932
 qm_magic_slot_offset=1

@@ -3,16 +3,16 @@
 ; ea_id:        12931
 ; ea_slug:      classical-triple-top-reversal-h4
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   76046eb370bd6a0587e8660a0ab9b1d253065aaf69770cee6d554414750005cf
+; build_hash:   d86870d7df81b7686877c32187d9aeb42637d0af97a8fcd70c5bf0d6e2921046
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=12931
 qm_magic_slot_offset=0
@@ -20,6 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12931_classical-triple-top-reversal-h4.md
 strategy_tf=16388
 strategy_atr_period=14
 strategy_fractal_wing_bars=1

@@ -3,21 +3,24 @@
 ; ea_id:        12947
 ; ea_slug:      mql5-ha-ema-trend-card
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4779068bf65d1d4272182ad7a21b77197ba7f0729ee3439033b1618be0c6b841
-; author:       Gemini
-; date:         2026-08-22
+; build_hash:   76818030ecebf9522730dedac0285a016e9009b388c27e3aae9d6a211ff5cba6
+; author:       Development
+; date:         2026-08-25
 ;==========================================================
+qm_ea_id=12947
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12947_mql5-ha-ema-trend-card.md
 strategy_pre_smooth_period=6
 strategy_post_smooth_period=2
 strategy_ha_seed_bars=120

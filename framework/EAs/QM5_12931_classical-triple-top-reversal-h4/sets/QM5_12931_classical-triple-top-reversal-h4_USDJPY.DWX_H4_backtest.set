@@ -3,16 +3,16 @@
 ; ea_id:        12931
 ; ea_slug:      classical-triple-top-reversal-h4
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   dc0364e016d52a2d866ed0fe8273a89bfc2a5172e22e9339f9e9a17d93661387
+; build_hash:   bc1abac7483e1870d30b21dabb1e6d1a6a1ce9364fce4a893637469cc1dce803
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=12931
 qm_magic_slot_offset=8
@@ -20,6 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12931_classical-triple-top-reversal-h4.md
 strategy_tf=16388
 strategy_atr_period=14
 strategy_fractal_wing_bars=1

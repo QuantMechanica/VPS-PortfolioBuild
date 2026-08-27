@@ -3,16 +3,16 @@
 ; ea_id:        9963
 ; ea_slug:      bandy-lr-slope-sign-flip-trend
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bd56066f4137fb807d27864eb516bafd3cb7db4e03d61a768837f313937f71cc
+; build_hash:   b82a3b174b20cde77ab587a08d4271464aa6ac0f69920be3dc281833af974f9d
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9963
 qm_magic_slot_offset=7

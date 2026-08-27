@@ -3,16 +3,16 @@
 ; ea_id:        20090
 ; ea_slug:      pricebob-ttr-brooks-stoporder-breakout-audusd
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260825-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   42dc503365fd758d60e4e158b4fbb44c13a7bb7b6479d3ec70cc5bf80e35d7f4
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=20090
 qm_magic_slot_offset=0

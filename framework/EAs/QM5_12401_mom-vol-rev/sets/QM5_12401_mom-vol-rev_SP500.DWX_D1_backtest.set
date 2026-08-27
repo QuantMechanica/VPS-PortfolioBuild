@@ -3,16 +3,16 @@
 ; ea_id:        12401
 ; ea_slug:      mom-vol-rev
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260825-001
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   53dba9dea8a5703dc2f16c4056659dd0d8466846522fa07c246b42795af6a76b
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=12401
 qm_magic_slot_offset=0

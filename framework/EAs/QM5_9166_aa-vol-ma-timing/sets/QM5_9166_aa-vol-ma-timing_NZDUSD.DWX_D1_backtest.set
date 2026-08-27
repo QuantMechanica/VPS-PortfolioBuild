@@ -3,16 +3,16 @@
 ; ea_id:        9166
 ; ea_slug:      aa-vol-ma-timing
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   12
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c6a75cc67a694fca8174188c671c8a63e67fda4c1fc425bd50fa358f7c1a91f2
+; build_hash:   9ed817625aae126304a8c33890513a30a1b05f438ad939ca8731b166bd584276
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9166
 qm_magic_slot_offset=12
@@ -21,4 +21,9 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9166_aa-vol-ma-timing.md
-; card_defaults_status=none_found
+strategy_sma_months=10
+strategy_vol_lookback_days=252
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_min_warmup_bars=252
+strategy_enable_shorts=false

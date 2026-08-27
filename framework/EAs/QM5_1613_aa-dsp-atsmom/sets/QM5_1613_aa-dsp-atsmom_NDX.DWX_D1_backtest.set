@@ -3,16 +3,16 @@
 ; ea_id:        1613
 ; ea_slug:      aa-dsp-atsmom
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c01635af8a2a937afdf2465c53d1f42542f9bc65b6f9811b4480f665302a8594
+; build_hash:   659fd23e9d2c8848641de4d6c8644af1cc2d48b45d638dab63a0c6f3a10004ee
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=1613
 qm_magic_slot_offset=1

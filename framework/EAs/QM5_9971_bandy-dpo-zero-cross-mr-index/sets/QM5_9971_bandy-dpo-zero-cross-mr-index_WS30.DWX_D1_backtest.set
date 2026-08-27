@@ -3,16 +3,16 @@
 ; ea_id:        9971
 ; ea_slug:      bandy-dpo-zero-cross-mr-index
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b1489ae54dd00882051ff82d0b594272d7b8aefeb6cb552d3796ee2cbee0e7ed
+; build_hash:   f3c6e629049197fc0a7f0ec6aa09f92fa1b141682c1df1300567b44a16f78d7f
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9971
 qm_magic_slot_offset=4
@@ -21,15 +21,11 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9971_bandy-dpo-zero-cross-mr-index.md
-; card_defaults_status=none_found
-; strategy params backfilled from the EA's own input defaults;
-; behaviour-identical (an omitted param already used this value),
-; required by Q08 sub-gate 8.5 which perturbs named parameters.
-strategy_anti_cluster_bars=5
+strategy_dpo_period=20
+strategy_dpo_lag=11
+strategy_regime_sma_period=200
 strategy_atr_period=14
 strategy_atr_stop_mult=2.5
-strategy_dpo_lag=11
-strategy_dpo_period=20
-strategy_min_dpo_atr_mult=0.1
-strategy_regime_sma_period=200
 strategy_time_stop_days=15
+strategy_anti_cluster_bars=5
+strategy_min_dpo_atr_mult=0.1

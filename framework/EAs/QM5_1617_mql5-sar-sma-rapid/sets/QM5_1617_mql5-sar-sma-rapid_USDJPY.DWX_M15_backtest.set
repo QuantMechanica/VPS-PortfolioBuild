@@ -3,16 +3,16 @@
 ; ea_id:        1617
 ; ea_slug:      mql5-sar-sma-rapid
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   51718571c23c6885a76a9e323c77082a4c0f2f301ad77881339e284e28fa4a36
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=1617
 qm_magic_slot_offset=8

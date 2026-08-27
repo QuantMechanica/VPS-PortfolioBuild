@@ -3,16 +3,16 @@
 ; ea_id:        1539
 ; ea_slug:      aa-canary-13612w
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       UK100.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7cbbb46b1b94a17bef08e0e0173239c66f68d7c5c6877755d7f5314836ec6d71
+; build_hash:   73d2e78852a2981c5b7f4a8d75b5bf6754b930c5e48e7924f63f50f5e8fe88c9
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=1539
 qm_magic_slot_offset=3

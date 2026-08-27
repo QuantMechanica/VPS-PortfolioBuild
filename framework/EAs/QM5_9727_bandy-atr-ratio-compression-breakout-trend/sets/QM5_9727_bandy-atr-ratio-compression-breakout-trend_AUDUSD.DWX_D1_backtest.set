@@ -3,16 +3,16 @@
 ; ea_id:        9727
 ; ea_slug:      bandy-atr-ratio-compression-breakout-trend
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   10
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8e4966de063f7a2bc44e990f6b6ce1450db017b541557e131ea1f25da289ce6e
+; build_hash:   fa869018c901bc8e9ed7bfe9a44dc7f0db34484bd2dac4c2c3e739ef3b533ea0
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9727
 qm_magic_slot_offset=10
@@ -21,4 +21,10 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9727_bandy-atr-ratio-compression-breakout-trend.md
-; card_defaults_status=none_found
+strategy_atr_short_period=5
+strategy_atr_long_period=20
+strategy_compression_threshold=0.65
+strategy_donchian_period=20
+strategy_trail_atr_period=14
+strategy_trail_atr_mult=2.5
+strategy_max_hold_days=45

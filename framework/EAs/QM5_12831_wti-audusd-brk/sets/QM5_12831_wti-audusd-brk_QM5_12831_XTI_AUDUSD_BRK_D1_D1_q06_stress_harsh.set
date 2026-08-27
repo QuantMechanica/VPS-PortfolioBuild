@@ -3,7 +3,7 @@
 ; ea_id:        12831
 ; ea_slug:      wti-audusd-brk
 ; ea_version:   v5.0
-; set_version:  s20260708-stress-harsh
+; set_version:  s20260826-stress-harsh
 ; symbol:       QM5_12831_XTI_AUDUSD_BRK_D1
 ; host_symbol:  XTIUSD.DWX
 ; timeframe:    D1
@@ -13,7 +13,7 @@
 ; portfolio_weight: 1
 ; build_hash:   083922f5d26bcf1c1644e001ba9e089fbd0db045883317a87c5a203c8dd2ea71
 ; author:       Development
-; date:         2026-07-08
+; date:         2026-08-26
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

@@ -3,16 +3,16 @@
 ; ea_id:        12949
 ; ea_slug:      mql5-rvi-ma-card
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   50adaac232c8a1af30774a38e8922b744c53c37bf5f0fcbc86389d2ac81d37b9
+; build_hash:   4fba0ad7b41d12c1d99c4eaa951ae70e0bdbddf6f3272ddbcaed63a742c38670
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=12949
 qm_magic_slot_offset=1

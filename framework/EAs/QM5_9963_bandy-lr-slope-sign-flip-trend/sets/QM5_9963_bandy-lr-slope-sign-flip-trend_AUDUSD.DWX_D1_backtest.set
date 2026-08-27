@@ -3,16 +3,16 @@
 ; ea_id:        9963
 ; ea_slug:      bandy-lr-slope-sign-flip-trend
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   10
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8f513d7e77bafa0642cb2a77e60b0a2072530e614110ab6ed21b32514ed50f07
+; build_hash:   0171b1ca29f09daba889410c52e483b15f9a6c09387a2b0ca548d1e4aaec3181
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9963
 qm_magic_slot_offset=10

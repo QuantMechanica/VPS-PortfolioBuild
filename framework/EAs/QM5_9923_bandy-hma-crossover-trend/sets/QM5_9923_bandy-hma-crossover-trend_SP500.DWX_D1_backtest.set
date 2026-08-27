@@ -3,16 +3,16 @@
 ; ea_id:        9923
 ; ea_slug:      bandy-hma-crossover-trend
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   457d114229c77f1c68bda4f9a65ed7b1a604fe0bfc68934a646d7dba2387ce0f
+; build_hash:   9733d31de125323b811277c192176eb5d3b8a79f401d74702e4f1eb90cd17692
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9923
 qm_magic_slot_offset=2
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9923_bandy-hma-crossover-trend.md
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_9923_bandy-hma-crossover-trend.md
 strategy_hma_fast=9
 strategy_hma_slow=21
 strategy_regime_sma_period=200

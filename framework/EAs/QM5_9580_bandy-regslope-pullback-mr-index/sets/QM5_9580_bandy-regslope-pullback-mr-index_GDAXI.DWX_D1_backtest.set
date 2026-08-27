@@ -3,22 +3,24 @@
 ; ea_id:        9580
 ; ea_slug:      bandy-regslope-pullback-mr-index
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5ec3aa4d8249340e85702365a53d291c120730419971dfe711df6a31e797ccbf
+; build_hash:   40ecf608c113a8908c6835145f4cf3ef75be67c78aa4f2683931e46b530bd294
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9580
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9580_bandy-regslope-pullback-mr-index.md
 strategy_reg_period=50
 strategy_r2_min=0.30
 strategy_rsi_period=2

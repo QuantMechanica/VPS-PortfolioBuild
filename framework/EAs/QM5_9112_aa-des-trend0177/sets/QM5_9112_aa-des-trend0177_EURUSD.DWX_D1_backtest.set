@@ -3,16 +3,16 @@
 ; ea_id:        9112
 ; ea_slug:      aa-des-trend0177
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f09c89c29df1dc57bca8abb15a02acaa9f932decc6d546ef64b5837cd76fb154
+; build_hash:   c2f461fbddaa459bf17e3c12212093e9cae9a85a17b31371fc96e72f3d7347e6
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9112
 qm_magic_slot_offset=6
@@ -21,4 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9112_aa-des-trend0177.md
-; card_defaults_status=none_found
+strategy_alpha=0.1772
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_min_warmup_bars=120
+strategy_enable_shorts=false

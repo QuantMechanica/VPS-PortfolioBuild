@@ -3,16 +3,16 @@
 ; ea_id:        1567
 ; ea_slug:      demark-td-reverse-sequential-h4
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   10
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c9a6d5ba79d1d0eeafa790c94f8351d45a815eb3be499ae0384f5364cfb38e3c
+; build_hash:   7f39fd10fbdbb318c72279a879c3007104085922caac98f952c39dfb0dac102a
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=1567
 qm_magic_slot_offset=10

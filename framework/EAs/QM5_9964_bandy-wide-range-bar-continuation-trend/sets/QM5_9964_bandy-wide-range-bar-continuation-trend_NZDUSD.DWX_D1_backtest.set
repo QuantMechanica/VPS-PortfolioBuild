@@ -3,16 +3,16 @@
 ; ea_id:        9964
 ; ea_slug:      bandy-wide-range-bar-continuation-trend
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260826-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   12
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b40964cf386ce749fcc88b232e07f162dc82043c8138173a39b39d0b49c71085
+; build_hash:   36f17dd45ee6e5ae9b19c1b1cd2fc848ba7973d1d50a7e54dc8cf18da7684c4d
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9964
 qm_magic_slot_offset=12

@@ -3,16 +3,16 @@
 ; ea_id:        9111
 ; ea_slug:      aa-dlwma-trend10
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       USDCAD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   11
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   49b21e7604f41908ff6120fc565d7b1f00865ae05ddbff63586f5a7e56ddcd46
+; build_hash:   2abbf9d08f2742fe249b1a453120496721ed5607c934cbacdd65fb22ca3c0e31
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9111
 qm_magic_slot_offset=11

@@ -3,16 +3,16 @@
 ; ea_id:        20089
 ; ea_slug:      hopwood-ts4-standalone-h4-r1-recovery
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260825-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   7feec3d4de5f524cc131fceb91869a7f3d341c59704d2ed0438d54bf97c6e4e5
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=20089
 qm_magic_slot_offset=1

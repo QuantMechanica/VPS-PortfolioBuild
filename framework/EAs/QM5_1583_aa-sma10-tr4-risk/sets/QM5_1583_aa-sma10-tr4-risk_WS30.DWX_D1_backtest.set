@@ -3,16 +3,16 @@
 ; ea_id:        1583
 ; ea_slug:      aa-sma10-tr4-risk
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   468058327b76f02e4adfe17bd7858a534cd43bf765d4f5a08918c09efbc388ef
+; build_hash:   9737bfa8b147bcce02855a5a414244d6e4945d76a0a75305aac714b8bb4d5b34
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=1583
 qm_magic_slot_offset=4

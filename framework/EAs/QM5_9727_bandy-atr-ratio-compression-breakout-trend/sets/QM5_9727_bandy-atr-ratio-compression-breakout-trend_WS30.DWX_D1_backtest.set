@@ -3,16 +3,16 @@
 ; ea_id:        9727
 ; ea_slug:      bandy-atr-ratio-compression-breakout-trend
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   421f7f98e10ea40259875a4bb27234f0390d32e9f0e87bf780b2008aa266b4e1
+; build_hash:   08843dbcb26b733d4fe3ac18671b79e42fa687f1e0c436c8f15d0602620561a2
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9727
 qm_magic_slot_offset=4
@@ -21,4 +21,10 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9727_bandy-atr-ratio-compression-breakout-trend.md
-; card_defaults_status=none_found
+strategy_atr_short_period=5
+strategy_atr_long_period=20
+strategy_compression_threshold=0.65
+strategy_donchian_period=20
+strategy_trail_atr_period=14
+strategy_trail_atr_mult=2.5
+strategy_max_hold_days=45

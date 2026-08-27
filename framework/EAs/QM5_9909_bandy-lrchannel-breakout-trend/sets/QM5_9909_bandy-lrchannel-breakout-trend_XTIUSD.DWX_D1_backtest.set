@@ -3,16 +3,16 @@
 ; ea_id:        9909
 ; ea_slug:      bandy-lrchannel-breakout-trend
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260826-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   13
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7cb029b63527e44028e44d309712954d69bcf7ef259c9cdab30ec1eba02bb708
+; build_hash:   dd9f29b9efb523ea9e9a6e197c9e579d5d9af4bad93b7b87af27ac835d0ff800
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9909
 qm_magic_slot_offset=13

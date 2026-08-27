@@ -3,16 +3,16 @@
 ; ea_id:        41110
 ; ea_slug:      xauxag-moutside-res-rv
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260825-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   acf9d63b2385fb96c1535d09b076ffe15af826ec27392b1326dcd412b8c77073
+; build_hash:   2bbb571d1e7a6da03ca76a3819c1bf0586d9fe685cfe8a30168be213a4d9fb09
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=41110
 qm_magic_slot_offset=0

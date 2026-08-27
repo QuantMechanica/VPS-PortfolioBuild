@@ -3,16 +3,16 @@
 ; ea_id:        20089
 ; ea_slug:      hopwood-ts4-standalone-h4-r1-recovery
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260825-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   f76cabc14c4f4c0f71faae6676d57f4628f568f9baa5ac92257c81d78aa48bfc
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=20089
 qm_magic_slot_offset=6

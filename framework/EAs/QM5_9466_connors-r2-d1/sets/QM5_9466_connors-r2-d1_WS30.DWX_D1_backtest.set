@@ -3,16 +3,16 @@
 ; ea_id:        9466
 ; ea_slug:      connors-r2-d1
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ced213c3889080ace807f4bb97c0984e2acc5b15e44464d625080e00f88670bc
+; build_hash:   4d1c99dfcfd94c9ded00c2a0e3acf25be11ebb3ddaed5b0670087287f7d64cf8
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9466
 qm_magic_slot_offset=4

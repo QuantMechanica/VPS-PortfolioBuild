@@ -3,16 +3,16 @@
 ; ea_id:        9949
 ; ea_slug:      bandy-bbwidth-contraction-breakout-trend
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d58306b06e57f04097b3df29e865df2f5e6c284a8710541d86e48acf84d2a674
+; build_hash:   4d0f98aadd6c914768e937b0d23ebec52a24df75c2d25bf01af15bf634e2af05
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9949
 qm_magic_slot_offset=4
@@ -21,4 +21,15 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9949_bandy-bbwidth-contraction-breakout-trend.md
-; card_defaults_status=none_found
+strategy_bb_period=20
+strategy_bb_deviation=2.0
+strategy_compression_lookback=120
+strategy_compression_pct=10.0
+strategy_rearm_pct=60.0
+strategy_regime_sma_period=200
+strategy_atr_period=14
+strategy_stop_atr_mult=2.5
+strategy_extreme_range_atr_mult=4.0
+strategy_max_hold_bars=30
+strategy_warmup_bars=250
+strategy_max_spread_points=0

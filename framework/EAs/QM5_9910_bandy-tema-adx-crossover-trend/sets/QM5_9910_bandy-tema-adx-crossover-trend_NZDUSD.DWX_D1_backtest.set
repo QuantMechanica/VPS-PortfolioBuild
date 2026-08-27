@@ -3,16 +3,16 @@
 ; ea_id:        9910
 ; ea_slug:      bandy-tema-adx-crossover-trend
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   12
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5e057b746f2515eafc08e48102c23caa6dd753ebf70e0f3cdb4e7c44ce83e450
+; build_hash:   b4c37cf3a885b5edbca71f4e85d84a6332ce2b31076333ee2995309a2e244637
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9910
 qm_magic_slot_offset=12

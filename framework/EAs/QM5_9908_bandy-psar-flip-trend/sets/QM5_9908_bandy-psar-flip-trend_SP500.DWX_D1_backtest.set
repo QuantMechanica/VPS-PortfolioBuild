@@ -2,17 +2,17 @@
 ; QM5 Set File
 ; ea_id:        9908
 ; ea_slug:      bandy-psar-flip-trend
-; ea_version:   v5.1
-; set_version:  s20260824-002
+; ea_version:   v5.0
+; set_version:  s20260826-001
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   587525bbf2413cde5bbdb44fbdefc86f95fe6710c964b1268254d3c3092c121f
+; build_hash:   26d9f6eac9eac173f3afd127aaa97fe87bb1fb9cc7e3df0e0528783a88ff5a49
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9908
 qm_magic_slot_offset=2

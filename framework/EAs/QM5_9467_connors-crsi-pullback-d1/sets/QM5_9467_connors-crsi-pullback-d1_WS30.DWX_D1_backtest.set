@@ -3,16 +3,16 @@
 ; ea_id:        9467
 ; ea_slug:      connors-crsi-pullback-d1
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f24d133f2ede90faf2b17b2a7e7ed67d744dba026c611ed1bb44f72c8a904986
+; build_hash:   d44e76288c2bc6c257c56126c3cd9e97a20c4467ff9023fcca4eadc71e57f926
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9467
 qm_magic_slot_offset=4

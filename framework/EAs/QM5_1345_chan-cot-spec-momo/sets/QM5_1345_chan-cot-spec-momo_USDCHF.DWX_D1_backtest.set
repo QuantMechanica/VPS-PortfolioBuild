@@ -3,16 +3,16 @@
 ; ea_id:        1345
 ; ea_slug:      chan-cot-spec-momo
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260825-001
 ; symbol:       USDCHF.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   9
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   06a253b7f2cfd6af61100c3cd12383b3d10d1ae78c0aaef1ba1a35b8edb708c8
+; build_hash:   ec5a86f410fdcb8e4be18db2d0e0c241d3a2969c9b8981197880a5b17b33b35a
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=1345
 qm_magic_slot_offset=9

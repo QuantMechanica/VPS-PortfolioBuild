@@ -3,16 +3,16 @@
 ; ea_id:        1618
 ; ea_slug:      mql5-ma-support
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   9f96c4f02e347cc29036b62ac7364d3c7c23c2bec0fd4012f9a33a7f245cbc61
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=1618
 qm_magic_slot_offset=7

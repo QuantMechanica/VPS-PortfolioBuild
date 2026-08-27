@@ -3,16 +3,16 @@
 ; ea_id:        41111
 ; ea_slug:      wti-mdaybreadth-mom
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260825-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ab35bc23ef18b3d456e188cd3f714bbe8abe610945a8e2b780b5b8291166f4ec
+; build_hash:   365d18a70a92e4e242e218699cc99b7f0a3eb336655616f52d6b082751409d3c
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=41111
 qm_magic_slot_offset=0

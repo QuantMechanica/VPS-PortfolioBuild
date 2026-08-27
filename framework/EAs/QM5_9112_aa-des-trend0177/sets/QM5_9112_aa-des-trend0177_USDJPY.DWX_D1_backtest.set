@@ -3,16 +3,16 @@
 ; ea_id:        9112
 ; ea_slug:      aa-des-trend0177
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8e2035b9fe6e55775528f81961a447c5ce90272828f05679ebb9924e452fcebd
+; build_hash:   19aaae1b0b22b3f808b7ed63a7c1afd413b9670b0fcb17515f2d0c9d87a3ef75
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9112
 qm_magic_slot_offset=8
@@ -21,4 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9112_aa-des-trend0177.md
-; card_defaults_status=none_found
+strategy_alpha=0.1772
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_min_warmup_bars=120
+strategy_enable_shorts=false

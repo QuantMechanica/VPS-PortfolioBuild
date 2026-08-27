@@ -3,16 +3,16 @@
 ; ea_id:        12401
 ; ea_slug:      mom-vol-rev
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260825-001
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   1f9dfaa3f48dec2e3bca2b8b2fcf1dca6ecd0280246173ec912befd2ba4738ed
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=12401
 qm_magic_slot_offset=1

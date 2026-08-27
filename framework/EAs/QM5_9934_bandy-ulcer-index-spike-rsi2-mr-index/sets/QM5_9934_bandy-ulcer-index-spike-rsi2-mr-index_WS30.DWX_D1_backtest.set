@@ -3,16 +3,16 @@
 ; ea_id:        9934
 ; ea_slug:      bandy-ulcer-index-spike-rsi2-mr-index
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260826-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3140039dec2587b294b8d6b4f22b4bbe1e6d4528edc36a7da30f3e7b26fcfd62
+; build_hash:   306eb745f4dbdcfbeee8f2a3eec026d55d6ed4b23c59d001f3550311fb80d38c
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-26
 ;==========================================================
 qm_ea_id=9934
 qm_magic_slot_offset=4
@@ -20,19 +20,15 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9934_bandy-ulcer-index-spike-rsi2-mr-index.md
-; card_defaults_status=none_found
-; strategy params backfilled from the EA's own input defaults;
-; behaviour-identical (an omitted param already used this value),
-; required by Q08 sub-gate 8.5 which perturbs named parameters.
-strategy_atr_period=14
-strategy_atr_stop_mult=3.0
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9934_bandy-ulcer-index-spike-rsi2-mr-index.md
+strategy_ui_period=14
 strategy_percentile_lookback=252
 strategy_percentile_threshold=80.0
-strategy_regime_sma_period=200
+strategy_rsi_period=2
 strategy_rsi_entry_threshold=10.0
 strategy_rsi_exit_threshold=70.0
-strategy_rsi_period=2
+strategy_regime_sma_period=200
+strategy_atr_period=14
+strategy_atr_stop_mult=3.0
 strategy_time_stop_bars=10
-strategy_ui_period=14
 strategy_warmup_bars=270

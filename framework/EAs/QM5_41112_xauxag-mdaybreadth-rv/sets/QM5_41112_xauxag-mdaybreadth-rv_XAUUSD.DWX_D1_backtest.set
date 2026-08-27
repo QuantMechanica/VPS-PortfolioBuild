@@ -3,16 +3,16 @@
 ; ea_id:        41112
 ; ea_slug:      xauxag-mdaybreadth-rv
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260825-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   981ed927f5d886033d07cfcebd0473bed419706761e9dbafa08fa03bc861769a
+; build_hash:   d5ede00760e1fe1a052bd3115ac527f7f21c1a52b88a119b90aa6319261e1b24
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-08-25
 ;==========================================================
 qm_ea_id=41112
 qm_magic_slot_offset=0
