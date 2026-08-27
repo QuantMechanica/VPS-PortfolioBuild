@@ -1,0 +1,23 @@
+window_label,window_start_utc,window_end_utc,configured_slots,metric,dimension,value,unit,sample_count,note
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,execution_verdicts_per_day,all,180.0,verdicts/day,180,terminal execution rows; disposition_only excluded
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,measured_cells_per_hour,non_gate_measurement_pool,0.792,cells/hour,19,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,cpu_high_pause_events_per_hour,fleet,247.208,events/hour,5933,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,cpu_high_pause_events_per_slot_hour,fleet,24.721,events/slot-hour,5933,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,slot_utilization,fleet,60.799,percent,,145.918 occupied terminal-hours / 240.0 configured slot-hours
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,median_wall_minutes,Q02,12.65,minutes,3,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,median_wall_minutes,Q03,83.7,minutes,10,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,median_wall_minutes,Q07,94.117,minutes,7,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,median_wall_minutes,Q09,13.917,minutes,113,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,median_wall_minutes,Q10,213.95,minutes,15,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,median_wall_minutes,Q11,27.35,minutes,1,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,median_measurement_cell_wall_minutes,non_gate_measurement_pool,7.833,minutes,19,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,occupied_terminal_hours,T1,20.187,hours,,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,occupied_terminal_hours,T2,12.623,hours,,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,occupied_terminal_hours,T3,5.531,hours,,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,occupied_terminal_hours,T4,15.185,hours,,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,occupied_terminal_hours,T5,14.546,hours,,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,occupied_terminal_hours,T6,13.683,hours,,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,occupied_terminal_hours,T7,18.537,hours,,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,occupied_terminal_hours,T8,14.165,hours,,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,occupied_terminal_hours,T9,17.403,hours,,
+BASELINE_10,2026-08-26T10:36:09.688950+00:00,2026-08-27T10:36:09.688950+00:00,10,occupied_terminal_hours,T10,14.058,hours,,
