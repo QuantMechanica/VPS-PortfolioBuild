@@ -1,0 +1,143 @@
+{
+  "artifact_type": "diversity_backlog_collision_safe_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T10:35:18Z",
+  "generated_at_europe_berlin": "2026-08-27T12:35:18+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "1e4685a91f82e2f0d6458bee1f8ba46a5d3d9842",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_WITH_CONCURRENT_DIVERSITY_BUILD_VISIBLE",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "stop when either the five-sample average or maximum reaches the governed tester admission ceiling",
+    "source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-27T10:33:56Z",
+    "samples_percent": [
+      99.9,
+      99.71,
+      100.0,
+      93.51,
+      100.0
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_percent": 98.62,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "triggers": [
+      "average_percent",
+      "maximum_percent"
+    ],
+    "metatester64_process_count": 5
+  },
+  "farm_db_coordination": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access_mode": "read_only",
+    "active_work_item_count": 8,
+    "active_phase_counts": {
+      "OPT_CENSUS": 1,
+      "Q07": 1,
+      "Q09": 2,
+      "Q10_NEWS": 4
+    },
+    "process_snapshot_command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "process_snapshot_scanned_at_utc": "2026-08-27T10:33:56+00:00",
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T8"
+    ],
+    "running_factory_terminal_count": 5,
+    "active_terminal_reservation_count": 5,
+    "orphaned_factory_terminal_process_count": 0,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ],
+    "candidate_or_ea_claim_created": false,
+    "database_mutated": false
+  },
+  "diversity_candidate_collision_guard": {
+    "ea_id": "QM5_41181",
+    "slug": "xauxag-mkendall-rv",
+    "asset_class": "market-neutral precious-metals pair",
+    "approved_card_commit": "1e4685a91f82e2f0d6458bee1f8ba46a5d3d9842",
+    "farm_rows_at_observation": {
+      "tasks": 0,
+      "agent_tasks": 0,
+      "work_items": 0
+    },
+    "concurrent_filesystem_signals": [
+      "framework/registry/magic_numbers.csv modified",
+      "framework/include/QM/QM_MagicResolver.mqh modified",
+      "artifacts/qm5_41181_magic_allocation_dry_run_20260827.json untracked",
+      "artifacts/qm5_41181_magic_allocation_20260827.json untracked",
+      "framework/EAs/QM5_41181_xauxag-mkendall-rv/QM5_41181_xauxag-mkendall-rv.mq5 untracked",
+      "framework/EAs/QM5_41181_xauxag-mkendall-rv/basket_manifest.json untracked",
+      "framework/EAs/QM5_41181_xauxag-mkendall-rv/sets/ contains three backtest setfiles"
+    ],
+    "ex5_present": false,
+    "disposition": "left unclaimed and untouched because another actor is visibly building the newly approved candidate; no duplicate farm row or enqueue was created"
+  },
+  "non_duplicate_delta": {
+    "preceding_capacity_receipt": "artifacts/fx_cointegration_frontier_hard_cpu_stop_20260827T100349Z_board_advisor.json",
+    "preceding_observed_at_utc": "2026-08-27T10:01:54.8087159Z",
+    "preceding_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T8"
+    ],
+    "preceding_active_phase_counts": {
+      "OPT_CENSUS": 1,
+      "Q03": 1,
+      "Q07": 1,
+      "Q09": 1,
+      "Q10_NEWS": 4
+    },
+    "current_active_phase_counts": {
+      "OPT_CENSUS": 1,
+      "Q07": 1,
+      "Q09": 2,
+      "Q10_NEWS": 4
+    },
+    "new_information": "QM5_41181 was approved after the preceding receipt and now has a complete-looking source/setfile scaffold plus governed magic-allocation artifacts in progress, but no farm coordination row yet; collision avoidance therefore supersedes a duplicate claim while the CPU ceiling independently blocks tester admission."
+  },
+  "actions_this_run": {
+    "approved_backlog_reconciled": true,
+    "build_task_claimed": false,
+    "infra_repair_claimed": false,
+    "new_edge_mechanized": false,
+    "registry_or_magic_mutated_by_this_run": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_present": true,
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_worktree_changes_staged_or_committed": false
+  }
+}
