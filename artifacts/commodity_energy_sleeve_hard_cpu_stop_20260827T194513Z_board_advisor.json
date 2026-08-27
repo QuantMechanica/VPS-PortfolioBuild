@@ -1,0 +1,123 @@
+{
+  "artifact_type": "commodity_energy_sleeve_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-27T19:45:13.7332525Z",
+  "generated_at_europe_berlin": "2026-08-27T21:45:13.7332525+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "f5ce08a345107854218b88335dcf6af8fac45fbc",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "candidate_held": {
+    "name": "WTI same-calendar-month seasonal Mann-Kendall trend",
+    "proposed_slug": "wti-seasonal-kendall-tr",
+    "carrier": "XTIUSD.DWX outright",
+    "decision_clock": "first eligible D1 bar of each broker month",
+    "provisional_signal": "use exactly ten completed historical endpoints from the same calendar month in the preceding ten years; compute the chronological no-tie Mann-Kendall pair score over the 45 ordered pairs; BUY at S >= 23, SELL at S <= -23, otherwise consume the month flat",
+    "provisional_lifecycle": "one consumed attempt per broker month; exit at the next broker month with a forty-day stale repair",
+    "provisional_risk": "one backtest-only RISK_FIXED=1000 budget with RISK_PERCENT=0; final stop and sizing contract intentionally not approved before complete source intake",
+    "durable_predecessor_receipt": "artifacts/commodity_energy_sleeve_hard_cpu_stop_20260827T190228Z_board_advisor.json",
+    "status": "HELD_BEFORE_SOURCE_APPROVAL_OR_CANONICAL_DEDUP",
+    "qualification_boundary": "This is a concrete research candidate, not an approved source, Strategy Card, allocated identity, build, queue row, or portfolio claim. R1-R4, complete source reading, canonical dedup, G0, and deterministic allocation remain mandatory after capacity clears."
+  },
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Stop before source approval, allocation, build, compile, queue mutation, or tester work when either the five-sample average or maximum reaches the governed tester-admission ceiling.",
+    "hard_ceiling_source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-27T19:45:13.7332525Z",
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_percent": 100.0,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "triggers": [
+      "average_percent",
+      "maximum_percent"
+    ]
+  },
+  "farm_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-27T19:44:49+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T7"
+    ],
+    "running_factory_terminal_count": 4,
+    "active_terminal_reservation_count": 4,
+    "terminal_worker_daemon_count": 10,
+    "orphaned_factory_terminal_process_count": 0,
+    "t_live_observed_only": true,
+    "t_live_controlled": false
+  },
+  "active_work_items": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "query_result": "SQLITE_DATABASE_LOCKED",
+    "disposition": "Observed only; no retry, lock manipulation, claim, or database mutation was attempted after the CPU stop bound.",
+    "database_mutated": false
+  },
+  "non_duplicate_delta": {
+    "preceding_commodity_receipt": "artifacts/commodity_energy_sleeve_hard_cpu_stop_20260827T190228Z_board_advisor.json",
+    "preceding_fx_receipt": "artifacts/fx_cointegration_fleet_cpu_stop_20260827T193102Z_board_advisor.json",
+    "preceding_commodity_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T7",
+      "T9"
+    ],
+    "preceding_fx_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T7"
+    ],
+    "preceding_commodity_average_cpu_percent": 99.38497473094833,
+    "preceding_fx_average_cpu_percent": 100.0,
+    "current_average_cpu_percent": 100.0,
+    "current_maximum_cpu_percent": 100.0,
+    "changed_state": "The factory roster contracted to four active terminals: T9 left relative to the last commodity receipt, while T8 and T10 left relative to the latest branch receipt. Despite the smaller roster, all five fresh CPU samples remained saturated at 100 percent."
+  },
+  "actions_this_run": {
+    "candidate_reconciled_read_only": true,
+    "new_source_approved": false,
+    "source_extraction_started": false,
+    "canonical_dedup_started": false,
+    "card_or_g0_created": false,
+    "registry_or_magic_mutated": false,
+    "ea_or_setfile_created": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "resume_contract": "After a fresh five-sample window is strictly below 97% on both average and maximum, start with reputable-source approval and complete reading for the held candidate, run canonical dedup, then proceed through G0, deterministic ID and magic allocation, a strict non-live V5 RISK_FIXED build, Q01, and exactly one paced XTIUSD.DWX Q02 enqueue."
+}
