@@ -1,0 +1,227 @@
+{
+  "artifact_type": "fx_cointegration_fleet_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-28T00:31:10.2636009Z",
+  "generated_at_europe_berlin": "2026-08-28T02:31:10.2636009+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "0cbba4e0d600c72028f217e50596459860e106a2",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "scan": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "published_threshold_survivors": 2,
+    "new_unbuilt_pair_eligible": false,
+    "reason": "The OWNER-requested scan selected only QM5_12532 and QM5_12533 at its published reputable-source threshold. Both are already built, and the sign-aware coverage audit accounts for all 66 relationships. A new scan-derived sleeve would duplicate governed coverage or weaken the source criterion.",
+    "anchor_state": {
+      "QM5_12532": {
+        "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+        "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+        "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    }
+  },
+  "existing_forex_fallback": {
+    "ea_id": "QM5_20255",
+    "ea_directory": "framework/EAs/QM5_20255_usdchf-eurjpy",
+    "logical_symbol": "QM5_20255_USDCHF_EURJPY_COINTEGRATION_D1",
+    "basket_manifest": "framework/EAs/QM5_20255_usdchf-eurjpy/basket_manifest.json",
+    "traded_symbols": [
+      "USDCHF.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "USDJPY.DWX"
+    ],
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "canonical_setfiles": [
+      {
+        "path": "framework/EAs/QM5_20255_usdchf-eurjpy/sets/QM5_20255_usdchf-eurjpy_QM5_20255_USDCHF_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+        "sha256": "b4fb11d85874f8a382c3785c16783761ec791add216a89cb3dee0a8308bf3eec"
+      },
+      {
+        "path": "framework/EAs/QM5_20255_usdchf-eurjpy/sets/QM5_20255_usdchf-eurjpy_USDCHF.DWX_D1_backtest.set",
+        "sha256": "6e071ef9c6f9a7678631fa4c51b6458a7e8b48769899c4a82fb971166a1851f4"
+      }
+    ],
+    "work_items": {
+      "Q02": {
+        "id": "72ca17ca-f9df-40d5-806d-1d815ee4ea08",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "Q03": {
+        "id": "d50b8721-4691-4ab3-b0b4-14012ecb6f6a",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "Q04": {
+        "id": "265024c2-9c2c-457e-8696-b22b75b7d722",
+        "status": "pending",
+        "claimed_by": null,
+        "attempt_count": 0
+      }
+    },
+    "worktree_contract_clean": true,
+    "disposition": "The exact Q04 successor already exists, remains unclaimed and pending, and has not consumed an attempt. No duplicate enqueue, priority mutation, claim, restamp, dispatch, or direct phase run was performed."
+  },
+  "capacity_policy": {
+    "paced_launch_gate": 1,
+    "paced_launch_gate_source": "D:/QM/strategy_farm/state/launch_gate_max.txt",
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Stop when either the five-sample average or maximum reaches the governed tester-admission ceiling.",
+    "hard_ceiling_source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "command": "Five Win32_PerfFormattedData_PerfOS_Processor _Total samples at one-second pacing",
+    "samples": [
+      {
+        "observed_at_utc": "2026-08-28T00:31:05.1422627Z",
+        "percent": 99.0
+      },
+      {
+        "observed_at_utc": "2026-08-28T00:31:06.4421275Z",
+        "percent": 97.0
+      },
+      {
+        "observed_at_utc": "2026-08-28T00:31:07.7195639Z",
+        "percent": 98.0
+      },
+      {
+        "observed_at_utc": "2026-08-28T00:31:08.9954637Z",
+        "percent": 99.0
+      },
+      {
+        "observed_at_utc": "2026-08-28T00:31:10.2636009Z",
+        "percent": 94.0
+      }
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_percent": 97.4,
+    "maximum_percent": 99.0,
+    "ceiling_binding": true,
+    "triggers": [
+      "average_percent",
+      "maximum_percent"
+    ]
+  },
+  "farm_coordination": {
+    "fallback_query": "python tools/strategy_farm/farmctl.py work-items --ea QM5_20255",
+    "active_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "active_work_item_count": 6,
+    "active_phase_counts": {
+      "OPT_CENSUS": 1,
+      "Q03": 1,
+      "Q09": 1,
+      "Q10_NEWS": 3
+    },
+    "process_snapshot_command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "process_snapshot_scanned_at_utc": "2026-08-28T00:30:46+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T6"
+    ],
+    "running_factory_terminal_count": 2,
+    "active_terminal_reservation_count": 3,
+    "reserved_factory_terminals": [
+      "T1",
+      "T6",
+      "T8"
+    ],
+    "terminal_worker_daemon_count": 10,
+    "orphaned_factory_terminal_process_count": 0,
+    "active_rows_without_live_terminal_process": [
+      {
+        "work_item_id": "0e586e05-cad8-49bd-96f2-501c5ffd28cd",
+        "ea_id": "QM5_12354",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T10"
+      },
+      {
+        "work_item_id": "8ac4dd37-4d59-4721-bf19-da6a8e34e384",
+        "ea_id": "QM5_13036",
+        "phase": "Q09",
+        "claimed_by": "T5"
+      },
+      {
+        "work_item_id": "42e4b18c-4f1b-4c3f-8129-1265fa42dd7b",
+        "ea_id": "QM5_20266",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T4"
+      },
+      {
+        "work_item_id": "87d42aa0-1672-5e2c-b793-95322b0dc0fd",
+        "ea_id": "QM5_41097",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T8",
+        "reservation_visible": true
+      }
+    ],
+    "point_in_time_mismatch_disposition": "Observed only; the snapshot does not establish stale work or authorize reclaim, restamp, priority mutation, or duplicate enqueue.",
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "database_mutated": false
+  },
+  "non_duplicate_delta": {
+    "preceding_fx_receipt": "artifacts/fx_cointegration_fleet_cpu_stop_20260827T233221Z_board_advisor.json",
+    "preceding_active_work_item_count": 7,
+    "current_active_work_item_count": 6,
+    "phase_mix_change": "OPT_CENSUS decreased from two active rows to one; Q03, Q09, and three Q10_NEWS rows remain in the active set.",
+    "preceding_running_factory_terminals": [
+      "T1",
+      "T3",
+      "T6",
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T6"
+    ],
+    "preceding_average_cpu_percent": 96.999468,
+    "current_average_cpu_percent": 97.4,
+    "preceding_maximum_cpu_percent": 99.810496,
+    "current_maximum_cpu_percent": 99.0,
+    "changed_state": "The active set contracted by one OPT_CENSUS row and the visible tester roster contracted from four terminals to two, while T8 gained a launch reservation. Average CPU moved above the hard ceiling and the sampled maximum remained above it, so capacity is still binding."
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "fallback_contract_reverified": true,
+    "new_card_or_ea_created": false,
+    "existing_forex_card_dispatched": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  }
+}
