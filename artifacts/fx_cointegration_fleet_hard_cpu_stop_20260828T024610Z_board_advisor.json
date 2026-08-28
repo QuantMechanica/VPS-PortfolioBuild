@@ -1,0 +1,192 @@
+{
+  "artifact_type": "fx_cointegration_fleet_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-28T02:46:47.0918678Z",
+  "generated_at_europe_berlin": "2026-08-28T04:46:47.1012669+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "b1da330316b452651d893e908cafc93c09cbb2cd",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_FOREX_MUTATION",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_fleet_cpu_stop_20260828T003105Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "published_threshold_survivors": 2,
+    "new_unbuilt_pair_eligible": false,
+    "reason": "The reputable-source scan selected only QM5_12532 and QM5_12533, both already built. The committed sign-aware coverage audit accounts for all 66 relationships, so selecting a further pair would weaken the published threshold or duplicate governed coverage.",
+    "anchor_state_from_durable_evidence": {
+      "QM5_12532": {
+        "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "reverification_disposition": "No new backtest or strategy-state query was started after the capacity ceiling bound; the anchor state is carried from committed evidence."
+  },
+  "existing_forex_fallback": {
+    "ea_id": "QM5_20255",
+    "logical_symbol": "QM5_20255_USDCHF_EURJPY_COINTEGRATION_D1",
+    "known_successor_from_durable_evidence": "Q04 pending, unclaimed, attempt_count 0",
+    "action": "left unchanged because the explicit CPU stop bound before claim or dispatch"
+  },
+  "capacity_policy": {
+    "paced_launch_gate": 1,
+    "paced_launch_gate_source": "D:/QM/strategy_farm/state/launch_gate_max.txt",
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Stop when either the five-sample average or maximum reaches the governed tester-admission ceiling.",
+    "hard_ceiling_source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\\\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-28T02:46:10.9273064Z",
+    "samples_cpu_percent": [
+      100.0,
+      99.708376,
+      100.0,
+      100.0,
+      99.804711
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 99.902617,
+    "maximum_cpu_percent": 100.0,
+    "average_binding": true,
+    "maximum_binding": true,
+    "ceiling_binding": true,
+    "triggers": [
+      "average_cpu_percent",
+      "maximum_cpu_percent"
+    ]
+  },
+  "farm_coordination": {
+    "active_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "active_snapshot_result": "UNAVAILABLE_DATABASE_LOCKED",
+    "active_snapshot_error": "sqlite3.OperationalError: database is locked",
+    "active_snapshot_attempts": 1,
+    "process_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mt5-slots",
+    "process_snapshot_scanned_at_utc": "2026-08-28T02:46:25+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T10"
+    ],
+    "running_factory_terminal_count": 5,
+    "active_terminal_reservation_count": 5,
+    "terminal_worker_daemon_count": 10,
+    "metatester_process_count": 5,
+    "orphaned_factory_terminal_process_count": 0,
+    "duplicate_terminal_workers": {},
+    "visible_running_phase_counts": {
+      "Q03": 1,
+      "Q09": 1,
+      "Q10_NEWS": 3
+    },
+    "visible_running_work_items": [
+      {
+        "terminal": "T1",
+        "id": "c11f42d3-e6f3-4aff-bbb4-37dbdb5a2ac6",
+        "ea_id": "QM5_10114",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T2",
+        "id": "fac4d930-13b6-469e-8fe2-51ce06907f02",
+        "ea_id": "QM5_1537",
+        "symbol": "XAGUSD.DWX",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T4",
+        "id": "6a30d4f4-2d20-433b-90ac-a518047e5ad1",
+        "ea_id": "QM5_10513",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q09"
+      },
+      {
+        "terminal": "T6",
+        "id": "9437109a-799b-4f29-a501-89e6b4a3809c",
+        "ea_id": "QM5_20294",
+        "symbol": "QM5_20294_XAU_XAG_LOWMAX_D1",
+        "phase": "Q03"
+      },
+      {
+        "terminal": "T10",
+        "id": "0e586e05-cad8-49bd-96f2-501c5ffd28cd",
+        "ea_id": "QM5_12354",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS"
+      }
+    ],
+    "database_lock_disposition": "The failed coordination view was recorded only; it does not authorize stale-row inference, reclaim, restamp, priority change, or duplicate enqueue.",
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only": true,
+    "successful_database_mutation": false
+  },
+  "non_duplicate_delta": {
+    "preceding_branch_receipt": "artifacts/diversity_funnel_hard_cpu_stop_20260828T023126Z_board_advisor.json",
+    "preceding_snapshot_utc": "2026-08-28T02:31:57.5927759Z",
+    "preceding_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T10"
+    ],
+    "changed_state": "T8 and its QM5_12849 Q10_NEWS process are no longer visible, reducing the factory roster from six terminals to five. T1 and T2 have rotated to later run processes for their existing work items. The fresh capacity sample is materially stronger: both the 99.902617 percent average and 100 percent maximum bind, versus only the 99.804908 percent maximum in the preceding receipt."
+  },
+  "actions_this_run": {
+    "card_extraction_guard_consulted": true,
+    "build_skill_preflight_read": true,
+    "q02_pipeline_boundary_consulted": true,
+    "frontier_evidence_consulted": true,
+    "fresh_capacity_preflight_completed": true,
+    "farm_coordination_state_consulted_read_only": true,
+    "new_card_or_ea_created": false,
+    "existing_forex_card_claimed_or_dispatched": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "worktree_hygiene": {
+    "preexisting_tracked_change_count": 33,
+    "preexisting_untracked_change_count": 11,
+    "concurrent_unrelated_changes_present": true,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  },
+  "resume_contract": "On a later paced wake, proceed only after a fresh five-sample window has both average and maximum strictly below 97 percent. Then revalidate the exact existing FX successor and dispatch one non-duplicate non-live work item; mechanize a new pair only if a new OWNER-approved reputable-source record changes the governed frontier."
+}
