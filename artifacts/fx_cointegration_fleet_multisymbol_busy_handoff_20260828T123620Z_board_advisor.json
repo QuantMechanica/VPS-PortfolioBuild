@@ -1,0 +1,194 @@
+{
+  "artifact_type": "fx_cointegration_fleet_multisymbol_admission_handoff",
+  "schema": "qm.mission-admission-handoff/v1",
+  "generated_at_utc": "2026-08-28T12:36:20.7539152Z",
+  "generated_at_europe_berlin": "2026-08-28T14:36:20.7539152+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "4fe80e6e0ead47818f2706f3500792cba1407737",
+  "mission_outcome": "STOPPED_AT_ACTIVE_MULTISYMBOL_ADMISSION_GATE_WITH_CPU_BELOW_CEILING",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "published_threshold_survivors": 2,
+    "approved_cointegration_card_count": 25,
+    "approved_cointegration_cards_with_matching_ea_directory": 25,
+    "approved_cointegration_cards_unbuilt": 0,
+    "new_unbuilt_pair_eligible": false,
+    "reason": "Both published survivors are built, all 66 frozen relationships are covered, and every approved cointegration Card has a matching EA directory.",
+    "anchors": {
+      "QM5_12532": {
+        "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD"
+    }
+  },
+  "existing_forex_fallback": {
+    "ea_id": "QM5_20255",
+    "ea_directory": "framework/EAs/QM5_20255_usdchf-eurjpy",
+    "logical_symbol": "QM5_20255_USDCHF_EURJPY_COINTEGRATION_D1",
+    "basket_manifest_sha256": "090ef3be8e740003541bc911abb691599b28c92aa09efc557086fcc5f4ff5f17",
+    "mq5_sha256": "67ccfbd144462d561db675c706b7dfbea795733f0fc6df5e404e3eae2785cd02",
+    "ex5_sha256": "b5dfb19d02b20c8754b9b5a400fe81750a315313580ecee9931a619416846d53",
+    "logical_setfile_sha256": "b4fb11d85874f8a382c3785c16783761ec791add216a89cb3dee0a8308bf3eec",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "canonical_rows": [
+      {
+        "id": "72ca17ca-f9df-40d5-806d-1d815ee4ea08",
+        "phase": "Q02",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "id": "d50b8721-4691-4ab3-b0b4-14012ecb6f6a",
+        "phase": "Q03",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "id": "265024c2-9c2c-457e-8696-b22b75b7d722",
+        "phase": "Q04",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "attempt_count": 0
+      }
+    ]
+  },
+  "newly_pending_forex_sleeve_observed": {
+    "ea_id": "QM5_41140",
+    "logical_symbol": "QM5_41140_NZDJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1",
+    "compile_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "q02_work_item_id": "381b2608-c3f1-4493-88f8-9ed119e61d69",
+    "q02_status": "pending",
+    "q02_attempt_count": 0,
+    "priority_track": true,
+    "duplicate_enqueue_performed": false
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-28T12:30:54.9778200Z",
+    "samples_cpu_percent": [
+      93.07365188647486,
+      85.00014212854704,
+      72.85149212873033,
+      67.01207182431148,
+      80.07834515387233
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 79.60314062438722,
+    "maximum_cpu_percent": 93.07365188647486,
+    "hard_ceiling_percent": 97.0,
+    "average_binding": false,
+    "maximum_binding": false,
+    "ceiling_binding": false
+  },
+  "binding_multisymbol_admission": {
+    "source_rule": "tools/strategy_farm/terminal_worker.py refuses a new multisymbol claim while any multisymbol work item is active",
+    "active_work_item_id": "5beefa38-44e0-4c60-89d0-0f487fb47ba7",
+    "ea_id": "QM5_41083",
+    "logical_symbol": "QM5_41083_XAU_XAG_WLEGDIV_RV_D1",
+    "phase": "Q02",
+    "status": "active",
+    "claimed_by": "T1",
+    "claimed_at_utc": "2026-08-28T08:12:47+00:00",
+    "started_at_utc": "2026-08-28T08:21:51+00:00",
+    "timeout_minutes": 450,
+    "basket_symbols": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ],
+    "worker_pid": 32304,
+    "worker_visible": true,
+    "child_pid_from_payload": 32464,
+    "child_process_visible_at_observation": false,
+    "governed_timeout_elapsed": false,
+    "supported_reconcile_actions": [],
+    "stale_claim_inferred": false,
+    "repair_or_reclaim_performed": false
+  },
+  "farm_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mt5-slots",
+    "scanned_at_utc": "2026-08-28T12:33:36+00:00",
+    "running_factory_terminals": [
+      "T10"
+    ],
+    "running_factory_terminal_count": 1,
+    "terminal_worker_daemon_count": 10,
+    "duplicate_terminal_workers": {},
+    "orphaned_factory_terminal_process_count": 0,
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only": true
+  },
+  "non_duplicate_delta": {
+    "preceding_fx_receipt": "artifacts/fx_cointegration_fleet_hard_cpu_stop_20260828T060051Z_board_advisor.json",
+    "preceding_average_cpu_percent": 98.20683872154608,
+    "current_average_cpu_percent": 79.60314062438722,
+    "preceding_maximum_cpu_percent": 100.0,
+    "current_maximum_cpu_percent": 93.07365188647486,
+    "preceding_running_factory_terminals": [
+      "T4",
+      "T6",
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T10"
+    ],
+    "changed_state": "CPU is no longer binding and the visible tester roster contracted, but a still-valid active multisymbol row now binds basket admission; QM5_41140 also has a new distinct pending Q02 row."
+  },
+  "actions_this_run": {
+    "card_extraction_guard_consulted": true,
+    "build_skill_preflight_read": true,
+    "frontier_and_anchor_reconciled": true,
+    "approved_card_build_coverage_audited": true,
+    "fresh_capacity_preflight_completed": true,
+    "farm_coordination_state_consulted_read_only": true,
+    "supported_reconciliation_run_read_only": true,
+    "new_card_or_ea_created": false,
+    "existing_forex_card_claimed_or_dispatched": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "handoff_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "worktree_hygiene": {
+    "preexisting_tracked_change_count": 35,
+    "preexisting_untracked_change_count": 12,
+    "concurrent_unrelated_changes_present": true,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  },
+  "resume_contract": "After QM5_41083 reaches a canonical terminal state, take a fresh five-sample CPU window. If both CPU measures remain below 97 percent and no multisymbol row is active, allow the deterministic fleet to advance exactly one already-pending FX basket row without a duplicate enqueue."
+}
