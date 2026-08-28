@@ -1,0 +1,180 @@
+{
+  "artifact_type": "fx_fleet_sqlite_deferred_finish_recovery",
+  "schema": "qm.mission-runtime-recovery/v1",
+  "generated_at_utc": "2026-08-28T14:10:45.8355382Z",
+  "generated_at_europe_berlin": "2026-08-28T16:10:45.8362127+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "a3c14fb98e0c502ff86ec6fe0863676a751ca979",
+  "mission_outcome": "RECOVERED_COMPLETED_MULTISYMBOL_GATE_AND_HARDENED_FLEET_FX_Q02_ALREADY_ENQUEUED_PENDING",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "approved_card_count": 706,
+    "approved_cards_without_matching_ea_directory": 0,
+    "new_unbuilt_pair_eligible": false,
+    "anchors": {
+      "QM5_12532": {
+        "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_CARD"
+    }
+  },
+  "selected_existing_forex_fallback": {
+    "ea_id": "QM5_41140",
+    "slug": "nzdjpy-carry-unwind-crisis-momentum",
+    "logical_symbol": "QM5_41140_NZDJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1",
+    "card_path": "framework/EAs/QM5_41140_nzdjpy-carry-unwind-crisis-momentum/docs/strategy_card.md",
+    "g0_status": "APPROVED",
+    "source_id": "BRUNNERMEIER-NAGEL-PEDERSEN-CARRY-CRASH-2008",
+    "source_citation": "Brunnermeier, Nagel and Pedersen (2009), Carry Trades and Currency Crashes, NBER Macroeconomics Annual 23, DOI 10.1086/593088",
+    "basket_manifest_path": "framework/EAs/QM5_41140_nzdjpy-carry-unwind-crisis-momentum/basket_manifest.json",
+    "basket_manifest_sha256": "e80347214e1d93be5155b475090d0e65bb86416676e296ee619cd6aa3599a1a4",
+    "signal_symbols": [
+      "AUDJPY.DWX",
+      "NZDJPY.DWX",
+      "CADJPY.DWX",
+      "EURJPY.DWX"
+    ],
+    "traded_symbols": [
+      "NZDJPY.DWX"
+    ],
+    "mq5_sha256": "9bdfd70380c9040d84ce3ac323a39ee94acc5d7a9201816fe5eee6231e387479",
+    "ex5_sha256": "b7b1796aedc601b3576e5195344ff1e47de4f4a9efb9e2b6cafc4c965c5f3bf1",
+    "logical_setfile_sha256": "b7602730f71c586ed9862be39ea90531ecf6da3fd12377d8fbb8863cc8e13d06",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "compile_work_item": {
+      "id": "c791b8f6-7474-495a-abab-2469b610f332",
+      "status": "done",
+      "verdict": "COMPILE_OK"
+    },
+    "q02_work_item": {
+      "id": "381b2608-c3f1-4493-88f8-9ed119e61d69",
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 0,
+      "duplicate_enqueue_performed": false
+    }
+  },
+  "blocking_work_item_recovery": {
+    "work_item_id": "5beefa38-44e0-4c60-89d0-0f487fb47ba7",
+    "ea_id": "QM5_41083",
+    "logical_symbol": "QM5_41083_XAU_XAG_WLEGDIV_RV_D1",
+    "before": {
+      "status": "active",
+      "claimed_by": "T1",
+      "worker_pid": 32304,
+      "terminal_process_visible": false,
+      "worker_log_result": "sqlite_locked_finish_deferred"
+    },
+    "existing_summary": {
+      "path": "D:/QM/reports/work_items/5beefa38-44e0-4c60-89d0-0f487fb47ba7/QM5_41083/20260828_085420/summary.json",
+      "sha256": "8ff3d84702c9a5bf81385b72c0936ec1cb983fe329f20de6b8189188279e6e9d",
+      "timestamp_utc": "2026-08-28T09:08:26.5730333Z",
+      "result": "PASS",
+      "reason_classes": [
+        "OK"
+      ],
+      "total_trades": 62,
+      "oninit_failure_detected": false
+    },
+    "recovery_method": "terminal_worker._finish_work_item with the existing identity-bound summary and exit_code 0",
+    "recovery_result": {
+      "finished": true,
+      "status": "done",
+      "verdict": "PASS",
+      "artifact_identity_missing": []
+    },
+    "after": {
+      "status": "done",
+      "claimed_by": null,
+      "verdict": "PASS",
+      "evidence_path": "D:/QM/reports/work_items/5beefa38-44e0-4c60-89d0-0f487fb47ba7/QM5_41083/20260828_085420/summary.json"
+    },
+    "new_tester_run_started": false,
+    "existing_summary_reused": true,
+    "multisymbol_gate_cleared": true
+  },
+  "durable_code_fix": {
+    "source_path": "tools/strategy_farm/terminal_worker.py",
+    "source_sha256": "dc88e072a1424d0f8802e802e60dc6034cdebdae7a6ffb8d5701b1eb16d155b0",
+    "test_path": "tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py",
+    "test_sha256": "f9e03a49c4a63ad9f17f019ff47b0c36e131202f3f2963812be319124b00f0d9",
+    "behavior": "Before claiming, a terminal worker now detects a claim-fresh completed summary for its own active row after the child process exits, retries the normal finish classifier, and only then selects the next pending row. Missing, stale, still-running-child, and SQLite-busy cases remain fail-closed.",
+    "regression_test": "TerminalWorkerAtomicClaimTests.test_claim_recovers_completed_same_terminal_row_before_next_claim",
+    "verification": {
+      "pytest_command": "python -m pytest tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py -q --tb=short",
+      "passed": 71,
+      "failed": 0,
+      "duration_seconds": 44.82,
+      "py_compile": "PASS",
+      "git_diff_check": "PASS"
+    }
+  },
+  "capacity_samples": {
+    "initial": {
+      "samples_cpu_percent": [
+        75.1369634334191,
+        77.7889169158304,
+        87.2119812904294,
+        72.7770694362029,
+        62.5055829187034
+      ],
+      "average_cpu_percent": 75.08410279891703,
+      "maximum_cpu_percent": 87.21198129042938
+    },
+    "final": {
+      "samples_cpu_percent": [
+        90.9809894344259,
+        96.50509860963639,
+        85.4487550407056,
+        75.17265186168864,
+        88.67911744022047
+      ],
+      "average_cpu_percent": 87.35732247733539,
+      "maximum_cpu_percent": 96.50509860963639
+    },
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": false
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "approved_card_build_coverage_audited": true,
+    "existing_completed_summary_classified": true,
+    "runtime_work_item_status_mutated": true,
+    "new_card_or_ea_created": false,
+    "new_q02_row_created": false,
+    "queue_priority_mutated": false,
+    "tester_or_backtest_started": false,
+    "terminal_or_worker_stopped_or_restarted": false,
+    "terminal_worker_recovery_fixed_and_tested": true,
+    "handoff_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "resume_contract": "Leave QM5_41140 Q02 work item 381b2608-c3f1-4493-88f8-9ed119e61d69 as the sole existing row. The resident paced selector may claim it after ordinary CPU, memory, commit, mutation-lock, and multisymbol admission checks pass; do not enqueue a duplicate or bypass the selector."
+}

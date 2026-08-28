@@ -2213,6 +2213,70 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(row[1], "PASS")
             self.assertEqual(Path(row[2]), summary_path)
 
+    def test_claim_recovers_completed_same_terminal_row_before_next_claim(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            claim_time = datetime.now(timezone.utc)
+            run_time = claim_time + timedelta(seconds=1)
+            run_tag = run_time.strftime("%Y%m%d_%H%M%S")
+            report_root = root / "reports" / "finished-1"
+            summary_path = report_root / "QM5_9999" / run_tag / "summary.json"
+            summary_path.parent.mkdir(parents=True)
+            summary_path.write_text(
+                json.dumps({
+                    "timestamp_utc": run_time.isoformat(),
+                    "run_tag": run_tag,
+                    "result": "PASS",
+                    "model4_log_marker_detected": True,
+                    "min_trades_required": 5,
+                    "runs": [{"total_trades": 10, "exit_code": 0}],
+                }),
+                encoding="utf-8",
+            )
+            claim_iso = claim_time.isoformat().replace("+00:00", "Z")
+            self._insert_work_item(
+                root,
+                "finished-1",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T3",
+                payload={
+                    "report_root": str(report_root),
+                    "claimed_at_iso": claim_iso,
+                    "started_at_iso": claim_iso,
+                    "claimed_by_worker_pid": os.getpid(),
+                    "pid": 987654321,
+                    "expected_ex5_sha256": "a" * 64,
+                },
+            )
+            self._insert_work_item(
+                root,
+                "next-1",
+                "GBPUSD.DWX",
+                phase="Q02",
+            )
+
+            with patch.object(farmctl, "_pid_tree_exists", return_value=False):
+                result = terminal_worker.claim_atomic(root, "T3")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "next-1")
+            recovery = result["completed_claim_recovery"]
+            self.assertTrue(recovery["finished"])
+            self.assertEqual(recovery["status"], "done")
+            self.assertEqual(recovery["verdict"], "PASS")
+            self.assertEqual(Path(recovery["summary_path"]), summary_path)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                rows = {
+                    row[0]: row[1:]
+                    for row in conn.execute(
+                        "SELECT id, status, verdict, claimed_by FROM work_items"
+                    ).fetchall()
+                }
+            self.assertEqual(rows["finished-1"], ("done", "PASS", None))
+            self.assertEqual(rows["next-1"], ("active", None, "T3"))
+
     def test_monitor_waits_for_detached_terminal_summary(self) -> None:
         with self._root() as tmp:
             root = (Path(tmp) / "farm").resolve()

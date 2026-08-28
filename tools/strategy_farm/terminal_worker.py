@@ -1708,6 +1708,22 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             "recovery_capped": [],
         }
 
+    # A completed runner can publish a valid summary and then lose the final
+    # SQLite write to sustained fleet contention.  _finish_work_item reports
+    # sqlite_locked_finish_deferred in that case, but the resident worker used
+    # to enter its next claim cycle, see its own still-live worker PID, and
+    # decline forever as terminal_worker_busy.  Reconcile only a claim-fresh
+    # summary for this terminal before taking another claim.  The summary
+    # freshness/evidence binding is the same fail-closed check used by the
+    # ordinary finish path, so stale output cannot release an active row.
+    completed_claim_recovery = _recover_completed_claim_for_terminal(root, terminal)
+    if completed_claim_recovery and not completed_claim_recovery.get("finished"):
+        return {
+            "claimed": False,
+            "reason": "completed_claim_finish_deferred",
+            "completed_claim_recovery": completed_claim_recovery,
+        }
+
     def _claim() -> dict[str, Any]:
         farmctl.init_db(root)
         now = farmctl.utc_now()
@@ -2184,7 +2200,10 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             }
 
         try:
-            return _with_sqlite_retry(_claim)
+            claim_result = _with_sqlite_retry(_claim)
+            if completed_claim_recovery:
+                claim_result["completed_claim_recovery"] = completed_claim_recovery
+            return claim_result
         except sqlite3.OperationalError as exc:
             if not _is_sqlite_locked(exc):
                 raise
@@ -3775,6 +3794,64 @@ def _finish_work_item(
         if not _is_sqlite_locked(exc):
             raise
         return {"finished": False, "reason": "sqlite_locked_finish_deferred"}
+
+
+def _recover_completed_claim_for_terminal(
+    root: Path,
+    terminal: str,
+) -> dict[str, Any] | None:
+    """Finish one claim-fresh completed row stranded by SQLite contention.
+
+    This is deliberately narrower than stale-claim recovery: it never releases
+    or requeues an active row without a summary that passes the normal
+    claim-time/evidence freshness checks.
+    """
+
+    db_path = root / farmctl.DB_REL
+    if not db_path.is_file():
+        return None
+    try:
+        with farmctl.connect(root) as conn:
+            item = conn.execute(
+                "SELECT * FROM work_items "
+                "WHERE status='active' AND claimed_by=? "
+                "ORDER BY updated_at LIMIT 1",
+                (terminal,),
+            ).fetchone()
+    except sqlite3.OperationalError as exc:
+        if _is_sqlite_locked(exc):
+            return {"finished": False, "reason": "sqlite_locked_recovery_probe_deferred"}
+        if "no such table" in str(exc).lower():
+            return None
+        raise
+    if item is None:
+        return None
+
+    payload = _json_loads(item["payload_json"])
+    child_pid = payload.get("pid")
+    if child_pid and farmctl._pid_tree_exists(child_pid):
+        return None
+    summary_data = _find_work_item_summary_data(item, payload)
+    if summary_data is None:
+        return None
+
+    summary_path, summary = summary_data
+    exit_code = payload.get("run_smoke_exit_code")
+    if not isinstance(exit_code, int):
+        run_exit_codes = [
+            run.get("exit_code")
+            for run in summary.get("runs", [])
+            if isinstance(run, dict) and isinstance(run.get("exit_code"), int)
+        ]
+        exit_code = next((code for code in run_exit_codes if code != 0), 0)
+
+    result = _finish_work_item(root, str(item["id"]), exit_code)
+    return {
+        "item_id": str(item["id"]),
+        "summary_path": str(summary_path),
+        "run_smoke_exit_code": exit_code,
+        **result,
+    }
 
 
 def _phase_from_task_kind(kind: str) -> str:
