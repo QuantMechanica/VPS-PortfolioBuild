@@ -1,0 +1,171 @@
+{
+  "artifact_type": "commodity_energy_sleeve_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-28T04:31:05Z",
+  "generated_at_europe_berlin": "2026-08-28T06:31:05+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "2cdf5acc050ee9a19cd89a11262b2832c6e61295",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_EDGE_SELECTION_OR_MUTATION",
+  "capacity_policy": {
+    "paced_launch_gate": 1,
+    "paced_launch_gate_source": "D:/QM/strategy_farm/state/launch_gate_max.txt",
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Stop when either the five-sample average or maximum reaches the governed tester-admission ceiling.",
+    "hard_ceiling_source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\\\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "samples": [
+      {
+        "timestamp_europe_berlin": "2026-08-28T06:31:00.3580000+02:00",
+        "timestamp_utc": "2026-08-28T04:31:00.358Z",
+        "cpu_percent": 62.9921
+      },
+      {
+        "timestamp_europe_berlin": "2026-08-28T06:31:01.3650000+02:00",
+        "timestamp_utc": "2026-08-28T04:31:01.365Z",
+        "cpu_percent": 92.3411
+      },
+      {
+        "timestamp_europe_berlin": "2026-08-28T06:31:02.3670000+02:00",
+        "timestamp_utc": "2026-08-28T04:31:02.367Z",
+        "cpu_percent": 99.61
+      },
+      {
+        "timestamp_europe_berlin": "2026-08-28T06:31:03.3680000+02:00",
+        "timestamp_utc": "2026-08-28T04:31:03.368Z",
+        "cpu_percent": 90.0501
+      },
+      {
+        "timestamp_europe_berlin": "2026-08-28T06:31:04.3680000+02:00",
+        "timestamp_utc": "2026-08-28T04:31:04.368Z",
+        "cpu_percent": 79.4991
+      }
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 84.8985,
+    "maximum_cpu_percent": 99.61,
+    "average_binding": false,
+    "maximum_binding": true,
+    "ceiling_binding": true,
+    "triggers": [
+      "maximum_cpu_percent"
+    ]
+  },
+  "factory_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-28T04:31:05+00:00",
+    "running_factory_terminals": [
+      "T6",
+      "T10"
+    ],
+    "running_factory_terminal_count": 2,
+    "active_terminal_reservation_count": 4,
+    "reserved_factory_terminals": [
+      "T2",
+      "T4",
+      "T6",
+      "T10"
+    ],
+    "terminal_worker_daemon_count": 10,
+    "orphaned_factory_terminal_process_count": 0,
+    "visible_running_phase_counts": {
+      "Q03": 1,
+      "Q10_NEWS": 1
+    },
+    "visible_running_work_items": [
+      "9437109a-799b-4f29-a501-89e6b4a3809c",
+      "0e586e05-cad8-49bd-96f2-501c5ffd28cd"
+    ],
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only": true
+  },
+  "commodity_frontier_reconciliation": {
+    "registry_max_ea_id": "QM5_41190",
+    "latest_distinct_frontier": [
+      {
+        "ea_id": "QM5_41188",
+        "slug": "xtixng-mrepmedian-rv",
+        "mechanic": "monthly XTI/XNG repeated-median relative-value basket"
+      },
+      {
+        "ea_id": "QM5_41189",
+        "slug": "xtixng-mlad-rv",
+        "mechanic": "monthly XTI/XNG least-absolute-deviation relative-value basket"
+      },
+      {
+        "ea_id": "QM5_41190",
+        "slug": "xtixng-mtheilsen-rv",
+        "mechanic": "monthly XTI/XNG Theil-Sen relative-value basket"
+      }
+    ],
+    "latest_compile_successor": {
+      "ea_id": "QM5_41190",
+      "work_item_id": "5b6a9525-e988-4b0f-a7ec-b9f879adbb49",
+      "phase": "COMPILE_EA",
+      "status": "pending",
+      "attempt_count": 0,
+      "verdict": null,
+      "evidence_path": null
+    },
+    "decision": "Do not select a new mechanic, reuse a built mechanic, allocate QM5_41191, retry the held QM5_41190 compile, or create a Q02 successor while the explicit CPU stop is binding."
+  },
+  "non_duplicate_delta": {
+    "preceding_energy_receipt": "artifacts/commodity_energy_sleeve_hard_cpu_stop_20260828T021637Z_board_advisor.json",
+    "preceding_snapshot_utc": "2026-08-28T02:17:06+00:00",
+    "preceding_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "preceding_active_terminal_reservation_count": 6,
+    "preceding_average_cpu_percent": 92.8,
+    "preceding_maximum_cpu_percent": 99.9,
+    "current_running_factory_terminals": [
+      "T6",
+      "T10"
+    ],
+    "current_active_terminal_reservation_count": 4,
+    "changed_state": "The commodity frontier remains QM5_41190, but the supported factory snapshot contracted from six visible testers to two while four terminals remained reserved. Average CPU fell from 92.8 to 84.8985 percent, yet a fresh 99.61-percent peak independently kept the maximum-side ceiling binding."
+  },
+  "actions_this_run": {
+    "fresh_capacity_preflight_completed": true,
+    "current_frontier_consulted_read_only": true,
+    "new_edge_selected": false,
+    "new_source_approved": false,
+    "source_extraction_started": false,
+    "canonical_dedup_started": false,
+    "card_or_g0_created": false,
+    "registry_or_magic_mutated": false,
+    "ea_or_setfile_created": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "worktree_hygiene": {
+    "preexisting_tracked_change_count": 35,
+    "preexisting_untracked_change_count": 11,
+    "concurrent_unrelated_changes_present": true,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  },
+  "resume_contract": "On a later paced wake, proceed only after a fresh five-sample window has both average and maximum strictly below 97 percent. Reconcile the then-current commodity frontier before selecting exactly one new reputable-source mechanic; complete source approval, extraction, canonical dedup, G0, deterministic identity and magic allocation, strict non-live RISK_FIXED build and Q01 before enqueueing exactly one logical Q02 row."
+}
