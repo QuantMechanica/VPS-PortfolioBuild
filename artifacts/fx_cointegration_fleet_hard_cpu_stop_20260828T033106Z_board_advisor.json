@@ -1,0 +1,232 @@
+{
+  "artifact_type": "fx_cointegration_fleet_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-28T03:31:31.6548177Z",
+  "generated_at_europe_berlin": "2026-08-28T05:31:31.6659713+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "4ca5c1eb346762b611bfaf4a0fe5d67b28486448",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_FOREX_MUTATION",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_fleet_cpu_stop_20260828T003105Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "published_threshold_survivors": 2,
+    "new_unbuilt_pair_eligible": false,
+    "reason": "The OWNER-requested v3 scan selected only QM5_12532 and QM5_12533 at its published reputable-source threshold. Both are already built, and the committed sign-aware audit accounts for all 66 relationships; another scan-derived sleeve would weaken the source criterion or duplicate governed coverage.",
+    "anchor_state_from_durable_evidence": {
+      "QM5_12532": {
+        "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "reverification_disposition": "No new strategy-state query or backtest was started after the capacity ceiling bound; anchor state is carried from committed evidence."
+  },
+  "existing_forex_fallback": {
+    "ea_id": "QM5_20255",
+    "logical_symbol": "QM5_20255_USDCHF_EURJPY_COINTEGRATION_D1",
+    "known_successor_from_durable_evidence": "Q04 pending, unclaimed, attempt_count 0",
+    "action": "left unchanged because the explicit CPU stop bound before claim or dispatch"
+  },
+  "capacity_policy": {
+    "paced_launch_gate": 1,
+    "paced_launch_gate_source": "D:/QM/strategy_farm/state/launch_gate_max.txt",
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Stop when either the five-sample average or maximum reaches the governed tester-admission ceiling.",
+    "hard_ceiling_source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\\\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-28T03:31:06.7499677Z",
+    "samples_cpu_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 100.0,
+    "maximum_cpu_percent": 100.0,
+    "average_binding": true,
+    "maximum_binding": true,
+    "ceiling_binding": true,
+    "triggers": [
+      "average_cpu_percent",
+      "maximum_cpu_percent"
+    ]
+  },
+  "farm_coordination": {
+    "active_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "active_snapshot_result": "PASS",
+    "active_work_item_count": 9,
+    "active_phase_counts": {
+      "OPT_CENSUS": 2,
+      "Q03": 1,
+      "Q09": 2,
+      "Q10_NEWS": 4
+    },
+    "process_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mt5-slots",
+    "process_snapshot_scanned_at_utc": "2026-08-28T03:31:01+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T10"
+    ],
+    "running_factory_terminal_count": 5,
+    "active_terminal_reservation_count": 5,
+    "terminal_worker_daemon_count": 10,
+    "metatester_process_count": 5,
+    "orphaned_factory_terminal_process_count": 0,
+    "duplicate_terminal_workers": {},
+    "visible_running_phase_counts": {
+      "Q03": 1,
+      "Q10_NEWS": 4
+    },
+    "visible_running_work_items": [
+      {
+        "terminal": "T1",
+        "id": "c11f42d3-e6f3-4aff-bbb4-37dbdb5a2ac6",
+        "ea_id": "QM5_10114",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T2",
+        "id": "fac4d930-13b6-469e-8fe2-51ce06907f02",
+        "ea_id": "QM5_1537",
+        "symbol": "XAGUSD.DWX",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T4",
+        "id": "15c0377e-f79f-4662-a406-9cdee6496db3",
+        "ea_id": "QM5_13054",
+        "symbol": "XTIUSD.DWX",
+        "phase": "Q10_NEWS"
+      },
+      {
+        "terminal": "T6",
+        "id": "9437109a-799b-4f29-a501-89e6b4a3809c",
+        "ea_id": "QM5_20294",
+        "symbol": "QM5_20294_XAU_XAG_LOWMAX_D1",
+        "phase": "Q03"
+      },
+      {
+        "terminal": "T10",
+        "id": "0e586e05-cad8-49bd-96f2-501c5ffd28cd",
+        "ea_id": "QM5_12354",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS"
+      }
+    ],
+    "active_rows_without_live_terminal_process": [
+      {
+        "terminal": "T3",
+        "id": "b490072f-5bbc-50bf-885d-098f2e214670",
+        "ea_id": "QM5_41161",
+        "symbol": "GBPUSD.DWX",
+        "phase": "OPT_CENSUS"
+      },
+      {
+        "terminal": "T5",
+        "id": "8ac4dd37-4d59-4721-bf19-da6a8e34e384",
+        "ea_id": "QM5_13036",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q09"
+      },
+      {
+        "terminal": "T7",
+        "id": "06d77c8e-666b-5163-a652-c976654c713e",
+        "ea_id": "QM5_41097",
+        "symbol": "USDJPY.DWX",
+        "phase": "OPT_CENSUS"
+      },
+      {
+        "terminal": "T9",
+        "id": "36af8edc-bf8e-405a-b9ec-5fcaafa83740",
+        "ea_id": "QM5_10569",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q09"
+      }
+    ],
+    "point_in_time_mismatch_disposition": "Observed only; the snapshot does not establish stale work or authorize reclaim, restamp, priority mutation, or duplicate enqueue.",
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only": true,
+    "successful_database_mutation": false
+  },
+  "non_duplicate_delta": {
+    "preceding_branch_receipt": "artifacts/fx_cointegration_fleet_hard_cpu_stop_20260828T024610Z_board_advisor.json",
+    "preceding_snapshot_utc": "2026-08-28T02:46:47.0918678Z",
+    "preceding_active_snapshot_result": "UNAVAILABLE_DATABASE_LOCKED",
+    "current_active_snapshot_result": "PASS",
+    "current_active_work_item_count": 9,
+    "preceding_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T10"
+    ],
+    "process_rotation": "T4 rotated from QM5_10513 Q09 to QM5_13054 Q10_NEWS.",
+    "preceding_average_cpu_percent": 99.902617,
+    "current_average_cpu_percent": 100.0,
+    "preceding_maximum_cpu_percent": 100.0,
+    "current_maximum_cpu_percent": 100.0,
+    "changed_state": "The database coordination view recovered and exposed nine active rows. The five-terminal roster persisted, T4 rotated to a different work item and phase, and the fresh load window reached 100 percent for every sample."
+  },
+  "actions_this_run": {
+    "card_extraction_guard_consulted": true,
+    "build_skill_preflight_read": true,
+    "frontier_and_anchor_reconciled": true,
+    "fresh_capacity_preflight_completed": true,
+    "farm_coordination_state_consulted_read_only": true,
+    "new_card_or_ea_created": false,
+    "existing_forex_card_claimed_or_dispatched": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "worktree_hygiene": {
+    "preexisting_tracked_change_count": 35,
+    "preexisting_untracked_change_count": 11,
+    "concurrent_unrelated_changes_present": true,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  },
+  "resume_contract": "On a later paced wake, proceed only after a fresh five-sample window has both average and maximum strictly below 97 percent. Then revalidate the exact existing FX successor and dispatch one non-duplicate non-live work item; mechanize a new pair only if a new OWNER-approved reputable-source record changes the governed frontier."
+}
