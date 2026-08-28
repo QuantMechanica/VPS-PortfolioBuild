@@ -1,0 +1,142 @@
+{
+  "artifact_type": "fx_cointegration_fleet_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-28T01:19:18.0108072Z",
+  "generated_at_europe_berlin": "2026-08-28T03:19:18.0108072+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "20edea4ff4f02ca54e5d8229b4eadba8700f94fb",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_fleet_cpu_stop_20260828T003105Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "published_threshold_survivors": 2,
+    "new_unbuilt_pair_eligible": false,
+    "reason": "The controlling reputable-source scan selected only QM5_12532 and QM5_12533, both already built. The durable sign-aware audit covers all 66 relationships; weakening the threshold or duplicating a covered relationship is not authorized.",
+    "anchor_state_from_durable_evidence": {
+      "QM5_12532": {
+        "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "reverification_disposition": "No new database or backtest query was started after the capacity ceiling bound; the anchor state is carried from the cited committed evidence."
+  },
+  "existing_forex_fallback": {
+    "ea_id": "QM5_20255",
+    "logical_symbol": "QM5_20255_USDCHF_EURJPY_COINTEGRATION_D1",
+    "known_successor_from_durable_evidence": "Q04 pending, unclaimed, attempt_count 0",
+    "action": "left unchanged because the explicit CPU stop bound before dispatch"
+  },
+  "capacity_policy": {
+    "paced_launch_gate": 1,
+    "paced_launch_gate_source": "D:/QM/strategy_farm/state/launch_gate_max.txt",
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "stop when either the five-sample average or maximum reaches the governed tester-admission ceiling",
+    "hard_ceiling_source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\\\Processor(_Total)\\\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-28T01:19:18.0108072Z",
+    "samples_percent": [
+      97.270017,
+      97.860832,
+      97.757533,
+      75.359996,
+      89.167029
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_percent": 91.483081,
+    "maximum_percent": 97.860832,
+    "ceiling_binding": true,
+    "triggers": [
+      "maximum_percent"
+    ]
+  },
+  "farm_coordination": {
+    "active_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "active_snapshot_result": "UNAVAILABLE_DATABASE_LOCKED",
+    "active_snapshot_error": "sqlite3.OperationalError: database is locked",
+    "active_snapshot_attempts": 2,
+    "process_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mt5-slots",
+    "process_snapshot_scanned_at_utc": "2026-08-28T01:19:25+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "running_factory_terminal_count": 5,
+    "active_terminal_reservation_count": 5,
+    "terminal_worker_daemon_count": 10,
+    "orphaned_factory_terminal_process_count": 0,
+    "visible_running_phase_counts": {
+      "OPT_CENSUS": 1,
+      "Q03": 1,
+      "Q10_NEWS": 3
+    },
+    "visible_running_work_items": [
+      "c11f42d3-e6f3-4aff-bbb4-37dbdb5a2ac6",
+      "fac4d930-13b6-469e-8fe2-51ce06907f02",
+      "9437109a-799b-4f29-a501-89e6b4a3809c",
+      "66270dc9-3d58-5eec-9dea-d8732b37f51e",
+      "0e586e05-cad8-49bd-96f2-501c5ffd28cd"
+    ],
+    "database_lock_disposition": "The failed coordination view was recorded only; it does not authorize a retrying mutation, stale-row inference, reclaim, restamp, priority change, or duplicate enqueue.",
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "successful_database_mutation": false
+  },
+  "non_duplicate_delta": {
+    "preceding_fx_receipt": "artifacts/fx_cointegration_fleet_cpu_stop_20260828T003105Z_board_advisor.json",
+    "preceding_fx_running_factory_terminals": [
+      "T1",
+      "T6"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "latest_branch_receipt": "artifacts/diversity_funnel_cpu_ceiling_stop_20260828T010342Z_board_advisor.json",
+    "latest_branch_running_factory_terminal_count": 7,
+    "current_running_factory_terminal_count": 5,
+    "changed_state": "Relative to the preceding FX receipt, three additional testers are visible; relative to the latest branch-wide receipt, T4 and T9 are no longer visible and the tester count fell from seven to five. CPU capacity nevertheless remains binding because the fresh maximum exceeded 97%."
+  },
+  "actions_this_run": {
+    "frontier_evidence_consulted": true,
+    "new_card_or_ea_created": false,
+    "existing_forex_card_dispatched": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  }
+}
