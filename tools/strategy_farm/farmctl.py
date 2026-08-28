@@ -9722,6 +9722,7 @@ def _detect_active_age_timeout(
     *,
     now_dt: dt.datetime | None = None,
     mt5_root: Path | None = None,
+    item_ids: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     now_dt = now_dt or dt.datetime.now(dt.UTC)
     now = now_dt.replace(microsecond=0).isoformat()
@@ -9734,6 +9735,8 @@ def _detect_active_age_timeout(
     ).fetchall()
     flagged: list[dict[str, Any]] = []
     for r in rows:
+        if item_ids is not None and str(r["id"]) not in item_ids:
+            continue
         phase = str(r["phase"] or "")
         timeout_min = _active_timeout_min_for_work_item(phase, r["payload_json"])
         if timeout_min is None:

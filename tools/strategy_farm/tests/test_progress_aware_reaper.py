@@ -124,6 +124,26 @@ class ProgressAwareReaperTests(unittest.TestCase):
             self.assertEqual(flagged, [])
             self.assertEqual(status, "active")
 
+    @mock.patch.object(farmctl, "_stop_pid", return_value=False)
+    @mock.patch.object(farmctl, "_stop_terminal_slot", return_value=False)
+    def test_explicit_item_scope_never_reaps_another_stalled_row(self, *_):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            self._active(root, item_id="target", age_min=45, phase="Q07")
+            self._active(root, item_id="other", age_min=45, phase="Q07")
+            with farmctl.connect(root) as conn:
+                flagged = farmctl._detect_active_age_timeout(
+                    conn,
+                    now_dt=self.now,
+                    mt5_root=root,
+                    item_ids={"target"},
+                )
+                statuses = dict(
+                    conn.execute("SELECT id, status FROM work_items").fetchall()
+                )
+            self.assertEqual([row["id"] for row in flagged], ["target"])
+            self.assertEqual(statuses, {"target": "failed", "other": "active"})
+
     def test_outer_ceiling_is_looser_than_inner(self):
         value = farmctl._active_timeout_min_for_work_item(
             "Q02", json.dumps({"timeout_seconds": 7200})

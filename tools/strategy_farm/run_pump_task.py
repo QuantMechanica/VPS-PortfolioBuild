@@ -14,6 +14,11 @@ import sys
 import time
 from pathlib import Path
 
+try:
+    from process_identity import get_process_identity
+except ModuleNotFoundError:  # package import in tests
+    from tools.strategy_farm.process_identity import get_process_identity
+
 
 REPO_ROOT = Path(r"C:\QM\repo")
 LOG_DIR = Path(r"D:\QM\strategy_farm\logs")
@@ -41,7 +46,20 @@ def _acquire_lock() -> int | None:
         fd = os.open(str(LOCK_PATH), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
     except FileExistsError:
         try:
-            if time.time() - LOCK_PATH.stat().st_mtime > LOCK_STALE_SECONDS:
+            lock_age = time.time() - LOCK_PATH.stat().st_mtime
+            try:
+                owner_pid = int(LOCK_PATH.read_text(encoding="ascii").strip())
+            except (OSError, UnicodeError, ValueError):
+                owner_pid = 0
+            owner_dead = False
+            if owner_pid > 0:
+                try:
+                    identity = get_process_identity(owner_pid)
+                except (OSError, RuntimeError):
+                    # Fail closed when Windows cannot establish liveness.
+                    identity = {"is_running": True}
+                owner_dead = not identity or not bool(identity.get("is_running", True))
+            if owner_dead or lock_age > LOCK_STALE_SECONDS:
                 LOCK_PATH.unlink()
                 fd = os.open(str(LOCK_PATH), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
             else:
