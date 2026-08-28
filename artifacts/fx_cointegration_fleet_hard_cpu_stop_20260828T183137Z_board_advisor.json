@@ -1,0 +1,172 @@
+{
+  "artifact_type": "fx_cointegration_fleet_hard_cpu_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-28T18:31:37.2584627Z",
+  "generated_at_europe_berlin": "2026-08-28T20:31:37.2656894+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "7e4f81e38d122af31bdafab46119a1c555725231",
+  "mission_outcome": "STOPPED_AT_HARD_CPU_CEILING_WITH_ACTIVE_MULTISYMBOL_LANE",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "published_threshold_survivors": 2,
+    "approved_cointegration_cards_unbuilt": 0,
+    "new_unbuilt_pair_eligible": false,
+    "anchors": {
+      "QM5_12532": {
+        "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD"
+    }
+  },
+  "existing_forex_fallback": {
+    "ea_id": "QM5_20255",
+    "ea_directory": "framework/EAs/QM5_20255_usdchf-eurjpy",
+    "logical_symbol": "QM5_20255_USDCHF_EURJPY_COINTEGRATION_D1",
+    "basket_manifest_sha256": "090ef3be8e740003541bc911abb691599b28c92aa09efc557086fcc5f4ff5f17",
+    "logical_setfile_sha256": "b4fb11d85874f8a382c3785c16783761ec791add216a89cb3dee0a8308bf3eec",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "canonical_rows": [
+      {
+        "id": "72ca17ca-f9df-40d5-806d-1d815ee4ea08",
+        "phase": "Q02",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "id": "d50b8721-4691-4ab3-b0b4-14012ecb6f6a",
+        "phase": "Q03",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      {
+        "id": "265024c2-9c2c-457e-8696-b22b75b7d722",
+        "phase": "Q04",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "attempt_count": 0
+      }
+    ],
+    "duplicate_successor_created": false
+  },
+  "capacity_sample": {
+    "command": "five individual Get-Counter \\Processor(_Total)\\% Processor Time samples at one-second intervals",
+    "sample_window_completed_before_utc": "2026-08-28T18:31:37.2584627Z",
+    "samples_cpu_percent": [
+      98.831768,
+      99.317842,
+      96.782523,
+      80.865849,
+      92.383620
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 93.636320,
+    "maximum_cpu_percent": 99.317842,
+    "hard_ceiling_percent": 97.0,
+    "average_binding": false,
+    "maximum_binding": true,
+    "ceiling_binding": true
+  },
+  "binding_multisymbol_admission": {
+    "source_rule": "tools/strategy_farm/terminal_worker.py refuses a new multisymbol claim while any multisymbol work item is active",
+    "active_work_item_id": "4859f62b-3a57-449c-b0c0-3cef50fd7806",
+    "ea_id": "QM5_41086",
+    "logical_symbol": "QM5_41086_XAU_XAG_COMMONSHOCK_RV_D1",
+    "phase": "Q02",
+    "status": "active",
+    "claimed_by": "T1",
+    "updated_at_utc": "2026-08-28T18:20:04+00:00",
+    "terminal_process_visible": true,
+    "terminal_process_created_at_utc_approx": "2026-08-28T18:21:28.0113145+00:00",
+    "repair_or_reclaim_performed": false
+  },
+  "farm_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-28T18:30:42+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T10"
+    ],
+    "running_factory_terminal_count": 2,
+    "terminal_worker_daemon_count": 10,
+    "duplicate_terminal_workers": {},
+    "orphaned_factory_terminal_process_count": 0,
+    "canonical_active_work_item_count_after_bounded_retry": 9,
+    "canonical_active_phase_summary": {
+      "OPT_CENSUS": 2,
+      "Q02": 1,
+      "Q09": 4,
+      "Q10_NEWS": 1,
+      "Q11": 1
+    },
+    "initial_work_item_query_database_locked": true,
+    "bounded_retry_succeeded": true,
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only": true
+  },
+  "non_duplicate_delta": {
+    "preceding_fx_receipt": "artifacts/fx_cointegration_fleet_multisymbol_busy_handoff_20260828T123620Z_board_advisor.json",
+    "preceding_average_cpu_percent": 79.60314062438722,
+    "current_average_cpu_percent": 93.636320,
+    "preceding_maximum_cpu_percent": 93.07365188647486,
+    "current_maximum_cpu_percent": 99.317842,
+    "preceding_running_factory_terminals": [
+      "T10"
+    ],
+    "current_running_factory_terminals": [
+      "T1",
+      "T10"
+    ],
+    "preceding_active_multisymbol_work_item_id": "5beefa38-44e0-4c60-89d0-0f487fb47ba7",
+    "current_active_multisymbol_work_item_id": "4859f62b-3a57-449c-b0c0-3cef50fd7806",
+    "changed_state": "The earlier QM5_41083 basket claim rotated out, QM5_41086 now legitimately occupies T1, the visible factory roster expanded from T10 to T1/T10, and the fresh maximum CPU moved above the hard ceiling."
+  },
+  "actions_this_run": {
+    "card_extraction_guard_consulted": true,
+    "build_skill_preflight_read": true,
+    "frontier_and_anchor_reconciled": true,
+    "fresh_capacity_preflight_completed": true,
+    "farm_coordination_state_consulted_read_only": true,
+    "new_card_or_ea_created": false,
+    "existing_forex_card_claimed_or_dispatched": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_stop_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "resume_contract": "After QM5_41086 reaches a canonical terminal state, take a fresh five-sample CPU window. Proceed with exactly one already-pending FX basket successor only if both CPU measures are strictly below 97 percent and no multisymbol row is active; do not enqueue a duplicate."
+}
