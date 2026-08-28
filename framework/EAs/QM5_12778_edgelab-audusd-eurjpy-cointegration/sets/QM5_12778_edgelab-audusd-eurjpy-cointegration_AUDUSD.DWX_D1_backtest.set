@@ -3,16 +3,16 @@
 ; ea_id:        12778
 ; ea_slug:      edgelab-audusd-eurjpy-cointegration
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260827-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   db9a9d3d91832a259e967608bacf0df68deabde1e3ff7ecbd6e71b95d25ba237
+; build_hash:   d35b076f58f5412e49a71de6e1604f3b0c19dd136d0463dd5b51fdbaf944e7a1
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-08-27
 ;==========================================================
 qm_ea_id=12778
 qm_magic_slot_offset=0

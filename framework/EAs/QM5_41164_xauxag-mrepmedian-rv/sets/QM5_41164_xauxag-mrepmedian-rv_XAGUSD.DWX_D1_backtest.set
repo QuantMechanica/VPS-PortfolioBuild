@@ -3,35 +3,24 @@
 ; ea_id:        41164
 ; ea_slug:      xauxag-mrepmedian-rv
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260827-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   a095ceb4306cf155a9b3bc486680e39949f7f2455d480552728dac798248c865
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-08-27
 ;==========================================================
 qm_ea_id=41164
 qm_magic_slot_offset=1
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; Native completed-price signal; both news axes are intentionally OFF.
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-; Full broker-month hold; Friday flattening is intentionally disabled.
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-; Locked strategy defaults from the approved card; no optimization surface.
-; card_defaults_source=strategy-seeds/cards/approved/QM5_41164_xauxag-mrepmedian-rv_card.md
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_xag_symbol=XAGUSD.DWX
 strategy_month_end_count=13
 strategy_history_bars_d1=500

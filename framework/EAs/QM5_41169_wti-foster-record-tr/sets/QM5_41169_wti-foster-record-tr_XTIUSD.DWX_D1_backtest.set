@@ -3,16 +3,16 @@
 ; ea_id:        41169
 ; ea_slug:      wti-foster-record-tr
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260827-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_COMPILE
+; build_hash:   ca541911b0d0cc67de193966f6d3aff3de22d91503c4684706a06c4e4945dacd
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-08-27
 ;==========================================================
 qm_ea_id=41169
 qm_magic_slot_offset=0

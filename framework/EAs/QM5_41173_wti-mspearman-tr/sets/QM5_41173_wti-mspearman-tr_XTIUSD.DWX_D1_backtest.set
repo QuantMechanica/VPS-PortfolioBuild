@@ -3,16 +3,16 @@
 ; ea_id:        41173
 ; ea_slug:      wti-mspearman-tr
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260827-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_COMPILE
+; build_hash:   e712df93c0b83ed5d5bfdb437aab8d77c71a0ff0040237eccfd965f33ba18297
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-08-27
 ;==========================================================
 qm_ea_id=41173
 qm_magic_slot_offset=0

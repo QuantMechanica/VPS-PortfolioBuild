@@ -10,28 +10,17 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   aa39cb86a259da3f2f47f757a2a8e626199d2d45d80807370b544cd5c9046b8c
 ; author:       Development
 ; date:         2026-08-28
 ;==========================================================
 qm_ea_id=41191
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; Native completed-D1 signed-rank same-calendar signal; both news axes are OFF.
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-; The card holds to the next broker month; framework Friday close is OFF.
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41191_wti-samecal-srank_card.md
+; card_defaults_source=ea_input_defaults
 strategy_history_years=10
 strategy_min_observations=5
 strategy_signal_epsilon=0.000000000001
