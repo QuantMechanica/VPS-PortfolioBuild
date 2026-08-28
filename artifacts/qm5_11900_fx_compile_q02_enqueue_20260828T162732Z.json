@@ -1,0 +1,85 @@
+{
+  "branch": "agents/board-advisor",
+  "compile": {
+    "build_check_failures": 0,
+    "build_check_result": "PASS",
+    "build_check_warnings": 0,
+    "claimed_terminal": "T5",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "completed_at_utc": "2026-08-28T16:22:17+00:00",
+    "evidence_path": "D:\\QM\\reports\\work_items\\32c7be48-1585-4011-949c-52644c598780\\QM5_11900\\COMPILE_EA\\compile_evidence.json",
+    "ex5_sha256": "befa7d6b8877434ea5d376429507d171ed48feaa02f2b5574ea2b55a9c637e76",
+    "failure_classes": [],
+    "mq5_sha256": "261570f12ae7708e58c64f008a9029df35e147882b716cc4143e807ebb41a656",
+    "old_ex5_sha256": "16c7f328707e6e530360090a4e91e319bab02518dccd0b8cd5c0e65d787e2cfa",
+    "source_repair_authority": "router_q02_infra_repair:46e34047-c661-462c-96d5-b4f9d76914db",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "work_item_id": "32c7be48-1585-4011-949c-52644c598780"
+  },
+  "cpu_gate": {
+    "average_percent": 66.02,
+    "ceiling_percent": 97.0,
+    "maximum_percent": 72.65,
+    "sampled_at_utc": "2026-08-28T16:23:05.8746778Z",
+    "samples_percent": [61.74, 53.93, 69.16, 72.63, 72.65],
+    "stop_triggered": false
+  },
+  "ex5_commit_guard": {
+    "binding_mode": "WORKTREE_CRLF_TO_STAGED_LF",
+    "contract": "TEXT_BYTES_CRLF_TO_LF_SHA256_V1",
+    "receipt_work_item_id": "32c7be48-1585-4011-949c-52644c598780",
+    "result": "PASS",
+    "staged_mq5_sha256": "a73d12dd75d4afd463539341090eef2ef1df67dcdb369b1df95587cb8eb45586",
+    "worktree_mq5_sha256": "261570f12ae7708e58c64f008a9029df35e147882b716cc4143e807ebb41a656"
+  },
+  "ea_id": "QM5_11900",
+  "ea_label": "QM5_11900_kobasfx-4ema-macd-sentiment-h1",
+  "farm_task_id": "46e34047-c661-462c-96d5-b4f9d76914db",
+  "q02": {
+    "archive_admission_status": "ACTIVE",
+    "created_at_utc": "2026-08-28T16:27:32+00:00",
+    "expected_ex5_sha256": "befa7d6b8877434ea5d376429507d171ed48feaa02f2b5574ea2b55a9c637e76",
+    "expected_mq5_sha256": "261570f12ae7708e58c64f008a9029df35e147882b716cc4143e807ebb41a656",
+    "expected_setfile_sha256": "6b186956e5220de07fd9ca7b9ba1adb6bd8bc1fd1ec472ba233728652b1f4db4",
+    "fresh_q02_seed": true,
+    "gate_contract_version": "v4",
+    "historical_work_item_preserved": true,
+    "initial_status": "pending",
+    "pre_binding_source_verified": true,
+    "predecessor_status": "done",
+    "predecessor_verdict": "INFRA_FAIL",
+    "predecessor_work_item_id": "cc20795e-fa50-4a65-9107-f205308593c2",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "successor_count": 1,
+    "symbol": "USDCHF.DWX",
+    "timeframe": "H1",
+    "work_item_id": "4d8a8d50-0756-434d-84be-721098f8bb78"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "manual_dispatch": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  },
+  "schema_version": "qm.qm5-11900-compile-q02-handoff/v1",
+  "setfiles": {
+    "count": 10,
+    "magic_slots": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "pending_build_hash_count": 0,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "validation": {
+    "build_guardrails": "PASS (11 files, 0 findings)",
+    "candidate_repair_enqueue_tests": "42 passed",
+    "compile_work_item_tests": "26 passed",
+    "ex5_commit_guard": "PASS (governed receipt; CRLF-to-LF staged equivalence)",
+    "ex5_commit_guard_tests": "8 passed",
+    "release_compile_wave_tests": "3 passed",
+    "skill_build_ea_guard": "PASS",
+    "spec_doc": "PASS"
+  }
+}

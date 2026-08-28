@@ -3,16 +3,16 @@
 ; ea_id:        11900
 ; ea_slug:      kobasfx-4ema-macd-sentiment-h1
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260828-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   d0e04f05961431d535fbba9fcc0918838154d7e8e88c3d3f93b382644bf9994b
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-28
 ;==========================================================
 qm_ea_id=11900
 qm_magic_slot_offset=5

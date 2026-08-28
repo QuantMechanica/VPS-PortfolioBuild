@@ -24,13 +24,13 @@ def _git(*args: str, cwd: Path) -> None:
     subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True)
 
 
-def _init_repo(tmp_path: Path) -> Path:
+def _init_repo(tmp_path: Path, *, autocrlf: bool = False) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir()
     _git("init", "-q", cwd=repo)
     _git("config", "user.email", "test@example.com", cwd=repo)
     _git("config", "user.name", "Test", cwd=repo)
-    _git("config", "core.autocrlf", "false", cwd=repo)
+    _git("config", "core.autocrlf", str(autocrlf).lower(), cwd=repo)
     return repo
 
 
@@ -138,6 +138,63 @@ def test_rejects_when_receipt_binds_a_different_source_hash(tmp_path: Path) -> N
         ea_id="QM5_99999",
         ex5_sha256=hashlib.sha256(ex5_bytes).hexdigest(),
         mq5_sha256=hashlib.sha256(b"source v1").hexdigest(),
+    )
+
+    report = guard.evaluate(repo, db_path)
+
+    assert report["ok"] is False
+    assert report["changes"][0]["reason"] == "NO_GOVERNED_COMPILE_EA_RECEIPT"
+
+
+def test_accepts_exact_crlf_worktree_receipt_when_index_is_lf(tmp_path: Path) -> None:
+    repo = _init_repo(tmp_path, autocrlf=True)
+    db_path = _init_state_db(tmp_path)
+    ex5_bytes = b"governed-compiled-bytes"
+    mq5_worktree_bytes = b"source line 1\r\nsource line 2\r\n"
+    _stage_ea_files(repo, ex5_bytes=ex5_bytes, mq5_bytes=mq5_worktree_bytes)
+    mq5_path = f"framework/EAs/{EA_LABEL}/{EA_LABEL}.mq5"
+    assert guard._staged_blob_bytes(repo, mq5_path) == (
+        b"source line 1\nsource line 2\n"
+    )
+    _insert_receipt(
+        db_path,
+        work_item_id="wi-crlf",
+        ea_id="QM5_99999",
+        ex5_sha256=hashlib.sha256(ex5_bytes).hexdigest(),
+        mq5_sha256=hashlib.sha256(mq5_worktree_bytes).hexdigest(),
+    )
+
+    report = guard.evaluate(repo, db_path)
+
+    assert report["ok"] is True
+    (entry,) = report["changes"]
+    assert entry["receipt_work_item_id"] == "wi-crlf"
+    assert entry["mq5_binding"] == "WORKTREE_CRLF_TO_STAGED_LF"
+    assert entry["mq5_worktree_sha256"] == hashlib.sha256(
+        mq5_worktree_bytes
+    ).hexdigest()
+
+
+def test_rejects_crlf_receipt_when_worktree_semantics_differ_from_index(
+    tmp_path: Path,
+) -> None:
+    repo = _init_repo(tmp_path, autocrlf=True)
+    db_path = _init_state_db(tmp_path)
+    ex5_bytes = b"governed-compiled-bytes"
+    _stage_ea_files(
+        repo,
+        ex5_bytes=ex5_bytes,
+        mq5_bytes=b"source v1\r\n",
+    )
+    mq5_path = repo / "framework" / "EAs" / EA_LABEL / f"{EA_LABEL}.mq5"
+    changed_worktree_bytes = b"source v2\r\n"
+    mq5_path.write_bytes(changed_worktree_bytes)
+    _insert_receipt(
+        db_path,
+        work_item_id="wi-changed",
+        ea_id="QM5_99999",
+        ex5_sha256=hashlib.sha256(ex5_bytes).hexdigest(),
+        mq5_sha256=hashlib.sha256(changed_worktree_bytes).hexdigest(),
     )
 
     report = guard.evaluate(repo, db_path)

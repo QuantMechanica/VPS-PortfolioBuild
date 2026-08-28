@@ -3,16 +3,16 @@
 ; ea_id:        11900
 ; ea_slug:      kobasfx-4ema-macd-sentiment-h1
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260828-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   1b2cd2b4399597a1d83ed0a24712feaafa734fdb8d5101718625b865c479333f
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-08-28
 ;==========================================================
 qm_ea_id=11900
 qm_magic_slot_offset=1

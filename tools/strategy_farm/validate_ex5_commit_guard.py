@@ -5,7 +5,11 @@ the exact staged bytes.
 A receipt is a `work_items` row with kind='compile', phase='COMPILE_EA',
 status='done', verdict='COMPILE_OK', whose ex5_sha256 matches the staged
 .ex5 blob and whose mq5_sha256 (when the row has one) matches the staged
-.mq5 sibling. This closes the class of violation documented 2026-08-24:
+.mq5 sibling. On Windows, a receipt may instead bind the raw CRLF working
+copy MetaEditor compiled, but only when replacing CRLF byte pairs with LF
+reproduces the staged Git blob exactly. BOMs, standalone CRs, whitespace,
+and every other byte remain significant. This closes the class of violation
+documented 2026-08-24:
 fresh .ex5 bytes compiled ad hoc (idle MetaEditor, disposable profile, a
 non-canonical worker path) after the governed wrapper failed closed with
 LIVE_FACTORY_AD_HOC_COMPILE_REFUSED, then committed anyway (39001 x2,
@@ -65,6 +69,16 @@ def _staged_blob_bytes(repo_root: Path, path: str) -> bytes | None:
     return result.stdout
 
 
+def _worktree_blob_bytes(repo_root: Path, path: str) -> bytes | None:
+    candidate = repo_root / Path(path)
+    try:
+        if candidate.is_symlink() or not candidate.is_file():
+            return None
+        return candidate.read_bytes()
+    except OSError:
+        return None
+
+
 def _sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -97,6 +111,50 @@ def find_receipt(
     return dict(row)
 
 
+def _find_source_bound_receipt(
+    repo_root: Path,
+    db_path: Path,
+    ea_id: str,
+    ex5_sha256: str,
+    mq5_path: str,
+    staged_mq5_bytes: bytes | None,
+) -> tuple[dict[str, Any] | None, str | None, str | None]:
+    """Find an exact or provably line-ending-equivalent compile receipt.
+
+    Git stores text as LF in the index while MetaEditor compiles the raw
+    Windows working copy. The fallback is deliberately narrow: only CRLF byte
+    pairs are mapped to LF, the transformed bytes must equal the staged blob,
+    and the receipt must bind the exact untransformed working-copy hash.
+    """
+    staged_mq5_sha256 = (
+        _sha256_bytes(staged_mq5_bytes) if staged_mq5_bytes is not None else None
+    )
+    receipt = find_receipt(db_path, ea_id, ex5_sha256, staged_mq5_sha256)
+    if receipt is not None:
+        binding = (
+            "RECEIPT_MQ5_UNBOUND"
+            if not receipt.get("mq5_sha256")
+            else "STAGED_MQ5_EXACT"
+        )
+        return receipt, binding, None
+
+    if staged_mq5_bytes is None:
+        return None, None, None
+    worktree_mq5_bytes = _worktree_blob_bytes(repo_root, mq5_path)
+    if (
+        worktree_mq5_bytes is None
+        or b"\r\n" not in worktree_mq5_bytes
+        or worktree_mq5_bytes.replace(b"\r\n", b"\n") != staged_mq5_bytes
+    ):
+        return None, None, None
+
+    worktree_mq5_sha256 = _sha256_bytes(worktree_mq5_bytes)
+    receipt = find_receipt(db_path, ea_id, ex5_sha256, worktree_mq5_sha256)
+    if receipt is None:
+        return None, None, worktree_mq5_sha256
+    return receipt, "WORKTREE_CRLF_TO_STAGED_LF", worktree_mq5_sha256
+
+
 def evaluate(repo_root: Path, db_path: Path) -> dict[str, Any]:
     """Evaluate every staged .ex5 change in repo_root against db_path receipts."""
     results: list[dict[str, Any]] = []
@@ -122,7 +180,14 @@ def evaluate(repo_root: Path, db_path: Path) -> dict[str, Any]:
         mq5_path = f"framework/EAs/{ea_label}/{ea_label}.mq5"
         mq5_bytes = _staged_blob_bytes(repo_root, mq5_path)
         mq5_sha256 = _sha256_bytes(mq5_bytes) if mq5_bytes is not None else None
-        receipt = find_receipt(db_path, ea_id, ex5_sha256, mq5_sha256)
+        receipt, mq5_binding, mq5_worktree_sha256 = _find_source_bound_receipt(
+            repo_root,
+            db_path,
+            ea_id,
+            ex5_sha256,
+            mq5_path,
+            mq5_bytes,
+        )
         entry: dict[str, Any] = {
             "path": path,
             "git_status": status,
@@ -137,6 +202,9 @@ def evaluate(repo_root: Path, db_path: Path) -> dict[str, Any]:
         else:
             entry["ok"] = True
             entry["receipt_work_item_id"] = receipt["id"]
+            entry["mq5_binding"] = mq5_binding
+            if mq5_worktree_sha256 is not None:
+                entry["mq5_worktree_sha256"] = mq5_worktree_sha256
         results.append(entry)
     return {"ok": ok, "changes": results}
 
