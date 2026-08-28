@@ -405,6 +405,23 @@ def test_q02_infra_source_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_1252_q02_infra_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_1252_carver-handcraft-ens"
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_1252_Q02_INFRA_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_1253_unrelated-d1",
+        compile_work_items.QM5_1252_Q02_INFRA_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_ops_issue:wrong-task",
+    )
+
+
 def test_qm5_41163_mae_repair_authority_is_exact_label_bound() -> None:
     label = "QM5_41163_williams-18ma-outside-bar-entry-d1-opt"
 

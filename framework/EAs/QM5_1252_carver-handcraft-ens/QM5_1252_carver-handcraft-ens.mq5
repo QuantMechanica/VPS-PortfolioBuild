@@ -154,6 +154,8 @@ double Strategy_MedianSpreadPoints()
       const long spread = iSpread(_Symbol, PERIOD_D1, shift);
       if(spread <= 0)
          continue;
+      if(count >= ArraySize(spreads))
+         break;
       spreads[count] = (double)spread;
       ++count;
      }
@@ -602,6 +604,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
