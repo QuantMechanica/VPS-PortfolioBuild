@@ -21,6 +21,7 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 from datetime import datetime as dt_datetime, timedelta as dt_timedelta, timezone as dt_timezone
 from contextlib import closing
 from pathlib import Path
@@ -173,6 +174,80 @@ class _DispatchStubMixin:
         farmctl._spawn_work_item_runner = _fake_spawn_factory(spawn_calls, observer)
         farmctl._pid_tree_exists = lambda *a, **k: True
         farmctl._pid_exists = lambda *a, **k: True
+
+
+class TopDownGatePrioritySelectorTests(unittest.TestCase):
+    FLAG = farmctl.TOPDOWN_GATE_PRIORITY_ENV
+
+    def test_flag_off_preserves_incumbent_age_weighted_order(self) -> None:
+        db = _FarmDB()
+        self.addCleanup(db.close)
+        db.insert("old-q02", "Q02", "EURUSD.DWX")
+        db.insert("fresh-q11", "Q11", "USDJPY.DWX")
+        with closing(db.conn()) as conn:
+            conn.execute(
+                "UPDATE work_items SET created_at='2025-01-01T00:00:00+00:00' "
+                "WHERE id='old-q02'"
+            )
+            conn.commit()
+        with patch.dict("os.environ", {self.FLAG: "0"}):
+            self.assertEqual(db.order_ids()[0], "old-q02")
+
+    def test_flag_on_is_strict_highest_gate_first_despite_age(self) -> None:
+        db = _FarmDB()
+        self.addCleanup(db.close)
+        phases = (
+            "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09",
+            farmctl._NEWS_PORTFOLIO_PHASE, "Q11", "Q12", "Q13", "Q14",
+            farmctl.OPT_CENSUS_PHASE,
+        )
+        for phase in phases:
+            db.insert(f"row-{phase}", phase, f"{phase}.DWX")
+        with closing(db.conn()) as conn:
+            conn.execute(
+                "UPDATE work_items SET created_at='2020-01-01T00:00:00+00:00' "
+                "WHERE phase='Q02'"
+            )
+            conn.commit()
+        with patch.dict("os.environ", {self.FLAG: "1"}):
+            order = db.order_ids()
+        positions = {wid: index for index, wid in enumerate(order)}
+        optimization = {"row-Q12", "row-Q13", "row-Q14", "row-OPT_CENSUS"}
+        self.assertTrue(all(positions[wid] < positions["row-Q11"] for wid in optimization))
+        expected_descending = [
+            "row-Q11", f"row-{farmctl._NEWS_PORTFOLIO_PHASE}", "row-Q09",
+            "row-Q08", "row-Q07", "row-Q06", "row-Q05", "row-Q04",
+            "row-Q03", "row-Q02",
+        ]
+        self.assertEqual(
+            [positions[wid] for wid in expected_descending],
+            sorted(positions[wid] for wid in expected_descending),
+        )
+
+    def test_priority_track_remains_emergency_override(self) -> None:
+        db = _FarmDB()
+        self.addCleanup(db.close)
+        db.insert("ordinary-opt", farmctl.OPT_CENSUS_PHASE, "EURUSD.DWX")
+        db.insert("priority-q02", "Q02", "USDJPY.DWX", priority_track=True)
+        with patch.dict("os.environ", {self.FLAG: "1"}):
+            self.assertEqual(db.order_ids()[0], "priority-q02")
+
+    def test_active_hold_falls_through_to_lower_gate(self) -> None:
+        db = _FarmDB()
+        self.addCleanup(db.close)
+        db.insert("held-q11", "Q11", "EURUSD.DWX")
+        db.insert("free-q09", "Q09", "USDJPY.DWX")
+        with closing(db.conn()) as conn:
+            conn.execute(
+                "INSERT INTO work_item_holds "
+                "(work_item_id,hold_code,reason,active,release_on_restart,created_at,updated_at) "
+                "VALUES (?,?,?,?,?,?,?)",
+                ("held-q11", "TEST_HOLD", "fall-through fixture", 1, 0,
+                 "2026-08-28T00:00:00+00:00", "2026-08-28T00:00:00+00:00"),
+            )
+            conn.commit()
+        with patch.dict("os.environ", {self.FLAG: "1"}):
+            self.assertEqual(db.order_ids(), ["free-q09"])
 
 
 # ---------------------------------------------------------------------------
@@ -376,6 +451,34 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
         self.assertIsNotNone(first_recovery)
         self.assertTrue(all(c == "priority" for c in classes_by_order[:first_recovery]))
         self.assertEqual({wid for wid, c in claims if c == "priority"}, {"p1", "p2"})
+
+    def test_topdown_longrun_cap_falls_through_to_next_gate(self) -> None:
+        db = _FarmDB()
+        self.addCleanup(db.close)
+        news_phase = farmctl._NEWS_PHASE
+        for index in range(terminal_worker.longrun_scheduling_policy.TOTAL_NEWS_PARENT_FLEET_CAP):
+            db.insert(
+                f"active-news-{index}", news_phase, f"NEWS{index}.DWX",
+                status="active", claimed_by=f"TB{index}",
+            )
+        binding = json.dumps({
+            "q09_binding_version": "q09-news-dispatch-binding/v1",
+            "q09_run_plan_path": "plan.json",
+            "q09_run_plan_file_sha256": "a" * 64,
+            "q09_dispatch_binding_sha256": "b" * 64,
+        })
+        db.insert(
+            "capped-news", news_phase, "CAP.DWX", raw_payload_json=binding,
+        )
+        db.insert("free-q09", "Q09", "FREE.DWX")
+        with patch.dict("os.environ", {farmctl.TOPDOWN_GATE_PRIORITY_ENV: "1"}):
+            claim = terminal_worker.claim_atomic(db.root, "T1")
+        self.assertTrue(claim.get("claimed"), claim)
+        self.assertEqual(claim["item"]["id"], "free-q09")
+        self.assertEqual(
+            claim.get("longrun_cap_skipped"), None,
+            "a successful lower-gate claim proves the cap did not idle the slot",
+        )
 
     def test_recovery_drains_through_stalled_ineligible_frontier(self) -> None:
         # AMENDED CONTRACT (OWNER 2026-08-04): frontier rows that are pending but

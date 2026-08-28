@@ -22,7 +22,7 @@ import sys
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 
 try:
     from artifact_identity import (
@@ -1358,6 +1358,7 @@ CLAIM_RECOVERY_OCCUPANCY_MIN_ACTIVE = 5
 # Keep the ledger bounded: retain a tail far larger than the window and prune older
 # rows inside the same claim transaction. Only the last (WINDOW-1) rows are ever read.
 CLAIM_LEDGER_RETAIN = 64
+TOPDOWN_GATE_PRIORITY_ENV = "QM_TOPDOWN_GATE_PRIORITY_ENABLED"
 CLAIM_CLASS_LEDGER_DDL = (
     "CREATE TABLE IF NOT EXISTS claim_class_ledger ("
     " seq INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -1409,6 +1410,49 @@ def _gate_priority_rank_sql() -> str:
     return "\n".join(canonical_lines + legacy_lines)
 
 
+def topdown_gate_priority_enabled(environ: Mapping[str, str] | None = None) -> bool:
+    """Return whether OWNER's strict highest-gate-first selector is enabled.
+
+    The rollout is deliberately cold by default.  Only the exact value ``1``
+    activates the new ordering so an absent, misspelled, or malformed setting
+    preserves the pre-2026-08-28 selector byte-for-byte.
+    """
+    source = os.environ if environ is None else environ
+    return source.get(TOPDOWN_GATE_PRIORITY_ENV) == "1"
+
+
+def _topdown_gate_rank_sql() -> str:
+    """SQL CASE implementing OWNER-DEC-TOPDOWN-PRIORITY-20260828.
+
+    This is selection only.  Holds, caps, history/resource checks, verdicts,
+    and all gate criteria remain in their existing claim-path locations.  The
+    claim loop continues after a capped/held candidate, which is the OWNER's
+    utilization fall-through clause.
+    """
+    optimization_phases = tuple(dict.fromkeys(
+        (_PATTERN_PHASE, _PARAM_OPT_PHASE, _HEAD_TO_HEAD_PHASE, OPT_CENSUS_PHASE)
+    ))
+    arms = [
+        "WHEN 'HARNESS_PP_FIXTURE' THEN 0",
+        "WHEN 'COMPILE_EA' THEN 0",
+        *(f"WHEN '{phase}' THEN 0" for phase in optimization_phases),
+        f"WHEN '{_INCUMBENT_PHASE}' THEN 1",
+        f"WHEN '{_NEWS_GATE}' THEN 2",
+        f"WHEN '{_NEWS_PHASE}' THEN 2",
+        f"WHEN '{_NEWS_PORTFOLIO_PHASE}' THEN 2",
+    ]
+    # Q09 down through Q02 are strict descending tiers.  Q10 is supplied by
+    # the manifest role arms above because its executable storage phases carry
+    # suffixes (Q10_NEWS / Q10_PORTFOLIO in v4).
+    incumbent_rank = phase_rank(_INCUMBENT_PHASE)
+    for phase in ORDINARY_RUNTIME_PHASES:
+        rank = phase_rank(phase)
+        if phase == _INCUMBENT_PHASE or not (phase_rank("Q02") <= rank < incumbent_rank):
+            continue
+        arms.append(f"WHEN '{phase}' THEN {incumbent_rank - rank + 1}")
+    return "CASE w.phase " + " ".join(arms) + " ELSE 99 END"
+
+
 def pending_claim_order_sql() -> str:
     """Canonical pending-work ordering — the ONE selector every claimant uses.
 
@@ -1419,6 +1463,25 @@ def pending_claim_order_sql() -> str:
     ``julianday`` returns NULL for malformed dates; COALESCE makes those rows
     receive zero age credit (fail open, preserving their normal priority).
     """
+    if topdown_gate_priority_enabled():
+        order_by = (
+            "_universe_expansion_rank ASC, _recovery_rank ASC, "
+            "_priority_track_rank ASC, "
+            f"{_topdown_gate_rank_sql()} ASC, "
+            "(_phase_rank - _age_weeks) ASC, "
+            "_basket_q02_rank ASC, _diagnostic_queue_rank ASC, "
+            "_winner_rank ASC, _asset_rank ASC, "
+            "w.updated_at ASC, w.created_at ASC"
+        )
+    else:
+        # Cold path: retain the original ordering text and behavior exactly.
+        order_by = (
+            "_universe_expansion_rank ASC, _recovery_rank ASC, "
+            "(_priority_track_rank * 10 + _phase_rank - _age_weeks) ASC, "
+            "_basket_q02_rank ASC, _diagnostic_queue_rank ASC, "
+            "_winner_rank ASC, _asset_rank ASC, "
+            "w.updated_at ASC, w.created_at ASC"
+        )
     return f"""
         SELECT w.*,
           CASE
@@ -1566,11 +1629,7 @@ def pending_claim_order_sql() -> str:
             WHERE q.ea_id=w.ea_id AND q.symbol=w.symbol AND q.phase=w.phase
               AND q.active=1
           )
-        ORDER BY _universe_expansion_rank ASC, _recovery_rank ASC,
-                 (_priority_track_rank * 10 + _phase_rank - _age_weeks) ASC,
-                 _basket_q02_rank ASC, _diagnostic_queue_rank ASC,
-                 _winner_rank ASC, _asset_rank ASC,
-                 w.updated_at ASC, w.created_at ASC
+        ORDER BY {order_by}
     """
 
 
