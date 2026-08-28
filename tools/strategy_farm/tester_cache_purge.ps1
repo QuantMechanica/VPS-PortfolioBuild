@@ -313,6 +313,16 @@ if ($runBusyScratch) {
 $free = FreeGB
 if ($free -ge $LowWaterGB) { Log "SKIP: D: free ${free}GB >= ${LowWaterGB}GB threshold"; return }
 
+# 2026-08-28: never tear the factory down while a Factory_ON ceremony is mid-flight.
+# The IdleCaches path below stops/disables Pump+Tick and kills worker daemons before
+# restoring them; firing that during the post-start health gate made the gate observe
+# a disabled Pump and a missing worker cohort and fail closed (R3 rollback 23:40).
+$ceremonyMarker = Join-Path $FarmRoot 'state\FACTORY_ON_CEREMONY_INCOMPLETE.json'
+if (Test-Path -LiteralPath $ceremonyMarker -PathType Leaf) {
+    Log "SKIP: Factory_ON ceremony in progress ($ceremonyMarker present); no teardown during the restart window"
+    return
+}
+
 Log "TRIGGER: D: free ${free}GB < ${LowWaterGB}GB -> purge tester caches"
 $protectedTerminals = @(Get-ProtectedFactoryTerminals)
 $protectedLookup = @{}
