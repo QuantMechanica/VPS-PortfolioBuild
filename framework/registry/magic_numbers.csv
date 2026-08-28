@@ -18082,3 +18082,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41189,xtixng-mlad-rv,1,XNGUSD.DWX,411890001,2026-08-27,Codex governed allocator,active
 41190,xtixng-mtheilsen-rv,0,XTIUSD.DWX,411900000,2026-08-27,Codex governed allocator,active
 41190,xtixng-mtheilsen-rv,1,XNGUSD.DWX,411900001,2026-08-27,Codex governed allocator,active
+41153,audjpy-carry-unwind-crisis-momentum,0,AUDJPY.DWX,411530000,2026-08-28,Codex governed allocator,active
