@@ -1,0 +1,65 @@
+{
+  "schema": "qm.source-retrieval-evidence/v1",
+  "candidate_slug": "wti-samecal-srank",
+  "retrieved_at_utc": "2026-08-28T18:07:09.2379002Z",
+  "router": "C:/Users/Administrator/.codex/skills/qm/qm-read-trading-source/scripts/read_trading_source.py",
+  "records": [
+    {
+      "url": "https://github.com/wch/r-source/blob/trunk/src/library/stats/R/wilcox.test.R",
+      "router_status": "ROUTE_GITHUB_API",
+      "route": "public GitHub API",
+      "repository": "wch/r-source",
+      "commit_sha": "bac583951b728e97b9786804d3b4081f0fe18df5",
+      "path": "src/library/stats/R/wilcox.test.R",
+      "blob_sha": "60eb142e6a6c6a1355d96a881d9464ea017cdf18",
+      "byte_count": 42614,
+      "line_count": 1137,
+      "sha256": "669C3DC5B93B8DFA7F1C1ED866725960BA6F34C55E1E0378D3775E8EAA0E3C15",
+      "read_scope": "complete",
+      "paraphrase": "The one-sample statistic subtracts mu, ranks absolute observations, and sums ranks whose signed observations are positive; the implementation explicitly identifies V and its sign-flip distribution."
+    },
+    {
+      "url": "https://github.com/wch/r-source/blob/trunk/src/library/stats/man/wilcox.test.Rd",
+      "router_status": "ROUTE_GITHUB_API",
+      "route": "public GitHub API",
+      "repository": "wch/r-source",
+      "commit_sha": "bac583951b728e97b9786804d3b4081f0fe18df5",
+      "path": "src/library/stats/man/wilcox.test.Rd",
+      "blob_sha": "b630339352861e45975540421b408124414bbea8",
+      "byte_count": 12273,
+      "line_count": 262,
+      "sha256": "4B75352AB44829943EF35F0B174D7FA84CF17EFB4F22F1BD6CBA1B09EF0A3E69",
+      "read_scope": "complete",
+      "paraphrase": "The R Core manual distinguishes the one-sample signed-rank method from the two-sample rank-sum method and defines the one-sample location-null interpretation."
+    },
+    {
+      "url": "https://stat.ethz.ch/R-manual/R-devel/library/stats/html/wilcox.test.html",
+      "router_status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "read_scope": "none",
+      "claim_boundary": "No content from this generic route is used."
+    },
+    {
+      "url": "https://www.nber.org/papers/w20815",
+      "router_status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "read_scope": "none_this_intake",
+      "claim_boundary": "No new retrieval is inferred; the prior OWNER-approved complete repository packet is the source of record."
+    },
+    {
+      "url": "https://doi.org/10.2307/3001968",
+      "router_status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "read_scope": "none",
+      "claim_boundary": "The original article body is not represented as read and supplies no result or table claim."
+    }
+  ],
+  "local_parent_source": {
+    "path": "strategy-seeds/sources/KELOHARJU-RETSEAS-2016/source.md",
+    "sha256": "54E6036035D146BB080A0DDF4A16B378C187655A3834DF86329F7B2D319875F0",
+    "byte_count": 9245,
+    "read_scope": "complete",
+    "status": "cards_ready",
+    "approval_basis": "OWNER mission directive 2026-07-10"
+  }
+}
