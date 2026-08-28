@@ -516,7 +516,7 @@ def render_report(packet: Mapping[str, Any]) -> str:
     timing = packet["timing"]
     cold = timing["cold_baseline"]
     lines = [
-        "# V4a Phase 3 — governed sequential tester validation",
+        "# V4a Q-validation — governed sequential tester validation",
         "",
         f"**Verdict:** `{outcome['status']}`",
         f"**Execution:** `{outcome['attempted']}/20` cells launched, `{outcome['compared']}/20` compared, `{outcome['exact']}` exact.",
@@ -531,7 +531,7 @@ def render_report(packet: Mapping[str, Any]) -> str:
         f"| Backend + tests | {'PASS' if outcome['attempted'] else 'BLOCKED'} — governed DEV2 restart backend, Default-OFF authorization, byte guards, and containment closeout |",
         f"| 20-cell parity | {'PASS' if outcome['all_twenty_exact'] else 'DEVIATION/STOP'} — {outcome['exact']}/20 exact; full hashes are in the table, CSV, and JSON packet |",
         f"| Speedup | cold={cold['total_seconds']} s; attempted like-for-like={timing['attempted_like_for_like_speedup']}; complete batch={timing['complete_batch_speedup']}; target >=2.5x={'PASS' if timing['target_met'] else 'NOT MET'} |",
-        f"| Cold path / DL-089 | {'PASS' if packet['cold_path']['byte_identical_to_phase3_start'] else 'FAIL'} — governed cold-path files byte-identical to Phase-3 start |",
+        f"| Cold path / DL-089 | {'PASS' if packet['cold_path']['byte_identical_to_phase3_start'] else 'FAIL'} — governed cold-path files byte-identical to task start |",
         f"| Frozen history | {packet['cold_history_projection'].get('status', 'NOT RECORDED')} — {packet['cold_history_projection'].get('receipt_count', 0)} claim receipts, {packet['cold_history_projection'].get('file_count', 0)} byte-identical files |",
         "",
     ]
@@ -575,7 +575,7 @@ def render_report(packet: Mapping[str, Any]) -> str:
             "",
             "- T1–T10, T_Live, AutoTrading, production claims, queue rows, pipeline verdicts, and the farm database were not changed.",
             "- DEV2 was entered idle with its isolated account disabled; the governed controller restored it disabled after every cell and the logical-session closeout rechecked zero lane processes.",
-            "- `terminal_worker.py`, `run_smoke.ps1`, `opt_census.py`, and `dl089_matrix_service.py` retain their exact Phase-3-start bytes.",
+            "- `terminal_worker.py`, `run_smoke.ps1`, `opt_census.py`, and `dl089_matrix_service.py` retain their exact task-start bytes.",
             "- This validation packet is not pipeline evidence and does not authorize activation.",
             "",
         ]
