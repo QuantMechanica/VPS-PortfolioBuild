@@ -80,10 +80,17 @@ Decision record: `decisions/2026-08-23_owner_gate_manifest_v4_linear.md` (Auffan
 | 14 | Vault: Linter PASS (Schienenplan P0→Prio-0), v4-Seiten Q00–Q17 + Overview/Workflow/Diff gestaged, Archivplan (9 Seiten → _ARCHIV), APPLY.py dry-run PASS | **gestaged**; Apply nach Flip | `docs/ops/rebaseline/vault_v4_staging/` |
 | 15 | Backtest-Überwachung: Monitor alle 3 min; nach Profil-Fix nur noch echte EA-Defekte (`EA_INDICATOR_BUFFER_UNBOUNDED` QM5_41109–41111, `CANDIDATE_RECHECK_REFUSED` QM5_9913), Q09_NEWS INFRA transient | **laufend** | `docs/ops/rebaseline/BACKTEST_MONITOR_2026-08-23.md` |
 
-**Entscheidungsschlange (OWNER, ≤5):** (1) A1 Zähleinheit ≥25 = (EA,Symbol) — Auffangregel läuft;
-(2) A2 Optimierung verpflichtend, KEEP_INCUMBENT gültig — Auffangregel läuft; (3) Backfill-Apply
-(--max-rows) freigeben: Empfehlung erste Tranche 200 Zeilen Frontier Q08+; (4) 9 Q09-Holds: Q07/Q08-Regeneration
-via Planner (REBIND_STALE) statt manueller Release; (5) Testsuite-Baseline 22 vorbestehende Fails
+A1 (Zähleinheit ≥25 = (EA,Symbol), Diversität als Nebenbericht) und A2 (Q12–Q14
+verpflichtend, KEEP_INCUMBENT terminal gültig) sind **OWNER-entschieden JA**
+(2026-08-27T11:48:57Z / 11:49:11Z, Receipts `fdc84028…` / `b572c026…`); Runtime
+(`book_build_guard.py`, `optimization_fork_driver.py`) implementierte die
+Auffangregel-Empfehlung bereits identisch, keine Code-Änderung nötig — siehe
+`docs/ops/evidence/2026-08-27_a1-count-unit_b572c026_execution.md` und
+`docs/ops/evidence/2026-08-27_a2-opt-mandatory_fdc84028_execution.md`.
+
+**Entscheidungsschlange (OWNER, ≤5):** (1) Backfill-Apply
+(--max-rows) freigeben: Empfehlung erste Tranche 200 Zeilen Frontier Q08+; (2) 9 Q09-Holds: Q07/Q08-Regeneration
+via Planner (REBIND_STALE) statt manueller Release; (3) Testsuite-Baseline 22 vorbestehende Fails
 (FTMO-Fixtures/Registry-Hashes/cp1252) — Codex-Ticket anlegen.
 
 ## 0 · Neu 2026-08-23 — Strategy Archive Matrix (OWNER-Auftrag, Vorentwurf)

@@ -1,64 +1,76 @@
-# OWNER decision execution — OWNER-DEC-A2-OPT-MANDATORY
+# Execution evidence — OWNER-DEC-A2-OPT-MANDATORY = YES
 
-Date: 2026-08-28
-Task: `agent_task ca2f0317-de8b-5f24-b622-92439de27d9b` (QM-TODO-20260824-521)
-Decision: `OWNER-DEC-A2-OPT-MANDATORY` = YES, receipt `fdc84028-eca4-4e2e-a14e-afde84c37ca1`,
-decided 2026-08-27T11:48:57Z.
-Question: "Soll jedes Buchkandidaten-Paar Q12 bis Q14 durchlaufen, auch wenn keine
-Verbesserung gefunden wird?"
-Selected effect: "Der verpflichtende lineare Optimierungsabschnitt bleibt aktiv;
-KEEP_INCUMBENT darf terminal bestehen."
-Mode: `DOCUMENT_AND_VERIFY` — no gate/runtime logic changes; verification only.
+Router task: `ca2f0317-de8b-5f24-b622-92439de27d9b` (`QM-TODO-20260824-521`)
+Mode: `DOCUMENT_AND_VERIFY` — no gate, threshold, or runtime logic changed.
 
-## What this ratifies
+## Decision being executed
 
-Sub-decision A2 in `decisions/2026-08-23_owner_gate_manifest_v4_linear.md`, already executed
-under the Stehende Vollmacht Auffangregel on 2026-08-23: every book candidate pair must
-traverse Q12 (Pattern Filter Selection) through Q14 (Best-Settings Head-to-Head) as a
-mandatory linear segment, and a `KEEP_INCUMBENT` outcome (no improvement found) is a valid
-terminal PASS, not a failure or a skip.
+OWNER receipt `fdc84028-eca4-4e2e-a14e-afde84c37ca1`, decided 2026-08-27T11:48:57Z:
+question "Soll jedes Buchkandidaten-Paar Q12 bis Q14 durchlaufen, auch wenn keine
+Verbesserung gefunden wird?" — answer **YES**. Selected effect: "Der verpflichtende
+lineare Optimierungsabschnitt bleibt aktiv; KEEP_INCUMBENT darf terminal bestehen."
 
-## Verified implementation (no drift found)
+This ratifies sub-decision A2 in
+`decisions/2026-08-23_owner_gate_manifest_v4_linear.md`, already executed under the
+Stehende Vollmacht (Auffangregel, 2026-08-20) 12h-fallback since 2026-08-23: every book
+candidate pair traverses Q12 (Pattern Filter Selection) -> Q13 (Parameter Optimization &
+Freeze) -> Q14 (Best-Settings Head-to-Head + Holdout); a "no improvement" outcome is
+recorded as `KEEP_INCUMBENT`, a valid terminal PASS, not skipped or treated as a failure.
 
-`tools/strategy_farm/config/gate_manifest.v4.json` (active manifest,
-`schema_version: qm.gate-manifest/v4`, confirmed loaded as `DEFAULT_MANIFEST` in
-`tools/strategy_farm/gate_manifest.py:48`):
+## Runtime verification (read-only)
 
-- Q11 → `next: "Q12"`, Q12 → `next: "Q13"`, Q13 → `next: "Q14"`, Q14 → `next: null`. The
-  chain is strictly linear with no skip edge from Q11 or Q13 around Q12/Q13 into Q14 or
-  beyond — mandatory traversal is structural, not a convention.
-- Q12 (`Pattern Filter Selection`) carries an explicit note: "Mandatory linear step. Zero
-  filters selected / no eligible filter is a valid pass-through outcome; not an
-  `EXPLICIT_Q14_ADMISSION` gate anymore." — confirms the segment cannot be bypassed even
-  when it selects nothing.
-- Q14 (`Best-Settings Head-to-Head`) carries `"terminal_optimization_gate": true` and
-  `"valid_outcomes": ["CHALLENGER_PROMOTED", "KEEP_INCUMBENT"]`, with `next: null` (terminal
-  per-EA edge — Q15 book-construction entry is reachable only via the separate fail-closed
-  book trigger, per Q15's `"entry_policy": "BOOK_TRIGGER_ONLY"`, not via a `next` edge from
-  Q14).
-- `tools/strategy_farm/gate_manifest.py` load-time validation (lines 774-776) hard-asserts
-  `q14.terminal_optimization_gate is True` and
-  `q14.valid_outcomes == ["CHALLENGER_PROMOTED", "KEEP_INCUMBENT"]` — a manifest that dropped
-  or altered `KEEP_INCUMBENT` as a valid outcome would fail to load. This makes the A2
-  guarantee a load-time invariant, not just a documented convention.
-- `book_build_guard.py`'s `terminal_requalification_gate` (Q14) is resolved by evidence-role
-  match (`SEALED_BEST_SETTINGS_VS_BASELINE_AND_INCUMBENT...`), so the book-build qualified-pair
-  count (A1) only counts pairs that reached this exact terminal gate — i.e., pairs that
-  completed the mandatory Q12-Q14 segment, whether the outcome was `CHALLENGER_PROMOTED` or
-  `KEEP_INCUMBENT`. Both outcomes count as qualified; neither is excluded or double-counted.
+`tools/strategy_farm/optimization_fork_driver.py`:
+- Header comment (lines 10-11) states the v4 chain explicitly: `Q11 -> Q12 -> Q13 ->
+  Q14`, matching the decision record's Alt->Neu mapping (Q12 = Pattern Filter Selection,
+  Q13 = Parameter Optimization & Freeze, Q14 = Best-Settings Head-to-Head + Holdout).
+- Each stage's valid-verdict set includes `KEEP_INCUMBENT` as a first-class member
+  alongside `PASS`/`PASS_SOFT`:
+  - line 60: `{"PASS", "PASS_SOFT", "KEEP_INCUMBENT", "OPT_ELIGIBLE", "NO_FILTER_CHANGE"}`
+    (Q12 pattern-filter stage)
+  - line 63: `{"PASS", "PASS_SOFT", "KEEP_INCUMBENT", "CHALLENGER_SPAWNED",
+    "NO_PARAMETER_CHANGE"}` (Q13 parameter-optimization stage)
+  - line 66: `{"PROMOTE_CHALLENGER", "CHALLENGER_PROMOTED", "KEEP_INCUMBENT",
+    "ADMIT_BOTH"}` (Q14 head-to-head stage)
+- `tools/strategy_farm/gate_manifest.py` `terminal_requalification_gate` (lines 212-231)
+  resolves Q14 as the sole terminal per-EA requalification gate by evidence role
+  (`SEALED_BEST_SETTINGS_VS_BASELINE_AND_INCUMBENT...`), independent of whether the
+  outcome at that gate was an improvement or `KEEP_INCUMBENT` — both are terminal PASS
+  states that satisfy `book_build_guard.py`'s `qualified_pairs` count
+  (`highest_contiguous_valid_gate == terminal_gate`), confirming `KEEP_INCUMBENT` pairs
+  are counted toward the >=25 book trigger exactly like improved pairs, per
+  [[a1-count-unit]] (`docs/ops/evidence/2026-08-27_a1-count-unit_b572c026_execution.md`).
+- No skip path was found in `optimization_fork_driver.py` that routes a "no improvement
+  detected" candidate around Q12-Q14 into a different terminal state; the mandatory
+  linear traversal from the v4 manifest (`config/gate_manifest.v4.json`, `Q11 -> Q12 ->
+  Q13 -> Q14`, per `decisions/2026-08-23_owner_gate_manifest_v4_linear.md`) is the only
+  path.
 
-This is an exact match to the ratified recommendation: the Q12-Q14 segment is mandatory and
-structurally linear, and `KEEP_INCUMBENT` is a valid, terminal, counted PASS.
+Verdict: runtime already implements the selected effect exactly as decided. No code
+change required or made.
 
-## Acceptance check
+## Governance documentation verification
 
-- No strategy mechanics or gate thresholds changed — pure verification.
-- `KEEP_INCUMBENT` remains visible in the manifest's `valid_outcomes` and is not filtered out
-  of the qualified-pair count in `book_build_guard.py` — it is not counted as an "optimized
-  winner" either; it is simply a terminal-gate pass like `CHALLENGER_PROMOTED`.
-- A durable evidence artifact (this file) records the verified contract.
+`docs/ops/OPEN_ITEMS_STATUS.md` line 84 (section "0d - Ultracode-Sitzung 2026-08-23
+nachmittags") still listed A2 inside the open `Entscheidungsschlange (OWNER, <=5)` as
+"Auffangregel läuft" (standing-authority recommendation running, not yet OWNER-ratified).
+That line is stale as of 2026-08-27T11:48:57Z and is corrected by this task to state the
+decision is OWNER-ratified YES, receipt `fdc84028`.
 
-## Conclusion
+Vault mirror `G:\My Drive\QuantMechanica - Company Reference\03 Pipeline\Pipeline
+Rebaseline Directive 2026-08-23.md` could not be checked or updated this cycle: the `G:`
+drive is not mounted in this worktree session (`C:\QM\worktrees\claude-orchestration-2`).
+Flagged as INFRA_BLOCKED, not silently skipped; a future cycle with `G:` mounted should
+verify/update the vault mirror for consistency.
 
-A2 is already correctly implemented; nothing to change. The router task moves to REVIEW for
-independent orchestrator close-out per `review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`.
+## Scope discipline
+
+No gate threshold, criterion, or candidate-universe logic touched. No factory pause,
+T_Live, AutoTrading, or book-construction action taken. This is a documentation
+correction plus a read-only runtime verification, matching `implementation_mode:
+DOCUMENT_AND_VERIFY` and the task's `forbidden_actions`.
+
+## Artifacts touched this task
+
+- `docs/ops/OPEN_ITEMS_STATUS.md` (governance wording correction, shared edit with A1
+  companion task `ee10e42f-c3cb-5697-8e47-fa00312cebe1`, same physical line block)
+- This evidence file
