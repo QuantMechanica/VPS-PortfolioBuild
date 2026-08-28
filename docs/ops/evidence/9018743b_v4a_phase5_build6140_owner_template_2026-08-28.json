@@ -1,0 +1,77 @@
+{
+  "schema": "qm.dev2-runtime-rebase-owner-template/v1",
+  "task_id": "9018743b-5731-4b34-8aa4-61426e1db1c4",
+  "state": "DRAFT_OWNER_SIGNATURE_REQUIRED",
+  "created_at_utc": "2026-08-28T08:42:02.1083075Z",
+  "purpose": "Rebase the isolated DEV2 validation lane and the V4a sealed comparator to the current Build-6140 factory generation.",
+  "non_authorization_notice": "This unsigned template does not authorize a copy, lane-contract mutation, terminal start, validation run, production wiring, T_Live, or AutoTrading.",
+  "source": {
+    "terminal_root": "D:/QM/mt5/T1",
+    "selection_reason": "current factory installation; read-only representative of the Build-6140 generation",
+    "must_be_quiescent_during_capture_and_copy": true,
+    "programs": {
+      "terminal64.exe": {
+        "file_version": "5.0.0.6140",
+        "size_bytes": 121845984,
+        "sha256": "86c563c8c113e4af8802dc91241ecd51fc06caf92cc86fc40026dd8046e526ed",
+        "hash_evidence": "8f17e236 Phase-4 inventory; T1/T2/T10 equality sampled"
+      },
+      "metatester64.exe": {
+        "file_version": "5.0.0.6140",
+        "size_bytes": 21810944,
+        "sha256": null,
+        "hash_state": "OWNER_CAPTURE_REQUIRED_IN_QUIESCENT_WINDOW"
+      },
+      "MetaEditor64.exe": {
+        "file_version": "5.0.0.6140",
+        "size_bytes": 116791384,
+        "sha256": null,
+        "hash_state": "OWNER_CAPTURE_REQUIRED_IN_QUIESCENT_WINDOW"
+      }
+    }
+  },
+  "target": {
+    "lane": "DEV2",
+    "terminal_root": "D:/QM/mt5/DEV2",
+    "current_contract_path": "C:/QM/repo/framework/registry/dev2_lane_contract.json",
+    "current_contract_sha256": "866e4e346187e47c33e32beb30bb96dc4085e98cc316819fb33f7925306dda06",
+    "current_program_build": 5833,
+    "candidate_program_build": 6140,
+    "candidate_contract_sha256": null,
+    "candidate_contract_state": "GENERATE_ONLY_AFTER_ALL_THREE_SOURCE_HASHES_ARE_CAPTURED"
+  },
+  "required_preconditions": [
+    "OWNER supplies a signature/countersignature binding this template after all null hashes and candidate_contract_sha256 are populated.",
+    "A reviewed governed update delta stages and byte-verifies all three programs, preserves firewall and account isolation, and restores Build 5833 on every failed closeout path.",
+    "DEV2 is idle, its QMDev2 account is disabled, no QM_DEV2* Scheduled Task exists, and the feature flag is absent before mutation.",
+    "The source installation is quiescent; active T1-T10 tests are never interrupted to create the window.",
+    "The Phase-5 task ID is added through reviewed code to the validation seal and governed-restart allowlists; the current validator rejects it.",
+    "The authorization binds the exact 20-row cold-reference CSV hash, candidate lane-contract hash, common history-manifest hash, EX5 hashes, setfile hashes, stop-on-first-deviation policy, and complete rollback contract."
+  ],
+  "validation_authorization_template": {
+    "schema": "qm.warm-cell-validation-run/v1",
+    "purpose": "OFFLINE_PARITY_VALIDATION",
+    "task_id": "9018743b-5731-4b34-8aa4-61426e1db1c4",
+    "authorized_by": "OWNER_COMMISSION",
+    "owner_signature": null,
+    "owner_signed_at_utc": null,
+    "execution_backend": "GOVERNED_SEQUENTIAL_TESTER_RESTART",
+    "profile_mode": "ISOLATED_DEV2",
+    "lane": "DEV2",
+    "production_wiring": false,
+    "active_terminal_allowed": false,
+    "minimum_comparisons": 20,
+    "cold_path_default": "OFF",
+    "resident_ipc_claimed": false,
+    "stop_on_first_deviation": true,
+    "candidate_lane_contract_sha256": null,
+    "cold_reference_csv_sha256": null,
+    "common_history_manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06"
+  },
+  "owner_decision": {
+    "approved": null,
+    "signature": null,
+    "signed_at_utc": null,
+    "notes": null
+  }
+}
