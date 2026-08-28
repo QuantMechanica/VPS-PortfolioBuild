@@ -1,0 +1,139 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-28T01:03:42.0794112Z",
+  "generated_at_europe_berlin": "2026-08-28T03:03:42.0794112+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "36f0539789a037748a72fbfb3ed51e223a53d5b6",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "capacity_policy": {
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "stop when either the five-sample average or maximum reaches the governed tester-admission ceiling",
+    "source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-28T01:03:42.0794112Z",
+    "samples_percent": [
+      100.0,
+      99.80845656751933,
+      99.8065537769803,
+      98.53824409871625,
+      99.90289628607381
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_percent": 99.61123014585795,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "triggers": [
+      "average_percent",
+      "maximum_percent"
+    ]
+  },
+  "farm_db_coordination": {
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "active_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "active_work_item_count": 10,
+    "active_phase_counts": {
+      "OPT_CENSUS": 2,
+      "Q03": 1,
+      "Q09": 3,
+      "Q10_NEWS": 4
+    },
+    "process_snapshot_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mt5-slots",
+    "process_snapshot_scanned_at_utc": "2026-08-28T01:03:54+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "running_factory_terminal_count": 7,
+    "active_terminal_reservation_count": 7,
+    "terminal_worker_daemon_count": 10,
+    "orphaned_factory_terminal_process_count": 0,
+    "launch_gate_max": 1,
+    "running_factory_work_items": [
+      "c11f42d3-e6f3-4aff-bbb4-37dbdb5a2ac6",
+      "fac4d930-13b6-469e-8fe2-51ce06907f02",
+      "42e4b18c-4f1b-4c3f-8129-1265fa42dd7b",
+      "9437109a-799b-4f29-a501-89e6b4a3809c",
+      "a05e17e7-a7bc-4ab6-bb21-b072843c2028",
+      "c4f2a779-ca32-44ab-9e9f-6bb8f1b6445d",
+      "0e586e05-cad8-49bd-96f2-501c5ffd28cd"
+    ],
+    "diverse_active_row": {
+      "work_item_id": "9437109a-799b-4f29-a501-89e6b4a3809c",
+      "ea_id": "QM5_20294",
+      "logical_symbol": "QM5_20294_XAU_XAG_LOWMAX_D1",
+      "phase": "Q03",
+      "status": "active",
+      "claimed_by": "T6",
+      "updated_at_utc": "2026-08-27T23:20:06+00:00",
+      "process_or_reservation_visible_in_snapshot": true,
+      "action": "left undisturbed"
+    },
+    "active_rows_without_live_terminal_process": [
+      {
+        "work_item_id": "b490072f-5bbc-50bf-885d-098f2e214670",
+        "ea_id": "QM5_41161",
+        "symbol": "GBPUSD.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T3",
+        "updated_at_utc": "2026-08-28T00:41:58+00:00"
+      },
+      {
+        "work_item_id": "8ac4dd37-4d59-4721-bf19-da6a8e34e384",
+        "ea_id": "QM5_13036",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q09",
+        "claimed_by": "T5",
+        "updated_at_utc": "2026-08-27T05:52:15+00:00"
+      },
+      {
+        "work_item_id": "b2fbdfbb-f346-5ddc-9030-6494d412465d",
+        "ea_id": "QM5_41097",
+        "symbol": "USDJPY.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T7",
+        "updated_at_utc": "2026-08-28T01:03:35+00:00"
+      }
+    ],
+    "point_in_time_mismatch_disposition": "observed only; a process/database mismatch does not establish a stale row or authorize reclaim or duplicate enqueue",
+    "candidate_or_ea_claim_created": false,
+    "database_mutated": false
+  },
+  "non_duplicate_delta": {
+    "preceding_diversity_receipt": "artifacts/diversity_funnel_cpu_ceiling_stop_20260827T213020Z_board_advisor.json",
+    "preceding_active_work_item_count": 7,
+    "current_active_work_item_count": 10,
+    "preceding_running_factory_terminal_count": 5,
+    "current_running_factory_terminal_count": 7,
+    "changed_state": "three additional active rows and two additional visible factory testers; the active phase mix rotated to two OPT_CENSUS, one Q03, three Q09, and four Q10_NEWS while CPU remained above admission"
+  },
+  "actions_this_run": {
+    "approved_backlog_ranked": false,
+    "build_task_claimed": false,
+    "infra_repair_claimed": false,
+    "new_edge_mechanized": false,
+    "registry_or_magic_mutated": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_or_verdict_mutated": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  }
+}
