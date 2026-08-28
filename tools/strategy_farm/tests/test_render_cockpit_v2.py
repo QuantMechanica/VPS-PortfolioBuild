@@ -350,6 +350,21 @@ def test_stale_badge_appears():
     assert "STALE" not in html_fresh
 
 
+def test_atomic_write_preserves_last_good_file_when_replace_fails(tmp_path, monkeypatch):
+    output = tmp_path / "cockpit.html"
+    output.write_text("last-good", encoding="utf-8")
+
+    def fail_replace(_source, _destination):
+        raise OSError("publish failed")
+
+    monkeypatch.setattr(r.os, "replace", fail_replace)
+    with pytest.raises(OSError, match="publish failed"):
+        r._atomic_write_text(output, "incomplete-new-render")
+
+    assert output.read_text(encoding="utf-8") == "last-good"
+    assert list(output.parent.glob(".cockpit.html.*.tmp")) == []
+
+
 # ---------------------------------------------------------------------------
 # 6. actions create a governed handoff and carry no inline operational hook
 # ---------------------------------------------------------------------------

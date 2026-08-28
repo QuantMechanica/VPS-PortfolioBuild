@@ -38,6 +38,7 @@ import json
 import re
 import os
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -1523,6 +1524,35 @@ def _ea_page_exists_factory(output_dir: Path):
     return _exists
 
 
+def _atomic_write_text(path: Path, content: str) -> None:
+    """Publish a complete render without damaging the last good artifact."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            newline="\n",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+            temp_path = Path(handle.name)
+        os.replace(temp_path, path)
+        temp_path = None
+    finally:
+        if temp_path is not None:
+            try:
+                temp_path.unlink()
+            except OSError:
+                pass
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--db", type=Path, default=None,
@@ -1562,14 +1592,11 @@ def main(argv: list[str] | None = None) -> int:
                  duration_ms=dur_ms,
                  ea_page_exists=_ea_page_exists_factory(output.parent))
 
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(doc, encoding="utf-8", newline="\n")
+    _atomic_write_text(output, doc)
     if explorer_doc is not None:
-        (output.parent / "linear_frontier.html").write_text(
-            explorer_doc, encoding="utf-8", newline="\n"
-        )
+        _atomic_write_text(output.parent / "linear_frontier.html", explorer_doc)
     if output == OUTPUT_PATH:
-        ALIAS_PATH.write_text(doc, encoding="utf-8", newline="\n")
+        _atomic_write_text(ALIAS_PATH, doc)
     if args.stdout:
         sys.stdout.write(doc)
 
