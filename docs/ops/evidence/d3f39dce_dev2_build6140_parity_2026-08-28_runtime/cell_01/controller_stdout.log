@@ -1,0 +1,62 @@
+{
+  "program_sha256": {
+    "MetaEditor64.exe": "05718f3fa55f3f59fd2f024d8c433b457fbd58fcf39e947a16ccdad00a614ec7",
+    "metatester64.exe": "46da12974ea4b393fa6855576da57549a1e3255dbe5c667cce60d7f32c1a889f",
+    "terminal64.exe": "86c563c8c113e4af8802dc91241ecd51fc06caf92cc86fc40026dd8046e526ed"
+  },
+  "error_code": null,
+  "finished_utc": "2026-08-28T10:37:24.4199904Z",
+  "run_smoke_exit_code": 0,
+  "nonce": "70042cd6a9ae4fb9a51acd2084c363cf",
+  "run_id": "20260828T103337Z_cbb07e95d4624779b9c6bef5c341fdd7",
+  "identity_sid": "S-1-5-21-1736347224-3968129211-1303436014-1006",
+  "lane_contract_sha256": "12e3e4ede11c904ba74d2cd591390161832093d7c61a92201bb7b9d31a9e824b",
+  "started_utc": "2026-08-28T10:33:58.4083987Z",
+  "common_path": "C:\\Users\\QMDev2\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common",
+  "run_smoke_sha256": "750478498f9280b61d2cb02ba1ee03a52b54bb448461b2d3d3cc246af411cf4a",
+  "child_sha256": "6602217a4c27636a9d4faa26086b6be5dfd3a4817b5fa8174640e5160922d6b1",
+  "agent_port_proof": {
+    "status": "PASS",
+    "preexisting_port_owner": false,
+    "concurrent_port_owner": false,
+    "exclusivity_semantics": "NO_CONCURRENT_OVERLAPPING_ENDPOINT_OWNER",
+    "released_baseline_endpoint_reuse_allowed": true,
+    "metatester_path": "D:\\QM\\mt5\\DEV2\\metatester64.exe",
+    "metatester_sha256": "46da12974ea4b393fa6855576da57549a1e3255dbe5c667cce60d7f32c1a889f",
+    "listeners": [
+      {
+        "local_address": "127.0.0.1",
+        "local_port": 3000,
+        "process_id": 34928,
+        "owner_sid": "S-1-5-21-1736347224-3968129211-1303436014-1006",
+        "executable_path": "D:\\QM\\mt5\\DEV2\\metatester64.exe",
+        "creation_utc": "2026-08-28T12:34:53.595691+02:00",
+        "first_observed_utc": "2026-08-28T10:37:16.0723326Z",
+        "preexisting_port_owner": false,
+        "concurrent_port_owner": false,
+        "exclusive_current_owner": true,
+        "current_overlapping_owner_count": 1,
+        "baseline_endpoint_was_occupied": false,
+        "released_baseline_owner_count": 0
+      }
+    ]
+  },
+  "expected_task_name": "QM_DEV2_SMOKE_2c32dafcf9724794a51847d4e0d99307",
+  "log_path": "D:\\QM\\reports\\dev2\\runs\\20260828T103337Z_cbb07e95d4624779b9c6bef5c341fdd7\\output\\run.log",
+  "controller_mutex": "Global\\QM_DEV2_SMOKE_CONTROLLER",
+  "success": true,
+  "schema_version": 2,
+  "error_message": null,
+  "tester_groups_post_child_sha256": "25314333AF81FAF48E2AFE2DB5D52BEEA640CC74EC33A85A46B7C43AADB921DD",
+  "tester_groups_restored_sha256": "25314333AF81FAF48E2AFE2DB5D52BEEA640CC74EC33A85A46B7C43AADB921DD",
+  "tester_groups_canonical_path": "C:\\QM\\repo\\framework\\registry\\tester_groups\\Darwinex-Live_real.canonical.txt",
+  "tester_groups_dev2_path": "D:\\QM\\mt5\\DEV2\\MQL5\\Profiles\\Tester\\Groups\\Darwinex-Live_real.txt",
+  "dev2_account_initially_enabled": false,
+  "dev2_account_enabled_by_controller": true,
+  "dev2_account_restored_disabled": true,
+  "cleanup_helper_sha256": "617bbd95dfd1324bf70654a831ca6caec087df3cbaa8c1d064ddda3455e9f250",
+  "machine_credential_sha256": "32f621bab2069924727f5cc0fbdb9e98d38701f2186f00bbc4f687f4a870f5b7",
+  "machine_credential_helper_sha256": "bd3077f5ff671d80a377a820e35cd233cdf8ad1b25d376d579da4714c323ad2c",
+  "cleanup_lease_registered": true,
+  "cleanup_lease_disarmed": true
+}
