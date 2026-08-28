@@ -29,6 +29,7 @@ except ModuleNotFoundError:
 COMPILE_WORK_ITEM_KIND = "compile"
 COMPILE_EA_PHASE = "COMPILE_EA"
 COMPILE_CONTRACT_VERSION = "qm.compile-ea-work-item/v1"
+BUILD_TASK_BINDING_CONTRACT_VERSION = "qm.compile-ea-build-task-binding/v1"
 COMPILE_ACTIVATION_HOLD_CODE = "COMPILE_EA_WORKER_ROLLOUT_PENDING"
 COMPILE_ACTIVATION_HOLD_REASON = (
     "COMPILE_EA rows require the reviewed worker version on the full terminal fleet; "
@@ -675,14 +676,20 @@ def _inventory(root: Path, repo_root: Path) -> dict[str, Any]:
             superseded_by[str(row["work_item_id"])].add(
                 str(row["superseded_by_work_item_id"])
             )
-        build_ids = {
-            ea_id
-            for row in conn.execute(
-                "SELECT DISTINCT card_id FROM tasks "
-                "WHERE kind='build_ea' AND status IN ('pending','active','done')"
-            )
-            if (ea_id := _numeric_ea_reference(row[0]))
-        }
+        build_tasks_by_id: dict[str, dict[str, Any]] = {}
+        build_tasks_by_ea: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        build_ids: set[str] = set()
+        for row in conn.execute(
+            "SELECT id,status,card_id,payload_json FROM tasks WHERE kind='build_ea'"
+        ):
+            item = dict(row)
+            build_tasks_by_id[str(row["id"])] = item
+            ea_id = _numeric_ea_reference(row["card_id"])
+            if not ea_id:
+                continue
+            build_tasks_by_ea[ea_id].append(item)
+            if row["status"] in ("pending", "active", "done"):
+                build_ids.add(ea_id)
     return {
         "registry_by_id": registry_by_id,
         "active_magics": active_magics,
@@ -691,7 +698,74 @@ def _inventory(root: Path, repo_root: Path) -> dict[str, Any]:
         "rollout_holds": rollout_holds,
         "superseded_by": superseded_by,
         "build_ids": build_ids,
+        "build_tasks_by_id": build_tasks_by_id,
+        "build_tasks_by_ea": build_tasks_by_ea,
     }
+
+
+def _build_task_binding(
+    repo_root: Path,
+    canonical_label: str,
+    ea_id: str,
+    build_task_id: str | None,
+    inventory: dict[str, Any],
+) -> dict[str, Any]:
+    """Validate a single open build task as compile authority for its own EA.
+
+    The ordinary classifier refuses every EA represented in the build backlog.
+    A standard build running while the factory is live must nevertheless use a
+    governed COMPILE_EA row.  This binding is deliberately narrow: it waives
+    only BUILD_TASK_EXISTS, only for one exact open task, and only when the task
+    payload still names the canonical EA id, slug, and directory.
+    """
+    requested_id = str(build_task_id or "").strip()
+    result: dict[str, Any] = {
+        "contract_version": BUILD_TASK_BINDING_CONTRACT_VERSION,
+        "requested": bool(requested_id),
+        "authorized": False,
+        "build_task_id": requested_id or None,
+    }
+    if not requested_id:
+        return {**result, "reason": "BUILD_TASK_BINDING_NOT_REQUESTED"}
+
+    row = inventory.get("build_tasks_by_id", {}).get(requested_id)
+    if not row:
+        return {**result, "reason": "BUILD_TASK_BINDING_NOT_FOUND"}
+    status = str(row.get("status") or "")
+    result["build_task_status"] = status
+    if status not in {"pending", "active"}:
+        return {**result, "reason": "BUILD_TASK_BINDING_NOT_OPEN"}
+
+    parts = _label_parts(canonical_label)
+    if not parts:
+        return {**result, "reason": "BUILD_TASK_BINDING_IDENTITY_MISMATCH"}
+    _label, _numeric_id, slug = parts
+    payload = _json_object(row.get("payload_json"))
+    expected_dir = repo_root / "framework" / "EAs" / canonical_label
+    try:
+        payload_dir_matches = (
+            Path(str(payload.get("ea_dir") or "")).resolve()
+            == expected_dir.resolve()
+        )
+    except (OSError, RuntimeError):
+        payload_dir_matches = False
+    identity_matches = bool(
+        _numeric_ea_reference(row.get("card_id")) == ea_id
+        and _numeric_ea_reference(payload.get("ea_id")) == ea_id
+        and str(payload.get("slug") or "") == slug
+        and payload_dir_matches
+    )
+    if not identity_matches:
+        return {**result, "reason": "BUILD_TASK_BINDING_IDENTITY_MISMATCH"}
+
+    open_rows = [
+        task
+        for task in inventory.get("build_tasks_by_ea", {}).get(ea_id, [])
+        if str(task.get("status") or "") in {"pending", "active"}
+    ]
+    if len(open_rows) != 1 or str(open_rows[0].get("id")) != requested_id:
+        return {**result, "reason": "BUILD_TASK_BINDING_AMBIGUOUS"}
+    return {**result, "authorized": True, "reason": "AUTHORIZED"}
 
 
 def classify_candidate(
@@ -704,6 +778,7 @@ def classify_candidate(
     sanctioned_predecessor_ids: Iterable[str] = (),
     force_rebuild_ea_ids: frozenset[str] = frozenset(),
     source_repair_authority: str | None = None,
+    bound_build_task_id: str | None = None,
 ) -> dict[str, Any]:
     parts = _label_parts(label)
     if not parts:
@@ -802,7 +877,16 @@ def classify_candidate(
     ]
     if other_work:
         reasons.append("WORK_ITEMS_EXIST")
-    if ea_id in inventory["build_ids"]:
+    build_task_binding = _build_task_binding(
+        repo_root,
+        canonical_label,
+        ea_id,
+        bound_build_task_id,
+        inventory,
+    )
+    if build_task_binding["requested"] and not build_task_binding["authorized"]:
+        reasons.append(str(build_task_binding["reason"]))
+    if ea_id in inventory["build_ids"] and not build_task_binding["authorized"]:
         reasons.append("BUILD_TASK_EXISTS")
     bound_hashes = _bound_setfile_hashes(ea_dir) if ea_dir.is_dir() else []
     if bound_hashes:
@@ -848,6 +932,8 @@ def classify_candidate(
         "active_magic_row_count": len(magic_rows),
         "bound_setfile_hashes": bound_hashes,
         "timeframe": timeframe,
+        "build_task_binding": build_task_binding,
+        "build_task_binding_authorized": build_task_binding["authorized"],
         "sanctioned_predecessor_ids": sorted(sanctioned_ids),
         "force_rebuild_authorized": force_rebuild_authorized,
         "force_rebuild_waived_reasons": force_rebuild_waived_reasons,
@@ -1077,10 +1163,18 @@ def enqueue_compile_eas(
     from_file: str | None = None,
     apply: bool = False,
     source_repair_authority: str | None = None,
+    build_task_id: str | None = None,
 ) -> dict[str, Any]:
     labels, input_metadata = load_labels(explicit_labels, from_file, repo_root)
     if not labels:
         return {"ok": False, "reason": "NO_EA_LABELS", "enqueued_count": 0}
+    bound_build_task_id = str(build_task_id or "").strip() or None
+    if bound_build_task_id and (from_file or len(labels) != 1):
+        return {
+            "ok": False,
+            "reason": "BUILD_TASK_BINDING_REQUIRES_ONE_EXPLICIT_EA_LABEL",
+            "enqueued_count": 0,
+        }
     # Explicit labels are an intentionally narrow single/manual form.  A file
     # is the batch form and remains dry-run until --apply is present.
     apply_effective = bool(apply or not from_file)
@@ -1091,6 +1185,7 @@ def enqueue_compile_eas(
             root, repo_root, label, inventory,
             force_rebuild_ea_ids=force_rebuild_ea_ids,
             source_repair_authority=source_repair_authority,
+            bound_build_task_id=bound_build_task_id,
         )
         for label in labels
     ]
@@ -1103,6 +1198,39 @@ def enqueue_compile_eas(
         with _connect(root) as conn:
             conn.execute("BEGIN IMMEDIATE")
             for candidate in eligible:
+                if bound_build_task_id:
+                    current_build_tasks_by_id: dict[str, dict[str, Any]] = {}
+                    current_build_tasks_by_ea: dict[str, list[dict[str, Any]]] = (
+                        defaultdict(list)
+                    )
+                    for task_row in conn.execute(
+                        "SELECT id,status,card_id,payload_json FROM tasks "
+                        "WHERE kind='build_ea'"
+                    ):
+                        task = dict(task_row)
+                        current_build_tasks_by_id[str(task_row["id"])] = task
+                        task_ea_id = _numeric_ea_reference(task_row["card_id"])
+                        if task_ea_id:
+                            current_build_tasks_by_ea[task_ea_id].append(task)
+                    current_binding = _build_task_binding(
+                        repo_root,
+                        str(candidate["ea_label"]),
+                        str(candidate["numeric_ea_id"]),
+                        bound_build_task_id,
+                        {
+                            "build_tasks_by_id": current_build_tasks_by_id,
+                            "build_tasks_by_ea": current_build_tasks_by_ea,
+                        },
+                    )
+                    if not current_binding["authorized"]:
+                        refused.append({
+                            **candidate,
+                            "eligible": False,
+                            "reason": "BUILD_TASK_BINDING_INVALID_AT_APPLY",
+                            "reasons": ["BUILD_TASK_BINDING_INVALID_AT_APPLY"],
+                            "build_task_binding": current_binding,
+                        })
+                        continue
                 if (
                     source_repair_authority
                     == HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY
@@ -1199,6 +1327,14 @@ def enqueue_compile_eas(
                     "no_gate_verdict": True,
                     "enqueued_at": now,
                 }
+                if candidate.get("build_task_binding_authorized"):
+                    payload.update({
+                        "compile_build_task_binding_contract_version": (
+                            BUILD_TASK_BINDING_CONTRACT_VERSION
+                        ),
+                        "bound_build_task_id": bound_build_task_id,
+                        "bound_build_task_ea_id": candidate["ea_id"],
+                    })
                 if candidate.get("force_rebuild_authorized"):
                     payload.update({
                         "force_rebuild": True,
@@ -1297,6 +1433,7 @@ def enqueue_compile_eas(
         "candidate_classification": classified if not apply_effective else None,
         "no_gate_verdict": True,
         "source_repair_authority": source_repair_authority,
+        "build_task_id": bound_build_task_id,
     }
 
 
@@ -1587,6 +1724,12 @@ def run_compile_work_item(
                 if payload.get("append_only_source_repair") is True
                 and payload.get("compile_source_repair_contract_version")
                 == SOURCE_REPAIR_CONTRACT_VERSION
+                else None
+            ),
+            bound_build_task_id=(
+                str(payload.get("bound_build_task_id") or "")
+                if payload.get("compile_build_task_binding_contract_version")
+                == BUILD_TASK_BINDING_CONTRACT_VERSION
                 else None
             ),
         )

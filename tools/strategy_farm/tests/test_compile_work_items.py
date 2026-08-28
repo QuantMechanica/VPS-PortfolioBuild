@@ -63,6 +63,42 @@ def _fixture(tmp_path: Path, labels: list[str]) -> tuple[Path, Path]:
     return repo, root
 
 
+def _insert_build_task(
+    root: Path,
+    repo: Path,
+    label: str,
+    task_id: str,
+    *,
+    status: str = "pending",
+    payload_overrides: dict[str, str] | None = None,
+) -> None:
+    parts = compile_work_items._label_parts(label)
+    assert parts is not None
+    _canonical_label, numeric_id, slug = parts
+    payload = {
+        "ea_id": f"QM5_{numeric_id}",
+        "slug": slug,
+        "ea_dir": str(repo / "framework" / "EAs" / label),
+    }
+    payload.update(payload_overrides or {})
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "INSERT INTO tasks "
+            "(id,kind,status,source_id,card_id,payload_json,created_at,updated_at) "
+            "VALUES (?,'build_ea',?,NULL,?,?,?,?)",
+            (
+                task_id,
+                status,
+                f"QM5_{numeric_id}",
+                json.dumps(payload, sort_keys=True),
+                now,
+                now,
+            ),
+        )
+        conn.commit()
+
+
 def test_enqueue_compile_is_idempotent_for_existing_open_row(tmp_path: Path) -> None:
     label = "QM5_1001_compile-fixture-h1"
     repo, root = _fixture(tmp_path, [label])
@@ -88,6 +124,103 @@ def test_enqueue_compile_is_idempotent_for_existing_open_row(tmp_path: Path) -> 
         1,
         1,
     )
+
+
+def test_open_build_task_compile_requires_exact_identity_binding(
+    tmp_path: Path,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    task_id = "build-task-1001"
+    repo, root = _fixture(tmp_path, [label])
+    _insert_build_task(root, repo, label, task_id)
+
+    unbound = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    bound = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        build_task_id=task_id,
+    )
+
+    assert unbound["ok"] is False
+    assert unbound["enqueued_count"] == 0
+    assert "BUILD_TASK_EXISTS" in unbound["refused"][0]["reasons"]
+    assert bound["ok"] is True
+    assert bound["enqueued_count"] == 1
+    work_item_id = bound["enqueued"][0]["work_item_id"]
+    with farmctl.connect(root) as conn:
+        payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (work_item_id,),
+            ).fetchone()[0]
+        )
+    assert payload["compile_build_task_binding_contract_version"] == (
+        compile_work_items.BUILD_TASK_BINDING_CONTRACT_VERSION
+    )
+    assert payload["bound_build_task_id"] == task_id
+    assert payload["bound_build_task_ea_id"] == "QM5_1001"
+
+    inventory = compile_work_items._inventory(root, repo)
+    worker_recheck = compile_work_items.classify_candidate(
+        root,
+        repo,
+        label,
+        inventory,
+        current_work_item_id=work_item_id,
+        bound_build_task_id=task_id,
+    )
+    assert worker_recheck["eligible"] is True
+    assert worker_recheck["build_task_binding_authorized"] is True
+
+
+def test_build_task_compile_binding_fails_closed_on_wrong_task_or_state(
+    tmp_path: Path,
+) -> None:
+    labels = [
+        "QM5_1001_compile-fixture-h1",
+        "QM5_1002_second-fixture-d1",
+    ]
+    repo, root = _fixture(tmp_path, labels)
+    _insert_build_task(root, repo, labels[0], "build-task-1001")
+    _insert_build_task(root, repo, labels[1], "build-task-1002")
+
+    wrong_task = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [labels[0]],
+        build_task_id="build-task-1002",
+    )
+    assert wrong_task["ok"] is False
+    assert "BUILD_TASK_BINDING_IDENTITY_MISMATCH" in (
+        wrong_task["refused"][0]["reasons"]
+    )
+
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE tasks SET status='done' WHERE id='build-task-1001'"
+        )
+        conn.commit()
+    closed_task = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [labels[0]],
+        build_task_id="build-task-1001",
+    )
+    assert closed_task["ok"] is False
+    assert "BUILD_TASK_BINDING_NOT_OPEN" in closed_task["refused"][0]["reasons"]
+
+    broad_request = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        labels,
+        build_task_id="build-task-1002",
+    )
+    assert broad_request == {
+        "ok": False,
+        "reason": "BUILD_TASK_BINDING_REQUIRES_ONE_EXPLICIT_EA_LABEL",
+        "enqueued_count": 0,
+    }
 
 
 def test_source_repair_appends_fresh_row_without_mutating_stale_open(

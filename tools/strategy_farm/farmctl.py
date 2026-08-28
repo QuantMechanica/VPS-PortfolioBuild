@@ -6881,6 +6881,7 @@ def enqueue_compile_eas(
     from_file: str | None = None,
     apply: bool = False,
     source_repair_authority: str | None = None,
+    build_task_id: str | None = None,
 ) -> dict[str, Any]:
     """Create guarded COMPILE_EA utility work items.
 
@@ -6902,7 +6903,10 @@ def enqueue_compile_eas(
                 _scope_guard(
                     "ea.compile",
                     tool="enqueue_compile_eas",
-                    args_summary=f"labels={len(ea_labels)}:from_file={from_file}:apply={apply}",
+                    args_summary=(
+                        f"labels={len(ea_labels)}:from_file={from_file}:apply={apply}:"
+                        f"build_task_id={build_task_id}"
+                    ),
                     conn=audit_conn,
                 )
             except Exception:
@@ -6917,6 +6921,7 @@ def enqueue_compile_eas(
         from_file=from_file,
         apply=apply,
         source_repair_authority=source_repair_authority,
+        build_task_id=build_task_id,
     )
 
 
@@ -25770,6 +25775,23 @@ def _validate_raw_mq5_promotion(build_result: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+AUTO_Q02_IDEMPOTENT_RETRY_SKIP_REASONS = frozenset({
+    "basket_manifest_missing_logical_setfile",
+})
+
+
+def _auto_q02_idempotent_retry_reasons(payload: dict[str, Any]) -> list[str]:
+    prior = payload.get("auto_q02_enqueued")
+    if not isinstance(prior, dict) or prior.get("enqueued"):
+        return []
+    reasons = {
+        str(row.get("reason") or "")
+        for row in (prior.get("skipped") or [])
+        if isinstance(row, dict)
+    }
+    return sorted(reasons & AUTO_Q02_IDEMPOTENT_RETRY_SKIP_REASONS)
+
+
 def record_build_result(
     root: Path,
     task_id: str,
@@ -25855,6 +25877,36 @@ def record_build_result(
     initial_result_sha256 = _sha256_file(rp)
     prior_result_sha256 = str(task_payload.get("build_result_sha256") or "").strip().lower()
     if task_row["status"] == "done" and prior_result_sha256 == initial_result_sha256.lower():
+        retry_reasons = _auto_q02_idempotent_retry_reasons(task_payload)
+        if retry_reasons:
+            reconciled_q02 = _auto_enqueue_q02_for_build(root, result)
+            existing_q02 = any(
+                str(row.get("reason") or "").startswith("existing_q02_")
+                for row in (reconciled_q02.get("skipped") or [])
+                if isinstance(row, dict)
+            )
+            if reconciled_q02.get("enqueued") or existing_q02:
+                reconciled_at = utc_now()
+                with connect(root) as conn:
+                    update_task(
+                        conn,
+                        task_id,
+                        status="done",
+                        payload_merge={
+                            "auto_q02_enqueued": reconciled_q02,
+                            "auto_q02_reconciled_at": reconciled_at,
+                            "auto_q02_reconciled_from_reasons": retry_reasons,
+                        },
+                    )
+                return {
+                    "recorded": True,
+                    "already_recorded": True,
+                    "task_id": task_id,
+                    "new_status": "done",
+                    "build_result_sha256": initial_result_sha256,
+                    "auto_q02_enqueued": reconciled_q02,
+                    "auto_q02_reconciled": True,
+                }
         return {
             "recorded": True,
             "already_recorded": True,
@@ -28278,6 +28330,13 @@ def build_parser() -> argparse.ArgumentParser:
             "authority; ordinary enqueue guards remain fail-closed"
         ),
     )
+    enqueue_compile.add_argument(
+        "--build-task-id",
+        help=(
+            "Bind one explicit EA label to its exact open build_ea task; this "
+            "waives only the otherwise circular BUILD_TASK_EXISTS refusal"
+        ),
+    )
     compile_status = sub.add_parser(
         "compile-status",
         help="Report latest COMPILE_EA status and failure classes per EA",
@@ -28923,6 +28982,7 @@ def main(argv: list[str] | None = None) -> int:
             from_file=args.from_file,
             apply=args.apply,
             source_repair_authority=args.source_repair_authority,
+            build_task_id=args.build_task_id,
         )
         print_json(compile_enqueue_result)
         if not compile_enqueue_result.get("ok", False):

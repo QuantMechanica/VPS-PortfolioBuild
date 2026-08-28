@@ -839,6 +839,70 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(payload["portfolio_scope"], "basket")
             self.assertEqual(payload["tester_currency"], "JPY")
 
+    def test_record_build_idempotently_retries_repaired_logical_setfile(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            farmctl.init_db(root)
+            result_path = root / "artifacts" / "builds" / "build-task.json"
+            result_path.parent.mkdir(parents=True, exist_ok=True)
+            build_result = {
+                "task_id": "build-task",
+                "ea_id": "QM5_12533",
+                "setfiles_generated": ["physical.set"],
+            }
+            result_path.write_text(json.dumps(build_result), encoding="utf-8")
+            now = farmctl.utc_now()
+            payload = {
+                "build_result_path": str(result_path),
+                "build_result_sha256": farmctl._sha256_file(result_path),
+                "auto_q02_enqueued": {
+                    "enqueued": [],
+                    "skipped": [{
+                        "setfile": "physical.set",
+                        "reason": "basket_manifest_missing_logical_setfile",
+                    }],
+                },
+            }
+            with farmctl.connect(root) as conn:
+                conn.execute(
+                    "INSERT INTO tasks "
+                    "(id,kind,status,source_id,card_id,payload_json,created_at,updated_at) "
+                    "VALUES ('build-task','build_ea','done',NULL,'QM5_12533',?,?,?)",
+                    (json.dumps(payload), now, now),
+                )
+                conn.commit()
+
+            old_auto_q02 = farmctl._auto_enqueue_q02_for_build
+            self.addCleanup(
+                setattr, farmctl, "_auto_enqueue_q02_for_build", old_auto_q02
+            )
+            farmctl._auto_enqueue_q02_for_build = lambda _root, _result: {
+                "ea_id": "QM5_12533",
+                "enqueued": [{"wi_id": "fresh-q02", "symbol": "LOGICAL"}],
+                "skipped": [],
+            }
+
+            recorded = farmctl.record_build_result(
+                root, "build-task", str(result_path)
+            )
+
+            self.assertTrue(recorded["already_recorded"])
+            self.assertTrue(recorded["auto_q02_reconciled"])
+            self.assertEqual(
+                recorded["auto_q02_enqueued"]["enqueued"][0]["wi_id"],
+                "fresh-q02",
+            )
+            with farmctl.connect(root) as conn:
+                stored = json.loads(
+                    conn.execute(
+                        "SELECT payload_json FROM tasks WHERE id='build-task'"
+                    ).fetchone()[0]
+                )
+            self.assertEqual(
+                stored["auto_q02_reconciled_from_reasons"],
+                ["basket_manifest_missing_logical_setfile"],
+            )
+
     def test_embedded_build_result_materializes_and_records(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"

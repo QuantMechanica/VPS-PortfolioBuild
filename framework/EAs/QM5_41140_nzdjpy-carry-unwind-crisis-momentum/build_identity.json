@@ -1,25 +1,29 @@
 {
-  "task_id": "29863320-8536-4252-b02c-6dae6db885d9",
+  "task_id": "5f69b208-6e8b-4900-a8c2-020c779eb030",
   "ea_id": "QM5_41140",
   "ea_dir": "framework/EAs/QM5_41140_nzdjpy-carry-unwind-crisis-momentum",
   "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41140_nzdjpy-carry-unwind-crisis-momentum\\QM5_41140_nzdjpy-carry-unwind-crisis-momentum.mq5",
   "mq5_sha256": "9bdfd70380c9040d84ce3ac323a39ee94acc5d7a9201816fe5eee6231e387479",
-  "ex5_path": null,
-  "ex5_sha256": null,
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41140_nzdjpy-carry-unwind-crisis-momentum\\QM5_41140_nzdjpy-carry-unwind-crisis-momentum.ex5",
+  "ex5_sha256": "b7b1796aedc601b3576e5195344ff1e47de4f4a9efb9e2b6cafc4c965c5f3bf1",
   "magic_base": 411400000,
   "symbols_registered": [
     "NZDJPY.DWX"
   ],
   "setfiles_generated": [
-    "C:\\QM\\repo\\framework\\EAs\\QM5_41140_nzdjpy-carry-unwind-crisis-momentum\\sets\\QM5_41140_nzdjpy-carry-unwind-crisis-momentum_NZDJPY.DWX_D1_backtest.set"
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41140_nzdjpy-carry-unwind-crisis-momentum\\sets\\QM5_41140_nzdjpy-carry-unwind-crisis-momentum_NZDJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41140_nzdjpy-carry-unwind-crisis-momentum\\sets\\QM5_41140_nzdjpy-carry-unwind-crisis-momentum_QM5_41140_NZDJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1_D1_backtest.set"
   ],
   "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41140_nzdjpy-carry-unwind-crisis-momentum\\SPEC.md",
-  "build_check_passed": false,
-  "compile_succeeded": false,
-  "smoke_result": "build_check_failed",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
   "smoke_report_path": null,
-  "blocked_reason": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED and governed enqueue refused BUILD_TASK_EXISTS; no terminal was interrupted and no compile verdict is claimed",
-  "open_questions": [
-    "Control-plane sequencing must admit a governed COMPILE_EA work item while this router-owned Q01 task exists, or otherwise provide an authorized compile path before REVIEW."
-  ]
+  "blocked_reason": "",
+  "open_questions": [],
+  "build_generation": 0,
+  "build_smoke_framework_error": "framework_error custom_history_gate_refused terminal=T5 status=REFUSED reason=active Custom-history isolation requires a worker-bound work item whose archives were privatized before run_smoke",
+  "smoke_skipped_reason": "framework_error_during_build_smoke_treated_as_done",
+  "compile_work_item_id": "c791b8f6-7474-495a-abab-2469b610f332",
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\c791b8f6-7474-495a-abab-2469b610f332\\QM5_41140\\COMPILE_EA\\compile_evidence.json"
 }

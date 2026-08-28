@@ -4,13 +4,14 @@
 ; ea_slug:      nzdjpy-carry-unwind-crisis-momentum
 ; ea_version:   v5.0
 ; set_version:  s20260828-001
-; symbol:       NZDJPY.DWX
+; symbol:       QM5_41140_NZDJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1
+; host_symbol:  NZDJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b4fd41a63b6c54cb0128114818327b0d23164d2d89a93d00f36f09005da473fd
+; build_hash:   7dd7c1eb3b50369abe3b6bd69e6d7653484f93421b4bf7d35f687f8c51f20c26
 ; author:       Development
 ; date:         2026-08-28
 ;==========================================================
@@ -19,8 +20,7 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_41140_nzdjpy-carry-unwind-crisis-momentum.md
+; strategy-specific params from the approved card/input defaults
 breadth_return_days=5
 breadth_threshold=-0.010
 breakout_lookback=20
@@ -29,3 +29,4 @@ vol_baseline_days=60
 atr_period=14
 hard_stop_atr=2.0
 max_hold_bars=10
+; basket_manifest=../basket_manifest.json

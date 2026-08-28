@@ -1329,3 +1329,39 @@ def test_qm5_1224_is_one_atomic_fx7_cross_sectional_package() -> None:
     assert "QM_CalendarPeriodKey(cadence, _Symbol, 1)" in source
     assert "QM_IsNewCalendarPeriod" not in source
     assert not re.search(r"\bi(?:Time|Close|Open|High|Low|Volume|Bars)\s*\(", source)
+
+
+def test_qm5_41140_has_one_fixed_risk_logical_basket_setfile() -> None:
+    ea_dir = (
+        REPO
+        / "framework"
+        / "EAs"
+        / "QM5_41140_nzdjpy-carry-unwind-crisis-momentum"
+    )
+    manifest = json.loads(
+        (ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig")
+    )
+    logical_setfile = (
+        ea_dir
+        / "sets"
+        / (
+            f"{ea_dir.name}_{manifest['logical_symbol']}_"
+            f"{manifest['host_timeframe']}_backtest.set"
+        )
+    )
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+
+    assert manifest["host_symbol"] == "NZDJPY.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["traded_symbols"] == ["NZDJPY.DWX"]
+    assert set(manifest["basket_symbols"]) == {
+        "AUDJPY.DWX",
+        "NZDJPY.DWX",
+        "CADJPY.DWX",
+        "EURJPY.DWX",
+    }
+    assert logical_setfile.exists()
+    assert "; host_symbol:  NZDJPY.DWX" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert re.search(r"(?m)^; build_hash:\s+[0-9a-f]{64}$", set_text)

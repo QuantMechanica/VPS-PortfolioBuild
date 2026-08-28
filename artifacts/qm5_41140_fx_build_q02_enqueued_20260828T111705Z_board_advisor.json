@@ -1,0 +1,117 @@
+{
+  "schema": "qm.paced-fleet-build-complete/v1",
+  "recorded_at_utc": "2026-08-28T11:17:05.8562936Z",
+  "branch": "agents/board-advisor",
+  "mission": "diversity_funnel_throughput",
+  "selection": {
+    "strategy_priority_rank": 8,
+    "reason": "first eligible structural low-frequency FX-cross diversity card in the scored approved build backlog",
+    "ea_id": "QM5_41140",
+    "label": "QM5_41140_nzdjpy-carry-unwind-crisis-momentum",
+    "family": "carry_funding",
+    "mechanism": "carry_unwind_crisis_momentum",
+    "host_symbol": "NZDJPY.DWX",
+    "timeframe": "D1",
+    "source_tier": "TIER_A",
+    "source_url": "https://www.nber.org/papers/w14473"
+  },
+  "farm_claim": {
+    "build_task_id": "5f69b208-6e8b-4900-a8c2-020c779eb030",
+    "final_status": "done",
+    "collision_check": "one exact open build task and no prior QM5_41140 Q02 row"
+  },
+  "control_plane_repair": {
+    "compile_binding_contract": "qm.compile-ea-build-task-binding/v1",
+    "compile_guard_before": "BUILD_TASK_EXISTS",
+    "compile_guard_after": "exact open task/card/slug/directory binding authorized; unbound and mismatched requests remain refused",
+    "basket_reconciliation": "record-build idempotently retried only the basket_manifest_missing_logical_setfile package failure after the logical preset was supplied",
+    "default_guards_weakened": false
+  },
+  "compile": {
+    "work_item_id": "c791b8f6-7474-495a-abab-2469b610f332",
+    "terminal": "T2",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "mq5_sha256": "9bdfd70380c9040d84ce3ac323a39ee94acc5d7a9201816fe5eee6231e387479",
+    "ex5_sha256": "b7b1796aedc601b3576e5195344ff1e47de4f4a9efb9e2b6cafc4c965c5f3bf1",
+    "ex5_bytes": 434864,
+    "evidence_path": "D:\\QM\\reports\\work_items\\c791b8f6-7474-495a-abab-2469b610f332\\QM5_41140\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "b4381ec3588c4177f8e9e9273f13ac9ddce7b340d3c952e61801e18995747965"
+  },
+  "risk_and_presets": {
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "physical_setfile_sha256": "2a71e28f6a3c704a93d1eb979171adba01a7d1102595c34e38a2a590d2e9681b",
+    "logical_setfile_sha256": "b7602730f71c586ed9862be39ea90531ecf6da3fd12377d8fbb8863cc8e13d06",
+    "logical_symbol": "QM5_41140_NZDJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1",
+    "basket_symbols": [
+      "AUDJPY.DWX",
+      "NZDJPY.DWX",
+      "CADJPY.DWX",
+      "EURJPY.DWX"
+    ]
+  },
+  "single_smoke": {
+    "attempt_count": 1,
+    "terminal": "T5",
+    "year": 2024,
+    "period": "D1",
+    "mt5_test_started": false,
+    "reported_result": "framework_error",
+    "reason": "custom_history_gate_refused: active custom-history isolation requires a worker-bound work item whose archives were privatized before run_smoke",
+    "record_build_normalized_result": "deferred_p2_smoke",
+    "needs_p2_smoke_via_pump": true,
+    "retry_attempted": false
+  },
+  "q02": {
+    "work_item_id": "381b2608-c3f1-4493-88f8-9ed119e61d69",
+    "status_at_record": "pending",
+    "symbol": "QM5_41140_NZDJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1",
+    "host_symbol": "NZDJPY.DWX",
+    "timeframe": "D1",
+    "portfolio_scope": "basket",
+    "priority_track": true,
+    "custom_history_archive_status": "ACTIVE",
+    "selected_archive_rows": 432
+  },
+  "cpu_ceiling_checks": [
+    {
+      "stage": "before_compile_enqueue",
+      "samples_percent": [26, 24, 18, 43, 40],
+      "average_percent": 30.2,
+      "maximum_percent": 43
+    },
+    {
+      "stage": "before_single_smoke",
+      "samples_percent": [77, 96, 63, 91, 86],
+      "average_percent": 82.6,
+      "maximum_percent": 96
+    },
+    {
+      "stage": "during_single_smoke_dispatch",
+      "samples_percent": [88, 37, 46, 18, 2],
+      "average_percent": 38.2,
+      "maximum_percent": 88
+    }
+  ],
+  "verification": {
+    "spec_validation": "PASS",
+    "pytest": [
+      "tools/strategy_farm/tests/test_compile_work_items.py",
+      "tools/strategy_farm/tests/test_factory_off_build_interlock.py",
+      "tools/strategy_farm/tests/test_basket_work_items.py",
+      "tools/strategy_farm/tests/test_fx_basket_manifests.py"
+    ],
+    "expected_test_count": 96
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "t_live_mutated": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "smoke_retry_attempted": false
+  }
+}
