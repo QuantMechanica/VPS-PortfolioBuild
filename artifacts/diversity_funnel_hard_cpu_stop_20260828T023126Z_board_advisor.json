@@ -1,0 +1,227 @@
+{
+  "artifact_type": "diversity_funnel_capacity_stop",
+  "schema": "qm.mission-capacity-stop/v1",
+  "generated_at_utc": "2026-08-28T02:31:57.5927759Z",
+  "generated_at_europe_berlin": "2026-08-28T04:31:57.5927759+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "3d161902ed319a874ef89ce12ea32fa381e3fc4d",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING_BEFORE_BACKLOG_CLAIM_OR_MUTATION",
+  "capacity_policy": {
+    "paced_launch_gate": 1,
+    "paced_launch_gate_source": "D:/QM/strategy_farm/state/launch_gate_max.txt",
+    "hard_ceiling_percent": 97.0,
+    "binding_rule": "Stop when either the five-sample average or maximum reaches the governed tester-admission ceiling.",
+    "hard_ceiling_source": "tools/strategy_farm/terminal_worker.py CPU_MAX_LOAD_PERCENT"
+  },
+  "capacity_sample": {
+    "command": "Get-Counter \\\\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "sampled_at_utc": "2026-08-28T02:31:26.5212643Z",
+    "samples_cpu_percent": [
+      95.217723,
+      91.432948,
+      98.731876,
+      99.804908,
+      87.406507
+    ],
+    "sample_count": 5,
+    "sample_interval_seconds": 1,
+    "average_cpu_percent": 94.518792,
+    "maximum_cpu_percent": 99.804908,
+    "average_binding": false,
+    "maximum_binding": true,
+    "ceiling_binding": true,
+    "triggers": [
+      "maximum_cpu_percent"
+    ]
+  },
+  "farm_db_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "captured_at_utc": "2026-08-28T02:31:57.5927759Z",
+    "active_work_item_count": 10,
+    "active_phase_counts": {
+      "OPT_CENSUS": 2,
+      "Q03": 1,
+      "Q09": 3,
+      "Q10_NEWS": 4
+    },
+    "active_work_items": [
+      {
+        "id": "c11f42d3-e6f3-4aff-bbb4-37dbdb5a2ac6",
+        "ea_id": "QM5_10114",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T1",
+        "attempt_count": 0
+      },
+      {
+        "id": "6a30d4f4-2d20-433b-90ac-a518047e5ad1",
+        "ea_id": "QM5_10513",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q09",
+        "claimed_by": "T4",
+        "attempt_count": 0
+      },
+      {
+        "id": "36af8edc-bf8e-405a-b9ec-5fcaafa83740",
+        "ea_id": "QM5_10569",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q09",
+        "claimed_by": "T9",
+        "attempt_count": 0
+      },
+      {
+        "id": "0e586e05-cad8-49bd-96f2-501c5ffd28cd",
+        "ea_id": "QM5_12354",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T10",
+        "attempt_count": 2
+      },
+      {
+        "id": "c0fda6f1-84f0-49eb-846d-a7f729dcf984",
+        "ea_id": "QM5_12849",
+        "symbol": "XTIUSD.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T8",
+        "attempt_count": 0
+      },
+      {
+        "id": "8ac4dd37-4d59-4721-bf19-da6a8e34e384",
+        "ea_id": "QM5_13036",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q09",
+        "claimed_by": "T5",
+        "attempt_count": 0
+      },
+      {
+        "id": "fac4d930-13b6-469e-8fe2-51ce06907f02",
+        "ea_id": "QM5_1537",
+        "symbol": "XAGUSD.DWX",
+        "phase": "Q10_NEWS",
+        "claimed_by": "T2",
+        "attempt_count": 0
+      },
+      {
+        "id": "9437109a-799b-4f29-a501-89e6b4a3809c",
+        "ea_id": "QM5_20294",
+        "symbol": "QM5_20294_XAU_XAG_LOWMAX_D1",
+        "phase": "Q03",
+        "claimed_by": "T6",
+        "attempt_count": 1
+      },
+      {
+        "id": "06d77c8e-666b-5163-a652-c976654c713e",
+        "ea_id": "QM5_41097",
+        "symbol": "USDJPY.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T7",
+        "attempt_count": 0
+      },
+      {
+        "id": "b490072f-5bbc-50bf-885d-098f2e214670",
+        "ea_id": "QM5_41161",
+        "symbol": "GBPUSD.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T3",
+        "attempt_count": 0
+      }
+    ]
+  },
+  "factory_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mt5-slots",
+    "scanned_at_utc": "2026-08-28T02:31:57.5927759Z",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "running_factory_terminal_count": 6,
+    "active_terminal_reservation_count": 6,
+    "terminal_worker_daemon_count": 10,
+    "orphaned_factory_terminal_process_count": 0,
+    "duplicate_terminal_workers": {},
+    "visible_running_phase_counts": {
+      "Q03": 1,
+      "Q09": 1,
+      "Q10_NEWS": 4
+    },
+    "visible_running_work_items": [
+      "c11f42d3-e6f3-4aff-bbb4-37dbdb5a2ac6",
+      "fac4d930-13b6-469e-8fe2-51ce06907f02",
+      "6a30d4f4-2d20-433b-90ac-a518047e5ad1",
+      "9437109a-799b-4f29-a501-89e6b4a3809c",
+      "c0fda6f1-84f0-49eb-846d-a7f729dcf984",
+      "0e586e05-cad8-49bd-96f2-501c5ffd28cd"
+    ],
+    "t_live_observed_only": true,
+    "t_live_controlled": false,
+    "external_ftmo_terminal_observed_only": true
+  },
+  "selection_decision": {
+    "approved_backlog_ranked": false,
+    "farm_claim_created": false,
+    "ea_selected": null,
+    "reason": "The mission's explicit CPU stop condition bound before diversity ranking or claim. Existing active rows were observed only to prevent collision."
+  },
+  "non_duplicate_delta": {
+    "preceding_receipt": "artifacts/commodity_energy_sleeve_hard_cpu_stop_20260828T021637Z_board_advisor.json",
+    "preceding_snapshot_utc": "2026-08-28T02:17:06+00:00",
+    "preceding_running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "preceding_t4_work_item_id": "7a686cb4-2834-49da-8731-92b738d152d0",
+    "current_t4_work_item_id": "6a30d4f4-2d20-433b-90ac-a518047e5ad1",
+    "current_active_work_item_count": 10,
+    "current_active_phase_counts": {
+      "OPT_CENSUS": 2,
+      "Q03": 1,
+      "Q09": 3,
+      "Q10_NEWS": 4
+    },
+    "changed_state": "The six-terminal roster persisted, but T4 rotated to a distinct Q09 work item and the read-only DB census now records all ten claimed rows, including two OPT_CENSUS FX rows that are not visible as tester processes in the point-in-time slot scan. A fresh independent sample still crossed the hard ceiling at 99.804908 percent."
+  },
+  "actions_this_run": {
+    "build_skill_preflight_read": true,
+    "fresh_capacity_preflight_completed": true,
+    "farm_coordination_state_consulted_read_only": true,
+    "approved_backlog_claimed": false,
+    "diverse_ea_selected": false,
+    "infra_repair_started": false,
+    "new_edge_mechanized": false,
+    "card_or_g0_created": false,
+    "registry_or_magic_mutated": false,
+    "ea_binary_or_setfile_created": false,
+    "compile_or_build_check_started": false,
+    "smoke_or_backtest_started": false,
+    "q02_or_later_phase_enqueued": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "dispatch_tick": false,
+    "terminal_or_worker_controlled": false,
+    "capacity_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "worktree_hygiene": {
+    "preexisting_tracked_change_count": 33,
+    "preexisting_untracked_change_count": 11,
+    "concurrent_unrelated_changes_present": true,
+    "unrelated_paths_staged_or_committed_by_this_run": false
+  },
+  "resume_contract": "On a later paced wake, proceed only after a fresh five-sample window has both average and maximum strictly below 97 percent. Then use the farm DB to claim exactly one distinct diversity-first unit, follow the approved-card build path before fallbacks, keep backtest setfiles at RISK_FIXED, and enqueue Q02 without dispatching or touching portfolio/live surfaces."
+}
