@@ -1,0 +1,40 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "xtixng-mdaily-hl-rv",
+  "recorded_at_utc": "2026-08-28T23:55:00Z",
+  "retrieval_mode": "complete_read_of_governed_repository_packets",
+  "new_public_retrieval": false,
+  "records": [
+    {
+      "path": "strategy-seeds/sources/VILLAR-RAMBERG-OILGAS-2026/source.md",
+      "source_id": "VILLAR-RAMBERG-OILGAS-2026",
+      "sha256": "4A03377F4CE8BCA9816DC2D9DBC34131ADC5E50B5ABB9D02AC29CB64E9CC4604",
+      "byte_count": 10031,
+      "line_count": 192,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "government_and_peer_reviewed_oil_gas_relationship_with_adverse_regime_evidence"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-WTI-HLRET-2026/source.md",
+      "source_id": "MOP-WTI-HLRET-2026",
+      "sha256": "E0E6CF16F7A4656B7613702C39C19657653424819EFB61EE1CEBD9CC46403D8C",
+      "byte_count": 6732,
+      "line_count": 149,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "governed_inclusive_pairwise_average_and_exact_pseudomedian_arithmetic"
+    },
+    {
+      "path": "strategy-seeds/sources/SCHWEIKERT-HL-CME-XAUXAG-MDAILY-HL-RV-2026/source.md",
+      "source_id": "SCHWEIKERT-HL-CME-XAUXAG-MDAILY-HL-RV-2026",
+      "sha256": "D5E8C4CD0112724D66E64C13B20B7B41CCE1B4CDC2061BA21A979374F04531A8",
+      "byte_count": 11695,
+      "line_count": 238,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "governed_completed_month_daily_relative_return_and_atomic_basket_precedent"
+    }
+  ],
+  "claim_boundary": "No new webpage, blocked content, source result, performance statistic, hedge ratio, neutrality result, CFD equivalence, or portfolio-correlation result was inferred or imported."
+}
