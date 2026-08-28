@@ -350,6 +350,22 @@ def test_stale_badge_appears():
     assert "STALE" not in html_fresh
 
 
+def test_progress_source_failure_renders_stale_and_never_zero():
+    contract = make_contract()
+    progress = contract["progress"]
+    progress["meta"] = _meta(
+        staleness="STALE", degraded_reason="fixture query failed", as_of=None
+    )
+    html = r._render_progress(contract)
+
+    assert "STALE" in html
+    assert "fixture query failed" in html
+    completed_row = re.search(r"erledigte Work Items</td>(.*?)</tr>", html, re.S)
+    assert completed_row is not None
+    assert completed_row.group(1).count(">—</td>") == 4
+    assert ">0</td>" not in completed_row.group(1)
+
+
 def test_atomic_write_preserves_last_good_file_when_replace_fails(tmp_path, monkeypatch):
     output = tmp_path / "cockpit.html"
     output.write_text("last-good", encoding="utf-8")

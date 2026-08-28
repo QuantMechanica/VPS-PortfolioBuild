@@ -207,7 +207,7 @@ def test_measured_row_does_not_count_in_throughput_gate_pass() -> None:
     conn = sqlite3.connect(":memory:")
     conn.execute(WORK_ITEMS_DDL)
     now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
-    # A real Q06 gate PASS (should count) + an OPT_CENSUS MEASURED (must not).
+    # A real Q06 gate PASS plus an OPT_CENSUS measurement completion.
     _insert(conn, id="q06", kind="backtest", phase="Q06", ea_id="QM5_1", symbol="EURUSD",
             setfile_path="a.set", status="done", verdict="PASS", attempt_count=0,
             payload_json="{}", created_at=now, updated_at=now)
@@ -217,10 +217,10 @@ def test_measured_row_does_not_count_in_throughput_gate_pass() -> None:
     conn.row_factory = sqlite3.Row
     clean.install_clean_view(conn)
     progress = mc.build_progress(conn)
-    # gate_pass counts the Q06 PASS only; the MEASURED row is excluded both by
-    # phase (not an MT5 tester phase) and by its 'measurement' taxonomy.
+    # Completed-work counts both rows; gate_pass counts only the Q06 PASS
+    # because the MEASURED row has measurement taxonomy.
     assert progress["total"]["gate_pass"] == 1
-    assert progress["total"]["completed"] == 1  # OPT_CENSUS not in the MT5 window
+    assert progress["total"]["completed"] == 2
 
 
 def test_phase_age_slo_ignores_fresh_census_batch() -> None:

@@ -106,6 +106,14 @@ MT5_TESTER_PHASES = frozenset(
     }
 )
 
+# Progress is a completed-work census, not a drain-ETA slice.  It must include
+# every governed execution row that reached a terminal clean status, including
+# utility/measurement stages and gates added after this module was introduced.
+# Only the permission-pattern fixture is synthetic and excluded.  Keeping this
+# rule exclusion-based prevents a newly introduced Q-gate from silently making
+# a fresh cockpit look idle until somebody extends an allowlist.
+PROGRESS_EXCLUDED_PHASES = frozenset({"HARNESS_PP_FIXTURE"})
+
 # Staleness SLAs (seconds). A section older than its SLA is badged STALE; a
 # section that could not be produced at all is DEGRADED with a reason.
 SLA_HEALTH_SEC = 20 * 60          # health.json: farmctl health runs /15 min
@@ -528,17 +536,19 @@ def build_progress(con: sqlite3.Connection, *, now: dt.datetime | None = None) -
     """today / yesterday / 7-day-average-per-day / total progress KPIs.
 
     Counting basis (documented, identical across all windows): a progress event
-    is a ``work_items_clean`` row that has reached a terminal clean status
-    (``done`` or ``failed``) in an MT5-tester phase, counted by its ``updated_at``
-    transition timestamp. There is no ``completed_at`` column in the schema;
-    ``updated_at`` is the transition marker. Append-only reruns create NEW rows,
-    so a requeue is a separate event and never rewrites a prior row's timestamp.
+    is a governed ``work_items_clean`` row that has reached a terminal clean
+    status (``done`` or ``failed``), counted by its ``updated_at`` transition
+    timestamp. Synthetic permission-pattern fixtures are excluded. There is no
+    ``completed_at`` column in the schema; ``updated_at`` is the transition
+    marker. Append-only reruns create NEW rows, so a requeue is a separate event
+    and never rewrites a prior row's timestamp.
     """
     now = now or _now_utc()
     today = now.date()
 
-    placeholders = ",".join("?" for _ in MT5_TESTER_PHASES)
-    phase_params = tuple(sorted(MT5_TESTER_PHASES))
+    excluded_placeholders = ",".join("?" for _ in PROGRESS_EXCLUDED_PHASES)
+    excluded_params = tuple(sorted(PROGRESS_EXCLUDED_PHASES))
+    window_cutoff = _iso(now - dt.timedelta(days=8))
 
     # Windowed rows: pull the last 8 calendar days once, bucket in Python.
     windowed = _rows(
@@ -547,10 +557,10 @@ def build_progress(con: sqlite3.Connection, *, now: dt.datetime | None = None) -
         SELECT ea_id, symbol, phase, verdict, verdict_taxonomy, updated_at
         FROM work_items_clean
         WHERE status IN ('done','failed')
-          AND UPPER(phase) IN ({placeholders})
-          AND updated_at >= datetime('now','-8 days')
+          AND UPPER(COALESCE(phase,'')) NOT IN ({excluded_placeholders})
+          AND updated_at >= ?
         """,
-        phase_params,
+        excluded_params + (window_cutoff,),
     )
 
     def in_day(row: dict, delta_days: int) -> bool:
@@ -606,9 +616,9 @@ def build_progress(con: sqlite3.Connection, *, now: dt.datetime | None = None) -
           MIN(updated_at) AS since
         FROM work_items_clean
         WHERE status IN ('done','failed')
-          AND UPPER(phase) IN ({placeholders})
+          AND UPPER(COALESCE(phase,'')) NOT IN ({excluded_placeholders})
         """,
-        phase_params,
+        excluded_params,
     )[0]
     completed_total = int(total_agg.get("completed") or 0)
     total_kpi = {
@@ -625,22 +635,29 @@ def build_progress(con: sqlite3.Connection, *, now: dt.datetime | None = None) -
     }
 
     meta = _section_meta(
-        source="farm_state.sqlite:work_items_clean(status IN done,failed; MT5 phases; by updated_at)",
+        source="farm_state.sqlite:work_items_clean(status IN done,failed; governed execution rows; by updated_at)",
         source_as_of=_iso(now),
         sla_sec=None,
         now=now,
     )
     return {
         "meta": meta,
-        "phase_set": sorted(MT5_TESTER_PHASES),
+        # Operator-facing phase labels remain Q-only. Utility stages contribute
+        # to completed-work totals but are not presented as pipeline phases.
+        "phase_set": sorted({
+            phase_label(r.get("phase"))
+            for r in windowed
+            if str(phase_label(r.get("phase"))).upper().startswith("Q")
+        }),
         "today": today_kpi,
         "yesterday": yday_kpi,
         "seven_day_average": seven_day_avg,
         "total": total_kpi,
         "counting_basis": (
-            "Terminal work_items_clean rows (done|failed) in MT5-tester phases, "
-            "counted by updated_at. No completed_at column exists; updated_at is "
-            "the transition marker. Requeues are new rows (separate events)."
+            "Terminal work_items_clean rows (done|failed) across governed "
+            "execution stages, counted by updated_at. Synthetic fixtures are "
+            "excluded. No completed_at column exists; updated_at is the "
+            "transition marker. Requeues are new rows (separate events)."
         ),
         "caveats": [
             "TOTAL mixes contract eras: gate thresholds and sub-gate calibrations "
@@ -653,6 +670,36 @@ def build_progress(con: sqlite3.Connection, *, now: dt.datetime | None = None) -
             "distinct_ea_symbol counts pairs TOUCHED (a terminal transition) in "
             "the window, not pairs advanced a gate.",
         ],
+    }
+
+
+def _stale_progress(now: dt.datetime, exc: BaseException) -> dict[str, Any]:
+    """Return an explicit unavailable contract; never forge source zeroes."""
+    unavailable = {
+        "completed": None,
+        "distinct_ea_symbol": None,
+        "gate_pass": None,
+        "economic_fail": None,
+        "infra_transient": None,
+        "other": None,
+        "infra_rate": None,
+    }
+    meta = _section_meta(
+        source="farm_state.sqlite:work_items_clean progress query",
+        source_as_of=None,
+        degraded_reason=f"progress query unavailable: {type(exc).__name__}: {exc}",
+        now=now,
+    )
+    meta["staleness"] = "STALE"
+    return {
+        "meta": meta,
+        "phase_set": [],
+        "today": dict(unavailable),
+        "yesterday": dict(unavailable),
+        "seven_day_average": {**unavailable, "_basis": "source unavailable"},
+        "total": {**unavailable, "since": None},
+        "counting_basis": "STALE: progress source unavailable; zero fallback is forbidden.",
+        "caveats": ["The last query failed; KPI values are unavailable, not zero."],
     }
 
 
@@ -1210,7 +1257,10 @@ def build_contract(
     con = _connect_ro(db)
     try:
         terminals = build_terminals(con, ea_slugs, now=now)
-        progress = build_progress(con, now=now)
+        try:
+            progress = build_progress(con, now=now)
+        except (sqlite3.Error, OSError) as exc:
+            progress = _stale_progress(now, exc)
         queue = build_queue(con, now=now)
         q09_autoseal_holds = build_q09_autoseal_holds(con, now=now)
         q09_ftmo = q09_ftmo_recommendation.collect(con)
@@ -1616,11 +1666,11 @@ CONTRACT_SCHEMA: dict[str, Any] = {
             "required": ["completed", "distinct_ea_symbol", "gate_pass",
                          "economic_fail", "infra_transient"],
             "properties": {
-                "completed": {"type": "integer"},
-                "distinct_ea_symbol": {"type": "integer"},
-                "gate_pass": {"type": "integer"},
-                "economic_fail": {"type": "integer"},
-                "infra_transient": {"type": "integer"},
+                "completed": {"type": ["integer", "null"]},
+                "distinct_ea_symbol": {"type": ["integer", "null"]},
+                "gate_pass": {"type": ["integer", "null"]},
+                "economic_fail": {"type": ["integer", "null"]},
+                "infra_transient": {"type": ["integer", "null"]},
                 "infra_rate": {"type": ["number", "null"]},
             },
         },

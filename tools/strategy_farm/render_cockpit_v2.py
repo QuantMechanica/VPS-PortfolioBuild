@@ -204,14 +204,14 @@ def _stale_badge(meta: dict) -> str:
     """A STALE / DEGRADED chip for a section header, driven by meta."""
     if not isinstance(meta, dict):
         return ""
+    if str(meta.get("staleness") or "").upper() == "STALE":
+        age = meta.get("age_seconds")
+        t = e(meta.get("degraded_reason") or f"source_as_of {meta.get('source_as_of')}")
+        return (f'<span class="mc-badge mc-badge-warn" title="{t}">STALE'
+                + (f' · {_int(age)}s' if age is not None else "") + "</span>")
     if meta.get("degraded_reason"):
         return (f'<span class="mc-badge mc-badge-warn" '
                 f'title="{e(meta.get("degraded_reason"))}">DEGRADED</span>')
-    if str(meta.get("staleness") or "").upper() == "STALE":
-        age = meta.get("age_seconds")
-        t = f"source_as_of {e(meta.get('source_as_of'))}"
-        return (f'<span class="mc-badge mc-badge-warn" title="{t}">STALE'
-                + (f' · {_int(age)}s' if age is not None else "") + "</span>")
     return ""
 
 
@@ -662,6 +662,13 @@ def _render_progress(contract: dict) -> str:
     yday = pr.get("yesterday", {}) or {}
     avg = pr.get("seven_day_average", {}) or {}
     total = pr.get("total", {}) or {}
+    meta = pr.get("meta", {}) or {}
+    source_failed = bool(meta.get("degraded_reason"))
+
+    # A source error is an unknown value, never a measured zero. Ignore any
+    # numeric fallback a stale snapshot may contain and render explicit dashes.
+    if source_failed:
+        today = yday = avg = total = {}
 
     def cell(v, kind="int"):
         if kind == "int":
@@ -692,7 +699,7 @@ def _render_progress(contract: dict) -> str:
     return f'''
   <section class="mc-section">
     <div class="mc-h2"><span>Fortschrittsvergleich</span>
-      <span class="mc-h2-aux">einheitliche Zähllogik über alle Fenster</span></div>
+      <span class="mc-h2-aux">einheitliche Zähllogik über alle Fenster {_stale_badge(meta)}</span></div>
     <table class="mc-table">
       <thead><tr>
         <th></th><th class="mc-num">Heute</th><th class="mc-num">Gestern</th>

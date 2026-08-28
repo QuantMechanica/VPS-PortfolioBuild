@@ -95,8 +95,10 @@ def fixture_db(tmp_path: Path) -> Path:
     # --- older, still inside 7d ---
     _insert(con, "o-pass", "Q04", "QM5_8", "EURUSD.DWX", "done", "PASS", updated=_iso(3))
 
-    # --- a NON-MT5 phase completion (Q09_NEWS) must NOT count as progress ---
+    # --- productive stages outside the old tester allowlist still count ---
     _insert(con, "news-done", "Q09_NEWS", "QM5_9", "EURUSD.DWX", "done", "CONFIG_LOCKED", updated=_iso(0))
+    _insert(con, "census-done", "OPT_CENSUS", "QM5_10", "USDJPY.DWX", "done", "MEASURED", updated=_iso(0))
+    _insert(con, "q09-done", "Q09", "QM5_11", "XAUUSD.DWX", "done", "PASS", updated=_iso(0))
 
     # --- ACTIVE claims for the terminal join ---
     _insert(con, "act-t1", "Q07", "QM5_11165", "AUDCAD.DWX", "active", None, claimed_by="T1", updated=_iso(0))
@@ -155,22 +157,30 @@ def test_classify_progress_buckets():
     assert kpi["infra_rate"] == round(2 / 8, 4)
 
 
-def test_progress_windows_and_mt5_scope(fixture_db):
+def test_progress_windows_match_governed_db_rows(fixture_db):
     con = mc._connect_ro(fixture_db)
     try:
         prog = mc.build_progress(con, now=NOW)
+        expected_completed = con.execute(
+            "SELECT COUNT(*) FROM work_items_clean "
+            "WHERE status IN ('done','failed') AND updated_at>=? "
+            "AND UPPER(COALESCE(phase,''))<>'HARNESS_PP_FIXTURE'",
+            (_iso(0).split("T", 1)[0] + "T00:00:00+00:00",),
+        ).fetchone()[0]
     finally:
         con.close()
 
     today = prog["today"]
-    # 6 MT5 rows today (2xPASS, FAIL, ZERO, INFRA, +second PASS for pair QM5_1);
-    # the Q09_NEWS done row is NON-MT5 and excluded.
-    assert today["completed"] == 6
-    assert today["gate_pass"] == 3          # t-pass1, t-pass2, t-pass1b
+    # 9 governed terminal rows today: the six original gate rows plus a news
+    # gate, measurement stage, and newer Q-gate row.
+    assert today["completed"] == 9
+    assert today["gate_pass"] == 5          # 3 base PASS + config lock + Q09 PASS
     assert today["economic_fail"] == 2      # FAIL + ZERO_TRADES
     assert today["infra_transient"] == 1    # INFRA_FAIL restamped
     # QM5_1/EURUSD touched twice today -> one distinct pair
-    assert today["distinct_ea_symbol"] == 5
+    assert today["distinct_ea_symbol"] == 8
+
+    assert today["completed"] == expected_completed
 
     assert prog["yesterday"]["completed"] == 2
     assert prog["yesterday"]["gate_pass"] == 1
@@ -181,6 +191,14 @@ def test_progress_windows_and_mt5_scope(fixture_db):
     assert any("era" in c.lower() for c in prog["caveats"])
     # seven-day average is a true per-day mean (<= completed over window)
     assert prog["seven_day_average"]["_basis"].startswith("mean of the 7")
+
+
+def test_stale_progress_uses_nulls_not_zeroes():
+    progress = mc._stale_progress(NOW, sqlite3.OperationalError("fixture failure"))
+    assert progress["meta"]["staleness"] == "STALE"
+    assert progress["today"]["completed"] is None
+    assert progress["today"]["gate_pass"] is None
+    assert "zero fallback is forbidden" in progress["counting_basis"]
 
 
 def test_queue_eta_excludes_parked(fixture_db):
@@ -390,6 +408,15 @@ def test_full_contract_is_schema_valid(fixture_db, monkeypatch, tmp_path):
     )
     assert contract["path_to_25"] == contract["operator_surface"]["path_to_25"]
     assert contract["path_to_25"]["qualified_pairs"] == 0
+
+    def fail_progress(_con, *, now=None):
+        raise sqlite3.OperationalError("fixture progress query failed")
+
+    monkeypatch.setattr(mc, "build_progress", fail_progress)
+    stale_contract = mc.build_contract(fixture_db, now=NOW)
+    mc.validate_contract(stale_contract)
+    assert stale_contract["progress"]["meta"]["staleness"] == "STALE"
+    assert stale_contract["progress"]["today"]["completed"] is None
 
 
 def test_validator_rejects_bad_document():
