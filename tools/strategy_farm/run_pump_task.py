@@ -29,6 +29,15 @@ CODEX_KILL_SAFETY_AUDIT = (
 LOCK_PATH = LOG_DIR / "pump_task.lock"
 LOCK_STALE_SECONDS = 20 * 60
 FACTORY_OFF_FLAG = Path(r"D:\QM\strategy_farm\state\FACTORY_OFF.flag")
+# 2026-08-29: while a Factory_ON ceremony is mid-flight the ceremony process holds
+# the factory mutation lock until after its post-start health gate.  A full pump
+# cycle then spends the whole gate in lock/sqlite retry sleeps and can never
+# complete (R2/R4 gates starved on Pump for 3600s each).  Mirror the existing
+# FACTORY_OFF no-op: report an honest, instant no-op success while the ceremony
+# marker exists; the next 5-minute trigger after ceremony completion pumps fully.
+FACTORY_ON_CEREMONY_MARKER = Path(
+    r"D:\QM\strategy_farm\state\FACTORY_ON_CEREMONY_INCOMPLETE.json"
+)
 
 
 def _console_python() -> str:
@@ -73,6 +82,8 @@ def _acquire_lock() -> int | None:
 def main() -> int:
     if FACTORY_OFF_FLAG.exists():
         return 0  # FACTORY_OFF.flag is set; pump is suspended
+    if FACTORY_ON_CEREMONY_MARKER.exists():
+        return 0  # Factory_ON ceremony in progress; pump no-ops until it completes
     os.environ.setdefault("QM_AGENT_ID", "controller")
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     lock_fd = _acquire_lock()
