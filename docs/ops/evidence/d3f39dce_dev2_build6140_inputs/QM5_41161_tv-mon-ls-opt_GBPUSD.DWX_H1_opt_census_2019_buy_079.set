@@ -1,0 +1,48 @@
+; opt_census_schema: qm.opt-census.v1
+; opt_census_cell_key: DL089_QM5_10706_GBPUSD_DWX_2019_2025:2019:buy_079
+; opt_census_from_date: 2019.01.01
+; opt_census_to_date: 2019.12.31
+;==========================================================
+; QM5 Set File
+; ea_id:        41161
+; ea_slug:      tv-mon-ls-opt
+; ea_version:   v5.0
+; set_version:  s20260826-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   61ebd06b1aeee11908d88b88b4ad49f6c1d6366a0c987bc7b092dea684a3381c
+; author:       Development
+; date:         2026-08-26
+;==========================================================
+qm_ea_id=41161
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_spread_atr_mult=0.25
+MondayBoxShiftHours=7
+LiqPct=0.0002
+MaxWickPct=0.0025
+SlPct=0.0002
+RrTarget=3.5
+MondayRangeTpPct=1.30
+BeTriggerR=1.5
+BeBars=24
+BeLockFrac=0.1
+EntryMode=MLS_ONE_TRADE_PER_WEEK
+FridayExitHourBroker=18
+FridayExitMinuteBroker=30
+
+; DL-089 governed neutral pattern bindings
+opt_pp_buy1=79
+opt_pp_buy2=0
+opt_pp_buy3=0
+opt_pp_sell1=0
+opt_pp_sell2=0
+opt_pp_sell3=0

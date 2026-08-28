@@ -42,7 +42,14 @@ FLAG_NAME = "QM_ENABLE_WARM_CELL_RUNNER"
 TASK_ID = "c7536f46-2c1e-4ab9-b18c-47cfe01c6491"
 PHASE2_TASK_ID = "7d800fe1-be0d-42df-8e67-a9b9a55d0906"
 PHASE3_TASK_ID = "2cb9d160-d5c0-46ea-ae45-d145a63cf1f4"
-VALIDATION_TASK_IDS = frozenset({TASK_ID, PHASE2_TASK_ID, PHASE3_TASK_ID})
+PHASE5_REBASE_TASK_ID = "d3f39dce-ebc5-49fd-a781-dacd049baa68"
+PHASE5_OWNER_DECISION_ID = "OWNER-DEC-DEV2-6140-SEAL"
+PHASE5_OWNER_DECISION_SHA256 = (
+    "781ee98be8931c645a25863f39787081d1a5a82f9df1cdaf2a0f26fa48d03f2b"
+)
+VALIDATION_TASK_IDS = frozenset(
+    {TASK_ID, PHASE2_TASK_ID, PHASE3_TASK_ID, PHASE5_REBASE_TASK_ID}
+)
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 DEFAULT_REPO = Path(r"C:\QM\repo")
 MIN_PARITY_CELLS = 20
@@ -96,6 +103,9 @@ PHASE2_TASK_START_COLD_PATH_SHA256 = {
 # values is intentional evidence that the commissioned backend did not require a
 # cold worker, run_smoke, optimizer-census, or DL-089 receipt change.
 PHASE3_TASK_START_COLD_PATH_SHA256 = dict(PHASE2_TASK_START_COLD_PATH_SHA256)
+# OWNER-DEC-DEV2-6140-SEAL successor boundary.  The governed production/cold
+# files remain unchanged by the DEV2-only rebase and parity replay.
+PHASE5_TASK_START_COLD_PATH_SHA256 = dict(PHASE2_TASK_START_COLD_PATH_SHA256)
 
 
 class FlagValueError(ValueError):
@@ -232,10 +242,28 @@ def validation_authorization_problems(
     if backend_profile not in allowed_backend_profiles:
         problems.append("VALIDATION_BACKEND_PROFILE_INVALID")
     if backend_profile == (GOVERNED_RESTART_BACKEND, GOVERNED_RESTART_PROFILE):
-        if manifest.get("task_id") != PHASE3_TASK_ID:
+        if manifest.get("task_id") not in {PHASE3_TASK_ID, PHASE5_REBASE_TASK_ID}:
             problems.append("VALIDATION_RESTART_TASK_ID_INVALID")
         if manifest.get("lane") != "DEV2":
             problems.append("VALIDATION_RESTART_LANE_INVALID")
+    if manifest.get("task_id") == PHASE5_REBASE_TASK_ID:
+        phase5_expected = {
+            "owner_decision_id": PHASE5_OWNER_DECISION_ID,
+            "owner_decision_sha256": PHASE5_OWNER_DECISION_SHA256,
+            "owner_signature": PHASE5_OWNER_DECISION_ID,
+            "candidate_program_build": 6140,
+            "allow_mixed_pairs": True,
+        }
+        for field, value in phase5_expected.items():
+            if manifest.get(field) != value:
+                problems.append(f"VALIDATION_PHASE5_{field.upper()}_INVALID")
+        for field in (
+            "candidate_lane_contract_sha256",
+            "cold_reference_csv_sha256",
+            "common_history_manifest_sha256",
+        ):
+            if not re.fullmatch(r"[0-9a-f]{64}", str(manifest.get(field) or "")):
+                problems.append(f"VALIDATION_PHASE5_{field.upper()}_INVALID")
     try:
         minimum = int(manifest.get("minimum_comparisons") or 0)
     except (TypeError, ValueError):
@@ -472,10 +500,41 @@ class WarmCellRunner:
         pair_fields = ("ea_id", "symbol", "period", "ex5_sha256", "history_manifest_sha256")
         first = cold_references[keys[0]]
         pair_contract = {field: first.get(field) for field in pair_fields}
-        for key in keys[1:]:
-            reference = cold_references[key]
-            if any(reference.get(field) != pair_contract[field] for field in pair_fields):
-                raise ActivationRefused("RUN_BATCH_PAIR_IDENTITY_MIXED")
+        mixed_pair = any(
+            any(
+                cold_references[key].get(field) != pair_contract[field]
+                for field in pair_fields
+            )
+            for key in keys[1:]
+        )
+        phase5_mixed_authorized = bool(
+            (activation_manifest or {}).get("task_id") == PHASE5_REBASE_TASK_ID
+            and (activation_manifest or {}).get("allow_mixed_pairs") is True
+        )
+        if mixed_pair and not phase5_mixed_authorized:
+            raise ActivationRefused("RUN_BATCH_PAIR_IDENTITY_MIXED")
+        if mixed_pair:
+            histories = {
+                str(cold_references[key].get("history_manifest_sha256") or "")
+                for key in keys
+            }
+            if len(histories) != 1 or "" in histories:
+                raise ActivationRefused("RUN_BATCH_MIXED_HISTORY_MANIFEST")
+            pair_contract = {
+                "history_manifest_sha256": next(iter(histories)),
+                "mixed_pairs": True,
+                "pair_count": len(
+                    {
+                        (
+                            cold_references[key].get("ea_id"),
+                            cold_references[key].get("symbol"),
+                            cold_references[key].get("period"),
+                            cold_references[key].get("ex5_sha256"),
+                        )
+                        for key in keys
+                    }
+                ),
+            }
 
         session = self.backend.open_session(pair_contract)
         comparisons: list[dict[str, Any]] = []
@@ -888,14 +947,23 @@ class GovernedDev2RestartBackend:
         *,
         repo_root: Path,
         artifact_dir: Path,
-        history_receipt_path: Path,
         expected_history_manifest_sha256: str,
+        history_receipt_path: Path | None = None,
+        history_receipt_paths: Sequence[Path] | None = None,
         process_runner: Any | None = None,
         lane_probe: Any | None = None,
     ) -> None:
         self.repo_root = Path(repo_root).resolve()
         self.artifact_dir = Path(artifact_dir).resolve()
-        self.history_receipt_path = Path(history_receipt_path).resolve()
+        supplied_receipts = list(history_receipt_paths or [])
+        if history_receipt_path is not None:
+            supplied_receipts.insert(0, history_receipt_path)
+        self.history_receipt_paths = list(
+            dict.fromkeys(Path(path).resolve() for path in supplied_receipts)
+        )
+        if not self.history_receipt_paths:
+            raise ActivationRefused("DEV2_HISTORY_RECEIPTS_REQUIRED")
+        self.history_receipt_path = self.history_receipt_paths[0]
         self.expected_history_manifest_sha256 = str(
             expected_history_manifest_sha256
         ).lower()
@@ -979,6 +1047,36 @@ class GovernedDev2RestartBackend:
                 problems.append(f"HASH_CHANGED:program:{name}")
         return problems
 
+    def _audit_histories(self) -> dict[str, Any]:
+        audits = [
+            audit_history_receipt(
+                receipt_path=receipt_path,
+                lane_root=DEV2_ROOT,
+                expected_manifest_sha256=self.expected_history_manifest_sha256,
+            )
+            for receipt_path in self.history_receipt_paths
+        ]
+        inventory = sorted(
+            [
+                {
+                    "receipt_path": audit["receipt_path"],
+                    "receipt_file_sha256": audit["receipt_file_sha256"],
+                    "inventory_sha256": audit["inventory_sha256"],
+                    "file_count": audit["file_count"],
+                }
+                for audit in audits
+            ],
+            key=lambda item: item["receipt_path"],
+        )
+        return {
+            "status": "PASS_EXACT_MULTI_RECEIPT",
+            "manifest_sha256": self.expected_history_manifest_sha256,
+            "receipt_count": len(audits),
+            "inventory_count": len({row["inventory_sha256"] for row in inventory}),
+            "inventory_sha256": sha256_bytes(canonical_json_bytes(inventory)),
+            "receipts": audits,
+        }
+
     def open_session(self, pair_contract: Mapping[str, Any]) -> dict[str, Any]:
         if pair_contract.get("history_manifest_sha256") != self.expected_history_manifest_sha256:
             raise ActivationRefused("DEV2_SESSION_HISTORY_MANIFEST_MISMATCH")
@@ -994,11 +1092,7 @@ class GovernedDev2RestartBackend:
             raise ActivationRefused("DEV2_SESSION_PASSWORD_CONTRACT_INVALID")
         fixed = self._fixed_inputs()
         self.active_fixed_inputs = fixed
-        history_before = audit_history_receipt(
-            receipt_path=self.history_receipt_path,
-            lane_root=DEV2_ROOT,
-            expected_manifest_sha256=self.expected_history_manifest_sha256,
-        )
+        history_before = self._audit_histories()
         return {
             "schema": "qm.warm-cell-governed-restart-session/v1",
             "session_id": str(uuid.uuid4()),
@@ -1233,11 +1327,7 @@ class GovernedDev2RestartBackend:
         return result
 
     def close_session(self, session: dict[str, Any]) -> None:
-        history_after = audit_history_receipt(
-            receipt_path=self.history_receipt_path,
-            lane_root=DEV2_ROOT,
-            expected_manifest_sha256=self.expected_history_manifest_sha256,
-        )
+        history_after = self._audit_histories()
         lane_after = self.lane_probe()
         problems: list[str] = []
         if int(lane_after.get("process_count") or 0) != 0:

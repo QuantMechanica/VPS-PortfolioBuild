@@ -1655,7 +1655,8 @@ function Invoke-QmRotationResumeFinalize {
     Assert-QmDev2CredentialExactAcl -Path $legacyCredentialPath
     $contractRecord = Read-QmRotationExactJsonFile -Path $contractPath -ExpectedFields @(
         'agent_port_contract', 'allowed_symbols', 'contract_id', 'coordination', 'copy_contract',
-        'firewall', 'identity', 'lane', 'paths', 'program_sha256', 'schema_version', 'source_lane'
+        'firewall', 'identity', 'lane', 'paths', 'program_sha256', 'runtime_rebase',
+        'schema_version', 'source_lane'
     ) -ExpectedSha256 ([string]$journal.lane_contract_sha256) -MaximumBytes 262144
     $boundContract = $contractRecord.Payload
     if ([int]$boundContract.schema_version -ne 3 -or [string]$boundContract.contract_id -cne $contractId -or

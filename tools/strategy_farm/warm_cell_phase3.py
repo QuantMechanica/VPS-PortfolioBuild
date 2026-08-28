@@ -35,6 +35,79 @@ def _load_json(path: Path) -> dict[str, Any]:
     return value
 
 
+def references_from_bound_csv(
+    con: Any, *, reference_csv: Path
+) -> list[dict[str, Any]]:
+    """Re-authenticate and select the exact ordered Phase-5 cold cohort."""
+
+    with Path(reference_csv).open("r", encoding="utf-8-sig", newline="") as handle:
+        declared = list(csv.DictReader(handle))
+    if len(declared) != core.MIN_PARITY_CELLS:
+        raise core.ActivationRefused(
+            f"PHASE5_REFERENCE_CSV_COUNT_{len(declared)}"
+        )
+    ranks = [int(row.get("rank") or 0) for row in declared]
+    if ranks != list(range(1, core.MIN_PARITY_CELLS + 1)):
+        raise core.ActivationRefused("PHASE5_REFERENCE_CSV_RANK_INVALID")
+    work_item_ids = [str(row.get("work_item_id") or "") for row in declared]
+    if len(set(work_item_ids)) != core.MIN_PARITY_CELLS or "" in work_item_ids:
+        raise core.ActivationRefused("PHASE5_REFERENCE_CSV_IDENTITY_INVALID")
+
+    inventory: dict[str, dict[str, Any]] = {}
+    pairs = sorted({(str(row["ea_id"]), str(row["symbol"])) for row in declared})
+    for ea_id, symbol in pairs:
+        for reference in core.cold_references(
+            con, ea_id=ea_id, symbol=symbol, year=2019
+        ):
+            inventory[str(reference.get("work_item_id"))] = reference
+
+    selected: list[dict[str, Any]] = []
+    field_map = {
+        "ea_id": "ea_id",
+        "symbol": "symbol",
+        "arm": "arm",
+        "summary_sha256": "summary_sha256",
+        "report_sha256": "report_sha256",
+        "logger_sha256": "logger_sample_sha256",
+        "setfile_sha256": "setfile_sha256",
+        "metrics_sha256": "report_metrics_sha256",
+        "trades_sha256": "trade_list_sha256",
+    }
+    for row in declared:
+        work_item_id = str(row["work_item_id"])
+        reference = inventory.get(work_item_id)
+        if reference is None:
+            raise core.ActivationRefused(
+                f"PHASE5_REFERENCE_NOT_FOUND:{work_item_id}"
+            )
+        if reference.get("reference_status") != "AUTHENTICATED_COLD":
+            raise core.ActivationRefused(
+                f"PHASE5_REFERENCE_NOT_AUTHENTICATED:{work_item_id}:"
+                + ";".join(reference.get("reference_errors") or [])
+            )
+        for csv_field, reference_field in field_map.items():
+            if str(row.get(csv_field) or "").lower() != str(
+                reference.get(reference_field) or ""
+            ).lower():
+                raise core.ActivationRefused(
+                    f"PHASE5_REFERENCE_FIELD_MISMATCH:{work_item_id}:{csv_field}"
+                )
+        if int(row.get("build") or 0) != 6140:
+            raise core.ActivationRefused(
+                f"PHASE5_REFERENCE_BUILD_INVALID:{work_item_id}"
+            )
+        if abs(float(row.get("cold_seconds") or 0) - float(
+            reference.get("cold_elapsed_seconds") or 0
+        )) > 0.001:
+            raise core.ActivationRefused(
+                f"PHASE5_REFERENCE_TIMING_MISMATCH:{work_item_id}"
+            )
+        reference = dict(reference)
+        reference["selection_rank"] = int(row["rank"])
+        selected.append(reference)
+    return selected
+
+
 def _git_head(repo_root: Path) -> str:
     completed = subprocess.run(
         ["git", "rev-parse", "HEAD"],
@@ -99,8 +172,10 @@ def prepare_cells(
 
 def authenticate_common_history_projection(
     references: Sequence[Mapping[str, Any]],
+    *,
+    require_common_inventory: bool = True,
 ) -> dict[str, Any]:
-    """Prove that per-claim receipts bind one byte-identical history inventory."""
+    """Prove receipts share one manifest and, when required, one inventory."""
 
     rows: list[dict[str, Any]] = []
     for reference in references:
@@ -147,15 +222,50 @@ def authenticate_common_history_projection(
     file_counts = {row["file_count"] for row in rows}
     if len(manifests) != 1 or "" in manifests:
         raise core.ActivationRefused("PHASE3_HISTORY_MANIFEST_NOT_COMMON")
-    if len(inventories) != 1 or len(file_counts) != 1:
+    if require_common_inventory and (
+        len(inventories) != 1 or len(file_counts) != 1
+    ):
         raise core.ActivationRefused("PHASE3_HISTORY_INVENTORY_NOT_COMMON")
+    audit_receipts = []
+    seen_inventories: set[str] = set()
+    for row in rows:
+        if row["inventory_sha256"] in seen_inventories:
+            continue
+        seen_inventories.add(row["inventory_sha256"])
+        audit_receipts.append(row["receipt_path"])
+    aggregate_inventory_sha256 = core.sha256_bytes(
+        core.canonical_json_bytes(
+            sorted(
+                [
+                    {
+                        "inventory_sha256": row["inventory_sha256"],
+                        "file_count": row["file_count"],
+                    }
+                    for row in rows
+                ],
+                key=lambda item: (item["inventory_sha256"], item["file_count"]),
+            )
+        )
+    )
     return {
-        "status": "PASS_COMMON_BYTE_INVENTORY",
+        "status": (
+            "PASS_COMMON_BYTE_INVENTORY"
+            if len(inventories) == 1 and len(file_counts) == 1
+            else "PASS_COMMON_MANIFEST_MULTI_INVENTORY"
+        ),
         "receipt_count": len(rows),
         "manifest_sha256": next(iter(manifests)),
-        "inventory_sha256": next(iter(inventories)),
-        "file_count": next(iter(file_counts)),
+        "inventory_count": len(inventories),
+        "inventory_sha256": (
+            next(iter(inventories)) if len(inventories) == 1
+            else aggregate_inventory_sha256
+        ),
+        "file_count": (
+            next(iter(file_counts)) if len(file_counts) == 1
+            else sum({row["file_count"] for row in rows})
+        ),
         "audit_receipt_path": rows[0]["receipt_path"],
+        "audit_receipt_paths": audit_receipts,
         "receipts": rows,
     }
 
@@ -277,9 +387,15 @@ def build_packet(
     all_twenty_exact = len(comparisons) == 20 and exact_count == 20
     batch_speedup = attempted_speedup if all_twenty_exact else None
     speedup_target_met = bool(batch_speedup is not None and batch_speedup >= 2.5)
+    task_id = str(authorization_manifest.get("task_id") or core.PHASE3_TASK_ID)
+    task_start_hashes = (
+        core.PHASE5_TASK_START_COLD_PATH_SHA256
+        if task_id == core.PHASE5_REBASE_TASK_ID
+        else core.PHASE3_TASK_START_COLD_PATH_SHA256
+    )
     cold_paths = core.cold_path_identity(
         repo_root,
-        task_start_hashes=core.PHASE3_TASK_START_COLD_PATH_SHA256,
+        task_start_hashes=task_start_hashes,
     )
     cold_path_exact = all(row["byte_identical_to_task_start"] for row in cold_paths)
     selection_identity = [
@@ -293,7 +409,7 @@ def build_packet(
     ]
     packet = {
         "schema": "qm.warm-cell-phase3-validation/v1",
-        "task_id": core.PHASE3_TASK_ID,
+        "task_id": task_id,
         "generated_at_utc": core.utc_now(),
         "outcome": {
             "status": outcome_status,
@@ -523,6 +639,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--db", type=Path, default=core.DEFAULT_DB)
     parser.add_argument("--repo-root", type=Path, default=core.DEFAULT_REPO)
     parser.add_argument("--authorization-manifest", type=Path, required=True)
+    parser.add_argument("--reference-csv", type=Path)
     parser.add_argument("--input-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--output-stem", default=DEFAULT_OUTPUT_STEM)
@@ -540,28 +657,53 @@ def main(argv: Sequence[str] | None = None) -> int:
     problems = core.validation_authorization_problems(authorization)
     if problems:
         raise core.ActivationRefused(";".join(problems))
+    if authorization.get("task_id") == core.PHASE5_REBASE_TASK_ID:
+        if args.reference_csv is None:
+            raise core.ActivationRefused("PHASE5_REFERENCE_CSV_REQUIRED")
+        if core.sha256_file(args.reference_csv) != authorization.get(
+            "cold_reference_csv_sha256"
+        ):
+            raise core.ActivationRefused("PHASE5_REFERENCE_CSV_HASH_MISMATCH")
+        contract_path = repo_root / core.DEV2_LANE_CONTRACT_RELATIVE
+        if core.sha256_file(contract_path) != authorization.get(
+            "candidate_lane_contract_sha256"
+        ):
+            raise core.ActivationRefused("PHASE5_LANE_CONTRACT_HASH_MISMATCH")
     with core._read_only_connection(args.db) as con:
         con.execute("BEGIN")
-        references_all = core.cold_references(
-            con,
-            ea_id="QM5_41097",
-            symbol="USDJPY.DWX",
-            year=2019,
-        )
+        if args.reference_csv is not None:
+            references = references_from_bound_csv(
+                con, reference_csv=args.reference_csv
+            )
+        else:
+            references_all = core.cold_references(
+                con,
+                ea_id="QM5_41097",
+                symbol="USDJPY.DWX",
+                year=2019,
+            )
+            references = core.oldest_authenticated_references(
+                references_all, limit=20
+            )
         con.rollback()
-    references = core.oldest_authenticated_references(references_all, limit=20)
     if len(references) != 20:
         raise core.ActivationRefused(
             f"PHASE3_AUTHENTICATED_REFERENCE_COUNT_{len(references)}"
         )
     cells = prepare_cells(references, input_dir=args.input_dir, repo_root=repo_root)
-    history_projection = authenticate_common_history_projection(references)
+    is_phase5_rebase = authorization.get("task_id") == core.PHASE5_REBASE_TASK_ID
+    history_projection = authenticate_common_history_projection(
+        references,
+        require_common_inventory=not is_phase5_rebase,
+    )
     runtime_dir = args.output_dir.resolve() / f"{args.output_stem}_runtime"
     backend = core.GovernedDev2RestartBackend(
         repo_root=repo_root,
         artifact_dir=runtime_dir,
-        history_receipt_path=Path(history_projection["audit_receipt_path"]),
         expected_history_manifest_sha256=history_projection["manifest_sha256"],
+        history_receipt_paths=[
+            Path(path) for path in history_projection["audit_receipt_paths"]
+        ],
     )
     comparisons: list[dict[str, Any]] = []
     outcome_status = "BACKEND_EXECUTION_STOP"

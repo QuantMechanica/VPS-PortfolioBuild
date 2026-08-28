@@ -71,6 +71,17 @@ if ([bool]$contract.agent_port_contract.source_agents_dat_copied -or
     -not [bool]$contract.agent_port_contract.allow_released_baseline_endpoint_reuse) {
     throw 'DEV2 agent-port contract is not fail-closed.'
 }
+$rebase = $contract.runtime_rebase
+if ([string]$rebase.status -cne 'ACTIVE' -or [int]$rebase.program_build -ne 6140 -or
+    [string]$rebase.source_lane -cne 'T1' -or
+    [string]$rebase.source_terminal_root -cne 'D:/QM/mt5/T1' -or
+    [string]$rebase.owner_decision_id -cne '2026-08-28_owner_dev2_seal_and_topdown_priority' -or
+    [string]$rebase.owner_decision_sha256 -cne '781ee98be8931c645a25863f39787081d1a5a82f9df1cdaf2a0f26fa48d03f2b' -or
+    [string]$rebase.task_id -cne 'd3f39dce-ebc5-49fd-a781-dacd049baa68' -or
+    [int]$rebase.previous_program_build -ne 5833 -or
+    [string]::IsNullOrWhiteSpace([string]$rebase.rollback_backup_root)) {
+    throw 'DEV2 runtime rebase provenance contract drifted.'
+}
 $exception = $contract.copy_contract.documented_exception
 if ([string]$exception.relative_path -cne 'Bases/Custom/history/GBPUSD.DWX/2026.hcc' -or
     -not [bool]$exception.copy_current_bytes -or [bool]$exception.claim_old_dev1_manifest_hash) {
@@ -399,13 +410,17 @@ if ([string]$plan.status -cne 'PLAN_ONLY' -or [bool]$plan.mutates_host -or
     throw 'DEV2 provisioner default mode is not a read-only fixed-target plan.'
 }
 
-# The executable contract is checked against the current DEV1 source without
+# The executable contract is checked against the active runtime source without
 # reading mutable history/tick files or touching either lane.
+$activeProgramSource = [string]$contract.paths.source_terminal_root
+if ([string]$contract.runtime_rebase.status -ceq 'ACTIVE') {
+    $activeProgramSource = [string]$contract.runtime_rebase.source_terminal_root
+}
 foreach ($property in @($contract.program_sha256.PSObject.Properties)) {
-    $sourceProgram = Join-Path 'D:\QM\mt5\DEV1' ([string]$property.Name)
+    $sourceProgram = Join-Path $activeProgramSource ([string]$property.Name)
     $actualHash = (Get-FileHash -LiteralPath $sourceProgram -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
     if ($actualHash -cne ([string]$property.Value).ToLowerInvariant()) {
-        throw "DEV1 source program no longer matches DEV2 contract: $($property.Name)"
+        throw "Active source program no longer matches DEV2 contract: $($property.Name)"
     }
 }
 

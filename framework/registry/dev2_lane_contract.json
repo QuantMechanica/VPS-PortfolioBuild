@@ -3,6 +3,24 @@
   "contract_id": "QM_DEV2_ISOLATED_MT5_LANE_V3",
   "lane": "DEV2",
   "source_lane": "DEV1",
+  "runtime_rebase": {
+    "status": "ACTIVE",
+    "program_build": 6140,
+    "source_lane": "T1",
+    "source_terminal_root": "D:/QM/mt5/T1",
+    "owner_decision_id": "2026-08-28_owner_dev2_seal_and_topdown_priority",
+    "owner_decision_path": "decisions/2026-08-28_owner_dev2_seal_and_topdown_priority.md",
+    "owner_decision_sha256": "781ee98be8931c645a25863f39787081d1a5a82f9df1cdaf2a0f26fa48d03f2b",
+    "task_id": "d3f39dce-ebc5-49fd-a781-dacd049baa68",
+    "applied_at_utc": "2026-08-28T10:21:15Z",
+    "previous_program_build": 5833,
+    "rollback_backup_root": "D:/QM/reports/dev2/rebase/20260828T102113Z/build5833_program_backup",
+    "previous_program_sha256": {
+      "terminal64.exe": "abd32f97efea4d3ddaaf694230c13eacef228e71d5115da7202033aa226c6946",
+      "metatester64.exe": "d1e991d84243ec913db8c82505ab69eab48babcb2fa6826ab3871b3360abb646",
+      "MetaEditor64.exe": "2c0c8e9e5c1239e30e8a908d9205cdb01b9cdfcf876752e43bd7a755cce58ad3"
+    }
+  },
   "identity": {
     "local_user": "QMDev2",
     "profile": "C:/Users/QMDev2",
@@ -49,9 +67,9 @@
     }
   ],
   "program_sha256": {
-    "terminal64.exe": "abd32f97efea4d3ddaaf694230c13eacef228e71d5115da7202033aa226c6946",
-    "metatester64.exe": "d1e991d84243ec913db8c82505ab69eab48babcb2fa6826ab3871b3360abb646",
-    "MetaEditor64.exe": "2c0c8e9e5c1239e30e8a908d9205cdb01b9cdfcf876752e43bd7a755cce58ad3"
+    "terminal64.exe": "86c563c8c113e4af8802dc91241ecd51fc06caf92cc86fc40026dd8046e526ed",
+    "metatester64.exe": "46da12974ea4b393fa6855576da57549a1e3255dbe5c667cce60d7f32c1a889f",
+    "MetaEditor64.exe": "05718f3fa55f3f59fd2f024d8c433b457fbd58fcf39e947a16ccdad00a614ec7"
   },
   "allowed_symbols": [
     "NDX.DWX",

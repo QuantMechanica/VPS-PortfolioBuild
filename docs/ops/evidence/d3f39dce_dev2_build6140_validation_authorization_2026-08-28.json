@@ -1,0 +1,40 @@
+{
+  "schema": "qm.warm-cell-validation-run/v1",
+  "purpose": "OFFLINE_PARITY_VALIDATION",
+  "task_id": "d3f39dce-ebc5-49fd-a781-dacd049baa68",
+  "authorized_by": "OWNER_COMMISSION",
+  "owner_decision_id": "OWNER-DEC-DEV2-6140-SEAL",
+  "owner_decision_path": "C:/QM/repo/decisions/2026-08-28_owner_dev2_seal_and_topdown_priority.md",
+  "owner_decision_sha256": "781ee98be8931c645a25863f39787081d1a5a82f9df1cdaf2a0f26fa48d03f2b",
+  "owner_signature": "OWNER-DEC-DEV2-6140-SEAL",
+  "execution_backend": "GOVERNED_SEQUENTIAL_TESTER_RESTART",
+  "profile_mode": "ISOLATED_DEV2",
+  "lane": "DEV2",
+  "production_wiring": false,
+  "active_terminal_allowed": false,
+  "minimum_comparisons": 20,
+  "cold_path_default": "OFF",
+  "resident_ipc_claimed": false,
+  "stop_on_first_deviation": true,
+  "candidate_program_build": 6140,
+  "allow_mixed_pairs": true,
+  "candidate_lane_contract_path": "C:/QM/repo/framework/registry/dev2_lane_contract.json",
+  "candidate_lane_contract_sha256": "12e3e4ede11c904ba74d2cd591390161832093d7c61a92201bb7b9d31a9e824b",
+  "cold_reference_csv_path": "C:/QM/repo/docs/ops/evidence/9018743b_v4a_phase5_build6140_cold_references_2026-08-28.csv",
+  "cold_reference_csv_sha256": "9ab369d2034f52391ab9369897345976c916faeccfd299a9b677a5a6934ea9c2",
+  "common_history_manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+  "program_sha256": {
+    "terminal64.exe": "86c563c8c113e4af8802dc91241ecd51fc06caf92cc86fc40026dd8046e526ed",
+    "metatester64.exe": "46da12974ea4b393fa6855576da57549a1e3255dbe5c667cce60d7f32c1a889f",
+    "MetaEditor64.exe": "05718f3fa55f3f59fd2f024d8c433b457fbd58fcf39e947a16ccdad00a614ec7"
+  },
+  "rollback": {
+    "backup_root": "D:/QM/reports/dev2/rebase/20260828T102113Z/build5833_program_backup",
+    "program_build": 5833,
+    "program_sha256": {
+      "terminal64.exe": "abd32f97efea4d3ddaaf694230c13eacef228e71d5115da7202033aa226c6946",
+      "metatester64.exe": "d1e991d84243ec913db8c82505ab69eab48babcb2fa6826ab3871b3360abb646",
+      "MetaEditor64.exe": "2c0c8e9e5c1239e30e8a908d9205cdb01b9cdfcf876752e43bd7a755cce58ad3"
+    }
+  }
+}

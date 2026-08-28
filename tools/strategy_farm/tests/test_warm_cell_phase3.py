@@ -2,7 +2,10 @@
 from __future__ import annotations
 
 import json
+import csv
 from types import SimpleNamespace
+
+import pytest
 
 from tools.strategy_farm import warm_cell_phase3 as phase3
 from tools.strategy_farm import warm_cell_runner as core
@@ -55,6 +58,69 @@ def test_prepare_cells_authenticates_staged_risk_fixed_inputs(tmp_path):
     assert cells[0]["setfile_guard"]["risk_percent"] == 0
 
 
+def test_phase5_csv_reauthenticates_exact_ordered_mixed_cohort(tmp_path, monkeypatch):
+    references = [_reference(index) for index in range(20)]
+    for index, reference in enumerate(references):
+        reference.update(
+            {
+                "work_item_id": f"work-{index:02d}",
+                "reference_status": "AUTHENTICATED_COLD",
+                "summary_sha256": f"{index + 101:064x}",
+                "report_sha256": f"{index + 201:064x}",
+                "logger_sample_sha256": f"{index + 301:064x}",
+                "report_metrics_sha256": f"{index + 401:064x}",
+                "trade_list_sha256": f"{index + 501:064x}",
+                "cold_elapsed_seconds": float(index + 1),
+            }
+        )
+        if index % 2:
+            reference["ea_id"] = "QM5_41161"
+            reference["symbol"] = "GBPUSD.DWX"
+
+    def fake_cold_references(_con, *, ea_id, symbol, year):
+        assert year == 2019
+        return [
+            row for row in references
+            if row["ea_id"] == ea_id and row["symbol"] == symbol
+        ]
+
+    monkeypatch.setattr(core, "cold_references", fake_cold_references)
+    path = tmp_path / "references.csv"
+    fields = [
+        "rank", "work_item_id", "ea_id", "symbol", "arm", "build",
+        "cold_seconds", "summary_sha256", "report_sha256", "logger_sha256",
+        "setfile_sha256", "metrics_sha256", "trades_sha256", "status",
+    ]
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer.writeheader()
+        for rank, reference in enumerate(references, start=1):
+            writer.writerow(
+                {
+                    "rank": rank,
+                    "work_item_id": reference["work_item_id"],
+                    "ea_id": reference["ea_id"],
+                    "symbol": reference["symbol"],
+                    "arm": reference["arm"],
+                    "build": 6140,
+                    "cold_seconds": reference["cold_elapsed_seconds"],
+                    "summary_sha256": reference["summary_sha256"],
+                    "report_sha256": reference["report_sha256"],
+                    "logger_sha256": reference["logger_sample_sha256"],
+                    "setfile_sha256": reference["setfile_sha256"],
+                    "metrics_sha256": reference["report_metrics_sha256"],
+                    "trades_sha256": reference["trade_list_sha256"],
+                    "status": "AUTHENTICATED_COLD_BUILD_6140",
+                }
+            )
+    selected = phase3.references_from_bound_csv(object(), reference_csv=path)
+    assert [row["work_item_id"] for row in selected] == [
+        f"work-{index:02d}" for index in range(20)
+    ]
+    assert selected[0]["selection_rank"] == 1
+    assert selected[-1]["selection_rank"] == 20
+
+
 def test_history_receipts_may_have_distinct_paths_when_inventory_is_identical(
     tmp_path,
 ):
@@ -83,6 +149,39 @@ def test_history_receipts_may_have_distinct_paths_when_inventory_is_identical(
     assert result["file_count"] == 1
     assert result["receipts"][0]["receipt_sha256"] != result["receipts"][1]["receipt_sha256"]
     assert result["receipts"][0]["inventory_sha256"] == result["receipts"][1]["inventory_sha256"]
+
+
+def test_phase5_history_projection_allows_multiple_inventories_under_one_manifest(
+    tmp_path,
+):
+    references = [_reference(index) for index in range(2)]
+    for index, reference in enumerate(references):
+        path = tmp_path / f"receipt-{index}.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "qm.custom-history-copy-on-claim/v1",
+                    "status": "PASS_PRIVATIZED",
+                    "manifest_sha256": "c" * 64,
+                    "files": [{
+                        "relative_path": f"history/SYMBOL{index}/2019.hcc",
+                        "size": index + 1,
+                        "sha256": str(index + 1) * 64,
+                    }],
+                }
+            ),
+            encoding="utf-8",
+        )
+        reference["history_receipt_path"] = str(path)
+
+    with pytest.raises(core.ActivationRefused, match="INVENTORY_NOT_COMMON"):
+        phase3.authenticate_common_history_projection(references)
+    result = phase3.authenticate_common_history_projection(
+        references, require_common_inventory=False
+    )
+    assert result["status"] == "PASS_COMMON_MANIFEST_MULTI_INVENTORY"
+    assert result["inventory_count"] == 2
+    assert len(result["audit_receipt_paths"]) == 2
 
 
 def test_phase3_packet_proves_twenty_exact_and_measured_speedup(

@@ -56,6 +56,27 @@ def _validation_authorization() -> dict:
     }
 
 
+def _phase5_authorization() -> dict:
+    manifest = _validation_authorization()
+    manifest.update(
+        {
+            "task_id": runner.PHASE5_REBASE_TASK_ID,
+            "execution_backend": runner.GOVERNED_RESTART_BACKEND,
+            "profile_mode": runner.GOVERNED_RESTART_PROFILE,
+            "lane": "DEV2",
+            "owner_decision_id": runner.PHASE5_OWNER_DECISION_ID,
+            "owner_decision_sha256": runner.PHASE5_OWNER_DECISION_SHA256,
+            "owner_signature": runner.PHASE5_OWNER_DECISION_ID,
+            "candidate_program_build": 6140,
+            "allow_mixed_pairs": True,
+            "candidate_lane_contract_sha256": "1" * 64,
+            "cold_reference_csv_sha256": "2" * 64,
+            "common_history_manifest_sha256": "c" * 64,
+        }
+    )
+    return manifest
+
+
 class FakeBackend:
     def __init__(self, results: dict[str, dict]):
         self.results = results
@@ -245,6 +266,34 @@ def test_phase3_restart_authorization_is_task_and_lane_bound():
     assert "VALIDATION_RESTART_LANE_INVALID" in runner.validation_authorization_problems(
         manifest
     )
+
+
+def test_phase5_restart_authorization_is_owner_decision_bound():
+    manifest = _phase5_authorization()
+    assert runner.validation_authorization_problems(manifest) == []
+    manifest["owner_decision_sha256"] = "0" * 64
+    assert (
+        "VALIDATION_PHASE5_OWNER_DECISION_SHA256_INVALID"
+        in runner.validation_authorization_problems(manifest)
+    )
+
+
+def test_phase5_explicitly_allows_mixed_pairs_with_common_history():
+    references = {f"cell-{i:02d}": _result(i) for i in range(20)}
+    for index, reference in enumerate(references.values()):
+        if index % 2:
+            reference["ea_id"] = "QM5_41097"
+            reference["symbol"] = "USDJPY.DWX"
+            reference["ex5_sha256"] = "9" * 64
+    backend = FakeBackend(deepcopy(references))
+    result = runner.WarmCellRunner(backend).run(
+        cells=[{"cell_key": key} for key in references],
+        cold_references=references,
+        environ={runner.FLAG_NAME: "1"},
+        activation_manifest=_phase5_authorization(),
+    )
+    assert result["status"] == "EXACT_PARITY"
+    assert backend.opened == backend.closed == 1
 
 
 def test_comparator_includes_receipt_artifact_bytes_and_entry_days():
