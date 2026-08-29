@@ -16659,9 +16659,25 @@ def _validated_q09_include_closure(
             successor = closure_builder.build_include_closure(
                 ea_id, successor_root, ea_dir=ea_dir
             )
-        return successor, closure_builder.validate_include_closure(
-            ea_id, successor, ea_dir=ea_dir
-        )
+        try:
+            return successor, closure_builder.validate_include_closure(
+                ea_id, successor, ea_dir=ea_dir
+            )
+        except RuntimeError as successor_exc:
+            if not any(marker in str(successor_exc) for marker in stale_markers):
+                raise
+            generation_key = closure_builder.include_closure_generation_key(
+                ea_id, ea_dir=ea_dir
+            )
+            generation_root = successor_root / "successors" / generation_key
+            generation = generation_root / f"{ea_id}_include_closure.json"
+            if not generation.exists():
+                generation = closure_builder.build_include_closure(
+                    ea_id, generation_root, ea_dir=ea_dir
+                )
+            return generation, closure_builder.validate_include_closure(
+                ea_id, generation, ea_dir=ea_dir
+            )
 
 
 def _build_q09_autoseal_plan(

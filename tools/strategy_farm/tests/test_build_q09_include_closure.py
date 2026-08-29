@@ -136,6 +136,19 @@ def test_non_generated_include_drift_is_rejected(
         closure.validate_include_closure(ea_id, path)
 
 
+def test_generation_key_tracks_current_closure_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ea_id, _path, _resolver, _ex5 = _make_ea(tmp_path, monkeypatch)
+    first = closure.include_closure_generation_key(ea_id)
+    assert len(first) == 64
+    include_other = closure.INCLUDE_ROOT / "QM" / "Other.mqh"
+    include_other.write_text("int other = 2;\n", encoding="utf-8")
+    second = closure.include_closure_generation_key(ea_id)
+    assert second != first
+    assert second == closure.include_closure_generation_key(ea_id)
+
+
 def test_ex5_mismatch_rejected_even_with_identical_sources(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

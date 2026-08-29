@@ -1002,6 +1002,47 @@ def test_news_autoseal_preserves_stale_closure_and_builds_scoped_successor(
     ]
 
 
+def test_news_autoseal_generates_hash_scoped_closure_after_scoped_drift(
+    tmp_path: Path,
+) -> None:
+    canonical = tmp_path / "QM5_1_include_closure.json"
+    canonical.write_text("canonical", encoding="utf-8")
+    scoped = tmp_path / "child-1" / canonical.name
+    scoped.parent.mkdir()
+    scoped.write_text("scoped", encoding="utf-8")
+    generation_key = "a" * 64
+    generation = (
+        tmp_path / "child-1" / "successors" / generation_key / canonical.name
+    )
+    builder = mock.MagicMock()
+    builder.validate_include_closure.side_effect = [
+        RuntimeError("include closure source inventory/hash mismatch"),
+        RuntimeError("include closure source inventory/hash mismatch"),
+        {"generated_source_drift": []},
+    ]
+    builder.include_closure_generation_key.return_value = generation_key
+    builder.build_include_closure.return_value = generation
+
+    with mock.patch.object(
+        farmctl, "Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT", tmp_path
+    ):
+        path, validation = farmctl._validated_q09_include_closure(
+            builder,
+            ea_id="QM5_1",
+            ea_dir=tmp_path / "QM5_1_demo",
+            work_item_id="child-1",
+        )
+
+    assert path == generation
+    assert validation == {"generated_source_drift": []}
+    builder.include_closure_generation_key.assert_called_once_with(
+        "QM5_1", ea_dir=tmp_path / "QM5_1_demo"
+    )
+    builder.build_include_closure.assert_called_once_with(
+        "QM5_1", generation.parent, ea_dir=tmp_path / "QM5_1_demo"
+    )
+
+
 def _autoseal_plan_collision_fixture(tmp_path: Path) -> tuple[dict, dict]:
     source_paths = {}
     for name in ("q08", "baseline", "expert", "closure", "calendar"):

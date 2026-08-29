@@ -221,6 +221,41 @@ def validate_include_closure(
     return payload
 
 
+def include_closure_generation_key(
+    ea_id: str, *, ea_dir: Path | None = None
+) -> str:
+    """Hash the current closure identity before choosing an immutable path."""
+
+    ea_dir = _resolve_ea_dir(ea_id, ea_dir)
+    root_mq5 = ea_dir / f"{ea_dir.name}.mq5"
+    ex5 = ea_dir / f"{ea_dir.name}.ex5"
+    for path in (root_mq5, ex5):
+        if not path.is_file():
+            raise RuntimeError(f"missing {path}")
+    files = [
+        {
+            "origin": origin,
+            "relative_path": relative_label(path, origin),
+            "sha256": sha256_file(path),
+            "size_bytes": path.stat().st_size,
+        }
+        for path, origin in walk(root_mq5)
+    ]
+    files.sort(key=lambda row: (row["origin"] != "repo", row["relative_path"]))
+    identity = {
+        "schema": SCHEMA,
+        "ea_id": ea_id,
+        "root_source": root_mq5.relative_to(REPO).as_posix(),
+        "ex5_path": ex5.relative_to(REPO).as_posix(),
+        "ex5_sha256": sha256_file(ex5),
+        "files": files,
+    }
+    encoded = json.dumps(
+        identity, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def build_include_closure(
     ea_id: str, out_dir: Path = OUT_DIR, *, ea_dir: Path | None = None
 ) -> Path:
