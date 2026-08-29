@@ -1,0 +1,22 @@
+{
+  "logical_symbol": "QM5_41193_XTI_XNG_FRACD_RV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg monthly oil/gas relative-value package. Q02 must evaluate combined package PnL, paired costs, density, and later Q09 correlation; neither leg is a standalone strategy.",
+    "The EA exact-joins 316 completed synchronized D1 pairs, applies fixed d=0.40 K=64 fractional-difference weights, holds the latest of 253 outputs out of a 252-output baseline, fades inclusive abs(z)>=0.50, targets equal absolute notionals, and caps combined frozen-stop risk at one RISK_FIXED budget.",
+    "Manifest follows the validated QM5_12533 logical-basket host-symbol recipe while keeping USD tester currency and the canonical 100000 deposit for the XTI/XNG carrier."
+  ]
+}
