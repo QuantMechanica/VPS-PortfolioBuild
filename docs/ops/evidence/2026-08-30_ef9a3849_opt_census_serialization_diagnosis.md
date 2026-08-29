@@ -1,7 +1,7 @@
 # OPT_CENSUS effective-single-slot diagnosis
 
-Date: 2026-08-30 (Europe/Berlin; live evidence captured 2026-08-29 23:02-23:12 UTC)  
-Router task: `ef9a3849-d8a4-4d88-8f6b-e78332a76295`  
+Date: 2026-08-30 (Europe/Berlin; live evidence captured 2026-08-29 23:02-23:12 UTC)
+Router task: `ef9a3849-d8a4-4d88-8f6b-e78332a76295`
 Scope: diagnosis and governed proposal only; no queue, selection-rule, pruning-rule, EA, terminal, or live-state mutation
 
 ## Verdict
