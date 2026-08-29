@@ -1,0 +1,154 @@
+{
+  "schema_version": "qm.fx-cointegration-session-progress-fix/v1",
+  "generated_at_utc": "2026-08-29T18:37:15Z",
+  "generated_at_europe_berlin": "2026-08-29T20:37:15+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base": "6c58e0e9318ca41cd7ea25d2b52198970e65a2aa",
+  "mission_result": "EXISTING_FOREX_FALLBACK_Q03_REAPER_DEFECT_FIXED",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "published_pair_count": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "published_hard_qualifiers": 2,
+    "new_unbuilt_pair_eligible": false,
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "anchors": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    },
+    "anchor_q02_oninit_or_no_history_repair_required": false,
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_NON_DUPLICATE_SCAN_QUALIFIED_PAIR",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_COINTEGRATION_CARD"
+    }
+  },
+  "selected_existing_forex_sleeve": {
+    "ea_id": "QM5_20224",
+    "ea_directory": "framework/EAs/QM5_20224_eurusd-eurjpy",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20224_eurusd-eurjpy_card.md",
+    "logical_symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "USDJPY.DWX"
+    ],
+    "scan_relationship_rank": 46,
+    "timeframe": "D1",
+    "selection_mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "queue_lineage": {
+      "q02": {
+        "id": "5d1cb89c-25ce-419c-869c-8c9f7afa10c1",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "q03": {
+        "id": "3c74eb04-7e19-4aa0-8dcf-3f004faaa946",
+        "status": "pending",
+        "verdict": null,
+        "priority_track": true,
+        "priority_reason": "board_advisor_fx_fallback_rank46_q03"
+      },
+      "q04": {
+        "id": "a525cd8f-4c29-4752-b1af-3c43288f259e",
+        "status": "pending",
+        "verdict": null,
+        "dependency_not_bypassed": true
+      }
+    }
+  },
+  "defect": {
+    "classification": "WORK_ITEM_BOUND_Q03_RETRY_SESSION_IGNORED_BY_ACTIVE_REAPER",
+    "prior_false_reap_at_utc": "2026-08-29T16:53:46Z",
+    "prior_reap_reason": "NO_FORWARD_PROGRESS",
+    "prior_reaper_progress_at_utc": "2026-08-29T16:21:16Z",
+    "run_01_tester_progress": {
+      "at_utc": "2026-08-29T16:47:15Z",
+      "progress_percent": 94
+    },
+    "run_02_work_item_bound_session_marker_at_utc": "2026-08-29T16:49:36Z",
+    "reap_delay_after_run_02_marker_minutes": 4.17,
+    "root_cause": "The terminal parser exposed latest_session_at, but Q02/Q03 reaper decisions consumed only percentage progress_at. A bounded run_smoke retry therefore reset the percentage stream without resetting the stall clock."
+  },
+  "repair": {
+    "source": "tools/strategy_farm/farmctl.py",
+    "test": "tools/strategy_farm/tests/test_progress_aware_reaper.py",
+    "progress_contract": "run_smoke_session_v1",
+    "admitted_evidence": "existing work-item-UUID-bound MT5 session marker only",
+    "arbitrary_report_growth_admitted": false,
+    "strategy_logic_changed": false,
+    "queue_row_created": false,
+    "queue_row_replaced": false,
+    "runtime_database_mutated_by_this_fix": false
+  },
+  "exact_incident_reproduction": {
+    "before": {
+      "progress_at_utc": "2026-08-29T16:21:16Z",
+      "stalled_minutes": 32.5
+    },
+    "after": {
+      "progress_at_utc": "2026-08-29T16:49:36Z",
+      "stalled_minutes": 4.17,
+      "activity_source": "mt5_session_launch"
+    },
+    "would_reap_at_2026_08_29T16_53_46Z": false
+  },
+  "source_and_build_binding": {
+    "card_schema_lint": "PASS",
+    "card_ml_hits": [],
+    "approved_card_sha256": "3b2ab7bc3c1dea90a86b936b1bf0e352f69e5c9532724f78512a18b987d35580",
+    "mq5_sha256": "7eda37af63f23e00dcb930d71eb07afe4bef97e30875ec7f83bf5d234f668129",
+    "ex5_sha256": "d534838d2c9c993db151500c836f4e38088d961b2fe90e820defb0d31a34ae5b",
+    "basket_manifest_sha256": "f7207377d90fb4fb3447425597f4ec4b2c2709838e0bd44cf4d851f70bb97725",
+    "logical_setfile_sha256": "397181311f649d5416044d36d6aa70023390ea8b14f97cb75e7fb8818b144254",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true,
+    "machine_learning": false,
+    "adaptive_refit": false
+  },
+  "verification": {
+    "progress_reaper_tests": "13 passed",
+    "related_q_phase_and_basket_tests": "4 passed, 16 deselected",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "capacity": {
+    "captured_at_utc": "2026-08-29T18:36:35.9884707Z",
+    "samples_percent": [
+      95.612506,
+      87.642342,
+      79.797455,
+      78.420236,
+      82.326172
+    ],
+    "average_percent": 84.759742,
+    "maximum_percent": 95.612506,
+    "ceiling_percent": 97.0,
+    "ceiling_hit": false
+  },
+  "paced_fleet": {
+    "active_multisymbol_work_item_id": "a5b489ed-47f9-4c5e-b3a5-bde07b903413",
+    "active_multisymbol_ea_id": "QM5_41075",
+    "active_multisymbol_phase": "Q04",
+    "active_multisymbol_terminal": "T3",
+    "binding_condition": "OTHER_ACTIVE_BASKET_OWNS_SERIALIZED_MULTISYMBOL_LANE",
+    "manual_dispatch_started": false,
+    "backtest_started_by_this_change": false
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "next_action": "Let the resident paced worker reclaim the same priority-bound QM5_20224 Q03 row after QM5_41075 releases the serialized basket lane; require canonical Q03 PASS before Q04."
+}

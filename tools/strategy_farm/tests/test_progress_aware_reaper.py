@@ -172,6 +172,44 @@ class ProgressAwareReaperTests(unittest.TestCase):
 
     @mock.patch.object(farmctl, "_stop_pid", return_value=False)
     @mock.patch.object(farmctl, "_stop_terminal_slot", return_value=False)
+    def test_q03_recent_retry_session_marker_counts_as_progress(self, *_):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            self._active(root, item_id="q03_retry", age_min=32, phase="Q03")
+            old = (self.now.astimezone() - dt.timedelta(minutes=31)).strftime(
+                "%H:%M:%S.000"
+            )
+            recent = (self.now.astimezone() - dt.timedelta(minutes=4)).strftime(
+                "%H:%M:%S.000"
+            )
+            self._session_log(root, "q03_retry", [old, recent])
+            with farmctl.connect(root) as conn:
+                flagged = farmctl._detect_active_age_timeout(
+                    conn, now_dt=self.now, mt5_root=root
+                )
+                row = conn.execute(
+                    "SELECT status, payload_json FROM work_items WHERE id='q03_retry'"
+                ).fetchone()
+            self.assertEqual(flagged, [])
+            self.assertEqual(row[0], "active")
+
+            evidence = farmctl._terminal_progress_evidence(
+                "q03_retry",
+                "T1",
+                self.now - dt.timedelta(minutes=32),
+                now_dt=self.now,
+                mt5_root=root,
+            )
+            combined = farmctl._run_smoke_session_progress_evidence(
+                evidence,
+                now_dt=self.now,
+            )
+            self.assertEqual(combined["progress_contract"], "run_smoke_session_v1")
+            self.assertEqual(combined["activity_source"], "mt5_session_launch")
+            self.assertEqual(combined["stalled_min"], 4.0)
+
+    @mock.patch.object(farmctl, "_stop_pid", return_value=False)
+    @mock.patch.object(farmctl, "_stop_terminal_slot", return_value=False)
     def test_phase_runner_report_root_growth_counts_as_progress(self, *_):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)

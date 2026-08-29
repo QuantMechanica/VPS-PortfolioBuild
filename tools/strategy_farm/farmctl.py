@@ -9835,6 +9835,40 @@ def _phase_runner_progress_evidence(
     return combined
 
 
+def _run_smoke_session_progress_evidence(
+    terminal_progress: dict[str, Any],
+    *,
+    now_dt: dt.datetime,
+) -> dict[str, Any]:
+    """Count a fresh item-bound run_smoke session as forward progress.
+
+    Q02/Q03 use one ``run_smoke.ps1`` child, but that child may launch a
+    second MT5 tester session after a bounded infrastructure retry.  The
+    terminal parser intentionally reads percentage lines only after the last
+    matching work-item marker.  Until the new session emits its first
+    percentage line, ``progress_at`` can therefore still point at the claim
+    even though ``latest_session_at`` proves that the row just moved forward.
+
+    This helper admits only the existing UUID-bound terminal marker.  It does
+    not widen Q02/Q03 to arbitrary report-root file growth.
+    """
+    if not terminal_progress.get("determined"):
+        return terminal_progress
+    progress_at = _parse_utc_datetime(terminal_progress.get("progress_at"))
+    session_at = _parse_utc_datetime(terminal_progress.get("latest_session_at"))
+    if session_at is None or (progress_at is not None and session_at <= progress_at):
+        return terminal_progress
+    combined = dict(terminal_progress)
+    combined.update({
+        "reason": "work_item_bound_session_progress",
+        "progress_contract": "run_smoke_session_v1",
+        "activity_source": "mt5_session_launch",
+        "progress_at": session_at.replace(microsecond=0).isoformat(),
+        "stalled_min": round(max(0.0, (now_dt - session_at).total_seconds() / 60.0), 2),
+    })
+    return combined
+
+
 def _detect_active_age_timeout(
     con: sqlite3.Connection,
     *,
@@ -9896,6 +9930,11 @@ def _detect_active_age_timeout(
             mt5_root=mt5_root,
             additional_marker_paths=list(external_progress.get("terminal_marker_paths") or []),
         )
+        if phase_qid(phase) in {"Q02", "Q03"}:
+            progress = _run_smoke_session_progress_evidence(
+                progress,
+                now_dt=now_dt,
+            )
         if phase in REAL_PHASE_RUNNER_PHASES:
             raw_report_root = payload.get("report_root")
             report_root = (
