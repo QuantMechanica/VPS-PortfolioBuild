@@ -1,0 +1,55 @@
+{
+  "candidate": {
+    "author": "Matti Keloharju; Juhani T. Linnainmaa; Peter Nyberg; Peter J. Huber",
+    "mechanic": "single XNG exact prior ten year same calendar month log returns fixed-scale Huber M location even median MAD 32 reweight updates sign monthly renewal",
+    "slug": "xng-samecal-huber10",
+    "strategy_id": "KELOHARJU-HUBER-XNG-SAMECAL10-2026_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-08-29T20:04:36+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41204_wti-samecal-huber10_card.md",
+      "score": 1.0,
+      "slug": "wti-samecal-huber10",
+      "source": "card",
+      "strategy_id": "KELOHARJU-HUBER-WTI-SAMECAL10-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20100_xng-samecal_card.md",
+      "score": 0.85,
+      "slug": "xng-samecal",
+      "source": "card",
+      "strategy_id": "KELOHARJU-RETSEAS-2016_XNG_S03"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4704,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1350,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}

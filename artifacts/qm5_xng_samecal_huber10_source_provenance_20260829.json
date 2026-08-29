@@ -1,0 +1,30 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "xng-samecal-huber10",
+  "recorded_at_utc": "2026-08-29T20:05:24Z",
+  "retrieval_mode": "complete_read_of_governed_repository_packets",
+  "new_public_retrieval": false,
+  "records": [
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-RETSEAS-2016/source.md",
+      "source_id": "KELOHARJU-RETSEAS-2016",
+      "sha256": "54E6036035D146BB080A0DDF4A16B378C187655A3834DF86329F7B2D319875F0",
+      "byte_count": 9245,
+      "line_count": 174,
+      "read_scope": "complete",
+      "status": "cards_ready",
+      "role": "peer_reviewed_same_calendar_commodity_seasonality_explicit_natural_gas_membership_and_history_floor"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-WTI-HUBER-2026/source.md",
+      "source_id": "MOP-WTI-HUBER-2026",
+      "sha256": "849EEF9C014DFFC16F42531E38F995767F7C516BEF0824559E7D3A057E59F611",
+      "byte_count": 6949,
+      "line_count": 154,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "governed_peer_reviewed_huber_bounded_location_arithmetic_only_no_wti_carrier_claim_transferred"
+    }
+  ],
+  "claim_boundary": "The exact ten-year same-calendar XNG Huber-location conjunction is a transparent QM mechanization and governed symbol/statistic port. No source performance, significance, density, cost, CFD equivalence, decorrelation, or portfolio result is imported."
+}
