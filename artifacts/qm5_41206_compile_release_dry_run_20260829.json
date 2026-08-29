@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "df3150c19e72716c78a0f9fd4f0952350f676b32baecdd4b8bc5f3b3184094fd",
+      "ea_id": "QM5_41206",
+      "ea_label": "QM5_41206_xauxag-samecal-huber10",
+      "expected_mq5_sha256": "df3150c19e72716c78a0f9fd4f0952350f676b32baecdd4b8bc5f3b3184094fd",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41206_xauxag-samecal-huber10\\QM5_41206_xauxag-samecal-huber10.mq5",
+      "work_item_id": "25c25747-2490-442f-9ed4-455ddacd10e2"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "25c25747-2490-442f-9ed4-455ddacd10e2"
+}

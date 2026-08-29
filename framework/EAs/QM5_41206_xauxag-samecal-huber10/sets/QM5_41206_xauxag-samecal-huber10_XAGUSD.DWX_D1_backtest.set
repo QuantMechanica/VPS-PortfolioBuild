@@ -4,35 +4,23 @@
 ; ea_slug:      xauxag-samecal-huber10
 ; ea_version:   v5.0
 ; set_version:  s20260829-001
-; symbol:       QM5_41206_XAU_XAG_SAMECAL_HUBER10_D1
-; host_symbol:  XAUUSD.DWX
+; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   21282e9fdabab8737949b930d7e779c44a2b96eef4c5574bc71b567d9c36e030
+; build_hash:   cce997eaf642f99f64411b47faa60c8331b53019905d26571ca14d1bcb571145
 ; author:       Development
 ; date:         2026-08-29
 ;==========================================================
 qm_ea_id=41206
-qm_magic_slot_offset=0
-qm_rng_seed=42
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; Native completed-price signal; both news axes are intentionally OFF.
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-; Full broker-month hold; Friday flattening is intentionally disabled.
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-; Locked approved-card defaults; no optimization surface.
-; card_defaults_source=strategy-seeds/cards/approved/QM5_41206_xauxag-samecal-huber10_card.md
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_xag_symbol=XAGUSD.DWX
 strategy_history_years=10
 strategy_required_observations=10
