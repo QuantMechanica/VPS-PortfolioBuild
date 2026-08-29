@@ -1,0 +1,30 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "wti-samecal-hl5",
+  "recorded_at_utc": "2026-08-29T15:40:00Z",
+  "retrieval_mode": "complete_read_of_governed_repository_packets",
+  "new_public_retrieval": false,
+  "records": [
+    {
+      "path": "strategy-seeds/sources/KELOHARJU-RETSEAS-2016/source.md",
+      "source_id": "KELOHARJU-RETSEAS-2016",
+      "sha256": "54E6036035D146BB080A0DDF4A16B378C187655A3834DF86329F7B2D319875F0",
+      "byte_count": 9245,
+      "line_count": 174,
+      "read_scope": "complete",
+      "status": "cards_ready",
+      "role": "peer_reviewed_same_calendar_commodity_evidence_with_explicit_crude_oil_membership_and_five_year_floor"
+    },
+    {
+      "path": "strategy-seeds/sources/MOP-WTI-HLRET-2026/source.md",
+      "source_id": "MOP-WTI-HLRET-2026",
+      "sha256": "E0E6CF16F7A4656B7613702C39C19657653424819EFB61EE1CEBD9CC46403D8C",
+      "byte_count": 6732,
+      "line_count": 149,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "peer_reviewed_wti_own_return_lineage_and_exact_inclusive_pair_pseudomedian_arithmetic"
+    }
+  ],
+  "claim_boundary": "The exact five-year same-calendar Hodges-Lehmann conjunction is a transparent QM mechanization. No source performance, significance, density, cost, futures-CFD equivalence, decorrelation, or portfolio result is imported."
+}
