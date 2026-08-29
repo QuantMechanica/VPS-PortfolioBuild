@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "fd7245683b69696c55fbd73a4da19a6271b9543a5175fb679982f41fb1effbbb",
+      "ea_id": "QM5_41208",
+      "ea_label": "QM5_41208_xng-seas-surprise-rv",
+      "expected_mq5_sha256": "fd7245683b69696c55fbd73a4da19a6271b9543a5175fb679982f41fb1effbbb",
+      "source_path": "framework\\EAs\\QM5_41208_xng-seas-surprise-rv\\QM5_41208_xng-seas-surprise-rv.mq5",
+      "work_item_id": "e099e331-094c-4697-963f-3b10c1fadc23"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "e099e331-094c-4697-963f-3b10c1fadc23"
+}

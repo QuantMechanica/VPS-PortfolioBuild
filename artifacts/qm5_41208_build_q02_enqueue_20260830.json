@@ -1,0 +1,152 @@
+{
+  "schema": "qm.new-energy-sleeve-build-q02/v1",
+  "generated_at_utc": "2026-08-29T23:50:10Z",
+  "branch": "agents/board-advisor",
+  "pre_receipt_head": "99a1d112076b0437185cb969cb56402446894cb8",
+  "mission_outcome": "BUILT_COMPILE_OK_Q02_ENQUEUED_CPU_CEILING_BOUND_POST_ENQUEUE",
+  "ea": {
+    "ea_id": "QM5_41208",
+    "slug": "xng-seas-surprise-rv",
+    "strategy_id": "KELOHARJU-MISHRA-XNG-SEASSURPRISE-2026_S01",
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "magic": 412080000
+  },
+  "edge": {
+    "class": "xng_just_completed_month_standardized_same_calendar_surprise_reversion",
+    "frequency": "monthly",
+    "mechanic": "At the first normalized broker-month boundary, subtract the arithmetic mean of five to ten valid returns for the same just-completed calendar month in the exact prior ten years from the realized XNG log return, divide by n-1 sample standard deviation, and trade contrarian only beyond abs(z)>0.50+1e-10 until the next month.",
+    "book_difference": "The candidate is a symmetric monthly seasonally adjusted XNG surprise stream, unlike the incumbent long-only two-day cumulative-RSI pullback. This is a structural distinction only; realized decorrelation is not claimed and remains Q09 authority.",
+    "dedup_verdict": "CLEAN_XNG_STANDARDIZED_SEASONAL_SURPRISE_REVERSION_AFTER_CANONICAL_AND_MANUAL_REVIEW",
+    "dedup_receipt": "artifacts/qm5_xng_seassurprise_rv_preallocation_dedup_20260830.json",
+    "dedup_receipt_sha256": "368080a3c487f6fe8655177d94c8ab6d61d0bc165fad25b1bedd7b945edb121c",
+    "manual_neighbors": [
+      "QM5_12567 two-day trend-filtered long-only cumulative RSI2 pullback",
+      "QM5_20054 unconditional completed-month sign contrarian",
+      "QM5_20100 raw upcoming-month same-calendar seasonal following",
+      "QM5_41205 Huber upcoming-month same-calendar seasonal following",
+      "QM5_21517 paired XAU-XAG seasonal-surprise basket"
+    ]
+  },
+  "governance": {
+    "source_packet": "strategy-seeds/sources/KELOHARJU-MISHRA-XNG-SEASSURPRISE-2026/source.md",
+    "source_packet_sha256": "daa4c8c70fcfb330f157ac4ac0cbaa3ad13fdc765d184affd80f88c588cf09bc",
+    "source_approval": "decisions/2026-08-30_xng_seasonal_surprise_reversion_source_approval.md",
+    "source_approval_commit": "c69176b43",
+    "source_extraction_commit": "a6cb76267",
+    "g0_decision": "decisions/2026-08-30_qm5_41208_xng_seasonal_surprise_reversion_g0.md",
+    "g0_status": "APPROVED",
+    "approved_card": "strategy-seeds/cards/approved/QM5_41208_xng-seas-surprise-rv_card.md",
+    "approved_card_sha256": "a813e8d958104322e52998ecd9ade00bb8da6cfb163e833b88544049bb36b951",
+    "card_approval_commit": "69423f42d",
+    "schema_normalization_amendment": "decisions/2026-08-30_qm5_41208_card_schema_normalization_amendment.md",
+    "runtime_card_sha256": "a2b15a06cd46feb6e86632112694f831b9df7e5e696b88b431aac20623705bfd",
+    "runtime_card_normalization": "Farm approval updated informational G0 reasoning and ordering priors only; the committed mechanic, R2-R4 gates, fixed risk, and execution contract were unchanged.",
+    "magic_allocation_receipt": "artifacts/qm5_41208_magic_allocation_20260830.json",
+    "magic_allocation_receipt_sha256": "02f8b5c241630fe53603efe4fc65cc872c3f63860f48660358d254073c01a90d"
+  },
+  "build": {
+    "implementation_commit": "99a1d112076b0437185cb969cb56402446894cb8",
+    "build_task_id": "e0c31390-cc4d-4dc7-92d8-1e0c183634f8",
+    "build_task_status": "done",
+    "build_task_prompt": "artifacts/qm5_41208_build_task_20260830.md",
+    "build_task_prompt_sha256": "f8f1e9dc363eb156e5f0d9d2ac3d37a2727939f0351de6c1a6f6e5693531d758",
+    "build_result": "artifacts/qm5_41208_build_result_20260830.json",
+    "build_result_sha256": "d535790b27a5f9d483598fa7a5d849523746d5709c72710067d2e8222e82824d",
+    "compile_work_item_id": "e099e331-094c-4697-963f-3b10c1fadc23",
+    "compile_work_item_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "compile_release_dry_run": "artifacts/qm5_41208_compile_release_dry_run_20260830.json",
+    "compile_release_dry_run_sha256": "872cc825fba713e5b65f7a93afbffe133b9662e66d7fc45cc01ce6c0b350f419",
+    "compile_release": "artifacts/qm5_41208_compile_release_20260830.json",
+    "compile_release_sha256": "37b8ccfcc1cec25d98c7f00102539e43f5bd76b3198c2a4230a7bac90531e88c",
+    "compile_evidence": "D:/QM/reports/work_items/e099e331-094c-4697-963f-3b10c1fadc23/QM5_41208/COMPILE_EA/compile_evidence.json",
+    "compile_evidence_sha256": "45c5bbcb7fb518738875dc550c2887964c6b1693227da1ba456c7cd8b281fb6d",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260829_234643.json",
+    "build_check_report_sha256": "f35524ade0138122c9b1c5cbb1ef016b5faa0b6f33000b44b6827abfc76c525b",
+    "mq5_sha256": "fd7245683b69696c55fbd73a4da19a6271b9543a5175fb679982f41fb1effbbb",
+    "ex5_sha256": "041e31ea7de2c20e1891fb3d186a9a9785a185e06b93fe98fee00d88ec66ff68",
+    "setfile_sha256": "826b0541ffe4b8e428cbc9650810c10dba78920cd4946e2c5fd04e7b8ce3c13b",
+    "setfile_build_hash": "c265078ab252cf2e1ee4bfb11b16a6b33a76e45cdd66845f29b3e9972c2aa76b",
+    "spec_sha256": "87c7a4591b41d6bc9f5a516e972dfd5d41eaaf7b204f3af6a4f414384099eaff",
+    "build_check": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "capacity_before_compile_release": {
+    "sampled_at_utc": "2026-08-29T23:44:54.5298503Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [95.70518752272656, 88.58930721799636, 89.26071316387365, 95.63226131809988, 84.5722376708575],
+    "average_percent": 90.75194137871081,
+    "maximum_percent": 95.70518752272656,
+    "ceiling_binding": false
+  },
+  "capacity_before_q02": {
+    "sampled_at_utc": "2026-08-29T23:49:19.1073052Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [94.92242736233034, 87.30608521636654, 74.02612569860277, 75.69826824597942, 87.7121494401268],
+    "average_percent": 83.93301119268116,
+    "maximum_percent": 94.92242736233034,
+    "ceiling_binding": false
+  },
+  "capacity_after_q02_enqueue": {
+    "sampled_at_utc": "2026-08-29T23:50:04.0218154Z",
+    "hard_ceiling_percent": 97.0,
+    "samples_percent": [73.8441269319684, 83.6118998209483, 85.25593311675861, 100.0, 99.90412846432373],
+    "average_percent": 88.52321766679981,
+    "maximum_percent": 100.0,
+    "ceiling_binding": true,
+    "response": "STOPPED_AFTER_RECEIPT_SEALING_NO_DISPATCH_OR_TESTER_ACTION"
+  },
+  "q02": {
+    "enqueued": true,
+    "enqueued_by": "record_build_result.auto_q02",
+    "work_item_id": "a6496270-03b5-4036-bb4b-86d19071f0c7",
+    "status_at_readback": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_41208_xng-seas-surprise-rv/sets/QM5_41208_xng-seas-surprise-rv_XNGUSD.DWX_D1_backtest.set",
+    "items_enqueued": 1
+  },
+  "verification": {
+    "reference_tests": "PASS: 12 tests",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "execution_contract_lint": "PASS: as-of 2026-08-29, target card supplied, zero issues",
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "registry_resolver": "PASS: one active row, resolver magic present, zero new collision",
+    "static_build_gate": "PASS: zero target failures and warnings",
+    "strict_compile": "PASS: zero errors and zero warnings",
+    "json_parse_and_hash_binding": "PASS"
+  },
+  "risks": [
+    "Long D1 warm-up, missing earlier years, or unstable same-calendar dispersion can produce zero or sub-floor Q02 activity.",
+    "Continuous-CFD labels, financing, roll construction, gaps, and futures-to-CFD basis remain empirical translation risks.",
+    "A second XNG mechanic does not establish portfolio diversification; Q09 must reject excessive realized overlap.",
+    "The post-enqueue CPU sample crossed the hard ceiling; no further pipeline or tester action was taken."
+  ],
+  "safety": {
+    "manual_q02_dispatch": false,
+    "manual_tester_launch": false,
+    "autotrading_toggled": false,
+    "t_live_controlled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "certification_claimed": false,
+    "decorrelation_claimed": false
+  },
+  "mission_commits_before_receipt": [
+    "c69176b43",
+    "a6cb76267",
+    "69423f42d",
+    "99a1d112076b0437185cb969cb56402446894cb8"
+  ]
+}

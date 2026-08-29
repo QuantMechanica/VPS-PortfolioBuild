@@ -1,0 +1,49 @@
+{
+  "task_id": "e0c31390-cc4d-4dc7-92d8-1e0c183634f8",
+  "build_generation": 0,
+  "ea_id": "QM5_41208",
+  "slug": "xng-seas-surprise-rv",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_41208_xng-seas-surprise-rv",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41208_xng-seas-surprise-rv/QM5_41208_xng-seas-surprise-rv.mq5",
+  "mq5_sha256": "fd7245683b69696c55fbd73a4da19a6271b9543a5175fb679982f41fb1effbbb",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41208_xng-seas-surprise-rv/QM5_41208_xng-seas-surprise-rv.ex5",
+  "ex5_sha256": "041e31ea7de2c20e1891fb3d186a9a9785a185e06b93fe98fee00d88ec66ff68",
+  "magic_base": 412080000,
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41208_xng-seas-surprise-rv/sets/QM5_41208_xng-seas-surprise-rv_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41208_xng-seas-surprise-rv_XNGUSD.DWX_D1_backtest.set": "826b0541ffe4b8e428cbc9650810c10dba78920cd4946e2c5fd04e7b8ce3c13b"
+  },
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41208_xng-seas-surprise-rv/SPEC.md",
+  "spec_md_sha256": "87c7a4591b41d6bc9f5a516e972dfd5d41eaaf7b204f3af6a4f414384099eaff",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_work_item_id": "e099e331-094c-4697-963f-3b10c1fadc23",
+  "compile_predecessor_work_item_id": null,
+  "compile_evidence_path": "D:/QM/reports/work_items/e099e331-094c-4697-963f-3b10c1fadc23/QM5_41208/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "45c5bbcb7fb518738875dc550c2887964c6b1693227da1ba456c7cd8b281fb6d",
+  "compile_verdict": "COMPILE_OK",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260829_234643.json",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "open_questions": [
+    "The build-only lane did not launch a tester; Q02 owns frequency and baseline execution evidence.",
+    "Only Q09 may determine realized portfolio correlation or diversification value."
+  ],
+  "built_at_utc": "2026-08-29T23:47:27Z"
+}
