@@ -1,0 +1,43 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260829T065517Z.sqlite",
+    "sha256": "10e4fc34ada82f91045a32ca12f056b745273b69f2a1ddb8f8e7c1e9765a545a"
+  },
+  "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+  "inserted": 1,
+  "mode": "apply",
+  "reason": "Pending row bound artifact changed after enqueue; dispatch must remain fail-closed until governed successor build.",
+  "release_condition": "Append governed successor row bound to reviewed current artifact; do not rebind sealed row.",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:55:41+00:00",
+        "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+        "reason": "Pending row bound artifact changed after enqueue; dispatch must remain fail-closed until governed successor build.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:55:41+00:00",
+        "work_item_id": "256846e2-edce-4354-a346-0a428dafcc1b"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-21T14:20:33+00:00",
+        "ea_id": "QM5_20096",
+        "id": "256846e2-edce-4354-a346-0a428dafcc1b",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "pending",
+        "symbol": "USDCHF.DWX",
+        "updated_at": "2026-08-21T14:20:33+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok"
+}

@@ -1,0 +1,433 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260829T065551Z.sqlite",
+    "sha256": "df238bb9e4560b4c1c475b26e40a9d32e2ce924b44b923ff558de9d57b5bebb4"
+  },
+  "hold_code": "ARTIFACT_BINDING_MISSING",
+  "inserted": 16,
+  "mode": "apply",
+  "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+  "release_condition": "Restore exact sealed artifact bytes or append a governed recompiled successor; never mutate sealed binding.",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "0660f211-cef3-5ac2-9d2c-25d8bb4374d2"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "0660f211-cef3-5ac2-9d2c-25d8bb4374d2",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T06:00:31+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "0e1946ed-0f28-59d0-ab96-a468389dd363"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "0e1946ed-0f28-59d0-ab96-a468389dd363",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T02:02:53+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "1add389e-8b5b-573d-b29f-a77f91dfe0c7"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "1add389e-8b5b-573d-b29f-a77f91dfe0c7",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T01:44:15+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "24820dc3-15bb-51bb-abaa-af43ad05bb09"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "24820dc3-15bb-51bb-abaa-af43ad05bb09",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T01:11:44+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "35edcef0-0ce6-5f91-85b4-ce21acb69eb3"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "35edcef0-0ce6-5f91-85b4-ce21acb69eb3",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T00:20:36+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "5825adc0-c5df-51bc-8f72-a4bd729a4bbe"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "5825adc0-c5df-51bc-8f72-a4bd729a4bbe",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-27T20:00:23+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "71d0ab59-cf6d-599f-9ae3-3db4d64df0f0"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "71d0ab59-cf6d-599f-9ae3-3db4d64df0f0",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T02:10:16+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "762d715d-37aa-509a-9760-1e9d7a17355b"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "762d715d-37aa-509a-9760-1e9d7a17355b",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T02:23:45+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "a42317cd-9c07-5f39-9511-b99a8284b915"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "a42317cd-9c07-5f39-9511-b99a8284b915",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T02:30:25+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "aa4674d3-79a2-5553-ac92-7952e868a920"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "aa4674d3-79a2-5553-ac92-7952e868a920",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-28T00:50:34+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "ab181f75-b251-59ba-bc1b-05515484f6e8"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "ab181f75-b251-59ba-bc1b-05515484f6e8",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-27T10:00:33+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "c2436feb-042e-5026-bdf1-c53eafcfc284"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "c2436feb-042e-5026-bdf1-c53eafcfc284",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-27T21:04:27+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "d66234ac-4f26-5ebf-82a3-3251fae1cfae"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "d66234ac-4f26-5ebf-82a3-3251fae1cfae",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-28T23:50:57+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "dd25453f-6792-591f-97f2-6589a68e61de"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "dd25453f-6792-591f-97f2-6589a68e61de",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-28T23:42:31+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "e4dae175-c161-5522-960f-1dba60cdca50"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "e4dae175-c161-5522-960f-1dba60cdca50",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T01:24:03+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:56:58+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:56:58+00:00",
+        "work_item_id": "eba793d6-2146-58fc-9e3f-cada87dfe84f"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "eba793d6-2146-58fc-9e3f-cada87dfe84f",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T00:53:55+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok"
+}

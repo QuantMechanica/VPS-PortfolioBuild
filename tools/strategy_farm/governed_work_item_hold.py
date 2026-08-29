@@ -19,6 +19,11 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Sequence
 
+try:
+    from tools.strategy_farm.sqlite_busy import retry_sqlite_busy
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    from sqlite_busy import retry_sqlite_busy  # type: ignore
+
 
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 DEFAULT_BACKUP_DIR = Path(r"D:\QM\strategy_farm\state\backups")
@@ -174,89 +179,101 @@ def apply_holds(
     release_condition: str,
 ) -> dict[str, Any]:
     backup_path, backup_sha = sqlite_backup(db, backup_dir)
-    now = utc_now()
-    conn = sqlite3.connect(db, timeout=30)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA busy_timeout=30000")
-    inserted = 0
-    already_held = 0
-    try:
-        ensure_schema(conn)
-        conn.execute("BEGIN IMMEDIATE")
-        before = inspect_targets(
-            conn, targets, ea_id=ea_id, phase=phase, hold_code=hold_code, reason=reason
-        )
-        for item in before:
-            row = item["work_item"]
-            existing = item["hold"]
-            if existing and bool(existing["active"]):
-                already_held += 1
-                continue
-            if existing and existing["hold_code"] != hold_code:
-                raise HoldError(
-                    f"conflicting_inactive_hold:{row['id']}:{existing['hold_code']}"
-                )
-            if existing:
+
+    def _apply_once() -> dict[str, Any]:
+        now = utc_now()
+        conn = sqlite3.connect(db, timeout=0.75)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA busy_timeout=750")
+        inserted = 0
+        already_held = 0
+        try:
+            ensure_schema(conn)
+            conn.execute("BEGIN IMMEDIATE")
+            before = inspect_targets(
+                conn, targets, ea_id=ea_id, phase=phase,
+                hold_code=hold_code, reason=reason,
+            )
+            for item in before:
+                row = item["work_item"]
+                existing = item["hold"]
+                if existing and bool(existing["active"]):
+                    already_held += 1
+                    continue
+                if existing and existing["hold_code"] != hold_code:
+                    raise HoldError(
+                        f"conflicting_inactive_hold:{row['id']}:{existing['hold_code']}"
+                    )
+                if existing:
+                    conn.execute(
+                        """
+                        UPDATE work_item_holds
+                        SET reason=?,active=1,release_on_restart=0,updated_at=?,
+                            released_at=NULL,release_note=NULL
+                        WHERE work_item_id=? AND hold_code=? AND active=0
+                        """,
+                        (reason, now, row["id"], hold_code),
+                    )
+                else:
+                    conn.execute(
+                        """
+                        INSERT INTO work_item_holds(
+                          work_item_id,hold_code,reason,active,release_on_restart,
+                          created_at,updated_at,released_at,release_note
+                        ) VALUES(?,?,?,1,0,?,?,NULL,NULL)
+                        """,
+                        (row["id"], hold_code, reason, now, now),
+                    )
+                detail = {
+                    "ea_id": ea_id,
+                    "symbol": row["symbol"],
+                    "phase": phase,
+                    "hold_code": hold_code,
+                    "reason": reason,
+                    "release_condition": release_condition,
+                    "release_on_restart": False,
+                    "backup_path": str(backup_path),
+                    "backup_sha256": backup_sha,
+                }
                 conn.execute(
-                    """
-                    UPDATE work_item_holds
-                    SET reason=?,active=1,release_on_restart=0,updated_at=?,
-                        released_at=NULL,release_note=NULL
-                    WHERE work_item_id=? AND hold_code=? AND active=0
-                    """,
-                    (reason, now, row["id"], hold_code),
+                    "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
+                    "VALUES(?,'work_item',?,'governed_hold_activated',?)",
+                    (now, row["id"], json.dumps(detail, sort_keys=True)),
                 )
-            else:
-                conn.execute(
-                    """
-                    INSERT INTO work_item_holds(
-                      work_item_id,hold_code,reason,active,release_on_restart,
-                      created_at,updated_at,released_at,release_note
-                    ) VALUES(?,?,?,1,0,?,?,NULL,NULL)
-                    """,
-                    (row["id"], hold_code, reason, now, now),
-                )
-            detail = {
-                "ea_id": ea_id,
-                "symbol": row["symbol"],
-                "phase": phase,
+                inserted += 1
+            after = inspect_targets(
+                conn, targets, ea_id=ea_id, phase=phase,
+                hold_code=hold_code, reason=reason,
+            )
+            if any(item["claimable"] for item in after):
+                raise HoldError("pre_commit_claimable_row")
+            if any(
+                not item["hold"] or not bool(item["hold"]["active"])
+                for item in after
+            ):
+                raise HoldError("pre_commit_active_hold_missing")
+            conn.commit()
+            return {
+                "mode": "apply",
                 "hold_code": hold_code,
                 "reason": reason,
                 "release_condition": release_condition,
-                "release_on_restart": False,
-                "backup_path": str(backup_path),
-                "backup_sha256": backup_sha,
+                "inserted": inserted,
+                "already_held": already_held,
+                "backup": {"path": str(backup_path), "sha256": backup_sha},
+                "rows": after,
+                "all_unclaimable": True,
             }
-            conn.execute(
-                "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
-                "VALUES(?,'work_item',?,'governed_hold_activated',?)",
-                (now, row["id"], json.dumps(detail, sort_keys=True)),
-            )
-            inserted += 1
-        after = inspect_targets(
-            conn, targets, ea_id=ea_id, phase=phase, hold_code=hold_code, reason=reason
-        )
-        if any(item["claimable"] for item in after):
-            raise HoldError("pre_commit_claimable_row")
-        if any(not item["hold"] or not bool(item["hold"]["active"]) for item in after):
-            raise HoldError("pre_commit_active_hold_missing")
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
-    return {
-        "mode": "apply",
-        "hold_code": hold_code,
-        "reason": reason,
-        "release_condition": release_condition,
-        "inserted": inserted,
-        "already_held": already_held,
-        "backup": {"path": str(backup_path), "sha256": backup_sha},
-        "rows": after,
-        "all_unclaimable": True,
-    }
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    # Preserve one durable pre-mutation backup while reopening the entire
+    # transaction after each SQLITE_BUSY burst. Re-running the backup itself
+    # adds minutes of read I/O without improving rollback safety.
+    return retry_sqlite_busy(_apply_once, attempts=40)
 
 
 def plan_holds(

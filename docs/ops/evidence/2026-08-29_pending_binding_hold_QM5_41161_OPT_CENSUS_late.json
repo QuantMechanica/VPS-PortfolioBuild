@@ -1,0 +1,69 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260829T070126Z.sqlite",
+    "sha256": "58cdee5ae9f42ea098f7f968749fabc1faa20af780c5c7be951e41074590ab33"
+  },
+  "hold_code": "ARTIFACT_BINDING_MISSING",
+  "inserted": 2,
+  "mode": "apply",
+  "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+  "release_condition": "Restore exact sealed artifact bytes or append a governed recompiled successor; never mutate sealed binding.",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T07:01:52+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T07:01:52+00:00",
+        "work_item_id": "11a887ac-a1f3-5174-aae4-66ae55473e0c"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "11a887ac-a1f3-5174-aae4-66ae55473e0c",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-29T06:25:44+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T07:01:52+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T07:01:52+00:00",
+        "work_item_id": "4dc1d723-e11c-5fa5-92be-a561cc771eeb"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "4dc1d723-e11c-5fa5-92be-a561cc771eeb",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-29T06:55:24+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok"
+}

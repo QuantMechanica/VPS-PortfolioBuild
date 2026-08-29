@@ -1,0 +1,121 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260829T065827Z.sqlite",
+    "sha256": "d3814aee37167c068aaeb2f28580a4d3bd2936ca11ac67b7efc0fdc5d731f809"
+  },
+  "hold_code": "ARTIFACT_BINDING_MISSING",
+  "inserted": 4,
+  "mode": "apply",
+  "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+  "release_condition": "Restore exact sealed artifact bytes or append a governed recompiled successor; never mutate sealed binding.",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:59:26+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:59:26+00:00",
+        "work_item_id": "45cc7070-43d0-5480-b72b-625d15fcdd26"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "45cc7070-43d0-5480-b72b-625d15fcdd26",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T06:55:24+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:59:26+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:59:26+00:00",
+        "work_item_id": "4c7d9b9b-31ef-55aa-bf9e-2a2b12d8c2fc"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "4c7d9b9b-31ef-55aa-bf9e-2a2b12d8c2fc",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T06:46:03+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:59:26+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:59:26+00:00",
+        "work_item_id": "629c396b-d8e1-58d0-8e84-c80c9bb896f2"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "629c396b-d8e1-58d0-8e84-c80c9bb896f2",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T06:25:44+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:59:26+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:59:26+00:00",
+        "work_item_id": "faa6864d-63df-55b6-92a3-8e7785408cbb"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-22T05:54:52.310414+00:00",
+        "ea_id": "QM5_41097",
+        "id": "faa6864d-63df-55b6-92a3-8e7785408cbb",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-29T06:30:28+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok"
+}

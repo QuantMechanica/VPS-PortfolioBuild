@@ -1,0 +1,303 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260829T065710Z.sqlite",
+    "sha256": "993f2a532156ad5daf81b12539c420eeefde687ac60b545daa3f792661a9006c"
+  },
+  "hold_code": "ARTIFACT_BINDING_MISSING",
+  "inserted": 11,
+  "mode": "apply",
+  "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+  "release_condition": "Restore exact sealed artifact bytes or append a governed recompiled successor; never mutate sealed binding.",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:58:01+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:58:01+00:00",
+        "work_item_id": "327006ce-769b-5717-a62d-c34808ebd9c7"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "327006ce-769b-5717-a62d-c34808ebd9c7",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-29T01:02:10+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:58:01+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:58:01+00:00",
+        "work_item_id": "3c5fbcbf-cc98-5f35-b64c-a1b594b99ece"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "3c5fbcbf-cc98-5f35-b64c-a1b594b99ece",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-29T01:35:49+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:58:01+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:58:01+00:00",
+        "work_item_id": "43c93110-acca-5c0c-8532-ef591082ff45"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "43c93110-acca-5c0c-8532-ef591082ff45",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-28T23:42:58+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:58:01+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:58:01+00:00",
+        "work_item_id": "44260d47-4baa-5799-8f02-fc01d35750eb"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "44260d47-4baa-5799-8f02-fc01d35750eb",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-29T06:00:31+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:58:01+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:58:01+00:00",
+        "work_item_id": "58701f59-c825-53e2-ba10-a53067e8c1d6"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "58701f59-c825-53e2-ba10-a53067e8c1d6",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-29T01:24:13+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:58:01+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:58:01+00:00",
+        "work_item_id": "594bd397-2be4-5b9c-b661-9886c4068bb9"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "594bd397-2be4-5b9c-b661-9886c4068bb9",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-29T02:03:40+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:58:01+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:58:01+00:00",
+        "work_item_id": "68185e12-22a2-5c76-a338-0f1a6f77075d"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "68185e12-22a2-5c76-a338-0f1a6f77075d",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-29T02:21:39+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:58:01+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:58:01+00:00",
+        "work_item_id": "a7482458-c7b3-5726-8833-7fea5508c184"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "a7482458-c7b3-5726-8833-7fea5508c184",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-28T23:25:16+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:58:01+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:58:01+00:00",
+        "work_item_id": "b95a682e-2172-554a-a5c1-3618d682e8ed"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "b95a682e-2172-554a-a5c1-3618d682e8ed",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-28T23:50:41+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:58:01+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:58:01+00:00",
+        "work_item_id": "cd26ff4f-f82b-59e6-b30a-5e7224391793"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "cd26ff4f-f82b-59e6-b30a-5e7224391793",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-29T00:54:24+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-29T06:58:01+00:00",
+        "hold_code": "ARTIFACT_BINDING_MISSING",
+        "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-08-29T06:58:01+00:00",
+        "work_item_id": "ee0a314f-190f-5dcd-87a6-7900dccba658"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-26T12:02:00.920939+00:00",
+        "ea_id": "QM5_41161",
+        "id": "ee0a314f-190f-5dcd-87a6-7900dccba658",
+        "kind": "backtest",
+        "phase": "OPT_CENSUS",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-29T00:20:35+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok"
+}
