@@ -1,0 +1,40 @@
+{
+  "schema": "qm.local-source-provenance/v1",
+  "candidate_slug": "xauxag-corrbreak-rv",
+  "recorded_at_utc": "2026-08-29T22:23:26Z",
+  "retrieval_mode": "complete_read_of_governed_repository_packets",
+  "new_public_retrieval": false,
+  "records": [
+    {
+      "path": "strategy-seeds/sources/KRAWIEC-SCHWEIKERT-XAUXAG-GOLDLEAD-2026/source.md",
+      "source_id": "KRAWIEC-SCHWEIKERT-XAUXAG-GOLDLEAD-2026",
+      "sha256": "A2BA7247C1BDD05AE0B19CB0094A32DB499D6F5DC83666C5E91D55FE5522C484",
+      "byte_count": 10166,
+      "line_count": 202,
+      "read_scope": "complete",
+      "status": "approved_source_complete",
+      "role": "peer_reviewed_daily_gold_silver_positive_correlation_and_gold_to_silver_ordering_lineage"
+    },
+    {
+      "path": "strategy-seeds/sources/SCHWEIKERT-QC-2018/source.md",
+      "source_id": "SCHWEIKERT-QC-2018",
+      "sha256": "7C409472768550C1F3A4A58CB22E12A6E915EB752B09ABC8E9B98F3E99048FFA",
+      "byte_count": 6813,
+      "line_count": 131,
+      "read_scope": "complete",
+      "status": "cards_ready_complete",
+      "role": "peer_reviewed_state_dependent_gold_silver_relation_and_adverse_constant_spread_evidence"
+    },
+    {
+      "path": "strategy-seeds/sources/CME-GSR-SPREAD-2025/source.md",
+      "source_id": "CME-GSR-SPREAD-2025",
+      "sha256": "2B5903457BD861771821A81F554BE95CA369AD56C1AA45494E0B81555493AF93",
+      "byte_count": 2182,
+      "line_count": 39,
+      "read_scope": "complete",
+      "status": "cards_ready_complete",
+      "role": "governed_exchange_gold_silver_intermarket_carrier_and_distinct_driver_context"
+    }
+  ],
+  "claim_boundary": "The disjoint 60-versus-20-session Pearson/Fisher correlation-break gate, five-session standardized relative displacement fade, equal-notional Darwinex CFD package, and execution rules are transparent QM hypotheses. No source performance, density, cost, hedge, CFD equivalence, decorrelation, or portfolio result is imported."
+}
