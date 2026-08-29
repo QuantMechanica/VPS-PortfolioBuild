@@ -91,3 +91,23 @@ or change any Q-gate acceptance criterion.
   unrelated Q10 news parents currently occupy the governed expansion cap
   (`b3957bc9-...` on T7 and `bd590714-...` on T4). No cap, gate, hold, terminal,
   or active backtest was overridden to manufacture a spawn observation.
+
+## Fresh matrix execution proof — 2026-08-29 16:22Z
+
+- The ordinary scheduled worker claimed the exact row on T9 at
+  `2026-08-29T16:18:22Z` and logged a fresh authenticated
+  `q09_news_runner.py execute` spawn at `2026-08-29T16:22:43Z`.
+- The bound runner is PID `22628`, image `python.exe`, creation key
+  `windows-filetime:134324941630909751`; its live command line carries the
+  immutable plan file SHA-256
+  `845c1fb519f0e458bf775b9df3e4382cc8e897aa69713c7c8404fe73a5562df8`.
+- The runner has a live child `run_smoke.ps1` process executing the first
+  sealed `7x4` matrix cell (`control_off__m0__c0__s17`) on T9. This proves the
+  repaired claim-to-spawn path crosses plan authentication, expansion binding,
+  custom-history admission, EX5 staging, process-identity binding, and child
+  launch without another silent re-claim loop.
+- The row remains `active/T9` and the matrix is intentionally left running;
+  no terminal process or backtest was interrupted. This is runner-execution
+  evidence, not a Q10_NEWS pipeline verdict.
+- Re-verification: `py_compile` PASS, implementation `diff --check` PASS, and
+  the focused PID-reuse plus worker-adoption/staged-EX5 suites PASS (17 tests).
