@@ -1,0 +1,220 @@
+{
+  "artifact_type": "qm5_20224_q03_active_predecessor_handoff",
+  "schema": "qm.paced-fx-handoff/v1",
+  "generated_at_utc": "2026-08-29T22:49:37.7501395Z",
+  "generated_at_europe_berlin": "2026-08-30T00:49:37.7501395+02:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "4acdc74606a874a22e92c9c4599d7c32cb8de827",
+  "mission_outcome": "EXISTING_FX_Q03_PRIORITY_INTACT_BEHIND_ACTIVE_PREDECESSOR",
+  "frontier_reconciliation": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_total": 66,
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "new_scan_pair_eligible": false,
+    "approved_cointegration_or_coint_cards": 119,
+    "approved_cards_without_ea_directory": 0,
+    "anchors": {
+      "QM5_12532": {
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 PASS; Q05 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      },
+      "QM5_12533": {
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "q02": "PASS",
+        "later_chain": "Q04 FAIL",
+        "current_q02_oninit_or_no_history_block": false
+      }
+    },
+    "skill_gate_disposition": {
+      "strategy_card_extraction": "CLOSED_NO_NON_DUPLICATE_SCAN_RELATIONSHIP",
+      "ea_build": "CLOSED_NO_APPROVED_UNBUILT_SCAN_RELATIONSHIP"
+    }
+  },
+  "selected_existing_forex_sleeve": {
+    "scan_rank": 46,
+    "ea_id": "QM5_20224",
+    "pair": [
+      "EURUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "USDJPY.DWX"
+    ],
+    "logical_symbol": "QM5_20224_EURUSD_EURJPY_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "fixed_beta": -0.236324029,
+    "disposition": "one_shot_pipeline_falsification_no_refit_filter_or_rescue",
+    "risk_contract": {
+      "mode": "RISK_FIXED",
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "portfolio_weight": 1.0
+    },
+    "structural_only": true,
+    "machine_learning": false,
+    "adaptive_refit": false
+  },
+  "canonical_lineage": {
+    "q02": {
+      "id": "5d1cb89c-25ce-419c-869c-8c9f7afa10c1",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q03": {
+      "id": "3c74eb04-7e19-4aa0-8dcf-3f004faaa946",
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0,
+      "priority_track": true,
+      "priority_reason": "board_advisor_fx_fallback_rank46_q03",
+      "payload_sha256": "b9e8294d644b5d450601ea7eb7456e83165716f52e6b4a5cabf4e8f95eb484b4"
+    },
+    "q04": {
+      "id": "a525cd8f-4c29-4752-b1af-3c43288f259e",
+      "status": "pending",
+      "verdict": null,
+      "priority_track": false,
+      "advanced_ahead_of_q03": false,
+      "payload_sha256": "a750cc94bf2865ba808576502d8e85406f8eb1b0bf7b4583f9addbf747e705f8"
+    }
+  },
+  "serialized_lane_delta": {
+    "preceding_evidence": "artifacts/qm5_20224_q03_hard_cpu_stop_20260829T214651Z_board_advisor.json",
+    "completed_predecessor": {
+      "ea_id": "QM5_41078",
+      "q05_id": "0aa74af1-c6c4-423e-9ad4-19e0222e024f",
+      "q05_status": "done",
+      "q05_verdict": "PASS",
+      "q05_updated_at_utc": "2026-08-29T22:26:32+00:00",
+      "q06_id": "f2839978-e5af-4c42-8ec2-ede1eac65591",
+      "q06_status": "done",
+      "q06_verdict": "INFRA_FAIL",
+      "q06_updated_at_utc": "2026-08-29T22:32:20+00:00"
+    },
+    "active_predecessor": {
+      "ea_id": "QM5_41079",
+      "phase": "Q04",
+      "id": "ffa3fbf3-7447-4cae-8ad5-f70a0751c2dc",
+      "status": "active",
+      "claimed_by": "T4",
+      "started_at_utc": "2026-08-29T22:34:54+00:00",
+      "phase_runner": "framework/scripts/q04_walkforward.py",
+      "phase_runner_pid": 5760,
+      "phase_runner_parent_pid": 17432,
+      "phase_runner_alive_at_postcheck": true,
+      "commit_reservation_class": "heavy_or_unknown_multisymbol",
+      "commit_reservation_gb": 44.0,
+      "commit_reservation_until_utc": "2026-08-29T23:32:43+00:00"
+    },
+    "remaining_known_predecessors_after_active_row": [
+      {
+        "ea_id": "QM5_41085",
+        "phase": "Q04",
+        "id": "91dde144-610c-4d81-9bf9-b4173955e45f",
+        "status": "pending"
+      },
+      {
+        "ea_id": "QM5_41086",
+        "phase": "Q04",
+        "id": "c2caae0c-9bcb-46ea-9bbf-cd04832a6169",
+        "status": "pending"
+      },
+      {
+        "ea_id": "QM5_20294",
+        "phase": "Q04",
+        "id": "a34ee5cd-39b0-4655-9b02-1bf8e389f440",
+        "status": "pending"
+      },
+      {
+        "ea_id": "QM5_20206",
+        "phase": "Q04",
+        "id": "ddad91a7-f1d1-4a06-a9bf-e82e1ec9558a",
+        "status": "pending"
+      }
+    ],
+    "admission_disposition": "DO_NOT_DUPLICATE_OR_FORCE_A_SECOND_MULTISYMBOL_RUN"
+  },
+  "capacity_windows": [
+    {
+      "sampled_at_utc": "2026-08-29T22:46:13.9181753Z",
+      "samples_cpu_percent": [
+        94.471261,
+        95.135761,
+        86.452101,
+        85.747426,
+        90.821208
+      ],
+      "average_cpu_percent": 90.525551,
+      "maximum_cpu_percent": 95.135761,
+      "ceiling_binding": false
+    },
+    {
+      "sampled_at_utc": "2026-08-29T22:48:20.9987959Z",
+      "samples_cpu_percent": [
+        90.072625,
+        94.74409,
+        93.174637,
+        94.730461,
+        89.558559
+      ],
+      "average_cpu_percent": 92.456074,
+      "maximum_cpu_percent": 94.74409,
+      "ceiling_binding": false
+    }
+  ],
+  "capacity_contract": {
+    "hard_ceiling_percent": 97.0,
+    "binding_if_average_or_maximum_reaches_ceiling": true,
+    "ceiling_observed_this_run": false
+  },
+  "farm_snapshot": {
+    "mt5_slots_scanned_at_utc": "2026-08-29T22:48:15+00:00",
+    "running_factory_terminals_visible_in_instantaneous_scan": [
+      "T7",
+      "T8"
+    ],
+    "t4_terminal_visible_in_instantaneous_scan": false,
+    "t4_phase_runner_alive_at_bounded_postcheck": true,
+    "classification": "DB row active and governed Q04 phase runner alive; the instantaneous terminal gap does not establish a free serialized basket lane",
+    "terminal_worker_count": 10,
+    "duplicate_terminal_workers": 0,
+    "t_live_observed_only_and_excluded": true,
+    "external_terminals_observed_only_and_excluded": true
+  },
+  "actions_this_run": {
+    "frontier_and_anchor_reconciled": true,
+    "exact_q03_lineage_and_priority_reverified": true,
+    "new_predecessor_progress_recorded": true,
+    "active_multisymbol_predecessor_respected": true,
+    "new_card_or_ea_created": false,
+    "duplicate_work_item_created": false,
+    "queue_priority_claim_status_or_verdict_mutated": false,
+    "manual_dispatch_or_terminal_control": false,
+    "backtest_started_by_this_run": false,
+    "paced_handoff_evidence_committed": true
+  },
+  "protected_surfaces": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_controlled": false,
+    "autotrading_toggled": false,
+    "live_or_deploy_manifest_touched": false,
+    "preexisting_worktree_changes_preserved": true
+  },
+  "non_duplicate_delta": "Since the 21:46:51Z committed stop, QM5_41078 Q05 completed PASS and its Q06 successor completed INFRA_FAIL; QM5_41079 then claimed the single multisymbol lane at Q04. The exact QM5_20224 Q03 identity remains pending, attempt zero, unclaimed, and priority-bound, so another Q02/Q03 row or a concurrent manual launch would be a duplicate or pacing violation.",
+  "resume_contract": "After QM5_41079 and the four older downstream basket rows drain, take a fresh five-sample CPU window and re-read the exact QM5_20224 Q03 row. Preserve its identity; do not enqueue another Q02 or Q03, force a second basket, or promote Q04 before canonical Q03 PASS."
+}
