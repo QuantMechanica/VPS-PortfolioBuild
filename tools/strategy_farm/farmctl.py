@@ -1982,6 +1982,16 @@ def ensure_work_item_artifact_identity_schema(conn: sqlite3.Connection) -> dict[
 
 
 def init_db(root: Path) -> None:
+    # The schema ensure below (incl. the gate_contract_version backfill UPDATE)
+    # needs the write lock on every entry.  Under fleet contention a single
+    # BUSY_TIMEOUT_MS (750ms) roll loses roughly a coin flip; 64/65 pump cycles
+    # died here 2026-08-29 02:00-07:40.  Use the same jittered-retry idiom as
+    # every other writer; each attempt opens a fresh connection per the
+    # retry_sqlite_busy contract.
+    retry_sqlite_busy(lambda: _init_db_once(root))
+
+
+def _init_db_once(root: Path) -> None:
     init_dirs(root)
     with connect(root) as conn:
         conn.executescript(
