@@ -177,6 +177,17 @@ DL089_PILOT_BINARY_RECOVERY_EA_LABELS = frozenset({
     "QM5_41162_ohlc-daily-squeeze-reversal-d1-opt",
     "QM5_41163_williams-18ma-outside-bar-entry-d1-opt",
 })
+# Exact paced-fleet authority for the QM5_11465 FX diversity recovery.  Its
+# current-source COMPILE_OK receipt survives, but the bound EX5 bytes do not;
+# the stale older open row is source-hash mismatched.  This one task/label
+# binding permits only an append-only, current-source COMPILE_EA successor and
+# grants no gate verdict, strategy change, or authority for another EA.
+QM5_11465_Q02_BINARY_RECOVERY_AUTHORITY = (
+    "router_ops_issue:6c02cfce-b008-4b65-8fa0-161202e25ebe"
+)
+QM5_11465_Q02_BINARY_RECOVERY_EA_LABELS = frozenset({
+    "QM5_11465_suhr-bank-trading-stop-run-fade-h1",
+})
 # Exact remediation authority for the 2026-08-24 ROT-violation revert
 # (router task b63eaead-7890-4be4-b8e7-0edea3fe6a85). Both EAs had ad-hoc
 # EX5 binaries committed after an explicit LIVE_FACTORY_AD_HOC_COMPILE_REFUSED
@@ -560,6 +571,10 @@ def _source_repair_authorized(
         or (
             authority == DL089_PILOT_BINARY_RECOVERY_AUTHORITY
             and ea_label in DL089_PILOT_BINARY_RECOVERY_EA_LABELS
+        )
+        or (
+            authority == QM5_11465_Q02_BINARY_RECOVERY_AUTHORITY
+            and ea_label in QM5_11465_Q02_BINARY_RECOVERY_EA_LABELS
         )
         or (
             authority == QM5_41164_41191_COMPILE_FAIL_REPAIR_AUTHORITY

@@ -1,0 +1,98 @@
+{
+  "schema_version": "qm.paced-fleet-diversity-recovery/v1",
+  "created_at_utc": "2026-08-29T17:30:40Z",
+  "branch": "agents/board-advisor",
+  "mission_unit": "recover one structurally diverse FX EA blocked before Q02 by missing EX5 bytes",
+  "ea_id": "QM5_11465",
+  "ea_label": "QM5_11465_suhr-bank-trading-stop-run-fade-h1",
+  "instrument_class": "forex",
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "strategy_contract": {
+    "structural": true,
+    "indicators": [],
+    "ml_or_adaptive_logic": false,
+    "timeframe": "H1",
+    "expected_trades_per_year_per_symbol": 10,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed_usd": 1000,
+    "source_provenance": "OWNER-approved card; R1 TIER_C/conditional self-published guide",
+    "source_provenance_caveat_retained": true
+  },
+  "farm_claim": {
+    "agent_task_id": "6c02cfce-b008-4b65-8fa0-161202e25ebe",
+    "task_type": "ops_issue",
+    "assigned_agent": "codex"
+  },
+  "diagnosis": {
+    "prior_compile_work_item_id": "f892cd23-30d0-4efa-8405-91adbe992046",
+    "prior_compile_verdict": "COMPILE_OK",
+    "prior_ex5_sha256": "8498992fc17493083b4cb5e0cd46c5c6ffcd0f4f4fee77be7b61f4c0d5fb0cef",
+    "blocker": "the current-source EX5 file was absent, leaving no Q02 work item",
+    "stale_open_compile_work_item_id": "1cab0ed2-b87e-45ef-a461-1e29653eb182",
+    "stale_open_mq5_sha256": "02e4d2b2c9f063ae7ff56e24088835c4f08fc63b916de54b8288e8a06f57b0b1",
+    "current_mq5_sha256": "44aa223ce9c0f29d856accdac9b79c168e548e717e6389cbb19462270adaab92"
+  },
+  "repair": {
+    "build_task_id": "299fac3e-1180-46b6-a285-428b535224ee",
+    "compile_work_item_id": "1d469fa4-5e52-4842-9630-188364e02fc6",
+    "compile_terminal": "T7",
+    "source_repair_authority": "router_ops_issue:6c02cfce-b008-4b65-8fa0-161202e25ebe",
+    "authority_scope": "one task, one EA label, append-only current-source COMPILE_EA successor",
+    "build_check_result": "PASS",
+    "compile_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "new_ex5_sha256": "50fc3cc9026a96f3826f5c1b0f8dca25c1835c8e3e16ced19172ad7d3cfaf79a",
+    "setfile_count": 5,
+    "compile_evidence_path": "D:\\QM\\reports\\work_items\\1d469fa4-5e52-4842-9630-188364e02fc6\\QM5_11465\\COMPILE_EA\\compile_evidence.json"
+  },
+  "verification": {
+    "targeted_tests": "python -m pytest tools/strategy_farm/tests/test_compile_work_items.py -k 'qm5_11465 or source_repair_appends_fresh_row_without_mutating_stale_open or source_repair_refuses_current_compile_ok' -q",
+    "targeted_test_result": "4 passed, 30 deselected",
+    "cpu_sampled_at_utc": "2026-08-29T17:29:16.2918221Z",
+    "cpu_samples_pct": [
+      81.938418,
+      83.631849,
+      83.109414,
+      82.822865,
+      85.548392
+    ],
+    "cpu_average_pct": 83.410188,
+    "cpu_maximum_pct": 85.548392,
+    "cpu_ceiling_pct": 97,
+    "cpu_ceiling_binding": false,
+    "smoke_attempt_count": 1,
+    "raw_smoke_result": "framework_error",
+    "raw_smoke_failure": "pre-launch T2 custom-history reservation refused: permission denied on XAUUSD.DWX/2025.hcc",
+    "tester_launched": false,
+    "recorded_smoke_result": "deferred_p2_smoke",
+    "recorded_smoke_reason": "framework_error_during_build_smoke_treated_as_done"
+  },
+  "q02": {
+    "enqueued": true,
+    "work_item_id": "baecad83-6201-4674-8c6e-81d8c3e5a27e",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "H1",
+    "status_at_recording": "pending",
+    "fanout_policy": "qm-q02-canary-fanout/v1",
+    "cohort_size": 5,
+    "remaining_symbols_staged": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "AUDUSD.DWX",
+      "USDCAD.DWX"
+    ]
+  },
+  "forbidden_surfaces": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

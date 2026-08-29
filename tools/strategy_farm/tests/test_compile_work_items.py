@@ -605,6 +605,62 @@ def test_dl089_pilot_missing_compile_ok_binary_can_append_recovery(
     assert recovery["refused"] == []
 
 
+def test_qm5_11465_q02_binary_recovery_authority_is_exact_label_bound() -> None:
+    label = "QM5_11465_suhr-bank-trading-stop-run-fade-h1"
+
+    assert compile_work_items.QM5_11465_Q02_BINARY_RECOVERY_EA_LABELS == {label}
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_11465_Q02_BINARY_RECOVERY_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_11466_unrelated-h1",
+        compile_work_items.QM5_11465_Q02_BINARY_RECOVERY_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_ops_issue:wrong-task",
+    )
+
+
+def test_qm5_11465_missing_compile_ok_binary_can_append_recovery(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    label = "QM5_1001_suhr-bank-trading-stop-run-fade-h1"
+    repo, root = _fixture(tmp_path, [label])
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_11465_Q02_BINARY_RECOVERY_EA_LABELS",
+        frozenset({label}),
+    )
+    first = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    first_id = first["enqueued"][0]["work_item_id"]
+    binary = repo / "framework" / "EAs" / label / f"{label}.ex5"
+    binary.write_bytes(b"lost binary fixture")
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE work_items SET status='done',verdict='COMPILE_OK',ex5_sha256=? WHERE id=?",
+            (compile_work_items.sha256_file(binary), first_id),
+        )
+        conn.commit()
+    binary.unlink()
+
+    recovery = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority=(
+            compile_work_items.QM5_11465_Q02_BINARY_RECOVERY_AUTHORITY
+        ),
+    )
+
+    assert recovery["ok"] is True
+    assert recovery["enqueued_count"] == 1
+    assert recovery["enqueued"][0]["work_item_id"] != first_id
+    assert recovery["refused"] == []
+
+
 def test_qm5_41164_41191_compile_fail_repair_authority_is_exact_label_bound() -> None:
     allowed = compile_work_items.QM5_41164_41191_COMPILE_FAIL_REPAIR_EA_LABELS
 
