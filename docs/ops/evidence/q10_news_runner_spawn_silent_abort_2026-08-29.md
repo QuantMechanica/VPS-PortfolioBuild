@@ -76,3 +76,18 @@ Gate criteria and the sealed news plan are unchanged.
 
 This is operational harness evidence only. It does not issue a pipeline verdict
 or change any Q-gate acceptance criterion.
+
+## Scheduled-cycle re-verification — 2026-08-29 15:57Z
+
+- The exact row remains `pending`, unclaimed, and without a verdict; its
+  `NEWS_RUNNER_SPAWN_SILENT_ABORT` hold is inactive with the original
+  creation-key-bound release note intact.
+- The structured payload still authenticates the expected runner creation key
+  and the observed reused PID identity (`sleep.exe`), so the diagnosed failure
+  boundary remains durable after later farm activity.
+- `py_compile`, commit `diff --check`, the focused PID-reuse regression, the
+  complete worker-adoption suite, and the staged-EX5 suite passed: **17 tests**.
+- A fresh matrix spawn remains capacity-deferred, not failure-deferred: two
+  unrelated Q10 news parents currently occupy the governed expansion cap
+  (`b3957bc9-...` on T7 and `bd590714-...` on T4). No cap, gate, hold, terminal,
+  or active backtest was overridden to manufacture a spawn observation.
