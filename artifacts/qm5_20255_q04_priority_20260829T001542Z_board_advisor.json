@@ -1,0 +1,165 @@
+{
+  "schema_version": "qm.fx-cointegration-q04-priority-handoff/v1",
+  "generated_at_utc": "2026-08-29T00:15:42Z",
+  "branch": "agents/board-advisor",
+  "git_head_before_runtime_mutation": "d4a43aac85e31fffc843e009d8102c92723dff57",
+  "mission_result": "EXISTING_FOREX_FALLBACK_Q04_PRIORITY_APPLIED",
+  "frontier_reconciliation": {
+    "controlling_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "published_pair_count": 66,
+    "published_hard_qualifiers": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_PASS_Q05_FAIL"
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "canonical_frontier": "Q02_PASS_Q04_FAIL"
+      }
+    ],
+    "sign_aware_coverage_artifact": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationships_covered": 66,
+    "relationships_uncovered": 0,
+    "approved_cointegration_cards": 25,
+    "matching_ea_directories": 25,
+    "approved_unbuilt_cointegration_cards": 0,
+    "fresh_q02_basket_audit": {
+      "fx_basket_identities": 90,
+      "identities_without_economic_q02_verdict": 15,
+      "unresolved_pair_cointegration_identities": 0,
+      "note": "The unresolved identities are broad carry/CSM baskets or an archived basket, not an unbuilt relationship from the governed pair scan."
+    },
+    "fallback_authorized": true
+  },
+  "selection": {
+    "ea_id": "QM5_20255",
+    "ea_directory": "framework/EAs/QM5_20255_usdchf-eurjpy",
+    "approved_card": "strategy-seeds/cards/approved/QM5_20255_usdchf-eurjpy_card.md",
+    "approved_card_sha256": "f7cfdc76eefe3e32801e769873cce5d479ca9339c847fa0918f097a88a223b81",
+    "logical_symbol": "QM5_20255_USDCHF_EURJPY_COINTEGRATION_D1",
+    "traded_symbols": [
+      "USDCHF.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_history_only_symbols": [
+      "USDJPY.DWX"
+    ],
+    "selection_mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "scan_relationship_rank": 64,
+    "timeframe": "D1"
+  },
+  "build_and_risk_binding": {
+    "mq5_sha256": "67ccfbd144462d561db675c706b7dfbea795733f0fc6df5e404e3eae2785cd02",
+    "ex5_sha256": "b5dfb19d02b20c8754b9b5a400fe81750a315313580ecee9931a619416846d53",
+    "basket_manifest": "framework/EAs/QM5_20255_usdchf-eurjpy/basket_manifest.json",
+    "basket_manifest_sha256": "090ef3be8e740003541bc911abb691599b28c92aa09efc557086fcc5f4ff5f17",
+    "setfile": "framework/EAs/QM5_20255_usdchf-eurjpy/sets/QM5_20255_usdchf-eurjpy_QM5_20255_USDCHF_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+    "setfile_sha256": "b4fb11d85874f8a382c3785c16783761ec791add216a89cb3dee0a8308bf3eec",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true,
+    "machine_learning": false,
+    "adaptive_refit": false
+  },
+  "sealed_lineage": [
+    {
+      "work_item_id": "72ca17ca-f9df-40d5-806d-1d815ee4ea08",
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "ex5_sha256": "b5dfb19d02b20c8754b9b5a400fe81750a315313580ecee9931a619416846d53",
+      "mq5_sha256": "67ccfbd144462d561db675c706b7dfbea795733f0fc6df5e404e3eae2785cd02",
+      "setfile_sha256": "b4fb11d85874f8a382c3785c16783761ec791add216a89cb3dee0a8308bf3eec"
+    },
+    {
+      "work_item_id": "d50b8721-4691-4ab3-b0b4-14012ecb6f6a",
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "ex5_sha256": "b5dfb19d02b20c8754b9b5a400fe81750a315313580ecee9931a619416846d53",
+      "mq5_sha256": "67ccfbd144462d561db675c706b7dfbea795733f0fc6df5e404e3eae2785cd02",
+      "setfile_sha256": "b4fb11d85874f8a382c3785c16783761ec791add216a89cb3dee0a8308bf3eec"
+    }
+  ],
+  "queue_action": {
+    "work_item_id": "265024c2-9c2c-457e-8696-b22b75b7d722",
+    "phase": "Q04",
+    "mutation": "EXACT_ID_IN_PLACE_PAYLOAD_CAS",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "attempt_count_after": 0,
+    "verdict_after": null,
+    "updated_at_preserved": "2026-08-08T12:31:16+00:00",
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "priority_reason": "board_advisor_fx_fallback_full_66_pair_frontier_covered_q04",
+    "queue_rank_before": 2139,
+    "queue_rank_after": 1955,
+    "queue_rank_improvement": 184,
+    "prior_payload_sha256": "239f44c23a0ad5dfa5497b03d855e7c76a3c1215d000f30a3c40a903ea653fbb",
+    "post_payload_sha256": "793f8a4e4bf2fc64286c2cae94aa1048bb3d3c9eb63f26ccf7016ad968388591",
+    "audit_event_id": 380242,
+    "audit_event": "priority_track_set",
+    "row_journal": "D:/QM/reports/state/qm5_20255_q04_priority_20260829T001542Z.journal.json",
+    "row_journal_sha256": "a5f25e74740771d42fa0e0f9b93cbe672b239f8e44454b70e0a9cf6289d19ea7",
+    "row_journal_state": "COMMITTED",
+    "open_matching_q04_rows_after": 1,
+    "active_holds_after": 0,
+    "supersede_relations_after": 0,
+    "active_quarantine_after": 0,
+    "duplicate_work_items_created": 0,
+    "pipeline_verdict_changed": false,
+    "alpha_changed": false
+  },
+  "capacity": {
+    "lock_wait_seconds": 78.781,
+    "cpu_samples_percent": [
+      58.862069485033345,
+      44.00615715608194,
+      40.276032079806356,
+      38.37097223489041,
+      38.1106314547517
+    ],
+    "cpu_average_percent": 43.92517248211275,
+    "cpu_maximum_percent": 58.862069485033345,
+    "cpu_ceiling_percent": 97,
+    "cpu_ceiling_hit": false,
+    "active_multisymbol_work_item": {
+      "work_item_id": "11cbafc9-5452-45d6-8a11-a81bc33473c1",
+      "ea_id": "QM5_20161",
+      "symbol": "QM5_20161_XAUUSD_XAGUSD_OLS_D1",
+      "phase": "Q03",
+      "claimed_by": "T2"
+    },
+    "manual_mt5_dispatch_started": false
+  },
+  "guarded_recovery": {
+    "full_database_backup_attempt_committed": false,
+    "target_changed_during_backup_attempt": false,
+    "audit_event_created_during_backup_attempt": false,
+    "incomplete_backup_removed": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_20255_q04_priority_20260828T235229Z.sqlite",
+    "incomplete_backup_bytes_removed": 285212672,
+    "replacement_recovery_mechanism": "atomic row preimage/postimage journal with payload-hash revert guard"
+  },
+  "safety": {
+    "factory_mutation_lock_released": true,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "manual_terminal_action": false
+  }
+}
