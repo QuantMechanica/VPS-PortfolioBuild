@@ -28,7 +28,7 @@ except ImportError:  # pragma: no cover - package import path
 
 
 ROUTER_TASK_ID = "0666e8f0-fe8d-4c25-ac8b-21c9a7d9bac9"
-CONTRACT = "qm.q01.worker_bound_basket_smoke.v1"
+CONTRACT = farmctl.Q01_SMOKE_WORK_ITEM_CONTRACT
 FROM_DATE = "2024.01.01"
 TO_DATE = "2024.12.31"
 Q01_MIN_TRADES = 1
@@ -289,7 +289,7 @@ def apply(
                         "expected_setfile_sha256": existing_payload.get("expected_setfile_sha256"),
                     }
                     expected = {
-                        "kind": "q01_smoke",
+                        "kind": farmctl.Q01_SMOKE_WORK_ITEM_KIND,
                         "phase": "Q01",
                         "ea_id": target.ea_id,
                         "symbol": target.logical_symbol,
@@ -311,10 +311,11 @@ def apply(
                     INSERT INTO work_items(
                         id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
                         payload_json,created_at,updated_at,gate_contract_version
-                    ) VALUES(?, 'q01_smoke', 'Q01', ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
+                    ) VALUES(?, ?, 'Q01', ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
                     """,
                     (
                         work_item_id,
+                        farmctl.Q01_SMOKE_WORK_ITEM_KIND,
                         target.ea_id,
                         target.logical_symbol,
                         str(setfile),

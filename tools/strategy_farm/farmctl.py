@@ -433,6 +433,13 @@ HARNESS_PP_FIXTURE_SOURCE_DIR = REPO_ROOT / "framework" / "tests"
 # slot but never launches terminal64 and never emits a Q-gate verdict.
 COMPILE_WORK_ITEM_KIND = "compile"
 COMPILE_EA_PHASE = "COMPILE_EA"
+# Router-authorized build-smoke recovery is a prerequisite lane, not a pipeline
+# backtest.  Its exact producer contract receives the same bounded emergency
+# scheduling treatment as compile/harness work so a Q01 prerequisite cannot sit
+# behind thousands of priority optimization cells.  The phase remains Q01 and
+# all smoke/admission criteria remain unchanged.
+Q01_SMOKE_WORK_ITEM_KIND = "q01_smoke"
+Q01_SMOKE_WORK_ITEM_CONTRACT = "qm.q01.worker_bound_basket_smoke.v1"
 # run_smoke requires a positive numeric logger/evidence namespace even for a
 # non-strategy harness. This reserved diagnostic id is never registered,
 # reviewed, promoted, or used as a magic number.
@@ -1500,6 +1507,11 @@ def pending_claim_order_sql() -> str:
           CASE
             WHEN json_valid(w.payload_json) = 1 THEN
               CASE
+                WHEN lower(COALESCE(w.kind, ''))='{Q01_SMOKE_WORK_ITEM_KIND}'
+                 AND COALESCE(json_extract(
+                   w.payload_json, '$.q01_smoke_contract'
+                 ), '')='{Q01_SMOKE_WORK_ITEM_CONTRACT}'
+                THEN -1
                 WHEN json_type(w.payload_json, '$.priority_track') = 'true'
                  AND COALESCE(json_extract(
                    w.payload_json, '$.poison_pill_priority_override'

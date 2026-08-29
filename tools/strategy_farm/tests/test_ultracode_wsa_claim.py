@@ -75,7 +75,7 @@ class _FarmDB:
     def insert(self, wid: str, phase: str, symbol: str, *, status: str = "pending",
                recovery: str | None = None, priority_track: bool = False,
                claimed_by: str | None = None, ea_id: str | None = None,
-               raw_payload_json: str | None = None) -> None:
+               raw_payload_json: str | None = None, kind: str = "backtest") -> None:
         payload: dict = {}
         if recovery:
             payload["recovery_class"] = recovery
@@ -88,7 +88,7 @@ class _FarmDB:
                 "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
                 "status, verdict, attempt_count, payload_json, created_at, updated_at) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                (wid, "backtest", phase, ea_id or f"QM5_{wid}", symbol, f"{wid}.set",
+                (wid, kind, phase, ea_id or f"QM5_{wid}", symbol, f"{wid}.set",
                  status, None, 0, payload_json,
                  "2026-07-26T00:00:00+00:00", "2026-07-26T00:00:00+00:00"),
             )
@@ -231,6 +231,45 @@ class TopDownGatePrioritySelectorTests(unittest.TestCase):
         db.insert("priority-q02", "Q02", "USDJPY.DWX", priority_track=True)
         with patch.dict("os.environ", {self.FLAG: "1"}):
             self.assertEqual(db.order_ids()[0], "priority-q02")
+
+    def test_exact_q01_smoke_prerequisite_precedes_priority_optimization(self) -> None:
+        db = _FarmDB()
+        self.addCleanup(db.close)
+        db.insert(
+            "priority-opt",
+            farmctl.OPT_CENSUS_PHASE,
+            "EURUSD.DWX",
+            priority_track=True,
+        )
+        db.insert(
+            "q01-smoke",
+            "Q01",
+            "QM5_42_TEST_BASKET_H1",
+            priority_track=True,
+            kind=farmctl.Q01_SMOKE_WORK_ITEM_KIND,
+            raw_payload_json=json.dumps(
+                {
+                    "priority_track": True,
+                    "q01_smoke_contract": farmctl.Q01_SMOKE_WORK_ITEM_CONTRACT,
+                },
+                sort_keys=True,
+            ),
+        )
+        db.insert(
+            "untrusted-q01",
+            "Q01",
+            "QM5_43_TEST_BASKET_H1",
+            priority_track=True,
+            kind=farmctl.Q01_SMOKE_WORK_ITEM_KIND,
+            raw_payload_json=json.dumps(
+                {"priority_track": True, "q01_smoke_contract": "wrong"},
+                sort_keys=True,
+            ),
+        )
+        with patch.dict("os.environ", {self.FLAG: "1"}):
+            order = db.order_ids()
+        self.assertEqual(order[0], "q01-smoke")
+        self.assertLess(order.index("priority-opt"), order.index("untrusted-q01"))
 
     def test_active_hold_falls_through_to_lower_gate(self) -> None:
         db = _FarmDB()
