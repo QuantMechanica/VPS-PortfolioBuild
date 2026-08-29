@@ -52,6 +52,14 @@ Gate criteria and the sealed news plan are unchanged.
   exact-row reconciliation. No active backtest was interrupted.
 - The row was changed from stale `active/T6` to `pending/unclaimed` and parked
   with `release_on_restart=0` plus the structured PID-reuse event.
+- Fix commit: `d6b58fb21` on `agents/board-advisor`.
+- The exact hold was released at `2026-08-29T13:27:43Z`; the release event and
+  payload bind authorization to `d6b58fb21`.
+- Post-release admission remained correctly pending because two expanded news
+  parents were already active, equal to the governed expansion subcap of two
+  (`e2b29c28-...` on T1 and `a49c9730-...` on T8). The live cap was not
+  overridden and no active backtest was interrupted. The repaired row is
+  eligible for the next ordinary expansion slot.
 
 ## Verification
 
@@ -61,6 +69,10 @@ Gate criteria and the sealed news plan are unchanged.
 - Combined worker suites — 92 PASS with one unrelated parallel-claim timing
   assertion under host load; that isolated assertion passed on rerun.
 - `git diff --check` on the implementation and regression test — PASS
+- Live recovery transition — PASS: stale PID reuse was detected, structured
+  hold/event written, and the hold released only after the fix commit.
+- Fresh live matrix spawn — DEFERRED by the existing expanded-parent fleet cap;
+  no gate or scheduling criterion was weakened to force this verification.
 
 This is operational harness evidence only. It does not issue a pipeline verdict
 or change any Q-gate acceptance criterion.
