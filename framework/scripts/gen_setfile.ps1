@@ -36,6 +36,33 @@ $cardsRoots = @(
     'D:\QM\strategy_farm\artifacts\cards_approved'
 ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -Unique
 
+function Get-QmFileSha256 {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$LiteralPath
+    )
+
+    # Scheduled worker services can inherit a deliberately minimal
+    # PSModulePath. Get-FileHash is exported by Microsoft.PowerShell.Utility,
+    # so relying on module autoload after the setfile has been written can turn
+    # a valid generation into a false failure. Use the framework-independent
+    # .NET primitive and keep the emitted lowercase digest contract unchanged.
+    $stream = [System.IO.File]::OpenRead([System.IO.Path]::GetFullPath($LiteralPath))
+    try {
+        $algorithm = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $digest = $algorithm.ComputeHash($stream)
+        }
+        finally {
+            $algorithm.Dispose()
+        }
+    }
+    finally {
+        $stream.Dispose()
+    }
+    return [System.BitConverter]::ToString($digest).Replace('-', '').ToLowerInvariant()
+}
+
 function Find-CardPath {
     param(
         [Parameter(Mandatory = $true)]
@@ -554,7 +581,7 @@ if ($ProvenanceTemplatePath) {
     $targetPath = Join-Path $setsFolder "${EaSlug}_${Symbol}_${TF}_live.set"
     Invoke-ProvenanceTemplateRepair -TemplatePath $ProvenanceTemplatePath -TargetPath $targetPath `
         -ExpectedEaSlug $EaSlug -ExpectedSymbol $Symbol -ExpectedTimeframe $TF -ExpectedBuildHash $BuildHash
-    $sha = (Get-FileHash -Algorithm SHA256 -LiteralPath $targetPath).Hash.ToLowerInvariant()
+    $sha = Get-QmFileSha256 -LiteralPath $targetPath
     [pscustomobject]@{
         status = 'ok'
         mode = 'provenance_template_repair'
@@ -680,7 +707,7 @@ if ($Env -eq 'live' -and -not ($lines | Where-Object { $_ -match '^strategy_[A-Z
 $content = ($lines -join "`n") + "`n"
 [System.IO.File]::WriteAllText($targetPath, $content, [System.Text.UTF8Encoding]::new($false))
 
-$sha = (Get-FileHash -Algorithm SHA256 -LiteralPath $targetPath).Hash.ToLowerInvariant()
+$sha = Get-QmFileSha256 -LiteralPath $targetPath
 [pscustomobject]@{
     status = 'ok'
     ea = $EaSlug

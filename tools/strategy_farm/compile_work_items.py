@@ -143,6 +143,16 @@ QM5_41163_MAE_REPAIR_AUTHORITY = (
 QM5_41163_MAE_REPAIR_EA_LABELS = frozenset({
     "QM5_41163_williams-18ma-outside-bar-entry-d1-opt",
 })
+# Exact follow-up authority for the same sibling after its governed compiler
+# failed closed because the scheduled Windows PowerShell environment could not
+# autoload Get-FileHash. This permits one append-only, source-hash-bound compile
+# successor under router task 9f304e74 and grants no backtest/gate authority.
+QM5_41163_SETFILE_REPAIR_AUTHORITY = (
+    "router_ops_issue:9f304e74-5be4-4a6b-8921-d1b65875e241"
+)
+QM5_41163_SETFILE_REPAIR_EA_LABELS = frozenset({
+    "QM5_41163_williams-18ma-outside-bar-entry-d1-opt",
+})
 # Exact authority for the two DL-089 measurement siblings whose initial compile
 # receipts preceded the final source normalization commit.  The P0 dispatch
 # repair requires current source-bound binaries before it may enqueue any real
@@ -464,6 +474,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_41163_MAE_REPAIR_AUTHORITY
             and ea_label in QM5_41163_MAE_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_41163_SETFILE_REPAIR_AUTHORITY
+            and ea_label in QM5_41163_SETFILE_REPAIR_EA_LABELS
         )
         or (
             authority == DL089_MATRIX_DISPATCH_REPAIR_AUTHORITY

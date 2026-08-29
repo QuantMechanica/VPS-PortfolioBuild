@@ -442,6 +442,23 @@ def test_qm5_41163_mae_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_41163_setfile_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_41163_williams-18ma-outside-bar-entry-d1-opt"
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41163_SETFILE_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41162_ohlc-daily-squeeze-reversal-d1-opt",
+        compile_work_items.QM5_41163_SETFILE_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_ops_issue:wrong-task",
+    )
+
+
 def test_dl089_matrix_dispatch_repair_authority_is_exact_label_bound() -> None:
     allowed = compile_work_items.DL089_MATRIX_DISPATCH_REPAIR_EA_LABELS
 
