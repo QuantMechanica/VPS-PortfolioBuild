@@ -1,0 +1,20 @@
+{
+  "logical_symbol": "QM5_41154_EURJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1",
+  "host_symbol": "EURJPY.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "AUDJPY.DWX",
+    "NZDJPY.DWX",
+    "CADJPY.DWX",
+    "EURJPY.DWX"
+  ],
+  "traded_symbols": [
+    "EURJPY.DWX"
+  ],
+  "notes": [
+    "AUDJPY, NZDJPY, and CADJPY are synchronized completed-D1 signal inputs only; no order, magic row, or risk allocation is assigned to them.",
+    "Q02 evaluates the single EURJPY short carrier using RISK_FIXED=1000 and the frozen eight-parameter card baseline."
+  ]
+}

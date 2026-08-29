@@ -1,0 +1,135 @@
+{
+  "schema": "qm.source-build-compile-handoff/v1",
+  "recorded_at_utc": "2026-08-29T19:42:08.4378024Z",
+  "branch": "agents/board-advisor",
+  "mission": "diversity_funnel_throughput",
+  "outcome": "SOURCE_BUILD_READY_COMPILE_QUEUED_ACTIVATION_HELD_Q02_STOPPED_CPU_CEILING",
+  "selection": {
+    "ea_id": "QM5_41154",
+    "ea_label": "QM5_41154_eurjpy-carry-unwind-crisis-momentum",
+    "family": "carry_funding",
+    "mechanism": "carry_unwind_crisis_momentum",
+    "host_symbol": "EURJPY.DWX",
+    "logical_symbol": "QM5_41154_EURJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1",
+    "timeframe": "D1",
+    "source_id": "BRUNNERMEIER-NAGEL-PEDERSEN-CARRY-CRASH-2008",
+    "source_tier": "TIER_A",
+    "source_url": "https://www.nber.org/papers/w14473",
+    "reason": "deterministic lower-ea-id tie-break among the two remaining approved Wave-2 FX carry-unwind cards; adds a forex carrier outside the certified index/metal/energy concentration"
+  },
+  "farm_claim": {
+    "build_task_id": "baf614cf-9fd2-462f-ac4a-f8f56a018916",
+    "build_task_status_at_stop": "pending",
+    "collision_check": "no prior QM5_41154 build task or pipeline work item existed at claim time"
+  },
+  "governed_allocation": {
+    "magic": 411540000,
+    "slot": 0,
+    "symbol": "EURJPY.DWX",
+    "registry_row_status": "active",
+    "resolver_rows_after": 17964,
+    "allocation_artifact": "artifacts/qm5_41154_governed_magic_allocation_20260829T1932Z_board_advisor.json",
+    "allocation_artifact_sha256": "95a3860ebf0a83ab8a91d505f8773772f55aa34b326253df7a942aea9a6be866"
+  },
+  "implementation": {
+    "mq5_path": "framework/EAs/QM5_41154_eurjpy-carry-unwind-crisis-momentum/QM5_41154_eurjpy-carry-unwind-crisis-momentum.mq5",
+    "mq5_sha256": "df7e2e57aaa974d7936e58d6c236d80b51a22cd5b2130fb6de2c8f2d001e9159",
+    "spec_path": "framework/EAs/QM5_41154_eurjpy-carry-unwind-crisis-momentum/SPEC.md",
+    "spec_sha256": "16dbb0286d1ab8b7935ec36b8b44d25ceaa05bd9094f0e8276ba284b5a2e613f",
+    "spec_validation": "PASS",
+    "basket_manifest_path": "framework/EAs/QM5_41154_eurjpy-carry-unwind-crisis-momentum/basket_manifest.json",
+    "basket_manifest_sha256": "1b024e38d67da047a5b698d85357a9143380730b7db529195875f2a81ccb991b",
+    "basket_symbols": [
+      "AUDJPY.DWX",
+      "NZDJPY.DWX",
+      "CADJPY.DWX",
+      "EURJPY.DWX"
+    ],
+    "traded_symbols": [
+      "EURJPY.DWX"
+    ],
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "structural_rules": {
+      "entry": "equal-weight five-session JPY-cross return <= -1%, EURJPY completed close below the prior 20-bar low, and 10-session realized volatility above its trailing 60-observation median",
+      "side": "SHORT_EURJPY_ONLY",
+      "stop": "frozen 2.0 ATR(14,D1)",
+      "exit": "ten completed D1 bars or close above the midpoint of the prior 20-bar high/low channel"
+    },
+    "ml_or_banned_indicators": false,
+    "setfiles": [
+      {
+        "path": "framework/EAs/QM5_41154_eurjpy-carry-unwind-crisis-momentum/sets/QM5_41154_eurjpy-carry-unwind-crisis-momentum_EURJPY.DWX_D1_backtest.set",
+        "sha256_before_compile_seal": "88f8555fefc58fdf0ae1b3786fb1c0c1c1fb5042ef314deda6d192e399557a2a"
+      },
+      {
+        "path": "framework/EAs/QM5_41154_eurjpy-carry-unwind-crisis-momentum/sets/QM5_41154_eurjpy-carry-unwind-crisis-momentum_QM5_41154_EURJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1_D1_backtest.set",
+        "sha256_before_compile_seal": "dcf563e4487f6981b50cbd57fd22078f335524195b6bb6d322ef9062ccb629af"
+      }
+    ]
+  },
+  "compile": {
+    "ad_hoc_build_check_result": "REFUSED_NO_COMPILE",
+    "ad_hoc_failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "governed_work_item_id": "a05b9483-e45a-46ed-9fc9-c672723fec02",
+    "status_at_stop": "pending",
+    "attempt_count": 0,
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "activation_hold_active": true,
+    "release_dry_run": "ELIGIBLE_SOURCE_HASH_MATCH",
+    "release_apply_invoked": false,
+    "compiled": false,
+    "q01_pass": false,
+    "ex5_present": false
+  },
+  "capacity": {
+    "sampling_method": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "ceiling_percent": 97.0,
+    "before_compile_enqueue": {
+      "sampled_at_utc": "2026-08-29T19:40:56.5919486Z",
+      "samples_percent": [
+        80.51953945672842,
+        79.1767900927529,
+        82.62596909781487,
+        81.84687996200692,
+        76.77194962304429
+      ],
+      "average_cpu_percent": 80.18822564646948,
+      "maximum_cpu_percent": 82.62596909781487,
+      "ceiling_hit": false
+    },
+    "before_compile_release": {
+      "sampled_at_utc": "2026-08-29T19:42:08.4378024Z",
+      "samples_percent": [
+        91.80181268713092,
+        91.82643479442683,
+        97.94942895318967,
+        96.30610841781923,
+        96.00426407697773
+      ],
+      "average_cpu_percent": 94.77760978590888,
+      "maximum_cpu_percent": 97.94942895318967,
+      "ceiling_hit": true
+    }
+  },
+  "q02": {
+    "enqueued": false,
+    "backtest_launched": false,
+    "blocking_reasons": [
+      "Q01_NOT_PASS_COMPILE_ACTIVATION_HELD",
+      "CPU_CEILING_MAX_GE_97_PERCENT"
+    ]
+  },
+  "safety": {
+    "mt5_compile_started": false,
+    "smoke_attempted": false,
+    "terminal_processes_started_or_stopped": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
