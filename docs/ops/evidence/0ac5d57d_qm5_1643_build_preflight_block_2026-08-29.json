@@ -1,0 +1,56 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "0ac5d57d-ccf1-46b1-b673-f223a032dbf7",
+  "task_type": "build_ea",
+  "priority": 50,
+  "checked_at_utc": "2026-08-29T05:03:03Z",
+  "canonical_checkout": "C:/QM/repo",
+  "branch": "agents/board-advisor",
+  "git_head_inspected": "750e4c09f80e553c7869d7fd6bca936645f30959",
+  "requested_identity": {
+    "ea_id": "QM5_1643",
+    "slug": "aa-overnight-mom"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1643_aa-overnight-mom.md",
+    "sha256": "5bb4044ba949fe021f41a3a74a3e1e081e028188fde6c0fd9094c71c69d6927a",
+    "ea_id": "QM5_1643",
+    "slug": "aa-overnight-mom",
+    "g0_status": "APPROVED",
+    "gate_result": "PASS"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "b106ec0802875d259252a5b52ee59d787472ea82989dae096f4a379c35c8fb88",
+    "exact_ea_id_rows": [],
+    "exact_identity_gate": "FAIL",
+    "conflicting_slug_rows": [
+      "1619,aa-overnight-mom,ede348b4-0fa7-5be1-baa8-09e9089b67b7,active,Research,2026-05-19,,,",
+      "12249,aa-overnight-mom,ede348b4-0fa7-5be1-baa8-09e9089b67b7,retired,DeepSeek,2026-05-26,,,"
+    ],
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "f1a4ce64b39e4d114adf71a80310e950d53352bd340bd4f8f807415e6782110d",
+    "exact_ea_id_magic_rows": [],
+    "magic_gate": "FAIL"
+  },
+  "existing_source_observation": {
+    "path": "framework/EAs/QM5_1643_aa-overnight-mom/QM5_1643_aa-overnight-mom.mq5",
+    "sha256": "c1485b1c8e2204baa59bd1f3030eed09903cab356bac305363b9cdeb9eac032c",
+    "length_bytes": 4082,
+    "line_count": 126,
+    "note": "The pre-existing staged mq5-only scaffold was preserved and cannot establish a missing registry identity."
+  },
+  "verdict": "BUILD_NOT_STARTED_EA_IDENTITY_GATE_FAIL",
+  "blocked_reason": "ea_id_registry.csv has no row for EA 1643. The requested slug is actively registered under EA 1619, so the mandatory card-slug-folder-registry identity cannot be proven.",
+  "required_next_action": "OWNER-governed intake must reconcile the card EA ID with the deterministic registry, ensure a single active identity, allocate all traded-symbol magic rows, and recycle the build task.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "setfile_modified": false,
+    "compile_attempted": false,
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "live_or_autotrading_changed": false
+  }
+}

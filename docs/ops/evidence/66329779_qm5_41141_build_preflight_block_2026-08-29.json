@@ -1,0 +1,57 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "66329779-aa43-4905-97da-7fabc11823d3",
+  "task_type": "build_ea",
+  "priority": 50,
+  "checked_at_utc": "2026-08-29T05:03:03Z",
+  "canonical_checkout": "C:/QM/repo",
+  "branch": "agents/board-advisor",
+  "git_head_inspected": "750e4c09f80e553c7869d7fd6bca936645f30959",
+  "requested_identity": {
+    "ea_id": "QM5_41141",
+    "slug": "gbpusd-quarter-end-benchmark-fix-hedge-flow"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow.md",
+    "sha256": "6d36821e663865f087fa1d0f260947d57bcbcfc69fef06130482900ca6a1d01f",
+    "ea_id": "QM5_41141",
+    "slug": "gbpusd-quarter-end-benchmark-fix-hedge-flow",
+    "g0_status": "APPROVED",
+    "target_symbols": ["GBPUSD.DWX"],
+    "period": "M15",
+    "gate_result": "PASS"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "b106ec0802875d259252a5b52ee59d787472ea82989dae096f4a379c35c8fb88",
+    "exact_identity_row": "41141,gbpusd-quarter-end-benchmark-fix-hedge-flow,MELVIN-PRINS-LONDON-FIX-2015,active,Codex,2026-08-24,,,",
+    "exact_identity_gate": "PASS",
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "f1a4ce64b39e4d114adf71a80310e950d53352bd340bd4f8f807415e6782110d",
+    "required_magic_rows": [
+      {"symbol_slot": 0, "symbol": "GBPUSD.DWX", "expected_magic": 411410000}
+    ],
+    "exact_ea_id_magic_rows": [],
+    "magic_gate": "FAIL"
+  },
+  "existing_source_observation": {
+    "path": "framework/EAs/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow.mq5",
+    "sha256": "8216f9e0aff23879b4294010ab5a5ab1973d17a3d8cecbccdd1fcf0dd9a39c73",
+    "length_bytes": 4085,
+    "line_count": 126,
+    "note": "The pre-existing staged mq5-only scaffold was preserved and does not substitute for governed magic allocation."
+  },
+  "verdict": "BUILD_NOT_STARTED_MAGIC_GATE_FAIL",
+  "blocked_reason": "The approved card and active EA identity match, but magic_numbers.csv has no row for EA 41141 and its traded GBPUSD.DWX slot. qm-build-ea-from-card forbids Development from allocating the row.",
+  "required_next_action": "The governed registry writer must allocate the active slot-0 GBPUSD.DWX magic row, regenerate QM_MagicResolver.mqh, verify zero dropped rows, and recycle the build task.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "setfile_modified": false,
+    "compile_attempted": false,
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "live_or_autotrading_changed": false
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": "qm.build_preflight_block.v1",
+  "task_id": "73c2b022-304d-463e-9a77-dd6c1c4d8175",
+  "task_type": "build_ea",
+  "priority": 50,
+  "checked_at_utc": "2026-08-29T05:03:03Z",
+  "canonical_checkout": "C:/QM/repo",
+  "branch": "agents/board-advisor",
+  "git_head_inspected": "750e4c09f80e553c7869d7fd6bca936645f30959",
+  "requested_identity": {
+    "ea_id": "QM5_1157",
+    "slug": "qp-stress-reversal-sp500"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1157_qp-stress-reversal-sp500.md",
+    "sha256": "6b96b9a0b5a0ec9bda33f62bad2a7b0b29940eed9a942fdd41c2172cf340e652",
+    "ea_id": "QM5_1157",
+    "slug": "qp-stress-reversal-sp500",
+    "g0_status": "APPROVED",
+    "target_symbols": ["SP500.DWX"],
+    "period": "D1",
+    "gate_result": "PASS"
+  },
+  "deterministic_registry": {
+    "ea_id_registry_path": "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "ea_id_registry_sha256": "b106ec0802875d259252a5b52ee59d787472ea82989dae096f4a379c35c8fb88",
+    "exact_ea_id_rows": [
+      "1157,qp-stress-reversal-sp500,7ede58dd-d184-5099-9d48-7a65de230853,retired,Research,2026-05-17,,,",
+      "1157,plastun-crude-oil-autumn,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Development,2026-06-18,,,"
+    ],
+    "exact_identity_gate": "FAIL",
+    "requested_slug_active_rows": [
+      "12074,qp-stress-reversal-sp500,7ede58dd-d184-5099-9d48-7a65de230853,active,DeepSeek,2026-05-26,,,"
+    ],
+    "magic_registry_path": "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "magic_registry_sha256": "f1a4ce64b39e4d114adf71a80310e950d53352bd340bd4f8f807415e6782110d",
+    "exact_ea_id_magic_rows": [
+      "1157,plastun-crude-oil-autumn,0,XTIUSD.DWX,11570000,2026-06-18,Claude,reserved"
+    ],
+    "magic_gate": "FAIL"
+  },
+  "existing_source_observation": {
+    "path": "framework/EAs/QM5_1157_qp-stress-reversal-sp500/QM5_1157_qp-stress-reversal-sp500.mq5",
+    "sha256": "e290767e29a650600f150ba45d5a023806fae5064abb0550f9d371c04ec35eb1",
+    "length_bytes": 4082,
+    "line_count": 126,
+    "note": "The pre-existing staged mq5-only scaffold was preserved; EA 1157 is not an active identity for this strategy."
+  },
+  "verdict": "BUILD_NOT_STARTED_RETIRED_AND_REUSED_EA_ID",
+  "blocked_reason": "The requested EA 1157 identity for qp-stress-reversal-sp500 is retired. The same number is active for plastun-crude-oil-autumn, while qp-stress-reversal-sp500 is active under EA 12074. Building would violate identity and magic ownership gates.",
+  "required_next_action": "OWNER-governed intake must reconcile the duplicate/reused EA identities and route the card only under its single active canonical ID with matching active magic rows.",
+  "actions_taken": {
+    "source_modified": false,
+    "registry_modified": false,
+    "resolver_modified": false,
+    "setfile_modified": false,
+    "compile_attempted": false,
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "live_or_autotrading_changed": false
+  }
+}
