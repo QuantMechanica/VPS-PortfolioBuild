@@ -309,6 +309,32 @@ QM5_41203_COMPILE_FAIL_REJECTED_SOURCE_SHA256 = (
 QM5_41203_COMPILE_FAIL_REPAIRED_SOURCE_SHA256 = (
     "aabcac8d22ceebfa75960c877e8078bfd85e657e4c5b37bdca4dbaff540f75ea"
 )
+# Exact append-only authority for the QM5_41207 pre-Q02 execution-contract
+# repair.  Its first governed compile was mechanically clean, but the strict
+# build receipt carried BUILD_CHECK_DWX_ADVISORY_DWX_SPREAD_FAILCLOSED: the
+# original source rejected Ask==Bid even though .DWX tester quotes legitimately
+# model zero spread.  This binding authorizes only the reviewed Ask<Bid repair,
+# against the immutable advisory receipt and successor source hash.  It grants
+# no backtest, gate-verdict, or general EX5-overwrite authority.
+QM5_41207_COMPILE_ADVISORY_REPAIR_PREDECESSOR_ID = (
+    "673f05ea-b106-4de1-8607-3df23d51e2d6"
+)
+QM5_41207_COMPILE_ADVISORY_REPAIR_AUTHORITY = (
+    "governed_compile_advisory:673f05ea-b106-4de1-8607-3df23d51e2d6"
+)
+QM5_41207_COMPILE_ADVISORY_REPAIR_EA_LABEL = "QM5_41207_xauxag-corrbreak-rv"
+QM5_41207_COMPILE_ADVISORY_REJECTED_SOURCE_SHA256 = (
+    "5fb24a43d232fb4bfba613d02735ad4b8ad7a01a89824847fef013d3fb3c0f1e"
+)
+QM5_41207_COMPILE_ADVISORY_REPAIRED_SOURCE_SHA256 = (
+    "ffbfc3e4845ccbc87c73adb6e6ddf6f8a1cd8e4ecec78b6382c96fd920b8812a"
+)
+QM5_41207_COMPILE_ADVISORY_PREDECESSOR_EX5_SHA256 = (
+    "957f2774a66c4afc501a310b518cf308d80170af03be688855f2ba6c7902493d"
+)
+QM5_41207_COMPILE_ADVISORY_EVIDENCE_SHA256 = (
+    "90f8a719f54d41efe13c2abd705d44ebc4d36e37c63bbb51c7f1a9a4e90cff2a"
+)
 COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
@@ -574,6 +600,76 @@ def _qm5_41203_compile_fail_repair_authorized(
     )
 
 
+def _qm5_41207_compile_advisory_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None,
+    source_sha: str | None,
+    inventory: dict[str, Any] | None,
+) -> bool:
+    """Bind the QM5_41207 zero-spread repair to one exact advisory receipt."""
+    if (
+        authority != QM5_41207_COMPILE_ADVISORY_REPAIR_AUTHORITY
+        or ea_label != QM5_41207_COMPILE_ADVISORY_REPAIR_EA_LABEL
+        or ea_id != "41207"
+        or str(source_sha or "").lower()
+        != QM5_41207_COMPILE_ADVISORY_REPAIRED_SOURCE_SHA256
+        or inventory is None
+    ):
+        return False
+    predecessor = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id"))
+            == QM5_41207_COMPILE_ADVISORY_REPAIR_PREDECESSOR_ID
+        ),
+        None,
+    )
+    if predecessor is None:
+        return False
+    evidence_path = Path(str(predecessor.get("evidence_path") or ""))
+    if (
+        not evidence_path.is_file()
+        or sha256_file(evidence_path).lower()
+        != QM5_41207_COMPILE_ADVISORY_EVIDENCE_SHA256
+    ):
+        return False
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    output_tail = str(evidence.get("build_check_output_tail") or "")
+    payload = _json_object(predecessor.get("payload_json"))
+    compile_result = payload.get("compile_result")
+    predecessor_ex5_sha = str(
+        predecessor.get("ex5_sha256")
+        or (compile_result or {}).get("ex5_sha256")
+        or ""
+    ).lower()
+    return bool(
+        predecessor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("status") == "done"
+        and predecessor.get("verdict") == "COMPILE_OK"
+        and payload.get("ea_label") == ea_label
+        and str(payload.get("mq5_sha256") or "").lower()
+        == QM5_41207_COMPILE_ADVISORY_REJECTED_SOURCE_SHA256
+        and payload.get("verdict_reason") == "COMPILE_ARTIFACT_READY"
+        and isinstance(compile_result, dict)
+        and compile_result.get("compile_result") == "PASS"
+        and compile_result.get("build_check_result") == "PASS"
+        and compile_result.get("failure_classes") == []
+        and compile_result.get("success") is True
+        and predecessor_ex5_sha
+        == QM5_41207_COMPILE_ADVISORY_PREDECESSOR_EX5_SHA256
+        and evidence.get("build_check_result") == "PASS"
+        and evidence.get("compile_result") == "PASS"
+        and "BUILD_CHECK_DWX_ADVISORY_DWX_SPREAD_FAILCLOSED" in output_tail
+        and "build_check.warnings=1" in output_tail
+    )
+
+
 def _source_repair_authorized(
     ea_label: str,
     authority: str | None,
@@ -594,6 +690,14 @@ def _source_repair_authorized(
         )
     if authority == QM5_41203_COMPILE_FAIL_REPAIR_AUTHORITY:
         return _qm5_41203_compile_fail_repair_authorized(
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+        )
+    if authority == QM5_41207_COMPILE_ADVISORY_REPAIR_AUTHORITY:
+        return _qm5_41207_compile_advisory_repair_authorized(
             ea_label,
             authority,
             ea_id=ea_id,

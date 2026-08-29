@@ -4,6 +4,8 @@ import csv
 import json
 from pathlib import Path
 
+import pytest
+
 from tools.strategy_farm import compile_work_items, farmctl, terminal_worker
 
 
@@ -610,6 +612,103 @@ def test_qm5_41203_compile_fail_repair_authority_is_failure_and_hash_bound() -> 
     assert not compile_work_items._source_repair_authorized(
         label,
         compile_work_items.QM5_41203_COMPILE_FAIL_REPAIR_AUTHORITY,
+        **{**arguments, "inventory": changed_inventory},
+    )
+
+
+def test_qm5_41207_compile_advisory_repair_is_receipt_and_hash_bound(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    label = compile_work_items.QM5_41207_COMPILE_ADVISORY_REPAIR_EA_LABEL
+    predecessor_id = (
+        compile_work_items.QM5_41207_COMPILE_ADVISORY_REPAIR_PREDECESSOR_ID
+    )
+    evidence_path = tmp_path / "compile_evidence.json"
+    evidence_path.write_text(
+        json.dumps({
+            "build_check_result": "PASS",
+            "compile_result": "PASS",
+            "build_check_output_tail": (
+                "WARNING: BUILD_CHECK_DWX_ADVISORY_DWX_SPREAD_FAILCLOSED\n"
+                "build_check.warnings=1\n"
+            ),
+        }),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        compile_work_items,
+        "sha256_file",
+        lambda _path: (
+            compile_work_items.QM5_41207_COMPILE_ADVISORY_EVIDENCE_SHA256
+        ),
+    )
+    predecessor_payload = {
+        "ea_label": label,
+        "mq5_sha256": (
+            compile_work_items.QM5_41207_COMPILE_ADVISORY_REJECTED_SOURCE_SHA256
+        ),
+        "verdict_reason": "COMPILE_ARTIFACT_READY",
+        "compile_result": {
+            "compile_result": "PASS",
+            "build_check_result": "PASS",
+            "failure_classes": [],
+            "success": True,
+            "ex5_sha256": (
+                compile_work_items.QM5_41207_COMPILE_ADVISORY_PREDECESSOR_EX5_SHA256
+            ),
+        },
+    }
+    inventory = {
+        "work_rows": {
+            "41207": [{
+                "id": predecessor_id,
+                "phase": compile_work_items.COMPILE_EA_PHASE,
+                "status": "done",
+                "verdict": "COMPILE_OK",
+                "evidence_path": str(evidence_path),
+                "ex5_sha256": (
+                    compile_work_items.QM5_41207_COMPILE_ADVISORY_PREDECESSOR_EX5_SHA256
+                ),
+                "payload_json": json.dumps(predecessor_payload),
+            }],
+        },
+    }
+    arguments = {
+        "ea_id": "41207",
+        "source_sha": (
+            compile_work_items.QM5_41207_COMPILE_ADVISORY_REPAIRED_SOURCE_SHA256
+        ),
+        "inventory": inventory,
+    }
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41207_COMPILE_ADVISORY_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41208_unrelated",
+        compile_work_items.QM5_41207_COMPILE_ADVISORY_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "governed_compile_advisory:wrong-row",
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41207_COMPILE_ADVISORY_REPAIR_AUTHORITY,
+        **{**arguments, "source_sha": "0" * 64},
+    )
+    changed_inventory = json.loads(json.dumps(inventory))
+    changed_inventory["work_rows"]["41207"][0]["payload_json"] = json.dumps(
+        {**predecessor_payload, "verdict_reason": "OTHER"}
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41207_COMPILE_ADVISORY_REPAIR_AUTHORITY,
         **{**arguments, "inventory": changed_inventory},
     )
 
