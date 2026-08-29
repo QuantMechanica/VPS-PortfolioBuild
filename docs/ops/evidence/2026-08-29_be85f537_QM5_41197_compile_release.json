@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "3f472524-6774-4fb9-91fa-2de5dde91169"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260829T200411Z_b1223b50.sqlite",
+    "sha256": "715fdd8877b1120e3bac6f7bd8667806fd7bb777a2c9a349d91cd8c594481b7a"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "9918490a1942c1b3a661d0a1b2a4a1ed8c2f3517ac0ef4a480796c25d5016c3a",
+      "ea_id": "QM5_41197",
+      "ea_label": "QM5_41197_connors-rsi2-mean-reversion-opt",
+      "expected_mq5_sha256": "9918490a1942c1b3a661d0a1b2a4a1ed8c2f3517ac0ef4a480796c25d5016c3a",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41197_connors-rsi2-mean-reversion-opt\\QM5_41197_connors-rsi2-mean-reversion-opt.mq5",
+      "work_item_id": "3f472524-6774-4fb9-91fa-2de5dde91169"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-29T20:04:17+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "3f472524-6774-4fb9-91fa-2de5dde91169"
+}
